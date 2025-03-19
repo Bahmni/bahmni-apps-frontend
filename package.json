@@ -1,0 +1,64 @@
+{
+  "name": "bahmni-clinical-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "webpack serve --mode development --open",
+    "build": "webpack --mode production",
+    "preview": "webpack serve --mode production --open",
+    "lint": "eslint --ext .ts,.tsx src/",
+    "lint:fix": "eslint --ext .ts,.tsx src/ --fix"
+  },
+  "dependencies": {
+    "@carbon/react": "^1.33.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.3.0",
+    "workbox-core": "^7.0.0",
+    "workbox-expiration": "^7.0.0",
+    "workbox-precaching": "^7.0.0",
+    "workbox-routing": "^7.0.0",
+    "workbox-strategies": "^7.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.22.15",
+    "@babel/preset-env": "^7.22.15",
+    "@babel/preset-react": "^7.22.15",
+    "@babel/preset-typescript": "^7.22.15",
+    "@types/node": "^22.13.10",
+    "@types/react": "^19.0.11",
+    "@types/react-dom": "^19.0.4",
+    "@typescript-eslint/eslint-plugin": "^8.26.1",
+    "@typescript-eslint/parser": "^8.26.1",
+    "babel-loader": "^10.0.0",
+    "copy-webpack-plugin": "^13.0.0",
+    "css-loader": "^7.1.2",
+    "eslint": "^9.22.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "html-webpack-plugin": "^5.5.3",
+    "mini-css-extract-plugin": "^2.7.6",
+    "sass": "^1.66.1",
+    "sass-loader": "^16.0.5",
+    "style-loader": "^4.0.0",
+    "terser-webpack-plugin": "^5.3.9",
+    "typescript": "^5.2.2",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.0",
+    "webpack-pwa-manifest": "^4.3.0",
+    "workbox-webpack-plugin": "^7.0.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
