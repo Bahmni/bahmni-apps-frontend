@@ -1,9 +1,9 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import { Content } from '@carbon/react';
-import MainLayout from './components/layout/MainLayout';
-import HomePage from './pages/HomePage';
-import NotFoundPage from './pages/NotFoundPage';
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import { Content } from "@carbon/react";
+import MainLayout from "./components/layout/MainLayout";
+import HomePage from "./pages/HomePage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 const App: React.FC = () => {
   return (

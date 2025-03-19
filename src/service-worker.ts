@@ -1,10 +1,10 @@
 /// <reference lib="webworker" />
 
-import { clientsClaim } from 'workbox-core';
-import { ExpirationPlugin } from 'workbox-expiration';
-import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
-import { registerRoute } from 'workbox-routing';
-import { StaleWhileRevalidate, CacheFirst } from 'workbox-strategies';
+import { clientsClaim } from "workbox-core";
+import { ExpirationPlugin } from "workbox-expiration";
+import { precacheAndRoute, createHandlerBoundToURL } from "workbox-precaching";
+import { registerRoute } from "workbox-routing";
+import { StaleWhileRevalidate, CacheFirst } from "workbox-strategies";
 
 declare const self: ServiceWorkerGlobalScope;
 
@@ -19,13 +19,13 @@ clientsClaim();
 precacheAndRoute(manifest);
 
 // Set up App Shell-style routing
-const fileExtensionRegexp = new RegExp('/[^/?]+\\.[^/]+$');
+const fileExtensionRegexp = new RegExp("/[^/?]+\\.[^/]+$");
 registerRoute(
   // Return false to exempt requests from being fulfilled by index.html
   ({ request, url }: { request: Request; url: URL }) => {
     try {
       // If this is a URL that starts with /_, skip
-      if (url.pathname.startsWith('/_')) {
+      if (url.pathname.startsWith("/_")) {
         return false;
       }
 
@@ -36,28 +36,28 @@ registerRoute(
       }
 
       // Only handle GET requests
-      if (request.method !== 'GET') {
+      if (request.method !== "GET") {
         return false;
       }
 
       // Return true to signal that we want to use the handler
       return true;
     } catch (error) {
-      console.error('Error in navigation route handler:', error);
+      console.error("Error in navigation route handler:", error);
       return false;
     }
   },
-  createHandlerBoundToURL('/index.html')
+  createHandlerBoundToURL("/index.html"),
 );
 
 // Cache images with a Cache First strategy
 registerRoute(
   // Check to see if the request's destination is style for stylesheets
-  ({ request }) => request.destination === 'image',
+  ({ request }) => request.destination === "image",
   // Use a Cache First caching strategy
   new CacheFirst({
     // Put all cached files in a cache named 'images'
-    cacheName: 'images',
+    cacheName: "images",
     plugins: [
       // Ensure that only requests that result in a 200 status are cached
       // new CacheableResponsePlugin({
@@ -69,24 +69,24 @@ registerRoute(
         maxAgeSeconds: 60 * 60 * 24 * 30, // 30 Days
       }),
     ],
-  })
+  }),
 );
 
 // Cache CSS and JavaScript Files
 registerRoute(
   ({ request }) =>
-    request.destination === 'style' ||
-    request.destination === 'script' ||
-    request.destination === 'font',
+    request.destination === "style" ||
+    request.destination === "script" ||
+    request.destination === "font",
   new StaleWhileRevalidate({
-    cacheName: 'static-resources',
-  })
+    cacheName: "static-resources",
+  }),
 );
 
 // This allows the web app to trigger skipWaiting via
 // registration.waiting.postMessage({type: 'SKIP_WAITING'})
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
   }
 });
