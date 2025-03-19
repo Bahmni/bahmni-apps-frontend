@@ -23,19 +23,29 @@ const fileExtensionRegexp = new RegExp('/[^/?]+\\.[^/]+$');
 registerRoute(
   // Return false to exempt requests from being fulfilled by index.html
   ({ request, url }: { request: Request; url: URL }) => {
-    // If this is a URL that starts with /_, skip
-    if (url.pathname.startsWith('/_')) {
+    try {
+      // If this is a URL that starts with /_, skip
+      if (url.pathname.startsWith('/_')) {
+        return false;
+      }
+
+      // If this looks like a URL for a resource, because it contains
+      // a file extension, skip
+      if (url.pathname.match(fileExtensionRegexp)) {
+        return false;
+      }
+
+      // Only handle GET requests
+      if (request.method !== 'GET') {
+        return false;
+      }
+
+      // Return true to signal that we want to use the handler
+      return true;
+    } catch (error) {
+      console.error('Error in navigation route handler:', error);
       return false;
     }
-
-    // If this looks like a URL for a resource, because it contains
-    // a file extension, skip
-    if (url.pathname.match(fileExtensionRegexp)) {
-      return false;
-    }
-
-    // Return true to signal that we want to use the handler
-    return true;
   },
   createHandlerBoundToURL('/index.html')
 );
