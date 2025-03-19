@@ -42,7 +42,9 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "globals": "^16.0.0",
     "html-webpack-plugin": "^5.5.3",
+    "husky": "^9.1.7",
     "jiti": "^2.4.2",
+    "lint-staged": "^15.5.0",
     "mini-css-extract-plugin": "^2.7.6",
     "prettier": "^3.5.3",
     "sass": "1.77.6",
@@ -67,6 +69,12 @@
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
+    ]
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "yarn lint:fix",
+      "yarn prettier:fix"
     ]
   }
 }
