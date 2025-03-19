@@ -7,7 +7,9 @@
     "build": "webpack --mode production",
     "preview": "webpack serve --mode production --open",
     "lint": "eslint --ext .ts,.tsx src/",
-    "lint:fix": "eslint --ext .ts,.tsx src/ --fix"
+    "lint:fix": "eslint --ext .ts,.tsx src/ --fix",
+    "prettier:check": "prettier --check src/",
+    "prettier:fix": "prettier --write src/"
   },
   "dependencies": {
     "@carbon/react": "^1.78.2",
@@ -35,12 +37,14 @@
     "copy-webpack-plugin": "^13.0.0",
     "css-loader": "^7.1.2",
     "eslint": "^9.22.0",
+    "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.2.0",
     "globals": "^16.0.0",
     "html-webpack-plugin": "^5.5.3",
     "jiti": "^2.4.2",
     "mini-css-extract-plugin": "^2.7.6",
+    "prettier": "^3.5.3",
     "sass": "1.77.6",
     "sass-loader": "16.0.0",
     "style-loader": "^4.0.0",
