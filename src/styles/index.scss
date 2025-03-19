@@ -1,0 +1,21 @@
+// Import Carbon styles
+@use '@carbon/react';
+
+// Global styles
+body {
+  margin: 0;
+  font-family: 'IBM Plex Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+// Layout styles
+main {
+  padding-top: 3rem;
+}
+
+// Add more custom styles as needed
