@@ -10,7 +10,7 @@
     "lint:fix": "eslint --ext .ts,.tsx src/ --fix"
   },
   "dependencies": {
-    "@carbon/react": "^1.33.0",
+    "@carbon/react": "^1.78.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.3.0",
@@ -38,8 +38,8 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "html-webpack-plugin": "^5.5.3",
     "mini-css-extract-plugin": "^2.7.6",
-    "sass": "^1.66.1",
-    "sass-loader": "^16.0.5",
+    "sass": "1.77.6",
+    "sass-loader": "16.0.0",
     "style-loader": "^4.0.0",
     "terser-webpack-plugin": "^5.3.9",
     "typescript": "^5.2.2",
