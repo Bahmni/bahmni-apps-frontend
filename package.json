@@ -39,6 +39,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "globals": "^16.0.0",
     "html-webpack-plugin": "^5.5.3",
+    "jiti": "^2.4.2",
     "mini-css-extract-plugin": "^2.7.6",
     "sass": "1.77.6",
     "sass-loader": "16.0.0",
