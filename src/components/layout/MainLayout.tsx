@@ -1,11 +1,11 @@
-import React, { ReactNode } from "react";
+import React, { ReactNode } from 'react';
 import {
   Header,
   HeaderName,
   HeaderNavigation,
   HeaderMenuItem,
   SkipToContent,
-} from "@carbon/react";
+} from '@carbon/react';
 
 interface MainLayoutProps {
   children: ReactNode;

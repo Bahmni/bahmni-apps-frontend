@@ -1,5 +1,5 @@
-import React from "react";
-import { Grid, Column, Heading, Section } from "@carbon/react";
+import React from 'react';
+import { Grid, Column, Heading, Section } from '@carbon/react';
 
 const HomePage: React.FC = () => {
   return (

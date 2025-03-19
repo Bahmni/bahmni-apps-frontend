@@ -1,6 +1,6 @@
-import React from "react";
-import { Grid, Column, Heading, Section, Link } from "@carbon/react";
-import { Link as RouterLink } from "react-router-dom";
+import React from 'react';
+import { Grid, Column, Heading, Section, Link } from '@carbon/react';
+import { Link as RouterLink } from 'react-router-dom';
 
 const NotFoundPage: React.FC = () => {
   return (
