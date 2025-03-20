@@ -9,7 +9,9 @@
     "lint": "eslint --ext .ts,.tsx src/",
     "lint:fix": "eslint --ext .ts,.tsx src/ --fix",
     "prettier:check": "prettier --check src/",
-    "prettier:fix": "prettier --write src/"
+    "prettier:fix": "prettier --write src/",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@carbon/react": "^1.78.2",
@@ -28,6 +30,10 @@
     "@babel/preset-react": "^7.22.15",
     "@babel/preset-typescript": "^7.22.15",
     "@eslint/js": "^9.22.0",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@types/jest": "^29.5.12",
     "@types/node": "^22.13.10",
     "@types/react": "^19.0.11",
     "@types/react-dom": "^19.0.4",
@@ -43,6 +49,8 @@
     "globals": "^16.0.0",
     "html-webpack-plugin": "^5.5.3",
     "husky": "^9.1.7",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
     "jiti": "^2.4.2",
     "lint-staged": "^15.5.0",
     "mini-css-extract-plugin": "^2.7.6",
@@ -51,6 +59,7 @@
     "sass-loader": "16.0.0",
     "style-loader": "^4.0.0",
     "terser-webpack-plugin": "^5.3.9",
+    "ts-node": "^10.9.2",
     "typescript": "^5.2.2",
     "typescript-eslint": "^8.26.1",
     "webpack": "^5.88.2",
