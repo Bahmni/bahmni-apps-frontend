@@ -205,5 +205,6 @@ module.exports = (env, argv) => {
       maxAssetSize: 512000, // 500 KiB
       maxEntrypointSize: 512000, // 500 KiB
     },
+    stats: 'minimal',
   };
 };
