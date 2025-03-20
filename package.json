@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "webpack serve --mode development --open",
-    "build": "webpack --mode production --env PUBLIC_PATH='/bahnew/'",
+    "build": "webpack --mode production --env PUBLIC_PATH='/bahmni-new/'",
     "preview": "webpack serve --mode production --open",
     "lint": "eslint --ext .ts,.tsx src/",
     "lint:fix": "eslint --ext .ts,.tsx src/ --fix",
