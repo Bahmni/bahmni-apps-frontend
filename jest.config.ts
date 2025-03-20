@@ -1,4 +1,6 @@
-module.exports = {
+import type { Config } from '@jest/types';
+
+const config: Config.InitialOptions = {
   testEnvironment: 'jsdom',
   roots: ['<rootDir>/src'],
   transform: {
@@ -11,3 +13,5 @@ module.exports = {
   },
   setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
 };
+
+export default config;
