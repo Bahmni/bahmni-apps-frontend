@@ -55,6 +55,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: package/docker/Dockerfile
           push: false
           load: true
           tags: clinical-frontend:local
