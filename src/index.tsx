@@ -4,12 +4,6 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './styles/index.scss';
 
-const getBasename = () => {
-  const pathname = window.location.pathname;
-  const basePath = pathname.split('/').slice(0, 2).join('/');
-  return basePath || '/';
-};
-
 // Register service worker for PWA
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -34,7 +28,7 @@ const root = createRoot(container);
 
 root.render(
   <React.StrictMode>
-    <BrowserRouter basename={getBasename()}>
+    <BrowserRouter basename={process.env.PUBLIC_URL || '/'}>
       <App />
     </BrowserRouter>
   </React.StrictMode>,
