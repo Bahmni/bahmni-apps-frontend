@@ -8,6 +8,8 @@ const { GenerateSW } = require('workbox-webpack-plugin');
 
 module.exports = (env, argv) => {
   const isProduction = argv.mode === 'production';
+  // Allow configuring the public path via environment variable
+  const publicPath = env.PUBLIC_PATH || '/';
   
   return {
     entry: './src/index.tsx',
@@ -15,7 +17,7 @@ module.exports = (env, argv) => {
       path: path.resolve(__dirname, 'dist'),
       filename: isProduction ? 'static/js/[name].[contenthash:8].js' : 'static/js/[name].js',
       chunkFilename: isProduction ? 'static/js/[name].[contenthash:8].chunk.js' : 'static/js/[name].chunk.js',
-      publicPath: '/',
+      publicPath: publicPath,
       clean: true,
     },
     devtool: isProduction ? 'source-map' : 'cheap-module-source-map',
@@ -113,8 +115,8 @@ module.exports = (env, argv) => {
         theme_color: '#0f62fe', // Carbon blue
         display: 'standalone',
         orientation: 'portrait',
-        scope: '/',
-        start_url: '/',
+        scope: publicPath,
+        start_url: publicPath,
         icons: [
           {
             src: path.resolve('public/logo512.png'),
