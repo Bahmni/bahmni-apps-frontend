@@ -8,7 +8,7 @@ import './styles/index.scss';
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     // Use a relative path that will work regardless of the base URL
-    const swUrl = new URL('/service-worker.js', window.location.origin)
+    const swUrl = new URL('./service-worker.js', window.location.href)
       .pathname;
 
     navigator.serviceWorker
@@ -28,7 +28,7 @@ const root = createRoot(container);
 
 root.render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename={process.env.PUBLIC_URL || '/'}>
       <App />
     </BrowserRouter>
   </React.StrictMode>,
