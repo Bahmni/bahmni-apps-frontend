@@ -133,7 +133,7 @@ This method allows you to build the application locally and mount it into the Do
 
 5. **Access the Application**:
    
-   Open your browser and navigate to the Bahmni EMR URL (typically http://localhost:8080/bahmni-new/).
+   Open your browser and navigate to the Bahmni EMR URL and open any Active patient (typically start from http://localhost/bahmni/home).
 
 6. **Development Workflow**:
    
@@ -161,7 +161,7 @@ This method provides a faster development experience with hot reloading:
    
    To authorize API requests to the backend:
 
-   a. Login to Bahmni EMR in another browser tab (typically http://localhost:8080/bahmni/home)
+   a. Login to Bahmni EMR in another browser tab (typically https://localhost/bahmni/home)
    
    b. After successful login, open browser developer tools (F12 or right-click > Inspect)
    
@@ -172,7 +172,6 @@ This method provides a faster development experience with hot reloading:
    e. In your localhost:3000 tab, use developer tools to create a new cookie:
       - Name: `JSESSIONID`
       - Value: (paste the copied value)
-      - Domain: localhost
 
 3. **Development Workflow**:
    
