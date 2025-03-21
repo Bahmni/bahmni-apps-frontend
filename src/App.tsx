@@ -11,6 +11,7 @@ const App: React.FC = () => {
       <Content>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/clinical/:patientUuid" element={<HomePage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Content>
