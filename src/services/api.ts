@@ -1,8 +1,8 @@
-import axios, { AxiosResponse, AxiosError } from 'axios';
+import axios, { AxiosResponse, AxiosError, AxiosInstance } from 'axios';
 import { hostUrl } from '../constants/app';
 import { notificationService } from './notificationService';
 
-const client = axios.create({ baseURL: hostUrl });
+const client: AxiosInstance = axios.create({ baseURL: hostUrl });
 client.defaults.headers.common['Content-Type'] = 'application/json';
 
 // Request interceptor
@@ -56,6 +56,7 @@ export const getErrorDetails = (
         message = 'The server encountered an error. Please try again later.';
       } else {
         title = 'Request Error';
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const responseData = axiosError.response.data as Record<string, any>;
         message =
           responseData?.message ||
@@ -66,9 +67,6 @@ export const getErrorDetails = (
       title = 'Network Error';
       message =
         'Unable to connect to the server. Please check your internet connection.';
-    } else {
-      title = 'Request Error';
-      message = axiosError.message || 'Error setting up the request';
     }
   } else if (error instanceof Error) {
     title = error.name || 'Error';
@@ -85,11 +83,13 @@ export const get = async <T>(url: string): Promise<T> => {
   return response.data;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const post = async <T>(url: string, data: any): Promise<T> => {
   const response: AxiosResponse<T> = await client.post(url, data);
   return response.data;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const put = async <T>(url: string, data: any): Promise<T> => {
   const response: AxiosResponse<T> = await client.put(url, data);
   return response.data;
