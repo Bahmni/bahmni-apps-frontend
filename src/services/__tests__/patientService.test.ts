@@ -1,0 +1,510 @@
+import {
+  getPatientById,
+  formatPatientName,
+  formatPatientAddress,
+  formatPatientContact,
+  formatPatientData,
+} from '../patientService';
+import { get } from '../api';
+import { PATIENT_RESOURCE_URL } from '../../constants/app';
+import { FhirPatient } from '../../types/patient';
+
+// Mock the api module
+jest.mock('../api');
+const mockedGet = get as jest.MockedFunction<typeof get>;
+
+describe('Patient Service', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('getPatientById', () => {
+    it('should call get with the correct patient URL', async () => {
+      // Arrange
+      const patientUUID = '123-456';
+      const mockPatient = { resourceType: 'Patient', id: patientUUID };
+      mockedGet.mockResolvedValueOnce(mockPatient);
+
+      // Act
+      const result = await getPatientById(patientUUID);
+
+      // Assert
+      expect(mockedGet).toHaveBeenCalledWith(PATIENT_RESOURCE_URL(patientUUID));
+      expect(result).toEqual(mockPatient);
+    });
+
+    it('should propagate errors from the API', async () => {
+      // Arrange
+      const patientUUID = '123-456';
+      const mockError = new Error('API Error');
+      mockedGet.mockRejectedValueOnce(mockError);
+
+      // Act & Assert
+      await expect(getPatientById(patientUUID)).rejects.toThrow('API Error');
+      expect(mockedGet).toHaveBeenCalledWith(PATIENT_RESOURCE_URL(patientUUID));
+    });
+  });
+
+  describe('formatPatientName', () => {
+    it('should format patient name correctly', () => {
+      // Arrange
+      const patient = {
+        resourceType: 'Patient' as const,
+        name: [{ given: ['John'], family: 'Doe' }],
+      };
+
+      // Act
+      const result = formatPatientName(patient);
+
+      // Assert
+      expect(result).toBe('John Doe');
+    });
+
+    it('should handle multiple given names', () => {
+      // Arrange
+      const patient = {
+        resourceType: 'Patient' as const,
+        name: [{ given: ['John', 'Robert'], family: 'Doe' }],
+      };
+
+      // Act
+      const result = formatPatientName(patient);
+
+      // Assert
+      expect(result).toBe('John Robert Doe');
+    });
+
+    it('should handle missing family name', () => {
+      // Arrange
+      const patient = {
+        resourceType: 'Patient' as const,
+        name: [{ given: ['John'] }],
+      };
+
+      // Act
+      const result = formatPatientName(patient);
+
+      // Assert
+      expect(result).toBe('John');
+    });
+
+    it('should handle missing given name', () => {
+      // Arrange
+      const patient = {
+        resourceType: 'Patient' as const,
+        name: [{ family: 'Doe' }],
+      };
+
+      // Act
+      const result = formatPatientName(patient);
+
+      // Assert
+      expect(result).toBe('Doe');
+    });
+
+    it('should return null for empty name array', () => {
+      // Arrange
+      const patient = {
+        resourceType: 'Patient' as const,
+        name: [],
+      };
+
+      // Act
+      const result = formatPatientName(patient);
+
+      // Assert
+      expect(result).toBeNull();
+    });
+
+    it('should return null for missing name property', () => {
+      // Arrange
+      const patient = {
+        resourceType: 'Patient' as const,
+      };
+
+      // Act
+      const result = formatPatientName(patient);
+
+      // Assert
+      expect(result).toBeNull();
+    });
+
+    it('should return null for empty name object', () => {
+      // Arrange
+      const patient = {
+        resourceType: 'Patient' as const,
+        name: [{}],
+      };
+
+      // Act
+      const result = formatPatientName(patient);
+
+      // Assert
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('formatPatientAddress', () => {
+    it('should format address correctly', () => {
+      // Arrange
+      const address = {
+        line: ['123 Main St'],
+        city: 'Boston',
+        state: 'MA',
+        postalCode: '02115',
+      };
+
+      // Act
+      const result = formatPatientAddress(address);
+
+      // Assert
+      expect(result).toBe('123 Main St, Boston, MA 02115');
+    });
+
+    it('should handle multiple address lines', () => {
+      // Arrange
+      const address = {
+        line: ['123 Main St', 'Apt 4B'],
+        city: 'Boston',
+        state: 'MA',
+        postalCode: '02115',
+      };
+
+      // Act
+      const result = formatPatientAddress(address);
+
+      // Assert
+      expect(result).toBe('123 Main St, Apt 4B, Boston, MA 02115');
+    });
+
+    it('should handle missing fields', () => {
+      // Arrange
+      const address = {
+        line: ['123 Main St'],
+        city: 'Boston',
+        // Missing state and postalCode
+      };
+
+      // Act
+      const result = formatPatientAddress(address);
+
+      // Assert
+      expect(result).toEqual('123 Main St, Boston');
+    });
+
+    it('should handle only city and state', () => {
+      // Arrange
+      const address = {
+        city: 'Boston',
+        state: 'MA',
+      };
+
+      // Act
+      const result = formatPatientAddress(address);
+
+      // Assert
+      expect(result).toEqual('Boston, MA');
+    });
+
+    it('should handle only line and postalCode', () => {
+      // Arrange
+      const address = {
+        line: ['123 Main St'],
+        postalCode: '02115',
+      };
+
+      // Act
+      const result = formatPatientAddress(address);
+
+      // Assert
+      expect(result).toEqual('123 Main St, 02115');
+    });
+
+    it('should handle empty strings for all fields', () => {
+      // Arrange
+      const address = {
+        line: [''],
+        city: '',
+        state: '',
+        postalCode: '',
+      };
+
+      // Act
+      const result = formatPatientAddress(address);
+
+      // Assert
+      expect(result).toBeNull();
+    });
+
+    it('should clean up extra commas and spaces', () => {
+      // Arrange
+      const address = {
+        line: ['123 Main St'],
+        city: '',
+        state: 'MA',
+        postalCode: '',
+      };
+
+      // Act
+      const result = formatPatientAddress(address);
+
+      // Assert
+      expect(result).toEqual('123 Main St, MA');
+    });
+
+    it('should return null for undefined address', () => {
+      // Act
+      const result = formatPatientAddress(undefined);
+
+      // Assert
+      expect(result).toBeNull();
+    });
+
+    it('should return null for empty address object', () => {
+      // Arrange
+      const address = {};
+
+      // Act
+      const result = formatPatientAddress(address);
+
+      // Assert
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('formatPatientContact', () => {
+    it('should format telecom correctly', () => {
+      // Arrange
+      const telecom = {
+        system: 'phone' as const,
+        value: '555-123-4567',
+      };
+
+      // Act
+      const result = formatPatientContact(telecom);
+
+      // Assert
+      expect(result).toBe('phone: 555-123-4567');
+    });
+
+    it('should return null for undefined telecom', () => {
+      // Act
+      const result = formatPatientContact(undefined);
+
+      // Assert
+      expect(result).toBeNull();
+    });
+
+    it('should return null for missing system', () => {
+      // Arrange
+      const telecom = {
+        value: '555-123-4567',
+      };
+
+      // Act
+      const result = formatPatientContact(telecom);
+
+      // Assert
+      expect(result).toBeNull();
+    });
+
+    it('should return null for missing value', () => {
+      // Arrange
+      const telecom = {
+        system: 'phone' as const,
+      };
+
+      // Act
+      const result = formatPatientContact(telecom);
+
+      // Assert
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('formatPatientData', () => {
+    it('should format complete patient data correctly', () => {
+      // Arrange
+      const patient: FhirPatient = {
+        resourceType: 'Patient',
+        id: 'test-uuid',
+        name: [{ given: ['John'], family: 'Doe' }],
+        gender: 'male',
+        birthDate: '1990-01-01',
+        address: [
+          {
+            line: ['123 Main St'],
+            city: 'Boston',
+            state: 'MA',
+            postalCode: '02115',
+          },
+        ],
+        telecom: [
+          {
+            system: 'phone',
+            value: '555-123-4567',
+          },
+        ],
+      };
+
+      // Act
+      const result = formatPatientData(patient);
+
+      // Assert
+      expect(result).toEqual({
+        id: 'test-uuid',
+        fullName: 'John Doe',
+        gender: 'male',
+        birthDate: '1990-01-01',
+        formattedAddress: '123 Main St, Boston, MA 02115',
+        formattedContact: 'phone: 555-123-4567',
+      });
+    });
+
+    it('should handle patient with minimal data', () => {
+      // Arrange
+      const patient: FhirPatient = {
+        resourceType: 'Patient',
+        id: 'test-uuid',
+      };
+
+      // Act
+      const result = formatPatientData(patient);
+
+      // Assert
+      expect(result).toEqual({
+        id: 'test-uuid',
+        fullName: null,
+        gender: null,
+        birthDate: null,
+        formattedAddress: null,
+        formattedContact: null,
+      });
+    });
+
+    it('should handle patient with undefined id', () => {
+      // Arrange
+      const patient: FhirPatient = {
+        resourceType: 'Patient',
+      };
+
+      // Act
+      const result = formatPatientData(patient);
+
+      // Assert
+      expect(result.id).toBe('');
+    });
+
+    it('should handle patient with empty address array', () => {
+      // Arrange
+      const patient: FhirPatient = {
+        resourceType: 'Patient',
+        id: 'test-uuid',
+        address: [],
+      };
+
+      // Act
+      const result = formatPatientData(patient);
+
+      // Assert
+      expect(result.formattedAddress).toBeNull();
+    });
+
+    it('should handle patient with empty telecom array', () => {
+      // Arrange
+      const patient: FhirPatient = {
+        resourceType: 'Patient',
+        id: 'test-uuid',
+        telecom: [],
+      };
+
+      // Act
+      const result = formatPatientData(patient);
+
+      // Assert
+      expect(result.formattedContact).toBeNull();
+    });
+
+    it('should use the first address when multiple are provided', () => {
+      // Arrange
+      const patient: FhirPatient = {
+        resourceType: 'Patient',
+        id: 'test-uuid',
+        address: [
+          {
+            line: ['123 Main St'],
+            city: 'Boston',
+            state: 'MA',
+            postalCode: '02115',
+          },
+          {
+            line: ['456 Second St'],
+            city: 'New York',
+            state: 'NY',
+            postalCode: '10001',
+          },
+        ],
+      };
+
+      // Act
+      const result = formatPatientData(patient);
+
+      // Assert
+      expect(result.formattedAddress).toBe('123 Main St, Boston, MA 02115');
+    });
+
+    it('should use the first telecom when multiple are provided', () => {
+      // Arrange
+      const patient: FhirPatient = {
+        resourceType: 'Patient',
+        id: 'test-uuid',
+        telecom: [
+          {
+            system: 'phone',
+            value: '555-123-4567',
+          },
+          {
+            system: 'email',
+            value: 'john.doe@example.com',
+          },
+        ],
+      };
+
+      // Act
+      const result = formatPatientData(patient);
+
+      // Assert
+      expect(result.formattedContact).toBe('phone: 555-123-4567');
+    });
+
+    it('should handle malformed address data', () => {
+      // Arrange
+      const patient: FhirPatient = {
+        resourceType: 'Patient',
+        id: 'test-uuid',
+        address: [{}], // Empty address object
+      };
+
+      // Act
+      const result = formatPatientData(patient);
+
+      // Assert
+      expect(result.formattedAddress).toBeNull();
+    });
+
+    it('should handle malformed telecom data', () => {
+      // Arrange
+      const patient: FhirPatient = {
+        resourceType: 'Patient',
+        id: 'test-uuid',
+        telecom: [{}], // Empty telecom object
+      };
+
+      // Act
+      const result = formatPatientData(patient);
+
+      // Assert
+      expect(result.formattedContact).toBeNull();
+    });
+  });
+});
