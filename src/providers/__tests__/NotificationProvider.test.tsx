@@ -50,6 +50,19 @@ const TestComponent = () => {
         Add Duplicate
       </button>
       <button
+        data-testid="add-different-type"
+        onClick={() =>
+          addNotification({
+            title: 'Test Title',
+            message: 'Test Message',
+            type: 'success',
+            timeout: 3000,
+          })
+        }
+      >
+        Add Different Type
+      </button>
+      <button
         data-testid="add-persistent"
         onClick={() =>
           addNotification({
@@ -112,12 +125,51 @@ describe('NotificationProvider', () => {
       </NotificationProvider>,
     );
 
+    // Add initial notification
     act(() => {
       screen.getByTestId('add-notification').click();
-      screen.getByTestId('add-duplicate').click();
     });
 
     expect(screen.getByTestId('notification-count').textContent).toBe('1');
+
+    // Add a duplicate notification (same title, message, and type)
+    act(() => {
+      screen.getByTestId('add-duplicate').click();
+    });
+
+    // Should still only have 1 notification (deduplicated)
+    expect(screen.getByTestId('notification-count').textContent).toBe('1');
+
+    // Wait to ensure the notification would have disappeared if timeout wasn't updated
+    jest.advanceTimersByTime(2999);
+
+    // Check notification still exists (its timeout was updated)
+    expect(screen.getByTestId('notification-count').textContent).toBe('1');
+  });
+
+  test('allows notifications with same title and message but different type', () => {
+    jest.spyOn(console, 'error');
+    console.error.mockImplementation(() => null);
+    render(
+      <NotificationProvider>
+        <TestComponent />
+      </NotificationProvider>,
+    );
+
+    // Add initial notification
+    act(() => {
+      screen.getByTestId('add-notification').click();
+    });
+
+    expect(screen.getByTestId('notification-count').textContent).toBe('1');
+
+    // Add a notification with same title and message but different type
+    act(() => {
+      screen.getByTestId('add-different-type').click();
+    });
+
+    // Should now have 2 notifications (not deduplicated due to different type)
+    expect(screen.getByTestId('notification-count').textContent).toBe('2');
   });
 
   test('removes a notification correctly', () => {

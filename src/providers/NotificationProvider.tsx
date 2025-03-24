@@ -24,14 +24,19 @@ export const NotificationProvider: React.FC<NotificationProviderProps> =
         const id = generateId();
 
         setNotifications((prev) => {
-          if (
-            prev.some(
-              (n) =>
-                n.title === notification.title &&
-                n.message === notification.message,
-            )
-          ) {
-            return prev;
+          const existingNotification = prev.find(
+            (n) =>
+              n.title === notification.title &&
+              n.message === notification.message &&
+              n.type === notification.type,
+          );
+
+          if (existingNotification) {
+            return prev.map((n) =>
+              n.id === existingNotification.id
+                ? { ...n, timeout: notification.timeout }
+                : n,
+            );
           }
           return [...prev, { ...notification, id }];
         });
