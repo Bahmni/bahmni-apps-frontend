@@ -6,8 +6,8 @@ import {
   formatPatientData,
 } from '../patientService';
 import { get } from '../api';
-import { PATIENT_RESOURCE_URL } from '../../constants/app';
-import { FhirPatient } from '../../types/patient';
+import { PATIENT_RESOURCE_URL } from '@constants/app';
+import { FhirPatient } from '@types/patient';
 
 // Mock the api module
 jest.mock('../api');
@@ -339,6 +339,14 @@ describe('Patient Service', () => {
             postalCode: '02115',
           },
         ],
+        identifier: [
+          {
+            type: {
+              text: 'MRN',
+            },
+            value: '123456',
+          },
+        ],
         telecom: [
           {
             system: 'phone',
@@ -349,6 +357,8 @@ describe('Patient Service', () => {
 
       // Act
       const result = formatPatientData(patient);
+      let identifier = new Map<string, string>();
+      identifier.set('MRN', '123456');
 
       // Assert
       expect(result).toEqual({
@@ -358,6 +368,12 @@ describe('Patient Service', () => {
         birthDate: '1990-01-01',
         formattedAddress: '123 Main St, Boston, MA 02115',
         formattedContact: 'phone: 555-123-4567',
+        age: {
+          days: 23,
+          months: 2,
+          years: 35,
+        },
+        identifiers: identifier,
       });
     });
 
@@ -379,6 +395,8 @@ describe('Patient Service', () => {
         birthDate: null,
         formattedAddress: null,
         formattedContact: null,
+        age: null,
+        identifiers: new Map<string, string>(),
       });
     });
 
@@ -393,6 +411,55 @@ describe('Patient Service', () => {
 
       // Assert
       expect(result.id).toBe('');
+    });
+
+    it('should handle invalid identifier', () => {
+      // Arrange
+      const patient: FhirPatient = {
+        resourceType: 'Patient',
+        id: 'test-uuid',
+        name: [{ given: ['John'], family: 'Doe' }],
+        gender: 'male',
+        birthDate: '1990-01-01',
+        address: [
+          {
+            line: ['123 Main St'],
+            city: 'Boston',
+            state: 'MA',
+            postalCode: '02115',
+          },
+        ],
+        identifier: [
+          {
+            value: '123456',
+          },
+        ],
+        telecom: [
+          {
+            system: 'phone',
+            value: '555-123-4567',
+          },
+        ],
+      };
+
+      // Act
+      const result = formatPatientData(patient);
+
+      // Assert
+      expect(result).toEqual({
+        id: 'test-uuid',
+        fullName: 'John Doe',
+        gender: 'male',
+        birthDate: '1990-01-01',
+        formattedAddress: '123 Main St, Boston, MA 02115',
+        formattedContact: 'phone: 555-123-4567',
+        age: {
+          days: 23,
+          months: 2,
+          years: 35,
+        },
+        identifiers: new Map<string, string>(),
+      });
     });
 
     it('should handle patient with empty address array', () => {

@@ -1,15 +1,12 @@
-import { FhirPatient, FhirAddress, FhirTelecom } from '../types/patient';
-import { PATIENT_RESOURCE_URL } from '../constants/app';
+import {
+  FhirPatient,
+  FhirAddress,
+  FhirTelecom,
+  FormattedPatientData,
+} from '@types/patient';
+import { PATIENT_RESOURCE_URL } from '@constants/app';
 import { get } from './api';
-
-export interface FormattedPatientData {
-  id: string;
-  fullName: string | null;
-  gender: string | null;
-  birthDate: string | null;
-  formattedAddress: string | null;
-  formattedContact: string | null;
-}
+import { calculateAge } from '@utils/date';
 
 export const getPatientById = async (
   patientUUID: string,
@@ -97,6 +94,20 @@ export const formatPatientData = (
       ? formatPatientContact(patient.telecom[0])
       : null;
 
+  const identifiers = patient.identifier || [];
+
+  const identifierMap = new Map<string, string>();
+  if (identifiers.length > 0) {
+    identifiers.forEach((identifier) => {
+      if (!identifier.type || !identifier.type.text) {
+        return;
+      }
+      identifierMap.set(identifier.type.text, identifier.value);
+    });
+  }
+
+  const age = patient.birthDate ? calculateAge(patient.birthDate) : null;
+
   return {
     id: patient.id || '',
     fullName: formatPatientName(patient),
@@ -104,5 +115,7 @@ export const formatPatientData = (
     birthDate: patient.birthDate || null,
     formattedAddress: address,
     formattedContact: contact,
+    identifiers: identifierMap,
+    age,
   };
 };
