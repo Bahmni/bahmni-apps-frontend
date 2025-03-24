@@ -7,17 +7,16 @@ import { notificationService } from './notificationService';
  * This should be rendered inside the NotificationProvider
  */
 export const NotificationServiceComponent: React.FC = () => {
-  const { addNotification, clearAllNotifications } = useNotification();
+  const { addNotification } = useNotification();
 
   useEffect(() => {
     // Register the addNotification callback with the notification service
     notificationService.register((notification) => {
       addNotification(notification);
-      clearAllNotifications();
     });
 
     // No cleanup needed as this is a singleton service
-  }, [addNotification, clearAllNotifications]);
+  }, [addNotification]);
 
   // This component doesn't render anything
   return null;
