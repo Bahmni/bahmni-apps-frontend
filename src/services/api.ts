@@ -1,5 +1,5 @@
 import axios, { AxiosResponse, AxiosError, AxiosInstance } from 'axios';
-import { hostUrl } from '../constants/app';
+import { hostUrl, loginPath } from '@constants/app';
 import { notificationService } from './notificationService';
 
 const client: AxiosInstance = axios.create({ baseURL: hostUrl });
@@ -23,12 +23,17 @@ client.interceptors.response.use(
     return response;
   },
   function (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      window.location.href = loginPath;
+      return Promise.reject(error);
+    }
     const { title, message } = getErrorDetails(error);
     notificationService.showError(title, message);
     return Promise.reject(error);
   },
 );
 
+// TODO: Add i18n support
 // Helper function to categorize and format error messages
 export const getErrorDetails = (
   error: unknown,
@@ -44,8 +49,12 @@ export const getErrorDetails = (
     if (axiosError.response) {
       const status = axiosError.response.status;
 
-      if (status === 401 || status === 403) {
-        title = 'Authentication Error';
+      if (status === 400) {
+        title = 'Bad Request';
+        message =
+          'Invalid input parameters. Please check your request and try again.';
+      } else if (status === 403) {
+        title = 'Authorization Error';
         message =
           'You are not authorized to perform this action. Please log in again.';
       } else if (status === 404) {
