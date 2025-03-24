@@ -23,7 +23,7 @@ module.exports = (env, argv) => {
       chunkFilename: isProduction
         ? 'static/js/[name].[contenthash:8].chunk.js'
         : 'static/js/[name].chunk.js',
-      publicPath: '/',
+      publicPath: publicPath,
       clean: true,
     },
     devtool: isProduction ? 'source-map' : 'cheap-module-source-map',
@@ -97,7 +97,7 @@ module.exports = (env, argv) => {
     },
     plugins: [
       new webpack.DefinePlugin({
-        'process.env.PUBLIC_URL': JSON.stringify(publicPath)
+        'process.env.PUBLIC_URL': JSON.stringify(publicPath),
       }),
       new HtmlWebpackPlugin({
         template: './public/index.html',
@@ -144,8 +144,8 @@ module.exports = (env, argv) => {
           theme_color: '#0f62fe', // Carbon blue
           display: 'standalone',
           orientation: 'portrait',
-          scope: '/',
-          start_url: '/',
+          scope: publicPath,
+          start_url: publicPath,
           icons: [
             {
               src: path.resolve('public/logo512.png'),
