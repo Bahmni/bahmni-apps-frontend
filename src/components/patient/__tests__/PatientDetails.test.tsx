@@ -2,22 +2,29 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import PatientDetails from '../PatientDetails';
 import { usePatient } from '@hooks/usePatient';
+import { usePatientUUID } from '@hooks/usePatientUUID';
 import * as patientService from '@services/patientService';
-import { FormattedPatientData } from '@services/patientService';
+import { FormattedPatientData, Age } from '@types/patient';
 
-// Mock the custom hook and patient service
+// Mock the custom hooks and patient service
 jest.mock('../../../hooks/usePatient');
+jest.mock('../../../hooks/usePatientUUID');
 jest.mock('../../../services/patientService');
 
 const mockedUsePatient = usePatient as jest.MockedFunction<typeof usePatient>;
+const mockedUsePatientUUID = usePatientUUID as jest.MockedFunction<
+  typeof usePatientUUID
+>;
 const mockedFormatPatientData =
   patientService.formatPatientData as jest.MockedFunction<
     typeof patientService.formatPatientData
   >;
 
 describe('PatientDetails Component', () => {
-  afterEach(() => {
+  beforeEach(() => {
     jest.clearAllMocks();
+    // Mock the usePatientUUID hook to return a test UUID
+    mockedUsePatientUUID.mockReturnValue('test-uuid');
   });
 
   it('should render loading state', () => {
@@ -30,7 +37,7 @@ describe('PatientDetails Component', () => {
     });
 
     // Act
-    render(<PatientDetails patientUUID="test-uuid" />);
+    render(<PatientDetails />);
 
     // Assert
     expect(screen.getByTestId('skeleton-loader')).toBeInTheDocument();
@@ -46,6 +53,12 @@ describe('PatientDetails Component', () => {
       birthDate: '1990-01-01',
     };
 
+    const mockAge: Age = {
+      years: 35,
+      months: 2,
+      days: 15,
+    };
+
     const mockFormattedPatient: FormattedPatientData = {
       id: 'test-uuid',
       fullName: 'John Doe',
@@ -53,6 +66,8 @@ describe('PatientDetails Component', () => {
       birthDate: '1990-01-01',
       formattedAddress: null,
       formattedContact: null,
+      identifiers: new Map([['ID', 'test-uuid']]),
+      age: mockAge,
     };
 
     mockedUsePatient.mockReturnValue({
@@ -65,13 +80,14 @@ describe('PatientDetails Component', () => {
     mockedFormatPatientData.mockReturnValue(mockFormattedPatient);
 
     // Act
-    render(<PatientDetails patientUUID="test-uuid" />);
+    render(<PatientDetails />);
 
     // Assert
-    expect(screen.getByText('ID: test-uuid')).toBeInTheDocument();
     expect(screen.getByText('John Doe')).toBeInTheDocument();
-    expect(screen.getByText('Gender: male')).toBeInTheDocument();
-    expect(screen.getByText('Birth Date: 1990-01-01')).toBeInTheDocument();
+    expect(screen.getByText('ID: test-uuid')).toBeInTheDocument();
+    expect(
+      screen.getByText('male | 35 Years, 2 Months, 15 Days | 1990-01-01'),
+    ).toBeInTheDocument();
   });
 
   it('should render patient with address information', () => {
@@ -92,6 +108,12 @@ describe('PatientDetails Component', () => {
       ],
     };
 
+    const mockAge: Age = {
+      years: 35,
+      months: 2,
+      days: 15,
+    };
+
     const mockFormattedPatient: FormattedPatientData = {
       id: 'test-uuid',
       fullName: 'John Doe',
@@ -99,6 +121,8 @@ describe('PatientDetails Component', () => {
       birthDate: '1990-01-01',
       formattedAddress: '123 Main St, Boston, MA 02115',
       formattedContact: null,
+      identifiers: new Map([['ID', 'test-uuid']]),
+      age: mockAge,
     };
 
     mockedUsePatient.mockReturnValue({
@@ -111,12 +135,12 @@ describe('PatientDetails Component', () => {
     mockedFormatPatientData.mockReturnValue(mockFormattedPatient);
 
     // Act
-    render(<PatientDetails patientUUID="test-uuid" />);
+    render(<PatientDetails />);
 
     // Assert
     expect(screen.getByText('John Doe')).toBeInTheDocument();
     expect(
-      screen.getByText('Address: 123 Main St, Boston, MA 02115'),
+      screen.getByText('123 Main St, Boston, MA 02115'),
     ).toBeInTheDocument();
   });
 
@@ -136,6 +160,12 @@ describe('PatientDetails Component', () => {
       ],
     };
 
+    const mockAge: Age = {
+      years: 35,
+      months: 2,
+      days: 15,
+    };
+
     const mockFormattedPatient: FormattedPatientData = {
       id: 'test-uuid',
       fullName: 'John Doe',
@@ -143,6 +173,8 @@ describe('PatientDetails Component', () => {
       birthDate: '1990-01-01',
       formattedAddress: null,
       formattedContact: 'phone: 555-123-4567',
+      identifiers: new Map([['ID', 'test-uuid']]),
+      age: mockAge,
     };
 
     mockedUsePatient.mockReturnValue({
@@ -155,13 +187,11 @@ describe('PatientDetails Component', () => {
     mockedFormatPatientData.mockReturnValue(mockFormattedPatient);
 
     // Act
-    render(<PatientDetails patientUUID="test-uuid" />);
+    render(<PatientDetails />);
 
     // Assert
     expect(screen.getByText('John Doe')).toBeInTheDocument();
-    expect(
-      screen.getByText('Contact: phone: 555-123-4567'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('phone: 555-123-4567')).toBeInTheDocument();
   });
 
   it('should handle patient with multiple names', () => {
@@ -177,6 +207,12 @@ describe('PatientDetails Component', () => {
       birthDate: '1990-01-01',
     };
 
+    const mockAge: Age = {
+      years: 35,
+      months: 2,
+      days: 15,
+    };
+
     const mockFormattedPatient: FormattedPatientData = {
       id: 'test-uuid',
       fullName: 'John Robert Doe',
@@ -184,6 +220,8 @@ describe('PatientDetails Component', () => {
       birthDate: '1990-01-01',
       formattedAddress: null,
       formattedContact: null,
+      identifiers: new Map([['ID', 'test-uuid']]),
+      age: mockAge,
     };
 
     mockedUsePatient.mockReturnValue({
@@ -196,7 +234,7 @@ describe('PatientDetails Component', () => {
     mockedFormatPatientData.mockReturnValue(mockFormattedPatient);
 
     // Act
-    render(<PatientDetails patientUUID="test-uuid" />);
+    render(<PatientDetails />);
 
     // Assert
     expect(screen.getByText('John Robert Doe')).toBeInTheDocument();
@@ -218,6 +256,8 @@ describe('PatientDetails Component', () => {
       birthDate: null,
       formattedAddress: null,
       formattedContact: null,
+      identifiers: new Map([['ID', 'test-uuid']]),
+      age: null,
     };
 
     mockedUsePatient.mockReturnValue({
@@ -230,14 +270,14 @@ describe('PatientDetails Component', () => {
     mockedFormatPatientData.mockReturnValue(mockFormattedPatient);
 
     // Act
-    render(<PatientDetails patientUUID="test-uuid" />);
+    render(<PatientDetails />);
 
     // Assert
     expect(screen.getByText('John Doe')).toBeInTheDocument();
     expect(screen.getByText('ID: test-uuid')).toBeInTheDocument();
-    // Gender and birthDate should not be present
-    expect(screen.queryByText(/Gender:/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Birth Date:/)).not.toBeInTheDocument();
+    // Gender and birthDate should not be present in the details section
+    expect(screen.queryByText(/male/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/1990-01-01/)).not.toBeInTheDocument();
   });
 
   it('should render error state', () => {
@@ -252,11 +292,10 @@ describe('PatientDetails Component', () => {
     });
 
     // Act
-    render(<PatientDetails patientUUID="test-uuid" />);
+    render(<PatientDetails />);
 
     // Assert
-    expect(screen.getByText('Error')).toBeInTheDocument();
-    expect(screen.getByText('Failed to fetch patient')).toBeInTheDocument();
+    expect(screen.getByTestId('skeleton-loader')).toBeInTheDocument();
   });
 
   it('should handle different error messages', () => {
@@ -271,11 +310,10 @@ describe('PatientDetails Component', () => {
     });
 
     // Act
-    render(<PatientDetails patientUUID="test-uuid" />);
+    render(<PatientDetails />);
 
     // Assert
-    expect(screen.getByText('Error')).toBeInTheDocument();
-    expect(screen.getByText('Network timeout')).toBeInTheDocument();
+    expect(screen.getByTestId('skeleton-loader')).toBeInTheDocument();
   });
 
   it('should render empty state when no patient is found', () => {
@@ -288,7 +326,7 @@ describe('PatientDetails Component', () => {
     });
 
     // Act
-    render(<PatientDetails patientUUID="test-uuid" />);
+    render(<PatientDetails />);
 
     // Assert
     expect(screen.getByText('No data')).toBeInTheDocument();
@@ -307,6 +345,12 @@ describe('PatientDetails Component', () => {
       birthDate: '1990-01-01',
     };
 
+    const mockAge: Age = {
+      years: 35,
+      months: 2,
+      days: 15,
+    };
+
     const mockFormattedPatient: FormattedPatientData = {
       id: 'test-uuid',
       fullName: null,
@@ -314,6 +358,8 @@ describe('PatientDetails Component', () => {
       birthDate: '1990-01-01',
       formattedAddress: null,
       formattedContact: null,
+      identifiers: new Map([['ID', 'test-uuid']]),
+      age: mockAge,
     };
 
     mockedUsePatient.mockReturnValue({
@@ -326,15 +372,16 @@ describe('PatientDetails Component', () => {
     mockedFormatPatientData.mockReturnValue(mockFormattedPatient);
 
     // Act
-    render(<PatientDetails patientUUID="test-uuid" />);
+    render(<PatientDetails />);
 
     // Assert
     // Should still render other information
     expect(screen.getByText('ID: test-uuid')).toBeInTheDocument();
-    expect(screen.getByText('Gender: male')).toBeInTheDocument();
-    expect(screen.getByText('Birth Date: 1990-01-01')).toBeInTheDocument();
+    expect(
+      screen.getByText('male | 35 Years, 2 Months, 15 Days | 1990-01-01'),
+    ).toBeInTheDocument();
     // Name should not be present
-    expect(screen.queryByRole('heading')).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument();
   });
 
   it('should handle patient with empty address array', () => {
@@ -348,6 +395,12 @@ describe('PatientDetails Component', () => {
       address: [], // Empty address array
     };
 
+    const mockAge: Age = {
+      years: 35,
+      months: 2,
+      days: 15,
+    };
+
     const mockFormattedPatient: FormattedPatientData = {
       id: 'test-uuid',
       fullName: 'John Doe',
@@ -355,6 +408,8 @@ describe('PatientDetails Component', () => {
       birthDate: '1990-01-01',
       formattedAddress: null,
       formattedContact: null,
+      identifiers: new Map([['ID', 'test-uuid']]),
+      age: mockAge,
     };
 
     mockedUsePatient.mockReturnValue({
@@ -367,12 +422,12 @@ describe('PatientDetails Component', () => {
     mockedFormatPatientData.mockReturnValue(mockFormattedPatient);
 
     // Act
-    render(<PatientDetails patientUUID="test-uuid" />);
+    render(<PatientDetails />);
 
     // Assert
     expect(screen.getByText('John Doe')).toBeInTheDocument();
     // Address should not be rendered
-    expect(screen.queryByText(/Address:/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/123 Main St/)).not.toBeInTheDocument();
   });
 
   it('should handle patient with malformed address data', () => {
@@ -386,6 +441,12 @@ describe('PatientDetails Component', () => {
       address: [{}], // Address with no data
     };
 
+    const mockAge: Age = {
+      years: 35,
+      months: 2,
+      days: 15,
+    };
+
     const mockFormattedPatient: FormattedPatientData = {
       id: 'test-uuid',
       fullName: 'John Doe',
@@ -393,6 +454,8 @@ describe('PatientDetails Component', () => {
       birthDate: '1990-01-01',
       formattedAddress: null, // The formatter should handle malformed data and return null
       formattedContact: null,
+      identifiers: new Map([['ID', 'test-uuid']]),
+      age: mockAge,
     };
 
     mockedUsePatient.mockReturnValue({
@@ -405,12 +468,12 @@ describe('PatientDetails Component', () => {
     mockedFormatPatientData.mockReturnValue(mockFormattedPatient);
 
     // Act
-    render(<PatientDetails patientUUID="test-uuid" />);
+    render(<PatientDetails />);
 
     // Assert
     expect(screen.getByText('John Doe')).toBeInTheDocument();
     // Address should not be rendered since it's null
-    expect(screen.queryByText(/Address:/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/123 Main St/)).not.toBeInTheDocument();
   });
 
   it('should handle patient with empty telecom array', () => {
@@ -424,6 +487,12 @@ describe('PatientDetails Component', () => {
       telecom: [], // Empty telecom array
     };
 
+    const mockAge: Age = {
+      years: 35,
+      months: 2,
+      days: 15,
+    };
+
     const mockFormattedPatient: FormattedPatientData = {
       id: 'test-uuid',
       fullName: 'John Doe',
@@ -431,6 +500,8 @@ describe('PatientDetails Component', () => {
       birthDate: '1990-01-01',
       formattedAddress: null,
       formattedContact: null,
+      identifiers: new Map([['ID', 'test-uuid']]),
+      age: mockAge,
     };
 
     mockedUsePatient.mockReturnValue({
@@ -443,11 +514,182 @@ describe('PatientDetails Component', () => {
     mockedFormatPatientData.mockReturnValue(mockFormattedPatient);
 
     // Act
-    render(<PatientDetails patientUUID="test-uuid" />);
+    render(<PatientDetails />);
 
     // Assert
     expect(screen.getByText('John Doe')).toBeInTheDocument();
     // Contact should not be rendered
-    expect(screen.queryByText(/Contact:/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/phone:/)).not.toBeInTheDocument();
+  });
+
+  it('should handle patient with empty identifiers map', () => {
+    // Arrange
+    const mockPatient = {
+      resourceType: 'Patient' as const,
+      id: 'test-uuid',
+      name: [{ given: ['John'], family: 'Doe' }],
+      gender: 'male' as const,
+      birthDate: '1990-01-01',
+    };
+
+    const mockAge: Age = {
+      years: 35,
+      months: 2,
+      days: 15,
+    };
+
+    const mockFormattedPatient: FormattedPatientData = {
+      id: 'test-uuid',
+      fullName: 'John Doe',
+      gender: 'male',
+      birthDate: '1990-01-01',
+      formattedAddress: null,
+      formattedContact: null,
+      identifiers: new Map(), // Empty identifiers map
+      age: mockAge,
+    };
+
+    mockedUsePatient.mockReturnValue({
+      patient: mockPatient,
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    mockedFormatPatientData.mockReturnValue(mockFormattedPatient);
+
+    // Act
+    render(<PatientDetails />);
+
+    // Assert
+    expect(screen.getByText('John Doe')).toBeInTheDocument();
+    // No identifiers should be rendered
+    expect(screen.queryByText(/ID:/)).not.toBeInTheDocument();
+  });
+
+  it('should handle patient with age object but undefined years', () => {
+    // Arrange
+    const mockPatient = {
+      resourceType: 'Patient' as const,
+      id: 'test-uuid',
+      name: [{ given: ['John'], family: 'Doe' }],
+      gender: 'male' as const,
+      birthDate: '1990-01-01',
+    };
+
+    // Age with undefined years
+    const mockAge = {
+      years: undefined,
+      months: 2,
+      days: 15,
+    } as unknown as Age;
+
+    const mockFormattedPatient: FormattedPatientData = {
+      id: 'test-uuid',
+      fullName: 'John Doe',
+      gender: 'male',
+      birthDate: '1990-01-01',
+      formattedAddress: null,
+      formattedContact: null,
+      identifiers: new Map([['ID', 'test-uuid']]),
+      age: mockAge,
+    };
+
+    mockedUsePatient.mockReturnValue({
+      patient: mockPatient,
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    mockedFormatPatientData.mockReturnValue(mockFormattedPatient);
+
+    // Act
+    render(<PatientDetails />);
+
+    // Assert
+    expect(screen.getByText('John Doe')).toBeInTheDocument();
+    // Age should not be formatted since years is undefined
+    expect(screen.queryByText(/Years/)).not.toBeInTheDocument();
+    expect(screen.getByText('male | 1990-01-01')).toBeInTheDocument();
+  });
+
+  it('should handle both address and contact info present', () => {
+    // Arrange
+    const mockPatient = {
+      resourceType: 'Patient' as const,
+      id: 'test-uuid',
+      name: [{ given: ['John'], family: 'Doe' }],
+      gender: 'male' as const,
+      birthDate: '1990-01-01',
+      address: [
+        {
+          line: ['123 Main St'],
+          city: 'Boston',
+          state: 'MA',
+          postalCode: '02115',
+        },
+      ],
+      telecom: [
+        {
+          system: 'phone' as const,
+          value: '555-123-4567',
+        },
+      ],
+    };
+
+    const mockAge: Age = {
+      years: 35,
+      months: 2,
+      days: 15,
+    };
+
+    const mockFormattedPatient: FormattedPatientData = {
+      id: 'test-uuid',
+      fullName: 'John Doe',
+      gender: 'male',
+      birthDate: '1990-01-01',
+      formattedAddress: '123 Main St, Boston, MA 02115',
+      formattedContact: 'phone: 555-123-4567',
+      identifiers: new Map([['ID', 'test-uuid']]),
+      age: mockAge,
+    };
+
+    mockedUsePatient.mockReturnValue({
+      patient: mockPatient,
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    mockedFormatPatientData.mockReturnValue(mockFormattedPatient);
+
+    // Act
+    render(<PatientDetails />);
+
+    // Assert
+    expect(screen.getByText('John Doe')).toBeInTheDocument();
+    // Both address and contact should be rendered together
+    expect(
+      screen.getByText('123 Main St, Boston, MA 02115 | phone: 555-123-4567'),
+    ).toBeInTheDocument();
+  });
+
+  it('should handle null patient UUID', () => {
+    // Arrange
+    mockedUsePatientUUID.mockReturnValue(null);
+
+    mockedUsePatient.mockReturnValue({
+      patient: null,
+      loading: false,
+      error: new Error('Invalid patient UUID'),
+      refetch: jest.fn(),
+    });
+
+    // Act
+    render(<PatientDetails />);
+
+    // Assert
+    expect(screen.getByTestId('skeleton-loader')).toBeInTheDocument();
   });
 });

@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { FhirPatient } from '@types/patient';
+import { useNotification } from '@hooks/useNotification';
 import { getPatientById } from '@services/patientService';
 
 interface UsePatientResult {
@@ -9,31 +10,44 @@ interface UsePatientResult {
   refetch: () => void;
 }
 
-export const usePatient = (patientUUID: string): UsePatientResult => {
+export const usePatient = (patientUUID: string | null): UsePatientResult => {
   const [patient, setPatient] = useState<FhirPatient | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
+  const { addNotification } = useNotification();
 
-  const fetchPatient = async () => {
+  const fetchPatient = useCallback(async () => {
+    if (!patientUUID) {
+      setError(new Error('Invalid patient UUID'));
+      addNotification({
+        type: 'error',
+        title: 'Error',
+        message: 'Invalid patient UUID',
+      });
+      return;
+    }
+
     try {
       setLoading(true);
-      setError(null);
       const data = await getPatientById(patientUUID);
       setPatient(data);
     } catch (err) {
-      setError(
-        err instanceof Error ? err : new Error('An unknown error occurred'),
-      );
+      const errorMessage =
+        err instanceof Error ? err.message : 'An unknown error occurred';
+      addNotification({
+        type: 'error',
+        title: 'Error',
+        message: errorMessage,
+      });
+      setError(err instanceof Error ? err : new Error(errorMessage));
     } finally {
       setLoading(false);
     }
-  };
+  }, [patientUUID, addNotification]);
 
   useEffect(() => {
-    if (patientUUID) {
-      fetchPatient();
-    }
-  }, [patientUUID]);
+    fetchPatient();
+  }, [patientUUID, fetchPatient]);
 
   return { patient, loading, error, refetch: fetchPatient };
 };

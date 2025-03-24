@@ -1,13 +1,19 @@
 import React, { useMemo } from 'react';
 import { usePatient } from '@hooks/usePatient';
-import { InlineNotification, SkeletonText, Tile, Stack } from '@carbon/react';
+import {
+  InlineNotification,
+  SkeletonText,
+  Tile,
+  Column,
+  Grid,
+} from '@carbon/react';
 import { formatPatientData } from '@services/patientService';
+import { usePatientUUID } from '@hooks/usePatientUUID';
+import { Text } from '@carbon/react/lib/components/Text';
 
-interface PatientDetailsProps {
-  patientUUID: string;
-}
-
-const PatientDetails: React.FC<PatientDetailsProps> = ({ patientUUID }) => {
+// TODO: Extract this as a PatientDetails Display Control Component
+const PatientDetails: React.FC = () => {
+  const patientUUID: string | null = usePatientUUID();
   const { patient, loading, error } = usePatient(patientUUID);
 
   // Format patient data using the service
@@ -16,7 +22,7 @@ const PatientDetails: React.FC<PatientDetailsProps> = ({ patientUUID }) => {
     return formatPatientData(patient);
   }, [patient]);
 
-  if (loading) {
+  if (loading || error) {
     return (
       <Tile>
         <SkeletonText
@@ -29,12 +35,6 @@ const PatientDetails: React.FC<PatientDetailsProps> = ({ patientUUID }) => {
     );
   }
 
-  if (error) {
-    return (
-      <InlineNotification kind="error" title="Error" subtitle={error.message} />
-    );
-  }
-
   if (!patient || !formattedPatient) {
     return (
       <InlineNotification
@@ -44,24 +44,66 @@ const PatientDetails: React.FC<PatientDetailsProps> = ({ patientUUID }) => {
       />
     );
   }
+  const formatField = (value?: string | number | null) =>
+    value ? value : null;
+
+  const formattedIdentifiers = formattedPatient.identifiers.size
+    ? Array.from(formattedPatient.identifiers.entries())
+        .map(([key, value]) => `${key}: ${value}`)
+        .filter(Boolean)
+        .join(' | ')
+    : null;
+
+  const formattedAge =
+    formattedPatient.age && formattedPatient.age.years !== undefined
+      ? `${formattedPatient.age.years} Years, ${formattedPatient.age.months} Months, ${formattedPatient.age.days} Days`
+      : null;
+
+  const details = [
+    formatField(formattedPatient.gender),
+    formattedAge,
+    formatField(formattedPatient.birthDate),
+  ]
+    .filter(Boolean)
+    .join(' | ');
+
+  const contactInfo = [
+    formatField(formattedPatient.formattedAddress),
+    formatField(formattedPatient.formattedContact),
+  ]
+    .filter(Boolean)
+    .join(' | ');
 
   return (
-    <Stack gap={5}>
-      <Tile>
-        {formattedPatient.fullName && <h2>{formattedPatient.fullName}</h2>}
-        <p>ID: {formattedPatient.id}</p>
-        {formattedPatient.gender && <p>Gender: {formattedPatient.gender}</p>}
-        {formattedPatient.birthDate && (
-          <p>Birth Date: {formattedPatient.birthDate}</p>
+    <Tile>
+      <Grid fullWidth>
+        {/* Full Name as H2 */}
+        <Column sm={4} md={8} lg={16}>
+          {formattedPatient.fullName && <h2>{formattedPatient.fullName}</h2>}
+        </Column>
+
+        {/* Identifiers in single-line format */}
+        {formattedIdentifiers && (
+          <Column sm={4} md={8} lg={16}>
+            <Text>{formattedIdentifiers}</Text>
+          </Column>
         )}
-        {formattedPatient.formattedAddress && (
-          <p>Address: {formattedPatient.formattedAddress}</p>
+
+        {/* Gender, Age, Birth Date in one line */}
+        {details && (
+          <Column sm={4} md={8} lg={16}>
+            <Text style={{ textTransform: 'capitalize' }}>{details}</Text>
+          </Column>
         )}
-        {formattedPatient.formattedContact && (
-          <p>Contact: {formattedPatient.formattedContact}</p>
+
+        {/* Address and Contact in one line */}
+        {contactInfo && (
+          <Column sm={4} md={8} lg={16}>
+            <Text>{contactInfo}</Text>
+          </Column>
         )}
-      </Tile>
-    </Stack>
+      </Grid>
+    </Tile>
   );
 };
 
