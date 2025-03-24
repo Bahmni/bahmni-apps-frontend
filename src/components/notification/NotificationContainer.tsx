@@ -26,6 +26,9 @@ export const NotificationContainer: React.FC<NotificationContainerProps> = ({
         minWidth: '100%',
         alignItems: 'center',
       }}
+      aria-live="polite"
+      role="region"
+      aria-label="Notifications"
     >
       {notifications.map(({ id, title, message, type }) => (
         <InlineNotification
