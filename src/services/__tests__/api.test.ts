@@ -1,6 +1,7 @@
 import axios, { AxiosError } from 'axios';
-import client, { getErrorDetails, get, post, put, del } from '../api';
-import * as api from '../api';
+import client, { get, post, put, del } from '../api';
+import { getFormattedError } from '@utils/common';
+import * as common from '@utils/common';
 import { notificationService } from '../notificationService';
 
 jest.mock('../../constants/app', () => ({
@@ -53,196 +54,6 @@ describe('API Client', () => {
     jest.clearAllMocks();
   });
 
-  describe('getErrorDetails', () => {
-    it('should handle Axios errors with response', () => {
-      const mockResponse = {
-        status: 404,
-        data: { message: 'Resource not found' },
-      };
-
-      const axiosError = {
-        isAxiosError: true,
-        response: mockResponse,
-        request: {},
-        message: 'Request failed',
-        config: {},
-        toJSON: jest.fn(),
-      } as unknown as AxiosError;
-
-      mockedAxios.isAxiosError.mockReturnValue(true);
-
-      const result = getErrorDetails(axiosError);
-
-      expect(result).toEqual({
-        title: 'Not Found',
-        message: 'The requested resource was not found.',
-      });
-    });
-
-    it('should handle 403 authorization errors', () => {
-      const mockResponse = {
-        status: 403,
-        data: {},
-      };
-
-      const axiosError = {
-        isAxiosError: true,
-        response: mockResponse,
-        request: {},
-        message: 'Forbidden',
-        config: {},
-        toJSON: jest.fn(),
-      } as unknown as AxiosError;
-
-      mockedAxios.isAxiosError.mockReturnValue(true);
-
-      const result = getErrorDetails(axiosError);
-
-      expect(result).toEqual({
-        title: 'Authorization Error',
-        message:
-          'You are not authorized to perform this action. Please log in again.',
-      });
-    });
-
-    it('should handle server errors (500+)', () => {
-      const mockResponse = {
-        status: 500,
-        data: {},
-      };
-
-      const axiosError = {
-        isAxiosError: true,
-        response: mockResponse,
-        request: {},
-        message: 'Server Error',
-        config: {},
-        toJSON: jest.fn(),
-      } as unknown as AxiosError;
-
-      mockedAxios.isAxiosError.mockReturnValue(true);
-
-      const result = getErrorDetails(axiosError);
-
-      expect(result).toEqual({
-        title: 'Server Error',
-        message: 'The server encountered an error. Please try again later.',
-      });
-    });
-
-    it('should handle bad request (400) errors', () => {
-      const mockResponse = {
-        status: 400,
-        data: { message: 'Invalid input parameters' },
-      };
-
-      const axiosError = {
-        isAxiosError: true,
-        response: mockResponse,
-        request: {},
-        message: 'Bad Request',
-        config: {},
-        toJSON: jest.fn(),
-      } as unknown as AxiosError;
-
-      mockedAxios.isAxiosError.mockReturnValue(true);
-
-      const result = getErrorDetails(axiosError);
-
-      expect(result).toEqual({
-        title: 'Bad Request',
-        message:
-          'Invalid input parameters. Please check your request and try again.',
-      });
-    });
-
-    it('should handle custom error messages in response data for other status codes', () => {
-      const mockResponse = {
-        status: 422,
-        data: { message: 'Validation failed' },
-      };
-
-      const axiosError = {
-        isAxiosError: true,
-        response: mockResponse,
-        request: {},
-        message: 'Unprocessable Entity',
-        config: {},
-        toJSON: jest.fn(),
-      } as unknown as AxiosError;
-
-      mockedAxios.isAxiosError.mockReturnValue(true);
-
-      const result = getErrorDetails(axiosError);
-
-      expect(result).toEqual({
-        title: 'Request Error',
-        message: 'Validation failed',
-      });
-    });
-
-    it('should handle network errors (no response)', () => {
-      const axiosError = {
-        isAxiosError: true,
-        response: undefined,
-        request: {},
-        message: 'Network Error',
-        config: {},
-        toJSON: jest.fn(),
-      } as unknown as AxiosError;
-
-      mockedAxios.isAxiosError.mockReturnValue(true);
-
-      const result = getErrorDetails(axiosError);
-
-      expect(result).toEqual({
-        title: 'Network Error',
-        message:
-          'Unable to connect to the server. Please check your internet connection.',
-      });
-    });
-
-    it('should handle generic Error objects', () => {
-      const error = new Error('Something went wrong');
-      error.name = 'ValidationError';
-
-      mockedAxios.isAxiosError.mockReturnValue(false);
-
-      const result = getErrorDetails(error);
-
-      expect(result).toEqual({
-        title: 'ValidationError',
-        message: 'Something went wrong',
-      });
-    });
-
-    it('should handle string errors', () => {
-      const errorMessage = 'Simple error message';
-
-      mockedAxios.isAxiosError.mockReturnValue(false);
-
-      const result = getErrorDetails(errorMessage);
-
-      expect(result).toEqual({
-        title: 'Error',
-        message: 'Simple error message',
-      });
-    });
-
-    it('should handle unknown error types', () => {
-      const unknownError = { foo: 'bar' };
-
-      mockedAxios.isAxiosError.mockReturnValue(false);
-
-      const result = getErrorDetails(unknownError);
-
-      expect(result).toEqual({
-        title: 'Error',
-        message: 'An unexpected error occurred',
-      });
-    });
-  });
-
   describe('Request Interceptor', () => {
     it('should pass through the config for successful requests', () => {
       // Create a mock config
@@ -276,7 +87,7 @@ describe('API Client', () => {
           return config;
         },
         function (error) {
-          const { title, message } = getErrorDetails(error);
+          const { title, message } = getFormattedError(error);
           notificationService.showError(title, message);
           return Promise.reject(error);
         },
@@ -302,7 +113,7 @@ describe('API Client', () => {
         message: 'Request setup failed',
       };
       const getErrorDetailsMock = jest
-        .spyOn(api, 'getErrorDetails')
+        .spyOn(common, 'getFormattedError')
         .mockReturnValue(mockErrorDetails);
 
       // Create a mock for the error handler
@@ -329,7 +140,7 @@ describe('API Client', () => {
           return config;
         },
         function (error) {
-          const { title, message } = getErrorDetails(error);
+          const { title, message } = getFormattedError(error);
           notificationService.showError(title, message);
           return Promise.reject(error);
         },
@@ -461,7 +272,7 @@ describe('API Client', () => {
             window.location.href = '/login';
             return Promise.reject(error);
           }
-          const { title, message } = getErrorDetails(error);
+          const { title, message } = getFormattedError(error);
           notificationService.showError(title, message);
           return Promise.reject(error);
         },
@@ -508,7 +319,7 @@ describe('API Client', () => {
         message: 'The server encountered an error. Please try again later.',
       };
       const getErrorDetailsMock = jest
-        .spyOn(api, 'getErrorDetails')
+        .spyOn(common, 'getFormattedError')
         .mockReturnValue(mockErrorDetails);
 
       // Create a mock for the error handler
@@ -539,7 +350,7 @@ describe('API Client', () => {
             window.location.href = '/login';
             return Promise.reject(error);
           }
-          const { title, message } = getErrorDetails(error);
+          const { title, message } = getFormattedError(error);
           notificationService.showError(title, message);
           return Promise.reject(error);
         },

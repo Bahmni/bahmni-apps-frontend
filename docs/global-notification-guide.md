@@ -221,7 +221,7 @@ import React, { useState } from "react";
 import { useNotification } from "@hooks/useNotification";
 import { Button, Loading } from "@carbon/react";
 import { api } from "@services/api";
-import { formatErrorMessage } from "@types/notification";
+import { getFormattedError } from "@utils/common";
 
 export const DataFetchExample: React.FC = () => {
   const { addNotification } = useNotification();
@@ -239,9 +239,10 @@ export const DataFetchExample: React.FC = () => {
       });
       return response.data;
     } catch (error) {
+      const { title, message } = getFormattedError(error);
       addNotification({
-        title: "Error",
-        message: formatErrorMessage(error),
+        title: title,
+        message: message,
         type: "error",
       });
     } finally {
@@ -266,7 +267,7 @@ export const DataFetchExample: React.FC = () => {
 // src/services/dataService.ts
 import { api } from "@services/api";
 import { notificationService } from "@services/notificationService";
-import { formatErrorMessage } from "@types/notification";
+import { getFormattedError } from "@utils/common";
 
 export const dataService = {
   async fetchData() {
@@ -279,7 +280,8 @@ export const dataService = {
       );
       return response.data;
     } catch (error) {
-      notificationService.showError("Error", formatErrorMessage(error));
+      const { title, message } = getFormattedError(error);
+      notificationService.showError(title, message);
       throw error;
     }
   },
@@ -294,7 +296,8 @@ export const dataService = {
       );
       return response.data;
     } catch (error) {
-      notificationService.showError("Error", formatErrorMessage(error));
+      const { title, message } = getFormattedError(error);
+      notificationService.showError(title, message);
       throw error;
     }
   },
@@ -350,7 +353,7 @@ interface NotificationServiceInterface {
 
 ```ts
 // Format error messages from different sources
-const formatErrorMessage = (error: unknown): string => {
+const getFormattedError = (error: unknown): string => {
   // Returns a formatted error message
 };
 ```
@@ -360,7 +363,7 @@ const formatErrorMessage = (error: unknown): string => {
 1. **Use appropriate notification types**: Choose the correct type based on the nature of the message.
 2. **Keep messages concise**: Use clear, concise language for both titles and messages.
 3. **Set appropriate timeouts**: Use shorter timeouts for success messages and longer or no timeouts for error messages.
-4. **Handle errors gracefully**: Use the `formatErrorMessage` utility to ensure consistent error formatting.
+4. **Handle errors gracefully**: Use the `getFormattedError` utility to ensure consistent error formatting.
 5. **Avoid notification overload**: Don't show too many notifications at once, as this can overwhelm users.
 6. **Use the service for non-React code**: Always use the `notificationService` for notifications outside React components.
 7. **Ensure the provider is set up**: Make sure the `NotificationProvider` and `NotificationServiceComponent` are properly included in your application.

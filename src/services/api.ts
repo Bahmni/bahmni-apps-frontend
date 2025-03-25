@@ -1,5 +1,6 @@
-import axios, { AxiosResponse, AxiosError, AxiosInstance } from 'axios';
+import axios, { AxiosResponse, AxiosInstance } from 'axios';
 import { hostUrl, loginPath } from '@constants/app';
+import { getFormattedError } from '@utils/common';
 import { notificationService } from './notificationService';
 
 const client: AxiosInstance = axios.create({ baseURL: hostUrl });
@@ -11,7 +12,7 @@ client.interceptors.request.use(
     return config;
   },
   function (error) {
-    const { title, message } = getErrorDetails(error);
+    const { title, message } = getFormattedError(error);
     notificationService.showError(title, message);
     return Promise.reject(error);
   },
@@ -27,65 +28,11 @@ client.interceptors.response.use(
       window.location.href = loginPath;
       return Promise.reject(error);
     }
-    const { title, message } = getErrorDetails(error);
+    const { title, message } = getFormattedError(error);
     notificationService.showError(title, message);
     return Promise.reject(error);
   },
 );
-
-// TODO: Add i18n support
-// Helper function to categorize and format error messages
-export const getErrorDetails = (
-  error: unknown,
-): { title: string; message: string } => {
-  // Default error message
-  let title = 'Error';
-  let message = 'An unexpected error occurred';
-
-  if (axios.isAxiosError(error)) {
-    const axiosError = error as AxiosError;
-
-    // Handle different HTTP status codes
-    if (axiosError.response) {
-      const status = axiosError.response.status;
-
-      if (status === 400) {
-        title = 'Bad Request';
-        message =
-          'Invalid input parameters. Please check your request and try again.';
-      } else if (status === 403) {
-        title = 'Authorization Error';
-        message =
-          'You are not authorized to perform this action. Please log in again.';
-      } else if (status === 404) {
-        title = 'Not Found';
-        message = 'The requested resource was not found.';
-      } else if (status >= 500) {
-        title = 'Server Error';
-        message = 'The server encountered an error. Please try again later.';
-      } else {
-        title = 'Request Error';
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const responseData = axiosError.response.data as Record<string, any>;
-        message =
-          responseData?.message ||
-          axiosError.message ||
-          'Error processing your request';
-      }
-    } else if (axiosError.request) {
-      title = 'Network Error';
-      message =
-        'Unable to connect to the server. Please check your internet connection.';
-    }
-  } else if (error instanceof Error) {
-    title = error.name || 'Error';
-    message = error.message;
-  } else if (typeof error === 'string') {
-    message = error;
-  }
-
-  return { title, message };
-};
 
 export const get = async <T>(url: string): Promise<T> => {
   const response: AxiosResponse<T> = await client.get(url);

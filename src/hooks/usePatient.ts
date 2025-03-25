@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { FhirPatient } from '@types/patient';
 import { useNotification } from '@hooks/useNotification';
 import { getPatientById } from '@services/patientService';
+import { getFormattedError } from '@utils/common';
 
 interface UsePatientResult {
   patient: FhirPatient | null;
@@ -32,14 +33,13 @@ export const usePatient = (patientUUID: string | null): UsePatientResult => {
       const data = await getPatientById(patientUUID);
       setPatient(data);
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'An unknown error occurred';
+      const { title, message } = getFormattedError(err);
       addNotification({
         type: 'error',
-        title: 'Error',
-        message: errorMessage,
+        title: title,
+        message: message,
       });
-      setError(err instanceof Error ? err : new Error(errorMessage));
+      setError(err instanceof Error ? err : new Error(message));
     } finally {
       setLoading(false);
     }
