@@ -22,7 +22,7 @@ const PatientDetails: React.FC = () => {
     return formatPatientData(patient);
   }, [patient]);
 
-  if (loading || error) {
+  if (loading || error || !patient || !formattedPatient) {
     return (
       <Tile>
         <SkeletonText
@@ -35,15 +35,6 @@ const PatientDetails: React.FC = () => {
     );
   }
 
-  if (!patient || !formattedPatient) {
-    return (
-      <InlineNotification
-        kind="info"
-        title="No data"
-        subtitle="Patient information not found"
-      />
-    );
-  }
   const formatField = (value?: string | number | null) =>
     value ? value : null;
 

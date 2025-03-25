@@ -329,10 +329,7 @@ describe('PatientDetails Component', () => {
     render(<PatientDetails />);
 
     // Assert
-    expect(screen.getByText('No data')).toBeInTheDocument();
-    expect(
-      screen.getByText('Patient information not found'),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId('skeleton-loader')).toBeInTheDocument();
   });
 
   it('should handle patient with missing name information', () => {
