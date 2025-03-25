@@ -13,7 +13,8 @@
     "test": "jest --coverage",
     "test:watch": "jest --watch --coverage",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "prepare": "husky"
   },
   "dependencies": {
     "@carbon/react": "^1.78.2",

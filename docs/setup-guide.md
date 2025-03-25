@@ -210,6 +210,50 @@ yarn prettier:check
 yarn prettier:fix
 ```
 
+## Code Quality Tools
+
+The project includes several tools to maintain code quality and consistency across the codebase.
+
+### Husky Pre-commit Hooks
+
+Husky is used to set up Git hooks that run automatically at specific points in the Git workflow. The project uses a pre-commit hook to ensure code quality before commits are made.
+
+#### Setup
+
+Husky is automatically installed and configured when you run `yarn install` through the `prepare` script in package.json.
+
+The pre-commit hook is configured to run lint-staged, which runs linters and formatters on staged files.
+
+#### Lint-staged Configuration
+
+Lint-staged is configured in package.json to run ESLint and Prettier on staged TypeScript files.
+
+This ensures that all TypeScript files are properly linted and formatted before they are committed to the repository.
+
+### ESLint Configuration
+
+ESLint is configured using the new flat config format in the `eslint.config.ts` file.
+
+This configuration:
+
+- Applies to all JavaScript and TypeScript files
+- Uses the recommended configurations for JavaScript, TypeScript, and React
+- Sets up React version detection
+- Configures specific rules for React prop types
+
+### Prettier Configuration
+
+Prettier is configured in the `.prettierrc.json` file.
+
+This configuration ensures consistent code formatting across the project, with rules for:
+
+- Using 2 spaces for indentation
+- Maximum line width of 80 characters
+- Trailing commas in multi-line structures
+- Semicolons at the end of statements
+- Spaces around brackets in object literals
+- Parentheses around arrow function parameters
+
 ### Testing
 
 ```bash
