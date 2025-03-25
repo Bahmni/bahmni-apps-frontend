@@ -323,6 +323,10 @@ describe('Patient Service', () => {
   });
 
   describe('formatPatientData', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      jest.useFakeTimers().setSystemTime(new Date('2025-03-24'));
+    });
     it('should format complete patient data correctly', () => {
       // Arrange
       const patient: FhirPatient = {
