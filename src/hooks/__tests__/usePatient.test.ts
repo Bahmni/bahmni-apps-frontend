@@ -22,7 +22,7 @@ jest.mock('react', () => {
   return {
     ...originalReact,
     useState: jest.fn(),
-    useEffect: jest.fn((effect, deps) => {
+    useEffect: jest.fn((effect) => {
       effect();
     }),
     useCallback: jest.fn((fn) => fn),

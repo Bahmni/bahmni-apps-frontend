@@ -10,8 +10,7 @@ import './styles/index.scss';
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     // Use a relative path that will work regardless of the base URL
-    const swUrl = new URL('./service-worker.js', window.location.href)
-      .pathname;
+    const swUrl = new URL('./service-worker.js', window.location.href).pathname;
 
     navigator.serviceWorker
       .register(swUrl)

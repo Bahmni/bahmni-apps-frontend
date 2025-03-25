@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import client, { getErrorDetails, get, post, put, del } from '../api';
+import * as api from '../api';
 import { notificationService } from '../notificationService';
 
 jest.mock('../../constants/app', () => ({
@@ -248,7 +249,7 @@ describe('API Client', () => {
       const mockConfig = {
         url: '/test',
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       };
 
       // Create a mock for the success handler
@@ -263,9 +264,10 @@ describe('API Client', () => {
             successHandler.mockImplementation(successFn);
             return { id: 1 };
           }),
-          eject: jest.fn()
+          eject: jest.fn(),
         },
-        response: originalInterceptors.response
+        response: originalInterceptors.response,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any;
 
       // Re-create the interceptor to capture our mock
@@ -277,7 +279,7 @@ describe('API Client', () => {
           const { title, message } = getErrorDetails(error);
           notificationService.showError(title, message);
           return Promise.reject(error);
-        }
+        },
       );
 
       // Call the success handler with the mock config
@@ -295,8 +297,12 @@ describe('API Client', () => {
       const mockError = new Error('Request setup failed');
 
       // Mock the getErrorDetails function
-      const mockErrorDetails = { title: 'Error', message: 'Request setup failed' };
-      const getErrorDetailsMock = jest.spyOn(require('../api'), 'getErrorDetails')
+      const mockErrorDetails = {
+        title: 'Error',
+        message: 'Request setup failed',
+      };
+      const getErrorDetailsMock = jest
+        .spyOn(api, 'getErrorDetails')
         .mockReturnValue(mockErrorDetails);
 
       // Create a mock for the error handler
@@ -311,9 +317,10 @@ describe('API Client', () => {
             errorHandler.mockImplementation(errorFn);
             return { id: 1 };
           }),
-          eject: jest.fn()
+          eject: jest.fn(),
         },
-        response: originalInterceptors.response
+        response: originalInterceptors.response,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any;
 
       // Re-create the interceptor to capture our mock
@@ -325,7 +332,7 @@ describe('API Client', () => {
           const { title, message } = getErrorDetails(error);
           notificationService.showError(title, message);
           return Promise.reject(error);
-        }
+        },
       );
 
       // Call the error handler with the mock error
@@ -339,7 +346,7 @@ describe('API Client', () => {
       // Verify notificationService.showError was called with the correct title and message
       expect(notificationService.showError).toHaveBeenCalledWith(
         mockErrorDetails.title,
-        mockErrorDetails.message
+        mockErrorDetails.message,
       );
 
       // Restore original interceptors and mocks
@@ -356,7 +363,7 @@ describe('API Client', () => {
         status: 200,
         statusText: 'OK',
         headers: {},
-        config: {}
+        config: {},
       };
 
       // Create a mock for the success handler
@@ -372,8 +379,9 @@ describe('API Client', () => {
             successHandler.mockImplementation(successFn);
             return { id: 1 };
           }),
-          eject: jest.fn()
-        }
+          eject: jest.fn(),
+        },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any;
 
       // Re-create the interceptor to capture our mock
@@ -384,7 +392,7 @@ describe('API Client', () => {
         function (error) {
           // Implementation will be tested in other tests
           return Promise.reject(error);
-        }
+        },
       );
 
       // Call the success handler with the mock response
@@ -438,8 +446,9 @@ describe('API Client', () => {
             errorHandler.mockImplementation(errorFn);
             return { id: 1 };
           }),
-          eject: jest.fn()
-        }
+          eject: jest.fn(),
+        },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any;
 
       // Re-create the interceptor to capture our mock
@@ -455,7 +464,7 @@ describe('API Client', () => {
           const { title, message } = getErrorDetails(error);
           notificationService.showError(title, message);
           return Promise.reject(error);
-        }
+        },
       );
 
       // Call the error handler with the mock error
@@ -496,9 +505,10 @@ describe('API Client', () => {
       // Mock the getErrorDetails function
       const mockErrorDetails = {
         title: 'Server Error',
-        message: 'The server encountered an error. Please try again later.'
+        message: 'The server encountered an error. Please try again later.',
       };
-      const getErrorDetailsMock = jest.spyOn(require('../api'), 'getErrorDetails')
+      const getErrorDetailsMock = jest
+        .spyOn(api, 'getErrorDetails')
         .mockReturnValue(mockErrorDetails);
 
       // Create a mock for the error handler
@@ -514,8 +524,9 @@ describe('API Client', () => {
             errorHandler.mockImplementation(errorFn);
             return { id: 1 };
           }),
-          eject: jest.fn()
-        }
+          eject: jest.fn(),
+        },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any;
 
       // Re-create the interceptor to capture our mock
@@ -531,7 +542,7 @@ describe('API Client', () => {
           const { title, message } = getErrorDetails(error);
           notificationService.showError(title, message);
           return Promise.reject(error);
-        }
+        },
       );
 
       // Call the error handler with the mock error
@@ -545,7 +556,7 @@ describe('API Client', () => {
       // Verify notificationService.showError was called with the correct title and message
       expect(notificationService.showError).toHaveBeenCalledWith(
         mockErrorDetails.title,
-        mockErrorDetails.message
+        mockErrorDetails.message,
       );
 
       // Restore original interceptors and mocks

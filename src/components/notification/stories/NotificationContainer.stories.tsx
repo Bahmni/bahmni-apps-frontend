@@ -5,14 +5,16 @@ import { Notification } from '../../../types/notification';
 
 // Create a decorator to provide a better layout for the fixed-position component
 const NotificationDecorator = (Story: React.ComponentType) => (
-  <div style={{
-    position: 'relative',
-    height: '300px',
-    width: '100%',
-    border: '1px dashed #ccc',
-    overflow: 'hidden',
-    padding: '1rem'
-  }}>
+  <div
+    style={{
+      position: 'relative',
+      height: '300px',
+      width: '100%',
+      border: '1px dashed #ccc',
+      overflow: 'hidden',
+      padding: '1rem',
+    }}
+  >
     <Story />
   </div>
 );

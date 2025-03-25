@@ -21,24 +21,34 @@ describe('usePatientUUID', () => {
 
   it('should call useLocation and extractFirstUuidFromPath', () => {
     // Arrange
-    const mockLocation = { pathname: '/patients/123e4567-e89b-12d3-a456-426614174000' };
+    const mockLocation = {
+      pathname: '/patients/123e4567-e89b-12d3-a456-426614174000',
+    };
     (useLocation as jest.Mock).mockReturnValue(mockLocation);
-    (extractFirstUuidFromPath as jest.Mock).mockReturnValue('123e4567-e89b-12d3-a456-426614174000');
+    (extractFirstUuidFromPath as jest.Mock).mockReturnValue(
+      '123e4567-e89b-12d3-a456-426614174000',
+    );
 
     // Act
     const { result } = renderHook(() => usePatientUUID());
 
     // Assert
     expect(useLocation).toHaveBeenCalled();
-    expect(extractFirstUuidFromPath).toHaveBeenCalledWith(mockLocation.pathname);
+    expect(extractFirstUuidFromPath).toHaveBeenCalledWith(
+      mockLocation.pathname,
+    );
     expect(result.current).toBe('123e4567-e89b-12d3-a456-426614174000');
   });
 
   it('should return UUID when present in the path', () => {
     // Arrange
-    const mockLocation = { pathname: '/patients/123e4567-e89b-12d3-a456-426614174000/details' };
+    const mockLocation = {
+      pathname: '/patients/123e4567-e89b-12d3-a456-426614174000/details',
+    };
     (useLocation as jest.Mock).mockReturnValue(mockLocation);
-    (extractFirstUuidFromPath as jest.Mock).mockReturnValue('123e4567-e89b-12d3-a456-426614174000');
+    (extractFirstUuidFromPath as jest.Mock).mockReturnValue(
+      '123e4567-e89b-12d3-a456-426614174000',
+    );
 
     // Act
     const { result } = renderHook(() => usePatientUUID());
@@ -89,11 +99,14 @@ describe('usePatientUUID', () => {
   it('should handle complex paths with query parameters', () => {
     // Arrange
     const mockLocation = {
-      pathname: '/dashboard/patients/123e4567-e89b-12d3-a456-426614174000/visits',
-      search: '?date=2023-01-01'
+      pathname:
+        '/dashboard/patients/123e4567-e89b-12d3-a456-426614174000/visits',
+      search: '?date=2023-01-01',
     };
     (useLocation as jest.Mock).mockReturnValue(mockLocation);
-    (extractFirstUuidFromPath as jest.Mock).mockReturnValue('123e4567-e89b-12d3-a456-426614174000');
+    (extractFirstUuidFromPath as jest.Mock).mockReturnValue(
+      '123e4567-e89b-12d3-a456-426614174000',
+    );
 
     // Act
     const { result } = renderHook(() => usePatientUUID());
@@ -106,10 +119,12 @@ describe('usePatientUUID', () => {
     // Arrange
     const mockLocation = {
       pathname: '/patients/123e4567-e89b-12d3-a456-426614174000',
-      hash: '#medical-history'
+      hash: '#medical-history',
     };
     (useLocation as jest.Mock).mockReturnValue(mockLocation);
-    (extractFirstUuidFromPath as jest.Mock).mockReturnValue('123e4567-e89b-12d3-a456-426614174000');
+    (extractFirstUuidFromPath as jest.Mock).mockReturnValue(
+      '123e4567-e89b-12d3-a456-426614174000',
+    );
 
     // Act
     const { result } = renderHook(() => usePatientUUID());
