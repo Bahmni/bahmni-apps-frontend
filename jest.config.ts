@@ -20,10 +20,24 @@ const config: Config.InitialOptions = {
     '@providers/(.*)$': ['<rootDir>/src/providers/$1'],
   },
   setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
+  collectCoverageFrom: ['<rootDir>/src/**/*.{ts,tsx}'],
+  coverageReporters: ['text', 'lcov'],
   coveragePathIgnorePatterns: [
     '<rootDir>/src/constants',
     '<rootDir>/src/styles',
+    '<rootDir>/src/__mocks__',
+    '<rootDir>/src/setupTests.ts',
+    '<rootDir>/src/types',
+    '<rootDir>/src/.*/stories/',
   ],
+  coverageThreshold: {
+    global: {
+      lines: 95,
+      branches: 95,
+      functions: 95,
+      statements: 95,
+    },
+  },
 };
 
 export default config;

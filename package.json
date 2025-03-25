@@ -10,7 +10,7 @@
     "lint:fix": "eslint --ext .ts,.tsx src/ --fix",
     "prettier:check": "prettier --check src/",
     "prettier:fix": "prettier --write src/",
-    "test": "jest --coverage",
+    "test": "jest --coverage --collectCoverageFrom='src/**/*.{js,jsx,ts,tsx}'",
     "test:watch": "jest --watch --coverage",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
@@ -102,7 +102,8 @@
   "lint-staged": {
     "*.{ts,tsx}": [
       "yarn lint:fix",
-      "yarn prettier:fix"
+      "yarn prettier:fix",
+      "yarn test"
     ]
   },
   "eslintConfig": {
