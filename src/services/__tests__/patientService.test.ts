@@ -270,6 +270,145 @@ describe('Patient Service', () => {
       // Assert
       expect(result).toBeNull();
     });
+
+    it('should include address extensions in the formatted address', () => {
+      // Arrange
+      const address = {
+        line: ['123 Main St'],
+        city: 'Boston',
+        extension: [
+          {
+            url: 'http://example.org/fhir/StructureDefinition/address-details',
+            extension: [
+              {
+                url: 'http://example.org/fhir/StructureDefinition/address-ward',
+                valueString: 'Ward 12',
+              },
+              {
+                url: 'http://example.org/fhir/StructureDefinition/address-village',
+                valueString: 'Downtown',
+              },
+            ],
+          },
+        ],
+      };
+
+      // Act
+      const result = formatPatientAddress(address);
+
+      // Assert
+      expect(result).toBe('123 Main St, Ward 12, Downtown, Boston');
+    });
+
+    it('should handle address with empty extensions array', () => {
+      // Arrange
+      const address = {
+        line: ['123 Main St'],
+        city: 'Boston',
+        extension: [],
+      };
+
+      // Act
+      const result = formatPatientAddress(address);
+
+      // Assert
+      expect(result).toBe('123 Main St, Boston');
+    });
+
+    it('should handle address with malformed extensions', () => {
+      // Arrange
+      const address = {
+        line: ['123 Main St'],
+        city: 'Boston',
+        extension: [
+          {
+            url: 'http://example.org/fhir/StructureDefinition/address-details',
+            // Missing nested extension array
+          },
+        ],
+      };
+
+      // Act
+      const result = formatPatientAddress(address);
+
+      // Assert
+      expect(result).toBe('123 Main St, Boston');
+    });
+
+    it('should handle address with nested extensions but no valueString', () => {
+      // Arrange
+      const address = {
+        line: ['123 Main St'],
+        city: 'Boston',
+        extension: [
+          {
+            url: 'http://example.org/fhir/StructureDefinition/address-details',
+            extension: [
+              {
+                url: 'http://example.org/fhir/StructureDefinition/address-ward',
+                // Missing valueString
+              },
+            ],
+          },
+        ],
+      };
+
+      // Act
+      const result = formatPatientAddress(address);
+
+      // Assert
+      expect(result).toBe('123 Main St, Boston');
+    });
+
+    it('should handle address with multiple extension groups', () => {
+      // Arrange
+      const address = {
+        line: ['123 Main St'],
+        city: 'Boston',
+        extension: [
+          {
+            url: 'http://example.org/fhir/StructureDefinition/address-details',
+            extension: [
+              {
+                url: 'http://example.org/fhir/StructureDefinition/address-ward',
+                valueString: 'Ward 12',
+              },
+            ],
+          },
+          {
+            url: 'http://example.org/fhir/StructureDefinition/address-more-details',
+            extension: [
+              {
+                url: 'http://example.org/fhir/StructureDefinition/address-landmark',
+                valueString: 'Near Hospital',
+              },
+            ],
+          },
+        ],
+      };
+
+      // Act
+      const result = formatPatientAddress(address);
+
+      // Assert
+      expect(result).toBe('123 Main St, Ward 12, Near Hospital, Boston');
+    });
+
+    it('should handle non-array extension property', () => {
+      // Arrange
+      const address = {
+        line: ['123 Main St'],
+        city: 'Boston',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        extension: 'invalid' as any, // Intentionally incorrect type
+      };
+
+      // Act
+      const result = formatPatientAddress(address);
+
+      // Assert
+      expect(result).toBe('123 Main St, Boston');
+    });
   });
 
   describe('formatPatientContact', () => {
@@ -361,7 +500,7 @@ describe('Patient Service', () => {
 
       // Act
       const result = formatPatientData(patient);
-      let identifier = new Map<string, string>();
+      const identifier = new Map<string, string>();
       identifier.set('MRN', '123456');
 
       // Assert
@@ -576,6 +715,165 @@ describe('Patient Service', () => {
 
       // Assert
       expect(result.formattedContact).toBeNull();
+    });
+
+    it('should handle patient with address extensions', () => {
+      // Arrange
+      const patient: FhirPatient = {
+        resourceType: 'Patient',
+        id: 'test-uuid',
+        address: [
+          {
+            line: ['123 Main St'],
+            city: 'Boston',
+            extension: [
+              {
+                url: 'http://example.org/fhir/StructureDefinition/address-details',
+                extension: [
+                  {
+                    url: 'http://example.org/fhir/StructureDefinition/address-ward',
+                    valueString: 'Ward 12',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      // Act
+      const result = formatPatientData(patient);
+
+      // Assert
+      expect(result.formattedAddress).toBe('123 Main St, Ward 12, Boston');
+    });
+
+    it('should handle patient with multiple identifiers', () => {
+      // Arrange
+      const patient: FhirPatient = {
+        resourceType: 'Patient',
+        id: 'test-uuid',
+        identifier: [
+          {
+            type: {
+              text: 'MRN',
+            },
+            value: '123456',
+          },
+          {
+            type: {
+              text: 'SSN',
+            },
+            value: '999-99-9999',
+          },
+          {
+            // Invalid identifier without type
+            value: 'ABC123',
+          },
+        ],
+      };
+
+      // Act
+      const result = formatPatientData(patient);
+
+      // Assert
+      const expectedIdentifiers = new Map<string, string>();
+      expectedIdentifiers.set('MRN', '123456');
+      expectedIdentifiers.set('SSN', '999-99-9999');
+
+      expect(result.identifiers).toEqual(expectedIdentifiers);
+      expect(result.identifiers.size).toBe(2);
+    });
+
+    it('should handle patient with empty identifier array', () => {
+      // Arrange
+      const patient: FhirPatient = {
+        resourceType: 'Patient',
+        id: 'test-uuid',
+        identifier: [],
+      };
+
+      // Act
+      const result = formatPatientData(patient);
+
+      // Assert
+      expect(result.identifiers).toEqual(new Map<string, string>());
+      expect(result.identifiers.size).toBe(0);
+    });
+
+    it('should handle patient with invalid birthDate format', () => {
+      // Arrange
+      const patient: FhirPatient = {
+        resourceType: 'Patient',
+        id: 'test-uuid',
+        birthDate: 'invalid-date', // Invalid date format
+      };
+
+      // Act
+      const result = formatPatientData(patient);
+
+      // Assert
+      expect(result.age).toBeNull();
+    });
+
+    it('should handle patient with future birthDate', () => {
+      // Arrange
+      const patient: FhirPatient = {
+        resourceType: 'Patient',
+        id: 'test-uuid',
+        birthDate: '2030-01-01', // Future date
+      };
+
+      // Act
+      const result = formatPatientData(patient);
+
+      // Assert
+      expect(result.age).toBeNull();
+    });
+
+    it('should handle patient with identifier that has no value', () => {
+      // Arrange
+      const patient: FhirPatient = {
+        resourceType: 'Patient',
+        id: 'test-uuid',
+        identifier: [
+          {
+            type: {
+              text: 'MRN',
+            },
+            // Missing value
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } as any, // Intentionally incorrect type
+        ],
+      };
+
+      // Act
+      const result = formatPatientData(patient);
+
+      // Assert
+      expect(result.identifiers.size).toBe(0);
+    });
+
+    it('should handle patient with identifier that has empty type text', () => {
+      // Arrange
+      const patient: FhirPatient = {
+        resourceType: 'Patient',
+        id: 'test-uuid',
+        identifier: [
+          {
+            type: {
+              text: '', // Empty text
+            },
+            value: '123456',
+          },
+        ],
+      };
+
+      // Act
+      const result = formatPatientData(patient);
+
+      // Assert
+      expect(result.identifiers.size).toBe(0);
     });
   });
 });

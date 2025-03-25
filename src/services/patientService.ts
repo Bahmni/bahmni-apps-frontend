@@ -15,6 +15,22 @@ export const getPatientById = async (
 };
 
 /**
+ * Extract address extensions from FHIR address
+ */
+const extractAddressExtensions = (address: FhirAddress): string[] => {
+  if (!address.extension || !Array.isArray(address.extension)) return [];
+
+  return address.extension.flatMap((ext) => {
+    if (ext.extension && Array.isArray(ext.extension)) {
+      return ext.extension
+        .filter((nestedExt) => nestedExt.valueString)
+        .map((nestedExt) => nestedExt.valueString as string);
+    }
+    return [];
+  });
+};
+
+/**
  * Format patient's full name from FHIR patient data
  */
 export const formatPatientName = (patient: FhirPatient): string | null => {
@@ -37,34 +53,23 @@ export const formatPatientName = (patient: FhirPatient): string | null => {
  * Format patient's address from FHIR patient data
  */
 export const formatPatientAddress = (address?: FhirAddress): string | null => {
-  if (!address) {
-    return null;
-  }
+  if (!address) return null;
 
-  const line = address.line?.join(', ') || '';
+  const addressLines = [
+    ...(address.line || []), // Standard address lines
+    ...extractAddressExtensions(address), // Extracted address extensions
+  ];
   const city = address.city || '';
   const state = address.state || '';
   const postalCode = address.postalCode || '';
 
-  if (!line && !city && !state && !postalCode) {
-    return null;
-  }
-
-  // Build address parts array with only non-empty parts
-  const parts = [];
-  if (line) parts.push(line);
+  const parts = addressLines.filter(Boolean);
   if (city) parts.push(city);
+  if (state && postalCode) parts.push(`${state} ${postalCode}`);
+  else if (state) parts.push(state);
+  else if (postalCode) parts.push(postalCode);
 
-  if (state && postalCode) {
-    parts.push(`${state} ${postalCode}`);
-  } else if (postalCode) {
-    parts.push(postalCode);
-  } else if (state) {
-    parts.push(state);
-  }
-
-  // Join with appropriate separators
-  return parts.join(', ').trim();
+  return parts.length > 0 ? parts.join(', ').trim() : null;
 };
 
 /**
@@ -99,7 +104,7 @@ export const formatPatientData = (
   const identifierMap = new Map<string, string>();
   if (identifiers.length > 0) {
     identifiers.forEach((identifier) => {
-      if (!identifier.type || !identifier.type.text) {
+      if (!identifier.type || !identifier.type.text || !identifier.value) {
         return;
       }
       identifierMap.set(identifier.type.text, identifier.value);

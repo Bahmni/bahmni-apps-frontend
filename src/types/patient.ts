@@ -38,6 +38,14 @@ export interface FhirHumanName {
   suffix?: string[];
 }
 
+export interface FhirAddressExtension {
+  url: string;
+  extension?: Array<{
+    url: string;
+    valueString?: string;
+  }>;
+}
+
 export interface FhirAddress {
   use?: string;
   type?: string;
@@ -48,6 +56,7 @@ export interface FhirAddress {
   state?: string;
   postalCode?: string;
   country?: string;
+  extension?: FhirAddressExtension[];
 }
 
 export interface FhirTelecom {
