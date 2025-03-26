@@ -16,6 +16,9 @@ export const getPatientById = async (
 
 /**
  * Extract address extensions from FHIR address
+ * @param address - The FHIR address to extract from
+ * @returns An array of address extensions
+ * @returns An empty array if no extensions are found
  */
 const extractAddressExtensions = (address: FhirAddress): string[] => {
   if (!address.extension || !Array.isArray(address.extension)) return [];
@@ -32,6 +35,9 @@ const extractAddressExtensions = (address: FhirAddress): string[] => {
 
 /**
  * Format patient's full name from FHIR patient data
+ * @param patient - The FHIR patient to format
+ * @returns A formatted name string
+ * @returns null if no name is provided
  */
 export const formatPatientName = (patient: FhirPatient): string | null => {
   if (!patient.name || patient.name.length === 0) {
@@ -51,6 +57,9 @@ export const formatPatientName = (patient: FhirPatient): string | null => {
 
 /**
  * Format patient's address from FHIR patient data
+ * @param address - The FHIR address to format
+ * @returns A formatted address string
+ * @returns null if no address is provided
  */
 export const formatPatientAddress = (address?: FhirAddress): string | null => {
   if (!address) return null;
@@ -74,6 +83,9 @@ export const formatPatientAddress = (address?: FhirAddress): string | null => {
 
 /**
  * Format patient's contact information from FHIR telecom data
+ * @param telecom - The FHIR telecom to format
+ * @returns A formatted contact string
+ * @returns null if no telecom is provided
  */
 export const formatPatientContact = (telecom?: FhirTelecom): string | null => {
   if (!telecom || !telecom.system || !telecom.value) {
@@ -85,6 +97,8 @@ export const formatPatientContact = (telecom?: FhirTelecom): string | null => {
 
 /**
  * Format patient data for display
+ * @param patient - The FHIR patient to format
+ * @returns A formatted patient data object
  */
 export const formatPatientData = (
   patient: FhirPatient,

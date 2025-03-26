@@ -11,6 +11,11 @@ interface UsePatientResult {
   refetch: () => void;
 }
 
+/**
+ * Custom hook to fetch and manage patient data
+ * @param patientUUID - The UUID of the patient
+ * @returns Object containing patient, loading state, error state, and refetch function
+ */
 export const usePatient = (patientUUID: string | null): UsePatientResult => {
   const [patient, setPatient] = useState<FhirPatient | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
