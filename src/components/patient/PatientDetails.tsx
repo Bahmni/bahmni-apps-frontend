@@ -1,12 +1,6 @@
 import React, { useMemo } from 'react';
 import { usePatient } from '@hooks/usePatient';
-import {
-  InlineNotification,
-  SkeletonText,
-  Tile,
-  Column,
-  Grid,
-} from '@carbon/react';
+import { SkeletonText, Tile, Column, Grid } from '@carbon/react';
 import { formatPatientData } from '@services/patientService';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import { Text } from '@carbon/react/lib/components/Text';
