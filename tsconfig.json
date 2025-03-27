@@ -25,7 +25,7 @@
       "@providers/*": ["providers/*"],
       "@services/*": ["services/*"],
       "@types/*": ["types/*"],
-      "@utils/*": ["utils/*"],
+      "@utils/*": ["utils/*"]
     }
   },
   "include": ["src/**/*"],

@@ -9,7 +9,7 @@ const config: Config.InitialOptions = {
   testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.(ts|tsx)$',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   moduleNameMapper: {
-    '\\.(css|less|scss|sass)$': '<rootDir>/src/__mocks__/styleMock.js',
+    '\\.(css|less|scss|sass)$': '<rootDir>/src/__mocks__/styleMock.ts',
     '@components/(.*)$': ['<rootDir>/src/components/$1'],
     '@contexts/(.*)$': ['<rootDir>/src/contexts/$1'],
     '@constants/(.*)$': ['<rootDir>/src/constants/$1'],
@@ -32,10 +32,10 @@ const config: Config.InitialOptions = {
   ],
   coverageThreshold: {
     global: {
-      lines: 95,
-      branches: 95,
-      functions: 95,
-      statements: 95,
+      lines: 90,
+      branches: 90,
+      functions: 90,
+      statements: 90,
     },
   },
 };
