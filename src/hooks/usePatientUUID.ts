@@ -1,6 +1,7 @@
 import { useLocation } from 'react-router-dom';
 import { extractFirstUuidFromPath } from '@utils/common';
 
+// TODO: Use Params to get the UUID
 /**
  * Custom hook to extract the first UUID from the current URL
  *

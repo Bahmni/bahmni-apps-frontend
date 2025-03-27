@@ -16,92 +16,103 @@ export interface FormattedPatientData {
 }
 
 export interface FhirIdentifier {
-  use?: string;
-  system?: string;
-  value: string;
-  type?: {
-    coding?: {
-      system?: string;
-      code?: string;
-      display?: string;
+  readonly use?: string;
+  readonly system?: string;
+  readonly value: string;
+  readonly type?: {
+    readonly coding?: {
+      readonly system?: string;
+      readonly code?: string;
+      readonly display?: string;
     };
-    text?: string;
+    readonly text?: string;
   };
 }
 
 export interface FhirHumanName {
-  use?: string;
-  text?: string;
-  family?: string;
-  given?: string[];
-  prefix?: string[];
-  suffix?: string[];
+  readonly use?: string;
+  readonly text?: string;
+  readonly family?: string;
+  readonly given?: ReadonlyArray<string>;
+  readonly prefix?: ReadonlyArray<string>;
+  readonly suffix?: ReadonlyArray<string>;
 }
 
 export interface FhirAddressExtension {
-  url: string;
-  extension?: Array<{
-    url: string;
-    valueString?: string;
+  readonly url: string;
+  readonly extension?: ReadonlyArray<{
+    readonly url: string;
+    readonly valueString?: string;
   }>;
 }
 
 export interface FhirAddress {
-  use?: string;
-  type?: string;
-  text?: string;
-  line?: string[];
-  city?: string;
-  district?: string;
-  state?: string;
-  postalCode?: string;
-  country?: string;
-  extension?: FhirAddressExtension[];
+  readonly use?: string;
+  readonly type?: string;
+  readonly text?: string;
+  readonly line?: ReadonlyArray<string>;
+  readonly city?: string;
+  readonly district?: string;
+  readonly state?: string;
+  readonly postalCode?: string;
+  readonly country?: string;
+  readonly extension?: ReadonlyArray<FhirAddressExtension>;
 }
 
 export interface FhirTelecom {
-  system?: 'phone' | 'email' | 'other';
-  value?: string;
-  use?: 'home' | 'work' | 'mobile' | 'temp' | 'old';
+  readonly system?: 'phone' | 'email' | 'other';
+  readonly value?: string;
+  readonly use?: 'home' | 'work' | 'mobile' | 'temp' | 'old';
 }
 
 export interface FhirReference {
-  reference?: string;
-  display?: string;
+  readonly reference?: string;
+  readonly display?: string;
 }
 
 export interface FhirPatient {
-  resourceType: 'Patient';
-  id?: string;
-  identifier?: FhirIdentifier[];
-  active?: boolean;
-  name?: FhirHumanName[];
-  telecom?: FhirTelecom[];
-  gender?: 'male' | 'female' | 'other' | 'unknown';
-  birthDate?: string; // YYYY-MM-DD format
-  deceasedBoolean?: boolean;
-  deceasedDateTime?: string;
-  address?: FhirAddress[];
-  maritalStatus?: {
-    coding?: [{ system?: string; code?: string; display?: string }];
+  readonly resourceType: 'Patient';
+  readonly id?: string;
+  readonly identifier?: ReadonlyArray<FhirIdentifier>;
+  readonly active?: boolean;
+  readonly name?: ReadonlyArray<FhirHumanName>;
+  readonly telecom?: ReadonlyArray<FhirTelecom>;
+  readonly gender?: 'male' | 'female' | 'other' | 'unknown';
+  readonly birthDate?: string; // YYYY-MM-DD format
+  readonly deceasedBoolean?: boolean;
+  readonly deceasedDateTime?: string;
+  readonly address?: ReadonlyArray<FhirAddress>;
+  readonly maritalStatus?: {
+    readonly coding?: ReadonlyArray<{
+      readonly system?: string;
+      readonly code?: string;
+      readonly display?: string;
+    }>;
   };
-  multipleBirthBoolean?: boolean;
-  multipleBirthInteger?: number;
-  photo?: { contentType?: string; data?: string }[];
-  contact?: {
-    relationship?: [
-      { coding?: [{ system?: string; code?: string; display?: string }] },
-    ];
-    name?: FhirHumanName;
-    telecom?: FhirTelecom[];
-    address?: FhirAddress;
-    gender?: 'male' | 'female' | 'other' | 'unknown';
-    organization?: FhirReference;
-  }[];
-  generalPractitioner?: FhirReference[];
-  managingOrganization?: FhirReference;
-  link?: {
-    other: FhirReference;
-    type: 'replaced-by' | 'replaces' | 'refer' | 'seealso';
-  }[];
+  readonly multipleBirthBoolean?: boolean;
+  readonly multipleBirthInteger?: number;
+  readonly photo?: ReadonlyArray<{
+    readonly contentType?: string;
+    readonly data?: string;
+  }>;
+  readonly contact?: ReadonlyArray<{
+    readonly relationship?: ReadonlyArray<{
+      readonly coding?: ReadonlyArray<{
+        readonly system?: string;
+        readonly code?: string;
+        readonly display?: string;
+      }>;
+    }>;
+    readonly name?: FhirHumanName;
+    readonly telecom?: ReadonlyArray<FhirTelecom>;
+    readonly address?: FhirAddress;
+    readonly gender?: 'male' | 'female' | 'other' | 'unknown';
+    readonly organization?: FhirReference;
+  }>;
+  readonly generalPractitioner?: ReadonlyArray<FhirReference>;
+  readonly managingOrganization?: FhirReference;
+  readonly link?: ReadonlyArray<{
+    readonly other: FhirReference;
+    readonly type: 'replaced-by' | 'replaces' | 'refer' | 'seealso';
+  }>;
 }
