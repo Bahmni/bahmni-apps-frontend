@@ -1,9 +1,9 @@
 import axios, { AxiosResponse, AxiosInstance } from 'axios';
-import { hostUrl, loginPath } from '@constants/app';
+import { loginPath } from '@constants/app';
 import { getFormattedError } from '@utils/common';
 import { notificationService } from './notificationService';
 
-const client: AxiosInstance = axios.create({ baseURL: hostUrl });
+const client: AxiosInstance = axios.create();
 client.defaults.headers.common['Content-Type'] = 'application/json';
 
 // Request interceptor
