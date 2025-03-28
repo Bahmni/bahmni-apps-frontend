@@ -67,3 +67,5 @@ storybook-static
 
 # Bundle analyzer
 stats.html
+
+*storybook.log

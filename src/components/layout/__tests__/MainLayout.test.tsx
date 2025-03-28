@@ -13,13 +13,13 @@ describe('MainLayout Component', () => {
         <MainLayout>
           <MockChild />
         </MainLayout>
-      </BrowserRouter>
+      </BrowserRouter>,
     );
-    
+
     // Check if the Home menu item is rendered
     const homeMenuItem = screen.getByText('Home');
     expect(homeMenuItem).toBeInTheDocument();
-    
+
     // Verify it's a link to the home page
     expect(homeMenuItem.closest('a')).toHaveAttribute('href', '/');
   });
@@ -30,9 +30,9 @@ describe('MainLayout Component', () => {
         <MainLayout>
           <MockChild />
         </MainLayout>
-      </BrowserRouter>
+      </BrowserRouter>,
     );
-    
+
     // Check if the header with Bahmni Clinical text is rendered
     const header = screen.getByText('Bahmni Clinical');
     expect(header).toBeInTheDocument();
@@ -44,9 +44,9 @@ describe('MainLayout Component', () => {
         <MainLayout>
           <MockChild />
         </MainLayout>
-      </BrowserRouter>
+      </BrowserRouter>,
     );
-    
+
     // Check if children are rendered
     const childContent = screen.getByTestId('mock-child');
     expect(childContent).toBeInTheDocument();
