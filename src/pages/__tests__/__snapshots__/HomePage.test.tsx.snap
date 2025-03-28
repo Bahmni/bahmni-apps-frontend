@@ -1,0 +1,21 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`HomePage Component should match snapshot 1`] = `
+<DocumentFragment>
+  <section>
+    <div
+      class="cds--css-grid"
+    >
+      <div
+        class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
+      >
+        <div
+          data-testid="mocked-patient-details"
+        >
+          Mocked PatientDetails
+        </div>
+      </div>
+    </div>
+  </section>
+</DocumentFragment>
+`;
