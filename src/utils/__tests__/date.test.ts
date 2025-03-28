@@ -1,4 +1,16 @@
-import { calculateAge } from '../date';
+import { format, parseISO } from 'date-fns';
+import { calculateAge, formatDate, formatDateTime } from '../date';
+import { DATE_FORMAT, DATE_TIME_FORMAT } from '@constants/date';
+
+jest.mock('@utils/common', () => ({
+  generateId: jest.fn().mockReturnValue('generated-id'),
+  getFormattedError: jest.fn().mockImplementation((error) => {
+    if (error instanceof Error) {
+      return { title: error.name || 'Error', message: error.message };
+    }
+    return { title: 'Error', message: 'An unexpected error occurred' };
+  }),
+}));
 
 describe('calculateAge', () => {
   // Store the original Date implementation and mock date
@@ -145,5 +157,45 @@ describe('calculateAge', () => {
   it('should return null for date string with non-numeric characters', () => {
     const result = calculateAge('199O-05-15'); // Using letter O instead of zero
     expect(result).toBeNull();
+  });
+});
+
+describe('Date Utility Functions', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.spyOn(console, 'error').mockImplementation();
+  });
+
+  describe('formatDate', () => {
+    it('should return a formatted date string for a valid Date object', () => {
+      const date = new Date(2024, 2, 28); // March 28, 2024
+      const formatted = formatDate(date);
+      expect(formatted).toBe(format(date, DATE_FORMAT));
+    });
+
+    it('should return a formatted date string for a valid date string', () => {
+      const dateString = '2024-03-28';
+      const formatted = formatDate(dateString);
+      expect(formatted).toBe(format(parseISO(dateString), DATE_FORMAT));
+    });
+
+    it('should return an empty string and log an error for an invalid date string', () => {
+      const formatted = formatDate('invalid-date');
+      expect(formatted).toBe('');
+    });
+  });
+
+  describe('formatDateTime', () => {
+    it('should return a formatted date-time string for a valid Date object', () => {
+      const date = new Date(2024, 2, 28, 12, 30); // March 28, 2024, 12:30 PM
+      const formatted = formatDateTime(date);
+      expect(formatted).toBe(format(date, DATE_TIME_FORMAT));
+    });
+
+    it('should return a formatted date-time string for a valid date string', () => {
+      const dateString = '2024-03-28T12:30:00Z';
+      const formatted = formatDateTime(dateString);
+      expect(formatted).toBe(format(parseISO(dateString), DATE_TIME_FORMAT));
+    });
   });
 });
