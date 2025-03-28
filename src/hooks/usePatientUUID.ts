@@ -1,13 +1,12 @@
-import { useLocation } from 'react-router-dom';
-import { extractFirstUuidFromPath } from '@utils/common';
+import { useParams } from 'react-router-dom';
 
-// TODO: Use Params to get the UUID
 /**
- * Custom hook to extract the first UUID from the current URL
- *
- * @returns {string|null} The extracted UUID or null if not found
+ * Hook to retrieve the patient UUID from the URL
+ * @returns {string|null} The patient UUID or null if not found
+ * @example
+ * const patientUuid = usePatientUUID();
  */
 export const usePatientUUID = (): string | null => {
-  const location = useLocation();
-  return extractFirstUuidFromPath(location.pathname);
+  const params = useParams();
+  return params.patientUuid || null;
 };
