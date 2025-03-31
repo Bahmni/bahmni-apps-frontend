@@ -25,6 +25,10 @@ A React TypeScript application for the Bahmni Clinical module, built with Webpac
 yarn
 ```
 
+### Detailed Setup Guide
+
+For a comprehensive setup guide including development environments, Docker configuration, authentication setup, and troubleshooting, please refer to our [Setup Guide](docs/setup-guide.md).
+
 ### Development
 
 ```bash
