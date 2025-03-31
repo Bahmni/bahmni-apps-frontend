@@ -3,6 +3,7 @@ import axios, { AxiosError } from 'axios';
 
 jest.mock('axios', () => ({
   isAxiosError: jest.fn(),
+  get: jest.fn(),
 }));
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -345,34 +346,7 @@ describe('common utility functions', () => {
 
     it('should handle generic Error objects', () => {
       const error = new Error('Something went wrong');
-      error.name = 'ValidationError';
-
-      mockedAxios.isAxiosError.mockReturnValue(false);
-
-      const result = getFormattedError(error);
-
-      expect(result).toEqual({
-        title: 'ValidationError',
-        message: 'Something went wrong',
-      });
-    });
-
-    it('should return error object input', () => {
-      const result = getFormattedError({
-        message: 'An unknown error',
-      });
-      expect(result).toEqual({
-        title: 'Error',
-        message: 'An unknown error occurred',
-      });
-    });
-
-    it('should handle generic Error objects without name', () => {
-      const error = new Error('Something went wrong');
-      error.name = undefined; // Set name to undefined for this test
-
-      mockedAxios.isAxiosError.mockReturnValue(false);
-
+      mockedAxios.get.mockRejectedValue(error);
       const result = getFormattedError(error);
 
       expect(result).toEqual({

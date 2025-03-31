@@ -19,15 +19,11 @@ export const getFormattedError = (
 
   if (typeof error === 'string') {
     message = error;
-  } else if (error instanceof Error) {
-    title = error.name || 'Error';
-    message = error.message;
   } else if (axios.isAxiosError(error)) {
     const axiosError = error as AxiosError;
 
     if (axiosError?.response) {
       const status = axiosError.response.status;
-
       switch (status) {
         case 400:
           title = 'Bad Request';
@@ -60,11 +56,15 @@ export const getFormattedError = (
             'Error processing your request';
         }
       }
+    } else if (error instanceof Error) {
+      message = error.message;
     } else {
       title = 'Network Error';
       message =
         'Unable to connect to the server. Please check your internet connection.';
     }
+  } else if (error instanceof Error) {
+    message = error.message;
   } else {
     message = 'An unknown error occurred';
   }
