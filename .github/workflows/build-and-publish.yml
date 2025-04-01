@@ -51,30 +51,29 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Docker image
+      - name: Build & push multi-arch image (temp)
         uses: docker/build-push-action@v5
         with:
           context: .
           file: package/docker/Dockerfile
-          push: false
-          load: true
-          tags: clinical-frontend:local
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ghcr.io/bahnew/clinical-frontend:temp
 
       - name: Scan Docker image for vulnerabilities
         uses: aquasecurity/trivy-action@0.30.0
         with:
-          image-ref: 'clinical-frontend:local'
+          image-ref: 'ghcr.io/bahnew/clinical-frontend:temp'
           format: 'table'
           exit-code: '1'
           severity: 'CRITICAL'
-          
-      - name: Tag and push Docker image
-        run: |
-          docker tag clinical-frontend:local ghcr.io/bahnew/clinical-frontend:latest
-          docker push ghcr.io/bahnew/clinical-frontend:latest
 
+      - name: Retag & push final image
+        if: success()
+        run: |
+          docker manifest create ghcr.io/bahnew/clinical-frontend:latest \
+            --amend ghcr.io/bahnew/clinical-frontend:temp
+          docker manifest push ghcr.io/bahnew/clinical-frontend:latest
 
       - name: Repository Dispatch
         run: |
