@@ -68,12 +68,12 @@ jobs:
           exit-code: '1'
           severity: 'CRITICAL'
 
-      - name: Retag & push final image
+      - name: Tag & push final image
         if: success()
         run: |
-          docker manifest create ghcr.io/bahnew/clinical-frontend:latest \
-            --amend ghcr.io/bahnew/clinical-frontend:temp
-          docker manifest push ghcr.io/bahnew/clinical-frontend:latest
+          docker buildx imagetools create \
+            --tag ghcr.io/bahnew/clinical-frontend:latest \
+            ghcr.io/bahnew/clinical-frontend:temp
 
       - name: Repository Dispatch
         run: |
