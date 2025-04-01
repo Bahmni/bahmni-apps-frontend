@@ -14,6 +14,11 @@ exports[`HomePage Component should match snapshot 1`] = `
         >
           Mocked PatientDetails
         </div>
+        <div
+          data-testid="mocked-conditions-table"
+        >
+          Mocked ConditionsTable
+        </div>
       </div>
     </div>
   </section>

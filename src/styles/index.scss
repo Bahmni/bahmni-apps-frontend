@@ -28,4 +28,13 @@ main {
     padding-block: 0rem !important;
     padding-block-end: 0rem !important;
   }
+  .cds--child-row-inner-container {
+    padding-block: 0rem !important;
+    padding-block-end: 0rem !important;
+    p {
+      font-size: 14px;
+      font-weight: 600;
+      padding: 0.5rem;
+    }
+  }
 }

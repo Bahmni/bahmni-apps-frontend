@@ -25,7 +25,8 @@
       "@providers/*": ["providers/*"],
       "@services/*": ["services/*"],
       "@types/*": ["types/*"],
-      "@utils/*": ["utils/*"]
+      "@utils/*": ["utils/*"],
+      "@__mocks__/*": ["__mocks__/*"]
     }
   },
   "include": ["src/**/*"],

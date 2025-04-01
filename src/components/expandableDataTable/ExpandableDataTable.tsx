@@ -15,9 +15,7 @@ import {
   DataTableHeader,
   Accordion,
   AccordionItem,
-  ContainedListItem,
 } from '@carbon/react';
-import { Error, Information } from '@carbon/react/icons';
 import { generateId, getFormattedError } from '@utils/common';
 
 interface ExpandableDataTableProps<T> {
@@ -51,9 +49,9 @@ export const ExpandableDataTable = <T extends { id?: string }>({
       <div data-testid="expandable-table-error" className={className}>
         <Accordion>
           <AccordionItem title={tableTitle}>
-            <ContainedListItem renderIcon={Error}>
+            <p style={{ padding: '0.5rem' }}>
               {formattedError.title}: {formattedError.message}
-            </ContainedListItem>
+            </p>
           </AccordionItem>
         </Accordion>
       </div>
@@ -85,9 +83,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
       <div data-testid="expandable-data-table-empty" className={className}>
         <Accordion>
           <AccordionItem title={tableTitle}>
-            <ContainedListItem renderIcon={Information}>
-              {emptyStateMessage}
-            </ContainedListItem>
+            <p style={{ padding: '0.5rem' }}>{emptyStateMessage}</p>
           </AccordionItem>
         </Accordion>
       </div>
@@ -140,7 +136,10 @@ export const ExpandableDataTable = <T extends { id?: string }>({
 
                       return (
                         <React.Fragment key={row.id}>
-                          <TableExpandRow {...getRowProps({ row })}>
+                          <TableExpandRow
+                            {...getRowProps({ row })}
+                            key={generateId()}
+                          >
                             {tableHeaders.map((header) => (
                               <TableCell key={`cell-${generateId()}`}>
                                 {renderCell(originalRow, header.key)}
