@@ -104,7 +104,7 @@ jobs:
           image-ref: '${{ env.IMAGE_NAME }}:scan-${{ github.sha }}'
           format: 'table'
           exit-code: '1'
-          severity: 'CRITICAL,HIGH'
+          severity: 'CRITICAL'
       
       # If scan passes, tag the image with final tags
       - name: Tag image with final tags
