@@ -494,6 +494,57 @@ const renderRobustCell = (row: Item, cellId: string) => {
 };
 ```
 
+### Cell Styling Options
+
+The ExpandableDataTable provides several predefined CSS classes for styling individual cells, across a row:
+
+| Class Name     | Color Code | Use Case |
+|---------------|------------|-----------|
+| criticalCell  | #da1e28   | For highlighting critical or error values |
+| successCell   | #198038   | For highlighting successful or positive values |
+| warningCell   | #f1c21b   | For highlighting warning states |
+| alertCell     | #ff832b   | For highlighting items needing attention |
+
+### Usage in renderCell
+
+```tsx
+const renderCell = (row: Item, cellId: string) => {
+  switch (cellId) {
+    case 'status':
+      return (
+        <div className={row.status === 'Critical' ? 'criticalCell' : ''}>
+          {row.status}
+        </div>
+      );
+    case 'value':
+      if (row.value > threshold) {
+        return <span className="alertCell">{row.value}</span>;
+      }
+      return row.value;
+    // Other cases...
+  }
+};
+```
+
+You can combine these cell styles with Carbon Design System components:
+
+```tsx
+const renderCell = (row: Item, cellId: string) => {
+  switch (cellId) {
+    case 'status':
+      return (
+        <Tag 
+          type={row.status === 'Critical' ? 'red' : 'green'}
+          className={row.status === 'Critical' ? 'criticalCell' : ''}
+        >
+          {row.status}
+        </Tag>
+      );
+    // Other cases...
+  }
+};
+```
+
 ### Data Formatting
 
 1. **Format dates consistently**: Use consistent date formatting throughout the application.

@@ -892,6 +892,207 @@ export const ProductInventoryExample: Story = {
 };
 
 // Accessibility examples
+// Create mock data with different severity levels for allergies example
+const mockAllergiesData = [
+  {
+    id: 'allergy-1',
+    display: 'Peanut Allergy',
+    status: 'Active',
+    reactions: [
+      {
+        manifestation: ['Anaphylaxis'],
+        severity: 'severe',
+      },
+    ],
+    recordedDate: '2024-01-15T10:00:00Z',
+    recorder: 'Dr. Smith',
+    note: ['Patient experiences severe reaction within minutes of exposure'],
+  },
+  {
+    id: 'allergy-2',
+    display: 'Shellfish Allergy',
+    status: 'Active',
+    reactions: [
+      {
+        manifestation: ['Hives'],
+        severity: 'moderate',
+      },
+    ],
+    recordedDate: '2024-02-20T14:30:00Z',
+    recorder: 'Dr. Johnson',
+    note: ['Mild to moderate skin reaction'],
+  },
+  {
+    id: 'allergy-3',
+    display: 'Penicillin Allergy',
+    status: 'Active',
+    reactions: [
+      {
+        manifestation: ['Difficulty breathing'],
+        severity: 'severe',
+      },
+    ],
+    recordedDate: '2024-03-10T09:15:00Z',
+    recorder: 'Dr. Williams',
+    note: ['Requires immediate medical attention if exposed'],
+  },
+];
+
+export const AllergiesExample: Story = {
+  args: {
+    tableTitle: 'Patient Allergies',
+    rows: mockAllergiesData,
+    headers: [
+      { key: 'display', header: 'Allergy' },
+      { key: 'manifestation', header: 'Reaction(s)' },
+      { key: 'severity', header: 'Severity' },
+      { key: 'status', header: 'Status' },
+      { key: 'recorder', header: 'Provider' },
+      { key: 'recordedDate', header: 'Recorded Date' },
+    ],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    renderCell: (row: any, cellId: string) => {
+      switch (cellId) {
+        case 'display':
+          return row.display;
+        case 'manifestation':
+          return (
+            row.reactions?.[0]?.manifestation.join(', ') || 'Not available'
+          );
+        case 'severity':
+          return row.reactions?.[0]?.severity || 'Not available';
+        case 'status':
+          return (
+            <Tag type={row.status === 'Active' ? 'green' : 'gray'}>
+              {row.status}
+            </Tag>
+          );
+        case 'recorder':
+          return row.recorder || 'Not available';
+        case 'recordedDate':
+          return new Date(row.recordedDate).toLocaleString();
+        default:
+          return 'Not available';
+      }
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    renderExpandedContent: (row: any) => (
+      <div style={{ padding: '1rem' }}>
+        <p>
+          <strong>Notes:</strong> {row.note?.[0] || 'No notes available'}
+        </p>
+      </div>
+    ),
+    rowClassNames: mockAllergiesData.map((allergy) =>
+      allergy.reactions?.some((reaction) => reaction.severity === 'severe')
+        ? 'criticalCell'
+        : '',
+    ),
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Example showing how to use rowClassNames to highlight rows with severe allergies. Rows with severe reactions are highlighted in red using the criticalCell class.',
+      },
+    },
+  },
+};
+
+// Cell styling examples
+// Define interface for cell styling example
+interface CellStyleItem {
+  id: string;
+  name: string;
+  status: 'Active' | 'Inactive' | 'Pending';
+  date: string;
+  details: string;
+  value: string;
+  valueType: 'critical' | 'success' | 'warning' | 'alert';
+}
+
+const classNames = ['criticalCell', 'successCell', 'warningCell', 'alertCell'];
+
+export const WithCellStyling: Story = {
+  args: {
+    tableTitle: 'Table with Cell Styling',
+    rows: [
+      {
+        id: '1',
+        name: 'Critical Item',
+        status: 'Active',
+        date: '2025-03-15',
+        details: 'Item with critical status',
+        value: 'High Risk',
+        valueType: 'critical',
+      } as CellStyleItem,
+      {
+        id: '2',
+        name: 'Success Item',
+        status: 'Active',
+        date: '2025-03-15',
+        details: 'Item with success status',
+        value: 'Completed',
+        valueType: 'success',
+      } as CellStyleItem,
+      {
+        id: '3',
+        name: 'Warning Item',
+        status: 'Active',
+        date: '2025-03-15',
+        details: 'Item with warning status',
+        value: 'Pending Review',
+        valueType: 'warning',
+      } as CellStyleItem,
+      {
+        id: '4',
+        name: 'Alert Item',
+        status: 'Active',
+        date: '2025-03-15',
+        details: 'Item with alert status',
+        value: 'Needs Attention',
+        valueType: 'alert',
+      } as CellStyleItem,
+    ],
+    headers: [
+      { key: 'name', header: 'Name' },
+      { key: 'value', header: 'Value' },
+      { key: 'valueType', header: 'Value Type' },
+    ],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    renderCell: (row: any, cellId: string) => {
+      switch (cellId) {
+        case 'name':
+          return row.name;
+        case 'value':
+          return <span className={`${row.valueType}Cell`}>{row.value}</span>;
+        case 'valueType':
+          return row.valueType.charAt(0).toUpperCase() + row.valueType.slice(1);
+        default:
+          return null;
+      }
+    },
+    rowClassNames: classNames,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    renderExpandedContent: (row: any) => (
+      <div style={{ padding: '1rem' }}>
+        <p>
+          <strong>Example of styling with Carbon components. </strong>
+          {row.details}
+        </p>
+      </div>
+    ),
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Example showing how to use predefined cell styling classes (criticalCell, successCell, warningCell, alertCell) to highlight different types of content.',
+      },
+    },
+  },
+};
+
 export const WithAccessibilityFeatures: Story = {
   args: {
     tableTitle: 'Sample Table',

@@ -598,4 +598,152 @@ describe('ExpandableDataTable', () => {
     expect(screen.getByTestId('expandable-data-table')).toBeInTheDocument();
     expect(screen.getByText('Item 0')).toBeInTheDocument();
   });
+
+  it('should handle empty rowClassNames array', () => {
+    render(
+      <ExpandableDataTable
+        tableTitle="Test Table"
+        headers={mockHeaders}
+        rows={mockRows}
+        renderCell={renderCell}
+        renderExpandedContent={renderExpandedContent}
+        rowClassNames={[]}
+      />,
+    );
+
+    // Find all expandable rows
+    const expandRows = screen.getAllByRole('row').filter(
+      (row) => !row.querySelector('th[scope="col"]'), // Filter out header row
+    );
+
+    // No custom classes should be applied
+    expect(expandRows[0]).not.toHaveClass('critical-row');
+    expect(expandRows[0]).not.toHaveClass('warning-row');
+  });
+
+  it('should apply row-specific className to table cells when rowClassNames array is provided', () => {
+    const mockRowClassNames = ['critical-row', '', 'warning-row'];
+    const threeRows: TestRow[] = [
+      {
+        id: '1',
+        name: 'Item 1',
+        status: 'Active',
+        date: '2025-03-15',
+        details: 'Details for Item 1',
+      },
+      {
+        id: '2',
+        name: 'Item 2',
+        status: 'Inactive',
+        date: '2025-02-20',
+        details: 'Details for Item 2',
+      },
+      {
+        id: '3',
+        name: 'Item 3',
+        status: 'Active',
+        date: '2025-01-10',
+        details: 'Details for Item 3',
+      },
+    ];
+
+    render(
+      <ExpandableDataTable
+        tableTitle="Test Table"
+        headers={mockHeaders}
+        rows={threeRows}
+        renderCell={renderCell}
+        renderExpandedContent={renderExpandedContent}
+        rowClassNames={mockRowClassNames}
+      />,
+    );
+
+    // Find all table cells in the data rows
+    const firstRowCells = screen.getAllByText('Item 1')[0].closest('td');
+    const secondRowCells = screen.getAllByText('Item 2')[0].closest('td');
+    const thirdRowCells = screen.getAllByText('Item 3')[0].closest('td');
+
+    // First row cells should have the critical-row class
+    expect(firstRowCells).toHaveClass('critical-row');
+
+    // Second row cells should not have any custom class (empty string in array)
+    expect(secondRowCells).not.toHaveClass('critical-row');
+    expect(secondRowCells).not.toHaveClass('warning-row');
+
+    // Third row cells should have the warning-row class
+    expect(thirdRowCells).toHaveClass('warning-row');
+  });
+
+  it('should handle empty rowClassNames array for table cells', () => {
+    render(
+      <ExpandableDataTable
+        tableTitle="Test Table"
+        headers={mockHeaders}
+        rows={mockRows}
+        renderCell={renderCell}
+        renderExpandedContent={renderExpandedContent}
+        rowClassNames={[]}
+      />,
+    );
+
+    // Find cell elements
+    const firstRowCell = screen.getAllByText('Item 1')[0].closest('td');
+    const secondRowCell = screen.getAllByText('Item 2')[0].closest('td');
+
+    // No custom classes should be applied
+    expect(firstRowCell).not.toHaveClass('critical-row');
+    expect(firstRowCell).not.toHaveClass('warning-row');
+    expect(secondRowCell).not.toHaveClass('critical-row');
+    expect(secondRowCell).not.toHaveClass('warning-row');
+  });
+
+  it('should handle rowClassNames array shorter than rows array for table cells', () => {
+    const shortRowClassNames = ['critical-row'];
+
+    render(
+      <ExpandableDataTable
+        tableTitle="Test Table"
+        headers={mockHeaders}
+        rows={mockRows}
+        renderCell={renderCell}
+        renderExpandedContent={renderExpandedContent}
+        rowClassNames={shortRowClassNames}
+      />,
+    );
+
+    // Find cell elements
+    const firstRowCell = screen.getAllByText('Item 1')[0].closest('td');
+    const secondRowCell = screen.getAllByText('Item 2')[0].closest('td');
+
+    // First row cell should have the class
+    expect(firstRowCell).toHaveClass('critical-row');
+
+    // Second row cell should not have any custom class (no entry in array)
+    expect(secondRowCell).not.toHaveClass('critical-row');
+  });
+
+  it('should apply the same className to all cells in a row', () => {
+    const mockRowClassNames = ['critical-row'];
+
+    render(
+      <ExpandableDataTable
+        tableTitle="Test Table"
+        headers={mockHeaders}
+        rows={mockRows}
+        renderCell={renderCell}
+        renderExpandedContent={renderExpandedContent}
+        rowClassNames={mockRowClassNames}
+      />,
+    );
+
+    // Get all cells in the first row
+    const firstRowNameCell = screen.getAllByText('Item 1')[0].closest('td');
+    const firstRowStatusCell = screen.getAllByText('Active')[0].closest('td');
+    const firstRowDateCell = screen.getAllByText('2025-03-15')[0].closest('td');
+
+    // All cells in the first row should have the class
+    expect(firstRowNameCell).toHaveClass('critical-row');
+    expect(firstRowStatusCell).toHaveClass('critical-row');
+    expect(firstRowDateCell).toHaveClass('critical-row');
+  });
 });
