@@ -3,10 +3,47 @@ name: Build and Publish
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
+env:
+  IMAGE_NAME: ghcr.io/bahnew/clinical-frontend
+  NODE_VERSION: '22'
+
 jobs:
+  test-and-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
+      
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      
+      - name: Lint
+        run: yarn lint
+      
+      - name: Run tests
+        run: yarn test
+        
+      - name: Scan for package vulnerabilities
+        uses: aquasecurity/trivy-action@0.30.0
+        with:
+          scan-type: 'fs'
+          format: 'table'
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH'
+
   build-and-publish:
+    needs: test-and-lint
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -14,72 +51,86 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
+      
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'yarn'
-
+      
       - name: Install dependencies
         run: yarn install --frozen-lockfile
-
-      - name: Lint
-        run: yarn lint
-
-      - name: Run tests
-        run: yarn test
-
-      - name: Scan for package vulnerabilities
-        uses: aquasecurity/trivy-action@0.30.0
-        with:
-          scan-type: 'fs'
-          format: 'table'
-          exit-code: '1'
-          severity: 'CRITICAL'
-
+      
+      - name: Extract version
+        id: package-version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+      
       - name: Build
         run: yarn build
-
+        
+      - name: Cache build artifacts
+        uses: actions/cache@v3
+        with:
+          path: dist
+          key: ${{ runner.os }}-build-${{ github.sha }}
+      
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
+      
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build Docker image
+      
+      # Build image locally without pushing
+      - name: Build multi-arch image locally
         uses: docker/build-push-action@v5
         with:
           context: .
           file: package/docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: false
           load: true
-          tags: clinical-frontend:local
+          tags: |
+            ${{ env.IMAGE_NAME }}:local-scan
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
+      
+      # Scan the local image before pushing
       - name: Scan Docker image for vulnerabilities
         uses: aquasecurity/trivy-action@0.30.0
         with:
-          image-ref: 'clinical-frontend:local'
+          image-ref: '${{ env.IMAGE_NAME }}:local-scan'
           format: 'table'
           exit-code: '1'
-          severity: 'CRITICAL'
-          
-      - name: Tag and push Docker image
-        run: |
-          docker tag clinical-frontend:local ghcr.io/bahnew/clinical-frontend:latest
-          docker push ghcr.io/bahnew/clinical-frontend:latest
-
-
+          severity: 'CRITICAL,HIGH'
+      
+      # Only push if security scan passes
+      - name: Push multi-arch image
+        if: success()
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: package/docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.IMAGE_NAME }}:v${{ steps.package-version.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      # This step dispatches an event to the utils repo to trigger downstream deployments
       - name: Repository Dispatch
+        if: success()
         run: |
+          # Using GitHub's built-in REST API for repository dispatch
           curl -X POST \
             -H "Authorization: token ${{ secrets.INFRA_GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/bahnew/utils/dispatches \
-            -d '{"event_type":"clinical-frontend-publish"}'
+            -d '{"event_type":"clinical-frontend-publish","client_payload":{"version":"v${{ steps.package-version.outputs.version }}","sha":"${{ github.sha }}"}}'
+      
