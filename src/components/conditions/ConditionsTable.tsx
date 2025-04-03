@@ -6,7 +6,6 @@ import { useConditions } from '@hooks/useConditions';
 import { formatConditions } from '@services/conditionService';
 import { ConditionStatus, FormattedCondition } from '@types/condition';
 import { formatDateTime } from '@utils/date';
-import { generateId } from '@utils/common';
 
 /**
  * Maps condition status to appropriate tag type
@@ -77,11 +76,7 @@ const ConditionsTable: React.FC = () => {
         </p>
       ));
     }
-    return (
-      <p style={{ padding: '0.5rem' }} key={generateId()}>
-        No notes available
-      </p>
-    );
+    return undefined;
   };
 
   return (

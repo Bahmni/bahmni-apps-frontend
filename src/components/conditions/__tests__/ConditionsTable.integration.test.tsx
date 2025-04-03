@@ -215,7 +215,7 @@ describe('ConditionsTable Integration', () => {
     ).toBeInTheDocument();
   });
 
-  it('should display "No notes available" when condition has no notes', () => {
+  it('should display condition without expanding has no notes', () => {
     // Mock the hooks
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedUseConditions.mockReturnValue({
@@ -230,8 +230,9 @@ describe('ConditionsTable Integration', () => {
     render(<ConditionsTable />);
 
     // In a real test with the actual ExpandableDataTable, we would need to expand the row
-    // But since we're using a mock, we can just check if "No notes available" is in the document
-    expect(screen.getByText('No notes available')).toBeInTheDocument();
+    // But since we're using a mock, we can just check if there is no notes in the document
+    expect(screen.getByText('Cyst of Gallbladder')).toBeInTheDocument();
+    expect(screen.getByText('25/03/2025 00:00')).toBeInTheDocument();
   });
 
   it('should handle missing optional fields in condition data', () => {

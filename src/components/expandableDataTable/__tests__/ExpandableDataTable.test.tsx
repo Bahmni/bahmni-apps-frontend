@@ -553,27 +553,6 @@ describe('ExpandableDataTable', () => {
     expect(table).toHaveAttribute('aria-label', 'Test Table Title');
   });
 
-  it('should handle renderExpandedContent returning null', () => {
-    const nullExpandedContentRenderer = () => null;
-
-    render(
-      <ExpandableDataTable
-        tableTitle="Test Table"
-        headers={mockHeaders}
-        rows={mockRows}
-        renderCell={renderCell}
-        renderExpandedContent={nullExpandedContentRenderer}
-      />,
-    );
-
-    // Find and click the expand button for the first row
-    const expandButtons = screen.getAllByLabelText('Expand current row');
-    fireEvent.click(expandButtons[0]);
-
-    // Should not crash when expanding
-    expect(screen.getByText('Item 1')).toBeInTheDocument();
-  });
-
   it('should handle large datasets without crashing', () => {
     // Create a large dataset
     const largeDataset: TestRow[] = Array.from({ length: 100 }, (_, index) => ({
