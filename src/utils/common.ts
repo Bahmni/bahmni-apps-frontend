@@ -30,6 +30,11 @@ export const getFormattedError = (
           message =
             'Invalid input parameters. Please check your request and try again.';
           break;
+        case 401:
+          title = 'Unauthorized';
+          message =
+            'You are not authorized to perform this action. Please log in again.';
+          break;
         case 403:
           title = 'Authorization Error';
           message =
