@@ -73,8 +73,8 @@ Replace `GITHUB_PAT` with your GitHub Personal Access Token and `YOUR_GITHUB_USE
 After setting up the repositories and authenticating with GitHub Container Registry, you need to start the EMR components:
 
 ```bash
-# Navigate to the bahmni-docker directory
-cd bahmni-docker
+# Navigate to the bahmni-docker/bahmni-standard directory
+cd bahmni-docker/bahmni-standard
 
 # Start all EMR components with the latest images
 docker compose --env-file .env.dev up -d
@@ -86,7 +86,7 @@ This command will pull the latest images for all EMR components and start them i
 docker ps
 ```
 
-Wait for all services to start up completely before proceeding with the development setup.
+Wait for all services to start up completely. Open your browser and navigate to the Bahmni EMR URL and open any Active patient (typically start from <http://localhost/bahmni/home>). After login, register a patient and start a visit. Now navigate to the clinical module, and go to New - Active queue. You will see the new dashboard being rendered. 
 
 ## Development Setup Options
 
@@ -126,7 +126,7 @@ This method allows you to build the application locally and mount it into the Do
 
 4. **Start the Docker Services**:
 
-   In the bahmni-docker directory:
+   In the bahmni-docker/bahmni-standard directory:
 
    ```bash
    # Start all EMR components with the latest images
