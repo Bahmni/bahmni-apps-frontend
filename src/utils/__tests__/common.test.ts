@@ -28,6 +28,32 @@ describe('common utility functions', () => {
       jest.clearAllMocks();
     });
 
+    it('should handle Axios errors with response - 401 Unauthorized', () => {
+      const mockResponse = {
+        status: 401,
+        data: { message: 'Unauthorized' },
+      };
+
+      const axiosError = {
+        isAxiosError: true,
+        response: mockResponse,
+        request: {},
+        message: 'Request failed',
+        config: {},
+        toJSON: jest.fn(),
+      } as unknown as AxiosError;
+
+      mockedAxios.isAxiosError.mockReturnValue(true);
+
+      const result = getFormattedError(axiosError);
+
+      expect(result).toEqual({
+        title: 'Unauthorized',
+        message:
+          'You are not authorized to perform this action. Please log in again.',
+      });
+    });
+
     it('should handle Axios errors with response - 404 Not Found', () => {
       const mockResponse = {
         status: 404,
