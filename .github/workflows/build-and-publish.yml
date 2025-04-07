@@ -130,29 +130,11 @@ jobs:
       # Cleanup temporary Docker tags from GitHub Container Registry
       - name: Cleanup temporary Docker tags
         if: always()  # This ensures the step runs even if previous steps fail
-        run: |
-          # Get the package name without the registry prefix
-          PACKAGE_NAME=$(echo "${{ env.IMAGE_NAME }}" | sed 's/ghcr.io\///')
-          
-          # The package name needs to be URL-encoded for the API
-          # Replace "/" with "%2F"
-          ENCODED_PACKAGE_NAME=$(echo "$PACKAGE_NAME" | sed 's/\//%2F/g')
-          
-          # First, we need to find the ID of the tag
-          RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/orgs/bahnew/packages/container/${ENCODED_PACKAGE_NAME}/versions")
-          
-          # Extract the ID of the version with our temporary tag
-          VERSION_ID=$(echo $RESPONSE | jq -r '.[] | select(.metadata.container.tags[] | contains("scan-${{ github.sha }}")) | .id')
-          
-          if [ -n "$VERSION_ID" ]; then
-            # Delete just this specific tag (not the entire version)
-            curl -X DELETE \
-              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/orgs/bahnew/packages/container/${ENCODED_PACKAGE_NAME}/versions/${VERSION_ID}"
-            echo "Deleted temporary tag: scan-${{ github.sha }}"
-          else
-            echo "Could not find version ID for tag: scan-${{ github.sha }}"
-          fi
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: 'clinical-frontend'
+          package-type: 'container'
+          owner: 'bahnew'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-versions-to-keep: 0
+          ignore-versions: '^(?!scan-${{ github.sha }}$).*$'
