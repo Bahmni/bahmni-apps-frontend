@@ -232,7 +232,7 @@ describe('ConditionsTable Integration', () => {
     // In a real test with the actual ExpandableDataTable, we would need to expand the row
     // But since we're using a mock, we can just check if there is no notes in the document
     expect(screen.getByText('Cyst of Gallbladder')).toBeInTheDocument();
-    expect(screen.getByText('25/03/2025 00:00')).toBeInTheDocument();
+    expect(screen.getByText('Super Man')).toBeInTheDocument();
   });
 
   it('should handle missing optional fields in condition data', () => {
