@@ -113,8 +113,7 @@ jobs:
           # Tag the scanned image with final tags
           docker buildx imagetools create \
             --tag ${{ env.IMAGE_NAME }}:latest \
-            --tag ${{ env.IMAGE_NAME }}:${{ github.sha }} \
-            --tag ${{ env.IMAGE_NAME }}:v${{ steps.package-version.outputs.version }} \
+            --tag ${{ env.IMAGE_NAME }}:v${{ steps.package-version.outputs.version }}-${{github.run_number}} \
             ${{ env.IMAGE_NAME }}:scan-${{ github.sha }}
       
       # This step dispatches an event to the utils repo to trigger downstream deployments
@@ -128,3 +127,17 @@ jobs:
             https://api.github.com/repos/bahnew/utils/dispatches \
             -d '{"event_type":"clinical-frontend-publish","client_payload":{"version":"v${{ steps.package-version.outputs.version }}","sha":"${{ github.sha }}"}}'
       
+      # Cleanup Docker images from GitHub Container Registry
+      - name: Cleanup temporary Docker images
+        if: always()  # This ensures the step runs even if previous steps fail
+        run: |
+          # Delete the temporary scan tag from GitHub Container Registry
+          # Extract the package name from the image name (remove the registry prefix)
+          PACKAGE_NAME=$(echo "${{ env.IMAGE_NAME }}" | sed 's/ghcr.io\///')
+          
+          # Delete the temporary tag using GitHub API
+          curl -X DELETE \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/user/packages/container/${PACKAGE_NAME}/versions/scan-${{ github.sha }}"
+          
