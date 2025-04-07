@@ -132,9 +132,8 @@ jobs:
         if: always()  # This ensures the step runs even if previous steps fail
         uses: actions/delete-package-versions@v5
         with:
+          package-version-ids: 'scan-${{ github.sha }}'
           package-name: 'clinical-frontend'
           package-type: 'container'
           owner: 'bahnew'
           token: ${{ secrets.GITHUB_TOKEN }}
-          min-versions-to-keep: 0
-          ignore-versions: '^(?!scan-${{ github.sha }}$).*$'
