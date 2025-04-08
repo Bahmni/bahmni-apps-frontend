@@ -127,13 +127,13 @@ jobs:
             https://api.github.com/repos/bahnew/utils/dispatches \
             -d '{"event_type":"clinical-frontend-publish","client_payload":{"version":"v${{ steps.package-version.outputs.version }}","sha":"${{ github.sha }}"}}'
       
-      # Cleanup temporary Docker tags from GitHub Container Registry
+      # Cleanup the older Docker images from GitHub Container Registry
       - name: Cleanup temporary Docker tags
         if: always()  # This ensures the step runs even if previous steps fail
         uses: actions/delete-package-versions@v5
         with:
-          package-version-ids: 'scan-${{ github.sha }}'
+          owner: 'bahnew'
           package-name: 'clinical-frontend'
           package-type: 'container'
-          owner: 'bahnew'
+          min-versions-to-keep: 3
           token: ${{ secrets.GITHUB_TOKEN }}
