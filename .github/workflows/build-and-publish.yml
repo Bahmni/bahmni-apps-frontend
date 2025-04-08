@@ -135,5 +135,5 @@ jobs:
           owner: 'bahnew'
           package-name: 'clinical-frontend'
           package-type: 'container'
-          min-versions-to-keep: 3
+          min-versions-to-keep: 6
           token: ${{ secrets.GITHUB_TOKEN }}
