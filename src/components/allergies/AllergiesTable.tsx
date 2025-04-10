@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react';
 import { Tag } from '@carbon/react';
-import { ExpandableDataTable } from '../../components/expandableDataTable/ExpandableDataTable';
-import { usePatientUUID } from '../../hooks/usePatientUUID';
-import { useAllergies } from '../../hooks/useAllergies';
-import { formatAllergies } from '../../services/allergyService';
-import { FormattedAllergy } from '../../types/allergy';
-import { formatDateTime } from '../../utils/date';
-import { generateId, capitalize } from '../../utils/common';
+import { ExpandableDataTable } from '@components/expandableDataTable/ExpandableDataTable';
+import { usePatientUUID } from '@hooks/usePatientUUID';
+import { useAllergies } from '@hooks/useAllergies';
+import { formatAllergies } from '@services/allergyService';
+import { FormattedAllergy } from '@types/allergy';
+import { formatDateTime } from '@utils/date';
+import { generateId, capitalize } from '@utils/common';
 
 /**
  * Component to display patient allergies in a DataTable with expandable rows

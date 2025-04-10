@@ -1,7 +1,7 @@
 import {
   FhirAllergyIntolerance,
   FhirAllergyIntoleranceBundle,
-} from '../types/allergy';
+} from '@types/allergy';
 
 export const mockAllergyIntolerance: FhirAllergyIntolerance = {
   resourceType: 'AllergyIntolerance',

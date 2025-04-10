@@ -6,7 +6,6 @@ import { useConditions } from '@hooks/useConditions';
 import { formatConditions } from '@services/conditionService';
 import { ConditionStatus, FormattedCondition } from '@types/condition';
 import { formatDate, formatDateTime } from '@utils/date';
-import { generateId } from '@utils/common';
 
 /**
  * Maps condition status to appropriate tag type
