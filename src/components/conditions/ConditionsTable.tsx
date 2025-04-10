@@ -5,7 +5,7 @@ import { usePatientUUID } from '@hooks/usePatientUUID';
 import { useConditions } from '@hooks/useConditions';
 import { formatConditions } from '@services/conditionService';
 import { ConditionStatus, FormattedCondition } from '@types/condition';
-import { formatDateTime } from '@utils/date';
+import { formatDate, formatDateTime } from '@utils/date';
 import { generateId } from '@utils/common';
 
 /**
@@ -60,7 +60,7 @@ const ConditionsTable: React.FC = () => {
           </Tag>
         );
       case 'onsetDate':
-        return formatDateTime(condition.onsetDate || '');
+        return formatDate(condition.onsetDate || '');
       case 'recorder':
         return condition.recorder || 'Not available';
       case 'recordedDate':
