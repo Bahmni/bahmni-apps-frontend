@@ -4,7 +4,7 @@ import ConditionsTable from '../ConditionsTable';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import { useConditions } from '@hooks/useConditions';
 import { formatConditions } from '@services/conditionService';
-import { formatDateTime } from '@utils/date';
+import { formatDate, formatDateTime } from '@utils/date';
 import { generateId } from '@utils/common';
 import {
   mockPatientUUID,
@@ -105,6 +105,9 @@ const mockedFormatConditions = formatConditions as jest.MockedFunction<
 const mockedFormatDateTime = formatDateTime as jest.MockedFunction<
   typeof formatDateTime
 >;
+const mockedFormatDate = formatDate as jest.MockedFunction<
+  typeof formatDateTime
+>;
 const mockedGenerateId = generateId as jest.MockedFunction<typeof generateId>;
 
 describe('ConditionsTable Unit Tests', () => {
@@ -112,6 +115,7 @@ describe('ConditionsTable Unit Tests', () => {
     jest.clearAllMocks();
     mockedGenerateId.mockReturnValue('mock-id');
     mockedFormatDateTime.mockImplementation((date) => `Formatted: ${date}`);
+    mockedFormatDate.mockImplementation((date) => `Formatted: ${date}`);
   });
 
   // 1. Component Initialization and Hook Interactions
@@ -396,7 +400,7 @@ describe('ConditionsTable Unit Tests', () => {
       expect(screen.getByTestId('cell-onsetDate-0')).toHaveTextContent(
         'Formatted: 2025-03-24T18:30:00+00:00',
       );
-      expect(formatDateTime).toHaveBeenCalledWith('2025-03-24T18:30:00+00:00');
+      expect(formatDate).toHaveBeenCalledWith('2025-03-24T18:30:00+00:00');
     });
 
     it('should render recorder cell correctly', () => {
@@ -494,7 +498,7 @@ describe('ConditionsTable Unit Tests', () => {
       expect(screen.getByTestId('cell-onsetDate-0')).toHaveTextContent(
         'Formatted:',
       );
-      expect(formatDateTime).toHaveBeenCalledWith('');
+      expect(formatDate).toHaveBeenCalledWith('');
     });
 
     it('should handle empty recordedDate', () => {
