@@ -17,6 +17,13 @@ jest.mock('@components/conditions/ConditionsTable', () => {
     <div data-testid="mocked-conditions-table">Mocked ConditionsTable</div>
   ));
 });
+
+// Mock the AllergiesTable component
+jest.mock('@components/allergies/AllergiesTable', () => {
+  return jest.fn(() => (
+    <div data-testid="mocked-allergy-table">Mocked AllergiesTable</div>
+  ));
+});
 describe('HomePage Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();

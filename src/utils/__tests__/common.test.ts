@@ -1,4 +1,4 @@
-import { generateId, getFormattedError } from '../common';
+import { capitalize, generateId, getFormattedError } from '../common';
 import axios, { AxiosError } from 'axios';
 
 jest.mock('axios', () => ({
@@ -405,6 +405,26 @@ describe('common utility functions', () => {
         title: 'Error',
         message: 'An unknown error occurred',
       });
+    });
+  });
+
+  describe('capitalize', () => {
+    it('should convert string to capital case', () => {
+      expect(capitalize('foo bar')).toBe('Foo Bar');
+      expect(capitalize('foo-bar')).toBe('Foo Bar');
+      expect(capitalize('FOO BAR')).toBe('Foo Bar');
+    });
+
+    it('should handle empty string', () => {
+      expect(capitalize('')).toBe('');
+    });
+
+    it('should handle single word', () => {
+      expect(capitalize('hello')).toBe('Hello');
+    });
+
+    it('should handle custom delimiters', () => {
+      expect(capitalize('foo_bar-baz', '_-')).toBe('Foo Bar Baz');
     });
   });
 });

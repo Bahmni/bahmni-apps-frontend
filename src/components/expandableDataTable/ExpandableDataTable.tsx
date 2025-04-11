@@ -17,6 +17,7 @@ import {
   AccordionItem,
 } from '@carbon/react';
 import { generateId, getFormattedError } from '@utils/common';
+import './ExpandableDataTable.scss';
 
 interface ExpandableDataTableProps<T> {
   tableTitle: string;
@@ -29,6 +30,7 @@ interface ExpandableDataTableProps<T> {
   ariaLabel?: string;
   emptyStateMessage?: string;
   className?: string;
+  rowClassNames?: string[];
 }
 
 export const ExpandableDataTable = <T extends { id?: string }>({
@@ -42,6 +44,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
   ariaLabel = tableTitle,
   emptyStateMessage = 'No data available',
   className = 'expandable-data-table-item',
+  rowClassNames = [],
 }: ExpandableDataTableProps<T>) => {
   if (error) {
     const formattedError = getFormattedError(error);
@@ -129,26 +132,59 @@ export const ExpandableDataTable = <T extends { id?: string }>({
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {tableRows.map((row) => {
+                    {tableRows.map((row, index) => {
                       const originalRow = dataTableRows.find(
                         (r) => r.id === row.id,
                       ) as T;
 
                       return (
                         <React.Fragment key={row.id}>
-                          <TableExpandRow
-                            {...getRowProps({ row })}
-                            key={generateId()}
-                          >
-                            {tableHeaders.map((header) => (
-                              <TableCell key={`cell-${generateId()}`}>
-                                {renderCell(originalRow, header.key)}
-                              </TableCell>
-                            ))}
-                          </TableExpandRow>
-                          <TableExpandedRow colSpan={tableHeaders.length + 1}>
-                            {renderExpandedContent(originalRow)}
-                          </TableExpandedRow>
+                          {!renderExpandedContent(originalRow) ? (
+                            <TableRow
+                              {...getRowProps({ row })}
+                              key={generateId()}
+                              style={{ width: '100%' }}
+                            >
+                              <TableCell />
+                              {tableHeaders.map((header) => (
+                                <TableCell
+                                  key={`cell-${generateId()}`}
+                                  className={
+                                    rowClassNames[index]
+                                      ? rowClassNames[index]
+                                      : undefined
+                                  }
+                                >
+                                  {renderCell(originalRow, header.key)}
+                                </TableCell>
+                              ))}
+                            </TableRow>
+                          ) : (
+                            <>
+                              <TableExpandRow
+                                {...getRowProps({ row })}
+                                key={generateId()}
+                              >
+                                {tableHeaders.map((header) => (
+                                  <TableCell
+                                    key={`cell-${generateId()}`}
+                                    className={
+                                      rowClassNames[index]
+                                        ? rowClassNames[index]
+                                        : undefined
+                                    }
+                                  >
+                                    {renderCell(originalRow, header.key)}
+                                  </TableCell>
+                                ))}
+                              </TableExpandRow>
+                              <TableExpandedRow
+                                colSpan={tableHeaders.length + 1}
+                              >
+                                {renderExpandedContent(originalRow)}
+                              </TableExpandedRow>
+                            </>
+                          )}
                         </React.Fragment>
                       );
                     })}
