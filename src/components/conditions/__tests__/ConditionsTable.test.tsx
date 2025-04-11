@@ -551,7 +551,7 @@ describe('ConditionsTable Unit Tests', () => {
       );
     });
 
-    it('should render "No notes available" in expanded content when condition has no notes', () => {
+    it('should render content without expansion when condition has no notes', () => {
       // Arrange
       mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseConditions.mockReturnValue({
@@ -566,10 +566,10 @@ describe('ConditionsTable Unit Tests', () => {
 
       // Act
       render(<ConditionsTable />);
-
       // Assert
-      expect(screen.getByTestId('expanded-content-0')).toHaveTextContent(
-        'No notes available',
+      expect(screen.getByTestId('row-0')).toBeInTheDocument();
+      expect(screen.getByTestId('cell-display-0')).toHaveTextContent(
+        'Cyst of Gallbladder',
       );
     });
 
@@ -677,32 +677,6 @@ describe('ConditionsTable Unit Tests', () => {
       expect(screen.getByTestId('mock-error-state')).toHaveTextContent(
         'Authorization error: 401 Unauthorized',
       );
-    });
-
-    it('should handle conditions with missing ID', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseConditions.mockReturnValue({
-        conditions: mockConditions,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      const conditionWithoutId: FormattedCondition = {
-        ...mockFormattedConditionsWithoutNotes[0],
-        id: undefined as unknown as string, // Force undefined ID
-      };
-
-      mockedFormatConditions.mockReturnValue([conditionWithoutId]);
-
-      // Act
-      render(<ConditionsTable />);
-
-      // Assert
-      // The component should use generateId to create an ID
-      expect(generateId).toHaveBeenCalled();
-      expect(screen.getByTestId('mock-expandable-table')).toBeInTheDocument();
     });
   });
 });

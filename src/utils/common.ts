@@ -82,3 +82,17 @@ export const getFormattedError = (
  * @returns {string} A random ID
  */
 export const generateId = () => Math.random().toString(36).substring(2, 9);
+
+/**
+ * Converts a string to capital case (e.g., 'foo bar' -> 'Foo Bar')
+ * @param input - The string to convert
+ * @param delimiters - Optional string of delimiter characters (default: " -", space and hyphen)
+ * @returns The string in capital case
+ */
+export function capitalize(input: string, delimiters: string = ' -'): string {
+  if (!input) return '';
+  const words = input.toLowerCase().split(new RegExp(`[${delimiters}]+`));
+  return words
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
