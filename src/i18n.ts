@@ -1,52 +1,61 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
+import { LOCALE_COOKIE_NAME } from './constants/i18n';
 
 const BASE_PATH = process.env.PUBLIC_URL || '/';
 
-// Pre-load translations for a specific language
-const loadMergedTranslations = async (lng: string) => {
+/**
+ * Fetches and merges translations from standard and local config sources
+ * @param lng Language code to fetch translations for
+ * @returns Merged translations object
+ */
+const fetchTranslations = async (lng: string): Promise<Record<string, string>> => {
+  const standardConfigUrl = `/bahmni_config/openmrs/i18n/home/locale_${lng}.json`;
+  const localConfigUrl = `${BASE_PATH}locales/locale_${lng}.json`;
+  
   try {
-    const standardConfigUrl = `/bahmni_config/openmrs/i18n/home/locale_${lng}.json`;
-    const localConfigUrl = `${BASE_PATH}locales/locale_${lng}.json`;
-    
+    // Fetch both sources in parallel and handle potential failures
     const [standardConfig, localConfig] = await Promise.all([
-      fetch(standardConfigUrl).then(res => res.json()).catch(() => ({})),
-      fetch(localConfigUrl).then(res => res.json()).catch(() => ({}))
+      fetch(standardConfigUrl)
+        .then(res => res.ok ? res.json() : {})
+        .catch(() => ({})),
+      fetch(localConfigUrl)
+        .then(res => res.ok ? res.json() : {})
+        .catch(() => ({}))
     ]);
     
-    return { ...localConfig, ...standardConfig }; // Local config overrides standard config
+    // Local config takes precedence over standard config
+    return { ...standardConfig, ...localConfig };
   } catch (error) {
     console.error(`Failed to load translations for ${lng}:`, error);
     return {};
   }
 };
 
-// Initialize i18n after loading translations for the default language
-const initializeI18n = async () => {
-  // Detect user language or use fallback
-  const detectedLng = localStorage.getItem('i18nextLng') || 
-                      document.cookie.replace(/(?:(?:^|.*;\s*)NG_TRANSLATE_LANG_KEY\s*=\s*([^;]*).*$)|^.*$/, '$1') || 
-                      navigator.language || 
-                      'en';
+/**
+ * Initialize i18n with pre-loaded translations
+ */
+const initI18n = async () => {
+  // Get language from cookie or use fallback
+  const cookieLng = document.cookie.replace(
+    /(?:(?:^|.*;\s*)NG_TRANSLATE_LANG_KEY\s*=\s*([^;]*).*$)|^.*$/, 
+    '$1'
+  );
   
-  const lng = detectedLng.split('-')[0]; // Get base language code
+  const lng = (cookieLng || 'en').split('-')[0]; // Get base language code
   
-  // Pre-load translations for detected language
-  const resources = {
-    [lng]: {
-      clinical: await loadMergedTranslations(lng)
-    }
+  // Pre-load translations
+  const translations = {
+    [lng]: { clinical: await fetchTranslations(lng) }
   };
   
-  // Also load English as fallback if not already loaded
+  // Also load English as fallback if needed
   if (lng !== 'en') {
-    resources.en = {
-      clinical: await loadMergedTranslations('en')
-    };
+    translations.en = { clinical: await fetchTranslations('en') };
   }
   
-  // Initialize i18next with pre-loaded resources
+  // Initialize i18next with pre-loaded translations
   await i18n
     .use(LanguageDetector)
     .use(initReactI18next)
@@ -55,10 +64,10 @@ const initializeI18n = async () => {
       debug: true,
       ns: ['clinical'],
       defaultNS: 'clinical',
-      resources, // Pre-loaded resources
+      resources: translations,
       detection: {
         order: ['cookie', 'localStorage', 'navigator', 'htmlTag'],
-        lookupCookie: 'NG_TRANSLATE_LANG_KEY',
+        lookupCookie: LOCALE_COOKIE_NAME,
         caches: ['cookie'],
         cookieOptions: {
           path: '/',
@@ -72,10 +81,12 @@ const initializeI18n = async () => {
         useSuspense: true,
       },
     });
-  
+    
   return i18n;
 };
 
-// Export the initialization function and i18n instance
+// Export the i18n instance for direct access
 export const i18nInstance = i18n;
-export default await initializeI18n();
+
+// Export the initialization promise as default
+export default await initI18n();

@@ -1,0 +1,1 @@
+export const LOCALE_COOKIE_NAME = "NG_TRANSLATE_LANG_KEY";
