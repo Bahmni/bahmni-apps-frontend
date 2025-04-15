@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Clinical Dashboard Configuration Schema",
+  "description": "Schema for global clinical dashboard configuration including patient information, actions and available dashboards",
+  "type": "object",
+  "required": ["patientInformation", "actions", "dashboards"],
+  "properties": {
+    "patientInformation": {
+      "type": "object",
+      "required": ["translationKey", "type"],
+      "properties": {
+        "translationKey": {
+          "type": "string",
+          "description": "Translation key for patient information title"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type identifier for patient information section"
+        }
+      }
+    },
+    "actions": {
+      "type": "array",
+      "description": "List of available actions",
+      "items": {
+        "type": "object"
+      }
+    },
+    "dashboards": {
+      "type": "array",
+      "description": "List of available dashboards",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "description", "url", "requiredPrivilege"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the dashboard"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name of the dashboard"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the dashboard purpose"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL to access the dashboard data"
+          },
+          "requiredPrivilege": {
+            "type": "string",
+            "description": "Permission required to access this dashboard"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  }
+}
