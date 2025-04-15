@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 
 // TODO: Extract this as a PatientDetails Display Control Component
 const PatientDetails: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const patientUUID: string | null = usePatientUUID();
   const { patient, loading, error } = usePatient(patientUUID);
 
