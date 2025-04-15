@@ -23,6 +23,7 @@ interface ExpandableDataTableProps<T> {
   tableTitle: string;
   rows: T[];
   headers: DataTableHeader[];
+  sortable?: boolean[];
   renderCell: (row: T, cellId: string) => React.ReactNode;
   renderExpandedContent: (row: T) => React.ReactNode;
   loading?: boolean;
@@ -37,6 +38,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
   tableTitle,
   rows,
   headers,
+  sortable = headers.map(() => true),
   renderCell,
   renderExpandedContent,
   loading = false,
@@ -103,7 +105,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
     <div className={className} data-testid="expandable-data-table">
       <Accordion>
         <AccordionItem title={tableTitle}>
-          <DataTable rows={dataTableRows} headers={headers} isSortable>
+          <DataTable rows={dataTableRows} headers={headers}>
             {({
               rows: tableRows,
               headers: tableHeaders,
@@ -121,9 +123,12 @@ export const ExpandableDataTable = <T extends { id?: string }>({
                   <TableHead>
                     <TableRow>
                       <TableExpandHeader />
-                      {tableHeaders.map((header) => (
+                      {tableHeaders.map((header, index) => (
                         <TableHeader
-                          {...getHeaderProps({ header })}
+                          {...getHeaderProps({
+                            header,
+                            isSortable: sortable[index] ?? false,
+                          })}
                           key={generateId()}
                         >
                           {header.header}
