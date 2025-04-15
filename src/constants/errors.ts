@@ -5,10 +5,9 @@ import i18next from 'i18next';
  * Used for consistent error handling across the application
  */
 export const CONFIG_ERROR_MESSAGES = {
+  CONFIG_NOT_FOUND: 'Configuration not found',
   VALIDATION_FAILED: 'Configuration validation failed',
   NO_DASHBOARDS: 'No dashboards found in configuration',
-  DEPARTMENT_FETCH_FAILED: (name: string) =>
-    `Failed to load ${name} configuration`,
   INVALID_CONFIG: 'Invalid configuration format',
   SCHEMA_VALIDATION_FAILED: 'Configuration does not match required schema',
 } as const;

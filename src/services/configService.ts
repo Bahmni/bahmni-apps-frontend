@@ -20,7 +20,7 @@ export const getConfig = async <T extends AppConfig>(
     // Fetch configuration from server
     const config = await fetchConfig<T>(configPath);
     if (!config) {
-      throw new Error(CONFIG_ERROR_MESSAGES.FETCH_FAILED);
+      throw new Error(CONFIG_ERROR_MESSAGES.CONFIG_NOT_FOUND);
     }
 
     // Validate configuration against schema
