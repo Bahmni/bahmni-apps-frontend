@@ -50,6 +50,15 @@ It is built on top of Carbon Design System's DataTable component and provides ad
       description: 'Column definitions',
       control: 'object',
     },
+    sortable: {
+      description:
+        'Array of boolean values indicating which columns are sortable',
+      control: 'object',
+      table: {
+        type: { summary: 'boolean[]' },
+        defaultValue: { summary: 'headers.map(() => true)' },
+      },
+    },
     renderCell: {
       description: 'Function to render cell content',
       control: false,
@@ -77,6 +86,14 @@ It is built on top of Carbon Design System's DataTable component and provides ad
     className: {
       description: 'Custom CSS class',
       control: 'text',
+    },
+    rowClassNames: {
+      description: 'Array of CSS class names to apply to specific rows',
+      control: 'object',
+      table: {
+        type: { summary: 'string[]' },
+        defaultValue: { summary: '[]' },
+      },
     },
   },
 };
@@ -1088,6 +1105,159 @@ export const WithCellStyling: Story = {
       description: {
         story:
           'Example showing how to use predefined cell styling classes (criticalCell, successCell, warningCell, alertCell) to highlight different types of content.',
+      },
+    },
+  },
+};
+
+// Sorting Configuration Examples
+export const DefaultSorting: Story = {
+  args: {
+    tableTitle: 'Default Sorting Table',
+    rows: mockItems,
+    headers: mockHeaders,
+    renderCell: defaultRenderCell,
+    renderExpandedContent: defaultRenderExpandedContent,
+    // No sortable prop provided - defaults to all columns being sortable
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Table with default sorting behavior where all columns are sortable. By default, when no sortable prop is provided, all columns are sortable. Users can click on any column header to sort the table by that column.',
+      },
+    },
+  },
+};
+
+export const CustomSortableColumns: Story = {
+  args: {
+    tableTitle: 'Custom Sortable Columns',
+    rows: mockItems,
+    headers: mockHeaders,
+    sortable: [true, false, true, false], // Only Name and Date columns are sortable
+    renderCell: defaultRenderCell,
+    renderExpandedContent: defaultRenderExpandedContent,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Table with custom sortable configuration. In this example, only the Name and Date columns are sortable (first and third columns), while Status and Count columns are not sortable (second and fourth columns). The sortable array maps directly to the headers array.',
+      },
+    },
+  },
+};
+
+export const SortableWithComplexData: Story = {
+  args: {
+    tableTitle: 'Product Inventory with Custom Sorting',
+    rows: mockHeadersWithProductInventoryExample,
+    headers: [
+      { key: 'name', header: 'Product Name' },
+      { key: 'category', header: 'Category' },
+      { key: 'price', header: 'Price' },
+      { key: 'stock', header: 'Stock' },
+      { key: 'lastUpdated', header: 'Last Updated' },
+    ],
+    sortable: [true, false, true, true, true], // Category column is not sortable
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    renderCell: (row: any, cellId: string) => {
+      const typedRow = row as MockItem;
+      switch (cellId) {
+        case 'name':
+          return typedRow.name;
+        case 'category':
+          return (
+            <Tag
+              type={
+                typedRow.category === 'Electronics'
+                  ? 'blue'
+                  : typedRow.category === 'Furniture'
+                    ? 'green'
+                    : 'gray'
+              }
+            >
+              {typedRow.category}
+            </Tag>
+          );
+        case 'price':
+          return typedRow.price ? `$${typedRow.price.toFixed(2)}` : 'N/A';
+        case 'stock':
+          if (typedRow.stock === undefined) return 'N/A';
+          return (
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <span style={{ marginRight: '0.5rem' }}>{typedRow.stock}</span>
+              {typedRow.stock < 15 ? (
+                <Tag type="red">Low</Tag>
+              ) : typedRow.stock < 30 ? (
+                <Tag type="magenta">Medium</Tag>
+              ) : (
+                <Tag type="green">High</Tag>
+              )}
+            </div>
+          );
+        case 'lastUpdated':
+          return typedRow.lastUpdated
+            ? new Date(typedRow.lastUpdated).toLocaleString()
+            : 'N/A';
+        default:
+          return null;
+      }
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    renderExpandedContent: (row: any) => {
+      const typedRow = row as MockItem;
+      return (
+        <div className="expanded-content" style={{ padding: '1rem' }}>
+          <h4>{typedRow.name} Details</h4>
+          <p>
+            <strong>Description:</strong> {typedRow.description || 'N/A'}
+          </p>
+          <h5>Specifications</h5>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+              gap: '1rem',
+            }}
+          >
+            {typedRow.specifications &&
+              Object.entries(typedRow.specifications).map(([key, value]) => (
+                <div key={key}>
+                  <strong>{key.charAt(0).toUpperCase() + key.slice(1)}:</strong>{' '}
+                  {value}
+                </div>
+              ))}
+          </div>
+        </div>
+      );
+    },
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Example of a table with complex data and custom sorting configuration. In this example, all columns except the Category column are sortable. This demonstrates how to make specific columns non-sortable in a real-world scenario.',
+      },
+    },
+  },
+};
+
+export const SortableEdgeCases: Story = {
+  args: {
+    tableTitle: 'Sortable Edge Cases',
+    rows: mockItems,
+    headers: mockHeaders,
+    sortable: [true], // Only the first column is sortable, array is shorter than headers
+    renderCell: defaultRenderCell,
+    renderExpandedContent: defaultRenderExpandedContent,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Table demonstrating edge cases for the sortable prop. In this example, the sortable array is shorter than the headers array, so only the first column (Name) is sortable. The remaining columns default to not being sortable. This shows how the component handles cases where the sortable array length does not match the headers array length.',
       },
     },
   },

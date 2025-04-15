@@ -19,14 +19,16 @@ const AllergiesTable: React.FC = () => {
   const headers = useMemo(
     () => [
       { key: 'display', header: 'Allergy' },
+      { key: 'severity', header: 'Severity' },
       { key: 'manifestation', header: 'Reaction(s)' },
       { key: 'status', header: 'Status' },
-      { key: 'severity', header: 'Severity' },
       { key: 'recorder', header: 'Provider' },
       { key: 'recordedDate', header: 'Recorded Date' },
     ],
     [],
   );
+
+  const sortable = useMemo(() => [true, false, false, true, true, true], []);
 
   // Format allergies for display
   const formattedAllergies = useMemo(() => {
@@ -96,6 +98,7 @@ const AllergiesTable: React.FC = () => {
         tableTitle="Allergies"
         rows={formattedAllergies}
         headers={headers}
+        sortable={sortable}
         renderCell={renderCell}
         renderExpandedContent={renderExpandedContent}
         loading={loading}

@@ -46,18 +46,20 @@ The ExpandableDataTable component accepts a generic type parameter `T` which rep
 
 ### Props
 
-| Prop                  | Type                                        | Description                                            | Required |
-| --------------------- | ------------------------------------------- | ------------------------------------------------------ | -------- |
-| tableTitle            | string                                      | Title for the table, displayed in the Accordion header | Yes      |
-| rows                  | T[]                                         | Array of data to display in the table                  | Yes      |
-| headers               | DataTableHeader[]                           | Column definitions for the table                       | Yes      |
-| renderCell            | (row: T, cellId: string) => React.ReactNode | Function to render the content of each cell            | Yes      |
-| renderExpandedContent | (row: T) => React.ReactNode                 | Function to render the content of expanded rows        | Yes      |
-| loading               | boolean                                     | Whether the table is in a loading state                | No       |
-| error                 | unknown                                     | Error object to display in the error state             | No       |
-| ariaLabel             | string                                      | Accessibility label for the table                      | No       |
-| emptyStateMessage     | string                                      | Message to display when there are no rows              | No       |
-| className             | string                                      | Custom CSS class for the component                     | No       |
+| Prop                  | Type                                        | Description                                                                           | Required |
+| --------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------- | -------- |
+| tableTitle            | string                                      | Title for the table, displayed in the Accordion header                                | Yes      |
+| rows                  | T[]                                         | Array of data to display in the table                                                 | Yes      |
+| headers               | DataTableHeader[]                           | Column definitions for the table                                                      | Yes      |
+| sortable              | boolean[]                                   | Array of boolean values indicating which columns are sortable. Maps to headers array. | No       |
+| renderCell            | (row: T, cellId: string) => React.ReactNode | Function to render the content of each cell                                           | Yes      |
+| renderExpandedContent | (row: T) => React.ReactNode                 | Function to render the content of expanded rows                                       | Yes      |
+| loading               | boolean                                     | Whether the table is in a loading state                                               | No       |
+| error                 | unknown                                     | Error object to display in the error state                                            | No       |
+| ariaLabel             | string                                      | Accessibility label for the table                                                     | No       |
+| emptyStateMessage     | string                                      | Message to display when there are no rows                                             | No       |
+| className             | string                                      | Custom CSS class for the component                                                    | No       |
+| rowClassNames         | string[]                                    | Array of CSS class names to apply to specific rows                                    | No       |
 
 ### Type Definitions
 
@@ -66,6 +68,7 @@ interface ExpandableDataTableProps<T> {
   tableTitle: string;
   rows: T[];
   headers: DataTableHeader[];
+  sortable?: boolean[];
   renderCell: (row: T, cellId: string) => React.ReactNode;
   renderExpandedContent: (row: T) => React.ReactNode;
   loading?: boolean;
@@ -73,6 +76,7 @@ interface ExpandableDataTableProps<T> {
   ariaLabel?: string;
   emptyStateMessage?: string;
   className?: string;
+  rowClassNames?: string[];
 }
 
 // Carbon Design System type
@@ -86,9 +90,87 @@ interface DataTableHeader {
 
 - `loading`: `false`
 - `error`: `null`
+- `sortable`: Defaults to all columns being sortable (`headers.map(() => true)`)
 - `ariaLabel`: Same as `tableTitle` if provided
 - `emptyStateMessage`: `'No data available'`
 - `className`: `'expandable-data-table-item'`
+- `rowClassNames`: `[]`
+
+## Sorting Configuration
+
+The ExpandableDataTable component provides built-in sorting functionality that can be configured using the `sortable` prop. This prop allows you to specify which columns should be sortable and which should not.
+
+### Default Sorting Behavior
+
+By default, all columns in the table are sortable. This means users can click on any column header to sort the table by that column in ascending or descending order.
+
+```tsx
+// All columns are sortable by default
+<ExpandableDataTable
+  tableTitle="Sample Table"
+  rows={data}
+  headers={headers}
+  renderCell={renderCell}
+  renderExpandedContent={renderExpandedContent}
+/>
+```
+
+### Configuring Sortable Columns
+
+You can customize which columns are sortable by providing a `sortable` array. This array should contain boolean values that map to each header in the `headers` array.
+
+```tsx
+const headers = [
+  { key: "name", header: "Name" },
+  { key: "status", header: "Status" },
+  { key: "date", header: "Date" },
+];
+
+// Only the Name and Date columns will be sortable
+const sortable = [true, false, true];
+
+<ExpandableDataTable
+  tableTitle="Sample Table"
+  rows={data}
+  headers={headers}
+  sortable={sortable}
+  renderCell={renderCell}
+  renderExpandedContent={renderExpandedContent}
+/>;
+```
+
+### Handling Edge Cases
+
+The component handles various edge cases gracefully:
+
+1. **Shorter sortable array**: If the `sortable` array is shorter than the `headers` array, the remaining columns will default to not being sortable.
+
+   ```tsx
+   // Only the Name column will be sortable, Status and Date will not be sortable
+   const sortable = [true];
+   ```
+
+2. **Longer sortable array**: If the `sortable` array is longer than the `headers` array, the extra values will be ignored.
+
+   ```tsx
+   // Only the first three values will be used, extra values are ignored
+   const sortable = [true, false, true, true, true];
+   ```
+
+3. **Empty sortable array**: If an empty array is provided, no columns will be sortable.
+
+   ```tsx
+   // No columns will be sortable
+   const sortable = [];
+   ```
+
+4. **Non-boolean values**: Non-boolean values in the `sortable` array will be coerced to boolean.
+
+   ```tsx
+   // Values will be coerced to boolean (truthy/falsy)
+   const sortable = [1, 0, "true"];
+   // Equivalent to [true, false, true]
+   ```
 
 ## States and Rendering
 
@@ -498,25 +580,25 @@ const renderRobustCell = (row: Item, cellId: string) => {
 
 The ExpandableDataTable provides several predefined CSS classes for styling individual cells, across a row:
 
-| Class Name     | Color Code | Use Case |
-|---------------|------------|-----------|
-| criticalCell  | #da1e28   | For highlighting critical or error values |
-| successCell   | #198038   | For highlighting successful or positive values |
-| warningCell   | #f1c21b   | For highlighting warning states |
-| alertCell     | #ff832b   | For highlighting items needing attention |
+| Class Name   | Color Code | Use Case                                       |
+| ------------ | ---------- | ---------------------------------------------- |
+| criticalCell | #da1e28    | For highlighting critical or error values      |
+| successCell  | #198038    | For highlighting successful or positive values |
+| warningCell  | #f1c21b    | For highlighting warning states                |
+| alertCell    | #ff832b    | For highlighting items needing attention       |
 
 ### Usage in renderCell
 
 ```tsx
 const renderCell = (row: Item, cellId: string) => {
   switch (cellId) {
-    case 'status':
+    case "status":
       return (
-        <div className={row.status === 'Critical' ? 'criticalCell' : ''}>
+        <div className={row.status === "Critical" ? "criticalCell" : ""}>
           {row.status}
         </div>
       );
-    case 'value':
+    case "value":
       if (row.value > threshold) {
         return <span className="alertCell">{row.value}</span>;
       }
@@ -531,11 +613,11 @@ You can combine these cell styles with Carbon Design System components:
 ```tsx
 const renderCell = (row: Item, cellId: string) => {
   switch (cellId) {
-    case 'status':
+    case "status":
       return (
-        <Tag 
-          type={row.status === 'Critical' ? 'red' : 'green'}
-          className={row.status === 'Critical' ? 'criticalCell' : ''}
+        <Tag
+          type={row.status === "Critical" ? "red" : "green"}
+          className={row.status === "Critical" ? "criticalCell" : ""}
         >
           {row.status}
         </Tag>
@@ -612,6 +694,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
   tableTitle,
   rows,
   headers,
+  sortable = headers.map(() => true),
   renderCell,
   renderExpandedContent,
   loading = false,
@@ -619,6 +702,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
   ariaLabel = tableTitle,
   emptyStateMessage = "No data available",
   className = "expandable-data-table-item",
+  rowClassNames = [],
 }: ExpandableDataTableProps<T>) => {
   // Component implementation
 };
@@ -631,6 +715,7 @@ interface ExpandableDataTableProps<T> {
   tableTitle: string;
   rows: T[];
   headers: DataTableHeader[];
+  sortable?: boolean[];
   renderCell: (row: T, cellId: string) => React.ReactNode;
   renderExpandedContent: (row: T) => React.ReactNode;
   loading?: boolean;
@@ -638,6 +723,7 @@ interface ExpandableDataTableProps<T> {
   ariaLabel?: string;
   emptyStateMessage?: string;
   className?: string;
+  rowClassNames?: string[];
 }
 ```
 

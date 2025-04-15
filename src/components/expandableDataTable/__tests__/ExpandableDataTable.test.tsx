@@ -217,6 +217,58 @@ describe('ExpandableDataTable', () => {
   });
 
   // Happy Path: Sorting Tests
+  it('should make all columns sortable by default', () => {
+    render(
+      <ExpandableDataTable
+        tableTitle="Test Table"
+        headers={mockHeaders}
+        rows={mockRows}
+        renderCell={renderCell}
+        renderExpandedContent={renderExpandedContent}
+      />,
+    );
+
+    // Get all header cells (excluding the expand header)
+    const headerCells = screen.getAllByRole('columnheader').slice(1);
+
+    // Verify that all headers have the aria-sort attribute (indicating they're sortable)
+    headerCells.forEach((header) => {
+      expect(header).toHaveAttribute('aria-sort', 'none');
+    });
+
+    // Verify all headers have the sortable button
+    headerCells.forEach((header) => {
+      expect(header.querySelector('button')).not.toBeNull();
+    });
+  });
+
+  it('should respect custom sortable array configuration', () => {
+    // Only make the first column sortable
+    const customSortable = [true, false, false];
+
+    render(
+      <ExpandableDataTable
+        tableTitle="Test Table"
+        headers={mockHeaders}
+        rows={mockRows}
+        renderCell={renderCell}
+        renderExpandedContent={renderExpandedContent}
+        sortable={customSortable}
+      />,
+    );
+
+    // Get all header cells (excluding the expand header)
+    const headerCells = screen.getAllByRole('columnheader').slice(1);
+
+    // First header should be sortable
+    expect(headerCells[0]).toHaveAttribute('aria-sort', 'none');
+    expect(headerCells[0].querySelector('button')).not.toBeNull();
+
+    // Second and third headers should not be sortable
+    expect(headerCells[1].querySelector('button')).toBeNull();
+    expect(headerCells[2].querySelector('button')).toBeNull();
+  });
+
   it('should sort rows when header is clicked', () => {
     render(
       <ExpandableDataTable
@@ -329,6 +381,115 @@ describe('ExpandableDataTable', () => {
     // Verify that the table still renders correctly
     expect(screen.getByText('Item 1')).toBeInTheDocument();
     expect(screen.getByText('Item 2')).toBeInTheDocument();
+  });
+
+  // Edge Cases for Sortable Prop
+  it('should handle sortable array shorter than headers array', () => {
+    // Only provide sortable value for first column
+    const shortSortable = [true];
+
+    render(
+      <ExpandableDataTable
+        tableTitle="Test Table"
+        headers={mockHeaders}
+        rows={mockRows}
+        renderCell={renderCell}
+        renderExpandedContent={renderExpandedContent}
+        sortable={shortSortable}
+      />,
+    );
+
+    // Get all header cells (excluding the expand header)
+    const headerCells = screen.getAllByRole('columnheader').slice(1);
+
+    // First header should be sortable
+    expect(headerCells[0]).toHaveAttribute('aria-sort', 'none');
+    expect(headerCells[0].querySelector('button')).not.toBeNull();
+
+    // Second and third headers should default to false (not sortable)
+    expect(headerCells[1].querySelector('button')).toBeNull();
+    expect(headerCells[2].querySelector('button')).toBeNull();
+  });
+
+  it('should handle sortable array longer than headers array', () => {
+    // Provide more sortable values than headers
+    const longSortable = [true, false, true, true, true];
+
+    render(
+      <ExpandableDataTable
+        tableTitle="Test Table"
+        headers={mockHeaders}
+        rows={mockRows}
+        renderCell={renderCell}
+        renderExpandedContent={renderExpandedContent}
+        sortable={longSortable}
+      />,
+    );
+
+    // Get all header cells (excluding the expand header)
+    const headerCells = screen.getAllByRole('columnheader').slice(1);
+
+    // Should use only the values needed and ignore extras
+    expect(headerCells[0]).toHaveAttribute('aria-sort', 'none'); // true
+    expect(headerCells[0].querySelector('button')).not.toBeNull();
+
+    expect(headerCells[1].querySelector('button')).toBeNull(); // false
+
+    expect(headerCells[2]).toHaveAttribute('aria-sort', 'none'); // true
+    expect(headerCells[2].querySelector('button')).not.toBeNull();
+  });
+
+  it('should handle non-boolean values in sortable array gracefully', () => {
+    // Create a sortable array with non-boolean values
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const invalidSortable = [1, 0, 'true'] as any;
+
+    render(
+      <ExpandableDataTable
+        tableTitle="Test Table"
+        headers={mockHeaders}
+        rows={mockRows}
+        renderCell={renderCell}
+        renderExpandedContent={renderExpandedContent}
+        sortable={invalidSortable}
+      />,
+    );
+
+    // Get all header cells (excluding the expand header)
+    const headerCells = screen.getAllByRole('columnheader').slice(1);
+
+    // Non-boolean values should be coerced to boolean
+    // 1 coerces to true
+    expect(headerCells[0]).toHaveAttribute('aria-sort', 'none');
+    expect(headerCells[0].querySelector('button')).not.toBeNull();
+
+    // 0 coerces to false
+    expect(headerCells[1].querySelector('button')).toBeNull();
+
+    // 'true' string coerces to true
+    expect(headerCells[2]).toHaveAttribute('aria-sort', 'none');
+    expect(headerCells[2].querySelector('button')).not.toBeNull();
+  });
+
+  it('should handle empty sortable array gracefully', () => {
+    render(
+      <ExpandableDataTable
+        tableTitle="Test Table"
+        headers={mockHeaders}
+        rows={mockRows}
+        renderCell={renderCell}
+        renderExpandedContent={renderExpandedContent}
+        sortable={[]}
+      />,
+    );
+
+    // Get all header cells (excluding the expand header)
+    const headerCells = screen.getAllByRole('columnheader').slice(1);
+
+    // All headers should default to not sortable when empty array provided
+    headerCells.forEach((header) => {
+      expect(header.querySelector('button')).toBeNull();
+    });
   });
 
   // Sad Path: Edge Cases & Failures
