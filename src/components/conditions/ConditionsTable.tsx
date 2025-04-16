@@ -6,6 +6,7 @@ import { useConditions } from '@hooks/useConditions';
 import { formatConditions } from '@services/conditionService';
 import { ConditionStatus, FormattedCondition } from '@types/condition';
 import { formatDate, formatDateTime } from '@utils/date';
+import { FormatDateResult } from '@types/date';
 
 /**
  * Maps condition status to appropriate tag type
@@ -58,12 +59,20 @@ const ConditionsTable: React.FC = () => {
             {condition.status}
           </Tag>
         );
-      case 'onsetDate':
-        return formatDate(condition.onsetDate || '');
+      case 'onsetDate': {
+        const onsetDate: FormatDateResult = formatDate(
+          condition.onsetDate || '',
+        );
+        return onsetDate.formattedResult || 'Not available';
+      }
       case 'recorder':
         return condition.recorder || 'Not available';
-      case 'recordedDate':
-        return formatDateTime(condition.recordedDate || '');
+      case 'recordedDate': {
+        const recordedDate: FormatDateResult = formatDateTime(
+          condition.recordedDate || '',
+        );
+        return recordedDate.formattedResult || 'Not available';
+      }
     }
   };
 
