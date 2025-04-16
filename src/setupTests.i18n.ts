@@ -1,11 +1,8 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-
+import enTranslations from '../public/locales/locale_en.json';
 
 const initTestI18n = () => {
-  // Load English translations synchronously for tests
-  const enTranslations = require('../public/locales/locale_en.json');
-  
   i18n
     .use(initReactI18next)
     .init({
