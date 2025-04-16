@@ -81,10 +81,10 @@ jest.mock('@components/expandableDataTable/ExpandableDataTable', () => ({
           </div>
         ) : null;
 
-        // Apply row class if provided
+        // Apply row class if provided - use row.id as key for rowClassNames
         const rowClass =
-          rowClassNames && rowClassNames[rowIndex]
-            ? rowClassNames[rowIndex]
+          rowClassNames && row.id && rowClassNames[row.id]
+            ? rowClassNames[row.id]
             : '';
 
         return (
@@ -791,12 +791,14 @@ describe('AllergiesTable Unit Tests', () => {
       // Create an allergy with severe reaction
       const allergyWithSevereReaction: FormattedAllergy = {
         ...mockFormattedAllergies[0],
+        id: 'allergy-123', // Ensure ID is set
         reactions: [
           {
             manifestation: ['Difficulty breathing'],
             severity: 'severe',
           },
         ],
+        severity: 'severe',
       };
 
       mockedFormatAllergies.mockReturnValue([allergyWithSevereReaction]);
@@ -860,6 +862,7 @@ describe('AllergiesTable Unit Tests', () => {
             severity: 'severe',
           },
         ],
+        severity: 'severe',
       };
 
       const allergyWithModerateReaction: FormattedAllergy = {
@@ -1109,6 +1112,7 @@ describe('AllergiesTable Unit Tests', () => {
             severity: 'severe',
           },
         ],
+        severity: 'severe',
       };
 
       mockedFormatAllergies.mockReturnValue([
