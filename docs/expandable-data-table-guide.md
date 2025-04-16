@@ -46,20 +46,20 @@ The ExpandableDataTable component accepts a generic type parameter `T` which rep
 
 ### Props
 
-| Prop                  | Type                                        | Description                                                                           | Required |
-| --------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------- | -------- |
-| tableTitle            | string                                      | Title for the table, displayed in the Accordion header                                | Yes      |
-| rows                  | T[]                                         | Array of data to display in the table                                                 | Yes      |
-| headers               | DataTableHeader[]                           | Column definitions for the table                                                      | Yes      |
-| sortable              | boolean[]                                   | Array of boolean values indicating which columns are sortable. Maps to headers array. | No       |
-| renderCell            | (row: T, cellId: string) => React.ReactNode | Function to render the content of each cell                                           | Yes      |
-| renderExpandedContent | (row: T) => React.ReactNode                 | Function to render the content of expanded rows                                       | Yes      |
-| loading               | boolean                                     | Whether the table is in a loading state                                               | No       |
-| error                 | unknown                                     | Error object to display in the error state                                            | No       |
-| ariaLabel             | string                                      | Accessibility label for the table                                                     | No       |
-| emptyStateMessage     | string                                      | Message to display when there are no rows                                             | No       |
-| className             | string                                      | Custom CSS class for the component                                                    | No       |
-| rowClassNames         | string[]                                    | Array of CSS class names to apply to specific rows                                    | No       |
+| Prop                  | Type                                          | Description                                                                           | Required |
+| --------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------- | -------- |
+| tableTitle            | string                                        | Title for the table, displayed in the Accordion header                                | Yes      |
+| rows                  | T[]                                           | Array of data to display in the table                                                 | Yes      |
+| headers               | DataTableHeader[]                             | Column definitions for the table                                                      | Yes      |
+| sortable              | boolean[]                                     | Array of boolean values indicating which columns are sortable. Maps to headers array. | No       |
+| renderCell            | (row: T, cellId: string) => React.ReactNode   | Function to render the content of each cell                                           | Yes      |
+| renderExpandedContent | (row: T) => React.ReactNode \| undefined      | Function to render the content of expanded rows                                       | Yes      |
+| loading               | boolean                                       | Whether the table is in a loading state                                               | No       |
+| error                 | unknown                                       | Error object to display in the error state                                            | No       |
+| ariaLabel             | string                                        | Accessibility label for the table                                                     | No       |
+| emptyStateMessage     | string                                        | Message to display when there are no rows                                             | No       |
+| className             | string                                        | Custom CSS class for the component                                                    | No       |
+| rowClassNames         | Record<string, string>                        | Object mapping row IDs to CSS class names to apply to specific rows                   | No       |
 
 ### Type Definitions
 
@@ -70,13 +70,13 @@ interface ExpandableDataTableProps<T> {
   headers: DataTableHeader[];
   sortable?: boolean[];
   renderCell: (row: T, cellId: string) => React.ReactNode;
-  renderExpandedContent: (row: T) => React.ReactNode;
+  renderExpandedContent: (row: T) => React.ReactNode | undefined;
   loading?: boolean;
   error?: unknown;
   ariaLabel?: string;
   emptyStateMessage?: string;
   className?: string;
-  rowClassNames?: string[];
+  rowClassNames?: Record<string, string>;
 }
 
 // Carbon Design System type
@@ -94,7 +94,43 @@ interface DataTableHeader {
 - `ariaLabel`: Same as `tableTitle` if provided
 - `emptyStateMessage`: `'No data available'`
 - `className`: `'expandable-data-table-item'`
-- `rowClassNames`: `[]`
+- `rowClassNames`: `{}`
+
+## Row Expansion Behavior
+
+The ExpandableDataTable component allows you to control which rows are expandable based on your data. This is done through the `renderExpandedContent` function.
+
+### Expandable vs Non-Expandable Rows
+
+- **Expandable Rows**: When `renderExpandedContent` returns valid JSX content for a row, that row will be rendered as an expandable row with an expand/collapse button.
+- **Non-Expandable Rows**: When `renderExpandedContent` returns `undefined` for a row, that row will be rendered as a regular row without an expand/collapse button.
+
+This allows you to mix expandable and non-expandable rows in the same table based on your data requirements.
+
+```tsx
+const renderExpandedContent = (row: Item) => {
+  // Only make rows with details expandable
+  if (!row.details || row.details.length === 0) {
+    return undefined; // This row will not be expandable
+  }
+  
+  // Return content for expandable rows
+  return (
+    <div style={{ padding: '1rem' }}>
+      <p>{row.details}</p>
+    </div>
+  );
+};
+```
+
+### Implementation Details
+
+Under the hood, the component uses different Carbon components based on whether a row is expandable:
+
+- **Expandable Rows**: Uses `TableExpandRow` and `TableExpandedRow` from Carbon Design System
+- **Non-Expandable Rows**: Uses regular `TableRow` from Carbon Design System
+
+This approach ensures that non-expandable rows don't have unnecessary expand/collapse buttons, providing a cleaner user interface.
 
 ## Sorting Configuration
 
@@ -171,6 +207,103 @@ The component handles various edge cases gracefully:
    const sortable = [1, 0, "true"];
    // Equivalent to [true, false, true]
    ```
+
+## Row Styling Options
+
+The ExpandableDataTable provides several ways to style rows based on your data:
+
+### Row-Level Styling with rowClassNames
+
+You can apply CSS classes to specific rows using the `rowClassNames` prop. This prop accepts an object where the keys are row IDs and the values are CSS class names.
+
+```tsx
+// Define row class names based on row IDs
+const rowClassNames = {
+  'row-1': 'criticalCell',
+  'row-3': 'warningCell',
+  'row-5': 'successCell'
+};
+
+// Use in component
+<ExpandableDataTable
+  // other props...
+  rowClassNames={rowClassNames}
+/>
+```
+
+### Dynamic Row Styling
+
+You can dynamically generate the `rowClassNames` object based on your data:
+
+```tsx
+// Generate row class names dynamically
+const rowClassNames = useMemo(() => {
+  const classNames: Record<string, string> = {};
+  
+  rows.forEach(row => {
+    if (row.id && row.status === 'Critical') {
+      classNames[row.id] = 'criticalCell';
+    } else if (row.id && row.status === 'Warning') {
+      classNames[row.id] = 'warningCell';
+    }
+  });
+  
+  return classNames;
+}, [rows]);
+```
+
+### Predefined CSS Classes
+
+The component provides several predefined CSS classes for styling rows:
+
+| Class Name   | Color Code | Use Case                                       |
+| ------------ | ---------- | ---------------------------------------------- |
+| criticalCell | #da1e28    | For highlighting critical or error values      |
+| successCell  | #198038    | For highlighting successful or positive values |
+| warningCell  | #f1c21b    | For highlighting warning states                |
+| alertCell    | #ff832b    | For highlighting items needing attention       |
+
+### Cell-Level Styling
+
+You can also apply styling at the cell level using the `renderCell` function:
+
+```tsx
+const renderCell = (row: Item, cellId: string) => {
+  switch (cellId) {
+    case "status":
+      return (
+        <div className={row.status === "Critical" ? "criticalCell" : ""}>
+          {row.status}
+        </div>
+      );
+    case "value":
+      if (row.value > threshold) {
+        return <span className="alertCell">{row.value}</span>;
+      }
+      return row.value;
+    // Other cases...
+  }
+};
+```
+
+You can combine these cell styles with Carbon Design System components:
+
+```tsx
+const renderCell = (row: Item, cellId: string) => {
+  switch (cellId) {
+    case "status":
+      return (
+        <Tag
+          type={row.status === "Critical" ? "red" : "green"}
+          className={row.status === "Critical" ? "criticalCell" : ""}
+        >
+          {row.status}
+        </Tag>
+      );
+    // Other cases...
+  }
+};
+```
 
 ## States and Rendering
 
@@ -321,6 +454,120 @@ const MyComponent: React.FC = () => {
       headers={headers}
       renderCell={renderCell}
       renderExpandedContent={renderExpandedContent}
+    />
+  );
+};
+```
+
+### Example with Conditional Expansion and Row Styling
+
+```tsx
+import React, { useMemo } from "react";
+import { ExpandableDataTable } from "@components/expandableDataTable/ExpandableDataTable";
+import { DataTableHeader, Tag } from "@carbon/react";
+
+// Define your data type
+interface Item {
+  id: string;
+  name: string;
+  status: "Active" | "Inactive" | "Critical";
+  date: string;
+  details?: string; // Optional details
+}
+
+// Sample data
+const items: Item[] = [
+  {
+    id: "1",
+    name: "Item 1",
+    status: "Critical",
+    date: "2025-03-15",
+    details: "This item requires immediate attention",
+  },
+  {
+    id: "2",
+    name: "Item 2",
+    status: "Active",
+    date: "2025-02-20",
+    // No details provided
+  },
+  {
+    id: "3",
+    name: "Item 3",
+    status: "Inactive",
+    date: "2025-01-10",
+    details: "This item is no longer active",
+  },
+];
+
+const MyConditionalTable: React.FC = () => {
+  // Generate row class names based on status
+  const rowClassNames = useMemo(() => {
+    const classNames: Record<string, string> = {};
+    
+    items.forEach(item => {
+      if (item.status === "Critical") {
+        classNames[item.id] = "criticalCell";
+      } else if (item.status === "Inactive") {
+        classNames[item.id] = "warningCell";
+      }
+    });
+    
+    return classNames;
+  }, [items]);
+  
+  // Define cell renderer
+  const renderCell = (row: Item, cellId: string) => {
+    switch (cellId) {
+      case "name":
+        return row.name;
+      case "status":
+        return (
+          <Tag
+            type={
+              row.status === "Active"
+                ? "green"
+                : row.status === "Critical"
+                  ? "red"
+                  : "gray"
+            }
+          >
+            {row.status}
+          </Tag>
+        );
+      case "date":
+        return row.date;
+      default:
+        return null;
+    }
+  };
+  
+  // Define conditional expanded content renderer
+  const renderExpandedContent = (row: Item) => {
+    // Only provide expanded content for rows with details
+    if (!row.details) {
+      return undefined; // This row will not be expandable
+    }
+    
+    return (
+      <div style={{ padding: "1rem" }}>
+        <p>{row.details}</p>
+      </div>
+    );
+  };
+  
+  return (
+    <ExpandableDataTable
+      tableTitle="Items with Conditional Expansion"
+      rows={items}
+      headers={[
+        { key: "name", header: "Name" },
+        { key: "status", header: "Status" },
+        { key: "date", header: "Date" },
+      ]}
+      renderCell={renderCell}
+      renderExpandedContent={renderExpandedContent}
+      rowClassNames={rowClassNames}
     />
   );
 };
@@ -576,57 +823,6 @@ const renderRobustCell = (row: Item, cellId: string) => {
 };
 ```
 
-### Cell Styling Options
-
-The ExpandableDataTable provides several predefined CSS classes for styling individual cells, across a row:
-
-| Class Name   | Color Code | Use Case                                       |
-| ------------ | ---------- | ---------------------------------------------- |
-| criticalCell | #da1e28    | For highlighting critical or error values      |
-| successCell  | #198038    | For highlighting successful or positive values |
-| warningCell  | #f1c21b    | For highlighting warning states                |
-| alertCell    | #ff832b    | For highlighting items needing attention       |
-
-### Usage in renderCell
-
-```tsx
-const renderCell = (row: Item, cellId: string) => {
-  switch (cellId) {
-    case "status":
-      return (
-        <div className={row.status === "Critical" ? "criticalCell" : ""}>
-          {row.status}
-        </div>
-      );
-    case "value":
-      if (row.value > threshold) {
-        return <span className="alertCell">{row.value}</span>;
-      }
-      return row.value;
-    // Other cases...
-  }
-};
-```
-
-You can combine these cell styles with Carbon Design System components:
-
-```tsx
-const renderCell = (row: Item, cellId: string) => {
-  switch (cellId) {
-    case "status":
-      return (
-        <Tag
-          type={row.status === "Critical" ? "red" : "green"}
-          className={row.status === "Critical" ? "criticalCell" : ""}
-        >
-          {row.status}
-        </Tag>
-      );
-    // Other cases...
-  }
-};
-```
-
 ### Data Formatting
 
 1. **Format dates consistently**: Use consistent date formatting throughout the application.
@@ -702,7 +898,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
   ariaLabel = tableTitle,
   emptyStateMessage = "No data available",
   className = "expandable-data-table-item",
-  rowClassNames = [],
+  rowClassNames = {},
 }: ExpandableDataTableProps<T>) => {
   // Component implementation
 };
@@ -717,13 +913,13 @@ interface ExpandableDataTableProps<T> {
   headers: DataTableHeader[];
   sortable?: boolean[];
   renderCell: (row: T, cellId: string) => React.ReactNode;
-  renderExpandedContent: (row: T) => React.ReactNode;
+  renderExpandedContent: (row: T) => React.ReactNode | undefined;
   loading?: boolean;
   error?: unknown;
   ariaLabel?: string;
   emptyStateMessage?: string;
   className?: string;
-  rowClassNames?: string[];
+  rowClassNames?: Record<string, string>;
 }
 ```
 

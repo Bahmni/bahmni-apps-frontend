@@ -31,7 +31,7 @@ interface ExpandableDataTableProps<T> {
   ariaLabel?: string;
   emptyStateMessage?: string;
   className?: string;
-  rowClassNames?: string[];
+  rowClassNames?: Record<string, string>;
 }
 
 export const ExpandableDataTable = <T extends { id?: string }>({
@@ -46,7 +46,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
   ariaLabel = tableTitle,
   emptyStateMessage = 'No data available',
   className = 'expandable-data-table-item',
-  rowClassNames = [],
+  rowClassNames = {},
 }: ExpandableDataTableProps<T>) => {
   if (error) {
     const formattedError = getFormattedError(error);
@@ -137,11 +137,10 @@ export const ExpandableDataTable = <T extends { id?: string }>({
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {tableRows.map((row, index) => {
+                    {tableRows.map((row) => {
                       const originalRow = dataTableRows.find(
                         (r) => r.id === row.id,
                       ) as T;
-
                       return (
                         <React.Fragment key={row.id}>
                           {!renderExpandedContent(originalRow) ? (
@@ -154,11 +153,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
                               {tableHeaders.map((header) => (
                                 <TableCell
                                   key={`cell-${generateId()}`}
-                                  className={
-                                    rowClassNames[index]
-                                      ? rowClassNames[index]
-                                      : undefined
-                                  }
+                                  className={rowClassNames[row.id]}
                                 >
                                   {renderCell(originalRow, header.key)}
                                 </TableCell>
@@ -173,11 +168,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
                                 {tableHeaders.map((header) => (
                                   <TableCell
                                     key={`cell-${generateId()}`}
-                                    className={
-                                      rowClassNames[index]
-                                        ? rowClassNames[index]
-                                        : undefined
-                                    }
+                                    className={rowClassNames[row.id]}
                                   >
                                     {renderCell(originalRow, header.key)}
                                   </TableCell>

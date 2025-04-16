@@ -38,11 +38,15 @@ const AllergiesTable: React.FC = () => {
 
   // Create row class names array for styling rows with severe allergies
   const rowClassNames = useMemo(() => {
-    return formattedAllergies.map((allergy) =>
-      allergy.reactions?.some((reaction) => reaction.severity === 'severe')
-        ? 'criticalCell'
-        : '',
-    );
+    const classNames: Record<string, string> = {};
+
+    formattedAllergies.forEach((allergy) => {
+      if (allergy.id && allergy.severity && allergy.severity === 'severe') {
+        classNames[allergy.id] = 'criticalCell';
+      }
+    });
+
+    return classNames;
   }, [formattedAllergies]);
 
   // Function to render cell content based on the cell ID
