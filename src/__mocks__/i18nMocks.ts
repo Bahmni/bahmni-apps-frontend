@@ -11,4 +11,3 @@ export const useTranslation = () => {
     i18n: i18n,
   };
 };
-

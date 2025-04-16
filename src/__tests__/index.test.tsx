@@ -25,7 +25,7 @@ jest.mock('../styles/index.scss', () => ({}));
 jest.mock('../i18n', () => ({
   __esModule: true,
   default: {},
-  i18nInstance: {}
+  i18nInstance: {},
 }));
 
 describe('Index', () => {
