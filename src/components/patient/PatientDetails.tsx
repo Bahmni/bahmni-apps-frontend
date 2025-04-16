@@ -43,7 +43,7 @@ const PatientDetails: React.FC = () => {
 
   const formattedAge =
     formattedPatient.age && formattedPatient.age.years !== undefined
-      ? `${formattedPatient.age.years} ${t('YEARS')}, ${formattedPatient.age.months} ${t('MONTHS')}, ${formattedPatient.age.days} ${t('DAYS')}`
+      ? `${formattedPatient.age.years} Years, ${formattedPatient.age.months} Months, ${formattedPatient.age.days} Days`
       : null;
 
   const details = [
