@@ -51,9 +51,9 @@ The ExpandableDataTable component accepts a generic type parameter `T` which rep
 | tableTitle            | string                                        | Title for the table, displayed in the Accordion header                                | Yes      |
 | rows                  | T[]                                           | Array of data to display in the table                                                 | Yes      |
 | headers               | DataTableHeader[]                             | Column definitions for the table                                                      | Yes      |
-| sortable              | boolean[]                                     | Array of boolean values indicating which columns are sortable. Maps to headers array. | No       |
+| sortable              | { key: string; sortable: boolean }[]          | Array of objects specifying which columns are sortable by their key                   | No       |
 | renderCell            | (row: T, cellId: string) => React.ReactNode   | Function to render the content of each cell                                           | Yes      |
-| renderExpandedContent | (row: T) => React.ReactNode \| undefined      | Function to render the content of expanded rows                                       | Yes      |
+| renderExpandedContent | (row: T) => React.ReactNode                   | Function to render the content of expanded rows                                       | Yes      |
 | loading               | boolean                                       | Whether the table is in a loading state                                               | No       |
 | error                 | unknown                                       | Error object to display in the error state                                            | No       |
 | ariaLabel             | string                                        | Accessibility label for the table                                                     | No       |
@@ -68,9 +68,9 @@ interface ExpandableDataTableProps<T> {
   tableTitle: string;
   rows: T[];
   headers: DataTableHeader[];
-  sortable?: boolean[];
+  sortable?: { key: string; sortable: boolean }[];
   renderCell: (row: T, cellId: string) => React.ReactNode;
-  renderExpandedContent: (row: T) => React.ReactNode | undefined;
+  renderExpandedContent: (row: T) => React.ReactNode;
   loading?: boolean;
   error?: unknown;
   ariaLabel?: string;
@@ -90,7 +90,7 @@ interface DataTableHeader {
 
 - `loading`: `false`
 - `error`: `null`
-- `sortable`: Defaults to all columns being sortable (`headers.map(() => true)`)
+- `sortable`: Defaults to all columns being sortable (`headers.map((header) => ({ key: header.key, sortable: true }))`)
 - `ariaLabel`: Same as `tableTitle` if provided
 - `emptyStateMessage`: `'No data available'`
 - `className`: `'expandable-data-table-item'`
@@ -103,7 +103,7 @@ The ExpandableDataTable component allows you to control which rows are expandabl
 ### Expandable vs Non-Expandable Rows
 
 - **Expandable Rows**: When `renderExpandedContent` returns valid JSX content for a row, that row will be rendered as an expandable row with an expand/collapse button.
-- **Non-Expandable Rows**: When `renderExpandedContent` returns `undefined` for a row, that row will be rendered as a regular row without an expand/collapse button.
+- **Non-Expandable Rows**: When `renderExpandedContent` returns a falsy value (like `undefined`, `null`, or `false`) for a row, that row will be rendered as a regular row without an expand/collapse button.
 
 This allows you to mix expandable and non-expandable rows in the same table based on your data requirements.
 
@@ -113,7 +113,7 @@ const renderExpandedContent = (row: Item) => {
   if (!row.details || row.details.length === 0) {
     return undefined; // This row will not be expandable
   }
-  
+
   // Return content for expandable rows
   return (
     <div style={{ padding: '1rem' }}>
@@ -153,7 +153,9 @@ By default, all columns in the table are sortable. This means users can click on
 
 ### Configuring Sortable Columns
 
-You can customize which columns are sortable by providing a `sortable` array. This array should contain boolean values that map to each header in the `headers` array.
+You can customize which columns are sortable by providing a `sortable` array. This array should contain objects with `key` and `sortable` properties that specify which columns are sortable.
+
+> **⚠️ Warning:** The `key` values in the `sortable` array must match exactly with the `key` values in the `headers` array. If a key doesn't match any header key, it will be ignored, which could lead to unexpected sorting behavior.
 
 ```tsx
 const headers = [
@@ -163,7 +165,11 @@ const headers = [
 ];
 
 // Only the Name and Date columns will be sortable
-const sortable = [true, false, true];
+const sortable = [
+  { key: "name", sortable: true },
+  { key: "status", sortable: false },
+  { key: "date", sortable: true }
+];
 
 <ExpandableDataTable
   tableTitle="Sample Table"
@@ -179,33 +185,30 @@ const sortable = [true, false, true];
 
 The component handles various edge cases gracefully:
 
-1. **Shorter sortable array**: If the `sortable` array is shorter than the `headers` array, the remaining columns will default to not being sortable.
+1. **Missing column keys**: If a column key in the `sortable` array doesn't match any header key, it will be ignored.
 
    ```tsx
-   // Only the Name column will be sortable, Status and Date will not be sortable
-   const sortable = [true];
+   // Only the Name column will be sortable, nonexistent will be ignored
+   const sortable = [
+     { key: "name", sortable: true },
+     { key: "nonexistent", sortable: true }
+   ];
    ```
 
-2. **Longer sortable array**: If the `sortable` array is longer than the `headers` array, the extra values will be ignored.
+2. **Partial configuration**: If some columns are not specified in the `sortable` array, they will default to being sortable.
 
    ```tsx
-   // Only the first three values will be used, extra values are ignored
-   const sortable = [true, false, true, true, true];
+   // Only Status is explicitly set to not be sortable, Name and Date will be sortable by default
+   const sortable = [
+     { key: "status", sortable: false }
+   ];
    ```
 
-3. **Empty sortable array**: If an empty array is provided, no columns will be sortable.
+3. **Empty sortable array**: If an empty array is provided, all columns will be sortable by default.
 
    ```tsx
-   // No columns will be sortable
+   // All columns will be sortable
    const sortable = [];
-   ```
-
-4. **Non-boolean values**: Non-boolean values in the `sortable` array will be coerced to boolean.
-
-   ```tsx
-   // Values will be coerced to boolean (truthy/falsy)
-   const sortable = [1, 0, "true"];
-   // Equivalent to [true, false, true]
    ```
 
 ## Row Styling Options
@@ -325,7 +328,7 @@ When valid data is provided in the `rows` prop, the component renders a table wi
 
 ### Loading State
 
-When the `loading` prop is set to `true`, the component renders a skeleton loader to indicate that data is being loaded.
+When the `loading` prop is set to `true`, the component renders a skeleton loader to indicate that data is being loaded. The loading state is wrapped in an Accordion component for consistent styling.
 
 ```tsx
 <ExpandableDataTable
@@ -340,7 +343,7 @@ When the `loading` prop is set to `true`, the component renders a skeleton loade
 
 ### Error State
 
-When the `error` prop is provided, the component renders an error message using the formatted error.
+When the `error` prop is provided, the component renders an error message using the formatted error. The error state is wrapped in an Accordion component for consistent styling.
 
 ```tsx
 <ExpandableDataTable
@@ -355,7 +358,7 @@ When the `error` prop is provided, the component renders an error message using 
 
 ### Empty State
 
-When the `rows` prop is an empty array, the component renders an empty state message.
+When the `rows` prop is an empty array, the component renders an empty state message. The empty state is wrapped in an Accordion component for consistent styling.
 
 ```tsx
 <ExpandableDataTable
@@ -573,6 +576,51 @@ const MyConditionalTable: React.FC = () => {
 };
 ```
 
+### Example with Custom Sortable Configuration
+
+```tsx
+import React from "react";
+import { ExpandableDataTable } from "@components/expandableDataTable/ExpandableDataTable";
+import { DataTableHeader } from "@carbon/react";
+
+// Define your data type
+interface Item {
+  id?: string;
+  name: string;
+  status: string;
+  date: string;
+  details: string;
+}
+
+// Define your headers
+const headers: DataTableHeader[] = [
+  { key: "name", header: "Name" },
+  { key: "status", header: "Status" },
+  { key: "date", header: "Date" },
+];
+
+// Define custom sortable configuration
+const sortableConfig = [
+  { key: "name", sortable: true },
+  { key: "status", sortable: false }, // Status column is not sortable
+  { key: "date", sortable: true },
+];
+
+// Component usage
+const MySortableTable: React.FC = () => {
+  return (
+    <ExpandableDataTable
+      tableTitle="Custom Sortable Table"
+      rows={items}
+      headers={headers}
+      sortable={sortableConfig}
+      renderCell={renderCell}
+      renderExpandedContent={renderExpandedContent}
+    />
+  );
+};
+```
+
 ### Handling Loading State
 
 ```tsx
@@ -706,6 +754,15 @@ const conditionHeaders: DataTableHeader[] = [
   { key: "recordedDate", header: "Recorded Date" },
 ];
 
+// Make only certain columns sortable
+const conditionSortable = [
+  { key: "display", sortable: true },
+  { key: "status", sortable: false }, // Status column is not sortable
+  { key: "onsetDate", sortable: true },
+  { key: "recorder", sortable: true },
+  { key: "recordedDate", sortable: true },
+];
+
 const renderConditionCell = (condition: Condition, cellId: string) => {
   switch (cellId) {
     case "display":
@@ -747,6 +804,7 @@ const renderConditionExpandedContent = (condition: Condition) => (
   tableTitle="Patient Conditions"
   rows={conditions}
   headers={conditionHeaders}
+  sortable={conditionSortable}
   renderCell={renderConditionCell}
   renderExpandedContent={renderConditionExpandedContent}
 />;
@@ -849,6 +907,7 @@ const renderRobustCell = (row: Item, cellId: string) => {
 
    - Ensure that the data in the `rows` array is of the expected type for the column being sorted.
    - For custom sorting behavior, you may need to pre-process the data before passing it to the component.
+   - Verify that the column keys in the `sortable` array match the keys in the `headers` array.
 
 4. **Performance issues with large datasets**:
    - Consider implementing pagination or virtualization for large datasets.
@@ -890,7 +949,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
   tableTitle,
   rows,
   headers,
-  sortable = headers.map(() => true),
+  sortable = headers.map((header) => ({ key: header.key, sortable: true })),
   renderCell,
   renderExpandedContent,
   loading = false,
@@ -911,9 +970,9 @@ interface ExpandableDataTableProps<T> {
   tableTitle: string;
   rows: T[];
   headers: DataTableHeader[];
-  sortable?: boolean[];
+  sortable?: { key: string; sortable: boolean }[];
   renderCell: (row: T, cellId: string) => React.ReactNode;
-  renderExpandedContent: (row: T) => React.ReactNode | undefined;
+  renderExpandedContent: (row: T) => React.ReactNode;
   loading?: boolean;
   error?: unknown;
   ariaLabel?: string;

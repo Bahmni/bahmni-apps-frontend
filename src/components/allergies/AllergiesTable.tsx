@@ -28,7 +28,17 @@ const AllergiesTable: React.FC = () => {
     [],
   );
 
-  const sortable = useMemo(() => [true, true, false, true, true, true], []);
+  const sortable = useMemo(
+    () => [
+      { key: 'display', sortable: true },
+      { key: 'severity', sortable: true },
+      { key: 'manifestation', sortable: false },
+      { key: 'status', sortable: true },
+      { key: 'recorder', sortable: true },
+      { key: 'recordedDate', sortable: true },
+    ],
+    [],
+  );
 
   // Format allergies for display
   const formattedAllergies = useMemo(() => {

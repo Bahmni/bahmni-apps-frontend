@@ -244,7 +244,11 @@ describe('ExpandableDataTable', () => {
 
   it('should respect custom sortable array configuration', () => {
     // Only make the first column sortable
-    const customSortable = [true, false, false];
+    const customSortable = [
+      { key: 'name', sortable: true },
+      { key: 'status', sortable: false },
+      { key: 'date', sortable: false },
+    ];
 
     render(
       <ExpandableDataTable
@@ -386,7 +390,7 @@ describe('ExpandableDataTable', () => {
   // Edge Cases for Sortable Prop
   it('should handle sortable array shorter than headers array', () => {
     // Only provide sortable value for first column
-    const shortSortable = [true];
+    const shortSortable = [{ key: 'name', sortable: true }];
 
     render(
       <ExpandableDataTable
@@ -413,7 +417,12 @@ describe('ExpandableDataTable', () => {
 
   it('should handle sortable array longer than headers array', () => {
     // Provide more sortable values than headers
-    const longSortable = [true, false, true, true, true];
+    const longSortable = [
+      { key: 'name', sortable: true },
+      { key: 'status', sortable: false },
+      { key: 'date', sortable: true },
+      { key: 'extra', sortable: true },
+    ];
 
     render(
       <ExpandableDataTable
@@ -436,38 +445,6 @@ describe('ExpandableDataTable', () => {
     expect(headerCells[1].querySelector('button')).toBeNull(); // false
 
     expect(headerCells[2]).toHaveAttribute('aria-sort', 'none'); // true
-    expect(headerCells[2].querySelector('button')).not.toBeNull();
-  });
-
-  it('should handle non-boolean values in sortable array gracefully', () => {
-    // Create a sortable array with non-boolean values
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const invalidSortable = [1, 0, 'true'] as any;
-
-    render(
-      <ExpandableDataTable
-        tableTitle="Test Table"
-        headers={mockHeaders}
-        rows={mockRows}
-        renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
-        sortable={invalidSortable}
-      />,
-    );
-
-    // Get all header cells (excluding the expand header)
-    const headerCells = screen.getAllByRole('columnheader').slice(1);
-
-    // Non-boolean values should be coerced to boolean
-    // 1 coerces to true
-    expect(headerCells[0]).toHaveAttribute('aria-sort', 'none');
-    expect(headerCells[0].querySelector('button')).not.toBeNull();
-
-    // 0 coerces to false
-    expect(headerCells[1].querySelector('button')).toBeNull();
-
-    // 'true' string coerces to true
-    expect(headerCells[2]).toHaveAttribute('aria-sort', 'none');
     expect(headerCells[2].querySelector('button')).not.toBeNull();
   });
 
