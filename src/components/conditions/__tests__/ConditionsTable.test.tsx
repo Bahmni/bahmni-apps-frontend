@@ -105,17 +105,19 @@ const mockedFormatConditions = formatConditions as jest.MockedFunction<
 const mockedFormatDateTime = formatDateTime as jest.MockedFunction<
   typeof formatDateTime
 >;
-const mockedFormatDate = formatDate as jest.MockedFunction<
-  typeof formatDateTime
->;
+const mockedFormatDate = formatDate as jest.MockedFunction<typeof formatDate>;
 const mockedGenerateId = generateId as jest.MockedFunction<typeof generateId>;
 
 describe('ConditionsTable Unit Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockedGenerateId.mockReturnValue('mock-id');
-    mockedFormatDateTime.mockImplementation((date) => `Formatted: ${date}`);
-    mockedFormatDate.mockImplementation((date) => `Formatted: ${date}`);
+    mockedFormatDateTime.mockImplementation((date) => ({
+      formattedResult: `Formatted: ${date}`,
+    }));
+    mockedFormatDate.mockImplementation((date) => ({
+      formattedResult: `Formatted: ${date}`,
+    }));
   });
 
   // 1. Component Initialization and Hook Interactions
