@@ -8,10 +8,10 @@ import {
   subMonths,
   format,
 } from 'date-fns';
-import { Age } from '@types/patient';
+import { Age } from '@types/age';
+import { FormatDateResult } from '@types/date';
 import { DATE_FORMAT, DATE_TIME_FORMAT } from '@constants/date';
-import notificationService from '@services/notificationService';
-import { getFormattedError } from './common';
+import { DATE_ERROR_MESSAGES } from '@constants/errors';
 
 /**
  * Calculates age based on a date string in the format yyyy-mm-dd
@@ -42,65 +42,106 @@ export function calculateAge(dateString: string): Age | null {
 }
 
 /**
+ * Interface for date parsing results
+ */
+interface DateParseResult {
+  date: Date | null;
+  error?: {
+    title: string;
+    message: string;
+  };
+}
+
+/**
  * Safely parses a date string into a Date object.
  * @param dateString - The date string to parse.
- * @returns A Date object if the parsing is successful, or null if the input is invalid or empty.
+ * @returns A DateParseResult object containing either a valid Date or an error.
  */
-function safeParseDate(dateString: string): Date | null {
+function safeParseDate(dateString: string): DateParseResult {
   if (!dateString?.trim()) {
-    const { title, message } = getFormattedError(
-      new Error('Date string is empty or invalid'),
-    );
-    notificationService.showError(title, message);
-    return null;
+    return {
+      date: null,
+      error: {
+        title: DATE_ERROR_MESSAGES.PARSE_ERROR,
+        message: DATE_ERROR_MESSAGES.EMPTY_OR_INVALID,
+      },
+    };
   }
   const parsedDate = parseISO(dateString);
   if (!isValid(parsedDate)) {
-    const { title, message } = getFormattedError(
-      new Error(`Invalid date format: ${dateString}`),
-    );
-    notificationService.showError(title, message);
-    return null;
+    return {
+      date: null,
+      error: {
+        title: DATE_ERROR_MESSAGES.PARSE_ERROR,
+        message: DATE_ERROR_MESSAGES.INVALID_FORMAT,
+      },
+    };
   }
-  return parsedDate;
+  return { date: parsedDate };
 }
 
 /**
  * Formats a date string or Date object into the specified date format.
  * @param date - The date string or Date object to format.
  * @param dateFormat - The date format to use (e.g., 'yyyy-MM-dd', 'dd/MM/yyyy').
- * @returns A formatted date string or an empty string if the input is invalid.
+ * @returns A FormatDateResult object containing either a formatted date string or an error.
  */
 function formatDateGeneric(
   date: string | Date | number,
   dateFormat: string,
-): string {
-  const parsedDate =
-    typeof date === 'string' ? safeParseDate(date) : new Date(date);
-  if (!isValid(parsedDate) || !parsedDate) {
-    const { title, message: errorMessage } = getFormattedError(
-      new Error(`Invalid date format: ${date}`),
-    );
-    notificationService.showError(title, errorMessage);
-    return '';
+): FormatDateResult {
+  if (date === null || date === undefined) {
+    return {
+      formattedResult: '',
+      error: {
+        title: DATE_ERROR_MESSAGES.FORMAT_ERROR,
+        message: DATE_ERROR_MESSAGES.NULL_OR_UNDEFINED,
+      },
+    };
   }
-  return format(parsedDate, dateFormat);
+
+  let dateToFormat: Date | null;
+
+  if (typeof date === 'string') {
+    const parseResult = safeParseDate(date);
+    if (parseResult.error) {
+      return {
+        formattedResult: '',
+        error: parseResult.error,
+      };
+    }
+    dateToFormat = parseResult.date;
+  } else {
+    dateToFormat = new Date(date);
+  }
+
+  if (!isValid(dateToFormat) || !dateToFormat) {
+    return {
+      formattedResult: '',
+      error: {
+        title: DATE_ERROR_MESSAGES.PARSE_ERROR,
+        message: DATE_ERROR_MESSAGES.INVALID_FORMAT,
+      },
+    };
+  }
+
+  return { formattedResult: format(dateToFormat, dateFormat) };
 }
 
 /**
- * Formats a date string or Date object into the specified date format.
+ * Formats a date string or Date object into the specified date time format.
  * @param date - The date string or Date object to format.
- * @returns A formatted date string or an empty string if the input is invalid.
+ * @returns A FormatDateResult object containing either a formatted date string or an error.
  */
-export function formatDateTime(date: string | Date | number): string {
+export function formatDateTime(date: string | Date | number): FormatDateResult {
   return formatDateGeneric(date, DATE_TIME_FORMAT);
 }
 
 /**
  * Formats a date string or Date object into the specified date format.
  * @param date - The date string or Date object to format.
- * @returns A formatted date string or an empty string if the input is invalid.
+ * @returns A FormatDateResult object containing either a formatted date string or an error.
  */
-export function formatDate(date: string | Date | number): string {
+export function formatDate(date: string | Date | number): FormatDateResult {
   return formatDateGeneric(date, DATE_FORMAT);
 }

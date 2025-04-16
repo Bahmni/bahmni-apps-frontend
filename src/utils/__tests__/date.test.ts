@@ -1,6 +1,7 @@
 import { format, parseISO } from 'date-fns';
 import { calculateAge, formatDate, formatDateTime } from '../date';
 import { DATE_FORMAT, DATE_TIME_FORMAT } from '@constants/date';
+import { DATE_ERROR_MESSAGES } from '@constants/errors';
 
 jest.mock('@utils/common', () => ({
   generateId: jest.fn().mockReturnValue('generated-id'),
@@ -170,18 +171,49 @@ describe('Date Utility Functions', () => {
     it('should return a formatted date string for a valid Date object', () => {
       const date = new Date(2024, 2, 28); // March 28, 2024
       const formatted = formatDate(date);
-      expect(formatted).toBe(format(date, DATE_FORMAT));
+      expect(formatted.formattedResult).toBe(format(date, DATE_FORMAT));
+      expect(formatted.error).toBeUndefined();
     });
 
     it('should return a formatted date string for a valid date string', () => {
       const dateString = '2024-03-28';
       const formatted = formatDate(dateString);
-      expect(formatted).toBe(format(parseISO(dateString), DATE_FORMAT));
+      expect(formatted.formattedResult).toBe(
+        format(parseISO(dateString), DATE_FORMAT),
+      );
+      expect(formatted.error).toBeUndefined();
     });
 
-    it('should return an empty string and log an error for an invalid date string', () => {
+    it('should return an empty string and error object for an invalid date string', () => {
       const formatted = formatDate('invalid-date');
-      expect(formatted).toBe('');
+      expect(formatted.formattedResult).toBe('');
+      expect(formatted.error).toBeDefined();
+      expect(formatted.error?.title).toBe(DATE_ERROR_MESSAGES.PARSE_ERROR);
+      expect(formatted.error?.message).toBe(DATE_ERROR_MESSAGES.INVALID_FORMAT);
+    });
+
+    it('should handle empty string input', () => {
+      const formatted = formatDate('');
+      expect(formatted.formattedResult).toBe('');
+      expect(formatted.error).toBeDefined();
+      expect(formatted.error?.title).toBe(DATE_ERROR_MESSAGES.PARSE_ERROR);
+      expect(formatted.error?.message).toBe(
+        DATE_ERROR_MESSAGES.EMPTY_OR_INVALID,
+      );
+    });
+
+    it('should handle null input', () => {
+      /* eslint-disable  @typescript-eslint/no-explicit-any */
+      const formatted = formatDate(null as any);
+      expect(formatted.formattedResult).toBe('');
+      expect(formatted.error).toBeDefined();
+    });
+
+    it('should handle timestamp input', () => {
+      const timestamp = new Date(2024, 2, 28).getTime();
+      const formatted = formatDate(timestamp);
+      expect(formatted.formattedResult).toBe('28/03/2024');
+      expect(formatted.error).toBeUndefined();
     });
   });
 
@@ -189,13 +221,56 @@ describe('Date Utility Functions', () => {
     it('should return a formatted date-time string for a valid Date object', () => {
       const date = new Date(2024, 2, 28, 12, 30); // March 28, 2024, 12:30 PM
       const formatted = formatDateTime(date);
-      expect(formatted).toBe(format(date, DATE_TIME_FORMAT));
+      expect(formatted.formattedResult).toBe(format(date, DATE_TIME_FORMAT));
+      expect(formatted.error).toBeUndefined();
     });
 
     it('should return a formatted date-time string for a valid date string', () => {
       const dateString = '2024-03-28T12:30:00Z';
       const formatted = formatDateTime(dateString);
-      expect(formatted).toBe(format(parseISO(dateString), DATE_TIME_FORMAT));
+      expect(formatted.formattedResult).toBe(
+        format(parseISO(dateString), DATE_TIME_FORMAT),
+      );
+      expect(formatted.error).toBeUndefined();
+    });
+
+    it('should return an empty string and error object for an invalid date string', () => {
+      const formatted = formatDateTime('invalid-date');
+      expect(formatted.formattedResult).toBe('');
+      expect(formatted.error).toBeDefined();
+      expect(formatted.error?.title).toBe(DATE_ERROR_MESSAGES.PARSE_ERROR);
+      expect(formatted.error?.message).toBe(DATE_ERROR_MESSAGES.INVALID_FORMAT);
+    });
+
+    it('should handle empty string input', () => {
+      const formatted = formatDateTime('');
+      expect(formatted.formattedResult).toBe('');
+      expect(formatted.error).toBeDefined();
+      expect(formatted.error?.title).toBe(DATE_ERROR_MESSAGES.PARSE_ERROR);
+      expect(formatted.error?.message).toBe(
+        DATE_ERROR_MESSAGES.EMPTY_OR_INVALID,
+      );
+    });
+
+    it('should handle null input', () => {
+      /* eslint-disable  @typescript-eslint/no-explicit-any */
+      const formatted = formatDateTime(null as any);
+      expect(formatted.formattedResult).toBe('');
+      expect(formatted.error).toBeDefined();
+    });
+
+    it('should handle timestamp input', () => {
+      const timestamp = new Date(2024, 2, 28, 12, 30).getTime();
+      const formatted = formatDateTime(timestamp);
+      expect(formatted.formattedResult).toBe('28/03/2024 12:30');
+      expect(formatted.error).toBeUndefined();
+    });
+
+    it('should handle invalid input', () => {
+      /* eslint-disable  @typescript-eslint/no-explicit-any */
+      const formatted = formatDateTime({} as any);
+      expect(formatted.formattedResult).toBe('');
+      expect(formatted.error).toBeDefined();
     });
   });
 });
