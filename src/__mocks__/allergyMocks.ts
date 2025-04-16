@@ -219,3 +219,168 @@ export const mockAllergyWithEmptyNotes: FhirAllergyIntolerance = {
   id: 'allergy-empty-notes',
   note: [],
 };
+
+/**
+ * Mock allergy with multiple categories
+ */
+export const mockAllergyWithMultipleCategories: FhirAllergyIntolerance = {
+  ...mockAllergyIntolerance,
+  id: 'allergy-multiple-categories',
+  category: ['food', 'medication', 'environment'],
+};
+
+/**
+ * Mock allergy with different criticality levels
+ */
+export const mockAllergyWithHighCriticality: FhirAllergyIntolerance = {
+  ...mockAllergyIntolerance,
+  id: 'allergy-high-criticality',
+  criticality: 'high',
+};
+
+export const mockAllergyWithLowCriticality: FhirAllergyIntolerance = {
+  ...mockAllergyIntolerance,
+  id: 'allergy-low-criticality',
+  criticality: 'low',
+};
+
+/**
+ * Mock allergy with specific type
+ */
+export const mockAllergyWithType: FhirAllergyIntolerance = {
+  ...mockAllergyIntolerance,
+  id: 'allergy-with-type',
+  type: 'allergy',
+};
+
+export const mockIntoleranceWithType: FhirAllergyIntolerance = {
+  ...mockAllergyIntolerance,
+  id: 'intolerance-with-type',
+  type: 'intolerance',
+};
+
+/**
+ * Mock allergy with inactive status
+ */
+export const mockInactiveAllergy: FhirAllergyIntolerance = {
+  ...mockAllergyIntolerance,
+  id: 'inactive-allergy',
+  clinicalStatus: {
+    coding: [
+      {
+        system:
+          'http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical',
+        code: 'inactive',
+        display: 'Inactive',
+      },
+    ],
+  },
+};
+
+/**
+ * Mock malformed FHIR bundle
+ */
+export const mockMalformedFhirBundle = {
+  resourceType: 'Bundle',
+  id: 'malformed-bundle',
+  meta: {
+    lastUpdated: '2023-01-01T12:00:00Z',
+  },
+  // Missing required fields like type, total, link
+} as unknown as FhirAllergyIntoleranceBundle;
+
+/**
+ * Mock bundle with invalid entry structure
+ */
+export const mockBundleWithInvalidEntry: FhirAllergyIntoleranceBundle = {
+  resourceType: 'Bundle',
+  id: 'bundle-invalid-entry',
+  meta: {
+    lastUpdated: '2023-01-01T12:00:00Z',
+  },
+  type: 'searchset',
+  total: 1,
+  link: [
+    {
+      relation: 'self',
+      url: 'http://example.org/fhir/AllergyIntolerance?patient=patient-123',
+    },
+  ],
+  entry: [
+    {
+      fullUrl: 'http://example.org/fhir/AllergyIntolerance/incomplete-resource',
+      resource: {
+        // Incomplete resource
+        resourceType: 'AllergyIntolerance',
+        id: 'incomplete-resource',
+      } as unknown as FhirAllergyIntolerance,
+    },
+  ],
+};
+
+/**
+ * Mock allergy with invalid coding array
+ */
+export const mockAllergyWithInvalidCoding: FhirAllergyIntolerance = {
+  ...mockAllergyIntolerance,
+  id: 'allergy-invalid-coding',
+  clinicalStatus: {
+    coding: [], // Empty coding array
+  },
+  code: {
+    coding: [], // Empty coding array
+    text: 'Allergy with invalid coding',
+  },
+};
+
+/**
+ * Mock allergy with multiple reactions of different severities
+ */
+export const mockAllergyWithMultipleSeverities: FhirAllergyIntolerance = {
+  ...mockAllergyIntolerance,
+  id: 'allergy-multiple-severities',
+  reaction: [
+    {
+      manifestation: [
+        {
+          coding: [
+            {
+              system: 'http://snomed.info/sct',
+              code: '247472004',
+              display: 'Hives',
+            },
+          ],
+        },
+      ],
+      severity: 'mild',
+    },
+    {
+      manifestation: [
+        {
+          coding: [
+            {
+              system: 'http://snomed.info/sct',
+              code: '267036007',
+              display: 'Difficulty breathing',
+            },
+          ],
+        },
+      ],
+      severity: 'severe',
+    },
+    {
+      manifestation: [
+        {
+          coding: [
+            {
+              system: 'http://snomed.info/sct',
+              code: '39579001',
+              display: 'Anaphylaxis',
+            },
+          ],
+        },
+      ],
+      severity: 'severe',
+    },
+  ],
+};

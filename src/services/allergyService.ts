@@ -50,7 +50,7 @@ export function formatAllergies(
   try {
     return allergies.map((allergy) => {
       const status = allergy.clinicalStatus.coding[0]?.display || 'Unknown';
-
+      const allergySeverity = allergy.reaction?.[0]?.severity || 'Unknown';
       return {
         id: allergy.id,
         display: allergy.code.text,
@@ -65,6 +65,7 @@ export function formatAllergies(
           ),
           severity: reaction.severity,
         })),
+        severity: allergySeverity,
         note: allergy.note?.map((note) => note.text),
       };
     });
