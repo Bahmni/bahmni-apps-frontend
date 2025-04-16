@@ -248,7 +248,7 @@ describe('ConditionsTable Unit Tests', () => {
 
       // Assert
       expect(screen.getByTestId('mock-empty-state')).toBeInTheDocument();
-      expect(screen.getByText('No conditions found')).toBeInTheDocument();
+      expect(screen.getByText('No Conditions available')).toBeInTheDocument();
     });
 
     it('should render table with correct headers', () => {

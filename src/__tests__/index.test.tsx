@@ -21,6 +21,13 @@ jest.mock('../App', () => jest.fn(() => <div>App Component</div>));
 // Mock styles import
 jest.mock('../styles/index.scss', () => ({}));
 
+// Mock i18n
+jest.mock('../i18n', () => ({
+  __esModule: true,
+  default: {},
+  i18nInstance: {}
+}));
+
 describe('Index', () => {
   let originalConsoleError: typeof console.error;
   let originalEnv: NodeJS.ProcessEnv;
