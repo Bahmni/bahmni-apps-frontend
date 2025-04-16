@@ -94,5 +94,6 @@ export interface FormattedAllergy {
     readonly manifestation: string[];
     readonly severity?: string;
   }>;
+  readonly severity?: string;
   readonly note?: string[];
 }

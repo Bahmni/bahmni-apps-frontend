@@ -4,7 +4,16 @@ import AllergiesTable from '../AllergiesTable';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import { useAllergies } from '@hooks/useAllergies';
 import { formatAllergies } from '@services/allergyService';
-import { mockAllergyIntolerance } from '@__mocks__/allergyMocks';
+import {
+  mockAllergyIntolerance,
+  mockAllergyWithMultipleCategories,
+  mockAllergyWithType,
+  mockIntoleranceWithType,
+  mockAllergyWithHighCriticality,
+  mockAllergyWithLowCriticality,
+  mockInactiveAllergy,
+  mockAllergyWithMultipleSeverities,
+} from '@__mocks__/allergyMocks';
 import { FhirAllergyIntolerance, FormattedAllergy } from '@types/allergy';
 import * as common from '@utils/common';
 
@@ -45,6 +54,7 @@ const mockFormattedAllergies: FormattedAllergy[] = [
         severity: 'moderate',
       },
     ],
+    severity: 'moderate',
   },
 ];
 
@@ -61,13 +71,14 @@ const mockMultipleAllergies: FormattedAllergy[] = [
     reactions: [
       {
         manifestation: ['Rash', 'Swelling'],
-        severity: 'moderate',
+        severity: 'severe',
       },
       {
         manifestation: ['Difficulty breathing'],
         severity: 'severe',
       },
     ],
+    severity: 'severe',
   },
   {
     id: 'allergy-789',
@@ -83,6 +94,7 @@ const mockMultipleAllergies: FormattedAllergy[] = [
         severity: 'mild',
       },
     ],
+    severity: 'mild',
   },
 ];
 
@@ -236,7 +248,7 @@ describe('AllergiesTable Integration', () => {
 
       // Verify severity levels are displayed correctly
       expect(screen.getByText('Moderate')).toBeInTheDocument();
-      expect(screen.getByText('Moderate, Severe')).toBeInTheDocument();
+      expect(screen.getByText('Severe')).toBeInTheDocument();
       expect(screen.getByText('Mild')).toBeInTheDocument();
     });
   });
@@ -277,8 +289,242 @@ describe('AllergiesTable Integration', () => {
     });
   });
 
+  // New Field Tests
+  describe('New Field Tests', () => {
+    it('should handle allergy type field correctly', () => {
+      // Mock the hooks
+      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+      mockedUseAllergies.mockReturnValue({
+        allergies: [mockAllergyWithType],
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      const formattedAllergyWithType: FormattedAllergy = {
+        ...mockFormattedAllergies[0],
+        id: 'allergy-with-type',
+      };
+
+      mockedFormatAllergies.mockReturnValue([formattedAllergyWithType]);
+
+      render(<AllergiesTable />);
+
+      // Verify the allergy is displayed correctly
+      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
+      expect(screen.getByText('Active')).toBeInTheDocument();
+    });
+
+    it('should handle intolerance type field correctly', () => {
+      // Mock the hooks
+      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+      mockedUseAllergies.mockReturnValue({
+        allergies: [mockIntoleranceWithType],
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      const formattedIntoleranceWithType: FormattedAllergy = {
+        ...mockFormattedAllergies[0],
+        id: 'intolerance-with-type',
+      };
+
+      mockedFormatAllergies.mockReturnValue([formattedIntoleranceWithType]);
+
+      render(<AllergiesTable />);
+
+      // Verify the intolerance is displayed correctly
+      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
+      expect(screen.getByText('Active')).toBeInTheDocument();
+    });
+
+    it('should handle multiple categories correctly', () => {
+      // Mock the hooks
+      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+      mockedUseAllergies.mockReturnValue({
+        allergies: [mockAllergyWithMultipleCategories],
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      const formattedAllergyWithMultipleCategories: FormattedAllergy = {
+        ...mockFormattedAllergies[0],
+        id: 'allergy-multiple-categories',
+        category: ['food', 'medication', 'environment'],
+      };
+
+      mockedFormatAllergies.mockReturnValue([
+        formattedAllergyWithMultipleCategories,
+      ]);
+
+      render(<AllergiesTable />);
+
+      // Verify the allergy with multiple categories is displayed correctly
+      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
+      expect(screen.getByText('Active')).toBeInTheDocument();
+    });
+
+    it('should handle criticality levels correctly', () => {
+      // Mock the hooks
+      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+      mockedUseAllergies.mockReturnValue({
+        allergies: [
+          mockAllergyWithHighCriticality,
+          mockAllergyWithLowCriticality,
+        ],
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      const formattedAllergiesWithCriticality: FormattedAllergy[] = [
+        {
+          ...mockFormattedAllergies[0],
+          id: 'allergy-high-criticality',
+          criticality: 'high',
+        },
+        {
+          ...mockFormattedAllergies[0],
+          id: 'allergy-low-criticality',
+          criticality: 'low',
+          display: 'Low Criticality Allergy',
+        },
+      ];
+
+      mockedFormatAllergies.mockReturnValue(formattedAllergiesWithCriticality);
+
+      render(<AllergiesTable />);
+
+      // Verify both allergies are displayed correctly
+      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
+      expect(screen.getByText('Low Criticality Allergy')).toBeInTheDocument();
+      expect(screen.getAllByText('Active').length).toBe(2);
+    });
+
+    it('should handle multiple reactions with different severities correctly', () => {
+      // Mock the hooks
+      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+      mockedUseAllergies.mockReturnValue({
+        allergies: [mockAllergyWithMultipleSeverities],
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      const formattedAllergyWithMultipleSeverities: FormattedAllergy = {
+        ...mockFormattedAllergies[0],
+        id: 'allergy-multiple-severities',
+        reactions: [
+          {
+            manifestation: ['Hives'],
+            severity: 'mild',
+          },
+          {
+            manifestation: ['Difficulty breathing'],
+            severity: 'severe',
+          },
+          {
+            manifestation: ['Anaphylaxis'],
+            severity: 'severe',
+          },
+        ],
+      };
+
+      mockedFormatAllergies.mockReturnValue([
+        formattedAllergyWithMultipleSeverities,
+      ]);
+
+      render(<AllergiesTable />);
+
+      // Verify the allergy with multiple severities is displayed correctly
+      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
+      expect(
+        screen.getByText('Hives, Difficulty breathing, Anaphylaxis'),
+      ).toBeInTheDocument();
+    });
+  });
+
   // Edge Cases
   describe('Edge Cases', () => {
+    it('should handle inactive status correctly', () => {
+      // Mock the hooks
+      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+      mockedUseAllergies.mockReturnValue({
+        allergies: [mockInactiveAllergy],
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      const formattedInactiveAllergy: FormattedAllergy = {
+        ...mockFormattedAllergies[0],
+        id: 'inactive-allergy',
+        status: 'Inactive',
+      };
+
+      mockedFormatAllergies.mockReturnValue([formattedInactiveAllergy]);
+
+      render(<AllergiesTable />);
+
+      // Verify the inactive allergy is displayed correctly
+      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
+      expect(screen.getByText('Inactive')).toBeInTheDocument();
+    });
+
+    it('should handle missing fields gracefully', () => {
+      // Mock the hooks
+      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+      mockedUseAllergies.mockReturnValue({
+        allergies: mockAllergies,
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      const allergyWithMissingFields: FormattedAllergy = {
+        ...mockFormattedAllergies[0],
+        recorder: undefined,
+        reactions: undefined,
+        recordedDate: '',
+      };
+
+      mockedFormatAllergies.mockReturnValue([allergyWithMissingFields]);
+
+      render(<AllergiesTable />);
+
+      // Verify the allergy with missing fields is displayed correctly
+      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
+      expect(screen.getAllByText('Not available')).toHaveLength(3); // For missing reactions
+    });
+
+    it('should handle malformed data without crashing', () => {
+      // Mock the hooks
+      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+      mockedUseAllergies.mockReturnValue({
+        allergies: mockAllergies,
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      // Create a malformed allergy object
+      const malformedAllergy = {
+        id: 'malformed-allergy',
+        display: 'Malformed Allergy',
+        // Missing required fields
+      } as unknown as FormattedAllergy;
+
+      mockedFormatAllergies.mockReturnValue([malformedAllergy]);
+
+      // This should not throw an error
+      render(<AllergiesTable />);
+
+      // Verify the component rendered without crashing
+      expect(screen.getByText('Malformed Allergy')).toBeInTheDocument();
+    });
+
     it('should refetch allergies when patient UUID changes', () => {
       const refetchMock = jest.fn();
 

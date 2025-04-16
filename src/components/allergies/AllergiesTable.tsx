@@ -28,7 +28,7 @@ const AllergiesTable: React.FC = () => {
     [],
   );
 
-  const sortable = useMemo(() => [true, false, false, true, true, true], []);
+  const sortable = useMemo(() => [true, true, false, true, true, true], []);
 
   // Format allergies for display
   const formattedAllergies = useMemo(() => {
@@ -63,17 +63,13 @@ const AllergiesTable: React.FC = () => {
               .join(', ')
           : 'Not available';
       case 'severity':
-        return allergy.reactions
-          ? allergy.reactions
-              .map((reaction) => reaction.severity)
-              .filter((severity): severity is string => !!severity)
-              .map((severity) => capitalize(severity))
-              .join(', ')
-          : 'Not available';
+        return capitalize(allergy.severity || 'Unknown');
       case 'recorder':
         return allergy.recorder || 'Not available';
-      case 'recordedDate':
-        return formatDateTime(allergy.recordedDate || '');
+      case 'recordedDate': {
+        const recordedDate = formatDateTime(allergy.recordedDate || '');
+        return recordedDate.formattedResult || 'Not available';
+      }
     }
   };
 

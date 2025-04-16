@@ -15,6 +15,15 @@ import {
   mockAllergyWithoutClinicalStatusDisplay,
   mockAllergyWithMultipleNotes,
   mockAllergyWithEmptyNotes,
+  mockAllergyWithType,
+  mockIntoleranceWithType,
+  mockAllergyWithMultipleCategories,
+  mockAllergyWithHighCriticality,
+  mockAllergyWithLowCriticality,
+  mockInactiveAllergy,
+  mockAllergyWithMultipleSeverities,
+  mockBundleWithInvalidEntry,
+  mockAllergyWithInvalidCoding,
 } from '@__mocks__/allergyMocks';
 import notificationService from '../notificationService';
 import { getFormattedError } from '@utils/common';
@@ -115,6 +124,7 @@ describe('allergyService', () => {
             severity: mockAllergyIntolerance.reaction?.[0].severity,
           },
         ],
+        severity: mockAllergyIntolerance.reaction?.[0].severity,
         note: mockAllergyIntolerance.note?.map((note) => note.text),
       });
     });
@@ -213,6 +223,91 @@ describe('allergyService', () => {
         mockFormattedError.message,
       );
       expect(result).toEqual([]);
+    });
+
+    // New tests for allergy type field
+    it('should handle allergy type field correctly', () => {
+      const result = formatAllergies([mockAllergyWithType]);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe(mockAllergyWithType.id);
+      expect(result[0].display).toBe(mockAllergyWithType.code.text);
+    });
+
+    it('should handle intolerance type field correctly', () => {
+      const result = formatAllergies([mockIntoleranceWithType]);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe(mockIntoleranceWithType.id);
+      expect(result[0].display).toBe(mockIntoleranceWithType.code.text);
+    });
+
+    // Tests for multiple categories
+    it('should handle multiple categories correctly', () => {
+      const result = formatAllergies([mockAllergyWithMultipleCategories]);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].category).toEqual(['food', 'medication', 'environment']);
+      expect(result[0].category?.length).toBe(3);
+    });
+
+    // Tests for criticality levels
+    it('should handle high criticality correctly', () => {
+      const result = formatAllergies([mockAllergyWithHighCriticality]);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].criticality).toBe('high');
+    });
+
+    it('should handle low criticality correctly', () => {
+      const result = formatAllergies([mockAllergyWithLowCriticality]);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].criticality).toBe('low');
+    });
+
+    // Tests for inactive status
+    it('should handle inactive status correctly', () => {
+      const result = formatAllergies([mockInactiveAllergy]);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].status).toBe('Inactive');
+    });
+
+    // Tests for multiple reactions with different severities
+    it('should handle multiple reactions with different severities correctly', () => {
+      const result = formatAllergies([mockAllergyWithMultipleSeverities]);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].reactions?.length).toBe(3);
+      expect(result[0].reactions?.[0].severity).toBe('mild');
+      expect(result[0].reactions?.[1].severity).toBe('severe');
+      expect(result[0].reactions?.[2].severity).toBe('severe');
+
+      // Check manifestations
+      expect(result[0].reactions?.[0].manifestation).toContain('Hives');
+      expect(result[0].reactions?.[1].manifestation).toContain(
+        'Difficulty breathing',
+      );
+      expect(result[0].reactions?.[2].manifestation).toContain('Anaphylaxis');
+    });
+
+    it('should handle bundle with invalid entry structure', async () => {
+      (get as jest.Mock).mockResolvedValueOnce(mockBundleWithInvalidEntry);
+
+      const result = await getAllergies(mockPatientUUID);
+
+      expect(result).toHaveLength(1);
+      // The resource should still be extracted even with missing fullUrl
+      expect(result[0].id).toBe('incomplete-resource');
+    });
+
+    it('should handle allergy with invalid coding array', () => {
+      const result = formatAllergies([mockAllergyWithInvalidCoding]);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].status).toBe('Unknown');
+      expect(result[0].display).toBe('Allergy with invalid coding');
     });
   });
 });
