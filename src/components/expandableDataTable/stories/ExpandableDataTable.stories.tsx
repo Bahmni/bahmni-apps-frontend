@@ -52,11 +52,14 @@ It is built on top of Carbon Design System's DataTable component and provides ad
     },
     sortable: {
       description:
-        'Array of boolean values indicating which columns are sortable',
+        'Array of objects specifying which columns are sortable by their key',
       control: 'object',
       table: {
-        type: { summary: 'boolean[]' },
-        defaultValue: { summary: 'headers.map(() => true)' },
+        type: { summary: '{ key: string; sortable: boolean }[]' },
+        defaultValue: {
+          summary:
+            'headers.map((header) => ({ key: header.key, sortable: true }))',
+        },
       },
     },
     renderCell: {
@@ -1000,10 +1003,17 @@ export const AllergiesExample: Story = {
         </p>
       </div>
     ),
-    rowClassNames: mockAllergiesData.map((allergy) =>
-      allergy.reactions?.some((reaction) => reaction.severity === 'severe')
-        ? 'criticalCell'
-        : '',
+    rowClassNames: mockAllergiesData.reduce(
+      (acc, allergy) => {
+        if (
+          allergy.id &&
+          allergy.reactions?.some((reaction) => reaction.severity === 'severe')
+        ) {
+          acc[allergy.id] = 'criticalCell';
+        }
+        return acc;
+      },
+      {} as Record<string, string>,
     ),
   },
   parameters: {
@@ -1027,8 +1037,6 @@ interface CellStyleItem {
   value: string;
   valueType: 'critical' | 'success' | 'warning' | 'alert';
 }
-
-const classNames = ['criticalCell', 'successCell', 'warningCell', 'alertCell'];
 
 export const WithCellStyling: Story = {
   args: {
@@ -1089,7 +1097,12 @@ export const WithCellStyling: Story = {
           return null;
       }
     },
-    rowClassNames: classNames,
+    rowClassNames: {
+      '1': 'criticalCell',
+      '2': 'successCell',
+      '3': 'warningCell',
+      '4': 'alertCell',
+    },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     renderExpandedContent: (row: any) => (
       <div style={{ padding: '1rem' }}>
@@ -1135,7 +1148,12 @@ export const CustomSortableColumns: Story = {
     tableTitle: 'Custom Sortable Columns',
     rows: mockItems,
     headers: mockHeaders,
-    sortable: [true, false, true, false], // Only Name and Date columns are sortable
+    sortable: [
+      { key: 'name', sortable: true },
+      { key: 'status', sortable: false },
+      { key: 'date', sortable: true },
+      { key: 'count', sortable: false },
+    ], // Only Name and Date columns are sortable
     renderCell: defaultRenderCell,
     renderExpandedContent: defaultRenderExpandedContent,
   },
@@ -1160,7 +1178,13 @@ export const SortableWithComplexData: Story = {
       { key: 'stock', header: 'Stock' },
       { key: 'lastUpdated', header: 'Last Updated' },
     ],
-    sortable: [true, false, true, true, true], // Category column is not sortable
+    sortable: [
+      { key: 'name', sortable: true },
+      { key: 'category', sortable: false },
+      { key: 'price', sortable: true },
+      { key: 'stock', sortable: true },
+      { key: 'lastUpdated', sortable: true },
+    ], // Category column is not sortable
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     renderCell: (row: any, cellId: string) => {
       const typedRow = row as MockItem;
@@ -1249,7 +1273,7 @@ export const SortableEdgeCases: Story = {
     tableTitle: 'Sortable Edge Cases',
     rows: mockItems,
     headers: mockHeaders,
-    sortable: [true], // Only the first column is sortable, array is shorter than headers
+    sortable: [{ key: 'name', sortable: true }], // Only the first column is sortable, array is shorter than headers
     renderCell: defaultRenderCell,
     renderExpandedContent: defaultRenderExpandedContent,
   },
