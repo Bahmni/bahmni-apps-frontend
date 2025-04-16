@@ -30,6 +30,8 @@ const config: Config.InitialOptions = {
     '<rootDir>/src/setupTests.ts',
     '<rootDir>/src/types',
     '<rootDir>/src/.*/stories/',
+    '<rootDir>/src/i18n.ts',
+    '<rootDir>/src/setupTests.i18n.ts',
   ],
   coverageThreshold: {
     global: {
