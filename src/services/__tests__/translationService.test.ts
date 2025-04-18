@@ -1,30 +1,133 @@
-import { getMergedTranslations } from '../translationService';
+import { getTranslations, getUserPreferredLocale } from '../translationService';
 import {
   CONFIG_TRANSLATIONS_URL_TEMPLATE,
   BUNDLED_TRANSLATIONS_URL_TEMPLATE,
-} from '@constants/i18n';
+  LOCALE_COOKIE_NAME,
+  DEFAULT_LOCALE,
+} from '@constants/app';
+import notificationService from '../notificationService';
+import * as commonUtils from '@utils/common';
+import * as apiService from '../api';
 
-// Mock the global fetch function
-const mockFetch = jest.fn();
-global.fetch = mockFetch;
+// Mock dependencies
+jest.mock('../notificationService');
+jest.mock('@utils/common');
+jest.mock('../api');
 
 describe('Translation Service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('getMergedTranslations', () => {
-    it('should fetch and merge translations from both sources', async () => {
+  describe('getUserPreferredLocale', () => {
+    beforeEach(() => {
+      // Reset mocks before each test
+      jest.clearAllMocks();
+
+      // Mock localStorage
+      Object.defineProperty(window, 'localStorage', {
+        value: {
+          getItem: jest.fn(),
+          setItem: jest.fn(),
+          clear: jest.fn(),
+        },
+        writable: true,
+      });
+
+      // Mock Intl.getCanonicalLocales
+      global.Intl.getCanonicalLocales = jest
+        .fn()
+        .mockImplementation((locale) => {
+          if (locale === 'invalid') {
+            throw new Error('Invalid language tag');
+          }
+          return [locale];
+        });
+    });
+
+    it('should return the locale from localStorage when valid', () => {
+      // Arrange
+      const validLocale = 'fr';
+      (localStorage.getItem as jest.Mock).mockReturnValue(validLocale);
+
+      // Act
+      const result = getUserPreferredLocale();
+
+      // Assert
+      expect(localStorage.getItem).toHaveBeenCalledWith(LOCALE_COOKIE_NAME);
+      expect(Intl.getCanonicalLocales).toHaveBeenCalledWith(validLocale);
+      expect(result).toBe(validLocale);
+      expect(notificationService.showError).not.toHaveBeenCalled();
+    });
+
+    it('should return DEFAULT_LOCALE when no localStorage value is found', () => {
+      // Arrange
+      (localStorage.getItem as jest.Mock).mockReturnValue(null);
+
+      // Act
+      const result = getUserPreferredLocale();
+
+      // Assert
+      expect(localStorage.getItem).toHaveBeenCalledWith(LOCALE_COOKIE_NAME);
+      expect(result).toBe(DEFAULT_LOCALE);
+      expect(notificationService.showError).not.toHaveBeenCalled();
+    });
+
+    it('should return DEFAULT_LOCALE and show error when locale is invalid', () => {
+      // Arrange
+      const invalidLocale = 'invalid';
+      const mockFormattedError = {
+        title: 'Error',
+        message: 'Invalid language tag',
+      };
+      (localStorage.getItem as jest.Mock).mockReturnValue(invalidLocale);
+      jest
+        .spyOn(commonUtils, 'getFormattedError')
+        .mockReturnValue(mockFormattedError);
+
+      // Act
+      const result = getUserPreferredLocale();
+
+      // Assert
+      expect(localStorage.getItem).toHaveBeenCalledWith(LOCALE_COOKIE_NAME);
+      expect(Intl.getCanonicalLocales).toHaveBeenCalledWith(invalidLocale);
+      expect(commonUtils.getFormattedError).toHaveBeenCalledWith(
+        expect.any(Error),
+      );
+      expect(notificationService.showError).toHaveBeenCalledWith(
+        mockFormattedError.title,
+        mockFormattedError.message,
+      );
+      expect(result).toBe(DEFAULT_LOCALE);
+    });
+
+    it('should handle complex locale formats correctly', () => {
+      // Arrange
+      const complexLocale = 'en-US';
+      (localStorage.getItem as jest.Mock).mockReturnValue(complexLocale);
+
+      // Act
+      const result = getUserPreferredLocale();
+
+      // Assert
+      expect(localStorage.getItem).toHaveBeenCalledWith(LOCALE_COOKIE_NAME);
+      expect(Intl.getCanonicalLocales).toHaveBeenCalledWith(complexLocale);
+      expect(result).toBe(complexLocale);
+    });
+  });
+
+  describe('getTranslations', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    // Happy Path Tests
+    it('should fetch and merge translations for requested language', async () => {
       // Arrange
       const language = 'en';
-      const configUrl = CONFIG_TRANSLATIONS_URL_TEMPLATE.replace(
-        '{{lng}}',
-        language,
-      );
-      const bundledUrl = BUNDLED_TRANSLATIONS_URL_TEMPLATE.replace(
-        '{{lng}}',
-        language,
-      );
+      const namespace = 'clinical';
+      const configUrl = CONFIG_TRANSLATIONS_URL_TEMPLATE(language);
+      const bundledUrl = BUNDLED_TRANSLATIONS_URL_TEMPLATE(language);
 
       const configTranslations = {
         key1: 'Config Value 1',
@@ -36,365 +139,148 @@ describe('Translation Service', () => {
         key2: 'Bundled Value 2',
       };
 
-      // Mock fetch responses
-      mockFetch.mockImplementation((url) => {
+      // Mock API responses
+      jest.spyOn(apiService, 'get').mockImplementation((url: string) => {
         if (url === configUrl) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(configTranslations),
-          });
+          return Promise.resolve(configTranslations);
         } else if (url === bundledUrl) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(bundledTranslations),
-          });
+          return Promise.resolve(bundledTranslations);
         }
         return Promise.reject(new Error('Unexpected URL'));
       });
 
       // Act
-      const result = await getMergedTranslations(language);
+      const result = await getTranslations(language, namespace);
 
       // Assert
-      expect(mockFetch).toHaveBeenCalledTimes(2);
-      expect(mockFetch).toHaveBeenCalledWith(configUrl);
-      expect(mockFetch).toHaveBeenCalledWith(bundledUrl);
+      expect(apiService.get).toHaveBeenCalledTimes(2);
+      expect(apiService.get).toHaveBeenCalledWith(configUrl);
+      expect(apiService.get).toHaveBeenCalledWith(bundledUrl);
 
       // Config translations should override bundled translations
       expect(result).toEqual({
-        key1: 'Config Value 1', // From config (overrides bundled)
-        key2: 'Bundled Value 2', // From bundled only
-        key3: 'Config Value 3', // From config only
+        [language]: {
+          [namespace]: {
+            key1: 'Config Value 1', // From config (overrides bundled)
+            key2: 'Bundled Value 2', // From bundled only
+            key3: 'Config Value 3', // From config only
+          },
+        },
       });
     });
 
-    it('should handle failure of config translations source', async () => {
+    it('should include English fallback for non-English languages', async () => {
       // Arrange
-      const language = 'en';
-      const configUrl = CONFIG_TRANSLATIONS_URL_TEMPLATE.replace(
-        '{{lng}}',
-        language,
-      );
-      const bundledUrl = BUNDLED_TRANSLATIONS_URL_TEMPLATE.replace(
-        '{{lng}}',
-        language,
-      );
+      const language = 'es';
+      const namespace = 'clinical';
+      const esConfigUrl = CONFIG_TRANSLATIONS_URL_TEMPLATE(language);
+      const esBundledUrl = BUNDLED_TRANSLATIONS_URL_TEMPLATE(language);
+      const enConfigUrl = CONFIG_TRANSLATIONS_URL_TEMPLATE('en');
+      const enBundledUrl = BUNDLED_TRANSLATIONS_URL_TEMPLATE('en');
 
-      const bundledTranslations = {
-        key1: 'Bundled Value 1',
-        key2: 'Bundled Value 2',
+      const esTranslations = { key1: 'Spanish Value' };
+      const enTranslations = {
+        key1: 'English Value',
+        key2: 'Another English Value',
       };
 
-      // Mock fetch responses
-      mockFetch.mockImplementation((url) => {
-        if (url === configUrl) {
-          return Promise.resolve({
-            ok: false,
-            status: 404,
-          });
-        } else if (url === bundledUrl) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(bundledTranslations),
-          });
+      // Mock API responses
+      jest.spyOn(apiService, 'get').mockImplementation((url: string) => {
+        if (url === esConfigUrl || url === esBundledUrl) {
+          return Promise.resolve(esTranslations);
+        } else if (url === enConfigUrl || url === enBundledUrl) {
+          return Promise.resolve(enTranslations);
         }
         return Promise.reject(new Error('Unexpected URL'));
       });
 
-      // Spy on console.warn
-      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
-
       // Act
-      const result = await getMergedTranslations(language);
+      const result = await getTranslations(language, namespace);
 
       // Assert
-      expect(mockFetch).toHaveBeenCalledTimes(2);
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        `Failed to load translations from ${configUrl} with status 404`,
-      );
-
-      // Should still have bundled translations
-      expect(result).toEqual(bundledTranslations);
-
-      // Restore console.warn
-      consoleWarnSpy.mockRestore();
+      expect(apiService.get).toHaveBeenCalledTimes(4); // 2 for Spanish, 2 for English fallback
+      expect(result).toEqual({
+        [language]: {
+          [namespace]: { ...esTranslations },
+        },
+        en: {
+          [namespace]: { ...enTranslations },
+        },
+      });
     });
 
-    it('should handle failure of bundled translations source', async () => {
+    it('should not fetch English fallback when language is English', async () => {
       // Arrange
       const language = 'en';
-      const configUrl = CONFIG_TRANSLATIONS_URL_TEMPLATE.replace(
-        '{{lng}}',
-        language,
-      );
-      const bundledUrl = BUNDLED_TRANSLATIONS_URL_TEMPLATE.replace(
-        '{{lng}}',
-        language,
-      );
+      const namespace = 'clinical';
+      const translations = { key1: 'English Value' };
 
-      const configTranslations = {
-        key1: 'Config Value 1',
-        key3: 'Config Value 3',
+      // Mock API responses
+      jest.spyOn(apiService, 'get').mockResolvedValue(translations);
+
+      // Act
+      const result = await getTranslations(language, namespace);
+
+      // Assert
+      expect(apiService.get).toHaveBeenCalledTimes(2); // Only for English, no fallback
+      expect(result).toEqual({
+        en: {
+          [namespace]: { ...translations },
+        },
+      });
+    });
+
+    // Sad Path Tests
+
+    it('should handle empty translation objects', async () => {
+      // Arrange
+      const language = 'en';
+      const namespace = 'clinical';
+
+      // Mock API responses - both return empty objects
+      jest.spyOn(apiService, 'get').mockResolvedValue({});
+
+      // Act
+      const result = await getTranslations(language, namespace);
+
+      // Assert
+      expect(apiService.get).toHaveBeenCalledTimes(2);
+      expect(result).toEqual({
+        [language]: {
+          [namespace]: {},
+        },
+      });
+    });
+
+    it('should handle non-string values in translation objects', async () => {
+      // Arrange
+      const language = 'en';
+      const namespace = 'clinical';
+
+      // Mock API responses with non-string values
+      const mixedTranslations = {
+        key1: 'String value',
+        key2: 123,
+        key3: true,
+        key4: { nested: 'object' },
       };
 
-      // Mock fetch responses
-      mockFetch.mockImplementation((url) => {
-        if (url === configUrl) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(configTranslations),
-          });
-        } else if (url === bundledUrl) {
-          return Promise.resolve({
-            ok: false,
-            status: 500,
-          });
-        }
-        return Promise.reject(new Error('Unexpected URL'));
-      });
-
-      // Spy on console.warn
-      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      jest
+        .spyOn(apiService, 'get')
+        .mockResolvedValue(
+          mixedTranslations as unknown as Record<string, string>,
+        );
 
       // Act
-      const result = await getMergedTranslations(language);
+      const result = await getTranslations(language, namespace);
 
       // Assert
-      expect(mockFetch).toHaveBeenCalledTimes(2);
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        `Failed to load translations from ${bundledUrl} with status 500`,
-      );
-
-      // Should still have config translations
-      expect(result).toEqual(configTranslations);
-
-      // Restore console.warn
-      consoleWarnSpy.mockRestore();
-    });
-
-    it('should handle network errors for config translations', async () => {
-      // Arrange
-      const language = 'en';
-      const configUrl = CONFIG_TRANSLATIONS_URL_TEMPLATE.replace(
-        '{{lng}}',
-        language,
-      );
-      const bundledUrl = BUNDLED_TRANSLATIONS_URL_TEMPLATE.replace(
-        '{{lng}}',
-        language,
-      );
-
-      const bundledTranslations = {
-        key1: 'Bundled Value 1',
-        key2: 'Bundled Value 2',
-      };
-
-      const networkError = new Error('Network error');
-
-      // Mock fetch responses
-      mockFetch.mockImplementation((url) => {
-        if (url === configUrl) {
-          return Promise.reject(networkError);
-        } else if (url === bundledUrl) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(bundledTranslations),
-          });
-        }
-        return Promise.reject(new Error('Unexpected URL'));
+      expect(apiService.get).toHaveBeenCalledTimes(2);
+      expect(result).toEqual({
+        [language]: {
+          [namespace]: mixedTranslations,
+        },
       });
-
-      // Spy on console.warn
-      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
-
-      // Act
-      const result = await getMergedTranslations(language);
-
-      // Assert
-      expect(mockFetch).toHaveBeenCalledTimes(2);
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        `Failed to load translations from ${configUrl}:`,
-        networkError,
-      );
-
-      // Should still have bundled translations
-      expect(result).toEqual(bundledTranslations);
-
-      // Restore console.warn
-      consoleWarnSpy.mockRestore();
-    });
-
-    it('should handle network errors for bundled translations', async () => {
-      // Arrange
-      const language = 'en';
-      const configUrl = CONFIG_TRANSLATIONS_URL_TEMPLATE.replace(
-        '{{lng}}',
-        language,
-      );
-      const bundledUrl = BUNDLED_TRANSLATIONS_URL_TEMPLATE.replace(
-        '{{lng}}',
-        language,
-      );
-
-      const configTranslations = {
-        key1: 'Config Value 1',
-        key3: 'Config Value 3',
-      };
-
-      const networkError = new Error('Network error');
-
-      // Mock fetch responses
-      mockFetch.mockImplementation((url) => {
-        if (url === configUrl) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(configTranslations),
-          });
-        } else if (url === bundledUrl) {
-          return Promise.reject(networkError);
-        }
-        return Promise.reject(new Error('Unexpected URL'));
-      });
-
-      // Spy on console.warn
-      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
-
-      // Act
-      const result = await getMergedTranslations(language);
-
-      // Assert
-      expect(mockFetch).toHaveBeenCalledTimes(2);
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        `Failed to load translations from ${bundledUrl}:`,
-        networkError,
-      );
-
-      // Should still have config translations
-      expect(result).toEqual(configTranslations);
-
-      // Restore console.warn
-      consoleWarnSpy.mockRestore();
-    });
-
-    it('should handle failure of both translation sources', async () => {
-      // Arrange
-      const language = 'en';
-      const configUrl = CONFIG_TRANSLATIONS_URL_TEMPLATE.replace(
-        '{{lng}}',
-        language,
-      );
-      const bundledUrl = BUNDLED_TRANSLATIONS_URL_TEMPLATE.replace(
-        '{{lng}}',
-        language,
-      );
-
-      // Mock fetch responses
-      mockFetch.mockImplementation((url) => {
-        if (url === configUrl) {
-          return Promise.resolve({
-            ok: false,
-            status: 404,
-          });
-        } else if (url === bundledUrl) {
-          return Promise.resolve({
-            ok: false,
-            status: 500,
-          });
-        }
-        return Promise.reject(new Error('Unexpected URL'));
-      });
-
-      // Spy on console.warn
-      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
-
-      // Act
-      const result = await getMergedTranslations(language);
-
-      // Assert
-      expect(mockFetch).toHaveBeenCalledTimes(2);
-      expect(consoleWarnSpy).toHaveBeenCalledTimes(2);
-
-      // Should return empty object when both sources fail
-      expect(result).toEqual({});
-
-      // Restore console.warn
-      consoleWarnSpy.mockRestore();
-    });
-
-    it('should handle JSON parsing errors', async () => {
-      // Arrange
-      const language = 'en';
-      const configUrl = CONFIG_TRANSLATIONS_URL_TEMPLATE.replace(
-        '{{lng}}',
-        language,
-      );
-      const bundledUrl = BUNDLED_TRANSLATIONS_URL_TEMPLATE.replace(
-        '{{lng}}',
-        language,
-      );
-
-      const jsonError = new Error('Invalid JSON');
-
-      // Mock fetch responses
-      mockFetch.mockImplementation((url) => {
-        if (url === configUrl) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.reject(jsonError),
-          });
-        } else if (url === bundledUrl) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.reject(jsonError),
-          });
-        }
-        return Promise.reject(new Error('Unexpected URL'));
-      });
-
-      // Spy on console.warn
-      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
-
-      // Act
-      const result = await getMergedTranslations(language);
-
-      // Assert
-      expect(mockFetch).toHaveBeenCalledTimes(2);
-      expect(consoleWarnSpy).toHaveBeenCalledTimes(2);
-
-      // Should return empty object when both sources fail
-      expect(result).toEqual({});
-
-      // Restore console.warn
-      consoleWarnSpy.mockRestore();
-    });
-
-    it('should correctly replace language code in URLs', async () => {
-      // Arrange
-      const language = 'fr';
-      const configUrl = CONFIG_TRANSLATIONS_URL_TEMPLATE.replace(
-        '{{lng}}',
-        language,
-      );
-      const bundledUrl = BUNDLED_TRANSLATIONS_URL_TEMPLATE.replace(
-        '{{lng}}',
-        language,
-      );
-
-      // Mock fetch responses
-      mockFetch.mockImplementation(() => {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({}),
-        });
-      });
-
-      // Act
-      await getMergedTranslations(language);
-
-      // Assert
-      expect(mockFetch).toHaveBeenCalledTimes(2);
-      expect(mockFetch).toHaveBeenCalledWith(configUrl);
-      expect(mockFetch).toHaveBeenCalledWith(bundledUrl);
     });
   });
 });
