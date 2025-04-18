@@ -6,7 +6,7 @@ import { notificationService } from '../notificationService';
 
 jest.mock('../../constants/app', () => ({
   hostUrl: 'https://api.example.com',
-  loginPath: '/login',
+  LOGIN_PATH: '/login',
 }));
 
 jest.mock('../notificationService', () => ({

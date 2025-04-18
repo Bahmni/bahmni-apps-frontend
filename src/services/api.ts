@@ -1,5 +1,5 @@
 import axios, { AxiosResponse, AxiosInstance } from 'axios';
-import { loginPath } from '@constants/app';
+import { LOGIN_PATH } from '@constants/app';
 import { getFormattedError } from '@utils/common';
 import { notificationService } from './notificationService';
 
@@ -25,7 +25,7 @@ client.interceptors.response.use(
   },
   function (error) {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
-      window.location.href = loginPath;
+      window.location.href = LOGIN_PATH;
       return Promise.reject(error);
     }
     const { title, message } = getFormattedError(error);
