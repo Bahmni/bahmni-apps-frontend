@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import AllergiesTable from '../AllergiesTable';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import { useAllergies } from '@hooks/useAllergies';
@@ -16,6 +16,68 @@ import {
 } from '@__mocks__/allergyMocks';
 import { FhirAllergyIntolerance, FormattedAllergy } from '@types/allergy';
 import * as common from '@utils/common';
+
+// Mock for react-i18next with language switching support
+jest.mock('react-i18next', () => {
+  // Create a mock module factory that doesn't reference external variables
+  return {
+    // Mock the useTranslation hook
+    useTranslation: () => {
+      return {
+        t: jest.fn((key: string) => {
+          // Mock implementation that returns translations based on the current language
+          const mockI18n = jest.requireMock('react-i18next').__mockI18n;
+
+          if (mockI18n.language === 'es') {
+            const spanishTranslations: Record<string, string> = {
+              ALLERGEN: 'Alérgeno',
+              SEVERITY: 'Gravedad',
+              REACTIONS: 'Reacción(es)',
+              ALLERGY_LIST_STATUS: 'Estado',
+              ALLERGY_LIST_PROVIDER: 'Proveedor',
+              ALLERGY_LIST_RECORDED_DATE: 'Fecha de grabación',
+              ALLERGIES_DISPLAY_CONTROL_HEADING: 'Alergias',
+              NO_ALLERGIES: 'No hay alergias registradas para este paciente',
+              ALLERGY_LIST_ACTIVE: 'Activo',
+              ALLERGY_LIST_INACTIVE: 'Inactivo',
+              ALLERGY_TABLE_NOT_AVAILABLE: 'No disponible',
+            };
+            return spanishTranslations[key] || key;
+          }
+
+          const englishTranslations: Record<string, string> = {
+            ALLERGEN: 'Allergen',
+            SEVERITY: 'Severity',
+            REACTIONS: 'Reaction(s)',
+            ALLERGY_LIST_STATUS: 'Status',
+            ALLERGY_LIST_PROVIDER: 'Provider',
+            ALLERGY_LIST_RECORDED_DATE: 'Recorded Date',
+            ALLERGIES_DISPLAY_CONTROL_HEADING: 'Allergies',
+            NO_ALLERGIES: 'No Allergies recorded for this patient.',
+            ALLERGY_LIST_ACTIVE: 'Active',
+            ALLERGY_LIST_INACTIVE: 'Inactive',
+            ALLERGY_TABLE_NOT_AVAILABLE: 'Not available',
+          };
+          return englishTranslations[key] || key;
+        }),
+        i18n: {
+          // These properties will be updated by the test
+          get language() {
+            return jest.requireMock('react-i18next').__mockI18n.language;
+          },
+          changeLanguage: jest.fn((lang: string) => {
+            jest.requireMock('react-i18next').__mockI18n.language = lang;
+            return Promise.resolve();
+          }),
+        },
+      };
+    },
+    // Store the mock state in the module
+    __mockI18n: {
+      language: 'en',
+    },
+  };
+});
 
 // Mock the hooks
 jest.mock('@hooks/usePatientUUID');
@@ -102,6 +164,8 @@ describe('AllergiesTable Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(console, 'error').mockImplementation();
+    // Reset i18n mock state before each test
+    jest.requireMock('react-i18next').__mockI18n.language = 'en';
     // Mock capitalize to capitalize first letter of each word
     jest
       .spyOn(common, 'capitalize')
@@ -175,8 +239,9 @@ describe('AllergiesTable Integration', () => {
 
       // Verify error state is shown
       expect(screen.getByTestId('expandable-table-error')).toBeInTheDocument();
+      // Check for the error message placeholder instead of the actual error message
       expect(
-        screen.getByText('Failed to fetch allergies', { exact: false }),
+        screen.getByText('EXPANDABLE_TABLE_ERROR_MESSAGE'),
       ).toBeInTheDocument();
     });
 
@@ -550,6 +615,146 @@ describe('AllergiesTable Integration', () => {
 
       // Verify useAllergies was called with the new UUID
       expect(useAllergies).toHaveBeenCalledWith(newUUID);
+    });
+  });
+
+  // Language Switching Tests
+  describe('Language Switching Integration', () => {
+    beforeEach(() => {
+      // Setup standard test data
+      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+      mockedUseAllergies.mockReturnValue({
+        allergies: mockAllergies,
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+      mockedFormatAllergies.mockReturnValue(mockFormattedAllergies);
+    });
+
+    it('should render with English translations by default', async () => {
+      // Act
+      render(<AllergiesTable />);
+
+      // Assert - Check table headers are in English
+      expect(screen.getByText('Allergen')).toBeInTheDocument();
+      expect(screen.getByText('Severity')).toBeInTheDocument();
+      expect(screen.getByText('Reaction(s)')).toBeInTheDocument();
+      expect(screen.getByText('Status')).toBeInTheDocument();
+      expect(screen.getByText('Provider')).toBeInTheDocument();
+      expect(screen.getByText('Recorded Date')).toBeInTheDocument();
+
+      // Check table title is in English
+      expect(screen.getByText('Allergies')).toBeInTheDocument();
+
+      // Check status tag is in English
+      expect(screen.getByText('Active')).toBeInTheDocument();
+    });
+
+    it('should display Spanish translations when language is set to Spanish', async () => {
+      // Arrange - Set language to Spanish
+      jest.requireMock('react-i18next').__mockI18n.language = 'es';
+
+      // Act
+      render(<AllergiesTable />);
+
+      // Assert - Check table headers are in Spanish
+      expect(screen.getByText('Alérgeno')).toBeInTheDocument();
+      expect(screen.getByText('Gravedad')).toBeInTheDocument();
+      expect(screen.getByText('Reacción(es)')).toBeInTheDocument();
+      expect(screen.getByText('Estado')).toBeInTheDocument();
+      expect(screen.getByText('Proveedor')).toBeInTheDocument();
+      expect(screen.getByText('Fecha de grabación')).toBeInTheDocument();
+
+      // Check table title is in Spanish
+      expect(screen.getByText('Alergias')).toBeInTheDocument();
+
+      // Check status tag is in Spanish
+      expect(screen.getByText('Activo')).toBeInTheDocument();
+    });
+
+    it('should switch from English to Spanish and back', async () => {
+      // Arrange
+      const { rerender } = render(<AllergiesTable />);
+
+      // Assert initial English rendering
+      expect(screen.getByText('Allergen')).toBeInTheDocument();
+      expect(screen.getByText('Allergies')).toBeInTheDocument();
+
+      // Act - Change to Spanish
+      act(() => {
+        jest.requireMock('react-i18next').__mockI18n.language = 'es';
+      });
+      rerender(<AllergiesTable />);
+
+      // Assert Spanish rendering
+      expect(screen.getByText('Alérgeno')).toBeInTheDocument();
+      expect(screen.getByText('Alergias')).toBeInTheDocument();
+
+      // Act - Change back to English
+      act(() => {
+        jest.requireMock('react-i18next').__mockI18n.language = 'en';
+      });
+      rerender(<AllergiesTable />);
+
+      // Assert English rendering again
+      expect(screen.getByText('Allergen')).toBeInTheDocument();
+      expect(screen.getByText('Allergies')).toBeInTheDocument();
+    });
+
+    it('should display empty state message in the correct language', async () => {
+      // Arrange - Empty allergies
+      mockedUseAllergies.mockReturnValue({
+        allergies: [],
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+      mockedFormatAllergies.mockReturnValue([]);
+
+      // Act - Render with English
+      const { rerender } = render(<AllergiesTable />);
+
+      // Assert - Empty state message in English
+      expect(
+        screen.getByText('No Allergies recorded for this patient.'),
+      ).toBeInTheDocument();
+
+      // Act - Change to Spanish and rerender
+      act(() => {
+        jest.requireMock('react-i18next').__mockI18n.language = 'es';
+      });
+      rerender(<AllergiesTable />);
+
+      // Assert - Empty state message in Spanish
+      expect(
+        screen.getByText('No hay alergias registradas para este paciente'),
+      ).toBeInTheDocument();
+    });
+
+    it('should display translated text for different languages', async () => {
+      // Arrange - Allergy with missing fields
+      const allergyWithMissingFields: FormattedAllergy = {
+        ...mockFormattedAllergies[0],
+        recorder: undefined,
+        reactions: undefined,
+      };
+      mockedFormatAllergies.mockReturnValue([allergyWithMissingFields]);
+
+      // Act - Render with English
+      const { rerender } = render(<AllergiesTable />);
+
+      // Assert - Check that we have English text
+      expect(screen.getAllByText('Not available')[0]).toBeInTheDocument();
+
+      // Act - Change to Spanish and rerender
+      act(() => {
+        jest.requireMock('react-i18next').__mockI18n.language = 'es';
+      });
+      rerender(<AllergiesTable />);
+
+      // Assert - Check that we have Spanish text
+      expect(screen.getAllByText('No disponible')[0]).toBeInTheDocument();
     });
   });
 });

@@ -7,17 +7,32 @@ import * as patientService from '@services/patientService';
 import { FormattedPatientData, Age } from '@types/patient';
 import { NotificationProvider } from '@providers/NotificationProvider';
 
-// Mock react-i18next
+// Mock react-i18next with language switching support
+const mockI18n = {
+  language: 'en',
+  changeLanguage: jest.fn(),
+};
+
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => {
-      const translations: Record<string, string> = {
+      if (mockI18n.language === 'es') {
+        const spanishTranslations: Record<string, string> = {
+          CLINICAL_YEARS_TRANSLATION_KEY: 'años',
+          CLINICAL_MONTHS_TRANSLATION_KEY: 'meses',
+          CLINICAL_DAYS_TRANSLATION_KEY: 'días',
+        };
+        return spanishTranslations[key] || key;
+      }
+
+      const englishTranslations: Record<string, string> = {
         CLINICAL_YEARS_TRANSLATION_KEY: 'Years',
         CLINICAL_MONTHS_TRANSLATION_KEY: 'Months',
         CLINICAL_DAYS_TRANSLATION_KEY: 'Days',
       };
-      return translations[key] || key;
+      return englishTranslations[key] || key;
     },
+    i18n: mockI18n,
   }),
 }));
 
@@ -76,6 +91,8 @@ const mockedFormatPatientData =
 describe('PatientDetails Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset language to English before each test
+    mockI18n.language = 'en';
   });
 
   it('should fetch and display patient data', async () => {

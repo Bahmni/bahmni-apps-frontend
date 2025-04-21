@@ -1,8 +1,68 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { ExpandableDataTable } from '../ExpandableDataTable';
 import { DataTableHeader, Tag } from '@carbon/react';
 import { getFormattedError } from '@utils/common';
+
+// Mock for react-i18next with language switching support
+jest.mock('react-i18next', () => {
+  // Create a mock module factory that doesn't reference external variables
+  return {
+    // Mock the useTranslation hook
+    useTranslation: () => {
+      return {
+        t: jest.fn((key: string, options?: Record<string, string>) => {
+          // Mock implementation that returns translations based on the current language
+          const mockI18n = jest.requireMock('react-i18next').__mockI18n;
+
+          if (mockI18n.language === 'es') {
+            const spanishTranslations: Record<string, string> = {
+              EXPANDABLE_TABLE_EMPTY_STATE_MESSAGE: 'No hay datos disponibles',
+              EXPANDABLE_TABLE_ERROR_MESSAGE: '{{title}}: {{message}}',
+            };
+
+            // Handle interpolation for error message
+            if (key === 'EXPANDABLE_TABLE_ERROR_MESSAGE' && options) {
+              return spanishTranslations[key]
+                .replace('{{title}}', options.title || '')
+                .replace('{{message}}', options.message || '');
+            }
+
+            return spanishTranslations[key] || key;
+          }
+
+          const englishTranslations: Record<string, string> = {
+            EXPANDABLE_TABLE_EMPTY_STATE_MESSAGE: 'No data available',
+            EXPANDABLE_TABLE_ERROR_MESSAGE: '{{title}}: {{message}}',
+          };
+
+          // Handle interpolation for error message
+          if (key === 'EXPANDABLE_TABLE_ERROR_MESSAGE' && options) {
+            return englishTranslations[key]
+              .replace('{{title}}', options.title || '')
+              .replace('{{message}}', options.message || '');
+          }
+
+          return englishTranslations[key] || key;
+        }),
+        i18n: {
+          // These properties will be updated by the test
+          get language() {
+            return jest.requireMock('react-i18next').__mockI18n.language;
+          },
+          changeLanguage: jest.fn((lang: string) => {
+            jest.requireMock('react-i18next').__mockI18n.language = lang;
+            return Promise.resolve();
+          }),
+        },
+      };
+    },
+    // Store the mock state in the module
+    __mockI18n: {
+      language: 'en',
+    },
+  };
+});
 
 // Mock the common utils
 jest.mock('@utils/common', () => ({
@@ -80,6 +140,8 @@ describe('ExpandableDataTable', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(console, 'error').mockImplementation();
+    // Reset i18n mock state before each test
+    jest.requireMock('react-i18next').__mockI18n.language = 'en';
   });
 
   it('should render the table with provided headers and rows', () => {
@@ -892,5 +954,256 @@ describe('ExpandableDataTable', () => {
     // The rows should still be rendered
     expect(screen.getByText('Item 1')).toBeInTheDocument();
     expect(screen.getByText('Item 2')).toBeInTheDocument();
+  });
+
+  // Language Switching Tests
+  describe('Language Switching', () => {
+    it('should display empty state message in English by default', () => {
+      render(
+        <ExpandableDataTable
+          tableTitle="Test Table"
+          headers={mockHeaders}
+          rows={[]}
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+        />,
+      );
+
+      // Check if empty state message is rendered in English
+      expect(screen.getByText('No data available')).toBeInTheDocument();
+    });
+
+    it('should display empty state message in Spanish when language is set to Spanish', () => {
+      // Set language to Spanish
+      jest.requireMock('react-i18next').__mockI18n.language = 'es';
+
+      render(
+        <ExpandableDataTable
+          tableTitle="Test Table"
+          headers={mockHeaders}
+          rows={[]}
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+        />,
+      );
+
+      // Check if empty state message is rendered in Spanish
+      expect(screen.getByText('No hay datos disponibles')).toBeInTheDocument();
+    });
+
+    it('should display error message in English by default', () => {
+      const testError = new Error('Test error message');
+
+      render(
+        <ExpandableDataTable
+          tableTitle="Test Table"
+          headers={mockHeaders}
+          rows={mockRows}
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+          error={testError}
+        />,
+      );
+
+      // Check if error message is rendered in English
+      expect(screen.getByText('Error: Test error message')).toBeInTheDocument();
+    });
+
+    it('should display error message in Spanish when language is set to Spanish', () => {
+      // Set language to Spanish
+      jest.requireMock('react-i18next').__mockI18n.language = 'es';
+
+      const testError = new Error('Test error message');
+
+      render(
+        <ExpandableDataTable
+          tableTitle="Test Table"
+          headers={mockHeaders}
+          rows={mockRows}
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+          error={testError}
+        />,
+      );
+
+      // Check if error message is rendered in Spanish
+      expect(screen.getByText('Error: Test error message')).toBeInTheDocument();
+    });
+
+    it('should switch empty state message language when language changes', () => {
+      // Render with English
+      const { rerender } = render(
+        <ExpandableDataTable
+          tableTitle="Test Table"
+          headers={mockHeaders}
+          rows={[]}
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+        />,
+      );
+
+      // Check if empty state message is rendered in English
+      expect(screen.getByText('No data available')).toBeInTheDocument();
+
+      // Change language to Spanish
+      act(() => {
+        jest.requireMock('react-i18next').__mockI18n.language = 'es';
+      });
+
+      // Re-render with Spanish
+      rerender(
+        <ExpandableDataTable
+          tableTitle="Test Table"
+          headers={mockHeaders}
+          rows={[]}
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+        />,
+      );
+
+      // Check if empty state message is rendered in Spanish
+      expect(screen.getByText('No hay datos disponibles')).toBeInTheDocument();
+
+      // Change language back to English
+      act(() => {
+        jest.requireMock('react-i18next').__mockI18n.language = 'en';
+      });
+
+      // Re-render with English
+      rerender(
+        <ExpandableDataTable
+          tableTitle="Test Table"
+          headers={mockHeaders}
+          rows={[]}
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+        />,
+      );
+
+      // Check if empty state message is rendered in English again
+      expect(screen.getByText('No data available')).toBeInTheDocument();
+    });
+
+    it('should switch error message language when language changes', () => {
+      const testError = new Error('Test error message');
+
+      // Render with English
+      const { rerender } = render(
+        <ExpandableDataTable
+          tableTitle="Test Table"
+          headers={mockHeaders}
+          rows={mockRows}
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+          error={testError}
+        />,
+      );
+
+      // Check if error message is rendered in English
+      expect(screen.getByText('Error: Test error message')).toBeInTheDocument();
+
+      // Change language to Spanish
+      act(() => {
+        jest.requireMock('react-i18next').__mockI18n.language = 'es';
+      });
+
+      // Re-render with Spanish
+      rerender(
+        <ExpandableDataTable
+          tableTitle="Test Table"
+          headers={mockHeaders}
+          rows={mockRows}
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+          error={testError}
+        />,
+      );
+
+      // Check if error message is rendered in Spanish
+      expect(screen.getByText('Error: Test error message')).toBeInTheDocument();
+
+      // Change language back to English
+      act(() => {
+        jest.requireMock('react-i18next').__mockI18n.language = 'en';
+      });
+
+      // Re-render with English
+      rerender(
+        <ExpandableDataTable
+          tableTitle="Test Table"
+          headers={mockHeaders}
+          rows={mockRows}
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+          error={testError}
+        />,
+      );
+
+      // Check if error message is rendered in English again
+      expect(screen.getByText('Error: Test error message')).toBeInTheDocument();
+    });
+
+    it('should handle complex error objects with interpolation', () => {
+      const complexError = {
+        name: 'ValidationError',
+        message: 'Multiple fields have validation errors',
+        details: ['Field 1 is required', 'Field 2 must be a number'],
+      };
+
+      // Mock getFormattedError to return a specific format for this test
+      (getFormattedError as jest.Mock).mockReturnValueOnce({
+        title: 'ValidationError',
+        message: 'Multiple fields have validation errors',
+      });
+
+      // Render with English
+      const { rerender } = render(
+        <ExpandableDataTable
+          tableTitle="Test Table"
+          headers={mockHeaders}
+          rows={mockRows}
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+          error={complexError}
+        />,
+      );
+
+      // Check if error message is rendered with interpolation
+      expect(
+        screen.getByText(
+          'ValidationError: Multiple fields have validation errors',
+        ),
+      ).toBeInTheDocument();
+
+      // Change language to Spanish
+      act(() => {
+        jest.requireMock('react-i18next').__mockI18n.language = 'es';
+      });
+
+      // Mock getFormattedError again for the rerender
+      (getFormattedError as jest.Mock).mockReturnValueOnce({
+        title: 'ValidationError',
+        message: 'Multiple fields have validation errors',
+      });
+
+      // Re-render with Spanish
+      rerender(
+        <ExpandableDataTable
+          tableTitle="Test Table"
+          headers={mockHeaders}
+          rows={mockRows}
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+          error={complexError}
+        />,
+      );
+
+      // Check if error message is rendered with interpolation in Spanish
+      expect(
+        screen.getByText(
+          'ValidationError: Multiple fields have validation errors',
+        ),
+      ).toBeInTheDocument();
+    });
   });
 });

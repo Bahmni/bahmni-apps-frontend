@@ -27,6 +27,68 @@ jest.mock('@hooks/useAllergies');
 jest.mock('@services/allergyService');
 jest.mock('@utils/date');
 jest.mock('@utils/common');
+
+// Mock for react-i18next with language switching support
+jest.mock('react-i18next', () => {
+  // Create a mock module factory that doesn't reference external variables
+  return {
+    // Mock the useTranslation hook
+    useTranslation: () => {
+      return {
+        t: jest.fn((key: string) => {
+          // Mock implementation that returns translations based on the current language
+          const mockI18n = jest.requireMock('react-i18next').__mockI18n;
+
+          if (mockI18n.language === 'es') {
+            const spanishTranslations: Record<string, string> = {
+              ALLERGEN: 'Alérgeno',
+              SEVERITY: 'Gravedad',
+              REACTIONS: 'Reacción(es)',
+              ALLERGY_LIST_STATUS: 'Estado',
+              ALLERGY_LIST_PROVIDER: 'Proveedor',
+              ALLERGY_LIST_RECORDED_DATE: 'Fecha de grabación',
+              ALLERGIES_DISPLAY_CONTROL_HEADING: 'Alergias',
+              NO_ALLERGIES: 'No hay alergias registradas para este paciente',
+              ALLERGY_LIST_ACTIVE: 'Activo',
+              ALLERGY_LIST_INACTIVE: 'Inactivo',
+              ALLERGY_TABLE_NOT_AVAILABLE: 'No disponible',
+            };
+            return spanishTranslations[key] || key;
+          }
+
+          const englishTranslations: Record<string, string> = {
+            ALLERGEN: 'Allergen',
+            SEVERITY: 'Severity',
+            REACTIONS: 'Reaction(s)',
+            ALLERGY_LIST_STATUS: 'Status',
+            ALLERGY_LIST_PROVIDER: 'Provider',
+            ALLERGY_LIST_RECORDED_DATE: 'Recorded Date',
+            ALLERGIES_DISPLAY_CONTROL_HEADING: 'Allergies',
+            NO_ALLERGIES: 'No Allergies recorded for this patient.',
+            ALLERGY_LIST_ACTIVE: 'Active',
+            ALLERGY_LIST_INACTIVE: 'Inactive',
+            ALLERGY_TABLE_NOT_AVAILABLE: 'Not available',
+          };
+          return englishTranslations[key] || key;
+        }),
+        i18n: {
+          // These properties will be updated by the test
+          get language() {
+            return jest.requireMock('react-i18next').__mockI18n.language;
+          },
+          changeLanguage: jest.fn((lang: string) => {
+            jest.requireMock('react-i18next').__mockI18n.language = lang;
+            return Promise.resolve();
+          }),
+        },
+      };
+    },
+    // Store the mock state in the module
+    __mockI18n: {
+      language: 'en',
+    },
+  };
+});
 jest.mock('@components/expandableDataTable/ExpandableDataTable', () => ({
   ExpandableDataTable: jest.fn(
     ({
@@ -206,6 +268,9 @@ describe('AllergiesTable Unit Tests', () => {
     mockedFormatDateTime.mockImplementation((date) => ({
       formattedResult: `Formatted: ${date}`,
     }));
+
+    // Reset i18n mock state before each test
+    jest.requireMock('react-i18next').__mockI18n.language = 'en';
 
     // Mock capitalize to capitalize first letter of each word
     jest
@@ -1397,6 +1462,207 @@ describe('AllergiesTable Unit Tests', () => {
       // Assert
       // The component should render without crashing
       expect(screen.getByTestId('mock-expandable-table')).toBeInTheDocument();
+    });
+  });
+
+  // 7. Language Switching Tests
+  describe('Language Switching', () => {
+    beforeEach(() => {
+      // Setup standard test data
+      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+      mockedUseAllergies.mockReturnValue({
+        allergies: [mockAllergyIntolerance],
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+      mockedFormatAllergies.mockReturnValue(mockFormattedAllergies);
+    });
+
+    it('should render with English translations by default', () => {
+      // Act
+      render(<AllergiesTable />);
+
+      // Assert - Check table headers are in English
+      expect(screen.getByTestId('header-display')).toHaveTextContent(
+        'Allergen',
+      );
+      expect(screen.getByTestId('header-severity')).toHaveTextContent(
+        'Severity',
+      );
+      expect(screen.getByTestId('header-manifestation')).toHaveTextContent(
+        'Reaction(s)',
+      );
+      expect(screen.getByTestId('header-status')).toHaveTextContent('Status');
+      expect(screen.getByTestId('header-recorder')).toHaveTextContent(
+        'Provider',
+      );
+      expect(screen.getByTestId('header-recordedDate')).toHaveTextContent(
+        'Recorded Date',
+      );
+
+      // Check table title is in English
+      expect(screen.getByTestId('table-title')).toHaveTextContent('Allergies');
+
+      // Check status tag is in English
+      expect(screen.getByTestId('cell-status-0')).toHaveTextContent('Active');
+    });
+
+    it('should display Spanish translations when language is set to Spanish', () => {
+      // Arrange - Set language to Spanish
+      jest.requireMock('react-i18next').__mockI18n.language = 'es';
+
+      // Act
+      render(<AllergiesTable />);
+
+      // Assert - Check table headers are in Spanish
+      expect(screen.getByTestId('header-display')).toHaveTextContent(
+        'Alérgeno',
+      );
+      expect(screen.getByTestId('header-severity')).toHaveTextContent(
+        'Gravedad',
+      );
+      expect(screen.getByTestId('header-manifestation')).toHaveTextContent(
+        'Reacción(es)',
+      );
+      expect(screen.getByTestId('header-status')).toHaveTextContent('Estado');
+      expect(screen.getByTestId('header-recorder')).toHaveTextContent(
+        'Proveedor',
+      );
+      expect(screen.getByTestId('header-recordedDate')).toHaveTextContent(
+        'Fecha de grabación',
+      );
+
+      // Check table title is in Spanish
+      expect(screen.getByTestId('table-title')).toHaveTextContent('Alergias');
+
+      // Check status tag is in Spanish
+      expect(screen.getByTestId('cell-status-0')).toHaveTextContent('Activo');
+    });
+
+    it('should switch from English to Spanish and back', () => {
+      // Arrange
+      const { rerender } = render(<AllergiesTable />);
+
+      // Assert initial English rendering
+      expect(screen.getByTestId('header-display')).toHaveTextContent(
+        'Allergen',
+      );
+      expect(screen.getByTestId('table-title')).toHaveTextContent('Allergies');
+
+      // Act - Change to Spanish
+      jest.requireMock('react-i18next').__mockI18n.language = 'es';
+      rerender(<AllergiesTable />);
+
+      // Assert Spanish rendering
+      expect(screen.getByTestId('header-display')).toHaveTextContent(
+        'Alérgeno',
+      );
+      expect(screen.getByTestId('table-title')).toHaveTextContent('Alergias');
+
+      // Act - Change back to English
+      jest.requireMock('react-i18next').__mockI18n.language = 'en';
+      rerender(<AllergiesTable />);
+
+      // Assert English rendering again
+      expect(screen.getByTestId('header-display')).toHaveTextContent(
+        'Allergen',
+      );
+      expect(screen.getByTestId('table-title')).toHaveTextContent('Allergies');
+    });
+
+    it('should display "Not available" text in the correct language', () => {
+      // Arrange
+      const allergyWithMissingFields: FormattedAllergy = {
+        ...mockFormattedAllergies[0],
+        recorder: undefined,
+        reactions: undefined,
+      };
+      mockedFormatAllergies.mockReturnValue([allergyWithMissingFields]);
+
+      // Act - Render with English
+      const { rerender } = render(<AllergiesTable />);
+
+      // Assert - "Not available" text in English
+      expect(screen.getByTestId('cell-recorder-0')).toHaveTextContent(
+        'Not available',
+      );
+      expect(screen.getByTestId('cell-manifestation-0')).toHaveTextContent(
+        'Not available',
+      );
+
+      // Act - Change to Spanish and rerender
+      jest.requireMock('react-i18next').__mockI18n.language = 'es';
+      rerender(<AllergiesTable />);
+
+      // Assert - "Not available" text in Spanish
+      expect(screen.getByTestId('cell-recorder-0')).toHaveTextContent(
+        'No disponible',
+      );
+      expect(screen.getByTestId('cell-manifestation-0')).toHaveTextContent(
+        'No disponible',
+      );
+    });
+
+    it('should display empty state message in the correct language', () => {
+      // Arrange - Empty allergies
+      mockedUseAllergies.mockReturnValue({
+        allergies: [],
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+      mockedFormatAllergies.mockReturnValue([]);
+
+      // Act - Render with English
+      const { rerender } = render(<AllergiesTable />);
+
+      // Assert - Empty state message in English
+      expect(screen.getByTestId('mock-empty-state')).toHaveTextContent(
+        'No Allergies recorded for this patient.',
+      );
+
+      // Act - Change to Spanish and rerender
+      jest.requireMock('react-i18next').__mockI18n.language = 'es';
+      rerender(<AllergiesTable />);
+
+      // Assert - Empty state message in Spanish
+      expect(screen.getByTestId('mock-empty-state')).toHaveTextContent(
+        'No hay alergias registradas para este paciente',
+      );
+    });
+
+    it('should display active/inactive status in the correct language', () => {
+      // Arrange - Create allergies with different statuses
+      const activeAllergy: FormattedAllergy = {
+        ...mockFormattedAllergies[0],
+        id: 'active-allergy',
+        status: 'Active',
+      };
+
+      const inactiveAllergy: FormattedAllergy = {
+        ...mockFormattedAllergies[0],
+        id: 'inactive-allergy',
+        status: 'Inactive',
+        display: 'Inactive Allergy',
+      };
+
+      mockedFormatAllergies.mockReturnValue([activeAllergy, inactiveAllergy]);
+
+      // Act - Render with English
+      const { rerender } = render(<AllergiesTable />);
+
+      // Assert - Status tags in English
+      expect(screen.getByTestId('cell-status-0')).toHaveTextContent('Active');
+      expect(screen.getByTestId('cell-status-1')).toHaveTextContent('Inactive');
+
+      // Act - Change to Spanish and rerender
+      jest.requireMock('react-i18next').__mockI18n.language = 'es';
+      rerender(<AllergiesTable />);
+
+      // Assert - Status tags in Spanish
+      expect(screen.getByTestId('cell-status-0')).toHaveTextContent('Activo');
+      expect(screen.getByTestId('cell-status-1')).toHaveTextContent('Inactivo');
     });
   });
 });

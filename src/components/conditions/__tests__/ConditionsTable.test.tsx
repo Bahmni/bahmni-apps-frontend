@@ -20,6 +20,66 @@ jest.mock('@hooks/useConditions');
 jest.mock('@services/conditionService');
 jest.mock('@utils/date');
 jest.mock('@utils/common');
+
+// Mock for react-i18next with language switching support
+jest.mock('react-i18next', () => {
+  // Create a mock module factory that doesn't reference external variables
+  return {
+    // Mock the useTranslation hook
+    useTranslation: () => {
+      return {
+        t: jest.fn((key: string) => {
+          // Mock implementation that returns translations based on the current language
+          const mockI18n = jest.requireMock('react-i18next').__mockI18n;
+
+          if (mockI18n.language === 'es') {
+            const spanishTranslations: Record<string, string> = {
+              CONDITION_LIST_CONDITION: 'Condición',
+              CONDITION_LIST_STATUS: 'Estado',
+              CONDITION_TABLE_ONSET_DATE: 'Fecha de inicio',
+              CONDITION_TABLE_PROVIDER: 'Proveedor',
+              CONDITION_TABLE_RECORDED_DATE: 'Fecha de grabación',
+              CONDITION_LIST_DISPLAY_CONTROL_TITLE: 'Condiciones',
+              CONDITION_LIST_NO_CONDITIONS: 'No hay Condiciones disponibles',
+              CONDITION_LIST_ACTIVE: 'Activo',
+              CONDITION_LIST_INACTIVE: 'Inactivo',
+              CONDITION_TABLE_NOT_AVAILABLE: 'No disponible',
+            };
+            return spanishTranslations[key] || key;
+          }
+
+          const englishTranslations: Record<string, string> = {
+            CONDITION_LIST_CONDITION: 'Condition',
+            CONDITION_LIST_STATUS: 'Status',
+            CONDITION_TABLE_ONSET_DATE: 'Onset Date',
+            CONDITION_TABLE_PROVIDER: 'Provider',
+            CONDITION_TABLE_RECORDED_DATE: 'Recorded Date',
+            CONDITION_LIST_DISPLAY_CONTROL_TITLE: 'Conditions',
+            CONDITION_LIST_NO_CONDITIONS: 'No conditions found',
+            CONDITION_LIST_ACTIVE: 'Active',
+            CONDITION_LIST_INACTIVE: 'Inactive',
+            CONDITION_TABLE_NOT_AVAILABLE: 'Not available',
+          };
+          return englishTranslations[key] || key;
+        }),
+        i18n: {
+          // These properties will be updated by the test
+          get language() {
+            return jest.requireMock('react-i18next').__mockI18n.language;
+          },
+          changeLanguage: jest.fn((lang: string) => {
+            jest.requireMock('react-i18next').__mockI18n.language = lang;
+            return Promise.resolve();
+          }),
+        },
+      };
+    },
+    // Store the mock state in the module
+    __mockI18n: {
+      language: 'en',
+    },
+  };
+});
 jest.mock('@components/expandableDataTable/ExpandableDataTable', () => ({
   ExpandableDataTable: jest.fn(
     ({
@@ -118,6 +178,8 @@ describe('ConditionsTable Unit Tests', () => {
     mockedFormatDate.mockImplementation((date) => ({
       formattedResult: `Formatted: ${date}`,
     }));
+    // Reset i18n mock state before each test
+    jest.requireMock('react-i18next').__mockI18n.language = 'en';
   });
 
   // 1. Component Initialization and Hook Interactions
@@ -529,6 +591,72 @@ describe('ConditionsTable Unit Tests', () => {
       );
       expect(formatDateTime).toHaveBeenCalledWith('');
     });
+
+    it('should show "Not available" when onsetDate formatting returns no result', () => {
+      // Arrange
+      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+      mockedUseConditions.mockReturnValue({
+        conditions: mockConditions,
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      const conditionWithOnsetDate: FormattedCondition = {
+        ...mockFormattedConditionsWithoutNotes[0],
+        onsetDate: '2025-03-24T18:30:00+00:00',
+      };
+
+      mockedFormatConditions.mockReturnValue([conditionWithOnsetDate]);
+
+      // Mock formatDate to return no formattedResult
+      mockedFormatDate.mockReturnValue({
+        formattedResult: '',
+        error: { title: 'Error', message: 'Invalid date format' },
+      });
+
+      // Act
+      render(<ConditionsTable />);
+
+      // Assert - Should show "Not available" text
+      expect(screen.getByTestId('cell-onsetDate-0')).toHaveTextContent(
+        'Not available',
+      );
+      expect(formatDate).toHaveBeenCalledWith('2025-03-24T18:30:00+00:00');
+    });
+
+    it('should show "Not available" when recordedDate formatting returns no result', () => {
+      // Arrange
+      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+      mockedUseConditions.mockReturnValue({
+        conditions: mockConditions,
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      const conditionWithRecordedDate: FormattedCondition = {
+        ...mockFormattedConditionsWithoutNotes[0],
+        recordedDate: '2025-03-25T06:48:32+00:00',
+      };
+
+      mockedFormatConditions.mockReturnValue([conditionWithRecordedDate]);
+
+      // Mock formatDateTime to return no formattedResult
+      mockedFormatDateTime.mockReturnValue({
+        formattedResult: '',
+        error: { title: 'Error', message: 'Invalid date format' },
+      });
+
+      // Act
+      render(<ConditionsTable />);
+
+      // Assert - Should show "Not available" text
+      expect(screen.getByTestId('cell-recordedDate-0')).toHaveTextContent(
+        'Not available',
+      );
+      expect(formatDateTime).toHaveBeenCalledWith('2025-03-25T06:48:32+00:00');
+    });
   });
 
   // 4. Expanded Content Tests
@@ -679,6 +807,260 @@ describe('ConditionsTable Unit Tests', () => {
       expect(screen.getByTestId('mock-error-state')).toHaveTextContent(
         'Authorization error: 401 Unauthorized',
       );
+    });
+  });
+
+  // 6. Language Switching Tests
+  describe('Language Switching', () => {
+    beforeEach(() => {
+      // Setup standard test data
+      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+      mockedUseConditions.mockReturnValue({
+        conditions: mockConditions,
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+      mockedFormatConditions.mockReturnValue(
+        mockFormattedConditionsWithoutNotes,
+      );
+    });
+
+    it('should render with English translations by default', () => {
+      // Act
+      render(<ConditionsTable />);
+
+      // Assert - Check table headers are in English
+      expect(screen.getByTestId('header-display')).toHaveTextContent(
+        'Condition',
+      );
+      expect(screen.getByTestId('header-status')).toHaveTextContent('Status');
+      expect(screen.getByTestId('header-onsetDate')).toHaveTextContent(
+        'Onset Date',
+      );
+      expect(screen.getByTestId('header-recorder')).toHaveTextContent(
+        'Provider',
+      );
+      expect(screen.getByTestId('header-recordedDate')).toHaveTextContent(
+        'Recorded Date',
+      );
+
+      // Check table title is in English
+      expect(screen.getByTestId('table-title')).toHaveTextContent('Conditions');
+
+      // Check status tag is in English
+      expect(screen.getByTestId('cell-status-0')).toHaveTextContent('Active');
+    });
+
+    it('should display Spanish translations when language is set to Spanish', () => {
+      // Arrange - Set language to Spanish
+      jest.requireMock('react-i18next').__mockI18n.language = 'es';
+
+      // Act
+      render(<ConditionsTable />);
+
+      // Assert - Check table headers are in Spanish
+      expect(screen.getByTestId('header-display')).toHaveTextContent(
+        'Condición',
+      );
+      expect(screen.getByTestId('header-status')).toHaveTextContent('Estado');
+      expect(screen.getByTestId('header-onsetDate')).toHaveTextContent(
+        'Fecha de inicio',
+      );
+      expect(screen.getByTestId('header-recorder')).toHaveTextContent(
+        'Proveedor',
+      );
+      expect(screen.getByTestId('header-recordedDate')).toHaveTextContent(
+        'Fecha de grabación',
+      );
+
+      // Check table title is in Spanish
+      expect(screen.getByTestId('table-title')).toHaveTextContent(
+        'Condiciones',
+      );
+
+      // Check status tag is in Spanish
+      expect(screen.getByTestId('cell-status-0')).toHaveTextContent('Activo');
+    });
+
+    it('should switch from English to Spanish and back', () => {
+      // Arrange
+      const { rerender } = render(<ConditionsTable />);
+
+      // Assert initial English rendering
+      expect(screen.getByTestId('header-display')).toHaveTextContent(
+        'Condition',
+      );
+      expect(screen.getByTestId('table-title')).toHaveTextContent('Conditions');
+
+      // Act - Change to Spanish
+      jest.requireMock('react-i18next').__mockI18n.language = 'es';
+      rerender(<ConditionsTable />);
+
+      // Assert Spanish rendering
+      expect(screen.getByTestId('header-display')).toHaveTextContent(
+        'Condición',
+      );
+      expect(screen.getByTestId('table-title')).toHaveTextContent(
+        'Condiciones',
+      );
+
+      // Act - Change back to English
+      jest.requireMock('react-i18next').__mockI18n.language = 'en';
+      rerender(<ConditionsTable />);
+
+      // Assert English rendering again
+      expect(screen.getByTestId('header-display')).toHaveTextContent(
+        'Condition',
+      );
+      expect(screen.getByTestId('table-title')).toHaveTextContent('Conditions');
+    });
+
+    it('should display "Not available" text in the correct language', () => {
+      // Arrange
+      const conditionWithMissingFields: FormattedCondition = {
+        ...mockFormattedConditionsWithoutNotes[0],
+        recorder: undefined,
+        onsetDate: undefined,
+      };
+      mockedFormatConditions.mockReturnValue([conditionWithMissingFields]);
+
+      // Act - Render with English
+      const { rerender } = render(<ConditionsTable />);
+
+      // Assert - "Not available" text in English
+      expect(screen.getByTestId('cell-recorder-0')).toHaveTextContent(
+        'Not available',
+      );
+      expect(screen.getByTestId('cell-onsetDate-0')).toHaveTextContent(
+        'Formatted:',
+      );
+
+      // Act - Change to Spanish and rerender
+      jest.requireMock('react-i18next').__mockI18n.language = 'es';
+      rerender(<ConditionsTable />);
+
+      // Assert - "Not available" text in Spanish
+      expect(screen.getByTestId('cell-recorder-0')).toHaveTextContent(
+        'No disponible',
+      );
+    });
+
+    it('should show translated fallback text when date formatting returns no result', () => {
+      // Arrange
+      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+      mockedUseConditions.mockReturnValue({
+        conditions: mockConditions,
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      const conditionWithDates: FormattedCondition = {
+        ...mockFormattedConditionsWithoutNotes[0],
+        onsetDate: '2025-03-24T18:30:00+00:00',
+        recordedDate: '2025-03-25T06:48:32+00:00',
+      };
+
+      mockedFormatConditions.mockReturnValue([conditionWithDates]);
+
+      // Mock both date formatting functions to return no formattedResult
+      mockedFormatDate.mockReturnValue({
+        formattedResult: '',
+        error: { title: 'Error', message: 'Invalid date format' },
+      });
+
+      mockedFormatDateTime.mockReturnValue({
+        formattedResult: '',
+        error: { title: 'Error', message: 'Invalid date format' },
+      });
+
+      // Act - Render with English
+      const { rerender } = render(<ConditionsTable />);
+
+      // Assert - Fallback text in English
+      expect(screen.getByTestId('cell-onsetDate-0')).toHaveTextContent(
+        'Not available',
+      );
+      expect(screen.getByTestId('cell-recordedDate-0')).toHaveTextContent(
+        'Not available',
+      );
+
+      // Act - Change to Spanish and rerender
+      jest.requireMock('react-i18next').__mockI18n.language = 'es';
+      rerender(<ConditionsTable />);
+
+      // Assert - Fallback text in Spanish
+      expect(screen.getByTestId('cell-onsetDate-0')).toHaveTextContent(
+        'No disponible',
+      );
+      expect(screen.getByTestId('cell-recordedDate-0')).toHaveTextContent(
+        'No disponible',
+      );
+    });
+
+    it('should display empty state message in the correct language', () => {
+      // Arrange - Empty conditions
+      mockedUseConditions.mockReturnValue({
+        conditions: [],
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+      mockedFormatConditions.mockReturnValue([]);
+
+      // Act - Render with English
+      const { rerender } = render(<ConditionsTable />);
+
+      // Assert - Empty state message in English
+      expect(screen.getByTestId('mock-empty-state')).toHaveTextContent(
+        'No conditions found',
+      );
+
+      // Act - Change to Spanish and rerender
+      jest.requireMock('react-i18next').__mockI18n.language = 'es';
+      rerender(<ConditionsTable />);
+
+      // Assert - Empty state message in Spanish
+      expect(screen.getByTestId('mock-empty-state')).toHaveTextContent(
+        'No hay Condiciones disponibles',
+      );
+    });
+
+    it('should display active/inactive status in the correct language', () => {
+      // Arrange - Create conditions with different statuses
+      const activeCondition: FormattedCondition = {
+        ...mockFormattedConditionsWithoutNotes[0],
+        id: 'active-condition',
+        status: ConditionStatus.Active,
+      };
+
+      const inactiveCondition: FormattedCondition = {
+        ...mockFormattedConditionsWithoutNotes[0],
+        id: 'inactive-condition',
+        status: ConditionStatus.Inactive,
+        display: 'Inactive Condition',
+      };
+
+      mockedFormatConditions.mockReturnValue([
+        activeCondition,
+        inactiveCondition,
+      ]);
+
+      // Act - Render with English
+      const { rerender } = render(<ConditionsTable />);
+
+      // Assert - Status tags in English
+      expect(screen.getByTestId('cell-status-0')).toHaveTextContent('Active');
+      expect(screen.getByTestId('cell-status-1')).toHaveTextContent('Inactive');
+
+      // Act - Change to Spanish and rerender
+      jest.requireMock('react-i18next').__mockI18n.language = 'es';
+      rerender(<ConditionsTable />);
+
+      // Assert - Status tags in Spanish
+      expect(screen.getByTestId('cell-status-0')).toHaveTextContent('Activo');
+      expect(screen.getByTestId('cell-status-1')).toHaveTextContent('Inactivo');
     });
   });
 });
