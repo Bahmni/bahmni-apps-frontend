@@ -350,7 +350,7 @@ describe('ConditionsTable Unit Tests', () => {
 
       // Assert
       const statusCell = screen.getByTestId('cell-status-0');
-      expect(statusCell).toHaveTextContent('active');
+      expect(statusCell).toHaveTextContent('Active');
       // In a real test, we would check for the Tag component with type="green"
       // but since we're using a mock, we just check for the content
     });
@@ -377,7 +377,7 @@ describe('ConditionsTable Unit Tests', () => {
 
       // Assert
       const statusCell = screen.getByTestId('cell-status-0');
-      expect(statusCell).toHaveTextContent('inactive');
+      expect(statusCell).toHaveTextContent('Inactive');
       // In a real test, we would check for the Tag component with type="gray"
       // but since we're using a mock, we just check for the content
     });

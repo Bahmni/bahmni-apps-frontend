@@ -1,1 +1,13 @@
-{}
+{
+  "CONDITION_LIST_DISPLAY_CONTROL_TITLE": "Condiciones",
+  "CONDITION_LIST_ACTIVE": "Activo",
+  "CONDITION_LIST_INACTIVE": "Inactivo",
+  "CONDITION_LIST_CONDITION": "Condición",
+  "CONDITION_LIST_STATUS": "Estado",
+  "CONDITION_LIST_DATE": "Fecha",
+  "CONDITION_LIST_NO_CONDITIONS": "No hay Condiciones disponibles",
+  "CONDITION_TABLE_ONSET_DATE": "Fecha de inicio",
+  "CONDITION_TABLE_PROVIDER": "Proveedor",
+  "CONDITION_TABLE_RECORDED_DATE": "Fecha de grabación",
+  "CONDITION_TABLE_NOT_AVAILABLE": "No disponible"
+}
