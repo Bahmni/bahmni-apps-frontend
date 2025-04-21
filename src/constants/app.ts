@@ -14,5 +14,5 @@ export const PATIENT_ALLERGY_RESOURCE_URL = (patientUUID: string) =>
 
 export const LOGIN_PATH = '/bahmni/home/index.html#/login';
 export const DEFAULT_LOCALE = 'en';
-export const LOCALE_COOKIE_NAME = 'NG_TRANSLATE_LANG_KEY';
+export const LOCALE_STORAGE_KEY = 'NG_TRANSLATE_LANG_KEY';
 export const CLINICAL_NAMESPACE = 'clinical';

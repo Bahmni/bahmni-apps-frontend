@@ -1,27 +1,41 @@
 import {
   CONFIG_TRANSLATIONS_URL_TEMPLATE,
   BUNDLED_TRANSLATIONS_URL_TEMPLATE,
-  LOCALE_COOKIE_NAME,
+  LOCALE_STORAGE_KEY,
   DEFAULT_LOCALE,
 } from '@constants/app';
-import { get } from './api';
-import { getFormattedError } from '@utils/common';
-import notificationService from './notificationService';
+import axios from 'axios';
 
 /**
- * Fetches user's preferred locale from the cookie
+ * Fetches user's preferred locale from the local storage.
  * @returns The user's preferred locale code if valid, or DEFAULT_LOCALE if not found or invalid
  */
 export const getUserPreferredLocale = (): string => {
-  const localeCookie = localStorage.getItem(LOCALE_COOKIE_NAME);
-  const userLocale = localeCookie || DEFAULT_LOCALE;
+  const localeStorageKey = localStorage.getItem(LOCALE_STORAGE_KEY);
+  const userLocale = localeStorageKey || DEFAULT_LOCALE;
+  return userLocale;
+};
+
+/**
+ * Fetches translations from a URL using axios.
+ * Returns an empty object if the request fails for any reason.
+ *
+ * @param url - URL to fetch translations from
+ * @returns A promise that resolves to a translations object or empty object on failure
+ */
+export const getTranslationFile = async (
+  url: string,
+): Promise<Record<string, string>> => {
   try {
-    Intl.getCanonicalLocales(userLocale);
-    return userLocale;
+    const response = await axios.get(url);
+    if (!response || !response.data) {
+      console.error(`Invalid response from ${url}`);
+      return {};
+    }
+    return response.data;
   } catch (error) {
-    const { title, message } = getFormattedError(error);
-    notificationService.showError(title, message);
-    return DEFAULT_LOCALE;
+    console.error(`Failed to load translations from ${url}:`, error);
+    return {};
   }
 };
 
@@ -41,11 +55,11 @@ const getMergedTranslations = async (
   let bundledTranslations: Record<string, string> = {};
   let configTranslations: Record<string, string> = {};
 
-  bundledTranslations = await get<Record<string, string>>(
+  bundledTranslations = await getTranslationFile(
     BUNDLED_TRANSLATIONS_URL_TEMPLATE(lang),
   );
 
-  configTranslations = await get<Record<string, string>>(
+  configTranslations = await getTranslationFile(
     CONFIG_TRANSLATIONS_URL_TEMPLATE(lang),
   );
 

@@ -1,7 +1,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
-import { LOCALE_COOKIE_NAME, CLINICAL_NAMESPACE } from './constants/app';
+import { LOCALE_STORAGE_KEY, CLINICAL_NAMESPACE } from './constants/app';
 import {
   getTranslations,
   getUserPreferredLocale,
@@ -28,7 +28,7 @@ export const initI18n = async () => {
       resources: translations,
       detection: {
         order: ['localStorage'],
-        lookupLocalStorage: LOCALE_COOKIE_NAME,
+        lookupLocalStorage: LOCALE_STORAGE_KEY,
       },
       interpolation: {
         escapeValue: false,

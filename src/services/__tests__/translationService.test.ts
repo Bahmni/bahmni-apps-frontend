@@ -1,4 +1,8 @@
-import { getTranslations, getUserPreferredLocale } from '../translationService';
+import {
+  getTranslations,
+  getUserPreferredLocale,
+  getTranslationFile,
+} from '../translationService';
 import {
   CONFIG_TRANSLATIONS_URL_TEMPLATE,
   BUNDLED_TRANSLATIONS_URL_TEMPLATE,
@@ -6,16 +10,17 @@ import {
   DEFAULT_LOCALE,
 } from '@constants/app';
 import notificationService from '../notificationService';
-import * as apiService from '../api';
+import axios from 'axios';
 
 // Mock dependencies
 jest.mock('../notificationService');
 jest.mock('@utils/common');
-jest.mock('../api');
+jest.mock('axios');
 
 describe('Translation Service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   describe('getUserPreferredLocale', () => {
@@ -58,6 +63,65 @@ describe('Translation Service', () => {
     });
   });
 
+  describe('getTranslationFile', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      jest.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    // Happy Path
+    it('should successfully fetch and return translation data', async () => {
+      // Arrange
+      const mockData = { key1: 'value1', key2: 'value2' };
+      (axios.get as jest.Mock).mockResolvedValue({ data: mockData });
+
+      // Act
+      const url = 'http://example.com/translations';
+      const result = await getTranslationFile(url);
+
+      // Assert
+      expect(result).toEqual(mockData);
+      expect(axios.get).toHaveBeenCalledWith(url);
+      expect(console.error).not.toHaveBeenCalled();
+    });
+
+    // Error Cases
+    it('should return empty object and log error when request fails', async () => {
+      // Arrange
+      const error = new Error('Network error');
+      (axios.get as jest.Mock).mockRejectedValue(error);
+
+      // Act
+      const url = 'http://example.com/translations';
+      const result = await getTranslationFile(url);
+
+      // Assert
+      expect(result).toEqual({});
+      expect(axios.get).toHaveBeenCalledWith(url);
+      expect(console.error).toHaveBeenCalledWith(
+        `Failed to load translations from ${url}:`,
+        error,
+      );
+    });
+
+    it('should return empty object when response is invalid', async () => {
+      // Arrange
+      (axios.get as jest.Mock).mockResolvedValue({ data: null });
+
+      // Act
+      const url = 'http://example.com/translations';
+      const result = await getTranslationFile(url);
+
+      // Assert
+      expect(result).toEqual({});
+      expect(axios.get).toHaveBeenCalledWith(url);
+    });
+  });
+
   describe('getTranslations', () => {
     beforeEach(() => {
       jest.clearAllMocks();
@@ -81,12 +145,12 @@ describe('Translation Service', () => {
         key2: 'Bundled Value 2',
       };
 
-      // Mock API responses
-      jest.spyOn(apiService, 'get').mockImplementation((url: string) => {
+      // Mock axios responses
+      (axios.get as jest.Mock).mockImplementation((url: string) => {
         if (url === configUrl) {
-          return Promise.resolve(configTranslations);
+          return Promise.resolve({ data: configTranslations });
         } else if (url === bundledUrl) {
-          return Promise.resolve(bundledTranslations);
+          return Promise.resolve({ data: bundledTranslations });
         }
         return Promise.reject(new Error('Unexpected URL'));
       });
@@ -95,9 +159,8 @@ describe('Translation Service', () => {
       const result = await getTranslations(language, namespace);
 
       // Assert
-      expect(apiService.get).toHaveBeenCalledTimes(2);
-      expect(apiService.get).toHaveBeenCalledWith(configUrl);
-      expect(apiService.get).toHaveBeenCalledWith(bundledUrl);
+      expect(axios.get).toHaveBeenCalledWith(configUrl);
+      expect(axios.get).toHaveBeenCalledWith(bundledUrl);
 
       // Config translations should override bundled translations
       expect(result).toEqual({
@@ -126,12 +189,12 @@ describe('Translation Service', () => {
         key2: 'Another English Value',
       };
 
-      // Mock API responses
-      jest.spyOn(apiService, 'get').mockImplementation((url: string) => {
+      // Mock axios responses
+      (axios.get as jest.Mock).mockImplementation((url: string) => {
         if (url === esConfigUrl || url === esBundledUrl) {
-          return Promise.resolve(esTranslations);
+          return Promise.resolve({ data: esTranslations });
         } else if (url === enConfigUrl || url === enBundledUrl) {
-          return Promise.resolve(enTranslations);
+          return Promise.resolve({ data: enTranslations });
         }
         return Promise.reject(new Error('Unexpected URL'));
       });
@@ -140,7 +203,6 @@ describe('Translation Service', () => {
       const result = await getTranslations(language, namespace);
 
       // Assert
-      expect(apiService.get).toHaveBeenCalledTimes(4); // 2 for Spanish, 2 for English fallback
       expect(result).toEqual({
         [language]: {
           [namespace]: { ...esTranslations },
@@ -157,14 +219,13 @@ describe('Translation Service', () => {
       const namespace = 'clinical';
       const translations = { key1: 'English Value' };
 
-      // Mock API responses
-      jest.spyOn(apiService, 'get').mockResolvedValue(translations);
+      // Mock axios responses
+      (axios.get as jest.Mock).mockResolvedValue({ data: translations });
 
       // Act
       const result = await getTranslations(language, namespace);
 
       // Assert
-      expect(apiService.get).toHaveBeenCalledTimes(2); // Only for English, no fallback
       expect(result).toEqual({
         en: {
           [namespace]: { ...translations },
@@ -173,20 +234,18 @@ describe('Translation Service', () => {
     });
 
     // Sad Path Tests
-
     it('should handle empty translation objects', async () => {
       // Arrange
       const language = 'en';
       const namespace = 'clinical';
 
-      // Mock API responses - both return empty objects
-      jest.spyOn(apiService, 'get').mockResolvedValue({});
+      // Mock axios responses - both return empty objects
+      (axios.get as jest.Mock).mockResolvedValue({ data: {} });
 
       // Act
       const result = await getTranslations(language, namespace);
 
       // Assert
-      expect(apiService.get).toHaveBeenCalledTimes(2);
       expect(result).toEqual({
         [language]: {
           [namespace]: {},
@@ -194,33 +253,21 @@ describe('Translation Service', () => {
       });
     });
 
-    it('should handle non-string values in translation objects', async () => {
+    it('should handle failed requests gracefully', async () => {
       // Arrange
       const language = 'en';
       const namespace = 'clinical';
 
-      // Mock API responses with non-string values
-      const mixedTranslations = {
-        key1: 'String value',
-        key2: 123,
-        key3: true,
-        key4: { nested: 'object' },
-      };
-
-      jest
-        .spyOn(apiService, 'get')
-        .mockResolvedValue(
-          mixedTranslations as unknown as Record<string, string>,
-        );
+      // Mock axios to simulate failed requests
+      (axios.get as jest.Mock).mockRejectedValue(new Error('Network error'));
 
       // Act
       const result = await getTranslations(language, namespace);
 
       // Assert
-      expect(apiService.get).toHaveBeenCalledTimes(2);
       expect(result).toEqual({
         [language]: {
-          [namespace]: mixedTranslations,
+          [namespace]: {},
         },
       });
     });

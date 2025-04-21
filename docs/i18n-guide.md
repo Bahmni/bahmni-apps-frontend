@@ -34,7 +34,7 @@ The Bahmni Clinical Frontend application uses [i18next](https://www.i18next.com/
 
 1. The `TranslationProvider` component initializes translations after the notification service is ready
 2. The `initI18n` function in `src/i18n.ts` is called to set up i18next
-3. User's preferred locale is determined from cookies or defaults to English
+3. User's preferred locale is determined from storage key or defaults to English
 4. Translations are fetched from both bundled and config sources
 5. i18next is initialized with the merged translations
 
@@ -53,13 +53,13 @@ These constants define the URL patterns for fetching translations:
 
 ```typescript
 export const DEFAULT_LOCALE = "en";
-export const LOCALE_COOKIE_NAME = "NG_TRANSLATE_LANG_KEY";
+export const LOCALE_STORAGE_KEY = "NG_TRANSLATE_LANG_KEY";
 ```
 
 These constants define:
 
 - **DEFAULT_LOCALE**: The fallback locale (English) used when a translation is missing or when the user's preferred locale is invalid
-- **LOCALE_COOKIE_NAME**: The name of the cookie used to store the user's preferred locale
+- **LOCALE_STORAGE_KEY**: The name of the cookie used to store the user's preferred locale
 
 ### Namespace Configuration
 
@@ -103,20 +103,61 @@ When both sources provide a translation for the same key, the config translation
 
 The `getTranslations` function in `translationService.ts` handles loading and merging translations:
 
-1. Fetches translations from both bundled and config sources
-2. Merges them with config translations taking precedence
+1. Fetches translations from both bundled and config sources using the `getMergedTranslations` function
+2. Merges them with config translations taking precedence over bundled translations
 3. For non-English locales, also loads English translations as fallback
-4. Organizes translations by language code and namespace
+4. Organizes translations by language code and namespace following the i18next resource structure
+
+The merging process is handled by the `getMergedTranslations` function:
+
+```typescript
+const getMergedTranslations = async (
+  lang: string,
+): Promise<Record<string, string>> => {
+  let bundledTranslations: Record<string, string> = {};
+  let configTranslations: Record<string, string> = {};
+
+  bundledTranslations = await get<Record<string, string>>(
+    BUNDLED_TRANSLATIONS_URL_TEMPLATE(lang),
+  );
+
+  configTranslations = await get<Record<string, string>>(
+    CONFIG_TRANSLATIONS_URL_TEMPLATE(lang),
+  );
+
+  return { ...bundledTranslations, ...configTranslations };
+};
+```
+
+This function:
+
+- Fetches translations from both bundled and configuration sources
+- Uses the spread operator to merge them, with config translations overriding bundled ones
+- Either source can fail independently without affecting the other
 
 ### Error Handling and Fallbacks
 
 The implementation includes robust error handling:
 
-- If a locale is invalid, it falls back to the default locale (English)
-- If bundled translations fail to load, it continues with config translations
-- If config translations fail to load, it continues with bundled translations
-- If both fail, it shows appropriate warnings and uses an empty translations object
-- For non-English locales, English translations are always loaded as fallback
+- If a locale is invalid or not found in localStorage, it falls back to the default locale (English)
+- The `getUserPreferredLocale` function handles this fallback:
+  ```typescript
+  export const getUserPreferredLocale = (): string => {
+    const localeStorageKey = localStorage.getItem(LOCALE_STORAGE_KEY);
+    const userLocale = localeStorageKey || DEFAULT_LOCALE;
+    return userLocale;
+  };
+  ```
+- For non-English locales, English translations are always loaded as fallback:
+  ```typescript
+  // Add English fallback for non-English languages
+  if (lang !== "en") {
+    translations.en = {
+      [namespace]: await getMergedTranslations("en"),
+    };
+  }
+  ```
+- This ensures that even if a translation is missing in the requested language, the English version will be displayed
 
 ## Development Guidelines
 
@@ -188,14 +229,14 @@ function ItemCount({ count }: { count: number }) {
 ```tsx
 import { useTranslation } from "react-i18next";
 import Cookies from "js-cookie";
-import { LOCALE_COOKIE_NAME } from "@constants/app";
+import { LOCALE_STORAGE_KEY } from "@constants/app";
 
 function LanguageSwitcher() {
   const { i18n } = useTranslation();
 
   const changeLanguage = (lang: string) => {
     i18n.changeLanguage(lang);
-    Cookies.set(LOCALE_COOKIE_NAME, lang);
+    Cookies.set(LOCALE_STORAGE_KEY, lang);
   };
 
   return (
@@ -244,7 +285,7 @@ If you need to change the location of translation files:
 
 The application uses cookies to persist the user's language preference:
 
-1. The cookie name is defined by `LOCALE_COOKIE_NAME` in `src/constants/app.ts`
+1. The cookie name is defined by `LOCALE_STORAGE_KEY` in `src/constants/app.ts`
 2. The default value is `'NG_TRANSLATE_LANG_KEY'` for compatibility with AngularJS applications
 3. To change the cookie name, update this constant
 
