@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   DataTable,
   DataTableSkeleton,
@@ -44,10 +45,13 @@ export const ExpandableDataTable = <T extends { id?: string }>({
   loading = false,
   error = null,
   ariaLabel = tableTitle,
-  emptyStateMessage = 'No data available',
+  emptyStateMessage,
   className = 'expandable-data-table-item',
   rowClassNames = {},
 }: ExpandableDataTableProps<T>) => {
+  const { t } = useTranslation();
+  emptyStateMessage =
+    emptyStateMessage || t('EXPANDABLE_TABLE_EMPTY_STATE_MESSAGE');
   if (error) {
     const formattedError = getFormattedError(error);
     return (
@@ -55,7 +59,10 @@ export const ExpandableDataTable = <T extends { id?: string }>({
         <Accordion>
           <AccordionItem title={tableTitle}>
             <p style={{ padding: '0.5rem' }}>
-              {formattedError.title}: {formattedError.message}
+              {t('EXPANDABLE_TABLE_ERROR_MESSAGE', {
+                title: formattedError.title,
+                message: formattedError.message,
+              })}
             </p>
           </AccordionItem>
         </Accordion>

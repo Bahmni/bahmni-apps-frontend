@@ -18,6 +18,8 @@
   "CONDITION_TABLE_ONSET_DATE": "Onset Date",
   "CONDITION_TABLE_PROVIDER": "Provider",
   "CONDITION_TABLE_RECORDED_DATE": "Recorded Date",
+  "EXPANDABLE_TABLE_EMPTY_STATE_MESSAGE": "No data available",
+  "EXPANDABLE_TABLE_ERROR_MESSAGE": "{{title}}: {{message}}",
   "NO_ALLERGIES": "No Allergies recorded for this patient.",
   "REACTIONS": "Reaction(s)",
   "SEVERITY": "Severity"

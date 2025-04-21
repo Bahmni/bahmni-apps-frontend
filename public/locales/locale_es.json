@@ -18,6 +18,8 @@
   "CONDITION_TABLE_ONSET_DATE": "Fecha de inicio",
   "CONDITION_TABLE_PROVIDER": "Proveedor",
   "CONDITION_TABLE_RECORDED_DATE": "Fecha de grabación",
+  "EXPANDABLE_TABLE_EMPTY_STATE_MESSAGE": "No hay datos disponibles",
+  "EXPANDABLE_TABLE_ERROR_MESSAGE": "{{title}}: {{message}}",
   "NO_ALLERGIES": "No hay alergias registradas para este paciente",
   "REACTIONS": "Reacción(es)",
   "SEVERITY": "Gravedad"
