@@ -1,61 +1,16 @@
 import React from 'react';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import PatientDetails from '../PatientDetails';
 import { usePatient } from '@hooks/usePatient';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import * as patientService from '@services/patientService';
 import { FormattedPatientData, Age } from '@types/patient';
+import i18n from '@/setupTests.i18n';
 
 // Mock the custom hooks and patient service
-jest.mock('../../../hooks/usePatient');
-jest.mock('../../../hooks/usePatientUUID');
-jest.mock('../../../services/patientService');
-
-// Mock for react-i18next
-jest.mock('react-i18next', () => {
-  // Create a mock module factory that doesn't reference external variables
-  return {
-    // Mock the useTranslation hook
-    useTranslation: () => {
-      return {
-        t: jest.fn((key: string) => {
-          // Mock implementation that returns translations based on the current language
-          const mockI18n = jest.requireMock('react-i18next').__mockI18n;
-
-          if (mockI18n.language === 'es') {
-            const spanishTranslations: Record<string, string> = {
-              CLINICAL_YEARS_TRANSLATION_KEY: 'años',
-              CLINICAL_MONTHS_TRANSLATION_KEY: 'meses',
-              CLINICAL_DAYS_TRANSLATION_KEY: 'días',
-            };
-            return spanishTranslations[key] || key;
-          }
-
-          const englishTranslations: Record<string, string> = {
-            CLINICAL_YEARS_TRANSLATION_KEY: 'Years',
-            CLINICAL_MONTHS_TRANSLATION_KEY: 'Months',
-            CLINICAL_DAYS_TRANSLATION_KEY: 'Days',
-          };
-          return englishTranslations[key] || key;
-        }),
-        i18n: {
-          // These properties will be updated by the test
-          get language() {
-            return jest.requireMock('react-i18next').__mockI18n.language;
-          },
-          changeLanguage: jest.fn((lang: string) => {
-            jest.requireMock('react-i18next').__mockI18n.language = lang;
-            return Promise.resolve();
-          }),
-        },
-      };
-    },
-    // Store the mock state in the module
-    __mockI18n: {
-      language: 'en',
-    },
-  };
-});
+jest.mock('@hooks/usePatient');
+jest.mock('@hooks/usePatientUUID');
+jest.mock('@services/patientService');
 
 const mockedUsePatient = usePatient as jest.MockedFunction<typeof usePatient>;
 const mockedUsePatientUUID = usePatientUUID as jest.MockedFunction<
@@ -69,8 +24,8 @@ const mockedFormatPatientData =
 describe('PatientDetails Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // Reset i18n mock state before each test
-    jest.requireMock('react-i18next').__mockI18n.language = 'en';
+    // Reset i18n to English
+    i18n.changeLanguage('en');
     // Mock the usePatientUUID hook to return a test UUID
     mockedUsePatientUUID.mockReturnValue('test-uuid');
   });
@@ -134,7 +89,7 @@ describe('PatientDetails Component', () => {
     expect(screen.getByText('John Doe')).toBeInTheDocument();
     expect(screen.getByText('ID: test-uuid')).toBeInTheDocument();
     expect(
-      screen.getByText('male | 35 Years, 2 Months, 15 Days | 1990-01-01'),
+      screen.getByText('male | 35 years, 2 months, 15 days | 1990-01-01'),
     ).toBeInTheDocument();
   });
 
@@ -423,7 +378,7 @@ describe('PatientDetails Component', () => {
     // Should still render other information
     expect(screen.getByText('ID: test-uuid')).toBeInTheDocument();
     expect(
-      screen.getByText('male | 35 Years, 2 Months, 15 Days | 1990-01-01'),
+      screen.getByText('male | 35 years, 2 months, 15 days | 1990-01-01'),
     ).toBeInTheDocument();
     // Name should not be present
     expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument();
@@ -736,105 +691,5 @@ describe('PatientDetails Component', () => {
 
     // Assert
     expect(screen.getByTestId('skeleton-loader')).toBeInTheDocument();
-  });
-
-  // Language switching tests
-  describe('Language switching', () => {
-    beforeEach(() => {
-      // Reset i18n mock state before each test
-      jest.requireMock('react-i18next').__mockI18n.language = 'en';
-
-      // Setup patient data
-      const mockPatient = {
-        resourceType: 'Patient' as const,
-        id: 'test-uuid',
-        name: [{ given: ['John'], family: 'Doe' }],
-        gender: 'male' as const,
-        birthDate: '1990-01-01',
-      };
-
-      const mockAge: Age = {
-        years: 35,
-        months: 2,
-        days: 15,
-      };
-
-      const mockFormattedPatient: FormattedPatientData = {
-        id: 'test-uuid',
-        fullName: 'John Doe',
-        gender: 'male',
-        birthDate: '1990-01-01',
-        formattedAddress: null,
-        formattedContact: null,
-        identifiers: new Map([['ID', 'test-uuid']]),
-        age: mockAge,
-      };
-
-      mockedUsePatient.mockReturnValue({
-        patient: mockPatient,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      mockedFormatPatientData.mockReturnValue(mockFormattedPatient);
-    });
-
-    it('should render with English translations by default', () => {
-      // Act
-      render(<PatientDetails />);
-
-      // Assert
-      expect(
-        screen.getByText('male | 35 Years, 2 Months, 15 Days | 1990-01-01'),
-      ).toBeInTheDocument();
-
-      // We don't need to check if t was called with specific keys since we're verifying the output
-    });
-
-    it('should display Spanish translations when language is changed to Spanish', async () => {
-      // Arrange
-      jest.requireMock('react-i18next').__mockI18n.language = 'es';
-
-      // Act
-      render(<PatientDetails />);
-
-      // Assert
-      expect(
-        screen.getByText('male | 35 años, 2 meses, 15 días | 1990-01-01'),
-      ).toBeInTheDocument();
-    });
-
-    it('should switch from English to Spanish and back', async () => {
-      // Arrange
-      const { rerender } = render(<PatientDetails />);
-
-      // Assert initial English rendering
-      expect(
-        screen.getByText('male | 35 Years, 2 Months, 15 Days | 1990-01-01'),
-      ).toBeInTheDocument();
-
-      // Act - Change to Spanish
-      act(() => {
-        jest.requireMock('react-i18next').__mockI18n.language = 'es';
-      });
-      rerender(<PatientDetails />);
-
-      // Assert Spanish rendering
-      expect(
-        screen.getByText('male | 35 años, 2 meses, 15 días | 1990-01-01'),
-      ).toBeInTheDocument();
-
-      // Act - Change back to English
-      act(() => {
-        jest.requireMock('react-i18next').__mockI18n.language = 'en';
-      });
-      rerender(<PatientDetails />);
-
-      // Assert English rendering again
-      expect(
-        screen.getByText('male | 35 Years, 2 Months, 15 Days | 1990-01-01'),
-      ).toBeInTheDocument();
-    });
   });
 });

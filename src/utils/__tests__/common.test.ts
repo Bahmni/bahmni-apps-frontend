@@ -1,35 +1,10 @@
 import { capitalize, generateId, getFormattedError } from '../common';
 import axios, { AxiosError } from 'axios';
-import i18next from 'i18next';
+import i18n from '@/setupTests.i18n';
 
 jest.mock('axios', () => ({
   isAxiosError: jest.fn(),
   get: jest.fn(),
-}));
-
-jest.mock('i18next', () => ({
-  t: jest.fn((key: string) => {
-    const translations: { [key: string]: string } = {
-      ERROR_DEFAULT_TITLE: 'Error',
-      ERROR_DEFAULT_MESSAGE: 'An unexpected error occurred',
-      ERROR_BAD_REQUEST_TITLE: 'Bad Request',
-      ERROR_BAD_REQUEST_MESSAGE:
-        'Invalid input parameters. Please check your request and try again.',
-      ERROR_UNAUTHORIZED_TITLE: 'Unauthorized',
-      ERROR_UNAUTHORIZED_MESSAGE:
-        'You are not authorized to perform this action. Please log in again.',
-      ERROR_NOT_FOUND_TITLE: 'Not Found',
-      ERROR_NOT_FOUND_MESSAGE: 'The requested resource was not found.',
-      ERROR_SERVER_TITLE: 'Server Error',
-      ERROR_SERVER_MESSAGE:
-        'The server encountered an error. Please try again later.',
-      ERROR_NETWORK_TITLE: 'Network Error',
-      ERROR_NETWORK_MESSAGE:
-        'Unable to connect to the server. Please check your internet connection.',
-      ERROR_UNKNOWN_MESSAGE: 'An unknown error occurred',
-    };
-    return translations[key] || key;
-  }),
 }));
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -52,7 +27,7 @@ describe('common utility functions', () => {
   describe('getFormattedError', () => {
     beforeEach(() => {
       jest.clearAllMocks();
-      jest.mocked(i18next.t).mockClear();
+      i18n.changeLanguage('en');
     });
 
     it('should handle Axios errors with response - 401 Unauthorized', () => {
@@ -79,8 +54,6 @@ describe('common utility functions', () => {
         message:
           'You are not authorized to perform this action. Please log in again.',
       });
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_UNAUTHORIZED_TITLE');
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_UNAUTHORIZED_MESSAGE');
     });
 
     it('should handle Axios errors with response - 404 Not Found', () => {
@@ -106,8 +79,6 @@ describe('common utility functions', () => {
         title: 'Not Found',
         message: 'The requested resource was not found.',
       });
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_NOT_FOUND_TITLE');
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_NOT_FOUND_MESSAGE');
     });
 
     it('should handle 403 authorization errors', () => {
@@ -134,8 +105,6 @@ describe('common utility functions', () => {
         message:
           'You are not authorized to perform this action. Please log in again.',
       });
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_UNAUTHORIZED_TITLE');
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_UNAUTHORIZED_MESSAGE');
     });
 
     it('should handle server errors (500+)', () => {
@@ -161,8 +130,6 @@ describe('common utility functions', () => {
         title: 'Server Error',
         message: 'The server encountered an error. Please try again later.',
       });
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_SERVER_TITLE');
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_SERVER_MESSAGE');
     });
 
     it('should handle all non standard axios errors', () => {
@@ -187,8 +154,6 @@ describe('common utility functions', () => {
         title: 'Error',
         message: 'An unknown error occurred',
       });
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_DEFAULT_TITLE');
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_UNKNOWN_MESSAGE');
     });
 
     it('should return Network Error message when axiosError.request exists', () => {
@@ -205,8 +170,6 @@ describe('common utility functions', () => {
         message:
           'Unable to connect to the server. Please check your internet connection.',
       });
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_NETWORK_TITLE');
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_NETWORK_MESSAGE');
     });
 
     it('should handle bad request (400) errors', () => {
@@ -233,8 +196,6 @@ describe('common utility functions', () => {
         message:
           'Invalid input parameters. Please check your request and try again.',
       });
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_BAD_REQUEST_TITLE');
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_BAD_REQUEST_MESSAGE');
     });
 
     it('should handle Axios error with undefined response data', () => {
@@ -260,7 +221,6 @@ describe('common utility functions', () => {
         title: 'Error',
         message: 'Error processing your request',
       });
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_DEFAULT_TITLE');
     });
 
     it('should handle non-Axios error object that looks like an Axios error', () => {
@@ -281,8 +241,6 @@ describe('common utility functions', () => {
         title: 'Error',
         message: 'An unknown error occurred',
       });
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_DEFAULT_TITLE');
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_UNKNOWN_MESSAGE');
     });
 
     it('should handle undefined error input', () => {
@@ -291,8 +249,6 @@ describe('common utility functions', () => {
         title: 'Error',
         message: 'An unexpected error occurred',
       });
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_DEFAULT_TITLE');
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_DEFAULT_MESSAGE');
     });
 
     it('should handle Axios error with empty response data', () => {
@@ -318,7 +274,6 @@ describe('common utility functions', () => {
         title: 'Error',
         message: 'Error processing your request',
       });
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_DEFAULT_TITLE');
     });
 
     it('should handle Axios error with null response data', () => {
@@ -344,7 +299,6 @@ describe('common utility functions', () => {
         title: 'Error',
         message: 'Error processing your request',
       });
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_DEFAULT_TITLE');
     });
 
     it('should handle custom error messages in response data', () => {
@@ -370,7 +324,6 @@ describe('common utility functions', () => {
         title: 'Error',
         message: 'Validation failed',
       });
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_DEFAULT_TITLE');
     });
 
     it('should handle Axios error with response but no data message', () => {
@@ -396,7 +349,6 @@ describe('common utility functions', () => {
         title: 'Error',
         message: 'Custom error message',
       });
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_DEFAULT_TITLE');
     });
 
     it('should handle network errors (no response)', () => {
@@ -418,8 +370,6 @@ describe('common utility functions', () => {
         message:
           'Unable to connect to the server. Please check your internet connection.',
       });
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_NETWORK_TITLE');
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_NETWORK_MESSAGE');
     });
 
     it('should handle generic Error objects', () => {
@@ -431,7 +381,6 @@ describe('common utility functions', () => {
         title: 'Error',
         message: 'Something went wrong',
       });
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_DEFAULT_TITLE');
     });
 
     it('should handle string errors', () => {
@@ -445,7 +394,6 @@ describe('common utility functions', () => {
         title: 'Error',
         message: 'Simple error message',
       });
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_DEFAULT_TITLE');
     });
 
     it('should handle unknown error types', () => {
@@ -459,8 +407,6 @@ describe('common utility functions', () => {
         title: 'Error',
         message: 'An unknown error occurred',
       });
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_DEFAULT_TITLE');
-      expect(i18next.t).toHaveBeenCalledWith('ERROR_UNKNOWN_MESSAGE');
     });
   });
 

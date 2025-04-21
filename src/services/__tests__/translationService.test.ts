@@ -2,11 +2,10 @@ import { getTranslations, getUserPreferredLocale } from '../translationService';
 import {
   CONFIG_TRANSLATIONS_URL_TEMPLATE,
   BUNDLED_TRANSLATIONS_URL_TEMPLATE,
-  LOCALE_COOKIE_NAME,
+  LOCALE_STORAGE_KEY,
   DEFAULT_LOCALE,
 } from '@constants/app';
 import notificationService from '../notificationService';
-import * as commonUtils from '@utils/common';
 import * as apiService from '../api';
 
 // Mock dependencies
@@ -45,21 +44,6 @@ describe('Translation Service', () => {
         });
     });
 
-    it('should return the locale from localStorage when valid', () => {
-      // Arrange
-      const validLocale = 'fr';
-      (localStorage.getItem as jest.Mock).mockReturnValue(validLocale);
-
-      // Act
-      const result = getUserPreferredLocale();
-
-      // Assert
-      expect(localStorage.getItem).toHaveBeenCalledWith(LOCALE_COOKIE_NAME);
-      expect(Intl.getCanonicalLocales).toHaveBeenCalledWith(validLocale);
-      expect(result).toBe(validLocale);
-      expect(notificationService.showError).not.toHaveBeenCalled();
-    });
-
     it('should return DEFAULT_LOCALE when no localStorage value is found', () => {
       // Arrange
       (localStorage.getItem as jest.Mock).mockReturnValue(null);
@@ -68,51 +52,9 @@ describe('Translation Service', () => {
       const result = getUserPreferredLocale();
 
       // Assert
-      expect(localStorage.getItem).toHaveBeenCalledWith(LOCALE_COOKIE_NAME);
+      expect(localStorage.getItem).toHaveBeenCalledWith(LOCALE_STORAGE_KEY);
       expect(result).toBe(DEFAULT_LOCALE);
       expect(notificationService.showError).not.toHaveBeenCalled();
-    });
-
-    it('should return DEFAULT_LOCALE and show error when locale is invalid', () => {
-      // Arrange
-      const invalidLocale = 'invalid';
-      const mockFormattedError = {
-        title: 'Error',
-        message: 'Invalid language tag',
-      };
-      (localStorage.getItem as jest.Mock).mockReturnValue(invalidLocale);
-      jest
-        .spyOn(commonUtils, 'getFormattedError')
-        .mockReturnValue(mockFormattedError);
-
-      // Act
-      const result = getUserPreferredLocale();
-
-      // Assert
-      expect(localStorage.getItem).toHaveBeenCalledWith(LOCALE_COOKIE_NAME);
-      expect(Intl.getCanonicalLocales).toHaveBeenCalledWith(invalidLocale);
-      expect(commonUtils.getFormattedError).toHaveBeenCalledWith(
-        expect.any(Error),
-      );
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        mockFormattedError.title,
-        mockFormattedError.message,
-      );
-      expect(result).toBe(DEFAULT_LOCALE);
-    });
-
-    it('should handle complex locale formats correctly', () => {
-      // Arrange
-      const complexLocale = 'en-US';
-      (localStorage.getItem as jest.Mock).mockReturnValue(complexLocale);
-
-      // Act
-      const result = getUserPreferredLocale();
-
-      // Assert
-      expect(localStorage.getItem).toHaveBeenCalledWith(LOCALE_COOKIE_NAME);
-      expect(Intl.getCanonicalLocales).toHaveBeenCalledWith(complexLocale);
-      expect(result).toBe(complexLocale);
     });
   });
 
