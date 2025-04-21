@@ -1,13 +1,24 @@
 {
-  "CONDITION_LIST_DISPLAY_CONTROL_TITLE": "Conditions",
+  "ALLERGEN": "Allergen",
+  "ALLERGIES_DISPLAY_CONTROL_HEADING": "Allergies",
+  "ALLERGY_LIST_ACTIVE": "Active",
+  "ALLERGY_LIST_INACTIVE": "Inactive",
+  "ALLERGY_LIST_PROVIDER": "Provider",
+  "ALLERGY_LIST_RECORDED_DATE": "Recorded Date",
+  "ALLERGY_LIST_STATUS": "Status",
+  "ALLERGY_TABLE_NOT_AVAILABLE": "Not available",
   "CONDITION_LIST_ACTIVE": "Active",
-  "CONDITION_LIST_INACTIVE": "Inactive",
   "CONDITION_LIST_CONDITION": "Condition",
-  "CONDITION_LIST_STATUS": "Status",
   "CONDITION_LIST_DATE": "Date",
+  "CONDITION_LIST_DISPLAY_CONTROL_TITLE": "Conditions",
+  "CONDITION_LIST_INACTIVE": "Inactive",
   "CONDITION_LIST_NO_CONDITIONS": "No conditions found",
+  "CONDITION_LIST_STATUS": "Status",
+  "CONDITION_TABLE_NOT_AVAILABLE": "Not available",
   "CONDITION_TABLE_ONSET_DATE": "Onset Date",
   "CONDITION_TABLE_PROVIDER": "Provider",
   "CONDITION_TABLE_RECORDED_DATE": "Recorded Date",
-  "CONDITION_TABLE_NOT_AVAILABLE": "Not available"
+  "NO_ALLERGIES": "No Allergies recorded for this patient.",
+  "REACTIONS": "Reaction(s)",
+  "SEVERITY": "Severity"
 }

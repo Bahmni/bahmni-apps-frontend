@@ -197,7 +197,9 @@ describe('AllergiesTable Integration', () => {
       expect(
         screen.getByTestId('expandable-data-table-empty'),
       ).toBeInTheDocument();
-      expect(screen.getByText('No allergies found')).toBeInTheDocument();
+      expect(
+        screen.getByText('No Allergies recorded for this patient.'),
+      ).toBeInTheDocument();
     });
   });
 
@@ -270,7 +272,7 @@ describe('AllergiesTable Integration', () => {
 
       // Verify the table has proper ARIA attributes
       const table = screen.getByRole('table');
-      expect(table).toHaveAttribute('aria-label', 'Patient allergies');
+      expect(table).toHaveAttribute('aria-label', 'Allergies');
 
       // Verify the table has proper styling
       const tableContainer = screen.getByTestId('allergy-table');

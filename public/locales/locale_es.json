@@ -1,13 +1,24 @@
 {
-  "CONDITION_LIST_DISPLAY_CONTROL_TITLE": "Condiciones",
+  "ALLERGEN": "Alérgeno",
+  "ALLERGIES_DISPLAY_CONTROL_HEADING": "Alergias",
+  "ALLERGY_LIST_ACTIVE": "Activo",
+  "ALLERGY_LIST_INACTIVE": "Inactivo",
+  "ALLERGY_LIST_PROVIDER": "Proveedor",
+  "ALLERGY_LIST_RECORDED_DATE": "Fecha de grabación",
+  "ALLERGY_LIST_STATUS": "Estado",
+  "ALLERGY_TABLE_NOT_AVAILABLE": "No disponible",
   "CONDITION_LIST_ACTIVE": "Activo",
-  "CONDITION_LIST_INACTIVE": "Inactivo",
   "CONDITION_LIST_CONDITION": "Condición",
-  "CONDITION_LIST_STATUS": "Estado",
   "CONDITION_LIST_DATE": "Fecha",
+  "CONDITION_LIST_DISPLAY_CONTROL_TITLE": "Condiciones",
+  "CONDITION_LIST_INACTIVE": "Inactivo",
   "CONDITION_LIST_NO_CONDITIONS": "No hay Condiciones disponibles",
+  "CONDITION_LIST_STATUS": "Estado",
+  "CONDITION_TABLE_NOT_AVAILABLE": "No disponible",
   "CONDITION_TABLE_ONSET_DATE": "Fecha de inicio",
   "CONDITION_TABLE_PROVIDER": "Proveedor",
   "CONDITION_TABLE_RECORDED_DATE": "Fecha de grabación",
-  "CONDITION_TABLE_NOT_AVAILABLE": "No disponible"
+  "NO_ALLERGIES": "No hay alergias registradas para este paciente",
+  "REACTIONS": "Reacción(es)",
+  "SEVERITY": "Gravedad"
 }
