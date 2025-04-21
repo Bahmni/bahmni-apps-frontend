@@ -10,6 +10,18 @@ import { FormattedPatientData, Age } from '@types/patient';
 jest.mock('../../../hooks/usePatient');
 jest.mock('../../../hooks/usePatientUUID');
 jest.mock('../../../services/patientService');
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        CLINICAL_YEARS_TRANSLATION_KEY: 'Years',
+        CLINICAL_MONTHS_TRANSLATION_KEY: 'Months',
+        CLINICAL_DAYS_TRANSLATION_KEY: 'Days',
+      };
+      return translations[key] || key;
+    },
+  }),
+}));
 
 const mockedUsePatient = usePatient as jest.MockedFunction<typeof usePatient>;
 const mockedUsePatientUUID = usePatientUUID as jest.MockedFunction<

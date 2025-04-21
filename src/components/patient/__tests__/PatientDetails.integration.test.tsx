@@ -7,6 +7,20 @@ import * as patientService from '@services/patientService';
 import { FormattedPatientData, Age } from '@types/patient';
 import { NotificationProvider } from '@providers/NotificationProvider';
 
+// Mock react-i18next
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        CLINICAL_YEARS_TRANSLATION_KEY: 'Years',
+        CLINICAL_MONTHS_TRANSLATION_KEY: 'Months',
+        CLINICAL_DAYS_TRANSLATION_KEY: 'Days',
+      };
+      return translations[key] || key;
+    },
+  }),
+}));
+
 // Mock axios and patientService
 jest.mock('axios', () => ({
   create: jest.fn(() => ({
