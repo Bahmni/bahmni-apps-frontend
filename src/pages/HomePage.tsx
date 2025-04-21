@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import { Grid, Column, Section, Loading } from '@carbon/react';
-import { useConfig } from '@hooks/useConfig';
+import { useClinicalConfig } from '@hooks/useClinicalConfig';
 
 const PatientDetails = React.lazy(
   () => import('@components/patient/PatientDetails'),
@@ -13,12 +13,11 @@ const AllergiesTable = React.lazy(
 );
 
 const HomePage: React.FC = () => {
-  const { config } = useConfig();
-
-  if (!config) {
+  const { clinicalConfig } = useClinicalConfig();
+  if (!clinicalConfig) {
     return <Loading description="Loading..." />;
   }
-
+  console.log(clinicalConfig);
   return (
     <Suspense fallback={<Loading description="Loading..." />}>
       <Section>

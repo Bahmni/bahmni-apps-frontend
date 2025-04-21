@@ -7,8 +7,6 @@ import i18next from 'i18next';
 export const CONFIG_ERROR_MESSAGES = {
   CONFIG_NOT_FOUND: 'Configuration not found',
   VALIDATION_FAILED: 'Configuration validation failed',
-  NO_DASHBOARDS: 'No dashboards found in configuration',
-  INVALID_CONFIG: 'Invalid configuration format',
   SCHEMA_VALIDATION_FAILED: 'Configuration does not match required schema',
 } as const;
 
@@ -18,7 +16,7 @@ export const CONFIG_ERROR_MESSAGES = {
 export const ERROR_TITLES = {
   CONFIG_ERROR: 'Configuration Error',
   VALIDATION_ERROR: 'Validation Error',
-  DEPARTMENT_ERROR: 'Department Configuration Error',
+  DASHBOARD_ERROR: 'Department Configuration Error',
 } as const;
 
 export const DATE_ERROR_MESSAGES = {

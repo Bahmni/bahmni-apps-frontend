@@ -3,8 +3,8 @@ import { render, screen } from '@testing-library/react';
 import HomePage from '../HomePage';
 import PatientDetails from '@components/patient/PatientDetails';
 import ConditionsTable from '@components/conditions/ConditionsTable';
-import { useConfig } from '@hooks/useConfig';
-import { validFullConfig } from '@__mocks__/configMocks';
+import { useClinicalConfig } from '@hooks/useClinicalConfig';
+import { validFullClinicalConfig } from '@__mocks__/configMocks';
 
 // Mock Carbon components
 jest.mock('@carbon/react', () => ({
@@ -34,8 +34,8 @@ jest.mock('@components/conditions/ConditionsTable', () => {
   ));
 });
 
-// Mock the useConfig hook
-jest.mock('@hooks/useConfig');
+// Mock the useClinicalConfig hook
+jest.mock('@hooks/useClinicalConfig');
 
 // Mock the AllergiesTable component
 jest.mock('@components/allergies/AllergiesTable', () => {
@@ -50,8 +50,8 @@ describe('HomePage Component', () => {
   });
 
   it('should show loading state when config is null', () => {
-    // Mock useConfig to return null config (loading state)
-    (useConfig as jest.Mock).mockReturnValue({ config: null });
+    // Mock useClinicalConfig to return null config (loading state)
+    (useClinicalConfig as jest.Mock).mockReturnValue({ clinicalConfig: null });
 
     render(<HomePage />);
 
@@ -68,8 +68,10 @@ describe('HomePage Component', () => {
   });
 
   it('should render with correct Carbon layout structure when config is loaded', () => {
-    // Mock useConfig to return config
-    (useConfig as jest.Mock).mockReturnValue({ config: validFullConfig });
+    // Mock useClinicalConfig to return config
+    (useClinicalConfig as jest.Mock).mockReturnValue({
+      clinicalConfig: validFullClinicalConfig,
+    });
 
     render(<HomePage />);
 
@@ -80,8 +82,10 @@ describe('HomePage Component', () => {
   });
 
   it('should render child components when config is loaded', () => {
-    // Mock useConfig to return config
-    (useConfig as jest.Mock).mockReturnValue({ config: validFullConfig });
+    // Mock useClinicalConfig to return config
+    (useClinicalConfig as jest.Mock).mockReturnValue({
+      clinicalConfig: validFullClinicalConfig,
+    });
 
     render(<HomePage />);
 
@@ -96,16 +100,18 @@ describe('HomePage Component', () => {
   });
 
   it('should match snapshot when loading', () => {
-    // Mock useConfig to return null config (loading state)
-    (useConfig as jest.Mock).mockReturnValue({ config: null });
+    // Mock useClinicalConfig to return null config (loading state)
+    (useClinicalConfig as jest.Mock).mockReturnValue({ clinicalConfig: null });
 
     const { asFragment } = render(<HomePage />);
     expect(asFragment()).toMatchSnapshot();
   });
 
   it('should match snapshot when loaded', () => {
-    // Mock useConfig to return config
-    (useConfig as jest.Mock).mockReturnValue({ config: validFullConfig });
+    // Mock useClinicalConfig to return config
+    (useClinicalConfig as jest.Mock).mockReturnValue({
+      clinicalConfig: validFullClinicalConfig,
+    });
 
     const { asFragment } = render(<HomePage />);
     expect(asFragment()).toMatchSnapshot();
