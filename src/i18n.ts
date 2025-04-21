@@ -23,7 +23,6 @@ export const initI18n = async () => {
     .use(initReactI18next)
     .init({
       fallbackLng: 'en',
-      debug: true,
       ns: [CLINICAL_NAMESPACE],
       defaultNS: CLINICAL_NAMESPACE,
       resources: translations,
