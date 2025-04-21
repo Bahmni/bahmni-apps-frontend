@@ -1,7 +1,7 @@
 import { get } from './api';
 import Ajv from 'ajv';
 import { CONFIG_ERROR_MESSAGES } from '@constants/errors';
-import { AppConfig } from '@types/config';
+import { ClinicalConfig } from '@types/config';
 import { getFormattedError } from '@utils/common';
 
 /**
@@ -12,7 +12,7 @@ import { getFormattedError } from '@utils/common';
  * @returns Validated configuration object or null if invalid/error
  * @throws Error if fetch fails or validation fails
  */
-export const getConfig = async <T extends AppConfig>(
+export const getConfig = async <T extends ClinicalConfig>(
   configPath: string,
   configSchema: Record<string, unknown>,
 ): Promise<T | null> => {

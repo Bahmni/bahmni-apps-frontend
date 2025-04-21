@@ -7,51 +7,41 @@
   "properties": {
     "patientInformation": {
       "type": "object",
-      "required": ["translationKey", "type"],
-      "properties": {
-        "translationKey": {
-          "type": "string",
-          "description": "Translation key for patient information title"
-        },
-        "type": {
-          "type": "string",
-          "description": "Type identifier for patient information section"
-        }
-      }
+      "description": "Patient information configuration"
     },
     "actions": {
       "type": "array",
-      "description": "List of available actions",
-      "items": {
-        "type": "object"
-      }
+      "description": "List of available actions"
     },
     "dashboards": {
       "type": "array",
       "description": "List of available dashboards",
       "items": {
         "type": "object",
-        "required": ["id", "name", "description", "url", "requiredPrivilege"],
+        "required": ["name", "requiredPrivileges", "url"],
         "properties": {
-          "id": {
-            "type": "string",
-            "description": "Unique identifier for the dashboard"
-          },
           "name": {
             "type": "string",
             "description": "Display name of the dashboard"
           },
-          "description": {
+          "requiredPrivileges": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of permissions required to access this dashboard"
+          },
+          "icon": {
             "type": "string",
-            "description": "Description of the dashboard purpose"
+            "description": "Icon class name for the dashboard"
+          },
+          "default": {
+            "type": "boolean",
+            "description": "Whether this is the default dashboard"
           },
           "url": {
             "type": "string",
             "description": "URL to access the dashboard data"
-          },
-          "requiredPrivilege": {
-            "type": "string",
-            "description": "Permission required to access this dashboard"
           }
         },
         "additionalProperties": true

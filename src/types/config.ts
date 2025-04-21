@@ -1,29 +1,28 @@
+export interface Dashboard {
+  name: string;
+  url: string;
+  requiredPrivileges: string[];
+  icon?: string;
+  default?: boolean;
+}
+
 /**
  * Dashboard configuration interface matching appConfig.schema.json
  * Represents the structure of the main dashboard configuration
  */
-export interface AppConfig {
-  patientInformation: {
-    translationKey: string;
-    type: string;
-  };
-  actions: Array<Record<string, unknown>>;
-  dashboards: Array<{
-    id: string;
-    name: string;
-    description: string;
-    url: string;
-    requiredPrivilege: string;
-  }>;
+export interface ClinicalConfig {
+  patientInformation: Record<string, unknown>;
+  actions: Array<unknown>;
+  dashboards: Array<Dashboard>;
 }
 
 /**
  * Configuration context interface
  * Extends ConfigState with loading and error states
  */
-export interface ConfigContextType {
-  config: Record<string, string> | null;
-  setConfig: (config: Record<string, string>) => void;
+export interface ClinicalConfigContextType {
+  clinicalConfig: ClinicalConfig | null;
+  setClinicalConfig: (config: ClinicalConfig) => void;
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
   error: Error | null;

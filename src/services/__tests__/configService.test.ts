@@ -4,10 +4,10 @@ import Ajv from 'ajv';
 import * as commonUtils from '@utils/common';
 import { CONFIG_ERROR_MESSAGES } from '@constants/errors';
 import {
-  validFullConfig,
-  minimalConfig,
-  mixedConfig,
-  invalidConfig,
+  validFullClinicalConfig,
+  minimalClinicalConfig,
+  mixedClinicalConfig,
+  invalidClinicalConfig,
   emptyResponse,
   largeConfig,
   allOptionalFieldsConfig,
@@ -38,14 +38,23 @@ describe('ConfigService', () => {
   const mockSchema = {
     type: 'object',
     properties: {
-      section: {
+      patientInformation: {
+        type: 'object',
+      },
+      actions: {
+        type: 'array',
+        items: {
+          type: 'object',
+        },
+      },
+      dashboards: {
         type: 'array',
         items: {
           type: 'object',
         },
       },
     },
-    required: ['section'],
+    required: ['patientInformation', 'actions', 'dashboards'],
   };
 
   beforeEach(() => {
@@ -66,38 +75,38 @@ describe('ConfigService', () => {
     describe('Success cases', () => {
       test('should fetch and validate a fully valid config', async () => {
         // Arrange
-        mockGet.mockResolvedValueOnce(validFullConfig);
+        mockGet.mockResolvedValueOnce(validFullClinicalConfig);
 
         // Act
         const result = await getConfig('/api/config/dashboard', mockSchema);
 
         // Assert
         expect(mockGet).toHaveBeenCalledWith('/api/config/dashboard');
-        expect(result).toEqual(validFullConfig);
+        expect(result).toEqual(validFullClinicalConfig);
       });
 
       test('should fetch and validate config with only required fields', async () => {
         // Arrange
-        mockGet.mockResolvedValueOnce(minimalConfig);
+        mockGet.mockResolvedValueOnce(minimalClinicalConfig);
 
         // Act
         const result = await getConfig('/api/config/minimal', mockSchema);
 
         // Assert
         expect(mockGet).toHaveBeenCalledWith('/api/config/minimal');
-        expect(result).toEqual(minimalConfig);
+        expect(result).toEqual(minimalClinicalConfig);
       });
 
       test('should validate config with both required and optional fields', async () => {
         // Arrange
-        mockGet.mockResolvedValueOnce(mixedConfig);
+        mockGet.mockResolvedValueOnce(mixedClinicalConfig);
 
         // Act
         const result = await getConfig('/api/config/mixed', mockSchema);
 
         // Assert
         expect(mockGet).toHaveBeenCalledWith('/api/config/mixed');
-        expect(result).toEqual(mixedConfig);
+        expect(result).toEqual(mixedClinicalConfig);
       });
 
       test('should handle unusually large config object', async () => {
@@ -110,7 +119,7 @@ describe('ConfigService', () => {
         // Assert
         expect(mockGet).toHaveBeenCalledWith('/api/config/large');
         expect(result).toEqual(largeConfig);
-        expect(result?.section.length).toBe(50);
+        expect(result?.dashboards.length).toBe(50);
       });
 
       test('should handle config with all possible optional fields', async () => {
@@ -124,28 +133,37 @@ describe('ConfigService', () => {
         expect(mockGet).toHaveBeenCalledWith('/api/config/full');
         expect(result).toEqual(allOptionalFieldsConfig);
 
-        // Verify the comprehensive section has all optional fields
-        const section = result?.section[0];
-        expect(section).toBeDefined();
-        expect(section.name).toBe('Comprehensive Section');
-        expect(section.controls.length).toBe(4);
-        expect(
-          section.controls.some(
-            (control: { type: string }) =>
-              control.type === 'patientInformation',
-          ),
-        ).toBe(true);
+        // Verify the comprehensive dashboard has all optional fields
+        const dashboard = result?.dashboards[0];
+        expect(dashboard).toBeDefined();
+        if (dashboard) {
+          expect(dashboard.name).toBe('Comprehensive Dashboard');
+          expect(dashboard.requiredPrivileges).toContain(
+            'View Comprehensive Dashboard',
+          );
+          expect(dashboard.default).toBe(true);
+        }
+
+        // Verify patient information has custom sections
+        const customSections = result?.patientInformation.customSections as
+          | Array<{ name: string; attributes: string[] }>
+          | undefined;
+        expect(customSections).toBeDefined();
+        expect(customSections?.length).toBe(2);
       });
 
       test('should return typed config when using generic type parameter', async () => {
         // Arrange
         interface TestConfig {
-          section: Array<{
+          patientInformation: Record<string, unknown>;
+          actions: Array<unknown>;
+          dashboards: Array<{
             name: string;
-            controls: Array<{ type: string }>;
+            url: string;
+            requiredPrivileges: string[];
           }>;
         }
-        mockGet.mockResolvedValueOnce(minimalConfig);
+        mockGet.mockResolvedValueOnce(minimalClinicalConfig);
 
         // Act
         const result = await getConfig<TestConfig>(
@@ -154,9 +172,9 @@ describe('ConfigService', () => {
         );
 
         // Assert
-        expect(result).toEqual(minimalConfig);
+        expect(result).toEqual(minimalClinicalConfig);
         // TypeScript will ensure this is properly typed
-        expect(result?.section[0].name).toBe('Basic Information');
+        expect(result?.dashboards[0].name).toBe('Basic Information');
       });
     });
 
@@ -185,13 +203,13 @@ describe('ConfigService', () => {
         // Act & Assert
         await expect(
           getConfig('/api/config/dashboard', mockSchema),
-        ).rejects.toThrow(CONFIG_ERROR_MESSAGES.FETCH_FAILED);
+        ).rejects.toThrow(CONFIG_ERROR_MESSAGES.CONFIG_NOT_FOUND);
         expect(mockGet).toHaveBeenCalledWith('/api/config/dashboard');
       });
 
       test('should throw error when config fails schema validation', async () => {
         // Arrange
-        mockGet.mockResolvedValueOnce(invalidConfig);
+        mockGet.mockResolvedValueOnce(invalidClinicalConfig);
 
         // Setup Ajv to fail validation
         const mockValidate = jest.fn().mockReturnValue(false);
@@ -208,7 +226,7 @@ describe('ConfigService', () => {
           getConfig('/api/config/dashboard', mockSchema),
         ).rejects.toThrow(CONFIG_ERROR_MESSAGES.SCHEMA_VALIDATION_FAILED);
         expect(mockGet).toHaveBeenCalledWith('/api/config/dashboard');
-        expect(mockValidate).toHaveBeenCalledWith(invalidConfig);
+        expect(mockValidate).toHaveBeenCalledWith(invalidClinicalConfig);
       });
 
       test('should throw error when invalid JSON response is received', async () => {
@@ -231,7 +249,7 @@ describe('ConfigService', () => {
 
       test('should throw error when schema validation throws', async () => {
         // Arrange
-        mockGet.mockResolvedValueOnce(validFullConfig);
+        mockGet.mockResolvedValueOnce(validFullClinicalConfig);
 
         // Setup Ajv to throw during compilation
         const schemaError = new Error('Invalid schema');
@@ -263,14 +281,14 @@ describe('ConfigService', () => {
   describe('fetchConfig (via getConfig)', () => {
     test('should fetch config successfully', async () => {
       // Arrange
-      mockGet.mockResolvedValueOnce(minimalConfig);
+      mockGet.mockResolvedValueOnce(minimalClinicalConfig);
 
       // Act
       const result = await getConfig('/api/config/minimal', mockSchema);
 
       // Assert
       expect(mockGet).toHaveBeenCalledWith('/api/config/minimal');
-      expect(result).toEqual(minimalConfig);
+      expect(result).toEqual(minimalClinicalConfig);
     });
 
     test('should throw specific error when fetch fails', async () => {
@@ -278,7 +296,7 @@ describe('ConfigService', () => {
       mockGet.mockRejectedValueOnce(new Error('Network error'));
       mockGetFormattedError.mockReturnValueOnce({
         title: 'Error',
-        message: CONFIG_ERROR_MESSAGES.FETCH_FAILED,
+        message: CONFIG_ERROR_MESSAGES.CONFIG_NOT_FOUND,
       });
 
       // Act & Assert
@@ -293,7 +311,7 @@ describe('ConfigService', () => {
   describe('validateConfig (via getConfig)', () => {
     test('should validate config successfully', async () => {
       // Arrange
-      mockGet.mockResolvedValueOnce(validFullConfig);
+      mockGet.mockResolvedValueOnce(validFullClinicalConfig);
       const mockValidate = jest.fn().mockReturnValue(true);
       const mockCompile = jest.fn().mockReturnValue(mockValidate);
       mockAjv.mockImplementation(
@@ -308,13 +326,13 @@ describe('ConfigService', () => {
 
       // Assert
       expect(mockCompile).toHaveBeenCalledWith(mockSchema);
-      expect(mockValidate).toHaveBeenCalledWith(validFullConfig);
-      expect(result).toEqual(validFullConfig);
+      expect(mockValidate).toHaveBeenCalledWith(validFullClinicalConfig);
+      expect(result).toEqual(validFullClinicalConfig);
     });
 
     test('should throw error when validation fails', async () => {
       // Arrange
-      mockGet.mockResolvedValueOnce(invalidConfig);
+      mockGet.mockResolvedValueOnce(invalidClinicalConfig);
       const mockValidate = jest.fn().mockReturnValue(false);
       const mockCompile = jest.fn().mockReturnValue(mockValidate);
       mockAjv.mockImplementation(
@@ -329,7 +347,7 @@ describe('ConfigService', () => {
         getConfig('/api/config/dashboard', mockSchema),
       ).rejects.toThrow(CONFIG_ERROR_MESSAGES.SCHEMA_VALIDATION_FAILED);
       expect(mockCompile).toHaveBeenCalledWith(mockSchema);
-      expect(mockValidate).toHaveBeenCalledWith(invalidConfig);
+      expect(mockValidate).toHaveBeenCalledWith(invalidClinicalConfig);
     });
   });
 });

@@ -1,94 +1,100 @@
 // src/__mocks__/configMocks.ts
 
 // Happy Path Mocks
-export const validFullConfig = {
-  section: [
+export const validFullClinicalConfig = {
+  patientInformation: {
+    displayPatientIdentifiers: true,
+    showPatientPhoto: true,
+    additionalAttributes: ['caste', 'education', 'occupation'],
+  },
+  actions: [
+    {
+      name: 'Start Visit',
+      url: '/openmrs/ws/rest/v1/visit',
+      icon: 'fa fa-stethoscope',
+      requiredPrivilege: 'Start Visit',
+    },
+    {
+      name: 'Add Diagnosis',
+      url: '/openmrs/ws/rest/v1/diagnosis',
+      icon: 'fa fa-heartbeat',
+      requiredPrivilege: 'Add Diagnosis',
+    },
+    {
+      name: 'Record Allergy',
+      url: '/openmrs/ws/rest/v1/allergy',
+      icon: 'fa fa-exclamation-triangle',
+      requiredPrivilege: 'Record Allergy',
+    },
+  ],
+  dashboards: [
     {
       name: 'Patient Information',
-      translationKey: 'DASHBOARD_TITLE_PATIENT_INFO_KEY',
-      description: 'Displays patient demographics and identifiers',
+      url: 'patient-information',
+      requiredPrivileges: ['View Patient Information'],
       icon: 'fa fa-user',
-      controls: [
-        {
-          type: 'patientInformation',
-          translationKey: 'DASHBOARD_TITLE_PATIENT_DETAILS_KEY',
-        },
-      ],
+      default: true,
     },
     {
       name: 'Conditions',
-      translationKey: 'DASHBOARD_TITLE_CONDITIONS_KEY',
-      description: 'Displays patient conditions and diagnoses',
+      url: 'conditions',
+      requiredPrivileges: ['View Conditions'],
       icon: 'fa fa-heartbeat',
-      controls: [
-        {
-          type: 'diagnosis',
-          translationKey: 'DASHBOARD_TITLE_DIAGNOSIS_KEY',
-        },
-      ],
     },
     {
       name: 'Allergies',
-      translationKey: 'DASHBOARD_TITLE_ALLERGIES_KEY',
-      description: 'Displays patient allergies',
+      url: 'allergies',
+      requiredPrivileges: ['View Allergies'],
       icon: 'fa fa-exclamation-triangle',
-      controls: [
-        {
-          type: 'allergies',
-          translationKey: 'DASHBOARD_TITLE_ALLERGIES_LIST_KEY',
-        },
-      ],
     },
   ],
 };
 
-export const minimalConfig = {
-  section: [
+export const minimalClinicalConfig = {
+  patientInformation: {},
+  actions: [],
+  dashboards: [
     {
       name: 'Basic Information',
-      translationKey: 'DASHBOARD_TITLE_BASIC_KEY',
-      description: 'Basic patient information',
-      icon: 'fa fa-info',
-      controls: [
-        {
-          type: 'patientInformation',
-        },
-      ],
+      url: 'basic-information',
+      requiredPrivileges: ['View Patient Dashboard'],
     },
   ],
 };
 
-export const mixedConfig = {
-  section: [
+export const mixedClinicalConfig = {
+  patientInformation: {
+    displayPatientIdentifiers: true,
+  },
+  actions: [
+    {
+      name: 'Start Visit',
+      url: '/openmrs/ws/rest/v1/visit',
+      requiredPrivilege: 'Start Visit',
+    },
+  ],
+  dashboards: [
     {
       name: 'Required Section',
-      translationKey: 'DASHBOARD_TITLE_REQUIRED_KEY',
-      description: 'Section with required fields only',
-      icon: 'fa fa-check',
-      controls: [
-        {
-          type: 'patientInformation',
-        },
-      ],
+      url: 'required-section',
+      requiredPrivileges: ['View Patient Dashboard'],
     },
     {
       name: 'Optional Section',
-      translationKey: 'DASHBOARD_TITLE_OPTIONAL_KEY',
-      description: 'Section with optional fields',
+      url: 'optional-section',
+      requiredPrivileges: ['View Optional Dashboard'],
       icon: 'fa fa-plus',
-      controls: [
-        {
-          type: 'diagnosis',
-          translationKey: 'DASHBOARD_TITLE_DIAGNOSIS_OPTIONAL_KEY',
-        },
-      ],
+      default: false,
     },
   ],
 };
 
 // Sad Path Mocks
-export const invalidConfig = {
-  // Missing required section array
+export const invalidClinicalConfig = {
+  // Missing required properties
+  patientInformation: {},
+  // Missing actions array
+  // Missing dashboards array
   otherProperty: 'value',
 };
 
@@ -98,62 +104,93 @@ export const malformedJsonResponse = '{invalid-json}';
 
 // Edge Case Mocks
 export const largeConfig = {
-  section: generateLargeSections(50), // Generates 50 sections
+  patientInformation: {
+    displayPatientIdentifiers: true,
+    showPatientPhoto: true,
+    additionalAttributes: Array(50)
+      .fill(0)
+      .map((_, i) => `attribute${i}`),
+  },
+  actions: Array(20)
+    .fill(0)
+    .map((_, i) => ({
+      name: `Action ${i}`,
+      url: `/openmrs/ws/rest/v1/action${i}`,
+      icon: 'fa fa-cog',
+      requiredPrivilege: `Privilege ${i}`,
+    })),
+  dashboards: generateLargeDashboards(50), // Generates 50 dashboards
 };
 
 export const allOptionalFieldsConfig = {
-  section: [
+  patientInformation: {
+    displayPatientIdentifiers: true,
+    showPatientPhoto: true,
+    additionalAttributes: ['caste', 'education', 'occupation'],
+    customSections: [
+      {
+        name: 'Demographics',
+        attributes: ['birthdate', 'gender', 'address'],
+      },
+      {
+        name: 'Contact Information',
+        attributes: ['phoneNumber', 'email'],
+      },
+    ],
+  },
+  actions: [
     {
-      name: 'Comprehensive Section',
-      translationKey: 'DASHBOARD_TITLE_COMPREHENSIVE_KEY',
-      description: 'Section with all possible controls',
+      name: 'Comprehensive Action',
+      url: '/openmrs/ws/rest/v1/comprehensive',
       icon: 'fa fa-th-large',
-      controls: [
-        {
-          type: 'patientInformation',
-          translationKey: 'DASHBOARD_TITLE_PATIENT_INFO_KEY',
-        },
-        {
-          type: 'allergies',
-          translationKey: 'DASHBOARD_TITLE_ALLERGIES_KEY',
-        },
-        {
-          type: 'diagnosis',
-          translationKey: 'DASHBOARD_TITLE_DIAGNOSIS_KEY',
-        },
-        {
-          type: 'formsV2React',
-          translationKey: 'DASHBOARD_TITLE_FORMS_KEY',
-        },
-      ],
+      requiredPrivilege: 'Comprehensive Privilege',
+      order: 1,
+      type: 'standard',
+      additionalParams: {
+        color: 'blue',
+        size: 'large',
+        showInHeader: true,
+      },
+    },
+  ],
+  dashboards: [
+    {
+      name: 'Comprehensive Dashboard',
+      url: 'comprehensive-dashboard',
+      requiredPrivileges: ['View Comprehensive Dashboard'],
+      icon: 'fa fa-th-large',
+      default: true,
+      order: 1,
+      displayName: 'Comprehensive View',
+      description: 'A dashboard with all possible controls and features',
+      config: {
+        refreshInterval: 60,
+        layout: 'grid',
+        maxItems: 10,
+      },
     },
   ],
 };
 
 // Helper function to generate large config
-function generateLargeSections(count: number) {
-  const sections = [];
-  const controlTypes = [
-    'patientInformation',
-    'allergies',
-    'formsV2React',
-    'diagnosis',
+function generateLargeDashboards(count: number) {
+  const dashboards = [];
+  const icons = [
+    'fa fa-user',
+    'fa fa-heartbeat',
+    'fa fa-hospital',
+    'fa fa-medkit',
   ];
 
   for (let i = 0; i < count; i++) {
-    sections.push({
-      name: `Section ${i}`,
-      translationKey: `DASHBOARD_TITLE_SECTION_${i}_KEY`,
-      description: `Description for section ${i}`,
-      icon: 'fa fa-folder',
-      controls: [
-        {
-          type: controlTypes[i % controlTypes.length],
-          translationKey: `DASHBOARD_TITLE_CONTROL_${i}_KEY`,
-        },
-      ],
+    dashboards.push({
+      name: `Dashboard ${i}`,
+      url: `dashboard-${i}`,
+      requiredPrivileges: [`View Dashboard ${i}`],
+      icon: icons[i % icons.length],
+      default: i === 0, // First one is default
     });
   }
 
-  return sections;
+  return dashboards;
 }
