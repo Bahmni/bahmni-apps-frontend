@@ -159,6 +159,14 @@ The implementation includes robust error handling:
   ```
 - This ensures that even if a translation is missing in the requested language, the English version will be displayed
 
+#### Translation File Fetching and Error Handling
+
+- Internationalization will only function after i18n is properly initialized. If initialization fails, the application will fall back to using keys instead of translated text.
+- A separate axios client is used to fetch translation files (see `getTranslationFile` function) rather than the main API service.
+- This separate client is necessary because the main API service has a dependency on the notification service, which would create a circular dependency issue if used for translation files.
+- If there's a failure in fetching a particular locale, errors will be logged to the console, but the notification service will not display any errors to the user.
+- The implementation gracefully handles missing translation files by returning an empty object, allowing the application to continue functioning with available translations or fallbacks.
+
 ## Development Guidelines
 
 ### Adding New Translations
