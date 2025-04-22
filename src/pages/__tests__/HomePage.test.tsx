@@ -1,10 +1,16 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { render, screen } from '@testing-library/react';
 import HomePage from '../HomePage';
 import PatientDetails from '@components/patient/PatientDetails';
 import ConditionsTable from '@components/conditions/ConditionsTable';
 import { useClinicalConfig } from '@hooks/useClinicalConfig';
 import { validFullClinicalConfig } from '@__mocks__/configMocks';
+
+// Mock React.Suspense to render children immediately in tests
+jest.mock('react', () => ({
+  ...jest.requireActual('react'),
+  Suspense: ({ children }: { children: ReactNode }) => children,
+}));
 
 // Mock Carbon components
 jest.mock('@carbon/react', () => ({
@@ -67,7 +73,7 @@ describe('HomePage Component', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('should render with correct Carbon layout structure when config is loaded', () => {
+  it('should render with correct Carbon layout structure when config is loaded', async () => {
     // Mock useClinicalConfig to return config
     (useClinicalConfig as jest.Mock).mockReturnValue({
       clinicalConfig: validFullClinicalConfig,
@@ -76,12 +82,12 @@ describe('HomePage Component', () => {
     render(<HomePage />);
 
     // Should render Carbon layout components
-    expect(screen.getByTestId('carbon-section')).toBeInTheDocument();
-    expect(screen.getByTestId('carbon-grid')).toBeInTheDocument();
-    expect(screen.getByTestId('carbon-column')).toBeInTheDocument();
+    expect(await screen.findByTestId('carbon-section')).toBeInTheDocument();
+    expect(await screen.findByTestId('carbon-grid')).toBeInTheDocument();
+    expect(await screen.findByTestId('carbon-column')).toBeInTheDocument();
   });
 
-  it('should render child components when config is loaded', () => {
+  it('should render child components when config is loaded', async () => {
     // Mock useClinicalConfig to return config
     (useClinicalConfig as jest.Mock).mockReturnValue({
       clinicalConfig: validFullClinicalConfig,
@@ -91,12 +97,20 @@ describe('HomePage Component', () => {
 
     // Should render child components
     expect(PatientDetails).toHaveBeenCalled();
-    expect(screen.getByTestId('mocked-patient-details')).toBeInTheDocument();
-    expect(screen.getByText('Mocked PatientDetails')).toBeInTheDocument();
+    expect(
+      await screen.findByTestId('mocked-patient-details'),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByText('Mocked PatientDetails'),
+    ).toBeInTheDocument();
 
     expect(ConditionsTable).toHaveBeenCalled();
-    expect(screen.getByTestId('mocked-conditions-table')).toBeInTheDocument();
-    expect(screen.getByText('Mocked ConditionsTable')).toBeInTheDocument();
+    expect(
+      await screen.findByTestId('mocked-conditions-table'),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByText('Mocked ConditionsTable'),
+    ).toBeInTheDocument();
   });
 
   it('should match snapshot when loading', () => {

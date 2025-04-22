@@ -16,8 +16,8 @@ root.render(
   <React.StrictMode>
     <BrowserRouter basename={process.env.PUBLIC_URL || '/'}>
       <NotificationProvider>
+        <NotificationServiceComponent />
         <ClinicalConfigProvider>
-          <NotificationServiceComponent />
           <App />
         </ClinicalConfigProvider>
       </NotificationProvider>
