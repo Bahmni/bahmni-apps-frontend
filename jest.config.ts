@@ -10,6 +10,7 @@ const config: Config.InitialOptions = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': '<rootDir>/src/__mocks__/styleMock.ts',
+    '@/(.*)$': ['<rootDir>/src/$1'],
     '@components/(.*)$': ['<rootDir>/src/components/$1'],
     '@contexts/(.*)$': ['<rootDir>/src/contexts/$1'],
     '@constants/(.*)$': ['<rootDir>/src/constants/$1'],
@@ -30,6 +31,8 @@ const config: Config.InitialOptions = {
     '<rootDir>/src/setupTests.ts',
     '<rootDir>/src/types',
     '<rootDir>/src/.*/stories/',
+    '<rootDir>/src/i18n.ts',
+    '<rootDir>/src/setupTests.i18n.ts',
   ],
   coverageThreshold: {
     global: {

@@ -4,6 +4,7 @@ import ConditionsTable from '../ConditionsTable';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import { useConditions } from '@hooks/useConditions';
 import { formatConditions } from '@services/conditionService';
+import i18n from '@/setupTests.i18n';
 import {
   mockPatientUUID,
   mockConditions,
@@ -37,6 +38,8 @@ describe('ConditionsTable Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(console, 'error').mockImplementation();
+    // Reset i18n to English
+    i18n.changeLanguage('en');
   });
 
   it('should call usePatientUUID to get patient UUID', () => {
@@ -105,7 +108,7 @@ describe('ConditionsTable Integration', () => {
 
     // Verify the formatted conditions are displayed
     expect(screen.getByText('Cyst of Gallbladder')).toBeInTheDocument();
-    expect(screen.getByText('active')).toBeInTheDocument();
+    expect(screen.getByText('Active')).toBeInTheDocument();
     expect(screen.getByText('Super Man')).toBeInTheDocument();
   });
 
@@ -290,6 +293,6 @@ describe('ConditionsTable Integration', () => {
 
     // Verify the component renders with incomplete data
     expect(screen.getByText('Test Condition')).toBeInTheDocument();
-    expect(screen.getByText('inactive')).toBeInTheDocument();
+    expect(screen.getByText('Inactive')).toBeInTheDocument();
   });
 });

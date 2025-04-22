@@ -5,11 +5,12 @@ import { usePatient } from '@hooks/usePatient';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import * as patientService from '@services/patientService';
 import { FormattedPatientData, Age } from '@types/patient';
+import i18n from '@/setupTests.i18n';
 
 // Mock the custom hooks and patient service
-jest.mock('../../../hooks/usePatient');
-jest.mock('../../../hooks/usePatientUUID');
-jest.mock('../../../services/patientService');
+jest.mock('@hooks/usePatient');
+jest.mock('@hooks/usePatientUUID');
+jest.mock('@services/patientService');
 
 const mockedUsePatient = usePatient as jest.MockedFunction<typeof usePatient>;
 const mockedUsePatientUUID = usePatientUUID as jest.MockedFunction<
@@ -23,6 +24,8 @@ const mockedFormatPatientData =
 describe('PatientDetails Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset i18n to English
+    i18n.changeLanguage('en');
     // Mock the usePatientUUID hook to return a test UUID
     mockedUsePatientUUID.mockReturnValue('test-uuid');
   });
@@ -86,7 +89,7 @@ describe('PatientDetails Component', () => {
     expect(screen.getByText('John Doe')).toBeInTheDocument();
     expect(screen.getByText('ID: test-uuid')).toBeInTheDocument();
     expect(
-      screen.getByText('male | 35 Years, 2 Months, 15 Days | 1990-01-01'),
+      screen.getByText('male | 35 years, 2 months, 15 days | 1990-01-01'),
     ).toBeInTheDocument();
   });
 
@@ -375,7 +378,7 @@ describe('PatientDetails Component', () => {
     // Should still render other information
     expect(screen.getByText('ID: test-uuid')).toBeInTheDocument();
     expect(
-      screen.getByText('male | 35 Years, 2 Months, 15 Days | 1990-01-01'),
+      screen.getByText('male | 35 years, 2 months, 15 days | 1990-01-01'),
     ).toBeInTheDocument();
     // Name should not be present
     expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument();
