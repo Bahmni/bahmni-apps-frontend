@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Clinical Dashboard Configuration Schema",
-  "description": "Schema for global clinical dashboard configuration including patient information, actions and available dashboards",
+  "title": "Clinical App Configuration Schema",
+  "description": "Schema for global clinical app configuration including patient information, actions and available dashboards",
   "type": "object",
   "required": ["patientInformation", "actions", "dashboards"],
   "properties": {
