@@ -6,6 +6,7 @@ import PatientDetails from '../PatientDetails';
 import * as patientService from '@services/patientService';
 import { FormattedPatientData, Age } from '@types/patient';
 import { NotificationProvider } from '@providers/NotificationProvider';
+import i18n from '@/setupTests.i18n';
 
 // Mock axios and patientService
 jest.mock('axios', () => ({
@@ -62,6 +63,8 @@ const mockedFormatPatientData =
 describe('PatientDetails Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset i18n to English
+    i18n.changeLanguage('en');
   });
 
   it('should fetch and display patient data', async () => {
@@ -114,7 +117,7 @@ describe('PatientDetails Integration', () => {
     // Assert - Data displayed correctly
     expect(screen.getByText('ID: test-uuid')).toBeInTheDocument();
     expect(
-      screen.getByText('male | 35 Years, 2 Months, 15 Days | 1990-01-01'),
+      screen.getByText('male | 35 years, 2 months, 15 days | 1990-01-01'),
     ).toBeInTheDocument();
   });
 

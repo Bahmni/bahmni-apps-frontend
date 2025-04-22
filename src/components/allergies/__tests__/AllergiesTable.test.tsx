@@ -7,6 +7,7 @@ import { formatAllergies } from '@services/allergyService';
 import { formatDateTime } from '@utils/date';
 import { generateId } from '@utils/common';
 import * as common from '@utils/common';
+import i18n from '@/setupTests.i18n';
 import {
   mockAllergyIntolerance,
   mockAllergyWithMissingFields,
@@ -207,6 +208,9 @@ describe('AllergiesTable Unit Tests', () => {
       formattedResult: `Formatted: ${date}`,
     }));
 
+    // Reset i18n to English
+    i18n.changeLanguage('en');
+
     // Mock capitalize to capitalize first letter of each word
     jest
       .spyOn(common, 'capitalize')
@@ -348,7 +352,9 @@ describe('AllergiesTable Unit Tests', () => {
 
       // Assert
       expect(screen.getByTestId('mock-empty-state')).toBeInTheDocument();
-      expect(screen.getByText('No allergies found')).toBeInTheDocument();
+      expect(
+        screen.getByText('No Allergies recorded for this patient.'),
+      ).toBeInTheDocument();
     });
 
     it('should render table with correct headers', () => {
@@ -366,7 +372,9 @@ describe('AllergiesTable Unit Tests', () => {
       render(<AllergiesTable />);
 
       // Assert
-      expect(screen.getByTestId('header-display')).toHaveTextContent('Allergy');
+      expect(screen.getByTestId('header-display')).toHaveTextContent(
+        'Allergen',
+      );
       expect(screen.getByTestId('header-manifestation')).toHaveTextContent(
         'Reaction(s)',
       );
@@ -1350,7 +1358,9 @@ describe('AllergiesTable Unit Tests', () => {
 
       // Assert
       expect(screen.getByTestId('mock-empty-state')).toBeInTheDocument();
-      expect(screen.getByText('No allergies found')).toBeInTheDocument();
+      expect(
+        screen.getByText('No Allergies recorded for this patient.'),
+      ).toBeInTheDocument();
     });
 
     it('should handle empty or malformed allergy data without crashing', () => {

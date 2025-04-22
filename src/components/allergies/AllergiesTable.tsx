@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Tag } from '@carbon/react';
+import { useTranslation } from 'react-i18next';
 import { ExpandableDataTable } from '@components/expandableDataTable/ExpandableDataTable';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import { useAllergies } from '@hooks/useAllergies';
@@ -12,20 +13,21 @@ import { generateId, capitalize } from '@utils/common';
  * Component to display patient allergies in a DataTable with expandable rows
  */
 const AllergiesTable: React.FC = () => {
+  const { t } = useTranslation();
   const patientUUID = usePatientUUID();
   const { allergies, loading, error } = useAllergies(patientUUID);
 
   // Define table headers
   const headers = useMemo(
     () => [
-      { key: 'display', header: 'Allergy' },
-      { key: 'severity', header: 'Severity' },
-      { key: 'manifestation', header: 'Reaction(s)' },
-      { key: 'status', header: 'Status' },
-      { key: 'recorder', header: 'Provider' },
-      { key: 'recordedDate', header: 'Recorded Date' },
+      { key: 'display', header: t('ALLERGEN') },
+      { key: 'severity', header: t('SEVERITY') },
+      { key: 'manifestation', header: t('REACTIONS') },
+      { key: 'status', header: t('ALLERGY_LIST_STATUS') },
+      { key: 'recorder', header: t('ALLERGY_LIST_PROVIDER') },
+      { key: 'recordedDate', header: t('ALLERGY_LIST_RECORDED_DATE') },
     ],
-    [],
+    [t],
   );
 
   const sortable = useMemo(
@@ -67,7 +69,9 @@ const AllergiesTable: React.FC = () => {
       case 'status':
         return (
           <Tag type={allergy.status === 'Active' ? 'green' : 'gray'}>
-            {allergy.status}
+            {allergy.status === 'Active'
+              ? t('ALLERGY_LIST_ACTIVE')
+              : t('ALLERGY_LIST_INACTIVE')}
           </Tag>
         );
       case 'manifestation':
@@ -75,14 +79,14 @@ const AllergiesTable: React.FC = () => {
           ? allergy.reactions
               .map((reaction) => reaction.manifestation.join(', '))
               .join(', ')
-          : 'Not available';
+          : t('ALLERGY_TABLE_NOT_AVAILABLE');
       case 'severity':
         return capitalize(allergy.severity || 'Unknown');
       case 'recorder':
-        return allergy.recorder || 'Not available';
+        return allergy.recorder || t('ALLERGY_TABLE_NOT_AVAILABLE');
       case 'recordedDate': {
         const recordedDate = formatDateTime(allergy.recordedDate || '');
-        return recordedDate.formattedResult || 'Not available';
+        return recordedDate.formattedResult || t('ALLERGY_TABLE_NOT_AVAILABLE');
       }
     }
   };
@@ -105,7 +109,7 @@ const AllergiesTable: React.FC = () => {
       data-testid="allergy-table"
     >
       <ExpandableDataTable
-        tableTitle="Allergies"
+        tableTitle={t('ALLERGIES_DISPLAY_CONTROL_HEADING')}
         rows={formattedAllergies}
         headers={headers}
         sortable={sortable}
@@ -113,8 +117,8 @@ const AllergiesTable: React.FC = () => {
         renderExpandedContent={renderExpandedContent}
         loading={loading}
         error={error}
-        ariaLabel="Patient allergies"
-        emptyStateMessage="No allergies found"
+        ariaLabel={t('ALLERGIES_DISPLAY_CONTROL_HEADING')}
+        emptyStateMessage={t('NO_ALLERGIES')}
         rowClassNames={rowClassNames}
       />
     </div>

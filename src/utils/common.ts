@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
+import i18next from 'i18next';
 
-// TODO: Add i18n support
 /**
  * Formats error messages from different sources
  * @param error - The error to format
@@ -10,8 +10,8 @@ export const getFormattedError = (
   error: unknown,
 ): { title: string; message: string } => {
   // Default error title and message
-  let title = 'Error';
-  let message = 'An unexpected error occurred';
+  let title = i18next.t('ERROR_DEFAULT_TITLE');
+  let message = i18next.t('ERROR_DEFAULT_MESSAGE');
 
   if (!error) {
     return { title, message };
@@ -26,52 +26,48 @@ export const getFormattedError = (
       const status = axiosError.response.status;
       switch (status) {
         case 400:
-          title = 'Bad Request';
-          message =
-            'Invalid input parameters. Please check your request and try again.';
+          title = i18next.t('ERROR_BAD_REQUEST_TITLE');
+          message = i18next.t('ERROR_BAD_REQUEST_MESSAGE');
           break;
         case 401:
-          title = 'Unauthorized';
-          message =
-            'You are not authorized to perform this action. Please log in again.';
+          title = i18next.t('ERROR_UNAUTHORIZED_TITLE');
+          message = i18next.t('ERROR_UNAUTHORIZED_MESSAGE');
           break;
         case 403:
-          title = 'Authorization Error';
-          message =
-            'You are not authorized to perform this action. Please log in again.';
+          title = i18next.t('ERROR_UNAUTHORIZED_TITLE');
+          message = i18next.t('ERROR_UNAUTHORIZED_MESSAGE');
           break;
         case 404:
-          title = 'Not Found';
-          message = 'The requested resource was not found.';
+          title = i18next.t('ERROR_NOT_FOUND_TITLE');
+          message = i18next.t('ERROR_NOT_FOUND_MESSAGE');
           break;
         case 500:
         case 502:
         case 503:
         case 504:
-          title = 'Server Error';
-          message = 'The server encountered an error. Please try again later.';
+          title = i18next.t('ERROR_SERVER_TITLE');
+          message = i18next.t('ERROR_SERVER_MESSAGE');
           break;
         default: {
-          title = 'Request Error';
+          title = i18next.t('ERROR_DEFAULT_TITLE');
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const responseData = axiosError.response.data as Record<string, any>;
           message =
             responseData?.message ||
             axiosError.message ||
-            'Error processing your request';
+            i18next.t('ERROR_UNKNOWN_MESSAGE');
         }
       }
     } else if (error instanceof Error) {
       message = error.message;
     } else {
-      title = 'Network Error';
-      message =
-        'Unable to connect to the server. Please check your internet connection.';
+      title = i18next.t('ERROR_NETWORK_TITLE');
+      message = i18next.t('ERROR_NETWORK_MESSAGE');
     }
   } else if (error instanceof Error) {
     message = error.message;
   } else {
-    message = 'An unknown error occurred';
+    message = i18next.t('ERROR_UNKNOWN_MESSAGE');
   }
 
   return { title, message };

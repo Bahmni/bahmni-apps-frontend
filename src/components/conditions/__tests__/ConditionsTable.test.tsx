@@ -6,6 +6,7 @@ import { useConditions } from '@hooks/useConditions';
 import { formatConditions } from '@services/conditionService';
 import { formatDate, formatDateTime } from '@utils/date';
 import { generateId } from '@utils/common';
+import i18n from '@/setupTests.i18n';
 import {
   mockPatientUUID,
   mockConditions,
@@ -118,6 +119,8 @@ describe('ConditionsTable Unit Tests', () => {
     mockedFormatDate.mockImplementation((date) => ({
       formattedResult: `Formatted: ${date}`,
     }));
+    // Reset i18n to English
+    i18n.changeLanguage('en');
   });
 
   // 1. Component Initialization and Hook Interactions
@@ -350,7 +353,7 @@ describe('ConditionsTable Unit Tests', () => {
 
       // Assert
       const statusCell = screen.getByTestId('cell-status-0');
-      expect(statusCell).toHaveTextContent('active');
+      expect(statusCell).toHaveTextContent('Active');
       // In a real test, we would check for the Tag component with type="green"
       // but since we're using a mock, we just check for the content
     });
@@ -377,7 +380,7 @@ describe('ConditionsTable Unit Tests', () => {
 
       // Assert
       const statusCell = screen.getByTestId('cell-status-0');
-      expect(statusCell).toHaveTextContent('inactive');
+      expect(statusCell).toHaveTextContent('Inactive');
       // In a real test, we would check for the Tag component with type="gray"
       // but since we're using a mock, we just check for the content
     });
@@ -528,6 +531,72 @@ describe('ConditionsTable Unit Tests', () => {
         'Formatted:',
       );
       expect(formatDateTime).toHaveBeenCalledWith('');
+    });
+
+    it('should show "Not available" when onsetDate formatting returns no result', () => {
+      // Arrange
+      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+      mockedUseConditions.mockReturnValue({
+        conditions: mockConditions,
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      const conditionWithOnsetDate: FormattedCondition = {
+        ...mockFormattedConditionsWithoutNotes[0],
+        onsetDate: '2025-03-24T18:30:00+00:00',
+      };
+
+      mockedFormatConditions.mockReturnValue([conditionWithOnsetDate]);
+
+      // Mock formatDate to return no formattedResult
+      mockedFormatDate.mockReturnValue({
+        formattedResult: '',
+        error: { title: 'Error', message: 'Invalid date format' },
+      });
+
+      // Act
+      render(<ConditionsTable />);
+
+      // Assert - Should show "Not available" text
+      expect(screen.getByTestId('cell-onsetDate-0')).toHaveTextContent(
+        'Not available',
+      );
+      expect(formatDate).toHaveBeenCalledWith('2025-03-24T18:30:00+00:00');
+    });
+
+    it('should show "Not available" when recordedDate formatting returns no result', () => {
+      // Arrange
+      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+      mockedUseConditions.mockReturnValue({
+        conditions: mockConditions,
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      const conditionWithRecordedDate: FormattedCondition = {
+        ...mockFormattedConditionsWithoutNotes[0],
+        recordedDate: '2025-03-25T06:48:32+00:00',
+      };
+
+      mockedFormatConditions.mockReturnValue([conditionWithRecordedDate]);
+
+      // Mock formatDateTime to return no formattedResult
+      mockedFormatDateTime.mockReturnValue({
+        formattedResult: '',
+        error: { title: 'Error', message: 'Invalid date format' },
+      });
+
+      // Act
+      render(<ConditionsTable />);
+
+      // Assert - Should show "Not available" text
+      expect(screen.getByTestId('cell-recordedDate-0')).toHaveTextContent(
+        'Not available',
+      );
+      expect(formatDateTime).toHaveBeenCalledWith('2025-03-25T06:48:32+00:00');
     });
   });
 

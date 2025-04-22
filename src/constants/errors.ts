@@ -1,7 +1,9 @@
+import i18next from 'i18next';
+
 export const DATE_ERROR_MESSAGES = {
-  PARSE_ERROR: 'Date Parse Error',
-  FORMAT_ERROR: 'Date Format Error',
-  EMPTY_OR_INVALID: 'Date string is empty or invalid',
-  INVALID_FORMAT: 'Invalid date format',
-  NULL_OR_UNDEFINED: 'Date is null or undefined',
+  PARSE_ERROR: i18next.t('DATE_ERROR_PARSE'),
+  FORMAT_ERROR: i18next.t('DATE_ERROR_FORMAT'),
+  EMPTY_OR_INVALID: i18next.t('DATE_ERROR_EMPTY_OR_INVALID'),
+  INVALID_FORMAT: i18next.t('DATE_ERROR_INVALID_FORMAT'),
+  NULL_OR_UNDEFINED: i18next.t('DATE_ERROR_NULL_OR_UNDEFINED'),
 } as const;

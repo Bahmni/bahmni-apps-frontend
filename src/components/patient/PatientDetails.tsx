@@ -4,9 +4,11 @@ import { SkeletonText, Tile, Column, Grid } from '@carbon/react';
 import { formatPatientData } from '@services/patientService';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import { Text } from '@carbon/react/lib/components/Text';
+import { useTranslation } from 'react-i18next';
 
 // TODO: Extract this as a PatientDetails Display Control Component
 const PatientDetails: React.FC = () => {
+  const { t } = useTranslation();
   const patientUUID: string | null = usePatientUUID();
   const { patient, loading, error } = usePatient(patientUUID);
 
@@ -41,7 +43,7 @@ const PatientDetails: React.FC = () => {
 
   const formattedAge =
     formattedPatient.age && formattedPatient.age.years !== undefined
-      ? `${formattedPatient.age.years} Years, ${formattedPatient.age.months} Months, ${formattedPatient.age.days} Days`
+      ? `${formattedPatient.age.years} ${t('CLINICAL_YEARS_TRANSLATION_KEY')}, ${formattedPatient.age.months} ${t('CLINICAL_MONTHS_TRANSLATION_KEY')}, ${formattedPatient.age.days} ${t('CLINICAL_DAYS_TRANSLATION_KEY')}`
       : null;
 
   const details = [

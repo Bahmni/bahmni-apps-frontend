@@ -1,5 +1,6 @@
 import { capitalize, generateId, getFormattedError } from '../common';
 import axios, { AxiosError } from 'axios';
+import i18n from '@/setupTests.i18n';
 
 jest.mock('axios', () => ({
   isAxiosError: jest.fn(),
@@ -26,6 +27,7 @@ describe('common utility functions', () => {
   describe('getFormattedError', () => {
     beforeEach(() => {
       jest.clearAllMocks();
+      i18n.changeLanguage('en');
     });
 
     it('should handle Axios errors with response - 401 Unauthorized', () => {
@@ -99,7 +101,7 @@ describe('common utility functions', () => {
       const result = getFormattedError(axiosError);
 
       expect(result).toEqual({
-        title: 'Authorization Error',
+        title: 'Unauthorized',
         message:
           'You are not authorized to perform this action. Please log in again.',
       });
@@ -149,8 +151,8 @@ describe('common utility functions', () => {
       const result = getFormattedError(axiosError);
 
       expect(result).toEqual({
-        title: 'Request Error',
-        message: 'Error processing your request',
+        title: 'Error',
+        message: 'An unknown error occurred',
       });
     });
 
@@ -216,7 +218,7 @@ describe('common utility functions', () => {
       const result = getFormattedError(axiosError);
 
       expect(result).toEqual({
-        title: 'Request Error',
+        title: 'Error',
         message: 'Error processing your request',
       });
     });
@@ -269,7 +271,7 @@ describe('common utility functions', () => {
       const result = getFormattedError(axiosError);
 
       expect(result).toEqual({
-        title: 'Request Error',
+        title: 'Error',
         message: 'Error processing your request',
       });
     });
@@ -294,7 +296,7 @@ describe('common utility functions', () => {
       const result = getFormattedError(axiosError);
 
       expect(result).toEqual({
-        title: 'Request Error',
+        title: 'Error',
         message: 'Error processing your request',
       });
     });
@@ -319,7 +321,7 @@ describe('common utility functions', () => {
       const result = getFormattedError(axiosError);
 
       expect(result).toEqual({
-        title: 'Request Error',
+        title: 'Error',
         message: 'Validation failed',
       });
     });
@@ -344,7 +346,7 @@ describe('common utility functions', () => {
       const result = getFormattedError(axiosError);
 
       expect(result).toEqual({
-        title: 'Request Error',
+        title: 'Error',
         message: 'Custom error message',
       });
     });

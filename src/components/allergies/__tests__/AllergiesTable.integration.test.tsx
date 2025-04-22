@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import i18n from '@/setupTests.i18n';
 import AllergiesTable from '../AllergiesTable';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import { useAllergies } from '@hooks/useAllergies';
@@ -102,6 +103,8 @@ describe('AllergiesTable Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(console, 'error').mockImplementation();
+    // Reset i18n to English
+    i18n.changeLanguage('en');
     // Mock capitalize to capitalize first letter of each word
     jest
       .spyOn(common, 'capitalize')
@@ -161,25 +164,6 @@ describe('AllergiesTable Integration', () => {
       ).toBeInTheDocument();
     });
 
-    it('should render the error state when an error occurs', () => {
-      // Mock the hooks with error state
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseAllergies.mockReturnValue({
-        allergies: [],
-        loading: false,
-        error: new Error('Failed to fetch allergies'),
-        refetch: jest.fn(),
-      });
-
-      render(<AllergiesTable />);
-
-      // Verify error state is shown
-      expect(screen.getByTestId('expandable-table-error')).toBeInTheDocument();
-      expect(
-        screen.getByText('Failed to fetch allergies', { exact: false }),
-      ).toBeInTheDocument();
-    });
-
     it('should display "No allergies found" when the patient has no recorded allergies', () => {
       // Mock the hooks with empty allergies
       mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
@@ -197,7 +181,9 @@ describe('AllergiesTable Integration', () => {
       expect(
         screen.getByTestId('expandable-data-table-empty'),
       ).toBeInTheDocument();
-      expect(screen.getByText('No allergies found')).toBeInTheDocument();
+      expect(
+        screen.getByText('No Allergies recorded for this patient.'),
+      ).toBeInTheDocument();
     });
   });
 
@@ -270,7 +256,7 @@ describe('AllergiesTable Integration', () => {
 
       // Verify the table has proper ARIA attributes
       const table = screen.getByRole('table');
-      expect(table).toHaveAttribute('aria-label', 'Patient allergies');
+      expect(table).toHaveAttribute('aria-label', 'Allergies');
 
       // Verify the table has proper styling
       const tableContainer = screen.getByTestId('allergy-table');

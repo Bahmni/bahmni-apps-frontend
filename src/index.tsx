@@ -5,6 +5,7 @@ import App from './App';
 import { NotificationProvider } from '@providers/NotificationProvider';
 import { NotificationServiceComponent } from './services/NotificationServiceComponent';
 import './styles/index.scss';
+import '@/i18n';
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Failed to find the root element');

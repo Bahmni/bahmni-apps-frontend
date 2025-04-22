@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { ExpandableDataTable } from '../ExpandableDataTable';
 import { DataTableHeader, Tag } from '@carbon/react';
 import { getFormattedError } from '@utils/common';
+import i18n from '@/setupTests.i18n';
 
 // Mock the common utils
 jest.mock('@utils/common', () => ({
@@ -80,6 +81,8 @@ describe('ExpandableDataTable', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(console, 'error').mockImplementation();
+    // Reset i18n to English
+    i18n.changeLanguage('en');
   });
 
   it('should render the table with provided headers and rows', () => {
