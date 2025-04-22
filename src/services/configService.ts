@@ -1,8 +1,10 @@
 import { get } from './api';
 import Ajv from 'ajv';
-import { CONFIG_ERROR_MESSAGES } from '@constants/errors';
+import { CONFIG_ERROR_MESSAGES, ERROR_TITLES } from '@constants/errors';
 import { ClinicalConfig } from '@types/config';
 import { getFormattedError } from '@utils/common';
+import notificationService from './notificationService';
+import i18next from 'i18next';
 
 /**
  * Fetches and validates configuration from the server
@@ -20,20 +22,28 @@ export const getConfig = async <T extends ClinicalConfig>(
     // Fetch configuration from server
     const config = await fetchConfig<T>(configPath);
     if (!config) {
-      throw new Error(CONFIG_ERROR_MESSAGES.CONFIG_NOT_FOUND);
+      notificationService.showError(
+        i18next.t(ERROR_TITLES.CONFIG_ERROR),
+        i18next.t(CONFIG_ERROR_MESSAGES.CONFIG_NOT_FOUND),
+      );
+      return null;
     }
 
     // Validate configuration against schema
     const isValid = await validateConfig(config, configSchema);
     if (!isValid) {
-      throw new Error(CONFIG_ERROR_MESSAGES.SCHEMA_VALIDATION_FAILED);
+      notificationService.showError(
+        i18next.t(ERROR_TITLES.VALIDATION_ERROR),
+        i18next.t(CONFIG_ERROR_MESSAGES.VALIDATION_FAILED),
+      );
+      return null;
     }
 
     return config;
   } catch (error) {
-    // Log error for debugging purposes
-    const { message } = getFormattedError(error);
-    throw new Error(message);
+    const { title, message } = getFormattedError(error);
+    notificationService.showError(title, message);
+    return null;
   }
 };
 

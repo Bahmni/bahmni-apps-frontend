@@ -1,28 +1,26 @@
-import i18next from 'i18next';
-
 /**
  * Configuration-related error messages
  * Used for consistent error handling across the application
  */
 export const CONFIG_ERROR_MESSAGES = {
-  CONFIG_NOT_FOUND: 'Configuration not found',
-  VALIDATION_FAILED: 'Configuration validation failed',
-  SCHEMA_VALIDATION_FAILED: 'Configuration does not match required schema',
-} as const;
+  CONFIG_NOT_FOUND: 'CONFIG_ERROR_NOT_FOUND',
+  VALIDATION_FAILED: 'CONFIG_ERROR_VALIDATION_FAILED',
+  SCHEMA_VALIDATION_FAILED: 'CONFIG_ERROR_SCHEMA_VALIDATION_FAILED',
+};
 
 /**
  * Error title constants for notifications
  */
 export const ERROR_TITLES = {
-  CONFIG_ERROR: 'Configuration Error',
-  VALIDATION_ERROR: 'Validation Error',
-  DASHBOARD_ERROR: 'Department Configuration Error',
-} as const;
+  CONFIG_ERROR: 'ERROR_CONFIG_TITLE',
+  VALIDATION_ERROR: 'ERROR_VALIDATION_TITLE',
+  DASHBOARD_ERROR: 'ERROR_DASHBOARD_CONFIG_TITLE',
+};
 
 export const DATE_ERROR_MESSAGES = {
-  PARSE_ERROR: i18next.t('DATE_ERROR_PARSE'),
-  FORMAT_ERROR: i18next.t('DATE_ERROR_FORMAT'),
-  EMPTY_OR_INVALID: i18next.t('DATE_ERROR_EMPTY_OR_INVALID'),
-  INVALID_FORMAT: i18next.t('DATE_ERROR_INVALID_FORMAT'),
-  NULL_OR_UNDEFINED: i18next.t('DATE_ERROR_NULL_OR_UNDEFINED'),
-} as const;
+  PARSE_ERROR: 'DATE_ERROR_PARSE',
+  FORMAT_ERROR: 'DATE_ERROR_FORMAT',
+  EMPTY_OR_INVALID: 'DATE_ERROR_EMPTY_OR_INVALID',
+  INVALID_FORMAT: 'DATE_ERROR_INVALID_FORMAT',
+  NULL_OR_UNDEFINED: 'DATE_ERROR_NULL_OR_UNDEFINED',
+};

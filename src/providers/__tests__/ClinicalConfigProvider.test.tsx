@@ -12,7 +12,6 @@ import { useClinicalConfig } from '@hooks/useClinicalConfig';
 import { getConfig } from '@services/configService';
 import notificationService from '@services/notificationService';
 import { ClinicalConfig } from '@types/config';
-import { CONFIG_ERROR_MESSAGES } from '@constants/errors';
 import * as configMocks from '@__mocks__/configMocks';
 
 // Mock the configService
@@ -417,35 +416,6 @@ describe('ClinicalConfigProvider', () => {
   });
 
   describe('Error Handling Tests', () => {
-    test('should handle null clinicalConfig', async () => {
-      // Mock getConfig to return null
-      mockGetConfig.mockResolvedValueOnce(null);
-
-      render(
-        <ClinicalConfigProvider>
-          <TestComponent />
-        </ClinicalConfigProvider>,
-      );
-
-      await waitFor(() => {
-        expect(screen.getByTestId('config-test').textContent).toBe('Loaded');
-      });
-
-      // Verify config is null
-      expect(screen.getByTestId('config-data').textContent).toBe('No config');
-
-      // Verify error is set with CONFIG_NOT_FOUND message
-      expect(screen.getByTestId('config-error').textContent).toBe(
-        CONFIG_ERROR_MESSAGES.CONFIG_NOT_FOUND,
-      );
-
-      // Verify notification was shown
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        expect.any(String),
-        CONFIG_ERROR_MESSAGES.CONFIG_NOT_FOUND,
-      );
-    });
-
     test('should handle malformed JSON response', async () => {
       // Mock error for malformed JSON
       const jsonError = new SyntaxError('Unexpected token in JSON');

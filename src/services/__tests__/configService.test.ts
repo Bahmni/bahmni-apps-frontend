@@ -2,13 +2,14 @@ import { getConfig } from '../configService';
 import * as api from '../api';
 import Ajv from 'ajv';
 import * as commonUtils from '@utils/common';
-import { CONFIG_ERROR_MESSAGES } from '@constants/errors';
+import { CONFIG_ERROR_MESSAGES, ERROR_TITLES } from '@constants/errors';
+import notificationService from '../notificationService';
+import i18n from '@/setupTests.i18n';
 import {
   validFullClinicalConfig,
   minimalClinicalConfig,
   mixedClinicalConfig,
   invalidClinicalConfig,
-  emptyResponse,
   largeConfig,
   allOptionalFieldsConfig,
 } from '@__mocks__/configMocks';
@@ -32,6 +33,18 @@ const mockGetFormattedError =
   commonUtils.getFormattedError as jest.MockedFunction<
     typeof commonUtils.getFormattedError
   >;
+
+// Mock notificationService
+jest.mock('../notificationService', () => ({
+  showError: jest.fn(),
+  __esModule: true,
+  default: {
+    showError: jest.fn(),
+  },
+}));
+const mockShowError = notificationService.showError as jest.MockedFunction<
+  typeof notificationService.showError
+>;
 
 describe('ConfigService', () => {
   // Mock schema for testing
@@ -179,7 +192,7 @@ describe('ConfigService', () => {
     });
 
     describe('Error cases', () => {
-      test('should throw error when API request fails', async () => {
+      test('should return null and show error when API request fails', async () => {
         // Arrange
         const networkError = new Error('Network error');
         mockGet.mockRejectedValueOnce(networkError);
@@ -188,26 +201,33 @@ describe('ConfigService', () => {
           message: 'Network error',
         });
 
-        // Act & Assert
-        await expect(
-          getConfig('/api/config/dashboard', mockSchema),
-        ).rejects.toThrow('Network error');
+        // Act
+        const result = await getConfig('/api/config/dashboard', mockSchema);
+
+        // Assert
+        expect(result).toBeNull();
         expect(mockGet).toHaveBeenCalledWith('/api/config/dashboard');
         expect(mockGetFormattedError).toHaveBeenCalledWith(expect.any(Error));
+        expect(mockShowError).toHaveBeenCalledWith('Error', 'Network error');
       });
 
-      test('should throw error when API returns empty response', async () => {
+      test('should return null and show error when API returns empty response', async () => {
         // Arrange
-        mockGet.mockResolvedValueOnce(emptyResponse);
+        mockGet.mockResolvedValueOnce(null);
 
-        // Act & Assert
-        await expect(
-          getConfig('/api/config/dashboard', mockSchema),
-        ).rejects.toThrow(CONFIG_ERROR_MESSAGES.CONFIG_NOT_FOUND);
+        // Act
+        const result = await getConfig('/api/config/dashboard', mockSchema);
+
+        // Assert
+        expect(result).toBeNull();
         expect(mockGet).toHaveBeenCalledWith('/api/config/dashboard');
+        expect(mockShowError).toHaveBeenCalledWith(
+          i18n.t(ERROR_TITLES.CONFIG_ERROR),
+          i18n.t(CONFIG_ERROR_MESSAGES.CONFIG_NOT_FOUND),
+        );
       });
 
-      test('should throw error when config fails schema validation', async () => {
+      test('should return null and show error when config fails schema validation', async () => {
         // Arrange
         mockGet.mockResolvedValueOnce(invalidClinicalConfig);
 
@@ -221,15 +241,20 @@ describe('ConfigService', () => {
             }) as unknown as Ajv,
         );
 
-        // Act & Assert
-        await expect(
-          getConfig('/api/config/dashboard', mockSchema),
-        ).rejects.toThrow(CONFIG_ERROR_MESSAGES.SCHEMA_VALIDATION_FAILED);
+        // Act
+        const result = await getConfig('/api/config/dashboard', mockSchema);
+
+        // Assert
+        expect(result).toBeNull();
         expect(mockGet).toHaveBeenCalledWith('/api/config/dashboard');
         expect(mockValidate).toHaveBeenCalledWith(invalidClinicalConfig);
+        expect(mockShowError).toHaveBeenCalledWith(
+          i18n.t(ERROR_TITLES.VALIDATION_ERROR),
+          i18n.t(CONFIG_ERROR_MESSAGES.VALIDATION_FAILED),
+        );
       });
 
-      test('should throw error when invalid JSON response is received', async () => {
+      test('should return null and show error when invalid JSON response is received', async () => {
         // Arrange
         const syntaxError = new SyntaxError('Unexpected token in JSON');
         mockGet.mockImplementationOnce(() => {
@@ -240,14 +265,19 @@ describe('ConfigService', () => {
           message: 'Unexpected token in JSON',
         });
 
-        // Act & Assert
-        await expect(
-          getConfig('/api/config/dashboard', mockSchema),
-        ).rejects.toThrow('Unexpected token in JSON');
+        // Act
+        const result = await getConfig('/api/config/dashboard', mockSchema);
+
+        // Assert
+        expect(result).toBeNull();
         expect(mockGet).toHaveBeenCalledWith('/api/config/dashboard');
+        expect(mockShowError).toHaveBeenCalledWith(
+          'Error',
+          'Unexpected token in JSON',
+        );
       });
 
-      test('should throw error when schema validation throws', async () => {
+      test('should return null and show error when schema validation throws', async () => {
         // Arrange
         mockGet.mockResolvedValueOnce(validFullClinicalConfig);
 
@@ -267,12 +297,14 @@ describe('ConfigService', () => {
           message: 'Invalid schema',
         });
 
-        // Act & Assert
-        await expect(
-          getConfig('/api/config/dashboard', mockSchema),
-        ).rejects.toThrow('Invalid schema');
+        // Act
+        const result = await getConfig('/api/config/dashboard', mockSchema);
+
+        // Assert
+        expect(result).toBeNull();
         expect(mockGet).toHaveBeenCalledWith('/api/config/dashboard');
         expect(mockCompile).toHaveBeenCalled();
+        expect(mockShowError).toHaveBeenCalledWith('Error', 'Invalid schema');
       });
     });
   });
@@ -291,19 +323,22 @@ describe('ConfigService', () => {
       expect(result).toEqual(minimalClinicalConfig);
     });
 
-    test('should throw specific error when fetch fails', async () => {
+    test('should return null and show error when fetch fails', async () => {
       // Arrange
-      mockGet.mockRejectedValueOnce(new Error('Network error'));
+      const networkError = new Error('Network error');
+      mockGet.mockRejectedValueOnce(networkError);
       mockGetFormattedError.mockReturnValueOnce({
         title: 'Error',
-        message: CONFIG_ERROR_MESSAGES.CONFIG_NOT_FOUND,
+        message: 'Network error',
       });
 
-      // Act & Assert
-      await expect(
-        getConfig('/api/config/dashboard', mockSchema),
-      ).rejects.toThrow(expect.any(Error));
+      // Act
+      const result = await getConfig('/api/config/dashboard', mockSchema);
+
+      // Assert
+      expect(result).toBeNull();
       expect(mockGet).toHaveBeenCalledWith('/api/config/dashboard');
+      expect(mockShowError).toHaveBeenCalledWith('Error', 'Network error');
     });
   });
 
@@ -330,7 +365,7 @@ describe('ConfigService', () => {
       expect(result).toEqual(validFullClinicalConfig);
     });
 
-    test('should throw error when validation fails', async () => {
+    test('should return null and show error when validation fails', async () => {
       // Arrange
       mockGet.mockResolvedValueOnce(invalidClinicalConfig);
       const mockValidate = jest.fn().mockReturnValue(false);
@@ -342,12 +377,17 @@ describe('ConfigService', () => {
           }) as unknown as Ajv,
       );
 
-      // Act & Assert
-      await expect(
-        getConfig('/api/config/dashboard', mockSchema),
-      ).rejects.toThrow(CONFIG_ERROR_MESSAGES.SCHEMA_VALIDATION_FAILED);
+      // Act
+      const result = await getConfig('/api/config/dashboard', mockSchema);
+
+      // Assert
+      expect(result).toBeNull();
       expect(mockCompile).toHaveBeenCalledWith(mockSchema);
       expect(mockValidate).toHaveBeenCalledWith(invalidClinicalConfig);
+      expect(mockShowError).toHaveBeenCalledWith(
+        i18n.t(ERROR_TITLES.VALIDATION_ERROR),
+        i18n.t(CONFIG_ERROR_MESSAGES.VALIDATION_FAILED),
+      );
     });
   });
 });
