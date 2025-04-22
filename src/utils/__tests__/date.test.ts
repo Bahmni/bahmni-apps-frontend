@@ -2,6 +2,7 @@ import { format, parseISO } from 'date-fns';
 import { calculateAge, formatDate, formatDateTime } from '../date';
 import { DATE_FORMAT, DATE_TIME_FORMAT } from '@constants/date';
 import { DATE_ERROR_MESSAGES } from '@constants/errors';
+import i18n from '@/setupTests.i18n';
 
 jest.mock('@utils/common', () => ({
   generateId: jest.fn().mockReturnValue('generated-id'),
@@ -188,17 +189,23 @@ describe('Date Utility Functions', () => {
       const formatted = formatDate('invalid-date');
       expect(formatted.formattedResult).toBe('');
       expect(formatted.error).toBeDefined();
-      expect(formatted.error?.title).toBe(DATE_ERROR_MESSAGES.PARSE_ERROR);
-      expect(formatted.error?.message).toBe(DATE_ERROR_MESSAGES.INVALID_FORMAT);
+      expect(formatted.error?.title).toBe(
+        i18n.t(DATE_ERROR_MESSAGES.PARSE_ERROR),
+      );
+      expect(formatted.error?.message).toBe(
+        i18n.t(DATE_ERROR_MESSAGES.INVALID_FORMAT),
+      );
     });
 
     it('should handle empty string input', () => {
       const formatted = formatDate('');
       expect(formatted.formattedResult).toBe('');
       expect(formatted.error).toBeDefined();
-      expect(formatted.error?.title).toBe(DATE_ERROR_MESSAGES.PARSE_ERROR);
+      expect(formatted.error?.title).toBe(
+        i18n.t(DATE_ERROR_MESSAGES.PARSE_ERROR),
+      );
       expect(formatted.error?.message).toBe(
-        DATE_ERROR_MESSAGES.EMPTY_OR_INVALID,
+        i18n.t(DATE_ERROR_MESSAGES.EMPTY_OR_INVALID),
       );
     });
 
@@ -238,17 +245,23 @@ describe('Date Utility Functions', () => {
       const formatted = formatDateTime('invalid-date');
       expect(formatted.formattedResult).toBe('');
       expect(formatted.error).toBeDefined();
-      expect(formatted.error?.title).toBe(DATE_ERROR_MESSAGES.PARSE_ERROR);
-      expect(formatted.error?.message).toBe(DATE_ERROR_MESSAGES.INVALID_FORMAT);
+      expect(formatted.error?.title).toBe(
+        i18n.t(DATE_ERROR_MESSAGES.PARSE_ERROR),
+      );
+      expect(formatted.error?.message).toBe(
+        i18n.t(DATE_ERROR_MESSAGES.INVALID_FORMAT),
+      );
     });
 
     it('should handle empty string input', () => {
       const formatted = formatDateTime('');
       expect(formatted.formattedResult).toBe('');
       expect(formatted.error).toBeDefined();
-      expect(formatted.error?.title).toBe(DATE_ERROR_MESSAGES.PARSE_ERROR);
+      expect(formatted.error?.title).toBe(
+        i18n.t(DATE_ERROR_MESSAGES.PARSE_ERROR),
+      );
       expect(formatted.error?.message).toBe(
-        DATE_ERROR_MESSAGES.EMPTY_OR_INVALID,
+        i18n.t(DATE_ERROR_MESSAGES.EMPTY_OR_INVALID),
       );
     });
 

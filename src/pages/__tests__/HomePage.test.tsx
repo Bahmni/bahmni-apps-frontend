@@ -1,8 +1,30 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { render, screen } from '@testing-library/react';
 import HomePage from '../HomePage';
 import PatientDetails from '@components/patient/PatientDetails';
 import ConditionsTable from '@components/conditions/ConditionsTable';
+import { useClinicalConfig } from '@hooks/useClinicalConfig';
+import { validFullClinicalConfig } from '@__mocks__/configMocks';
+
+// Mock React.Suspense to render children immediately in tests
+jest.mock('react', () => ({
+  ...jest.requireActual('react'),
+  Suspense: ({ children }: { children: ReactNode }) => children,
+}));
+
+// Mock Carbon components
+jest.mock('@carbon/react', () => ({
+  Grid: jest.fn(({ children }) => (
+    <div data-testid="carbon-grid">{children}</div>
+  )),
+  Column: jest.fn(({ children }) => (
+    <div data-testid="carbon-column">{children}</div>
+  )),
+  Section: jest.fn(({ children }) => (
+    <div data-testid="carbon-section">{children}</div>
+  )),
+  Loading: jest.fn(() => <div data-testid="carbon-loading">Loading...</div>),
+}));
 
 // Mock the PatientDetails component
 jest.mock('@components/patient/PatientDetails', () => {
@@ -18,6 +40,9 @@ jest.mock('@components/conditions/ConditionsTable', () => {
   ));
 });
 
+// Mock the useClinicalConfig hook
+jest.mock('@hooks/useClinicalConfig');
+
 // Mock the AllergiesTable component
 jest.mock('@components/allergies/AllergiesTable', () => {
   return jest.fn(() => (
@@ -27,26 +52,81 @@ jest.mock('@components/allergies/AllergiesTable', () => {
 describe('HomePage Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(console, 'log').mockImplementation(() => {});
   });
 
-  it('should render without crashing', () => {
+  it('should show loading state when config is null', () => {
+    // Mock useClinicalConfig to return null config (loading state)
+    (useClinicalConfig as jest.Mock).mockReturnValue({ clinicalConfig: null });
+
     render(<HomePage />);
-    expect(screen.getByTestId('mocked-conditions-table')).toBeInTheDocument();
-    expect(screen.getByTestId('mocked-patient-details')).toBeInTheDocument();
+
+    // Should show loading component
+    expect(screen.getByTestId('carbon-loading')).toBeInTheDocument();
+
+    // Should not render other components
+    expect(
+      screen.queryByTestId('mocked-patient-details'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('mocked-conditions-table'),
+    ).not.toBeInTheDocument();
   });
 
-  it('should render PatientDetails component', () => {
+  it('should render with correct Carbon layout structure when config is loaded', async () => {
+    // Mock useClinicalConfig to return config
+    (useClinicalConfig as jest.Mock).mockReturnValue({
+      clinicalConfig: validFullClinicalConfig,
+    });
+
     render(<HomePage />);
+
+    // Should render Carbon layout components
+    expect(await screen.findByTestId('carbon-section')).toBeInTheDocument();
+    expect(await screen.findByTestId('carbon-grid')).toBeInTheDocument();
+    expect(await screen.findByTestId('carbon-column')).toBeInTheDocument();
+  });
+
+  it('should render child components when config is loaded', async () => {
+    // Mock useClinicalConfig to return config
+    (useClinicalConfig as jest.Mock).mockReturnValue({
+      clinicalConfig: validFullClinicalConfig,
+    });
+
+    render(<HomePage />);
+
+    // Should render child components
     expect(PatientDetails).toHaveBeenCalled();
-    expect(screen.getByTestId('mocked-patient-details')).toBeInTheDocument();
-    expect(screen.getByText('Mocked PatientDetails')).toBeInTheDocument();
+    expect(
+      await screen.findByTestId('mocked-patient-details'),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByText('Mocked PatientDetails'),
+    ).toBeInTheDocument();
 
     expect(ConditionsTable).toHaveBeenCalled();
-    expect(screen.getByTestId('mocked-conditions-table')).toBeInTheDocument();
-    expect(screen.getByText('Mocked ConditionsTable')).toBeInTheDocument();
+    expect(
+      await screen.findByTestId('mocked-conditions-table'),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByText('Mocked ConditionsTable'),
+    ).toBeInTheDocument();
   });
 
-  it('should match snapshot', () => {
+  it('should match snapshot when loading', () => {
+    // Mock useClinicalConfig to return null config (loading state)
+    (useClinicalConfig as jest.Mock).mockReturnValue({ clinicalConfig: null });
+
+    const { asFragment } = render(<HomePage />);
+    expect(asFragment()).toMatchSnapshot();
+  });
+
+  it('should match snapshot when loaded', () => {
+    // Mock useClinicalConfig to return config
+    (useClinicalConfig as jest.Mock).mockReturnValue({
+      clinicalConfig: validFullClinicalConfig,
+    });
+
     const { asFragment } = render(<HomePage />);
     expect(asFragment()).toMatchSnapshot();
   });

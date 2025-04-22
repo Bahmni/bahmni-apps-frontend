@@ -2,9 +2,10 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
+import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
 import { NotificationProvider } from '@providers/NotificationProvider';
-import { NotificationServiceComponent } from './services/NotificationServiceComponent';
-import './styles/index.scss';
+import { NotificationServiceComponent } from '@services/NotificationServiceComponent';
+import '@styles/index.scss';
 import '@/i18n';
 
 const container = document.getElementById('root');
@@ -16,7 +17,9 @@ root.render(
     <BrowserRouter basename={process.env.PUBLIC_URL || '/'}>
       <NotificationProvider>
         <NotificationServiceComponent />
-        <App />
+        <ClinicalConfigProvider>
+          <App />
+        </ClinicalConfigProvider>
       </NotificationProvider>
     </BrowserRouter>
   </React.StrictMode>,

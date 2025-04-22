@@ -23,6 +23,7 @@
       "@constants/*": ["constants/*"],
       "@hooks/*": ["hooks/*"],
       "@providers/*": ["providers/*"],
+      "@schemas/*": ["schemas/*"],
       "@services/*": ["services/*"],
       "@types/*": ["types/*"],
       "@utils/*": ["utils/*"],
