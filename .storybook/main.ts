@@ -2,22 +2,19 @@ import type { StorybookConfig } from '@storybook/react-webpack5';
 import path from 'path';
 
 const config: StorybookConfig = {
-  "stories": [
-    "../src/**/*.mdx",
-    "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"
+  stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
+  addons: [
+    '@storybook/addon-webpack5-compiler-swc',
+    '@storybook/addon-essentials',
+    '@storybook/addon-onboarding',
+    '@chromatic-com/storybook',
+    '@storybook/addon-interactions',
   ],
-  "addons": [
-    "@storybook/addon-webpack5-compiler-swc",
-    "@storybook/addon-essentials",
-    "@storybook/addon-onboarding",
-    "@chromatic-com/storybook",
-    "@storybook/addon-interactions"
-  ],
-  "framework": {
-    "name": "@storybook/react-webpack5",
-    "options": {}
+  framework: {
+    name: '@storybook/react-webpack5',
+    options: {},
   },
-  "staticDirs": ['../public'],
+  staticDirs: ['../public'],
   webpackFinal: async (config) => {
     // Add SCSS support
     if (config.module && config.module.rules) {
@@ -33,7 +30,7 @@ const config: StorybookConfig = {
                 includePaths: [path.resolve(__dirname, '../node_modules')],
               },
             },
-          }
+          },
         ],
         include: path.resolve(__dirname, '../'),
       });
@@ -50,12 +47,13 @@ const config: StorybookConfig = {
         '@hooks': path.resolve(__dirname, '../src/hooks'),
         '@providers': path.resolve(__dirname, '../src/providers'),
         '@services': path.resolve(__dirname, '../src/services'),
+        '@schemas': path.resolve(__dirname, '../src/schemas'),
         '@types': path.resolve(__dirname, '../src/types'),
         '@utils': path.resolve(__dirname, '../src/utils'),
       };
     }
 
     return config;
-  }
+  },
 };
 export default config;

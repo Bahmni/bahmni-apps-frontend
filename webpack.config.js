@@ -58,6 +58,7 @@ module.exports = (env, argv) => {
         '@contexts': path.resolve(__dirname, 'src/contexts'),
         '@types': path.resolve(__dirname, 'src/types'),
         '@providers': path.resolve(__dirname, 'src/providers'),
+        '@schemas': path.resolve(__dirname, 'src/schemas'),
       },
     },
     module: {

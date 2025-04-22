@@ -1,13 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`HomePage Component should match snapshot 1`] = `
+exports[`HomePage Component should match snapshot when loaded 1`] = `
 <DocumentFragment>
-  <section>
+  <div
+    data-testid="carbon-section"
+  >
     <div
-      class="cds--css-grid"
+      data-testid="carbon-grid"
     >
       <div
-        class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
+        data-testid="carbon-column"
       >
         <div
           data-testid="mocked-patient-details"
@@ -26,6 +28,16 @@ exports[`HomePage Component should match snapshot 1`] = `
         </div>
       </div>
     </div>
-  </section>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`HomePage Component should match snapshot when loading 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="carbon-loading"
+  >
+    Loading...
+  </div>
 </DocumentFragment>
 `;

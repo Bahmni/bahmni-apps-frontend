@@ -1,10 +1,16 @@
 import React, { Suspense } from 'react';
-import { Grid, Column, Section } from '@carbon/react';
+import { Grid, Column, Section, Loading } from '@carbon/react';
 import PatientDetails from '@components/patient/PatientDetails';
 import ConditionsTable from '@components/conditions/ConditionsTable';
 import AllergiesTable from '@components/allergies/AllergiesTable';
+import { useClinicalConfig } from '@hooks/useClinicalConfig';
 
 const HomePage: React.FC = () => {
+  const { clinicalConfig } = useClinicalConfig();
+  if (!clinicalConfig) {
+    return <Loading description="Loading..." />;
+  }
+  console.log(clinicalConfig);
   return (
     <Suspense fallback="loading">
       <Section>

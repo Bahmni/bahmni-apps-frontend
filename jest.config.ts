@@ -19,6 +19,7 @@ const config: Config.InitialOptions = {
     '@types/(.*)$': ['<rootDir>/src/types/$1'],
     '@utils/(.*)$': ['<rootDir>/src/utils/$1'],
     '@providers/(.*)$': ['<rootDir>/src/providers/$1'],
+    '@schemas/(.*)$': ['<rootDir>/src/schemas/$1'],
     '@__mocks__/(.*)$': ['<rootDir>/src/__mocks__/$1'],
   },
   setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],

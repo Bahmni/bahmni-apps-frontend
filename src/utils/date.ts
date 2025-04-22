@@ -12,6 +12,7 @@ import { Age } from '@types/age';
 import { FormatDateResult } from '@types/date';
 import { DATE_FORMAT, DATE_TIME_FORMAT } from '@constants/date';
 import { DATE_ERROR_MESSAGES } from '@constants/errors';
+import i18next from 'i18next';
 
 /**
  * Calculates age based on a date string in the format yyyy-mm-dd
@@ -62,8 +63,8 @@ function safeParseDate(dateString: string): DateParseResult {
     return {
       date: null,
       error: {
-        title: DATE_ERROR_MESSAGES.PARSE_ERROR,
-        message: DATE_ERROR_MESSAGES.EMPTY_OR_INVALID,
+        title: i18next.t(DATE_ERROR_MESSAGES.PARSE_ERROR),
+        message: i18next.t(DATE_ERROR_MESSAGES.EMPTY_OR_INVALID),
       },
     };
   }
@@ -72,8 +73,8 @@ function safeParseDate(dateString: string): DateParseResult {
     return {
       date: null,
       error: {
-        title: DATE_ERROR_MESSAGES.PARSE_ERROR,
-        message: DATE_ERROR_MESSAGES.INVALID_FORMAT,
+        title: i18next.t(DATE_ERROR_MESSAGES.PARSE_ERROR),
+        message: i18next.t(DATE_ERROR_MESSAGES.INVALID_FORMAT),
       },
     };
   }
@@ -94,8 +95,8 @@ function formatDateGeneric(
     return {
       formattedResult: '',
       error: {
-        title: DATE_ERROR_MESSAGES.FORMAT_ERROR,
-        message: DATE_ERROR_MESSAGES.NULL_OR_UNDEFINED,
+        title: i18next.t(DATE_ERROR_MESSAGES.FORMAT_ERROR),
+        message: i18next.t(DATE_ERROR_MESSAGES.NULL_OR_UNDEFINED),
       },
     };
   }
@@ -119,8 +120,8 @@ function formatDateGeneric(
     return {
       formattedResult: '',
       error: {
-        title: DATE_ERROR_MESSAGES.PARSE_ERROR,
-        message: DATE_ERROR_MESSAGES.INVALID_FORMAT,
+        title: i18next.t(DATE_ERROR_MESSAGES.PARSE_ERROR),
+        message: i18next.t(DATE_ERROR_MESSAGES.INVALID_FORMAT),
       },
     };
   }

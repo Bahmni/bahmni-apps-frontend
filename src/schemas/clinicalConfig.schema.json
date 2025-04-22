@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Clinical App Configuration Schema",
+  "description": "Schema for global clinical app configuration including patient information, actions and available dashboards",
+  "type": "object",
+  "required": ["patientInformation", "actions", "dashboards"],
+  "properties": {
+    "patientInformation": {
+      "type": "object",
+      "description": "Patient information configuration"
+    },
+    "actions": {
+      "type": "array",
+      "description": "List of available actions"
+    },
+    "dashboards": {
+      "type": "array",
+      "description": "List of available dashboards",
+      "items": {
+        "type": "object",
+        "required": ["name", "requiredPrivileges", "url"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Display name of the dashboard"
+          },
+          "requiredPrivileges": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of permissions required to access this dashboard"
+          },
+          "icon": {
+            "type": "string",
+            "description": "Icon class name for the dashboard"
+          },
+          "default": {
+            "type": "boolean",
+            "description": "Whether this is the default dashboard"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL to access the dashboard data"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  }
+}
