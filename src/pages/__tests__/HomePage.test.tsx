@@ -44,7 +44,7 @@ jest.mock('@components/conditions/ConditionsTable', () => {
 jest.mock('@hooks/useClinicalConfig');
 
 // Mock the AllergiesTable component
-jest.mock('@components/allergies/AllergiesTable', () => {
+jest.mock('@displayControls/allergies/AllergiesTable', () => {
   return jest.fn(() => (
     <div data-testid="mocked-allergy-table">Mocked AllergiesTable</div>
   ));
