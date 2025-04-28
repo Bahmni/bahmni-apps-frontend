@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
 import ClinicalLayout from '@layouts/clinical/ClinicalLayout';
-import HomePage from '../pages/HomePage';
+import ConsultationPage from '../pages/ConsultationPage';
 import NotFoundPage from '../pages/NotFoundPage';
 
 // Mock dependencies
@@ -13,7 +13,7 @@ jest.mock('@layouts/clinical/ClinicalLayout', () => {
   ));
 });
 
-jest.mock('../pages/HomePage', () => {
+jest.mock('../pages/ConsultationPage', () => {
   return jest.fn(() => <div data-testid="mock-home-page">Home Page</div>);
 });
 
@@ -45,19 +45,19 @@ describe('App Component', () => {
     expect(screen.getByTestId('mock-carbon-content')).toBeInTheDocument();
   });
 
-  it('should render HomePage for root path', () => {
+  it('should render ConsultationPage for root path', () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <App />
       </MemoryRouter>,
     );
 
-    expect(HomePage).toHaveBeenCalled();
+    expect(ConsultationPage).toHaveBeenCalled();
     expect(screen.getByTestId('mock-home-page')).toBeInTheDocument();
     expect(screen.queryByTestId('mock-not-found-page')).not.toBeInTheDocument();
   });
 
-  it('should render HomePage for patient-specific path', () => {
+  it('should render ConsultationPage for patient-specific path', () => {
     render(
       <MemoryRouter
         initialEntries={['/clinical/123e4567-e89b-12d3-a456-426614174000']}
@@ -66,7 +66,7 @@ describe('App Component', () => {
       </MemoryRouter>,
     );
 
-    expect(HomePage).toHaveBeenCalled();
+    expect(ConsultationPage).toHaveBeenCalled();
     expect(screen.getByTestId('mock-home-page')).toBeInTheDocument();
     expect(screen.queryByTestId('mock-not-found-page')).not.toBeInTheDocument();
   });

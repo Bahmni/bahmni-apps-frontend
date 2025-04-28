@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { render, screen } from '@testing-library/react';
-import HomePage from '../HomePage';
+import ConsultationPage from '../ConsultationPage';
 import PatientDetails from '@displayControls/patient/PatientDetails';
 import ConditionsTable from '@displayControls/conditions/ConditionsTable';
 import AllergiesTable from '@displayControls/allergies/AllergiesTable';
@@ -50,7 +50,7 @@ jest.mock('@displayControls/allergies/AllergiesTable', () => {
     <div data-testid="mocked-allergy-table">Mocked AllergiesTable</div>
   ));
 });
-describe('HomePage Component', () => {
+describe('ConsultationPage Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(console, 'log').mockImplementation(() => {});
@@ -60,7 +60,7 @@ describe('HomePage Component', () => {
     // Mock useClinicalConfig to return null config (loading state)
     (useClinicalConfig as jest.Mock).mockReturnValue({ clinicalConfig: null });
 
-    render(<HomePage />);
+    render(<ConsultationPage />);
 
     // Should show loading component
     expect(screen.getByTestId('carbon-loading')).toBeInTheDocument();
@@ -80,7 +80,7 @@ describe('HomePage Component', () => {
       clinicalConfig: validFullClinicalConfig,
     });
 
-    render(<HomePage />);
+    render(<ConsultationPage />);
 
     // Should render Carbon layout components
     expect(await screen.findByTestId('carbon-section')).toBeInTheDocument();
@@ -94,7 +94,7 @@ describe('HomePage Component', () => {
       clinicalConfig: validFullClinicalConfig,
     });
 
-    render(<HomePage />);
+    render(<ConsultationPage />);
 
     // Should render child components
     expect(PatientDetails).toHaveBeenCalled();
@@ -119,7 +119,7 @@ describe('HomePage Component', () => {
     // Mock useClinicalConfig to return null config (loading state)
     (useClinicalConfig as jest.Mock).mockReturnValue({ clinicalConfig: null });
 
-    const { asFragment } = render(<HomePage />);
+    const { asFragment } = render(<ConsultationPage />);
     expect(asFragment()).toMatchSnapshot();
   });
 
@@ -129,7 +129,7 @@ describe('HomePage Component', () => {
       clinicalConfig: validFullClinicalConfig,
     });
 
-    const { asFragment } = render(<HomePage />);
+    const { asFragment } = render(<ConsultationPage />);
     expect(asFragment()).toMatchSnapshot();
   });
 });

@@ -5,7 +5,7 @@ import ConditionsTable from '@displayControls/conditions/ConditionsTable';
 import AllergiesTable from '@displayControls/allergies/AllergiesTable';
 import { useClinicalConfig } from '@hooks/useClinicalConfig';
 
-const HomePage: React.FC = () => {
+const ConsultationPage: React.FC = () => {
   const { clinicalConfig } = useClinicalConfig();
   if (!clinicalConfig) {
     return <Loading description="Loading..." />;
@@ -26,4 +26,4 @@ const HomePage: React.FC = () => {
   );
 };
 
-export default HomePage;
+export default ConsultationPage;

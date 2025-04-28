@@ -2,7 +2,7 @@ import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Content } from '@carbon/react';
 import ClinicalLayout from './layouts/clinical/ClinicalLayout';
-import HomePage from './pages/HomePage';
+import HomePage from './pages/ConsultationPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 const App: React.FC = () => {
