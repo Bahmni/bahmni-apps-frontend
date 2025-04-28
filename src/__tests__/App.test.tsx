@@ -3,8 +3,8 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
 import ClinicalLayout from '@layouts/clinical/ClinicalLayout';
-import ConsultationPage from '../pages/ConsultationPage';
-import NotFoundPage from '../pages/NotFoundPage';
+import ConsultationPage from '@pages/ConsultationPage';
+import NotFoundPage from '@pages/NotFoundPage';
 
 // Mock dependencies
 jest.mock('@layouts/clinical/ClinicalLayout', () => {
@@ -13,11 +13,11 @@ jest.mock('@layouts/clinical/ClinicalLayout', () => {
   ));
 });
 
-jest.mock('../pages/ConsultationPage', () => {
+jest.mock('@pages/ConsultationPage', () => {
   return jest.fn(() => <div data-testid="mock-home-page">Home Page</div>);
 });
 
-jest.mock('../pages/NotFoundPage', () => {
+jest.mock('@pages/NotFoundPage', () => {
   return jest.fn(() => (
     <div data-testid="mock-not-found-page">Not Found Page</div>
   ));
