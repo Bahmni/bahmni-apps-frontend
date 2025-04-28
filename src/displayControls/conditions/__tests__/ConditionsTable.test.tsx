@@ -21,7 +21,7 @@ jest.mock('@hooks/useConditions');
 jest.mock('@services/conditionService');
 jest.mock('@utils/date');
 jest.mock('@utils/common');
-jest.mock('@components/expandableDataTable/ExpandableDataTable', () => ({
+jest.mock('@components/common/expandableDataTable/ExpandableDataTable', () => ({
   ExpandableDataTable: jest.fn(
     ({
       tableTitle,
