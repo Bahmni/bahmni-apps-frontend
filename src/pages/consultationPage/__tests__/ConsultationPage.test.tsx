@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { render, screen } from '@testing-library/react';
-import ConsultationPage from './ConsultationPage';
+import ConsultationPage from '../ConsultationPage';
 import PatientDetails from '@displayControls/patientDetails/PatientDetails';
 import ConditionsTable from '@displayControls/conditions/ConditionsTable';
 import { useClinicalConfig } from '@hooks/useClinicalConfig';

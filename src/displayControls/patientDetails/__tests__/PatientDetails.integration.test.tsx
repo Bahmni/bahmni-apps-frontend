@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import axios from 'axios';
-import PatientDetails from './PatientDetails';
+import PatientDetails from '../PatientDetails';
 import * as patientService from '@services/patientService';
 import { FormattedPatientData, Age } from '@types/patient';
 import { NotificationProvider } from '@providers/NotificationProvider';
