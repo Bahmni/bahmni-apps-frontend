@@ -5,7 +5,7 @@ import App from './App';
 import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
 import { NotificationProvider } from '@providers/NotificationProvider';
 import { NotificationServiceComponent } from '@services/NotificationServiceComponent';
-import '@styles/index.scss';
+import '@/index.scss';
 import '@/i18n';
 
 const container = document.getElementById('root');

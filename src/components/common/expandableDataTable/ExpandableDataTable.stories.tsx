@@ -1,6 +1,6 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { ExpandableDataTable } from '../ExpandableDataTable';
+import { ExpandableDataTable } from './ExpandableDataTable';
 import { DataTableHeader, Tag } from '@carbon/react';
 
 // Create a decorator to provide a better layout for the component

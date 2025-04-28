@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import ConditionsTable from '../ConditionsTable';
+import ConditionsTable from './ConditionsTable';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import { useConditions } from '@hooks/useConditions';
 import { formatConditions } from '@services/conditionService';

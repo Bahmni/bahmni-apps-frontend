@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ExpandableDataTable } from '../ExpandableDataTable';
+import { ExpandableDataTable } from './ExpandableDataTable';
 import { DataTableHeader, Tag } from '@carbon/react';
 import { getFormattedError } from '@utils/common';
 import i18n from '@/setupTests.i18n';

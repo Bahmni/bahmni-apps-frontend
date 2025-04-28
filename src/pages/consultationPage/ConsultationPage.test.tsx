@@ -1,8 +1,8 @@
 import React, { ReactNode } from 'react';
 import { render, screen } from '@testing-library/react';
-import HomePage from '../HomePage';
-import PatientDetails from '@components/patient/PatientDetails';
-import ConditionsTable from '@components/conditions/ConditionsTable';
+import ConsultationPage from './ConsultationPage';
+import PatientDetails from '@displayControls/patientDetails/PatientDetails';
+import ConditionsTable from '@displayControls/conditions/ConditionsTable';
 import { useClinicalConfig } from '@hooks/useClinicalConfig';
 import { validFullClinicalConfig } from '@__mocks__/configMocks';
 
@@ -27,14 +27,14 @@ jest.mock('@carbon/react', () => ({
 }));
 
 // Mock the PatientDetails component
-jest.mock('@components/patient/PatientDetails', () => {
+jest.mock('@displayControls/patientDetails/PatientDetails', () => {
   return jest.fn(() => (
     <div data-testid="mocked-patient-details">Mocked PatientDetails</div>
   ));
 });
 
 // Mock the ConditionsTable component
-jest.mock('@components/conditions/ConditionsTable', () => {
+jest.mock('@displayControls/conditions/ConditionsTable', () => {
   return jest.fn(() => (
     <div data-testid="mocked-conditions-table">Mocked ConditionsTable</div>
   ));
@@ -44,7 +44,7 @@ jest.mock('@components/conditions/ConditionsTable', () => {
 jest.mock('@hooks/useClinicalConfig');
 
 // Mock the AllergiesTable component
-jest.mock('@components/allergies/AllergiesTable', () => {
+jest.mock('@displayControls/allergies/AllergiesTable', () => {
   return jest.fn(() => (
     <div data-testid="mocked-allergy-table">Mocked AllergiesTable</div>
   ));
@@ -59,7 +59,7 @@ describe('HomePage Component', () => {
     // Mock useClinicalConfig to return null config (loading state)
     (useClinicalConfig as jest.Mock).mockReturnValue({ clinicalConfig: null });
 
-    render(<HomePage />);
+    render(<ConsultationPage />);
 
     // Should show loading component
     expect(screen.getByTestId('carbon-loading')).toBeInTheDocument();
@@ -79,7 +79,7 @@ describe('HomePage Component', () => {
       clinicalConfig: validFullClinicalConfig,
     });
 
-    render(<HomePage />);
+    render(<ConsultationPage />);
 
     // Should render Carbon layout components
     expect(await screen.findByTestId('carbon-section')).toBeInTheDocument();
@@ -93,7 +93,7 @@ describe('HomePage Component', () => {
       clinicalConfig: validFullClinicalConfig,
     });
 
-    render(<HomePage />);
+    render(<ConsultationPage />);
 
     // Should render child components
     expect(PatientDetails).toHaveBeenCalled();
@@ -117,7 +117,7 @@ describe('HomePage Component', () => {
     // Mock useClinicalConfig to return null config (loading state)
     (useClinicalConfig as jest.Mock).mockReturnValue({ clinicalConfig: null });
 
-    const { asFragment } = render(<HomePage />);
+    const { asFragment } = render(<ConsultationPage />);
     expect(asFragment()).toMatchSnapshot();
   });
 
@@ -127,7 +127,7 @@ describe('HomePage Component', () => {
       clinicalConfig: validFullClinicalConfig,
     });
 
-    const { asFragment } = render(<HomePage />);
+    const { asFragment } = render(<ConsultationPage />);
     expect(asFragment()).toMatchSnapshot();
   });
 });

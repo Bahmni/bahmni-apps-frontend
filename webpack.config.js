@@ -59,6 +59,9 @@ module.exports = (env, argv) => {
         '@types': path.resolve(__dirname, 'src/types'),
         '@providers': path.resolve(__dirname, 'src/providers'),
         '@schemas': path.resolve(__dirname, 'src/schemas'),
+        '@layouts': path.resolve(__dirname, 'src/layouts'),
+        '@displayControls': path.resolve(__dirname, 'src/displayControls'),
+        '@pages': path.resolve(__dirname, 'src/pages'),
       },
     },
     module: {

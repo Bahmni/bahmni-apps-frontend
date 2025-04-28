@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import AllergiesTable from '../AllergiesTable';
+import AllergiesTable from './AllergiesTable';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import { useAllergies } from '@hooks/useAllergies';
 import { formatAllergies } from '@services/allergyService';
@@ -28,7 +28,7 @@ jest.mock('@hooks/useAllergies');
 jest.mock('@services/allergyService');
 jest.mock('@utils/date');
 jest.mock('@utils/common');
-jest.mock('@components/expandableDataTable/ExpandableDataTable', () => ({
+jest.mock('@components/common/expandableDataTable/ExpandableDataTable', () => ({
   ExpandableDataTable: jest.fn(
     ({
       tableTitle,

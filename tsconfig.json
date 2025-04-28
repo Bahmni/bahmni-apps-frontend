@@ -27,7 +27,10 @@
       "@services/*": ["services/*"],
       "@types/*": ["types/*"],
       "@utils/*": ["utils/*"],
-      "@__mocks__/*": ["__mocks__/*"]
+      "@__mocks__/*": ["__mocks__/*"],
+      "@layouts/*": ["layouts/*"],
+      "@displayControls/*": ["displayControls/*"],
+      "@pages/*": ["pages/*"]
     }
   },
   "include": ["src/**/*"],

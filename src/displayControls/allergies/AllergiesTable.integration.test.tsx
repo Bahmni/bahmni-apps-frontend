@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import i18n from '@/setupTests.i18n';
-import AllergiesTable from '../AllergiesTable';
+import AllergiesTable from './AllergiesTable';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import { useAllergies } from '@hooks/useAllergies';
 import { formatAllergies } from '@services/allergyService';

@@ -2,22 +2,22 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
-import MainLayout from '@components/layout/MainLayout';
-import HomePage from '../pages/HomePage';
-import NotFoundPage from '../pages/NotFoundPage';
+import MainLayout from '@layouts/MainLayout';
+import ConsultationPage from '../pages/consultationPage/ConsultationPage';
+import NotFoundPage from '../pages/notFoundPage/NotFoundPage';
 
 // Mock dependencies
-jest.mock('@components/layout/MainLayout', () => {
+jest.mock('@layouts/MainLayout', () => {
   return jest.fn(({ children }) => (
     <div data-testid="mock-main-layout">{children}</div>
   ));
 });
 
-jest.mock('../pages/HomePage', () => {
+jest.mock('@pages/consultationPage/ConsultationPage', () => {
   return jest.fn(() => <div data-testid="mock-home-page">Home Page</div>);
 });
 
-jest.mock('../pages/NotFoundPage', () => {
+jest.mock('@pages/notFoundPage/NotFoundPage', () => {
   return jest.fn(() => (
     <div data-testid="mock-not-found-page">Not Found Page</div>
   ));
@@ -52,7 +52,7 @@ describe('App Component', () => {
       </MemoryRouter>,
     );
 
-    expect(HomePage).toHaveBeenCalled();
+    expect(ConsultationPage).toHaveBeenCalled();
     expect(screen.getByTestId('mock-home-page')).toBeInTheDocument();
     expect(screen.queryByTestId('mock-not-found-page')).not.toBeInTheDocument();
   });
@@ -66,7 +66,7 @@ describe('App Component', () => {
       </MemoryRouter>,
     );
 
-    expect(HomePage).toHaveBeenCalled();
+    expect(ConsultationPage).toHaveBeenCalled();
     expect(screen.getByTestId('mock-home-page')).toBeInTheDocument();
     expect(screen.queryByTestId('mock-not-found-page')).not.toBeInTheDocument();
   });

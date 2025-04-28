@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import PatientDetails from '../PatientDetails';
+import PatientDetails from './PatientDetails';
 import { usePatient } from '@hooks/usePatient';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import * as patientService from '@services/patientService';
