@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 import { render, screen } from '@testing-library/react';
 import HomePage from '../HomePage';
 import PatientDetails from '@components/patient/PatientDetails';
-import ConditionsTable from '@components/conditions/ConditionsTable';
+import ConditionsTable from '@/displayControls/conditions/ConditionsTable';
 import { useClinicalConfig } from '@hooks/useClinicalConfig';
 import { validFullClinicalConfig } from '@__mocks__/configMocks';
 
@@ -34,7 +34,7 @@ jest.mock('@components/patient/PatientDetails', () => {
 });
 
 // Mock the ConditionsTable component
-jest.mock('@components/conditions/ConditionsTable', () => {
+jest.mock('@displayControls/conditions/ConditionsTable', () => {
   return jest.fn(() => (
     <div data-testid="mocked-conditions-table">Mocked ConditionsTable</div>
   ));

@@ -13,7 +13,7 @@ import {
   mockFormattedConditionsWithNotes,
   mockFormattedConditionsWithoutNotes,
 } from '@__mocks__/conditionMocks';
-import { ConditionStatus, FormattedCondition } from '../../../types/condition';
+import { ConditionStatus, FormattedCondition } from '@types/condition';
 
 // Mock the hooks and utilities
 jest.mock('@hooks/usePatientUUID');

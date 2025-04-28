@@ -1,8 +1,8 @@
 import React, { Suspense } from 'react';
 import { Grid, Column, Section, Loading } from '@carbon/react';
 import PatientDetails from '@components/patient/PatientDetails';
-import ConditionsTable from '@components/conditions/ConditionsTable';
-import AllergiesTable from '@/displayControls/allergies/AllergiesTable';
+import ConditionsTable from '@displayControls/conditions/ConditionsTable';
+import AllergiesTable from '@displayControls/allergies/AllergiesTable';
 import { useClinicalConfig } from '@hooks/useClinicalConfig';
 
 const HomePage: React.FC = () => {
