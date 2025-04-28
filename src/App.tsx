@@ -1,13 +1,13 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Content } from '@carbon/react';
-import MainLayout from './components/layout/MainLayout';
+import ClinicalLayout from './layouts/clinical/ClinicalLayout';
 import HomePage from './pages/HomePage';
 import NotFoundPage from './pages/NotFoundPage';
 
 const App: React.FC = () => {
   return (
-    <MainLayout>
+    <ClinicalLayout>
       <Content>
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -15,7 +15,7 @@ const App: React.FC = () => {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Content>
-    </MainLayout>
+    </ClinicalLayout>
   );
 };
 

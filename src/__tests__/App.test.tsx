@@ -2,12 +2,12 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
-import MainLayout from '@components/layout/MainLayout';
+import ClinicalLayout from '@layouts/clinical/ClinicalLayout';
 import HomePage from '../pages/HomePage';
 import NotFoundPage from '../pages/NotFoundPage';
 
 // Mock dependencies
-jest.mock('@components/layout/MainLayout', () => {
+jest.mock('@layouts/clinical/ClinicalLayout', () => {
   return jest.fn(({ children }) => (
     <div data-testid="mock-main-layout">{children}</div>
   ));
@@ -83,17 +83,17 @@ describe('App Component', () => {
     expect(screen.queryByTestId('mock-home-page')).not.toBeInTheDocument();
   });
 
-  it('should wrap content with MainLayout', () => {
+  it('should wrap content with ClinicalLayout', () => {
     render(
       <MemoryRouter>
         <App />
       </MemoryRouter>,
     );
 
-    expect(MainLayout).toHaveBeenCalled();
-    const mainLayout = screen.getByTestId('mock-main-layout');
-    expect(mainLayout).toBeInTheDocument();
-    expect(mainLayout).toContainElement(
+    expect(ClinicalLayout).toHaveBeenCalled();
+    const clinicalLayout = screen.getByTestId('mock-main-layout');
+    expect(clinicalLayout).toBeInTheDocument();
+    expect(clinicalLayout).toContainElement(
       screen.getByTestId('mock-carbon-content'),
     );
   });
