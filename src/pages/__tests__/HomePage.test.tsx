@@ -1,8 +1,9 @@
 import React, { ReactNode } from 'react';
 import { render, screen } from '@testing-library/react';
 import HomePage from '../HomePage';
-import PatientDetails from '@components/patient/PatientDetails';
-import ConditionsTable from '@/displayControls/conditions/ConditionsTable';
+import PatientDetails from '@displayControls/patient/PatientDetails';
+import ConditionsTable from '@displayControls/conditions/ConditionsTable';
+import AllergiesTable from '@displayControls/allergies/AllergiesTable';
 import { useClinicalConfig } from '@hooks/useClinicalConfig';
 import { validFullClinicalConfig } from '@__mocks__/configMocks';
 
@@ -27,7 +28,7 @@ jest.mock('@carbon/react', () => ({
 }));
 
 // Mock the PatientDetails component
-jest.mock('@components/patient/PatientDetails', () => {
+jest.mock('@displayControls/patient/PatientDetails', () => {
   return jest.fn(() => (
     <div data-testid="mocked-patient-details">Mocked PatientDetails</div>
   ));
@@ -105,6 +106,7 @@ describe('HomePage Component', () => {
     ).toBeInTheDocument();
 
     expect(ConditionsTable).toHaveBeenCalled();
+    expect(AllergiesTable).toHaveBeenCalled();
     expect(
       await screen.findByTestId('mocked-conditions-table'),
     ).toBeInTheDocument();
