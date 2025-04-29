@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Tag } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
-import { ExpandableDataTable } from '@components/expandableDataTable/ExpandableDataTable';
+import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import { useAllergies } from '@hooks/useAllergies';
 import { formatAllergies } from '@services/allergyService';

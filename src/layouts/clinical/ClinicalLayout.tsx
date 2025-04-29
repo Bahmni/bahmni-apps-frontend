@@ -7,11 +7,11 @@ import {
   SkipToContent,
 } from '@carbon/react';
 
-interface MainLayoutProps {
+interface ClinicalLayoutProps {
   children: ReactNode;
 }
 
-const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+const ClinicalLayout: React.FC<ClinicalLayoutProps> = ({ children }) => {
   return (
     <>
       <Header aria-label="Bahmni Clinical">
@@ -29,4 +29,4 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   );
 };
 
-export default MainLayout;
+export default ClinicalLayout;

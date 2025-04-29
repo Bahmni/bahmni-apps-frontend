@@ -28,7 +28,7 @@ jest.mock('@hooks/useAllergies');
 jest.mock('@services/allergyService');
 jest.mock('@utils/date');
 jest.mock('@utils/common');
-jest.mock('@components/expandableDataTable/ExpandableDataTable', () => ({
+jest.mock('@components/common/expandableDataTable/ExpandableDataTable', () => ({
   ExpandableDataTable: jest.fn(
     ({
       tableTitle,

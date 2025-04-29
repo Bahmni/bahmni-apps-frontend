@@ -18,7 +18,7 @@ import {
   AccordionItem,
 } from '@carbon/react';
 import { generateId, getFormattedError } from '@utils/common';
-import './ExpandableDataTable.scss';
+import './styles/ExpandableDataTable.scss';
 
 interface ExpandableDataTableProps<T> {
   tableTitle: string;

@@ -13,7 +13,7 @@ import {
   mockFormattedConditionsWithNotes,
   mockFormattedConditionsWithoutNotes,
 } from '@__mocks__/conditionMocks';
-import { ConditionStatus, FormattedCondition } from '../../../types/condition';
+import { ConditionStatus, FormattedCondition } from '@types/condition';
 
 // Mock the hooks and utilities
 jest.mock('@hooks/usePatientUUID');
@@ -21,7 +21,7 @@ jest.mock('@hooks/useConditions');
 jest.mock('@services/conditionService');
 jest.mock('@utils/date');
 jest.mock('@utils/common');
-jest.mock('@components/expandableDataTable/ExpandableDataTable', () => ({
+jest.mock('@components/common/expandableDataTable/ExpandableDataTable', () => ({
   ExpandableDataTable: jest.fn(
     ({
       tableTitle,

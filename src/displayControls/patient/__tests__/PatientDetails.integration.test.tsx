@@ -41,8 +41,8 @@ jest.mock('axios', () => ({
   get: jest.fn(),
 }));
 
-jest.mock('../../../services/patientService', () => {
-  const originalModule = jest.requireActual('../../../services/patientService');
+jest.mock('@services/patientService', () => {
+  const originalModule = jest.requireActual('@services/patientService');
   return {
     ...originalModule,
     formatPatientData: jest.fn(),
@@ -50,7 +50,7 @@ jest.mock('../../../services/patientService', () => {
 });
 
 // Mock the usePatientUUID hook
-jest.mock('../../../hooks/usePatientUUID', () => ({
+jest.mock('@hooks/usePatientUUID', () => ({
   usePatientUUID: jest.fn().mockReturnValue('test-uuid'),
 }));
 
