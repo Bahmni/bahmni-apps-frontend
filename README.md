@@ -34,6 +34,8 @@ For a comprehensive setup guide including development environments, Docker confi
 
 ### Additional Documentation
 
+- [Frontend Architecture](docs/architecture.md) - A comprehensive overview of the Bahmni Clinical Frontend architecture
+- [Project Structure](docs/project-structure.md) - A high-level overview of the project structure
 - [i18n Guide](docs/i18n-guide.md) - Internationalization implementation details
 - [Expandable Data Table Guide](docs/expandable-data-table-guide.md) - Usage of the expandable data table component
 - [Global Notification Guide](docs/global-notification-guide.md) - Using the notification system
