@@ -2,22 +2,22 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
-import MainLayout from '@components/layout/MainLayout';
-import HomePage from '../pages/HomePage';
-import NotFoundPage from '../pages/NotFoundPage';
+import ClinicalLayout from '@layouts/clinical/ClinicalLayout';
+import ConsultationPage from '@pages/ConsultationPage';
+import NotFoundPage from '@pages/NotFoundPage';
 
 // Mock dependencies
-jest.mock('@components/layout/MainLayout', () => {
+jest.mock('@layouts/clinical/ClinicalLayout', () => {
   return jest.fn(({ children }) => (
     <div data-testid="mock-main-layout">{children}</div>
   ));
 });
 
-jest.mock('../pages/HomePage', () => {
+jest.mock('@pages/ConsultationPage', () => {
   return jest.fn(() => <div data-testid="mock-home-page">Home Page</div>);
 });
 
-jest.mock('../pages/NotFoundPage', () => {
+jest.mock('@pages/NotFoundPage', () => {
   return jest.fn(() => (
     <div data-testid="mock-not-found-page">Not Found Page</div>
   ));
@@ -45,19 +45,19 @@ describe('App Component', () => {
     expect(screen.getByTestId('mock-carbon-content')).toBeInTheDocument();
   });
 
-  it('should render HomePage for root path', () => {
+  it('should render ConsultationPage for root path', () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <App />
       </MemoryRouter>,
     );
 
-    expect(HomePage).toHaveBeenCalled();
+    expect(ConsultationPage).toHaveBeenCalled();
     expect(screen.getByTestId('mock-home-page')).toBeInTheDocument();
     expect(screen.queryByTestId('mock-not-found-page')).not.toBeInTheDocument();
   });
 
-  it('should render HomePage for patient-specific path', () => {
+  it('should render ConsultationPage for patient-specific path', () => {
     render(
       <MemoryRouter
         initialEntries={['/clinical/123e4567-e89b-12d3-a456-426614174000']}
@@ -66,7 +66,7 @@ describe('App Component', () => {
       </MemoryRouter>,
     );
 
-    expect(HomePage).toHaveBeenCalled();
+    expect(ConsultationPage).toHaveBeenCalled();
     expect(screen.getByTestId('mock-home-page')).toBeInTheDocument();
     expect(screen.queryByTestId('mock-not-found-page')).not.toBeInTheDocument();
   });
@@ -83,17 +83,17 @@ describe('App Component', () => {
     expect(screen.queryByTestId('mock-home-page')).not.toBeInTheDocument();
   });
 
-  it('should wrap content with MainLayout', () => {
+  it('should wrap content with ClinicalLayout', () => {
     render(
       <MemoryRouter>
         <App />
       </MemoryRouter>,
     );
 
-    expect(MainLayout).toHaveBeenCalled();
-    const mainLayout = screen.getByTestId('mock-main-layout');
-    expect(mainLayout).toBeInTheDocument();
-    expect(mainLayout).toContainElement(
+    expect(ClinicalLayout).toHaveBeenCalled();
+    const clinicalLayout = screen.getByTestId('mock-main-layout');
+    expect(clinicalLayout).toBeInTheDocument();
+    expect(clinicalLayout).toContainElement(
       screen.getByTestId('mock-carbon-content'),
     );
   });

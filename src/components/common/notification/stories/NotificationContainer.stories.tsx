@@ -1,7 +1,7 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { NotificationContainer } from '../NotificationContainer';
-import { Notification } from '../../../types/notification';
+import { Notification } from '@types/notification';
 
 // Create a decorator to provide a better layout for the fixed-position component
 const NotificationDecorator = (Story: React.ComponentType) => (
@@ -20,7 +20,7 @@ const NotificationDecorator = (Story: React.ComponentType) => (
 );
 
 const meta: Meta<typeof NotificationContainer> = {
-  title: 'Components/Notification/NotificationContainer',
+  title: 'Components/Common/NotificationContainer',
   component: NotificationContainer,
   parameters: {
     layout: 'fullscreen',

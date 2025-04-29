@@ -1,18 +1,18 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import MainLayout from '../MainLayout';
+import ClinicalLayout from '../ClinicalLayout';
 
 // Mock component to be used as children
 const MockChild = () => <div data-testid="mock-child">Mock Child</div>;
 
-describe('MainLayout Component', () => {
+describe('ClinicalLayout Component', () => {
   test('renders the Home menu item', () => {
     render(
       <BrowserRouter>
-        <MainLayout>
+        <ClinicalLayout>
           <MockChild />
-        </MainLayout>
+        </ClinicalLayout>
       </BrowserRouter>,
     );
 
@@ -27,9 +27,9 @@ describe('MainLayout Component', () => {
   test('renders the Bahmni Clinical header', () => {
     render(
       <BrowserRouter>
-        <MainLayout>
+        <ClinicalLayout>
           <MockChild />
-        </MainLayout>
+        </ClinicalLayout>
       </BrowserRouter>,
     );
 
@@ -41,9 +41,9 @@ describe('MainLayout Component', () => {
   test('renders children content', () => {
     render(
       <BrowserRouter>
-        <MainLayout>
+        <ClinicalLayout>
           <MockChild />
-        </MainLayout>
+        </ClinicalLayout>
       </BrowserRouter>,
     );
 
