@@ -6,6 +6,7 @@ import {
   HeaderMenuItem,
   SkipToContent,
 } from '@carbon/react';
+import Icon from '@/components/common/Icon/Icon';
 
 interface ClinicalLayoutProps {
   children: ReactNode;
@@ -20,7 +21,9 @@ const ClinicalLayout: React.FC<ClinicalLayoutProps> = ({ children }) => {
           Bahmni Clinical
         </HeaderName>
         <HeaderNavigation aria-label="Main Navigation">
-          <HeaderMenuItem href="/">Home</HeaderMenuItem>
+          <HeaderMenuItem href="/">
+            <Icon name="fa-home" size="lg"></Icon>Home
+          </HeaderMenuItem>
           {/* Add more navigation items as needed */}
         </HeaderNavigation>
       </Header>
