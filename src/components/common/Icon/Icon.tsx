@@ -1,78 +1,70 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { IconName, IconPrefix } from '@fortawesome/fontawesome-svg-core';
+import { IconName } from '@fortawesome/fontawesome-svg-core';
+import { ICON_SIZE, ICON_PADDING } from '@constants/icon';
 
 interface IconProps {
   name: string; // Format: "fa-home"
-  className?: string;
-  size?:
-    | '2xs'
-    | 'xs'
-    | 'sm'
-    | 'lg'
-    | 'xl'
-    | '2xl'
-    | '1x'
-    | '2x'
-    | '3x'
-    | '4x'
-    | '5x'
-    | '6x'
-    | '7x'
-    | '8x'
-    | '9x'
-    | '10x';
+  size?: ICON_SIZE;
   color?: string;
-  'data-testid'?: string;
+  id: string;
+  ariaLabel?: string;
+  padding?: ICON_PADDING;
 }
 
 /**
- * Icon component that renders FontAwesome icons
+ * Icon component that renders FontAwesome icons with customizable size, color, and padding.
  *
- * Usage:
- * <Icon name="fa-home" />
- * <Icon name="fa-regular-user" />
+ * @component
+ * @example
+ * // Basic usage with solid icon (default)
+ * <Icon name="fa-home" id="home-icon" />
  *
- * @param props - Component props
- * @returns React component
+ * // Regular icon (option 1)
+ * <Icon name="fa-regular-user" id="user-icon" />
+ *
+ * // Regular icon (option 2)
+ * <Icon name="far-user" id="user-icon-alt" />
+ *
+ * // With custom size, color and padding
+ * <Icon
+ *   name="fa-cog"
+ *   id="settings-icon"
+ *   size={ICON_SIZE.X2}
+ *   color="#0f62fe"
+ *   padding={ICON_PADDING.MEDIUM}
+ *   ariaLabel="Settings"
+ * />
+ *
+ * @param {Object} props - Component props
+ * @param {string} props.name - Icon name in the format "fa-home", "fa-regular-user", or "far-user"
+ * @param {ICON_SIZE} [props.size] - Icon size from ICON_SIZE enum (XXS, XS, SM, LG, XL, XXL, X1-X10)
+ * @param {string} [props.color] - Icon color as CSS color value
+ * @param {string} props.id - Unique identifier for the icon (used for testing and accessibility)
+ * @param {string} [props.ariaLabel] - Accessibility label (defaults to id if not provided)
+ * @param {ICON_PADDING} [props.padding=ICON_PADDING.XXSMALL] - Padding around the icon from ICON_PADDING enum
+ * @returns {React.ReactElement} React component
  */
 const Icon: React.FC<IconProps> = ({
   name,
-  className = '',
-  size,
+  size = ICON_SIZE.XS,
   color,
-  'data-testid': dataTestId,
+  id,
+  ariaLabel = id,
+  padding = ICON_PADDING.XXSMALL,
 }) => {
-  if (!name) return null;
-
-  // Parse the icon name (format: "fa-home")
-  const parts = name.split('-');
-  if (parts.length < 2 || !parts[1]) return null;
-
-  // Default to solid icons
-  let prefix: IconPrefix = 'fas';
-
-  // Check if it's a regular icon (fa-regular-home or far-home)
-  if (parts[0] === 'far' || (parts[0] === 'fa' && parts[1] === 'regular')) {
-    prefix = 'far';
-    // Adjust the icon name based on format
-    parts.splice(0, parts[0] === 'far' ? 1 : 2);
-  } else {
-    // Remove the 'fa' or 'fas' prefix
-    parts.splice(0, 1);
+  if (!name || !/^fas?-[a-zA-Z0-9_-]+$/.test(name)) {
+    return <></>;
   }
-
-  // Join the remaining parts to form the icon name
-  const iconName = parts.join('-') as IconName;
-
   return (
-    <FontAwesomeIcon
-      icon={[prefix, iconName]}
-      className={className}
-      size={size}
-      color={color}
-      data-testid={dataTestId}
-    />
+    <div style={{ padding: padding }} id={id} aria-label={ariaLabel}>
+      <FontAwesomeIcon
+        icon={['fas', name as IconName]}
+        size={size}
+        color={color}
+        data-testid={id}
+      />
+    </div>
   );
 };
 

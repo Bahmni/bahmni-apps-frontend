@@ -5,7 +5,19 @@ import ClinicalLayout from '../ClinicalLayout';
 
 // Mock component to be used as children
 const MockChild = () => <div data-testid="mock-child">Mock Child</div>;
-
+jest.mock('@fortawesome/react-fontawesome', () => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  FontAwesomeIcon: ({ icon, size, color, ...props }: any) => (
+    <svg
+      data-testid={props['data-testid']}
+      data-icon={icon[1]}
+      data-prefix={icon[0]}
+      data-size={size}
+      data-color={color}
+      {...props}
+    />
+  ),
+}));
 describe('ClinicalLayout Component', () => {
   test('renders the Home menu item', () => {
     render(

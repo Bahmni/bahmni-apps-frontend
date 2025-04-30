@@ -1,50 +1,96 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import Icon from '../Icon';
-import { library } from '@fortawesome/fontawesome-svg-core';
-import { fas } from '@fortawesome/free-solid-svg-icons';
+import '@testing-library/jest-dom';
+import { ICON_PADDING, ICON_SIZE } from '@/constants/icon';
 
-// Initialize FontAwesome library for tests
-library.add(fas);
+// Mock FontAwesomeIcon and pass props to the rendered element
+jest.mock('@fortawesome/react-fontawesome', () => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  FontAwesomeIcon: ({ icon, size, color, ...props }: any) => (
+    <svg
+      data-testid={props['data-testid']}
+      data-icon={icon[1]}
+      data-prefix={icon[0]}
+      data-size={size}
+      data-color={color}
+      {...props}
+    />
+  ),
+}));
 
 describe('Icon Component', () => {
-  it('renders solid icon correctly', () => {
-    render(<Icon name="fa-home" data-testid="icon" />);
-    const icon = screen.getByTestId('icon');
+  it('renders solid icon', () => {
+    render(<Icon name="fa-home" id="test-icon" />);
+    const icon = screen.getByTestId('test-icon');
     expect(icon).toBeInTheDocument();
-    // FontAwesome adds SVG with specific classes
-    expect(icon.tagName).toBe('svg');
-    // FontAwesome 6 uses 'house' instead of 'home'
-    expect(icon.classList.contains('fa-house')).toBe(true);
+    expect(icon).toHaveAttribute('data-icon', 'fa-home');
+    expect(icon).toHaveAttribute('data-prefix', 'fas');
   });
 
-  it('renders solid icon with alternative syntax', () => {
-    render(<Icon name="fa-star" data-testid="icon" />);
-    const icon = screen.getByTestId('icon');
+  it('renders with all props', () => {
+    render(
+      <Icon
+        name="fa-user"
+        size={ICON_SIZE.X2}
+        color="blue"
+        id="full-icon"
+        ariaLabel="user icon"
+        padding={ICON_PADDING.MEDIUM}
+      />,
+    );
+    const icon = screen.getByTestId('full-icon');
+    const container = screen.getByLabelText('user icon');
+
     expect(icon).toBeInTheDocument();
-    expect(icon.tagName).toBe('svg');
-    expect(icon.classList.contains('fa-star')).toBe(true);
+    expect(icon).toHaveAttribute('data-icon', 'fa-user');
+    expect(icon).toHaveAttribute('data-prefix', 'fas');
+    expect(icon).toHaveAttribute('data-size', '2x');
+    expect(icon).toHaveAttribute('data-color', 'blue');
+    expect(container).toHaveStyle('padding: 1rem');
   });
 
-  it('applies custom className', () => {
-    render(<Icon name="fa-home" className="custom-class" data-testid="icon" />);
-    const icon = screen.getByTestId('icon');
-    expect(icon.classList.contains('custom-class')).toBe(true);
+  it('accepts alternative icon syntax (fas-*)', () => {
+    render(<Icon name="fas-star" id="alt-icon" />);
+    const icon = screen.getByTestId('alt-icon');
+    expect(icon).toHaveAttribute('data-icon', 'fas-star');
+    expect(icon).toHaveAttribute('data-prefix', 'fas');
   });
 
-  it('applies size prop', () => {
-    render(<Icon name="fa-home" size="2x" data-testid="icon" />);
-    const icon = screen.getByTestId('icon');
-    expect(icon.classList.contains('fa-2x')).toBe(true);
+  it('applies default padding', () => {
+    render(<Icon name="fa-home" id="default-padding" />);
+    const container = screen.getByLabelText('default-padding');
+    expect(container).toHaveStyle('padding: 0.125rem');
   });
 
-  it('returns null for empty name', () => {
-    const { container } = render(<Icon name="" />);
-    expect(container.firstChild).toBeNull();
+  it('applies custom padding', () => {
+    render(
+      <Icon name="fa-home" id="custom-padding" padding={ICON_PADDING.SMALL} />,
+    );
+    const container = screen.getByLabelText('custom-padding');
+    expect(container).toHaveStyle('padding: 0.5rem');
   });
 
-  it('returns null for invalid name format', () => {
-    const { container } = render(<Icon name="invalid" />);
-    expect(container.firstChild).toBeNull();
+  it('applies size class', () => {
+    render(<Icon name="fas-home" id="sized-icon" size={ICON_SIZE.LG} />);
+    const icon = screen.getByTestId('sized-icon');
+    expect(icon).toHaveAttribute('data-size', 'lg');
+  });
+
+  it('applies color', () => {
+    render(<Icon name="fa-home" id="colored-icon" color="#FF0000" />);
+    const icon = screen.getByTestId('colored-icon');
+    expect(icon).toHaveAttribute('data-color', '#FF0000');
+  });
+
+  it('renders with empty name', () => {
+    const icon = render(<Icon name="" id="empty-icon" />);
+    expect(icon.container).toBeEmptyDOMElement();
+  });
+
+  // Test 9: Renders with malformed name (current behavior)
+  it('renders with malformed name', () => {
+    const icon = render(<Icon name="invalid-name-format" id="invalid-icon" />);
+    expect(icon.container).toBeEmptyDOMElement();
   });
 });
