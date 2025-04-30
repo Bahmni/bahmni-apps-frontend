@@ -19,7 +19,6 @@
   "dependencies": {
     "@carbon/react": "^1.78.2",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
-    "@fortawesome/free-regular-svg-icons": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@testing-library/react-hooks": "^8.0.1",

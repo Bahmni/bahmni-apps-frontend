@@ -3,10 +3,9 @@ import { render, screen } from '@testing-library/react';
 import Icon from '../Icon';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
-import { far } from '@fortawesome/free-regular-svg-icons';
 
 // Initialize FontAwesome library for tests
-library.add(fas, far);
+library.add(fas);
 
 describe('Icon Component', () => {
   it('renders solid icon correctly', () => {
@@ -19,16 +18,8 @@ describe('Icon Component', () => {
     expect(icon.classList.contains('fa-house')).toBe(true);
   });
 
-  it('renders regular icon correctly', () => {
-    render(<Icon name="fa-regular-user" data-testid="icon" />);
-    const icon = screen.getByTestId('icon');
-    expect(icon).toBeInTheDocument();
-    expect(icon.tagName).toBe('svg');
-    expect(icon.classList.contains('fa-user')).toBe(true);
-  });
-
-  it('renders regular icon with alternative syntax', () => {
-    render(<Icon name="far-star" data-testid="icon" />);
+  it('renders solid icon with alternative syntax', () => {
+    render(<Icon name="fa-star" data-testid="icon" />);
     const icon = screen.getByTestId('icon');
     expect(icon).toBeInTheDocument();
     expect(icon.tagName).toBe('svg');
