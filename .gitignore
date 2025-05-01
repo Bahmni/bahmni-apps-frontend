@@ -69,3 +69,7 @@ storybook-static
 stats.html
 
 *storybook.log
+
+# Cline
+docs/memory-bank/*
+.clinerules
