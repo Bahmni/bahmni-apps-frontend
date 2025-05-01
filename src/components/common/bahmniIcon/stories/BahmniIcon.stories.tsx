@@ -1,7 +1,7 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { initFontAwesome } from '@/fontawesome';
-import Icon from '../Icon';
+import BahmniIcon from '../BahmniIcon';
 import { ICON_SIZE, ICON_PADDING } from '@constants/icon';
 
 // Initialize FontAwesome
@@ -20,15 +20,15 @@ const IconDecorator = (Story: React.ComponentType) => (
   </div>
 );
 
-const meta: Meta<typeof Icon> = {
-  title: 'Components/Common/Icon',
-  component: Icon,
+const meta: Meta<typeof BahmniIcon> = {
+  title: 'Components/Common/BahmniIcon',
+  component: BahmniIcon,
   parameters: {
     layout: 'centered',
     docs: {
       description: {
         component: `
-The Icon component is a reusable component that renders FontAwesome icons with customizable size, color, and padding.
+The BahmniIcon component is a reusable component that renders FontAwesome icons with customizable size, color, and padding.
 It supports both solid and regular icon styles and provides a consistent way to use icons throughout the application.
 
 Key features:
@@ -75,7 +75,7 @@ Key features:
 };
 
 export default meta;
-type Story = StoryObj<typeof Icon>;
+type Story = StoryObj<typeof BahmniIcon>;
 
 // Basic usage stories
 export const Default: Story = {
@@ -175,15 +175,15 @@ export const SizeVariations: Story = {
         <h3>Extra Small Sizes</h3>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <div>
-            <Icon name="fa-star" id="xxs-icon" size={ICON_SIZE.XXS} />
+            <BahmniIcon name="fa-star" id="xxs-icon" size={ICON_SIZE.XXS} />
             <p>XXS (2xs)</p>
           </div>
           <div>
-            <Icon name="fa-star" id="xs-icon" size={ICON_SIZE.XS} />
+            <BahmniIcon name="fa-star" id="xs-icon" size={ICON_SIZE.XS} />
             <p>XS (xs)</p>
           </div>
           <div>
-            <Icon name="fa-star" id="sm-icon" size={ICON_SIZE.SM} />
+            <BahmniIcon name="fa-star" id="sm-icon" size={ICON_SIZE.SM} />
             <p>SM (sm)</p>
           </div>
         </div>
@@ -193,19 +193,19 @@ export const SizeVariations: Story = {
         <h3>Standard Sizes</h3>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <div>
-            <Icon name="fa-star" id="x1-icon" size={ICON_SIZE.X1} />
+            <BahmniIcon name="fa-star" id="x1-icon" size={ICON_SIZE.X1} />
             <p>X1 (1x)</p>
           </div>
           <div>
-            <Icon name="fa-star" id="lg-icon" size={ICON_SIZE.LG} />
+            <BahmniIcon name="fa-star" id="lg-icon" size={ICON_SIZE.LG} />
             <p>LG (lg)</p>
           </div>
           <div>
-            <Icon name="fa-star" id="xl-icon" size={ICON_SIZE.XL} />
+            <BahmniIcon name="fa-star" id="xl-icon" size={ICON_SIZE.XL} />
             <p>XL (xl)</p>
           </div>
           <div>
-            <Icon name="fa-star" id="xxl-icon" size={ICON_SIZE.XXL} />
+            <BahmniIcon name="fa-star" id="xxl-icon" size={ICON_SIZE.XXL} />
             <p>XXL (2xl)</p>
           </div>
         </div>
@@ -222,19 +222,19 @@ export const SizeVariations: Story = {
           }}
         >
           <div>
-            <Icon name="fa-star" id="x2-icon" size={ICON_SIZE.X2} />
+            <BahmniIcon name="fa-star" id="x2-icon" size={ICON_SIZE.X2} />
             <p>X2 (2x)</p>
           </div>
           <div>
-            <Icon name="fa-star" id="x3-icon" size={ICON_SIZE.X3} />
+            <BahmniIcon name="fa-star" id="x3-icon" size={ICON_SIZE.X3} />
             <p>X3 (3x)</p>
           </div>
           <div>
-            <Icon name="fa-star" id="x4-icon" size={ICON_SIZE.X4} />
+            <BahmniIcon name="fa-star" id="x4-icon" size={ICON_SIZE.X4} />
             <p>X4 (4x)</p>
           </div>
           <div>
-            <Icon name="fa-star" id="x5-icon" size={ICON_SIZE.X5} />
+            <BahmniIcon name="fa-star" id="x5-icon" size={ICON_SIZE.X5} />
             <p>X5 (5x)</p>
           </div>
         </div>
@@ -251,23 +251,23 @@ export const SizeVariations: Story = {
           }}
         >
           <div>
-            <Icon name="fa-star" id="x6-icon" size={ICON_SIZE.X6} />
+            <BahmniIcon name="fa-star" id="x6-icon" size={ICON_SIZE.X6} />
             <p>X6 (6x)</p>
           </div>
           <div>
-            <Icon name="fa-star" id="x7-icon" size={ICON_SIZE.X7} />
+            <BahmniIcon name="fa-star" id="x7-icon" size={ICON_SIZE.X7} />
             <p>X7 (7x)</p>
           </div>
           <div>
-            <Icon name="fa-star" id="x8-icon" size={ICON_SIZE.X8} />
+            <BahmniIcon name="fa-star" id="x8-icon" size={ICON_SIZE.X8} />
             <p>X8 (8x)</p>
           </div>
           <div>
-            <Icon name="fa-star" id="x9-icon" size={ICON_SIZE.X9} />
+            <BahmniIcon name="fa-star" id="x9-icon" size={ICON_SIZE.X9} />
             <p>X9 (9x)</p>
           </div>
           <div>
-            <Icon name="fa-star" id="x10-icon" size={ICON_SIZE.X10} />
+            <BahmniIcon name="fa-star" id="x10-icon" size={ICON_SIZE.X10} />
             <p>X10 (10x)</p>
           </div>
         </div>
@@ -296,7 +296,7 @@ export const PaddingVariations: Story = {
         }}
       >
         <div style={{ border: '1px dashed #ccc', display: 'inline-block' }}>
-          <Icon
+          <BahmniIcon
             name="fa-star"
             id="none-padding-icon"
             size={ICON_SIZE.X2}
@@ -305,7 +305,7 @@ export const PaddingVariations: Story = {
           <p>NONE (0)</p>
         </div>
         <div style={{ border: '1px dashed #ccc', display: 'inline-block' }}>
-          <Icon
+          <BahmniIcon
             name="fa-star"
             id="xxsmall-padding-icon"
             size={ICON_SIZE.X2}
@@ -314,7 +314,7 @@ export const PaddingVariations: Story = {
           <p>XXSMALL (0.125rem)</p>
         </div>
         <div style={{ border: '1px dashed #ccc', display: 'inline-block' }}>
-          <Icon
+          <BahmniIcon
             name="fa-star"
             id="xsmall-padding-icon"
             size={ICON_SIZE.X2}
@@ -323,7 +323,7 @@ export const PaddingVariations: Story = {
           <p>XSMALL (0.25rem)</p>
         </div>
         <div style={{ border: '1px dashed #ccc', display: 'inline-block' }}>
-          <Icon
+          <BahmniIcon
             name="fa-star"
             id="small-padding-icon"
             size={ICON_SIZE.X2}
@@ -332,7 +332,7 @@ export const PaddingVariations: Story = {
           <p>SMALL (0.5rem)</p>
         </div>
         <div style={{ border: '1px dashed #ccc', display: 'inline-block' }}>
-          <Icon
+          <BahmniIcon
             name="fa-star"
             id="medium-padding-icon"
             size={ICON_SIZE.X2}
@@ -341,7 +341,7 @@ export const PaddingVariations: Story = {
           <p>MEDIUM (1rem)</p>
         </div>
         <div style={{ border: '1px dashed #ccc', display: 'inline-block' }}>
-          <Icon
+          <BahmniIcon
             name="fa-star"
             id="large-padding-icon"
             size={ICON_SIZE.X2}
@@ -374,11 +374,15 @@ export const ColorVariations: Story = {
         }}
       >
         <div>
-          <Icon name="fa-star" id="default-color-icon" size={ICON_SIZE.X2} />
+          <BahmniIcon
+            name="fa-star"
+            id="default-color-icon"
+            size={ICON_SIZE.X2}
+          />
           <p>Default</p>
         </div>
         <div>
-          <Icon
+          <BahmniIcon
             name="fa-star"
             id="blue-icon"
             size={ICON_SIZE.X2}
@@ -387,7 +391,7 @@ export const ColorVariations: Story = {
           <p>Blue (#0f62fe)</p>
         </div>
         <div>
-          <Icon
+          <BahmniIcon
             name="fa-star"
             id="red-icon"
             size={ICON_SIZE.X2}
@@ -396,7 +400,7 @@ export const ColorVariations: Story = {
           <p>Red (#da1e28)</p>
         </div>
         <div>
-          <Icon
+          <BahmniIcon
             name="fa-star"
             id="green-icon"
             size={ICON_SIZE.X2}
@@ -405,7 +409,7 @@ export const ColorVariations: Story = {
           <p>Green (#24a148)</p>
         </div>
         <div>
-          <Icon
+          <BahmniIcon
             name="fa-star"
             id="yellow-icon"
             size={ICON_SIZE.X2}
@@ -414,7 +418,7 @@ export const ColorVariations: Story = {
           <p>Yellow (#f1c21b)</p>
         </div>
         <div>
-          <Icon
+          <BahmniIcon
             name="fa-star"
             id="purple-icon"
             size={ICON_SIZE.X2}
@@ -448,23 +452,39 @@ export const CommonIcons: Story = {
         }}
       >
         <div>
-          <Icon name="fa-home" id="home-icon-example" size={ICON_SIZE.X2} />
+          <BahmniIcon
+            name="fa-home"
+            id="home-icon-example"
+            size={ICON_SIZE.X2}
+          />
           <p>fa-home</p>
         </div>
         <div>
-          <Icon name="fa-user" id="user-icon-example" size={ICON_SIZE.X2} />
+          <BahmniIcon
+            name="fa-user"
+            id="user-icon-example"
+            size={ICON_SIZE.X2}
+          />
           <p>fa-user</p>
         </div>
         <div>
-          <Icon name="fa-cog" id="settings-icon-example" size={ICON_SIZE.X2} />
+          <BahmniIcon
+            name="fa-cog"
+            id="settings-icon-example"
+            size={ICON_SIZE.X2}
+          />
           <p>fa-cog</p>
         </div>
         <div>
-          <Icon name="fa-search" id="search-icon-example" size={ICON_SIZE.X2} />
+          <BahmniIcon
+            name="fa-search"
+            id="search-icon-example"
+            size={ICON_SIZE.X2}
+          />
           <p>fa-search</p>
         </div>
         <div>
-          <Icon
+          <BahmniIcon
             name="fa-bell"
             id="notification-icon-example"
             size={ICON_SIZE.X2}
@@ -483,23 +503,43 @@ export const CommonIcons: Story = {
         }}
       >
         <div>
-          <Icon name="fa-plus" id="add-icon-example" size={ICON_SIZE.X2} />
+          <BahmniIcon
+            name="fa-plus"
+            id="add-icon-example"
+            size={ICON_SIZE.X2}
+          />
           <p>fa-plus</p>
         </div>
         <div>
-          <Icon name="fa-minus" id="minus-icon-example" size={ICON_SIZE.X2} />
+          <BahmniIcon
+            name="fa-minus"
+            id="minus-icon-example"
+            size={ICON_SIZE.X2}
+          />
           <p>fa-minus</p>
         </div>
         <div>
-          <Icon name="fa-edit" id="edit-icon-example" size={ICON_SIZE.X2} />
+          <BahmniIcon
+            name="fa-edit"
+            id="edit-icon-example"
+            size={ICON_SIZE.X2}
+          />
           <p>fa-edit</p>
         </div>
         <div>
-          <Icon name="fa-trash" id="delete-icon-example" size={ICON_SIZE.X2} />
+          <BahmniIcon
+            name="fa-trash"
+            id="delete-icon-example"
+            size={ICON_SIZE.X2}
+          />
           <p>fa-trash</p>
         </div>
         <div>
-          <Icon name="fa-save" id="save-icon-example" size={ICON_SIZE.X2} />
+          <BahmniIcon
+            name="fa-save"
+            id="save-icon-example"
+            size={ICON_SIZE.X2}
+          />
           <p>fa-save</p>
         </div>
       </div>
@@ -514,7 +554,7 @@ export const CommonIcons: Story = {
         }}
       >
         <div>
-          <Icon
+          <BahmniIcon
             name="fa-heartbeat"
             id="heartbeat-icon-example"
             size={ICON_SIZE.X2}
@@ -522,7 +562,7 @@ export const CommonIcons: Story = {
           <p>fa-heartbeat</p>
         </div>
         <div>
-          <Icon
+          <BahmniIcon
             name="fa-stethoscope"
             id="stethoscope-icon-example"
             size={ICON_SIZE.X2}
@@ -530,11 +570,15 @@ export const CommonIcons: Story = {
           <p>fa-stethoscope</p>
         </div>
         <div>
-          <Icon name="fa-pills" id="pills-icon-example" size={ICON_SIZE.X2} />
+          <BahmniIcon
+            name="fa-pills"
+            id="pills-icon-example"
+            size={ICON_SIZE.X2}
+          />
           <p>fa-pills</p>
         </div>
         <div>
-          <Icon
+          <BahmniIcon
             name="fa-hospital"
             id="hospital-icon-example"
             size={ICON_SIZE.X2}
@@ -542,7 +586,7 @@ export const CommonIcons: Story = {
           <p>fa-hospital</p>
         </div>
         <div>
-          <Icon
+          <BahmniIcon
             name="fa-user-md"
             id="doctor-icon-example"
             size={ICON_SIZE.X2}
@@ -589,7 +633,7 @@ export const AccessibilityExample: Story = {
         <p>Icons should always have an aria-label for screen readers.</p>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <div>
-            <Icon
+            <BahmniIcon
               name="fa-home"
               id="accessible-home"
               size={ICON_SIZE.X2}
@@ -598,7 +642,7 @@ export const AccessibilityExample: Story = {
             <p>With descriptive aria-label</p>
           </div>
           <div>
-            <Icon
+            <BahmniIcon
               name="fa-search"
               id="accessible-search"
               size={ICON_SIZE.X2}

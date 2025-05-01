@@ -1,29 +1,29 @@
-# FontAwesome Icons Guide
+# BahmniIcon Guide
 
 This guide explains how to use FontAwesome icons in the Bahmni Clinical Frontend application.
 
 ## Overview
 
-The application uses FontAwesome free solid icons through a custom Icon component. This allows for consistent icon usage throughout the application and supports specifying icons in configuration.
+The application uses FontAwesome free solid icons through a custom BahmniIcon component. This allows for consistent icon usage throughout the application and supports specifying icons in configuration.
 
 ## Usage
 
 ### Basic Usage
 
-Import the Icon component and use it in your components:
+Import the BahmniIcon component and use it in your components:
 
 ```tsx
 import React from "react";
-import Icon from "@components/common/Icon";
+import BahmniIcon from "@components/common/bahmniIcon/BahmniIcon";
 
 const MyComponent: React.FC = () => {
   return (
     <div>
       <h1>
-        <Icon name="fa-home" id="home-icon" /> Home
+        <BahmniIcon name="fa-home" id="home-icon" /> Home
       </h1>
       <button>
-        <Icon name="fa-cog" id="settings-icon" /> Settings
+        <BahmniIcon name="fa-cog" id="settings-icon" /> Settings
       </button>
     </div>
   );
@@ -32,19 +32,19 @@ const MyComponent: React.FC = () => {
 
 ### Icon Naming Format
 
-The Icon component expects names in the format "fa-iconname" or "fas-iconname":
+The BahmniIcon component expects names in the format "fa-iconname" or "fas-iconname":
 
 ```tsx
 // Solid icon format
-<Icon name="fa-home" id="home-icon" />
+<BahmniIcon name="fa-home" id="home-icon" />
 
 // Alternative solid icon format
-<Icon name="fas-home" id="home-icon-alt" />
+<BahmniIcon name="fas-home" id="home-icon-alt" />
 ```
 
 ### Icon Properties
 
-The Icon component accepts the following properties:
+The BahmniIcon component accepts the following properties:
 
 | Property  | Type              | Description                                                           |
 | --------- | ----------------- | --------------------------------------------------------------------- |
@@ -60,7 +60,7 @@ Example with all properties:
 ```tsx
 import { ICON_SIZE, ICON_PADDING } from "@constants/icon";
 
-<Icon
+<BahmniIcon
   name="fa-user"
   id="user-profile-icon"
   size={ICON_SIZE.X2}
@@ -72,7 +72,7 @@ import { ICON_SIZE, ICON_PADDING } from "@constants/icon";
 
 ### Size Options
 
-The Icon component supports various sizes through the ICON_SIZE enum:
+The BahmniIcon component supports various sizes through the ICON_SIZE enum:
 
 ```tsx
 export enum ICON_SIZE {
@@ -97,7 +97,7 @@ export enum ICON_SIZE {
 
 ### Padding Options
 
-The Icon component supports various padding options through the ICON_PADDING enum:
+The BahmniIcon component supports various padding options through the ICON_PADDING enum:
 
 ```tsx
 export enum ICON_PADDING {
@@ -131,11 +131,11 @@ Icons can be specified in configuration using the "fa-home" format. For example,
 }
 ```
 
-When rendering components based on this configuration, use the Icon component:
+When rendering components based on this configuration, use the BahmniIcon component:
 
 ```tsx
 import React from "react";
-import Icon from "@components/common/Icon";
+import BahmniIcon from "@components/common/bahmniIcon/BahmniIcon";
 
 interface DashboardItemProps {
   dashboard: {
@@ -149,7 +149,7 @@ const DashboardItem: React.FC<DashboardItemProps> = ({ dashboard }) => {
   return (
     <div className="dashboard-item">
       {dashboard.icon && (
-        <Icon
+        <BahmniIcon
           name={dashboard.icon}
           id={`${dashboard.name.toLowerCase()}-icon`}
           size={ICON_SIZE.LG}
@@ -169,23 +169,23 @@ When using icons, it's important to ensure they are accessible to all users, inc
 
 ```tsx
 // Good
-<Icon name="fa-search" id="search-button-icon" ariaLabel="Search for patients" />
+<BahmniIcon name="fa-search" id="search-button-icon" ariaLabel="Search for patients" />
 
 // Not recommended (uses id as ariaLabel)
-<Icon name="fa-search" id="search-icon" />
+<BahmniIcon name="fa-search" id="search-icon" />
 ```
 
 2. **For decorative icons**, you can use the same approach but with a more descriptive label:
 
 ```tsx
-<Icon name="fa-star" id="rating-star-icon" ariaLabel="Rating star" />
+<BahmniIcon name="fa-star" id="rating-star-icon" ariaLabel="Rating star" />
 ```
 
 3. **For icons that are part of a button or interactive element**, ensure the parent element also has appropriate accessibility attributes:
 
 ```tsx
 <button aria-label="Search for patients">
-  <Icon name="fa-search" id="search-icon" ariaLabel="Search icon" />
+  <BahmniIcon name="fa-search" id="search-icon" ariaLabel="Search icon" />
   Search
 </button>
 ```
@@ -194,7 +194,7 @@ When using icons, it's important to ensure they are accessible to all users, inc
 
 ```tsx
 <button aria-label="Close dialog">
-  <Icon name="fa-times" id="close-icon" ariaLabel="Close" />
+  <BahmniIcon name="fa-times" id="close-icon" ariaLabel="Close" />
 </button>
 ```
 
@@ -219,7 +219,7 @@ The FontAwesome integration consists of:
    - Initializes the FontAwesome library
    - Adds all solid icons
 
-3. Icon Component (src/components/common/Icon/Icon.tsx):
+3. BahmniIcon Component (src/components/common/bahmniIcon/BahmniIcon.tsx):
 
    - Renders FontAwesome icons
    - Supports customization through props
@@ -229,7 +229,7 @@ The FontAwesome integration consists of:
 
 ## Storybook Examples
 
-The Icon component includes a comprehensive set of Storybook examples that demonstrate various usage patterns and configurations. To view these examples, run the Storybook development server and navigate to the Icon component section.
+The BahmniIcon component includes a comprehensive set of Storybook examples that demonstrate various usage patterns and configurations. To view these examples, run the Storybook development server and navigate to the BahmniIcon component section.
 
 Examples include:
 

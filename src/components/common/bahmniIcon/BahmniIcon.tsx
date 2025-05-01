@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IconName } from '@fortawesome/fontawesome-svg-core';
 import { ICON_SIZE, ICON_PADDING } from '@constants/icon';
 
-interface IconProps {
+interface BahmniIconProps {
   name: string; // Format: "fa-home"
   size?: ICON_SIZE;
   color?: string;
@@ -45,7 +45,7 @@ interface IconProps {
  * @param {ICON_PADDING} [props.padding=ICON_PADDING.XXSMALL] - Padding around the icon from ICON_PADDING enum
  * @returns {React.ReactElement} React component
  */
-const Icon: React.FC<IconProps> = ({
+const BahmniIcon: React.FC<BahmniIconProps> = ({
   name,
   size = ICON_SIZE.XS,
   color,
@@ -68,4 +68,4 @@ const Icon: React.FC<IconProps> = ({
   );
 };
 
-export default Icon;
+export default BahmniIcon;

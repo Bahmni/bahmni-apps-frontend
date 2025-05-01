@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import Icon from '../Icon';
+import BahmniIcon from '../BahmniIcon';
 import '@testing-library/jest-dom';
 import { ICON_PADDING, ICON_SIZE } from '@/constants/icon';
 
@@ -21,7 +21,7 @@ jest.mock('@fortawesome/react-fontawesome', () => ({
 
 describe('Icon Component', () => {
   it('renders solid icon', () => {
-    render(<Icon name="fa-home" id="test-icon" />);
+    render(<BahmniIcon name="fa-home" id="test-icon" />);
     const icon = screen.getByTestId('test-icon');
     expect(icon).toBeInTheDocument();
     expect(icon).toHaveAttribute('data-icon', 'fa-home');
@@ -30,7 +30,7 @@ describe('Icon Component', () => {
 
   it('renders with all props', () => {
     render(
-      <Icon
+      <BahmniIcon
         name="fa-user"
         size={ICON_SIZE.X2}
         color="blue"
@@ -51,46 +51,52 @@ describe('Icon Component', () => {
   });
 
   it('accepts alternative icon syntax (fas-*)', () => {
-    render(<Icon name="fas-star" id="alt-icon" />);
+    render(<BahmniIcon name="fas-star" id="alt-icon" />);
     const icon = screen.getByTestId('alt-icon');
     expect(icon).toHaveAttribute('data-icon', 'fas-star');
     expect(icon).toHaveAttribute('data-prefix', 'fas');
   });
 
   it('applies default padding', () => {
-    render(<Icon name="fa-home" id="default-padding" />);
+    render(<BahmniIcon name="fa-home" id="default-padding" />);
     const container = screen.getByLabelText('default-padding');
     expect(container).toHaveStyle('padding: 0.125rem');
   });
 
   it('applies custom padding', () => {
     render(
-      <Icon name="fa-home" id="custom-padding" padding={ICON_PADDING.SMALL} />,
+      <BahmniIcon
+        name="fa-home"
+        id="custom-padding"
+        padding={ICON_PADDING.SMALL}
+      />,
     );
     const container = screen.getByLabelText('custom-padding');
     expect(container).toHaveStyle('padding: 0.5rem');
   });
 
   it('applies size class', () => {
-    render(<Icon name="fas-home" id="sized-icon" size={ICON_SIZE.LG} />);
+    render(<BahmniIcon name="fas-home" id="sized-icon" size={ICON_SIZE.LG} />);
     const icon = screen.getByTestId('sized-icon');
     expect(icon).toHaveAttribute('data-size', 'lg');
   });
 
   it('applies color', () => {
-    render(<Icon name="fa-home" id="colored-icon" color="#FF0000" />);
+    render(<BahmniIcon name="fa-home" id="colored-icon" color="#FF0000" />);
     const icon = screen.getByTestId('colored-icon');
     expect(icon).toHaveAttribute('data-color', '#FF0000');
   });
 
   it('renders with empty name', () => {
-    const icon = render(<Icon name="" id="empty-icon" />);
+    const icon = render(<BahmniIcon name="" id="empty-icon" />);
     expect(icon.container).toBeEmptyDOMElement();
   });
 
   // Test 9: Renders with malformed name (current behavior)
   it('renders with malformed name', () => {
-    const icon = render(<Icon name="invalid-name-format" id="invalid-icon" />);
+    const icon = render(
+      <BahmniIcon name="invalid-name-format" id="invalid-icon" />,
+    );
     expect(icon.container).toBeEmptyDOMElement();
   });
 });
