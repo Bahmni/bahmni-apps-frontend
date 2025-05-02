@@ -5,8 +5,12 @@ import App from './App';
 import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
 import { NotificationProvider } from '@providers/NotificationProvider';
 import { NotificationServiceComponent } from '@services/NotificationServiceComponent';
+import { initFontAwesome } from './fontawesome';
 import '@styles/index.scss';
 import '@/i18n';
+
+// Initialize FontAwesome
+initFontAwesome();
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Failed to find the root element');
