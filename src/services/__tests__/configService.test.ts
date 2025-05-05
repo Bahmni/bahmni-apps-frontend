@@ -1,4 +1,4 @@
-import { getConfig } from '../configService';
+import { getClinicalConfig } from '../configService';
 import * as api from '../api';
 import Ajv from 'ajv';
 import * as commonUtils from '@utils/common';
@@ -13,6 +13,7 @@ import {
   largeConfig,
   allOptionalFieldsConfig,
 } from '@__mocks__/configMocks';
+import { CLINICAL_CONFIG_URL } from '@constants/app';
 
 // Mock the api module
 jest.mock('../api');
@@ -42,13 +43,10 @@ jest.mock('../notificationService', () => ({
     showError: jest.fn(),
   },
 }));
-const mockShowError = notificationService.showError as jest.MockedFunction<
-  typeof notificationService.showError
->;
 
-describe('ConfigService', () => {
-  // Mock schema for testing
-  const mockSchema = {
+jest.mock('@schemas/clinicalConfig.schema.json', () => ({
+  __esModule: true,
+  default: {
     type: 'object',
     properties: {
       patientInformation: {
@@ -68,8 +66,35 @@ describe('ConfigService', () => {
       },
     },
     required: ['patientInformation', 'actions', 'dashboards'],
-  };
+  },
+}));
+const mockSchema = {
+  type: 'object',
+  properties: {
+    patientInformation: {
+      type: 'object',
+    },
+    actions: {
+      type: 'array',
+      items: {
+        type: 'object',
+      },
+    },
+    dashboards: {
+      type: 'array',
+      items: {
+        type: 'object',
+      },
+    },
+  },
+  required: ['patientInformation', 'actions', 'dashboards'],
+};
 
+const mockShowError = notificationService.showError as jest.MockedFunction<
+  typeof notificationService.showError
+>;
+
+describe('ConfigService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
@@ -84,17 +109,17 @@ describe('ConfigService', () => {
     );
   });
 
-  describe('getConfig', () => {
+  describe('getClinicalConfig', () => {
     describe('Success cases', () => {
       test('should fetch and validate a fully valid config', async () => {
         // Arrange
         mockGet.mockResolvedValueOnce(validFullClinicalConfig);
 
         // Act
-        const result = await getConfig('/api/config/dashboard', mockSchema);
+        const result = await getClinicalConfig();
 
         // Assert
-        expect(mockGet).toHaveBeenCalledWith('/api/config/dashboard');
+        expect(mockGet).toHaveBeenCalledWith(CLINICAL_CONFIG_URL);
         expect(result).toEqual(validFullClinicalConfig);
       });
 
@@ -103,10 +128,9 @@ describe('ConfigService', () => {
         mockGet.mockResolvedValueOnce(minimalClinicalConfig);
 
         // Act
-        const result = await getConfig('/api/config/minimal', mockSchema);
-
+        const result = await getClinicalConfig();
         // Assert
-        expect(mockGet).toHaveBeenCalledWith('/api/config/minimal');
+        expect(mockGet).toHaveBeenCalledWith(CLINICAL_CONFIG_URL);
         expect(result).toEqual(minimalClinicalConfig);
       });
 
@@ -115,10 +139,10 @@ describe('ConfigService', () => {
         mockGet.mockResolvedValueOnce(mixedClinicalConfig);
 
         // Act
-        const result = await getConfig('/api/config/mixed', mockSchema);
+        const result = await getClinicalConfig();
 
         // Assert
-        expect(mockGet).toHaveBeenCalledWith('/api/config/mixed');
+        expect(mockGet).toHaveBeenCalledWith(CLINICAL_CONFIG_URL);
         expect(result).toEqual(mixedClinicalConfig);
       });
 
@@ -127,10 +151,10 @@ describe('ConfigService', () => {
         mockGet.mockResolvedValueOnce(largeConfig);
 
         // Act
-        const result = await getConfig('/api/config/large', mockSchema);
+        const result = await getClinicalConfig();
 
         // Assert
-        expect(mockGet).toHaveBeenCalledWith('/api/config/large');
+        expect(mockGet).toHaveBeenCalledWith(CLINICAL_CONFIG_URL);
         expect(result).toEqual(largeConfig);
         expect(result?.dashboards.length).toBe(50);
       });
@@ -140,10 +164,10 @@ describe('ConfigService', () => {
         mockGet.mockResolvedValueOnce(allOptionalFieldsConfig);
 
         // Act
-        const result = await getConfig('/api/config/full', mockSchema);
+        const result = await getClinicalConfig();
 
         // Assert
-        expect(mockGet).toHaveBeenCalledWith('/api/config/full');
+        expect(mockGet).toHaveBeenCalledWith(CLINICAL_CONFIG_URL);
         expect(result).toEqual(allOptionalFieldsConfig);
 
         // Verify the comprehensive dashboard has all optional fields
@@ -179,10 +203,7 @@ describe('ConfigService', () => {
         mockGet.mockResolvedValueOnce(minimalClinicalConfig);
 
         // Act
-        const result = await getConfig<TestConfig>(
-          '/api/config/typed',
-          mockSchema,
-        );
+        const result = await getClinicalConfig<TestConfig>();
 
         // Assert
         expect(result).toEqual(minimalClinicalConfig);
@@ -202,11 +223,11 @@ describe('ConfigService', () => {
         });
 
         // Act
-        const result = await getConfig('/api/config/dashboard', mockSchema);
+        const result = await getClinicalConfig();
 
         // Assert
         expect(result).toBeNull();
-        expect(mockGet).toHaveBeenCalledWith('/api/config/dashboard');
+        expect(mockGet).toHaveBeenCalledWith(CLINICAL_CONFIG_URL);
         expect(mockGetFormattedError).toHaveBeenCalledWith(expect.any(Error));
         expect(mockShowError).toHaveBeenCalledWith('Error', 'Network error');
       });
@@ -216,11 +237,11 @@ describe('ConfigService', () => {
         mockGet.mockResolvedValueOnce(null);
 
         // Act
-        const result = await getConfig('/api/config/dashboard', mockSchema);
+        const result = await getClinicalConfig();
 
         // Assert
         expect(result).toBeNull();
-        expect(mockGet).toHaveBeenCalledWith('/api/config/dashboard');
+        expect(mockGet).toHaveBeenCalledWith(CLINICAL_CONFIG_URL);
         expect(mockShowError).toHaveBeenCalledWith(
           i18n.t(ERROR_TITLES.CONFIG_ERROR),
           i18n.t(CONFIG_ERROR_MESSAGES.CONFIG_NOT_FOUND),
@@ -242,11 +263,11 @@ describe('ConfigService', () => {
         );
 
         // Act
-        const result = await getConfig('/api/config/dashboard', mockSchema);
+        const result = await getClinicalConfig();
 
         // Assert
         expect(result).toBeNull();
-        expect(mockGet).toHaveBeenCalledWith('/api/config/dashboard');
+        expect(mockGet).toHaveBeenCalledWith(CLINICAL_CONFIG_URL);
         expect(mockValidate).toHaveBeenCalledWith(invalidClinicalConfig);
         expect(mockShowError).toHaveBeenCalledWith(
           i18n.t(ERROR_TITLES.VALIDATION_ERROR),
@@ -266,11 +287,11 @@ describe('ConfigService', () => {
         });
 
         // Act
-        const result = await getConfig('/api/config/dashboard', mockSchema);
+        const result = await getClinicalConfig();
 
         // Assert
         expect(result).toBeNull();
-        expect(mockGet).toHaveBeenCalledWith('/api/config/dashboard');
+        expect(mockGet).toHaveBeenCalledWith(CLINICAL_CONFIG_URL);
         expect(mockShowError).toHaveBeenCalledWith(
           'Error',
           'Unexpected token in JSON',
@@ -298,11 +319,11 @@ describe('ConfigService', () => {
         });
 
         // Act
-        const result = await getConfig('/api/config/dashboard', mockSchema);
+        const result = await getClinicalConfig();
 
         // Assert
         expect(result).toBeNull();
-        expect(mockGet).toHaveBeenCalledWith('/api/config/dashboard');
+        expect(mockGet).toHaveBeenCalledWith(CLINICAL_CONFIG_URL);
         expect(mockCompile).toHaveBeenCalled();
         expect(mockShowError).toHaveBeenCalledWith('Error', 'Invalid schema');
       });
@@ -316,10 +337,10 @@ describe('ConfigService', () => {
       mockGet.mockResolvedValueOnce(minimalClinicalConfig);
 
       // Act
-      const result = await getConfig('/api/config/minimal', mockSchema);
+      const result = await getClinicalConfig();
 
       // Assert
-      expect(mockGet).toHaveBeenCalledWith('/api/config/minimal');
+      expect(mockGet).toHaveBeenCalledWith(CLINICAL_CONFIG_URL);
       expect(result).toEqual(minimalClinicalConfig);
     });
 
@@ -333,11 +354,11 @@ describe('ConfigService', () => {
       });
 
       // Act
-      const result = await getConfig('/api/config/dashboard', mockSchema);
+      const result = await getClinicalConfig();
 
       // Assert
       expect(result).toBeNull();
-      expect(mockGet).toHaveBeenCalledWith('/api/config/dashboard');
+      expect(mockGet).toHaveBeenCalledWith(CLINICAL_CONFIG_URL);
       expect(mockShowError).toHaveBeenCalledWith('Error', 'Network error');
     });
   });
@@ -357,7 +378,7 @@ describe('ConfigService', () => {
       );
 
       // Act
-      const result = await getConfig('/api/config/dashboard', mockSchema);
+      const result = await getClinicalConfig();
 
       // Assert
       expect(mockCompile).toHaveBeenCalledWith(mockSchema);
@@ -378,7 +399,7 @@ describe('ConfigService', () => {
       );
 
       // Act
-      const result = await getConfig('/api/config/dashboard', mockSchema);
+      const result = await getClinicalConfig();
 
       // Assert
       expect(result).toBeNull();

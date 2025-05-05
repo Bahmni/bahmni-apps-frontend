@@ -5,6 +5,20 @@ import { ClinicalConfig } from '@types/config';
 import { getFormattedError } from '@utils/common';
 import notificationService from './notificationService';
 import i18next from 'i18next';
+import { CLINICAL_CONFIG_URL } from '@constants/app';
+import clinicalConfigSchema from '@schemas/clinicalConfig.schema.json';
+
+/**
+ * Fetches and validates clinical app configuration from the server
+ *
+ * @returns Validated configuration object or null if invalid/error
+ * @throws Error if fetch fails or validation fails
+ */
+export const getClinicalConfig = async <
+  T extends ClinicalConfig,
+>(): Promise<T | null> => {
+  return getConfig<T>(CLINICAL_CONFIG_URL, clinicalConfigSchema);
+};
 
 /**
  * Fetches and validates configuration from the server
@@ -14,7 +28,7 @@ import i18next from 'i18next';
  * @returns Validated configuration object or null if invalid/error
  * @throws Error if fetch fails or validation fails
  */
-export const getConfig = async <T extends ClinicalConfig>(
+const getConfig = async <T>(
   configPath: string,
   configSchema: Record<string, unknown>,
 ): Promise<T | null> => {
