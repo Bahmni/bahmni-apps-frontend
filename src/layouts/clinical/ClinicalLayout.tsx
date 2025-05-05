@@ -1,23 +1,42 @@
 import React, { ReactNode } from 'react';
-import Header from '@components/clinical/header/Header';
+import * as styles from './styles/ClinicalLayout.module.scss';
 
 interface ClinicalLayoutProps {
-  children: ReactNode;
+  header: ReactNode;
+  patientDetails: ReactNode;
+  sidebar: ReactNode;
+  mainDisplay: ReactNode;
 }
 
 /**
  * Clinical Layout component that provides the main layout structure
- * for clinical pages, including the header and main content area
+ * for clinical pages with four distinct sections:
+ * 1. Header - at the top of the screen, full width
+ * 2. Patient Details - below header, spans full width
+ * 3. Sidebar - left side below patient details
+ * 4. Main Display - right side, scrollable content area
  *
- * @param {ReactNode} children - The content to render in the main area
+ * @param {ReactNode} header - The header component
+ * @param {ReactNode} patientDetails - The patient details component
+ * @param {ReactNode} sidebar - The sidebar component
+ * @param {ReactNode} mainDisplay - The main content to display
  * @returns {React.ReactElement} The ClinicalLayout component
  */
-const ClinicalLayout: React.FC<ClinicalLayoutProps> = ({ children }) => {
+const ClinicalLayout: React.FC<ClinicalLayoutProps> = ({
+  header,
+  patientDetails,
+  sidebar,
+  mainDisplay,
+}) => {
   return (
-    <>
-      <Header />
-      <main id="main-content">{children}</main>
-    </>
+    <div className={styles.layout}>
+      <header className={styles.header}>{header}</header>
+      <div className={styles.body}>
+        <section className={styles.patientDetails}>{patientDetails}</section>
+        <aside className={styles.sidebar}>{sidebar}</aside>
+        <main className={styles.mainDisplay}>{mainDisplay}</main>
+      </div>
+    </div>
   );
 };
 
