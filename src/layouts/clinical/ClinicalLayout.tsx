@@ -1,38 +1,21 @@
 import React, { ReactNode } from 'react';
-import {
-  Header,
-  HeaderName,
-  HeaderNavigation,
-  HeaderMenuItem,
-  SkipToContent,
-} from '@carbon/react';
-import BahmniIcon from '@/components/common/bahmniIcon/BahmniIcon';
-import { ICON_SIZE } from '@constants/icon';
+import Header from '@components/clinical/header/Header';
 
 interface ClinicalLayoutProps {
   children: ReactNode;
 }
 
+/**
+ * Clinical Layout component that provides the main layout structure
+ * for clinical pages, including the header and main content area
+ *
+ * @param {ReactNode} children - The content to render in the main area
+ * @returns {React.ReactElement} The ClinicalLayout component
+ */
 const ClinicalLayout: React.FC<ClinicalLayoutProps> = ({ children }) => {
   return (
     <>
-      <Header aria-label="Bahmni Clinical">
-        <SkipToContent />
-        <HeaderName href="/" prefix="">
-          Bahmni Clinical
-        </HeaderName>
-        <HeaderNavigation aria-label="Main Navigation">
-          <HeaderMenuItem href="/">
-            <BahmniIcon
-              name="fa-home"
-              size={ICON_SIZE.LG}
-              id="home"
-            ></BahmniIcon>
-            Home
-          </HeaderMenuItem>
-          {/* Add more navigation items as needed */}
-        </HeaderNavigation>
-      </Header>
+      <Header />
       <main id="main-content">{children}</main>
     </>
   );

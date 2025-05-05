@@ -3,23 +3,17 @@ import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import ClinicalLayout from '../ClinicalLayout';
 
+// Mock the Header component
+jest.mock('@components/clinical/header/Header', () => {
+  return function MockHeader() {
+    return <div data-testid="mock-header">Mock Header</div>;
+  };
+});
+
 // Mock component to be used as children
 const MockChild = () => <div data-testid="mock-child">Mock Child</div>;
-jest.mock('@fortawesome/react-fontawesome', () => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  FontAwesomeIcon: ({ icon, size, color, ...props }: any) => (
-    <svg
-      data-testid={props['data-testid']}
-      data-icon={icon[1]}
-      data-prefix={icon[0]}
-      data-size={size}
-      data-color={color}
-      {...props}
-    />
-  ),
-}));
 describe('ClinicalLayout Component', () => {
-  test('renders the Home menu item', () => {
+  test('renders the Header component', () => {
     render(
       <BrowserRouter>
         <ClinicalLayout>
@@ -28,25 +22,8 @@ describe('ClinicalLayout Component', () => {
       </BrowserRouter>,
     );
 
-    // Check if the Home menu item is rendered
-    const homeMenuItem = screen.getByText('Home');
-    expect(homeMenuItem).toBeInTheDocument();
-
-    // Verify it's a link to the home page
-    expect(homeMenuItem.closest('a')).toHaveAttribute('href', '/');
-  });
-
-  test('renders the Bahmni Clinical header', () => {
-    render(
-      <BrowserRouter>
-        <ClinicalLayout>
-          <MockChild />
-        </ClinicalLayout>
-      </BrowserRouter>,
-    );
-
-    // Check if the header with Bahmni Clinical text is rendered
-    const header = screen.getByText('Bahmni Clinical');
+    // Check if the Header component is rendered
+    const header = screen.getByTestId('mock-header');
     expect(header).toBeInTheDocument();
   });
 
