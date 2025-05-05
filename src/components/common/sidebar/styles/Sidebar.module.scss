@@ -1,0 +1,42 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/motion" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-03; // 8px in Carbon
+  padding-top: $spacing-03;
+  height: 100%;
+}
+
+.sidebarItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-04; // 16px in Carbon
+  padding: $spacing-03 $spacing-03;
+  cursor: pointer;
+  border-radius: $spacing-01; // 4px in Carbon
+  transition: background-color $duration-moderate-01 motion(standard, productive),
+              color $duration-moderate-01 motion(standard, productive);
+  @include type-style('body-compact-01');
+  font-weight: 600;
+  color: $text-secondary; // Carbon theme token
+
+  &:hover:not(.active) {
+    background-color: $background-hover; // Carbon theme token
+  }
+
+  &.active {
+    background-color: $background-selected; // Carbon theme token for selected state
+    color: $link-primary; // Carbon theme token for links
+  }
+}
+
+.label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
