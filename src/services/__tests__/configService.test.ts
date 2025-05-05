@@ -1,4 +1,4 @@
-import { getClinicalConfig } from '../configService';
+import { getClinicalConfig, getDashboardConfig } from '../configService';
 import * as api from '../api';
 import Ajv from 'ajv';
 import * as commonUtils from '@utils/common';
@@ -13,7 +13,7 @@ import {
   largeConfig,
   allOptionalFieldsConfig,
 } from '@__mocks__/configMocks';
-import { CLINICAL_CONFIG_URL } from '@constants/app';
+import { CLINICAL_CONFIG_URL, DASHBOARD_CONFIG_URL } from '@constants/app';
 
 // Mock the api module
 jest.mock('../api');
@@ -88,6 +88,69 @@ const mockSchema = {
     },
   },
   required: ['patientInformation', 'actions', 'dashboards'],
+};
+
+jest.mock('@schemas/dashboardConfig.schema.json', () => ({
+  __esModule: true,
+  default: {
+    type: 'object',
+    required: ['sections'],
+    properties: {
+      sections: {
+        type: 'array',
+        items: {
+          type: 'object',
+          required: ['name', 'icon', 'controls'],
+          properties: {
+            name: { type: 'string' },
+            translationKey: { type: 'string' },
+            icon: { type: 'string' },
+            controls: { type: 'array' },
+          },
+        },
+      },
+    },
+  },
+}));
+const mockDashboardSchema = {
+  type: 'object',
+  required: ['sections'],
+  properties: {
+    sections: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['name', 'icon', 'controls'],
+        properties: {
+          name: { type: 'string' },
+          translationKey: { type: 'string' },
+          icon: { type: 'string' },
+          controls: { type: 'array' },
+        },
+      },
+    },
+  },
+};
+
+// Mock dashboard configs for testing
+const validDashboardConfig = {
+  sections: [
+    {
+      name: 'Vitals',
+      icon: 'heartbeat',
+      translationKey: 'DASHBOARD_VITALS_KEY',
+      controls: [],
+    },
+    {
+      name: 'Medications',
+      icon: 'pills',
+      controls: [],
+    },
+  ],
+};
+
+const invalidDashboardConfig = {
+  // Missing required sections array
 };
 
 const mockShowError = notificationService.showError as jest.MockedFunction<
@@ -405,6 +468,70 @@ describe('ConfigService', () => {
       expect(result).toBeNull();
       expect(mockCompile).toHaveBeenCalledWith(mockSchema);
       expect(mockValidate).toHaveBeenCalledWith(invalidClinicalConfig);
+      expect(mockShowError).toHaveBeenCalledWith(
+        i18n.t(ERROR_TITLES.VALIDATION_ERROR),
+        i18n.t(CONFIG_ERROR_MESSAGES.VALIDATION_FAILED),
+      );
+    });
+  });
+
+  // Tests for getDashboardConfig
+  describe('getDashboardConfig', () => {
+    const testDashboardURL = 'test-dashboard';
+    const formattedDashboardURL = DASHBOARD_CONFIG_URL(testDashboardURL);
+
+    test('should call API with correct dashboard URL', async () => {
+      // Arrange
+      mockGet.mockResolvedValueOnce(validDashboardConfig);
+
+      // Act
+      const result = await getDashboardConfig(testDashboardURL);
+
+      // Assert
+      expect(mockGet).toHaveBeenCalledWith(formattedDashboardURL);
+      expect(result).toEqual(validDashboardConfig);
+    });
+
+    test('should validate config against dashboard schema', async () => {
+      // Arrange
+      mockGet.mockResolvedValueOnce(validDashboardConfig);
+      const mockValidate = jest.fn().mockReturnValue(true);
+      const mockCompile = jest.fn().mockReturnValue(mockValidate);
+      mockAjv.mockImplementation(
+        () =>
+          ({
+            compile: mockCompile,
+          }) as unknown as Ajv,
+      );
+
+      // Act
+      const result = await getDashboardConfig(testDashboardURL);
+
+      // Assert
+      expect(mockCompile).toHaveBeenCalledWith(mockDashboardSchema);
+      expect(mockValidate).toHaveBeenCalledWith(validDashboardConfig);
+      expect(result).toEqual(validDashboardConfig);
+    });
+
+    test('should return null when validation fails', async () => {
+      // Arrange
+      mockGet.mockResolvedValueOnce(invalidDashboardConfig);
+      const mockValidate = jest.fn().mockReturnValue(false);
+      const mockCompile = jest.fn().mockReturnValue(mockValidate);
+      mockAjv.mockImplementation(
+        () =>
+          ({
+            compile: mockCompile,
+          }) as unknown as Ajv,
+      );
+
+      // Act
+      const result = await getDashboardConfig(testDashboardURL);
+
+      // Assert
+      expect(result).toBeNull();
+      expect(mockCompile).toHaveBeenCalledWith(mockDashboardSchema);
+      expect(mockValidate).toHaveBeenCalledWith(invalidDashboardConfig);
       expect(mockShowError).toHaveBeenCalledWith(
         i18n.t(ERROR_TITLES.VALIDATION_ERROR),
         i18n.t(CONFIG_ERROR_MESSAGES.VALIDATION_FAILED),

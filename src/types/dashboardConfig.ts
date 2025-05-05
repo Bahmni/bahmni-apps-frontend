@@ -6,5 +6,11 @@ export interface DashboardSection {
 }
 
 export interface DashboardConfig {
-  sections: DashboardSection[];
+  sections?: DashboardSection[];
+}
+
+export interface DashboardConfigContextType {
+  dashboardConfig: DashboardConfig | null;
+  isLoading: boolean;
+  error: Error | null;
 }

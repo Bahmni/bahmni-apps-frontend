@@ -5,8 +5,10 @@ import { ClinicalConfig } from '@types/config';
 import { getFormattedError } from '@utils/common';
 import notificationService from './notificationService';
 import i18next from 'i18next';
-import { CLINICAL_CONFIG_URL } from '@constants/app';
+import { DashboardConfig } from '@types/dashboardConfig';
+import { CLINICAL_CONFIG_URL, DASHBOARD_CONFIG_URL } from '@constants/app';
 import clinicalConfigSchema from '@schemas/clinicalConfig.schema.json';
+import dashboardConfigSchema from '@schemas/dashboardConfig.schema.json';
 
 /**
  * Fetches and validates clinical app configuration from the server
@@ -18,6 +20,22 @@ export const getClinicalConfig = async <
   T extends ClinicalConfig,
 >(): Promise<T | null> => {
   return getConfig<T>(CLINICAL_CONFIG_URL, clinicalConfigSchema);
+};
+
+/**
+ * Fetches and validates dashboard configuration from the server
+ *
+ * @param dashboardURL - URL path to fetch the dashboard configuration
+ * @returns Validated configuration object or null if invalid/error
+ * @throws Error if fetch fails or validation fails
+ */
+export const getDashboardConfig = async <T extends DashboardConfig>(
+  dashboardURL: string,
+): Promise<T | null> => {
+  return getConfig<T>(
+    DASHBOARD_CONFIG_URL(dashboardURL),
+    dashboardConfigSchema,
+  );
 };
 
 /**

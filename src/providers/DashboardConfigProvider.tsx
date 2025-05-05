@@ -1,9 +1,7 @@
 import React, { ReactNode, useState, useMemo, useEffect } from 'react';
 import { DashboardConfigContext } from '@contexts/DashboardConfigContext';
 import { DashboardConfig } from '@types/dashboardConfig';
-import { DASHBOARD_CONFIG_URL } from '@/constants/app';
-import { getConfig } from '@services/configService';
-import dashboardConfigSchema from '@schemas/dashboardConfig.schema.json';
+import { getDashboardConfig } from '@services/configService';
 import { getFormattedError } from '@utils/common';
 import notificationService from '@services/notificationService';
 
@@ -24,10 +22,8 @@ export const DashboardConfigProvider: React.FC<
     const fetchConfig = async () => {
       setIsLoading(true);
       try {
-        const dashboardConfig: DashboardConfig = await getConfig(
-          DASHBOARD_CONFIG_URL(dashboardURL),
-          dashboardConfigSchema,
-        );
+        const dashboardConfig: DashboardConfig | null =
+          await getDashboardConfig(dashboardURL);
         setDashboardConfig(dashboardConfig);
       } catch (error) {
         const { title, message } = getFormattedError(error);
@@ -43,7 +39,9 @@ export const DashboardConfigProvider: React.FC<
 
   const value = useMemo(
     () => ({
-      dashboardConfig,
+      dashboardConfig: dashboardConfig,
+      isLoading: isLoading,
+      error: error,
     }),
     [dashboardConfig, isLoading, error],
   );
