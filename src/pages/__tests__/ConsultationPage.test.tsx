@@ -27,6 +27,11 @@ jest.mock('@carbon/react', () => ({
   Loading: jest.fn(() => <div data-testid="carbon-loading">Loading...</div>),
 }));
 
+jest.mock('@layouts/clinical/ClinicalLayout', () => {
+  return jest.fn(({ children }) => (
+    <div data-testid="mocked-clinical-layout">{children}</div>
+  ));
+});
 // Mock the PatientDetails component
 jest.mock('@displayControls/patient/PatientDetails', () => {
   return jest.fn(() => (

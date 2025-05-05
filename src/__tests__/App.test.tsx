@@ -6,13 +6,6 @@ import ClinicalLayout from '@layouts/clinical/ClinicalLayout';
 import ConsultationPage from '@pages/ConsultationPage';
 import NotFoundPage from '@pages/NotFoundPage';
 
-// Mock dependencies
-jest.mock('@layouts/clinical/ClinicalLayout', () => {
-  return jest.fn(({ children }) => (
-    <div data-testid="mock-main-layout">{children}</div>
-  ));
-});
-
 jest.mock('@pages/ConsultationPage', () => {
   return jest.fn(() => <div data-testid="mock-home-page">Home Page</div>);
 });
@@ -41,7 +34,6 @@ describe('App Component', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByTestId('mock-main-layout')).toBeInTheDocument();
     expect(screen.getByTestId('mock-carbon-content')).toBeInTheDocument();
   });
 
@@ -81,21 +73,6 @@ describe('App Component', () => {
     expect(NotFoundPage).toHaveBeenCalled();
     expect(screen.getByTestId('mock-not-found-page')).toBeInTheDocument();
     expect(screen.queryByTestId('mock-home-page')).not.toBeInTheDocument();
-  });
-
-  it('should wrap content with ClinicalLayout', () => {
-    render(
-      <MemoryRouter>
-        <App />
-      </MemoryRouter>,
-    );
-
-    expect(ClinicalLayout).toHaveBeenCalled();
-    const clinicalLayout = screen.getByTestId('mock-main-layout');
-    expect(clinicalLayout).toBeInTheDocument();
-    expect(clinicalLayout).toContainElement(
-      screen.getByTestId('mock-carbon-content'),
-    );
   });
 
   it('should render Routes component correctly', () => {
