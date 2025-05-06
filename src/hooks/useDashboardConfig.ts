@@ -1,21 +1,46 @@
-import { useContext } from 'react';
-import { DashboardConfigContext } from '@contexts/DashboardConfigContext';
+import { useState, useEffect } from 'react';
+import { DashboardConfig } from '@types/dashboardConfig';
 import { DashboardConfigContextType } from '@types/dashboardConfig';
+import { getDashboardConfig } from '@services/configService';
+import { getFormattedError } from '@utils/common';
+import notificationService from '@services/notificationService';
 
 /**
- * Custom hook to access the dashboard configuration context
+ * Custom hook to fetch and manage dashboard configuration
  *
- * @returns The dashboard configuration context value
- * @throws Error if used outside of a DashboardConfigProvider
+ * @param dashboardURL - URL path to fetch the dashboard configuration
+ * @returns The dashboard configuration, loading state, and error state
  */
-export const useDashboardConfig = (): DashboardConfigContextType => {
-  const context = useContext(DashboardConfigContext);
+export const useDashboardConfig = (
+  dashboardURL: string,
+): DashboardConfigContextType => {
+  const [dashboardConfig, setDashboardConfig] =
+    useState<DashboardConfig | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-  if (context === undefined) {
-    throw new Error(
-      'useDashboardConfig must be used within a DashboardConfigProvider',
-    );
-  }
+  useEffect(() => {
+    const fetchConfig = async () => {
+      setIsLoading(true);
+      try {
+        const config: DashboardConfig | null =
+          await getDashboardConfig(dashboardURL);
+        setDashboardConfig(config);
+      } catch (error) {
+        const { title, message } = getFormattedError(error);
+        setError(new Error(message));
+        notificationService.showError(title, message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  return context;
+    fetchConfig();
+  }, [dashboardURL]);
+
+  return {
+    dashboardConfig,
+    isLoading,
+    error,
+  };
 };

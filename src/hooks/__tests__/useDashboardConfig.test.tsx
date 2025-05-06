@@ -1,11 +1,11 @@
 import React from 'react';
-import { renderHook } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useDashboardConfig } from '../useDashboardConfig';
 import {
   DashboardConfigContextType,
   DashboardConfig,
 } from '@types/dashboardConfig';
-import { DashboardConfigProvider } from '@providers/DashboardConfigProvider';
+import { getDashboardConfig } from '@services/configService';
 
 // Mock notification service
 jest.mock('@services/notificationService', () => ({
@@ -27,13 +27,6 @@ jest.mock('@services/configService', () => ({
   getDashboardConfig: jest.fn(),
 }));
 
-// Wrapper component to provide the DashboardConfigContext
-const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <DashboardConfigProvider dashboardURL="test-dashboard">
-    {children}
-  </DashboardConfigProvider>
-);
-
 describe('useDashboardConfig', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -44,7 +37,7 @@ describe('useDashboardConfig', () => {
     jest.restoreAllMocks();
   });
 
-  it('should return the context values correctly', () => {
+  it('should fetch and return dashboard config correctly', async () => {
     // Mock dashboard config
     const mockDashboardConfig: DashboardConfig = {
       sections: [
@@ -62,99 +55,123 @@ describe('useDashboardConfig', () => {
       ],
     };
 
-    // Mock context value
-    const mockContextValue: DashboardConfigContextType = {
-      dashboardConfig: mockDashboardConfig,
-      isLoading: false,
-      error: null,
-    };
+    // Mock the getDashboardConfig function
+    (getDashboardConfig as jest.Mock).mockResolvedValue(mockDashboardConfig);
 
-    // Mock the DashboardConfigContext
-    jest.spyOn(React, 'useContext').mockReturnValue(mockContextValue);
+    // Render the hook with a dashboard URL
+    const { result, rerender } = renderHook(
+      (props) => useDashboardConfig(props.dashboardURL),
+      {
+        initialProps: { dashboardURL: 'test-dashboard' },
+      }
+    );
 
-    const { result } = renderHook(() => useDashboardConfig());
-
-    // Verify the hook returns the context values
-    expect(result.current).toEqual(mockContextValue);
-    expect(result.current.dashboardConfig).toEqual(mockDashboardConfig);
-    expect(result.current.isLoading).toBe(false);
+    // Initially, it should be in loading state
+    expect(result.current.isLoading).toBe(true);
+    expect(result.current.dashboardConfig).toBeNull();
     expect(result.current.error).toBeNull();
+
+    // Wait for the async operation to complete
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    // After loading, it should have the dashboard config
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.dashboardConfig).toEqual(mockDashboardConfig);
+    expect(result.current.error).toBeNull();
+
+    // Verify getDashboardConfig was called with the correct URL
+    expect(getDashboardConfig).toHaveBeenCalledWith('test-dashboard');
   });
 
-  it('should handle loading state correctly', () => {
-    // Mock context value with loading state
-    const mockContextValue: DashboardConfigContextType = {
-      dashboardConfig: null,
-      isLoading: true,
-      error: null,
-    };
+  it('should handle loading state correctly', async () => {
+    // Mock the getDashboardConfig function to delay the response
+    (getDashboardConfig as jest.Mock).mockImplementation(
+      () => new Promise((resolve) => setTimeout(() => resolve({}), 100))
+    );
 
-    // Mock the DashboardConfigContext
-    jest.spyOn(React, 'useContext').mockReturnValue(mockContextValue);
+    // Render the hook
+    const { result } = renderHook(() => useDashboardConfig('test-dashboard'));
 
-    const { result } = renderHook(() => useDashboardConfig());
-
-    // Verify the hook returns the loading state
+    // Initially, it should be in loading state
     expect(result.current.isLoading).toBe(true);
     expect(result.current.dashboardConfig).toBeNull();
     expect(result.current.error).toBeNull();
   });
 
-  it('should handle error state correctly', () => {
+  it('should handle error state correctly', async () => {
     const mockError = new Error('Dashboard config error');
 
-    // Mock context value with error
-    const mockContextValue: DashboardConfigContextType = {
-      dashboardConfig: null,
-      isLoading: false,
-      error: mockError,
-    };
+    // Mock the getDashboardConfig function to throw an error
+    (getDashboardConfig as jest.Mock).mockRejectedValue(mockError);
 
-    // Mock the DashboardConfigContext
-    jest.spyOn(React, 'useContext').mockReturnValue(mockContextValue);
+    // Render the hook
+    const { result } = renderHook(() => useDashboardConfig('test-dashboard'));
 
-    const { result } = renderHook(() => useDashboardConfig());
-
-    // Verify the hook returns the error state
-    expect(result.current.error).toEqual(mockError);
+    // Initially, it should be in loading state
+    expect(result.current.isLoading).toBe(true);
     expect(result.current.dashboardConfig).toBeNull();
+    expect(result.current.error).toBeNull();
+
+    // Wait for the async operation to complete
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    // After error, it should have the error state
     expect(result.current.isLoading).toBe(false);
+    expect(result.current.dashboardConfig).toBeNull();
+    expect(result.current.error).toBeDefined();
   });
 
-  it('should throw an error when used outside of DashboardConfigProvider', () => {
-    // Mock the DashboardConfigContext to return undefined (simulating use outside provider)
-    jest.spyOn(React, 'useContext').mockReturnValue(undefined);
+  it('should refetch when dashboardURL changes', async () => {
+    // Mock the getDashboardConfig function
+    (getDashboardConfig as jest.Mock).mockResolvedValue({
+      sections: [],
+    });
 
-    // Expect the hook to throw an error when used without a provider
-    expect(() => {
-      renderHook(() => useDashboardConfig());
-    }).toThrow(
-      'useDashboardConfig must be used within a DashboardConfigProvider',
+    // Render the hook with initial props
+    const { result, rerender } = renderHook(
+      (props) => useDashboardConfig(props.dashboardURL),
+      {
+        initialProps: { dashboardURL: 'test-dashboard-1' },
+      }
     );
+
+    // Wait for the first fetch to complete
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    // Verify getDashboardConfig was called with the first URL
+    expect(getDashboardConfig).toHaveBeenCalledWith('test-dashboard-1');
+    expect(getDashboardConfig).toHaveBeenCalledTimes(1);
+
+    // Rerender with a different dashboardURL
+    rerender({ dashboardURL: 'test-dashboard-2' });
+
+    // Wait for the second fetch to complete
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    // Verify getDashboardConfig was called with the second URL
+    expect(getDashboardConfig).toHaveBeenCalledWith('test-dashboard-2');
+    expect(getDashboardConfig).toHaveBeenCalledTimes(2);
   });
 
-  it('should work with the actual provider', () => {
-    const { result } = renderHook(() => useDashboardConfig(), { wrapper });
+  it('should handle empty dashboard config', async () => {
+    // Mock the getDashboardConfig function to return empty config
+    (getDashboardConfig as jest.Mock).mockResolvedValue({ sections: [] });
 
-    // With the actual provider, we should get a valid context
-    expect(result.current).toBeDefined();
-    expect(result.current).toHaveProperty('dashboardConfig');
-    expect(result.current).toHaveProperty('isLoading');
-    expect(result.current).toHaveProperty('error');
-  });
+    // Render the hook
+    const { result } = renderHook(() => useDashboardConfig('test-dashboard'));
 
-  it('should handle empty dashboard config', () => {
-    // Mock context value with empty dashboard config
-    const mockContextValue: DashboardConfigContextType = {
-      dashboardConfig: { sections: [] },
-      isLoading: false,
-      error: null,
-    };
-
-    // Mock the DashboardConfigContext
-    jest.spyOn(React, 'useContext').mockReturnValue(mockContextValue);
-
-    const { result } = renderHook(() => useDashboardConfig());
+    // Wait for the async operation to complete
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
 
     // Verify the hook returns the empty dashboard config
     expect(result.current.dashboardConfig).toEqual({ sections: [] });
@@ -162,18 +179,17 @@ describe('useDashboardConfig', () => {
     expect(result.current.error).toBeNull();
   });
 
-  it('should handle null dashboard config', () => {
-    // Mock context value with null dashboard config
-    const mockContextValue: DashboardConfigContextType = {
-      dashboardConfig: null,
-      isLoading: false,
-      error: null,
-    };
+  it('should handle null dashboard config', async () => {
+    // Mock the getDashboardConfig function to return null
+    (getDashboardConfig as jest.Mock).mockResolvedValue(null);
 
-    // Mock the DashboardConfigContext
-    jest.spyOn(React, 'useContext').mockReturnValue(mockContextValue);
+    // Render the hook
+    const { result } = renderHook(() => useDashboardConfig('test-dashboard'));
 
-    const { result } = renderHook(() => useDashboardConfig());
+    // Wait for the async operation to complete
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
 
     // Verify the hook returns null dashboard config
     expect(result.current.dashboardConfig).toBeNull();
