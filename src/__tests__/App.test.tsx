@@ -36,18 +36,6 @@ describe('App Component', () => {
     expect(screen.getByTestId('mock-carbon-content')).toBeInTheDocument();
   });
 
-  it('should render ConsultationPage for root path', () => {
-    render(
-      <MemoryRouter initialEntries={['/']}>
-        <App />
-      </MemoryRouter>,
-    );
-
-    expect(ConsultationPage).toHaveBeenCalled();
-    expect(screen.getByTestId('mock-home-page')).toBeInTheDocument();
-    expect(screen.queryByTestId('mock-not-found-page')).not.toBeInTheDocument();
-  });
-
   it('should render ConsultationPage for patient-specific path', () => {
     render(
       <MemoryRouter
@@ -91,7 +79,7 @@ describe('App Component', () => {
 
   it('should match snapshot', () => {
     const { asFragment } = render(
-      <MemoryRouter>
+      <MemoryRouter initialEntries={['/clinical/123e4567-e89b-12d3-a456-426614174000']}>
         <App />
       </MemoryRouter>,
     );

@@ -2,7 +2,6 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
-import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
 import { NotificationProvider } from '@providers/NotificationProvider';
 import { NotificationServiceComponent } from '@services/NotificationServiceComponent';
 import { initFontAwesome } from './fontawesome';
@@ -21,9 +20,7 @@ root.render(
     <BrowserRouter basename={process.env.PUBLIC_URL || '/'}>
       <NotificationProvider>
         <NotificationServiceComponent />
-        <ClinicalConfigProvider>
           <App />
-        </ClinicalConfigProvider>
       </NotificationProvider>
     </BrowserRouter>
   </React.StrictMode>,
