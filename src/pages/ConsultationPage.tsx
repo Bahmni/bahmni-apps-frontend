@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense } from 'react';
 import { Grid, Column, Section, Loading } from '@carbon/react';
 import ClinicalLayout from '@layouts/clinical/ClinicalLayout';
 import PatientDetails from '@displayControls/patient/PatientDetails';
@@ -9,72 +9,49 @@ import Header from '@components/clinical/header/Header';
 import Sidebar from '@components/common/sidebar/Sidebar';
 import { SidebarItemProps } from '@/components/common/sidebar/SidebarItem';
 import { Dashboard } from '@types/config';
+import { useDashboardConfig } from '@hooks/useDashboardConfig';
+import { DashboardConfig } from '@types/dashboardConfig';
 
 const ConsultationPage: React.FC = () => {
   const { clinicalConfig } = useClinicalConfig();
+
+  const getDefaultDashboard = (dashboards: Dashboard[]):Dashboard | null => {
+    const defaultDashboard = dashboards.find((dashboard) => dashboard.default === true);
+    if (defaultDashboard) {
+      return defaultDashboard;
+    }
+    return null;
+  };
+
+  const getSidebarItems = (dashboardConfig: DashboardConfig): SidebarItemProps[] => {
+    return dashboardConfig.sections.map((section) => ({
+      id: section.name,
+      icon: section.icon,
+      //TODO: add translation
+      label: section.name,
+      active: false,
+      action: () => {},
+    }));
+  }
+  
   if (!clinicalConfig) {
     return <Loading description="Loading..." />;
   }
-  console.log(clinicalConfig);
-  const sidebarItems: SidebarItemProps[] = [
-    {
-      id: 'notes',
-      icon: 'fa-clipboard-list',
-      label: 'Consultation Notes',
-      active: true,
-      action: () => {},
-    },
-    {
-      id: 'vitals',
-      icon: 'fa-heartbeat',
-      label: 'Vital Signs',
-      action: () => {},
-    },
-    {
-      id: 'medications',
-      icon: 'fa-pills',
-      label: 'Medications',
-      action: () => {},
-    },
-    {
-      id: 'lab-orders',
-      icon: 'fa-flask',
-      label: 'Lab Orders',
-      action: () => {},
-    },
-    {
-      id: 'appointments',
-      icon: 'fa-calendar-alt',
-      label: 'Appointments',
-      action: () => {},
-    },
-  ];
-
-  const [currentDashboard, setCurrentDashboard] =
-    React.useState<Dashboard | null>(null);
-
-  const getDefaultDashboard = () => {
-    //find the default dashboard with the default property set to true
-    const defaultDashboard = clinicalConfig.dashboards.find(
-      (dashboard) => dashboard.default === true,
-    );
-    if (!defaultDashboard) {
-      return null;
-    }
-    return defaultDashboard;
-  };
-
-  useEffect(() => {
-    if (clinicalConfig) {
-      setCurrentDashboard(getDefaultDashboard);
-    }
-  }, [clinicalConfig]);
+  const currentDashboard = getDefaultDashboard(clinicalConfig.dashboards);
+  // Check if currentDashboard is null
+  if (!currentDashboard) {
+    return <Loading description="Loading dashboard..." />;
+  }
+ const { dashboardConfig } = useDashboardConfig(currentDashboard.url);
+ if(!dashboardConfig) {
+    return <Loading description="Loading dashboard config..." />;
+  }
 
   return (
     <ClinicalLayout
       header={<Header />}
       patientDetails={<PatientDetails />}
-      sidebar={<Sidebar items={sidebarItems} />}
+      sidebar={<Sidebar items={getSidebarItems(dashboardConfig)} />}
       mainDisplay={
         <Suspense fallback="loading">
           <Section>
