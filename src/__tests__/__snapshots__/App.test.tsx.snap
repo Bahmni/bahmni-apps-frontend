@@ -3,16 +3,12 @@
 exports[`App Component should match snapshot 1`] = `
 <DocumentFragment>
   <div
-    data-testid="mock-main-layout"
+    data-testid="mock-carbon-content"
   >
     <div
-      data-testid="mock-carbon-content"
+      data-testid="mock-home-page"
     >
-      <div
-        data-testid="mock-home-page"
-      >
-        Home Page
-      </div>
+      Home Page
     </div>
   </div>
 </DocumentFragment>

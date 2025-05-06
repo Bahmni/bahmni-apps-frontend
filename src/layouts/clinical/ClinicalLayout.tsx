@@ -1,40 +1,42 @@
 import React, { ReactNode } from 'react';
-import {
-  Header,
-  HeaderName,
-  HeaderNavigation,
-  HeaderMenuItem,
-  SkipToContent,
-} from '@carbon/react';
-import BahmniIcon from '@/components/common/bahmniIcon/BahmniIcon';
-import { ICON_SIZE } from '@constants/icon';
+import * as styles from './styles/ClinicalLayout.module.scss';
 
 interface ClinicalLayoutProps {
-  children: ReactNode;
+  header: ReactNode;
+  patientDetails: ReactNode;
+  sidebar: ReactNode;
+  mainDisplay: ReactNode;
 }
 
-const ClinicalLayout: React.FC<ClinicalLayoutProps> = ({ children }) => {
+/**
+ * Clinical Layout component that provides the main layout structure
+ * for clinical pages with four distinct sections:
+ * 1. Header - at the top of the screen, full width
+ * 2. Patient Details - below header, spans full width
+ * 3. Sidebar - left side below patient details
+ * 4. Main Display - right side, scrollable content area
+ *
+ * @param {ReactNode} header - The header component
+ * @param {ReactNode} patientDetails - The patient details component
+ * @param {ReactNode} sidebar - The sidebar component
+ * @param {ReactNode} mainDisplay - The main content to display
+ * @returns {React.ReactElement} The ClinicalLayout component
+ */
+const ClinicalLayout: React.FC<ClinicalLayoutProps> = ({
+  header,
+  patientDetails,
+  sidebar,
+  mainDisplay,
+}) => {
   return (
-    <>
-      <Header aria-label="Bahmni Clinical">
-        <SkipToContent />
-        <HeaderName href="/" prefix="">
-          Bahmni Clinical
-        </HeaderName>
-        <HeaderNavigation aria-label="Main Navigation">
-          <HeaderMenuItem href="/">
-            <BahmniIcon
-              name="fa-home"
-              size={ICON_SIZE.LG}
-              id="home"
-            ></BahmniIcon>
-            Home
-          </HeaderMenuItem>
-          {/* Add more navigation items as needed */}
-        </HeaderNavigation>
-      </Header>
-      <main id="main-content">{children}</main>
-    </>
+    <div className={styles.layout}>
+      <header className={styles.header}>{header}</header>
+      <div className={styles.body}>
+        <section className={styles.patientDetails}>{patientDetails}</section>
+        <aside className={styles.sidebar}>{sidebar}</aside>
+        <main className={styles.mainDisplay}>{mainDisplay}</main>
+      </div>
+    </div>
   );
 };
 

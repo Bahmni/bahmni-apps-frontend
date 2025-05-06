@@ -33,6 +33,11 @@
       "@__mocks__/*": ["__mocks__/*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*",
+    "declarations.d.ts",
+    "vite.config.ts",
+    "vite-env.d.ts"
+  ],
   "exclude": ["node_modules", "build", "dist"]
 }
