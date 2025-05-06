@@ -6,28 +6,119 @@ exports[`ConsultationPage Component should match snapshot when loaded 1`] = `
     data-testid="mocked-clinical-layout"
   >
     <div
-      data-testid="carbon-section"
+      data-testid="mocked-header"
     >
       <div
-        data-testid="carbon-grid"
+        data-testid="mocked-header-component"
+      >
+        Mocked Header
+      </div>
+    </div>
+    <div
+      data-testid="mocked-patient-section"
+    >
+      <div
+        data-testid="mocked-patient-details"
+      >
+        Mocked PatientDetails
+      </div>
+    </div>
+    <div
+      data-testid="mocked-sidebar"
+    >
+      <div
+        class="undefined "
+        data-testid="sidebar"
       >
         <div
-          data-testid="carbon-column"
+          class="undefined undefined"
+          data-testid="sidebar-item-notes"
         >
           <div
-            data-testid="mocked-patient-details"
-          >
-            Mocked PatientDetails
-          </div>
+            aria-label="sidebar-icon-notes"
+            id="sidebar-icon-notes"
+            style="padding: 0.125rem;"
+          />
+          <span>
+            Consultation Notes
+          </span>
+        </div>
+        <div
+          class="undefined "
+          data-testid="sidebar-item-vitals"
+        >
           <div
-            data-testid="mocked-allergy-table"
-          >
-            Mocked AllergiesTable
-          </div>
+            aria-label="sidebar-icon-vitals"
+            id="sidebar-icon-vitals"
+            style="padding: 0.125rem;"
+          />
+          <span>
+            Vital Signs
+          </span>
+        </div>
+        <div
+          class="undefined "
+          data-testid="sidebar-item-medications"
+        >
           <div
-            data-testid="mocked-conditions-table"
+            aria-label="sidebar-icon-medications"
+            id="sidebar-icon-medications"
+            style="padding: 0.125rem;"
+          />
+          <span>
+            Medications
+          </span>
+        </div>
+        <div
+          class="undefined "
+          data-testid="sidebar-item-lab-orders"
+        >
+          <div
+            aria-label="sidebar-icon-lab-orders"
+            id="sidebar-icon-lab-orders"
+            style="padding: 0.125rem;"
+          />
+          <span>
+            Lab Orders
+          </span>
+        </div>
+        <div
+          class="undefined "
+          data-testid="sidebar-item-appointments"
+        >
+          <div
+            aria-label="sidebar-icon-appointments"
+            id="sidebar-icon-appointments"
+            style="padding: 0.125rem;"
+          />
+          <span>
+            Appointments
+          </span>
+        </div>
+      </div>
+    </div>
+    <div
+      data-testid="mocked-main-display"
+    >
+      <div
+        data-testid="carbon-section"
+      >
+        <div
+          data-testid="carbon-grid"
+        >
+          <div
+            data-testid="carbon-column"
           >
-            Mocked ConditionsTable
+            <div
+              data-testid="mocked-allergy-table"
+            >
+              Mocked AllergiesTable
+            </div>
+            <div
+              data-testid="mocked-conditions-table"
+            >
+              Mocked ConditionsTable
+            </div>
           </div>
         </div>
       </div>

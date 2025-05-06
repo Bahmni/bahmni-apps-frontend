@@ -19,19 +19,22 @@
   padding: $spacing-03 $spacing-03;
   cursor: pointer;
   border-radius: $spacing-01; // 4px in Carbon
-  transition: background-color $duration-moderate-01 motion(standard, productive),
-              color $duration-moderate-01 motion(standard, productive);
-  @include type-style('body-compact-01');
+  transition:
+    background-color $duration-moderate-01 motion(standard, productive),
+    color $duration-moderate-01 motion(standard, productive);
+  @include type-style("body-compact-01");
   font-weight: 600;
   color: $text-secondary; // Carbon theme token
 
   &:hover:not(.active) {
-    background-color: $background-hover; // Carbon theme token
+    border: 1px solid $teal-60;
+    background-color: $teal-10; // Carbon theme token
+    color: $teal-60;
   }
 
   &.active {
-    background-color: $background-selected; // Carbon theme token for selected state
-    color: $link-primary; // Carbon theme token for links
+    background-color: $teal-10; // Carbon theme token for selected state
+    color: $teal-60;
   }
 }
 

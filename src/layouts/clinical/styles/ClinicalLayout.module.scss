@@ -20,6 +20,7 @@
   flex: 0 0 auto; // Don't grow, don't shrink, auto basis
 }
 
+//TODO: Body should not be scrollable
 .body {
   display: grid;
   grid-template-areas:
@@ -29,13 +30,13 @@
   grid-template-rows: auto 1fr;
   flex: 1; // Take all remaining space
   width: 100%;
-  height: 100%;
-  overflow: hidden; // Prevent overall body scrolling
+  height: calc(100vh - 1rem);
+  margin-top: 1rem;
+  overflow: hidden !important; // Prevent overall body scrolling
 }
 
 .patientDetails {
   grid-area: patient-details;
-  position: sticky;
   border-bottom: 1px solid $border-subtle-01; // Carbon border token
 }
 

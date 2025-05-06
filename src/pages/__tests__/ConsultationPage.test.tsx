@@ -28,8 +28,20 @@ jest.mock('@carbon/react', () => ({
 }));
 
 jest.mock('@layouts/clinical/ClinicalLayout', () => {
-  return jest.fn(({ children }) => (
-    <div data-testid="mocked-clinical-layout">{children}</div>
+  return jest.fn(({ header, patientDetails, sidebar, mainDisplay }) => (
+    <div data-testid="mocked-clinical-layout">
+      <div data-testid="mocked-header">{header}</div>
+      <div data-testid="mocked-patient-section">{patientDetails}</div>
+      <div data-testid="mocked-sidebar">{sidebar}</div>
+      <div data-testid="mocked-main-display">{mainDisplay}</div>
+    </div>
+  ));
+});
+
+// Mock the Header component
+jest.mock('@components/clinical/header/Header', () => {
+  return jest.fn(() => (
+    <div data-testid="mocked-header-component">Mocked Header</div>
   ));
 });
 // Mock the PatientDetails component
@@ -59,6 +71,7 @@ describe('ConsultationPage Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(console, 'log').mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   it('should show loading state when config is null', () => {
