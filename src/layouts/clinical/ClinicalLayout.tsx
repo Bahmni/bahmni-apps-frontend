@@ -33,8 +33,8 @@ const ClinicalLayout: React.FC<ClinicalLayoutProps> = ({
       <header className={styles.header}>{header}</header>
       <div className={styles.body}>
         <section className={styles.patientDetails}>{patientDetails}</section>
-        <aside className={styles.sidebar}>{sidebar}</aside>
-        <main className={styles.mainDisplay}>{mainDisplay}</main>
+        <div className={styles.sidebar}>{sidebar}</div>
+        <div className={styles.mainDisplay}>{mainDisplay}</div>
       </div>
     </div>
   );
