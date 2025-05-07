@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import ConsultationPage from '../ConsultationPage';
 import PatientDetails from '@displayControls/patient/PatientDetails';
 import ConditionsTable from '@displayControls/conditions/ConditionsTable';
@@ -12,6 +12,7 @@ import {
   validDashboardConfig,
 } from '@__mocks__/configMocks';
 import Sidebar, { SidebarItemProps } from '@components/common/sidebar/Sidebar';
+import ClinicalLayout from '@layouts/clinical/ClinicalLayout';
 import { axe, toHaveNoViolations } from 'jest-axe';
 
 expect.extend(toHaveNoViolations);
@@ -350,6 +351,222 @@ describe('ConsultationPage Component', () => {
 
     const { asFragment } = render(<ConsultationPage />);
     expect(asFragment()).toMatchSnapshot();
+  });
+
+  // Error Handling Tests
+  describe('Error Handling', () => {
+    it('should show error notification when no default dashboard is configured', () => {
+      // Mock useClinicalConfig to return config with no dashboards
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: {
+          ...validFullClinicalConfig,
+          dashboards: [],
+        },
+      });
+
+      const mockAddNotification = jest.fn();
+      (useNotification as jest.Mock).mockReturnValue({
+        addNotification: mockAddNotification,
+      });
+
+      render(<ConsultationPage />);
+
+      // Should show loading component
+      expect(screen.getByTestId('carbon-loading')).toBeInTheDocument();
+
+      // Should call addNotification with error message
+      expect(mockAddNotification).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Error',
+          message: 'No default dashboard configured',
+          type: 'error',
+        }),
+      );
+    });
+
+    it('should handle dashboard config error', () => {
+      // Mock useClinicalConfig to return config
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: validFullClinicalConfig,
+      });
+
+      // Mock useDashboardConfig to return error
+      (useDashboardConfig as jest.Mock).mockReturnValue({
+        dashboardConfig: null,
+        isLoading: false,
+        error: new Error('Failed to load dashboard config'),
+      });
+
+      const mockAddNotification = jest.fn();
+      (useNotification as jest.Mock).mockReturnValue({
+        addNotification: mockAddNotification,
+      });
+
+      render(<ConsultationPage />);
+
+      // Should show loading component
+      expect(screen.getByTestId('carbon-loading')).toBeInTheDocument();
+    });
+
+    it('should handle invalid dashboard URL', () => {
+      // Mock a clinical config with invalid dashboard URL
+      const configWithInvalidURL = {
+        ...validFullClinicalConfig,
+        dashboards: [
+          {
+            ...validFullClinicalConfig.dashboards[0],
+            url: 'invalid-url',
+          },
+        ],
+      };
+
+      // Mock useClinicalConfig to return config with invalid URL
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: configWithInvalidURL,
+      });
+
+      // Mock useDashboardConfig to return null
+      (useDashboardConfig as jest.Mock).mockReturnValue({
+        dashboardConfig: null,
+        isLoading: false,
+        error: new Error('Invalid URL'),
+      });
+
+      render(<ConsultationPage />);
+
+      // Should show loading component
+      expect(screen.getByTestId('carbon-loading')).toBeInTheDocument();
+    });
+  });
+
+  // User Interaction Tests
+  describe('User Interactions', () => {
+    it('should update active sidebar item when clicked', () => {
+      // Mock useClinicalConfig to return config
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: validFullClinicalConfig,
+      });
+
+      // Mock useDashboardConfig to return dashboard config
+      (useDashboardConfig as jest.Mock).mockReturnValue({
+        dashboardConfig: validDashboardConfig,
+        isLoading: false,
+        error: null,
+      });
+
+      render(<ConsultationPage />);
+
+      // Get the sidebar component
+      const sidebarProps = (Sidebar as jest.Mock).mock.calls[0][0];
+
+      // Call the onItemClick function with a test item ID
+      act(() => {
+        sidebarProps.onItemClick('Vitals');
+      });
+
+      // Verify Sidebar was called again with updated props
+      const updatedSidebarProps = (Sidebar as jest.Mock).mock.calls[1][0];
+      expect(updatedSidebarProps.activeItemId).toBe('Vitals');
+    });
+
+    it('should initialize with null active sidebar item', () => {
+      // Mock useClinicalConfig to return config
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: validFullClinicalConfig,
+      });
+
+      // Mock useDashboardConfig to return dashboard config
+      (useDashboardConfig as jest.Mock).mockReturnValue({
+        dashboardConfig: validDashboardConfig,
+        isLoading: false,
+        error: null,
+      });
+
+      render(<ConsultationPage />);
+
+      // Verify Sidebar was called with null activeItemId
+      const sidebarProps = (Sidebar as jest.Mock).mock.calls[0][0];
+      expect(sidebarProps.activeItemId).toBeNull();
+    });
+  });
+
+  // Edge Case Tests
+  describe('Edge Cases', () => {
+    it('should handle dashboard config with no sections', () => {
+      // Mock useClinicalConfig to return config
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: validFullClinicalConfig,
+      });
+
+      // Mock useDashboardConfig to return empty dashboard config
+      (useDashboardConfig as jest.Mock).mockReturnValue({
+        dashboardConfig: { sections: [] },
+        isLoading: false,
+        error: null,
+      });
+
+      render(<ConsultationPage />);
+
+      // Verify Sidebar was called with empty items array
+      const sidebarProps = (Sidebar as jest.Mock).mock.calls[0][0];
+      expect(sidebarProps.items).toEqual([]);
+    });
+
+    it('should handle dashboard config with many sections', () => {
+      // Mock useClinicalConfig to return config
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: validFullClinicalConfig,
+      });
+
+      // Create a dashboard config with many sections
+      const manySections = Array(10)
+        .fill(0)
+        .map((_, i) => ({
+          name: `Section${i}`,
+          icon: 'icon',
+          translationKey: `section${i}`,
+        }));
+
+      // Mock useDashboardConfig to return dashboard config with many sections
+      (useDashboardConfig as jest.Mock).mockReturnValue({
+        dashboardConfig: { sections: manySections },
+        isLoading: false,
+        error: null,
+      });
+
+      render(<ConsultationPage />);
+
+      // Verify Sidebar was called with correct number of items
+      const sidebarProps = (Sidebar as jest.Mock).mock.calls[0][0];
+      expect(sidebarProps.items).toHaveLength(10);
+    });
+  });
+
+  // Integration with Child Components Tests
+  describe('Integration with Child Components', () => {
+    it('should pass correct props to child components', () => {
+      // Mock useClinicalConfig to return config
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: validFullClinicalConfig,
+      });
+
+      // Mock useDashboardConfig to return dashboard config
+      (useDashboardConfig as jest.Mock).mockReturnValue({
+        dashboardConfig: validDashboardConfig,
+        isLoading: false,
+        error: null,
+      });
+
+      render(<ConsultationPage />);
+
+      // Verify ClinicalLayout was called with correct props
+      const clinicalLayoutProps = (ClinicalLayout as jest.Mock).mock
+        .calls[0][0];
+      expect(clinicalLayoutProps).toHaveProperty('header');
+      expect(clinicalLayoutProps).toHaveProperty('patientDetails');
+      expect(clinicalLayoutProps).toHaveProperty('sidebar');
+      expect(clinicalLayoutProps).toHaveProperty('mainDisplay');
+    });
   });
 
   // Accessibility test
