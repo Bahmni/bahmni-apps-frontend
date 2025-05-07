@@ -14,6 +14,9 @@ import {
   mockFormattedConditionsWithoutNotes,
 } from '@__mocks__/conditionMocks';
 import { ConditionStatus, FormattedCondition } from '@types/condition';
+import { axe, toHaveNoViolations } from 'jest-axe';
+
+expect.extend(toHaveNoViolations);
 
 // Mock the hooks and utilities
 jest.mock('@hooks/usePatientUUID');
@@ -748,6 +751,12 @@ describe('ConditionsTable Unit Tests', () => {
       expect(screen.getByTestId('mock-error-state')).toHaveTextContent(
         'Authorization error: 401 Unauthorized',
       );
+    });
+  });
+  describe('Accessibility', () => {
+    test('accessible forms pass axe', async () => {
+      const { container } = render(<ConditionsTable />);
+      expect(await axe(container)).toHaveNoViolations();
     });
   });
 });

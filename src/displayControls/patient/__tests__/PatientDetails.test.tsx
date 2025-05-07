@@ -6,6 +6,9 @@ import { usePatientUUID } from '@hooks/usePatientUUID';
 import * as patientService from '@services/patientService';
 import { FormattedPatientData, Age } from '@types/patient';
 import i18n from '@/setupTests.i18n';
+import { axe, toHaveNoViolations } from 'jest-axe';
+
+expect.extend(toHaveNoViolations);
 
 // Mock the custom hooks and patient service
 jest.mock('@hooks/usePatient');
@@ -691,5 +694,12 @@ describe('PatientDetails Component', () => {
 
     // Assert
     expect(screen.getByTestId('skeleton-loader')).toBeInTheDocument();
+  });
+
+  describe('Accessibility', () => {
+    test('accessible forms pass axe', async () => {
+      const { container } = render(<PatientDetails />);
+      expect(await axe(container)).toHaveNoViolations();
+    });
   });
 });

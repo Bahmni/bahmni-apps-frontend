@@ -8,19 +8,7 @@ import { SidebarItemProps } from '../SidebarItem';
 initFontAwesome();
 
 // Create a decorator to provide proper layout and sizing for the sidebar
-const SidebarDecorator = (Story: React.ComponentType) => (
-  <div
-    style={{
-      height: '450px',
-      width: '240px',
-      border: '1px solid #e0e0e0',
-      borderRadius: '4px',
-      overflow: 'hidden',
-    }}
-  >
-    <Story />
-  </div>
-);
+const SidebarDecorator = (Story: React.ComponentType) => <Story />;
 
 const meta: Meta<typeof Sidebar> = {
   title: 'Components/Common/Sidebar',

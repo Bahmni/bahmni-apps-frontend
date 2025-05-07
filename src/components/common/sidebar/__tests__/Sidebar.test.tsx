@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import Sidebar from '../Sidebar';
+import { axe, toHaveNoViolations } from 'jest-axe';
 
 // Mock react-i18next
 jest.mock('react-i18next', () => ({
@@ -12,6 +13,7 @@ jest.mock('react-i18next', () => ({
   }),
 }));
 
+expect.extend(toHaveNoViolations);
 // Mock the CSS module
 jest.mock('../styles/Sidebar.module.scss', () => ({
   sidebar: 'sidebar-mock',
@@ -152,5 +154,12 @@ describe('Sidebar', () => {
 
     // Check that the action was called
     expect(mockAction).toHaveBeenCalledTimes(1);
+  });
+
+  describe('Accessibility', () => {
+    test('accessible forms pass axe', async () => {
+      const { container } = render(<Sidebar items={defaultItems} />);
+      expect(await axe(container)).toHaveNoViolations();
+    });
   });
 });

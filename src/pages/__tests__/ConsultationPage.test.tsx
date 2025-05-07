@@ -12,6 +12,9 @@ import {
   validDashboardConfig,
 } from '@__mocks__/configMocks';
 import Sidebar, { SidebarItemProps } from '@components/common/sidebar/Sidebar';
+import { axe, toHaveNoViolations } from 'jest-axe';
+
+expect.extend(toHaveNoViolations);
 
 // Mock React.Suspense to render children immediately in tests
 jest.mock('react', () => ({
@@ -343,5 +346,19 @@ describe('ConsultationPage Component', () => {
 
     const { asFragment } = render(<ConsultationPage />);
     expect(asFragment()).toMatchSnapshot();
+  });
+
+  // Accessibility test
+  describe('Accessibility', () => {
+    it('should have no accessibility violations', async () => {
+      // Mock useClinicalConfig to return config
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: validFullClinicalConfig,
+      });
+
+      const { container } = render(<ConsultationPage />);
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
   });
 });
