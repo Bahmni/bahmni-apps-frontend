@@ -6,8 +6,7 @@ import ConditionsTable from '@displayControls/conditions/ConditionsTable';
 import AllergiesTable from '@displayControls/allergies/AllergiesTable';
 import { useClinicalConfig } from '@hooks/useClinicalConfig';
 import Header from '@components/clinical/header/Header';
-import Sidebar from '@components/common/sidebar/Sidebar';
-import { SidebarItemProps } from '@/components/common/sidebar/SidebarItem';
+import Sidebar, { SidebarItemProps } from '@components/common/sidebar/Sidebar';
 
 const ConsultationPage: React.FC = () => {
   const { clinicalConfig } = useClinicalConfig();

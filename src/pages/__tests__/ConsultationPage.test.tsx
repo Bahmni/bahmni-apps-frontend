@@ -6,6 +6,7 @@ import ConditionsTable from '@displayControls/conditions/ConditionsTable';
 import AllergiesTable from '@displayControls/allergies/AllergiesTable';
 import { useClinicalConfig } from '@hooks/useClinicalConfig';
 import { validFullClinicalConfig } from '@__mocks__/configMocks';
+import { SidebarItemProps } from '@components/common/sidebar/Sidebar';
 
 // Mock React.Suspense to render children immediately in tests
 jest.mock('react', () => ({
@@ -65,6 +66,19 @@ jest.mock('@hooks/useClinicalConfig');
 jest.mock('@displayControls/allergies/AllergiesTable', () => {
   return jest.fn(() => (
     <div data-testid="mocked-allergy-table">Mocked AllergiesTable</div>
+  ));
+});
+
+// Mock the Sidebar component
+jest.mock('@components/common/sidebar/Sidebar', () => {
+  return jest.fn(({ items }: { items: SidebarItemProps[] }) => (
+    <div data-testid="mocked-sidebar">
+      {items.map((item: SidebarItemProps) => (
+        <div key={item.id} data-testid={`sidebar-item-${item.id}`}>
+          {item.label}
+        </div>
+      ))}
+    </div>
   ));
 });
 describe('ConsultationPage Component', () => {

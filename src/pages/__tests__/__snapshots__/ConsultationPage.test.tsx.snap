@@ -27,73 +27,32 @@ exports[`ConsultationPage Component should match snapshot when loaded 1`] = `
       data-testid="mocked-sidebar"
     >
       <div
-        class="undefined "
-        data-testid="sidebar"
+        data-testid="mocked-sidebar"
       >
         <div
-          class="undefined undefined"
           data-testid="sidebar-item-notes"
         >
-          <div
-            aria-label="sidebar-icon-notes"
-            id="sidebar-icon-notes"
-            style="padding: 0.125rem;"
-          />
-          <span>
-            Consultation Notes
-          </span>
+          Consultation Notes
         </div>
         <div
-          class="undefined "
           data-testid="sidebar-item-vitals"
         >
-          <div
-            aria-label="sidebar-icon-vitals"
-            id="sidebar-icon-vitals"
-            style="padding: 0.125rem;"
-          />
-          <span>
-            Vital Signs
-          </span>
+          Vital Signs
         </div>
         <div
-          class="undefined "
           data-testid="sidebar-item-medications"
         >
-          <div
-            aria-label="sidebar-icon-medications"
-            id="sidebar-icon-medications"
-            style="padding: 0.125rem;"
-          />
-          <span>
-            Medications
-          </span>
+          Medications
         </div>
         <div
-          class="undefined "
           data-testid="sidebar-item-lab-orders"
         >
-          <div
-            aria-label="sidebar-icon-lab-orders"
-            id="sidebar-icon-lab-orders"
-            style="padding: 0.125rem;"
-          />
-          <span>
-            Lab Orders
-          </span>
+          Lab Orders
         </div>
         <div
-          class="undefined "
           data-testid="sidebar-item-appointments"
         >
-          <div
-            aria-label="sidebar-icon-appointments"
-            id="sidebar-icon-appointments"
-            style="padding: 0.125rem;"
-          />
-          <span>
-            Appointments
-          </span>
+          Appointments
         </div>
       </div>
     </div>
