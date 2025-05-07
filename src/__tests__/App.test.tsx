@@ -21,6 +21,12 @@ jest.mock('@carbon/react', () => ({
   )),
 }));
 
+jest.mock('@providers/ClinicalConfigProvider', () => ({
+  ClinicalConfigProvider: jest.fn(({ children }) => (
+    <div data-testid="mock-clinical-config-provider">{children}</div>
+  )),
+}));
+
 describe('App Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
