@@ -2,6 +2,9 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Header from '../Header';
+import { axe, toHaveNoViolations } from 'jest-axe';
+
+expect.extend(toHaveNoViolations);
 
 // Mock FontAwesomeIcon for BahmniIcon
 jest.mock('@fortawesome/react-fontawesome', () => ({
@@ -81,15 +84,9 @@ describe('Header Component', () => {
 
   // Accessibility Tests
   describe('Accessibility', () => {
-    test('all interactive elements have accessible names', () => {
-      renderWithRouter();
-
-      // Check all buttons and links have accessible names
-      const links = screen.getAllByRole('link', { hidden: true });
-
-      links.forEach((element) => {
-        expect(element).toHaveAccessibleName();
-      });
+    test('accessible forms pass axe', async () => {
+      const { container } = renderWithRouter();
+      expect(await axe(container)).toHaveNoViolations();
     });
   });
 });

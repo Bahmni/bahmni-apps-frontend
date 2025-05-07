@@ -2,6 +2,9 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import ClinicalLayout from '../ClinicalLayout';
+import { axe, toHaveNoViolations } from 'jest-axe';
+
+expect.extend(toHaveNoViolations);
 
 // Mock the CSS module
 jest.mock('../styles/ClinicalLayout.module.scss', () => ({
@@ -141,6 +144,20 @@ describe('ClinicalLayout Component', () => {
       expect(screen.getByTestId('deep-nested')).toBeInTheDocument();
       expect(screen.getByText('Nested Level 1')).toBeInTheDocument();
       expect(screen.getByText('Nested Level 2')).toBeInTheDocument();
+    });
+  });
+
+  // Accessibility Tests
+  describe('Accessibility', () => {
+    test('has no accessibility violations', async () => {
+      const { container } = render(
+        <BrowserRouter>
+          <ClinicalLayout {...defaultProps} />
+        </BrowserRouter>,
+      );
+
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
     });
   });
 });

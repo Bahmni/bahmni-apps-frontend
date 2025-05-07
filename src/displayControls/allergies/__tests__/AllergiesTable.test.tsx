@@ -21,6 +21,9 @@ import {
   mockAllergyWithMultipleSeverities,
 } from '@__mocks__/allergyMocks';
 import { FhirAllergyIntolerance, FormattedAllergy } from '@types/allergy';
+import { axe, toHaveNoViolations } from 'jest-axe';
+
+expect.extend(toHaveNoViolations);
 
 // Mock the hooks and utilities
 jest.mock('@hooks/usePatientUUID');
@@ -1401,6 +1404,13 @@ describe('AllergiesTable Unit Tests', () => {
       // Assert
       // The component should render without crashing
       expect(screen.getByTestId('mock-expandable-table')).toBeInTheDocument();
+    });
+  });
+
+  describe('Accessibility', () => {
+    test('accessible forms pass axe', async () => {
+      const { container } = render(<AllergiesTable />);
+      expect(await axe(container)).toHaveNoViolations();
     });
   });
 });

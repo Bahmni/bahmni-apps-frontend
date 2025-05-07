@@ -3,6 +3,9 @@ import { render, screen } from '@testing-library/react';
 import BahmniIcon from '../BahmniIcon';
 import '@testing-library/jest-dom';
 import { ICON_PADDING, ICON_SIZE } from '@/constants/icon';
+import { axe, toHaveNoViolations } from 'jest-axe';
+
+expect.extend(toHaveNoViolations);
 
 // Mock FontAwesomeIcon and pass props to the rendered element
 jest.mock('@fortawesome/react-fontawesome', () => ({
@@ -98,5 +101,14 @@ describe('Icon Component', () => {
       <BahmniIcon name="invalid-name-format" id="invalid-icon" />,
     );
     expect(icon.container).toBeEmptyDOMElement();
+  });
+
+  describe('Accessibility', () => {
+    test('accessible forms pass axe', async () => {
+      const { container } = render(
+        <BahmniIcon name="invalid-name-format" id="invalid-icon" />,
+      );
+      expect(await axe(container)).toHaveNoViolations();
+    });
   });
 });

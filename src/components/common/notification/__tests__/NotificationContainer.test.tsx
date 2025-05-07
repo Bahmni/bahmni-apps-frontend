@@ -276,4 +276,6 @@ describe('NotificationContainer', () => {
     expect(screen.getByText('A'.repeat(100))).toBeInTheDocument();
     expect(screen.getByText('B'.repeat(500))).toBeInTheDocument();
   });
+
+  //TODO: Add tests for A11Y compliance
 });
