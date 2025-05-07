@@ -3,6 +3,16 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import Sidebar from '../Sidebar';
 import { axe, toHaveNoViolations } from 'jest-axe';
 
+// Mock react-i18next
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      // For testing, we'll return the key to simulate translation
+      return key;
+    },
+  }),
+}));
+
 expect.extend(toHaveNoViolations);
 // Mock the CSS module
 jest.mock('../styles/Sidebar.module.scss', () => ({
@@ -90,7 +100,6 @@ describe('Sidebar', () => {
       id: 'item1',
       icon: 'fa-clipboard-list',
       label: 'Item 1',
-      active: true,
     },
     {
       id: 'item2',
@@ -99,16 +108,34 @@ describe('Sidebar', () => {
     },
   ];
 
+  const mockOnItemClick = jest.fn();
+
+  beforeEach(() => {
+    mockOnItemClick.mockClear();
+  });
+
   it('renders with a list of items', () => {
-    render(<Sidebar items={defaultItems} />);
+    render(
+      <Sidebar
+        items={defaultItems}
+        activeItemId="item1"
+        onItemClick={mockOnItemClick}
+      />,
+    );
 
     expect(screen.getByTestId('sidebar')).toBeInTheDocument();
     expect(screen.getByTestId('sidebar-item-item1')).toBeInTheDocument();
     expect(screen.getByTestId('sidebar-item-item2')).toBeInTheDocument();
   });
 
-  it('passes correct props to each SideNavLink', () => {
-    render(<Sidebar items={defaultItems} />);
+  it('passes correct props to each SideNavLink based on activeItemId', () => {
+    render(
+      <Sidebar
+        items={defaultItems}
+        activeItemId="item1"
+        onItemClick={mockOnItemClick}
+      />,
+    );
 
     const item1 = screen.getByTestId('sidebar-item-item1');
     expect(item1).toHaveAttribute('data-active', 'true');
@@ -122,31 +149,40 @@ describe('Sidebar', () => {
   });
 
   it('renders correctly with empty items array', () => {
-    render(<Sidebar items={[]} />);
+    render(
+      <Sidebar items={[]} activeItemId={null} onItemClick={mockOnItemClick} />,
+    );
 
     expect(screen.getByTestId('sidebar')).toBeInTheDocument();
     expect(screen.queryByTestId(/sidebar-item-/)).not.toBeInTheDocument();
   });
 
-  it('calls action when item is clicked', () => {
-    const mockAction = jest.fn();
-    const itemsWithAction = [
-      { ...defaultItems[0], action: mockAction },
-      defaultItems[1],
-    ];
-
-    render(<Sidebar items={itemsWithAction} />);
+  it('calls onItemClick when item is clicked', () => {
+    render(
+      <Sidebar
+        items={defaultItems}
+        activeItemId="item2"
+        onItemClick={mockOnItemClick}
+      />,
+    );
 
     // Click the first item
     fireEvent.click(screen.getByTestId('sidebar-item-item1'));
 
-    // Check that the action was called
-    expect(mockAction).toHaveBeenCalledTimes(1);
+    // Check that onItemClick was called with the correct item id
+    expect(mockOnItemClick).toHaveBeenCalledTimes(1);
+    expect(mockOnItemClick).toHaveBeenCalledWith('item1');
   });
 
   describe('Accessibility', () => {
     test('accessible forms pass axe', async () => {
-      const { container } = render(<Sidebar items={defaultItems} />);
+      const { container } = render(
+        <Sidebar
+          items={defaultItems}
+          activeItemId="item1"
+          onItemClick={mockOnItemClick}
+        />,
+      );
       expect(await axe(container)).toHaveNoViolations();
     });
   });

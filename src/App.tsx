@@ -1,17 +1,19 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Content } from '@carbon/react';
-import HomePage from './pages/ConsultationPage';
-import NotFoundPage from './pages/NotFoundPage';
+import ConsulationPage from '@pages/ConsultationPage';
+import NotFoundPage from '@pages/NotFoundPage';
+import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
 
 const App: React.FC = () => {
   return (
     <Content>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/clinical/:patientUuid" element={<HomePage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+      <ClinicalConfigProvider>
+        <Routes>
+          <Route path="/clinical/:patientUuid" element={<ConsulationPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </ClinicalConfigProvider>
     </Content>
   );
 };

@@ -1,8 +1,7 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { initFontAwesome } from '@/fontawesome';
-import Sidebar from '../Sidebar';
-import { SidebarItemProps } from '../SidebarItem';
+import Sidebar, { SidebarItemProps } from '../Sidebar';
 
 // Initialize FontAwesome for the icons
 initFontAwesome();
@@ -23,8 +22,8 @@ It can be used to navigate between different sections or views of the applicatio
 
 Key features:
 - Displays a vertical list of navigation items
-- Each item can be active or inactive
-- Items can have click handlers for navigation
+- Each item can be active or inactive based on activeItemId
+- Centralized click handling through onItemClick
 - Consistent styling with the design system
 - Fully customizable through props
         `,
@@ -38,9 +37,13 @@ Key features:
       description: 'Array of sidebar items to render',
       control: 'object',
     },
-    className: {
-      description: 'Optional CSS class name for additional styling',
+    activeItemId: {
+      description: 'ID of the currently active item',
       control: 'text',
+    },
+    onItemClick: {
+      description: 'Callback function when an item is clicked',
+      action: 'clicked',
     },
   },
 };
@@ -54,39 +57,40 @@ const defaultItems: SidebarItemProps[] = [
     id: 'notes',
     icon: 'fa-clipboard-list',
     label: 'Consultation Notes',
-    active: true,
-    action: () => console.log('Consultation Notes clicked'),
   },
   {
     id: 'vitals',
     icon: 'fa-heartbeat',
     label: 'Vital Signs',
-    action: () => console.log('Vital Signs clicked'),
   },
   {
     id: 'medications',
     icon: 'fa-pills',
     label: 'Medications',
-    action: () => console.log('Medications clicked'),
   },
   {
     id: 'lab-orders',
     icon: 'fa-flask',
     label: 'Lab Orders',
-    action: () => console.log('Lab Orders clicked'),
   },
   {
     id: 'appointments',
     icon: 'fa-calendar-alt',
     label: 'Appointments',
-    action: () => console.log('Appointments clicked'),
   },
 ];
+
+// Common onItemClick handler for stories
+const onItemClick = (itemId: string) => {
+  console.log(`Item clicked: ${itemId}`);
+};
 
 // Basic usage stories
 export const Default: Story = {
   args: {
     items: defaultItems,
+    activeItemId: 'notes',
+    onItemClick,
   },
   parameters: {
     docs: {
@@ -99,7 +103,9 @@ export const Default: Story = {
 
 export const NoActiveItem: Story = {
   args: {
-    items: defaultItems.map((item) => ({ ...item, active: false })),
+    items: defaultItems,
+    activeItemId: null,
+    onItemClick,
   },
   parameters: {
     docs: {
@@ -110,19 +116,7 @@ export const NoActiveItem: Story = {
   },
 };
 
-export const WithCustomClassName: Story = {
-  args: {
-    items: defaultItems,
-    className: 'custom-sidebar',
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: 'Sidebar with a custom CSS class for additional styling',
-      },
-    },
-  },
-};
+// Removed WithCustomClassName story as className is not part of the component props
 
 export const WithLongLabels: Story = {
   args: {
@@ -132,17 +126,16 @@ export const WithLongLabels: Story = {
         icon: 'fa-clipboard-list',
         label:
           'Consultation Notes with a very long title that should be truncated',
-        active: true,
-        action: () => console.log('Consultation Notes clicked'),
       },
       {
         id: 'vitals',
         icon: 'fa-heartbeat',
         label: 'Vital Signs and Measurements with Detailed Information',
-        action: () => console.log('Vital Signs clicked'),
       },
       ...defaultItems.slice(2),
     ],
+    activeItemId: 'notes',
+    onItemClick,
   },
   parameters: {
     docs: {
@@ -156,6 +149,8 @@ export const WithLongLabels: Story = {
 export const Empty: Story = {
   args: {
     items: [],
+    activeItemId: null,
+    onItemClick,
   },
   parameters: {
     docs: {
@@ -174,33 +169,30 @@ export const ManyItems: Story = {
         id: 'imaging',
         icon: 'fa-x-ray',
         label: 'Imaging',
-        action: () => console.log('Imaging clicked'),
       },
       {
         id: 'procedures',
         icon: 'fa-procedures',
         label: 'Procedures',
-        action: () => console.log('Procedures clicked'),
       },
       {
         id: 'allergies',
         icon: 'fa-allergies',
         label: 'Allergies',
-        action: () => console.log('Allergies clicked'),
       },
       {
         id: 'conditions',
         icon: 'fa-disease',
         label: 'Conditions',
-        action: () => console.log('Conditions clicked'),
       },
       {
         id: 'documents',
         icon: 'fa-file-medical',
         label: 'Documents',
-        action: () => console.log('Documents clicked'),
       },
     ],
+    activeItemId: 'notes',
+    onItemClick,
   },
   parameters: {
     docs: {
@@ -217,16 +209,18 @@ export const InteractiveSidebar: Story = {
     // Using React hooks for state management in the story
     const [activeItemId, setActiveItemId] = React.useState('notes');
 
-    const items: SidebarItemProps[] = defaultItems.map((item) => ({
-      ...item,
-      active: item.id === activeItemId,
-      action: () => {
-        console.log(`${item.label} clicked`);
-        setActiveItemId(item.id);
-      },
-    }));
+    const handleItemClick = (itemId: string) => {
+      console.log(`${itemId} clicked`);
+      setActiveItemId(itemId);
+    };
 
-    return <Sidebar items={items} />;
+    return (
+      <Sidebar
+        items={defaultItems}
+        activeItemId={activeItemId}
+        onItemClick={handleItemClick}
+      />
+    );
   },
   parameters: {
     docs: {

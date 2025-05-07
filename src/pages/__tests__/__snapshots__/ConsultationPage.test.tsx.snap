@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ConsultationPage Component should match snapshot when loaded 1`] = `
+exports[`ConsultationPage Component should match snapshot when fully loaded 1`] = `
 <DocumentFragment>
   <div
     data-testid="mocked-clinical-layout"
@@ -27,32 +27,17 @@ exports[`ConsultationPage Component should match snapshot when loaded 1`] = `
       data-testid="mocked-sidebar"
     >
       <div
-        data-testid="mocked-sidebar"
+        data-testid="mocked-sidebar-component"
       >
         <div
-          data-testid="sidebar-item-notes"
+          data-testid="sidebar-item-Vitals"
         >
-          Consultation Notes
+          Vitals
         </div>
         <div
-          data-testid="sidebar-item-vitals"
-        >
-          Vital Signs
-        </div>
-        <div
-          data-testid="sidebar-item-medications"
+          data-testid="sidebar-item-Medications"
         >
           Medications
-        </div>
-        <div
-          data-testid="sidebar-item-lab-orders"
-        >
-          Lab Orders
-        </div>
-        <div
-          data-testid="sidebar-item-appointments"
-        >
-          Appointments
         </div>
       </div>
     </div>
@@ -86,7 +71,17 @@ exports[`ConsultationPage Component should match snapshot when loaded 1`] = `
 </DocumentFragment>
 `;
 
-exports[`ConsultationPage Component should match snapshot when loading 1`] = `
+exports[`ConsultationPage Component should match snapshot when loading clinical config 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="carbon-loading"
+  >
+    Loading...
+  </div>
+</DocumentFragment>
+`;
+
+exports[`ConsultationPage Component should match snapshot when loading dashboard config 1`] = `
 <DocumentFragment>
   <div
     data-testid="carbon-loading"

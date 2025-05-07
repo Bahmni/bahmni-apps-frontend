@@ -9,14 +9,16 @@ import {
 import '@testing-library/jest-dom';
 import { ClinicalConfigProvider } from '../ClinicalConfigProvider';
 import { useClinicalConfig } from '@hooks/useClinicalConfig';
-import { getConfig } from '@services/configService';
+import { getClinicalConfig } from '@services/configService';
 import notificationService from '@services/notificationService';
 import { ClinicalConfig } from '@types/config';
 import * as configMocks from '@__mocks__/configMocks';
 
 // Mock the configService
 jest.mock('@services/configService');
-const mockGetConfig = getConfig as jest.MockedFunction<typeof getConfig>;
+const mockGetConfig = getClinicalConfig as jest.MockedFunction<
+  typeof getClinicalConfig
+>;
 
 // Mock the notificationService
 jest.mock('@services/notificationService', () => ({
