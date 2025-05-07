@@ -1,4 +1,4 @@
-import React, { Suspense, useMemo } from 'react';
+import React, { Suspense, useState, useMemo } from 'react';
 import { Grid, Column, Section, Loading } from '@carbon/react';
 import ClinicalLayout from '@layouts/clinical/ClinicalLayout';
 import PatientDetails from '@displayControls/patient/PatientDetails';
@@ -17,6 +17,14 @@ import {
 const ConsultationPage: React.FC = () => {
   const { clinicalConfig } = useClinicalConfig();
   const { addNotification } = useNotification();
+
+  const [activeSidebarItem, setActiveSidebarItem] = useState<string | null>(
+    null,
+  );
+
+  const handleSidebarItemClick = (itemId: string) => {
+    setActiveSidebarItem(itemId);
+  };
 
   if (!clinicalConfig) {
     return <Loading description="Loading..." />;
@@ -45,7 +53,13 @@ const ConsultationPage: React.FC = () => {
     <ClinicalLayout
       header={<Header />}
       patientDetails={<PatientDetails />}
-      sidebar={<Sidebar items={getSidebarItems(dashboardConfig)} />}
+      sidebar={
+        <Sidebar
+          items={getSidebarItems(dashboardConfig)}
+          activeItemId={activeSidebarItem}
+          onItemClick={handleSidebarItemClick}
+        />
+      }
       mainDisplay={
         <Suspense fallback="loading">
           <Section>

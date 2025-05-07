@@ -6,35 +6,40 @@ import * as styles from './styles/Sidebar.module.scss';
 import { useTranslation } from 'react-i18next';
 
 /**
- * SidebarItem component displays a single item in the sidebar with an icon and label.
- * It can be in an active or inactive state and can handle click actions.
+ * Interface defining the properties for sidebar items.
+ * Each item represents a navigation option in the sidebar.
  *
- * @component
- * @param {string} id - Unique identifier for the item
- * @param {string} icon - Icon name in FontAwesome format (e.g., "fa-clipboard-list")
- * @param {string} label - Display text for the item
- * @param {boolean} [active=false] - Whether the item is currently active/selected
- * @param {function} [action] - Callback function executed when the item is clicked
+ * @interface
+ * @property {string} id - Unique identifier for the item
+ * @property {string} icon - Icon name in FontAwesome format (e.g., "fa-clipboard-list")
+ * @property {string} label - Display text for the item
  */
 export interface SidebarItemProps {
   id: string;
   icon: string;
   label: string;
-  active?: boolean;
-  action: () => void;
 }
 
 /**
- * Sidebar component that renders a vertical list of sidebar items using Carbon SideNav.
+ * Sidebar component that renders a vertical list of navigation items using Carbon SideNav.
+ * Manages active state and click events at the component level.
  *
  * @component
  * @param {SidebarItemProps[]} items - Array of sidebar items to render
+ * @param {string | null} activeItemId - ID of the currently active/selected item
+ * @param {function} onItemClick - Callback function executed when an item is clicked, receives the item ID as parameter
  */
 interface SidebarProps {
   items: SidebarItemProps[];
+  activeItemId: string | null;
+  onItemClick: (itemId: string) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ items }) => {
+const Sidebar: React.FC<SidebarProps> = ({
+  items,
+  activeItemId,
+  onItemClick,
+}) => {
   const { t } = useTranslation();
 
   const handleOnClick = (e: React.MouseEvent, action: () => void) => {
@@ -62,8 +67,8 @@ const Sidebar: React.FC<SidebarProps> = ({ items }) => {
               />
             )}
             href="#"
-            onClick={(e) => handleOnClick(e, item.action)}
-            isActive={item.active}
+            onClick={(e) => handleOnClick(e, () => onItemClick(item.id))}
+            isActive={item.id === activeItemId}
             data-testid={`sidebar-item-${item.id}`}
           >
             {t(item.label)}
