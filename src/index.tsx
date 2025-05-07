@@ -20,7 +20,7 @@ root.render(
     <BrowserRouter basename={process.env.PUBLIC_URL || '/'}>
       <NotificationProvider>
         <NotificationServiceComponent />
-          <App />
+        <App />
       </NotificationProvider>
     </BrowserRouter>
   </React.StrictMode>,

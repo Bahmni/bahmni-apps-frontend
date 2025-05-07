@@ -9,11 +9,13 @@ const App: React.FC = () => {
   return (
     <Content>
       <Routes>
-        <Route path="/clinical/:patientUuid" element={
-          <ClinicalConfigProvider>
-            <ConsulationPage />
-          </ClinicalConfigProvider>
-        }
+        <Route
+          path="/clinical/:patientUuid"
+          element={
+            <ClinicalConfigProvider>
+              <ConsulationPage />
+            </ClinicalConfigProvider>
+          }
         />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

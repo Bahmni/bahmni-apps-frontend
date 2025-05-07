@@ -79,7 +79,9 @@ describe('App Component', () => {
 
   it('should match snapshot', () => {
     const { asFragment } = render(
-      <MemoryRouter initialEntries={['/clinical/123e4567-e89b-12d3-a456-426614174000']}>
+      <MemoryRouter
+        initialEntries={['/clinical/123e4567-e89b-12d3-a456-426614174000']}
+      >
         <App />
       </MemoryRouter>,
     );
