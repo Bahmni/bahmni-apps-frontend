@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useMemo } from 'react';
 import { Grid, Column, Section, Loading } from '@carbon/react';
 import ClinicalLayout from '@layouts/clinical/ClinicalLayout';
 import PatientDetails from '@displayControls/patient/PatientDetails';
@@ -42,7 +42,11 @@ const ConsultationPage: React.FC = () => {
   if (!clinicalConfig) {
     return <Loading description="Loading..." />;
   }
-  const currentDashboard = getDefaultDashboard(clinicalConfig.dashboards);
+
+  const currentDashboard = useMemo(() => {
+    if (!clinicalConfig) return null;
+    return getDefaultDashboard(clinicalConfig.dashboards);
+  }, [clinicalConfig]);
 
   if (!currentDashboard) {
     addNotification({
