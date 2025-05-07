@@ -1,11 +1,7 @@
-import React from 'react';
 import { renderHook, act } from '@testing-library/react';
 import { useDashboardConfig } from '../useDashboardConfig';
-import {
-  DashboardConfigContextType,
-  DashboardConfig,
-} from '@types/dashboardConfig';
 import { getDashboardConfig } from '@services/configService';
+import { validDashboardConfig } from '@/__mocks__/configMocks';
 
 // Mock notification service
 jest.mock('@services/notificationService', () => ({
@@ -38,32 +34,15 @@ describe('useDashboardConfig', () => {
   });
 
   it('should fetch and return dashboard config correctly', async () => {
-    // Mock dashboard config
-    const mockDashboardConfig: DashboardConfig = {
-      sections: [
-        {
-          name: 'Vitals',
-          icon: 'heartbeat',
-          translationKey: 'DASHBOARD_VITALS_KEY',
-          controls: [],
-        },
-        {
-          name: 'Medications',
-          icon: 'pills',
-          controls: [],
-        },
-      ],
-    };
-
     // Mock the getDashboardConfig function
-    (getDashboardConfig as jest.Mock).mockResolvedValue(mockDashboardConfig);
+    (getDashboardConfig as jest.Mock).mockResolvedValue(validDashboardConfig);
 
     // Render the hook with a dashboard URL
-    const { result, rerender } = renderHook(
+    const { result } = renderHook(
       (props) => useDashboardConfig(props.dashboardURL),
       {
         initialProps: { dashboardURL: 'test-dashboard' },
-      }
+      },
     );
 
     // Initially, it should be in loading state
@@ -78,7 +57,7 @@ describe('useDashboardConfig', () => {
 
     // After loading, it should have the dashboard config
     expect(result.current.isLoading).toBe(false);
-    expect(result.current.dashboardConfig).toEqual(mockDashboardConfig);
+    expect(result.current.dashboardConfig).toEqual(validDashboardConfig);
     expect(result.current.error).toBeNull();
 
     // Verify getDashboardConfig was called with the correct URL
@@ -88,7 +67,7 @@ describe('useDashboardConfig', () => {
   it('should handle loading state correctly', async () => {
     // Mock the getDashboardConfig function to delay the response
     (getDashboardConfig as jest.Mock).mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve({}), 100))
+      () => new Promise((resolve) => setTimeout(() => resolve({}), 100)),
     );
 
     // Render the hook
@@ -132,11 +111,11 @@ describe('useDashboardConfig', () => {
     });
 
     // Render the hook with initial props
-    const { result, rerender } = renderHook(
+    const { rerender } = renderHook(
       (props) => useDashboardConfig(props.dashboardURL),
       {
         initialProps: { dashboardURL: 'test-dashboard-1' },
-      }
+      },
     );
 
     // Wait for the first fetch to complete

@@ -194,3 +194,36 @@ function generateLargeDashboards(count: number) {
 
   return dashboards;
 }
+
+// Mock dashboard configs for testing
+export const validDashboardConfig = {
+  sections: [
+    {
+      name: 'Vitals',
+      icon: 'heartbeat',
+      translationKey: 'DASHBOARD_VITALS_KEY',
+      controls: [],
+    },
+    {
+      name: 'Medications',
+      icon: 'pills',
+      controls: [],
+    },
+  ],
+};
+
+export const invalidDashboardConfig = {
+  sections: [
+    {
+      //Missing required name parameter
+      icon: 'heartbeat',
+      translationKey: 'DASHBOARD_VITALS_KEY',
+      controls: [],
+    },
+    {
+      name: 'Medications',
+      icon: 'pills',
+      controls: [],
+    },
+  ],
+};

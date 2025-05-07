@@ -12,6 +12,8 @@ import {
   invalidClinicalConfig,
   largeConfig,
   allOptionalFieldsConfig,
+  validDashboardConfig,
+  invalidDashboardConfig,
 } from '@__mocks__/configMocks';
 import { CLINICAL_CONFIG_URL, DASHBOARD_CONFIG_URL } from '@constants/app';
 
@@ -130,27 +132,6 @@ const mockDashboardSchema = {
       },
     },
   },
-};
-
-// Mock dashboard configs for testing
-const validDashboardConfig = {
-  sections: [
-    {
-      name: 'Vitals',
-      icon: 'heartbeat',
-      translationKey: 'DASHBOARD_VITALS_KEY',
-      controls: [],
-    },
-    {
-      name: 'Medications',
-      icon: 'pills',
-      controls: [],
-    },
-  ],
-};
-
-const invalidDashboardConfig = {
-  // Missing required sections array
 };
 
 const mockShowError = notificationService.showError as jest.MockedFunction<

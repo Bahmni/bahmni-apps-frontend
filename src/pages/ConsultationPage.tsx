@@ -11,39 +11,51 @@ import { SidebarItemProps } from '@/components/common/sidebar/SidebarItem';
 import { Dashboard } from '@types/config';
 import { useDashboardConfig } from '@hooks/useDashboardConfig';
 import { DashboardConfig } from '@types/dashboardConfig';
+import useNotification from '@hooks/useNotification';
 
 const ConsultationPage: React.FC = () => {
   const { clinicalConfig } = useClinicalConfig();
+  const { addNotification } = useNotification();
 
-  const getDefaultDashboard = (dashboards: Dashboard[]):Dashboard | null => {
-    const defaultDashboard = dashboards.find((dashboard) => dashboard.default === true);
+  const getDefaultDashboard = (dashboards: Dashboard[]): Dashboard | null => {
+    const defaultDashboard = dashboards.find(
+      (dashboard) => dashboard.default === true,
+    );
     if (defaultDashboard) {
       return defaultDashboard;
     }
     return null;
   };
 
-  const getSidebarItems = (dashboardConfig: DashboardConfig): SidebarItemProps[] => {
+  const getSidebarItems = (
+    dashboardConfig: DashboardConfig,
+  ): SidebarItemProps[] => {
     return dashboardConfig.sections.map((section) => ({
       id: section.name,
       icon: section.icon,
-      //TODO: add translation
+      // TODO: add translation
       label: section.name,
       active: false,
       action: () => {},
     }));
-  }
-  
+  };
+
   if (!clinicalConfig) {
     return <Loading description="Loading..." />;
   }
   const currentDashboard = getDefaultDashboard(clinicalConfig.dashboards);
-  // Check if currentDashboard is null
+
   if (!currentDashboard) {
-    return <Loading description="Loading dashboard..." />;
+    addNotification({
+      title: 'Error',
+      message: 'No default dashboard configured',
+      type: 'error',
+    });
+    return <Loading description="Error Loading dashboard" />;
   }
- const { dashboardConfig } = useDashboardConfig(currentDashboard.url);
- if(!dashboardConfig) {
+  const { dashboardConfig } = useDashboardConfig(currentDashboard.url);
+
+  if (!dashboardConfig) {
     return <Loading description="Loading dashboard config..." />;
   }
 
