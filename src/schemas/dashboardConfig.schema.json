@@ -3,6 +3,7 @@
   "title": "Clinical Dashboard Configuration Schema",
   "description": "Schema for dashboards in clinical app which contains sections and associated controls",
   "type": "object",
+  "additionalProperties": false,
   "required": ["sections"],
   "properties": {
     "sections": {
@@ -10,6 +11,7 @@
       "description": "Section in a dashboard",
       "items": {
         "type": "object",
+        "additionalProperties": false,
         "required": ["name", "icon", "controls"],
         "properties": {
           "name": {
