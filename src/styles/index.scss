@@ -1,3 +1,6 @@
+// Import theme variables
+@use "@styles/theme-variables.scss" as *;
+
 // Import Carbon styles
 @use "@carbon/react";
 

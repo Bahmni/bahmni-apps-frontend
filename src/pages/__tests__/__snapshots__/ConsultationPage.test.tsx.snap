@@ -29,18 +29,16 @@ exports[`ConsultationPage Component should match snapshot when fully loaded 1`] 
       <div
         data-testid="mocked-sidebar-component"
       >
-        <ul>
-          <li
-            data-testid="sidebar-item-Vitals"
-          >
-            Vitals
-          </li>
-          <li
-            data-testid="sidebar-item-Medications"
-          >
-            Medications
-          </li>
-        </ul>
+        <div
+          data-testid="sidebar-item-Vitals"
+        >
+          Vitals
+        </div>
+        <div
+          data-testid="sidebar-item-Medications"
+        >
+          Medications
+        </div>
       </div>
     </div>
     <div

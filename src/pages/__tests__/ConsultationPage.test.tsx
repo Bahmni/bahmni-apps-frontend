@@ -11,7 +11,7 @@ import {
   validFullClinicalConfig,
   validDashboardConfig,
 } from '@__mocks__/configMocks';
-import Sidebar from '@components/common/sidebar/Sidebar';
+import Sidebar, { SidebarItemProps } from '@components/common/sidebar/Sidebar';
 
 // Mock React.Suspense to render children immediately in tests
 jest.mock('react', () => ({
@@ -65,23 +65,6 @@ jest.mock('@displayControls/conditions/ConditionsTable', () => {
   ));
 });
 
-// Mock the Sidebar component
-jest.mock('@components/common/sidebar/Sidebar', () => {
-  return jest.fn(({ items }) => (
-    <div data-testid="mocked-sidebar-component">
-      {items && items.length > 0 && (
-        <ul>
-          {items.map((item, index) => (
-            <li key={index} data-testid={`sidebar-item-${item.id}`}>
-              {item.label}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  ));
-});
-
 // Mock the useClinicalConfig hook
 jest.mock('@hooks/useClinicalConfig');
 
@@ -98,6 +81,18 @@ jest.mock('@displayControls/allergies/AllergiesTable', () => {
   ));
 });
 
+// Mock the Sidebar component
+jest.mock('@components/common/sidebar/Sidebar', () => {
+  return jest.fn(({ items }: { items: SidebarItemProps[] }) => (
+    <div data-testid="mocked-sidebar-component">
+      {items.map((item: SidebarItemProps) => (
+        <div key={item.id} data-testid={`sidebar-item-${item.id}`}>
+          {item.label}
+        </div>
+      ))}
+    </div>
+  ));
+});
 describe('ConsultationPage Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
