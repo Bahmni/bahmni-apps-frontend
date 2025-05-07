@@ -46,7 +46,7 @@ export const getDashboardConfig = async <T extends DashboardConfig>(
  * @returns Validated configuration object or null if invalid/error
  * @throws Error if fetch fails or validation fails
  */
-const getConfig = async <T>(
+const getConfig = async <T extends ClinicalConfig | DashboardConfig>(
   configPath: string,
   configSchema: Record<string, unknown>,
 ): Promise<T | null> => {
