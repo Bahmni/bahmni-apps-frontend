@@ -469,7 +469,7 @@ describe('ConsultationPage Component', () => {
       expect(updatedSidebarProps.activeItemId).toBe('Vitals');
     });
 
-    it('should initialize with null active sidebar item', () => {
+    it('should use first sidebar item as active by default when activeSidebarItem is null', () => {
       // Mock useClinicalConfig to return config
       (useClinicalConfig as jest.Mock).mockReturnValue({
         clinicalConfig: validFullClinicalConfig,
@@ -484,9 +484,37 @@ describe('ConsultationPage Component', () => {
 
       render(<ConsultationPage />);
 
-      // Verify Sidebar was called with null activeItemId
+      // Verify Sidebar was called with first item's ID as activeItemId
       const sidebarProps = (Sidebar as jest.Mock).mock.calls[0][0];
-      expect(sidebarProps.activeItemId).toBeNull();
+      expect(sidebarProps.activeItemId).toBe(sidebarProps.items[0].id);
+    });
+
+    it('should use the selected sidebar item when activeSidebarItem has a value', () => {
+      // Mock useClinicalConfig to return config
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: validFullClinicalConfig,
+      });
+
+      // Mock useDashboardConfig to return dashboard config
+      (useDashboardConfig as jest.Mock).mockReturnValue({
+        dashboardConfig: validDashboardConfig,
+        isLoading: false,
+        error: null,
+      });
+
+      render(<ConsultationPage />);
+
+      // Get the sidebar component
+      const sidebarProps = (Sidebar as jest.Mock).mock.calls[0][0];
+
+      // Call the onItemClick function with the second item ID
+      act(() => {
+        sidebarProps.onItemClick('Medications');
+      });
+
+      // Verify Sidebar was called again with the selected item ID
+      const updatedSidebarProps = (Sidebar as jest.Mock).mock.calls[1][0];
+      expect(updatedSidebarProps.activeItemId).toBe('Medications');
     });
   });
 
@@ -510,6 +538,28 @@ describe('ConsultationPage Component', () => {
       // Verify Sidebar was called with empty items array
       const sidebarProps = (Sidebar as jest.Mock).mock.calls[0][0];
       expect(sidebarProps.items).toEqual([]);
+    });
+
+    it('should handle empty sidebar items gracefully for default active item', () => {
+      // Mock useClinicalConfig to return config
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: validFullClinicalConfig,
+      });
+
+      // Mock useDashboardConfig to return empty dashboard config
+      (useDashboardConfig as jest.Mock).mockReturnValue({
+        dashboardConfig: { sections: [] },
+        isLoading: false,
+        error: null,
+      });
+
+      render(<ConsultationPage />);
+
+      // Verify Sidebar was called with undefined activeItemId (since there are no items)
+      const sidebarProps = (Sidebar as jest.Mock).mock.calls[0][0];
+      expect(sidebarProps.items).toEqual([]);
+      // The activeItemId should be undefined when there are no items
+      expect(sidebarProps.activeItemId).toBeNull();
     });
 
     it('should handle dashboard config with many sections', () => {

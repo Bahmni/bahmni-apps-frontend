@@ -17,7 +17,7 @@ import {
 const ConsultationPage: React.FC = () => {
   const { clinicalConfig } = useClinicalConfig();
   const { addNotification } = useNotification();
-  const [activeSidebarItem, setActiveSidebarItem] = useState<string | null>(
+  const [activeSideBarItemId, setActiveSideBarItemId] = useState<string | null>(
     null,
   );
 
@@ -29,8 +29,13 @@ const ConsultationPage: React.FC = () => {
   const { dashboardConfig } = useDashboardConfig(currentDashboard?.url || null);
 
   const handleSidebarItemClick = (itemId: string) => {
-    setActiveSidebarItem(itemId);
+    setActiveSideBarItemId(itemId);
   };
+
+  const sidebarItems = useMemo(() => {
+    if (!dashboardConfig) return [];
+    return getSidebarItems(dashboardConfig);
+  }, [dashboardConfig]);
 
   if (!clinicalConfig) {
     return <Loading description="Loading..." />;
@@ -55,8 +60,11 @@ const ConsultationPage: React.FC = () => {
       patientDetails={<PatientDetails />}
       sidebar={
         <Sidebar
-          items={getSidebarItems(dashboardConfig)}
-          activeItemId={activeSidebarItem}
+          items={sidebarItems}
+          activeItemId={
+            activeSideBarItemId ||
+            (sidebarItems.length > 0 ? sidebarItems[0].id : null)
+          }
           onItemClick={handleSidebarItemClick}
         />
       }
