@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useState } from 'react';
 import { Grid, Column, Section, Loading } from '@carbon/react';
 import ClinicalLayout from '@layouts/clinical/ClinicalLayout';
 import PatientDetails from '@displayControls/patient/PatientDetails';
@@ -10,6 +10,14 @@ import Sidebar, { SidebarItemProps } from '@components/common/sidebar/Sidebar';
 
 const ConsultationPage: React.FC = () => {
   const { clinicalConfig } = useClinicalConfig();
+  const [activeSidebarItem, setActiveSidebarItem] = useState<string | null>(
+    null,
+  );
+
+  const handleSidebarItemClick = (itemId: string) => {
+    setActiveSidebarItem(itemId);
+  };
+
   if (!clinicalConfig) {
     return <Loading description="Loading..." />;
   }
@@ -19,32 +27,36 @@ const ConsultationPage: React.FC = () => {
       id: 'notes',
       icon: 'fa-clipboard-list',
       label: 'Consultation Notes',
-      active: true,
-      action: () => {},
+      active: activeSidebarItem == 'notes',
+      action: () => handleSidebarItemClick('notes'),
     },
     {
       id: 'vitals',
       icon: 'fa-heartbeat',
       label: 'Vital Signs',
-      action: () => {},
+      active: activeSidebarItem == 'vitals',
+      action: () => handleSidebarItemClick('vitals'),
     },
     {
       id: 'medications',
       icon: 'fa-pills',
       label: 'Medications',
-      action: () => {},
+      active: activeSidebarItem == 'medications',
+      action: () => handleSidebarItemClick('medications'),
     },
     {
       id: 'lab-orders',
       icon: 'fa-flask',
       label: 'Lab Orders',
-      action: () => {},
+      active: activeSidebarItem == 'lab-orders',
+      action: () => handleSidebarItemClick('lab-orders'),
     },
     {
       id: 'appointments',
       icon: 'fa-calendar-alt',
       label: 'Appointments',
-      action: () => {},
+      active: activeSidebarItem == 'appointments',
+      action: () => handleSidebarItemClick('appointments'),
     },
   ];
 
