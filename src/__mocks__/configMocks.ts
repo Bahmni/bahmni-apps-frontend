@@ -1,5 +1,7 @@
 // src/__mocks__/configMocks.ts
 
+import { DashboardConfig } from '@types/dashboardConfig';
+
 // Happy Path Mocks
 export const validFullClinicalConfig = {
   patientInformation: {
@@ -194,3 +196,35 @@ function generateLargeDashboards(count: number) {
 
   return dashboards;
 }
+
+// Mock dashboard configs for testing
+export const validDashboardConfig: DashboardConfig = {
+  sections: [
+    {
+      name: 'Vitals',
+      icon: 'heartbeat',
+      controls: [],
+    },
+    {
+      name: 'Medications',
+      icon: 'pills',
+      controls: [],
+    },
+  ],
+};
+
+export const invalidDashboardConfig = {
+  sections: [
+    {
+      //Missing required name parameter
+      icon: 'heartbeat',
+      translationKey: 'DASHBOARD_VITALS_KEY',
+      controls: [],
+    },
+    {
+      name: 'Medications',
+      icon: 'pills',
+      controls: [],
+    },
+  ],
+};

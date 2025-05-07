@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Clinical Dashboard Configuration Schema",
+  "description": "Schema for dashboards in clinical app which contains sections and associated controls",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["sections"],
+  "properties": {
+    "sections": {
+      "type": "array",
+      "description": "Section in a dashboard",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "icon", "controls"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Display name of the section"
+          },
+          "translationKey": {
+            "type": "string",
+            "description": "Translation key for the section name"
+          },
+          "icon": {
+            "type": "string",
+            "description": "Fontawesome Icon name for the section"
+          },
+          "controls": {
+            "type": "array",
+            "description": "List of controls in the section"
+          }
+        }
+      }
+    }
+  }
+}

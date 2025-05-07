@@ -4,10 +4,12 @@
   "description": "Schema for global clinical app configuration including patient information, actions and available dashboards",
   "type": "object",
   "required": ["patientInformation", "actions", "dashboards"],
+  "additionalProperties": false,
   "properties": {
     "patientInformation": {
       "type": "object",
-      "description": "Patient information configuration"
+      "description": "Patient information configuration",
+      "additionalProperties": false
     },
     "actions": {
       "type": "array",
@@ -19,6 +21,7 @@
       "items": {
         "type": "object",
         "required": ["name", "requiredPrivileges", "url"],
+        "additionalProperties": false,
         "properties": {
           "name": {
             "type": "string",
@@ -43,8 +46,7 @@
             "type": "string",
             "description": "URL to access the dashboard data"
           }
-        },
-        "additionalProperties": true
+        }
       }
     }
   }

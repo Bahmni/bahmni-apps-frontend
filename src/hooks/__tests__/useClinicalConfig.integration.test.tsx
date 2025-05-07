@@ -2,7 +2,7 @@ import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
 import { useClinicalConfig } from '../useClinicalConfig';
-import { getConfig } from '@services/configService';
+import { getClinicalConfig } from '@services/configService';
 import { ClinicalConfig } from '@types/config';
 import notificationService from '@services/notificationService';
 
@@ -41,7 +41,7 @@ describe('useClinicalConfig Integration', () => {
 
   it('should handle loading states correctly', async () => {
     // Mock a delayed response
-    (getConfig as jest.Mock).mockImplementation(
+    (getClinicalConfig as jest.Mock).mockImplementation(
       () =>
         new Promise((resolve) => setTimeout(() => resolve(mockAppConfig), 100)),
     );
@@ -73,7 +73,7 @@ describe('useClinicalConfig Integration', () => {
   it('should handle error states and show notification', async () => {
     // Mock an error response
     const mockError = new Error('Failed to fetch config');
-    (getConfig as jest.Mock).mockRejectedValueOnce(mockError);
+    (getClinicalConfig as jest.Mock).mockRejectedValueOnce(mockError);
 
     const TestComponent = () => {
       const { error, clinicalConfig } = useClinicalConfig();
