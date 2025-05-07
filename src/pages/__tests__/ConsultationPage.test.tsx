@@ -123,7 +123,7 @@ describe('ConsultationPage Component', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('should show error notification when no default dashboard is configured', () => {
+  it('should use the first dashboard when no dashboard is marked as default', () => {
     // Mock a clinical config with no default dashboard
     const configWithNoDefault = {
       ...validFullClinicalConfig,
@@ -138,6 +138,13 @@ describe('ConsultationPage Component', () => {
       clinicalConfig: configWithNoDefault,
     });
 
+    // Mock useDashboardConfig to return dashboard config
+    (useDashboardConfig as jest.Mock).mockReturnValue({
+      dashboardConfig: validDashboardConfig,
+      isLoading: false,
+      error: null,
+    });
+
     const mockAddNotification = jest.fn();
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: mockAddNotification,
@@ -145,15 +152,18 @@ describe('ConsultationPage Component', () => {
 
     render(<ConsultationPage />);
 
-    // Should show loading component with error message
-    expect(screen.getByTestId('carbon-loading')).toBeInTheDocument();
+    // Should NOT show loading component with error message
+    expect(
+      screen.queryByText('Error Loading dashboard'),
+    ).not.toBeInTheDocument();
 
-    // Should call addNotification with error message
-    expect(mockAddNotification).toHaveBeenCalledWith({
-      title: 'Error',
-      message: 'No default dashboard configured',
-      type: 'error',
-    });
+    // Should NOT call addNotification with error message
+    expect(mockAddNotification).not.toHaveBeenCalled();
+
+    // Verify useDashboardConfig was called with the first dashboard's URL
+    expect(useDashboardConfig).toHaveBeenCalledWith(
+      configWithNoDefault.dashboards[0].url,
+    );
   });
 
   it('should show loading state when dashboard config is being loaded', () => {

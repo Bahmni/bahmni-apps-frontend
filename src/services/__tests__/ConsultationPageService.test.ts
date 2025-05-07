@@ -16,14 +16,14 @@ describe('ConsultationPageService', () => {
       expect(result).toEqual(validFullClinicalConfig.dashboards[0]);
     });
 
-    it('should return null when no default dashboard exists', () => {
+    it('should return the first dashboard when no default dashboard exists', () => {
       const dashboardsWithNoDefault: Dashboard[] =
         validFullClinicalConfig.dashboards.map((dashboard) => ({
           ...dashboard,
           default: false,
         }));
       const result = getDefaultDashboard(dashboardsWithNoDefault);
-      expect(result).toBeNull();
+      expect(result).toEqual(dashboardsWithNoDefault[0]);
     });
 
     it('should return null for empty dashboards array', () => {

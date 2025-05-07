@@ -10,13 +10,23 @@ import { SidebarItemProps } from '@components/common/sidebar/Sidebar';
 export const getDefaultDashboard = (
   dashboards: Dashboard[],
 ): Dashboard | null => {
+  // Return null if the array is empty
+  if (dashboards.length === 0) {
+    return null;
+  }
+
+  // Find dashboard with default: true
   const defaultDashboard = dashboards.find(
     (dashboard) => dashboard.default === true,
   );
+
+  // Return the default dashboard if found
   if (defaultDashboard) {
     return defaultDashboard;
   }
-  return null;
+
+  // Return the first dashboard if no default is specified
+  return dashboards[0];
 };
 
 /**
