@@ -1,45 +1,130 @@
+@use "@styles/theme-variables.scss" as *;
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/motion" as *;
 @use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/breakpoint" as *;
+
+:global(.cds--side-nav.cds--side-nav--expanded.cds--side-nav--ux) {
+  background: $sidebar-background;
+  border: none;
+  width: auto;
+  max-width: 14.9rem;
+  inline-size: 14.9rem !important;
+  max-inline-size: 14.9rem !important;
+  box-shadow: none;
+
+  @include breakpoint-down("md") {
+    max-width: 3rem;
+    inline-size: 3rem !important;
+    max-inline-size: 3rem !important;
+    background: $sidebar-background;
+    padding-left: 0 !important;
+
+    :global(.cds--side-nav__items) {
+      padding: $spacing-03;
+    }
+  }
+}
 
 .sidebar {
   display: flex;
   flex-direction: column;
-  gap: $spacing-03; // 8px in Carbon
-  padding-top: $spacing-03;
   height: 100%;
-}
 
-.sidebarItem {
-  display: flex;
-  align-items: center;
-  gap: $spacing-04; // 16px in Carbon
-  padding: $spacing-03 $spacing-03;
-  cursor: pointer;
-  border-radius: $spacing-01; // 4px in Carbon
-  transition:
-    background-color $duration-moderate-01 motion(standard, productive),
-    color $duration-moderate-01 motion(standard, productive);
-  @include type-style("body-compact-01");
-  font-weight: 600;
-  color: $text-secondary; // Carbon theme token
+  // SideNav Items
+  :global(.cds--side-nav__items) {
+    padding: $spacing-04;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-03;
 
-  &:hover:not(.active) {
-    border: 1px solid $teal-60;
-    background-color: $teal-10; // Carbon theme token
-    color: $teal-60;
+    :global(.cds--side-nav__item) {
+      &:hover:not(:global(.cds--side-nav__link--current)) {
+        background-color: $clinical-teal-10;
+        color: $clinical-teal-60;
+
+        :global(.cds--side-nav__link-text) {
+          color: $clinical-teal-60;
+        }
+
+        :global(.cds--side-nav__icon) {
+          color: $clinical-teal-60;
+        }
+      }
+
+      :global(.cds--side-nav__link--current) {
+        background-color: $clinical-teal-10;
+        color: $clinical-teal-60;
+        border: 1px solid $clinical-teal-60;
+
+        :global(.cds--side-nav__link-text) {
+          color: $clinical-teal-60;
+        }
+
+        :global(.cds--side-nav__icon) {
+          color: $clinical-teal-60;
+        }
+      }
+    }
   }
 
-  &.active {
-    background-color: $teal-10; // Carbon theme token for selected state
-    color: $teal-60;
-  }
-}
+  // SideNav Link
+  :global(.cds--side-nav__link) {
+    height: $sidebar-height;
+    padding: $sidebar-item-padding;
+    border-left: none;
+    align-items: center;
+    gap: $sidebar-item-gap;
+    border-radius: 0;
+    display: flex;
+    font-weight: $sidebar-font-weight;
+    font-size: $sidebar-font-size;
+    color: $sidebar-text-color;
+    transition:
+      background-color $duration-moderate-01 motion(standard, productive),
+      color $duration-moderate-01 motion(standard, productive);
 
-.label {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+    &::before {
+      display: none; // Remove default Carbon indicator
+    }
+
+    &.cds--side-nav__link--current {
+      background-color: $clinical-teal-10;
+      color: $clinical-teal-60;
+
+      &::before {
+        display: none;
+      }
+
+      :global(.cds--side-nav__link-text) {
+        color: $clinical-teal-60;
+      }
+    }
+
+    :global(.cds--side-nav__link-text) {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-weight: $sidebar-font-weight;
+      font-size: $sidebar-font-size;
+
+      @include breakpoint-down("md") {
+        opacity: 0;
+        visibility: hidden;
+      }
+    }
+  }
+
+  // Icon styling
+  :global(.cds--side-nav__icon) {
+    width: $sidebar-icon-size;
+    height: $sidebar-icon-size;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0 !important;
+    min-width: $sidebar-icon-size;
+  }
 }

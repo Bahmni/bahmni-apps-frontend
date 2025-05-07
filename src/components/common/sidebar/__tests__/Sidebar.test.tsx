@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import Sidebar from '../Sidebar';
 
 // Mock the CSS module
@@ -10,20 +10,73 @@ jest.mock('../styles/Sidebar.module.scss', () => ({
   label: 'label-mock',
 }));
 
-// Mock SidebarItem to make testing simpler
-jest.mock('../SidebarItem', () => {
-  return function MockSidebarItem(props: {
+// Mock Carbon components
+jest.mock('@carbon/react', () => {
+  return {
+    SideNav: ({
+      children,
+      className,
+      'data-testid': dataTestId,
+    }: {
+      children: React.ReactNode;
+      className?: string;
+      'data-testid'?: string;
+    }) => (
+      <nav className={className} data-testid={dataTestId}>
+        {children}
+      </nav>
+    ),
+    SideNavItems: ({ children }: { children: React.ReactNode }) => (
+      <div data-testid="side-nav-items">{children}</div>
+    ),
+    SideNavLink: ({
+      children,
+      renderIcon,
+      href,
+      onClick,
+      isActive,
+      'data-testid': dataTestId,
+    }: {
+      children: React.ReactNode;
+      renderIcon?: () => React.ReactNode;
+      href?: string;
+      onClick?: (e: React.MouseEvent) => void;
+      isActive?: boolean;
+      'data-testid'?: string;
+    }) => {
+      const Icon = renderIcon ? renderIcon() : null;
+      return (
+        <a
+          href={href}
+          onClick={onClick}
+          data-testid={dataTestId}
+          data-active={isActive ? 'true' : 'false'}
+          role="link"
+          aria-current={isActive ? 'page' : undefined}
+        >
+          {Icon}
+          <span>{children}</span>
+        </a>
+      );
+    },
+  };
+});
+
+// Mock BahmniIcon to make testing simpler
+jest.mock('@components/common/bahmniIcon/BahmniIcon', () => {
+  return function BahmniIcon(props: {
     id: string;
-    icon: string;
-    label: string;
-    active?: boolean;
+    name: string;
+    color: string;
+    size: string;
   }) {
     return (
       <div
-        data-testid={`sidebar-item-${props.id}`}
-        data-active={props.active ? 'true' : 'false'}
+        data-testid={`${props.id}`}
+        data-icon-name={props.name}
+        data-color={props.color}
       >
-        {props.label}
+        Icon Mock
       </div>
     );
   };
@@ -52,23 +105,18 @@ describe('Sidebar', () => {
     expect(screen.getByTestId('sidebar-item-item2')).toBeInTheDocument();
   });
 
-  it('passes correct props to each SidebarItem', () => {
+  it('passes correct props to each SideNavLink', () => {
     render(<Sidebar items={defaultItems} />);
 
     const item1 = screen.getByTestId('sidebar-item-item1');
     expect(item1).toHaveAttribute('data-active', 'true');
+    expect(item1).toHaveAttribute('aria-current', 'page');
     expect(item1).toHaveTextContent('Item 1');
 
     const item2 = screen.getByTestId('sidebar-item-item2');
     expect(item2).toHaveAttribute('data-active', 'false');
+    expect(item2).not.toHaveAttribute('aria-current', 'page');
     expect(item2).toHaveTextContent('Item 2');
-  });
-
-  it('applies custom className when provided', () => {
-    render(<Sidebar items={defaultItems} className="custom-class" />);
-
-    const sidebar = screen.getByTestId('sidebar');
-    expect(sidebar).toHaveClass('custom-class');
   });
 
   it('renders correctly with empty items array', () => {
@@ -76,5 +124,21 @@ describe('Sidebar', () => {
 
     expect(screen.getByTestId('sidebar')).toBeInTheDocument();
     expect(screen.queryByTestId(/sidebar-item-/)).not.toBeInTheDocument();
+  });
+
+  it('calls action when item is clicked', () => {
+    const mockAction = jest.fn();
+    const itemsWithAction = [
+      { ...defaultItems[0], action: mockAction },
+      defaultItems[1],
+    ];
+
+    render(<Sidebar items={itemsWithAction} />);
+
+    // Click the first item
+    fireEvent.click(screen.getByTestId('sidebar-item-item1'));
+
+    // Check that the action was called
+    expect(mockAction).toHaveBeenCalledTimes(1);
   });
 });

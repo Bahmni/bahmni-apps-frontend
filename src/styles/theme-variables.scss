@@ -1,0 +1,33 @@
+// --------------------------------------
+// COLOR TOKENS
+// --------------------------------------
+
+// Primary brand colors
+$brand-primary: #0f62fe; // IBM Blue
+$brand-secondary: #8a3ffc; // IBM Purple
+
+// Clinical specific colors
+$clinical-teal-10: #d9fbfb;
+$clinical-teal-60: #007d79;
+$gray-70: #525252;
+$white-0: #ffffff; // From Figma design
+
+// --------------------------------------
+// COMPONENT SPECIFIC VARIABLES
+// --------------------------------------
+
+// Sidebar component
+$sidebar-background: $white-0;
+$sidebar-text-color: $gray-70;
+$sidebar-font-size: 14px;
+$sidebar-font-weight: 600;
+$sidebar-item-padding: 0px 12px;
+$sidebar-item-gap: 12px;
+$sidebar-active-bg: $clinical-teal-10;
+$sidebar-active-color: $gray-70; // Match text color from Figma
+$sidebar-active-border: none;
+$sidebar-hover-border: none;
+$sidebar-hover-bg: $clinical-teal-10;
+$sidebar-hover-color: $gray-70;
+$sidebar-icon-size: 16px;
+$sidebar-height: 40px; // Match height from Figma
