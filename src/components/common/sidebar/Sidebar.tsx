@@ -3,6 +3,7 @@ import { SideNav, SideNavItems, SideNavLink } from '@carbon/react';
 import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
 import { ICON_SIZE } from '@constants/icon';
 import * as styles from './styles/Sidebar.module.scss';
+import { useTranslation } from 'react-i18next';
 
 /**
  * SidebarItem component displays a single item in the sidebar with an icon and label.
@@ -34,6 +35,8 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ items }) => {
+  const { t } = useTranslation();
+
   const handleOnClick = (e: React.MouseEvent, action: () => void) => {
     e.preventDefault();
     action();
@@ -63,7 +66,7 @@ const Sidebar: React.FC<SidebarProps> = ({ items }) => {
             isActive={item.active}
             data-testid={`sidebar-item-${item.id}`}
           >
-            {item.label}
+            {t(item.label)}
           </SideNavLink>
         ))}
       </SideNavItems>

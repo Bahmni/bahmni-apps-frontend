@@ -203,7 +203,6 @@ export const validDashboardConfig: DashboardConfig = {
     {
       name: 'Vitals',
       icon: 'heartbeat',
-      translationKey: 'DASHBOARD_VITALS_KEY',
       controls: [],
     },
     {

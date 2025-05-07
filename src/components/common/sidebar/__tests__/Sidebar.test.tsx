@@ -2,6 +2,16 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import Sidebar from '../Sidebar';
 
+// Mock react-i18next
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      // For testing, we'll return the key to simulate translation
+      return key;
+    },
+  }),
+}));
+
 // Mock the CSS module
 jest.mock('../styles/Sidebar.module.scss', () => ({
   sidebar: 'sidebar-mock',
@@ -89,11 +99,13 @@ describe('Sidebar', () => {
       icon: 'fa-clipboard-list',
       label: 'Item 1',
       active: true,
+      action: () => {},
     },
     {
       id: 'item2',
       icon: 'fa-heartbeat',
       label: 'Item 2',
+      action: () => {},
     },
   ];
 
@@ -130,7 +142,7 @@ describe('Sidebar', () => {
     const mockAction = jest.fn();
     const itemsWithAction = [
       { ...defaultItems[0], action: mockAction },
-      defaultItems[1],
+      { ...defaultItems[1] }, // action is already included from defaultItems
     ];
 
     render(<Sidebar items={itemsWithAction} />);

@@ -41,7 +41,7 @@ export const getSidebarItems = (
     id: section.name,
     icon: section.icon,
     // TODO: add translation
-    label: section.name,
+    label: section.translationKey || section.name,
     active: false,
     action: () => {},
   }));
