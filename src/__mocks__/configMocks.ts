@@ -1,5 +1,7 @@
 // src/__mocks__/configMocks.ts
 
+import { DashboardConfig } from '@types/dashboardConfig';
+
 // Happy Path Mocks
 export const validFullClinicalConfig = {
   patientInformation: {
@@ -196,7 +198,7 @@ function generateLargeDashboards(count: number) {
 }
 
 // Mock dashboard configs for testing
-export const validDashboardConfig = {
+export const validDashboardConfig: DashboardConfig = {
   sections: [
     {
       name: 'Vitals',

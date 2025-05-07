@@ -6,38 +6,17 @@ import ConditionsTable from '@displayControls/conditions/ConditionsTable';
 import AllergiesTable from '@displayControls/allergies/AllergiesTable';
 import { useClinicalConfig } from '@hooks/useClinicalConfig';
 import Header from '@components/clinical/header/Header';
-import Sidebar, { SidebarItemProps } from '@components/common/sidebar/Sidebar';
-import { Dashboard } from '@types/config';
+import Sidebar from '@components/common/sidebar/Sidebar';
 import { useDashboardConfig } from '@hooks/useDashboardConfig';
-import { DashboardConfig } from '@types/dashboardConfig';
 import useNotification from '@hooks/useNotification';
+import {
+  getDefaultDashboard,
+  getSidebarItems,
+} from '@services/ConsultationPageService';
 
 const ConsultationPage: React.FC = () => {
   const { clinicalConfig } = useClinicalConfig();
   const { addNotification } = useNotification();
-
-  const getDefaultDashboard = (dashboards: Dashboard[]): Dashboard | null => {
-    const defaultDashboard = dashboards.find(
-      (dashboard) => dashboard.default === true,
-    );
-    if (defaultDashboard) {
-      return defaultDashboard;
-    }
-    return null;
-  };
-
-  const getSidebarItems = (
-    dashboardConfig: DashboardConfig,
-  ): SidebarItemProps[] => {
-    return dashboardConfig.sections.map((section) => ({
-      id: section.name,
-      icon: section.icon,
-      // TODO: add translation
-      label: section.name,
-      active: false,
-      action: () => {},
-    }));
-  };
 
   if (!clinicalConfig) {
     return <Loading description="Loading..." />;
