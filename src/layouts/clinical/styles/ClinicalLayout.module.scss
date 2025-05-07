@@ -62,7 +62,6 @@
   .body {
     grid-template-areas:
       "patient-details"
-      "sidebar"
       "main-display";
     grid-template-columns: 1fr;
     grid-template-rows: auto auto 1fr;
