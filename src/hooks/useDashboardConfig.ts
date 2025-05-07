@@ -8,11 +8,11 @@ import notificationService from '@services/notificationService';
 /**
  * Custom hook to fetch and manage dashboard configuration
  *
- * @param dashboardURL - URL path to fetch the dashboard configuration
+ * @param dashboardURL - URL path to fetch the dashboard configuration, or null if not available
  * @returns The dashboard configuration, loading state, and error state
  */
 export const useDashboardConfig = (
-  dashboardURL: string,
+  dashboardURL: string | null,
 ): DashboardConfigContextType => {
   const [dashboardConfig, setDashboardConfig] =
     useState<DashboardConfig | null>(null);
@@ -20,6 +20,13 @@ export const useDashboardConfig = (
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
+    if (dashboardURL === null) {
+      setDashboardConfig(null);
+      setIsLoading(false);
+      setError(null);
+      return;
+    }
+
     const fetchConfig = async () => {
       setIsLoading(true);
       try {

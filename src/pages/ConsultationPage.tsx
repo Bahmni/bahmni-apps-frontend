@@ -17,10 +17,16 @@ import {
 const ConsultationPage: React.FC = () => {
   const { clinicalConfig } = useClinicalConfig();
   const { addNotification } = useNotification();
-
   const [activeSidebarItem, setActiveSidebarItem] = useState<string | null>(
     null,
   );
+
+  const currentDashboard = useMemo(() => {
+    if (!clinicalConfig) return null;
+    return getDefaultDashboard(clinicalConfig?.dashboards || []);
+  }, [clinicalConfig]);
+
+  const { dashboardConfig } = useDashboardConfig(currentDashboard?.url || null);
 
   const handleSidebarItemClick = (itemId: string) => {
     setActiveSidebarItem(itemId);
@@ -30,11 +36,6 @@ const ConsultationPage: React.FC = () => {
     return <Loading description="Loading..." />;
   }
 
-  const currentDashboard = useMemo(() => {
-    if (!clinicalConfig) return null;
-    return getDefaultDashboard(clinicalConfig.dashboards);
-  }, [clinicalConfig]);
-
   if (!currentDashboard) {
     addNotification({
       title: 'Error',
@@ -43,7 +44,6 @@ const ConsultationPage: React.FC = () => {
     });
     return <Loading description="Error Loading dashboard" />;
   }
-  const { dashboardConfig } = useDashboardConfig(currentDashboard.url);
 
   if (!dashboardConfig) {
     return <Loading description="Loading dashboard config..." />;

@@ -175,4 +175,30 @@ describe('useDashboardConfig', () => {
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBeNull();
   });
+
+  it('should handle null URL parameter', async () => {
+    // Reset mock to track calls
+    (getDashboardConfig as jest.Mock).mockReset();
+
+    // Render the hook with null URL
+    const { result } = renderHook(() => useDashboardConfig(null));
+
+    // Should immediately return null config without loading state
+    expect(result.current.dashboardConfig).toBeNull();
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.error).toBeNull();
+
+    // Wait a tick to ensure any potential async operations would have started
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    // Verify getDashboardConfig was not called at all
+    expect(getDashboardConfig).not.toHaveBeenCalled();
+
+    // State should remain the same
+    expect(result.current.dashboardConfig).toBeNull();
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.error).toBeNull();
+  });
 });

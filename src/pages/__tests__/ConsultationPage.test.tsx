@@ -111,6 +111,10 @@ describe('ConsultationPage Component', () => {
   it('should show loading state when clinical config is null', () => {
     // Mock useClinicalConfig to return null config (loading state)
     (useClinicalConfig as jest.Mock).mockReturnValue({ clinicalConfig: null });
+    // Mock useDashboardConfig to return null (loading state)
+    (useDashboardConfig as jest.Mock).mockReturnValue({
+      dashboardConfig: null,
+    });
 
     render(<ConsultationPage />);
 
