@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import DashboardContainer from '../DashboardContainer';
-import { DashboardSection as DashboardSectionType } from '@types/dashboardConfig';
+import { DashboardSectionConfig as DashboardSectionType } from '@types/dashboardConfig';
 
 // Mock the Carbon components
 jest.mock('@carbon/react', () => ({

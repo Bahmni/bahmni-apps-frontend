@@ -1,10 +1,10 @@
 import React from 'react';
 import { Tile } from '@carbon/react';
-import { DashboardSection as DashboardSectionType } from '@types/dashboardConfig';
+import { DashboardSectionConfig } from '@types/dashboardConfig';
 import * as styles from './styles/DashboardSection.module.scss';
 
 export interface DashboardSectionProps {
-  section: DashboardSectionType;
+  section: DashboardSectionConfig;
 }
 
 /**

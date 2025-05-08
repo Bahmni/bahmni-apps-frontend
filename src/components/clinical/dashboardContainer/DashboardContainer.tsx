@@ -1,11 +1,11 @@
 import React from 'react';
 import { Grid, Column, Section } from '@carbon/react';
-import { DashboardSection as DashboardSectionType } from '@types/dashboardConfig';
+import { DashboardSectionConfig } from '@types/dashboardConfig';
 import DashboardSection from '../dashboardSection/DashboardSection';
 import * as styles from './styles/DashboardContainer.module.scss';
 
 export interface DashboardContainerProps {
-  sections: DashboardSectionType[];
+  sections: DashboardSectionConfig[];
   activeItemId?: string | null;
 }
 

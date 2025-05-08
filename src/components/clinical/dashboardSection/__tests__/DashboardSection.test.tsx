@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import DashboardSection from '../DashboardSection';
-import { DashboardSection as DashboardSectionType } from '@types/dashboardConfig';
+import { DashboardSectionConfig } from '@types/dashboardConfig';
 
 // Mock the Carbon Tile component
 jest.mock('@carbon/react', () => ({
@@ -13,7 +13,7 @@ jest.mock('@carbon/react', () => ({
 }));
 
 describe('DashboardSection Component', () => {
-  const mockSection: DashboardSectionType = {
+  const mockSection: DashboardSectionConfig = {
     name: 'Test Section',
     icon: 'test-icon',
     controls: [],
