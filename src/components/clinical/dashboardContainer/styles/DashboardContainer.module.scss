@@ -1,0 +1,11 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.sectionColumn {
+  margin-bottom: $spacing-07; // Add margin between sections (32px)
+
+  &:last-child {
+    margin-bottom: 0; // Remove margin from the last section
+  }
+}
