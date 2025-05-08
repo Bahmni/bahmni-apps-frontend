@@ -1,9 +1,8 @@
 import React, { Suspense, useState, useMemo } from 'react';
-import { Grid, Column, Section, Loading } from '@carbon/react';
+import { Loading } from '@carbon/react';
 import ClinicalLayout from '@layouts/clinical/ClinicalLayout';
 import PatientDetails from '@displayControls/patient/PatientDetails';
-import ConditionsTable from '@displayControls/conditions/ConditionsTable';
-import AllergiesTable from '@displayControls/allergies/AllergiesTable';
+import DashboardContainer from '@components/clinical/dashboardContainer/DashboardContainer';
 import { useClinicalConfig } from '@hooks/useClinicalConfig';
 import Header from '@components/clinical/header/Header';
 import Sidebar from '@components/common/sidebar/Sidebar';
@@ -70,14 +69,13 @@ const ConsultationPage: React.FC = () => {
       }
       mainDisplay={
         <Suspense fallback="loading">
-          <Section>
-            <Grid>
-              <Column lg={16} md={8} sm={4}>
-                <AllergiesTable />
-                <ConditionsTable />
-              </Column>
-            </Grid>
-          </Section>
+          <DashboardContainer
+            sections={dashboardConfig.sections}
+            activeItemId={
+              activeSideBarItemId ||
+              (sidebarItems.length > 0 ? sidebarItems[0].id : null)
+            }
+          />
         </Suspense>
       }
     />

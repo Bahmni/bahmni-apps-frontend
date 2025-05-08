@@ -2,8 +2,7 @@ import React, { ReactNode } from 'react';
 import { render, screen, act } from '@testing-library/react';
 import ConsultationPage from '../ConsultationPage';
 import PatientDetails from '@displayControls/patient/PatientDetails';
-import ConditionsTable from '@displayControls/conditions/ConditionsTable';
-import AllergiesTable from '@displayControls/allergies/AllergiesTable';
+import DashboardContainer from '@components/clinical/dashboardContainer/DashboardContainer';
 import { useClinicalConfig } from '@hooks/useClinicalConfig';
 import { useDashboardConfig } from '@hooks/useDashboardConfig';
 import useNotification from '@hooks/useNotification';
@@ -62,13 +61,6 @@ jest.mock('@displayControls/patient/PatientDetails', () => {
   ));
 });
 
-// Mock the ConditionsTable component
-jest.mock('@displayControls/conditions/ConditionsTable', () => {
-  return jest.fn(() => (
-    <div data-testid="mocked-conditions-table">Mocked ConditionsTable</div>
-  ));
-});
-
 // Mock the useClinicalConfig hook
 jest.mock('@hooks/useClinicalConfig');
 
@@ -78,10 +70,13 @@ jest.mock('@hooks/useDashboardConfig');
 // Mock the useNotification hook
 jest.mock('@hooks/useNotification');
 
-// Mock the AllergiesTable component
-jest.mock('@displayControls/allergies/AllergiesTable', () => {
-  return jest.fn(() => (
-    <div data-testid="mocked-allergy-table">Mocked AllergiesTable</div>
+// Mock the DashboardContainer component
+jest.mock('@components/clinical/dashboardContainer/DashboardContainer', () => {
+  return jest.fn(({ sections, activeItemId }) => (
+    <div data-testid="mocked-dashboard-container">
+      <div data-testid="dashboard-sections-count">{sections.length}</div>
+      <div data-testid="dashboard-active-item">{activeItemId || 'none'}</div>
+    </div>
   ));
 });
 
@@ -193,7 +188,7 @@ describe('ConsultationPage Component', () => {
     expect(screen.getByTestId('carbon-loading')).toBeInTheDocument();
   });
 
-  it('should render with correct Carbon layout structure when all configs are loaded', async () => {
+  it('should render with correct layout structure when all configs are loaded', async () => {
     // Mock useClinicalConfig to return config
     (useClinicalConfig as jest.Mock).mockReturnValue({
       clinicalConfig: validFullClinicalConfig,
@@ -208,10 +203,16 @@ describe('ConsultationPage Component', () => {
 
     render(<ConsultationPage />);
 
-    // Should render Carbon layout components
-    expect(await screen.findByTestId('carbon-section')).toBeInTheDocument();
-    expect(await screen.findByTestId('carbon-grid')).toBeInTheDocument();
-    expect(await screen.findByTestId('carbon-column')).toBeInTheDocument();
+    // Should render the main layout components
+    expect(
+      await screen.findByTestId('mocked-clinical-layout'),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByTestId('mocked-main-display'),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByTestId('mocked-dashboard-container'),
+    ).toBeInTheDocument();
   });
 
   it('should render child components when all configs are loaded', async () => {
@@ -235,14 +236,18 @@ describe('ConsultationPage Component', () => {
       await screen.findByTestId('mocked-patient-details'),
     ).toBeInTheDocument();
 
-    expect(ConditionsTable).toHaveBeenCalled();
-    expect(AllergiesTable).toHaveBeenCalled();
+    // Should render DashboardContainer
+    expect(DashboardContainer).toHaveBeenCalled();
     expect(
-      await screen.findByTestId('mocked-conditions-table'),
+      await screen.findByTestId('mocked-dashboard-container'),
     ).toBeInTheDocument();
-    expect(
-      await screen.findByTestId('mocked-allergy-table'),
-    ).toBeInTheDocument();
+
+    // Verify DashboardContainer props
+    const dashboardContainerProps = (DashboardContainer as jest.Mock).mock
+      .calls[0][0];
+    expect(dashboardContainerProps.sections).toEqual(
+      validDashboardConfig.sections,
+    );
   });
 
   it('should generate sidebar items correctly from dashboard config', async () => {
