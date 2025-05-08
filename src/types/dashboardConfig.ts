@@ -1,4 +1,4 @@
-export interface DashboardSection {
+export interface DashboardSectionConfig {
   name: string;
   translationKey?: string;
   icon: string;
@@ -6,11 +6,5 @@ export interface DashboardSection {
 }
 
 export interface DashboardConfig {
-  sections: DashboardSection[];
-}
-
-export interface DashboardConfigContextType {
-  dashboardConfig: DashboardConfig | null;
-  isLoading: boolean;
-  error: Error | null;
+  sections: DashboardSectionConfig[];
 }

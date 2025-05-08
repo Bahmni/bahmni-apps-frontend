@@ -1,9 +1,14 @@
 import { useState, useEffect } from 'react';
 import { DashboardConfig } from '@types/dashboardConfig';
-import { DashboardConfigContextType } from '@types/dashboardConfig';
 import { getDashboardConfig } from '@services/configService';
 import { getFormattedError } from '@utils/common';
 import notificationService from '@services/notificationService';
+
+interface UseDashboardConfigResult {
+  dashboardConfig: DashboardConfig | null;
+  isLoading: boolean;
+  error: Error | null;
+}
 
 /**
  * Custom hook to fetch and manage dashboard configuration
@@ -13,7 +18,7 @@ import notificationService from '@services/notificationService';
  */
 export const useDashboardConfig = (
   dashboardURL: string | null,
-): DashboardConfigContextType => {
+): UseDashboardConfigResult => {
   const [dashboardConfig, setDashboardConfig] =
     useState<DashboardConfig | null>(null);
   const [isLoading, setIsLoading] = useState(false);
