@@ -1061,6 +1061,13 @@
   dependencies:
     "@ibm/telemetry-js" "^1.5.0"
 
+"@carbon/layout@^11.34.0":
+  version "11.34.0"
+  resolved "https://registry.yarnpkg.com/@carbon/layout/-/layout-11.34.0.tgz#4a76c3cb1a82c8f8e5f07059ec75ed9939f07e71"
+  integrity sha512-6PMofb/Ul/CZkP1XivszK2teh0odPV/bUG/PPQlVX1xnFdc+4O9o08JnFG9N2Ie6syncOXRCf8z1CegpV28x9A==
+  dependencies:
+    "@ibm/telemetry-js" "^1.5.0"
+
 "@carbon/motion@^11.25.0":
   version "11.25.0"
   resolved "https://registry.yarnpkg.com/@carbon/motion/-/motion-11.25.0.tgz#854c1e906c7b35333786ebf8c8f1c83701ef09e4"
@@ -2773,6 +2780,11 @@
   integrity sha512-z9fJ5Im06zvUL548KvYNecEVlA7cVDkGUi6kZusb04mpyEFKCIZJvloCcmpmLaIahDpOQGHaHmG6imtPMmPXGQ==
   dependencies:
     "@types/node" "*"
+
+"@types/carbon__layout@^0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@types/carbon__layout/-/carbon__layout-0.0.3.tgz#7e7b0385c65ec0bb4391f7dbec6933589d22818d"
+  integrity sha512-ZAAgNTBecBtxuqm/yQCWkXN2Nlz0TorTORhGKWuy1pO3jF0TRNut/0W8me14396Q6a0BugH/xMa7Jv8miQP3kg==
 
 "@types/connect-history-api-fallback@^1.5.4":
   version "1.5.4"
@@ -9202,6 +9214,7 @@ string-length@^4.0.1:
     strip-ansi "^6.0.0"
 
 "string-width-cjs@npm:string-width@^4.2.0", string-width@^4.1.0, string-width@^4.2.0, string-width@^4.2.3:
+  name string-width-cjs
   version "4.2.3"
   resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
   integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
