@@ -9,10 +9,8 @@ expect.extend(toHaveNoViolations);
 // Mock the CSS module
 jest.mock('../styles/ClinicalLayout.module.scss', () => ({
   layout: 'layout',
-  header: 'header',
   body: 'body',
   patientDetails: 'patientDetails',
-  sidebar: 'sidebar',
   mainDisplay: 'mainDisplay',
 }));
 
@@ -22,15 +20,13 @@ describe('ClinicalLayout Component', () => {
   const MockPatientDetails = () => (
     <div data-testid="mock-patient-details">Mock Patient Details</div>
   );
-  const MockSidebar = () => <div data-testid="mock-sidebar">Mock Sidebar</div>;
   const MockMainDisplay = () => (
     <div data-testid="mock-main-display">Mock Main Display</div>
   );
 
   const defaultProps = {
-    header: <MockHeader />,
+    headerWSideNav: <MockHeader />,
     patientDetails: <MockPatientDetails />,
-    sidebar: <MockSidebar />,
     mainDisplay: <MockMainDisplay />,
   };
 
@@ -46,7 +42,6 @@ describe('ClinicalLayout Component', () => {
       // Check if all sections are rendered
       expect(screen.getByTestId('mock-header')).toBeInTheDocument();
       expect(screen.getByTestId('mock-patient-details')).toBeInTheDocument();
-      expect(screen.getByTestId('mock-sidebar')).toBeInTheDocument();
       expect(screen.getByTestId('mock-main-display')).toBeInTheDocument();
     });
 
@@ -59,12 +54,10 @@ describe('ClinicalLayout Component', () => {
 
       // Check for layout structure classes
       expect(container.querySelector('[class*="layout"]')).toBeInTheDocument();
-      expect(container.querySelector('[class*="header"]')).toBeInTheDocument();
       expect(container.querySelector('[class*="body"]')).toBeInTheDocument();
       expect(
         container.querySelector('[class*="patientDetails"]'),
       ).toBeInTheDocument();
-      expect(container.querySelector('[class*="sidebar"]')).toBeInTheDocument();
       expect(
         container.querySelector('[class*="mainDisplay"]'),
       ).toBeInTheDocument();
@@ -75,9 +68,8 @@ describe('ClinicalLayout Component', () => {
   describe('Sad Path', () => {
     test('renders with empty content in sections', () => {
       const emptyProps = {
-        header: <div data-testid="empty-header"></div>,
+        headerWSideNav: <div data-testid="empty-header"></div>,
         patientDetails: <div data-testid="empty-patient-details"></div>,
-        sidebar: <div data-testid="empty-sidebar"></div>,
         mainDisplay: <div data-testid="empty-main-display"></div>,
       };
 
@@ -90,30 +82,12 @@ describe('ClinicalLayout Component', () => {
       // Check if empty sections are rendered
       expect(screen.getByTestId('empty-header')).toBeInTheDocument();
       expect(screen.getByTestId('empty-patient-details')).toBeInTheDocument();
-      expect(screen.getByTestId('empty-sidebar')).toBeInTheDocument();
       expect(screen.getByTestId('empty-main-display')).toBeInTheDocument();
-    });
-
-    test('renders null components gracefully', () => {
-      const nullProps = {
-        ...defaultProps,
-        sidebar: null,
-      };
-
-      // Should not throw an error
-      expect(() => {
-        render(
-          <BrowserRouter>
-            <ClinicalLayout {...nullProps} />
-          </BrowserRouter>,
-        );
-      }).not.toThrow();
     });
   });
 
   // Edge Case Tests
   describe('Edge Cases', () => {
-    // Test with long content in mainDisplay and sidebar sections
     // is ignored as it is not relevant to the layout structure
     // Test with long content in mainDisplay and sidebar sections
     // can be done in browser-based E2E tests. As when using @testing-library/react and jest with CSS Modules: the actual CSS styles (like overflow-y: auto) are not applied or rendered in the JSDOM environment during tests. The style classes (className) are present, but the browser-like CSS rendering engine that applies computed styles is not.

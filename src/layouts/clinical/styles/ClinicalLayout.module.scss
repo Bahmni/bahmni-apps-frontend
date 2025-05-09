@@ -13,26 +13,25 @@
   overflow: hidden; // Prevent scrolling of the overall layout
 }
 
-.header {
-  width: 100%;
-  z-index: 2; // Higher z-index to stay on top
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  flex: 0 0 auto; // Don't grow, don't shrink, auto basis
-}
+// .header {
+//   width: 100%;
+//   z-index: 2; // Higher z-index to stay on top
+//   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+//   flex: 0 0 auto; // Don't grow, don't shrink, auto basis
+// }
 
 //TODO: Body should not be scrollable
 .body {
   display: grid;
   grid-template-areas:
-    "sidebar patient-details"
-    "sidebar main-display";
-  grid-template-columns: 15rem 1fr;
+    "header patient-details"
+    "header main-display";
+  grid-template-columns: 16rem 1fr;
   grid-template-rows: auto 1fr;
   flex: 1; // Take all remaining space
   width: 100%;
   height: calc(100vh - 1rem);
   margin-top: 1rem;
-  overflow: hidden !important; // Prevent overall body scrolling
 }
 
 .patientDetails {
@@ -40,36 +39,20 @@
   border-bottom: 1px solid $border-subtle-01; // Carbon border token
 }
 
-.sidebar {
-  grid-area: sidebar;
-  padding: $spacing-04; // Carbon spacing token (16px)
-  padding-bottom: $spacing-07; // Carbon spacing token (32px)
-  overflow-y: auto;
-  height: 120%;
-  border-right: 1px solid $border-subtle-01; // Carbon border token
-}
-
 .mainDisplay {
   grid-area: main-display;
-  padding: $spacing-04; // Carbon spacing token (16px)
-  padding-bottom: $spacing-07; // Carbon spacing token (32px)
+  padding: $spacing-05; // Carbon spacing token (16px)
+  padding-bottom: $spacing-10; // Carbon spacing token (32px)
   overflow-y: auto;
-  height: 100%;
 }
 
 // Responsive adjustments using Carbon breakpoints
-@include breakpoint-down(md) {
+@include breakpoint-down(lg) {
   .body {
     grid-template-areas:
-      "patient-details"
-      "main-display";
-    grid-template-columns: 1fr;
+      "header patient-details"
+      "header main-display";
+    grid-template-columns: 3rem 1fr;
     grid-template-rows: auto auto 1fr;
-  }
-
-  .sidebar {
-    border-right: none;
-    border-bottom: 1px solid $border-subtle-01; // Carbon border token
-    max-height: $spacing-13; // Carbon spacing token (~200px)
   }
 }
