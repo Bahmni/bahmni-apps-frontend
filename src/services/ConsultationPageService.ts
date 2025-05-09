@@ -40,7 +40,6 @@ export const getSidebarItems = (
   return dashboardConfig.sections.map((section) => ({
     id: section.name,
     icon: section.icon,
-    // TODO: add translation
     label: section.translationKey || section.name,
     active: false,
     action: () => {},

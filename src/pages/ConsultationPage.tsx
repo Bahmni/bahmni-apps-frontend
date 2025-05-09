@@ -4,8 +4,7 @@ import ClinicalLayout from '@layouts/clinical/ClinicalLayout';
 import PatientDetails from '@displayControls/patient/PatientDetails';
 import DashboardContainer from '@components/clinical/dashboardContainer/DashboardContainer';
 import { useClinicalConfig } from '@hooks/useClinicalConfig';
-import Header from '@components/clinical/header/Header';
-import Sidebar from '@components/common/sidebar/Sidebar';
+import HeaderWSideNav from '@components/common/headerWSideNav/HeaderWSideNav';
 import { useDashboardConfig } from '@hooks/useDashboardConfig';
 import useNotification from '@hooks/useNotification';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +13,9 @@ import {
   getDefaultDashboard,
   getSidebarItems,
 } from '@services/ConsultationPageService';
+import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
+import { ICON_SIZE } from '@constants/icon';
+import { BAHMNI_CLINICAL_PATH, BAHMNI_HOME_PATH } from '@constants/app';
 
 /**
  * ConsultationPage
@@ -62,18 +64,57 @@ const ConsultationPage: React.FC = () => {
       <Loading description={t('LOADING_DASHBOARD_CONFIG')} role="status" />
     );
   }
-
+  const breadcrumbItems = [
+    { id: 'home', label: 'Home', href: BAHMNI_HOME_PATH },
+    {
+      id: 'clinical',
+      label: 'Clinical',
+      href: BAHMNI_CLINICAL_PATH,
+    },
+    { id: 'current', label: 'Current Patient', isCurrentPage: true },
+  ];
+  const globalActions = [
+    {
+      id: 'search',
+      label: 'Search',
+      renderIcon: (
+        <BahmniIcon id="search-icon" name="fa-search" size={ICON_SIZE.LG} />
+      ),
+      onClick: () => console.log('Search clicked'),
+    },
+    {
+      id: 'notifications',
+      label: 'Notifications',
+      renderIcon: (
+        <BahmniIcon
+          id="notifications-icon"
+          name="fa-bell"
+          size={ICON_SIZE.LG}
+        />
+      ),
+      onClick: () => console.log('Notifications clicked'),
+    },
+    {
+      id: 'user',
+      label: 'User',
+      renderIcon: (
+        <BahmniIcon id="user-icon" name="fa-user" size={ICON_SIZE.LG} />
+      ),
+      onClick: () => console.log('App Switcher clicked'),
+    },
+  ];
   return (
     <ClinicalLayout
-      header={<Header />}
-      patientDetails={<PatientDetails />}
-      sidebar={
-        <Sidebar
-          items={sidebarItems}
-          activeItemId={activeItemId}
-          onItemClick={handleItemClick}
+      headerWSideNav={
+        <HeaderWSideNav
+          breadcrumbItems={breadcrumbItems}
+          globalActions={globalActions}
+          sideNavItems={sidebarItems}
+          activeSideNavItemId={activeItemId}
+          onSideNavItemClick={handleItemClick}
         />
       }
+      patientDetails={<PatientDetails />}
       mainDisplay={
         <Suspense
           fallback={
