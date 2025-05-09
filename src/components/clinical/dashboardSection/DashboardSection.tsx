@@ -5,6 +5,7 @@ import * as styles from './styles/DashboardSection.module.scss';
 import AllergiesTable from '@/displayControls/allergies/AllergiesTable';
 import ConditionsTable from '@/displayControls/conditions/ConditionsTable';
 import { useTranslation } from 'react-i18next';
+import LabInvestigation from '@/displayControls/labinvestigation/LabInvestigationTable';
 
 export interface DashboardSectionProps {
   section: DashboardSectionConfig;
@@ -17,8 +18,10 @@ const renderSectionContent = (section: DashboardSectionConfig) => {
       return <AllergiesTable />;
     case 'Conditions':
       return <ConditionsTable />;
+    case 'Lab Investigations':  
+       return <LabInvestigation/>;    
     default:
-      return null;
+    return null;
   }
 };
 /**
