@@ -37,13 +37,22 @@
 .patientDetails {
   grid-area: patient-details;
   border-bottom: 1px solid $border-subtle-01; // Carbon border token
+  position: fixed;
+  width: inherit;
+  left: 16rem;
+  z-index: 1000;
 }
 
 .mainDisplay {
   grid-area: main-display;
-  padding: $spacing-05; // Carbon spacing token (16px)
-  padding-bottom: $spacing-10; // Carbon spacing token (32px)
+  padding-bottom: $spacing-05; // Carbon spacing token (16px)
+  padding-top: $spacing-07; // Carbon spacing token (24px)
   overflow-y: auto;
+  position: fixed;
+  bottom: 0;
+  left: 16rem;
+  height: calc(100vh - 10rem);
+  width: calc(100vw - 16rem);
 }
 
 // Responsive adjustments using Carbon breakpoints
@@ -54,5 +63,14 @@
       "header main-display";
     grid-template-columns: 3rem 1fr;
     grid-template-rows: auto auto 1fr;
+  }
+
+  .patientDetails {
+    left: 3rem;
+  }
+
+  .mainDisplay {
+    width: calc(100vw - 3rem);
+    left: 3rem;
   }
 }
