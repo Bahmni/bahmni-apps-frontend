@@ -54,5 +54,6 @@
   "LOADING_DASHBOARD_CONTENT": "Cargando contenido del panel...",
   "NO_ALLERGIES": "No hay alergias registradas para este paciente",
   "REACTIONS": "Reacción(es)",
-  "SEVERITY": "Gravedad"
+  "SEVERITY": "Gravedad",
+  "SIDE_NAVIGATION": "Navegación lateral"
 }
