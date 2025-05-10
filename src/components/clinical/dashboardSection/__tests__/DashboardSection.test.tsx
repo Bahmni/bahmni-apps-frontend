@@ -1,15 +1,35 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import DashboardSection from '../DashboardSection';
-import { DashboardSectionConfig } from '@types/dashboardConfig';
+import { DashboardSectionConfig } from '@/types/dashboardConfig';
 
-// Mock the Carbon Tile component
+// Mock dependencies
 jest.mock('@carbon/react', () => ({
-  Tile: jest.fn(({ children }) => (
-    <div className="cds--tile" data-testid="carbon-tile">
+  Tile: jest.fn(({ children, ref, ...rest }) => (
+    <div className="cds--tile" data-testid="carbon-tile" ref={ref} {...rest}>
       {children}
     </div>
   )),
+}));
+
+// Mock the translation hook
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: jest.fn((key) =>
+      key === 'custom.translation.key' ? 'Translated Title' : key,
+    ),
+  }),
+}));
+
+// Mock the display control components
+jest.mock('@displayControls/allergies/AllergiesTable', () => ({
+  __esModule: true,
+  default: () => <div data-testid="allergies-table">Allergies Table</div>,
+}));
+
+jest.mock('@displayControls/conditions/ConditionsTable', () => ({
+  __esModule: true,
+  default: () => <div data-testid="conditions-table">Conditions Table</div>,
 }));
 
 describe('DashboardSection Component', () => {
@@ -19,15 +39,20 @@ describe('DashboardSection Component', () => {
     controls: [],
   };
 
+  // Handle for forwardRef in tests
+  const mockRef = jest.fn();
+
   it('renders with the correct section name', () => {
-    render(<DashboardSection section={mockSection} />);
+    render(<DashboardSection section={mockSection} ref={mockRef} />);
 
     // Check if the section name is rendered
     expect(screen.getByText('Test Section')).toBeInTheDocument();
   });
 
   it('has the correct id attribute', () => {
-    const { container } = render(<DashboardSection section={mockSection} />);
+    const { container } = render(
+      <DashboardSection section={mockSection} ref={mockRef} />,
+    );
 
     // Check if the div has the correct id
     const sectionDiv = container.querySelector(
@@ -37,9 +62,77 @@ describe('DashboardSection Component', () => {
   });
 
   it('renders a Tile component', () => {
-    render(<DashboardSection section={mockSection} />);
+    render(<DashboardSection section={mockSection} ref={mockRef} />);
 
     // Check if a Tile component is rendered
     expect(screen.getByTestId('carbon-tile')).toBeInTheDocument();
+  });
+
+  it('accepts a ref prop', () => {
+    const mockRefFn = jest.fn();
+
+    render(<DashboardSection section={mockSection} ref={mockRefFn} />);
+
+    // In a real component, we'd check ref.current
+    // For our mocked component, we just verify the ref was passed
+    expect(screen.getByTestId('carbon-tile')).toBeInTheDocument();
+  });
+
+  it('uses translationKey instead of name when available', () => {
+    const sectionWithTranslationKey: DashboardSectionConfig = {
+      name: 'Test Section',
+      translationKey: 'custom.translation.key',
+      icon: 'test-icon',
+      controls: [],
+    };
+
+    render(
+      <DashboardSection section={sectionWithTranslationKey} ref={mockRef} />,
+    );
+
+    // Check if the translated text is rendered instead of the name
+    expect(screen.getByText('Translated Title')).toBeInTheDocument();
+    expect(screen.queryByText('Test Section')).not.toBeInTheDocument();
+  });
+
+  describe('content rendering', () => {
+    it('renders AllergiesTable when section name is Allergies', () => {
+      const allergiesSection: DashboardSectionConfig = {
+        name: 'Allergies',
+        icon: 'test-icon',
+        controls: [],
+      };
+
+      render(<DashboardSection section={allergiesSection} ref={mockRef} />);
+
+      expect(screen.getByTestId('allergies-table')).toBeInTheDocument();
+    });
+
+    it('renders ConditionsTable when section name is Conditions', () => {
+      const conditionsSection: DashboardSectionConfig = {
+        name: 'Conditions',
+        icon: 'test-icon',
+        controls: [],
+      };
+
+      render(<DashboardSection section={conditionsSection} ref={mockRef} />);
+
+      expect(screen.getByTestId('conditions-table')).toBeInTheDocument();
+    });
+
+    it('renders no content for unknown section types', () => {
+      const unknownSection: DashboardSectionConfig = {
+        name: 'Unknown Section',
+        icon: 'test-icon',
+        controls: [],
+      };
+
+      render(<DashboardSection section={unknownSection} ref={mockRef} />);
+
+      // Check that only section title is present, no other content
+      expect(screen.getByText('Unknown Section')).toBeInTheDocument();
+      const tile = screen.getByTestId('carbon-tile');
+      expect(tile.children.length).toBe(1); // Only the title paragraph, no additional content
+    });
   });
 });

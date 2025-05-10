@@ -45,8 +45,6 @@
 
 .mainDisplay {
   grid-area: main-display;
-  padding-bottom: $spacing-05; // Carbon spacing token (16px)
-  padding-top: $spacing-07; // Carbon spacing token (24px)
   overflow-y: auto;
   position: fixed;
   bottom: 0;
