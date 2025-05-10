@@ -1,7 +1,7 @@
 import {
   getDefaultDashboard,
   getSidebarItems,
-} from '../ConsultationPageService';
+} from '../consultationPageService';
 import {
   validFullClinicalConfig,
   validDashboardConfig,

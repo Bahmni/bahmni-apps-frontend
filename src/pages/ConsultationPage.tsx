@@ -12,7 +12,7 @@ import { useSidebarNavigation } from '@hooks/useSidebarNavigation';
 import {
   getDefaultDashboard,
   getSidebarItems,
-} from '@services/ConsultationPageService';
+} from '@/services/consultationPageService';
 import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
 import { ICON_SIZE } from '@constants/icon';
 import { BAHMNI_CLINICAL_PATH, BAHMNI_HOME_PATH } from '@constants/app';
