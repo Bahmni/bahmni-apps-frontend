@@ -38,7 +38,7 @@ export const getSidebarItems = (
   dashboardConfig: DashboardConfig,
 ): SidebarItemProps[] => {
   return dashboardConfig.sections.map((section) => ({
-    id: section.name,
+    id: section.id,
     icon: section.icon,
     label: section.translationKey || section.name,
     active: false,

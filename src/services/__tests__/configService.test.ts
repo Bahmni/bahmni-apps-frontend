@@ -25,12 +25,13 @@ const mockGet = api.get as jest.MockedFunction<typeof api.get>;
 jest.mock('ajv');
 const mockAjv = Ajv as jest.MockedClass<typeof Ajv>;
 
-// Mock getFormattedError
+// Mock common utils
 jest.mock('@utils/common', () => ({
   getFormattedError: jest.fn().mockImplementation((error) => ({
     title: 'Error',
     message: error instanceof Error ? error.message : 'Unknown error',
   })),
+  generateId: jest.fn().mockReturnValue('mock-generated-id'),
 }));
 const mockGetFormattedError =
   commonUtils.getFormattedError as jest.MockedFunction<
@@ -471,6 +472,48 @@ describe('ConfigService', () => {
       // Assert
       expect(mockGet).toHaveBeenCalledWith(formattedDashboardURL);
       expect(result).toEqual(validDashboardConfig);
+    });
+
+    test("should generate IDs for dashboard sections that don't have them", async () => {
+      // Arrange
+      // Mock a dashboard config without IDs
+      const configWithoutIds = {
+        sections: [
+          { name: 'Section1', icon: 'icon1', controls: [] },
+          { name: 'Section2', icon: 'icon2', controls: [] },
+        ],
+      };
+      mockGet.mockResolvedValueOnce(configWithoutIds);
+
+      // Act
+      const result = await getDashboardConfig(testDashboardURL);
+
+      // Assert
+      expect(result?.sections[0].id).toBeDefined();
+      expect(result?.sections[1].id).toBeDefined();
+      expect(typeof result?.sections[0].id).toBe('string');
+      expect(typeof result?.sections[1].id).toBe('string');
+    });
+
+    test('should preserve existing IDs when present', async () => {
+      // Arrange
+      // Mock a dashboard config with some existing IDs
+      const existingId = 'existing-id';
+      const configWithSomeIds = {
+        sections: [
+          { id: existingId, name: 'Section1', icon: 'icon1', controls: [] },
+          { name: 'Section2', icon: 'icon2', controls: [] },
+        ],
+      };
+      mockGet.mockResolvedValueOnce(configWithSomeIds);
+
+      // Act
+      const result = await getDashboardConfig(testDashboardURL);
+
+      // Assert
+      expect(result?.sections[0].id).toBe(existingId);
+      expect(result?.sections[1].id).toBeDefined();
+      expect(result?.sections[1].id).not.toBe(existingId);
     });
 
     test('should validate config against dashboard schema', async () => {

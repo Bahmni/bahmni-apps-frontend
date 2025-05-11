@@ -34,7 +34,7 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
 }) => {
   const { t } = useTranslation();
   return (
-    <Tile id={`section-${section.name}`} ref={ref}>
+    <Tile id={`section-${section.id}`} ref={ref}>
       <p className={styles.sectionTitle}>
         {t(section.translationKey || section.name)}
       </p>

@@ -65,11 +65,13 @@ describe('DashboardContainer Component', () => {
 
   const mockSections: DashboardSectionType[] = [
     {
+      id: 'section-1-id',
       name: 'Section 1',
       icon: 'icon-1',
       controls: [],
     },
     {
+      id: 'section-2-id',
       name: 'Section 2',
       icon: 'icon-2',
       controls: [],
@@ -102,7 +104,7 @@ describe('DashboardContainer Component', () => {
     expect(screen.getAllByTestId('carbon-column').length).toBe(2); // One column per section
   });
 
-  it('scrolls to the active section when activeItemId matches section name', async () => {
+  it('scrolls to the active section when activeItemId matches section id', async () => {
     // Create a spy div element with scrollIntoView method
     const spyElement = document.createElement('div');
     const scrollSpy = jest.spyOn(spyElement, 'scrollIntoView');
@@ -112,37 +114,11 @@ describe('DashboardContainer Component', () => {
       current: spyElement,
     }));
 
-    // Render component with activeItemId matching a section name
-    render(
-      <DashboardContainer sections={mockSections} activeItemId="Section 1" />,
-    );
-
-    // Wait for all effects to execute
-    await waitFor(() => {
-      expect(scrollSpy).toHaveBeenCalledWith({
-        behavior: 'smooth',
-      });
-    });
-
-    // Restore the original implementation
-    jest.restoreAllMocks();
-  });
-
-  it('scrolls to the active section when activeItemId matches with section- prefix', async () => {
-    // Create a spy div element with scrollIntoView method
-    const spyElement = document.createElement('div');
-    const scrollSpy = jest.spyOn(spyElement, 'scrollIntoView');
-
-    // Mock createRef to return our spy element
-    jest.spyOn(React, 'createRef').mockImplementation(() => ({
-      current: spyElement,
-    }));
-
-    // Render component with activeItemId having the section- prefix
+    // Render component with activeItemId matching a section id
     render(
       <DashboardContainer
         sections={mockSections}
-        activeItemId="section-Section 2"
+        activeItemId="section-1-id"
       />,
     );
 
@@ -200,6 +176,7 @@ describe('DashboardContainer Component', () => {
     const updatedSections: DashboardSectionType[] = [
       ...mockSections,
       {
+        id: 'section-3-id',
         name: 'Section 3',
         icon: 'icon-3',
         controls: [],
@@ -216,7 +193,7 @@ describe('DashboardContainer Component', () => {
     rerender(
       <DashboardContainer
         sections={updatedSections}
-        activeItemId="Section 3"
+        activeItemId="section-3-id"
       />,
     );
 
@@ -249,7 +226,7 @@ describe('DashboardContainer Component', () => {
     rerender(
       <DashboardContainer
         sections={reducedSections}
-        activeItemId="Section 2"
+        activeItemId="section-2-id"
       />,
     );
 

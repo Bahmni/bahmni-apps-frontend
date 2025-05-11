@@ -201,11 +201,13 @@ function generateLargeDashboards(count: number) {
 export const validDashboardConfig: DashboardConfig = {
   sections: [
     {
+      id: 'vitals',
       name: 'Vitals',
       icon: 'heartbeat',
       controls: [],
     },
     {
+      id: 'medications',
       name: 'Medications',
       icon: 'pills',
       controls: [],
@@ -217,11 +219,13 @@ export const invalidDashboardConfig = {
   sections: [
     {
       //Missing required name parameter
+      id: 'vitals',
       icon: 'heartbeat',
       translationKey: 'DASHBOARD_VITALS_KEY',
       controls: [],
     },
     {
+      id: 'medications',
       name: 'Medications',
       icon: 'pills',
       controls: [],

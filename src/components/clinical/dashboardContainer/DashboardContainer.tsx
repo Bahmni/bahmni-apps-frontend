@@ -28,8 +28,8 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
   // Initialize refs for each section
   useEffect(() => {
     sections.forEach((section) => {
-      if (!sectionRefs.current[section.name]) {
-        sectionRefs.current[section.name] = React.createRef<HTMLDivElement>();
+      if (!sectionRefs.current[section.id]) {
+        sectionRefs.current[section.id] = React.createRef<HTMLDivElement>();
       }
     });
   }, [sections]);
@@ -39,15 +39,12 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
     if (activeItemId) {
       // Find the section that corresponds to the activeItemId
       const activeSection = sections.find(
-        (section) =>
-          // This assumes sidebar item IDs match section names or have a consistent pattern
-          section.name === activeItemId ||
-          `section-${section.name}` === activeItemId,
+        (section) => section.id === activeItemId,
       );
 
-      if (activeSection && sectionRefs.current[activeSection.name]?.current) {
+      if (activeSection && sectionRefs.current[activeSection.id]?.current) {
         // Added optional chaining and null check to prevent errors
-        sectionRefs.current[activeSection.name].current.scrollIntoView({
+        sectionRefs.current[activeSection.id].current.scrollIntoView({
           behavior: 'smooth',
         });
       }
@@ -67,13 +64,13 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
             lg={16}
             md={8}
             sm={4}
-            key={section.name}
+            key={section.id}
             className={styles.sectionColumn}
-            ref={sectionRefs.current[section.name]}
+            ref={sectionRefs.current[section.id]}
           >
             <DashboardSection
               section={section}
-              ref={sectionRefs.current[section.name]}
+              ref={sectionRefs.current[section.id]}
             />
           </Column>
         ))}
