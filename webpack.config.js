@@ -78,9 +78,13 @@ module.exports = (env, argv) => {
             {
               loader: 'css-loader',
               options: {
-                modules: true,
+                modules: {
+                  localIdentName: isProduction
+                    ? '[path][local]--[hash:base64:5]'
+                    : '[hash:base64]',
+                },
                 importLoaders: 1,
-              }
+              },
             },
             'sass-loader',
           ],
