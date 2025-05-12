@@ -1,5 +1,5 @@
 import React from 'react';
-import { InlineNotification } from '@carbon/react';
+import { ToastNotification } from '@carbon/react';
 import { Notification } from '@types/notification';
 import * as styles from './styles/NotificationContainer.module.scss';
 
@@ -22,7 +22,7 @@ export const NotificationContainer: React.FC<NotificationContainerProps> = ({
       aria-label="Notifications"
     >
       {notifications.map(({ id, title, message, type }) => (
-        <InlineNotification
+        <ToastNotification
           key={id}
           title={title}
           subtitle={message}

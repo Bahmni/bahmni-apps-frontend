@@ -4,10 +4,10 @@
 .notificationContainer {
   position: fixed;
   top: $spacing-10;
+  right: $spacing-05;
   z-index: 9000;
   display: flex;
   flex-direction: column;
   gap: $spacing-03;
-  min-width: 100%;
-  align-items: center;
+  align-items: end;
 }
