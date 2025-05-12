@@ -1,6 +1,7 @@
 import React from 'react';
 import { InlineNotification } from '@carbon/react';
 import { Notification } from '@types/notification';
+import * as styles from './styles/NotificationContainer.module.scss';
 
 interface NotificationContainerProps {
   notifications: Notification[];
@@ -15,17 +16,7 @@ export const NotificationContainer: React.FC<NotificationContainerProps> = ({
 
   return (
     <div
-      className="notification-container"
-      style={{
-        position: 'fixed',
-        top: '4rem',
-        zIndex: 9000,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.5rem',
-        minWidth: '100%',
-        alignItems: 'center',
-      }}
+      className={styles.notificationContainer}
       aria-live="polite"
       role="region"
       aria-label="Notifications"
