@@ -3,9 +3,13 @@
 @use "@carbon/react/scss/theme" as *;
 
 .sectionColumn {
-  margin-bottom: $spacing-07; // Add margin between sections (32px)
+  margin-bottom: $spacing-04; // Add margin to all sections
 
   &:last-child {
-    margin-bottom: 0; // Remove margin from the last section
+    margin-bottom: $spacing-05; // Add margin to the last section
+  }
+
+  &:first-child {
+    margin-top: $spacing-07; // Add margin to the first section
   }
 }

@@ -71,9 +71,27 @@ jest.mock('@layouts/clinical/ClinicalLayout', () => {
   ));
 });
 
-jest.mock('@components/clinical/header/Header', () => {
-  return jest.fn(() => (
-    <div data-testid="mocked-header-component">Mocked Header</div>
+// Add this mock to ConsultationPage.test.tsx
+jest.mock('@components/common/headerWSideNav/HeaderWSideNav', () => {
+  return jest.fn(({ sideNavItems, activeSideNavItemId }) => (
+    <div data-testid="mocked-header-component">
+      {sideNavItems.map(
+        (item: {
+          id: string;
+          icon: string;
+          label: string;
+          href?: string;
+          renderIcon?: ReactNode;
+        }) => (
+          <div key={item.id} data-testid={`sidenav-item-${item.id}`}>
+            {item.label}
+          </div>
+        ),
+      )}
+      <div data-testid="active-sidenav-item">
+        {activeSideNavItemId || 'none'}
+      </div>
+    </div>
   ));
 });
 
@@ -88,21 +106,6 @@ jest.mock('@components/clinical/dashboardContainer/DashboardContainer', () => {
     <div data-testid="mocked-dashboard-container">
       <div data-testid="dashboard-sections-count">{sections.length}</div>
       <div data-testid="dashboard-active-item">{activeItemId || 'none'}</div>
-    </div>
-  ));
-});
-
-jest.mock('@components/common/sidebar/Sidebar', () => {
-  return jest.fn(({ items }) => (
-    <div data-testid="mocked-sidebar-component">
-      {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        items.map((item: any) => (
-          <div key={item.id} data-testid={`sidebar-item-${item.id}`}>
-            {item.label}
-          </div>
-        ))
-      }
     </div>
   ));
 });
@@ -134,17 +137,12 @@ describe('ConsultationPage', () => {
       render(<ConsultationPage />);
       // Verify main layout is rendered
       expect(screen.getByTestId('mocked-clinical-layout')).toBeInTheDocument();
-      expect(screen.getByTestId('mocked-header')).toBeInTheDocument();
       expect(screen.getByTestId('mocked-patient-section')).toBeInTheDocument();
-      expect(screen.getByTestId('mocked-sidebar')).toBeInTheDocument();
       expect(screen.getByTestId('mocked-main-display')).toBeInTheDocument();
       expect(screen.getByTestId('mocked-patient-details')).toBeInTheDocument();
-      expect(screen.getByTestId('mocked-header-component')).toBeInTheDocument();
+      expect(screen.getByTestId('mocked-header')).toBeInTheDocument();
       expect(
         screen.getByTestId('mocked-dashboard-container'),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByTestId('mocked-sidebar-component'),
       ).toBeInTheDocument();
       expect(screen.getByTestId('dashboard-sections-count')).toHaveTextContent(
         validDashboardConfig.sections.length.toString(),

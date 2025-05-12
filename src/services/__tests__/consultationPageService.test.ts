@@ -1,7 +1,7 @@
 import {
   getDefaultDashboard,
   getSidebarItems,
-} from '../ConsultationPageService';
+} from '../consultationPageService';
 import {
   validFullClinicalConfig,
   validDashboardConfig,
@@ -38,14 +38,14 @@ describe('ConsultationPageService', () => {
 
       expect(result).toHaveLength(2);
       expect(result[0]).toEqual({
-        id: 'Vitals',
+        id: 'vitals',
         icon: 'heartbeat',
         label: 'Vitals',
         active: false,
         action: expect.any(Function),
       });
       expect(result[1]).toEqual({
-        id: 'Medications',
+        id: 'medications',
         icon: 'pills',
         label: 'Medications',
         active: false,

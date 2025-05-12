@@ -54,5 +54,6 @@
   "LOADING_DASHBOARD_CONTENT": "Loading dashboard content...",
   "NO_ALLERGIES": "No Allergies recorded for this patient.",
   "REACTIONS": "Reaction(s)",
-  "SEVERITY": "Severity"
+  "SEVERITY": "Severity",
+  "SIDE_NAVIGATION": "Side navigation"
 }

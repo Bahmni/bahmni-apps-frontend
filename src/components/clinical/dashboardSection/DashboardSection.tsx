@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 
 export interface DashboardSectionProps {
   section: DashboardSectionConfig;
+  ref: React.RefObject<HTMLDivElement>;
 }
 
 //TODO: Refactor this to depend on Controls configuration
@@ -27,17 +28,18 @@ const renderSectionContent = (section: DashboardSectionConfig) => {
  * @param {DashboardSectionProps} props - Component props
  * @returns {React.ReactElement} The rendered component
  */
-const DashboardSection: React.FC<DashboardSectionProps> = ({ section }) => {
+const DashboardSection: React.FC<DashboardSectionProps> = ({
+  section,
+  ref,
+}) => {
   const { t } = useTranslation();
   return (
-    <div id={`section-${section.name}`}>
-      <Tile>
-        <p className={styles.sectionTitle}>
-          {t(section.translationKey || section.name)}
-        </p>
-        {renderSectionContent(section)}
-      </Tile>
-    </div>
+    <Tile id={`section-${section.id}`} ref={ref}>
+      <p className={styles.sectionTitle}>
+        {t(section.translationKey || section.name)}
+      </p>
+      {renderSectionContent(section)}
+    </Tile>
   );
 };
 
