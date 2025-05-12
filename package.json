@@ -17,6 +17,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@carbon/layout": "^11.34.0",
     "@carbon/react": "^1.78.2",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
@@ -57,6 +58,7 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^14.6.1",
+    "@types/carbon__layout": "^0.0.3",
     "@types/jest": "^29.5.12",
     "@types/jest-axe": "^3.5.9",
     "@types/node": "^22.13.10",

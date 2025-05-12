@@ -2,7 +2,7 @@ import { get } from './api';
 import Ajv from 'ajv';
 import { CONFIG_ERROR_MESSAGES, ERROR_TITLES } from '@constants/errors';
 import { ClinicalConfig } from '@types/config';
-import { getFormattedError } from '@utils/common';
+import { getFormattedError, generateId } from '@utils/common';
 import notificationService from './notificationService';
 import i18next from 'i18next';
 import { DashboardConfig } from '@types/dashboardConfig';
@@ -32,10 +32,24 @@ export const getClinicalConfig = async <
 export const getDashboardConfig = async <T extends DashboardConfig>(
   dashboardURL: string,
 ): Promise<T | null> => {
-  return getConfig<T>(
+  const config = await getConfig<T>(
     DASHBOARD_CONFIG_URL(dashboardURL),
     dashboardConfigSchema,
   );
+
+  if (config && config.sections && config.sections.length > 0) {
+    config.sections = config.sections.map((section) => {
+      if (!section.id) {
+        return {
+          ...section,
+          id: generateId(),
+        };
+      }
+      return section;
+    });
+  }
+
+  return config;
 };
 
 /**
