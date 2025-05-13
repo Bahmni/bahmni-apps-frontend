@@ -5,9 +5,8 @@
 
 .actionArea {
   position: fixed;
-  top: 0;
   right: 0;
-  height: 100vh;
+  height: inherit;
   width: 60vw;
   border-left: 1px solid $gray-20;
   background-color: $white;

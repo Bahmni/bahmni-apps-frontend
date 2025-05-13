@@ -35,6 +35,11 @@ type Story = StoryObj<typeof ActionArea>;
 
 // Base story with required buttons
 export const Default: Story = {
+  render: (args) => (
+    <div style={{ top: '0', height: '100vh', position: 'fixed' }}>
+      <ActionArea {...args} />
+    </div>
+  ),
   args: {
     title: 'New Consultation',
     primaryButtonText: 'Done',
@@ -51,6 +56,11 @@ export const Default: Story = {
 
 // Story with all three buttons
 export const WithAllButtons: Story = {
+  render: (args) => (
+    <div style={{ top: '0', height: '100vh', position: 'fixed' }}>
+      <ActionArea {...args} />
+    </div>
+  ),
   args: {
     ...Default.args,
     secondaryButtonText: 'Discard',
@@ -62,6 +72,11 @@ export const WithAllButtons: Story = {
 
 // Story with form content
 export const WithFormContent: Story = {
+  render: (args) => (
+    <div style={{ top: '0', height: '100vh', position: 'fixed' }}>
+      <ActionArea {...args} />
+    </div>
+  ),
   args: {
     ...WithAllButtons.args,
     children: (
@@ -192,7 +207,9 @@ export const Interactive: Story = {
         </div>
 
         {isVisible && (
-          <ActionArea {...args} onPrimaryButtonClick={handlePrimaryClick} />
+          <div style={{ top: '0', height: '100vh', position: 'fixed' }}>
+            <ActionArea {...args} onPrimaryButtonClick={handlePrimaryClick} />
+          </div>
         )}
       </>
     );
