@@ -17,6 +17,7 @@ export interface ActionAreaProps {
   onTertiaryButtonClick?: () => void; // Function to be called when tertiary button is clicked
   children: ReactNode; // Content to be rendered inside the ActionArea
   className?: string; // Optional CSS class
+  ariaLabel?: string; // Accessible label for the component
 }
 
 /**
@@ -36,6 +37,7 @@ const ActionArea: React.FC<ActionAreaProps> = ({
   onTertiaryButtonClick,
   children,
   className,
+  ariaLabel,
 }) => {
   const { t } = useTranslation();
 
@@ -44,17 +46,36 @@ const ActionArea: React.FC<ActionAreaProps> = ({
       ? styles.threeButtons
       : styles.twoButtons;
 
-  return (
-    <div className={classNames(styles.actionArea, className)}>
-      <h2 className={styles.title}>{t(title)}</h2>
-      <MenuItemDivider />
-      <div className={styles.content}>{children}</div>
+  // Determine accessible label for the component
+  const accessibleLabel = ariaLabel || 'Action Area';
 
-      <ButtonSet className={styles.buttonSet}>
+  return (
+    <div
+      className={classNames(styles.actionArea, className)}
+      role="region"
+      aria-label={accessibleLabel}
+    >
+      <h2 className={styles.title} id="action-area-title">
+        {t(title)}
+      </h2>
+      <MenuItemDivider aria-hidden="true" />
+      <div
+        className={styles.content}
+        role="region"
+        aria-labelledby="action-area-title"
+      >
+        {children}
+      </div>
+
+      <ButtonSet
+        className={styles.buttonSet}
+        aria-label={t('ACTION_AREA.BUTTON_GROUP')}
+      >
         <Button
           kind="secondary"
           onClick={onSecondaryButtonClick}
           className={buttonCountClass}
+          aria-label={t(secondaryButtonText)}
         >
           {t(secondaryButtonText)}
         </Button>
@@ -64,6 +85,7 @@ const ActionArea: React.FC<ActionAreaProps> = ({
             kind="tertiary"
             onClick={onTertiaryButtonClick}
             className={buttonCountClass}
+            aria-label={t(tertiaryButtonText)}
           >
             {t(tertiaryButtonText)}
           </Button>
@@ -73,6 +95,7 @@ const ActionArea: React.FC<ActionAreaProps> = ({
           kind="primary"
           onClick={onPrimaryButtonClick}
           className={buttonCountClass}
+          aria-label={t(primaryButtonText)}
         >
           {t(primaryButtonText)}
         </Button>
