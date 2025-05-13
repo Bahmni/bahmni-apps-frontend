@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react';
 import { Button, ButtonSet, MenuItemDivider } from '@carbon/react';
 import * as styles from './styles/ActionArea.module.scss';
 import classNames from 'classnames';
+import { useTranslation } from 'react-i18next';
 
 /**
  * ActionArea component props
@@ -36,6 +37,8 @@ const ActionArea: React.FC<ActionAreaProps> = ({
   children,
   className,
 }) => {
+  const { t } = useTranslation();
+
   const buttonCountClass =
     tertiaryButtonText && onTertiaryButtonClick
       ? styles.threeButtons
@@ -43,7 +46,7 @@ const ActionArea: React.FC<ActionAreaProps> = ({
 
   return (
     <div className={classNames(styles.actionArea, className)}>
-      <h2 className={styles.title}>{title}</h2>
+      <h2 className={styles.title}>{t(title)}</h2>
       <MenuItemDivider />
       <div className={styles.content}>{children}</div>
 
@@ -53,7 +56,7 @@ const ActionArea: React.FC<ActionAreaProps> = ({
           onClick={onSecondaryButtonClick}
           className={buttonCountClass}
         >
-          {secondaryButtonText}
+          {t(secondaryButtonText)}
         </Button>
 
         {tertiaryButtonText && onTertiaryButtonClick && (
@@ -62,7 +65,7 @@ const ActionArea: React.FC<ActionAreaProps> = ({
             onClick={onTertiaryButtonClick}
             className={buttonCountClass}
           >
-            {tertiaryButtonText}
+            {t(tertiaryButtonText)}
           </Button>
         )}
 
@@ -71,7 +74,7 @@ const ActionArea: React.FC<ActionAreaProps> = ({
           onClick={onPrimaryButtonClick}
           className={buttonCountClass}
         >
-          {primaryButtonText}
+          {t(primaryButtonText)}
         </Button>
       </ButtonSet>
     </div>
