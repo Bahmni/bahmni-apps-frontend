@@ -10,15 +10,17 @@ expect.extend(toHaveNoViolations);
 jest.mock('../styles/ClinicalLayout.module.scss', () => ({
   layout: 'layout',
   body: 'body',
-  patientDetails: 'patientDetails',
+  patientHeader: 'patientHeader',
   mainDisplay: 'mainDisplay',
+  actionArea: 'actionArea',
+  collapse: 'collapse',
 }));
 
 describe('ClinicalLayout Component', () => {
   // Mock components for each section
   const MockHeader = () => <div data-testid="mock-header">Mock Header</div>;
-  const MockPatientDetails = () => (
-    <div data-testid="mock-patient-details">Mock Patient Details</div>
+  const MockPatientHeader = () => (
+    <div data-testid="mock-patient-header">Mock Patient Header</div>
   );
   const MockMainDisplay = () => (
     <div data-testid="mock-main-display">Mock Main Display</div>
@@ -26,8 +28,10 @@ describe('ClinicalLayout Component', () => {
 
   const defaultProps = {
     headerWSideNav: <MockHeader />,
-    patientDetails: <MockPatientDetails />,
+    patientHeader: <MockPatientHeader />,
     mainDisplay: <MockMainDisplay />,
+    actionArea: <div data-testid="mock-action-area">Mock Action Area</div>,
+    isActionAreaVisible: false,
   };
 
   // Happy Path Tests
@@ -41,7 +45,7 @@ describe('ClinicalLayout Component', () => {
 
       // Check if all sections are rendered
       expect(screen.getByTestId('mock-header')).toBeInTheDocument();
-      expect(screen.getByTestId('mock-patient-details')).toBeInTheDocument();
+      expect(screen.getByTestId('mock-patient-header')).toBeInTheDocument();
       expect(screen.getByTestId('mock-main-display')).toBeInTheDocument();
     });
 
@@ -56,7 +60,7 @@ describe('ClinicalLayout Component', () => {
       expect(container.querySelector('[class*="layout"]')).toBeInTheDocument();
       expect(container.querySelector('[class*="body"]')).toBeInTheDocument();
       expect(
-        container.querySelector('[class*="patientDetails"]'),
+        container.querySelector('[class*="patientHeader"]'),
       ).toBeInTheDocument();
       expect(
         container.querySelector('[class*="mainDisplay"]'),
@@ -69,8 +73,10 @@ describe('ClinicalLayout Component', () => {
     test('renders with empty content in sections', () => {
       const emptyProps = {
         headerWSideNav: <div data-testid="empty-header"></div>,
-        patientDetails: <div data-testid="empty-patient-details"></div>,
+        patientHeader: <div data-testid="empty-patient-header"></div>,
         mainDisplay: <div data-testid="empty-main-display"></div>,
+        actionArea: <div data-testid="empty-action-area"></div>,
+        isActionAreaVisible: false,
       };
 
       render(
@@ -81,7 +87,7 @@ describe('ClinicalLayout Component', () => {
 
       // Check if empty sections are rendered
       expect(screen.getByTestId('empty-header')).toBeInTheDocument();
-      expect(screen.getByTestId('empty-patient-details')).toBeInTheDocument();
+      expect(screen.getByTestId('empty-patient-header')).toBeInTheDocument();
       expect(screen.getByTestId('empty-main-display')).toBeInTheDocument();
     });
   });
