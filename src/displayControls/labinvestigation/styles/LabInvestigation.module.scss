@@ -1,0 +1,55 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.labInvestigationWrapper {
+  width: 100%;
+  margin: $spacing-05 auto;
+}
+
+.accordionTitle {
+  display: flex;
+  align-items: center;
+  gap: $spacing-03;
+  font-weight: 600;
+}
+
+.chevron {
+  font-size: 1rem;
+  color: $text-secondary;
+}
+
+.labBox {
+  border: 1px solid $border-subtle;
+  border-radius: $spacing-03  $spacing-03 0 0;
+  padding: $spacing-05;
+  margin-top: $spacing-03;
+  background-color: $layer-02;
+}
+
+.labHeader {
+  display: flex;
+  align-items: center;
+  gap: $spacing-03;
+  margin-bottom: $spacing-03;
+}
+
+.testType {
+  color: $text-secondary;
+}
+
+.orderedBy {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  gap: $spacing-02;
+  color: $text-primary;
+}
+
+.labResult {
+  width: 100%;
+  background-color: $background-hover;
+  padding: $spacing-04;
+  border-radius: $spacing-02;
+  font-weight: 600;
+}

@@ -1,54 +1,28 @@
 import React from 'react';
-import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
-import { Accordion, AccordionItem, DataTable, IconTab, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tag, TextInput, Tile } from '@carbon/react';
-import BahmniIcon from "@components/common/bahmniIcon/BahmniIcon";
-import { ICON_SIZE } from '@/constants/icon';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Test from './Test';
-
-interface LabInvestigationTable {
-    id: string;
-    testName: string;
-    result: string;
-    date: string;
-    refernceRange?: string;
-    reportedOn?: string;
-    actions?: string;
-}
-
-const mockLabInvestigations: LabInvestigationTable[] = [
-    { id: '1', testName: 'CBC', result: 'Normal', date: '2023-10-01' },
-    { id: '2', testName: 'LFT', result: 'Elevated', date: '2023-10-02' },
-    { id: '3', testName: 'KFT', result: 'Normal', date: '2023-10-03' },
-];
-
-const headers = [
-    { key: 'status', header: 'Status' },
-    { key: 'testName', header: 'Test Name' },
-    { key: 'result', header: 'Result' },
-    { key: 'refernceRange', header: 'Reference Range' },
-    { key: 'reportedOn', header: 'Reported On' },
-    { key: 'actions', header: 'Action' },
-];
+import * as styles from './styles/LabInvestigation.module.scss';
+import { Accordion, AccordionItem } from '@carbon/react';
+import LabTests from './LabTests';
 
 const LabInvestigationTable: React.FC = () => {
-    return (
-        <div>
 
-            <Accordion>
-                <AccordionItem title="23-05-2023">
-                    <Test/>
-                    <Tile>
-                        <strong>Results pending...</strong>
-                    </Tile>
-    
+    return (
+        <section className={styles.labInvestigationWrapper}>
+            <Accordion align="start" size="lg">
+
+                <AccordionItem
+                    title={<span className={styles.accordionTitle}><strong>April 29, 2025</strong></span>}
+                >
+                    <LabTests
+                        testName="Thyroid function Test"
+                        type="Single Test"
+                        tag="Routine"
+                        orderedBy="Dr. Sarah Johnson"
+                        result="Results pending..."
+                    />
                 </AccordionItem>
             </Accordion>
-        </div>
+        </section>
     );
 };
 
 export default LabInvestigationTable;
-
-
-
