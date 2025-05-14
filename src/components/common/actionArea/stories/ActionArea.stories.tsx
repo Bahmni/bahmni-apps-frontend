@@ -46,7 +46,7 @@ export const Default: Story = {
     onPrimaryButtonClick: action('Done clicked'),
     secondaryButtonText: 'Cancel',
     onSecondaryButtonClick: action('Cancel clicked'),
-    children: (
+    content: (
       <Stack gap={6}>
         <p>Content goes here</p>
       </Stack>
@@ -79,7 +79,7 @@ export const WithFormContent: Story = {
   ),
   args: {
     ...WithAllButtons.args,
-    children: (
+    content: (
       <Stack gap={6}>
         <FormGroup legendText="">
           <Grid>

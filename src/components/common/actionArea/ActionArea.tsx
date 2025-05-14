@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { Button, ButtonSet, MenuItemDivider } from '@carbon/react';
+import { Button, ButtonSet } from '@carbon/react';
 import * as styles from './styles/ActionArea.module.scss';
 import classNames from 'classnames';
 import { useTranslation } from 'react-i18next';
@@ -15,7 +15,7 @@ export interface ActionAreaProps {
   onSecondaryButtonClick: () => void; // Function to be called when secondary button is clicked
   tertiaryButtonText?: string; // Text for the tertiary button
   onTertiaryButtonClick?: () => void; // Function to be called when tertiary button is clicked
-  children: ReactNode; // Content to be rendered inside the ActionArea
+  content: ReactNode; // Content to be rendered inside the ActionArea
   className?: string; // Optional CSS class
   ariaLabel?: string; // Accessible label for the component
 }
@@ -35,7 +35,7 @@ const ActionArea: React.FC<ActionAreaProps> = ({
   onSecondaryButtonClick,
   tertiaryButtonText,
   onTertiaryButtonClick,
-  children,
+  content,
   className,
   ariaLabel,
 }) => {
@@ -58,13 +58,12 @@ const ActionArea: React.FC<ActionAreaProps> = ({
       <h2 className={styles.title} id="action-area-title">
         {t(title)}
       </h2>
-      <MenuItemDivider aria-hidden="true" />
       <div
         className={styles.content}
         role="region"
         aria-labelledby="action-area-title"
       >
-        {children}
+        {content}
       </div>
 
       <ButtonSet

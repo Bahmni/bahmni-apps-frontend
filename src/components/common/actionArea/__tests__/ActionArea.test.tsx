@@ -11,6 +11,7 @@ describe('ActionArea', () => {
     onPrimaryButtonClick: jest.fn(),
     secondaryButtonText: 'Cancel',
     onSecondaryButtonClick: jest.fn(),
+    content: <div data-testid="test-content">Test Content</div>,
   };
 
   beforeEach(() => {
@@ -18,11 +19,7 @@ describe('ActionArea', () => {
   });
 
   it('renders with required props', () => {
-    render(
-      <ActionArea {...defaultProps}>
-        <div data-testid="test-content">Test Content</div>
-      </ActionArea>,
-    );
+    render(<ActionArea {...defaultProps} />);
 
     expect(screen.getByText('Test Title')).toBeInTheDocument();
     expect(screen.getByText('Done')).toBeInTheDocument();
@@ -38,9 +35,9 @@ describe('ActionArea', () => {
         onSecondaryButtonClick={jest.fn()}
         tertiaryButtonText="Discard"
         onTertiaryButtonClick={jest.fn()}
-      >
-        <div data-testid="test-content">Test Content</div>
-      </ActionArea>,
+        className="custom-class"
+        ariaLabel="Custom Action Area"
+      />,
     );
 
     expect(screen.getByText('Test Title')).toBeInTheDocument();
@@ -48,14 +45,16 @@ describe('ActionArea', () => {
     expect(screen.getByText('Save Draft')).toBeInTheDocument();
     expect(screen.getByText('Discard')).toBeInTheDocument();
     expect(screen.getByTestId('test-content')).toBeInTheDocument();
+
+    // Check for custom class and aria label
+    const actionArea = screen.getByRole('region', {
+      name: 'Custom Action Area',
+    });
+    expect(actionArea).toHaveClass('custom-class');
   });
 
   it('calls the primary button click handler when clicked', () => {
-    render(
-      <ActionArea {...defaultProps}>
-        <div>Test Content</div>
-      </ActionArea>,
-    );
+    render(<ActionArea {...defaultProps} />);
 
     fireEvent.click(screen.getByText('Done'));
     expect(defaultProps.onPrimaryButtonClick).toHaveBeenCalledTimes(1);
@@ -68,9 +67,7 @@ describe('ActionArea', () => {
         {...defaultProps}
         secondaryButtonText="Save Draft"
         onSecondaryButtonClick={onSecondaryButtonClick}
-      >
-        <div>Test Content</div>
-      </ActionArea>,
+      />,
     );
 
     fireEvent.click(screen.getByText('Save Draft'));
@@ -84,9 +81,7 @@ describe('ActionArea', () => {
         {...defaultProps}
         tertiaryButtonText="Discard"
         onTertiaryButtonClick={onTertiaryButtonClick}
-      >
-        <div>Test Content</div>
-      </ActionArea>,
+      />,
     );
 
     fireEvent.click(screen.getByText('Discard'));
@@ -95,11 +90,7 @@ describe('ActionArea', () => {
 
   describe('Accessibility', () => {
     it('should have no accessibility violations', async () => {
-      const { container } = render(
-        <ActionArea {...defaultProps}>
-          <div>Test Content</div>
-        </ActionArea>,
-      );
+      const { container } = render(<ActionArea {...defaultProps} />);
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });
