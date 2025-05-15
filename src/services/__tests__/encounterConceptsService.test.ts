@@ -1,31 +1,22 @@
 import { get } from '../api';
 import { getEncounterConcepts } from '../encounterConceptsService';
 import { ENCOUNTER_CONCEPTS_URL } from '@constants/app';
-import { getFormattedError } from '@utils/common';
-import notificationService from '../notificationService';
+import { COMMON_ERROR_MESSAGES } from '@constants/errors';
 import {
   EncounterConceptsResponse,
   EncounterConcepts,
 } from '@types/encounterConcepts';
+import i18next from 'i18next';
 
 // Mock dependencies
 jest.mock('../api');
-jest.mock('@utils/common', () => ({
-  getFormattedError: jest.fn(),
-}));
-jest.mock('../notificationService', () => ({
-  showError: jest.fn(),
-  default: { showError: jest.fn() },
+jest.mock('i18next', () => ({
+  t: jest.fn(() => 'Invalid response format'),
 }));
 
 // Type the mocked functions
 const mockedGet = get as jest.MockedFunction<typeof get>;
-const mockedGetFormattedError = getFormattedError as jest.MockedFunction<
-  typeof getFormattedError
->;
-const mockedNotificationService = notificationService as jest.Mocked<
-  typeof notificationService
->;
+const mockedI18next = i18next as jest.Mocked<typeof i18next>;
 
 describe('encounterConceptsService', () => {
   beforeEach(() => {
@@ -177,7 +168,10 @@ describe('encounterConceptsService', () => {
 
       // Act & Assert
       await expect(getEncounterConcepts()).rejects.toThrow(
-        'Invalid response format from encounter concepts API',
+        'Invalid response format',
+      );
+      expect(mockedI18next.t).toHaveBeenCalledWith(
+        COMMON_ERROR_MESSAGES.INVALID_RESPONSE,
       );
     });
 
@@ -187,42 +181,11 @@ describe('encounterConceptsService', () => {
 
       // Act & Assert
       await expect(getEncounterConcepts()).rejects.toThrow(
-        'Invalid response format from encounter concepts API',
+        'Invalid response format',
       );
-    });
-
-    it('should show notification when transformation fails', async () => {
-      // Arrange
-      const mockResponse = { visitTypes: {} };
-      const transformError = new Error('Transform error');
-
-      // Save original implementation
-      const originalEntries = Object.entries;
-
-      // Mock implementation that throws during transformation
-      Object.entries = jest.fn().mockImplementationOnce(() => {
-        throw transformError;
-      });
-
-      mockedGet.mockResolvedValueOnce(mockResponse);
-
-      // Mock the error formatting
-      const formattedError = { title: 'Error Title', message: 'Error Message' };
-      mockedGetFormattedError.mockReturnValueOnce(formattedError);
-
-      // Act & Assert
-      await expect(getEncounterConcepts()).rejects.toThrow();
-
-      // Verify notification was shown
-      expect(mockedGetFormattedError).toHaveBeenCalledWith(transformError);
-      expect(mockedNotificationService.showError).toHaveBeenCalledWith(
-        formattedError.title,
-        formattedError.message,
-        5000,
+      expect(mockedI18next.t).toHaveBeenCalledWith(
+        COMMON_ERROR_MESSAGES.INVALID_RESPONSE,
       );
-
-      // Restore original implementation
-      Object.entries = originalEntries;
     });
 
     it('should convert non-string values to strings', async () => {
