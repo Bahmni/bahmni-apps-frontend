@@ -17,6 +17,9 @@ export const DASHBOARD_CONFIG_URL = (dashboardURL: string) =>
 export const CLINICAL_CONFIG_URL =
   '/bahmni_config/openmrs/apps/clinical/v2/app.json';
 export const LOCATION_RESOURCE_URL = OPENMRS_REST_V1 + '/location';
+export const ENCOUNTER_CONCEPTS_URL =
+  OPENMRS_REST_V1 +
+  '/bahmnicore/config/bahmniencounter?callerContext=REGISTRATION_CONCEPTS';
 export const LOGIN_PATH = '/bahmni/home/index.html#/login';
 export const DEFAULT_LOCALE = 'en';
 export const LOCALE_STORAGE_KEY = 'NG_TRANSLATE_LANG_KEY';
