@@ -1,122 +1,120 @@
-import { get } from '../api';
+import { COMMON_ERROR_MESSAGES } from '@/constants/errors';
 import { getLocations } from '../locationService';
-import { LOCATION_RESOURCE_URL } from '@constants/app';
-import { OpenMRSLocation, OpenMRSLocationResponse } from '@/types/location';
-
-// Mock the api module
-jest.mock('../api');
-
-// Type the mocked functions
-const mockedGet = get as jest.MockedFunction<typeof get>;
 
 describe('locationService', () => {
+  // Store the original document.cookie descriptor
+  const originalDocumentCookie = Object.getOwnPropertyDescriptor(
+    document,
+    'cookie',
+  );
+
   beforeEach(() => {
-    jest.clearAllMocks();
+    // Reset document.cookie before each test
+    Object.defineProperty(document, 'cookie', {
+      writable: true,
+      value: '',
+    });
+
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterAll(() => {
+    // Restore original document.cookie after tests
+    if (originalDocumentCookie) {
+      Object.defineProperty(document, 'cookie', originalDocumentCookie);
+    }
   });
 
   // Happy Path Tests
   describe('Happy Paths', () => {
-    it('should return locations when API call succeeds', async () => {
+    it('should return location from cookie when it exists', async () => {
       // Arrange
-      const mockLocations: OpenMRSLocation[] = [
-        {
-          uuid: 'location-uuid-1',
-          display: 'Test Location 1',
-          links: [
-            {
-              rel: 'self',
-              uri: 'http://example.com/location/location-uuid-1',
-              resourceAlias: 'location',
-            },
-          ],
-        },
-        {
-          uuid: 'location-uuid-2',
-          display: 'Test Location 2',
-          links: [
-            {
-              rel: 'self',
-              uri: 'http://example.com/location/location-uuid-2',
-              resourceAlias: 'location',
-            },
-          ],
-        },
-      ];
-
-      const mockResponse: OpenMRSLocationResponse = {
-        results: mockLocations,
-      };
-
-      mockedGet.mockResolvedValueOnce(mockResponse);
+      const locationCookie =
+        '%7B%22name%22%3A%22General%20Ward%22%2C%22uuid%22%3A%228e6ad830-21be-488b-87af-5e480334342c%22%7D';
+      document.cookie = `bahmni.user.location=${locationCookie}`;
 
       // Act
       const result = await getLocations();
 
       // Assert
-      expect(mockedGet).toHaveBeenCalledWith(LOCATION_RESOURCE_URL);
-      expect(result).toEqual(mockLocations);
+      expect(result).toEqual([
+        {
+          uuid: '8e6ad830-21be-488b-87af-5e480334342c',
+          display: 'General Ward',
+          links: [],
+        },
+      ]);
     });
   });
 
   // Sad Path Tests
   describe('Sad Paths', () => {
-    it('should propagate errors from API calls', async () => {
-      // Arrange
-      const mockError = new Error('Network error');
-      mockedGet.mockRejectedValueOnce(mockError);
+    it('should return empty array when cookie is not present', async () => {
+      // Act
+      const result = await getLocations();
 
-      // Act & Assert
-      await expect(getLocations()).rejects.toThrow('Network error');
-      expect(mockedGet).toHaveBeenCalledWith(LOCATION_RESOURCE_URL);
+      // Assert
+      expect(result).toEqual([]);
     });
 
-    it('should handle server errors properly', async () => {
+    it('should return empty array when cookie value is empty', async () => {
       // Arrange
-      const serverError = new Error('Internal Server Error');
-      serverError.name = 'ServerError';
-      mockedGet.mockRejectedValueOnce(serverError);
+      document.cookie = 'bahmni.user.location=';
 
-      // Act & Assert
-      await expect(getLocations()).rejects.toThrow('Internal Server Error');
+      // Act
+      const result = await getLocations();
+
+      // Assert
+      expect(result).toEqual([]);
     });
   });
 
   // Edge Case Tests
   describe('Edge Cases', () => {
-    it('should return empty array when results is null', async () => {
+    it('should handle malformed cookie gracefully', async () => {
       // Arrange
-      const mockResponse = { results: null };
-      mockedGet.mockResolvedValueOnce(mockResponse);
+      document.cookie = 'bahmni.user.location=invalid-json';
+      // Assert
+      await expect(getLocations()).rejects.toThrow(
+        COMMON_ERROR_MESSAGES.UNEXPECTED_ERROR,
+      );
+    });
+
+    it('should handle cookie with missing properties', async () => {
+      // Arrange - Cookie missing the uuid property
+      document.cookie =
+        'bahmni.user.location=%7B%22name%22%3A%22General%20Ward%22%7D';
 
       // Act
       const result = await getLocations();
 
       // Assert
-      expect(result).toEqual([]);
+      expect(result).toEqual([
+        {
+          uuid: undefined,
+          display: 'General Ward',
+          links: [],
+        },
+      ]);
     });
 
-    it('should return empty array when results is undefined', async () => {
+    it('should handle multiple cookies properly', async () => {
       // Arrange
-      const mockResponse = {};
-      mockedGet.mockResolvedValueOnce(mockResponse);
+      document.cookie = 'other.cookie=some-value';
+      document.cookie =
+        'bahmni.user.location=%7B%22name%22%3A%22General%20Ward%22%2C%22uuid%22%3A%228e6ad830-21be-488b-87af-5e480334342c%22%7D';
 
       // Act
       const result = await getLocations();
 
       // Assert
-      expect(result).toEqual([]);
-    });
-
-    it('should handle unexpected response structure', async () => {
-      // Arrange - Response without the expected structure
-      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-      mockedGet.mockResolvedValueOnce('invalid response' as any);
-
-      // Act & Assert
-      const result = await getLocations();
-
-      // Should still return an empty array rather than crashing
-      expect(result).toEqual([]);
+      expect(result).toEqual([
+        {
+          uuid: '8e6ad830-21be-488b-87af-5e480334342c',
+          display: 'General Ward',
+          links: [],
+        },
+      ]);
     });
   });
 });
