@@ -2,6 +2,10 @@ const BASE_PATH = process.env.PUBLIC_URL || '/';
 const OPENMRS_FHIR_R4 = '/openmrs/ws/fhir2/R4';
 const OPENMRS_REST_V1 = '/openmrs/ws/rest/v1';
 
+// Cookie name constants
+export const BAHMNI_USER_COOKIE_NAME = 'bahmni.user';
+export const BAHMNI_USER_LOCATION_COOKIE_NAME = 'bahmni.user.location';
+
 export const CONFIG_TRANSLATIONS_URL_TEMPLATE = (lang: string) =>
   `/bahmni_config/openmrs/i18n/clinical/locale_${lang}.json`;
 export const BUNDLED_TRANSLATIONS_URL_TEMPLATE = (lang: string) =>
@@ -26,3 +30,9 @@ export const LOCALE_STORAGE_KEY = 'NG_TRANSLATE_LANG_KEY';
 export const CLINICAL_NAMESPACE = 'clinical';
 export const BAHMNI_HOME_PATH = '/bahmni/home/index.html';
 export const BAHMNI_CLINICAL_PATH = '/bahmni/clinical/index.html';
+
+// User and Practitioner endpoints
+export const USER_RESOURCE_URL = (username: string) =>
+  `${OPENMRS_REST_V1}/user?username=${username}&v=custom:(username,uuid)`;
+export const PRACTITIONER_RESOURCE_URL = (uuid?: string) =>
+  OPENMRS_FHIR_R4 + `/Practitioner${uuid ? `/${uuid}` : ''}`;

@@ -1,6 +1,7 @@
 import { COMMON_ERROR_MESSAGES } from '@/constants/errors';
 import { OpenMRSLocation } from '@/types/location';
-import { getCookieByName } from '@/utils/common';
+import { getCookieByName } from '@utils/common';
+import { BAHMNI_USER_LOCATION_COOKIE_NAME } from '@constants/app';
 
 /**
  * Fetches just the current location from bahmni.user.location cookie
@@ -10,7 +11,7 @@ import { getCookieByName } from '@/utils/common';
 export async function getLocations(): Promise<OpenMRSLocation[]> {
   try {
     // Get the cookie value
-    const cookieValue = getCookieByName('bahmni.user.location');
+    const cookieValue = getCookieByName(BAHMNI_USER_LOCATION_COOKIE_NAME);
 
     if (!cookieValue) {
       return [];
