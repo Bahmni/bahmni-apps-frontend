@@ -69,7 +69,7 @@ const BasicForm: React.FC<BasicFormProps> = ({
             titleText={t('LOCATION')}
             helperText={t('SELECT_LOCATION_HELPER')}
             label={t('SELECT_LOCATION')}
-            items={location ? [location] : []}
+            items={[location]}
             itemToString={(item) => (item ? item.display : '')}
             initialSelectedItem={locationSelected}
             disabled
@@ -91,19 +91,6 @@ const BasicForm: React.FC<BasicFormProps> = ({
             type="inline"
           />
         </Column>
-        <Column sm={4} md={8} lg={5}>
-          <DatePicker datePickerType="single" dateFormat="d/m/Y">
-            <DatePickerInput
-              id="date-picker-input"
-              placeholder="dd/mm/yyyy"
-              title={t('CONSULTATION_DATE')}
-              labelText={t('CONSULTATION_DATE')}
-              helperText={t('SELECT_CONSULTATION_DATE_HELPER')}
-              defaultValue={defaultDate}
-              disabled
-            />
-          </DatePicker>
-        </Column>
         <Column sm={4} md={8} lg={5} xl={12}>
           {visitTypeSelected && (
             <Dropdown
@@ -111,7 +98,7 @@ const BasicForm: React.FC<BasicFormProps> = ({
               titleText={t('VISIT_TYPE')}
               helperText={t('SELECT_VISIT_TYPE_HELPER')}
               label={t('SELECT_VISIT_TYPE')}
-              items={visitTypes || []}
+              items={visitTypes}
               itemToString={(item) => (item ? item.name : '')}
               initialSelectedItem={visitTypeSelected}
               disabled
@@ -127,16 +114,27 @@ const BasicForm: React.FC<BasicFormProps> = ({
               titleText={t('PRACTITIONER')}
               helperText={t('SELECT_PRACTITIONER_HELPER')}
               label={t('SELECT_PRACTITIONER')}
-              items={practitioner ? [practitioner] : []}
-              itemToString={(item) =>
-                item ? (item.fullName ? item.fullName : '') : ''
-              }
+              items={[practitioner]}
+              itemToString={(item) => (item?.fullName ? item.fullName : '')}
               initialSelectedItem={practitioner}
               disabled
               size="md"
               type="inline"
             />
           )}
+        </Column>
+        <Column sm={4} md={8} lg={5}>
+          <DatePicker datePickerType="single" dateFormat="d/m/Y">
+            <DatePickerInput
+              id="date-picker-input"
+              placeholder="dd/mm/yyyy"
+              title={t('CONSULTATION_DATE')}
+              labelText={t('CONSULTATION_DATE')}
+              helperText={t('SELECT_CONSULTATION_DATE_HELPER')}
+              defaultValue={defaultDate}
+              disabled
+            />
+          </DatePicker>
         </Column>
       </Grid>
       <MenuItemDivider />

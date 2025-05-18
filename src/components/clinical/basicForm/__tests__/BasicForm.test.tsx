@@ -191,4 +191,208 @@ describe('BasicForm', () => {
       ).toBeInTheDocument();
     });
   });
+
+  describe('Conditional Rendering', () => {
+    describe('Visit Type Dropdown', () => {
+      it('should render Visit Type dropdown when visitTypeSelected is provided', () => {
+        // Act
+        renderBasicForm({
+          visitTypeSelected: mockVisitTypes[0],
+        });
+
+        // Assert
+        expect(screen.getByText('VISIT_TYPE')).toBeInTheDocument();
+        const visitTypeDropdown = screen.getByRole('combobox', {
+          name: /VISIT_TYPE/i,
+        });
+        expect(visitTypeDropdown).toBeInTheDocument();
+        expect(visitTypeDropdown).toBeDisabled();
+      });
+
+      it('should not render Visit Type dropdown when visitTypeSelected is null', () => {
+        // Act
+        renderBasicForm({
+          visitTypeSelected: null,
+        });
+
+        // Assert
+        expect(screen.queryByText('VISIT_TYPE')).not.toBeInTheDocument();
+        expect(
+          screen.queryByRole('combobox', { name: /VISIT_TYPE/i }),
+        ).not.toBeInTheDocument();
+      });
+
+      it('should not render Visit Type dropdown when visitTypeSelected is undefined', () => {
+        // Act
+        renderBasicForm({
+          visitTypeSelected: undefined,
+        });
+
+        // Assert
+        expect(screen.queryByText('VISIT_TYPE')).not.toBeInTheDocument();
+        expect(
+          screen.queryByRole('combobox', { name: /VISIT_TYPE/i }),
+        ).not.toBeInTheDocument();
+      });
+
+      it('should render Visit Type dropdown when visitTypeSelected is an empty object', () => {
+        // Act
+        renderBasicForm({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          visitTypeSelected: {} as any, // Empty object cast as Concept
+        });
+
+        // Assert
+        expect(screen.getByText('VISIT_TYPE')).toBeInTheDocument();
+        const visitTypeDropdown = screen.getByRole('combobox', {
+          name: /VISIT_TYPE/i,
+        });
+        expect(visitTypeDropdown).toBeInTheDocument();
+      });
+    });
+
+    describe('Practitioner Dropdown', () => {
+      it('should render Practitioner dropdown when practitioner is provided', () => {
+        // Act
+        renderBasicForm({
+          practitioner: mockPractitioner,
+        });
+
+        // Assert
+        expect(screen.getByText('PRACTITIONER')).toBeInTheDocument();
+        const practitionerDropdown = screen.getByRole('combobox', {
+          name: /PRACTITIONER/i,
+        });
+        expect(practitionerDropdown).toBeInTheDocument();
+        expect(practitionerDropdown).toBeDisabled();
+      });
+
+      it('should not render Practitioner dropdown when practitioner is null', () => {
+        // Act
+        renderBasicForm({
+          practitioner: null,
+        });
+
+        // Assert
+        expect(screen.queryByText('PRACTITIONER')).not.toBeInTheDocument();
+        expect(
+          screen.queryByRole('combobox', { name: /PRACTITIONER/i }),
+        ).not.toBeInTheDocument();
+      });
+
+      it('should not render Practitioner dropdown when practitioner is undefined', () => {
+        // Act
+        renderBasicForm({
+          practitioner: undefined,
+        });
+
+        // Assert
+        expect(screen.queryByText('PRACTITIONER')).not.toBeInTheDocument();
+        expect(
+          screen.queryByRole('combobox', { name: /PRACTITIONER/i }),
+        ).not.toBeInTheDocument();
+      });
+
+      it('should render Practitioner dropdown when practitioner is an empty object', () => {
+        // Act
+        renderBasicForm({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          practitioner: {} as any, // Empty object cast as FormattedPractitioner
+        });
+
+        // Assert
+        expect(screen.getByText('PRACTITIONER')).toBeInTheDocument();
+        const practitionerDropdown = screen.getByRole('combobox', {
+          name: /PRACTITIONER/i,
+        });
+        expect(practitionerDropdown).toBeInTheDocument();
+      });
+    });
+
+    describe('Combined Conditional Rendering', () => {
+      it('should render both conditionally rendered components when both conditions are met', () => {
+        // Act
+        renderBasicForm({
+          visitTypeSelected: mockVisitTypes[0],
+          practitioner: mockPractitioner,
+        });
+
+        // Assert
+        // Visit Type should be rendered
+        expect(screen.getByText('VISIT_TYPE')).toBeInTheDocument();
+        expect(
+          screen.getByRole('combobox', { name: /VISIT_TYPE/i }),
+        ).toBeInTheDocument();
+
+        // Practitioner should be rendered
+        expect(screen.getByText('PRACTITIONER')).toBeInTheDocument();
+        expect(
+          screen.getByRole('combobox', { name: /PRACTITIONER/i }),
+        ).toBeInTheDocument();
+      });
+
+      it('should not render either component when both conditions are not met', () => {
+        // Act
+        renderBasicForm({
+          visitTypeSelected: null,
+          practitioner: null,
+        });
+
+        // Assert
+        // Visit Type should not be rendered
+        expect(screen.queryByText('VISIT_TYPE')).not.toBeInTheDocument();
+        expect(
+          screen.queryByRole('combobox', { name: /VISIT_TYPE/i }),
+        ).not.toBeInTheDocument();
+
+        // Practitioner should not be rendered
+        expect(screen.queryByText('PRACTITIONER')).not.toBeInTheDocument();
+        expect(
+          screen.queryByRole('combobox', { name: /PRACTITIONER/i }),
+        ).not.toBeInTheDocument();
+      });
+
+      it('should render only Visit Type when only visitTypeSelected is provided', () => {
+        // Act
+        renderBasicForm({
+          visitTypeSelected: mockVisitTypes[0],
+          practitioner: null,
+        });
+
+        // Assert
+        // Visit Type should be rendered
+        expect(screen.getByText('VISIT_TYPE')).toBeInTheDocument();
+        expect(
+          screen.getByRole('combobox', { name: /VISIT_TYPE/i }),
+        ).toBeInTheDocument();
+
+        // Practitioner should not be rendered
+        expect(screen.queryByText('PRACTITIONER')).not.toBeInTheDocument();
+        expect(
+          screen.queryByRole('combobox', { name: /PRACTITIONER/i }),
+        ).not.toBeInTheDocument();
+      });
+
+      it('should render only Practitioner when only practitioner is provided', () => {
+        // Act
+        renderBasicForm({
+          visitTypeSelected: null,
+          practitioner: mockPractitioner,
+        });
+
+        // Assert
+        // Visit Type should not be rendered
+        expect(screen.queryByText('VISIT_TYPE')).not.toBeInTheDocument();
+        expect(
+          screen.queryByRole('combobox', { name: /VISIT_TYPE/i }),
+        ).not.toBeInTheDocument();
+
+        // Practitioner should be rendered
+        expect(screen.getByText('PRACTITIONER')).toBeInTheDocument();
+        expect(
+          screen.getByRole('combobox', { name: /PRACTITIONER/i }),
+        ).toBeInTheDocument();
+      });
+    });
+  });
 });

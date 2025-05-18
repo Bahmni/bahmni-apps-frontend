@@ -147,69 +147,6 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
     </div>
     <div
       class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-5 cds--css-grid-column"
-    >
-      <div
-        class="cds--form-item"
-      >
-        <div
-          class="cds--date-picker cds--date-picker--single"
-        >
-          <div
-            class="cds--date-picker-container"
-          >
-            <label
-              class="cds--label cds--label--disabled"
-              dir="auto"
-              for="date-picker-input"
-            >
-              CONSULTATION_DATE
-            </label>
-            <div
-              class="cds--date-picker-input__wrapper"
-            >
-              <span>
-                <input
-                  aria-describedby="datepicker-input-helper-text-id-«r6»"
-                  class="cds--date-picker__input cds--date-picker__input--md flatpickr-input"
-                  disabled=""
-                  id="date-picker-input"
-                  pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
-                  placeholder="dd/mm/yyyy"
-                  title="CONSULTATION_DATE"
-                  type="text"
-                  value="16/05/2025"
-                />
-                <svg
-                  aria-hidden="true"
-                  class="cds--date-picker__icon"
-                  fill="currentColor"
-                  focusable="false"
-                  height="16"
-                  preserveAspectRatio="xMidYMid meet"
-                  role="img"
-                  viewBox="0 0 32 32"
-                  width="16"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M26,4h-4V2h-2v2h-8V2h-2v2H6C4.9,4,4,4.9,4,6v20c0,1.1,0.9,2,2,2h20c1.1,0,2-0.9,2-2V6C28,4.9,27.1,4,26,4z M26,26H6V12h20 V26z M26,10H6V6h4v2h2V6h8v2h2V6h4V10z"
-                  />
-                </svg>
-              </span>
-            </div>
-            <div
-              class="cds--form__helper-text cds--form__helper-text--disabled"
-              dir="auto"
-              id="datepicker-input-helper-text-id-«r6»"
-            >
-              SELECT_CONSULTATION_DATE_HELPER
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div
-      class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-5 cds--css-grid-column"
       xl="12"
     >
       <div
@@ -217,8 +154,8 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
       >
         <label
           class="cds--label cds--label--disabled"
-          for="downshift-«r9»-toggle-button"
-          id="downshift-«r9»-label"
+          for="downshift-«r8»-toggle-button"
+          id="downshift-«r8»-label"
         >
           VISIT_TYPE
         </label>
@@ -228,13 +165,13 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-«r9»-menu"
+            aria-controls="downshift-«r8»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
-            aria-labelledby="downshift-«r9»-label"
+            aria-labelledby="downshift-«r8»-label"
             class="cds--list-box__field"
             disabled=""
-            id="downshift-«r9»-toggle-button"
+            id="downshift-«r8»-toggle-button"
             role="combobox"
             tabindex="0"
             title="Visit Type 1"
@@ -270,9 +207,9 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-«r9»-label"
+            aria-labelledby="downshift-«r8»-label"
             class="cds--list-box__menu"
-            id="downshift-«r9»-menu"
+            id="downshift-«r8»-menu"
             role="listbox"
           />
         </div>
@@ -286,8 +223,8 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
       >
         <label
           class="cds--label cds--label--disabled"
-          for="downshift-«rc»-toggle-button"
-          id="downshift-«rc»-label"
+          for="downshift-«rb»-toggle-button"
+          id="downshift-«rb»-label"
         >
           PRACTITIONER
         </label>
@@ -297,13 +234,13 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-«rc»-menu"
+            aria-controls="downshift-«rb»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
-            aria-labelledby="downshift-«rc»-label"
+            aria-labelledby="downshift-«rb»-label"
             class="cds--list-box__field"
             disabled=""
-            id="downshift-«rc»-toggle-button"
+            id="downshift-«rb»-toggle-button"
             role="combobox"
             tabindex="0"
             title="Dr. John Smith"
@@ -339,11 +276,74 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-«rc»-label"
+            aria-labelledby="downshift-«rb»-label"
             class="cds--list-box__menu"
-            id="downshift-«rc»-menu"
+            id="downshift-«rb»-menu"
             role="listbox"
           />
+        </div>
+      </div>
+    </div>
+    <div
+      class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-5 cds--css-grid-column"
+    >
+      <div
+        class="cds--form-item"
+      >
+        <div
+          class="cds--date-picker cds--date-picker--single"
+        >
+          <div
+            class="cds--date-picker-container"
+          >
+            <label
+              class="cds--label cds--label--disabled"
+              dir="auto"
+              for="date-picker-input"
+            >
+              CONSULTATION_DATE
+            </label>
+            <div
+              class="cds--date-picker-input__wrapper"
+            >
+              <span>
+                <input
+                  aria-describedby="datepicker-input-helper-text-id-«rc»"
+                  class="cds--date-picker__input cds--date-picker__input--md flatpickr-input"
+                  disabled=""
+                  id="date-picker-input"
+                  pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
+                  placeholder="dd/mm/yyyy"
+                  title="CONSULTATION_DATE"
+                  type="text"
+                  value="16/05/2025"
+                />
+                <svg
+                  aria-hidden="true"
+                  class="cds--date-picker__icon"
+                  fill="currentColor"
+                  focusable="false"
+                  height="16"
+                  preserveAspectRatio="xMidYMid meet"
+                  role="img"
+                  viewBox="0 0 32 32"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M26,4h-4V2h-2v2h-8V2h-2v2H6C4.9,4,4,4.9,4,6v20c0,1.1,0.9,2,2,2h20c1.1,0,2-0.9,2-2V6C28,4.9,27.1,4,26,4z M26,26H6V12h20 V26z M26,10H6V6h4v2h2V6h8v2h2V6h4V10z"
+                  />
+                </svg>
+              </span>
+            </div>
+            <div
+              class="cds--form__helper-text cds--form__helper-text--disabled"
+              dir="auto"
+              id="datepicker-input-helper-text-id-«rc»"
+            >
+              SELECT_CONSULTATION_DATE_HELPER
+            </div>
+          </div>
         </div>
       </div>
     </div>
