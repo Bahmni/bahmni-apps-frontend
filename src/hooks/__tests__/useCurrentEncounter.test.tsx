@@ -1,4 +1,3 @@
-/* tslint:disable */
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
 import { useCurrentEncounter } from '@hooks/useCurrentEncounter';
@@ -30,16 +29,26 @@ describe('useCurrentEncounter', () => {
     <NotificationProvider>{children}</NotificationProvider>
   );
 
-  it('should return loading state initially', () => {
-    mockedGetCurrentEncounter.mockResolvedValueOnce(mockCurrentEncounter);
+  it('should return loading state initially', async () => {
+    // Create a promise that we can control when it resolves
+    const promise = Promise.resolve(mockCurrentEncounter);
+    mockedGetCurrentEncounter.mockReturnValueOnce(promise);
 
     const { result } = renderHook(() => useCurrentEncounter(patientUUID), {
       wrapper,
     });
 
+    // Check initial loading state
     expect(result.current.loading).toBe(true);
     expect(result.current.currentEncounter).toBeNull();
     expect(result.current.error).toBeNull();
+
+    // Wait for all promises to resolve
+    await act(async () => {
+      await promise;
+      // Add a small delay to ensure all state updates have processed
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
   });
 
   it('should fetch and return the current encounter', async () => {
@@ -53,9 +62,11 @@ describe('useCurrentEncounter', () => {
     // Initial state
     expect(result.current.loading).toBe(true);
 
-    // Wait for the promise to resolve and component to update
+    // Wait for all state updates to complete using act
     await act(async () => {
       await promise;
+      // Add a small delay to ensure all state updates have processed
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     // Verify the state after the promise resolves
@@ -70,7 +81,12 @@ describe('useCurrentEncounter', () => {
       wrapper,
     });
 
-    // Immediately verify since it's a synchronous path
+    // Wait for any potential state updates to complete
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    // Verify since it's a synchronous path
     expect(result.current.loading).toBe(false);
     expect(result.current.currentEncounter).toBeNull();
     expect(result.current.error).toBeInstanceOf(Error);
@@ -90,6 +106,8 @@ describe('useCurrentEncounter', () => {
     // Wait for the promise to resolve and component to update
     await act(async () => {
       await promise;
+      // Add a small delay to ensure all state updates have processed
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     // Verify the state after the promise resolves
@@ -116,12 +134,14 @@ describe('useCurrentEncounter', () => {
       } catch {
         // Expected rejection
       }
+      // Add a small delay to ensure all state updates have processed
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     // Verify the state after the promise rejects
     expect(result.current.loading).toBe(false);
     expect(result.current.currentEncounter).toBeNull();
-    expect(result.current.error).toEqual(error);
+    expect(result.current.error).toEqual(new Error('Service error'));
   });
 
   it('should refetch data when patientUUID changes', async () => {
@@ -139,6 +159,8 @@ describe('useCurrentEncounter', () => {
     // Wait for the first promise to resolve and component to update
     await act(async () => {
       await promise1;
+      // Add a small delay to ensure all state updates have processed
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(mockedGetCurrentEncounter).toHaveBeenCalledTimes(1);
@@ -152,6 +174,8 @@ describe('useCurrentEncounter', () => {
     await act(async () => {
       rerender({ patientId: newPatientUUID });
       await promise2;
+      // Add a small delay to ensure all state updates have processed
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(mockedGetCurrentEncounter).toHaveBeenCalledTimes(2);
@@ -169,6 +193,8 @@ describe('useCurrentEncounter', () => {
     // Wait for the first promise to resolve and component to update
     await act(async () => {
       await promise1;
+      // Add a small delay to ensure all state updates have processed
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(mockedGetCurrentEncounter).toHaveBeenCalledTimes(1);
@@ -180,6 +206,8 @@ describe('useCurrentEncounter', () => {
     await act(async () => {
       result.current.refetch();
       await promise2;
+      // Add a small delay to ensure all state updates have processed
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(mockedGetCurrentEncounter).toHaveBeenCalledTimes(2);
@@ -201,6 +229,8 @@ describe('useCurrentEncounter', () => {
       } catch {
         // Expected rejection
       }
+      // Add a small delay to ensure all state updates have processed
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     // The notificationService might be called directly in encounterService,
