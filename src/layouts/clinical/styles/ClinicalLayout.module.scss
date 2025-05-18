@@ -70,8 +70,9 @@
     grid-template-rows: auto auto 1fr;
   }
 
-  .patientDetails {
+  .patientHeader {
     left: 3rem;
+    width: fit-content;
   }
 
   .mainDisplay {
