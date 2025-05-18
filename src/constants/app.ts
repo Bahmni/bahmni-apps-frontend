@@ -16,6 +16,8 @@ export const PATIENT_CONDITION_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 + `/Condition?patient=${patientUUID}`;
 export const PATIENT_ALLERGY_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 + `/AllergyIntolerance?patient=${patientUUID}`;
+export const PATIENT_ENCOUNTER_RESOURCE_URL = (patientUUID: string) =>
+  OPENMRS_FHIR_R4 + `/Encounter?subject:Patient=${patientUUID}&_tag=visit`;
 export const DASHBOARD_CONFIG_URL = (dashboardURL: string) =>
   `/bahmni_config/openmrs/apps/clinical/v2/dashboards/${dashboardURL}`;
 export const CLINICAL_CONFIG_URL =
@@ -24,15 +26,13 @@ export const LOCATION_RESOURCE_URL = OPENMRS_REST_V1 + '/location';
 export const ENCOUNTER_CONCEPTS_URL =
   OPENMRS_REST_V1 +
   '/bahmnicore/config/bahmniencounter?callerContext=REGISTRATION_CONCEPTS';
+export const USER_RESOURCE_URL = (username: string) =>
+  `${OPENMRS_REST_V1}/user?username=${username}&v=custom:(username,uuid)`;
+export const PRACTITIONER_RESOURCE_URL = (uuid?: string) =>
+  OPENMRS_FHIR_R4 + `/Practitioner${uuid ? `/${uuid}` : ''}`;
 export const LOGIN_PATH = '/bahmni/home/index.html#/login';
 export const DEFAULT_LOCALE = 'en';
 export const LOCALE_STORAGE_KEY = 'NG_TRANSLATE_LANG_KEY';
 export const CLINICAL_NAMESPACE = 'clinical';
 export const BAHMNI_HOME_PATH = '/bahmni/home/index.html';
 export const BAHMNI_CLINICAL_PATH = '/bahmni/clinical/index.html';
-
-// User and Practitioner endpoints
-export const USER_RESOURCE_URL = (username: string) =>
-  `${OPENMRS_REST_V1}/user?username=${username}&v=custom:(username,uuid)`;
-export const PRACTITIONER_RESOURCE_URL = (uuid?: string) =>
-  OPENMRS_FHIR_R4 + `/Practitioner${uuid ? `/${uuid}` : ''}`;
