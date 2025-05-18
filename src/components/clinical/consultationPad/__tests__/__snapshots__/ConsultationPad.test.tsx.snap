@@ -1,0 +1,82 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ConsultationPad Rendering States should match snapshot when fully loaded 1`] = `
+<div>
+  <div
+    data-testid="action-area"
+  >
+    <div
+      data-testid="action-area-title"
+    >
+      Consultation Pad
+    </div>
+    <button
+      data-testid="primary-button"
+    >
+      Done
+    </button>
+    <button
+      data-testid="secondary-button"
+    >
+      Cancel
+    </button>
+    <div
+      data-testid="action-area-content"
+    >
+      <div
+        data-testid="basic-form"
+      >
+        <pre
+          data-testid="basic-form-props"
+        >
+          {
+  "practitioner": {
+    "id": "practitioner-uuid",
+    "fullName": "Dr. Test Doctor"
+  },
+  "encounterTypes": [
+    {
+      "uuid": "encounter-type-uuid-1",
+      "name": "Consultation"
+    },
+    {
+      "uuid": "encounter-type-uuid-2",
+      "name": "Other Type"
+    }
+  ],
+  "encounterTypeSelected": {
+    "uuid": "encounter-type-uuid-1",
+    "name": "Consultation"
+  },
+  "visitTypes": [
+    {
+      "uuid": "visit-type-uuid-1",
+      "name": "Visit Type 1"
+    },
+    {
+      "uuid": "visit-type-uuid-2",
+      "name": "Visit Type 2"
+    }
+  ],
+  "visitTypeSelected": {
+    "uuid": "visit-type-uuid-1",
+    "name": "Visit Type 1"
+  },
+  "location": {
+    "uuid": "location-uuid-1",
+    "display": "Test Location",
+    "links": []
+  },
+  "locationSelected": {
+    "uuid": "location-uuid-1",
+    "display": "Test Location",
+    "links": []
+  },
+  "defaultDate": "Sun May 18 2025"
+}
+        </pre>
+      </div>
+    </div>
+  </div>
+</div>
+`;

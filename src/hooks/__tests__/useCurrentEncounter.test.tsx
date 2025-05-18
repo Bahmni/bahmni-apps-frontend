@@ -113,7 +113,7 @@ describe('useCurrentEncounter', () => {
     await act(async () => {
       try {
         await promise;
-      } catch (e) {
+      } catch {
         // Expected rejection
       }
     });
@@ -198,7 +198,7 @@ describe('useCurrentEncounter', () => {
     await act(async () => {
       try {
         await promise;
-      } catch (e) {
+      } catch {
         // Expected rejection
       }
     });

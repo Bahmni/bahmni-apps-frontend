@@ -10,7 +10,6 @@
   height: inherit;
   width: 60vw;
   border-left: 1px solid $gray-20;
-  background-color: $white;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -20,13 +19,12 @@
   @include type-style("heading-03");
   font-weight: 700;
   padding: $spacing-06;
-  padding-bottom: $spacing-05;
+  padding-bottom: $spacing-04;
 }
 
 .content {
   flex: 1;
   overflow-y: auto;
-  padding: $spacing-06;
 }
 
 .buttonSet {
