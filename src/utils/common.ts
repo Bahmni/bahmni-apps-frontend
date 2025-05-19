@@ -1,4 +1,5 @@
 import axios, { AxiosError } from 'axios';
+import { breakpoints, baseFontSize } from '@carbon/layout';
 import i18next from 'i18next';
 
 /**
@@ -91,4 +92,30 @@ export function capitalize(input: string, delimiters: string = ' -'): string {
   return words
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
+}
+
+export function isMobile(): boolean {
+  // Parse the breakpoint width to a number for proper comparison
+  const breakpointWidth = parseInt(breakpoints.lg.width);
+  const isMobile = window.innerWidth < breakpointWidth * baseFontSize;
+  return isMobile;
+}
+
+/**
+ * Gets the cookie value by name
+ * @param name The name of the cookie to retrieve
+ * @returns The cookie value or empty string if not found
+ */
+export function getCookieByName(name: string): string {
+  const cookieString = document.cookie;
+  const cookies = cookieString.split(';');
+
+  for (const cookie of cookies) {
+    const [cookieName, cookieValue] = cookie.trim().split('=');
+    if (cookieName === name) {
+      return cookieValue;
+    }
+  }
+
+  return '';
 }

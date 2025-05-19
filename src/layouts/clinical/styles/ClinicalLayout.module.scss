@@ -13,33 +13,31 @@
   overflow: hidden; // Prevent scrolling of the overall layout
 }
 
-// .header {
-//   width: 100%;
-//   z-index: 2; // Higher z-index to stay on top
-//   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-//   flex: 0 0 auto; // Don't grow, don't shrink, auto basis
-// }
-
-//TODO: Body should not be scrollable
 .body {
   display: grid;
   grid-template-areas:
     "header patient-details"
     "header main-display";
   grid-template-columns: 16rem 1fr;
+  left: 16rem;
   grid-template-rows: auto 1fr;
   flex: 1; // Take all remaining space
-  width: 100%;
-  height: calc(100vh - 1rem);
+  width: calc(100vw - 16rem);
+  height: calc(100vh - 3rem);
   margin-top: 1rem;
 }
 
-.patientDetails {
+.collapse {
+  width: calc(40vw - 3rem);
+  left: 3rem;
+}
+
+.patientHeader {
   grid-area: patient-details;
   border-bottom: 1px solid $border-subtle-01; // Carbon border token
   position: fixed;
   width: inherit;
-  left: 16rem;
+  left: inherit;
   z-index: 1000;
 }
 
@@ -48,9 +46,17 @@
   overflow-y: auto;
   position: fixed;
   bottom: 0;
-  left: 16rem;
+  left: inherit;
   height: calc(100vh - 10rem);
-  width: calc(100vw - 16rem);
+  width: inherit;
+}
+
+.actionArea {
+  position: fixed;
+  top: 3rem !important;
+  right: 0;
+  height: calc(100vh - 3rem) !important;
+  z-index: 1000;
 }
 
 // Responsive adjustments using Carbon breakpoints
@@ -60,15 +66,25 @@
       "header patient-details"
       "header main-display";
     grid-template-columns: 3rem 1fr;
+    left: 3rem;
     grid-template-rows: auto auto 1fr;
   }
 
-  .patientDetails {
+  .patientHeader {
     left: 3rem;
+    width: fit-content;
   }
 
   .mainDisplay {
     width: calc(100vw - 3rem);
     left: 3rem;
+  }
+
+  .actionArea {
+    left: 3rem;
+  }
+
+  .collapse {
+    display: none;
   }
 }

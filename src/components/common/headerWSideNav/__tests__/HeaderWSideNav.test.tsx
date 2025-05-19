@@ -14,10 +14,12 @@ jest.mock('react-i18next', () => ({
 
 // Mock useHeaderSideNav hook
 const mockHandleClickSideNavExpand = jest.fn();
+// Allow controlling isSideNavExpanded in tests
+let mockIsSideNavExpanded = false;
 
 jest.mock('@hooks/useHeaderSideNav', () => ({
   useHeaderSideNav: (onItemClick) => ({
-    isSideNavExpanded: false,
+    isSideNavExpanded: mockIsSideNavExpanded,
     handleClickSideNavExpand: mockHandleClickSideNavExpand,
     // Pass the e and itemId arguments to the onItemClick callback
     handleSideNavItemClick: (e, itemId) => {
@@ -324,6 +326,66 @@ describe('HeaderWSideNav', () => {
       render(<HeaderWSideNav {...defaultProps} globalActions={[]} />);
 
       expect(screen.queryByTestId('header-global-bar')).not.toBeInTheDocument();
+    });
+  });
+
+  // SideNav expansion tests
+  describe('SideNav expansion behavior', () => {
+    afterEach(() => {
+      // Reset the mock value after each test
+      mockIsSideNavExpanded = false;
+    });
+
+    it('expands SideNav when isSideNavExpanded=true and isRail=false', () => {
+      mockIsSideNavExpanded = true;
+      const { container } = render(
+        <HeaderWSideNav {...defaultProps} isRail={false} />,
+      );
+
+      const sideNav = screen.getByTestId('side-nav');
+      expect(sideNav).toHaveAttribute('data-expanded', 'true');
+
+      // Create a snapshot for this state
+      expect(container).toMatchSnapshot('expanded_sideNav');
+    });
+
+    it('does not expand SideNav when isSideNavExpanded=true and isRail=true', () => {
+      mockIsSideNavExpanded = true;
+      const { container } = render(
+        <HeaderWSideNav {...defaultProps} isRail={true} />,
+      );
+
+      const sideNav = screen.getByTestId('side-nav');
+      expect(sideNav).toHaveAttribute('data-expanded', 'false');
+
+      // Create a snapshot for this state
+      expect(container).toMatchSnapshot('expanded_with_rail');
+    });
+
+    it('does not expand SideNav when isSideNavExpanded=false and isRail=false', () => {
+      mockIsSideNavExpanded = false;
+      const { container } = render(
+        <HeaderWSideNav {...defaultProps} isRail={false} />,
+      );
+
+      const sideNav = screen.getByTestId('side-nav');
+      expect(sideNav).toHaveAttribute('data-expanded', 'false');
+
+      // Create a snapshot for this state
+      expect(container).toMatchSnapshot('not_expanded_no_rail');
+    });
+
+    it('does not expand SideNav when isSideNavExpanded=false and isRail=true', () => {
+      mockIsSideNavExpanded = false;
+      const { container } = render(
+        <HeaderWSideNav {...defaultProps} isRail={true} />,
+      );
+
+      const sideNav = screen.getByTestId('side-nav');
+      expect(sideNav).toHaveAttribute('data-expanded', 'false');
+
+      // Create a snapshot for this state
+      expect(container).toMatchSnapshot('not_expanded_with_rail');
     });
   });
 

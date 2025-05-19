@@ -16,6 +16,7 @@ import { ICON_SIZE } from '@constants/icon';
 import * as styles from './styles/HeaderWSideNav.module.scss';
 import { useTranslation } from 'react-i18next';
 import { HeaderWSideNavProps } from '@types/headerSideNav';
+import { isMobile } from '@utils/common';
 
 /**
  * HeaderWSideNav component combines a header with side navigation, breadcrumbs, and global actions.
@@ -31,6 +32,7 @@ const HeaderWSideNav: React.FC<HeaderWSideNavProps> = ({
   sideNavItems,
   activeSideNavItemId = null,
   onSideNavItemClick,
+  isRail = false,
   ariaLabel = 'HeaderWSideNav',
 }) => {
   const { t } = useTranslation();
@@ -83,9 +85,9 @@ const HeaderWSideNav: React.FC<HeaderWSideNavProps> = ({
     return (
       <SideNav
         aria-label={t('SIDE_NAVIGATION')}
-        expanded={isSideNavExpanded}
+        expanded={isSideNavExpanded && !isRail}
         isPersistent
-        isRail
+        isRail={isRail || isMobile()}
         data-testid="side-nav"
         className={styles.sideNavItems}
       >

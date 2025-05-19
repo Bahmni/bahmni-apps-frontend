@@ -1,10 +1,13 @@
 import React, { ReactNode } from 'react';
+import classNames from 'classnames';
 import * as styles from './styles/ClinicalLayout.module.scss';
 
 interface ClinicalLayoutProps {
   headerWSideNav: ReactNode;
-  patientDetails: ReactNode;
+  patientHeader: ReactNode;
   mainDisplay: ReactNode;
+  actionArea: ReactNode;
+  isActionAreaVisible: boolean;
 }
 
 /**
@@ -15,22 +18,34 @@ interface ClinicalLayoutProps {
  * 3. Main Display - right side, scrollable content area
  *
  * @param {ReactNode} headerWSideNav - The header component
- * @param {ReactNode} patientDetails - The patient details component
+ * @param {ReactNode} patientHeader - The patient header component
  * @param {ReactNode} mainDisplay - The main content to display
+ * @param {ReactNode} actionArea - The action area component
+ * @param {boolean} isActionAreaVisible - Flag to control visibility of the action area
  * @returns {React.ReactElement} The ClinicalLayout component
  */
 const ClinicalLayout: React.FC<ClinicalLayoutProps> = ({
   headerWSideNav,
-  patientDetails,
+  patientHeader,
   mainDisplay,
+  actionArea,
+  isActionAreaVisible,
 }) => {
   return (
     <div className={styles.layout}>
       {headerWSideNav}
-      <div className={styles.body}>
-        <section className={styles.patientDetails}>{patientDetails}</section>
+      <div
+        className={classNames(
+          styles.body,
+          isActionAreaVisible ? styles.collapse : undefined,
+        )}
+      >
+        <section className={styles.patientHeader}>{patientHeader}</section>
         <div className={styles.mainDisplay}>{mainDisplay}</div>
       </div>
+      {isActionAreaVisible && (
+        <div className={styles.actionArea}>{actionArea}</div>
+      )}
     </div>
   );
 };

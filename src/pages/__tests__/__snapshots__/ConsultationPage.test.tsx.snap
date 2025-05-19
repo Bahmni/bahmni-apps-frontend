@@ -7,14 +7,55 @@ exports[`ConsultationPage Rendering and Structure should match the snapshot 1`] 
   >
     <div
       data-testid="mocked-header"
-    />
+    >
+      <div
+        data-testid="mocked-header-component"
+      >
+        <div
+          data-testid="sidenav-item-vitals"
+        >
+          Vitals
+        </div>
+        <div
+          data-testid="sidenav-item-medications"
+        >
+          Medications
+        </div>
+        <div
+          data-testid="active-sidenav-item"
+        >
+          Vitals
+        </div>
+      </div>
+    </div>
     <div
       data-testid="mocked-patient-section"
     >
       <div
-        data-testid="mocked-patient-details"
+        data-testid="carbon-tile"
       >
-        Mocked PatientDetails
+        <div
+          data-testid="carbon-grid"
+        >
+          <div
+            data-testid="carbon-column"
+          >
+            <div
+              data-testid="mocked-patient-details"
+            >
+              Mocked PatientDetails
+            </div>
+          </div>
+          <div
+            data-testid="carbon-column"
+          >
+            <button
+              data-testid="carbon-button"
+            >
+              translated_PATIENT_HEADER_SHOW_ACTION_AREA
+            </button>
+          </div>
+        </div>
       </div>
     </div>
     <div

@@ -1,4 +1,9 @@
-import { capitalize, generateId, getFormattedError } from '../common';
+import {
+  capitalize,
+  generateId,
+  getFormattedError,
+  getCookieByName,
+} from '../common';
 import axios, { AxiosError } from 'axios';
 import i18n from '@/setupTests.i18n';
 
@@ -10,6 +15,68 @@ jest.mock('axios', () => ({
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('common utility functions', () => {
+  describe('getCookieByName', () => {
+    const originalDocumentCookie = Object.getOwnPropertyDescriptor(
+      document,
+      'cookie',
+    );
+
+    beforeEach(() => {
+      // Reset document.cookie before each test
+      Object.defineProperty(document, 'cookie', {
+        writable: true,
+        value: '',
+      });
+    });
+
+    afterAll(() => {
+      // Restore original document.cookie after tests
+      if (originalDocumentCookie) {
+        Object.defineProperty(document, 'cookie', originalDocumentCookie);
+      }
+    });
+
+    it('should return cookie value when cookie exists', () => {
+      // Arrange
+      document.cookie = 'test_cookie=cookie_value';
+
+      // Act
+      const result = getCookieByName('test_cookie');
+
+      // Assert
+      expect(result).toBe('cookie_value');
+    });
+
+    it('should return empty string when cookie does not exist', () => {
+      // Act
+      const result = getCookieByName('nonexistent_cookie');
+
+      // Assert
+      expect(result).toBe('');
+    });
+
+    it('should handle URL-encoded cookie values', () => {
+      // Arrange
+      document.cookie = 'encoded_cookie=%7B%22key%22%3A%22value%22%7D';
+
+      // Act
+      const result = getCookieByName('encoded_cookie');
+
+      // Assert
+      expect(result).toBe('%7B%22key%22%3A%22value%22%7D');
+    });
+
+    it('should handle cookies with special characters in name', () => {
+      // Arrange - Set a cookie with dots in name (common for namespaced cookies)
+      document.cookie = 'bahmni.user.location=location_value';
+
+      // Act
+      const result = getCookieByName('bahmni.user.location');
+
+      // Assert
+      expect(result).toBe('location_value');
+    });
+  });
   describe('generateId', () => {
     it('should generate a random string ID', () => {
       const id = generateId();
