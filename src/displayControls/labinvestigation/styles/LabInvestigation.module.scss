@@ -36,6 +36,19 @@
 
 .testType {
   color: $text-secondary;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  
+  &.abnormal {
+    color: 'red';
+    background-color: $support-error;
+  }
+  
+  &.normal {
+    color: 'green';
+    background-color: $support-success;
+  }
 }
 
 .orderedBy {
@@ -52,4 +65,20 @@
   padding: $spacing-04;
   border-radius: $spacing-02;
   font-weight: 600;
+}
+
+.resultsTable {
+  width: 100%;
+  margin-top: 1rem;
+  border-collapse: collapse;
+
+  th, td {
+    border: 1px solid #e0e0e0;
+    padding: 0.75rem;
+    text-align: left;
+  }
+
+  th {
+    background-color: #f4f4f4;
+  }
 }
