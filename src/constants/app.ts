@@ -28,8 +28,11 @@ export const ENCOUNTER_CONCEPTS_URL =
   '/bahmnicore/config/bahmniencounter?callerContext=REGISTRATION_CONCEPTS';
 export const USER_RESOURCE_URL = (username: string) =>
   `${OPENMRS_REST_V1}/user?username=${username}&v=custom:(username,uuid)`;
+export const PROVIDER_RESOURCE_URL = (userUUID: string) =>
+  `${OPENMRS_REST_V1}/provider?user=${userUUID}&v=custom:(uuid,display,person)`;
 export const PRACTITIONER_RESOURCE_URL = (uuid?: string) =>
   OPENMRS_FHIR_R4 + `/Practitioner${uuid ? `/${uuid}` : ''}`;
+export const CONSULTATION_BUNDLE_URL = OPENMRS_FHIR_R4 + '/ConsultationBundle';
 export const LOGIN_PATH = '/bahmni/home/index.html#/login';
 export const DEFAULT_LOCALE = 'en';
 export const LOCALE_STORAGE_KEY = 'NG_TRANSLATE_LANG_KEY';
