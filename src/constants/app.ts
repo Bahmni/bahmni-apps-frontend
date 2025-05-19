@@ -11,6 +11,8 @@ export const PATIENT_CONDITION_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 + `/Condition?patient=${patientUUID}`;
 export const PATIENT_ALLERGY_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 + `/AllergyIntolerance?patient=${patientUUID}`;
+export const PATIENT_LAB_INVESTIGATION_RESOURCE_URL = (patientUUID: string, category: string) =>
+  OPENMRS_FHIR_R4 + `/ServiceRequest?category=${category}&patient=${patientUUID}`;
 export const DASHBOARD_CONFIG_URL = (dashboardURL: string) =>
   `/bahmni_config/openmrs/apps/clinical/v2/dashboards/${dashboardURL}`;
 export const CLINICAL_CONFIG_URL =
