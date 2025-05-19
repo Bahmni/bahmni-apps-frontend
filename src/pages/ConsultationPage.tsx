@@ -1,7 +1,6 @@
-import React, { Suspense, useMemo } from 'react';
+import React, { Suspense, useMemo, useState } from 'react';
 import { Loading } from '@carbon/react';
 import ClinicalLayout from '@layouts/clinical/ClinicalLayout';
-import PatientDetails from '@displayControls/patient/PatientDetails';
 import DashboardContainer from '@components/clinical/dashboardContainer/DashboardContainer';
 import { useClinicalConfig } from '@hooks/useClinicalConfig';
 import HeaderWSideNav from '@components/common/headerWSideNav/HeaderWSideNav';
@@ -12,10 +11,50 @@ import { useSidebarNavigation } from '@hooks/useSidebarNavigation';
 import {
   getDefaultDashboard,
   getSidebarItems,
-} from '@/services/consultationPageService';
+} from '@services/consultationPageService';
 import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
 import { ICON_SIZE } from '@constants/icon';
 import { BAHMNI_CLINICAL_PATH, BAHMNI_HOME_PATH } from '@constants/app';
+import ConsultationPad from '@components/clinical/consultationPad/ConsultationPad';
+import { usePatientUUID } from '@hooks/usePatientUUID';
+import PatientHeader from '@components/clinical/patientHeader/PatientHeader';
+
+const breadcrumbItems = [
+  { id: 'home', label: 'Home', href: BAHMNI_HOME_PATH },
+  {
+    id: 'clinical',
+    label: 'Clinical',
+    href: BAHMNI_CLINICAL_PATH,
+  },
+  { id: 'current', label: 'Current Patient', isCurrentPage: true },
+];
+
+const globalActions = [
+  {
+    id: 'search',
+    label: 'Search',
+    renderIcon: (
+      <BahmniIcon id="search-icon" name="fa-search" size={ICON_SIZE.LG} />
+    ),
+    onClick: () => console.log('Search clicked'),
+  },
+  {
+    id: 'notifications',
+    label: 'Notifications',
+    renderIcon: (
+      <BahmniIcon id="notifications-icon" name="fa-bell" size={ICON_SIZE.LG} />
+    ),
+    onClick: () => console.log('Notifications clicked'),
+  },
+  {
+    id: 'user',
+    label: 'User',
+    renderIcon: (
+      <BahmniIcon id="user-icon" name="fa-user" size={ICON_SIZE.LG} />
+    ),
+    onClick: () => console.log('App Switcher clicked'),
+  },
+];
 
 /**
  * ConsultationPage
@@ -30,6 +69,8 @@ const ConsultationPage: React.FC = () => {
   const { t } = useTranslation();
   const { clinicalConfig } = useClinicalConfig();
   const { addNotification } = useNotification();
+  const patientUuid = usePatientUUID();
+  const [isActionAreaVisible, setIsActionAreaVisible] = useState(false);
 
   const currentDashboard = useMemo(() => {
     if (!clinicalConfig) return null;
@@ -64,45 +105,7 @@ const ConsultationPage: React.FC = () => {
       <Loading description={t('LOADING_DASHBOARD_CONFIG')} role="status" />
     );
   }
-  const breadcrumbItems = [
-    { id: 'home', label: 'Home', href: BAHMNI_HOME_PATH },
-    {
-      id: 'clinical',
-      label: 'Clinical',
-      href: BAHMNI_CLINICAL_PATH,
-    },
-    { id: 'current', label: 'Current Patient', isCurrentPage: true },
-  ];
-  const globalActions = [
-    {
-      id: 'search',
-      label: 'Search',
-      renderIcon: (
-        <BahmniIcon id="search-icon" name="fa-search" size={ICON_SIZE.LG} />
-      ),
-      onClick: () => console.log('Search clicked'),
-    },
-    {
-      id: 'notifications',
-      label: 'Notifications',
-      renderIcon: (
-        <BahmniIcon
-          id="notifications-icon"
-          name="fa-bell"
-          size={ICON_SIZE.LG}
-        />
-      ),
-      onClick: () => console.log('Notifications clicked'),
-    },
-    {
-      id: 'user',
-      label: 'User',
-      renderIcon: (
-        <BahmniIcon id="user-icon" name="fa-user" size={ICON_SIZE.LG} />
-      ),
-      onClick: () => console.log('App Switcher clicked'),
-    },
-  ];
+
   return (
     <ClinicalLayout
       headerWSideNav={
@@ -112,9 +115,15 @@ const ConsultationPage: React.FC = () => {
           sideNavItems={sidebarItems}
           activeSideNavItemId={activeItemId}
           onSideNavItemClick={handleItemClick}
+          isRail={isActionAreaVisible}
         />
       }
-      patientDetails={<PatientDetails />}
+      patientHeader={
+        <PatientHeader
+          isActionAreaVisible={isActionAreaVisible}
+          setIsActionAreaVisible={setIsActionAreaVisible}
+        />
+      }
       mainDisplay={
         <Suspense
           fallback={
@@ -129,6 +138,13 @@ const ConsultationPage: React.FC = () => {
             activeItemId={activeItemId}
           />
         </Suspense>
+      }
+      isActionAreaVisible={isActionAreaVisible}
+      actionArea={
+        <ConsultationPad
+          patientUUID={patientUuid || ''}
+          onClose={() => setIsActionAreaVisible((prev) => !prev)}
+        />
       }
     />
   );

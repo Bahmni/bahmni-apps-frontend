@@ -3,6 +3,7 @@ import { Tile, Button, Grid, Column } from '@carbon/react';
 import PatientDetails from '@displayControls/patient/PatientDetails';
 import { useTranslation } from 'react-i18next';
 import * as styles from './styles/PatientHeader.module.scss';
+import { Add } from '@carbon/icons-react';
 
 interface PatientHeaderProps {
   setIsActionAreaVisible: React.Dispatch<React.SetStateAction<boolean>>;
@@ -42,10 +43,9 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
           <Button
             size="lg"
             onClick={() => setIsActionAreaVisible(!isActionAreaVisible)}
+            renderIcon={Add}
           >
-            {isActionAreaVisible
-              ? t('PATIENT_HEADER_HIDE_ACTION_AREA')
-              : t('PATIENT_HEADER_SHOW_ACTION_AREA')}
+            {t('PATIENT_HEADER_SHOW_ACTION_AREA')}
           </Button>
         </Column>
       </Grid>

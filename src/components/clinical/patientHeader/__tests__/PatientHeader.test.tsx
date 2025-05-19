@@ -6,6 +6,25 @@ import '@testing-library/jest-dom';
 
 expect.extend(toHaveNoViolations);
 
+// Mock BahmniIcon
+jest.mock('@components/common/bahmniIcon/BahmniIcon', () => {
+  return function BahmniIcon(props: {
+    id: string;
+    name: string;
+    size: string;
+  }) {
+    return (
+      <div
+        data-testid={`${props.id}`}
+        data-icon-name={props.name}
+        data-size={props.size}
+      >
+        Icon Mock
+      </div>
+    );
+  };
+});
+
 // Mock the PatientDetails component
 jest.mock('@displayControls/patient/PatientDetails', () => {
   return {
@@ -60,13 +79,13 @@ describe('PatientHeader Component', () => {
     test('renders button with correct text when isActionAreaVisible is false', () => {
       renderComponent({ isActionAreaVisible: false });
       const button = screen.getByRole('button');
-      expect(button).toHaveTextContent('Show Action Area');
+      expect(button).toHaveTextContent('New Visit');
     });
 
     test('renders button with correct text when isActionAreaVisible is true', () => {
       renderComponent({ isActionAreaVisible: true });
       const button = screen.getByRole('button');
-      expect(button).toHaveTextContent('Hide Action Area');
+      expect(button).toHaveTextContent('New Visit');
     });
 
     test('calls setIsActionAreaVisible with toggled value when button is clicked', () => {
