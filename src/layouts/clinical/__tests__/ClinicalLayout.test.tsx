@@ -127,6 +127,75 @@ describe('ClinicalLayout Component', () => {
     });
   });
 
+  // Conditional Rendering Tests
+  describe('Conditional Rendering', () => {
+    test('displays action area when isActionAreaVisible is true', () => {
+      const visibleActionAreaProps = {
+        ...defaultProps,
+        isActionAreaVisible: true,
+      };
+
+      render(
+        <BrowserRouter>
+          <ClinicalLayout {...visibleActionAreaProps} />
+        </BrowserRouter>,
+      );
+
+      // Check if action area is rendered when isActionAreaVisible is true
+      expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
+    });
+
+    test('does not display action area when isActionAreaVisible is false', () => {
+      const hiddenActionAreaProps = {
+        ...defaultProps,
+        isActionAreaVisible: false,
+      };
+
+      render(
+        <BrowserRouter>
+          <ClinicalLayout {...hiddenActionAreaProps} />
+        </BrowserRouter>,
+      );
+
+      // Check if action area is not rendered when isActionAreaVisible is false
+      expect(screen.queryByTestId('mock-action-area')).not.toBeInTheDocument();
+    });
+
+    test('applies collapse class to body when isActionAreaVisible is true', () => {
+      const visibleActionAreaProps = {
+        ...defaultProps,
+        isActionAreaVisible: true,
+      };
+
+      const { container } = render(
+        <BrowserRouter>
+          <ClinicalLayout {...visibleActionAreaProps} />
+        </BrowserRouter>,
+      );
+
+      // Check if body div has collapse class when isActionAreaVisible is true
+      const bodyElement = container.querySelector('[class*="body"]');
+      expect(bodyElement).toHaveClass('collapse');
+    });
+
+    test('does not apply collapse class to body when isActionAreaVisible is false', () => {
+      const hiddenActionAreaProps = {
+        ...defaultProps,
+        isActionAreaVisible: false,
+      };
+
+      const { container } = render(
+        <BrowserRouter>
+          <ClinicalLayout {...hiddenActionAreaProps} />
+        </BrowserRouter>,
+      );
+
+      // Check if body div does not have collapse class when isActionAreaVisible is false
+      const bodyElement = container.querySelector('[class*="body"]');
+      expect(bodyElement).not.toHaveClass('collapse');
+    });
+  });
+
   // Accessibility Tests
   describe('Accessibility', () => {
     test('has no accessibility violations', async () => {

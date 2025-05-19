@@ -1,6 +1,7 @@
 import React from 'react';
 import { Tile, Button, Grid, Column } from '@carbon/react';
 import PatientDetails from '@displayControls/patient/PatientDetails';
+import { useTranslation } from 'react-i18next';
 import * as styles from './styles/PatientHeader.module.scss';
 
 interface PatientHeaderProps {
@@ -18,18 +19,33 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
   isActionAreaVisible,
   setIsActionAreaVisible,
 }) => {
+  const { t } = useTranslation();
+
   return (
-    <Tile aria-label="Patient Header" className={styles.header}>
+    <Tile aria-label={t('PATIENT_HEADER_LABEL')} className={styles.header}>
       <Grid>
-        <Column sm={4} md={8} lg={13} xl={13}>
+        <Column
+          sm={4}
+          md={8}
+          lg={isActionAreaVisible ? 10 : 13}
+          xl={isActionAreaVisible ? 10 : 13}
+        >
           <PatientDetails />
         </Column>
-        <Column sm={4} md={8} lg={3} xl={3} className={styles.controls}>
+        <Column
+          sm={4}
+          md={8}
+          lg={isActionAreaVisible ? 6 : 3}
+          xl={isActionAreaVisible ? 6 : 3}
+          className={styles.controls}
+        >
           <Button
             size="lg"
             onClick={() => setIsActionAreaVisible(!isActionAreaVisible)}
           >
-            {isActionAreaVisible ? 'Hide Action Area' : 'Show Action Area'}
+            {isActionAreaVisible
+              ? t('PATIENT_HEADER_HIDE_ACTION_AREA')
+              : t('PATIENT_HEADER_SHOW_ACTION_AREA')}
           </Button>
         </Column>
       </Grid>
