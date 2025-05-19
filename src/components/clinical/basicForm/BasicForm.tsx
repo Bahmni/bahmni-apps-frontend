@@ -10,12 +10,12 @@ import {
 import { useTranslation } from 'react-i18next';
 import { OpenMRSLocation } from '@types/location';
 import { Concept } from '@types/encounterConcepts';
-import { FormattedPractitioner } from '@types/practitioner';
+import { Provider } from '@types/provider';
 
 /**
  * BasicForm props
  * @interface BasicFormProps
- * @property {FormattedPractitioner} practitioner - The practitioner associated with the encounter
+ * @property {Provider} practitioner - The practitioner associated with the encounter
  * @property {Concept[]} visitTypes - Available visit types for selection
  * @property {Concept} visitTypeSelected - Currently selected visit type
  * @property {Concept[]} encounterTypes - Available encounter types for selection
@@ -25,7 +25,7 @@ import { FormattedPractitioner } from '@types/practitioner';
  * @property {string} defaultDate - Default date for the consultation in string format
  */
 interface BasicFormProps {
-  practitioner: FormattedPractitioner;
+  practitioner: Provider;
   visitTypes: Concept[];
   visitTypeSelected: Concept;
   encounterTypes: Concept[];
@@ -115,7 +115,9 @@ const BasicForm: React.FC<BasicFormProps> = ({
               helperText={t('SELECT_PRACTITIONER_HELPER')}
               label={t('SELECT_PRACTITIONER')}
               items={[practitioner]}
-              itemToString={(item) => (item?.fullName ? item.fullName : '')}
+              itemToString={(item) =>
+                item?.person.preferredName.display ? item?.person.display : ''
+              }
               initialSelectedItem={practitioner}
               disabled
               size="md"

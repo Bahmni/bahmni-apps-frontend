@@ -5,10 +5,16 @@ import { useCurrentEncounter } from '@hooks/useCurrentEncounter';
 import { useActivePractitioner } from '@hooks/useActivePractitioner';
 import { useEncounterConcepts } from '@hooks/useEncounterConcepts';
 import { useLocations } from '@hooks/useLocations';
-import { Column, FlexGrid, Loading } from '@carbon/react';
+import { Column, Grid, Loading } from '@carbon/react';
 import * as styles from './styles/ConsultationPad.module.scss';
-import BasicForm from '@/components/clinical/basicForm/BasicForm';
-import { Concept } from '@/types/encounterConcepts';
+import BasicForm from '@components/clinical/basicForm/BasicForm';
+import { Concept } from '@types/encounterConcepts';
+import { ConsultationBundle } from '@types/consultationBundle';
+import {
+  createConsultationBundlePayload,
+  postConsultationBundle,
+} from '@services/consultationBundleService';
+import useNotification from '@hooks/useNotification';
 
 interface ConsultationPadProps {
   patientUUID: string;
@@ -19,7 +25,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   patientUUID,
   onClose,
 }) => {
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const { t } = useTranslation();
+  const { addNotification } = useNotification();
   const {
     locations,
     loading: loadingLocations,
@@ -53,8 +61,48 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     (item: Concept) => item.uuid === currentEncounterId,
   );
 
-  const handleOnPrimaryButtonClick = () => {
-    onClose();
+  // Data validation check for consultation submission
+  const canSubmitConsultation = !!(
+    patientUUID &&
+    practitioner &&
+    practitioner.uuid &&
+    currentEncounter &&
+    locations?.length > 0 &&
+    encounterTypeSelected
+  );
+
+  const submitConsultation = () => {
+    const payload = createConsultationBundlePayload(
+      patientUUID,
+      practitioner?.uuid,
+      currentEncounter.id,
+      locations[0].uuid,
+      encounterTypeSelected.uuid,
+      encounterTypeSelected.name,
+    );
+
+    return postConsultationBundle<ConsultationBundle>(payload);
+  };
+
+  const handleOnPrimaryButtonClick = async () => {
+    if (!isSubmitting && canSubmitConsultation) {
+      try {
+        setIsSubmitting(true);
+        await submitConsultation();
+        setIsSubmitting(false);
+        addNotification({
+          title: t('CONSULTATION_SUBMITTED_SUCCESS_TITLE'),
+          message: t('CONSULTATION_SUBMITTED_SUCCESS_MESSAGE'),
+          type: 'success',
+          timeout: 5000,
+        });
+        onClose();
+      } catch (error) {
+        setIsSubmitting(false);
+        console.error(error);
+        return null;
+      }
+    }
   };
 
   const handleOnSecondaryButtonClick = () => {
@@ -65,7 +113,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     loadingEncounterConcepts ||
     loadingLocations ||
     loadingPractitioner ||
-    loadingEncounter
+    loadingEncounter ||
+    isSubmitting
   ) {
     return (
       <ActionArea
@@ -75,14 +124,14 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         secondaryButtonText={t('CONSULTATION_PAD_CANCEL_BUTTON')}
         onSecondaryButtonClick={handleOnSecondaryButtonClick}
         content={
-          <FlexGrid fullWidth>
-            <Column sm={4} md={8} lg={16} className={styles.loadingContent}>
+          <Grid>
+            <Column sm={3} md={8} lg={16} className={styles.loadingContent}>
               <Loading
                 description={t('CONSULTATION_PAD_LOADING')}
                 withOverlay={false}
               />
             </Column>
-          </FlexGrid>
+          </Grid>
         }
       />
     );
@@ -111,11 +160,11 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         secondaryButtonText={t('CONSULTATION_PAD_CANCEL_BUTTON')}
         onSecondaryButtonClick={handleOnSecondaryButtonClick}
         content={
-          <FlexGrid>
+          <Grid>
             <Column sm={4} md={8} lg={16}>
               <h2>{t('CONSULTATION_PAD_ERROR')}</h2>
             </Column>
-          </FlexGrid>
+          </Grid>
         }
       />
     );

@@ -10,69 +10,21 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
       xl="12"
     >
       <div
-        class="cds--dropdown__wrapper cds--list-box__wrapper cds--dropdown__wrapper--inline cds--list-box__wrapper--inline"
+        data-testid="location-dropdown"
       >
-        <label
-          class="cds--label cds--label--disabled"
-          for="downshift-«r2»-toggle-button"
-          id="downshift-«r2»-label"
-        >
+        <div>
           LOCATION
-        </label>
-        <div
-          class="cds--dropdown cds--dropdown--inline cds--dropdown--disabled cds--dropdown--md cds--list-box cds--list-box--md"
-          id="location-dropdown"
-        >
-          <button
-            aria-activedescendant=""
-            aria-controls="downshift-«r2»-menu"
-            aria-expanded="false"
-            aria-haspopup="listbox"
-            aria-labelledby="downshift-«r2»-label"
-            class="cds--list-box__field"
-            disabled=""
-            id="downshift-«r2»-toggle-button"
-            role="combobox"
-            tabindex="0"
-            title="Location 1"
-            type="button"
-          >
-            <span
-              class="cds--list-box__label"
-            >
-              Location 1
-            </span>
-            <div
-              class="cds--list-box__menu-icon"
-            >
-              <svg
-                aria-label="Open menu"
-                fill="currentColor"
-                focusable="false"
-                height="16"
-                name="chevron--down"
-                preserveAspectRatio="xMidYMid meet"
-                role="img"
-                viewBox="0 0 16 16"
-                width="16"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
-                />
-                <title>
-                  Open menu
-                </title>
-              </svg>
-            </div>
-          </button>
-          <ul
-            aria-labelledby="downshift-«r2»-label"
-            class="cds--list-box__menu"
-            id="downshift-«r2»-menu"
-            role="listbox"
-          />
         </div>
+        <select
+          aria-label="LOCATION"
+          disabled=""
+        >
+          <option
+            value="123"
+          >
+            Location 1
+          </option>
+        </select>
       </div>
     </div>
     <div
@@ -80,69 +32,26 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
       xl="12"
     >
       <div
-        class="cds--dropdown__wrapper cds--list-box__wrapper cds--dropdown__wrapper--inline cds--list-box__wrapper--inline"
+        data-testid="encounter-type-dropdown"
       >
-        <label
-          class="cds--label cds--label--disabled"
-          for="downshift-«r5»-toggle-button"
-          id="downshift-«r5»-label"
-        >
+        <div>
           ENCOUNTER_TYPE
-        </label>
-        <div
-          class="cds--dropdown cds--dropdown--inline cds--dropdown--disabled cds--dropdown--md cds--list-box cds--list-box--md"
-          id="encounter-type-dropdown"
-        >
-          <button
-            aria-activedescendant=""
-            aria-controls="downshift-«r5»-menu"
-            aria-expanded="false"
-            aria-haspopup="listbox"
-            aria-labelledby="downshift-«r5»-label"
-            class="cds--list-box__field"
-            disabled=""
-            id="downshift-«r5»-toggle-button"
-            role="combobox"
-            tabindex="0"
-            title="Encounter Type 1"
-            type="button"
-          >
-            <span
-              class="cds--list-box__label"
-            >
-              Encounter Type 1
-            </span>
-            <div
-              class="cds--list-box__menu-icon"
-            >
-              <svg
-                aria-label="Open menu"
-                fill="currentColor"
-                focusable="false"
-                height="16"
-                name="chevron--down"
-                preserveAspectRatio="xMidYMid meet"
-                role="img"
-                viewBox="0 0 16 16"
-                width="16"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
-                />
-                <title>
-                  Open menu
-                </title>
-              </svg>
-            </div>
-          </button>
-          <ul
-            aria-labelledby="downshift-«r5»-label"
-            class="cds--list-box__menu"
-            id="downshift-«r5»-menu"
-            role="listbox"
-          />
         </div>
+        <select
+          aria-label="ENCOUNTER_TYPE"
+          disabled=""
+        >
+          <option
+            value="789"
+          >
+            Encounter Type 1
+          </option>
+          <option
+            value="012"
+          >
+            Encounter Type 2
+          </option>
+        </select>
       </div>
     </div>
     <div
@@ -150,138 +59,47 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
       xl="12"
     >
       <div
-        class="cds--dropdown__wrapper cds--list-box__wrapper cds--dropdown__wrapper--inline cds--list-box__wrapper--inline"
+        data-testid="visit-type-dropdown"
       >
-        <label
-          class="cds--label cds--label--disabled"
-          for="downshift-«r8»-toggle-button"
-          id="downshift-«r8»-label"
-        >
+        <div>
           VISIT_TYPE
-        </label>
-        <div
-          class="cds--dropdown cds--dropdown--inline cds--dropdown--disabled cds--dropdown--md cds--list-box cds--list-box--md"
-          id="visit-type-dropdown"
-        >
-          <button
-            aria-activedescendant=""
-            aria-controls="downshift-«r8»-menu"
-            aria-expanded="false"
-            aria-haspopup="listbox"
-            aria-labelledby="downshift-«r8»-label"
-            class="cds--list-box__field"
-            disabled=""
-            id="downshift-«r8»-toggle-button"
-            role="combobox"
-            tabindex="0"
-            title="Visit Type 1"
-            type="button"
-          >
-            <span
-              class="cds--list-box__label"
-            >
-              Visit Type 1
-            </span>
-            <div
-              class="cds--list-box__menu-icon"
-            >
-              <svg
-                aria-label="Open menu"
-                fill="currentColor"
-                focusable="false"
-                height="16"
-                name="chevron--down"
-                preserveAspectRatio="xMidYMid meet"
-                role="img"
-                viewBox="0 0 16 16"
-                width="16"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
-                />
-                <title>
-                  Open menu
-                </title>
-              </svg>
-            </div>
-          </button>
-          <ul
-            aria-labelledby="downshift-«r8»-label"
-            class="cds--list-box__menu"
-            id="downshift-«r8»-menu"
-            role="listbox"
-          />
         </div>
+        <select
+          aria-label="VISIT_TYPE"
+          disabled=""
+        >
+          <option
+            value="345"
+          >
+            Visit Type 1
+          </option>
+          <option
+            value="678"
+          >
+            Visit Type 2
+          </option>
+        </select>
       </div>
     </div>
     <div
       class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-5 cds--css-grid-column"
     >
       <div
-        class="cds--dropdown__wrapper cds--list-box__wrapper cds--dropdown__wrapper--inline cds--list-box__wrapper--inline"
+        data-testid="practitioner-dropdown"
       >
-        <label
-          class="cds--label cds--label--disabled"
-          for="downshift-«rb»-toggle-button"
-          id="downshift-«rb»-label"
-        >
+        <div>
           PRACTITIONER
-        </label>
-        <div
-          class="cds--dropdown cds--dropdown--inline cds--dropdown--disabled cds--dropdown--md cds--list-box cds--list-box--md"
-          id="practitioner-dropdown"
-        >
-          <button
-            aria-activedescendant=""
-            aria-controls="downshift-«rb»-menu"
-            aria-expanded="false"
-            aria-haspopup="listbox"
-            aria-labelledby="downshift-«rb»-label"
-            class="cds--list-box__field"
-            disabled=""
-            id="downshift-«rb»-toggle-button"
-            role="combobox"
-            tabindex="0"
-            title="Dr. John Smith"
-            type="button"
-          >
-            <span
-              class="cds--list-box__label"
-            >
-              Dr. John Smith
-            </span>
-            <div
-              class="cds--list-box__menu-icon"
-            >
-              <svg
-                aria-label="Open menu"
-                fill="currentColor"
-                focusable="false"
-                height="16"
-                name="chevron--down"
-                preserveAspectRatio="xMidYMid meet"
-                role="img"
-                viewBox="0 0 16 16"
-                width="16"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
-                />
-                <title>
-                  Open menu
-                </title>
-              </svg>
-            </div>
-          </button>
-          <ul
-            aria-labelledby="downshift-«rb»-label"
-            class="cds--list-box__menu"
-            id="downshift-«rb»-menu"
-            role="listbox"
-          />
         </div>
+        <select
+          aria-label="PRACTITIONER"
+          disabled=""
+        >
+          <option
+            value="provider-uuid-123"
+          >
+            Dr. John Smith
+          </option>
+        </select>
       </div>
     </div>
     <div
@@ -308,7 +126,7 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
             >
               <span>
                 <input
-                  aria-describedby="datepicker-input-helper-text-id-«rc»"
+                  aria-describedby="datepicker-input-helper-text-id-«r0»"
                   class="cds--date-picker__input cds--date-picker__input--md flatpickr-input"
                   disabled=""
                   id="date-picker-input"
@@ -339,7 +157,7 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
             <div
               class="cds--form__helper-text cds--form__helper-text--disabled"
               dir="auto"
-              id="datepicker-input-helper-text-id-«rc»"
+              id="datepicker-input-helper-text-id-«r0»"
             >
               SELECT_CONSULTATION_DATE_HELPER
             </div>

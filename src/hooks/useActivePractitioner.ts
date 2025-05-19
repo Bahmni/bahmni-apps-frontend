@@ -1,14 +1,11 @@
 import { useState, useCallback, useEffect } from 'react';
-import { FormattedPractitioner } from '@types/practitioner';
 import { useNotification } from './useNotification';
-import {
-  getActivePractitioner,
-  formatPractitioner,
-} from '@services/practitionerService';
+import { getCurrentProvider } from '@services/providerService';
 import { getFormattedError } from '@utils/common';
+import { Provider } from '@types/provider';
 
 interface useActivePractitionerResult {
-  practitioner: FormattedPractitioner | null;
+  practitioner: Provider | null;
   loading: boolean;
   error: Error | null;
   refetch: () => void;
@@ -19,8 +16,9 @@ interface useActivePractitionerResult {
  * @returns Object containing practitioner, loading state, error state, and refetch function
  */
 export const useActivePractitioner = (): useActivePractitionerResult => {
-  const [activePractitioner, setActivePractitioner] =
-    useState<FormattedPractitioner | null>(null);
+  const [activePractitioner, setActivePractitioner] = useState<Provider | null>(
+    null,
+  );
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const { addNotification } = useNotification();
@@ -28,7 +26,7 @@ export const useActivePractitioner = (): useActivePractitionerResult => {
   const fetchActivePractitioner = useCallback(async () => {
     try {
       setLoading(true);
-      const practitioner = await getActivePractitioner();
+      const practitioner = await getCurrentProvider();
       if (!practitioner) {
         setError(new Error('Active Practitioner not found'));
         addNotification({
@@ -38,8 +36,7 @@ export const useActivePractitioner = (): useActivePractitionerResult => {
         });
         return;
       }
-      const formattedPractitioner = formatPractitioner(practitioner);
-      setActivePractitioner(formattedPractitioner);
+      setActivePractitioner(practitioner);
       setError(null);
     } catch (err) {
       const { title, message } = getFormattedError(err);

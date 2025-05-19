@@ -1,82 +1,127 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ConsultationPad Rendering States should match snapshot when fully loaded 1`] = `
+exports[`ConsultationPad Rendering Snapshots should match snapshot for error state 1`] = `
 <div>
   <div
-    data-testid="action-area"
+    data-testid="mock-action-area"
   >
     <div
       data-testid="action-area-title"
     >
-      Consultation Pad
+      CONSULTATION_PAD_TITLE
     </div>
-    <button
-      data-testid="primary-button"
-    >
-      Done
-    </button>
-    <button
-      data-testid="secondary-button"
-    >
-      Cancel
-    </button>
     <div
       data-testid="action-area-content"
     >
       <div
-        data-testid="basic-form"
+        class="cds--css-grid"
       >
-        <pre
-          data-testid="basic-form-props"
+        <div
+          class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
         >
-          {
-  "practitioner": {
-    "id": "practitioner-uuid",
-    "fullName": "Dr. Test Doctor"
-  },
-  "encounterTypes": [
-    {
-      "uuid": "encounter-type-uuid-1",
-      "name": "Consultation"
-    },
-    {
-      "uuid": "encounter-type-uuid-2",
-      "name": "Other Type"
-    }
-  ],
-  "encounterTypeSelected": {
-    "uuid": "encounter-type-uuid-1",
-    "name": "Consultation"
-  },
-  "visitTypes": [
-    {
-      "uuid": "visit-type-uuid-1",
-      "name": "Visit Type 1"
-    },
-    {
-      "uuid": "visit-type-uuid-2",
-      "name": "Visit Type 2"
-    }
-  ],
-  "visitTypeSelected": {
-    "uuid": "visit-type-uuid-1",
-    "name": "Visit Type 1"
-  },
-  "location": {
-    "uuid": "location-uuid-1",
-    "display": "Test Location",
-    "links": []
-  },
-  "locationSelected": {
-    "uuid": "location-uuid-1",
-    "display": "Test Location",
-    "links": []
-  },
-  "defaultDate": "Sun May 18 2025"
-}
-        </pre>
+          <h2>
+            CONSULTATION_PAD_ERROR
+          </h2>
+        </div>
       </div>
     </div>
+    <button
+      data-testid="primary-button"
+    >
+      CONSULTATION_PAD_DONE_BUTTON
+    </button>
+    <button
+      data-testid="secondary-button"
+    >
+      CONSULTATION_PAD_CANCEL_BUTTON
+    </button>
+  </div>
+</div>
+`;
+
+exports[`ConsultationPad Rendering Snapshots should match snapshot for loading state 1`] = `
+<div>
+  <div
+    data-testid="mock-action-area"
+  >
+    <div
+      data-testid="action-area-title"
+    >
+      CONSULTATION_PAD_TITLE
+    </div>
+    <div
+      data-testid="action-area-content"
+    >
+      <div
+        class="cds--css-grid"
+      >
+        <div
+          class="cds--sm:col-span-3 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
+        >
+          <div
+            aria-atomic="true"
+            aria-live="assertive"
+            class="cds--loading"
+          >
+            <svg
+              class="cds--loading__svg"
+              viewBox="0 0 100 100"
+            >
+              <title>
+                CONSULTATION_PAD_LOADING
+              </title>
+              <circle
+                class="cds--loading__stroke"
+                cx="50%"
+                cy="50%"
+                r="44"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button
+      data-testid="primary-button"
+    >
+      CONSULTATION_PAD_DONE_BUTTON
+    </button>
+    <button
+      data-testid="secondary-button"
+    >
+      CONSULTATION_PAD_CANCEL_BUTTON
+    </button>
+  </div>
+</div>
+`;
+
+exports[`ConsultationPad Rendering Snapshots should match snapshot for normal state 1`] = `
+<div>
+  <div
+    data-testid="mock-action-area"
+  >
+    <div
+      data-testid="action-area-title"
+    >
+      CONSULTATION_PAD_TITLE
+    </div>
+    <div
+      data-testid="action-area-content"
+    >
+      <div
+        data-testid="mock-basic-form"
+      />
+    </div>
+    <button
+      data-testid="primary-button"
+    >
+      CONSULTATION_PAD_DONE_BUTTON
+    </button>
+    <button
+      data-testid="secondary-button"
+    >
+      CONSULTATION_PAD_CANCEL_BUTTON
+    </button>
   </div>
 </div>
 `;
