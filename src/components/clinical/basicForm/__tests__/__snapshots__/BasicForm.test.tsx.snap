@@ -1,0 +1,174 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`BasicForm Rendering should match snapshot 1`] = `
+<div>
+  <div
+    class="cds--css-grid"
+  >
+    <div
+      class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-5 cds--css-grid-column"
+      xl="12"
+    >
+      <div
+        data-testid="location-dropdown"
+      >
+        <div>
+          LOCATION
+        </div>
+        <select
+          aria-label="LOCATION"
+          disabled=""
+        >
+          <option
+            value="123"
+          >
+            Location 1
+          </option>
+        </select>
+      </div>
+    </div>
+    <div
+      class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-5 cds--css-grid-column"
+      xl="12"
+    >
+      <div
+        data-testid="encounter-type-dropdown"
+      >
+        <div>
+          ENCOUNTER_TYPE
+        </div>
+        <select
+          aria-label="ENCOUNTER_TYPE"
+          disabled=""
+        >
+          <option
+            value="789"
+          >
+            Encounter Type 1
+          </option>
+          <option
+            value="012"
+          >
+            Encounter Type 2
+          </option>
+        </select>
+      </div>
+    </div>
+    <div
+      class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-5 cds--css-grid-column"
+      xl="12"
+    >
+      <div
+        data-testid="visit-type-dropdown"
+      >
+        <div>
+          VISIT_TYPE
+        </div>
+        <select
+          aria-label="VISIT_TYPE"
+          disabled=""
+        >
+          <option
+            value="345"
+          >
+            Visit Type 1
+          </option>
+          <option
+            value="678"
+          >
+            Visit Type 2
+          </option>
+        </select>
+      </div>
+    </div>
+    <div
+      class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-5 cds--css-grid-column"
+    >
+      <div
+        data-testid="practitioner-dropdown"
+      >
+        <div>
+          PRACTITIONER
+        </div>
+        <select
+          aria-label="PRACTITIONER"
+          disabled=""
+        >
+          <option
+            value="provider-uuid-123"
+          >
+            Dr. John Smith
+          </option>
+        </select>
+      </div>
+    </div>
+    <div
+      class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-5 cds--css-grid-column"
+    >
+      <div
+        class="cds--form-item"
+      >
+        <div
+          class="cds--date-picker cds--date-picker--single"
+        >
+          <div
+            class="cds--date-picker-container"
+          >
+            <label
+              class="cds--label cds--label--disabled"
+              dir="auto"
+              for="date-picker-input"
+            >
+              CONSULTATION_DATE
+            </label>
+            <div
+              class="cds--date-picker-input__wrapper"
+            >
+              <span>
+                <input
+                  aria-describedby="datepicker-input-helper-text-id-«r0»"
+                  class="cds--date-picker__input cds--date-picker__input--md flatpickr-input"
+                  disabled=""
+                  id="date-picker-input"
+                  pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
+                  placeholder="dd/mm/yyyy"
+                  title="CONSULTATION_DATE"
+                  type="text"
+                  value="16/05/2025"
+                />
+                <svg
+                  aria-hidden="true"
+                  class="cds--date-picker__icon"
+                  fill="currentColor"
+                  focusable="false"
+                  height="16"
+                  preserveAspectRatio="xMidYMid meet"
+                  role="img"
+                  viewBox="0 0 32 32"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M26,4h-4V2h-2v2h-8V2h-2v2H6C4.9,4,4,4.9,4,6v20c0,1.1,0.9,2,2,2h20c1.1,0,2-0.9,2-2V6C28,4.9,27.1,4,26,4z M26,26H6V12h20 V26z M26,10H6V6h4v2h2V6h8v2h2V6h4V10z"
+                  />
+                </svg>
+              </span>
+            </div>
+            <div
+              class="cds--form__helper-text cds--form__helper-text--disabled"
+              dir="auto"
+              id="datepicker-input-helper-text-id-«r0»"
+            >
+              SELECT_CONSULTATION_DATE_HELPER
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <li
+    class="cds--menu-item-divider"
+    role="separator"
+  />
+</div>
+`;
