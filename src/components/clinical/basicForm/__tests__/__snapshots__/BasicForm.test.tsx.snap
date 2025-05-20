@@ -88,10 +88,10 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
         data-testid="practitioner-dropdown"
       >
         <div>
-          PRACTITIONER
+          PARTICIPANT
         </div>
         <select
-          aria-label="PRACTITIONER"
+          aria-label="PARTICIPANT"
           disabled=""
         >
           <option
@@ -126,7 +126,6 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
             >
               <span>
                 <input
-                  aria-describedby="datepicker-input-helper-text-id-«r0»"
                   class="cds--date-picker__input cds--date-picker__input--md flatpickr-input"
                   disabled=""
                   id="date-picker-input"
@@ -153,13 +152,6 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
                   />
                 </svg>
               </span>
-            </div>
-            <div
-              class="cds--form__helper-text cds--form__helper-text--disabled"
-              dir="auto"
-              id="datepicker-input-helper-text-id-«r0»"
-            >
-              SELECT_CONSULTATION_DATE_HELPER
             </div>
           </div>
         </div>

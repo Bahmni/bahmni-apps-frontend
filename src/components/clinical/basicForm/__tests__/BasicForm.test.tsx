@@ -161,10 +161,7 @@ describe('BasicForm', () => {
       expect(screen.getByText('ENCOUNTER_TYPE')).toBeInTheDocument();
       expect(screen.getByText('VISIT_TYPE')).toBeInTheDocument();
       expect(screen.getByText('CONSULTATION_DATE')).toBeInTheDocument();
-      expect(
-        screen.getByText('SELECT_CONSULTATION_DATE_HELPER'),
-      ).toBeInTheDocument();
-      expect(screen.getByText('PRACTITIONER')).toBeInTheDocument();
+      expect(screen.getByText('PARTICIPANT')).toBeInTheDocument();
     });
 
     it('should render all form fields as disabled', () => {
@@ -184,7 +181,7 @@ describe('BasicForm', () => {
       });
       const datePickerInput = screen.getByLabelText(/CONSULTATION_DATE/i);
       const practitionerDropdown = screen.getByRole('combobox', {
-        name: /PRACTITIONER/i,
+        name: /PARTICIPANT/i,
       });
 
       expect(locationDropdown).toBeDisabled();
@@ -207,7 +204,7 @@ describe('BasicForm', () => {
       renderBasicForm({ practitioner: null });
 
       // Assert
-      expect(screen.queryByText('PRACTITIONER')).not.toBeInTheDocument();
+      expect(screen.queryByText('PARTICIPANT')).not.toBeInTheDocument();
     });
   });
 
@@ -308,7 +305,7 @@ describe('BasicForm', () => {
       });
 
       // Assert
-      expect(screen.getByText('PRACTITIONER')).toBeInTheDocument();
+      expect(screen.getByText('PARTICIPANT')).toBeInTheDocument();
       // With our mock, we can still verify the dropdown is there
       expect(screen.getByTestId('practitioner-dropdown')).toBeInTheDocument();
     });
@@ -329,7 +326,7 @@ describe('BasicForm', () => {
       });
 
       // Assert
-      expect(screen.getByText('PRACTITIONER')).toBeInTheDocument();
+      expect(screen.getByText('PARTICIPANT')).toBeInTheDocument();
       // With our mock, we can still verify the dropdown is there
       expect(screen.getByTestId('practitioner-dropdown')).toBeInTheDocument();
     });
@@ -402,9 +399,9 @@ describe('BasicForm', () => {
         });
 
         // Assert
-        expect(screen.getByText('PRACTITIONER')).toBeInTheDocument();
+        expect(screen.getByText('PARTICIPANT')).toBeInTheDocument();
         const practitionerDropdown = screen.getByRole('combobox', {
-          name: /PRACTITIONER/i,
+          name: /PARTICIPANT/i,
         });
         expect(practitionerDropdown).toBeInTheDocument();
         expect(practitionerDropdown).toBeDisabled();
@@ -417,9 +414,9 @@ describe('BasicForm', () => {
         });
 
         // Assert
-        expect(screen.queryByText('PRACTITIONER')).not.toBeInTheDocument();
+        expect(screen.queryByText('PARTICIPANT')).not.toBeInTheDocument();
         expect(
-          screen.queryByRole('combobox', { name: /PRACTITIONER/i }),
+          screen.queryByRole('combobox', { name: /PARTICIPANT/i }),
         ).not.toBeInTheDocument();
       });
 
@@ -430,9 +427,9 @@ describe('BasicForm', () => {
         });
 
         // Assert
-        expect(screen.queryByText('PRACTITIONER')).not.toBeInTheDocument();
+        expect(screen.queryByText('PARTICIPANT')).not.toBeInTheDocument();
         expect(
-          screen.queryByRole('combobox', { name: /PRACTITIONER/i }),
+          screen.queryByRole('combobox', { name: /PARTICIPANT/i }),
         ).not.toBeInTheDocument();
       });
 
@@ -444,7 +441,7 @@ describe('BasicForm', () => {
         });
 
         // Assert
-        expect(screen.getByText('PRACTITIONER')).toBeInTheDocument();
+        expect(screen.getByText('PARTICIPANT')).toBeInTheDocument();
         // With our mock, we can still verify the dropdown is there
         expect(screen.getByTestId('practitioner-dropdown')).toBeInTheDocument();
       });
@@ -466,9 +463,9 @@ describe('BasicForm', () => {
         ).toBeInTheDocument();
 
         // Practitioner should be rendered
-        expect(screen.getByText('PRACTITIONER')).toBeInTheDocument();
+        expect(screen.getByText('PARTICIPANT')).toBeInTheDocument();
         expect(
-          screen.getByRole('combobox', { name: /PRACTITIONER/i }),
+          screen.getByRole('combobox', { name: /PARTICIPANT/i }),
         ).toBeInTheDocument();
       });
 
@@ -487,9 +484,9 @@ describe('BasicForm', () => {
         ).not.toBeInTheDocument();
 
         // Practitioner should not be rendered
-        expect(screen.queryByText('PRACTITIONER')).not.toBeInTheDocument();
+        expect(screen.queryByText('PARTICIPANT')).not.toBeInTheDocument();
         expect(
-          screen.queryByRole('combobox', { name: /PRACTITIONER/i }),
+          screen.queryByRole('combobox', { name: /PARTICIPANT/i }),
         ).not.toBeInTheDocument();
       });
 
@@ -508,9 +505,9 @@ describe('BasicForm', () => {
         ).toBeInTheDocument();
 
         // Practitioner should not be rendered
-        expect(screen.queryByText('PRACTITIONER')).not.toBeInTheDocument();
+        expect(screen.queryByText('PARTICIPANT')).not.toBeInTheDocument();
         expect(
-          screen.queryByRole('combobox', { name: /PRACTITIONER/i }),
+          screen.queryByRole('combobox', { name: /PARTICIPANT/i }),
         ).not.toBeInTheDocument();
       });
 
@@ -529,9 +526,9 @@ describe('BasicForm', () => {
         ).not.toBeInTheDocument();
 
         // Practitioner should be rendered
-        expect(screen.getByText('PRACTITIONER')).toBeInTheDocument();
+        expect(screen.getByText('PARTICIPANT')).toBeInTheDocument();
         expect(
-          screen.getByRole('combobox', { name: /PRACTITIONER/i }),
+          screen.getByRole('combobox', { name: /PARTICIPANT/i }),
         ).toBeInTheDocument();
       });
     });
@@ -544,7 +541,7 @@ describe('BasicForm', () => {
       renderBasicForm();
 
       // Assert - check that the dropdown exists
-      expect(screen.getByText('PRACTITIONER')).toBeInTheDocument();
+      expect(screen.getByText('PARTICIPANT')).toBeInTheDocument();
       expect(screen.getByTestId('practitioner-dropdown')).toBeInTheDocument();
     });
 
@@ -583,7 +580,7 @@ describe('BasicForm', () => {
       });
 
       // Assert
-      expect(screen.getByText('PRACTITIONER')).toBeInTheDocument();
+      expect(screen.getByText('PARTICIPANT')).toBeInTheDocument();
       expect(screen.getByTestId('practitioner-dropdown')).toBeInTheDocument();
     });
 
@@ -603,7 +600,7 @@ describe('BasicForm', () => {
       });
 
       // Assert
-      expect(screen.getByText('PRACTITIONER')).toBeInTheDocument();
+      expect(screen.getByText('PARTICIPANT')).toBeInTheDocument();
       expect(screen.getByTestId('practitioner-dropdown')).toBeInTheDocument();
     });
   });
