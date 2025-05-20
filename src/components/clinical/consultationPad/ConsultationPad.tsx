@@ -15,6 +15,7 @@ import {
   postConsultationBundle,
 } from '@services/consultationBundleService';
 import useNotification from '@hooks/useNotification';
+import { formatDate } from '@utils/date';
 
 interface ConsultationPadProps {
   patientUUID: string;
@@ -60,6 +61,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   const visitTypeSelected = encounterConcepts?.visitTypes.find(
     (item: Concept) => item.uuid === currentEncounterId,
   );
+
+  const formattedDate = formatDate(new Date());
 
   // Data validation check for consultation submission
   const canSubmitConsultation = !!(
@@ -150,7 +153,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     !visitTypeSelected ||
     !encounterTypeSelected ||
     !locations ||
-    locations.length === 0
+    locations.length === 0 ||
+    formattedDate.error
   ) {
     return (
       <ActionArea
@@ -186,7 +190,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
           visitTypeSelected={visitTypeSelected}
           location={locations[0]}
           locationSelected={locations[0]}
-          defaultDate={new Date().toDateString()}
+          defaultDate={formattedDate.formattedResult}
         />
       }
     />
