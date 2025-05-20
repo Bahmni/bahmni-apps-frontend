@@ -1,3 +1,12 @@
+// Mock formatDate from utils/date
+jest.mock('@utils/date', () => ({
+  ...jest.requireActual('@utils/date'),
+  formatDate: jest.fn().mockReturnValue({
+    formattedResult: '2025-05-20',
+    error: undefined,
+  }),
+}));
+
 // Mock axios at the module level (must be before other imports)
 jest.mock('axios', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,6 +66,7 @@ import {
   createConsultationBundlePayload,
   postConsultationBundle,
 } from '@services/consultationBundleService';
+import { formatDate } from '@utils/date';
 
 // Configure jest-axe
 expect.extend(toHaveNoViolations);
@@ -115,6 +125,7 @@ describe('ConsultationPad Integration', () => {
   // Common test data
   const mockPatientUUID = 'patient-123';
   const mockOnClose = jest.fn();
+  const mockFormattedDate = '2025-05-20';
 
   // Mock data for services
   const mockLocations = [
@@ -319,6 +330,10 @@ describe('ConsultationPad Integration', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    (formatDate as jest.Mock).mockReturnValue({
+      formattedResult: mockFormattedDate,
+      error: undefined,
+    });
   });
 
   describe('Happy Path Flow', () => {
@@ -424,6 +439,33 @@ describe('ConsultationPad Integration', () => {
     it('should handle location service errors correctly', async () => {
       // Mock location service error
       mockServiceErrorResponse('location');
+
+      // Render component
+      renderWithProviders(
+        <ConsultationPad patientUUID={mockPatientUUID} onClose={mockOnClose} />,
+      );
+
+      // Wait for error state
+      await waitFor(() => {
+        expect(
+          screen.queryByText('CONSULTATION_PAD_LOADING'),
+        ).not.toBeInTheDocument();
+      });
+
+      // Verify error message is displayed
+      expect(screen.getByText('CONSULTATION_PAD_ERROR')).toBeInTheDocument();
+    });
+
+    it('should handle date formatting errors correctly', async () => {
+      // Mock successful responses but date error
+      mockSuccessfulServiceResponses();
+      (formatDate as jest.Mock).mockReturnValue({
+        formattedResult: '',
+        error: {
+          title: 'Date Format Error',
+          message: 'Invalid date format',
+        },
+      });
 
       // Render component
       renderWithProviders(
@@ -602,6 +644,38 @@ describe('ConsultationPad Integration', () => {
       expect(postConsultationBundle).not.toHaveBeenCalled();
     });
 
+    it('should confirm provider uuid is passed correctly to consultation bundle payload', async () => {
+      // Mock successful responses
+      mockSuccessfulServiceResponses();
+
+      // Render component
+      renderWithProviders(
+        <ConsultationPad patientUUID={mockPatientUUID} onClose={mockOnClose} />,
+      );
+
+      // Wait for loading to complete
+      await waitFor(() => {
+        expect(
+          screen.queryByText('CONSULTATION_PAD_LOADING'),
+        ).not.toBeInTheDocument();
+      });
+
+      // Submit the consultation
+      fireEvent.click(screen.getByText('CONSULTATION_PAD_DONE_BUTTON'));
+
+      // Verify createConsultationBundlePayload was called with provider uuid
+      await waitFor(() => {
+        expect(createConsultationBundlePayload).toHaveBeenCalledWith(
+          mockPatientUUID,
+          mockPractitioner.uuid,
+          mockCurrentEncounter.id,
+          mockLocations[0].uuid,
+          mockEncounterConcepts.encounterTypes[0].uuid,
+          mockEncounterConcepts.encounterTypes[0].name,
+        );
+      });
+    });
+
     it('should disable submission when practitioner is null', async () => {
       // Mock responses with missing practitioner
       mockServiceResponsesWithMissingData('practitioner');
@@ -705,6 +779,60 @@ describe('ConsultationPad Integration', () => {
       // Check for accessibility violations
       const results = await axe(container);
       expect(results).toHaveNoViolations();
+    });
+  });
+
+  describe('Date Handling', () => {
+    it('should pass formatted date to BasicForm when date formatting succeeds', async () => {
+      // Mock successful responses
+      mockSuccessfulServiceResponses();
+      const formattedDateValue = '2025-05-20';
+      (formatDate as jest.Mock).mockReturnValue({
+        formattedResult: formattedDateValue,
+        error: undefined,
+      });
+
+      // Render component
+      renderWithProviders(
+        <ConsultationPad patientUUID={mockPatientUUID} onClose={mockOnClose} />,
+      );
+
+      // Wait for loading to complete
+      await waitFor(() => {
+        expect(
+          screen.queryByText('CONSULTATION_PAD_LOADING'),
+        ).not.toBeInTheDocument();
+      });
+
+      // Verify formatDate was called with current date
+      expect(formatDate).toHaveBeenCalledWith(expect.any(Date));
+    });
+
+    it('should handle multiple error conditions including date error', async () => {
+      // Mock service error and date error
+      mockServiceErrorResponse('location');
+      (formatDate as jest.Mock).mockReturnValue({
+        formattedResult: '',
+        error: {
+          title: 'Date Format Error',
+          message: 'Invalid date format',
+        },
+      });
+
+      // Render component
+      renderWithProviders(
+        <ConsultationPad patientUUID={mockPatientUUID} onClose={mockOnClose} />,
+      );
+
+      // Wait for error state
+      await waitFor(() => {
+        expect(
+          screen.queryByText('CONSULTATION_PAD_LOADING'),
+        ).not.toBeInTheDocument();
+      });
+
+      // Verify error message is displayed
+      expect(screen.getByText('CONSULTATION_PAD_ERROR')).toBeInTheDocument();
     });
   });
 });

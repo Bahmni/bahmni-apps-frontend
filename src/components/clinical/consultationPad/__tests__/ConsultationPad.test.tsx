@@ -13,8 +13,13 @@ import {
   postConsultationBundle,
 } from '@services/consultationBundleService';
 import { Provider } from '@types/provider';
+import { formatDate } from '@utils/date';
 
 // Mock all dependencies
+jest.mock('@utils/date', () => ({
+  ...jest.requireActual('@utils/date'),
+  formatDate: jest.fn(),
+}));
 jest.mock('react-i18next', () => ({
   useTranslation: jest.fn(),
 }));
@@ -269,6 +274,10 @@ describe('ConsultationPad', () => {
     });
     (createConsultationBundlePayload as jest.Mock).mockReturnValue({});
     (postConsultationBundle as jest.Mock).mockResolvedValue({});
+    (formatDate as jest.Mock).mockReturnValue({
+      formattedResult: '2025-05-20',
+      error: undefined,
+    });
   });
 
   describe('Rendering', () => {
@@ -320,6 +329,30 @@ describe('ConsultationPad', () => {
       it('should render error state when locations hook returns an error', () => {
         // Arrange
         mockHooksWithLocationError();
+
+        // Act
+        render(
+          <ConsultationPad
+            patientUUID={mockPatientUUID}
+            onClose={mockOnClose}
+          />,
+        );
+
+        // Assert
+        expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
+        expect(screen.getByText('CONSULTATION_PAD_ERROR')).toBeInTheDocument();
+      });
+
+      it('should render error state when formatDate returns an error', () => {
+        // Arrange
+        mockHooksForNormalState();
+        (formatDate as jest.Mock).mockReturnValue({
+          formattedResult: '',
+          error: {
+            title: 'Date Format Error',
+            message: 'Invalid date format',
+          },
+        });
 
         // Act
         render(
@@ -419,6 +452,11 @@ describe('ConsultationPad', () => {
       it('should render the BasicForm when all data is available', () => {
         // Arrange
         mockHooksForNormalState();
+        const mockFormattedDate = '2025-05-20';
+        (formatDate as jest.Mock).mockReturnValue({
+          formattedResult: mockFormattedDate,
+          error: undefined,
+        });
 
         // Act
         render(
@@ -432,6 +470,8 @@ describe('ConsultationPad', () => {
         expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
         expect(screen.getByTestId('mock-basic-form')).toBeInTheDocument();
         expect(screen.getByText('CONSULTATION_PAD_TITLE')).toBeInTheDocument();
+        // Verify formatDate was called with current date
+        expect(formatDate).toHaveBeenCalledWith(expect.any(Date));
       });
 
       it('should render with correct button text', () => {
@@ -729,7 +769,6 @@ describe('ConsultationPad', () => {
         expect(postConsultationBundle).not.toHaveBeenCalled();
       });
 
-      // New test for practitioner.uuid validation
       it('should determine canSubmitConsultation correctly with missing provider uuid', () => {
         // Arrange
         mockHooksForNormalState();
@@ -751,6 +790,32 @@ describe('ConsultationPad', () => {
         // Assert
         expect(postConsultationBundle).not.toHaveBeenCalled();
       });
+
+      it('should correctly pass provider uuid to createConsultationBundlePayload', async () => {
+        // Arrange
+        mockHooksForNormalState();
+
+        // Act
+        render(
+          <ConsultationPad
+            patientUUID={mockPatientUUID}
+            onClose={mockOnClose}
+          />,
+        );
+        fireEvent.click(screen.getByTestId('primary-button'));
+
+        // Assert
+        await waitFor(() => {
+          expect(createConsultationBundlePayload).toHaveBeenCalledWith(
+            mockPatientUUID,
+            mockPractitioner.uuid,
+            mockCurrentEncounter.id,
+            mockLocations[0].uuid,
+            mockEncounterConcepts.encounterTypes[0].uuid,
+            mockEncounterConcepts.encounterTypes[0].name,
+          );
+        });
+      });
     });
   });
 
@@ -760,6 +825,48 @@ describe('ConsultationPad', () => {
       mockHooksForNormalState();
       (useEncounterConcepts as jest.Mock).mockReturnValue({
         encounterConcepts: null,
+        loading: false,
+        error: null,
+      });
+
+      // Act
+      render(
+        <ConsultationPad patientUUID={mockPatientUUID} onClose={mockOnClose} />,
+      );
+
+      // Assert
+      expect(screen.getByText('CONSULTATION_PAD_ERROR')).toBeInTheDocument();
+    });
+
+    it('should handle formatDate function with empty string value', () => {
+      // Arrange
+      mockHooksForNormalState();
+      (formatDate as jest.Mock).mockReturnValue({
+        formattedResult: '',
+        error: undefined,
+      });
+
+      // Act
+      render(
+        <ConsultationPad patientUUID={mockPatientUUID} onClose={mockOnClose} />,
+      );
+
+      // Assert
+      expect(screen.getByTestId('mock-basic-form')).toBeInTheDocument();
+      // BasicForm should receive empty string as defaultDate prop
+      expect(formatDate).toHaveBeenCalledWith(expect.any(Date));
+    });
+
+    it('should handle multiple error conditions gracefully', () => {
+      // Arrange
+      mockHooksForNormalState();
+      // Simulate both a date error and a missing practitioner
+      (formatDate as jest.Mock).mockReturnValue({
+        formattedResult: '',
+        error: { title: 'Error', message: 'Invalid date' },
+      });
+      (useActivePractitioner as jest.Mock).mockReturnValue({
+        practitioner: null,
         loading: false,
         error: null,
       });
