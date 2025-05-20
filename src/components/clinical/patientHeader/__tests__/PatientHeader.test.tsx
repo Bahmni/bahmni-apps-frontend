@@ -79,13 +79,18 @@ describe('PatientHeader Component', () => {
     test('renders button with correct text when isActionAreaVisible is false', () => {
       renderComponent({ isActionAreaVisible: false });
       const button = screen.getByRole('button');
+      fireEvent.click(button);
+
+      expect(mockSetIsActionAreaVisible).toHaveBeenCalledTimes(1);
+      expect(mockSetIsActionAreaVisible).toHaveBeenCalledWith(true);
       expect(button).toHaveTextContent('New Consultation');
     });
 
     test('renders button with correct text when isActionAreaVisible is true', () => {
       renderComponent({ isActionAreaVisible: true });
       const button = screen.getByRole('button');
-      expect(button).toHaveTextContent('New Consultation');
+      expect(button).toHaveAttribute('disabled');
+      expect(button).toHaveTextContent('Consultation in progress');
     });
 
     test('calls setIsActionAreaVisible with toggled value when button is clicked', () => {
