@@ -160,7 +160,7 @@ describe('BasicForm', () => {
       expect(screen.getByText('LOCATION')).toBeInTheDocument();
       expect(screen.getByText('ENCOUNTER_TYPE')).toBeInTheDocument();
       expect(screen.getByText('VISIT_TYPE')).toBeInTheDocument();
-      expect(screen.getByText('CONSULTATION_DATE')).toBeInTheDocument();
+      expect(screen.getByText('ENCOUNTER_DATE')).toBeInTheDocument();
       expect(screen.getByText('PARTICIPANT')).toBeInTheDocument();
     });
 
@@ -179,7 +179,7 @@ describe('BasicForm', () => {
       const visitTypeDropdown = screen.getByRole('combobox', {
         name: /VISIT_TYPE/i,
       });
-      const datePickerInput = screen.getByLabelText(/CONSULTATION_DATE/i);
+      const datePickerInput = screen.getByLabelText(/ENCOUNTER_DATE/i);
       const practitionerDropdown = screen.getByRole('combobox', {
         name: /PARTICIPANT/i,
       });
@@ -233,7 +233,7 @@ describe('BasicForm', () => {
       expect(
         screen.getByRole('combobox', { name: /VISIT_TYPE/i }),
       ).toHaveAttribute('disabled');
-      expect(screen.getByLabelText(/CONSULTATION_DATE/i)).toHaveAttribute(
+      expect(screen.getByLabelText(/ENCOUNTER_DATE/i)).toHaveAttribute(
         'disabled',
       );
     });
