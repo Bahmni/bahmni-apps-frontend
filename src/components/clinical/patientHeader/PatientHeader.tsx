@@ -22,6 +22,10 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
 }) => {
   const { t } = useTranslation();
 
+  const handleOnButtonClick = () => {
+    if (!isActionAreaVisible) setIsActionAreaVisible(true);
+  };
+
   return (
     <Tile aria-label={t('PATIENT_HEADER_LABEL')} className={styles.header}>
       <Grid>
@@ -40,11 +44,7 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
           xl={isActionAreaVisible ? 6 : 3}
           className={styles.controls}
         >
-          <Button
-            size="lg"
-            onClick={() => setIsActionAreaVisible(!isActionAreaVisible)}
-            renderIcon={Add}
-          >
+          <Button size="lg" onClick={handleOnButtonClick} renderIcon={Add}>
             {t('PATIENT_HEADER_SHOW_ACTION_AREA')}
           </Button>
         </Column>
