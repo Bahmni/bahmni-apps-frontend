@@ -98,14 +98,13 @@ describe('PatientHeader Component', () => {
       expect(mockSetIsActionAreaVisible).toHaveBeenCalledWith(true);
     });
 
-    test('calls setIsActionAreaVisible with toggled value when button is clicked (starting with true)', () => {
+    test('setIsActionAreaVisible is not called when action area is already visible', () => {
       renderComponent({ isActionAreaVisible: true });
       const button = screen.getByRole('button');
 
       fireEvent.click(button);
 
-      expect(mockSetIsActionAreaVisible).toHaveBeenCalledTimes(1);
-      expect(mockSetIsActionAreaVisible).toHaveBeenCalledWith(false);
+      expect(mockSetIsActionAreaVisible).toHaveBeenCalledTimes(0);
     });
   });
 
