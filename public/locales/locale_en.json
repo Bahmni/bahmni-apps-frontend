@@ -68,6 +68,7 @@
   "NO_ALLERGIES": "No Allergies recorded for this patient.",
   "PATIENT_HEADER_LABEL": "Patient Header",
   "PATIENT_HEADER_SHOW_ACTION_AREA": "New Consultation",
+  "PATIENT_HEADER_ACTION_AREA_IN_PROGRESS": "Consultation in progress",
   "PARTICIPANT": "Participant(s)",
   "REACTIONS": "Reaction(s)",
   "SELECT_ENCOUNTER_TYPE": "Select encounter type",
