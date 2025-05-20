@@ -1,0 +1,14 @@
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
+.diagnosesFormTile {
+  margin: $spacing-06;
+  border: 1px solid $border-subtle-02;
+  background-color: $background !important;
+}
+
+.diagnosesFormTitle {
+  @include type-style("heading-compact-02");
+  padding-bottom: $spacing-05;
+}

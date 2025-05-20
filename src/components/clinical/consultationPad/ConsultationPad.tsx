@@ -16,6 +16,7 @@ import {
 } from '@services/consultationBundleService';
 import useNotification from '@hooks/useNotification';
 import { formatDate } from '@utils/date';
+import DiagnosesForm from '../diagnosesForm/diagnosesForm';
 
 interface ConsultationPadProps {
   patientUUID: string;
@@ -182,16 +183,19 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       secondaryButtonText={t('CONSULTATION_PAD_CANCEL_BUTTON')}
       onSecondaryButtonClick={handleOnSecondaryButtonClick}
       content={
-        <BasicForm
-          practitioner={practitioner}
-          encounterTypes={encounterConcepts.encounterTypes}
-          encounterTypeSelected={encounterTypeSelected}
-          visitTypes={encounterConcepts.visitTypes}
-          visitTypeSelected={visitTypeSelected}
-          location={locations[0]}
-          locationSelected={locations[0]}
-          defaultDate={formattedDate.formattedResult}
-        />
+        <>
+          <BasicForm
+            practitioner={practitioner}
+            encounterTypes={encounterConcepts.encounterTypes}
+            encounterTypeSelected={encounterTypeSelected}
+            visitTypes={encounterConcepts.visitTypes}
+            visitTypeSelected={visitTypeSelected}
+            location={locations[0]}
+            locationSelected={locations[0]}
+            defaultDate={formattedDate.formattedResult}
+          />
+          <DiagnosesForm />
+        </>
       }
     />
   );
