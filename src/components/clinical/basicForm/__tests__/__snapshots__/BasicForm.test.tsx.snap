@@ -117,9 +117,9 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
             <label
               class="cds--label cds--label--disabled"
               dir="auto"
-              for="date-picker-input"
+              for="encounter-date-picker-input"
             >
-              CONSULTATION_DATE
+              ENCOUNTER_DATE
             </label>
             <div
               class="cds--date-picker-input__wrapper"
@@ -128,10 +128,10 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
                 <input
                   class="cds--date-picker__input cds--date-picker__input--md flatpickr-input"
                   disabled=""
-                  id="date-picker-input"
+                  id="encounter-date-picker-input"
                   pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
                   placeholder="dd/mm/yyyy"
-                  title="CONSULTATION_DATE"
+                  title="ENCOUNTER_DATE"
                   type="text"
                   value="16/05/2025"
                 />
