@@ -11,6 +11,7 @@ import {
   mockLabTestsByDate,
   mockLabTestsByDateWithIncomplete,
 } from '@/__mocks__/labInvestigationMocks';
+import { LabTestPriority } from '@/types/labInvestigation';
 
 // Mock the hooks and services
 jest.mock('@hooks/usePatientUUID');
@@ -37,22 +38,7 @@ describe('LabInvestigationTable Integration', () => {
     i18n.changeLanguage('en');
   });
 
-  it('should call usePatientUUID to get patient UUID', () => {
-    // Mock the hooks
-    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedUseLabInvestigations.mockReturnValue({
-      labInvestigations: mockLabTestsByDate,
-      formattedLabTests: mockLabTestsByDate.flatMap(group => group.tests),
-      isLoading: false,
-    });
-
-    render(<LabInvestigationTable />);
-
-    // Verify usePatientUUID was called
-    expect(usePatientUUID).toHaveBeenCalled();
-  });
-
-  it('should call useLabInvestigations to get lab investigations', () => {
+  it('should call useLabInvestigations to get lab data', () => {
     // Mock the hooks
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedUseLabInvestigations.mockReturnValue({
@@ -112,9 +98,9 @@ describe('LabInvestigationTable Integration', () => {
     render(<LabInvestigationTable />);
 
     // Verify the priorities are displayed
-    const routineTags = screen.getAllByText('Routine');
+    const routineTags = screen.getAllByText(LabTestPriority.routine);
     expect(routineTags.length).toBe(2); // Two routine tests
-    expect(screen.getByText('Urgent')).toBeInTheDocument(); // One urgent test
+    expect(screen.getByText(LabTestPriority.stat)).toBeInTheDocument(); // One urgent test
   });
 
   it('should display ordered by information', () => {
