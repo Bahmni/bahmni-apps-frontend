@@ -77,6 +77,8 @@
   "SELECT_LOCATION": "Select location",
   "SELECT_PRACTITIONER": "Select practitioner",
   "SELECT_VISIT_TYPE": "Select visit type",
+  "SELECTED_ITEM_CLOSE": "Close",
+  "SELECTED_ITEM_CLOSE_ARIA_LABEL": "Close Selected Item",
   "SEVERITY": "Severity",
   "SIDE_NAVIGATION": "Side navigation",
   "UNEXPECTED_ERROR": "An unexpected error occurred",

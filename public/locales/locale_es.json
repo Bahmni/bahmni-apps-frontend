@@ -77,6 +77,8 @@
   "SELECT_LOCATION": "Seleccionar ubicación",
   "SELECT_PRACTITIONER": "Seleccionar profesional médico",
   "SELECT_VISIT_TYPE": "Seleccionar tipo de visita",
+  "SELECTED_ITEM_CLOSE": "Cerrar",
+  "SELECTED_ITEM_CLOSE_ARIA_LABEL": "Cerrar elemento seleccionado",
   "SEVERITY": "Gravedad",
   "SIDE_NAVIGATION": "Navegación lateral",
   "UNEXPECTED_ERROR": "Se produjo un error inesperado",
