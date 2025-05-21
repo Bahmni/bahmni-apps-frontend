@@ -2,6 +2,8 @@
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
 
+
+/* Container styles */
 .labInvestigationWrapper {
   width: 100%;
   margin: $spacing-05 auto;
@@ -19,9 +21,10 @@
   color: $text-secondary;
 }
 
+/* Lab test item styles */
 .labBox {
   border: 1px solid $border-subtle;
-  border-radius: $spacing-03  $spacing-03 0 0;
+  border-radius: $spacing-03 $spacing-03 0 0;
   padding: $spacing-05;
   margin-top: $spacing-03;
   background-color: $layer-02;
@@ -34,6 +37,7 @@
   margin-bottom: $spacing-03;
 }
 
+/* Test type styles - for future implementation */
 .testType {
   color: $text-secondary;
   padding: 0.25rem 0.5rem;
@@ -41,12 +45,12 @@
   font-weight: 500;
   
   &.abnormal {
-    color: 'red';
+    color: $text-primary;
     background-color: $support-error;
   }
   
   &.normal {
-    color: 'green';
+    color: $text-primary;
     background-color: $support-success;
   }
 }
@@ -59,26 +63,11 @@
   color: $text-primary;
 }
 
+/* Result display styles */
 .labResult {
   width: 100%;
   background-color: $background-hover;
   padding: $spacing-04;
   border-radius: $spacing-02;
   font-weight: 600;
-}
-
-.resultsTable {
-  width: 100%;
-  margin-top: 1rem;
-  border-collapse: collapse;
-
-  th, td {
-    border: 1px solid #e0e0e0;
-    padding: 0.75rem;
-    text-align: left;
-  }
-
-  th {
-    background-color: #f4f4f4;
-  }
 }

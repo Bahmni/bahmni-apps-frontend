@@ -11,9 +11,8 @@ export enum LabTestStatus {
  * Enum representing the possible priorities of a lab test
  */
 export enum LabTestPriority {
+  Stat = 'Urgent',
   Routine = 'Routine',
-  Urgent = 'Urgent',
-  Stat = 'Stat',
 }
 
 /**
@@ -117,8 +116,10 @@ export interface LabTestsByDate {
 }
 
 export interface LabTestResult {
-  parameter: string;
-  value: string;
-  unit: string;
+  status: string;
+  TestName: string;
+  Result: string;
   referenceRange: string;
+  reportedOn:string;
+  actions:string;
 }
