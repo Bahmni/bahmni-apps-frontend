@@ -5,6 +5,7 @@ import { useClinicalConfig } from '@hooks/useClinicalConfig';
 import { useDashboardConfig } from '@hooks/useDashboardConfig';
 import useNotification from '@hooks/useNotification';
 import { useSidebarNavigation } from '@hooks/useSidebarNavigation';
+import i18n from '@/setupTests.i18n';
 import {
   validFullClinicalConfig,
   validDashboardConfig,
@@ -34,6 +35,7 @@ jest.mock('react', () => ({
 jest.mock('@hooks/useClinicalConfig');
 jest.mock('@hooks/useDashboardConfig');
 jest.mock('@hooks/useNotification');
+jest.mock('@hooks/usePatientUUID');
 jest.mock('react-i18next', () => ({
   useTranslation: jest.fn(() => ({
     t: jest.fn((key) => `translated_${key}`),
@@ -57,23 +59,63 @@ jest.mock('@carbon/react', () => ({
       {description}
     </div>
   )),
+  Button: jest.fn(({ children, onClick, style }) => (
+    <button data-testid="carbon-button" onClick={onClick} style={style}>
+      {children}
+    </button>
+  )),
+  Tile: jest.fn(({ children, style }) => (
+    <div data-testid="carbon-tile" style={style}>
+      {children}
+    </div>
+  )),
 }));
 
 // Other necessary mocks from the original test
 jest.mock('@layouts/clinical/ClinicalLayout', () => {
-  return jest.fn(({ header, patientDetails, sidebar, mainDisplay }) => (
-    <div data-testid="mocked-clinical-layout">
-      <div data-testid="mocked-header">{header}</div>
-      <div data-testid="mocked-patient-section">{patientDetails}</div>
-      <div data-testid="mocked-sidebar">{sidebar}</div>
-      <div data-testid="mocked-main-display">{mainDisplay}</div>
-    </div>
-  ));
+  return jest.fn(
+    ({
+      headerWSideNav,
+      patientHeader,
+      sidebar,
+      mainDisplay,
+      isActionAreaVisible,
+      actionArea,
+    }) => (
+      <div data-testid="mocked-clinical-layout">
+        <div data-testid="mocked-header">{headerWSideNav}</div>
+        <div data-testid="mocked-patient-section">{patientHeader}</div>
+        <div data-testid="mocked-sidebar">{sidebar}</div>
+        <div data-testid="mocked-main-display">{mainDisplay}</div>
+        {isActionAreaVisible && (
+          <div data-testid="mocked-action-area">{actionArea}</div>
+        )}
+      </div>
+    ),
+  );
 });
 
-jest.mock('@components/clinical/header/Header', () => {
-  return jest.fn(() => (
-    <div data-testid="mocked-header-component">Mocked Header</div>
+// Add this mock to ConsultationPage.test.tsx
+jest.mock('@components/common/headerWSideNav/HeaderWSideNav', () => {
+  return jest.fn(({ sideNavItems, activeSideNavItemId }) => (
+    <div data-testid="mocked-header-component">
+      {sideNavItems.map(
+        (item: {
+          id: string;
+          icon: string;
+          label: string;
+          href?: string;
+          renderIcon?: ReactNode;
+        }) => (
+          <div key={item.id} data-testid={`sidenav-item-${item.id}`}>
+            {item.label}
+          </div>
+        ),
+      )}
+      <div data-testid="active-sidenav-item">
+        {activeSideNavItemId || 'none'}
+      </div>
+    </div>
   ));
 });
 
@@ -92,17 +134,13 @@ jest.mock('@components/clinical/dashboardContainer/DashboardContainer', () => {
   ));
 });
 
-jest.mock('@components/common/sidebar/Sidebar', () => {
-  return jest.fn(({ items }) => (
-    <div data-testid="mocked-sidebar-component">
-      {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        items.map((item: any) => (
-          <div key={item.id} data-testid={`sidebar-item-${item.id}`}>
-            {item.label}
-          </div>
-        ))
-      }
+jest.mock('@components/clinical/consultationPad/ConsultationPad', () => {
+  return jest.fn(({ patientUUID, onClose }) => (
+    <div data-testid="mocked-consultation-pad">
+      <div data-testid="consultation-pad-patient-uuid">{patientUUID}</div>
+      <button data-testid="consultation-pad-close-button" onClick={onClose}>
+        Close
+      </button>
     </div>
   ));
 });
@@ -111,6 +149,7 @@ describe('ConsultationPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
+    i18n.changeLanguage('en');
     // Default mock implementations
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: jest.fn(),
@@ -120,6 +159,11 @@ describe('ConsultationPage', () => {
       activeItemId: 'Vitals',
       handleItemClick: jest.fn(),
     });
+
+    // Mock usePatientUUID hook
+    jest.requireMock('@hooks/usePatientUUID').usePatientUUID = jest.fn(
+      () => 'mock-patient-uuid',
+    );
   });
 
   describe('Rendering and Structure', () => {
@@ -134,17 +178,12 @@ describe('ConsultationPage', () => {
       render(<ConsultationPage />);
       // Verify main layout is rendered
       expect(screen.getByTestId('mocked-clinical-layout')).toBeInTheDocument();
-      expect(screen.getByTestId('mocked-header')).toBeInTheDocument();
       expect(screen.getByTestId('mocked-patient-section')).toBeInTheDocument();
-      expect(screen.getByTestId('mocked-sidebar')).toBeInTheDocument();
       expect(screen.getByTestId('mocked-main-display')).toBeInTheDocument();
       expect(screen.getByTestId('mocked-patient-details')).toBeInTheDocument();
-      expect(screen.getByTestId('mocked-header-component')).toBeInTheDocument();
+      expect(screen.getByTestId('mocked-header')).toBeInTheDocument();
       expect(
         screen.getByTestId('mocked-dashboard-container'),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByTestId('mocked-sidebar-component'),
       ).toBeInTheDocument();
       expect(screen.getByTestId('dashboard-sections-count')).toHaveTextContent(
         validDashboardConfig.sections.length.toString(),

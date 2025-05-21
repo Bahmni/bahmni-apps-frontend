@@ -1,0 +1,15 @@
+@use "@carbon/react/scss/breakpoint" as *;
+
+.header {
+  padding: 0 !important;
+}
+
+.controls {
+  align-content: center;
+}
+
+@include breakpoint-down(lg) {
+  .header {
+    padding: 1rem !important;
+  }
+}

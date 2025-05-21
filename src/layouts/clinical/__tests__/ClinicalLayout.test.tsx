@@ -9,29 +9,29 @@ expect.extend(toHaveNoViolations);
 // Mock the CSS module
 jest.mock('../styles/ClinicalLayout.module.scss', () => ({
   layout: 'layout',
-  header: 'header',
   body: 'body',
-  patientDetails: 'patientDetails',
-  sidebar: 'sidebar',
+  patientHeader: 'patientHeader',
   mainDisplay: 'mainDisplay',
+  actionArea: 'actionArea',
+  collapse: 'collapse',
 }));
 
 describe('ClinicalLayout Component', () => {
   // Mock components for each section
   const MockHeader = () => <div data-testid="mock-header">Mock Header</div>;
-  const MockPatientDetails = () => (
-    <div data-testid="mock-patient-details">Mock Patient Details</div>
+  const MockPatientHeader = () => (
+    <div data-testid="mock-patient-header">Mock Patient Header</div>
   );
-  const MockSidebar = () => <div data-testid="mock-sidebar">Mock Sidebar</div>;
   const MockMainDisplay = () => (
     <div data-testid="mock-main-display">Mock Main Display</div>
   );
 
   const defaultProps = {
-    header: <MockHeader />,
-    patientDetails: <MockPatientDetails />,
-    sidebar: <MockSidebar />,
+    headerWSideNav: <MockHeader />,
+    patientHeader: <MockPatientHeader />,
     mainDisplay: <MockMainDisplay />,
+    actionArea: <div data-testid="mock-action-area">Mock Action Area</div>,
+    isActionAreaVisible: false,
   };
 
   // Happy Path Tests
@@ -45,8 +45,7 @@ describe('ClinicalLayout Component', () => {
 
       // Check if all sections are rendered
       expect(screen.getByTestId('mock-header')).toBeInTheDocument();
-      expect(screen.getByTestId('mock-patient-details')).toBeInTheDocument();
-      expect(screen.getByTestId('mock-sidebar')).toBeInTheDocument();
+      expect(screen.getByTestId('mock-patient-header')).toBeInTheDocument();
       expect(screen.getByTestId('mock-main-display')).toBeInTheDocument();
     });
 
@@ -59,12 +58,10 @@ describe('ClinicalLayout Component', () => {
 
       // Check for layout structure classes
       expect(container.querySelector('[class*="layout"]')).toBeInTheDocument();
-      expect(container.querySelector('[class*="header"]')).toBeInTheDocument();
       expect(container.querySelector('[class*="body"]')).toBeInTheDocument();
       expect(
-        container.querySelector('[class*="patientDetails"]'),
+        container.querySelector('[class*="patientHeader"]'),
       ).toBeInTheDocument();
-      expect(container.querySelector('[class*="sidebar"]')).toBeInTheDocument();
       expect(
         container.querySelector('[class*="mainDisplay"]'),
       ).toBeInTheDocument();
@@ -75,10 +72,11 @@ describe('ClinicalLayout Component', () => {
   describe('Sad Path', () => {
     test('renders with empty content in sections', () => {
       const emptyProps = {
-        header: <div data-testid="empty-header"></div>,
-        patientDetails: <div data-testid="empty-patient-details"></div>,
-        sidebar: <div data-testid="empty-sidebar"></div>,
+        headerWSideNav: <div data-testid="empty-header"></div>,
+        patientHeader: <div data-testid="empty-patient-header"></div>,
         mainDisplay: <div data-testid="empty-main-display"></div>,
+        actionArea: <div data-testid="empty-action-area"></div>,
+        isActionAreaVisible: false,
       };
 
       render(
@@ -89,31 +87,13 @@ describe('ClinicalLayout Component', () => {
 
       // Check if empty sections are rendered
       expect(screen.getByTestId('empty-header')).toBeInTheDocument();
-      expect(screen.getByTestId('empty-patient-details')).toBeInTheDocument();
-      expect(screen.getByTestId('empty-sidebar')).toBeInTheDocument();
+      expect(screen.getByTestId('empty-patient-header')).toBeInTheDocument();
       expect(screen.getByTestId('empty-main-display')).toBeInTheDocument();
-    });
-
-    test('renders null components gracefully', () => {
-      const nullProps = {
-        ...defaultProps,
-        sidebar: null,
-      };
-
-      // Should not throw an error
-      expect(() => {
-        render(
-          <BrowserRouter>
-            <ClinicalLayout {...nullProps} />
-          </BrowserRouter>,
-        );
-      }).not.toThrow();
     });
   });
 
   // Edge Case Tests
   describe('Edge Cases', () => {
-    // Test with long content in mainDisplay and sidebar sections
     // is ignored as it is not relevant to the layout structure
     // Test with long content in mainDisplay and sidebar sections
     // can be done in browser-based E2E tests. As when using @testing-library/react and jest with CSS Modules: the actual CSS styles (like overflow-y: auto) are not applied or rendered in the JSDOM environment during tests. The style classes (className) are present, but the browser-like CSS rendering engine that applies computed styles is not.
@@ -144,6 +124,75 @@ describe('ClinicalLayout Component', () => {
       expect(screen.getByTestId('deep-nested')).toBeInTheDocument();
       expect(screen.getByText('Nested Level 1')).toBeInTheDocument();
       expect(screen.getByText('Nested Level 2')).toBeInTheDocument();
+    });
+  });
+
+  // Conditional Rendering Tests
+  describe('Conditional Rendering', () => {
+    test('displays action area when isActionAreaVisible is true', () => {
+      const visibleActionAreaProps = {
+        ...defaultProps,
+        isActionAreaVisible: true,
+      };
+
+      render(
+        <BrowserRouter>
+          <ClinicalLayout {...visibleActionAreaProps} />
+        </BrowserRouter>,
+      );
+
+      // Check if action area is rendered when isActionAreaVisible is true
+      expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
+    });
+
+    test('does not display action area when isActionAreaVisible is false', () => {
+      const hiddenActionAreaProps = {
+        ...defaultProps,
+        isActionAreaVisible: false,
+      };
+
+      render(
+        <BrowserRouter>
+          <ClinicalLayout {...hiddenActionAreaProps} />
+        </BrowserRouter>,
+      );
+
+      // Check if action area is not rendered when isActionAreaVisible is false
+      expect(screen.queryByTestId('mock-action-area')).not.toBeInTheDocument();
+    });
+
+    test('applies collapse class to body when isActionAreaVisible is true', () => {
+      const visibleActionAreaProps = {
+        ...defaultProps,
+        isActionAreaVisible: true,
+      };
+
+      const { container } = render(
+        <BrowserRouter>
+          <ClinicalLayout {...visibleActionAreaProps} />
+        </BrowserRouter>,
+      );
+
+      // Check if body div has collapse class when isActionAreaVisible is true
+      const bodyElement = container.querySelector('[class*="body"]');
+      expect(bodyElement).toHaveClass('collapse');
+    });
+
+    test('does not apply collapse class to body when isActionAreaVisible is false', () => {
+      const hiddenActionAreaProps = {
+        ...defaultProps,
+        isActionAreaVisible: false,
+      };
+
+      const { container } = render(
+        <BrowserRouter>
+          <ClinicalLayout {...hiddenActionAreaProps} />
+        </BrowserRouter>,
+      );
+
+      // Check if body div does not have collapse class when isActionAreaVisible is false
+      const bodyElement = container.querySelector('[class*="body"]');
+      expect(bodyElement).not.toHaveClass('collapse');
     });
   });
 
