@@ -9,12 +9,14 @@ interface LabInvestigationItemProps {
   test: FormattedLabTest;
 }
 const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({ test }) => {
+  
   // Determine tag color based on priority
   const getTagType = (priority: LabTestPriority): 'gray' | 'green' => {
+    
     switch (priority) {
-      case LabTestPriority.Stat:
+      case LabTestPriority.stat:
         return 'gray' as const;
-      case LabTestPriority.Routine:
+      case LabTestPriority.routine:
         return 'green' as const;
       default:
         return 'green' as const;

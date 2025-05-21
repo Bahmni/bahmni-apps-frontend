@@ -32,16 +32,22 @@ const mapLabTestStatus = (labTest: FhirLabTest): LabTestStatus => {
  * Maps a FHIR priority code to LabTestPriority enum
  */
 const mapLabTestPriority = (labTest: FhirLabTest): LabTestPriority => {
+  console.log('Raw priority from API:', labTest.priority);
+  
+  let mappedPriority;
   switch (labTest.priority) {
-    case 'Routine':
-      return LabTestPriority.Routine;
-    case 'Urgent':
-      return LabTestPriority.Urgent;
-    case 'Stat':
-      return LabTestPriority.Stat;
+    case 'routine':
+      mappedPriority = LabTestPriority.routine;
+      break;
+    case 'stat':
+      mappedPriority = LabTestPriority.stat;
+      break;
     default:
-      return LabTestPriority.Routine;
+      mappedPriority = LabTestPriority.routine;
   }
+  
+  console.log('Mapped priority:', mappedPriority);
+  return mappedPriority;
 };
 
 /**
