@@ -64,6 +64,6 @@ describe('LabInvestigationItem', () => {
     
     render(<LabInvestigationItem test={statTest} />);
     
-    expect(screen.getByText('Stat')).toBeInTheDocument();
+    expect(screen.getByText('Urgent')).toBeInTheDocument();
   });
 });
