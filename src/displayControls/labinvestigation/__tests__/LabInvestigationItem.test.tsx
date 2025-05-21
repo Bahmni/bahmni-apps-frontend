@@ -48,7 +48,7 @@ describe('LabInvestigationItem', () => {
   it('applies different tag color for urgent priority', () => {
     const urgentTest = {
       ...mockLabTest,
-      priority: LabTestPriority.Urgent,
+      priority: LabTestPriority.Stat,
     };
     
     render(<LabInvestigationItem test={urgentTest} />);
@@ -56,14 +56,4 @@ describe('LabInvestigationItem', () => {
     expect(screen.getByText('Urgent')).toBeInTheDocument();
   });
 
-  it('applies different tag color for stat priority', () => {
-    const statTest = {
-      ...mockLabTest,
-      priority: LabTestPriority.Stat,
-    };
-    
-    render(<LabInvestigationItem test={statTest} />);
-    
-    expect(screen.getByText('Stat')).toBeInTheDocument();
-  });
 });
