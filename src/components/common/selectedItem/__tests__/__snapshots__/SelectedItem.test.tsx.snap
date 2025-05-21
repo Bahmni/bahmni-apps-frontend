@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`SelectedItem Snapshot should match snapshot 1`] = `
+exports[`Snapshot should match snapshot 1`] = `
 <div>
   <div
     class="cds--css-grid cds--css-grid--narrow cds--css-grid--full-width"

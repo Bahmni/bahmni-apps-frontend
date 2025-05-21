@@ -16,7 +16,7 @@ describe('SelectedItem', () => {
       render(
         <SelectedItem onClose={mockOnClose}>
           <div>{testContent}</div>
-        </SelectedItem>
+        </SelectedItem>,
       );
 
       // Assert
@@ -32,7 +32,7 @@ describe('SelectedItem', () => {
       render(
         <SelectedItem onClose={mockOnClose}>
           <div>{testContent}</div>
-        </SelectedItem>
+        </SelectedItem>,
       );
 
       const closeButton = screen.getByLabelText('Close Selected Item');
@@ -44,58 +44,38 @@ describe('SelectedItem', () => {
   });
 
   describe('Accessibility', () => {
-    it('should have accessible close button with correct attributes', () => {
-      // Arrange
-      const mockOnClose = jest.fn();
-
-      // Act
-      render(
-        <SelectedItem onClose={mockOnClose}>
-          <div>Content</div>
-        </SelectedItem>
-      );
-
-      const closeButton = screen.getByLabelText('Close Selected Item');
-
-      // Assert
-      expect(closeButton).toHaveAttribute('aria-label', 'Close Selected Item');
-      expect(closeButton).toBeInTheDocument();
-    });
-  });
-
-  describe('Snapshot', () => {
-    it('should match snapshot', () => {
-      // Arrange
+    it('should not have accessibility violations', async () => {
+      // Arrange      // Arrange
       const mockOnClose = jest.fn();
       const testContent = 'Test content';
 
-      // Act
       const { container } = render(
         <SelectedItem onClose={mockOnClose}>
           <div>{testContent}</div>
-        </SelectedItem>
+        </SelectedItem>,
       );
 
-      // Assert
-      expect(container).toMatchSnapshot();
+      // Act & Assert
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
     });
   });
+});
 
-  describe('Accessibility', () => {
-    it('should have no accessibility violations', async () => {
-      // Arrange
-      const mockOnClose = jest.fn();
-      const testContent = 'Test content';
+describe('Snapshot', () => {
+  it('should match snapshot', () => {
+    // Arrange
+    const mockOnClose = jest.fn();
+    const testContent = 'Test content';
 
-      // Act
-      const { container } = render(
-        <SelectedItem onClose={mockOnClose}>
-          <div>{testContent}</div>
-        </SelectedItem>
-      );
+    // Act
+    const { container } = render(
+      <SelectedItem onClose={mockOnClose}>
+        <div>{testContent}</div>
+      </SelectedItem>,
+    );
 
-      // Assert
-      expect(await axe(container)).toHaveNoViolations();
-    });
+    // Assert
+    expect(container).toMatchSnapshot();
   });
 });

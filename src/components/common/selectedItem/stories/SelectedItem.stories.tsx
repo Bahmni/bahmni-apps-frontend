@@ -1,6 +1,6 @@
 import React from 'react';
 import { StoryObj, Meta } from '@storybook/react';
-import { Dropdown, TextInput, Stack, Layer, Grid, Column } from '@carbon/react';
+import { Dropdown, TextInput, Stack, Grid, Column } from '@carbon/react';
 import SelectedItem from '../SelectedItem';
 import * as styles from './styles/SelectedItemStories.module.scss';
 
