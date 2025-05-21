@@ -11,8 +11,12 @@ const LabInvestigationTable: React.FC = () => {
     const { labInvestigations, isLoading } = useLabInvestigations();
 
     if (isLoading && labInvestigations.length === 0) {
-        return <div>Loading lab tests...</div>;
-      }
+        return <div>{t('Loading lab tests...')}</div>;
+    }
+
+    if (!isLoading && labInvestigations.length === 0) {
+        return null;
+    }
 
 
     return (
@@ -23,13 +27,9 @@ const LabInvestigationTable: React.FC = () => {
                         key={group.date}
                         title={<span className={styles.accordionTitle}><strong>{group.date}</strong></span>}
                     >
-                        {group.tests?.map((test, testIndex: number) => (
-                            <LabInvestigationItem
-                                key={testIndex}
-                                test={test}
-                            /> 
-                        ))}
-
+                     {group.tests?.map((test, testIndex) => (
+                        <LabInvestigationItem key={testIndex} test={test} />
+                     ))}
                     </AccordionItem>
                 ))}
 
