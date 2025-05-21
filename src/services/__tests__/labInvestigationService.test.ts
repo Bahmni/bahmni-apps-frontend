@@ -213,31 +213,31 @@ describe('labInvestigationService', () => {
     {
       id: '29e240ce-5a3d-4643-8d4b-ca5b4cbf665d',
       testName: 'Absolute eosinophil count test',
-      status: LabTestStatus.Completed,
+      status: LabTestStatus.Normal,
       priority: LabTestPriority.Routine,
       orderedBy: 'Super Man',
       orderedDate: '2025-04-09T13:21:22+00:00',
-      formattedDate: '04/09/2025',
+      formattedDate: 'April 9, 2025',
       result: undefined,
     },
     {
       id: 'e7eca932-1d6f-44a4-bd94-e1105860ab77',
       testName: 'Clotting Panel',
-      status: LabTestStatus.Completed,
+      status: LabTestStatus.Normal,
       priority: LabTestPriority.Routine,
       orderedBy: 'Super Man',
       orderedDate: '2025-04-09T13:21:22+00:00',
-      formattedDate: '04/09/2025',
+      formattedDate: 'April 9, 2025',
       result: undefined,
     },
     {
       id: 'aba2a637-05f5-44c6-9021-c5cd05548342',
       testName: 'CD8%',
-      status: LabTestStatus.Completed,
+      status: LabTestStatus.Normal,
       priority: LabTestPriority.Routine,
       orderedBy: 'Super Man',
       orderedDate: '2025-05-08T12:44:24+00:00',
-      formattedDate: '05/08/2025',
+      formattedDate: 'May 8, 2025',
       result: undefined,
     },
   ];
@@ -246,9 +246,9 @@ describe('labInvestigationService', () => {
   jest.mock('../../utils/date', () => ({
     formatDate: jest.fn().mockImplementation((date) => {
       if (date.includes('2025-04-09')) {
-        return { formattedResult: '04/09/2025' };
+        return { formattedResult: 'April 9, 2025' };
       } else if (date.includes('2025-05-08')) {
-        return { formattedResult: '05/08/2025' };
+        return { formattedResult: 'May 8, 2025' };
       }
       return { formattedResult: 'Invalid date' };
     }),
@@ -309,12 +309,12 @@ describe('labInvestigationService', () => {
       expect(result).toHaveLength(2); // Two unique dates
       
       // First date (newest)
-      expect(result[0].date).toBe('05/08/2025');
+      expect(result[0].date).toBe('May 8, 2025');
       expect(result[0].tests).toHaveLength(1);
       expect(result[0].tests[0].testName).toBe('CD8%');
       
       // Second date (older)
-      expect(result[1].date).toBe('04/09/2025');
+      expect(result[1].date).toBe('April 9, 2025');
       expect(result[1].tests).toHaveLength(2);
       expect(result[1].tests[0].testName).toBe('Absolute eosinophil count test');
       expect(result[1].tests[1].testName).toBe('Clotting Panel');
@@ -342,11 +342,11 @@ describe('labInvestigationService', () => {
       expect(result).toHaveLength(2); // Two unique dates
       
       // First date (newest)
-      expect(result[0].date).toBe('05/08/2025');
+      expect(result[0].date).toBe('May 8, 2025');
       expect(result[0].tests).toHaveLength(1);
       
       // Second date (older)
-      expect(result[1].date).toBe('04/09/2025');
+      expect(result[1].date).toBe('April 9, 2025');
       expect(result[1].tests).toHaveLength(2);
     });
 
