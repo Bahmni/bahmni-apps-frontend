@@ -219,7 +219,7 @@ describe('Date Utility Functions', () => {
     it('should handle timestamp input', () => {
       const timestamp = new Date(2024, 2, 28).getTime();
       const formatted = formatDate(timestamp);
-      expect(formatted.formattedResult).toBe('28/03/2024');
+      expect(formatted.formattedResult).toBe('March 28, 2024');
       expect(formatted.error).toBeUndefined();
     });
   });
