@@ -22,7 +22,7 @@ const LabInvestigationTable: React.FC = () => {
     return (
         <section className={styles.labInvestigationWrapper}>
             <Accordion align="start" size="lg">
-                {labInvestigations.map((group, groupIndex: number) => (
+                {labInvestigations.map((group) => (
                     <AccordionItem
                         key={group.date}
                         title={<span className={styles.accordionTitle}><strong>{group.date}</strong></span>}

@@ -6,7 +6,7 @@ import { FormattedLabTest, LabTestStatus, LabTestPriority } from '@/types/labInv
 // Mock the BahmniIcon component
 jest.mock('@components/common/bahmniIcon/BahmniIcon', () => ({
   __esModule: true,
-  default: ({ name, size, id }: { name: string; size: string; id: string }) => (
+  default: ({ name, id }: { name: string; id: string }) => (
     <span data-testid={id}>{name}</span>
   ),
 }));

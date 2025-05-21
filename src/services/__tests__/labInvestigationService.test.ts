@@ -10,9 +10,8 @@ import {
   LabTestStatus,
   LabTestPriority,
   FormattedLabTest,
-  LabTestsByDate,
 } from '../../types/labInvestigation';
-import { formatDate } from '../../utils/date';
+import '../../utils/date';
 import { getFormattedError } from '../../utils/common';
 import notificationService from '../notificationService';
 

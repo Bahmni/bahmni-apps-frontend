@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import LabInvestigationTable from '../LabInvestigationTable';
 import useLabInvestigations from '@/hooks/useLabInvestigations';
-import { LabTestsByDate, LabTestStatus, LabTestPriority } from '@/types/labInvestigation';
+import { LabTestsByDate, LabTestStatus, LabTestPriority, FormattedLabTest } from '@/types/labInvestigation';
 
 // Mock the useLabInvestigations hook
 jest.mock('@/hooks/useLabInvestigations');
@@ -10,7 +10,7 @@ jest.mock('@/hooks/useLabInvestigations');
 // Mock the LabInvestigationItem component
 jest.mock('../LabInvestigationItem', () => ({
   __esModule: true,
-  default: ({ test }: any) => (
+  default: ({ test }: { test: FormattedLabTest }) => (
     <div data-testid="lab-investigation-item">
       <span data-testid="test-name">{test.testName}</span>
       <span data-testid="test-status">{test.status}</span>
