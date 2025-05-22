@@ -6,9 +6,43 @@
   margin: $spacing-06;
   border: 1px solid $border-subtle-02;
   background-color: $background !important;
+  overflow: hidden !important;
 }
 
 .diagnosesFormTitle {
   @include type-style("heading-compact-02");
   padding-bottom: $spacing-05;
+}
+
+.diagnosesBox {
+  margin: $spacing-06;
+}
+
+.selectedDiagnosisItem {
+  border-top: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 1px solid $border-subtle-02;
+}
+
+.selectedDiagnosisTitle {
+  @include type-style("heading-compact-01");
+  margin: 0 !important;
+  justify-self: start;
+  align-self: center;
+}
+
+.selectedDiagnosisCertainty {
+  margin: 0 1rem !important;
+  justify-self: end;
+
+  :global(.cds--dropdown__wrapper--inline) {
+    border: 1px solid $border-subtle-02;
+    grid-gap: 0 !important;
+  }
+}
+
+.inlineErrorNotification {
+  min-width: -webkit-fill-available !important;
+  margin-top: $spacing-03;
 }

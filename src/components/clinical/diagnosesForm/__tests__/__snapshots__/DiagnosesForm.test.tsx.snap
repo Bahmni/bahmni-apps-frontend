@@ -1,0 +1,692 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DiagnosesForm Snapshot Tests empty form matches snapshot 1`] = `
+<div>
+  <div
+    class="cds--tile diagnosesFormTile"
+  >
+    <div
+      class="diagnosesFormTitle"
+    >
+      Diagnoses
+    </div>
+    <div
+      class="cds--list-box__wrapper"
+    >
+      <div
+        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--lg"
+      >
+        <div
+          class="cds--list-box__field"
+        >
+          <input
+            aria-activedescendant=""
+            aria-autocomplete="list"
+            aria-controls="downshift-«r7u»-menu"
+            aria-expanded="false"
+            aria-haspopup="listbox"
+            aria-label="Search for diagnoses"
+            autocomplete="off"
+            class="cds--text-input cds--text-input--empty"
+            id="diagnoses-search"
+            placeholder="Search to add new diagnosis"
+            role="combobox"
+            tabindex="0"
+            title=""
+            type="text"
+            value=""
+          />
+          <button
+            aria-controls="downshift-«r7u»-menu"
+            aria-expanded="false"
+            aria-label="Open"
+            class="cds--list-box__menu-icon"
+            id="downshift-«r7u»-toggle-button"
+            tabindex="-1"
+            title="Open"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="currentColor"
+              focusable="false"
+              height="16"
+              preserveAspectRatio="xMidYMid meet"
+              viewBox="0 0 16 16"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+              />
+            </svg>
+          </button>
+        </div>
+        <ul
+          aria-labelledby="downshift-«r7u»-label"
+          class="cds--list-box__menu"
+          id="downshift-«r7u»-menu"
+          role="listbox"
+          style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`DiagnosesForm Snapshot Tests form in loading state matches snapshot 1`] = `
+<div>
+  <div
+    class="cds--tile diagnosesFormTile"
+  >
+    <div
+      class="diagnosesFormTitle"
+    >
+      Diagnoses
+    </div>
+    <div
+      class="cds--list-box__wrapper"
+    >
+      <div
+        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--lg cds--list-box--disabled"
+      >
+        <div
+          class="cds--list-box__field"
+        >
+          <input
+            aria-activedescendant=""
+            aria-autocomplete="list"
+            aria-controls="downshift-«r8g»-menu"
+            aria-expanded="false"
+            aria-haspopup="listbox"
+            aria-label="Search for diagnoses"
+            autocomplete="off"
+            class="cds--text-input cds--text-input--empty"
+            disabled=""
+            id="diagnoses-search"
+            placeholder="Search to add new diagnosis"
+            role="combobox"
+            tabindex="0"
+            title=""
+            type="text"
+            value=""
+          />
+          <button
+            aria-controls="downshift-«r8g»-menu"
+            aria-expanded="false"
+            aria-label="Open"
+            class="cds--list-box__menu-icon"
+            disabled=""
+            id="downshift-«r8g»-toggle-button"
+            tabindex="-1"
+            title="Open"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="currentColor"
+              focusable="false"
+              height="16"
+              preserveAspectRatio="xMidYMid meet"
+              viewBox="0 0 16 16"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+              />
+            </svg>
+          </button>
+        </div>
+        <ul
+          aria-labelledby="downshift-«r8g»-label"
+          class="cds--list-box__menu"
+          id="downshift-«r8g»-menu"
+          role="listbox"
+          style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`DiagnosesForm Snapshot Tests form with errors matches snapshot 1`] = `
+<div>
+  <div
+    class="cds--tile diagnosesFormTile"
+  >
+    <div
+      class="diagnosesFormTitle"
+    >
+      Diagnoses
+    </div>
+    <div
+      class="cds--list-box__wrapper"
+    >
+      <div
+        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--lg"
+      >
+        <div
+          class="cds--list-box__field"
+        >
+          <input
+            aria-activedescendant=""
+            aria-autocomplete="list"
+            aria-controls="downshift-«r8d»-menu"
+            aria-expanded="false"
+            aria-haspopup="listbox"
+            aria-label="Search for diagnoses"
+            autocomplete="off"
+            class="cds--text-input cds--text-input--empty"
+            id="diagnoses-search"
+            placeholder="Search to add new diagnosis"
+            role="combobox"
+            tabindex="0"
+            title=""
+            type="text"
+            value=""
+          />
+          <button
+            aria-controls="downshift-«r8d»-menu"
+            aria-expanded="false"
+            aria-label="Open"
+            class="cds--list-box__menu-icon"
+            id="downshift-«r8d»-toggle-button"
+            tabindex="-1"
+            title="Open"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="currentColor"
+              focusable="false"
+              height="16"
+              preserveAspectRatio="xMidYMid meet"
+              viewBox="0 0 16 16"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+              />
+            </svg>
+          </button>
+        </div>
+        <ul
+          aria-labelledby="downshift-«r8d»-label"
+          class="cds--list-box__menu"
+          id="downshift-«r8d»-menu"
+          role="listbox"
+          style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+        />
+      </div>
+    </div>
+    <div
+      class="inlineErrorNotification cds--inline-notification cds--inline-notification--low-contrast cds--inline-notification--error"
+      role="alert"
+    >
+      <div
+        class="cds--inline-notification__details"
+      >
+        <svg
+          aria-hidden="true"
+          class="cds--inline-notification__icon"
+          fill="currentColor"
+          focusable="false"
+          height="20"
+          preserveAspectRatio="xMidYMid meet"
+          viewBox="0 0 20 20"
+          width="20"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M10,1c-5,0-9,4-9,9s4,9,9,9s9-4,9-9S15,1,10,1z M13.5,14.5l-8-8l1-1l8,8L13.5,14.5z"
+          />
+          <path
+            d="M13.5,14.5l-8-8l1-1l8,8L13.5,14.5z"
+            data-icon-path="inner-path"
+            opacity="0"
+          />
+          <title>
+            error icon
+          </title>
+        </svg>
+        <div
+          class="cds--inline-notification__text-wrapper"
+        >
+          <div
+            class="cds--inline-notification__title"
+            dir="auto"
+          >
+            Search failed
+          </div>
+        </div>
+      </div>
+      <button
+        aria-label="close notification"
+        class="cds--inline-notification__close-button"
+        title="close notification"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          class="cds--inline-notification__close-icon"
+          fill="currentColor"
+          focusable="false"
+          height="16"
+          preserveAspectRatio="xMidYMid meet"
+          viewBox="0 0 32 32"
+          width="16"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+          />
+        </svg>
+      </button>
+    </div>
+    <div
+      class="inlineErrorNotification cds--inline-notification cds--inline-notification--low-contrast cds--inline-notification--error"
+      role="alert"
+    >
+      <div
+        class="cds--inline-notification__details"
+      >
+        <svg
+          aria-hidden="true"
+          class="cds--inline-notification__icon"
+          fill="currentColor"
+          focusable="false"
+          height="20"
+          preserveAspectRatio="xMidYMid meet"
+          viewBox="0 0 20 20"
+          width="20"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M10,1c-5,0-9,4-9,9s4,9,9,9s9-4,9-9S15,1,10,1z M13.5,14.5l-8-8l1-1l8,8L13.5,14.5z"
+          />
+          <path
+            d="M13.5,14.5l-8-8l1-1l8,8L13.5,14.5z"
+            data-icon-path="inner-path"
+            opacity="0"
+          />
+          <title>
+            error icon
+          </title>
+        </svg>
+        <div
+          class="cds--inline-notification__text-wrapper"
+        >
+          <div
+            class="cds--inline-notification__title"
+            dir="auto"
+          >
+            Network error
+          </div>
+        </div>
+      </div>
+      <button
+        aria-label="close notification"
+        class="cds--inline-notification__close-button"
+        title="close notification"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          class="cds--inline-notification__close-icon"
+          fill="currentColor"
+          focusable="false"
+          height="16"
+          preserveAspectRatio="xMidYMid meet"
+          viewBox="0 0 32 32"
+          width="16"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+          />
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`DiagnosesForm Snapshot Tests form with search results matches snapshot 1`] = `
+<div>
+  <div
+    class="cds--tile diagnosesFormTile"
+  >
+    <div
+      class="diagnosesFormTitle"
+    >
+      Diagnoses
+    </div>
+    <div
+      class="cds--list-box__wrapper"
+    >
+      <div
+        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--lg"
+      >
+        <div
+          class="cds--list-box__field"
+        >
+          <input
+            aria-activedescendant=""
+            aria-autocomplete="list"
+            aria-controls="downshift-«r81»-menu"
+            aria-expanded="false"
+            aria-haspopup="listbox"
+            aria-label="Search for diagnoses"
+            autocomplete="off"
+            class="cds--text-input cds--text-input--empty"
+            id="diagnoses-search"
+            placeholder="Search to add new diagnosis"
+            role="combobox"
+            tabindex="0"
+            title=""
+            type="text"
+            value=""
+          />
+          <button
+            aria-controls="downshift-«r81»-menu"
+            aria-expanded="false"
+            aria-label="Open"
+            class="cds--list-box__menu-icon"
+            id="downshift-«r81»-toggle-button"
+            tabindex="-1"
+            title="Open"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="currentColor"
+              focusable="false"
+              height="16"
+              preserveAspectRatio="xMidYMid meet"
+              viewBox="0 0 16 16"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+              />
+            </svg>
+          </button>
+        </div>
+        <ul
+          aria-labelledby="downshift-«r81»-label"
+          class="cds--list-box__menu"
+          id="downshift-«r81»-menu"
+          role="listbox"
+          style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snapshot 1`] = `
+<div>
+  <div
+    class="cds--tile diagnosesFormTile"
+  >
+    <div
+      class="diagnosesFormTitle"
+    >
+      Diagnoses
+    </div>
+    <div
+      class="cds--list-box__wrapper"
+    >
+      <div
+        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--lg"
+      >
+        <div
+          class="cds--list-box__field"
+        >
+          <input
+            aria-activedescendant=""
+            aria-autocomplete="list"
+            aria-controls="downshift-«r84»-menu"
+            aria-expanded="false"
+            aria-haspopup="listbox"
+            aria-label="Search for diagnoses"
+            autocomplete="off"
+            class="cds--text-input cds--text-input--empty"
+            id="diagnoses-search"
+            placeholder="Search to add new diagnosis"
+            role="combobox"
+            tabindex="0"
+            title=""
+            type="text"
+            value=""
+          />
+          <button
+            aria-controls="downshift-«r84»-menu"
+            aria-expanded="false"
+            aria-label="Open"
+            class="cds--list-box__menu-icon"
+            id="downshift-«r84»-toggle-button"
+            tabindex="-1"
+            title="Open"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="currentColor"
+              focusable="false"
+              height="16"
+              preserveAspectRatio="xMidYMid meet"
+              viewBox="0 0 16 16"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+              />
+            </svg>
+          </button>
+        </div>
+        <ul
+          aria-labelledby="downshift-«r84»-label"
+          class="cds--list-box__menu"
+          id="downshift-«r84»-menu"
+          role="listbox"
+          style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+        />
+      </div>
+    </div>
+    <div
+      class="diagnosesBox"
+      data-testid="box-with-header"
+    >
+      <h3>
+        Added Diagnoses
+      </h3>
+      <div
+        class="selectedDiagnosisItem"
+        data-testid="selected-item"
+      >
+        <div
+          class="cds--css-grid"
+        >
+          <div
+            class="selectedDiagnosisTitle cds--sm:col-span-4 cds--md:col-span-7 cds--lg:col-span-11 cds--xlg:col-span-11 cds--css-grid-column"
+          >
+            Diabetes Mellitus
+          </div>
+          <div
+            class="selectedDiagnosisCertainty cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-4 cds--xlg:col-span-4 cds--css-grid-column"
+          >
+            <div
+              class="cds--dropdown__wrapper cds--list-box__wrapper cds--dropdown__wrapper--inline cds--list-box__wrapper--inline"
+              data-testid="diagnoses-certainty-dropdown-test-id"
+            >
+              <label
+                class="cds--label"
+                for="downshift-«r87»-toggle-button"
+                id="downshift-«r87»-label"
+              >
+                Select Certainty
+              </label>
+              <div
+                class="cds--dropdown cds--dropdown--inline cds--autoalign cds--list-box"
+                id="diagnoses-certainty-dropdown"
+              >
+                <button
+                  aria-activedescendant=""
+                  aria-controls="downshift-«r87»-menu"
+                  aria-expanded="false"
+                  aria-haspopup="listbox"
+                  aria-label="Select certainty level for diagnosis"
+                  class="cds--list-box__field"
+                  id="downshift-«r87»-toggle-button"
+                  role="combobox"
+                  tabindex="0"
+                  title="Confirmed"
+                  type="button"
+                >
+                  <span
+                    class="cds--list-box__label"
+                  >
+                    Confirmed
+                  </span>
+                  <div
+                    class="cds--list-box__menu-icon"
+                  >
+                    <svg
+                      aria-label="Open menu"
+                      fill="currentColor"
+                      focusable="false"
+                      height="16"
+                      name="chevron--down"
+                      preserveAspectRatio="xMidYMid meet"
+                      role="img"
+                      viewBox="0 0 16 16"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                      />
+                      <title>
+                        Open menu
+                      </title>
+                    </svg>
+                  </div>
+                </button>
+                <ul
+                  aria-labelledby="downshift-«r87»-label"
+                  class="cds--list-box__menu"
+                  id="downshift-«r87»-menu"
+                  role="listbox"
+                  style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <button
+          data-testid="remove-button"
+        >
+          Remove
+        </button>
+      </div>
+      <div
+        class="selectedDiagnosisItem"
+        data-testid="selected-item"
+      >
+        <div
+          class="cds--css-grid"
+        >
+          <div
+            class="selectedDiagnosisTitle cds--sm:col-span-4 cds--md:col-span-7 cds--lg:col-span-11 cds--xlg:col-span-11 cds--css-grid-column"
+          >
+            Hypertension
+          </div>
+          <div
+            class="selectedDiagnosisCertainty cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-4 cds--xlg:col-span-4 cds--css-grid-column"
+          >
+            <div
+              class="cds--dropdown__wrapper cds--list-box__wrapper cds--dropdown__wrapper--inline cds--list-box__wrapper--inline"
+              data-testid="diagnoses-certainty-dropdown-test-id"
+            >
+              <label
+                class="cds--label"
+                for="downshift-«r8a»-toggle-button"
+                id="downshift-«r8a»-label"
+              >
+                Select Certainty
+              </label>
+              <div
+                class="cds--dropdown cds--dropdown--inline cds--autoalign cds--list-box"
+                id="diagnoses-certainty-dropdown"
+              >
+                <button
+                  aria-activedescendant=""
+                  aria-controls="downshift-«r8a»-menu"
+                  aria-expanded="false"
+                  aria-haspopup="listbox"
+                  aria-label="Select certainty level for diagnosis"
+                  class="cds--list-box__field"
+                  id="downshift-«r8a»-toggle-button"
+                  role="combobox"
+                  tabindex="0"
+                  title="Provisional"
+                  type="button"
+                >
+                  <span
+                    class="cds--list-box__label"
+                  >
+                    Provisional
+                  </span>
+                  <div
+                    class="cds--list-box__menu-icon"
+                  >
+                    <svg
+                      aria-label="Open menu"
+                      fill="currentColor"
+                      focusable="false"
+                      height="16"
+                      name="chevron--down"
+                      preserveAspectRatio="xMidYMid meet"
+                      role="img"
+                      viewBox="0 0 16 16"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                      />
+                      <title>
+                        Open menu
+                      </title>
+                    </svg>
+                  </div>
+                </button>
+                <ul
+                  aria-labelledby="downshift-«r8a»-label"
+                  class="cds--list-box__menu"
+                  id="downshift-«r8a»-menu"
+                  role="listbox"
+                  style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <button
+          data-testid="remove-button"
+        >
+          Remove
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+`;
