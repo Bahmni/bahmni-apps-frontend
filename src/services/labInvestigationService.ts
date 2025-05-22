@@ -33,14 +33,12 @@ const mapLabTestStatus = (labTest: FhirLabTest): LabTestStatus => {
  */
 const mapLabTestPriority = (labTest: FhirLabTest): LabTestPriority => {
   switch (labTest.priority) {
-    case 'Routine':
-      return LabTestPriority.Routine;
-    case 'Urgent':
-      return LabTestPriority.Urgent;
-    case 'Stat':
-      return LabTestPriority.Stat;
+    case 'routine':
+      return LabTestPriority.routine;
+    case 'stat':
+      return LabTestPriority.stat;
     default:
-      return LabTestPriority.Routine;
+      return LabTestPriority.routine;
   }
 };
 

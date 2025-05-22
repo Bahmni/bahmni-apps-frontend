@@ -41,7 +41,7 @@ describe('LabInvestigationTable', () => {
           id: 'test-1',
           testName: 'Complete Blood Count',
           status: LabTestStatus.Normal,
-          priority: LabTestPriority.Routine,
+          priority: LabTestPriority.routine,
           orderedBy: 'Dr. Smith',
           orderedDate: '2025-05-08T12:44:24+00:00',
           formattedDate: '05/08/2025',
@@ -57,7 +57,7 @@ describe('LabInvestigationTable', () => {
           id: 'test-2',
           testName: 'Lipid Panel',
           status: LabTestStatus.Abnormal,
-          priority: LabTestPriority.Urgent,
+          priority: LabTestPriority.stat,
           orderedBy: 'Dr. Johnson',
           orderedDate: '2025-04-09T13:21:22+00:00',
           formattedDate: '04/09/2025',
@@ -67,7 +67,7 @@ describe('LabInvestigationTable', () => {
           id: 'test-3',
           testName: 'Liver Function',
           status: LabTestStatus.Pending,
-          priority: LabTestPriority.Stat,
+          priority: LabTestPriority.stat,
           orderedBy: 'Dr. Williams',
           orderedDate: '2025-04-09T13:21:22+00:00',
           formattedDate: '04/09/2025',
@@ -131,9 +131,9 @@ describe('LabInvestigationTable', () => {
     // Check that the test priorities are displayed
     const testPriorities = screen.getAllByTestId('test-priority');
     expect(testPriorities).toHaveLength(3);
-    expect(testPriorities[0].textContent).toBe(LabTestPriority.Routine);
-    expect(testPriorities[1].textContent).toBe(LabTestPriority.Urgent);
-    expect(testPriorities[2].textContent).toBe(LabTestPriority.Stat);
+    expect(testPriorities[0].textContent).toBe(LabTestPriority.routine);
+    expect(testPriorities[1].textContent).toBe(LabTestPriority.stat);
+    expect(testPriorities[2].textContent).toBe(LabTestPriority.stat);
   });
 
   it('renders nothing when there are no lab investigations and isLoading is false', () => {
