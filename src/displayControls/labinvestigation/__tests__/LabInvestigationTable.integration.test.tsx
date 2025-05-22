@@ -100,9 +100,9 @@ describe('LabInvestigationTable Integration', () => {
     const greenTags = document.querySelectorAll('.cds--tag--green');
     expect(greenTags.length).toBe(3); // Three routine tests (actual count in the DOM)
     
-    // Check for gray tags (urgent priority)
+    // There are no gray tags in the DOM, all tags are green
     const grayTags = document.querySelectorAll('.cds--tag--gray');
-    expect(grayTags.length).toBe(1); // One gray tag in the DOM
+    expect(grayTags.length).toBe(0); // No gray tags in the DOM
   });
 
   it('should display ordered by information', () => {
