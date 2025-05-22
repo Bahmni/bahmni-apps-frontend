@@ -60,3 +60,9 @@
   border-radius: $spacing-02;
   font-weight: 600;
 }
+
+.accordionItem {
+  :global(.cds--accordion__content) {
+    padding-inline-end: 0%;
+  }
+}

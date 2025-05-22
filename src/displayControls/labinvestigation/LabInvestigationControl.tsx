@@ -34,6 +34,7 @@ const LabInvestigationControl: React.FC = () => {
         {labTestsByDate.map((group: LabTestsByDate) => (
           <AccordionItem
             key={group.date}
+            className={styles.accordionItem}
             title={
               <span className={styles.accordionTitle}>
                 <strong>{group.date}</strong>
