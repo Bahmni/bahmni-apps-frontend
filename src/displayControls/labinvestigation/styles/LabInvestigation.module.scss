@@ -36,22 +36,12 @@
   margin-bottom: $spacing-03;
 }
 
-/* Test type styles - for future implementation */
+/* Test type styles */
 .testType {
   color: $text-secondary;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-weight: 500;
-
-  &.abnormal {
-    color: $text-primary;
-    background-color: $support-error;
-  }
-
-  &.normal {
-    color: $text-primary;
-    background-color: $support-success;
-  }
+  font-size: 0.875rem;
+  font-weight: normal;
+  margin-left: 0.5rem;
 }
 
 .orderedBy {

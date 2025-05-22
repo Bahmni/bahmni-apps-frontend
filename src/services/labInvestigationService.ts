@@ -72,6 +72,27 @@ export async function getLabTests(patientUUID: string): Promise<FhirLabTest[]> {
 }
 
 /**
+ * Determines if a lab test is a panel based on its extension
+ * @param labTest - The FHIR lab test to check
+ * @returns A string indicating the test type: "Panel", "Single Test", or "X Tests"
+ */
+export const determineTestType = (labTest: FhirLabTest): string => {
+  // Check if the test has an extension that indicates it's a panel
+  const panelExtension = labTest.extension?.find(
+    (ext) =>
+      ext.url === 'http://fhir.bahmni.org/lab-order-concept-type-extension' &&
+      ext.valueString === 'Panel',
+  );
+
+  if (panelExtension) {
+    return 'Panel';
+  }
+
+  // If it's not a panel, it's a single test
+  return 'Single Test';
+};
+
+/**
  * Formats FHIR lab tests into a more user-friendly format
  * @param labTests - The FHIR lab test array to format
  * @returns An array of formatted lab test objects
@@ -85,6 +106,7 @@ export function formatLabTests(labTests: FhirLabTest[]): FormattedLabTest[] {
       const dateFormatResult = formatDate(orderedDate);
       const formattedDate =
         dateFormatResult.formattedResult || orderedDate.split('T')[0];
+      const testType = determineTestType(labTest);
 
       return {
         id: labTest.id,
@@ -96,6 +118,7 @@ export function formatLabTests(labTests: FhirLabTest[]): FormattedLabTest[] {
         formattedDate,
         // Result would typically come from a separate Observation resource
         result: undefined,
+        testType,
       };
     });
   } catch (error) {

@@ -50,6 +50,10 @@ export interface FhirLabTest {
     readonly status: string;
     readonly div: string;
   };
+  readonly extension?: ReadonlyArray<{
+    readonly url: string;
+    readonly valueString: string;
+  }>;
   readonly status: string;
   readonly intent: string;
   readonly category: ReadonlyArray<{
@@ -104,6 +108,7 @@ export interface FormattedLabTest {
   readonly orderedDate: string; // ISO date string
   readonly formattedDate: string; // Formatted date for display
   readonly result?: string | LabTestResult[];
+  readonly testType: string; // "Panel", "Single Test", or "X Tests"
 }
 
 /**

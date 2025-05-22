@@ -23,6 +23,12 @@ export const mockFhirLabTests: FhirLabTest[] = [
       status: 'generated',
       div: '<div>Complete Blood Count</div>',
     },
+    extension: [
+      {
+        url: 'http://fhir.bahmni.org/lab-order-concept-type-extension',
+        valueString: 'Panel',
+      },
+    ],
     status: 'Pending',
     intent: 'order',
     category: [
@@ -82,6 +88,12 @@ export const mockFhirLabTests: FhirLabTest[] = [
       status: 'generated',
       div: '<div>Lipid Panel</div>',
     },
+    extension: [
+      {
+        url: 'http://fhir.bahmni.org/lab-order-concept-type-extension',
+        valueString: 'Panel',
+      },
+    ],
     status: 'Pending',
     intent: 'order',
     category: [
@@ -140,6 +152,12 @@ export const mockFhirLabTests: FhirLabTest[] = [
       status: 'generated',
       div: '<div>Glucose Test</div>',
     },
+    extension: [
+      {
+        url: 'http://fhir.bahmni.org/lab-order-concept-type-extension',
+        valueString: 'Test',
+      },
+    ],
     status: 'Pending',
     intent: 'order',
     category: [
@@ -216,28 +234,31 @@ export const mockFormattedLabTests: FormattedLabTest[] = [
     id: 'lab-test-1',
     testName: 'Complete Blood Count',
     status: LabTestStatus.Pending,
-    priority: LabTestPriority.Routine,
+    priority: LabTestPriority.routine,
     orderedBy: 'Dr. John Doe',
     orderedDate: '2025-03-25T06:48:32.000+00:00',
     formattedDate: 'Mar 25, 2025',
+    testType: 'Panel',
   },
   {
     id: 'lab-test-2',
     testName: 'Lipid Panel',
     status: LabTestStatus.Pending,
-    priority: LabTestPriority.Stat,
+    priority: LabTestPriority.stat,
     orderedBy: 'Dr. Jane Smith',
     orderedDate: '2025-03-25T06:48:32.000+00:00',
     formattedDate: 'Mar 25, 2025',
+    testType: 'Panel',
   },
   {
     id: 'lab-test-3',
     testName: 'Glucose Test',
     status: LabTestStatus.Pending,
-    priority: LabTestPriority.Routine,
+    priority: LabTestPriority.routine,
     orderedBy: 'Dr. John Doe',
     orderedDate: '2025-03-24T06:48:32.000+00:00',
     formattedDate: 'Mar 24, 2025',
+    testType: 'Single Test',
   },
 ];
 
@@ -263,6 +284,12 @@ export const mockLabTestWithMissingFields: FhirLabTest = {
     versionId: '1',
     lastUpdated: '2025-03-25T06:48:32.000+00:00',
   },
+  extension: [
+    {
+      url: 'http://fhir.bahmni.org/lab-order-concept-type-extension',
+      valueString: 'Test',
+    },
+  ],
   status: 'Pending',
   intent: 'order',
   category: [
@@ -311,10 +338,11 @@ export const mockFormattedLabTestWithMissingFields: FormattedLabTest = {
   id: 'lab-test-incomplete',
   testName: 'Incomplete Test',
   status: LabTestStatus.Pending,
-  priority: LabTestPriority.Routine,
+  priority: LabTestPriority.routine,
   orderedBy: 'Unknown Doctor',
   orderedDate: '2025-03-25T06:48:32.000+00:00',
   formattedDate: 'Mar 25, 2025',
+  testType: 'Single Test',
 };
 
 // Mock lab tests by date with incomplete test

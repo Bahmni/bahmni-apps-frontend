@@ -26,7 +26,10 @@ const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({
   return (
     <div className={styles.labBox}>
       <div className={styles.labHeader}>
-        <strong>{test.testName}</strong>
+        <div>
+          <strong>{test.testName}</strong>
+          <span className={styles.testType}>{test.testType}</span>
+        </div>
         <Tag type={getTagType(test.priority)}>{test.priority}</Tag>
         <div className={styles.orderedBy}>
           <BahmniIcon name="fa-user" size={ICON_SIZE.SM} id="homeIcon" />

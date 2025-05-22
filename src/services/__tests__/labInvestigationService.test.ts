@@ -33,6 +33,12 @@ describe('labInvestigationService', () => {
         versionId: '1744204882000',
         lastUpdated: '2025-04-09T13:21:22.000+00:00',
       },
+      extension: [
+        {
+          url: 'http://fhir.bahmni.org/lab-order-concept-type-extension',
+          valueString: 'Test',
+        },
+      ],
       status: 'completed',
       intent: 'order',
       category: [
@@ -86,6 +92,12 @@ describe('labInvestigationService', () => {
         versionId: '1744204882000',
         lastUpdated: '2025-04-09T13:21:22.000+00:00',
       },
+      extension: [
+        {
+          url: 'http://fhir.bahmni.org/lab-order-concept-type-extension',
+          valueString: 'Panel',
+        },
+      ],
       status: 'completed',
       intent: 'order',
       category: [
@@ -139,6 +151,12 @@ describe('labInvestigationService', () => {
         versionId: '1746708264000',
         lastUpdated: '2025-05-08T12:44:24.000+00:00',
       },
+      extension: [
+        {
+          url: 'http://fhir.bahmni.org/lab-order-concept-type-extension',
+          valueString: 'Test',
+        },
+      ],
       status: 'completed',
       intent: 'order',
       category: [
@@ -219,6 +237,7 @@ describe('labInvestigationService', () => {
       orderedDate: '2025-04-09T13:21:22+00:00',
       formattedDate: 'April 9, 2025',
       result: undefined,
+      testType: 'Single Test',
     },
     {
       id: 'e7eca932-1d6f-44a4-bd94-e1105860ab77',
@@ -229,6 +248,7 @@ describe('labInvestigationService', () => {
       orderedDate: '2025-04-09T13:21:22+00:00',
       formattedDate: 'April 9, 2025',
       result: undefined,
+      testType: 'Panel',
     },
     {
       id: 'aba2a637-05f5-44c6-9021-c5cd05548342',
@@ -239,6 +259,7 @@ describe('labInvestigationService', () => {
       orderedDate: '2025-05-08T12:44:24+00:00',
       formattedDate: 'May 8, 2025',
       result: undefined,
+      testType: 'Single Test',
     },
   ];
 
