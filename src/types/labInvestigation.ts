@@ -11,8 +11,8 @@ export enum LabTestStatus {
  * Enum representing the possible priorities of a lab test
  */
 export enum LabTestPriority {
-  stat = 'Urgent',
-  routine = 'Routine',
+  Stat = 'Urgent',
+  Routine = 'Routine',
 }
 
 /**

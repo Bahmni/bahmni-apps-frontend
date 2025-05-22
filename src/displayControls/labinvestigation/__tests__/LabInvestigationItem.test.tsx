@@ -17,7 +17,7 @@ describe('LabInvestigationItem', () => {
     id: 'test-123',
     testName: 'Complete Blood Count',
     status: LabTestStatus.Normal,
-    priority: LabTestPriority.routine,
+    priority: LabTestPriority.Routine,
     orderedBy: 'Dr. Smith',
     orderedDate: '2025-05-08T12:44:24+00:00',
     formattedDate: '05/08/2025',
@@ -48,7 +48,7 @@ describe('LabInvestigationItem', () => {
   it('applies different tag color for urgent priority', () => {
     const urgentTest = {
       ...mockLabTest,
-      priority: LabTestPriority.stat,
+      priority: LabTestPriority.Stat,
     };
     
     render(<LabInvestigationItem test={urgentTest} />);
@@ -56,14 +56,4 @@ describe('LabInvestigationItem', () => {
     expect(screen.getByText('Urgent')).toBeInTheDocument();
   });
 
-  it('applies different tag color for stat priority', () => {
-    const statTest = {
-      ...mockLabTest,
-      priority: LabTestPriority.stat,
-    };
-    
-    render(<LabInvestigationItem test={statTest} />);
-    
-    expect(screen.getByText('Urgent')).toBeInTheDocument();
-  });
 });
