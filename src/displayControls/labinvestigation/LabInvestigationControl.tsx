@@ -1,26 +1,37 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import * as styles from './styles/LabInvestigation.module.scss';
 import { useTranslation } from 'react-i18next';
 import { Accordion, AccordionItem } from '@carbon/react';
 import LabInvestigationItem from './LabInvestigationItem';
 import useLabInvestigations from '@/hooks/useLabInvestigations';
+import { groupLabTestsByDate } from '@/services/labInvestigationService';
+import { LabTestsByDate, FormattedLabTest } from '@/types/labInvestigation';
 
-const LabInvestigationTable: React.FC = () => {
+const LabInvestigationControl: React.FC = () => {
   const { t } = useTranslation();
-  const { labInvestigations, isLoading } = useLabInvestigations();
+  const { labTests, isLoading, isError } = useLabInvestigations();
+  
+  // Group the lab tests by date
+  const labTestsByDate = useMemo<LabTestsByDate[]>(() => {
+    return groupLabTestsByDate(labTests);
+  }, [labTests]);
 
-  if (isLoading && labInvestigations.length === 0) {
+  if (isLoading && labTests.length === 0) {
     return <div>{t('Loading lab tests...')}</div>;
   }
 
-  if (!isLoading && labInvestigations.length === 0) {
+  if (isError) {
+    return <div>{t('Error loading lab tests')}</div>;
+  }
+
+  if (!isLoading && labTests.length === 0) {
     return <div>{t('No lab Investigations available')}</div>;
   }
 
   return (
     <section className={styles.labInvestigationWrapper}>
       <Accordion align="start" size="lg">
-        {labInvestigations.map((group) => (
+        {labTestsByDate.map((group: LabTestsByDate) => (
           <AccordionItem
             key={group.date}
             title={
@@ -29,7 +40,7 @@ const LabInvestigationTable: React.FC = () => {
               </span>
             }
           >
-            {group.tests?.map((test, testIndex) => (
+            {group.tests?.map((test: FormattedLabTest, testIndex: number) => (
               <LabInvestigationItem key={testIndex} test={test} />
             ))}
           </AccordionItem>
@@ -39,4 +50,4 @@ const LabInvestigationTable: React.FC = () => {
   );
 };
 
-export default LabInvestigationTable;
+export default LabInvestigationControl;

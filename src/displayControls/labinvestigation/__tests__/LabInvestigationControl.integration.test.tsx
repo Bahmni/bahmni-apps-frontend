@@ -1,8 +1,9 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import LabInvestigationTable from '../LabInvestigationTable';
+import LabInvestigationControl from '../LabInvestigationControl';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import useLabInvestigations from '@/hooks/useLabInvestigations';
+import { groupLabTestsByDate } from '@/services/labInvestigationService';
 import i18n from '@/setupTests.i18n';
 import {
   mockPatientUUID,
@@ -13,7 +14,9 @@ import {
 // Mock the hooks and services
 jest.mock('@hooks/usePatientUUID');
 jest.mock('@/hooks/useLabInvestigations');
-jest.mock('@/services/labInvestigationService');
+jest.mock('@/services/labInvestigationService', () => ({
+  groupLabTestsByDate: jest.fn(),
+}));
 
 const mockedUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
@@ -23,7 +26,11 @@ const mockedUseLabInvestigations = useLabInvestigations as jest.MockedFunction<
   typeof useLabInvestigations
 >;
 
-describe('LabInvestigationTable Integration', () => {
+const mockedGroupLabTestsByDate = groupLabTestsByDate as jest.MockedFunction<
+  typeof groupLabTestsByDate
+>;
+
+describe('LabInvestigationControl Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(console, 'error').mockImplementation();
@@ -35,12 +42,13 @@ describe('LabInvestigationTable Integration', () => {
     // Mock the hooks
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedUseLabInvestigations.mockReturnValue({
-      labInvestigations: mockLabTestsByDate,
-      formattedLabTests: mockLabTestsByDate.flatMap((group) => group.tests),
+      labTests: mockLabTestsByDate.flatMap((group) => group.tests),
       isLoading: false,
+      isError: false,
     });
+    mockedGroupLabTestsByDate.mockReturnValue(mockLabTestsByDate);
 
-    render(<LabInvestigationTable />);
+    render(<LabInvestigationControl />);
 
     // Verify useLabInvestigations was called
     expect(useLabInvestigations).toHaveBeenCalled();
@@ -50,12 +58,13 @@ describe('LabInvestigationTable Integration', () => {
     // Mock the hooks
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedUseLabInvestigations.mockReturnValue({
-      labInvestigations: mockLabTestsByDate,
-      formattedLabTests: mockLabTestsByDate.flatMap((group) => group.tests),
+      labTests: mockLabTestsByDate.flatMap((group) => group.tests),
       isLoading: false,
+      isError: false,
     });
+    mockedGroupLabTestsByDate.mockReturnValue(mockLabTestsByDate);
 
-    render(<LabInvestigationTable />);
+    render(<LabInvestigationControl />);
 
     // Verify the dates are displayed
     expect(screen.getByText(/Mar 25, 2025/)).toBeInTheDocument();
@@ -66,12 +75,13 @@ describe('LabInvestigationTable Integration', () => {
     // Mock the hooks
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedUseLabInvestigations.mockReturnValue({
-      labInvestigations: mockLabTestsByDate,
-      formattedLabTests: mockLabTestsByDate.flatMap((group) => group.tests),
+      labTests: mockLabTestsByDate.flatMap((group) => group.tests),
       isLoading: false,
+      isError: false,
     });
+    mockedGroupLabTestsByDate.mockReturnValue(mockLabTestsByDate);
 
-    render(<LabInvestigationTable />);
+    render(<LabInvestigationControl />);
 
     // Verify the test names are displayed
     expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
@@ -83,12 +93,13 @@ describe('LabInvestigationTable Integration', () => {
     // Mock the hooks
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedUseLabInvestigations.mockReturnValue({
-      labInvestigations: mockLabTestsByDate,
-      formattedLabTests: mockLabTestsByDate.flatMap((group) => group.tests),
+      labTests: mockLabTestsByDate.flatMap((group) => group.tests),
       isLoading: false,
+      isError: false,
     });
+    mockedGroupLabTestsByDate.mockReturnValue(mockLabTestsByDate);
 
-    render(<LabInvestigationTable />);
+    render(<LabInvestigationControl />);
 
     // Verify the priorities are displayed by checking for tag elements
     // Carbon Design System's Tag component might not render text content properly in tests
@@ -97,23 +108,24 @@ describe('LabInvestigationTable Integration', () => {
 
     // Check for green tags (routine priority)
     const greenTags = document.querySelectorAll('.cds--tag--green');
-    expect(greenTags.length).toBe(3); // Three routine tests (actual count in the DOM)
+    expect(greenTags.length).toBe(2); // Two routine tests (actual count in the DOM)
 
-    // There are no gray tags in the DOM, all tags are green
+    // Check for gray tags (stat priority)
     const grayTags = document.querySelectorAll('.cds--tag--gray');
-    expect(grayTags.length).toBe(0); // No gray tags in the DOM
+    expect(grayTags.length).toBe(1); // One stat priority test
   });
 
   it('should display ordered by information', () => {
     // Mock the hooks
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedUseLabInvestigations.mockReturnValue({
-      labInvestigations: mockLabTestsByDate,
-      formattedLabTests: mockLabTestsByDate.flatMap((group) => group.tests),
+      labTests: mockLabTestsByDate.flatMap((group) => group.tests),
       isLoading: false,
+      isError: false,
     });
+    mockedGroupLabTestsByDate.mockReturnValue(mockLabTestsByDate);
 
-    render(<LabInvestigationTable />);
+    render(<LabInvestigationControl />);
 
     // Verify the ordered by information is displayed
     const orderedByTexts = screen.getAllByText(/Ordered by:/);
@@ -127,12 +139,12 @@ describe('LabInvestigationTable Integration', () => {
     // Mock the hooks with loading state
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedUseLabInvestigations.mockReturnValue({
-      labInvestigations: [],
-      formattedLabTests: [],
+      labTests: [],
       isLoading: true,
+      isError: false,
     });
 
-    render(<LabInvestigationTable />);
+    render(<LabInvestigationControl />);
 
     // Verify loading message is displayed
     expect(screen.getByText('Loading lab tests...')).toBeInTheDocument();
@@ -142,31 +154,29 @@ describe('LabInvestigationTable Integration', () => {
     // Mock the hooks with no data and not loading
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedUseLabInvestigations.mockReturnValue({
-      labInvestigations: [],
-      formattedLabTests: [],
+      labTests: [],
       isLoading: false,
+      isError: false,
     });
+    mockedGroupLabTestsByDate.mockReturnValue([]);
 
-    render(<LabInvestigationTable />);
+    render(<LabInvestigationControl />);
 
     // Verify the message is displayed
-    expect(
-      screen.getByText('No lab Investigations available'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('No lab Investigations available')).toBeInTheDocument();
   });
 
   it('should handle lab tests with missing optional fields', () => {
     // Mock the hooks with incomplete data
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedUseLabInvestigations.mockReturnValue({
-      labInvestigations: mockLabTestsByDateWithIncomplete,
-      formattedLabTests: mockLabTestsByDateWithIncomplete.flatMap(
-        (group) => group.tests,
-      ),
+      labTests: mockLabTestsByDateWithIncomplete.flatMap((group) => group.tests),
       isLoading: false,
+      isError: false,
     });
+    mockedGroupLabTestsByDate.mockReturnValue(mockLabTestsByDateWithIncomplete);
 
-    render(<LabInvestigationTable />);
+    render(<LabInvestigationControl />);
 
     // Verify the component renders with incomplete data
     expect(screen.getByText('Incomplete Test')).toBeInTheDocument();
@@ -175,32 +185,33 @@ describe('LabInvestigationTable Integration', () => {
 
   it('should refetch lab investigations when patient UUID changes', () => {
     // Create a mock implementation for useLabInvestigations that tracks calls
-    const mockUseLabInvestigations = jest.fn();
+    const mockUseLabInvestigationsImpl = jest.fn();
 
     // First render with initial UUID
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedUseLabInvestigations.mockImplementation(() => {
-      mockUseLabInvestigations();
+      mockUseLabInvestigationsImpl();
       return {
-        labInvestigations: mockLabTestsByDate,
-        formattedLabTests: mockLabTestsByDate.flatMap((group) => group.tests),
+        labTests: mockLabTestsByDate.flatMap((group) => group.tests),
         isLoading: false,
+        isError: false,
       };
     });
+    mockedGroupLabTestsByDate.mockReturnValue(mockLabTestsByDate);
 
-    const { rerender } = render(<LabInvestigationTable />);
+    const { rerender } = render(<LabInvestigationControl />);
 
     // Initial call count
-    const initialCallCount = mockUseLabInvestigations.mock.calls.length;
+    const initialCallCount = mockUseLabInvestigationsImpl.mock.calls.length;
 
     // Change the UUID and rerender
     const newUUID = 'new-patient-uuid';
     mockedUsePatientUUID.mockReturnValue(newUUID);
 
-    rerender(<LabInvestigationTable />);
+    rerender(<LabInvestigationControl />);
 
     // Verify useLabInvestigations was called again after UUID change
-    expect(mockUseLabInvestigations.mock.calls.length).toBeGreaterThan(
+    expect(mockUseLabInvestigationsImpl.mock.calls.length).toBeGreaterThan(
       initialCallCount,
     );
   });
@@ -209,15 +220,31 @@ describe('LabInvestigationTable Integration', () => {
     // Mock the hooks
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedUseLabInvestigations.mockReturnValue({
-      labInvestigations: mockLabTestsByDate,
-      formattedLabTests: mockLabTestsByDate.flatMap((group) => group.tests),
+      labTests: mockLabTestsByDate.flatMap((group) => group.tests),
       isLoading: false,
+      isError: false,
     });
+    mockedGroupLabTestsByDate.mockReturnValue(mockLabTestsByDate);
 
-    render(<LabInvestigationTable />);
+    render(<LabInvestigationControl />);
 
     // Verify the "Results pending..." text is displayed for each test
     const pendingTexts = screen.getAllByText('Results pending…');
     expect(pendingTexts.length).toBe(3); // Three tests with pending results
+  });
+
+  it('should display error message when isError is true', () => {
+    // Mock the hooks with error state
+    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+    mockedUseLabInvestigations.mockReturnValue({
+      labTests: [],
+      isLoading: false,
+      isError: true,
+    });
+
+    render(<LabInvestigationControl />);
+
+    // Verify error message is displayed
+    expect(screen.getByText('Error loading lab tests')).toBeInTheDocument();
   });
 });

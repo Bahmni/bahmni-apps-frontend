@@ -1,7 +1,8 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import LabInvestigationTable from '../LabInvestigationTable';
+import LabInvestigationControl from '../LabInvestigationControl';
 import useLabInvestigations from '@/hooks/useLabInvestigations';
+import { groupLabTestsByDate } from '@/services/labInvestigationService';
 import {
   LabTestsByDate,
   LabTestStatus,
@@ -11,6 +12,11 @@ import {
 
 // Mock the useLabInvestigations hook
 jest.mock('@/hooks/useLabInvestigations');
+
+// Mock the groupLabTestsByDate function
+jest.mock('@/services/labInvestigationService', () => ({
+  groupLabTestsByDate: jest.fn(),
+}));
 
 // Mock the LabInvestigationItem component
 jest.mock('../LabInvestigationItem', () => ({
@@ -43,79 +49,87 @@ jest.mock('@carbon/react', () => ({
   ),
 }));
 
-describe('LabInvestigationTable', () => {
+describe('LabInvestigationControl', () => {
   // Mock data
+  const mockFormattedLabTests: FormattedLabTest[] = [
+    {
+      id: 'test-1',
+      testName: 'Complete Blood Count',
+      status: LabTestStatus.Normal,
+      priority: LabTestPriority.routine,
+      orderedBy: 'Dr. Smith',
+      orderedDate: '2025-05-08T12:44:24+00:00',
+      formattedDate: '05/08/2025',
+      result: undefined,
+      testType: 'Panel',
+    },
+    {
+      id: 'test-2',
+      testName: 'Lipid Panel',
+      status: LabTestStatus.Abnormal,
+      priority: LabTestPriority.stat,
+      orderedBy: 'Dr. Johnson',
+      orderedDate: '2025-04-09T13:21:22+00:00',
+      formattedDate: '04/09/2025',
+      result: undefined,
+      testType: 'Panel',
+    },
+    {
+      id: 'test-3',
+      testName: 'Liver Function',
+      status: LabTestStatus.Pending,
+      priority: LabTestPriority.stat,
+      orderedBy: 'Dr. Williams',
+      orderedDate: '2025-04-09T13:21:22+00:00',
+      formattedDate: '04/09/2025',
+      result: undefined,
+      testType: 'Single Test',
+    },
+  ];
+
   const mockLabTestsByDate: LabTestsByDate[] = [
     {
       date: '05/08/2025',
       rawDate: '2025-05-08T12:44:24+00:00',
-      tests: [
-        {
-          id: 'test-1',
-          testName: 'Complete Blood Count',
-          status: LabTestStatus.Normal,
-          priority: LabTestPriority.routine,
-          orderedBy: 'Dr. Smith',
-          orderedDate: '2025-05-08T12:44:24+00:00',
-          formattedDate: '05/08/2025',
-          result: undefined,
-        },
-      ],
+      tests: [mockFormattedLabTests[0]],
     },
     {
       date: '04/09/2025',
       rawDate: '2025-04-09T13:21:22+00:00',
-      tests: [
-        {
-          id: 'test-2',
-          testName: 'Lipid Panel',
-          status: LabTestStatus.Abnormal,
-          priority: LabTestPriority.stat,
-          orderedBy: 'Dr. Johnson',
-          orderedDate: '2025-04-09T13:21:22+00:00',
-          formattedDate: '04/09/2025',
-          result: undefined,
-        },
-        {
-          id: 'test-3',
-          testName: 'Liver Function',
-          status: LabTestStatus.Pending,
-          priority: LabTestPriority.stat,
-          orderedBy: 'Dr. Williams',
-          orderedDate: '2025-04-09T13:21:22+00:00',
-          formattedDate: '04/09/2025',
-          result: undefined,
-        },
-      ],
+      tests: [mockFormattedLabTests[1], mockFormattedLabTests[2]],
     },
   ];
 
   beforeEach(() => {
     jest.clearAllMocks();
+    (groupLabTestsByDate as jest.Mock).mockReturnValue(mockLabTestsByDate);
   });
 
-  it('renders a loading message when isLoading is true and there are no lab investigations', () => {
+  it('renders a loading message when isLoading is true and there are no lab tests', () => {
     // Mock the hook to return loading state
     (useLabInvestigations as jest.Mock).mockReturnValue({
-      labInvestigations: [],
-      formattedLabTests: [],
+      labTests: [],
       isLoading: true,
+      isError: false,
     });
 
-    render(<LabInvestigationTable />);
+    render(<LabInvestigationControl />);
 
     expect(screen.getByText('Loading lab tests...')).toBeInTheDocument();
   });
 
-  it('renders lab investigations grouped by date', () => {
-    // Mock the hook to return lab investigations
+  it('renders lab tests grouped by date', () => {
+    // Mock the hook to return lab tests
     (useLabInvestigations as jest.Mock).mockReturnValue({
-      labInvestigations: mockLabTestsByDate,
-      formattedLabTests: mockLabTestsByDate.flatMap((group) => group.tests),
+      labTests: mockFormattedLabTests,
       isLoading: false,
+      isError: false,
     });
 
-    render(<LabInvestigationTable />);
+    render(<LabInvestigationControl />);
+
+    // Verify groupLabTestsByDate was called with the lab tests
+    expect(groupLabTestsByDate).toHaveBeenCalledWith(mockFormattedLabTests);
 
     // Check that the date headers are displayed
     const accordionTitles = screen.getAllByTestId('accordion-title');
@@ -149,19 +163,36 @@ describe('LabInvestigationTable', () => {
     expect(testPriorities[2].textContent).toBe(LabTestPriority.stat);
   });
 
-  it('renders "No lab Investigations available" message when there are no lab investigations and isLoading is false', () => {
-    // Mock the hook to return no lab investigations
+  it('renders "No lab Investigations available" message when there are no lab tests and isLoading is false', () => {
+    // Mock the hook to return no lab tests
     (useLabInvestigations as jest.Mock).mockReturnValue({
-      labInvestigations: [],
-      formattedLabTests: [],
+      labTests: [],
       isLoading: false,
+      isError: false,
     });
 
-    render(<LabInvestigationTable />);
+    // Mock empty grouped tests
+    (groupLabTestsByDate as jest.Mock).mockReturnValue([]);
+
+    render(<LabInvestigationControl />);
 
     // Check that the message is displayed
     expect(
       screen.getByText('No lab Investigations available'),
     ).toBeInTheDocument();
+  });
+
+  it('renders error message when isError is true', () => {
+    // Mock the hook to return error state
+    (useLabInvestigations as jest.Mock).mockReturnValue({
+      labTests: [],
+      isLoading: false,
+      isError: true,
+    });
+
+    render(<LabInvestigationControl />);
+
+    // Check that the error message is displayed
+    expect(screen.getByText('Error loading lab tests')).toBeInTheDocument();
   });
 });

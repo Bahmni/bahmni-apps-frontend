@@ -1,20 +1,16 @@
 import { useState, useEffect } from 'react';
-import { LabTestsByDate, FormattedLabTest } from '../types/labInvestigation';
-import { getPatientLabTestsByDate } from '../services/labInvestigationService';
+import { FormattedLabTest } from '../types/labInvestigation';
+import { getLabTests, formatLabTests } from '../services/labInvestigationService';
 import { usePatientUUID } from './usePatientUUID';
 
 /**
  * Hook to fetch and manage lab investigations for the current patient
- * @returns Object containing lab investigations, formatted lab tests, and loading state
+ * @returns Object containing lab tests, loading state, and error state
  */
 export default function useLabInvestigations() {
-  const [labInvestigations, setLabInvestigations] = useState<LabTestsByDate[]>(
-    [],
-  );
-  const [formattedLabTests, setFormattedLabTests] = useState<
-    FormattedLabTest[]
-  >([]);
+  const [labTests, setLabTests] = useState<FormattedLabTest[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isError, setIsError] = useState<boolean>(false);
   const patientUUID = usePatientUUID();
 
   useEffect(() => {
@@ -25,17 +21,19 @@ export default function useLabInvestigations() {
       }
 
       setIsLoading(true);
+      setIsError(false);
+      
       try {
-        const labTests = await getPatientLabTestsByDate(patientUUID);
-        setLabInvestigations(labTests);
-
-        // Extract all formatted tests from the grouped structure
-        const allFormattedTests = labTests.flatMap(
-          (dateGroup) => dateGroup.tests,
-        );
-        setFormattedLabTests(allFormattedTests);
-      } catch (error) {
-        console.error('Error fetching lab investigations:', error);
+        // Fetch raw lab tests
+        const rawLabTests = await getLabTests(patientUUID);
+        
+        // Format the lab tests
+        const formattedTests = formatLabTests(rawLabTests);
+        
+        setLabTests(formattedTests);
+      } catch (err) {
+        console.error('Error fetching lab investigations:', err);
+        setIsError(true);
       } finally {
         setIsLoading(false);
       }
@@ -44,5 +42,5 @@ export default function useLabInvestigations() {
     fetchLabInvestigations();
   }, [patientUUID]);
 
-  return { labInvestigations, formattedLabTests, isLoading };
+  return { labTests, isLoading, isError };
 }
