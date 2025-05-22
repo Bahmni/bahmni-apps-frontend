@@ -15,7 +15,7 @@ import notificationService from './notificationService';
 /**
  * Maps a FHIR status code to LabTestStatus enum
  */
-const mapLabTestStatus = (labTest: FhirLabTest): LabTestStatus => {
+export const mapLabTestStatus = (labTest: FhirLabTest): LabTestStatus => {
   switch (labTest.status) {
     case 'Pending':
       return LabTestStatus.Pending;
@@ -31,7 +31,7 @@ const mapLabTestStatus = (labTest: FhirLabTest): LabTestStatus => {
 /**
  * Maps a FHIR priority code to LabTestPriority enum
  */
-const mapLabTestPriority = (labTest: FhirLabTest): LabTestPriority => {
+export const mapLabTestPriority = (labTest: FhirLabTest): LabTestPriority => {
   switch (labTest.priority) {
     case 'routine':
       return LabTestPriority.routine;
@@ -60,9 +60,7 @@ export async function getPatientLabTestsBundle(
  * @param patientUUID - The UUID of the patient
  * @returns Promise resolving to an array of FhirLabTest
  */
-export async function getLabTests(
-  patientUUID: string,
-): Promise<FhirLabTest[]> {
+export async function getLabTests(patientUUID: string): Promise<FhirLabTest[]> {
   try {
     const fhirLabTestBundle = await getPatientLabTestsBundle(patientUUID);
     return fhirLabTestBundle.entry?.map((entry) => entry.resource) || [];
@@ -78,17 +76,16 @@ export async function getLabTests(
  * @param labTests - The FHIR lab test array to format
  * @returns An array of formatted lab test objects
  */
-export function formatLabTests(
-  labTests: FhirLabTest[],
-): FormattedLabTest[] {
+export function formatLabTests(labTests: FhirLabTest[]): FormattedLabTest[] {
   try {
     return labTests.map((labTest) => {
       const status = mapLabTestStatus(labTest);
       const priority = mapLabTestPriority(labTest);
       const orderedDate = labTest.occurrencePeriod.start;
       const dateFormatResult = formatDate(orderedDate);
-      const formattedDate = dateFormatResult.formattedResult || orderedDate.split('T')[0];
-      
+      const formattedDate =
+        dateFormatResult.formattedResult || orderedDate.split('T')[0];
+
       return {
         id: labTest.id,
         testName: labTest.code.text,
@@ -118,10 +115,10 @@ export function groupLabTestsByDate(
 ): LabTestsByDate[] {
   try {
     const dateMap = new Map<string, LabTestsByDate>();
-    
+
     labTests.forEach((labTest) => {
       const dateKey = labTest.orderedDate.split('T')[0]; // Get YYYY-MM-DD part
-      
+
       if (!dateMap.has(dateKey)) {
         dateMap.set(dateKey, {
           date: labTest.formattedDate,
@@ -129,13 +126,13 @@ export function groupLabTestsByDate(
           tests: [],
         });
       }
-      
+
       dateMap.get(dateKey)?.tests.push(labTest);
     });
-    
+
     // Sort by date (newest first)
-    return Array.from(dateMap.values()).sort((a, b) => 
-      new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime()
+    return Array.from(dateMap.values()).sort(
+      (a, b) => new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime(),
     );
   } catch (error) {
     const { title, message } = getFormattedError(error);

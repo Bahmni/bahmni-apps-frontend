@@ -3,7 +3,6 @@ import { render, screen } from '@testing-library/react';
 import LabInvestigationTable from '../LabInvestigationTable';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import useLabInvestigations from '@/hooks/useLabInvestigations';
-import { getPatientLabTestsByDate } from '@/services/labInvestigationService';
 import i18n from '@/setupTests.i18n';
 import {
   mockPatientUUID,
@@ -37,7 +36,7 @@ describe('LabInvestigationTable Integration', () => {
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedUseLabInvestigations.mockReturnValue({
       labInvestigations: mockLabTestsByDate,
-      formattedLabTests: mockLabTestsByDate.flatMap(group => group.tests),
+      formattedLabTests: mockLabTestsByDate.flatMap((group) => group.tests),
       isLoading: false,
     });
 
@@ -52,7 +51,7 @@ describe('LabInvestigationTable Integration', () => {
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedUseLabInvestigations.mockReturnValue({
       labInvestigations: mockLabTestsByDate,
-      formattedLabTests: mockLabTestsByDate.flatMap(group => group.tests),
+      formattedLabTests: mockLabTestsByDate.flatMap((group) => group.tests),
       isLoading: false,
     });
 
@@ -68,7 +67,7 @@ describe('LabInvestigationTable Integration', () => {
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedUseLabInvestigations.mockReturnValue({
       labInvestigations: mockLabTestsByDate,
-      formattedLabTests: mockLabTestsByDate.flatMap(group => group.tests),
+      formattedLabTests: mockLabTestsByDate.flatMap((group) => group.tests),
       isLoading: false,
     });
 
@@ -85,7 +84,7 @@ describe('LabInvestigationTable Integration', () => {
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedUseLabInvestigations.mockReturnValue({
       labInvestigations: mockLabTestsByDate,
-      formattedLabTests: mockLabTestsByDate.flatMap(group => group.tests),
+      formattedLabTests: mockLabTestsByDate.flatMap((group) => group.tests),
       isLoading: false,
     });
 
@@ -95,11 +94,11 @@ describe('LabInvestigationTable Integration', () => {
     // Carbon Design System's Tag component might not render text content properly in tests
     const tags = document.querySelectorAll('.cds--tag');
     expect(tags.length).toBe(3); // Total of 3 tags
-    
+
     // Check for green tags (routine priority)
     const greenTags = document.querySelectorAll('.cds--tag--green');
     expect(greenTags.length).toBe(3); // Three routine tests (actual count in the DOM)
-    
+
     // There are no gray tags in the DOM, all tags are green
     const grayTags = document.querySelectorAll('.cds--tag--gray');
     expect(grayTags.length).toBe(0); // No gray tags in the DOM
@@ -110,7 +109,7 @@ describe('LabInvestigationTable Integration', () => {
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedUseLabInvestigations.mockReturnValue({
       labInvestigations: mockLabTestsByDate,
-      formattedLabTests: mockLabTestsByDate.flatMap(group => group.tests),
+      formattedLabTests: mockLabTestsByDate.flatMap((group) => group.tests),
       isLoading: false,
     });
 
@@ -119,7 +118,7 @@ describe('LabInvestigationTable Integration', () => {
     // Verify the ordered by information is displayed
     const orderedByTexts = screen.getAllByText(/Ordered by:/);
     expect(orderedByTexts.length).toBe(3); // Three tests with ordered by info
-    
+
     expect(screen.getAllByText(/Dr. John Doe/).length).toBe(2); // Two tests ordered by Dr. John Doe
     expect(screen.getByText(/Dr. Jane Smith/)).toBeInTheDocument(); // One test ordered by Dr. Jane Smith
   });
@@ -159,7 +158,9 @@ describe('LabInvestigationTable Integration', () => {
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedUseLabInvestigations.mockReturnValue({
       labInvestigations: mockLabTestsByDateWithIncomplete,
-      formattedLabTests: mockLabTestsByDateWithIncomplete.flatMap(group => group.tests),
+      formattedLabTests: mockLabTestsByDateWithIncomplete.flatMap(
+        (group) => group.tests,
+      ),
       isLoading: false,
     });
 
@@ -173,20 +174,20 @@ describe('LabInvestigationTable Integration', () => {
   it('should refetch lab investigations when patient UUID changes', () => {
     // Create a mock implementation for useLabInvestigations that tracks calls
     const mockUseLabInvestigations = jest.fn();
-    
+
     // First render with initial UUID
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedUseLabInvestigations.mockImplementation(() => {
       mockUseLabInvestigations();
       return {
         labInvestigations: mockLabTestsByDate,
-        formattedLabTests: mockLabTestsByDate.flatMap(group => group.tests),
+        formattedLabTests: mockLabTestsByDate.flatMap((group) => group.tests),
         isLoading: false,
       };
     });
 
     const { rerender } = render(<LabInvestigationTable />);
-    
+
     // Initial call count
     const initialCallCount = mockUseLabInvestigations.mock.calls.length;
 
@@ -197,7 +198,9 @@ describe('LabInvestigationTable Integration', () => {
     rerender(<LabInvestigationTable />);
 
     // Verify useLabInvestigations was called again after UUID change
-    expect(mockUseLabInvestigations.mock.calls.length).toBeGreaterThan(initialCallCount);
+    expect(mockUseLabInvestigations.mock.calls.length).toBeGreaterThan(
+      initialCallCount,
+    );
   });
 
   it('should display "Results pending..." for tests without results', () => {
@@ -205,7 +208,7 @@ describe('LabInvestigationTable Integration', () => {
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedUseLabInvestigations.mockReturnValue({
       labInvestigations: mockLabTestsByDate,
-      formattedLabTests: mockLabTestsByDate.flatMap(group => group.tests),
+      formattedLabTests: mockLabTestsByDate.flatMap((group) => group.tests),
       isLoading: false,
     });
 
