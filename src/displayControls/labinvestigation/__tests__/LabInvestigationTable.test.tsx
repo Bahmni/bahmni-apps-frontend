@@ -2,7 +2,12 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import LabInvestigationTable from '../LabInvestigationTable';
 import useLabInvestigations from '@/hooks/useLabInvestigations';
-import { LabTestsByDate, LabTestStatus, LabTestPriority, FormattedLabTest } from '@/types/labInvestigation';
+import {
+  LabTestsByDate,
+  LabTestStatus,
+  LabTestPriority,
+  FormattedLabTest,
+} from '@/types/labInvestigation';
 
 // Mock the useLabInvestigations hook
 jest.mock('@/hooks/useLabInvestigations');
@@ -21,8 +26,16 @@ jest.mock('../LabInvestigationItem', () => ({
 
 // Mock the Carbon components
 jest.mock('@carbon/react', () => ({
-  Accordion: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  AccordionItem: ({ title, children }: { title: React.ReactNode; children: React.ReactNode }) => (
+  Accordion: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  AccordionItem: ({
+    title,
+    children,
+  }: {
+    title: React.ReactNode;
+    children: React.ReactNode;
+  }) => (
     <div>
       <div data-testid="accordion-title">{title}</div>
       <div data-testid="accordion-content">{children}</div>
@@ -90,7 +103,7 @@ describe('LabInvestigationTable', () => {
     });
 
     render(<LabInvestigationTable />);
-    
+
     expect(screen.getByText('Loading lab tests...')).toBeInTheDocument();
   });
 
@@ -98,36 +111,36 @@ describe('LabInvestigationTable', () => {
     // Mock the hook to return lab investigations
     (useLabInvestigations as jest.Mock).mockReturnValue({
       labInvestigations: mockLabTestsByDate,
-      formattedLabTests: mockLabTestsByDate.flatMap(group => group.tests),
+      formattedLabTests: mockLabTestsByDate.flatMap((group) => group.tests),
       isLoading: false,
     });
 
     render(<LabInvestigationTable />);
-    
+
     // Check that the date headers are displayed
     const accordionTitles = screen.getAllByTestId('accordion-title');
     expect(accordionTitles).toHaveLength(2);
     expect(accordionTitles[0].textContent).toContain('05/08/2025');
     expect(accordionTitles[1].textContent).toContain('04/09/2025');
-    
+
     // Check that the lab investigation items are displayed
     const labItems = screen.getAllByTestId('lab-investigation-item');
     expect(labItems).toHaveLength(3);
-    
+
     // Check that the test names are displayed
     const testNames = screen.getAllByTestId('test-name');
     expect(testNames).toHaveLength(3);
     expect(testNames[0].textContent).toBe('Complete Blood Count');
     expect(testNames[1].textContent).toBe('Lipid Panel');
     expect(testNames[2].textContent).toBe('Liver Function');
-    
+
     // Check that the test statuses are displayed
     const testStatuses = screen.getAllByTestId('test-status');
     expect(testStatuses).toHaveLength(3);
     expect(testStatuses[0].textContent).toBe(LabTestStatus.Normal);
     expect(testStatuses[1].textContent).toBe(LabTestStatus.Abnormal);
     expect(testStatuses[2].textContent).toBe(LabTestStatus.Pending);
-    
+
     // Check that the test priorities are displayed
     const testPriorities = screen.getAllByTestId('test-priority');
     expect(testPriorities).toHaveLength(3);
@@ -145,9 +158,11 @@ describe('LabInvestigationTable', () => {
     });
 
     render(<LabInvestigationTable />);
-    
+
     // Check that the accordion is empty
     expect(screen.queryByTestId('accordion-title')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('lab-investigation-item')).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('lab-investigation-item'),
+    ).not.toBeInTheDocument();
   });
 });

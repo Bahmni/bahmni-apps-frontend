@@ -8,8 +8,12 @@ import { usePatientUUID } from './usePatientUUID';
  * @returns Object containing lab investigations, formatted lab tests, and loading state
  */
 export default function useLabInvestigations() {
-  const [labInvestigations, setLabInvestigations] = useState<LabTestsByDate[]>([]);
-  const [formattedLabTests, setFormattedLabTests] = useState<FormattedLabTest[]>([]);
+  const [labInvestigations, setLabInvestigations] = useState<LabTestsByDate[]>(
+    [],
+  );
+  const [formattedLabTests, setFormattedLabTests] = useState<
+    FormattedLabTest[]
+  >([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const patientUUID = usePatientUUID();
 
@@ -24,9 +28,11 @@ export default function useLabInvestigations() {
       try {
         const labTests = await getPatientLabTestsByDate(patientUUID);
         setLabInvestigations(labTests);
-        
+
         // Extract all formatted tests from the grouped structure
-        const allFormattedTests = labTests.flatMap(dateGroup => dateGroup.tests);
+        const allFormattedTests = labTests.flatMap(
+          (dateGroup) => dateGroup.tests,
+        );
         setFormattedLabTests(allFormattedTests);
       } catch (error) {
         console.error('Error fetching lab investigations:', error);

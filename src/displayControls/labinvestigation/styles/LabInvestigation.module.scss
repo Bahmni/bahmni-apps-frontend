@@ -2,7 +2,6 @@
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
 
-
 /* Container styles */
 .labInvestigationWrapper {
   width: 100%;
@@ -43,12 +42,12 @@
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   font-weight: 500;
-  
+
   &.abnormal {
     color: $text-primary;
     background-color: $support-error;
   }
-  
+
   &.normal {
     color: $text-primary;
     background-color: $support-success;

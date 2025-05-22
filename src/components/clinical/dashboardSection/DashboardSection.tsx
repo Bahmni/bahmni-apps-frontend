@@ -19,10 +19,10 @@ const renderSectionContent = (section: DashboardSectionConfig) => {
       return <AllergiesTable />;
     case 'Conditions':
       return <ConditionsTable />;
-    case 'Lab Investigations':  
-       return <LabInvestigation/>;    
+    case 'Lab Investigations':
+      return <LabInvestigation />;
     default:
-    return null;
+      return null;
   }
 };
 /**

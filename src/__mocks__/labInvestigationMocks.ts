@@ -43,7 +43,8 @@ export const mockFhirLabTests: FhirLabTest[] = [
         {
           system: 'http://loinc.org',
           code: '58410-2',
-          display: 'Complete blood count (CBC) panel - Blood by Automated count',
+          display:
+            'Complete blood count (CBC) panel - Blood by Automated count',
         },
       ],
       text: 'Complete Blood Count',
@@ -245,17 +246,12 @@ export const mockLabTestsByDate: LabTestsByDate[] = [
   {
     date: 'Mar 25, 2025',
     rawDate: '2025-03-25T06:48:32.000+00:00',
-    tests: [
-      mockFormattedLabTests[0],
-      mockFormattedLabTests[1],
-    ],
+    tests: [mockFormattedLabTests[0], mockFormattedLabTests[1]],
   },
   {
     date: 'Mar 24, 2025',
     rawDate: '2025-03-24T06:48:32.000+00:00',
-    tests: [
-      mockFormattedLabTests[2],
-    ],
+    tests: [mockFormattedLabTests[2]],
   },
 ];
 

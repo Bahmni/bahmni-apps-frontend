@@ -3,16 +3,21 @@ import { renderHook, waitFor } from '@testing-library/react';
 import useLabInvestigations from '../useLabInvestigations';
 import { getPatientLabTestsByDate } from '@services/labInvestigationService';
 import { usePatientUUID } from '@hooks/usePatientUUID';
-import { LabTestsByDate, LabTestStatus, LabTestPriority } from '../../types/labInvestigation';
+import {
+  LabTestsByDate,
+  LabTestStatus,
+  LabTestPriority,
+} from '../../types/labInvestigation';
 
 // Mock dependencies
 jest.mock('@services/labInvestigationService');
 jest.mock('@hooks/usePatientUUID');
 
 // Type the mocked functions
-const mockedGetPatientLabTestsByDate = getPatientLabTestsByDate as jest.MockedFunction<
-  typeof getPatientLabTestsByDate
->;
+const mockedGetPatientLabTestsByDate =
+  getPatientLabTestsByDate as jest.MockedFunction<
+    typeof getPatientLabTestsByDate
+  >;
 const mockedUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
 >;
@@ -107,13 +112,21 @@ describe('useLabInvestigations', () => {
 
       // Wait for async operations
       await waitFor(() => {
-        expect(mockedGetPatientLabTestsByDate).toHaveBeenCalledWith(patientUUID);
-        expect(mockSetLabInvestigations).toHaveBeenCalledWith(mockLabTestsByDate);
-        
+        expect(mockedGetPatientLabTestsByDate).toHaveBeenCalledWith(
+          patientUUID,
+        );
+        expect(mockSetLabInvestigations).toHaveBeenCalledWith(
+          mockLabTestsByDate,
+        );
+
         // Check that formattedLabTests is set correctly
-        const allFormattedTests = mockLabTestsByDate.flatMap(dateGroup => dateGroup.tests);
-        expect(mockSetFormattedLabTests).toHaveBeenCalledWith(allFormattedTests);
-        
+        const allFormattedTests = mockLabTestsByDate.flatMap(
+          (dateGroup) => dateGroup.tests,
+        );
+        expect(mockSetFormattedLabTests).toHaveBeenCalledWith(
+          allFormattedTests,
+        );
+
         expect(mockSetLoading).toHaveBeenCalledWith(false);
       });
 
@@ -157,10 +170,12 @@ describe('useLabInvestigations', () => {
 
       // Wait for async operations
       await waitFor(() => {
-        expect(mockedGetPatientLabTestsByDate).toHaveBeenCalledWith(patientUUID);
+        expect(mockedGetPatientLabTestsByDate).toHaveBeenCalledWith(
+          patientUUID,
+        );
         expect(console.error).toHaveBeenCalledWith(
           'Error fetching lab investigations:',
-          error
+          error,
         );
         expect(mockSetFormattedLabTests).not.toHaveBeenCalled();
         expect(mockSetLoading).toHaveBeenCalledWith(false);
@@ -181,7 +196,9 @@ describe('useLabInvestigations', () => {
 
       // Wait for async operations
       await waitFor(() => {
-        expect(mockedGetPatientLabTestsByDate).toHaveBeenCalledWith(patientUUID);
+        expect(mockedGetPatientLabTestsByDate).toHaveBeenCalledWith(
+          patientUUID,
+        );
         expect(mockSetLabInvestigations).toHaveBeenCalledWith([]);
         expect(mockSetFormattedLabTests).toHaveBeenCalledWith([]);
         expect(mockSetLoading).toHaveBeenCalledWith(false);
@@ -190,7 +207,9 @@ describe('useLabInvestigations', () => {
 
     it('should cleanup properly on unmount', () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue('58493859-63f7-48b6-bd0b-698d5a119a21');
+      mockedUsePatientUUID.mockReturnValue(
+        '58493859-63f7-48b6-bd0b-698d5a119a21',
+      );
 
       // Act & Assert
       const { unmount } = renderHook(() => useLabInvestigations());

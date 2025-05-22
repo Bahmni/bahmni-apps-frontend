@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tag } from '@carbon/react';
-import BahmniIcon from "@components/common/bahmniIcon/BahmniIcon";
+import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
 import { ICON_SIZE } from '@/constants/icon';
 import * as styles from './styles/LabInvestigation.module.scss';
 import { FormattedLabTest, LabTestPriority } from '@/types/labInvestigation';
@@ -8,7 +8,9 @@ import { FormattedLabTest, LabTestPriority } from '@/types/labInvestigation';
 interface LabInvestigationItemProps {
   test: FormattedLabTest;
 }
-const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({ test }) => {
+const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({
+  test,
+}) => {
   // Determine tag color based on priority
   const getTagType = (priority: LabTestPriority): 'gray' | 'green' => {
     switch (priority) {
@@ -31,9 +33,7 @@ const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({ test }) => 
           Ordered by: {test.orderedBy}
         </div>
       </div>
-      <div>
-        Results pending…
-      </div>
+      <div>Results pending…</div>
     </div>
   );
 };

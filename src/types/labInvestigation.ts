@@ -120,6 +120,6 @@ export interface LabTestResult {
   TestName: string;
   Result: string;
   referenceRange: string;
-  reportedOn:string;
-  actions:string;
+  reportedOn: string;
+  actions: string;
 }
