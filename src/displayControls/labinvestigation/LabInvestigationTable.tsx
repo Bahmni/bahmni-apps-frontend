@@ -14,7 +14,7 @@ const LabInvestigationTable: React.FC = () => {
   }
 
   if (!isLoading && labInvestigations.length === 0) {
-    return null;
+    return <div>{t('No lab Investigations available')}</div>;
   }
 
   return (

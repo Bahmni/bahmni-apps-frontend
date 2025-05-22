@@ -138,7 +138,7 @@ describe('LabInvestigationTable Integration', () => {
     expect(screen.getByText('Loading lab tests...')).toBeInTheDocument();
   });
 
-  it('should not render anything when there are no lab tests and not loading', () => {
+  it('should display "No lab Investigations available" message when there are no lab tests and not loading', () => {
     // Mock the hooks with no data and not loading
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedUseLabInvestigations.mockReturnValue({
@@ -147,10 +147,12 @@ describe('LabInvestigationTable Integration', () => {
       isLoading: false,
     });
 
-    const { container } = render(<LabInvestigationTable />);
+    render(<LabInvestigationTable />);
 
-    // Verify nothing is rendered
-    expect(container.firstChild).toBeNull();
+    // Verify the message is displayed
+    expect(
+      screen.getByText('No lab Investigations available'),
+    ).toBeInTheDocument();
   });
 
   it('should handle lab tests with missing optional fields', () => {

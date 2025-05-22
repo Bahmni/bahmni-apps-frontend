@@ -149,7 +149,7 @@ describe('LabInvestigationTable', () => {
     expect(testPriorities[2].textContent).toBe(LabTestPriority.stat);
   });
 
-  it('renders nothing when there are no lab investigations and isLoading is false', () => {
+  it('renders "No lab Investigations available" message when there are no lab investigations and isLoading is false', () => {
     // Mock the hook to return no lab investigations
     (useLabInvestigations as jest.Mock).mockReturnValue({
       labInvestigations: [],
@@ -159,10 +159,9 @@ describe('LabInvestigationTable', () => {
 
     render(<LabInvestigationTable />);
 
-    // Check that the accordion is empty
-    expect(screen.queryByTestId('accordion-title')).not.toBeInTheDocument();
+    // Check that the message is displayed
     expect(
-      screen.queryByTestId('lab-investigation-item'),
-    ).not.toBeInTheDocument();
+      screen.getByText('No lab Investigations available'),
+    ).toBeInTheDocument();
   });
 });
