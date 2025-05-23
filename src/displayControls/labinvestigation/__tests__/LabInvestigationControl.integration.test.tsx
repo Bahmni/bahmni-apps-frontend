@@ -128,7 +128,9 @@ describe('LabInvestigationControl Integration', () => {
     render(<LabInvestigationControl />);
 
     // Verify the ordered by information is displayed
-    const orderedByTexts = screen.getAllByText(/Ordered by:/);
+    // Use a regex to match the translated text followed by a colon
+    const orderedByRegex = new RegExp(`${i18n.t('ORDERED_BY')}:`, 'i');
+    const orderedByTexts = screen.getAllByText(orderedByRegex);
     expect(orderedByTexts.length).toBe(3); // Three tests with ordered by info
 
     expect(screen.getAllByText(/Dr. John Doe/).length).toBe(2); // Two tests ordered by Dr. John Doe
@@ -146,8 +148,7 @@ describe('LabInvestigationControl Integration', () => {
 
     render(<LabInvestigationControl />);
 
-    // Verify loading message is displayed
-    expect(screen.getByText('Loading lab tests...')).toBeInTheDocument();
+    expect(screen.getByText(i18n.t('LOADING_LAB_TESTS'))).toBeInTheDocument();
   });
 
   it('should display "No lab Investigations available" message when there are no lab tests and not loading', () => {
@@ -162,9 +163,8 @@ describe('LabInvestigationControl Integration', () => {
 
     render(<LabInvestigationControl />);
 
-    // Verify the message is displayed
     expect(
-      screen.getByText('No lab Investigations available'),
+      screen.getByText(i18n.t('LAB_INVESTIGATIONS_UNAVAILABLE')),
     ).toBeInTheDocument();
   });
 
@@ -184,7 +184,13 @@ describe('LabInvestigationControl Integration', () => {
 
     // Verify the component renders with incomplete data
     expect(screen.getByText('Incomplete Test')).toBeInTheDocument();
-    expect(screen.getByText(/Ordered by: Unknown Doctor/)).toBeInTheDocument();
+
+    // Use a regex to match the translated text followed by the doctor name
+    const orderedByRegex = new RegExp(
+      `${i18n.t('ORDERED_BY')}: Unknown Doctor`,
+      'i',
+    );
+    expect(screen.getByText(orderedByRegex)).toBeInTheDocument();
   });
 
   it('should refetch lab investigations when patient UUID changes', () => {
@@ -232,8 +238,8 @@ describe('LabInvestigationControl Integration', () => {
 
     render(<LabInvestigationControl />);
 
-    // Verify the "Results pending..." text is displayed for each test
-    const pendingTexts = screen.getAllByText('Results pending…');
+    // Use the translated text from the locale file
+    const pendingTexts = screen.getAllByText(i18n.t('RESULTS_PENDING'));
     expect(pendingTexts.length).toBe(3); // Three tests with pending results
   });
 
@@ -248,7 +254,8 @@ describe('LabInvestigationControl Integration', () => {
 
     render(<LabInvestigationControl />);
 
-    // Verify error message is displayed
-    expect(screen.getByText('Error loading lab tests')).toBeInTheDocument();
+    expect(
+      screen.getByText(i18n.t('ERROR_LOADING_LAB_TESTS')),
+    ).toBeInTheDocument();
   });
 });
