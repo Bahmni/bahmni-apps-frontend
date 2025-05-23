@@ -14,8 +14,12 @@ jest.mock('@services/labInvestigationService');
 jest.mock('@hooks/usePatientUUID');
 
 // Type the mocked functions
-const mockedGetLabTests = getLabTests as jest.MockedFunction<typeof getLabTests>;
-const mockedFormatLabTests = formatLabTests as jest.MockedFunction<typeof formatLabTests>;
+const mockedGetLabTests = getLabTests as jest.MockedFunction<
+  typeof getLabTests
+>;
+const mockedFormatLabTests = formatLabTests as jest.MockedFunction<
+  typeof formatLabTests
+>;
 const mockedUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
 >;

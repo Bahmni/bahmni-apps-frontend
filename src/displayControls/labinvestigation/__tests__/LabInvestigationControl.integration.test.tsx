@@ -163,14 +163,18 @@ describe('LabInvestigationControl Integration', () => {
     render(<LabInvestigationControl />);
 
     // Verify the message is displayed
-    expect(screen.getByText('No lab Investigations available')).toBeInTheDocument();
+    expect(
+      screen.getByText('No lab Investigations available'),
+    ).toBeInTheDocument();
   });
 
   it('should handle lab tests with missing optional fields', () => {
     // Mock the hooks with incomplete data
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedUseLabInvestigations.mockReturnValue({
-      labTests: mockLabTestsByDateWithIncomplete.flatMap((group) => group.tests),
+      labTests: mockLabTestsByDateWithIncomplete.flatMap(
+        (group) => group.tests,
+      ),
       isLoading: false,
       isError: false,
     });

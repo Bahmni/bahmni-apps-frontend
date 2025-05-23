@@ -10,7 +10,7 @@ import { LabTestsByDate, FormattedLabTest } from '@/types/labInvestigation';
 const LabInvestigationControl: React.FC = () => {
   const { t } = useTranslation();
   const { labTests, isLoading, isError } = useLabInvestigations();
-  
+
   // Group the lab tests by date
   const labTestsByDate = useMemo<LabTestsByDate[]>(() => {
     return groupLabTestsByDate(labTests);

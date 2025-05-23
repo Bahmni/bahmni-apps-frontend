@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { FormattedLabTest } from '../types/labInvestigation';
-import { getLabTests, formatLabTests } from '../services/labInvestigationService';
+import {
+  getLabTests,
+  formatLabTests,
+} from '../services/labInvestigationService';
 import { usePatientUUID } from './usePatientUUID';
 
 /**
@@ -22,14 +25,14 @@ export default function useLabInvestigations() {
 
       setIsLoading(true);
       setIsError(false);
-      
+
       try {
         // Fetch raw lab tests
         const rawLabTests = await getLabTests(patientUUID);
-        
+
         // Format the lab tests
         const formattedTests = formatLabTests(rawLabTests);
-        
+
         setLabTests(formattedTests);
       } catch (err) {
         console.error('Error fetching lab investigations:', err);
