@@ -145,7 +145,7 @@ describe('LabInvestigationItem', () => {
         const translations: Record<string, string> = {
           LAB_TEST_5_TESTS: '5 Tests',
           LAB_TEST_ROUTINE: 'Routine',
-          LAB_TEST_ORDERED_BY : 'Ordered by:',
+          LAB_TEST_ORDERED_BY: 'Ordered by:',
           LAB_TEST_RESULTS_PENDING: 'Results pending…',
         };
         return translations[key] || key;
