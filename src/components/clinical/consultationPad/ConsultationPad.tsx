@@ -10,13 +10,14 @@ import * as styles from './styles/ConsultationPad.module.scss';
 import BasicForm from '@components/clinical/basicForm/BasicForm';
 import { Concept } from '@types/encounterConcepts';
 import { ConsultationBundle } from '@types/consultationBundle';
-import {
-  createConsultationBundlePayload,
-  postConsultationBundle,
-} from '@services/consultationBundleService';
+import { postConsultationBundle } from '@services/consultationBundleService';
 import useNotification from '@hooks/useNotification';
 import { formatDate } from '@utils/date';
-import DiagnosesForm from '../diagnosesForm/diagnosesForm';
+import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
+import {
+  createBundleEntry,
+  createConsultationBundle,
+} from '@utils/fhir/consultationBundleCreator';
 
 interface ConsultationPadProps {
   patientUUID: string;
@@ -76,16 +77,24 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   );
 
   const submitConsultation = () => {
-    const payload = createConsultationBundlePayload(
+    const enconterResourceURL = `urn:uuid:${crypto.randomUUID()}`;
+    const encounterResource = createEncounterResource(
+      encounterTypeSelected!.uuid,
+      encounterTypeSelected!.name,
       patientUUID,
-      practitioner?.uuid,
-      currentEncounter.id,
+      [practitioner!.uuid],
+      currentEncounter!.id,
       locations[0].uuid,
-      encounterTypeSelected.uuid,
-      encounterTypeSelected.name,
+      new Date(),
     );
+    const encounterBundleEntry = createBundleEntry(
+      enconterResourceURL,
+      encounterResource,
+      'POST',
+    );
+    const consultationBundle = createConsultationBundle([encounterBundleEntry]);
 
-    return postConsultationBundle<ConsultationBundle>(payload);
+    return postConsultationBundle<ConsultationBundle>(consultationBundle);
   };
 
   const handleOnPrimaryButtonClick = async () => {
@@ -194,7 +203,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
             locationSelected={locations[0]}
             defaultDate={formattedDate.formattedResult}
           />
-          <DiagnosesForm />
         </>
       }
     />
