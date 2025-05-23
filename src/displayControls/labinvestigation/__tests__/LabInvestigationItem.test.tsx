@@ -47,8 +47,8 @@ describe('LabInvestigationItem', () => {
           LAB_TEST_5_TESTS: '5 Tests',
           LAB_TEST_ROUTINE: 'Routine',
           LAB_TEST_URGENT: 'Urgent',
-          ORDERED_BY: 'Ordered by:',
-          RESULTS_PENDING: 'Results pending…',
+          LAB_TEST_ORDERED_BY: 'Ordered by:',
+          LAB_TEST_RESULTS_PENDING: 'Results pending…',
         };
         return translations[key] || key;
       },
@@ -103,8 +103,8 @@ describe('LabInvestigationItem', () => {
         if (key === 'LAB_TEST_UNKNOWN') return 'unknown';
         const translations: Record<string, string> = {
           LAB_TEST_PANEL: 'Panel',
-          ORDERED_BY: 'Ordered by:',
-          RESULTS_PENDING: 'Results pending…',
+          LAB_TEST_ORDERED_BY: 'Ordered by:',
+          LAB_TEST_RESULTS_PENDING: 'Results pending…',
         };
         return translations[key] || key;
       },
@@ -145,8 +145,8 @@ describe('LabInvestigationItem', () => {
         const translations: Record<string, string> = {
           LAB_TEST_5_TESTS: '5 Tests',
           LAB_TEST_ROUTINE: 'Routine',
-          ORDERED_BY: 'Ordered by:',
-          RESULTS_PENDING: 'Results pending…',
+          LAB_TEST_ORDERED_BY : 'Ordered by:',
+          LAB_TEST_RESULTS_PENDING: 'Results pending…',
         };
         return translations[key] || key;
       },

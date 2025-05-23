@@ -41,10 +41,10 @@ const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({
         </Tag>
         <div className={styles.orderedBy}>
           <BahmniIcon name="fa-user" size={ICON_SIZE.SM} id="homeIcon" />
-          {t('ORDERED_BY')}: {test.orderedBy}
+          {t('LAB_TEST_ORDERED_BY')}: {test.orderedBy}
         </div>
       </div>
-      <div>{t('RESULTS_PENDING')}</div>
+      <div>{t('LAB_TEST_RESULTS_PENDING')}</div>
     </div>
   );
 };

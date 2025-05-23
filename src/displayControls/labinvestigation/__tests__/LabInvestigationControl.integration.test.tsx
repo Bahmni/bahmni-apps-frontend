@@ -148,7 +148,7 @@ describe('LabInvestigationControl Integration', () => {
 
     render(<LabInvestigationControl />);
 
-    expect(screen.getByText(i18n.t('LOADING_LAB_TESTS'))).toBeInTheDocument();
+    expect(screen.getByText(i18n.t('LAB_TEST_LOADING'))).toBeInTheDocument();
   });
 
   it('should display "No lab Investigations available" message when there are no lab tests and not loading', () => {
@@ -164,7 +164,7 @@ describe('LabInvestigationControl Integration', () => {
     render(<LabInvestigationControl />);
 
     expect(
-      screen.getByText(i18n.t('LAB_INVESTIGATIONS_UNAVAILABLE')),
+      screen.getByText(i18n.t('LAB_TEST_UNAVAILABLE')),
     ).toBeInTheDocument();
   });
 
@@ -187,7 +187,7 @@ describe('LabInvestigationControl Integration', () => {
 
     // Use a regex to match the translated text followed by the doctor name
     const orderedByRegex = new RegExp(
-      `${i18n.t('ORDERED_BY')}: Unknown Doctor`,
+      `${i18n.t('LAB_TEST_ORDERED_BY')}: Unknown Doctor`,
       'i',
     );
     expect(screen.getByText(orderedByRegex)).toBeInTheDocument();
@@ -239,7 +239,7 @@ describe('LabInvestigationControl Integration', () => {
     render(<LabInvestigationControl />);
 
     // Use the translated text from the locale file
-    const pendingTexts = screen.getAllByText(i18n.t('RESULTS_PENDING'));
+    const pendingTexts = screen.getAllByText(i18n.t('LAB_TEST_RESULTS_PENDING'));
     expect(pendingTexts.length).toBe(3); // Three tests with pending results
   });
 
@@ -255,7 +255,7 @@ describe('LabInvestigationControl Integration', () => {
     render(<LabInvestigationControl />);
 
     expect(
-      screen.getByText(i18n.t('ERROR_LOADING_LAB_TESTS')),
+      screen.getByText(i18n.t('LAB_TEST_ERROR_LOADING')),
     ).toBeInTheDocument();
   });
 });

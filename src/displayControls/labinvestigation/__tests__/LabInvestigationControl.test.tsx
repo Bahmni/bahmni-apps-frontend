@@ -114,9 +114,9 @@ describe('LabInvestigationControl', () => {
     (useTranslation as jest.Mock).mockReturnValue({
       t: (key: string) => {
         const translations: Record<string, string> = {
-          LOADING_LAB_TESTS: 'Loading lab tests...',
-          ERROR_LOADING_LAB_TESTS: 'Error loading lab tests',
-          LAB_INVESTIGATIONS_UNAVAILABLE: 'No lab Investigations available',
+          LAB_TEST_LOADING: 'Loading lab tests...',
+          LAB_TEST_ERROR_LOADING: 'Error loading lab tests',
+          LAB_TEST_UNAVAILABLE: 'No lab Investigations available',
         };
         return translations[key] || key;
       },

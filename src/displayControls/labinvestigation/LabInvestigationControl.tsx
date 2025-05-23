@@ -17,15 +17,15 @@ const LabInvestigationControl: React.FC = () => {
   }, [labTests]);
 
   if (isLoading && labTests.length === 0) {
-    return <div>{t('LOADING_LAB_TESTS')}</div>;
+    return <div>{t('LAB_TEST_LOADING')}</div>;
   }
 
   if (isError) {
-    return <div>{t('ERROR_LOADING_LAB_TESTS')}</div>;
+    return <div>{t('LAB_TEST_ERROR_LOADING')}</div>;
   }
 
   if (!isLoading && labTests.length === 0) {
-    return <div>{t('LAB_INVESTIGATIONS_UNAVAILABLE')}</div>;
+    return <div>{t('LAB_TEST_UNAVAILABLE')}</div>;
   }
 
   return (
