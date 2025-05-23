@@ -62,11 +62,9 @@ import * as locationService from '@services/locationService';
 import * as encounterConceptsService from '@services/encounterConceptsService';
 import * as practitionerService from '@/services/providerService';
 import * as encounterService from '@services/encounterService';
-import {
-  createConsultationBundlePayload,
-  postConsultationBundle,
-} from '@services/consultationBundleService';
+import { postConsultationBundle } from '@services/consultationBundleService';
 import { formatDate } from '@utils/date';
+import { validBundle } from '@__mocks__/consultationBundleMock';
 
 // Configure jest-axe
 expect.extend(toHaveNoViolations);
@@ -90,7 +88,6 @@ jest.mock('@services/encounterService', () => ({
 }));
 
 jest.mock('@services/consultationBundleService', () => ({
-  createConsultationBundlePayload: jest.fn(),
   postConsultationBundle: jest.fn(),
 }));
 
@@ -120,6 +117,9 @@ jest.mock('@hooks/useNotification', () => {
     }),
   };
 });
+global.crypto.randomUUID = jest
+  .fn()
+  .mockReturnValue('1d87ab20-8b86-4b41-a30d-984b2208d945');
 
 describe('ConsultationPad Integration', () => {
   // Common test data
@@ -208,15 +208,6 @@ describe('ConsultationPad Integration', () => {
       mockCurrentEncounter,
     );
 
-    (createConsultationBundlePayload as jest.Mock).mockReturnValue({
-      patientId: mockPatientUUID,
-      practitionerId: mockPractitioner.uuid,
-      encounterId: mockCurrentEncounter.id,
-      locationId: mockLocations[0].uuid,
-      encounterTypeId: mockEncounterConcepts.encounterTypes[0].uuid,
-      encounterTypeName: mockEncounterConcepts.encounterTypes[0].name,
-    });
-
     (postConsultationBundle as jest.Mock).mockResolvedValue(mockBundle);
   }
 
@@ -250,15 +241,6 @@ describe('ConsultationPad Integration', () => {
           setTimeout(() => resolve(mockCurrentEncounter), delay),
         ),
     );
-
-    (createConsultationBundlePayload as jest.Mock).mockReturnValue({
-      patientId: mockPatientUUID,
-      practitionerId: mockPractitioner.uuid,
-      encounterId: mockCurrentEncounter.id,
-      locationId: mockLocations[0].uuid,
-      encounterTypeId: mockEncounterConcepts.encounterTypes[0].uuid,
-      encounterTypeName: mockEncounterConcepts.encounterTypes[0].name,
-    });
 
     (postConsultationBundle as jest.Mock).mockResolvedValue(mockBundle);
   }
@@ -340,7 +322,6 @@ describe('ConsultationPad Integration', () => {
     it('should load data and submit consultation successfully', async () => {
       // Mock successful responses from all services
       mockSuccessfulServiceResponses();
-
       // Render component with providers
       renderWithProviders(
         <ConsultationPad patientUUID={mockPatientUUID} onClose={mockOnClose} />,
@@ -370,15 +351,7 @@ describe('ConsultationPad Integration', () => {
 
       // Verify submission was called with correct parameters
       await waitFor(() => {
-        expect(createConsultationBundlePayload).toHaveBeenCalledWith(
-          mockPatientUUID,
-          mockPractitioner.uuid,
-          mockCurrentEncounter.id,
-          mockLocations[0].uuid,
-          mockEncounterConcepts.encounterTypes[0].uuid,
-          mockEncounterConcepts.encounterTypes[0].name,
-        );
-        expect(postConsultationBundle).toHaveBeenCalled();
+        expect(postConsultationBundle).toHaveBeenCalledWith(validBundle);
         expect(mockOnClose).toHaveBeenCalled();
       });
     });
@@ -642,38 +615,6 @@ describe('ConsultationPad Integration', () => {
 
       // Verify submission was not attempted
       expect(postConsultationBundle).not.toHaveBeenCalled();
-    });
-
-    it('should confirm provider uuid is passed correctly to consultation bundle payload', async () => {
-      // Mock successful responses
-      mockSuccessfulServiceResponses();
-
-      // Render component
-      renderWithProviders(
-        <ConsultationPad patientUUID={mockPatientUUID} onClose={mockOnClose} />,
-      );
-
-      // Wait for loading to complete
-      await waitFor(() => {
-        expect(
-          screen.queryByText('CONSULTATION_PAD_LOADING'),
-        ).not.toBeInTheDocument();
-      });
-
-      // Submit the consultation
-      fireEvent.click(screen.getByText('CONSULTATION_PAD_DONE_BUTTON'));
-
-      // Verify createConsultationBundlePayload was called with provider uuid
-      await waitFor(() => {
-        expect(createConsultationBundlePayload).toHaveBeenCalledWith(
-          mockPatientUUID,
-          mockPractitioner.uuid,
-          mockCurrentEncounter.id,
-          mockLocations[0].uuid,
-          mockEncounterConcepts.encounterTypes[0].uuid,
-          mockEncounterConcepts.encounterTypes[0].name,
-        );
-      });
     });
 
     it('should disable submission when practitioner is null', async () => {

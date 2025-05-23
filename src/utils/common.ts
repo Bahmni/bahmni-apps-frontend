@@ -119,3 +119,7 @@ export function getCookieByName(name: string): string {
 
   return '';
 }
+
+export const isStringEmpty = (input?: string): boolean => {
+  return !input || input.trim().length === 0;
+};

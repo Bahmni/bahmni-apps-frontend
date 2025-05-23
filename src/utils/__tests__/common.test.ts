@@ -3,6 +3,7 @@ import {
   generateId,
   getFormattedError,
   getCookieByName,
+  isStringEmpty,
 } from '../common';
 import axios, { AxiosError } from 'axios';
 import i18n from '@/setupTests.i18n';
@@ -494,6 +495,33 @@ describe('common utility functions', () => {
 
     it('should handle custom delimiters', () => {
       expect(capitalize('foo_bar-baz', '_-')).toBe('Foo Bar Baz');
+    });
+  });
+
+  describe('isStringEmpty', () => {
+    it('should return true for undefined input', () => {
+      expect(isStringEmpty(undefined)).toBe(true);
+    });
+
+    it('should return true for null input', () => {
+      // @ts-expect-error - Testing null case even though type is string | undefined
+      expect(isStringEmpty(null)).toBe(true);
+    });
+
+    it('should return true for empty string', () => {
+      expect(isStringEmpty('')).toBe(true);
+    });
+
+    it('should return true for string with only whitespace', () => {
+      expect(isStringEmpty('   ')).toBe(true);
+      expect(isStringEmpty('\t\n')).toBe(true);
+      expect(isStringEmpty(' \n \t ')).toBe(true);
+    });
+
+    it('should return false for non-empty string', () => {
+      expect(isStringEmpty('hello')).toBe(false);
+      expect(isStringEmpty(' hello ')).toBe(false);
+      expect(isStringEmpty('hello world')).toBe(false);
     });
   });
 });
