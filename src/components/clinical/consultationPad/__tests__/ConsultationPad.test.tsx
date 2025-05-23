@@ -8,12 +8,10 @@ import { useEncounterConcepts } from '@hooks/useEncounterConcepts';
 import { useActivePractitioner } from '@hooks/useActivePractitioner';
 import { useCurrentEncounter } from '@hooks/useCurrentEncounter';
 import useNotification from '@hooks/useNotification';
-import {
-  createConsultationBundlePayload,
-  postConsultationBundle,
-} from '@services/consultationBundleService';
+import { postConsultationBundle } from '@services/consultationBundleService';
 import { Provider } from '@types/provider';
 import { formatDate } from '@utils/date';
+import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
 
 // Mock all dependencies
 jest.mock('@utils/date', () => ({
@@ -46,9 +44,15 @@ jest.mock('@hooks/useCurrentEncounter', () => ({
 }));
 
 jest.mock('@services/consultationBundleService', () => ({
-  createConsultationBundlePayload: jest.fn(),
   postConsultationBundle: jest.fn(),
 }));
+
+jest.mock('@utils/fhir/encounterResourceCreator', () => ({
+  createEncounterResource: jest.fn(),
+}));
+global.crypto.randomUUID = jest
+  .fn()
+  .mockReturnValue('1d87ab20-8b86-4b41-a30d-984b2208d945');
 
 jest.mock('@components/common/actionArea/ActionArea', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -272,8 +276,8 @@ describe('ConsultationPad', () => {
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: mockAddNotification,
     });
-    (createConsultationBundlePayload as jest.Mock).mockReturnValue({});
     (postConsultationBundle as jest.Mock).mockResolvedValue({});
+    (createEncounterResource as jest.Mock).mockResolvedValue({});
     (formatDate as jest.Mock).mockReturnValue({
       formattedResult: '2025-05-20',
       error: undefined,
@@ -659,6 +663,10 @@ describe('ConsultationPad', () => {
       it('should call createConsultationBundlePayload with correct parameters', async () => {
         // Arrange
         mockHooksForNormalState();
+        const mockDate = new Date(1466424490000);
+        const spy = jest
+          .spyOn(global, 'Date')
+          .mockImplementation(() => mockDate);
 
         // Act
         render(
@@ -671,15 +679,17 @@ describe('ConsultationPad', () => {
 
         // Assert
         await waitFor(() => {
-          expect(createConsultationBundlePayload).toHaveBeenCalledWith(
-            mockPatientUUID,
-            mockPractitioner.uuid, // Updated to use uuid instead of id
-            mockCurrentEncounter.id,
-            mockLocations[0].uuid,
+          expect(createEncounterResource).toHaveBeenCalledWith(
             mockEncounterConcepts.encounterTypes[0].uuid,
             mockEncounterConcepts.encounterTypes[0].name,
+            mockPatientUUID,
+            [mockPractitioner.uuid], // Updated to use uuid instead of id
+            mockCurrentEncounter.id,
+            mockLocations[0].uuid,
+            mockDate,
           );
         });
+        spy.mockRestore();
       });
 
       it('should set isSubmitting to true when submission starts and false when it completes', async () => {
@@ -791,9 +801,13 @@ describe('ConsultationPad', () => {
         expect(postConsultationBundle).not.toHaveBeenCalled();
       });
 
-      it('should correctly pass provider uuid to createConsultationBundlePayload', async () => {
+      it('should correctly pass provider uuid to createEncounterResource', async () => {
         // Arrange
         mockHooksForNormalState();
+        const mockDate = new Date(1466424490000);
+        const spy = jest
+          .spyOn(global, 'Date')
+          .mockImplementation(() => mockDate);
 
         // Act
         render(
@@ -806,15 +820,17 @@ describe('ConsultationPad', () => {
 
         // Assert
         await waitFor(() => {
-          expect(createConsultationBundlePayload).toHaveBeenCalledWith(
-            mockPatientUUID,
-            mockPractitioner.uuid,
-            mockCurrentEncounter.id,
-            mockLocations[0].uuid,
+          expect(createEncounterResource).toHaveBeenCalledWith(
             mockEncounterConcepts.encounterTypes[0].uuid,
             mockEncounterConcepts.encounterTypes[0].name,
+            mockPatientUUID,
+            [mockPractitioner.uuid],
+            mockCurrentEncounter.id,
+            mockLocations[0].uuid,
+            mockDate,
           );
         });
+        spy.mockRestore();
       });
     });
   });

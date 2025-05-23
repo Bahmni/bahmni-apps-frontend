@@ -23,6 +23,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@testing-library/react-hooks": "^8.0.1",
+    "@types/fhir": "^0.0.41",
     "ajv": "^8.17.1",
     "axios": "^1.8.4",
     "date-fns": "^4.1.0",
