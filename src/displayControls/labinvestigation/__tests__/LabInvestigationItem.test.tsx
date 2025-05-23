@@ -36,7 +36,7 @@ describe('LabInvestigationItem', () => {
     expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
 
     // Check that the test type is displayed
-    expect(screen.getByText(/\(Panel\)/)).toBeInTheDocument();
+    expect(screen.getByText('Panel')).toBeInTheDocument();
 
     // Check that the priority is displayed
     expect(screen.getByText('Routine')).toBeInTheDocument();
@@ -79,28 +79,28 @@ describe('LabInvestigationItem', () => {
     // We can't directly test the color, but we can verify the component renders
     // without errors, which means the default case was used
   });
-    
+
   it('displays different test types correctly', () => {
     // Test with Single Test type
     const singleTest = {
       ...mockLabTest,
       testType: 'Single Test',
     };
-    
+
     const { rerender } = render(<LabInvestigationItem test={singleTest} />);
-    expect(screen.getByText(/\(Single Test\)/)).toBeInTheDocument();
-    
+    expect(screen.getByText('Single Test')).toBeInTheDocument();
+
     // Test with Panel type
     rerender(<LabInvestigationItem test={mockLabTest} />);
-    expect(screen.getByText(/\(Panel\)/)).toBeInTheDocument();
-    
+    expect(screen.getByText('Panel')).toBeInTheDocument();
+
     // Test with X Tests type
     const multipleTest = {
       ...mockLabTest,
       testType: '5 Tests',
     };
-    
+
     rerender(<LabInvestigationItem test={multipleTest} />);
-    expect(screen.getByText(/\(5 Tests\)/)).toBeInTheDocument();
+    expect(screen.getByText('5 Tests')).toBeInTheDocument();
   });
 });
