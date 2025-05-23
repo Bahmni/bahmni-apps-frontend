@@ -28,7 +28,7 @@
   "LAB_TEST_REPORTED_ON": "Reportado el",
   "LAB_TEST_ACTIONS": "Acciones",
   "ORDERED_BY": "Ordenado por",
-  "'RESULTS_PENDING'": "Resultados pendientes",
+  "RESULTS_PENDING": "Resultados pendientes",
   "CONFIG_ERROR_NOT_FOUND": "Configuración no encontrada",
   "CONFIG_ERROR_SCHEMA_VALIDATION_FAILED": "La configuración no coincide con el esquema requerido",
   "CONFIG_ERROR_VALIDATION_FAILED": "La validación de la configuración falló",
