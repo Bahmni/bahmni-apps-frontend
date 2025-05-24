@@ -2,12 +2,16 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { I18nextProvider } from 'react-i18next';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import i18n from '@/setupTests.i18n';
 import DiagnosesForm from '../DiagnosesForm';
-import { ConceptSearch, Coding } from '@/types/concepts';
+import { ConceptSearch } from '@/types/concepts';
+import { Coding } from 'fhir/r4';
+
+expect.extend(toHaveNoViolations);
 
 // Mock the CSS modules
-jest.mock('./styles/DiagnosesForm.modules.scss', () => ({
+jest.mock('../styles/DiagnosesForm.module.scss', () => ({
   diagnosesFormTile: 'diagnosesFormTile',
   diagnosesFormTitle: 'diagnosesFormTitle',
   selectedDiagnosisTitle: 'selectedDiagnosisTitle',
@@ -76,12 +80,14 @@ const mockCertaintyConcepts: Coding[] = [
 
 const mockSelectedDiagnoses = [
   {
+    id: 'diabetes-123',
     title: 'Diabetes Mellitus',
     certaintyConcepts: mockCertaintyConcepts,
     selectedCertainty: mockCertaintyConcepts[0],
     handleCertaintyChange: jest.fn(),
   },
   {
+    id: 'hypertension-456',
     title: 'Hypertension',
     certaintyConcepts: mockCertaintyConcepts,
     selectedCertainty: mockCertaintyConcepts[1],
@@ -173,12 +179,17 @@ describe('DiagnosesForm', () => {
       expect(screen.getByText('Diabetes Mellitus')).toBeInTheDocument();
       expect(screen.getByText('Hypertension')).toBeInTheDocument();
 
-      // Check that certainty labels are rendered instead of looking for dropdowns
-      expect(screen.getAllByText('Select Certainty')).toHaveLength(2);
-
-      // Check that the certainty values are displayed
+      // Check that the certainty dropdowns are rendered with their selected values
       expect(screen.getByText('Confirmed')).toBeInTheDocument();
       expect(screen.getByText('Provisional')).toBeInTheDocument();
+
+      // Check that the correct dropdowns are rendered
+      expect(
+        screen.getByTestId('diagnoses-certainty-dropdown-diabetes-123-0'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId('diagnoses-certainty-dropdown-hypertension-456-1'),
+      ).toBeInTheDocument();
     });
 
     test('calls handleRemoveDiagnosis when remove button is clicked', async () => {
@@ -228,27 +239,29 @@ describe('DiagnosesForm', () => {
       expect(combobox).toBeInTheDocument();
     });
 
-    test('handles missing conceptName in search results', () => {
-      const incompleteResults = [
-        {
-          matchedName: 'Diabetes',
-          conceptUuid: 'http://snomed.info/sct',
-        } as ConceptSearch,
-      ];
-
-      renderWithI18n(
-        <DiagnosesForm {...defaultProps} searchResults={incompleteResults} />,
+    test('handles null item in itemToString function', () => {
+      // This test specifically covers the branch where item is null in itemToString
+      const { container } = renderWithI18n(
+        <DiagnosesForm {...defaultProps} searchResults={[null as any]} />,
       );
 
       const combobox = screen.getByRole('combobox');
+
+      // The ComboBox should render without crashing even with null items
+      expect(combobox).toBeInTheDocument();
+
+      // Click to open the dropdown
       fireEvent.click(combobox);
 
-      expect(screen.getByText('Diabetes')).toBeInTheDocument();
+      // The dropdown should handle null items gracefully
+      const dropdownMenu = container.querySelector('[role="listbox"]');
+      expect(dropdownMenu).toBeInTheDocument();
     });
 
     test('handles missing display in certainty concepts', () => {
       const diagnosesWithMissingDisplay = [
         {
+          id: 'test-diagnosis-1',
           title: 'Test Diagnosis',
           certaintyConcepts: [
             { code: 'confirmed', system: 'test-system' } as Coding,
@@ -313,6 +326,7 @@ describe('DiagnosesForm', () => {
 
     test('handles large number of selected diagnoses', () => {
       const manyDiagnoses = Array.from({ length: 50 }, (_, index) => ({
+        id: `diagnosis-${index + 1}`,
         title: `Diagnosis ${index + 1}`,
         certaintyConcepts: mockCertaintyConcepts,
         selectedCertainty: mockCertaintyConcepts[0],
@@ -330,6 +344,7 @@ describe('DiagnosesForm', () => {
     test('handles special characters in diagnosis titles', () => {
       const specialCharDiagnoses = [
         {
+          id: 'special-char-1',
           title: 'Test & Diagnosis <with> "special" characters',
           certaintyConcepts: mockCertaintyConcepts,
           selectedCertainty: mockCertaintyConcepts[0],
@@ -353,6 +368,7 @@ describe('DiagnosesForm', () => {
       const longTitle = 'A'.repeat(500);
       const longTitleDiagnoses = [
         {
+          id: 'long-title-1',
           title: longTitle,
           certaintyConcepts: mockCertaintyConcepts,
           selectedCertainty: mockCertaintyConcepts[0],
@@ -373,12 +389,14 @@ describe('DiagnosesForm', () => {
     test('handles duplicate diagnosis titles', () => {
       const duplicateDiagnoses = [
         {
+          id: 'duplicate-1',
           title: 'Duplicate Diagnosis',
           certaintyConcepts: mockCertaintyConcepts,
           selectedCertainty: mockCertaintyConcepts[0],
           handleCertaintyChange: jest.fn(),
         },
         {
+          id: 'duplicate-2',
           title: 'Duplicate Diagnosis',
           certaintyConcepts: mockCertaintyConcepts,
           selectedCertainty: mockCertaintyConcepts[1],
@@ -400,6 +418,7 @@ describe('DiagnosesForm', () => {
     test('handles missing handleCertaintyChange function', () => {
       const diagnosesWithMissingHandler = [
         {
+          id: 'missing-handler-1',
           title: 'Test Diagnosis',
           certaintyConcepts: mockCertaintyConcepts,
           selectedCertainty: mockCertaintyConcepts[0],

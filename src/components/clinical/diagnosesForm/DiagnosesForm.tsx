@@ -1,82 +1,13 @@
 import React from 'react';
-import {
-  ComboBox,
-  Tile,
-  Column,
-  Grid,
-  Dropdown,
-  InlineNotification,
-  OnChangeData,
-} from '@carbon/react';
+import { ComboBox, Tile, InlineNotification } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
-import * as styles from './styles/DiagnosesForm.modules.scss';
+import * as styles from './styles/DiagnosesForm.module.scss';
 import SelectedItem from '@components/common/selectedItem/SelectedItem';
 import BoxWHeader from '@components/common/boxWHeader/BoxWHeader';
-import { Coding, ConceptSearch } from '@/types/concepts';
-
-/**
- * Properties for a selected diagnosis item
- * @interface SelectedDiagnosisItemProps
- * @property {string} title - The display name of the diagnosis
- * @property {Coding[]} certaintyConcepts - Available certainty options
- * @property {Coding} selectedCertainty - Currently selected certainty
- * @property {Function} handleCertaintyChange - Function to call when certainty changes
- */
-interface SelectedDiagnosisItemProps {
-  title: string;
-  certaintyConcepts: Coding[];
-  selectedCertainty: Coding;
-  handleCertaintyChange: (
-    selectedItem: OnChangeData<Coding | null | undefined>,
-  ) => void;
-}
-
-/**
- * Component for rendering a selected diagnosis with certainty dropdown
- *
- * @param {SelectedDiagnosisItemProps} props - Component props
- */
-const SelectedDiagnosisItem: React.FC<SelectedDiagnosisItemProps> = React.memo(
-  ({ title, certaintyConcepts, selectedCertainty, handleCertaintyChange }) => {
-    const { t } = useTranslation();
-    return (
-      <Grid>
-        <Column
-          sm={4}
-          md={7}
-          lg={11}
-          xlg={11}
-          className={styles.selectedDiagnosisTitle}
-        >
-          {title}
-        </Column>
-        <Column
-          sm={4}
-          md={2}
-          lg={4}
-          xlg={4}
-          className={styles.selectedDiagnosisCertainty}
-        >
-          <Dropdown
-            id="diagnoses-certainty-dropdown"
-            data-testid="diagnoses-certainty-dropdown-test-id"
-            titleText={t('DIAGNOSES_SELECT_CERTAINTY')}
-            type="inline"
-            label={t('DIAGNOSES_SELECT_CERTAINTY')}
-            items={certaintyConcepts}
-            selectedItem={selectedCertainty}
-            itemToString={(item) => item?.display || ''}
-            onChange={(data) => {
-              handleCertaintyChange(data);
-            }}
-            autoAlign
-            aria-label={t('DIAGNOSES_CERTAINTY_ARIA_LABEL')}
-          />
-        </Column>
-      </Grid>
-    );
-  },
-);
+import { ConceptSearch } from '@/types/concepts';
+import SelectedDiagnosisItem, {
+  SelectedDiagnosisItemProps,
+} from './SelectedDiagnosisItem';
 
 /**
  * DiagnosesForm component props
@@ -132,12 +63,12 @@ const DiagnosesForm: React.FC<DiagnosesFormProps> = React.memo(
           id="diagnoses-search"
           placeholder={t('DIAGNOSES_SEARCH_PLACEHOLDER')}
           items={searchResults}
-          itemToString={(item) => item?.conceptName || item?.matchedName || ''}
+          itemToString={(item) => (item ? item.conceptName : '')}
           shouldFilterItem={() => true}
-          onChange={(e) => {
-            handleResultSelection(e.selectedItem);
+          onChange={(data) => {
+            handleResultSelection(data.selectedItem);
           }}
-          onInputChange={(searchQuery) => handleSearch(searchQuery)}
+          onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
           selectedItem={selectedItem}
           size="lg"
           disabled={isSearchLoading}
@@ -168,6 +99,7 @@ const DiagnosesForm: React.FC<DiagnosesFormProps> = React.memo(
                 onClose={() => handleRemoveDiagnosis(index)}
               >
                 <SelectedDiagnosisItem
+                  id={`${diagnosis.id}-${index}`}
                   title={diagnosis.title}
                   certaintyConcepts={diagnosis.certaintyConcepts}
                   selectedCertainty={diagnosis.selectedCertainty}
@@ -181,5 +113,7 @@ const DiagnosesForm: React.FC<DiagnosesFormProps> = React.memo(
     );
   },
 );
+
+DiagnosesForm.displayName = 'DiagnosesForm';
 
 export default DiagnosesForm;

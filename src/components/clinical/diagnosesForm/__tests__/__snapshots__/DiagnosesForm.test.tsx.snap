@@ -525,25 +525,18 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
           >
             <div
               class="cds--dropdown__wrapper cds--list-box__wrapper cds--dropdown__wrapper--inline cds--list-box__wrapper--inline"
-              data-testid="diagnoses-certainty-dropdown-test-id"
+              data-testid="diagnoses-certainty-dropdown-diabetes-123-0"
             >
-              <label
-                class="cds--label"
-                for="downshift-«r87»-toggle-button"
-                id="downshift-«r87»-label"
-              >
-                Select Certainty
-              </label>
               <div
                 class="cds--dropdown cds--dropdown--inline cds--autoalign cds--list-box"
-                id="diagnoses-certainty-dropdown"
+                id="diagnoses-certainty-dropdown-diabetes-123-0"
               >
                 <button
                   aria-activedescendant=""
                   aria-controls="downshift-«r87»-menu"
                   aria-expanded="false"
                   aria-haspopup="listbox"
-                  aria-label="Select certainty level for diagnosis"
+                  aria-label="Diagnoses Certainty"
                   class="cds--list-box__field"
                   id="downshift-«r87»-toggle-button"
                   role="combobox"
@@ -614,25 +607,18 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
           >
             <div
               class="cds--dropdown__wrapper cds--list-box__wrapper cds--dropdown__wrapper--inline cds--list-box__wrapper--inline"
-              data-testid="diagnoses-certainty-dropdown-test-id"
+              data-testid="diagnoses-certainty-dropdown-hypertension-456-1"
             >
-              <label
-                class="cds--label"
-                for="downshift-«r8a»-toggle-button"
-                id="downshift-«r8a»-label"
-              >
-                Select Certainty
-              </label>
               <div
                 class="cds--dropdown cds--dropdown--inline cds--autoalign cds--list-box"
-                id="diagnoses-certainty-dropdown"
+                id="diagnoses-certainty-dropdown-hypertension-456-1"
               >
                 <button
                   aria-activedescendant=""
                   aria-controls="downshift-«r8a»-menu"
                   aria-expanded="false"
                   aria-haspopup="listbox"
-                  aria-label="Select certainty level for diagnosis"
+                  aria-label="Diagnoses Certainty"
                   class="cds--list-box__field"
                   id="downshift-«r8a»-toggle-button"
                   role="combobox"
