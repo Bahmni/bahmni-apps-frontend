@@ -33,6 +33,8 @@ export const PROVIDER_RESOURCE_URL = (userUUID: string) =>
 export const PRACTITIONER_RESOURCE_URL = (uuid?: string) =>
   OPENMRS_FHIR_R4 + `/Practitioner${uuid ? `/${uuid}` : ''}`;
 export const CONSULTATION_BUNDLE_URL = OPENMRS_FHIR_R4 + '/ConsultationBundle';
+export const CONCEPT_SEARCH_URL = (term: string, limit: number, locale: string) =>
+  `${OPENMRS_REST_V1}/bahmni/terminologies/concepts?limit=${limit}&locale=${locale}&term=${term}`;
 export const LOGIN_PATH = '/bahmni/home/index.html#/login';
 export const DEFAULT_LOCALE = 'en';
 export const LOCALE_STORAGE_KEY = 'NG_TRANSLATE_LANG_KEY';
