@@ -17,6 +17,7 @@ describe('useConceptSearch', () => {
 
   it('should set loading state during fetch', async () => {
     // Set up a delayed promise that we can control
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let resolvePromise: (value: any) => void;
     const promise = new Promise((resolve) => {
       resolvePromise = resolve;
@@ -28,7 +29,7 @@ describe('useConceptSearch', () => {
     // Start with empty search term to avoid immediate fetch
     const { result, rerender } = renderHook(
       ({ searchTerm }) => useConceptSearch(searchTerm),
-      { initialProps: { searchTerm: '' } }
+      { initialProps: { searchTerm: '' } },
     );
 
     // Initially loading should be false
@@ -131,9 +132,12 @@ describe('useConceptSearch', () => {
   });
 
   it('should debounce API calls when searchTerm changes rapidly', async () => {
-    const { rerender } = renderHook(({ searchTerm }) => useConceptSearch(searchTerm), {
-      initialProps: { searchTerm: '' },  // Start with empty to avoid initial API call
-    });
+    const { rerender } = renderHook(
+      ({ searchTerm }) => useConceptSearch(searchTerm),
+      {
+        initialProps: { searchTerm: '' }, // Start with empty to avoid initial API call
+      },
+    );
 
     // Change the searchTerm multiple times rapidly
     rerender({ searchTerm: 'te' });
@@ -161,9 +165,12 @@ describe('useConceptSearch', () => {
     const mockError = new Error('API error');
     (conceptService.searchConcepts as jest.Mock).mockRejectedValue(mockError);
 
-    const { result, rerender } = renderHook(({ searchTerm }) => useConceptSearch(searchTerm), {
-      initialProps: { searchTerm: 'error-term' },
-    });
+    const { result, rerender } = renderHook(
+      ({ searchTerm }) => useConceptSearch(searchTerm),
+      {
+        initialProps: { searchTerm: 'error-term' },
+      },
+    );
 
     // Advance timers to trigger the debounced fetch
     await act(async () => {
@@ -209,7 +216,9 @@ describe('useConceptSearch', () => {
     await waitFor(() => {
       // Verify the error is an Error instance with the fallback message
       expect(result.current.error).toBeInstanceOf(Error);
-      expect(result.current.error?.message).toBe('Failed to fetch concepts for search');
+      expect(result.current.error?.message).toBe(
+        'Failed to fetch concepts for search',
+      );
     });
   });
 
@@ -217,9 +226,9 @@ describe('useConceptSearch', () => {
     const customDelay = 300;
 
     // Start with empty search term to avoid immediate fetch
-    const { result, rerender } = renderHook(
+    const { rerender } = renderHook(
       ({ searchTerm }) => useConceptSearch(searchTerm, 20, customDelay),
-      { initialProps: { searchTerm: '' } }
+      { initialProps: { searchTerm: '' } },
     );
 
     // Change to non-empty search term
