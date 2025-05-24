@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { I18nextProvider } from 'react-i18next';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -23,6 +23,7 @@ jest.mock('../styles/DiagnosesForm.module.scss', () => ({
 
 // Mock the components
 jest.mock('@components/common/selectedItem/SelectedItem', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return function MockSelectedItem({ children, onClose, className }: any) {
     return (
       <div className={className} data-testid="selected-item">
@@ -36,6 +37,7 @@ jest.mock('@components/common/selectedItem/SelectedItem', () => {
 });
 
 jest.mock('@components/common/boxWHeader/BoxWHeader', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return function MockBoxWHeader({ children, title, className }: any) {
     return (
       <div className={className} data-testid="box-with-header">
@@ -115,6 +117,7 @@ const renderWithI18n = (component: React.ReactElement) => {
 describe('DiagnosesForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(console, 'error').mockImplementation();
     i18n.changeLanguage('en');
   });
 
@@ -136,7 +139,9 @@ describe('DiagnosesForm', () => {
       );
 
       const combobox = screen.getByRole('combobox');
-      fireEvent.click(combobox);
+      act(() => {
+        fireEvent.click(combobox);
+      });
 
       expect(screen.getByText('Diabetes Mellitus')).toBeInTheDocument();
       expect(screen.getByText('Hypertension')).toBeInTheDocument();
@@ -233,7 +238,9 @@ describe('DiagnosesForm', () => {
       renderWithI18n(<DiagnosesForm {...defaultProps} searchResults={[]} />);
 
       const combobox = screen.getByRole('combobox');
-      fireEvent.click(combobox);
+      act(() => {
+        fireEvent.click(combobox);
+      });
 
       // Should not crash and combobox should still be functional
       expect(combobox).toBeInTheDocument();
@@ -242,6 +249,7 @@ describe('DiagnosesForm', () => {
     test('handles null item in itemToString function', () => {
       // This test specifically covers the branch where item is null in itemToString
       const { container } = renderWithI18n(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         <DiagnosesForm {...defaultProps} searchResults={[null as any]} />,
       );
 
@@ -251,7 +259,9 @@ describe('DiagnosesForm', () => {
       expect(combobox).toBeInTheDocument();
 
       // Click to open the dropdown
-      fireEvent.click(combobox);
+      act(() => {
+        fireEvent.click(combobox);
+      });
 
       // The dropdown should handle null items gracefully
       const dropdownMenu = container.querySelector('[role="listbox"]');
@@ -296,6 +306,7 @@ describe('DiagnosesForm', () => {
 
     test('handles undefined selectedItem', () => {
       renderWithI18n(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         <DiagnosesForm {...defaultProps} selectedItem={undefined as any} />,
       );
 
@@ -312,6 +323,7 @@ describe('DiagnosesForm', () => {
 
     test('handles null selectedDiagnoses', () => {
       renderWithI18n(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         <DiagnosesForm {...defaultProps} selectedDiagnoses={null as any} />,
       );
 
@@ -422,6 +434,7 @@ describe('DiagnosesForm', () => {
           title: 'Test Diagnosis',
           certaintyConcepts: mockCertaintyConcepts,
           selectedCertainty: mockCertaintyConcepts[0],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           handleCertaintyChange: undefined as any,
         },
       ];
@@ -454,6 +467,50 @@ describe('DiagnosesForm', () => {
 
       // Should only be called once per click (though the component might prevent multiple calls)
       expect(defaultProps.handleRemoveDiagnosis).toHaveBeenCalledWith(0);
+    });
+  });
+
+  // ACCESSIBILITY TESTS
+  describe('Accessibility', () => {
+    test('should have no accessibility violations in empty state', async () => {
+      const { container } = renderWithI18n(<DiagnosesForm {...defaultProps} />);
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    test('should have no accessibility violations with selected diagnoses', async () => {
+      const { container } = renderWithI18n(
+        <DiagnosesForm
+          {...defaultProps}
+          selectedDiagnoses={mockSelectedDiagnoses}
+        />,
+      );
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    test('should have no accessibility violations with errors', async () => {
+      const { container } = renderWithI18n(
+        <DiagnosesForm {...defaultProps} errors={mockErrors} />,
+      );
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    test('should have no accessibility violations with search results', async () => {
+      const { container } = renderWithI18n(
+        <DiagnosesForm {...defaultProps} searchResults={mockSearchResults} />,
+      );
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    test('should have no accessibility violations in loading state', async () => {
+      const { container } = renderWithI18n(
+        <DiagnosesForm {...defaultProps} isSearchLoading={true} />,
+      );
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
     });
   });
 

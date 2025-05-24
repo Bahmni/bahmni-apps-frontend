@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import * as styles from './styles/DiagnosesForm.module.scss';
 import SelectedItem from '@components/common/selectedItem/SelectedItem';
 import BoxWHeader from '@components/common/boxWHeader/BoxWHeader';
-import { ConceptSearch } from '@/types/concepts';
+import { ConceptSearch } from '@types/concepts';
 import SelectedDiagnosisItem, {
   SelectedDiagnosisItemProps,
 } from './SelectedDiagnosisItem';
