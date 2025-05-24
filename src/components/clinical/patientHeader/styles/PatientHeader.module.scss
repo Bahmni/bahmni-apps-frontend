@@ -1,4 +1,5 @@
 @use "@carbon/react/scss/breakpoint" as *;
+@use "@carbon/react/scss/spacing" as *;
 
 .header {
   padding: 0 !important;
@@ -6,6 +7,7 @@
 
 .controls {
   align-content: center;
+  padding-block: $spacing-04 !important;
 }
 
 @include breakpoint-down(lg) {
