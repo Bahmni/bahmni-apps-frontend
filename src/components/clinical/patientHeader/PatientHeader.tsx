@@ -28,16 +28,16 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
         <Column
           sm={4}
           md={8}
-          lg={isActionAreaVisible ? 10 : 13}
-          xl={isActionAreaVisible ? 10 : 13}
+          lg={isActionAreaVisible ? 16 : 13}
+          xl={isActionAreaVisible ? 16 : 13}
         >
           <PatientDetails />
         </Column>
         <Column
           sm={4}
           md={8}
-          lg={isActionAreaVisible ? 6 : 3}
-          xl={isActionAreaVisible ? 6 : 3}
+          lg={isActionAreaVisible ? 16 : 3}
+          xl={isActionAreaVisible ? 16 : 3}
           className={styles.controls}
         >
           <Button
