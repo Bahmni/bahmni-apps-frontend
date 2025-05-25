@@ -29,6 +29,7 @@ interface DiagnosesFormProps {
   isSearchLoading: boolean;
   searchResults: ConceptSearch[];
   selectedItem: ConceptSearch | null;
+  isSearchEmpty: boolean;
   errors: Error[] | null;
   selectedDiagnoses: SelectedDiagnosisItemProps[];
   handleRemoveDiagnosis: (index: number) => void;
@@ -47,6 +48,7 @@ const DiagnosesForm: React.FC<DiagnosesFormProps> = React.memo(
     handleSearch,
     searchResults,
     isSearchLoading,
+    isSearchEmpty,
     selectedItem,
     errors,
     selectedDiagnoses,
@@ -62,7 +64,18 @@ const DiagnosesForm: React.FC<DiagnosesFormProps> = React.memo(
         <ComboBox
           id="diagnoses-search"
           placeholder={t('DIAGNOSES_SEARCH_PLACEHOLDER')}
-          items={searchResults}
+          items={
+            isSearchEmpty
+              ? [
+                  {
+                    conceptName: t('NO_MATCHING_CONCEPTS_FOUND'),
+                    conceptUuid: '',
+                    matchedName: '',
+                    disabled: true,
+                  },
+                ]
+              : searchResults
+          }
           itemToString={(item) => (item ? item.conceptName : '')}
           shouldFilterItem={() => true}
           onChange={(data) => {

@@ -301,6 +301,11 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
             handleSearch={handleSearch}
             isSearchLoading={isSearchLoading}
             searchResults={searchResults}
+            isSearchEmpty={
+              searchResults.length === 0 &&
+              !isSearchLoading &&
+              searchDiagnosesTerm.length > 2
+            }
             selectedItem={selectedDiagnosesSearchItem}
             errors={diagnosisErrors}
             selectedDiagnoses={selectedDiagnoses}

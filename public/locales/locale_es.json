@@ -75,6 +75,7 @@
   "LOCATION": "Ubicación",
   "NETWORK_ERROR": "Se produjo un error de red",
   "NO_ALLERGIES": "No hay alergias registradas para este paciente",
+  "NO_MATCHING_CONCEPTS_FOUND": "No se encontraron conceptos coincidentes",
   "PARTICIPANT": "Partícipe(es)",
   "PATIENT_HEADER_ACTION_AREA_IN_PROGRESS": "Consulta en progreso",
   "PATIENT_HEADER_LABEL": "Cabecera del Paciente",
