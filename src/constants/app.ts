@@ -1,3 +1,5 @@
+import { HL7_CONDITION_CATEGORY_CONDITION_CODE } from './fhir';
+
 const BASE_PATH = process.env.PUBLIC_URL || '/';
 const OPENMRS_FHIR_R4 = '/openmrs/ws/fhir2/R4';
 const OPENMRS_REST_V1 = '/openmrs/ws/rest/v1';
@@ -13,7 +15,8 @@ export const BUNDLED_TRANSLATIONS_URL_TEMPLATE = (lang: string) =>
 export const PATIENT_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 + `/Patient/${patientUUID}?_summary=data`;
 export const PATIENT_CONDITION_RESOURCE_URL = (patientUUID: string) =>
-  OPENMRS_FHIR_R4 + `/Condition?patient=${patientUUID}`;
+  OPENMRS_FHIR_R4 +
+  `/Condition?category=${HL7_CONDITION_CATEGORY_CONDITION_CODE}&patient=${patientUUID}`;
 export const PATIENT_ALLERGY_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 + `/AllergyIntolerance?patient=${patientUUID}`;
 export const PATIENT_ENCOUNTER_RESOURCE_URL = (patientUUID: string) =>

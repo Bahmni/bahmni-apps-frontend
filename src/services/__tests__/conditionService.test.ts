@@ -34,7 +34,7 @@ describe('conditionService', () => {
       const result = await getPatientConditionsBundle(patientUUID);
 
       expect(get).toHaveBeenCalledWith(
-        `/openmrs/ws/fhir2/R4/Condition?patient=${patientUUID}`,
+        `/openmrs/ws/fhir2/R4/Condition?category=problem-list-item&patient=${patientUUID}`,
       );
       expect(result).toEqual(mockConditionBundle);
     });
@@ -59,7 +59,7 @@ describe('conditionService', () => {
         const result = await getConditions(patientUUID);
 
         expect(get).toHaveBeenCalledWith(
-          `/openmrs/ws/fhir2/R4/Condition?patient=${patientUUID}`,
+          `/openmrs/ws/fhir2/R4/Condition?category=problem-list-item&patient=${patientUUID}`,
         );
         expect(result).toEqual([mockCondition]);
       });
