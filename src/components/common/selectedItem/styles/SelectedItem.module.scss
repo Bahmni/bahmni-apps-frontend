@@ -12,7 +12,7 @@
   align-content: center;
   justify-self: start;
   padding-left: $spacing-04;
-  width: inherit;
+  width: -webkit-fill-available;
 }
 
 .close {
