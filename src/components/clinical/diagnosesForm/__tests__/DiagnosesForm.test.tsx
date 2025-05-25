@@ -14,8 +14,6 @@ expect.extend(toHaveNoViolations);
 jest.mock('../styles/DiagnosesForm.module.scss', () => ({
   diagnosesFormTile: 'diagnosesFormTile',
   diagnosesFormTitle: 'diagnosesFormTitle',
-  selectedDiagnosisTitle: 'selectedDiagnosisTitle',
-  selectedDiagnosisCertainty: 'selectedDiagnosisCertainty',
   inlineErrorNotification: 'inlineErrorNotification',
   diagnosesBox: 'diagnosesBox',
   selectedDiagnosisItem: 'selectedDiagnosisItem',
@@ -480,14 +478,6 @@ describe('DiagnosesForm', () => {
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });
-
-    test('should have no accessibility violations in loading state', async () => {
-      const { container } = renderWithI18n(
-        <DiagnosesForm {...defaultProps} isSearchLoading={true} />,
-      );
-      const results = await axe(container);
-      expect(results).toHaveNoViolations();
-    });
   });
 
   // SNAPSHOT TESTS
@@ -517,13 +507,6 @@ describe('DiagnosesForm', () => {
     test('form with errors matches snapshot', () => {
       const { container } = renderWithI18n(
         <DiagnosesForm {...defaultProps} errors={mockErrors} />,
-      );
-      expect(container).toMatchSnapshot();
-    });
-
-    test('form in loading state matches snapshot', () => {
-      const { container } = renderWithI18n(
-        <DiagnosesForm {...defaultProps} isSearchLoading={true} />,
       );
       expect(container).toMatchSnapshot();
     });
