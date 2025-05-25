@@ -60,7 +60,7 @@ import { NotificationProvider } from '@providers/NotificationProvider';
 import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
 import * as locationService from '@services/locationService';
 import * as encounterConceptsService from '@services/encounterConceptsService';
-import * as practitionerService from '@/services/providerService';
+import * as practitionerService from '@services/providerService';
 import * as encounterService from '@services/encounterService';
 import { postConsultationBundle } from '@services/consultationBundleService';
 import { formatDate } from '@utils/date';
