@@ -873,49 +873,6 @@ describe('ConsultationPad Integration', () => {
       });
     });
 
-    it('should show loading state while searching for diagnoses', async () => {
-      // eslint-disable-next-line
-      const conceptService = require('@services/conceptService');
-
-      // Mock delayed search response
-      (conceptService.searchConcepts as jest.Mock).mockImplementation(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(() => resolve(mockDiagnosisSearchResults), 300),
-          ),
-      );
-
-      // Render component
-      renderWithProviders(
-        <ConsultationPad patientUUID={mockPatientUUID} onClose={mockOnClose} />,
-      );
-
-      // Wait for initial loading to complete
-      await waitFor(() => {
-        expect(
-          screen.queryByText('CONSULTATION_PAD_LOADING'),
-        ).not.toBeInTheDocument();
-      });
-
-      // Find search input
-      const searchInput = screen.getByPlaceholderText(
-        'DIAGNOSES_SEARCH_PLACEHOLDER',
-      );
-
-      // Type in search field
-      fireEvent.change(searchInput, { target: { value: 'diabetes' } });
-
-      // Check for loading indicator - the combobox should be disabled during search
-      await waitFor(() => {
-        expect(searchInput).toBeDisabled();
-      });
-
-      // Wait for search to complete - the combobox should be enabled again
-      await waitFor(() => {
-        expect(searchInput).not.toBeDisabled();
-      });
-    });
-
     it('should display search results in dropdown', async () => {
       // eslint-disable-next-line
       const conceptService = require('@services/conceptService');

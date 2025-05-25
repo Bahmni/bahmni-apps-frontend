@@ -104,7 +104,7 @@ const defaultProps = {
   handleSearch: jest.fn(),
   isSearchLoading: false,
   searchResults: [],
-  selectedItem: null,
+  isSearchEmpty: false,
   errors: null,
   selectedDiagnoses: [],
   handleRemoveDiagnosis: jest.fn(),
@@ -215,15 +215,6 @@ describe('DiagnosesForm', () => {
 
   // SAD PATH TESTS
   describe('Sad Path Scenarios', () => {
-    test('displays search loading state', () => {
-      renderWithI18n(
-        <DiagnosesForm {...defaultProps} isSearchLoading={true} />,
-      );
-
-      const combobox = screen.getByRole('combobox');
-      expect(combobox).toBeDisabled();
-    });
-
     test('displays error notifications when errors exist', () => {
       renderWithI18n(<DiagnosesForm {...defaultProps} errors={mockErrors} />);
 
@@ -298,21 +289,6 @@ describe('DiagnosesForm', () => {
 
   // EDGE CASE TESTS
   describe('Edge Case Scenarios', () => {
-    test('handles null selectedItem', () => {
-      renderWithI18n(<DiagnosesForm {...defaultProps} selectedItem={null} />);
-
-      expect(screen.getByRole('combobox')).toBeInTheDocument();
-    });
-
-    test('handles undefined selectedItem', () => {
-      renderWithI18n(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        <DiagnosesForm {...defaultProps} selectedItem={undefined as any} />,
-      );
-
-      expect(screen.getByRole('combobox')).toBeInTheDocument();
-    });
-
     test('handles empty selectedDiagnoses array', () => {
       renderWithI18n(
         <DiagnosesForm {...defaultProps} selectedDiagnoses={[]} />,

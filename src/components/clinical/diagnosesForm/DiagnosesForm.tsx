@@ -14,9 +14,7 @@ import SelectedDiagnosisItem, {
  * @interface DiagnosesFormProps
  * @property {function} handleResultSelection - Function to call when a diagnosis is selected
  * @property {function} handleSearch - Function to call when search term changes
- * @property {boolean} isSearchLoading - Whether search is in progress
  * @property {ConceptSearch[]} searchResults - Available search results
- * @property {ConceptSearch | null} selectedItem - Currently selected search item
  * @property {Error[] | null} errors - Any errors to display
  * @property {SelectedDiagnosisItemProps[]} selectedDiagnoses - List of selected diagnoses
  * @property {function} handleRemoveDiagnosis - Function to call when a diagnosis is removed
@@ -26,9 +24,7 @@ interface DiagnosesFormProps {
     selectedItem: ConceptSearch | null | undefined,
   ) => void;
   handleSearch: (searchTerm: string) => void;
-  isSearchLoading: boolean;
   searchResults: ConceptSearch[];
-  selectedItem: ConceptSearch | null;
   isSearchEmpty: boolean;
   errors: Error[] | null;
   selectedDiagnoses: SelectedDiagnosisItemProps[];
@@ -47,9 +43,7 @@ const DiagnosesForm: React.FC<DiagnosesFormProps> = React.memo(
     handleResultSelection,
     handleSearch,
     searchResults,
-    isSearchLoading,
     isSearchEmpty,
-    selectedItem,
     errors,
     selectedDiagnoses,
     handleRemoveDiagnosis,
@@ -77,14 +71,11 @@ const DiagnosesForm: React.FC<DiagnosesFormProps> = React.memo(
               : searchResults
           }
           itemToString={(item) => (item ? item.conceptName : '')}
-          shouldFilterItem={() => true}
           onChange={(data) => {
             handleResultSelection(data.selectedItem);
           }}
           onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
-          selectedItem={selectedItem}
           size="lg"
-          disabled={isSearchLoading}
           autoAlign
           aria-label={t('DIAGNOSES_SEARCH_ARIA_LABEL')}
         />

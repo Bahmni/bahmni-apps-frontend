@@ -22,7 +22,7 @@ exports[`DiagnosesForm Snapshot Tests empty form matches snapshot 1`] = `
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-«r8j»-menu"
+            aria-controls="downshift-«r8a»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Search for diagnoses"
@@ -37,11 +37,11 @@ exports[`DiagnosesForm Snapshot Tests empty form matches snapshot 1`] = `
             value=""
           />
           <button
-            aria-controls="downshift-«r8j»-menu"
+            aria-controls="downshift-«r8a»-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-«r8j»-toggle-button"
+            id="downshift-«r8a»-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -63,9 +63,9 @@ exports[`DiagnosesForm Snapshot Tests empty form matches snapshot 1`] = `
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-«r8j»-label"
+          aria-labelledby="downshift-«r8a»-label"
           class="cds--list-box__menu"
-          id="downshift-«r8j»-menu"
+          id="downshift-«r8a»-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -89,7 +89,7 @@ exports[`DiagnosesForm Snapshot Tests form in loading state matches snapshot 1`]
       class="cds--list-box__wrapper"
     >
       <div
-        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--lg cds--list-box--disabled"
+        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--lg"
       >
         <div
           class="cds--list-box__field"
@@ -97,13 +97,12 @@ exports[`DiagnosesForm Snapshot Tests form in loading state matches snapshot 1`]
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-«r95»-menu"
+            aria-controls="downshift-«r8s»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Search for diagnoses"
             autocomplete="off"
             class="cds--text-input cds--text-input--empty"
-            disabled=""
             id="diagnoses-search"
             placeholder="Search to add new diagnosis"
             role="combobox"
@@ -113,12 +112,11 @@ exports[`DiagnosesForm Snapshot Tests form in loading state matches snapshot 1`]
             value=""
           />
           <button
-            aria-controls="downshift-«r95»-menu"
+            aria-controls="downshift-«r8s»-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            disabled=""
-            id="downshift-«r95»-toggle-button"
+            id="downshift-«r8s»-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -140,9 +138,9 @@ exports[`DiagnosesForm Snapshot Tests form in loading state matches snapshot 1`]
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-«r95»-label"
+          aria-labelledby="downshift-«r8s»-label"
           class="cds--list-box__menu"
-          id="downshift-«r95»-menu"
+          id="downshift-«r8s»-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -174,7 +172,7 @@ exports[`DiagnosesForm Snapshot Tests form with errors matches snapshot 1`] = `
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-«r92»-menu"
+            aria-controls="downshift-«r8p»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Search for diagnoses"
@@ -189,11 +187,11 @@ exports[`DiagnosesForm Snapshot Tests form with errors matches snapshot 1`] = `
             value=""
           />
           <button
-            aria-controls="downshift-«r92»-menu"
+            aria-controls="downshift-«r8p»-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-«r92»-toggle-button"
+            id="downshift-«r8p»-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -215,9 +213,9 @@ exports[`DiagnosesForm Snapshot Tests form with errors matches snapshot 1`] = `
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-«r92»-label"
+          aria-labelledby="downshift-«r8p»-label"
           class="cds--list-box__menu"
-          id="downshift-«r92»-menu"
+          id="downshift-«r8p»-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -377,7 +375,7 @@ exports[`DiagnosesForm Snapshot Tests form with search results matches snapshot 
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-«r8m»-menu"
+            aria-controls="downshift-«r8d»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Search for diagnoses"
@@ -392,11 +390,11 @@ exports[`DiagnosesForm Snapshot Tests form with search results matches snapshot 
             value=""
           />
           <button
-            aria-controls="downshift-«r8m»-menu"
+            aria-controls="downshift-«r8d»-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-«r8m»-toggle-button"
+            id="downshift-«r8d»-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -418,9 +416,9 @@ exports[`DiagnosesForm Snapshot Tests form with search results matches snapshot 
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-«r8m»-label"
+          aria-labelledby="downshift-«r8d»-label"
           class="cds--list-box__menu"
-          id="downshift-«r8m»-menu"
+          id="downshift-«r8d»-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -452,7 +450,7 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-«r8p»-menu"
+            aria-controls="downshift-«r8g»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Search for diagnoses"
@@ -467,11 +465,11 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
             value=""
           />
           <button
-            aria-controls="downshift-«r8p»-menu"
+            aria-controls="downshift-«r8g»-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-«r8p»-toggle-button"
+            id="downshift-«r8g»-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -493,9 +491,9 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-«r8p»-label"
+          aria-labelledby="downshift-«r8g»-label"
           class="cds--list-box__menu"
-          id="downshift-«r8p»-menu"
+          id="downshift-«r8g»-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -533,12 +531,12 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
               >
                 <button
                   aria-activedescendant=""
-                  aria-controls="downshift-«r8s»-menu"
+                  aria-controls="downshift-«r8j»-menu"
                   aria-expanded="false"
                   aria-haspopup="listbox"
                   aria-label="Diagnoses Certainty"
                   class="cds--list-box__field"
-                  id="downshift-«r8s»-toggle-button"
+                  id="downshift-«r8j»-toggle-button"
                   role="combobox"
                   tabindex="0"
                   title="Confirmed"
@@ -574,9 +572,9 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
                   </div>
                 </button>
                 <ul
-                  aria-labelledby="downshift-«r8s»-label"
+                  aria-labelledby="downshift-«r8j»-label"
                   class="cds--list-box__menu"
-                  id="downshift-«r8s»-menu"
+                  id="downshift-«r8j»-menu"
                   role="listbox"
                   style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
                 />
@@ -615,12 +613,12 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
               >
                 <button
                   aria-activedescendant=""
-                  aria-controls="downshift-«r8v»-menu"
+                  aria-controls="downshift-«r8m»-menu"
                   aria-expanded="false"
                   aria-haspopup="listbox"
                   aria-label="Diagnoses Certainty"
                   class="cds--list-box__field"
-                  id="downshift-«r8v»-toggle-button"
+                  id="downshift-«r8m»-toggle-button"
                   role="combobox"
                   tabindex="0"
                   title="Provisional"
@@ -656,9 +654,9 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
                   </div>
                 </button>
                 <ul
-                  aria-labelledby="downshift-«r8v»-label"
+                  aria-labelledby="downshift-«r8m»-label"
                   class="cds--list-box__menu"
-                  id="downshift-«r8v»-menu"
+                  id="downshift-«r8m»-menu"
                   role="listbox"
                   style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
                 />

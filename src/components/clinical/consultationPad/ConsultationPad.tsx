@@ -38,8 +38,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
 
   // DiagnosesForm state management
   const [searchDiagnosesTerm, setSearchDiagnosesTerm] = React.useState('');
-  const [selectedDiagnosesSearchItem, setSelectedDiagnosesSearchItem] =
-    React.useState<ConceptSearch | null>(null);
   const [selectedDiagnoses, setSelectedDiagnoses] = React.useState<
     SelectedDiagnosisItemProps[]
   >([]);
@@ -73,7 +71,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     selectedItem: ConceptSearch | null | undefined,
   ) => {
     if (!selectedItem) {
-      setSelectedDiagnosesSearchItem(null);
       return;
     }
 
@@ -99,7 +96,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     };
 
     setSelectedDiagnoses([...selectedDiagnoses, newDiagnosis]);
-    setSelectedDiagnosesSearchItem(null); // Clear selection
     setSearchDiagnosesTerm(''); // Clear search
     setDiagnosisErrors([]); // Clear errors
   };
@@ -299,14 +295,12 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
           <DiagnosesForm
             handleResultSelection={handleResultSelection}
             handleSearch={handleSearch}
-            isSearchLoading={isSearchLoading}
             searchResults={searchResults}
             isSearchEmpty={
               searchResults.length === 0 &&
               !isSearchLoading &&
               searchDiagnosesTerm.length > 2
             }
-            selectedItem={selectedDiagnosesSearchItem}
             errors={diagnosisErrors}
             selectedDiagnoses={selectedDiagnoses}
             handleRemoveDiagnosis={handleRemoveDiagnosis}
