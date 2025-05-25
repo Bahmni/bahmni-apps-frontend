@@ -38,6 +38,7 @@
   "DATE_ERROR_PARSE": "Date Parse Error",
   "DIAGNOSES_ADDED_DIAGNOSES": "Added Diagnoses",
   "DIAGNOSES_CERTAINTY_ARIA_LABEL": "Diagnoses Certainty",
+  "DIAGNOSES_DUPLICATE_ERROR": "This diagnosis has already been added. Please select a different diagnosis.",
   "DIAGNOSES_FORM_TITLE": "Diagnoses",
   "DIAGNOSES_SEARCH_ARIA_LABEL": "Search for diagnoses",
   "DIAGNOSES_SEARCH_PLACEHOLDER": "Search to add new diagnosis",

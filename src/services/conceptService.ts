@@ -11,7 +11,7 @@ import { CONCEPT_SEARCH_URL } from '@constants/app';
  */
 export const searchConcepts = async (
   term: string,
-  limit = 20
+  limit = 20,
 ): Promise<ConceptSearch[]> => {
   const locale = getUserPreferredLocale();
   const url = CONCEPT_SEARCH_URL(term, limit, locale);

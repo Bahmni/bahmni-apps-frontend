@@ -5,10 +5,14 @@ import { useCurrentEncounter } from '@hooks/useCurrentEncounter';
 import { useActivePractitioner } from '@hooks/useActivePractitioner';
 import { useEncounterConcepts } from '@hooks/useEncounterConcepts';
 import { useLocations } from '@hooks/useLocations';
+import { useConceptSearch } from '@hooks/useConceptSearch';
 import { Column, Grid, Loading } from '@carbon/react';
 import * as styles from './styles/ConsultationPad.module.scss';
 import BasicForm from '@components/clinical/basicForm/BasicForm';
+import DiagnosesForm from '@components/clinical/diagnosesForm/DiagnosesForm';
+import { SelectedDiagnosisItemProps } from '@components/clinical/diagnosesForm/SelectedDiagnosisItem';
 import { Concept } from '@types/encounterConcepts';
+import { ConceptSearch } from '@types/concepts';
 import { ConsultationBundle } from '@types/consultationBundle';
 import { postConsultationBundle } from '@services/consultationBundleService';
 import useNotification from '@hooks/useNotification';
@@ -18,6 +22,8 @@ import {
   createBundleEntry,
   createConsultationBundle,
 } from '@utils/fhir/consultationBundleCreator';
+import { CERTAINITY_CONCEPTS } from '@constants/concepts';
+import { Coding } from 'fhir/r4';
 
 interface ConsultationPadProps {
   patientUUID: string;
@@ -29,8 +35,95 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   onClose,
 }) => {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  // DiagnosesForm state management
+  const [searchDiagnosesTerm, setSearchDiagnosesTerm] = React.useState('');
+  const [selectedDiagnosesSearchItem, setSelectedDiagnosesSearchItem] =
+    React.useState<ConceptSearch | null>(null);
+  const [selectedDiagnoses, setSelectedDiagnoses] = React.useState<
+    SelectedDiagnosisItemProps[]
+  >([]);
+  const [diagnosisErrors, setDiagnosisErrors] = React.useState<Error[]>([]);
+
   const { t } = useTranslation();
   const { addNotification } = useNotification();
+
+  // Use concept search hook for diagnoses
+  const {
+    searchResults,
+    loading: isSearchLoading,
+    error: searchError,
+  } = useConceptSearch(searchDiagnosesTerm);
+
+  // Handle search errors
+  React.useEffect(() => {
+    if (searchError) {
+      setDiagnosisErrors([searchError]);
+    }
+  }, [searchError]);
+
+  // DiagnosesForm handler functions
+  const handleSearch = (searchTerm: string) => {
+    setSearchDiagnosesTerm(searchTerm);
+    // Clear previous errors when new search starts
+    setDiagnosisErrors([]);
+  };
+
+  const handleResultSelection = (
+    selectedItem: ConceptSearch | null | undefined,
+  ) => {
+    if (!selectedItem) {
+      setSelectedDiagnosesSearchItem(null);
+      return;
+    }
+
+    // Check for duplicate diagnosis
+    const isDuplicate = selectedDiagnoses.some(
+      (diagnosis) => diagnosis.id === selectedItem.conceptUuid,
+    );
+
+    if (isDuplicate) {
+      setDiagnosisErrors([new Error(t('DIAGNOSES_DUPLICATE_ERROR'))]);
+      return;
+    }
+
+    // Create new diagnosis with certainty handler
+    const newDiagnosis: SelectedDiagnosisItemProps = {
+      id: selectedItem.conceptUuid,
+      title: selectedItem.conceptName,
+      certaintyConcepts: CERTAINITY_CONCEPTS,
+      selectedCertainty: null,
+      handleCertaintyChange: (data) => {
+        handleCertaintyChange(selectedItem.conceptUuid, data.selectedItem);
+      },
+    };
+
+    setSelectedDiagnoses([...selectedDiagnoses, newDiagnosis]);
+    setSelectedDiagnosesSearchItem(null); // Clear selection
+    setSearchDiagnosesTerm(''); // Clear search
+    setDiagnosisErrors([]); // Clear errors
+  };
+
+  const handleRemoveDiagnosis = (index: number) => {
+    setSelectedDiagnoses((prevDiagnoses) =>
+      prevDiagnoses.filter((_, i) => i !== index),
+    );
+    setDiagnosisErrors([]); // Clear any existing errors
+  };
+
+  const handleCertaintyChange = (
+    diagnosisId: string,
+    selectedCertainty: Coding | null | undefined,
+  ) => {
+    setSelectedDiagnoses((prevDiagnoses) =>
+      prevDiagnoses.map((diagnosis) =>
+        diagnosis.id === diagnosisId
+          ? { ...diagnosis, selectedCertainty: selectedCertainty || null }
+          : diagnosis,
+      ),
+    );
+  };
+
   const {
     locations,
     loading: loadingLocations,
@@ -202,6 +295,16 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
             location={locations[0]}
             locationSelected={locations[0]}
             defaultDate={formattedDate.formattedResult}
+          />
+          <DiagnosesForm
+            handleResultSelection={handleResultSelection}
+            handleSearch={handleSearch}
+            isSearchLoading={isSearchLoading}
+            searchResults={searchResults}
+            selectedItem={selectedDiagnosesSearchItem}
+            errors={diagnosisErrors}
+            selectedDiagnoses={selectedDiagnoses}
+            handleRemoveDiagnosis={handleRemoveDiagnosis}
           />
         </>
       }

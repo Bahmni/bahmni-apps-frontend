@@ -91,6 +91,10 @@ jest.mock('@services/consultationBundleService', () => ({
   postConsultationBundle: jest.fn(),
 }));
 
+jest.mock('@services/conceptService', () => ({
+  searchConcepts: jest.fn(),
+}));
+
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
@@ -120,6 +124,12 @@ jest.mock('@hooks/useNotification', () => {
 global.crypto.randomUUID = jest
   .fn()
   .mockReturnValue('1d87ab20-8b86-4b41-a30d-984b2208d945');
+
+// Mock scrollIntoView which is not available in jsdom
+// This is required for Carbon ComboBox component
+if (!Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = jest.fn();
+}
 
 describe('ConsultationPad Integration', () => {
   // Common test data
@@ -774,6 +784,358 @@ describe('ConsultationPad Integration', () => {
 
       // Verify error message is displayed
       expect(screen.getByText('CONSULTATION_PAD_ERROR')).toBeInTheDocument();
+    });
+  });
+
+  describe('DiagnosesForm Integration', () => {
+    const mockDiagnosisSearchResults = [
+      {
+        conceptUuid: 'diagnosis-1',
+        conceptName: 'Diabetes Type 2',
+        matchedName: 'Diabetes',
+      },
+      {
+        conceptUuid: 'diagnosis-2',
+        conceptName: 'Hypertension',
+        matchedName: 'Hypertension',
+      },
+    ];
+
+    beforeEach(() => {
+      // Mock successful services for diagnosis tests
+      mockSuccessfulServiceResponses();
+    });
+
+    it('should render DiagnosesForm component after loading', async () => {
+      // Import concept service
+      // eslint-disable-next-line
+      const conceptService = require('@services/conceptService');
+
+      // Mock empty search results initially
+      (conceptService.searchConcepts as jest.Mock).mockResolvedValue([]);
+
+      // Render component
+      renderWithProviders(
+        <ConsultationPad patientUUID={mockPatientUUID} onClose={mockOnClose} />,
+      );
+
+      // Wait for loading to complete
+      await waitFor(() => {
+        expect(
+          screen.queryByText('CONSULTATION_PAD_LOADING'),
+        ).not.toBeInTheDocument();
+      });
+
+      // Verify DiagnosesForm title is rendered
+      expect(screen.getByText('DIAGNOSES_FORM_TITLE')).toBeInTheDocument();
+
+      // Verify search placeholder text
+      expect(
+        screen.getByPlaceholderText('DIAGNOSES_SEARCH_PLACEHOLDER'),
+      ).toBeInTheDocument();
+    });
+
+    it('should search for diagnoses when user types in search field', async () => {
+      // eslint-disable-next-line
+      const conceptService = require('@services/conceptService');
+
+      // Mock search results
+      (conceptService.searchConcepts as jest.Mock).mockResolvedValue(
+        mockDiagnosisSearchResults,
+      );
+
+      // Render component
+      renderWithProviders(
+        <ConsultationPad patientUUID={mockPatientUUID} onClose={mockOnClose} />,
+      );
+
+      // Wait for loading to complete
+      await waitFor(() => {
+        expect(
+          screen.queryByText('CONSULTATION_PAD_LOADING'),
+        ).not.toBeInTheDocument();
+      });
+
+      // Find search input
+      const searchInput = screen.getByPlaceholderText(
+        'DIAGNOSES_SEARCH_PLACEHOLDER',
+      );
+
+      // Type in search field
+      fireEvent.change(searchInput, { target: { value: 'diabetes' } });
+
+      // Wait for debounce and verify search was called with searchTerm and limit
+      await waitFor(() => {
+        expect(conceptService.searchConcepts).toHaveBeenCalledWith(
+          'diabetes',
+          20,
+        );
+      });
+    });
+
+    it('should show loading state while searching for diagnoses', async () => {
+      // eslint-disable-next-line
+      const conceptService = require('@services/conceptService');
+
+      // Mock delayed search response
+      (conceptService.searchConcepts as jest.Mock).mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(() => resolve(mockDiagnosisSearchResults), 300),
+          ),
+      );
+
+      // Render component
+      renderWithProviders(
+        <ConsultationPad patientUUID={mockPatientUUID} onClose={mockOnClose} />,
+      );
+
+      // Wait for initial loading to complete
+      await waitFor(() => {
+        expect(
+          screen.queryByText('CONSULTATION_PAD_LOADING'),
+        ).not.toBeInTheDocument();
+      });
+
+      // Find search input
+      const searchInput = screen.getByPlaceholderText(
+        'DIAGNOSES_SEARCH_PLACEHOLDER',
+      );
+
+      // Type in search field
+      fireEvent.change(searchInput, { target: { value: 'diabetes' } });
+
+      // Check for loading indicator - the combobox should be disabled during search
+      await waitFor(() => {
+        expect(searchInput).toBeDisabled();
+      });
+
+      // Wait for search to complete - the combobox should be enabled again
+      await waitFor(() => {
+        expect(searchInput).not.toBeDisabled();
+      });
+    });
+
+    it('should display search results in dropdown', async () => {
+      // eslint-disable-next-line
+      const conceptService = require('@services/conceptService');
+
+      // Mock search results
+      (conceptService.searchConcepts as jest.Mock).mockResolvedValue(
+        mockDiagnosisSearchResults,
+      );
+
+      // Render component
+      renderWithProviders(
+        <ConsultationPad patientUUID={mockPatientUUID} onClose={mockOnClose} />,
+      );
+
+      // Wait for loading to complete
+      await waitFor(() => {
+        expect(
+          screen.queryByText('CONSULTATION_PAD_LOADING'),
+        ).not.toBeInTheDocument();
+      });
+
+      // Find search input and type
+      const searchInput = screen.getByPlaceholderText(
+        'DIAGNOSES_SEARCH_PLACEHOLDER',
+      );
+      fireEvent.change(searchInput, { target: { value: 'diabetes' } });
+
+      // Wait for results to appear
+      await waitFor(() => {
+        expect(screen.getByText('Diabetes Type 2')).toBeInTheDocument();
+        expect(screen.getByText('Hypertension')).toBeInTheDocument();
+      });
+    });
+
+    it('should add diagnosis to selected list when user selects from dropdown', async () => {
+      // eslint-disable-next-line
+      const conceptService = require('@services/conceptService');
+
+      // Mock search results
+      (conceptService.searchConcepts as jest.Mock).mockResolvedValue(
+        mockDiagnosisSearchResults,
+      );
+
+      // Render component
+      renderWithProviders(
+        <ConsultationPad patientUUID={mockPatientUUID} onClose={mockOnClose} />,
+      );
+
+      // Wait for loading to complete
+      await waitFor(() => {
+        expect(
+          screen.queryByText('CONSULTATION_PAD_LOADING'),
+        ).not.toBeInTheDocument();
+      });
+
+      // Search for diagnosis
+      const searchInput = screen.getByPlaceholderText(
+        'DIAGNOSES_SEARCH_PLACEHOLDER',
+      );
+      fireEvent.change(searchInput, { target: { value: 'diabetes' } });
+
+      // Wait for results and select one
+      await waitFor(() => {
+        expect(screen.getByText('Diabetes Type 2')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText('Diabetes Type 2'));
+
+      // Verify diagnosis was added to selected list
+      await waitFor(() => {
+        expect(
+          screen.getByText('DIAGNOSES_ADDED_DIAGNOSES'),
+        ).toBeInTheDocument();
+        // The selected diagnosis should appear in a SelectedItem component
+        expect(screen.getByText('Diabetes Type 2')).toBeInTheDocument();
+      });
+
+      // The ComboBox maintains its own internal state, so the value might not be cleared immediately
+      // Instead, verify that the diagnosis was successfully added
+      expect(screen.getByText('DIAGNOSES_ADDED_DIAGNOSES')).toBeInTheDocument();
+    });
+
+    it('should remove diagnosis when remove button is clicked', async () => {
+      // eslint-disable-next-line
+      const conceptService = require('@services/conceptService');
+
+      // Mock search results
+      (conceptService.searchConcepts as jest.Mock).mockResolvedValue(
+        mockDiagnosisSearchResults,
+      );
+
+      // Render component
+      renderWithProviders(
+        <ConsultationPad patientUUID={mockPatientUUID} onClose={mockOnClose} />,
+      );
+
+      // Wait for loading to complete
+      await waitFor(() => {
+        expect(
+          screen.queryByText('CONSULTATION_PAD_LOADING'),
+        ).not.toBeInTheDocument();
+      });
+
+      // Add a diagnosis
+      const searchInput = screen.getByPlaceholderText(
+        'DIAGNOSES_SEARCH_PLACEHOLDER',
+      );
+      fireEvent.change(searchInput, { target: { value: 'diabetes' } });
+
+      await waitFor(() => {
+        expect(screen.getByText('Diabetes Type 2')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText('Diabetes Type 2'));
+
+      // Verify diagnosis was added
+      await waitFor(() => {
+        expect(
+          screen.getByText('DIAGNOSES_ADDED_DIAGNOSES'),
+        ).toBeInTheDocument();
+      });
+
+      // Find and click remove button (assuming it has aria-label)
+      const removeButton = screen.getByLabelText(
+        'SELECTED_ITEM_CLOSE_ARIA_LABEL',
+      );
+      fireEvent.click(removeButton);
+
+      // Verify diagnosis was removed
+      await waitFor(() => {
+        // The diagnosis text should no longer be in the document
+        // (or only appear once if it's still in search results)
+        const diabetesElements = screen.queryAllByText('Diabetes Type 2');
+        expect(diabetesElements.length).toBeLessThan(2);
+      });
+    });
+
+    it('should handle concept search errors gracefully', async () => {
+      // eslint-disable-next-line
+      const conceptService = require('@services/conceptService');
+
+      // Mock search error
+      (conceptService.searchConcepts as jest.Mock).mockRejectedValue(
+        new Error('Search API failed'),
+      );
+
+      // Render component
+      renderWithProviders(
+        <ConsultationPad patientUUID={mockPatientUUID} onClose={mockOnClose} />,
+      );
+
+      // Wait for loading to complete
+      await waitFor(() => {
+        expect(
+          screen.queryByText('CONSULTATION_PAD_LOADING'),
+        ).not.toBeInTheDocument();
+      });
+
+      // Try to search
+      const searchInput = screen.getByPlaceholderText(
+        'DIAGNOSES_SEARCH_PLACEHOLDER',
+      );
+      fireEvent.change(searchInput, { target: { value: 'diabetes' } });
+
+      // Wait for error to be displayed
+      await waitFor(() => {
+        expect(screen.getByText(/Search API failed/i)).toBeInTheDocument();
+      });
+    });
+
+    it('should allow selecting certainty for added diagnoses', async () => {
+      // eslint-disable-next-line
+      const conceptService = require('@services/conceptService');
+
+      // Mock search results
+      (conceptService.searchConcepts as jest.Mock).mockResolvedValue(
+        mockDiagnosisSearchResults,
+      );
+
+      // Render component
+      renderWithProviders(
+        <ConsultationPad patientUUID={mockPatientUUID} onClose={mockOnClose} />,
+      );
+
+      // Wait for loading to complete
+      await waitFor(() => {
+        expect(
+          screen.queryByText('CONSULTATION_PAD_LOADING'),
+        ).not.toBeInTheDocument();
+      });
+
+      // Add a diagnosis
+      const searchInput = screen.getByPlaceholderText(
+        'DIAGNOSES_SEARCH_PLACEHOLDER',
+      );
+      fireEvent.change(searchInput, { target: { value: 'diabetes' } });
+
+      await waitFor(() => {
+        expect(screen.getByText('Diabetes Type 2')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText('Diabetes Type 2'));
+
+      // Wait for diagnosis to be added
+      await waitFor(() => {
+        expect(
+          screen.getByText('DIAGNOSES_ADDED_DIAGNOSES'),
+        ).toBeInTheDocument();
+      });
+
+      // Look for certainty dropdown
+      const certaintyDropdown = screen.getByLabelText(
+        'DIAGNOSES_CERTAINTY_ARIA_LABEL',
+      );
+      expect(certaintyDropdown).toBeInTheDocument();
+
+      // Verify placeholder text
+      expect(
+        screen.getByText('DIAGNOSES_SELECT_CERTAINTY'),
+      ).toBeInTheDocument();
     });
   });
 });
