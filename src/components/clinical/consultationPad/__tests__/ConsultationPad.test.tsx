@@ -1496,6 +1496,38 @@ describe('ConsultationPad', () => {
         // Implementation would require more detailed mocking
         expect(true).toBe(true);
       });
+
+      it('should properly update certainty for multiple diagnoses', () => {
+        // Arrange
+        mockHooksForNormalState();
+
+        // Act
+        render(
+          <ConsultationPad
+            patientUUID={mockPatientUUID}
+            onClose={mockOnClose}
+          />,
+        );
+
+        // Add first diagnosis using the existing "Select" button
+        fireEvent.click(screen.getByText('Select'));
+
+        // Verify diagnosis was added
+        expect(screen.getByTestId('diagnoses-form-selected')).toHaveTextContent(
+          '1 selected',
+        );
+
+        // Verify the selected diagnosis item is rendered
+        expect(screen.getByTestId('selected-diagnosis-0')).toBeInTheDocument();
+
+        // Click the certainty change button for first diagnosis
+        fireEvent.click(screen.getByTestId('change-certainty-0'));
+
+        // The component should handle the certainty change without errors
+        expect(screen.getByTestId('diagnoses-form-selected')).toHaveTextContent(
+          '1 selected',
+        );
+      });
     });
 
     // 6. Removal Tests

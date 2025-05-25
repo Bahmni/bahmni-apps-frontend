@@ -65,12 +65,12 @@ const mockSearchResults: ConceptSearch[] = [
 const mockCertaintyConcepts: Coding[] = [
   {
     code: 'confirmed',
-    display: 'Confirmed',
+    display: 'CERTAINITY_CONFIRMED',
     system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
   },
   {
     code: 'provisional',
-    display: 'Provisional',
+    display: 'CERTAINITY_PROVISIONAL',
     system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
   },
   {

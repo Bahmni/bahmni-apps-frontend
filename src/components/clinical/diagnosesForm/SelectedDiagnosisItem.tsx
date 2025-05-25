@@ -63,7 +63,7 @@ const SelectedDiagnosisItem: React.FC<SelectedDiagnosisItemProps> = React.memo(
             label={t('DIAGNOSES_SELECT_CERTAINTY')}
             items={certaintyConcepts}
             selectedItem={selectedCertainty}
-            itemToString={(item) => item?.display || ''}
+            itemToString={(item) => (item?.display ? t(item.display) : '')}
             onChange={(data) => {
               handleCertaintyChange(data);
             }}
