@@ -5,7 +5,6 @@ import { useCurrentEncounter } from '@hooks/useCurrentEncounter';
 import { useActivePractitioner } from '@hooks/useActivePractitioner';
 import { useEncounterConcepts } from '@hooks/useEncounterConcepts';
 import { useLocations } from '@hooks/useLocations';
-import { useConceptSearch } from '@hooks/useConceptSearch';
 import { Column, Grid, Loading } from '@carbon/react';
 import * as styles from './styles/ConsultationPad.module.scss';
 import BasicForm from '@components/clinical/basicForm/BasicForm';
@@ -37,55 +36,14 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   onClose,
 }) => {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-
-  // DiagnosesForm state management
-  const [searchDiagnosesTerm, setSearchDiagnosesTerm] = React.useState('');
   const [selectedDiagnoses, setSelectedDiagnoses] = React.useState<
     SelectedDiagnosisItemProps[]
   >([]);
-  const [diagnosisErrors, setDiagnosisErrors] = React.useState<Error[]>([]);
 
   const { t } = useTranslation();
   const { addNotification } = useNotification();
 
-  // Use concept search hook for diagnoses
-  const {
-    searchResults,
-    loading: isSearchLoading,
-    error: searchError,
-  } = useConceptSearch(searchDiagnosesTerm);
-
-  // Handle search errors
-  React.useEffect(() => {
-    if (searchError) {
-      setDiagnosisErrors([searchError]);
-    }
-  }, [searchError]);
-
-  // DiagnosesForm handler functions
-  const handleSearch = (searchTerm: string) => {
-    setSearchDiagnosesTerm(searchTerm);
-    // Clear previous errors when new search starts
-    setDiagnosisErrors([]);
-  };
-
-  const handleResultSelection = (
-    selectedItem: ConceptSearch | null | undefined,
-  ) => {
-    if (!selectedItem) {
-      return;
-    }
-
-    // Check for duplicate diagnosis
-    const isDuplicate = selectedDiagnoses.some(
-      (diagnosis) => diagnosis.id === selectedItem.conceptUuid,
-    );
-
-    if (isDuplicate) {
-      setDiagnosisErrors([new Error(t('DIAGNOSES_DUPLICATE_ERROR'))]);
-      return;
-    }
-
+  const handleResultSelection = (selectedItem: ConceptSearch) => {
     // Create new diagnosis with certainty handler
     const newDiagnosis: SelectedDiagnosisItemProps = {
       id: selectedItem.conceptUuid,
@@ -98,15 +56,12 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     };
 
     setSelectedDiagnoses([...selectedDiagnoses, newDiagnosis]);
-    setSearchDiagnosesTerm(''); // Clear search
-    setDiagnosisErrors([]); // Clear errors
   };
 
   const handleRemoveDiagnosis = (index: number) => {
     setSelectedDiagnoses((prevDiagnoses) =>
       prevDiagnoses.filter((_, i) => i !== index),
     );
-    setDiagnosisErrors([]); // Clear any existing errors
   };
 
   const handleCertaintyChange = (
@@ -305,14 +260,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
           />
           <DiagnosesForm
             handleResultSelection={handleResultSelection}
-            handleSearch={handleSearch}
-            searchResults={searchResults}
-            isSearchEmpty={
-              searchResults.length === 0 &&
-              !isSearchLoading &&
-              searchDiagnosesTerm.length > 2
-            }
-            errors={diagnosisErrors}
             selectedDiagnoses={selectedDiagnoses}
             handleRemoveDiagnosis={handleRemoveDiagnosis}
           />

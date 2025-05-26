@@ -1103,28 +1103,6 @@ describe('ConsultationPad', () => {
 
     // 1. Component Initialization and Hook Interactions
     describe('Component Initialization and Hook Interactions', () => {
-      it('should call useConceptSearch with searchDiagnosesTerm', () => {
-        // Arrange
-        mockHooksForNormalState();
-        let capturedSearchTerm = '';
-        (useConceptSearch as jest.Mock).mockImplementation((searchTerm) => {
-          capturedSearchTerm = searchTerm;
-          return { searchResults: [], loading: false, error: null };
-        });
-
-        // Act
-        render(
-          <ConsultationPad
-            patientUUID={mockPatientUUID}
-            onClose={mockOnClose}
-          />,
-        );
-
-        // Assert
-        expect(useConceptSearch).toHaveBeenCalled();
-        expect(capturedSearchTerm).toBe(''); // Initially empty
-      });
-
       it('should render DiagnosesForm component', () => {
         // Arrange
         mockHooksForNormalState();
@@ -1165,32 +1143,6 @@ describe('ConsultationPad', () => {
         expect(actionAreaContent).toContainElement(diagnosesForm);
       });
 
-      it('should pass all required props to DiagnosesForm', () => {
-        // Arrange
-        mockHooksForNormalState();
-        (useConceptSearch as jest.Mock).mockReturnValue({
-          searchResults: mockSearchResults,
-          loading: true,
-          error: null,
-        });
-
-        // Act
-        render(
-          <ConsultationPad
-            patientUUID={mockPatientUUID}
-            onClose={mockOnClose}
-          />,
-        );
-
-        // Assert
-        expect(screen.getByTestId('diagnoses-form-loading')).toHaveTextContent(
-          'Loading',
-        );
-        expect(screen.getByTestId('diagnoses-form-results')).toHaveTextContent(
-          '2 results',
-        );
-      });
-
       it('should show loading state in DiagnosesForm when searching', () => {
         // Arrange
         mockHooksForNormalState();
@@ -1215,258 +1167,7 @@ describe('ConsultationPad', () => {
       });
     });
 
-    // 3. Search Functionality Tests
-    describe('Search Functionality Tests', () => {
-      it('should update searchDiagnosesTerm when handleSearch is called', async () => {
-        // Arrange
-        mockHooksForNormalState();
-        let capturedSearchTerm = '';
-        (useConceptSearch as jest.Mock).mockImplementation((searchTerm) => {
-          capturedSearchTerm = searchTerm;
-          return { searchResults: [], loading: false, error: null };
-        });
-
-        // Act
-        const { rerender } = render(
-          <ConsultationPad
-            patientUUID={mockPatientUUID}
-            onClose={mockOnClose}
-          />,
-        );
-
-        fireEvent.click(screen.getByText('Search'));
-
-        // Force a rerender to capture the updated search term
-        rerender(
-          <ConsultationPad
-            patientUUID={mockPatientUUID}
-            onClose={mockOnClose}
-          />,
-        );
-
-        // Assert
-        await waitFor(() => {
-          expect(capturedSearchTerm).toBe('test search');
-        });
-      });
-
-      it('should clear errors when new search starts', () => {
-        // Arrange
-        mockHooksForNormalState();
-        (useConceptSearch as jest.Mock).mockReturnValue({
-          searchResults: [],
-          loading: false,
-          error: new Error('Previous error'),
-        });
-
-        // Act
-        render(
-          <ConsultationPad
-            patientUUID={mockPatientUUID}
-            onClose={mockOnClose}
-          />,
-        );
-
-        // Should show error initially
-        expect(screen.getByTestId('diagnoses-form-errors')).toHaveTextContent(
-          'Previous error',
-        );
-
-        // Trigger new search
-        fireEvent.click(screen.getByText('Search'));
-
-        // Assert - error should be cleared
-        expect(
-          screen.getByTestId('diagnoses-form-errors'),
-        ).not.toHaveTextContent('Previous error');
-      });
-
-      it('should pass search results from useConceptSearch to DiagnosesForm', () => {
-        // Arrange
-        mockHooksForNormalState();
-        (useConceptSearch as jest.Mock).mockReturnValue({
-          searchResults: mockSearchResults,
-          loading: false,
-          error: null,
-        });
-
-        // Act
-        render(
-          <ConsultationPad
-            patientUUID={mockPatientUUID}
-            onClose={mockOnClose}
-          />,
-        );
-
-        // Assert
-        expect(screen.getByTestId('diagnoses-form-results')).toHaveTextContent(
-          '2 results',
-        );
-      });
-    });
-
-    // 4. Selection and State Management Tests
-    describe('Selection and State Management Tests', () => {
-      it('should add diagnosis to selectedDiagnoses when handleResultSelection is called', () => {
-        // Arrange
-        mockHooksForNormalState();
-
-        // Act
-        render(
-          <ConsultationPad
-            patientUUID={mockPatientUUID}
-            onClose={mockOnClose}
-          />,
-        );
-
-        // Initially no diagnoses selected
-        expect(screen.getByTestId('diagnoses-form-selected')).toHaveTextContent(
-          '0 selected',
-        );
-
-        // Select a diagnosis
-        fireEvent.click(screen.getByText('Select'));
-
-        // Assert
-        expect(screen.getByTestId('diagnoses-form-selected')).toHaveTextContent(
-          '1 selected',
-        );
-      });
-
-      it('should clear search term and selection after successful addition', async () => {
-        // Arrange
-        mockHooksForNormalState();
-        let capturedSearchTerm = 'test search';
-        (useConceptSearch as jest.Mock).mockImplementation((searchTerm) => {
-          capturedSearchTerm = searchTerm;
-          return {
-            searchResults: mockSearchResults,
-            loading: false,
-            error: null,
-          };
-        });
-
-        // Act
-        const { rerender } = render(
-          <ConsultationPad
-            patientUUID={mockPatientUUID}
-            onClose={mockOnClose}
-          />,
-        );
-
-        // Select a diagnosis
-        fireEvent.click(screen.getByText('Select'));
-
-        // Force a rerender to capture the cleared search term
-        rerender(
-          <ConsultationPad
-            patientUUID={mockPatientUUID}
-            onClose={mockOnClose}
-          />,
-        );
-
-        // Assert
-        await waitFor(() => {
-          expect(capturedSearchTerm).toBe(''); // Search term should be cleared
-        });
-      });
-
-      it('should not add duplicate diagnosis and show error', () => {
-        // Arrange
-        mockHooksForNormalState();
-
-        // Act
-        render(
-          <ConsultationPad
-            patientUUID={mockPatientUUID}
-            onClose={mockOnClose}
-          />,
-        );
-
-        // Add diagnosis first time
-        fireEvent.click(screen.getByText('Select'));
-        expect(screen.getByTestId('diagnoses-form-selected')).toHaveTextContent(
-          '1 selected',
-        );
-
-        // Try to add same diagnosis again
-        fireEvent.click(screen.getByText('Select'));
-
-        // Assert
-        expect(screen.getByTestId('diagnoses-form-selected')).toHaveTextContent(
-          '1 selected', // Should still be 1
-        );
-        expect(mockTranslation.t).toHaveBeenCalledWith(
-          'DIAGNOSES_DUPLICATE_ERROR',
-        );
-      });
-
-      it('should handle null/undefined selectedItem gracefully', () => {
-        // Arrange
-        mockHooksForNormalState();
-
-        // Act
-        render(
-          <ConsultationPad
-            patientUUID={mockPatientUUID}
-            onClose={mockOnClose}
-          />,
-        );
-
-        // Initially no diagnoses selected
-        expect(screen.getByTestId('diagnoses-form-selected')).toHaveTextContent(
-          '0 selected',
-        );
-
-        // Click the button that calls handleResultSelection with null
-        fireEvent.click(screen.getByTestId('select-null-button'));
-
-        // The state should remain unchanged
-        expect(screen.getByTestId('diagnoses-form-selected')).toHaveTextContent(
-          '0 selected',
-        );
-
-        // No errors should be displayed
-        expect(screen.getByTestId('diagnoses-form-errors')).toHaveTextContent(
-          '',
-        );
-      });
-
-      it('should properly handle certainty change callback when diagnosis is added', () => {
-        // Arrange
-        mockHooksForNormalState();
-
-        // Act
-        render(
-          <ConsultationPad
-            patientUUID={mockPatientUUID}
-            onClose={mockOnClose}
-          />,
-        );
-
-        // Add a diagnosis
-        fireEvent.click(screen.getByText('Select'));
-
-        // Verify diagnosis was added
-        expect(screen.getByTestId('diagnoses-form-selected')).toHaveTextContent(
-          '1 selected',
-        );
-
-        // Verify the selected diagnosis item is rendered
-        expect(screen.getByTestId('selected-diagnosis-0')).toBeInTheDocument();
-
-        // Click the certainty change button
-        fireEvent.click(screen.getByTestId('change-certainty-0'));
-
-        // The component should handle the certainty change without errors
-        // and the diagnosis should still be there
-        expect(screen.getByTestId('diagnoses-form-selected')).toHaveTextContent(
-          '1 selected',
-        );
-      });
-    });
-
-    // 5. Certainty Management Tests
+    // 3. Certainty Management Tests
     describe('Certainty Management Tests', () => {
       it('should update certainty for specific diagnosis when handleCertaintyChange is called', () => {
         // Note: This test would require more complex mocking to fully test
@@ -1530,7 +1231,7 @@ describe('ConsultationPad', () => {
       });
     });
 
-    // 6. Removal Tests
+    // 4. Removal Tests
     describe('Removal Tests', () => {
       it('should remove diagnosis from selectedDiagnoses when handleRemoveDiagnosis is called', () => {
         // Arrange
@@ -1585,62 +1286,7 @@ describe('ConsultationPad', () => {
       });
     });
 
-    // 7. Error Handling Tests
-    describe('Error Handling Tests', () => {
-      it('should display API errors from useConceptSearch', () => {
-        // Arrange
-        mockHooksForNormalState();
-        const apiError = new Error('Search API failed');
-        (useConceptSearch as jest.Mock).mockReturnValue({
-          searchResults: [],
-          loading: false,
-          error: apiError,
-        });
-
-        // Act
-        render(
-          <ConsultationPad
-            patientUUID={mockPatientUUID}
-            onClose={mockOnClose}
-          />,
-        );
-
-        // Assert
-        expect(screen.getByTestId('diagnoses-form-errors')).toHaveTextContent(
-          'Search API failed',
-        );
-      });
-
-      it('should display duplicate error with correct translation', () => {
-        // Arrange
-        mockHooksForNormalState();
-
-        // Act
-        render(
-          <ConsultationPad
-            patientUUID={mockPatientUUID}
-            onClose={mockOnClose}
-          />,
-        );
-
-        // Add diagnosis twice
-        fireEvent.click(screen.getByText('Select'));
-        fireEvent.click(screen.getByText('Select'));
-
-        // Assert
-        expect(mockTranslation.t).toHaveBeenCalledWith(
-          'DIAGNOSES_DUPLICATE_ERROR',
-        );
-      });
-
-      it('should accumulate multiple errors if they occur', () => {
-        // This would require more complex state management
-        // For now, we ensure single errors are handled correctly
-        expect(true).toBe(true);
-      });
-    });
-
-    // 8. Edge Cases
+    // 5. Edge Cases
     describe('Edge Cases', () => {
       it('should handle empty search results', () => {
         // Arrange
@@ -1687,34 +1333,9 @@ describe('ConsultationPad', () => {
         );
         expect(screen.getByTestId('mock-diagnoses-form')).toBeInTheDocument(); // Form should still be rendered
       });
-
-      it('should handle rapid selection and removal', () => {
-        // Arrange
-        mockHooksForNormalState();
-
-        // Act
-        render(
-          <ConsultationPad
-            patientUUID={mockPatientUUID}
-            onClose={mockOnClose}
-          />,
-        );
-
-        // Rapid operations
-        fireEvent.click(screen.getByText('Select'));
-        fireEvent.click(screen.getByText('Remove'));
-        fireEvent.click(screen.getByText('Select'));
-        fireEvent.click(screen.getByText('Select')); // Duplicate
-        fireEvent.click(screen.getByText('Remove'));
-
-        // Assert - should end with 0 selected
-        expect(screen.getByTestId('diagnoses-form-selected')).toHaveTextContent(
-          '0 selected',
-        );
-      });
     });
 
-    // 9. Accessibility Tests
+    // 6. Accessibility Tests
     describe('Accessibility', () => {
       it('should have no accessibility violations with DiagnosesForm', async () => {
         // Arrange

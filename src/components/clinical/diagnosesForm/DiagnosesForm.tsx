@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ComboBox, Tile, InlineNotification } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import * as styles from './styles/DiagnosesForm.module.scss';
@@ -8,25 +8,17 @@ import { ConceptSearch } from '@types/concepts';
 import SelectedDiagnosisItem, {
   SelectedDiagnosisItemProps,
 } from './SelectedDiagnosisItem';
+import { useConceptSearch } from '@/hooks/useConceptSearch';
 
 /**
  * DiagnosesForm component props
  * @interface DiagnosesFormProps
  * @property {function} handleResultSelection - Function to call when a diagnosis is selected
- * @property {function} handleSearch - Function to call when search term changes
- * @property {ConceptSearch[]} searchResults - Available search results
- * @property {Error[] | null} errors - Any errors to display
  * @property {SelectedDiagnosisItemProps[]} selectedDiagnoses - List of selected diagnoses
  * @property {function} handleRemoveDiagnosis - Function to call when a diagnosis is removed
  */
 interface DiagnosesFormProps {
-  handleResultSelection: (
-    selectedItem: ConceptSearch | null | undefined,
-  ) => void;
-  handleSearch: (searchTerm: string) => void;
-  searchResults: ConceptSearch[];
-  isSearchEmpty: boolean;
-  errors: Error[] | null;
+  handleResultSelection: (selectedItem: ConceptSearch) => void;
   selectedDiagnoses: SelectedDiagnosisItemProps[];
   handleRemoveDiagnosis: (index: number) => void;
 }
@@ -39,16 +31,47 @@ interface DiagnosesFormProps {
  * @param {DiagnosesFormProps} props - Component props
  */
 const DiagnosesForm: React.FC<DiagnosesFormProps> = React.memo(
-  ({
-    handleResultSelection,
-    handleSearch,
-    searchResults,
-    isSearchEmpty,
-    errors,
-    selectedDiagnoses,
-    handleRemoveDiagnosis,
-  }) => {
+  ({ handleResultSelection, selectedDiagnoses, handleRemoveDiagnosis }) => {
     const { t } = useTranslation();
+    const [searchDiagnosesTerm, setSearchDiagnosesTerm] = useState('');
+    const [diagnosisErrors, setDiagnosisErrors] = React.useState<Error[]>([]);
+
+    // Use concept search hook for diagnoses
+    const {
+      searchResults,
+      loading: isSearchLoading,
+      error: searchError,
+    } = useConceptSearch(searchDiagnosesTerm);
+
+    // Handle search errors
+    useEffect(() => {
+      if (searchError) {
+        setDiagnosisErrors([searchError]);
+      }
+    }, [searchError]);
+
+    const handleSearch = (searchTerm: string) => {
+      setSearchDiagnosesTerm(searchTerm);
+      setDiagnosisErrors([]);
+    };
+
+    const handleOnChange = (selectedItem: ConceptSearch) => {
+      const isDuplicate = selectedDiagnoses.some(
+        (diagnosis) => diagnosis.id === selectedItem?.conceptUuid,
+      );
+
+      if (isDuplicate) {
+        setDiagnosisErrors([new Error(t('DIAGNOSES_DUPLICATE_ERROR'))]);
+        return;
+      }
+
+      handleResultSelection(selectedItem);
+    };
+
+    const isSearchEmpty =
+      searchResults.length === 0 &&
+      !isSearchLoading &&
+      searchDiagnosesTerm.length > 2;
 
     return (
       <Tile className={styles.diagnosesFormTile}>
@@ -70,18 +93,16 @@ const DiagnosesForm: React.FC<DiagnosesFormProps> = React.memo(
                 ]
               : searchResults
           }
-          itemToString={(item) => (item ? item.conceptName : '')}
-          onChange={(data) => {
-            handleResultSelection(data.selectedItem);
-          }}
+          itemToString={(item) => item!.conceptName}
+          onChange={(data) => handleOnChange(data.selectedItem!)}
           onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
           size="lg"
           autoAlign
           aria-label={t('DIAGNOSES_SEARCH_ARIA_LABEL')}
         />
-        {errors &&
-          errors.length > 0 &&
-          errors.map((error, index) => (
+        {diagnosisErrors &&
+          diagnosisErrors.length > 0 &&
+          diagnosisErrors.map((error, index) => (
             <InlineNotification
               key={`error-${index}-${error.message}`}
               kind="error"

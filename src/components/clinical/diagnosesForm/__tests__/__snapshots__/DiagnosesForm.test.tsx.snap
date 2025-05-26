@@ -3,12 +3,10 @@
 exports[`DiagnosesForm Snapshot Tests empty form matches snapshot 1`] = `
 <div>
   <div
-    class="cds--tile diagnosesFormTile"
+    class="cds--tile"
   >
-    <div
-      class="diagnosesFormTitle"
-    >
-      Diagnoses
+    <div>
+      DIAGNOSES_FORM_TITLE
     </div>
     <div
       class="cds--list-box__wrapper"
@@ -22,14 +20,14 @@ exports[`DiagnosesForm Snapshot Tests empty form matches snapshot 1`] = `
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-«r87»-menu"
+            aria-controls="downshift-«r3r»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
-            aria-label="Search for diagnoses"
+            aria-label="DIAGNOSES_SEARCH_ARIA_LABEL"
             autocomplete="off"
             class="cds--text-input cds--text-input--empty"
             id="diagnoses-search"
-            placeholder="Search to add new diagnosis"
+            placeholder="DIAGNOSES_SEARCH_PLACEHOLDER"
             role="combobox"
             tabindex="0"
             title=""
@@ -37,11 +35,11 @@ exports[`DiagnosesForm Snapshot Tests empty form matches snapshot 1`] = `
             value=""
           />
           <button
-            aria-controls="downshift-«r87»-menu"
+            aria-controls="downshift-«r3r»-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-«r87»-toggle-button"
+            id="downshift-«r3r»-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -63,9 +61,9 @@ exports[`DiagnosesForm Snapshot Tests empty form matches snapshot 1`] = `
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-«r87»-label"
+          aria-labelledby="downshift-«r3r»-label"
           class="cds--list-box__menu"
-          id="downshift-«r87»-menu"
+          id="downshift-«r3r»-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -78,12 +76,10 @@ exports[`DiagnosesForm Snapshot Tests empty form matches snapshot 1`] = `
 exports[`DiagnosesForm Snapshot Tests form with errors matches snapshot 1`] = `
 <div>
   <div
-    class="cds--tile diagnosesFormTile"
+    class="cds--tile"
   >
-    <div
-      class="diagnosesFormTitle"
-    >
-      Diagnoses
+    <div>
+      DIAGNOSES_FORM_TITLE
     </div>
     <div
       class="cds--list-box__wrapper"
@@ -97,14 +93,14 @@ exports[`DiagnosesForm Snapshot Tests form with errors matches snapshot 1`] = `
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-«r8m»-menu"
+            aria-controls="downshift-«r4b»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
-            aria-label="Search for diagnoses"
+            aria-label="DIAGNOSES_SEARCH_ARIA_LABEL"
             autocomplete="off"
             class="cds--text-input cds--text-input--empty"
             id="diagnoses-search"
-            placeholder="Search to add new diagnosis"
+            placeholder="DIAGNOSES_SEARCH_PLACEHOLDER"
             role="combobox"
             tabindex="0"
             title=""
@@ -112,11 +108,11 @@ exports[`DiagnosesForm Snapshot Tests form with errors matches snapshot 1`] = `
             value=""
           />
           <button
-            aria-controls="downshift-«r8m»-menu"
+            aria-controls="downshift-«r4b»-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-«r8m»-toggle-button"
+            id="downshift-«r4b»-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -138,16 +134,16 @@ exports[`DiagnosesForm Snapshot Tests form with errors matches snapshot 1`] = `
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-«r8m»-label"
+          aria-labelledby="downshift-«r4b»-label"
           class="cds--list-box__menu"
-          id="downshift-«r8m»-menu"
+          id="downshift-«r4b»-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
       </div>
     </div>
     <div
-      class="inlineErrorNotification cds--inline-notification cds--inline-notification--low-contrast cds--inline-notification--error"
+      class="cds--inline-notification cds--inline-notification--low-contrast cds--inline-notification--error"
       role="alert"
     >
       <div
@@ -210,70 +206,6 @@ exports[`DiagnosesForm Snapshot Tests form with errors matches snapshot 1`] = `
         </svg>
       </button>
     </div>
-    <div
-      class="inlineErrorNotification cds--inline-notification cds--inline-notification--low-contrast cds--inline-notification--error"
-      role="alert"
-    >
-      <div
-        class="cds--inline-notification__details"
-      >
-        <svg
-          aria-hidden="true"
-          class="cds--inline-notification__icon"
-          fill="currentColor"
-          focusable="false"
-          height="20"
-          preserveAspectRatio="xMidYMid meet"
-          viewBox="0 0 20 20"
-          width="20"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M10,1c-5,0-9,4-9,9s4,9,9,9s9-4,9-9S15,1,10,1z M13.5,14.5l-8-8l1-1l8,8L13.5,14.5z"
-          />
-          <path
-            d="M13.5,14.5l-8-8l1-1l8,8L13.5,14.5z"
-            data-icon-path="inner-path"
-            opacity="0"
-          />
-          <title>
-            error icon
-          </title>
-        </svg>
-        <div
-          class="cds--inline-notification__text-wrapper"
-        >
-          <div
-            class="cds--inline-notification__title"
-            dir="auto"
-          >
-            Network error
-          </div>
-        </div>
-      </div>
-      <button
-        aria-label="close notification"
-        class="cds--inline-notification__close-button"
-        title="close notification"
-        type="button"
-      >
-        <svg
-          aria-hidden="true"
-          class="cds--inline-notification__close-icon"
-          fill="currentColor"
-          focusable="false"
-          height="16"
-          preserveAspectRatio="xMidYMid meet"
-          viewBox="0 0 32 32"
-          width="16"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
-          />
-        </svg>
-      </button>
-    </div>
   </div>
 </div>
 `;
@@ -281,12 +213,10 @@ exports[`DiagnosesForm Snapshot Tests form with errors matches snapshot 1`] = `
 exports[`DiagnosesForm Snapshot Tests form with search results matches snapshot 1`] = `
 <div>
   <div
-    class="cds--tile diagnosesFormTile"
+    class="cds--tile"
   >
-    <div
-      class="diagnosesFormTitle"
-    >
-      Diagnoses
+    <div>
+      DIAGNOSES_FORM_TITLE
     </div>
     <div
       class="cds--list-box__wrapper"
@@ -300,14 +230,14 @@ exports[`DiagnosesForm Snapshot Tests form with search results matches snapshot 
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-«r8a»-menu"
+            aria-controls="downshift-«r3u»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
-            aria-label="Search for diagnoses"
+            aria-label="DIAGNOSES_SEARCH_ARIA_LABEL"
             autocomplete="off"
             class="cds--text-input cds--text-input--empty"
             id="diagnoses-search"
-            placeholder="Search to add new diagnosis"
+            placeholder="DIAGNOSES_SEARCH_PLACEHOLDER"
             role="combobox"
             tabindex="0"
             title=""
@@ -315,11 +245,11 @@ exports[`DiagnosesForm Snapshot Tests form with search results matches snapshot 
             value=""
           />
           <button
-            aria-controls="downshift-«r8a»-menu"
+            aria-controls="downshift-«r3u»-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-«r8a»-toggle-button"
+            id="downshift-«r3u»-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -341,9 +271,9 @@ exports[`DiagnosesForm Snapshot Tests form with search results matches snapshot 
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-«r8a»-label"
+          aria-labelledby="downshift-«r3u»-label"
           class="cds--list-box__menu"
-          id="downshift-«r8a»-menu"
+          id="downshift-«r3u»-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -356,12 +286,10 @@ exports[`DiagnosesForm Snapshot Tests form with search results matches snapshot 
 exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snapshot 1`] = `
 <div>
   <div
-    class="cds--tile diagnosesFormTile"
+    class="cds--tile"
   >
-    <div
-      class="diagnosesFormTitle"
-    >
-      Diagnoses
+    <div>
+      DIAGNOSES_FORM_TITLE
     </div>
     <div
       class="cds--list-box__wrapper"
@@ -375,14 +303,14 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-«r8d»-menu"
+            aria-controls="downshift-«r41»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
-            aria-label="Search for diagnoses"
+            aria-label="DIAGNOSES_SEARCH_ARIA_LABEL"
             autocomplete="off"
             class="cds--text-input cds--text-input--empty"
             id="diagnoses-search"
-            placeholder="Search to add new diagnosis"
+            placeholder="DIAGNOSES_SEARCH_PLACEHOLDER"
             role="combobox"
             tabindex="0"
             title=""
@@ -390,11 +318,11 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
             value=""
           />
           <button
-            aria-controls="downshift-«r8d»-menu"
+            aria-controls="downshift-«r41»-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-«r8d»-toggle-button"
+            id="downshift-«r41»-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -416,184 +344,159 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-«r8d»-label"
+          aria-labelledby="downshift-«r41»-label"
           class="cds--list-box__menu"
-          id="downshift-«r8d»-menu"
+          id="downshift-«r41»-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
       </div>
     </div>
     <div
-      class="diagnosesBox"
-      data-testid="box-with-header"
+      aria-label="DIAGNOSES_ADDED_DIAGNOSES"
+      class="cds--css-grid cds--css-grid--narrow cds--css-grid--full-width"
+      data-testid="box-w-title"
+      role="region"
     >
-      <h3>
-        Added Diagnoses
-      </h3>
       <div
-        class="selectedDiagnosisItem"
-        data-testid="selected-item"
+        class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
       >
-        <div
-          class="cds--css-grid"
-        >
-          <div
-            class="cds--sm:col-span-4 cds--md:col-span-7 cds--lg:col-span-11 cds--xlg:col-span-11 cds--css-grid-column"
-          >
-            Diabetes Mellitus
-          </div>
-          <div
-            class="cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-4 cds--xlg:col-span-4 cds--css-grid-column"
-          >
-            <div
-              class="cds--dropdown__wrapper cds--list-box__wrapper cds--dropdown__wrapper--inline cds--list-box__wrapper--inline"
-              data-testid="diagnoses-certainty-dropdown-diabetes-123-0"
-            >
-              <div
-                class="cds--dropdown cds--dropdown--inline cds--autoalign cds--list-box"
-                id="diagnoses-certainty-dropdown-diabetes-123-0"
-              >
-                <button
-                  aria-activedescendant=""
-                  aria-controls="downshift-«r8g»-menu"
-                  aria-expanded="false"
-                  aria-haspopup="listbox"
-                  aria-label="Diagnoses Certainty"
-                  class="cds--list-box__field"
-                  id="downshift-«r8g»-toggle-button"
-                  role="combobox"
-                  tabindex="0"
-                  title="Confirmed"
-                  type="button"
-                >
-                  <span
-                    class="cds--list-box__label"
-                  >
-                    Confirmed
-                  </span>
-                  <div
-                    class="cds--list-box__menu-icon"
-                  >
-                    <svg
-                      aria-label="Open menu"
-                      fill="currentColor"
-                      focusable="false"
-                      height="16"
-                      name="chevron--down"
-                      preserveAspectRatio="xMidYMid meet"
-                      role="img"
-                      viewBox="0 0 16 16"
-                      width="16"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
-                      />
-                      <title>
-                        Open menu
-                      </title>
-                    </svg>
-                  </div>
-                </button>
-                <ul
-                  aria-labelledby="downshift-«r8g»-label"
-                  class="cds--list-box__menu"
-                  id="downshift-«r8g»-menu"
-                  role="listbox"
-                  style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        <button
-          data-testid="remove-button"
-        >
-          Remove
-        </button>
+        DIAGNOSES_ADDED_DIAGNOSES
       </div>
       <div
-        class="selectedDiagnosisItem"
-        data-testid="selected-item"
+        class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
       >
         <div
-          class="cds--css-grid"
+          class="cds--subgrid cds--subgrid--narrow"
+          data-testid="selected-item"
         >
           <div
-            class="cds--sm:col-span-4 cds--md:col-span-7 cds--lg:col-span-11 cds--xlg:col-span-11 cds--css-grid-column"
-          >
-            Hypertension
-          </div>
-          <div
-            class="cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-4 cds--xlg:col-span-4 cds--css-grid-column"
+            class="cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
           >
             <div
-              class="cds--dropdown__wrapper cds--list-box__wrapper cds--dropdown__wrapper--inline cds--list-box__wrapper--inline"
-              data-testid="diagnoses-certainty-dropdown-hypertension-456-1"
+              class="cds--subgrid cds--subgrid--wide"
             >
               <div
-                class="cds--dropdown cds--dropdown--inline cds--autoalign cds--list-box"
-                id="diagnoses-certainty-dropdown-hypertension-456-1"
+                class="cds--sm:col-span-4 cds--md:col-span-7 cds--lg:col-span-11 cds--xlg:col-span-11 cds--css-grid-column"
               >
-                <button
-                  aria-activedescendant=""
-                  aria-controls="downshift-«r8j»-menu"
-                  aria-expanded="false"
-                  aria-haspopup="listbox"
-                  aria-label="Diagnoses Certainty"
-                  class="cds--list-box__field"
-                  id="downshift-«r8j»-toggle-button"
-                  role="combobox"
-                  tabindex="0"
-                  title="Provisional"
-                  type="button"
+                Hypertension
+              </div>
+              <div
+                class="cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-4 cds--xlg:col-span-4 cds--css-grid-column"
+              >
+                <div
+                  class="cds--dropdown__wrapper cds--list-box__wrapper cds--dropdown__wrapper--inline cds--list-box__wrapper--inline"
+                  data-testid="diagnoses-certainty-dropdown-uuid-1-0"
                 >
-                  <span
-                    class="cds--list-box__label"
-                  >
-                    Provisional
-                  </span>
                   <div
-                    class="cds--list-box__menu-icon"
+                    class="cds--dropdown cds--dropdown--inline cds--autoalign cds--list-box"
+                    id="diagnoses-certainty-dropdown-uuid-1-0"
                   >
-                    <svg
-                      aria-label="Open menu"
-                      fill="currentColor"
-                      focusable="false"
-                      height="16"
-                      name="chevron--down"
-                      preserveAspectRatio="xMidYMid meet"
-                      role="img"
-                      viewBox="0 0 16 16"
-                      width="16"
-                      xmlns="http://www.w3.org/2000/svg"
+                    <button
+                      aria-activedescendant=""
+                      aria-controls="downshift-«r44»-menu"
+                      aria-expanded="false"
+                      aria-haspopup="listbox"
+                      aria-label="DIAGNOSES_CERTAINTY_ARIA_LABEL"
+                      class="cds--list-box__field"
+                      id="downshift-«r44»-toggle-button"
+                      role="combobox"
+                      tabindex="0"
+                      title="Confirmed"
+                      type="button"
                     >
-                      <path
-                        d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
-                      />
-                      <title>
-                        Open menu
-                      </title>
-                    </svg>
+                      <span
+                        class="cds--list-box__label"
+                      >
+                        Confirmed
+                      </span>
+                      <div
+                        class="cds--list-box__menu-icon"
+                      >
+                        <svg
+                          aria-label="Open menu"
+                          fill="currentColor"
+                          focusable="false"
+                          height="16"
+                          name="chevron--down"
+                          preserveAspectRatio="xMidYMid meet"
+                          role="img"
+                          viewBox="0 0 16 16"
+                          width="16"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                          />
+                          <title>
+                            Open menu
+                          </title>
+                        </svg>
+                      </div>
+                    </button>
+                    <ul
+                      aria-labelledby="downshift-«r44»-label"
+                      class="cds--list-box__menu"
+                      id="downshift-«r44»-menu"
+                      role="listbox"
+                      style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+                    />
                   </div>
-                </button>
-                <ul
-                  aria-labelledby="downshift-«r8j»-label"
-                  class="cds--list-box__menu"
-                  id="downshift-«r8j»-menu"
-                  role="listbox"
-                  style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
-                />
+                </div>
               </div>
             </div>
           </div>
+          <div
+            class="cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
+          >
+            <span
+              class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
+            >
+              <div
+                class="cds--tooltip-trigger__wrapper"
+              >
+                <button
+                  aria-label="SELECTED_ITEM_CLOSE_ARIA_LABEL"
+                  aria-labelledby="tooltip-«r46»"
+                  class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
+                  data-testid="selected-item-close-button"
+                  id="close-selected-item"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    fill="currentColor"
+                    focusable="false"
+                    height="16"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <span
+                aria-hidden="true"
+                class="cds--popover"
+                id="tooltip-«r46»"
+                role="tooltip"
+              >
+                <span
+                  class="cds--popover-content cds--tooltip-content"
+                >
+                  SELECTED_ITEM_CLOSE
+                </span>
+                <span
+                  class="cds--popover-caret"
+                />
+              </span>
+            </span>
+          </div>
         </div>
-        <button
-          data-testid="remove-button"
-        >
-          Remove
-        </button>
       </div>
     </div>
   </div>
