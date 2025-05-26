@@ -23,7 +23,9 @@ import {
   createConsultationBundle,
 } from '@utils/fhir/consultationBundleCreator';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
-import { Coding } from 'fhir/r4';
+import { BundleEntry, Coding } from 'fhir/r4';
+import { createEncounterDiagnosisResource } from '@/utils/fhir/conditionResourceCreator';
+import { createPractitionerReference, getPlaceholderReference } from '@/utils/fhir/referenceCreator';
 
 interface ConsultationPadProps {
   patientUUID: string;
@@ -181,6 +183,15 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       encounterResource,
       'POST',
     );
+    
+    /* TODO Can be iterated for each item
+    const diagnosisEntries:BundleEntry[] = []
+    const diagnosisResourceURL = `urn:uuid:${crypto.randomUUID}`
+    const diagnosisResource = createEncounterDiagnosisResource("diagnosis-uuid", "certainity", encounterResource.subject, getPlaceholderReference(enconterResourceURL), createPractitionerReference(practitioner.uuid), new Date())
+    const diagnosisBundleEntry = createBundleEntry(diagnosisResourceURL, diagnosisResource, "POST");
+    diagnosisEntries.push(diagnosisBundleEntry);
+    */
+
     const consultationBundle = createConsultationBundle([encounterBundleEntry]);
 
     return postConsultationBundle<ConsultationBundle>(consultationBundle);
