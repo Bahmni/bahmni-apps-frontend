@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import * as styles from './styles/LabInvestigation.module.scss';
 import { useTranslation } from 'react-i18next';
-import { Accordion, AccordionItem } from '@carbon/react';
+import { Accordion, AccordionItem, SkeletonText } from '@carbon/react';
 import LabInvestigationItem from './LabInvestigationItem';
 import useLabInvestigations from '@/hooks/useLabInvestigations';
 import { groupLabTestsByDate } from '@/services/labInvestigationService';
@@ -16,10 +16,6 @@ const LabInvestigationControl: React.FC = () => {
     return groupLabTestsByDate(labTests);
   }, [labTests]);
 
-  if (isLoading && labTests.length === 0) {
-    return <div>{t('LAB_TEST_LOADING')}</div>;
-  }
-
   if (isError) {
     return <div>{t('LAB_TEST_ERROR_LOADING')}</div>;
   }
@@ -31,6 +27,12 @@ const LabInvestigationControl: React.FC = () => {
   return (
     <section className={styles.labInvestigationWrapper}>
       <Accordion align="start" size="lg">
+        {isLoading && labTests.length === 0 && (
+          <>
+            <SkeletonText lineCount={3} width="100%" />
+            <div>{t('LAB_TEST_LOADING')}</div>
+          </>
+        )}
         {labTestsByDate.map((group: LabTestsByDate) => (
           <AccordionItem
             key={group.date}
