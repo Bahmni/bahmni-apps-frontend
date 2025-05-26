@@ -42,4 +42,5 @@ export const LOCALE_STORAGE_KEY = 'NG_TRANSLATE_LANG_KEY';
 export const CLINICAL_NAMESPACE = 'clinical';
 export const BAHMNI_HOME_PATH = '/bahmni/home/index.html';
 export const BAHMNI_CLINICAL_PATH = '/bahmni/clinical/index.html';
+/* TODO: When we work on taking values dynamically, we need to remove the hardcoded value of LAB_ORDER_TYPE_UUID */
 export const LAB_ORDER_TYPE_UUID = 'd3560b17-5e07-11ef-8f7c-0242ac120002';
