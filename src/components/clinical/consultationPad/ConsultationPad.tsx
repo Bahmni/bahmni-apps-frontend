@@ -22,9 +22,7 @@ import {
   createConsultationBundle,
 } from '@utils/fhir/consultationBundleCreator';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
-import { BundleEntry, Coding } from 'fhir/r4';
-import { createEncounterDiagnosisResource } from '@/utils/fhir/conditionResourceCreator';
-import { createPractitionerReference, getPlaceholderReference } from '@/utils/fhir/referenceCreator';
+import { Coding } from 'fhir/r4';
 
 interface ConsultationPadProps {
   patientUUID: string;
@@ -138,7 +136,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       encounterResource,
       'POST',
     );
-    
+
     /* TODO Can be iterated for each item
     const diagnosisEntries:BundleEntry[] = []
     const diagnosisResourceURL = `urn:uuid:${crypto.randomUUID}`

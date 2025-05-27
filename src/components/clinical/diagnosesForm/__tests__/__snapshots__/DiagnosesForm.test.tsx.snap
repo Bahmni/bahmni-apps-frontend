@@ -457,7 +457,6 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
               >
                 <button
                   aria-label="SELECTED_ITEM_CLOSE_ARIA_LABEL"
-                  aria-labelledby="tooltip-«r46»"
                   class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
                   data-testid="selected-item-close-button"
                   id="close-selected-item"
