@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react';
-import { FormattedLabTest } from '../types/labInvestigation';
-import {
-  getLabTests,
-  formatLabTests,
-} from '../services/labInvestigationService';
+import { FormattedLabTest } from '@types/labInvestigation';
+import { getLabTests, formatLabTests } from '@services/labInvestigationService';
 import { usePatientUUID } from './usePatientUUID';
 
 /**
