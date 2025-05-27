@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  render,
-  screen,
-  waitFor,
-  fireEvent,
-  act,
-} from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useTranslation, I18nextProvider } from 'react-i18next';
 import DiagnosesForm from '../DiagnosesForm';
@@ -292,7 +286,7 @@ describe('DiagnosesForm', () => {
       await userEvent.type(searchInput, 'hyper');
 
       // Attempt to select the same diagnosis
-      await act(async () => {
+      await waitFor(async () => {
         fireEvent.change(searchInput, {
           target: { value: mockConcepts[0].conceptName },
         });
@@ -340,6 +334,37 @@ describe('DiagnosesForm', () => {
         // Verify handleResultSelection was not called
         expect(defaultProps.handleResultSelection).not.toHaveBeenCalled();
       });
+    });
+
+    it('should handle invalid item selection without errors', async () => {
+      render(<DiagnosesForm {...defaultProps} />);
+
+      const searchInput = screen.getByPlaceholderText(
+        'DIAGNOSES_SEARCH_PLACEHOLDER',
+      );
+      await userEvent.type(searchInput, 'hyper');
+
+      // Simulate selecting an item
+      fireEvent.change(searchInput, {
+        target: { value: mockConcepts[0].conceptName },
+      });
+      // Get the combobox and dropdown button
+      const comboBox = screen.getByRole('combobox');
+      const clearButton = screen.getByRole('button', {
+        name: 'Clear selected item',
+      });
+      const dropdownButton = screen.getByRole('button', { name: 'Close' });
+
+      // Simulate selection of invalid item
+      await waitFor(async () => {
+        await userEvent.click(clearButton);
+        await userEvent.click(dropdownButton);
+      });
+
+      // Assertions
+      expect(comboBox).toHaveValue('');
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+      expect(defaultProps.handleResultSelection).not.toHaveBeenCalled();
     });
   });
 
