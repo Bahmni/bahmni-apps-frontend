@@ -7,22 +7,25 @@ import { Reference } from 'fhir/r4';
 jest.mock('../codeableConceptCreator');
 
 describe('conditionResourceCreator', () => {
-  const mockCreateCodeableConcept = createCodeableConcept as jest.MockedFunction<typeof createCodeableConcept>;
-  const mockCreateCoding = createCoding as jest.MockedFunction<typeof createCoding>;
+  const mockCreateCodeableConcept =
+    createCodeableConcept as jest.MockedFunction<typeof createCodeableConcept>;
+  const mockCreateCoding = createCoding as jest.MockedFunction<
+    typeof createCoding
+  >;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Setup default mock implementations
     mockCreateCoding.mockImplementation((code, system?, display?) => ({
       code,
       ...(system && { system }),
-      ...(display && { display })
+      ...(display && { display }),
     }));
-    
+
     mockCreateCodeableConcept.mockImplementation((coding, text?) => ({
       coding,
-      ...(text && { text })
+      ...(text && { text }),
     }));
   });
 
@@ -31,29 +34,31 @@ describe('conditionResourceCreator', () => {
     const diagnosisConceptUUID = '123e4567-e89b-12d3-a456-426614174000';
     const subjectReference: Reference = {
       reference: 'Patient/patient-123',
-      type: 'Patient'
+      type: 'Patient',
     };
     const encounterReference: Reference = {
       reference: 'Encounter/encounter-456',
-      type: 'Encounter'
+      type: 'Encounter',
     };
     const recorderReference: Reference = {
       reference: 'Practitioner/practitioner-789',
-      type: 'Practitioner'
+      type: 'Practitioner',
     };
     const recordedDate = new Date('2024-01-15T10:30:00Z');
 
     it('should create a Condition resource with provisional diagnosis', () => {
       // Arrange
       const diagnosisCertainty = 'provisional' as const;
-      const mockDiagnosisCodeableConcept = { 
-        coding: [{ code: diagnosisConceptUUID }] 
+      const mockDiagnosisCodeableConcept = {
+        coding: [{ code: diagnosisConceptUUID }],
       };
-      const mockVerificationStatusCodeableConcept = { 
-        coding: [{ 
-          code: 'provisional', 
-          system: HL7_CONDITION_VERIFICATION_STATUS_CODE_SYSTEM 
-        }] 
+      const mockVerificationStatusCodeableConcept = {
+        coding: [
+          {
+            code: 'provisional',
+            system: HL7_CONDITION_VERIFICATION_STATUS_CODE_SYSTEM,
+          },
+        ],
       };
 
       mockCreateCodeableConcept
@@ -67,7 +72,7 @@ describe('conditionResourceCreator', () => {
         subjectReference,
         encounterReference,
         recorderReference,
-        recordedDate
+        recordedDate,
       );
 
       // Assert
@@ -78,50 +83,51 @@ describe('conditionResourceCreator', () => {
           {
             coding: [
               {
-                system: 'http://terminology.hl7.org/CodeSystem/condition-category',
-                code: 'encounter-diagnosis'
-              }
-            ]
-          }
+                system:
+                  'http://terminology.hl7.org/CodeSystem/condition-category',
+                code: 'encounter-diagnosis',
+              },
+            ],
+          },
         ],
         code: mockDiagnosisCodeableConcept,
         verificationStatus: mockVerificationStatusCodeableConcept,
         encounter: encounterReference,
         recorder: recorderReference,
-        recordedDate: '2024-01-15T10:30:00.000Z'
+        recordedDate: '2024-01-15T10:30:00.000Z',
       });
 
       // Verify mock calls
       expect(mockCreateCoding).toHaveBeenCalledTimes(2);
       expect(mockCreateCoding).toHaveBeenNthCalledWith(1, diagnosisConceptUUID);
       expect(mockCreateCoding).toHaveBeenNthCalledWith(
-        2, 
-        'provisional', 
-        HL7_CONDITION_VERIFICATION_STATUS_CODE_SYSTEM
+        2,
+        'provisional',
+        HL7_CONDITION_VERIFICATION_STATUS_CODE_SYSTEM,
       );
 
       expect(mockCreateCodeableConcept).toHaveBeenCalledTimes(2);
-      expect(mockCreateCodeableConcept).toHaveBeenNthCalledWith(
-        1, 
-        [mockCreateCoding.mock.results[0].value]
-      );
-      expect(mockCreateCodeableConcept).toHaveBeenNthCalledWith(
-        2, 
-        [mockCreateCoding.mock.results[1].value]
-      );
+      expect(mockCreateCodeableConcept).toHaveBeenNthCalledWith(1, [
+        mockCreateCoding.mock.results[0].value,
+      ]);
+      expect(mockCreateCodeableConcept).toHaveBeenNthCalledWith(2, [
+        mockCreateCoding.mock.results[1].value,
+      ]);
     });
 
     it('should create a Condition resource with confirmed diagnosis', () => {
       // Arrange
       const diagnosisCertainty = 'confirmed' as const;
-      const mockDiagnosisCodeableConcept = { 
-        coding: [{ code: diagnosisConceptUUID }] 
+      const mockDiagnosisCodeableConcept = {
+        coding: [{ code: diagnosisConceptUUID }],
       };
-      const mockVerificationStatusCodeableConcept = { 
-        coding: [{ 
-          code: 'confirmed', 
-          system: HL7_CONDITION_VERIFICATION_STATUS_CODE_SYSTEM 
-        }] 
+      const mockVerificationStatusCodeableConcept = {
+        coding: [
+          {
+            code: 'confirmed',
+            system: HL7_CONDITION_VERIFICATION_STATUS_CODE_SYSTEM,
+          },
+        ],
       };
 
       mockCreateCodeableConcept
@@ -135,15 +141,17 @@ describe('conditionResourceCreator', () => {
         subjectReference,
         encounterReference,
         recorderReference,
-        recordedDate
+        recordedDate,
       );
 
       // Assert
-      expect(result.verificationStatus).toEqual(mockVerificationStatusCodeableConcept);
+      expect(result.verificationStatus).toEqual(
+        mockVerificationStatusCodeableConcept,
+      );
       expect(mockCreateCoding).toHaveBeenNthCalledWith(
-        2, 
-        'confirmed', 
-        HL7_CONDITION_VERIFICATION_STATUS_CODE_SYSTEM
+        2,
+        'confirmed',
+        HL7_CONDITION_VERIFICATION_STATUS_CODE_SYSTEM,
       );
     });
 
@@ -160,7 +168,7 @@ describe('conditionResourceCreator', () => {
         minimalSubjectRef,
         minimalEncounterRef,
         minimalRecorderRef,
-        recordedDate
+        recordedDate,
       );
 
       // Assert
@@ -177,7 +185,7 @@ describe('conditionResourceCreator', () => {
         new Date('2024-01-01T12:00:00+05:30'), // With timezone
       ];
 
-      differentDates.forEach(date => {
+      differentDates.forEach((date) => {
         // Act
         const result = createEncounterDiagnosisResource(
           diagnosisConceptUUID,
@@ -185,13 +193,15 @@ describe('conditionResourceCreator', () => {
           subjectReference,
           encounterReference,
           recorderReference,
-          date
+          date,
         );
 
         // Assert
         expect(result.recordedDate).toBe(date.toISOString());
         expect(typeof result.recordedDate).toBe('string');
-        expect(result.recordedDate).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+        expect(result.recordedDate).toMatch(
+          /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
+        );
       });
     });
 
@@ -203,7 +213,7 @@ describe('conditionResourceCreator', () => {
         subjectReference,
         encounterReference,
         recorderReference,
-        recordedDate
+        recordedDate,
       );
 
       // Assert
@@ -218,7 +228,7 @@ describe('conditionResourceCreator', () => {
         subjectReference,
         encounterReference,
         recorderReference,
-        recordedDate
+        recordedDate,
       );
 
       // Assert
@@ -228,7 +238,7 @@ describe('conditionResourceCreator', () => {
       expect(result.category![0].coding).toHaveLength(1);
       expect(result.category![0].coding![0]).toEqual({
         system: 'http://terminology.hl7.org/CodeSystem/condition-category',
-        code: 'encounter-diagnosis'
+        code: 'encounter-diagnosis',
       });
     });
 
@@ -243,7 +253,7 @@ describe('conditionResourceCreator', () => {
         subjectReference,
         encounterReference,
         recorderReference,
-        recordedDate
+        recordedDate,
       );
 
       // Assert
@@ -253,18 +263,18 @@ describe('conditionResourceCreator', () => {
 
     it('should handle Reference objects with additional properties', () => {
       // Arrange
-      const extendedSubjectRef: Reference = { 
+      const extendedSubjectRef: Reference = {
         reference: 'Patient/123',
         type: 'Patient',
-        display: 'John Doe'
+        display: 'John Doe',
       };
-      const extendedEncounterRef: Reference = { 
+      const extendedEncounterRef: Reference = {
         reference: 'Encounter/456',
         type: 'Encounter',
         identifier: {
           system: 'http://example.org',
-          value: 'ENC-456'
-        }
+          value: 'ENC-456',
+        },
       };
 
       // Act
@@ -274,7 +284,7 @@ describe('conditionResourceCreator', () => {
         extendedSubjectRef,
         extendedEncounterRef,
         recorderReference,
-        recordedDate
+        recordedDate,
       );
 
       // Assert
@@ -290,7 +300,7 @@ describe('conditionResourceCreator', () => {
         subjectReference,
         encounterReference,
         recorderReference,
-        recordedDate
+        recordedDate,
       );
 
       // Assert - Verify all required FHIR Condition properties are present
@@ -302,7 +312,7 @@ describe('conditionResourceCreator', () => {
       expect(result).toHaveProperty('encounter');
       expect(result).toHaveProperty('recorder');
       expect(result).toHaveProperty('recordedDate');
-      
+
       // Verify no extra properties
       const expectedKeys = [
         'resourceType',
@@ -312,7 +322,7 @@ describe('conditionResourceCreator', () => {
         'verificationStatus',
         'encounter',
         'recorder',
-        'recordedDate'
+        'recordedDate',
       ];
       expect(Object.keys(result).sort()).toEqual(expectedKeys.sort());
     });

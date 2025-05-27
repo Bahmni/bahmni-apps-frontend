@@ -13,7 +13,10 @@ import { SelectedDiagnosisItemProps } from '@components/clinical/diagnosesForm/S
 import { Concept } from '@types/encounterConcepts';
 import { ConceptSearch } from '@types/concepts';
 import { ConsultationBundle } from '@types/consultationBundle';
-import { postConsultationBundle } from '@services/consultationBundleService';
+import {
+  postConsultationBundle,
+  createDiagnosisBundleEntries,
+} from '@services/consultationBundleService';
 import useNotification from '@hooks/useNotification';
 import { formatDate } from '@utils/date';
 import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
@@ -22,6 +25,7 @@ import {
   createConsultationBundle,
 } from '@utils/fhir/consultationBundleCreator';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
+import { ERROR_TITLES } from '@constants/errors';
 import { Coding } from 'fhir/r4';
 
 interface ConsultationPadProps {
@@ -88,6 +92,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
 
   const {
     practitioner,
+    user,
     loading: loadingPractitioner,
     error: errorPractitioner,
   } = useActivePractitioner();
@@ -136,16 +141,17 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       encounterResource,
       'POST',
     );
+    const diagnosisEntries = createDiagnosisBundleEntries({
+      selectedDiagnoses,
+      encounterSubject: encounterResource.subject!,
+      encounterReference: enconterResourceURL,
+      practitionerUUID: user!.uuid,
+    });
 
-    /* TODO Can be iterated for each item
-    const diagnosisEntries:BundleEntry[] = []
-    const diagnosisResourceURL = `urn:uuid:${crypto.randomUUID}`
-    const diagnosisResource = createEncounterDiagnosisResource("diagnosis-uuid", "certainity", encounterResource.subject, getPlaceholderReference(enconterResourceURL), createPractitionerReference(practitioner.uuid), new Date())
-    const diagnosisBundleEntry = createBundleEntry(diagnosisResourceURL, diagnosisResource, "POST");
-    diagnosisEntries.push(diagnosisBundleEntry);
-    */
-
-    const consultationBundle = createConsultationBundle([encounterBundleEntry]);
+    const consultationBundle = createConsultationBundle([
+      encounterBundleEntry,
+      ...diagnosisEntries,
+    ]);
 
     return postConsultationBundle<ConsultationBundle>(consultationBundle);
   };
@@ -165,7 +171,14 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         onClose();
       } catch (error) {
         setIsSubmitting(false);
-        console.error(error);
+        const errorMessage =
+          error instanceof Error ? error.message : 'CONSULTATION_ERROR_GENERIC';
+        addNotification({
+          title: t(ERROR_TITLES.CONSULTATION_ERROR),
+          message: t(errorMessage),
+          type: 'error',
+          timeout: 5000,
+        });
         return null;
       }
     }

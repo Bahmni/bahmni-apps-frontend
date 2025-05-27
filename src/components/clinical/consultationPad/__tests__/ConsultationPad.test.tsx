@@ -45,7 +45,21 @@ jest.mock('@hooks/useCurrentEncounter', () => ({
 }));
 
 jest.mock('@services/consultationBundleService', () => ({
-  postConsultationBundle: jest.fn(),
+  postConsultationBundle: jest
+    .fn()
+    .mockImplementation((bundle) => Promise.resolve(bundle)),
+  createDiagnosisBundleEntries: jest
+    .fn()
+    .mockImplementation(({ selectedDiagnoses }) => {
+      if (!selectedDiagnoses?.length) return [];
+      return selectedDiagnoses
+        .filter((d) => d.selectedCertainty?.code)
+        .map(() => ({
+          resource: {
+            resourceType: 'Condition',
+          },
+        }));
+    }),
 }));
 
 jest.mock('@utils/fhir/encounterResourceCreator', () => ({
@@ -233,6 +247,10 @@ describe('ConsultationPad', () => {
 
     const practitionerHook = {
       practitioner: mockPractitioner,
+      user: {
+        uuid: 'user-123',
+        display: 'Test User',
+      },
       loading: false,
       error: null,
     };
@@ -347,8 +365,20 @@ describe('ConsultationPad', () => {
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: mockAddNotification,
     });
-    (postConsultationBundle as jest.Mock).mockResolvedValue({});
-    (createEncounterResource as jest.Mock).mockResolvedValue({});
+    (postConsultationBundle as jest.Mock).mockImplementation((bundle) => {
+      return Promise.resolve({
+        resourceType: 'Bundle',
+        type: 'transaction-response',
+        entry: bundle.entry,
+      });
+    });
+    (createEncounterResource as jest.Mock).mockReturnValue({
+      resourceType: 'Encounter',
+      id: 'test-encounter',
+      subject: { reference: 'Patient/test-patient' },
+      status: 'in-progress',
+      type: [{ coding: [{ code: 'consultation', display: 'Consultation' }] }],
+    });
     (formatDate as jest.Mock).mockReturnValue({
       formattedResult: '2025-05-20',
       error: undefined,
@@ -715,9 +745,6 @@ describe('ConsultationPad', () => {
         mockHooksForNormalState();
         const mockError = new Error('Submission failed');
         (postConsultationBundle as jest.Mock).mockRejectedValue(mockError);
-        const consoleSpy = jest
-          .spyOn(console, 'error')
-          .mockImplementation(() => {});
 
         // Act
         render(
@@ -730,11 +757,8 @@ describe('ConsultationPad', () => {
 
         // Assert
         await waitFor(() => {
-          expect(consoleSpy).toHaveBeenCalledWith(mockError);
+          expect(mockAddNotification).toHaveBeenCalled();
         });
-
-        // Cleanup
-        consoleSpy.mockRestore();
       });
 
       it('should call createConsultationBundlePayload with correct parameters', async () => {
@@ -1400,6 +1424,103 @@ describe('ConsultationPad', () => {
         const results = await axe(container);
         expect(results).toHaveNoViolations();
       });
+    });
+  });
+
+  describe('Diagnosis Creation Logic', () => {
+    beforeEach(() => {
+      mockHooksForNormalState();
+      jest
+        .spyOn(global.crypto, 'randomUUID')
+        .mockReturnValue('1d87ab20-8b86-4b41-a30d-984b2208d945');
+    });
+
+    it('should not create diagnosis entries when selectedDiagnoses is empty', async () => {
+      // Arrange
+      render(
+        <ConsultationPad patientUUID={mockPatientUUID} onClose={mockOnClose} />,
+      );
+
+      // Act
+      fireEvent.click(screen.getByTestId('primary-button'));
+
+      // Assert
+      await waitFor(() => {
+        expect(postConsultationBundle).toHaveBeenCalledWith(
+          expect.objectContaining({
+            entry: expect.not.arrayContaining([
+              expect.objectContaining({
+                resource: expect.objectContaining({
+                  resourceType: 'Condition',
+                }),
+              }),
+            ]),
+          }),
+        );
+      });
+    });
+
+    it('should not create diagnosis entries when diagnosis has no certainty selected', async () => {
+      // Arrange
+      render(
+        <ConsultationPad patientUUID={mockPatientUUID} onClose={mockOnClose} />,
+      );
+
+      // Add diagnosis without certainty
+      fireEvent.click(screen.getByText('Select'));
+
+      // Act
+      fireEvent.click(screen.getByTestId('primary-button'));
+
+      // Assert
+      await waitFor(() => {
+        expect(postConsultationBundle).toHaveBeenCalledWith(
+          expect.objectContaining({
+            entry: expect.not.arrayContaining([
+              expect.objectContaining({
+                resource: expect.objectContaining({
+                  resourceType: 'Condition',
+                }),
+              }),
+            ]),
+          }),
+        );
+      });
+    });
+
+    it('should not create entries when encounterResource is missing', () => {
+      // Arrange
+      mockHooksForNormalState();
+      (createEncounterResource as jest.Mock).mockReturnValue(null);
+
+      // Mock useState to include a diagnosis with certainty
+      const mockSelectedDiagnoses = [
+        {
+          id: 'diagnosis-1',
+          title: 'Test Diagnosis',
+          selectedCertainty: {
+            code: 'confirmed',
+            display: 'Confirmed',
+            system:
+              'http://terminology.hl7.org/CodeSystem/condition-ver-status',
+          },
+        },
+      ];
+
+      jest
+        .spyOn(React, 'useState')
+        .mockImplementationOnce(() => [false, jest.fn()]) // isSubmitting
+        .mockImplementationOnce(() => [mockSelectedDiagnoses, jest.fn()]); // selectedDiagnoses
+
+      render(
+        <ConsultationPad patientUUID={mockPatientUUID} onClose={mockOnClose} />,
+      );
+
+      // Act
+      fireEvent.click(screen.getByTestId('primary-button'));
+
+      // Assert
+      expect(postConsultationBundle).not.toHaveBeenCalled();
     });
   });
 });
