@@ -53,6 +53,14 @@ jest.mock('@carbon/react', () => ({
       <div data-testid="accordion-content">{children}</div>
     </div>
   ),
+  // Add the missing SkeletonText component mock
+  SkeletonText: ({ lineCount, width }: { lineCount: number; width: string }) => (
+    <div data-testid="skeleton-text" style={{ width }}>
+      {Array(lineCount).fill(0).map((_, i) => (
+        <div key={i} className="skeleton-line"></div>
+      ))}
+    </div>
+  ),
 }));
 
 describe('LabInvestigationControl', () => {
