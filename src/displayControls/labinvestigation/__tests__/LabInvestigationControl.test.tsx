@@ -9,7 +9,7 @@ import {
   LabTestPriority,
   FormattedLabTest,
 } from '@/types/labInvestigation';
-import { useTranslation } from 'react-i18next';
+import i18n from '@/setupTests.i18n';
 
 // Mock the useLabInvestigations hook
 jest.mock('@/hooks/useLabInvestigations');
@@ -19,10 +19,6 @@ jest.mock('@/services/labInvestigationService', () => ({
   groupLabTestsByDate: jest.fn(),
 }));
 
-// Mock the useTranslation hook
-jest.mock('react-i18next', () => ({
-  useTranslation: jest.fn(),
-}));
 
 // Mock the LabInvestigationItem component
 jest.mock('../LabInvestigationItem', () => ({
@@ -117,18 +113,9 @@ describe('LabInvestigationControl', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (groupLabTestsByDate as jest.Mock).mockReturnValue(mockLabTestsByDate);
-
-    // Setup translation mock
-    (useTranslation as jest.Mock).mockReturnValue({
-      t: (key: string) => {
-        const translations: Record<string, string> = {
-          LAB_TEST_LOADING: 'Loading lab tests...',
-          LAB_TEST_ERROR_LOADING: 'Error loading lab tests',
-          LAB_TEST_UNAVAILABLE: 'No lab Investigations available',
-        };
-        return translations[key] || key;
-      },
-    });
+    
+    // Reset i18n to English
+    i18n.changeLanguage('en');
   });
 
   it('renders a loading message when isLoading is true and there are no lab tests', () => {
