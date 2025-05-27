@@ -4,8 +4,7 @@
 @use "@carbon/react/scss/theme" as *;
 
 .diagnosesFormTile {
-  margin: $spacing-06;
-  border: 1px solid $border-subtle-02;
+  margin: $spacing-03;
   background-color: $background !important;
   overflow: hidden !important;
 }
