@@ -7,7 +7,7 @@ import {
   LabTestStatus,
   LabTestPriority,
   LabTestsByDate,
-} from '@types/labInvestigation';
+} from '@/types/labInvestigation';
 import { getFormattedError } from '@utils/common';
 import { formatDate } from '@utils/date';
 import notificationService from './notificationService';
@@ -103,7 +103,7 @@ export function formatLabTests(labTests: FhirLabTest[]): FormattedLabTest[] {
       const status = mapLabTestStatus(labTest);
       const priority = mapLabTestPriority(labTest);
       const orderedDate = labTest.occurrencePeriod.start;
-      const dateFormatResult = formatDate(orderedDate);
+      const dateFormatResult = formatDate(orderedDate, 'MMMM d, yyyy');
       const formattedDate =
         dateFormatResult.formattedResult || orderedDate.split('T')[0];
       const testType = determineTestType(labTest);

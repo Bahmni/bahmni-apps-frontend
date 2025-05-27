@@ -15,15 +15,9 @@
   font-weight: 600;
 }
 
-.chevron {
-  font-size: 1rem;
-  color: $text-secondary;
-}
-
 /* Lab test item styles */
 .labBox {
   border: 1px solid $border-subtle;
-  border-radius: $spacing-03 $spacing-03 0 0;
   padding: $spacing-05;
   margin-top: $spacing-03;
   background-color: $layer-02;

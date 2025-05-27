@@ -68,7 +68,7 @@ describe('useLabInvestigations', () => {
   ];
 
   // Mock raw lab tests
-  const mockRawLabTests = [
+  const mockLabTestFhirBundle = [
     {
       resourceType: 'ServiceRequest',
       id: 'test1',
@@ -264,7 +264,7 @@ describe('useLabInvestigations', () => {
     });
 
     // Mock service functions
-    mockedGetLabTests.mockResolvedValue(mockRawLabTests);
+    mockedGetLabTests.mockResolvedValue(mockLabTestFhirBundle);
     mockedFormatLabTests.mockReturnValue(mockFormattedLabTests);
   });
 
@@ -281,7 +281,7 @@ describe('useLabInvestigations', () => {
       // Wait for async operations
       await waitFor(() => {
         expect(mockedGetLabTests).toHaveBeenCalledWith(patientUUID);
-        expect(mockedFormatLabTests).toHaveBeenCalledWith(mockRawLabTests);
+        expect(mockedFormatLabTests).toHaveBeenCalledWith(mockLabTestFhirBundle);
         expect(mockSetLabTests).toHaveBeenCalledWith(mockFormattedLabTests);
         expect(mockSetLoading).toHaveBeenCalledWith(false);
         expect(mockSetError).toHaveBeenCalledWith(false);

@@ -1,6 +1,6 @@
 import { format, parseISO } from 'date-fns';
 import { calculateAge, formatDate, formatDateTime } from '../date';
-import { MONTH_DATE_YEAR_FORMAT, DATE_TIME_FORMAT} from '@constants/date';
+import { DATE_TIME_FORMAT} from '@constants/date';
 import { DATE_ERROR_MESSAGES } from '@constants/errors';
 import i18n from '@/setupTests.i18n';
 
@@ -172,16 +172,14 @@ describe('Date Utility Functions', () => {
     it('should return a formatted date string for a valid Date object', () => {
       const date = new Date(2024, 2, 28); // March 28, 2024
       const formatted = formatDate(date);
-      expect(formatted.formattedResult).toBe(format(date, MONTH_DATE_YEAR_FORMAT));
+      expect(formatted.formattedResult).toBe('28/03/2024'); // Default DATE_FORMAT
       expect(formatted.error).toBeUndefined();
     });
 
     it('should return a formatted date string for a valid date string', () => {
       const dateString = '2024-03-28';
       const formatted = formatDate(dateString);
-      expect(formatted.formattedResult).toBe(
-        format(parseISO(dateString), MONTH_DATE_YEAR_FORMAT),
-      );
+      expect(formatted.formattedResult).toBe('28/03/2024'); // Default DATE_FORMAT
       expect(formatted.error).toBeUndefined();
     });
 
@@ -219,7 +217,21 @@ describe('Date Utility Functions', () => {
     it('should handle timestamp input', () => {
       const timestamp = new Date(2024, 2, 28).getTime();
       const formatted = formatDate(timestamp);
-      expect(formatted.formattedResult).toBe('March 28, 2024');
+      expect(formatted.formattedResult).toBe('28/03/2024'); // Default DATE_FORMAT
+      expect(formatted.error).toBeUndefined();
+    });
+
+    it('should accept custom format parameter', () => {
+      const date = new Date(2024, 2, 28); // March 28, 2024
+      const formatted = formatDate(date, 'MMMM d, yyyy');
+      expect(formatted.formattedResult).toBe('March 28, 2024'); // Custom format
+      expect(formatted.error).toBeUndefined();
+    });
+
+    it('should use default format when no format parameter is provided', () => {
+      const date = new Date(2024, 2, 28); // March 28, 2024
+      const formatted = formatDate(date);
+      expect(formatted.formattedResult).toBe('28/03/2024'); // Default DATE_FORMAT
       expect(formatted.error).toBeUndefined();
     });
   });
