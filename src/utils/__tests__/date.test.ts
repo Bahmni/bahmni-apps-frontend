@@ -1,6 +1,6 @@
 import { format, parseISO } from 'date-fns';
 import { calculateAge, formatDate, formatDateTime } from '../date';
-import { DATE_FORMAT, DATE_TIME_FORMAT } from '@constants/date';
+import { MONTH_DATE_YEAR_FORMAT, DATE_TIME_FORMAT , DATE_FORMAT} from '@constants/date';
 import { DATE_ERROR_MESSAGES } from '@constants/errors';
 import i18n from '@/setupTests.i18n';
 
@@ -172,7 +172,7 @@ describe('Date Utility Functions', () => {
     it('should return a formatted date string for a valid Date object', () => {
       const date = new Date(2024, 2, 28); // March 28, 2024
       const formatted = formatDate(date);
-      expect(formatted.formattedResult).toBe(format(date, DATE_FORMAT));
+      expect(formatted.formattedResult).toBe(format(date, MONTH_DATE_YEAR_FORMAT));
       expect(formatted.error).toBeUndefined();
     });
 
@@ -180,7 +180,7 @@ describe('Date Utility Functions', () => {
       const dateString = '2024-03-28';
       const formatted = formatDate(dateString);
       expect(formatted.formattedResult).toBe(
-        format(parseISO(dateString), DATE_FORMAT),
+        format(parseISO(dateString), MONTH_DATE_YEAR_FORMAT),
       );
       expect(formatted.error).toBeUndefined();
     });

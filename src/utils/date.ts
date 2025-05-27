@@ -10,7 +10,7 @@ import {
 } from 'date-fns';
 import { Age } from '@types/age';
 import { FormatDateResult } from '@types/date';
-import { DATE_FORMAT, DATE_TIME_FORMAT } from '@constants/date';
+import { MONTH_DATE_YEAR_FORMAT, DATE_TIME_FORMAT,DATE_FORMAT } from '@constants/date';
 import { DATE_ERROR_MESSAGES } from '@constants/errors';
 import i18next from 'i18next';
 
@@ -144,5 +144,5 @@ export function formatDateTime(date: string | Date | number): FormatDateResult {
  * @returns A FormatDateResult object containing either a formatted date string or an error.
  */
 export function formatDate(date: string | Date | number): FormatDateResult {
-  return formatDateGeneric(date, DATE_FORMAT);
+  return formatDateGeneric(date, MONTH_DATE_YEAR_FORMAT);
 }
