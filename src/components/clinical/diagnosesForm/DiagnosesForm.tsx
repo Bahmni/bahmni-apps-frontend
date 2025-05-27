@@ -46,7 +46,7 @@ const DiagnosesForm: React.FC<DiagnosesFormProps> = React.memo(
     // Handle search errors
     useEffect(() => {
       if (searchError) {
-        setDiagnosisErrors([searchError]);
+        setDiagnosisErrors([...diagnosisErrors, searchError]);
       }
     }, [searchError]);
 
@@ -79,7 +79,8 @@ const DiagnosesForm: React.FC<DiagnosesFormProps> = React.memo(
     const isSearchEmpty =
       searchResults.length === 0 &&
       !isSearchLoading &&
-      searchDiagnosesTerm.length > 2;
+      searchDiagnosesTerm.length > 2 &&
+      !searchError;
 
     return (
       <Tile className={styles.diagnosesFormTile}>

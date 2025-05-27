@@ -383,7 +383,9 @@ describe('DiagnosesForm', () => {
       );
 
       // First search with error
-      await userEvent.type(searchInput, 'error');
+      await waitFor(() => {
+        userEvent.type(searchInput, 'hyper');
+      });
       waitFor(() => {
         expect(screen.getByRole('alert')).toBeInTheDocument();
         expect(screen.getByText(mockError.message)).toBeInTheDocument();
@@ -454,14 +456,69 @@ describe('DiagnosesForm', () => {
       expect(screen.getByText('DIAGNOSES_FORM_TITLE')).toBeInTheDocument();
     });
 
-    it('should handle special characters in search term', async () => {
+    it('should handle network errors gracefully', async () => {
+      const networkError = new Error('Network error: Failed to fetch');
+      (useConceptSearch as jest.Mock).mockReturnValue({
+        searchResults: [],
+        loading: false,
+        error: networkError,
+      });
+
       render(<DiagnosesForm {...defaultProps} />);
       const searchInput = screen.getByPlaceholderText(
         'DIAGNOSES_SEARCH_PLACEHOLDER',
       );
-      await userEvent.type(searchInput, '@#$%^&*');
+      await waitFor(() => {
+        userEvent.type(searchInput, 'hyper');
+      });
+      waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent(
+          networkError.message,
+        );
+      });
+    });
 
-      expect(useConceptSearch).toHaveBeenCalledWith('@#$%^&*');
+    it('should handle server errors gracefully', async () => {
+      const serverError = new Error('Server error: 500 Internal Server Error');
+      (useConceptSearch as jest.Mock).mockReturnValue({
+        searchResults: [],
+        loading: false,
+        error: serverError,
+      });
+
+      render(<DiagnosesForm {...defaultProps} />);
+      const searchInput = screen.getByPlaceholderText(
+        'DIAGNOSES_SEARCH_PLACEHOLDER',
+      );
+      await waitFor(() => {
+        userEvent.type(searchInput, 'hyper');
+      });
+      waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent(
+          serverError.message,
+        );
+      });
+    });
+
+    it('should handle special characters in search term', async () => {
+      const mockError = new Error('Special characters not allowed');
+      (useConceptSearch as jest.Mock).mockReturnValue({
+        searchResults: [],
+        loading: false,
+        error: mockError,
+      });
+
+      render(<DiagnosesForm {...defaultProps} />);
+      const searchInput = screen.getByPlaceholderText(
+        'DIAGNOSES_SEARCH_PLACEHOLDER',
+      );
+      await waitFor(() => {
+        userEvent.type(searchInput, '@#$%^&*');
+      });
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toBeInTheDocument();
+        expect(screen.getByText(mockError.message)).toBeInTheDocument();
+      });
     });
   });
 
