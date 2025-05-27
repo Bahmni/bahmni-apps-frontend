@@ -58,7 +58,7 @@ const SelectedDiagnosisItem: React.FC<SelectedDiagnosisItemProps> = React.memo(
           <Dropdown
             id={`diagnoses-certainty-dropdown-${id}`}
             data-testid={`diagnoses-certainty-dropdown-${id}`}
-            type="inline"
+            type="default"
             titleText=""
             label={t('DIAGNOSES_SELECT_CERTAINTY')}
             items={certaintyConcepts}

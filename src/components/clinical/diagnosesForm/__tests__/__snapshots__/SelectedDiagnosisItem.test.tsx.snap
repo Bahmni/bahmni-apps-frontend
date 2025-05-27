@@ -14,11 +14,11 @@ exports[`SelectedDiagnosisItem Snapshot Tests default rendering matches snapshot
       class="selectedDiagnosisCertainty cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-4 cds--xlg:col-span-4 cds--css-grid-column"
     >
       <div
-        class="cds--dropdown__wrapper cds--list-box__wrapper cds--dropdown__wrapper--inline cds--list-box__wrapper--inline"
+        class="cds--dropdown__wrapper cds--list-box__wrapper"
         data-testid="diagnoses-certainty-dropdown-test-diagnosis-1"
       >
         <div
-          class="cds--dropdown cds--dropdown--inline cds--autoalign cds--list-box"
+          class="cds--dropdown cds--autoalign cds--list-box"
           id="diagnoses-certainty-dropdown-test-diagnosis-1"
         >
           <button
@@ -91,11 +91,11 @@ exports[`SelectedDiagnosisItem Snapshot Tests rendering with null selectedCertai
       class="selectedDiagnosisCertainty cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-4 cds--xlg:col-span-4 cds--css-grid-column"
     >
       <div
-        class="cds--dropdown__wrapper cds--list-box__wrapper cds--dropdown__wrapper--inline cds--list-box__wrapper--inline"
+        class="cds--dropdown__wrapper cds--list-box__wrapper"
         data-testid="diagnoses-certainty-dropdown-test-diagnosis-1"
       >
         <div
-          class="cds--dropdown cds--dropdown--inline cds--autoalign cds--list-box"
+          class="cds--dropdown cds--autoalign cds--list-box"
           id="diagnoses-certainty-dropdown-test-diagnosis-1"
         >
           <button
