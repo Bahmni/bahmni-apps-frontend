@@ -93,7 +93,11 @@ const DiagnosesForm: React.FC<DiagnosesFormProps> = React.memo(
                 ]
               : searchResults
           }
-          itemToString={(item) => item!.conceptName}
+          itemToString={(item) =>
+            item?.conceptName
+              ? item.conceptName
+              : t('DIAGNOSES_SEARCH_PLACEHOLDER')
+          }
           onChange={(data) => handleOnChange(data.selectedItem!)}
           onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
           size="lg"

@@ -147,6 +147,37 @@ describe('DiagnosesForm', () => {
   });
 
   describe('Search Functionality', () => {
+    it('should display placeholder when dropdown is opened', async () => {
+      render(<DiagnosesForm {...defaultProps} />);
+      expect(
+        screen.getByPlaceholderText('DIAGNOSES_SEARCH_PLACEHOLDER'),
+      ).toBeInTheDocument();
+      const dropdownButton = screen.getByRole('button', { name: 'Open' });
+      await userEvent.click(dropdownButton);
+
+      expect(
+        screen.getByPlaceholderText('DIAGNOSES_SEARCH_PLACEHOLDER'),
+      ).toBeInTheDocument();
+    });
+
+    it('should display concept name when item is selected', async () => {
+      (useConceptSearch as jest.Mock).mockReturnValue({
+        searchResults: mockConcepts,
+        loading: false,
+        error: null,
+      });
+
+      render(<DiagnosesForm {...defaultProps} />);
+      const searchInput = screen.getByPlaceholderText('DIAGNOSES_SEARCH_PLACEHOLDER');
+
+      // Open dropdown and select an item
+      await userEvent.type(searchInput, 'hyper');
+      const option = screen.getByText('Hypertension');
+      await userEvent.click(option);
+
+      expect(screen.getByDisplayValue('Hypertension')).toBeInTheDocument();
+    });
+
     it('should handle itemToString with null/undefined item', () => {
       render(<DiagnosesForm {...defaultProps} />);
       const comboBox = screen.getByRole('combobox');
