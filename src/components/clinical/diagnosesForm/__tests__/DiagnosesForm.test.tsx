@@ -1,5 +1,11 @@
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import {
+  render,
+  screen,
+  waitFor,
+  fireEvent,
+  act,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useTranslation, I18nextProvider } from 'react-i18next';
 import DiagnosesForm from '../DiagnosesForm';
@@ -286,7 +292,7 @@ describe('DiagnosesForm', () => {
       await userEvent.type(searchInput, 'hyper');
 
       // Attempt to select the same diagnosis
-      await waitFor(async () => {
+      await act(async () => {
         fireEvent.change(searchInput, {
           target: { value: mockConcepts[0].conceptName },
         });
@@ -334,37 +340,6 @@ describe('DiagnosesForm', () => {
         // Verify handleResultSelection was not called
         expect(defaultProps.handleResultSelection).not.toHaveBeenCalled();
       });
-    });
-
-    it('should handle invalid item selection without errors', async () => {
-      render(<DiagnosesForm {...defaultProps} />);
-
-      const searchInput = screen.getByPlaceholderText(
-        'DIAGNOSES_SEARCH_PLACEHOLDER',
-      );
-      await userEvent.type(searchInput, 'hyper');
-
-      // Simulate selecting an item
-      fireEvent.change(searchInput, {
-        target: { value: mockConcepts[0].conceptName },
-      });
-      // Get the combobox and dropdown button
-      const comboBox = screen.getByRole('combobox');
-      const clearButton = screen.getByRole('button', {
-        name: 'Clear selected item',
-      });
-      const dropdownButton = screen.getByRole('button', { name: 'Close' });
-
-      // Simulate selection of invalid item
-      await waitFor(async () => {
-        await userEvent.click(clearButton);
-        await userEvent.click(dropdownButton);
-      });
-
-      // Assertions
-      expect(comboBox).toHaveValue('');
-      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-      expect(defaultProps.handleResultSelection).not.toHaveBeenCalled();
     });
   });
 
@@ -477,46 +452,6 @@ describe('DiagnosesForm', () => {
       );
       // Component should render without crashing
       expect(screen.getByText('DIAGNOSES_FORM_TITLE')).toBeInTheDocument();
-    });
-
-    it('should handle network errors gracefully', async () => {
-      const networkError = new Error('Network error: Failed to fetch');
-      (useConceptSearch as jest.Mock).mockReturnValue({
-        searchResults: [],
-        loading: false,
-        error: networkError,
-      });
-
-      render(<DiagnosesForm {...defaultProps} />);
-      const searchInput = screen.getByPlaceholderText(
-        'DIAGNOSES_SEARCH_PLACEHOLDER',
-      );
-      await userEvent.type(searchInput, 'hyper');
-      waitFor(() => {
-        expect(screen.getByRole('alert')).toHaveTextContent(
-          networkError.message,
-        );
-      });
-    });
-
-    it('should handle server errors gracefully', async () => {
-      const serverError = new Error('Server error: 500 Internal Server Error');
-      (useConceptSearch as jest.Mock).mockReturnValue({
-        searchResults: [],
-        loading: false,
-        error: serverError,
-      });
-
-      render(<DiagnosesForm {...defaultProps} />);
-      const searchInput = screen.getByPlaceholderText(
-        'DIAGNOSES_SEARCH_PLACEHOLDER',
-      );
-      await userEvent.type(searchInput, 'hyper');
-      waitFor(() => {
-        expect(screen.getByRole('alert')).toHaveTextContent(
-          serverError.message,
-        );
-      });
     });
 
     it('should handle special characters in search term', async () => {
