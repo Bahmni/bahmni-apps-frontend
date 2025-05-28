@@ -236,6 +236,22 @@ describe('DiagnosesForm', () => {
       ).toBeInTheDocument();
     });
 
+    it('should display loading text when search is loading', async () => {
+      (useConceptSearch as jest.Mock).mockReturnValue({
+        searchResults: [],
+        loading: true,
+        error: null,
+      });
+
+      render(<DiagnosesForm {...defaultProps} />);
+      const searchInput = screen.getByPlaceholderText(
+        'DIAGNOSES_SEARCH_PLACEHOLDER',
+      );
+      await userEvent.type(searchInput, 'nonexistent');
+
+      expect(screen.getByText('LOADING_CONCEPTS')).toBeInTheDocument();
+    });
+
     it('should handle search term less than 3 characters', async () => {
       render(<DiagnosesForm {...defaultProps} />);
       const searchInput = screen.getByPlaceholderText(
