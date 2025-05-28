@@ -1,0 +1,62 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/theme" as *;
+
+/* Container styles */
+.labInvestigationWrapper {
+  width: 100%;
+  margin: $spacing-05 auto;
+}
+
+.accordionTitle {
+  display: flex;
+  align-items: center;
+  gap: $spacing-03;
+  font-weight: 600;
+}
+
+/* Lab test item styles */
+.labBox {
+  border: 1px solid $border-subtle;
+  padding: $spacing-05;
+  margin-top: $spacing-03;
+  background-color: $layer-02;
+}
+
+.labHeader {
+  display: flex;
+  align-items: center;
+  gap: $spacing-03;
+  margin-bottom: $spacing-03;
+}
+
+/* Test type styles */
+.testType {
+  color: $text-secondary;
+  font-size: 0.875rem;
+  font-weight: normal;
+  margin-left: 0.5rem;
+}
+
+.orderedBy {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  gap: $spacing-02;
+  color: $text-primary;
+}
+
+/* Result display styles */
+.labResult {
+  width: 100%;
+  background-color: $background-hover;
+  padding: $spacing-04;
+  border-radius: $spacing-02;
+  font-weight: 600;
+}
+
+.accordionItem {
+  :global(.cds--accordion__content) {
+    padding-inline-end: 0%;
+  }
+}
