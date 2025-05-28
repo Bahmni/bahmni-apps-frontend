@@ -1,0 +1,45 @@
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.storyHeading {
+  @include type-style("heading-compact-02");
+  padding-bottom: $spacing-03;
+  color: $text-primary;
+}
+
+.storySubheading {
+  @include type-style("heading-compact-01");
+  padding-bottom: $spacing-03;
+  color: $text-secondary;
+}
+
+.storyText {
+  @include type-style("body-compact-01");
+  padding-bottom: $spacing-03;
+}
+
+.storySmallText {
+  @include type-style("label-01");
+  color: $text-secondary;
+}
+
+.storyContainer {
+  margin-bottom: $spacing-05;
+}
+
+.storyFormTitle {
+  @include type-style("heading-compact-02");
+  padding-bottom: $spacing-05;
+}
+
+.storyFormSubtitle {
+  @include type-style("body-compact-01");
+  color: $text-secondary;
+  padding-bottom: $spacing-05;
+}
+
+.storyFormGroup {
+  margin-bottom: $spacing-05;
+}

@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@carbon/layout": "^11.34.0",
-    "@carbon/react": "^1.78.2",
+    "@carbon/react": "^1.83.0",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",

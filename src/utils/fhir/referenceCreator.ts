@@ -43,7 +43,7 @@ export const createPractitionerReference = (
     'Practitioner',
     practitionerUUID,
   );
-  practitionerReference.type = 'Practitoner';
+  practitionerReference.type = 'Practitioner';
   return practitionerReference;
 };
 

@@ -125,7 +125,7 @@ const BasicForm: React.FC<BasicFormProps> = ({
           <DatePicker datePickerType="single" dateFormat="d/m/Y">
             <DatePickerInput
               id="encounter-date-picker-input"
-              placeholder="dd/mm/yyyy"
+              placeholder={defaultDate}
               title={t('ENCOUNTER_DATE')}
               labelText={t('ENCOUNTER_DATE')}
               defaultValue={defaultDate}

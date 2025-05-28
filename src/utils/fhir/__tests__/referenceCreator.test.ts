@@ -97,7 +97,7 @@ describe('referenceCreator utility functions', () => {
       // Assert
       expect(result).toEqual({
         reference: `Practitioner/${practitionerUUID}`,
-        type: 'Practitoner',
+        type: 'Practitioner',
       });
     });
   });
@@ -114,7 +114,7 @@ describe('referenceCreator utility functions', () => {
       expect(result).toEqual({
         individual: {
           reference: `Practitioner/${practitionerUUID}`,
-          type: 'Practitoner',
+          type: 'Practitioner',
         },
       });
     });

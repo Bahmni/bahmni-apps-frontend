@@ -1,37 +1,12 @@
 import { getCurrentProvider } from '@services/providerService';
 import { get } from '@services/api';
-import {
-  USER_RESOURCE_URL,
-  PROVIDER_RESOURCE_URL,
-  BAHMNI_USER_COOKIE_NAME,
-} from '@constants/app';
-import * as commonUtils from '@utils/common';
+import { PROVIDER_RESOURCE_URL } from '@constants/app';
 
 // Mock dependencies
 jest.mock('@services/api');
-jest.mock('@services/notificationService');
-jest.mock('@utils/common', () => ({
-  ...jest.requireActual('@utils/common'),
-  getCookieByName: jest.fn(),
-  getFormattedError: jest.fn().mockImplementation((error) => ({
-    title: 'Error Title',
-    message: error instanceof Error ? error.message : 'Unknown error',
-  })),
-}));
 
 describe('providerService', () => {
-  const mockUsername = 'superman';
-  const mockEncodedUsername = '%22superman%22'; // URL encoded with quotes
   const mockUserUUID = 'd7a669e7-5e07-11ef-8f7c-0242ac120002';
-
-  const mockUserResponse = {
-    results: [
-      {
-        username: mockUsername,
-        uuid: mockUserUUID,
-      },
-    ],
-  };
 
   const mockProviderResponse = {
     results: [
@@ -68,149 +43,55 @@ describe('providerService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (get as jest.Mock).mockReset();
-    (commonUtils.getCookieByName as jest.Mock).mockReset();
   });
 
   describe('getCurrentProvider', () => {
-    it('should fetch provider from username in cookie', async () => {
+    it('should fetch provider using userUUID', async () => {
       // Arrange
-      (commonUtils.getCookieByName as jest.Mock).mockReturnValueOnce(
-        mockEncodedUsername,
-      );
-      (get as jest.Mock)
-        .mockResolvedValueOnce(mockUserResponse) // First call for user
-        .mockResolvedValueOnce(mockProviderResponse); // Second call for provider
+      (get as jest.Mock).mockResolvedValueOnce(mockProviderResponse);
 
       // Act
-      const result = await getCurrentProvider();
+      const result = await getCurrentProvider(mockUserUUID);
 
       // Assert
-      expect(commonUtils.getCookieByName).toHaveBeenCalledWith(
-        BAHMNI_USER_COOKIE_NAME,
-      );
-      expect(get).toHaveBeenCalledWith(USER_RESOURCE_URL('superman'));
       expect(get).toHaveBeenCalledWith(PROVIDER_RESOURCE_URL(mockUserUUID));
       expect(result).toEqual(mockProviderResponse.results[0]);
     });
 
-    it('should handle URL encoded and quoted cookie values', async () => {
+    it('should return null if provider results are empty', async () => {
       // Arrange
-      (commonUtils.getCookieByName as jest.Mock).mockReturnValueOnce(
-        mockEncodedUsername,
-      );
-      (get as jest.Mock)
-        .mockResolvedValueOnce(mockUserResponse) // First call for user
-        .mockResolvedValueOnce(mockProviderResponse); // Second call for provider
-
-      // Act
-      await getCurrentProvider();
-
-      // Assert
-      expect(get).toHaveBeenCalledWith(USER_RESOURCE_URL('superman'));
-    });
-
-    it('should return null if cookie is not found', async () => {
-      // Arrange
-      (commonUtils.getCookieByName as jest.Mock).mockReturnValueOnce('');
-
-      // Act
-      const result = await getCurrentProvider();
-
-      // Assert
-      expect(result).toBeNull();
-      expect(get).not.toHaveBeenCalled();
-    });
-
-    it('should return null if user results are empty', async () => {
-      // Arrange
-      (commonUtils.getCookieByName as jest.Mock).mockReturnValueOnce(
-        mockEncodedUsername,
-      );
       (get as jest.Mock).mockResolvedValueOnce({ results: [] });
 
       // Act
-      const result = await getCurrentProvider();
+      const result = await getCurrentProvider(mockUserUUID);
 
       // Assert
       expect(result).toBeNull();
-      expect(get).not.toHaveBeenCalledWith(
-        PROVIDER_RESOURCE_URL(expect.anything()),
-      );
-    });
-
-    it('should return null if user results are null', async () => {
-      // Arrange
-      (commonUtils.getCookieByName as jest.Mock).mockReturnValueOnce(
-        mockEncodedUsername,
-      );
-      (get as jest.Mock).mockResolvedValueOnce({ results: null });
-
-      // Act
-      const result = await getCurrentProvider();
-
-      // Assert
-      expect(result).toBeNull();
-      expect(get).not.toHaveBeenCalledWith(
-        PROVIDER_RESOURCE_URL(expect.anything()),
-      );
-    });
-
-    it('should return null if provider results are empty', async () => {
-      // Arrange
-      (commonUtils.getCookieByName as jest.Mock).mockReturnValueOnce(
-        mockEncodedUsername,
-      );
-      (get as jest.Mock)
-        .mockResolvedValueOnce(mockUserResponse) // First call for user
-        .mockResolvedValueOnce({ results: [] }); // Second call for provider with empty results
-
-      // Act
-      const result = await getCurrentProvider();
-
-      // Assert
-      expect(result).toBeNull();
+      expect(get).toHaveBeenCalledWith(PROVIDER_RESOURCE_URL(mockUserUUID));
     });
 
     it('should return null if provider results are null', async () => {
       // Arrange
-      (commonUtils.getCookieByName as jest.Mock).mockReturnValueOnce(
-        mockEncodedUsername,
-      );
-      (get as jest.Mock)
-        .mockResolvedValueOnce(mockUserResponse) // First call for user
-        .mockResolvedValueOnce({ results: null }); // Second call for provider with null results
+      (get as jest.Mock).mockResolvedValueOnce({ results: null });
 
       // Act
-      const result = await getCurrentProvider();
+      const result = await getCurrentProvider(mockUserUUID);
 
       // Assert
       expect(result).toBeNull();
-    });
-
-    it('should throw error if user API call fails', async () => {
-      // Arrange
-      const mockError = new Error('Network Error');
-      (commonUtils.getCookieByName as jest.Mock).mockReturnValueOnce(
-        mockEncodedUsername,
-      );
-      (get as jest.Mock).mockRejectedValueOnce(mockError);
-
-      // Act & Assert
-      await expect(getCurrentProvider()).rejects.toThrow('Network Error');
+      expect(get).toHaveBeenCalledWith(PROVIDER_RESOURCE_URL(mockUserUUID));
     });
 
     it('should throw error if provider API call fails', async () => {
       // Arrange
       const mockError = new Error('Provider API Error');
-      (commonUtils.getCookieByName as jest.Mock).mockReturnValueOnce(
-        mockEncodedUsername,
-      );
-      (get as jest.Mock)
-        .mockResolvedValueOnce(mockUserResponse) // First call for user succeeds
-        .mockRejectedValueOnce(mockError); // Second call for provider fails
+      (get as jest.Mock).mockRejectedValueOnce(mockError);
 
       // Act & Assert
-      await expect(getCurrentProvider()).rejects.toThrow('Provider API Error');
+      await expect(getCurrentProvider(mockUserUUID)).rejects.toThrow(
+        'Provider API Error',
+      );
+      expect(get).toHaveBeenCalledWith(PROVIDER_RESOURCE_URL(mockUserUUID));
     });
   });
 });

@@ -42,7 +42,7 @@ export const validBundle: ConsultationBundle = {
           {
             individual: {
               reference: 'Practitioner/practitioner-1',
-              type: 'Practitoner',
+              type: 'Practitioner',
             },
           },
         ],

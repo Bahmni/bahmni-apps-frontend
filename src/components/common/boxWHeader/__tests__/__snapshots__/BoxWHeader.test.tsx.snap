@@ -1,0 +1,25 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`BoxWHeader Happy Paths should match snapshot 1`] = `
+<div>
+  <div
+    aria-label="Snapshot Test"
+    class="box-class cds--css-grid cds--css-grid--narrow cds--css-grid--full-width"
+    data-testid="box-w-title"
+    role="region"
+  >
+    <div
+      class="header-class cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
+    >
+      Snapshot Test
+    </div>
+    <div
+      class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
+    >
+      <div>
+        Snapshot Content
+      </div>
+    </div>
+  </div>
+</div>
+`;

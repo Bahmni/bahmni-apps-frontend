@@ -1,0 +1,26 @@
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.diagnosesSelectedItem {
+  border-top: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 1px solid $border-subtle-02;
+}
+
+.storyFormTitle {
+  @include type-style("heading-compact-01");
+  margin-bottom: $spacing-02;
+}
+
+.storyFormSubtitle {
+  @include type-style("body-compact-01");
+  color: $text-secondary;
+  margin-bottom: $spacing-03;
+}
+
+.storyFormGroup {
+  margin-top: $spacing-03;
+}
