@@ -281,7 +281,9 @@ describe('useLabInvestigations', () => {
       // Wait for async operations
       await waitFor(() => {
         expect(mockedGetLabTests).toHaveBeenCalledWith(patientUUID);
-        expect(mockedFormatLabTests).toHaveBeenCalledWith(mockLabTestFhirBundle);
+        expect(mockedFormatLabTests).toHaveBeenCalledWith(
+          mockLabTestFhirBundle,
+        );
         expect(mockSetLabTests).toHaveBeenCalledWith(mockFormattedLabTests);
         expect(mockSetLoading).toHaveBeenCalledWith(false);
         expect(mockSetError).toHaveBeenCalledWith(false);
