@@ -8,8 +8,8 @@ import {
   subMonths,
   format,
 } from 'date-fns';
-import { Age } from '@types/age';
-import { FormatDateResult } from '@types/date';
+import { Age } from '@/types/patient';
+import { FormatDateResult } from '@/types/date';
 import { DATE_FORMAT, DATE_TIME_FORMAT } from '@constants/date';
 import { DATE_ERROR_MESSAGES } from '@constants/errors';
 import i18next from 'i18next';
@@ -141,8 +141,12 @@ export function formatDateTime(date: string | Date | number): FormatDateResult {
 /**
  * Formats a date string or Date object into the specified date format.
  * @param date - The date string or Date object to format.
+ * @param format - The date format to use (default is 'dd/MM/yyyy').
  * @returns A FormatDateResult object containing either a formatted date string or an error.
  */
-export function formatDate(date: string | Date | number): FormatDateResult {
-  return formatDateGeneric(date, DATE_FORMAT);
+export function formatDate(
+  date: string | Date | number,
+  format: string = DATE_FORMAT,
+): FormatDateResult {
+  return formatDateGeneric(date, format);
 }
