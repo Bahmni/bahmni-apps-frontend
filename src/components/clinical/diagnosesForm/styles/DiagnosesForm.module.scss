@@ -1,0 +1,31 @@
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.diagnosesFormTile {
+  margin: $spacing-03;
+  background-color: $background !important;
+  overflow: hidden !important;
+}
+
+.diagnosesFormTitle {
+  @include type-style("heading-compact-02");
+  padding-bottom: $spacing-05;
+}
+
+.diagnosesBox {
+  margin: $spacing-06;
+}
+
+.selectedDiagnosisItem {
+  border-top: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 1px solid $border-subtle-02;
+}
+
+.inlineErrorNotification {
+  min-width: -webkit-fill-available !important;
+  margin-top: $spacing-03;
+}

@@ -111,6 +111,44 @@ exports[`ConsultationPad Rendering Snapshots should match snapshot for normal st
       <div
         data-testid="mock-basic-form"
       />
+      <div
+        data-testid="mock-diagnoses-form"
+      >
+        <button>
+          Search
+        </button>
+        <button>
+          Select
+        </button>
+        <button
+          data-testid="select-null-button"
+        >
+          Select Null
+        </button>
+        <button>
+          Remove
+        </button>
+        <div
+          data-testid="diagnoses-form-errors"
+        />
+        <div
+          data-testid="diagnoses-form-loading"
+        >
+          Not Loading
+        </div>
+        <div
+          data-testid="diagnoses-form-results"
+        >
+          0
+           results
+        </div>
+        <div
+          data-testid="diagnoses-form-selected"
+        >
+          0
+           selected
+        </div>
+      </div>
     </div>
     <button
       data-testid="primary-button"

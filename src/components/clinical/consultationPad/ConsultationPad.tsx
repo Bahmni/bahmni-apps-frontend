@@ -8,9 +8,15 @@ import { useLocations } from '@hooks/useLocations';
 import { Column, Grid, Loading } from '@carbon/react';
 import * as styles from './styles/ConsultationPad.module.scss';
 import BasicForm from '@components/clinical/basicForm/BasicForm';
+import DiagnosesForm from '@components/clinical/diagnosesForm/DiagnosesForm';
+import { SelectedDiagnosisItemProps } from '@components/clinical/diagnosesForm/SelectedDiagnosisItem';
 import { Concept } from '@types/encounterConcepts';
+import { ConceptSearch } from '@types/concepts';
 import { ConsultationBundle } from '@types/consultationBundle';
-import { postConsultationBundle } from '@services/consultationBundleService';
+import {
+  postConsultationBundle,
+  createDiagnosisBundleEntries,
+} from '@services/consultationBundleService';
 import useNotification from '@hooks/useNotification';
 import { formatDate } from '@utils/date';
 import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
@@ -18,6 +24,9 @@ import {
   createBundleEntry,
   createConsultationBundle,
 } from '@utils/fhir/consultationBundleCreator';
+import { CERTAINITY_CONCEPTS } from '@constants/concepts';
+import { ERROR_TITLES } from '@constants/errors';
+import { Coding } from 'fhir/r4';
 
 interface ConsultationPadProps {
   patientUUID: string;
@@ -29,8 +38,47 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   onClose,
 }) => {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [selectedDiagnoses, setSelectedDiagnoses] = React.useState<
+    SelectedDiagnosisItemProps[]
+  >([]);
+
   const { t } = useTranslation();
   const { addNotification } = useNotification();
+
+  const handleResultSelection = (selectedItem: ConceptSearch) => {
+    // Create new diagnosis with certainty handler
+    const newDiagnosis: SelectedDiagnosisItemProps = {
+      id: selectedItem.conceptUuid,
+      title: selectedItem.conceptName,
+      certaintyConcepts: CERTAINITY_CONCEPTS,
+      selectedCertainty: null,
+      handleCertaintyChange: (data) => {
+        handleCertaintyChange(selectedItem.conceptUuid, data.selectedItem);
+      },
+    };
+
+    setSelectedDiagnoses([...selectedDiagnoses, newDiagnosis]);
+  };
+
+  const handleRemoveDiagnosis = (index: number) => {
+    setSelectedDiagnoses((prevDiagnoses) =>
+      prevDiagnoses.filter((_, i) => i !== index),
+    );
+  };
+
+  const handleCertaintyChange = (
+    diagnosisId: string,
+    selectedCertainty: Coding | null | undefined,
+  ) => {
+    setSelectedDiagnoses((prevDiagnoses) =>
+      prevDiagnoses.map((diagnosis) =>
+        diagnosis.id === diagnosisId
+          ? { ...diagnosis, selectedCertainty: selectedCertainty || null }
+          : diagnosis,
+      ),
+    );
+  };
+
   const {
     locations,
     loading: loadingLocations,
@@ -44,6 +92,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
 
   const {
     practitioner,
+    user,
     loading: loadingPractitioner,
     error: errorPractitioner,
   } = useActivePractitioner();
@@ -79,11 +128,11 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   const submitConsultation = () => {
     const enconterResourceURL = `urn:uuid:${crypto.randomUUID()}`;
     const encounterResource = createEncounterResource(
-      encounterTypeSelected?.uuid,
-      encounterTypeSelected?.name,
+      encounterTypeSelected!.uuid,
+      encounterTypeSelected!.name,
       patientUUID,
-      [practitioner?.uuid],
-      currentEncounter?.id,
+      [practitioner!.uuid],
+      currentEncounter!.id,
       locations[0].uuid,
       new Date(),
     );
@@ -92,7 +141,17 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       encounterResource,
       'POST',
     );
-    const consultationBundle = createConsultationBundle([encounterBundleEntry]);
+    const diagnosisEntries = createDiagnosisBundleEntries({
+      selectedDiagnoses,
+      encounterSubject: encounterResource.subject!,
+      encounterReference: enconterResourceURL,
+      practitionerUUID: user!.uuid,
+    });
+
+    const consultationBundle = createConsultationBundle([
+      encounterBundleEntry,
+      ...diagnosisEntries,
+    ]);
 
     return postConsultationBundle<ConsultationBundle>(consultationBundle);
   };
@@ -112,7 +171,14 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         onClose();
       } catch (error) {
         setIsSubmitting(false);
-        console.error(error);
+        const errorMessage =
+          error instanceof Error ? error.message : 'CONSULTATION_ERROR_GENERIC';
+        addNotification({
+          title: t(ERROR_TITLES.CONSULTATION_ERROR),
+          message: t(errorMessage),
+          type: 'error',
+          timeout: 5000,
+        });
         return null;
       }
     }
@@ -192,16 +258,23 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       secondaryButtonText={t('CONSULTATION_PAD_CANCEL_BUTTON')}
       onSecondaryButtonClick={handleOnSecondaryButtonClick}
       content={
-        <BasicForm
-          practitioner={practitioner}
-          encounterTypes={encounterConcepts.encounterTypes}
-          encounterTypeSelected={encounterTypeSelected}
-          visitTypes={encounterConcepts.visitTypes}
-          visitTypeSelected={visitTypeSelected}
-          location={locations[0]}
-          locationSelected={locations[0]}
-          defaultDate={formattedDate.formattedResult}
-        />
+        <>
+          <BasicForm
+            practitioner={practitioner}
+            encounterTypes={encounterConcepts.encounterTypes}
+            encounterTypeSelected={encounterTypeSelected}
+            visitTypes={encounterConcepts.visitTypes}
+            visitTypeSelected={visitTypeSelected}
+            location={locations[0]}
+            locationSelected={locations[0]}
+            defaultDate={formattedDate.formattedResult}
+          />
+          <DiagnosesForm
+            handleResultSelection={handleResultSelection}
+            selectedDiagnoses={selectedDiagnoses}
+            handleRemoveDiagnosis={handleRemoveDiagnosis}
+          />
+        </>
       }
     />
   );
