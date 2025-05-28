@@ -1,0 +1,76 @@
+.diagnosesWrapper {
+  width: 100%;
+}
+
+.tableHeader {
+  display: flex;
+  padding: 1rem 1rem;
+  background-color: #f4f4f4;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 0.875rem;
+  color: #161616;
+}
+
+.diagnosesColumn {
+  flex: 1;
+  padding-left: 1rem;
+}
+
+.recordedByColumn {
+  width: 200px;
+  padding-right: 1rem;
+}
+
+.accordionItem {
+  :global(.cds--accordion__content) {
+    padding: 0 !important;
+  }
+  
+  :global(.cds--accordion__heading) {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  :global(.cds--accordion__item) {
+    border: none;
+  }
+}
+
+.diagnosisRow {
+  display: flex;
+  padding: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+  align-items: center;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.diagnosisCell {
+  flex: 1;
+  padding-left: 1rem;
+}
+
+.diagnosisMainLine {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.diagnosisName {
+  font-weight: 600;
+}
+
+.recorderCell {
+  width: 200px;
+  text-align: right;
+  font-size: 0.875rem;
+  color: #161616;
+}
+
+.noData {
+  padding: 1rem;
+  text-align: center;
+  color: #525252;
+}
