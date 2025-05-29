@@ -5,157 +5,141 @@ import * as styles from './styles/DiagnosesForm.module.scss';
 import SelectedItem from '@components/common/selectedItem/SelectedItem';
 import BoxWHeader from '@components/common/boxWHeader/BoxWHeader';
 import { ConceptSearch } from '@types/concepts';
-import SelectedDiagnosisItem, {
-  SelectedDiagnosisItemProps,
-} from './SelectedDiagnosisItem';
-import { useConceptSearch } from '@hooks/useConceptSearch';
-
-/**
- * DiagnosesForm component props
- * @interface DiagnosesFormProps
- * @property {function} handleResultSelection - Function to call when a diagnosis is selected
- * @property {SelectedDiagnosisItemProps[]} selectedDiagnoses - List of selected diagnoses
- * @property {function} handleRemoveDiagnosis - Function to call when a diagnosis is removed
- */
-interface DiagnosesFormProps {
-  handleResultSelection: (selectedItem: ConceptSearch) => void;
-  selectedDiagnoses: SelectedDiagnosisItemProps[];
-  handleRemoveDiagnosis: (index: number) => void;
-}
+import SelectedDiagnosisItem from './SelectedDiagnosisItem';
+import { useConceptSearch } from '@/hooks/useConceptSearch';
+import { useDiagnosisStore } from '@stores/diagnosisStore';
 
 /**
  * DiagnosesForm component
  *
  * A component that displays a search interface for diagnoses and a list of selected diagnoses.
  * It allows users to search for diagnoses, select them, and specify the certainty level.
- * @param {DiagnosesFormProps} props - Component props
  */
-const DiagnosesForm: React.FC<DiagnosesFormProps> = React.memo(
-  ({ handleResultSelection, selectedDiagnoses, handleRemoveDiagnosis }) => {
-    const { t } = useTranslation();
-    const [searchDiagnosesTerm, setSearchDiagnosesTerm] = useState('');
-    const [diagnosisErrors, setDiagnosisErrors] = React.useState<Error[]>([]);
+const DiagnosesForm: React.FC = React.memo(() => {
+  const { t } = useTranslation();
+  const [searchDiagnosesTerm, setSearchDiagnosesTerm] = useState('');
+  const [diagnosisErrors, setDiagnosisErrors] = React.useState<Error[]>([]);
 
-    // Use concept search hook for diagnoses
-    const {
-      searchResults,
-      loading: isSearchLoading,
-      error: searchError,
-    } = useConceptSearch(searchDiagnosesTerm);
+  // Use Zustand store
+  const { selectedDiagnoses, addDiagnosis, removeDiagnosis, updateCertainty } =
+    useDiagnosisStore();
 
-    // Handle search errors
-    useEffect(() => {
-      if (searchError) {
-        setDiagnosisErrors([...diagnosisErrors, searchError]);
-      }
-    }, [searchError]);
+  // Use concept search hook for diagnoses
+  const {
+    searchResults,
+    loading: isSearchLoading,
+    error: searchError,
+  } = useConceptSearch(searchDiagnosesTerm);
 
-    const handleSearch = (searchTerm: string) => {
-      setSearchDiagnosesTerm(searchTerm);
-      setDiagnosisErrors([]);
-    };
+  // Handle search errors
+  useEffect(() => {
+    if (searchError) {
+      setDiagnosisErrors([...diagnosisErrors, searchError]);
+    }
+  }, [searchError]);
 
-    const handleOnChange = (selectedItem: ConceptSearch) => {
-      if (
-        !selectedItem ||
-        !selectedItem.conceptUuid ||
-        !selectedItem.conceptName
-      ) {
-        return;
-      }
+  const handleSearch = (searchTerm: string) => {
+    setSearchDiagnosesTerm(searchTerm);
+    setDiagnosisErrors([]);
+  };
 
-      const isDuplicate = selectedDiagnoses.some(
-        (diagnosis) => diagnosis.id === selectedItem?.conceptUuid,
-      );
+  const handleOnChange = (selectedItem: ConceptSearch) => {
+    if (
+      !selectedItem ||
+      !selectedItem.conceptUuid ||
+      !selectedItem.conceptName
+    ) {
+      return;
+    }
 
-      if (isDuplicate) {
-        setDiagnosisErrors([new Error(t('DIAGNOSES_DUPLICATE_ERROR'))]);
-        return;
-      }
+    const isDuplicate = selectedDiagnoses.some(
+      (diagnosis) => diagnosis.id === selectedItem?.conceptUuid,
+    );
 
-      handleResultSelection(selectedItem);
-    };
+    if (isDuplicate) {
+      setDiagnosisErrors([new Error(t('DIAGNOSES_DUPLICATE_ERROR'))]);
+      return;
+    }
 
-    const isSearchEmpty =
-      searchResults.length === 0 &&
-      !isSearchLoading &&
-      searchDiagnosesTerm.length > 2 &&
-      !searchError;
+    addDiagnosis(selectedItem);
+  };
 
-    const selectedDiagnosisItems = isSearchLoading
+  const isSearchEmpty =
+    searchResults.length === 0 &&
+    !isSearchLoading &&
+    searchDiagnosesTerm.length > 2 &&
+    !searchError;
+
+  const selectedDiagnosisItems = isSearchLoading
+    ? [
+        {
+          conceptName: t('LOADING_CONCEPTS'),
+          conceptUuid: '',
+          matchedName: '',
+          disabled: true,
+        },
+      ]
+    : isSearchEmpty
       ? [
           {
-            conceptName: t('LOADING_CONCEPTS'),
+            conceptName: t('NO_MATCHING_CONCEPTS_FOUND'),
             conceptUuid: '',
             matchedName: '',
             disabled: true,
           },
         ]
-      : isSearchEmpty
-        ? [
-            {
-              conceptName: t('NO_MATCHING_CONCEPTS_FOUND'),
-              conceptUuid: '',
-              matchedName: '',
-              disabled: true,
-            },
-          ]
-        : searchResults;
+      : searchResults;
 
-    return (
-      <Tile className={styles.diagnosesFormTile}>
-        <div className={styles.diagnosesFormTitle}>
-          {t('DIAGNOSES_FORM_TITLE')}
-        </div>
-        <ComboBox
-          id="diagnoses-search"
-          placeholder={t('DIAGNOSES_SEARCH_PLACEHOLDER')}
-          items={selectedDiagnosisItems}
-          itemToString={(item) => (item?.conceptName ? item.conceptName : '')}
-          onChange={(data) => handleOnChange(data.selectedItem!)}
-          onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
-          size="lg"
-          autoAlign
-          aria-label={t('DIAGNOSES_SEARCH_ARIA_LABEL')}
-        />
-        {diagnosisErrors &&
-          diagnosisErrors.length > 0 &&
-          diagnosisErrors.map((error, index) => (
-            <InlineNotification
-              key={`error-${index}-${error.message}`}
-              kind="error"
-              title={error.message}
-              lowContrast
-              className={styles.inlineErrorNotification}
-              role="alert"
-            />
+  return (
+    <Tile className={styles.diagnosesFormTile}>
+      <div className={styles.diagnosesFormTitle}>
+        {t('DIAGNOSES_FORM_TITLE')}
+      </div>
+      <ComboBox
+        id="diagnoses-search"
+        placeholder={t('DIAGNOSES_SEARCH_PLACEHOLDER')}
+        items={selectedDiagnosisItems}
+        itemToString={(item) => (item?.conceptName ? item.conceptName : '')}
+        onChange={(data) => handleOnChange(data.selectedItem!)}
+        onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
+        size="lg"
+        autoAlign
+        aria-label={t('DIAGNOSES_SEARCH_ARIA_LABEL')}
+      />
+      {diagnosisErrors &&
+        diagnosisErrors.length > 0 &&
+        diagnosisErrors.map((error, index) => (
+          <InlineNotification
+            key={`error-${index}-${error.message}`}
+            kind="error"
+            title={error.message}
+            lowContrast
+            className={styles.inlineErrorNotification}
+            role="alert"
+          />
+        ))}
+      {selectedDiagnoses && selectedDiagnoses.length > 0 && (
+        <BoxWHeader
+          title={t('DIAGNOSES_ADDED_DIAGNOSES')}
+          className={styles.diagnosesBox}
+        >
+          {selectedDiagnoses.map((diagnosis) => (
+            <SelectedItem
+              key={diagnosis.id}
+              className={styles.selectedDiagnosisItem}
+              onClose={() => removeDiagnosis(diagnosis.id)}
+            >
+              <SelectedDiagnosisItem
+                diagnosis={diagnosis}
+                updateCertainty={updateCertainty}
+              />
+            </SelectedItem>
           ))}
-        {selectedDiagnoses && selectedDiagnoses.length > 0 && (
-          <BoxWHeader
-            title={t('DIAGNOSES_ADDED_DIAGNOSES')}
-            className={styles.diagnosesBox}
-          >
-            {selectedDiagnoses.map((diagnosis, index) => (
-              <SelectedItem
-                key={`${diagnosis.title}-${index}`}
-                className={styles.selectedDiagnosisItem}
-                onClose={() => handleRemoveDiagnosis(index)}
-              >
-                <SelectedDiagnosisItem
-                  id={`${diagnosis.id}-${index}`}
-                  title={diagnosis.title}
-                  certaintyConcepts={diagnosis.certaintyConcepts}
-                  selectedCertainty={diagnosis.selectedCertainty}
-                  handleCertaintyChange={diagnosis.handleCertaintyChange}
-                />
-              </SelectedItem>
-            ))}
-          </BoxWHeader>
-        )}
-      </Tile>
-    );
-  },
-);
+        </BoxWHeader>
+      )}
+    </Tile>
+  );
+});
 
 DiagnosesForm.displayName = 'DiagnosesForm';
 

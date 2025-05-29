@@ -54,6 +54,7 @@ const config: StorybookConfig = {
         '@styles': path.resolve(__dirname, '../src/styles'),
         '@types': path.resolve(__dirname, '../src/types'),
         '@utils': path.resolve(__dirname, '../src/utils'),
+        '@stores': path.resolve(__dirname, '../src/stores'),
       };
     }
 
