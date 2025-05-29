@@ -53,7 +53,7 @@ const DiagnosesForm: React.FC = React.memo(() => {
     }
 
     const isDuplicate = selectedDiagnoses.some(
-      (diagnosis) => diagnosis.conceptUuid === selectedItem?.conceptUuid,
+      (diagnosis) => diagnosis.id === selectedItem?.conceptUuid,
     );
 
     if (isDuplicate) {
@@ -123,9 +123,9 @@ const DiagnosesForm: React.FC = React.memo(() => {
           title={t('DIAGNOSES_ADDED_DIAGNOSES')}
           className={styles.diagnosesBox}
         >
-          {selectedDiagnoses.map((diagnosis, index) => (
+          {selectedDiagnoses.map((diagnosis) => (
             <SelectedItem
-              key={`${diagnosis.title}-${index}`}
+              key={diagnosis.id}
               className={styles.selectedDiagnosisItem}
               onClose={() => removeDiagnosis(diagnosis.id)}
             >

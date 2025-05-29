@@ -57,8 +57,7 @@ jest.mock('@stores/diagnosisStore', () => {
       addDiagnosis: jest.fn((diagnosis) => {
         // Actually update the selectedDiagnoses array when addDiagnosis is called
         const newDiagnosis = {
-          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          conceptUuid: diagnosis.conceptUuid,
+          id: diagnosis.conceptUuid,
           title: diagnosis.conceptName,
           selectedCertainty: null,
           errors: {},
@@ -169,7 +168,6 @@ jest.mock('@components/clinical/diagnosesForm/DiagnosesForm', () => {
       // Create a diagnosis with a fixed ID for testing
       const newDiagnosis = {
         id: 'test-diagnosis-id',
-        conceptUuid: 'test-uuid',
         title: 'Test Diagnosis',
         selectedCertainty: null,
         errors: {},
@@ -1219,8 +1217,7 @@ describe('ConsultationPad', () => {
         addDiagnosis: jest.fn((diagnosis: ConceptSearch) => {
           // Actually update the selectedDiagnoses array when addDiagnosis is called
           const newDiagnosis = {
-            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            conceptUuid: diagnosis.conceptUuid,
+            id: diagnosis.conceptUuid,
             title: diagnosis.conceptName,
             selectedCertainty: null,
             errors: {},
@@ -1354,7 +1351,6 @@ describe('ConsultationPad', () => {
         mockStore.selectedDiagnoses = [
           {
             id: 'test-diagnosis-id',
-            conceptUuid: 'test-uuid',
             title: 'Test Diagnosis',
             selectedCertainty: null,
             errors: {},
@@ -1396,7 +1392,6 @@ describe('ConsultationPad', () => {
         mockStore.selectedDiagnoses = [
           {
             id: 'test-diagnosis-id',
-            conceptUuid: 'test-uuid',
             title: 'Test Diagnosis',
             selectedCertainty: null,
             errors: {},
@@ -1435,7 +1430,6 @@ describe('ConsultationPad', () => {
         mockStore.selectedDiagnoses = [
           {
             id: 'test-diagnosis-id',
-            conceptUuid: 'test-uuid',
             title: 'Test Diagnosis',
             selectedCertainty: null,
             errors: {},

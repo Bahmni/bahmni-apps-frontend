@@ -28,14 +28,11 @@ describe('diagnosisStore', () => {
 
       const state = store.getState();
       expect(state.selectedDiagnoses).toHaveLength(1);
-      expect(state.selectedDiagnoses[0].conceptUuid).toBe(
-        mockDiagnosis.conceptUuid,
-      );
+      expect(state.selectedDiagnoses[0].id).toBe(mockDiagnosis.conceptUuid);
       expect(state.selectedDiagnoses[0].title).toBe(mockDiagnosis.conceptName);
       expect(state.selectedDiagnoses[0].selectedCertainty).toBeNull();
       expect(state.selectedDiagnoses[0].errors).toEqual({});
       expect(state.selectedDiagnoses[0].hasBeenValidated).toBe(false);
-      expect(state.selectedDiagnoses[0].id).toBeDefined(); // Should have a unique ID
     });
 
     it('should add multiple different diagnoses', () => {
@@ -45,10 +42,10 @@ describe('diagnosisStore', () => {
       store.getState().addDiagnosis(mockDiagnosis2);
 
       expect(store.getState().selectedDiagnoses).toHaveLength(2);
-      expect(store.getState().selectedDiagnoses[0].conceptUuid).toBe(
+      expect(store.getState().selectedDiagnoses[0].id).toBe(
         mockDiagnosis.conceptUuid,
       );
-      expect(store.getState().selectedDiagnoses[1].conceptUuid).toBe(
+      expect(store.getState().selectedDiagnoses[1].id).toBe(
         mockDiagnosis2.conceptUuid,
       );
     });
@@ -69,7 +66,7 @@ describe('diagnosisStore', () => {
       store.getState().removeDiagnosis(firstDiagnosisId);
 
       expect(store.getState().selectedDiagnoses).toHaveLength(1);
-      expect(store.getState().selectedDiagnoses[0].conceptUuid).toBe(
+      expect(store.getState().selectedDiagnoses[0].id).toBe(
         mockDiagnosis2.conceptUuid,
       );
     });
@@ -162,7 +159,7 @@ describe('diagnosisStore', () => {
       // Get the generated IDs from the store
       const diagnoses = store.getState().selectedDiagnoses;
       const firstDiagnosisId = diagnoses.find(
-        (d) => d.conceptUuid === mockDiagnosis.conceptUuid,
+        (d) => d.id === mockDiagnosis.conceptUuid,
       )?.id;
 
       // Set certainty for only the first diagnosis

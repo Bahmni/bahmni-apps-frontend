@@ -65,7 +65,6 @@ const mockErrors = [new Error('Search failed'), new Error('Network error')];
 const mockDiagnosisEntries: DiagnosisInputEntry[] = [
   {
     id: 'uuid-1',
-    conceptUuid: 'uuid-1',
     title: 'Hypertension',
     selectedCertainty: CERTAINITY_CONCEPTS[0],
     errors: {},
@@ -75,7 +74,6 @@ const mockDiagnosisEntries: DiagnosisInputEntry[] = [
 
 const mockDiagnosisInputEntryWithoutCertainty: DiagnosisInputEntry = {
   id: 'uuid-2',
-  conceptUuid: 'uuid-2',
   title: 'Diabetes',
   selectedCertainty: null,
   errors: {},
@@ -317,10 +315,17 @@ describe('DiagnosesForm', () => {
     });
 
     it('should prevent duplicate diagnosis selection', async () => {
-      // Mock store with existing diagnosis
+      const existingDiagnosis: DiagnosisInputEntry = {
+        id: mockConcepts[0].conceptUuid,
+        title: mockConcepts[0].conceptName,
+        selectedCertainty: CERTAINITY_CONCEPTS[0],
+        errors: {},
+        hasBeenValidated: false,
+      };
+
       (useDiagnosisStore as unknown as jest.Mock).mockReturnValue({
         ...mockStore,
-        selectedDiagnoses: mockDiagnosisEntries,
+        selectedDiagnoses: [existingDiagnosis],
       });
 
       (useConceptSearch as jest.Mock).mockReturnValue({

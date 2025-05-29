@@ -59,7 +59,7 @@ export function createDiagnosisBundleEntries({
     }
     const diagnosisResourceURL = `urn:uuid:${crypto.randomUUID()}`;
     const diagnosisResource = createEncounterDiagnosisResource(
-      diagnosis.conceptUuid,
+      diagnosis.id,
       diagnosis.selectedCertainty.code === 'confirmed'
         ? 'confirmed'
         : 'provisional',

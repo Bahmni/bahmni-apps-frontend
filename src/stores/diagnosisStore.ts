@@ -19,11 +19,8 @@ export const useDiagnosisStore = create<DiagnosisState>((set, get) => ({
   selectedDiagnoses: [],
 
   addDiagnosis: (diagnosis: ConceptSearch) => {
-    const uniqueId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
     const newDiagnosis: DiagnosisInputEntry = {
-      id: uniqueId,
-      conceptUuid: diagnosis.conceptUuid,
+      id: diagnosis.conceptUuid,
       title: diagnosis.conceptName,
       selectedCertainty: null,
       errors: {},

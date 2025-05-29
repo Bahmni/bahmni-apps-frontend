@@ -28,7 +28,6 @@ describe('consultationBundleService', () => {
 
     const mockDiagnosis: DiagnosisInputEntry = {
       id: 'diagnosis-123',
-      conceptUuid: 'diagnosis-123',
       title: 'Test Diagnosis',
       selectedCertainty: {
         code: 'confirmed',

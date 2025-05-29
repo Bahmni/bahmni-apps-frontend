@@ -19,7 +19,6 @@ jest.mock('../styles/SelectedDiagnosisItem.module.scss', () => ({
 
 const mockDiagnosis: DiagnosisInputEntry = {
   id: 'test-diagnosis-1',
-  conceptUuid: 'test-diagnosis-1',
   title: 'Diabetes Mellitus',
   selectedCertainty: CERTAINITY_CONCEPTS[0],
   errors: {},
@@ -83,12 +82,10 @@ describe('SelectedDiagnosisItem', () => {
       const diagnosis1 = {
         ...mockDiagnosis,
         id: 'diagnosis-1',
-        conceptUuid: 'diagnosis-1',
       };
       const diagnosis2 = {
         ...mockDiagnosis,
         id: 'diagnosis-2',
-        conceptUuid: 'diagnosis-2',
       };
 
       const props1 = { ...defaultProps, diagnosis: diagnosis1 };
