@@ -1,26 +1,18 @@
 import React from 'react';
-import { Column, Grid, Dropdown, OnChangeData } from '@carbon/react';
+import { Column, Grid, Dropdown } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import * as styles from './styles/SelectedDiagnosisItem.module.scss';
 import { Coding } from 'fhir/r4';
+import { DiagnosisInputEntry } from '@types/diagnosis';
+import { CERTAINITY_CONCEPTS } from '@constants/concepts';
 
 /**
  * Properties for a selected diagnosis item
  * @interface SelectedDiagnosisItemProps
- * @property {string} id - Unique identifier for the diagnosis item
- * @property {string} title - The display name of the diagnosis
- * @property {Coding[]} certaintyConcepts - Available certainty options
- * @property {Coding | null} selectedCertainty - Currently selected certainty
- * @property {Function} handleCertaintyChange - Function to call when certainty changes
  */
 export interface SelectedDiagnosisItemProps {
-  id: string;
-  title: string;
-  certaintyConcepts: Coding[];
-  selectedCertainty: Coding | null;
-  handleCertaintyChange: (
-    selectedItem: OnChangeData<Coding | null | undefined>,
-  ) => void;
+  diagnosis: DiagnosisInputEntry;
+  updateCertainty: (diagnosisId: string, certainty: Coding | null) => void;
 }
 
 /**
@@ -29,14 +21,13 @@ export interface SelectedDiagnosisItemProps {
  * @param {SelectedDiagnosisItemProps} props - Component props
  */
 const SelectedDiagnosisItem: React.FC<SelectedDiagnosisItemProps> = React.memo(
-  ({
-    id,
-    title,
-    certaintyConcepts,
-    selectedCertainty,
-    handleCertaintyChange,
-  }) => {
+  ({ diagnosis, updateCertainty }) => {
     const { t } = useTranslation();
+
+    const { id, title, selectedCertainty, errors, hasBeenValidated } =
+      diagnosis;
+    const hasCertaintyError = !!(hasBeenValidated && errors.certainty);
+
     return (
       <Grid>
         <Column
@@ -61,12 +52,14 @@ const SelectedDiagnosisItem: React.FC<SelectedDiagnosisItemProps> = React.memo(
             type="default"
             titleText=""
             label={t('DIAGNOSES_SELECT_CERTAINTY')}
-            items={certaintyConcepts}
+            items={CERTAINITY_CONCEPTS}
             selectedItem={selectedCertainty}
             itemToString={(item) => (item?.display ? t(item.display) : '')}
             onChange={(data) => {
-              handleCertaintyChange(data);
+              updateCertainty(id, data.selectedItem);
             }}
+            invalid={hasCertaintyError}
+            invalidText={hasCertaintyError ? t(errors.certainty!) : ''}
             autoAlign
             aria-label={t('DIAGNOSES_CERTAINTY_ARIA_LABEL')}
           />

@@ -4,9 +4,9 @@ import {
   postConsultationBundle,
 } from '../consultationBundleService';
 import { CONSULTATION_ERROR_MESSAGES } from '@constants/errors';
-import { SelectedDiagnosisItemProps } from '@components/clinical/diagnosesForm/SelectedDiagnosisItem';
 import { Coding } from 'fhir/r4';
 import { post } from '../api';
+import { DiagnosisInputEntry } from '@types/diagnosis';
 
 // Mock crypto.randomUUID
 const mockUUID = '1d87ab20-8b86-4b41-a30d-984b2208d945';
@@ -26,16 +26,17 @@ describe('consultationBundleService', () => {
     const mockEncounterReference = 'Encounter/456';
     const mockPractitionerUUID = 'practitioner-789';
 
-    const mockDiagnosis: SelectedDiagnosisItemProps = {
+    const mockDiagnosis: DiagnosisInputEntry = {
       id: 'diagnosis-123',
+      conceptUuid: 'diagnosis-123',
       title: 'Test Diagnosis',
-      certaintyConcepts: [],
       selectedCertainty: {
         code: 'confirmed',
         system: 'test-system',
         display: 'Confirmed',
       } as Coding,
-      handleCertaintyChange: jest.fn(),
+      errors: {},
+      hasBeenValidated: false,
     };
 
     it('should create bundle entries for valid diagnoses', () => {
@@ -111,12 +112,12 @@ describe('consultationBundleService', () => {
     });
 
     it('should throw error for diagnoses without certainty code', () => {
-      const diagnosisWithoutCertainty: SelectedDiagnosisItemProps = {
+      const diagnosisWithoutCertainty: DiagnosisInputEntry = {
         ...mockDiagnosis,
         selectedCertainty: null,
       };
 
-      const diagnosisWithUndefinedCode: SelectedDiagnosisItemProps = {
+      const diagnosisWithUndefinedCode: DiagnosisInputEntry = {
         ...mockDiagnosis,
         selectedCertainty: {
           system: 'test-system',
@@ -138,7 +139,7 @@ describe('consultationBundleService', () => {
     });
 
     it('should handle provisional certainty', () => {
-      const provisionalDiagnosis: SelectedDiagnosisItemProps = {
+      const provisionalDiagnosis: DiagnosisInputEntry = {
         ...mockDiagnosis,
         selectedCertainty: {
           code: 'provisional',

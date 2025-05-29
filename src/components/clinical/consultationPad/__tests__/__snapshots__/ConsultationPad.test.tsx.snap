@@ -140,7 +140,8 @@ exports[`ConsultationPad Rendering Snapshots should match snapshot for normal st
           data-testid="diagnoses-form-results"
         >
           0
-           results
+           
+          results
         </div>
         <div
           data-testid="diagnoses-form-selected"
