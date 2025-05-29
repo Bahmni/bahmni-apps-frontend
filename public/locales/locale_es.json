@@ -91,6 +91,7 @@
   "LAB_TEST_UNAVAILABLE": "No disponible",
   "LAB_TEST_URGENT": "Urgente",
   "LOADING_CLINICAL_CONFIG": "Cargando configuración clínica...",
+  "LOADING_CONCEPTS": "Cargando conceptos...",
   "LOADING_DASHBOARD_CONFIG": "Cargando configuración del panel...",
   "LOADING_DASHBOARD_CONTENT": "Cargando contenido del panel...",
   "LOADING_LOCATIONS": "Cargando ubicaciones...",

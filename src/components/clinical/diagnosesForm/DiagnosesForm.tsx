@@ -70,6 +70,26 @@ const DiagnosesForm: React.FC = React.memo(() => {
     searchDiagnosesTerm.length > 2 &&
     !searchError;
 
+  const selectedDiagnosisItems = isSearchLoading
+    ? [
+        {
+          conceptName: t('LOADING_CONCEPTS'),
+          conceptUuid: '',
+          matchedName: '',
+          disabled: true,
+        },
+      ]
+    : isSearchEmpty
+      ? [
+          {
+            conceptName: t('NO_MATCHING_CONCEPTS_FOUND'),
+            conceptUuid: '',
+            matchedName: '',
+            disabled: true,
+          },
+        ]
+      : searchResults;
+
   return (
     <Tile className={styles.diagnosesFormTile}>
       <div className={styles.diagnosesFormTitle}>
@@ -78,18 +98,7 @@ const DiagnosesForm: React.FC = React.memo(() => {
       <ComboBox
         id="diagnoses-search"
         placeholder={t('DIAGNOSES_SEARCH_PLACEHOLDER')}
-        items={
-          isSearchEmpty
-            ? [
-                {
-                  conceptName: t('NO_MATCHING_CONCEPTS_FOUND'),
-                  conceptUuid: '',
-                  matchedName: '',
-                  disabled: true,
-                },
-              ]
-            : searchResults
-        }
+        items={selectedDiagnosisItems}
         itemToString={(item) => (item?.conceptName ? item.conceptName : '')}
         onChange={(data) => handleOnChange(data.selectedItem!)}
         onInputChange={(searchQuery: string) => handleSearch(searchQuery)}

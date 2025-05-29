@@ -1,6 +1,6 @@
 import { format, parseISO } from 'date-fns';
 import { calculateAge, formatDate, formatDateTime } from '../date';
-import { DATE_TIME_FORMAT} from '@constants/date';
+import { DATE_TIME_FORMAT } from '@constants/date';
 import { DATE_ERROR_MESSAGES } from '@constants/errors';
 import i18n from '@/setupTests.i18n';
 

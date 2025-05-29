@@ -91,6 +91,7 @@
   "LAB_TEST_UNAVAILABLE": "No lab Investigations available",
   "LAB_TEST_URGENT": "Urgent",
   "LOADING_CLINICAL_CONFIG": "Loading clinical configuration...",
+  "LOADING_CONCEPTS": "Loading concepts...",
   "LOADING_DASHBOARD_CONFIG": "Loading dashboard configuration...",
   "LOADING_DASHBOARD_CONTENT": "Loading dashboard content...",
   "LOADING_LOCATIONS": "Loading locations...",
