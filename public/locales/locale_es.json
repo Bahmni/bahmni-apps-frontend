@@ -47,6 +47,7 @@
   "DIAGNOSES_CERTAINTY_ARIA_LABEL": "Certeza del Diagnóstico",
   "DIAGNOSES_DUPLICATE_ERROR": "Este diagnóstico ya ha sido agregado. Por favor seleccione un diagnóstico diferente.",
   "DIAGNOSES_FORM_TITLE": "Diagnósticos",
+  "DROPDOWN_VALUE_REQUIRED": "Por favor seleccione un valor",
   "DIAGNOSES_SEARCH_ARIA_LABEL": "Buscar diagnósticos",
   "DIAGNOSES_SEARCH_PLACEHOLDER": "Buscar para agregar un diagnóstico",
   "DIAGNOSES_SELECT_CERTAINTY": "Seleccionar Certeza",

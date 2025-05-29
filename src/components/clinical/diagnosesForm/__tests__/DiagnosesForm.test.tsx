@@ -11,9 +11,12 @@ import { useTranslation, I18nextProvider } from 'react-i18next';
 import DiagnosesForm from '../DiagnosesForm';
 import { useConceptSearch } from '@hooks/useConceptSearch';
 import { ConceptSearch } from '@/types/concepts';
-import { Coding } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import i18n from '@/setupTests.i18n';
+import { useDiagnosisStore } from '@stores/diagnosisStore';
+import { DiagnosisInputEntry } from '@types/diagnosis';
+import { DiagnosisState } from '@stores/diagnosisStore';
+import { CERTAINITY_CONCEPTS } from '@constants/concepts';
 
 expect.extend(toHaveNoViolations);
 
@@ -28,6 +31,15 @@ jest.mock('react-i18next', () => ({
 jest.mock('@/hooks/useConceptSearch', () => ({
   useConceptSearch: jest.fn(),
 }));
+
+// Mock the Zustand store
+jest.mock('@stores/diagnosisStore', () => {
+  const actualModule = jest.requireActual('@stores/diagnosisStore');
+  return {
+    ...actualModule,
+    useDiagnosisStore: jest.fn(),
+  };
+});
 
 // Mock translation function
 const mockT = jest.fn((key: string) => key);
@@ -47,58 +59,66 @@ const mockConcepts: ConceptSearch[] = [
   },
 ];
 
-const mockCertaintyConcepts: Coding[] = [
-  { code: 'CONFIRMED', display: 'Confirmed' },
-  { code: 'PRESUMED', display: 'Presumed' },
-];
+const mockErrors = [new Error('Search failed'), new Error('Network error')];
 
-// Mock diagnoses with various states
-const mockSelectedDiagnoses = [
+// Convert the mock diagnoses to DiagnosisInputEntry format
+const mockDiagnosisEntries: DiagnosisInputEntry[] = [
   {
     id: 'uuid-1',
-    title: 'Hypertension',
-    certaintyConcepts: mockCertaintyConcepts,
-    selectedCertainty: mockCertaintyConcepts[0],
-    handleCertaintyChange: jest.fn(),
+    display: 'Hypertension',
+    selectedCertainty: CERTAINITY_CONCEPTS[0],
+    errors: {},
+    hasBeenValidated: false,
   },
 ];
 
-const mockDiagnosisWithoutCertainty = {
+const mockDiagnosisInputEntryWithoutCertainty: DiagnosisInputEntry = {
   id: 'uuid-2',
-  title: 'Diabetes',
-  certaintyConcepts: mockCertaintyConcepts,
+  display: 'Diabetes',
   selectedCertainty: null,
-  handleCertaintyChange: jest.fn(),
+  errors: {},
+  hasBeenValidated: false,
 };
 
-const mockDiagnosisWithEmptyCertaintyConcepts = {
-  id: 'uuid-3',
-  title: 'Asthma',
-  certaintyConcepts: [],
-  selectedCertainty: null,
-  handleCertaintyChange: jest.fn(),
+// Mock store implementation
+const createMockStore = (initialState: Partial<DiagnosisState> = {}) => {
+  const store: DiagnosisState = {
+    selectedDiagnoses: [],
+    addDiagnosis: jest.fn(),
+    removeDiagnosis: jest.fn(),
+    updateCertainty: jest.fn(),
+    validateAllDiagnoses: jest.fn().mockReturnValue(true),
+    reset: jest.fn(),
+    getState: jest.fn(),
+    ...initialState,
+  };
+
+  // Make getState return the current store state
+  store.getState = jest.fn().mockReturnValue(store);
+
+  return store;
 };
-
-const mockErrors = [new Error('Search failed'), new Error('Network error')];
-
-const mockMalformedDiagnosis = {
-  id: 'malformed-diagnosis',
-  // Missing required fields
-} as unknown as (typeof mockSelectedDiagnoses)[0];
-
-const mockUnexpectedStructure = {
-  id: 'unexpected-structure',
-  title: 123, // Wrong type for title (number instead of string)
-  certaintyConcepts: 'invalid', // Wrong type for certaintyConcepts
-  selectedCertainty: true, // Wrong type for selectedCertainty
-} as unknown as (typeof mockSelectedDiagnoses)[0];
 
 describe('DiagnosesForm', () => {
-  const defaultProps = {
-    handleResultSelection: jest.fn(),
-    selectedDiagnoses: [],
-    handleRemoveDiagnosis: jest.fn(),
-  };
+  // Default mock store
+  let mockStore: DiagnosisState;
+  let addDiagnosisMock: jest.Mock;
+  let removeDiagnosisMock: jest.Mock;
+  let updateCertaintyMock: jest.Mock;
+
+  beforeEach(() => {
+    addDiagnosisMock = jest.fn();
+    removeDiagnosisMock = jest.fn();
+    updateCertaintyMock = jest.fn();
+
+    mockStore = createMockStore({
+      addDiagnosis: addDiagnosisMock,
+      removeDiagnosis: removeDiagnosisMock,
+      updateCertainty: updateCertaintyMock,
+    });
+
+    (useDiagnosisStore as unknown as jest.Mock).mockReturnValue(mockStore);
+  });
 
   const renderWithI18n = (component: React.ReactElement) => {
     return render(<I18nextProvider i18n={i18n}>{component}</I18nextProvider>);
@@ -119,8 +139,8 @@ describe('DiagnosesForm', () => {
   });
 
   describe('Rendering', () => {
-    it('should render the component with default props', () => {
-      render(<DiagnosesForm {...defaultProps} />);
+    it('should render the component with default state', () => {
+      render(<DiagnosesForm />);
       expect(screen.getByText('DIAGNOSES_FORM_TITLE')).toBeInTheDocument();
       expect(
         screen.getByPlaceholderText('DIAGNOSES_SEARCH_PLACEHOLDER'),
@@ -128,19 +148,26 @@ describe('DiagnosesForm', () => {
     });
 
     it('should not render selected diagnoses section when no diagnoses are selected', () => {
-      render(<DiagnosesForm {...defaultProps} />);
+      // Use empty array for selectedDiagnoses
+      (useDiagnosisStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedDiagnoses: [],
+      });
+
+      render(<DiagnosesForm />);
       expect(
         screen.queryByText('DIAGNOSES_ADDED_DIAGNOSES'),
       ).not.toBeInTheDocument();
     });
 
     it('should render selected diagnoses section when diagnoses are present', () => {
-      render(
-        <DiagnosesForm
-          {...defaultProps}
-          selectedDiagnoses={mockSelectedDiagnoses}
-        />,
-      );
+      // Mock store with diagnoses
+      (useDiagnosisStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedDiagnoses: mockDiagnosisEntries,
+      });
+
+      render(<DiagnosesForm />);
       expect(screen.getByText('DIAGNOSES_ADDED_DIAGNOSES')).toBeInTheDocument();
       expect(screen.getByText('Hypertension')).toBeInTheDocument();
     });
@@ -148,7 +175,7 @@ describe('DiagnosesForm', () => {
 
   describe('Search Functionality', () => {
     it('should handle itemToString with null/undefined item', () => {
-      render(<DiagnosesForm {...defaultProps} />);
+      render(<DiagnosesForm />);
       const comboBox = screen.getByRole('combobox');
 
       // Test with null
@@ -167,7 +194,7 @@ describe('DiagnosesForm', () => {
     });
 
     it('should clear search results when search term is empty', async () => {
-      render(<DiagnosesForm {...defaultProps} />);
+      render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
         'DIAGNOSES_SEARCH_PLACEHOLDER',
       );
@@ -192,7 +219,7 @@ describe('DiagnosesForm', () => {
         error: null,
       });
 
-      render(<DiagnosesForm {...defaultProps} />);
+      render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
         'DIAGNOSES_SEARCH_PLACEHOLDER',
       );
@@ -208,7 +235,7 @@ describe('DiagnosesForm', () => {
         error: null,
       });
 
-      render(<DiagnosesForm {...defaultProps} />);
+      render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
         'DIAGNOSES_SEARCH_PLACEHOLDER',
       );
@@ -225,7 +252,7 @@ describe('DiagnosesForm', () => {
         error: null,
       });
 
-      render(<DiagnosesForm {...defaultProps} />);
+      render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
         'DIAGNOSES_SEARCH_PLACEHOLDER',
       );
@@ -243,7 +270,7 @@ describe('DiagnosesForm', () => {
         error: null,
       });
 
-      render(<DiagnosesForm {...defaultProps} />);
+      render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
         'DIAGNOSES_SEARCH_PLACEHOLDER',
       );
@@ -253,7 +280,7 @@ describe('DiagnosesForm', () => {
     });
 
     it('should handle search term less than 3 characters', async () => {
-      render(<DiagnosesForm {...defaultProps} />);
+      render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
         'DIAGNOSES_SEARCH_PLACEHOLDER',
       );
@@ -272,7 +299,7 @@ describe('DiagnosesForm', () => {
         error: null,
       });
 
-      render(<DiagnosesForm {...defaultProps} />);
+      render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
         'DIAGNOSES_SEARCH_PLACEHOLDER',
       );
@@ -284,24 +311,30 @@ describe('DiagnosesForm', () => {
       });
       fireEvent.click(screen.getByText(mockConcepts[0].conceptName));
 
-      expect(defaultProps.handleResultSelection).toHaveBeenCalledWith(
-        mockConcepts[0],
-      );
+      expect(addDiagnosisMock).toHaveBeenCalledWith(mockConcepts[0]);
     });
 
     it('should prevent duplicate diagnosis selection', async () => {
+      const existingDiagnosis: DiagnosisInputEntry = {
+        id: mockConcepts[0].conceptUuid,
+        display: mockConcepts[0].conceptName,
+        selectedCertainty: CERTAINITY_CONCEPTS[0],
+        errors: {},
+        hasBeenValidated: false,
+      };
+
+      (useDiagnosisStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedDiagnoses: [existingDiagnosis],
+      });
+
       (useConceptSearch as jest.Mock).mockReturnValue({
         searchResults: mockConcepts,
         loading: false,
         error: null,
       });
 
-      render(
-        <DiagnosesForm
-          {...defaultProps}
-          selectedDiagnoses={mockSelectedDiagnoses}
-        />,
-      );
+      render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
         'DIAGNOSES_SEARCH_PLACEHOLDER',
       );
@@ -323,25 +356,28 @@ describe('DiagnosesForm', () => {
           screen.getByText('DIAGNOSES_DUPLICATE_ERROR'),
         ).toBeInTheDocument();
       });
-      expect(defaultProps.handleResultSelection).not.toHaveBeenCalled();
+      expect(addDiagnosisMock).not.toHaveBeenCalled();
     });
 
     it('should handle removal of a diagnosis', async () => {
-      render(
-        <DiagnosesForm
-          {...defaultProps}
-          selectedDiagnoses={mockSelectedDiagnoses}
-        />,
-      );
+      // Mock store with existing diagnosis
+      (useDiagnosisStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedDiagnoses: mockDiagnosisEntries,
+      });
+
+      render(<DiagnosesForm />);
 
       const removeButton = screen.getByRole('button', { name: /close/i });
       await userEvent.click(removeButton);
 
-      expect(defaultProps.handleRemoveDiagnosis).toHaveBeenCalledWith(0);
+      expect(removeDiagnosisMock).toHaveBeenCalledWith(
+        mockDiagnosisEntries[0].id,
+      );
     });
 
     it('should handle null/undefined selection gracefully', async () => {
-      render(<DiagnosesForm {...defaultProps} />);
+      render(<DiagnosesForm />);
 
       // Trigger onChange with null value directly
       const comboBox = screen.getByRole('combobox');
@@ -353,9 +389,38 @@ describe('DiagnosesForm', () => {
       waitFor(() => {
         // Verify no error is displayed
         expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-        // Verify handleResultSelection was not called
-        expect(defaultProps.handleResultSelection).not.toHaveBeenCalled();
+        // Verify addDiagnosis was not called
+        expect(addDiagnosisMock).not.toHaveBeenCalled();
       });
+    });
+    it('should handle selection of a diagnosis with undefined concept uuid', async () => {
+      const mockConceptWithUndefinedUuid: ConceptSearch = {
+        conceptName: 'Test',
+        conceptUuid: '',
+        matchedName: 'Undefined Concept',
+      };
+
+      (useConceptSearch as jest.Mock).mockReturnValue({
+        searchResults: [mockConceptWithUndefinedUuid],
+        loading: false,
+        error: null,
+      });
+
+      render(<DiagnosesForm />);
+      const searchInput = screen.getByPlaceholderText(
+        'DIAGNOSES_SEARCH_PLACEHOLDER',
+      );
+      await userEvent.type(searchInput, 'Test');
+
+      // Simulate selecting the item
+      fireEvent.change(searchInput, {
+        target: { value: mockConceptWithUndefinedUuid.conceptName },
+      });
+      fireEvent.click(
+        screen.getByText(mockConceptWithUndefinedUuid.conceptName),
+      );
+
+      expect(addDiagnosisMock).not.toHaveBeenCalled();
     });
   });
 
@@ -368,7 +433,7 @@ describe('DiagnosesForm', () => {
         error: mockError,
       });
 
-      render(<DiagnosesForm {...defaultProps} />);
+      render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
         'DIAGNOSES_SEARCH_PLACEHOLDER',
       );
@@ -393,7 +458,7 @@ describe('DiagnosesForm', () => {
           error: null,
         });
 
-      render(<DiagnosesForm {...defaultProps} />);
+      render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
         'DIAGNOSES_SEARCH_PLACEHOLDER',
       );
@@ -416,60 +481,28 @@ describe('DiagnosesForm', () => {
 
   describe('Accessibility', () => {
     it('should have proper ARIA labels', () => {
-      render(<DiagnosesForm {...defaultProps} />);
+      render(<DiagnosesForm />);
       expect(
         screen.getByLabelText('DIAGNOSES_SEARCH_ARIA_LABEL'),
       ).toBeInTheDocument();
     });
 
     test('accessible forms pass axe', async () => {
-      const { container } = render(<DiagnosesForm {...defaultProps} />);
+      const { container } = render(<DiagnosesForm />);
       expect(await axe(container)).toHaveNoViolations();
     });
   });
 
   describe('Edge Cases and Error Handling', () => {
     it('should handle diagnosis without certainty', () => {
-      render(
-        <DiagnosesForm
-          {...defaultProps}
-          selectedDiagnoses={[mockDiagnosisWithoutCertainty]}
-        />,
-      );
+      // Mock store with diagnosis without certainty
+      (useDiagnosisStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedDiagnoses: [mockDiagnosisInputEntryWithoutCertainty],
+      });
+
+      render(<DiagnosesForm />);
       expect(screen.getByText('Diabetes')).toBeInTheDocument();
-    });
-
-    it('should handle diagnosis with empty certainty concepts', () => {
-      render(
-        <DiagnosesForm
-          {...defaultProps}
-          selectedDiagnoses={[mockDiagnosisWithEmptyCertaintyConcepts]}
-        />,
-      );
-      expect(screen.getByText('Asthma')).toBeInTheDocument();
-    });
-
-    it('should handle malformed diagnosis data without crashing', () => {
-      jest.spyOn(console, 'error').mockImplementation(() => {});
-      render(
-        <DiagnosesForm
-          {...defaultProps}
-          selectedDiagnoses={[mockMalformedDiagnosis]}
-        />,
-      );
-      // Component should render without crashing
-      expect(screen.getByText('DIAGNOSES_FORM_TITLE')).toBeInTheDocument();
-    });
-
-    it('should handle unexpected data structure without crashing', () => {
-      render(
-        <DiagnosesForm
-          {...defaultProps}
-          selectedDiagnoses={[mockUnexpectedStructure]}
-        />,
-      );
-      // Component should render without crashing
-      expect(screen.getByText('DIAGNOSES_FORM_TITLE')).toBeInTheDocument();
     });
 
     it('should handle network errors gracefully', async () => {
@@ -480,7 +513,7 @@ describe('DiagnosesForm', () => {
         error: networkError,
       });
 
-      render(<DiagnosesForm {...defaultProps} />);
+      render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
         'DIAGNOSES_SEARCH_PLACEHOLDER',
       );
@@ -502,7 +535,7 @@ describe('DiagnosesForm', () => {
         error: serverError,
       });
 
-      render(<DiagnosesForm {...defaultProps} />);
+      render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
         'DIAGNOSES_SEARCH_PLACEHOLDER',
       );
@@ -524,7 +557,7 @@ describe('DiagnosesForm', () => {
         error: mockError,
       });
 
-      render(<DiagnosesForm {...defaultProps} />);
+      render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
         'DIAGNOSES_SEARCH_PLACEHOLDER',
       );
@@ -541,7 +574,7 @@ describe('DiagnosesForm', () => {
   // SNAPSHOT TESTS
   describe('Snapshot Tests', () => {
     test('empty form matches snapshot', () => {
-      const { container } = renderWithI18n(<DiagnosesForm {...defaultProps} />);
+      const { container } = renderWithI18n(<DiagnosesForm />);
       expect(container).toMatchSnapshot();
     });
 
@@ -551,17 +584,16 @@ describe('DiagnosesForm', () => {
         loading: false,
         error: null,
       });
-      const { container } = renderWithI18n(<DiagnosesForm {...defaultProps} />);
+      const { container } = renderWithI18n(<DiagnosesForm />);
       expect(container).toMatchSnapshot();
     });
 
     test('form with selected diagnoses matches snapshot', () => {
-      const { container } = renderWithI18n(
-        <DiagnosesForm
-          {...defaultProps}
-          selectedDiagnoses={mockSelectedDiagnoses}
-        />,
-      );
+      (useDiagnosisStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedDiagnoses: mockDiagnosisEntries,
+      });
+      const { container } = renderWithI18n(<DiagnosesForm />);
       expect(container).toMatchSnapshot();
     });
 
@@ -571,7 +603,7 @@ describe('DiagnosesForm', () => {
         loading: false,
         error: mockErrors[0],
       });
-      const { container } = renderWithI18n(<DiagnosesForm {...defaultProps} />);
+      const { container } = renderWithI18n(<DiagnosesForm />);
       expect(container).toMatchSnapshot();
     });
   });

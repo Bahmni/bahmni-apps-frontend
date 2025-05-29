@@ -9,9 +9,7 @@ import { Column, Grid, Loading } from '@carbon/react';
 import * as styles from './styles/ConsultationPad.module.scss';
 import BasicForm from '@components/clinical/basicForm/BasicForm';
 import DiagnosesForm from '@components/clinical/diagnosesForm/DiagnosesForm';
-import { SelectedDiagnosisItemProps } from '@components/clinical/diagnosesForm/SelectedDiagnosisItem';
 import { Concept } from '@types/encounterConcepts';
-import { ConceptSearch } from '@types/concepts';
 import { ConsultationBundle } from '@types/consultationBundle';
 import {
   postConsultationBundle,
@@ -24,9 +22,8 @@ import {
   createBundleEntry,
   createConsultationBundle,
 } from '@utils/fhir/consultationBundleCreator';
-import { CERTAINITY_CONCEPTS } from '@constants/concepts';
 import { ERROR_TITLES } from '@constants/errors';
-import { Coding } from 'fhir/r4';
+import { useDiagnosisStore } from '@stores/diagnosisStore';
 
 interface ConsultationPadProps {
   patientUUID: string;
@@ -38,46 +35,13 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   onClose,
 }) => {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [selectedDiagnoses, setSelectedDiagnoses] = React.useState<
-    SelectedDiagnosisItemProps[]
-  >([]);
 
   const { t } = useTranslation();
   const { addNotification } = useNotification();
 
-  const handleResultSelection = (selectedItem: ConceptSearch) => {
-    // Create new diagnosis with certainty handler
-    const newDiagnosis: SelectedDiagnosisItemProps = {
-      id: selectedItem.conceptUuid,
-      title: selectedItem.conceptName,
-      certaintyConcepts: CERTAINITY_CONCEPTS,
-      selectedCertainty: null,
-      handleCertaintyChange: (data) => {
-        handleCertaintyChange(selectedItem.conceptUuid, data.selectedItem);
-      },
-    };
-
-    setSelectedDiagnoses([...selectedDiagnoses, newDiagnosis]);
-  };
-
-  const handleRemoveDiagnosis = (index: number) => {
-    setSelectedDiagnoses((prevDiagnoses) =>
-      prevDiagnoses.filter((_, i) => i !== index),
-    );
-  };
-
-  const handleCertaintyChange = (
-    diagnosisId: string,
-    selectedCertainty: Coding | null | undefined,
-  ) => {
-    setSelectedDiagnoses((prevDiagnoses) =>
-      prevDiagnoses.map((diagnosis) =>
-        diagnosis.id === diagnosisId
-          ? { ...diagnosis, selectedCertainty: selectedCertainty || null }
-          : diagnosis,
-      ),
-    );
-  };
+  // Use the diagnosis store
+  const { selectedDiagnoses, validateAllDiagnoses, reset } =
+    useDiagnosisStore();
 
   const {
     locations,
@@ -158,10 +122,16 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
 
   const handleOnPrimaryButtonClick = async () => {
     if (!isSubmitting && canSubmitConsultation) {
+      const isDiagnosesValid = validateAllDiagnoses();
+      if (!isDiagnosesValid) {
+        return;
+      }
+
       try {
         setIsSubmitting(true);
         await submitConsultation();
         setIsSubmitting(false);
+        reset();
         addNotification({
           title: t('CONSULTATION_SUBMITTED_SUCCESS_TITLE'),
           message: t('CONSULTATION_SUBMITTED_SUCCESS_MESSAGE'),
@@ -269,11 +239,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
             locationSelected={locations[0]}
             defaultDate={formattedDate.formattedResult}
           />
-          <DiagnosesForm
-            handleResultSelection={handleResultSelection}
-            selectedDiagnoses={selectedDiagnoses}
-            handleRemoveDiagnosis={handleRemoveDiagnosis}
-          />
+          <DiagnosesForm />
         </>
       }
     />

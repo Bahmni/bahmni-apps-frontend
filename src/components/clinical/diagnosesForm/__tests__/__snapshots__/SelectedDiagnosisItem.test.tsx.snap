@@ -23,12 +23,12 @@ exports[`SelectedDiagnosisItem Snapshot Tests default rendering matches snapshot
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-«r19»-menu"
+            aria-controls="downshift-«r1c»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Diagnoses Certainty"
             class="cds--list-box__field"
-            id="downshift-«r19»-toggle-button"
+            id="downshift-«r1c»-toggle-button"
             role="combobox"
             tabindex="0"
             title="Confirmed"
@@ -64,9 +64,9 @@ exports[`SelectedDiagnosisItem Snapshot Tests default rendering matches snapshot
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-«r19»-label"
+            aria-labelledby="downshift-«r1c»-label"
             class="cds--list-box__menu"
-            id="downshift-«r19»-menu"
+            id="downshift-«r1c»-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
@@ -100,12 +100,12 @@ exports[`SelectedDiagnosisItem Snapshot Tests rendering with null selectedCertai
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-«r1c»-menu"
+            aria-controls="downshift-«r1f»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Diagnoses Certainty"
             class="cds--list-box__field"
-            id="downshift-«r1c»-toggle-button"
+            id="downshift-«r1f»-toggle-button"
             role="combobox"
             tabindex="0"
             title="Select Certainty"
@@ -141,9 +141,9 @@ exports[`SelectedDiagnosisItem Snapshot Tests rendering with null selectedCertai
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-«r1c»-label"
+            aria-labelledby="downshift-«r1f»-label"
             class="cds--list-box__menu"
-            id="downshift-«r1c»-menu"
+            id="downshift-«r1f»-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
