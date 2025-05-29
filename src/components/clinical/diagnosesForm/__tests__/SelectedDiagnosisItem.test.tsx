@@ -19,7 +19,7 @@ jest.mock('../styles/SelectedDiagnosisItem.module.scss', () => ({
 
 const mockDiagnosis: DiagnosisInputEntry = {
   id: 'test-diagnosis-1',
-  title: 'Diabetes Mellitus',
+  display: 'Diabetes Mellitus',
   selectedCertainty: CERTAINITY_CONCEPTS[0],
   errors: {},
   hasBeenValidated: false,
@@ -215,28 +215,28 @@ describe('SelectedDiagnosisItem', () => {
 
   // EDGE CASE TESTS
   describe('Edge Case Scenarios', () => {
-    test('handles very long diagnosis title', () => {
-      const longTitle = 'A'.repeat(500);
-      const diagnosisWithLongTitle = {
+    test('handles very long diagnosis display', () => {
+      const longDisplay = 'A'.repeat(500);
+      const diagnosisWithLongDisplay = {
         ...mockDiagnosis,
-        title: longTitle,
+        display: longDisplay,
       };
 
       renderWithI18n(
         <SelectedDiagnosisItem
-          diagnosis={diagnosisWithLongTitle}
+          diagnosis={diagnosisWithLongDisplay}
           updateCertainty={defaultProps.updateCertainty}
         />,
       );
 
-      expect(screen.getByText(longTitle)).toBeInTheDocument();
+      expect(screen.getByText(longDisplay)).toBeInTheDocument();
     });
 
-    test('handles title with special characters', () => {
-      const specialCharTitle = 'Diabetes & <Symptoms> with "complications"';
+    test('handles display with special characters', () => {
+      const specialCharDisplay = 'Diabetes & <Symptoms> with "complications"';
       const diagnosisWithSpecialChars = {
         ...mockDiagnosis,
-        title: specialCharTitle,
+        display: specialCharDisplay,
       };
 
       renderWithI18n(
@@ -246,7 +246,7 @@ describe('SelectedDiagnosisItem', () => {
         />,
       );
 
-      expect(screen.getByText(specialCharTitle)).toBeInTheDocument();
+      expect(screen.getByText(specialCharDisplay)).toBeInTheDocument();
     });
 
     test('dropdown has no titleText prop', () => {

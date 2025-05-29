@@ -58,7 +58,7 @@ jest.mock('@stores/diagnosisStore', () => {
         // Actually update the selectedDiagnoses array when addDiagnosis is called
         const newDiagnosis = {
           id: diagnosis.conceptUuid,
-          title: diagnosis.conceptName,
+          display: diagnosis.conceptName,
           selectedCertainty: null,
           errors: {},
           hasBeenValidated: false,
@@ -168,7 +168,7 @@ jest.mock('@components/clinical/diagnosesForm/DiagnosesForm', () => {
       // Create a diagnosis with a fixed ID for testing
       const newDiagnosis = {
         id: 'test-diagnosis-id',
-        title: 'Test Diagnosis',
+        display: 'Test Diagnosis',
         selectedCertainty: null,
         errors: {},
         hasBeenValidated: false,
@@ -243,7 +243,7 @@ jest.mock('@components/clinical/diagnosesForm/DiagnosesForm', () => {
               key={`diagnosis-${index}`}
               data-testid={`selected-diagnosis-${index}`}
             >
-              <span>{diagnosis.title}</span>
+              <span>{diagnosis.display}</span>
               <button
                 data-testid={`change-certainty-${index}`}
                 onClick={() => handleCertaintyChange()}
@@ -1218,7 +1218,7 @@ describe('ConsultationPad', () => {
           // Actually update the selectedDiagnoses array when addDiagnosis is called
           const newDiagnosis = {
             id: diagnosis.conceptUuid,
-            title: diagnosis.conceptName,
+            display: diagnosis.conceptName,
             selectedCertainty: null,
             errors: {},
             hasBeenValidated: false,
@@ -1351,7 +1351,7 @@ describe('ConsultationPad', () => {
         mockStore.selectedDiagnoses = [
           {
             id: 'test-diagnosis-id',
-            title: 'Test Diagnosis',
+            display: 'Test Diagnosis',
             selectedCertainty: null,
             errors: {},
             hasBeenValidated: false,
@@ -1392,7 +1392,7 @@ describe('ConsultationPad', () => {
         mockStore.selectedDiagnoses = [
           {
             id: 'test-diagnosis-id',
-            title: 'Test Diagnosis',
+            display: 'Test Diagnosis',
             selectedCertainty: null,
             errors: {},
             hasBeenValidated: false,
@@ -1430,7 +1430,7 @@ describe('ConsultationPad', () => {
         mockStore.selectedDiagnoses = [
           {
             id: 'test-diagnosis-id',
-            title: 'Test Diagnosis',
+            display: 'Test Diagnosis',
             selectedCertainty: null,
             errors: {},
             hasBeenValidated: false,
@@ -1660,7 +1660,7 @@ describe('ConsultationPad', () => {
       const mockSelectedDiagnoses = [
         {
           id: 'diagnosis-1',
-          title: 'Test Diagnosis',
+          display: 'Test Diagnosis',
           selectedCertainty: {
             code: 'confirmed',
             display: 'Confirmed',

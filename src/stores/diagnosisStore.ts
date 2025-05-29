@@ -21,7 +21,7 @@ export const useDiagnosisStore = create<DiagnosisState>((set, get) => ({
   addDiagnosis: (diagnosis: ConceptSearch) => {
     const newDiagnosis: DiagnosisInputEntry = {
       id: diagnosis.conceptUuid,
-      title: diagnosis.conceptName,
+      display: diagnosis.conceptName,
       selectedCertainty: null,
       errors: {},
       hasBeenValidated: false,

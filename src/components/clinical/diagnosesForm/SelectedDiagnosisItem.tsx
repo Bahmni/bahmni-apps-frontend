@@ -24,7 +24,7 @@ const SelectedDiagnosisItem: React.FC<SelectedDiagnosisItemProps> = React.memo(
   ({ diagnosis, updateCertainty }) => {
     const { t } = useTranslation();
 
-    const { id, title, selectedCertainty, errors, hasBeenValidated } =
+    const { id, display, selectedCertainty, errors, hasBeenValidated } =
       diagnosis;
     const hasCertaintyError = !!(hasBeenValidated && errors.certainty);
 
@@ -37,7 +37,7 @@ const SelectedDiagnosisItem: React.FC<SelectedDiagnosisItemProps> = React.memo(
           xlg={11}
           className={styles.selectedDiagnosisTitle}
         >
-          {title}
+          {display}
         </Column>
         <Column
           sm={4}

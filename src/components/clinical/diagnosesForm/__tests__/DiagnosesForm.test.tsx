@@ -65,7 +65,7 @@ const mockErrors = [new Error('Search failed'), new Error('Network error')];
 const mockDiagnosisEntries: DiagnosisInputEntry[] = [
   {
     id: 'uuid-1',
-    title: 'Hypertension',
+    display: 'Hypertension',
     selectedCertainty: CERTAINITY_CONCEPTS[0],
     errors: {},
     hasBeenValidated: false,
@@ -74,7 +74,7 @@ const mockDiagnosisEntries: DiagnosisInputEntry[] = [
 
 const mockDiagnosisInputEntryWithoutCertainty: DiagnosisInputEntry = {
   id: 'uuid-2',
-  title: 'Diabetes',
+  display: 'Diabetes',
   selectedCertainty: null,
   errors: {},
   hasBeenValidated: false,
@@ -317,7 +317,7 @@ describe('DiagnosesForm', () => {
     it('should prevent duplicate diagnosis selection', async () => {
       const existingDiagnosis: DiagnosisInputEntry = {
         id: mockConcepts[0].conceptUuid,
-        title: mockConcepts[0].conceptName,
+        display: mockConcepts[0].conceptName,
         selectedCertainty: CERTAINITY_CONCEPTS[0],
         errors: {},
         hasBeenValidated: false,
