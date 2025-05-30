@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ComboBox, Tile } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import * as styles from './styles/DiagnosesForm.module.scss';
@@ -46,42 +46,57 @@ const DiagnosesForm: React.FC = React.memo(() => {
     addDiagnosis(selectedItem);
   };
 
-  const isSearchEmpty =
-    searchResults.length === 0 &&
-    !isSearchLoading &&
-    searchDiagnosesTerm.length > 2 &&
-    !searchError;
-
-  const selectedDiagnosisItems = isSearchLoading
-    ? [
+  const getFilteredSearchResults = () => {
+    if (isSearchLoading) {
+      return [
         {
           conceptName: t('LOADING_CONCEPTS'),
           conceptUuid: '',
           matchedName: '',
           disabled: true,
         },
-      ]
-    : isSearchEmpty
-      ? [
-          {
-            conceptName: t('NO_MATCHING_CONCEPTS_FOUND'),
-            conceptUuid: '',
-            matchedName: '',
-            disabled: true,
-          },
-        ]
-      : searchResults.map((item) => {
-          const isAlreadySelected = selectedDiagnoses.some(
-            (d) => d.id === item.conceptUuid,
-          );
-          return {
-            ...item,
-            conceptName: isAlreadySelected
-              ? `${item.conceptName} ${t('DIAGNOSIS_ALREADY_SELECTED')}`
-              : item.conceptName,
-            disabled: isAlreadySelected,
-          };
-        });
+      ];
+    }
+    const isSearchEmpty =
+      searchResults.length === 0 &&
+      searchDiagnosesTerm.length > 2 &&
+      !searchError;
+
+    if (isSearchEmpty) {
+      return [
+        {
+          conceptName: t('NO_MATCHING_CONCEPTS_FOUND'),
+          conceptUuid: '',
+          matchedName: '',
+          disabled: true,
+        },
+      ];
+    }
+
+    return searchResults.map((item) => {
+      const isAlreadySelected = selectedDiagnoses.some(
+        (d) => d.id === item.conceptUuid,
+      );
+      return {
+        ...item,
+        conceptName: isAlreadySelected
+          ? `${item.conceptName} ${t('DIAGNOSIS_ALREADY_SELECTED')}`
+          : item.conceptName,
+        disabled: isAlreadySelected,
+      };
+    });
+  };
+
+  const filteredSearchResults: ConceptSearch[] = useMemo(() => {
+    return getFilteredSearchResults();
+  }, [
+    isSearchLoading,
+    searchResults,
+    searchDiagnosesTerm,
+    searchError,
+    selectedDiagnoses,
+    t,
+  ]);
 
   return (
     <Tile className={styles.diagnosesFormTile}>
@@ -91,7 +106,7 @@ const DiagnosesForm: React.FC = React.memo(() => {
       <ComboBox
         id="diagnoses-search"
         placeholder={t('DIAGNOSES_SEARCH_PLACEHOLDER')}
-        items={selectedDiagnosisItems}
+        items={filteredSearchResults}
         itemToString={(item) => (item?.conceptName ? item.conceptName : '')}
         onChange={(data) => handleOnChange(data.selectedItem!)}
         onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
