@@ -185,6 +185,11 @@ describe('DiagnosesForm', () => {
     });
 
     it('should clear search results when search term is empty', async () => {
+      (useConceptSearch as jest.Mock).mockReturnValue({
+        searchResults: [],
+        loading: true,
+        error: null,
+      });
       render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
         'DIAGNOSES_SEARCH_PLACEHOLDER',
@@ -199,7 +204,7 @@ describe('DiagnosesForm', () => {
       // Should have called handleSearch with empty string
       expect(useConceptSearch).toHaveBeenCalledWith('');
       expect(
-        screen.queryByText('NO_MATCHING_CONCEPTS_FOUND'),
+        screen.queryByText('NO_MATCHING_DIAGNOSIS_FOUND'),
       ).not.toBeInTheDocument();
     });
 
@@ -250,7 +255,7 @@ describe('DiagnosesForm', () => {
       await userEvent.type(searchInput, 'nonexistent');
 
       expect(
-        screen.getByText('NO_MATCHING_CONCEPTS_FOUND'),
+        screen.getByText('NO_MATCHING_DIAGNOSIS_FOUND'),
       ).toBeInTheDocument();
     });
 

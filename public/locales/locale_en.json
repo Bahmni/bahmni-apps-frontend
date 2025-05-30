@@ -98,7 +98,7 @@
   "LOCATION": "Location",
   "NETWORK_ERROR": "A network error occurred",
   "NO_ALLERGIES": "No Allergies recorded for this patient.",
-  "NO_MATCHING_CONCEPTS_FOUND": "No matching concepts found.",
+  "NO_MATCHING_DIAGNOSIS_FOUND": "No matching diagnosis found.",
   "PARTICIPANT": "Participant(s)",
   "PATIENT_HEADER_ACTION_AREA_IN_PROGRESS": "Consultation in progress",
   "PATIENT_HEADER_LABEL": "Patient Header",
