@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ComboBox, Tile, InlineNotification } from '@carbon/react';
+import React, { useState } from 'react';
+import { ComboBox, Tile } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import * as styles from './styles/DiagnosesForm.module.scss';
 import SelectedItem from '@components/common/selectedItem/SelectedItem';
@@ -18,7 +18,6 @@ import { useDiagnosisStore } from '@stores/diagnosisStore';
 const DiagnosesForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const [searchDiagnosesTerm, setSearchDiagnosesTerm] = useState('');
-  const [diagnosisErrors, setDiagnosisErrors] = React.useState<Error[]>([]);
 
   // Use Zustand store
   const { selectedDiagnoses, addDiagnosis, removeDiagnosis, updateCertainty } =
@@ -31,16 +30,8 @@ const DiagnosesForm: React.FC = React.memo(() => {
     error: searchError,
   } = useConceptSearch(searchDiagnosesTerm);
 
-  // Handle search errors
-  useEffect(() => {
-    if (searchError) {
-      setDiagnosisErrors([...diagnosisErrors, searchError]);
-    }
-  }, [searchError]);
-
   const handleSearch = (searchTerm: string) => {
     setSearchDiagnosesTerm(searchTerm);
-    setDiagnosisErrors([]);
   };
 
   const handleOnChange = (selectedItem: ConceptSearch) => {
@@ -49,15 +40,6 @@ const DiagnosesForm: React.FC = React.memo(() => {
       !selectedItem.conceptUuid ||
       !selectedItem.conceptName
     ) {
-      return;
-    }
-
-    const isDuplicate = selectedDiagnoses.some(
-      (diagnosis) => diagnosis.id === selectedItem?.conceptUuid,
-    );
-
-    if (isDuplicate) {
-      setDiagnosisErrors([new Error(t('DIAGNOSES_DUPLICATE_ERROR'))]);
       return;
     }
 
@@ -88,7 +70,18 @@ const DiagnosesForm: React.FC = React.memo(() => {
             disabled: true,
           },
         ]
-      : searchResults;
+      : searchResults.map((item) => {
+          const isAlreadySelected = selectedDiagnoses.some(
+            (d) => d.id === item.conceptUuid,
+          );
+          return {
+            ...item,
+            conceptName: isAlreadySelected
+              ? `${item.conceptName} ${t('DIAGNOSIS_ALREADY_SELECTED')}`
+              : item.conceptName,
+            disabled: isAlreadySelected,
+          };
+        });
 
   return (
     <Tile className={styles.diagnosesFormTile}>
@@ -106,18 +99,6 @@ const DiagnosesForm: React.FC = React.memo(() => {
         autoAlign
         aria-label={t('DIAGNOSES_SEARCH_ARIA_LABEL')}
       />
-      {diagnosisErrors &&
-        diagnosisErrors.length > 0 &&
-        diagnosisErrors.map((error, index) => (
-          <InlineNotification
-            key={`error-${index}-${error.message}`}
-            kind="error"
-            title={error.message}
-            lowContrast
-            className={styles.inlineErrorNotification}
-            role="alert"
-          />
-        ))}
       {selectedDiagnoses && selectedDiagnoses.length > 0 && (
         <BoxWHeader
           title={t('DIAGNOSES_ADDED_DIAGNOSES')}
