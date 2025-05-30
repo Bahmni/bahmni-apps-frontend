@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ComboBox, Tile, InlineNotification } from '@carbon/react';
+import React, { useState, useMemo } from 'react';
+import { ComboBox, Tile } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import * as styles from './styles/DiagnosesForm.module.scss';
 import SelectedItem from '@components/common/selectedItem/SelectedItem';
@@ -18,7 +18,6 @@ import { useDiagnosisStore } from '@stores/diagnosisStore';
 const DiagnosesForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const [searchDiagnosesTerm, setSearchDiagnosesTerm] = useState('');
-  const [diagnosisErrors, setDiagnosisErrors] = React.useState<Error[]>([]);
 
   // Use Zustand store
   const { selectedDiagnoses, addDiagnosis, removeDiagnosis, updateCertainty } =
@@ -31,16 +30,8 @@ const DiagnosesForm: React.FC = React.memo(() => {
     error: searchError,
   } = useConceptSearch(searchDiagnosesTerm);
 
-  // Handle search errors
-  useEffect(() => {
-    if (searchError) {
-      setDiagnosisErrors([...diagnosisErrors, searchError]);
-    }
-  }, [searchError]);
-
   const handleSearch = (searchTerm: string) => {
     setSearchDiagnosesTerm(searchTerm);
-    setDiagnosisErrors([]);
   };
 
   const handleOnChange = (selectedItem: ConceptSearch) => {
@@ -52,43 +43,60 @@ const DiagnosesForm: React.FC = React.memo(() => {
       return;
     }
 
-    const isDuplicate = selectedDiagnoses.some(
-      (diagnosis) => diagnosis.id === selectedItem?.conceptUuid,
-    );
-
-    if (isDuplicate) {
-      setDiagnosisErrors([new Error(t('DIAGNOSES_DUPLICATE_ERROR'))]);
-      return;
-    }
-
     addDiagnosis(selectedItem);
   };
 
-  const isSearchEmpty =
-    searchResults.length === 0 &&
-    !isSearchLoading &&
-    searchDiagnosesTerm.length > 2 &&
-    !searchError;
-
-  const selectedDiagnosisItems = isSearchLoading
-    ? [
+  const getFilteredSearchResults = () => {
+    if (isSearchLoading) {
+      return [
         {
           conceptName: t('LOADING_CONCEPTS'),
           conceptUuid: '',
           matchedName: '',
           disabled: true,
         },
-      ]
-    : isSearchEmpty
-      ? [
-          {
-            conceptName: t('NO_MATCHING_CONCEPTS_FOUND'),
-            conceptUuid: '',
-            matchedName: '',
-            disabled: true,
-          },
-        ]
-      : searchResults;
+      ];
+    }
+    const isSearchEmpty =
+      searchResults.length === 0 &&
+      searchDiagnosesTerm.length > 2 &&
+      !searchError;
+
+    if (isSearchEmpty) {
+      return [
+        {
+          conceptName: t('NO_MATCHING_CONCEPTS_FOUND'),
+          conceptUuid: '',
+          matchedName: '',
+          disabled: true,
+        },
+      ];
+    }
+
+    return searchResults.map((item) => {
+      const isAlreadySelected = selectedDiagnoses.some(
+        (d) => d.id === item.conceptUuid,
+      );
+      return {
+        ...item,
+        conceptName: isAlreadySelected
+          ? `${item.conceptName} ${t('DIAGNOSIS_ALREADY_SELECTED')}`
+          : item.conceptName,
+        disabled: isAlreadySelected,
+      };
+    });
+  };
+
+  const filteredSearchResults: ConceptSearch[] = useMemo(() => {
+    return getFilteredSearchResults();
+  }, [
+    isSearchLoading,
+    searchResults,
+    searchDiagnosesTerm,
+    searchError,
+    selectedDiagnoses,
+    t,
+  ]);
 
   return (
     <Tile className={styles.diagnosesFormTile}>
@@ -98,7 +106,7 @@ const DiagnosesForm: React.FC = React.memo(() => {
       <ComboBox
         id="diagnoses-search"
         placeholder={t('DIAGNOSES_SEARCH_PLACEHOLDER')}
-        items={selectedDiagnosisItems}
+        items={filteredSearchResults}
         itemToString={(item) => (item?.conceptName ? item.conceptName : '')}
         onChange={(data) => handleOnChange(data.selectedItem!)}
         onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
@@ -106,18 +114,6 @@ const DiagnosesForm: React.FC = React.memo(() => {
         autoAlign
         aria-label={t('DIAGNOSES_SEARCH_ARIA_LABEL')}
       />
-      {diagnosisErrors &&
-        diagnosisErrors.length > 0 &&
-        diagnosisErrors.map((error, index) => (
-          <InlineNotification
-            key={`error-${index}-${error.message}`}
-            kind="error"
-            title={error.message}
-            lowContrast
-            className={styles.inlineErrorNotification}
-            role="alert"
-          />
-        ))}
       {selectedDiagnoses && selectedDiagnoses.length > 0 && (
         <BoxWHeader
           title={t('DIAGNOSES_ADDED_DIAGNOSES')}
