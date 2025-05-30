@@ -1,13 +1,30 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import BasicForm from '../BasicForm';
 import { useTranslation } from 'react-i18next';
-import { Provider } from '@types/provider';
+import { useLocations } from '@hooks/useLocations';
+import { useEncounterConcepts } from '@hooks/useEncounterConcepts';
+import { useActivePractitioner } from '@hooks/useActivePractitioner';
+import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
+import { FhirEncounter } from '@/types/encounter';
 
 // Mock the hooks
 jest.mock('react-i18next', () => ({
   useTranslation: jest.fn(),
+}));
+
+jest.mock('@hooks/useLocations');
+jest.mock('@hooks/useEncounterConcepts');
+jest.mock('@hooks/useActivePractitioner');
+jest.mock('@stores/encounterDetailsStore');
+
+// Mock the utils
+jest.mock('@utils/date', () => ({
+  formatDate: jest.fn(() => ({
+    formattedResult: '16/05/2025',
+    error: null,
+  })),
 }));
 
 // Mock the Carbon components to avoid dropdown itemToString issues with invalid data
@@ -23,6 +40,10 @@ jest.mock('@carbon/react', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     itemToString: (item: any) => string;
     disabled?: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    selectedItem?: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onChange?: (event: { selectedItem: any }) => void;
   }
 
   return {
@@ -33,6 +54,7 @@ jest.mock('@carbon/react', () => {
       items,
       itemToString,
       disabled,
+      selectedItem,
     }: MockDropdownProps) => {
       // A safer version that prevents edge case errors
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -49,6 +71,9 @@ jest.mock('@carbon/react', () => {
         <div data-testid={id}>
           <div>{titleText}</div>
           <select disabled={disabled} aria-label={titleText}>
+            {selectedItem && (
+              <option value="selected">{safeItemToString(selectedItem)}</option>
+            )}
             {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               items.map((item: any, i: number) => (
@@ -64,6 +89,9 @@ jest.mock('@carbon/react', () => {
         </div>
       );
     },
+    Loading: ({ description }: { description: string }) => (
+      <div data-testid="loading">{description}</div>
+    ),
   };
 });
 
@@ -76,8 +104,28 @@ describe('BasicForm', () => {
     t: jest.fn((key) => key),
   };
 
-  // Updated mock to match actual Provider type structure
-  const mockPractitioner: Provider = {
+  const mockLocations = [
+    {
+      uuid: '123',
+      display: 'Location 1',
+      links: [],
+    },
+  ];
+
+  const mockEncounterConcepts = {
+    encounterTypes: [
+      { uuid: '789', name: 'Consultation' },
+      { uuid: '012', name: 'Encounter Type 2' },
+    ],
+    visitTypes: [
+      { uuid: '345', name: 'Visit Type 1' },
+      { uuid: '678', name: 'Visit Type 2' },
+    ],
+    orderTypes: [],
+    conceptData: [],
+  };
+
+  const mockPractitioner = {
     uuid: 'provider-uuid-123',
     display: 'Dr. Smith - Clinician',
     person: {
@@ -95,8 +143,6 @@ describe('BasicForm', () => {
         display: 'Dr. John Smith',
         links: [],
       },
-      preferredAddress: null,
-      attributes: [],
       voided: false,
       birthtime: null,
       deathdateEstimated: false,
@@ -105,39 +151,84 @@ describe('BasicForm', () => {
     },
   };
 
-  const mockVisitTypes = [
-    { uuid: '345', name: 'Visit Type 1' },
-    { uuid: '678', name: 'Visit Type 2' },
-  ];
-
-  const mockEncounterTypes = [
-    { uuid: '789', name: 'Encounter Type 1' },
-    { uuid: '012', name: 'Encounter Type 2' },
-  ];
-
-  const mockLocation = {
-    uuid: '123',
-    display: 'Location 1',
-    links: [], // Added links property to match OpenMRSLocation interface
+  const mockCurrentEncounter: FhirEncounter = {
+    resourceType: 'Encounter',
+    id: 'encounter-1',
+    status: 'in-progress',
+    class: {
+      system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+      code: 'AMB',
+    },
+    type: [
+      {
+        coding: [
+          {
+            code: '345',
+            system: '',
+            display: '',
+          },
+        ],
+      },
+    ],
+    meta: {
+      versionId: '',
+      lastUpdated: '',
+      tag: [],
+    },
+    subject: {
+      reference: '',
+      type: '',
+      display: '',
+    },
+    period: {
+      start: '2025-05-16T00:00:00.000Z',
+    },
+    location: [],
   };
-  const defaultDate = '16/05/2025';
+
+  const mockStoreState = {
+    selectedLocation: null,
+    selectedEncounterType: null,
+    selectedVisitType: null,
+    encounterParticipants: [],
+    consultationDate: new Date(),
+    setSelectedLocation: jest.fn(),
+    setSelectedEncounterType: jest.fn(),
+    setSelectedVisitType: jest.fn(),
+    setEncounterParticipants: jest.fn(),
+    setConsultationDate: jest.fn(),
+    reset: jest.fn(),
+    getState: jest.fn(),
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
     // Setup default mock implementations
     (useTranslation as jest.Mock).mockReturnValue(mockTranslation);
+    (useLocations as jest.Mock).mockReturnValue({
+      locations: mockLocations,
+      loading: false,
+      error: null,
+    });
+    (useEncounterConcepts as jest.Mock).mockReturnValue({
+      encounterConcepts: mockEncounterConcepts,
+      loading: false,
+      error: null,
+    });
+    (useActivePractitioner as jest.Mock).mockReturnValue({
+      practitioner: mockPractitioner,
+      user: null,
+      loading: false,
+      error: null,
+    });
+    (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue(
+      mockStoreState,
+    );
   });
 
   const renderBasicForm = (props = {}) => {
     const defaultProps = {
-      practitioner: mockPractitioner,
-      visitTypes: mockVisitTypes,
-      visitTypeSelected: mockVisitTypes[0],
-      encounterTypes: mockEncounterTypes,
-      encounterTypeSelected: mockEncounterTypes[0],
-      location: mockLocation,
-      locationSelected: mockLocation,
-      defaultDate,
+      currentEncounter: mockCurrentEncounter,
     };
 
     return render(<BasicForm {...defaultProps} {...props} />);
@@ -161,7 +252,7 @@ describe('BasicForm', () => {
       expect(screen.getByText('ENCOUNTER_TYPE')).toBeInTheDocument();
       expect(screen.getByText('VISIT_TYPE')).toBeInTheDocument();
       expect(screen.getByText('ENCOUNTER_DATE')).toBeInTheDocument();
-      expect(screen.getByText('PARTICIPANT')).toBeInTheDocument();
+      expect(screen.getByText('PARTICIPANTS')).toBeInTheDocument();
     });
 
     it('should render all form fields as disabled', () => {
@@ -169,7 +260,6 @@ describe('BasicForm', () => {
       renderBasicForm();
 
       // Assert
-      // Use role selectors to find the elements by their roles and accessible names
       const locationDropdown = screen.getByRole('combobox', {
         name: /LOCATION/i,
       });
@@ -181,7 +271,7 @@ describe('BasicForm', () => {
       });
       const datePickerInput = screen.getByLabelText(/ENCOUNTER_DATE/i);
       const practitionerDropdown = screen.getByRole('combobox', {
-        name: /PARTICIPANT/i,
+        name: /PARTICIPANTS/i,
       });
 
       expect(locationDropdown).toBeDisabled();
@@ -191,20 +281,152 @@ describe('BasicForm', () => {
       expect(practitionerDropdown).toBeDisabled();
     });
 
-    it('should not render Visit Type dropdown when visitTypeSelected is not provided', () => {
+    it('should show loading state when data is being fetched', () => {
+      // Arrange
+      (useLocations as jest.Mock).mockReturnValue({
+        locations: [],
+        loading: true,
+        error: null,
+      });
+
       // Act
-      renderBasicForm({ visitTypeSelected: null });
+      renderBasicForm();
 
       // Assert
-      expect(screen.queryByText('VISIT_TYPE')).not.toBeInTheDocument();
+      expect(screen.getByTestId('loading')).toBeInTheDocument();
+      expect(screen.getByText('LOADING_FORM_DATA')).toBeInTheDocument();
     });
 
-    it('should not render Practitioner dropdown when practitioner is not provided', () => {
+    it('should render all dropdowns even when no data is selected', () => {
       // Act
-      renderBasicForm({ practitioner: null });
+      renderBasicForm();
 
       // Assert
-      expect(screen.queryByText('PARTICIPANT')).not.toBeInTheDocument();
+      expect(screen.getByTestId('location-dropdown')).toBeInTheDocument();
+      expect(screen.getByTestId('encounter-type-dropdown')).toBeInTheDocument();
+      expect(screen.getByTestId('visit-type-dropdown')).toBeInTheDocument();
+      expect(screen.getByTestId('practitioner-dropdown')).toBeInTheDocument();
+    });
+  });
+
+  describe('Store Integration', () => {
+    it('should initialize location when locations are loaded', async () => {
+      // Act
+      renderBasicForm();
+
+      // Assert
+      await waitFor(() => {
+        expect(mockStoreState.setSelectedLocation).toHaveBeenCalledWith(
+          mockLocations[0],
+        );
+      });
+    });
+
+    it('should initialize encounter type when concepts are loaded', async () => {
+      // Act
+      renderBasicForm();
+
+      // Assert
+      await waitFor(() => {
+        expect(mockStoreState.setSelectedEncounterType).toHaveBeenCalledWith(
+          mockEncounterConcepts.encounterTypes[0],
+        );
+      });
+    });
+
+    it('should initialize visit type based on current encounter', async () => {
+      // Act
+      renderBasicForm();
+
+      // Assert
+      await waitFor(() => {
+        expect(mockStoreState.setSelectedVisitType).toHaveBeenCalledWith(
+          mockEncounterConcepts.visitTypes[0],
+        );
+      });
+    });
+
+    it('should initialize encounter participants with current practitioner', async () => {
+      // Act
+      renderBasicForm();
+
+      // Assert
+      await waitFor(() => {
+        expect(mockStoreState.setEncounterParticipants).toHaveBeenCalledWith([
+          mockPractitioner,
+        ]);
+      });
+    });
+
+    it('should not re-initialize values if already set in store', () => {
+      // Arrange
+      const storeWithValues = {
+        ...mockStoreState,
+        selectedLocation: mockLocations[0],
+        selectedEncounterType: mockEncounterConcepts.encounterTypes[0],
+        selectedVisitType: mockEncounterConcepts.visitTypes[0],
+        encounterParticipants: [mockPractitioner],
+      };
+      (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue(
+        storeWithValues,
+      );
+
+      // Act
+      renderBasicForm();
+
+      // Assert
+      expect(mockStoreState.setSelectedLocation).not.toHaveBeenCalled();
+      expect(mockStoreState.setSelectedEncounterType).not.toHaveBeenCalled();
+      expect(mockStoreState.setSelectedVisitType).not.toHaveBeenCalled();
+      expect(mockStoreState.setEncounterParticipants).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Loading States', () => {
+    it('should show loading when locations are loading', () => {
+      // Arrange
+      (useLocations as jest.Mock).mockReturnValue({
+        locations: [],
+        loading: true,
+        error: null,
+      });
+
+      // Act
+      renderBasicForm();
+
+      // Assert
+      expect(screen.getByTestId('loading')).toBeInTheDocument();
+    });
+
+    it('should show loading when encounter concepts are loading', () => {
+      // Arrange
+      (useEncounterConcepts as jest.Mock).mockReturnValue({
+        encounterConcepts: null,
+        loading: true,
+        error: null,
+      });
+
+      // Act
+      renderBasicForm();
+
+      // Assert
+      expect(screen.getByTestId('loading')).toBeInTheDocument();
+    });
+
+    it('should show loading when practitioner is loading', () => {
+      // Arrange
+      (useActivePractitioner as jest.Mock).mockReturnValue({
+        practitioner: null,
+        user: null,
+        loading: true,
+        error: null,
+      });
+
+      // Act
+      renderBasicForm();
+
+      // Assert
+      expect(screen.getByTestId('loading')).toBeInTheDocument();
     });
   });
 
@@ -223,7 +445,6 @@ describe('BasicForm', () => {
       renderBasicForm();
 
       // Assert
-      // Check that all interactive elements have accessible properties
       expect(
         screen.getByRole('combobox', { name: /LOCATION/i }),
       ).toHaveAttribute('disabled');
@@ -240,368 +461,133 @@ describe('BasicForm', () => {
   });
 
   describe('Edge Cases', () => {
-    it('should handle empty arrays for dropdowns', () => {
-      // Act
-      renderBasicForm({
-        visitTypes: [],
-        encounterTypes: [],
+    it('should handle empty locations array', () => {
+      // Arrange
+      (useLocations as jest.Mock).mockReturnValue({
+        locations: [],
+        loading: false,
+        error: null,
       });
 
-      // Assert
-      expect(
-        screen.getByRole('combobox', { name: /ENCOUNTER_TYPE/i }),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole('combobox', { name: /VISIT_TYPE/i }),
-      ).toBeInTheDocument();
-    });
-
-    it('should handle undefined encounterTypes by using an empty array', () => {
-      // Act
-      renderBasicForm({
-        encounterTypes: undefined,
-      });
-
-      // Assert
-      expect(screen.getByText('ENCOUNTER_TYPE')).toBeInTheDocument();
-      expect(
-        screen.getByRole('combobox', { name: /ENCOUNTER_TYPE/i }),
-      ).toBeInTheDocument();
-    });
-
-    it('should handle undefined item in visit type itemToString', () => {
-      // We need to modify our mock component to test the itemToString function
-      // We'll use our mock dropdown to test this by checking it renders even with bad data
-      renderBasicForm({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        visitTypes: [undefined, null, { name: 'Valid Visit Type' }] as any,
-      });
-
-      // Assert dropdown still renders
-      expect(screen.getByText('VISIT_TYPE')).toBeInTheDocument();
-      expect(
-        screen.getByRole('combobox', { name: /VISIT_TYPE/i }),
-      ).toBeInTheDocument();
-    });
-
-    it('should handle undefined location', () => {
-      // Act
-      renderBasicForm({
-        location: undefined,
-        locationSelected: undefined,
-      });
-
-      // Assert
-      expect(
-        screen.getByRole('combobox', { name: /LOCATION/i }),
-      ).toBeInTheDocument();
-    });
-
-    // New test for Provider structure handling
-    it('should handle Provider without person property', () => {
-      // Act - Using our mock Carbon component to avoid the real error
-      renderBasicForm({
-        practitioner: { uuid: 'provider-uuid', display: 'Provider Display' },
-      });
-
-      // Assert
-      expect(screen.getByText('PARTICIPANT')).toBeInTheDocument();
-      // With our mock, we can still verify the dropdown is there
-      expect(screen.getByTestId('practitioner-dropdown')).toBeInTheDocument();
-    });
-
-    // New test for Provider structure handling
-    it('should handle Provider with person missing preferredName', () => {
-      // Act - Using our mock Carbon component to avoid the real error
-      const incompleteProvider = {
-        ...mockPractitioner,
-        person: {
-          ...mockPractitioner.person,
-          preferredName: undefined,
-        },
-      };
-
-      renderBasicForm({
-        practitioner: incompleteProvider,
-      });
-
-      // Assert
-      expect(screen.getByText('PARTICIPANT')).toBeInTheDocument();
-      // With our mock, we can still verify the dropdown is there
-      expect(screen.getByTestId('practitioner-dropdown')).toBeInTheDocument();
-    });
-  });
-
-  describe('Conditional Rendering', () => {
-    describe('Visit Type Dropdown', () => {
-      it('should render Visit Type dropdown when visitTypeSelected is provided', () => {
-        // Act
-        renderBasicForm({
-          visitTypeSelected: mockVisitTypes[0],
-        });
-
-        // Assert
-        expect(screen.getByText('VISIT_TYPE')).toBeInTheDocument();
-        const visitTypeDropdown = screen.getByRole('combobox', {
-          name: /VISIT_TYPE/i,
-        });
-        expect(visitTypeDropdown).toBeInTheDocument();
-        expect(visitTypeDropdown).toBeDisabled();
-      });
-
-      it('should not render Visit Type dropdown when visitTypeSelected is null', () => {
-        // Act
-        renderBasicForm({
-          visitTypeSelected: null,
-        });
-
-        // Assert
-        expect(screen.queryByText('VISIT_TYPE')).not.toBeInTheDocument();
-        expect(
-          screen.queryByRole('combobox', { name: /VISIT_TYPE/i }),
-        ).not.toBeInTheDocument();
-      });
-
-      it('should not render Visit Type dropdown when visitTypeSelected is undefined', () => {
-        // Act
-        renderBasicForm({
-          visitTypeSelected: undefined,
-        });
-
-        // Assert
-        expect(screen.queryByText('VISIT_TYPE')).not.toBeInTheDocument();
-        expect(
-          screen.queryByRole('combobox', { name: /VISIT_TYPE/i }),
-        ).not.toBeInTheDocument();
-      });
-
-      it('should render Visit Type dropdown when visitTypeSelected is an empty object', () => {
-        // Act
-        renderBasicForm({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          visitTypeSelected: {} as any, // Empty object cast as Concept
-        });
-
-        // Assert
-        expect(screen.getByText('VISIT_TYPE')).toBeInTheDocument();
-        const visitTypeDropdown = screen.getByRole('combobox', {
-          name: /VISIT_TYPE/i,
-        });
-        expect(visitTypeDropdown).toBeInTheDocument();
-      });
-    });
-
-    describe('Practitioner Dropdown', () => {
-      it('should render Practitioner dropdown when practitioner is provided', () => {
-        // Act
-        renderBasicForm({
-          practitioner: mockPractitioner,
-        });
-
-        // Assert
-        expect(screen.getByText('PARTICIPANT')).toBeInTheDocument();
-        const practitionerDropdown = screen.getByRole('combobox', {
-          name: /PARTICIPANT/i,
-        });
-        expect(practitionerDropdown).toBeInTheDocument();
-        expect(practitionerDropdown).toBeDisabled();
-      });
-
-      it('should not render Practitioner dropdown when practitioner is null', () => {
-        // Act
-        renderBasicForm({
-          practitioner: null,
-        });
-
-        // Assert
-        expect(screen.queryByText('PARTICIPANT')).not.toBeInTheDocument();
-        expect(
-          screen.queryByRole('combobox', { name: /PARTICIPANT/i }),
-        ).not.toBeInTheDocument();
-      });
-
-      it('should not render Practitioner dropdown when practitioner is undefined', () => {
-        // Act
-        renderBasicForm({
-          practitioner: undefined,
-        });
-
-        // Assert
-        expect(screen.queryByText('PARTICIPANT')).not.toBeInTheDocument();
-        expect(
-          screen.queryByRole('combobox', { name: /PARTICIPANT/i }),
-        ).not.toBeInTheDocument();
-      });
-
-      it('should render Practitioner dropdown when practitioner is an empty object', () => {
-        // Act - Using our mock Carbon component to avoid the real error
-        renderBasicForm({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          practitioner: {} as any, // Empty object cast as Provider
-        });
-
-        // Assert
-        expect(screen.getByText('PARTICIPANT')).toBeInTheDocument();
-        // With our mock, we can still verify the dropdown is there
-        expect(screen.getByTestId('practitioner-dropdown')).toBeInTheDocument();
-      });
-    });
-
-    describe('Combined Conditional Rendering', () => {
-      it('should render both conditionally rendered components when both conditions are met', () => {
-        // Act
-        renderBasicForm({
-          visitTypeSelected: mockVisitTypes[0],
-          practitioner: mockPractitioner,
-        });
-
-        // Assert
-        // Visit Type should be rendered
-        expect(screen.getByText('VISIT_TYPE')).toBeInTheDocument();
-        expect(
-          screen.getByRole('combobox', { name: /VISIT_TYPE/i }),
-        ).toBeInTheDocument();
-
-        // Practitioner should be rendered
-        expect(screen.getByText('PARTICIPANT')).toBeInTheDocument();
-        expect(
-          screen.getByRole('combobox', { name: /PARTICIPANT/i }),
-        ).toBeInTheDocument();
-      });
-
-      it('should not render either component when both conditions are not met', () => {
-        // Act
-        renderBasicForm({
-          visitTypeSelected: null,
-          practitioner: null,
-        });
-
-        // Assert
-        // Visit Type should not be rendered
-        expect(screen.queryByText('VISIT_TYPE')).not.toBeInTheDocument();
-        expect(
-          screen.queryByRole('combobox', { name: /VISIT_TYPE/i }),
-        ).not.toBeInTheDocument();
-
-        // Practitioner should not be rendered
-        expect(screen.queryByText('PARTICIPANT')).not.toBeInTheDocument();
-        expect(
-          screen.queryByRole('combobox', { name: /PARTICIPANT/i }),
-        ).not.toBeInTheDocument();
-      });
-
-      it('should render only Visit Type when only visitTypeSelected is provided', () => {
-        // Act
-        renderBasicForm({
-          visitTypeSelected: mockVisitTypes[0],
-          practitioner: null,
-        });
-
-        // Assert
-        // Visit Type should be rendered
-        expect(screen.getByText('VISIT_TYPE')).toBeInTheDocument();
-        expect(
-          screen.getByRole('combobox', { name: /VISIT_TYPE/i }),
-        ).toBeInTheDocument();
-
-        // Practitioner should not be rendered
-        expect(screen.queryByText('PARTICIPANT')).not.toBeInTheDocument();
-        expect(
-          screen.queryByRole('combobox', { name: /PARTICIPANT/i }),
-        ).not.toBeInTheDocument();
-      });
-
-      it('should render only Practitioner when only practitioner is provided', () => {
-        // Act
-        renderBasicForm({
-          visitTypeSelected: null,
-          practitioner: mockPractitioner,
-        });
-
-        // Assert
-        // Visit Type should not be rendered
-        expect(screen.queryByText('VISIT_TYPE')).not.toBeInTheDocument();
-        expect(
-          screen.queryByRole('combobox', { name: /VISIT_TYPE/i }),
-        ).not.toBeInTheDocument();
-
-        // Practitioner should be rendered
-        expect(screen.getByText('PARTICIPANT')).toBeInTheDocument();
-        expect(
-          screen.getByRole('combobox', { name: /PARTICIPANT/i }),
-        ).toBeInTheDocument();
-      });
-    });
-  });
-
-  // Updated Provider Display Logic test section
-  describe('Provider Display Logic', () => {
-    it('should show the practitioner dropdown when valid data is provided', () => {
       // Act
       renderBasicForm();
 
-      // Assert - check that the dropdown exists
-      expect(screen.getByText('PARTICIPANT')).toBeInTheDocument();
-      expect(screen.getByTestId('practitioner-dropdown')).toBeInTheDocument();
+      // Assert
+      expect(screen.getByText('LOCATION')).toBeInTheDocument();
+      expect(mockStoreState.setSelectedLocation).not.toHaveBeenCalled();
     });
 
-    // Test for the itemToString function used in the practitioner dropdown
-    it('should correctly handle item display logic in encounter type dropdown', () => {
-      renderBasicForm({
-        encounterTypes: [
-          {
-            uuid: 123,
-          },
-        ],
+    it('should handle null encounter concepts', () => {
+      // Arrange
+      (useEncounterConcepts as jest.Mock).mockReturnValue({
+        encounterConcepts: null,
+        loading: false,
+        error: null,
       });
-      const encounterTypeDropdown = screen.getByTestId(
-        'encounter-type-dropdown',
-      );
-      const options = encounterTypeDropdown.querySelector('option');
-      expect(options?.textContent).toBe('');
+
+      // Act
+      renderBasicForm();
+
+      // Assert
+      expect(screen.getByText('ENCOUNTER_TYPE')).toBeInTheDocument();
+      expect(mockStoreState.setSelectedEncounterType).not.toHaveBeenCalled();
     });
 
-    it('should handle practitioner with null preferredName.display value', () => {
-      // Create a practitioner with null display in preferredName
-      const modifiedPractitioner = {
-        ...mockPractitioner,
-        person: {
-          ...mockPractitioner.person,
-          preferredName: {
-            ...mockPractitioner.person.preferredName,
-            display: null, // Set display to null to trigger the alternate branch
-          },
-        },
+    it('should handle encounter without type coding', () => {
+      // Arrange
+      const encounterWithoutType: Encounter = {
+        ...mockCurrentEncounter,
+        type: [],
       };
 
       // Act
-      renderBasicForm({
-        practitioner: modifiedPractitioner,
-      });
+      renderBasicForm({ currentEncounter: encounterWithoutType });
 
       // Assert
-      expect(screen.getByText('PARTICIPANT')).toBeInTheDocument();
-      expect(screen.getByTestId('practitioner-dropdown')).toBeInTheDocument();
+      expect(mockStoreState.setSelectedVisitType).not.toHaveBeenCalled();
     });
 
-    it('should handle practitioner with missing display properties gracefully', () => {
-      // Create a practitioner with missing person display property
-      const incompleteProvider = {
-        ...mockPractitioner,
-        person: {
-          ...mockPractitioner.person,
-          display: undefined,
+    it('should handle missing consultation encounter type', () => {
+      // Arrange
+      (useEncounterConcepts as jest.Mock).mockReturnValue({
+        encounterConcepts: {
+          ...mockEncounterConcepts,
+          encounterTypes: [{ uuid: '999', name: 'Other Type' }],
         },
-      };
-
-      // Act - Using our mock Carbon component to avoid the real error
-      renderBasicForm({
-        practitioner: incompleteProvider,
+        loading: false,
+        error: null,
       });
 
+      // Act
+      renderBasicForm();
+
       // Assert
-      expect(screen.getByText('PARTICIPANT')).toBeInTheDocument();
-      expect(screen.getByTestId('practitioner-dropdown')).toBeInTheDocument();
+      expect(mockStoreState.setSelectedEncounterType).not.toHaveBeenCalled();
+    });
+
+    it('should handle null practitioner', () => {
+      // Arrange
+      (useActivePractitioner as jest.Mock).mockReturnValue({
+        practitioner: null,
+        user: null,
+        loading: false,
+        error: null,
+      });
+
+      // Act
+      renderBasicForm();
+
+      // Assert
+      expect(screen.getByText('PARTICIPANTS')).toBeInTheDocument();
+      expect(mockStoreState.setEncounterParticipants).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should handle location fetch error gracefully', () => {
+      // Arrange
+      (useLocations as jest.Mock).mockReturnValue({
+        locations: [],
+        loading: false,
+        error: new Error('Failed to fetch locations'),
+      });
+
+      // Act
+      renderBasicForm();
+
+      // Assert
+      expect(screen.getByText('LOCATION')).toBeInTheDocument();
+    });
+
+    it('should handle encounter concepts fetch error gracefully', () => {
+      // Arrange
+      (useEncounterConcepts as jest.Mock).mockReturnValue({
+        encounterConcepts: null,
+        loading: false,
+        error: new Error('Failed to fetch concepts'),
+      });
+
+      // Act
+      renderBasicForm();
+
+      // Assert
+      expect(screen.getByText('ENCOUNTER_TYPE')).toBeInTheDocument();
+    });
+
+    it('should handle practitioner fetch error gracefully', () => {
+      // Arrange
+      (useActivePractitioner as jest.Mock).mockReturnValue({
+        practitioner: null,
+        user: null,
+        loading: false,
+        error: new Error('Failed to fetch practitioner'),
+      });
+
+      // Act
+      renderBasicForm();
+
+      // Assert
+      expect(screen.getByText('PARTICIPANTS')).toBeInTheDocument();
     });
   });
 });

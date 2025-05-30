@@ -44,7 +44,7 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
           <option
             value="789"
           >
-            Encounter Type 1
+            Consultation
           </option>
           <option
             value="012"
@@ -88,10 +88,10 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
         data-testid="practitioner-dropdown"
       >
         <div>
-          PARTICIPANT
+          PARTICIPANTS
         </div>
         <select
-          aria-label="PARTICIPANT"
+          aria-label="PARTICIPANTS"
           disabled=""
         >
           <option

@@ -1,22 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import ActionArea from '@components/common/actionArea/ActionArea';
 import { useCurrentEncounter } from '@hooks/useCurrentEncounter';
 import { useActivePractitioner } from '@hooks/useActivePractitioner';
-import { useEncounterConcepts } from '@hooks/useEncounterConcepts';
-import { useLocations } from '@hooks/useLocations';
 import { Column, Grid, Loading } from '@carbon/react';
 import * as styles from './styles/ConsultationPad.module.scss';
 import BasicForm from '@components/clinical/basicForm/BasicForm';
 import DiagnosesForm from '@components/clinical/diagnosesForm/DiagnosesForm';
-import { Concept } from '@types/encounterConcepts';
 import { ConsultationBundle } from '@types/consultationBundle';
 import {
   postConsultationBundle,
   createDiagnosisBundleEntries,
 } from '@services/consultationBundleService';
 import useNotification from '@hooks/useNotification';
-import { formatDate } from '@utils/date';
 import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
 import {
   createBundleEntry,
@@ -24,6 +20,7 @@ import {
 } from '@utils/fhir/consultationBundleCreator';
 import { ERROR_TITLES } from '@constants/errors';
 import { useDiagnosisStore } from '@stores/diagnosisStore';
+import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 
 interface ConsultationPadProps {
   patientUUID: string;
@@ -40,19 +37,19 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   const { addNotification } = useNotification();
 
   // Use the diagnosis store
-  const { selectedDiagnoses, validateAllDiagnoses, reset } =
-    useDiagnosisStore();
+  const {
+    selectedDiagnoses,
+    validateAllDiagnoses,
+    reset: resetDiagnosis,
+  } = useDiagnosisStore();
 
   const {
-    locations,
-    loading: loadingLocations,
-    error: errorLocations,
-  } = useLocations();
-  const {
-    encounterConcepts,
-    loading: loadingEncounterConcepts,
-    error: errorEncounterConcepts,
-  } = useEncounterConcepts();
+    selectedLocation,
+    selectedEncounterType,
+    encounterParticipants,
+    consultationDate,
+    reset: resetEncounterDetails,
+  } = useEncounterDetailsStore();
 
   const {
     practitioner,
@@ -67,17 +64,13 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     error: errorEncounter,
   } = useCurrentEncounter(patientUUID);
 
-  const encounterTypeSelected = encounterConcepts?.encounterTypes.find(
-    (item: Concept) => item.name === 'Consultation',
-  );
-
-  const currentEncounterId = currentEncounter?.type[0]?.coding[0]?.code || '';
-
-  const visitTypeSelected = encounterConcepts?.visitTypes.find(
-    (item: Concept) => item.uuid === currentEncounterId,
-  );
-
-  const formattedDate = formatDate(new Date());
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      resetEncounterDetails();
+      resetDiagnosis();
+    };
+  }, [resetEncounterDetails, resetDiagnosis]);
 
   // Data validation check for consultation submission
   const canSubmitConsultation = !!(
@@ -85,20 +78,21 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     practitioner &&
     practitioner.uuid &&
     currentEncounter &&
-    locations?.length > 0 &&
-    encounterTypeSelected
+    selectedLocation &&
+    selectedEncounterType &&
+    encounterParticipants.length > 0
   );
 
   const submitConsultation = () => {
     const enconterResourceURL = `urn:uuid:${crypto.randomUUID()}`;
     const encounterResource = createEncounterResource(
-      encounterTypeSelected!.uuid,
-      encounterTypeSelected!.name,
+      selectedEncounterType!.uuid,
+      selectedEncounterType!.name,
       patientUUID,
-      [practitioner!.uuid],
+      encounterParticipants.map((p) => p.uuid),
       currentEncounter!.id,
-      locations[0].uuid,
-      new Date(),
+      selectedLocation!.uuid,
+      consultationDate,
     );
     const encounterBundleEntry = createBundleEntry(
       enconterResourceURL,
@@ -131,7 +125,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         setIsSubmitting(true);
         await submitConsultation();
         setIsSubmitting(false);
-        reset();
+        resetDiagnosis();
+        resetEncounterDetails();
         addNotification({
           title: t('CONSULTATION_SUBMITTED_SUCCESS_TITLE'),
           message: t('CONSULTATION_SUBMITTED_SUCCESS_MESSAGE'),
@@ -158,13 +153,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     onClose();
   };
 
-  if (
-    loadingEncounterConcepts ||
-    loadingLocations ||
-    loadingPractitioner ||
-    loadingEncounter ||
-    isSubmitting
-  ) {
+  if (loadingPractitioner || loadingEncounter || isSubmitting) {
     return (
       <ActionArea
         title={t('CONSULTATION_PAD_TITLE')}
@@ -187,20 +176,11 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   }
 
   if (
-    errorLocations ||
-    errorEncounterConcepts ||
     errorPractitioner ||
     errorEncounter ||
     !practitioner ||
     !patientUUID ||
-    !encounterConcepts?.encounterTypes ||
-    !encounterConcepts?.visitTypes ||
-    !currentEncounter ||
-    !visitTypeSelected ||
-    !encounterTypeSelected ||
-    !locations ||
-    locations.length === 0 ||
-    formattedDate.error
+    !currentEncounter
   ) {
     return (
       <ActionArea
@@ -229,16 +209,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       onSecondaryButtonClick={handleOnSecondaryButtonClick}
       content={
         <>
-          <BasicForm
-            practitioner={practitioner}
-            encounterTypes={encounterConcepts.encounterTypes}
-            encounterTypeSelected={encounterTypeSelected}
-            visitTypes={encounterConcepts.visitTypes}
-            visitTypeSelected={visitTypeSelected}
-            location={locations[0]}
-            locationSelected={locations[0]}
-            defaultDate={formattedDate.formattedResult}
-          />
+          <BasicForm currentEncounter={currentEncounter} />
           <DiagnosesForm />
         </>
       }
