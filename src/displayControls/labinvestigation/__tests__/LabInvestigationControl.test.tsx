@@ -19,7 +19,6 @@ jest.mock('@/services/labInvestigationService', () => ({
   groupLabTestsByDate: jest.fn(),
 }));
 
-
 // Mock the LabInvestigationItem component
 jest.mock('../LabInvestigationItem', () => ({
   __esModule: true,
@@ -121,7 +120,7 @@ describe('LabInvestigationControl', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (groupLabTestsByDate as jest.Mock).mockReturnValue(mockLabTestsByDate);
-    
+
     // Reset i18n to English
     i18n.changeLanguage('en');
   });

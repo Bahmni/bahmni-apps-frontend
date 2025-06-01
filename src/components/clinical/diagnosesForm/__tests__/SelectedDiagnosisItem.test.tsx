@@ -6,6 +6,8 @@ import i18n from '@/setupTests.i18n';
 import SelectedDiagnosisItem from '../SelectedDiagnosisItem';
 import { Coding } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import { DiagnosisInputEntry } from '@types/diagnosis';
+import { CERTAINITY_CONCEPTS } from '@constants/concepts';
 
 expect.extend(toHaveNoViolations);
 
@@ -15,31 +17,17 @@ jest.mock('../styles/SelectedDiagnosisItem.module.scss', () => ({
   selectedDiagnosisCertainty: 'selectedDiagnosisCertainty',
 }));
 
-// Test fixtures
-const mockCertaintyConcepts: Coding[] = [
-  {
-    code: 'confirmed',
-    display: 'CERTAINITY_CONFIRMED',
-    system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
-  },
-  {
-    code: 'provisional',
-    display: 'CERTAINITY_PROVISIONAL',
-    system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
-  },
-  {
-    code: 'differential',
-    display: 'Differential',
-    system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
-  },
-];
+const mockDiagnosis: DiagnosisInputEntry = {
+  id: 'test-diagnosis-1',
+  display: 'Diabetes Mellitus',
+  selectedCertainty: CERTAINITY_CONCEPTS[0],
+  errors: {},
+  hasBeenValidated: false,
+};
 
 const defaultProps = {
-  id: 'test-diagnosis-1',
-  title: 'Diabetes Mellitus',
-  certaintyConcepts: mockCertaintyConcepts,
-  selectedCertainty: mockCertaintyConcepts[0],
-  handleCertaintyChange: jest.fn(),
+  diagnosis: mockDiagnosis,
+  updateCertainty: jest.fn(),
 };
 
 const renderWithI18n = (component: React.ReactElement) => {
@@ -73,7 +61,7 @@ describe('SelectedDiagnosisItem', () => {
       );
     });
 
-    test('calls handleCertaintyChange when a certainty is selected', async () => {
+    test('calls updateCertainty when a certainty is selected', async () => {
       const user = userEvent.setup();
       renderWithI18n(<SelectedDiagnosisItem {...defaultProps} />);
 
@@ -87,12 +75,21 @@ describe('SelectedDiagnosisItem', () => {
 
       await user.click(provisionalOption);
 
-      expect(defaultProps.handleCertaintyChange).toHaveBeenCalled();
+      expect(defaultProps.updateCertainty).toHaveBeenCalled();
     });
 
     test('uses unique ID for dropdown elements', () => {
-      const props1 = { ...defaultProps, id: 'diagnosis-1' };
-      const props2 = { ...defaultProps, id: 'diagnosis-2' };
+      const diagnosis1 = {
+        ...mockDiagnosis,
+        id: 'diagnosis-1',
+      };
+      const diagnosis2 = {
+        ...mockDiagnosis,
+        id: 'diagnosis-2',
+      };
+
+      const props1 = { ...defaultProps, diagnosis: diagnosis1 };
+      const props2 = { ...defaultProps, diagnosis: diagnosis2 };
 
       const { rerender } = renderWithI18n(
         <SelectedDiagnosisItem {...props1} />,
@@ -123,8 +120,16 @@ describe('SelectedDiagnosisItem', () => {
   // SAD PATH TESTS
   describe('Sad Path Scenarios', () => {
     test('handles null selectedCertainty gracefully', () => {
+      const diagnosisWithNullCertainty = {
+        ...mockDiagnosis,
+        selectedCertainty: null,
+      };
+
       renderWithI18n(
-        <SelectedDiagnosisItem {...defaultProps} selectedCertainty={null} />,
+        <SelectedDiagnosisItem
+          diagnosis={diagnosisWithNullCertainty}
+          updateCertainty={defaultProps.updateCertainty}
+        />,
       );
 
       // When no value is selected, it shows the label
@@ -135,56 +140,113 @@ describe('SelectedDiagnosisItem', () => {
       expect(screen.getByText('Select Certainty')).toBeInTheDocument();
     });
 
-    test('handles empty certaintyConcepts array', () => {
-      renderWithI18n(
-        <SelectedDiagnosisItem {...defaultProps} certaintyConcepts={[]} />,
-      );
-
-      expect(screen.getByRole('combobox')).toHaveAttribute(
-        'aria-label',
-        'Diagnoses Certainty',
-      );
-      // Dropdown should render but be empty
-    });
-
     test('handles missing display in certainty concepts', () => {
       const missingDisplayConcepts = [
         { code: 'confirmed', system: 'test-system' } as Coding,
       ];
 
+      const diagnosisWithMissingDisplay = {
+        ...mockDiagnosis,
+        selectedCertainty: missingDisplayConcepts[0],
+      };
+
       renderWithI18n(
         <SelectedDiagnosisItem
-          {...defaultProps}
-          certaintyConcepts={missingDisplayConcepts}
-          selectedCertainty={missingDisplayConcepts[0]}
+          diagnosis={diagnosisWithMissingDisplay}
+          updateCertainty={defaultProps.updateCertainty}
         />,
       );
 
       // Should render without crashing
       expect(screen.getByText('Diabetes Mellitus')).toBeInTheDocument();
     });
+
+    test('displays validation error when certainty is missing and has been validated', () => {
+      const diagnosisWithError = {
+        ...mockDiagnosis,
+        selectedCertainty: null,
+        errors: { certainty: 'DROPDOWN_VALUE_REQUIRED' },
+        hasBeenValidated: true,
+      };
+
+      renderWithI18n(
+        <SelectedDiagnosisItem
+          diagnosis={diagnosisWithError}
+          updateCertainty={defaultProps.updateCertainty}
+        />,
+      );
+
+      // Should show the error message
+      expect(screen.getByText('Please select a value')).toBeInTheDocument();
+
+      // Check for the error message
+      expect(screen.getByText('Please select a value')).toBeInTheDocument();
+
+      // In Carbon, the invalid state is often applied with a data-invalid attribute
+      const dropdown = screen.getByRole('combobox').closest('.cds--dropdown');
+      expect(dropdown).toHaveAttribute('data-invalid', 'true');
+    });
+
+    test('does not display validation error when not validated yet', () => {
+      const diagnosisWithErrorButNotValidated = {
+        ...mockDiagnosis,
+        selectedCertainty: null,
+        errors: { certainty: 'DROPDOWN_VALUE_REQUIRED' },
+        hasBeenValidated: false,
+      };
+
+      renderWithI18n(
+        <SelectedDiagnosisItem
+          diagnosis={diagnosisWithErrorButNotValidated}
+          updateCertainty={defaultProps.updateCertainty}
+        />,
+      );
+
+      // Should not show the error message
+      expect(
+        screen.queryByText('Please select a value'),
+      ).not.toBeInTheDocument();
+
+      // Dropdown should not have invalid state
+      const dropdown = screen.getByRole('combobox').closest('.cds--dropdown');
+      expect(dropdown).not.toHaveAttribute('data-invalid');
+    });
   });
 
   // EDGE CASE TESTS
   describe('Edge Case Scenarios', () => {
-    test('handles very long diagnosis title', () => {
-      const longTitle = 'A'.repeat(500);
+    test('handles very long diagnosis display', () => {
+      const longDisplay = 'A'.repeat(500);
+      const diagnosisWithLongDisplay = {
+        ...mockDiagnosis,
+        display: longDisplay,
+      };
 
       renderWithI18n(
-        <SelectedDiagnosisItem {...defaultProps} title={longTitle} />,
+        <SelectedDiagnosisItem
+          diagnosis={diagnosisWithLongDisplay}
+          updateCertainty={defaultProps.updateCertainty}
+        />,
       );
 
-      expect(screen.getByText(longTitle)).toBeInTheDocument();
+      expect(screen.getByText(longDisplay)).toBeInTheDocument();
     });
 
-    test('handles title with special characters', () => {
-      const specialCharTitle = 'Diabetes & <Symptoms> with "complications"';
+    test('handles display with special characters', () => {
+      const specialCharDisplay = 'Diabetes & <Symptoms> with "complications"';
+      const diagnosisWithSpecialChars = {
+        ...mockDiagnosis,
+        display: specialCharDisplay,
+      };
 
       renderWithI18n(
-        <SelectedDiagnosisItem {...defaultProps} title={specialCharTitle} />,
+        <SelectedDiagnosisItem
+          diagnosis={diagnosisWithSpecialChars}
+          updateCertainty={defaultProps.updateCertainty}
+        />,
       );
 
-      expect(screen.getByText(specialCharTitle)).toBeInTheDocument();
+      expect(screen.getByText(specialCharDisplay)).toBeInTheDocument();
     });
 
     test('dropdown has no titleText prop', () => {
@@ -241,8 +303,16 @@ describe('SelectedDiagnosisItem', () => {
     });
 
     test('rendering with null selectedCertainty matches snapshot', () => {
+      const diagnosisWithNullCertainty = {
+        ...mockDiagnosis,
+        selectedCertainty: null,
+      };
+
       const { container } = renderWithI18n(
-        <SelectedDiagnosisItem {...defaultProps} selectedCertainty={null} />,
+        <SelectedDiagnosisItem
+          diagnosis={diagnosisWithNullCertainty}
+          updateCertainty={defaultProps.updateCertainty}
+        />,
       );
       expect(container).toMatchSnapshot();
     });

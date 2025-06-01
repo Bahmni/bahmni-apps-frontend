@@ -2,7 +2,6 @@ import { post } from './api';
 import { ConsultationBundle } from '@types/consultationBundle';
 import { CONSULTATION_BUNDLE_URL } from '@constants/app';
 import { BundleEntry, Reference } from 'fhir/r4';
-import { SelectedDiagnosisItemProps } from '@components/clinical/diagnosesForm/SelectedDiagnosisItem';
 import { CONSULTATION_ERROR_MESSAGES } from '@constants/errors';
 import { createEncounterDiagnosisResource } from '@utils/fhir/conditionResourceCreator';
 import { createBundleEntry } from '@utils/fhir/consultationBundleCreator';
@@ -10,9 +9,10 @@ import {
   createPractitionerReference,
   getPlaceholderReference,
 } from '@utils/fhir/referenceCreator';
+import { DiagnosisInputEntry } from '@types/diagnosis';
 
 interface CreateDiagnosisBundleEntriesParams {
-  selectedDiagnoses: SelectedDiagnosisItemProps[];
+  selectedDiagnoses: DiagnosisInputEntry[];
   encounterSubject: Reference;
   encounterReference: string;
   practitionerUUID: string;
