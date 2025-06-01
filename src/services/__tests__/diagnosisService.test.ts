@@ -37,14 +37,14 @@ describe('diagnosisService', () => {
       expect(mapDiagnosisCertainty(diagnosis)).toBe(DiagnosisCertainty.Provisional);
     });
 
-    it('returns Unknown for missing or invalid status', () => {
+    it('returns Provisional for missing or invalid status', () => {
       const diagnosisWithoutStatus = {
         ...mockFhirDiagnoses[0],
         verificationStatus: {
           coding: []
         }
       };
-      expect(mapDiagnosisCertainty(diagnosisWithoutStatus)).toBe(DiagnosisCertainty.Unknown);
+      expect(mapDiagnosisCertainty(diagnosisWithoutStatus)).toBe(DiagnosisCertainty.Provisional);
     });
   });
 
@@ -60,29 +60,16 @@ describe('diagnosisService', () => {
       expect(formattedDiagnoses[0].display).toBe(mockFhirDiagnoses[0].code.text);
       expect(formattedDiagnoses[0].certainty).toBe(DiagnosisCertainty.Confirmed);
       expect(formattedDiagnoses[0].recorder).toBe(mockFhirDiagnoses[0].recorder.display);
-      expect(formattedDiagnoses[0].note).toEqual(['Patient has a family history of diabetes.']);
     });
 
     it('handles errors and shows notifications', () => {
-      // Mock an error being thrown
-      const errorMock = new Error('Test error');
       jest.spyOn(console, 'error').mockImplementation(() => {});
       
-      // Create a mock implementation that throws an error
-      const mockFormatDate = jest.fn().mockImplementation(() => {
-        throw errorMock;
-      });
-      
-      // Replace the real formatDate with our mock
-      jest.mock('@/utils/date', () => ({
-        formatDate: mockFormatDate,
-      }));
-      
-      // Call the function that should now throw an error
+      // Call the function with invalid data that will cause an error
       const result = formatDiagnoses([
         {
           ...mockFhirDiagnoses[0],
-          recordedDate: 'invalid-date',
+          code: null as any, // This will cause an error
         },
       ]);
       
@@ -94,7 +81,7 @@ describe('diagnosisService', () => {
   });
 
   describe('groupDiagnosesByDateAndRecorder', () => {
-    it('groups diagnoses by date and recorder correctly', () => {
+    it('groups diagnoses by date correctly', () => {
       const groupedDiagnoses = groupDiagnosesByDateAndRecorder(mockFormattedDiagnoses);
       
       // Check that we have the right number of date groups
@@ -102,37 +89,14 @@ describe('diagnosisService', () => {
       
       // Check the first date group (Jan 15)
       expect(groupedDiagnoses[0].date).toBe('Jan 15, 2025');
-      expect(groupedDiagnoses[0].recorderGroups.length).toBe(1); // One recorder: Dr. Jane Smith
-      expect(groupedDiagnoses[0].recorderGroups[0].recorder).toBe('Dr. Jane Smith');
-      expect(groupedDiagnoses[0].recorderGroups[0].diagnoses.length).toBe(2); // Two diagnoses
+      expect(groupedDiagnoses[0].diagnoses.length).toBe(2); // Two diagnoses
+      expect(groupedDiagnoses[0].diagnoses[0].recorder).toBe('Dr. Jane Smith');
+      expect(groupedDiagnoses[0].diagnoses[1].recorder).toBe('Dr. Jane Smith');
       
       // Check the second date group (Jan 10)
       expect(groupedDiagnoses[1].date).toBe('Jan 10, 2025');
-      expect(groupedDiagnoses[1].recorderGroups.length).toBe(1); // One recorder: Dr. Robert Johnson
-      expect(groupedDiagnoses[1].recorderGroups[0].recorder).toBe('Dr. Robert Johnson');
-      expect(groupedDiagnoses[1].recorderGroups[0].diagnoses.length).toBe(1); // One diagnosis
-    });
-
-    it('handles errors and shows notifications', () => {
-      // Mock an error being thrown
-      const errorMock = new Error('Test error');
-      jest.spyOn(console, 'error').mockImplementation(() => {});
-      
-      // Create a mock implementation that throws an error
-      const mockMap = jest.spyOn(Array.prototype, 'forEach').mockImplementation(() => {
-        throw errorMock;
-      });
-      
-      // Call the function that should now throw an error
-      const result = groupDiagnosesByDateAndRecorder(mockFormattedDiagnoses);
-      
-      // Check that the error was handled and notification was shown
-      expect(utils.getFormattedError).toHaveBeenCalled();
-      expect(notificationService.showError).toHaveBeenCalledWith('Error Title', 'Error Message');
-      expect(result).toEqual([]);
-      
-      // Clean up
-      mockMap.mockRestore();
+      expect(groupedDiagnoses[1].diagnoses.length).toBe(1); // One diagnosis
+      expect(groupedDiagnoses[1].diagnoses[0].recorder).toBe('Dr. Robert Johnson');
     });
   });
 });

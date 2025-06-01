@@ -62,11 +62,6 @@ export const mockFhirDiagnoses: FhirDiagnosis[] = [
       type: 'Practitioner',
       display: 'Dr. Jane Smith',
     },
-    note: [
-      {
-        text: 'Patient has a family history of diabetes.',
-      },
-    ],
   },
   {
     resourceType: 'Condition',
@@ -191,11 +186,6 @@ export const mockFhirDiagnoses: FhirDiagnosis[] = [
       type: 'Practitioner',
       display: 'Dr. Robert Johnson',
     },
-    note: [
-      {
-        text: 'Patient experiences wheezing during exercise.',
-      },
-    ],
   },
 ];
 
@@ -207,7 +197,6 @@ export const mockFormattedDiagnoses = [
     recordedDate: '2025-01-15T10:30:00Z',
     formattedDate: 'Jan 15, 2025',
     recorder: 'Dr. Jane Smith',
-    note: ['Patient has a family history of diabetes.'],
   },
   {
     id: 'diagnosis-2',
@@ -224,7 +213,6 @@ export const mockFormattedDiagnoses = [
     recordedDate: '2025-01-10T14:20:00Z',
     formattedDate: 'Jan 10, 2025',
     recorder: 'Dr. Robert Johnson',
-    note: ['Patient experiences wheezing during exercise.'],
   },
 ];
 
@@ -240,7 +228,6 @@ export const mockDiagnosesByDate = [
         recordedDate: '2025-01-15T10:30:00Z',
         formattedDate: 'Jan 15, 2025',
         recorder: 'Dr. Jane Smith',
-        note: ['Patient has a family history of diabetes.'],
       },
       {
         id: 'diagnosis-2',
@@ -263,7 +250,6 @@ export const mockDiagnosesByDate = [
         recordedDate: '2025-01-10T14:20:00Z',
         formattedDate: 'Jan 10, 2025',
         recorder: 'Dr. Robert Johnson',
-        note: ['Patient experiences wheezing during exercise.'],
       },
     ],
   },

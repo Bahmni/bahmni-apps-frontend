@@ -11,15 +11,9 @@ export interface DiagnosisInputEntry {
   hasBeenValidated: boolean;
 }
 
-/**
- * Enum for diagnosis certainty status
- */
 export enum DiagnosisCertainty {
   Provisional = 'Provisional',
-  Confirmed = 'Confirmed',
-  Refuted = 'Refuted',
-  EnteredInError = 'Entered in Error',
-  Unknown = 'Unknown'
+  Confirmed = 'Confirmed'
 }
 
 /**
@@ -78,9 +72,6 @@ export interface FhirDiagnosis {
     type: string;
     display: string;
   };
-  note?: {
-    text: string;
-  }[];
 }
 
 /**
@@ -117,16 +108,8 @@ export interface FormattedDiagnosis {
   recordedDate: string;
   formattedDate: string;
   recorder: string;
-  note?: string[];
 }
 
-/**
- * Interface for diagnoses grouped by recorder
- */
-export interface DiagnosesByRecorder {
-  recorder: string;
-  diagnoses: FormattedDiagnosis[];
-}
 
 /**
  * Interface for diagnoses grouped by date

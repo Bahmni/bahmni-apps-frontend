@@ -2,7 +2,7 @@ import React from 'react';
 import { Accordion, AccordionItem } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import * as styles from './styles/Diagnoses.module.scss';
-import DiagnosisItem from './DiagnosisItem';
+import DiagnosisItem from './DiagnosesItem';
 import useDiagnoses from '@/hooks/useDiagnoses';
 import { DiagnosesByDate } from '@/types/diagnosis';
 
@@ -14,19 +14,21 @@ const DiagnosesControl: React.FC = () => {
   const { diagnosesByDate, isLoading, isError } = useDiagnoses();
 
   if (isLoading && diagnosesByDate.length === 0) {
-    return <div>{t('DIAGNOSIS_LOADING')}</div>;
+    return <div>{t('DIAGNOSES_LOADING')}</div>;
   }
 
   if (isError) {
-    return <div>{t('DIAGNOSIS_ERROR_LOADING')}</div>;
+    return <div>{t('DIAGNOSES_ERROR_LOADING')}</div>;
   }
 
   if (!isLoading && diagnosesByDate.length === 0) {
-    return <div className={styles.noData}>{t('DIAGNOSIS_NO_DIAGNOSES')}</div>;
+    return <div className={styles.noData}>{t('DIAGNOSES_NO_DIAGNOSES')}</div>;
   }
 
   return (
     <section className={styles.diagnosesWrapper} data-testid="diagnoses-control">
+      <Accordion>
+        <AccordionItem title={t('DIAGNOSES_FORM_TITLE')} className={styles.accordionItem}>
       {/* Table Header */}
       <div className={styles.tableHeader}>
         <div className={styles.diagnosesColumn}>Diagnoses</div>
@@ -41,7 +43,7 @@ const DiagnosesControl: React.FC = () => {
             className={styles.accordionItem}
             title={dateGroup.date}
           >
-            <div className={styles.diagnosesTable}>
+            <div>
               {dateGroup.diagnoses.map((diagnosis, diagnosisIndex) => (
                 <DiagnosisItem 
                   key={diagnosis.id || diagnosisIndex} 
@@ -51,6 +53,8 @@ const DiagnosesControl: React.FC = () => {
             </div>
           </AccordionItem>
         ))}
+      </Accordion>
+        </AccordionItem>
       </Accordion>
     </section>
   );

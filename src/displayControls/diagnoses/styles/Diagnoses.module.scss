@@ -5,7 +5,7 @@
 .tableHeader {
   display: flex;
   padding: 1rem 1rem;
-  background-color: #f4f4f4;
+  background-color: #ffffff;
   border-bottom: 1px solid #e0e0e0;
   font-size: 0.875rem;
   color: #161616;
@@ -23,15 +23,23 @@
 
 .accordionItem {
   :global(.cds--accordion__content) {
-    padding: 0 !important;
+    background-color: #f4f4f4;
+    padding-inline: 0px;
   }
-  
+
   :global(.cds--accordion__heading) {
     padding-left: 1rem !important;
     padding-right: 1rem !important;
   }
-  
+
+  :global(.cds--accordion__wrapper) {
+   padding-inline: 0px !important;
+   background-color: #f4f4f4;
+  }
+
   :global(.cds--accordion__item) {
+    padding-inline: 0;
+    background-color: white;
     border: none;
   }
 }
@@ -39,9 +47,8 @@
 .diagnosisRow {
   display: flex;
   padding: 1rem;
-  border-bottom: 1px solid #e0e0e0;
   align-items: center;
-  
+
   &:last-child {
     border-bottom: none;
   }

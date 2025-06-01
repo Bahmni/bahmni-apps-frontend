@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import DiagnosisItem from '../DiagnosisItem';
+import DiagnosisItem from '../DiagnosesItem';
 import { mockFormattedDiagnoses } from '@/__mocks__/diagnosisMocks';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/setupTests.i18n';
@@ -23,31 +23,11 @@ describe('DiagnosisItem', () => {
 
   it('renders the certainty tag', () => {
     renderComponent();
-    expect(screen.getByText('DIAGNOSIS_CONFIRMED')).toBeInTheDocument();
+    expect(screen.getByText('Confirmed')).toBeInTheDocument();
   });
 
-  it('renders the recorder information when showRecorder is true', () => {
-    renderComponent({ showRecorder: true });
-    expect(screen.getByText(/DIAGNOSIS_RECORDER: Dr. Jane Smith/i)).toBeInTheDocument();
-  });
-
-  it('does not render the recorder information when showRecorder is false', () => {
-    renderComponent({ showRecorder: false });
-    expect(screen.queryByText(/DIAGNOSIS_RECORDER/i)).not.toBeInTheDocument();
-  });
-
-  it('renders notes when available', () => {
+  it('renders the recorder information', () => {
     renderComponent();
-    expect(screen.getByText('Patient has a family history of diabetes.')).toBeInTheDocument();
-  });
-
-  it('does not render notes section when no notes are available', () => {
-    const diagnosisWithoutNotes = mockFormattedDiagnoses[1]; // Hypertension without notes
-    render(
-      <I18nextProvider i18n={i18n}>
-        <DiagnosisItem diagnosis={diagnosisWithoutNotes} />
-      </I18nextProvider>,
-    );
-    expect(screen.queryByText('Patient has a family history of diabetes.')).not.toBeInTheDocument();
+    expect(screen.getByText('Dr. Jane Smith')).toBeInTheDocument();
   });
 });
