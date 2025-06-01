@@ -1,11 +1,16 @@
 import { useEffect, useState, useMemo } from 'react';
 import useDebounce from './useDebounce';
-import { fetchAndFormatAllergenConcepts } from '@services/allergyService';
+import {
+  fetchAndFormatAllergenConcepts,
+  fetchReactionConcepts,
+} from '@services/allergyService';
 import { AllergenConcept } from '@/types/concepts';
 import { getFormattedError } from '@utils/common';
+import { Coding } from 'fhir/r4';
 
 interface UseAllergenSearchResult {
   allergens: AllergenConcept[];
+  reactions: Coding[];
   isLoading: boolean;
   error: Error | null;
 }
@@ -19,6 +24,7 @@ interface UseAllergenSearchResult {
  */
 const useAllergenSearch = (serchTerm: string = ''): UseAllergenSearchResult => {
   const [allergens, setAllergens] = useState<AllergenConcept[]>([]);
+  const [reactions, setReactions] = useState<Coding[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const debouncedSearchTerm = useDebounce(serchTerm);
@@ -29,8 +35,10 @@ const useAllergenSearch = (serchTerm: string = ''): UseAllergenSearchResult => {
       setIsLoading(true);
       setError(null);
       try {
-        const concepts = await fetchAndFormatAllergenConcepts();
-        setAllergens(concepts);
+        const allergens = await fetchAndFormatAllergenConcepts();
+        setAllergens(allergens);
+        const reactions = await fetchReactionConcepts();
+        setReactions(reactions);
       } catch (err) {
         const formattedError = getFormattedError(err);
         setError(new Error(formattedError.message));
@@ -60,6 +68,7 @@ const useAllergenSearch = (serchTerm: string = ''): UseAllergenSearchResult => {
 
   return {
     allergens: filteredAllergens,
+    reactions,
     isLoading,
     error,
   };

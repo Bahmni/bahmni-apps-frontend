@@ -5,6 +5,7 @@ import {
   formatAllergies,
   formatAllergenConcepts,
   fetchAndFormatAllergenConcepts,
+  fetchReactionConcepts,
 } from '../allergyService';
 import { FhirAllergyIntolerance } from '@/types/allergy';
 import {
@@ -30,7 +31,7 @@ import {
 import notificationService from '../notificationService';
 import { getFormattedError } from '@utils/common';
 import { searchFHIRConcepts } from '../conceptService';
-import { ALLERGEN_TYPES } from '@constants/concepts';
+import { ALLERGEN_TYPES, ALLERGY_REACTION } from '@constants/concepts';
 import { ValueSet } from 'fhir/r4';
 
 // Mock the api module
@@ -415,6 +416,81 @@ describe('allergyService', () => {
           { uuid: 'med2', display: '', type: 'medication' },
           { uuid: '', display: 'Medication 3', type: 'medication' },
         ]),
+      );
+    });
+  });
+
+  describe('fetchReactionConcepts', () => {
+    const mockReactionValueSet = {
+      resourceType: 'ValueSet',
+      id: 'reaction',
+      status: 'active',
+      compose: {
+        include: [
+          {
+            concept: [
+              {
+                system: 'http://snomed.info/sct',
+                code: 'reaction1',
+                display: 'Rash',
+              },
+              {
+                system: 'http://snomed.info/sct',
+                code: 'reaction2',
+                display: 'Hives',
+              },
+            ],
+          },
+        ],
+      },
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      (searchFHIRConcepts as jest.Mock).mockResolvedValue(mockReactionValueSet);
+    });
+
+    it('should fetch and return reaction concepts', async () => {
+      const result = await fetchReactionConcepts();
+
+      expect(searchFHIRConcepts).toHaveBeenCalledWith(ALLERGY_REACTION.code);
+      expect(result).toEqual(mockReactionValueSet.compose.include[0].concept);
+    });
+
+    it('should handle empty concept array', async () => {
+      const emptyValueSet = {
+        ...mockReactionValueSet,
+        compose: {
+          include: [{ concept: [] }],
+        },
+      };
+      (searchFHIRConcepts as jest.Mock).mockResolvedValue(emptyValueSet);
+
+      const result = await fetchReactionConcepts();
+
+      expect(result).toEqual([]);
+    });
+
+    it('should handle missing concept array', async () => {
+      const noConceptValueSet = {
+        ...mockReactionValueSet,
+        compose: {
+          include: [{}],
+        },
+      };
+      (searchFHIRConcepts as jest.Mock).mockResolvedValue(noConceptValueSet);
+
+      const result = await fetchReactionConcepts();
+
+      expect(result).toEqual([]);
+    });
+
+    it('should handle API errors', async () => {
+      const error = new Error('Failed to fetch reactions');
+      (searchFHIRConcepts as jest.Mock).mockRejectedValue(error);
+
+      await expect(fetchReactionConcepts()).rejects.toThrow(
+        'Failed to fetch reactions',
       );
     });
   });

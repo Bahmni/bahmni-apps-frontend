@@ -14,6 +14,24 @@ export const CERTAINITY_CONCEPTS: Coding[] = [
   },
 ];
 
+export const ALLERGY_SEVERITY_CONCEPTS: Coding[] = [
+  {
+    code: 'mild',
+    display: 'SEVERITY_MILD',
+    system: 'http://terminology.hl7.org/CodeSystem/condition-clinical',
+  },
+  {
+    code: 'moderate',
+    display: 'SEVERITY_MODERATE',
+    system: 'http://terminology.hl7.org/CodeSystem/condition-clinical',
+  },
+  {
+    code: 'severe',
+    display: 'SEVERITY_SEVERE',
+    system: 'http://terminology.hl7.org/CodeSystem/condition-clinical',
+  },
+];
+
 export const ALLERGEN_TYPES: Record<
   Uppercase<AllergenType>,
   {
@@ -39,14 +57,8 @@ export const ALLERGEN_TYPES: Record<
   },
 };
 
-export const ALLERGY_REACTION: Coding = {
+export const ALLERGY_REACTION = {
   code: '162555AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
   display: 'reaction',
   system: 'http://terminology.hl7.org/CodeSystem/allergyintolerance-type',
-};
-
-export const ALLERGY_SEVERITY = {
-  MILD: 'mild',
-  MODERATE: 'moderate',
-  SEVERE: 'severe',
 };

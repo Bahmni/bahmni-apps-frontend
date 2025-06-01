@@ -8,7 +8,7 @@ import {
 import { getFormattedError } from '@utils/common';
 import notificationService from './notificationService';
 import { searchFHIRConcepts } from './conceptService';
-import { ALLERGEN_TYPES } from '@constants/concepts';
+import { ALLERGEN_TYPES, ALLERGY_REACTION } from '@constants/concepts';
 import { AllergenConcept, AllergenType } from '@/types/concepts';
 import { Coding } from 'fhir/r4';
 
@@ -79,6 +79,14 @@ export const fetchAndFormatAllergenConcepts = async (): Promise<
   return formatAllergenConcepts(rawConcepts);
 };
 
+/**
+ * Fetches and formats reaction concepts from FHIR ValueSet
+ * @returns Promise resolving to an array of formatted reaction concepts
+ */
+export const fetchReactionConcepts = async (): Promise<Coding[]> => {
+  const reactionValueSet = await searchFHIRConcepts(ALLERGY_REACTION.code);
+  return reactionValueSet.compose?.include[0]?.concept || [];
+};
 /**
  * Fetches allergies for a given patient UUID from the FHIR R4 endpoint
  * @param patientUUID - The UUID of the patient
