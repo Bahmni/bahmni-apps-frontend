@@ -1,5 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import DiagnosesControl from '../DiagnosesControl';
 import { mockDiagnosesByDate } from '@/__mocks__/diagnosisMocks';
 import { I18nextProvider } from 'react-i18next';
@@ -8,6 +10,9 @@ import useDiagnoses from '@/hooks/useDiagnoses';
 
 // Mock the useDiagnoses hook
 jest.mock('@/hooks/useDiagnoses');
+
+// Extend Jest matchers for accessibility testing
+expect.extend(toHaveNoViolations);
 
 describe('DiagnosesControl', () => {
   beforeEach(() => {
@@ -31,7 +36,7 @@ describe('DiagnosesControl', () => {
     });
 
     renderComponent();
-    expect(screen.getByText('DIAGNOSIS_LOADING')).toBeInTheDocument();
+    expect(screen.getByText('Loading diagnoses...')).toBeInTheDocument();
   });
 
   it('renders error state when there is an error', () => {
@@ -42,7 +47,7 @@ describe('DiagnosesControl', () => {
     });
 
     renderComponent();
-    expect(screen.getByText('DIAGNOSIS_ERROR_LOADING')).toBeInTheDocument();
+    expect(screen.getByText('Error loading diagnoses')).toBeInTheDocument();
   });
 
   it('renders empty state when no diagnoses are available', () => {
@@ -53,10 +58,10 @@ describe('DiagnosesControl', () => {
     });
 
     renderComponent();
-    expect(screen.getByText('DIAGNOSIS_NO_DIAGNOSES')).toBeInTheDocument();
+    expect(screen.getByText('No diagnoses added for this patient')).toBeInTheDocument();
   });
 
-  it('renders diagnoses grouped by date and recorder', () => {
+  it('renders diagnoses grouped by date', () => {
     (useDiagnoses as jest.Mock).mockReturnValue({
       diagnosesByDate: mockDiagnosesByDate,
       isLoading: false,
@@ -69,13 +74,22 @@ describe('DiagnosesControl', () => {
     expect(screen.getByText('Jan 15, 2025')).toBeInTheDocument();
     expect(screen.getByText('Jan 10, 2025')).toBeInTheDocument();
     
-    // Check for recorder groups
-    expect(screen.getAllByText('Dr. Jane Smith')).toHaveLength(1);
-    expect(screen.getAllByText('Dr. Robert Johnson')).toHaveLength(1);
-    
     // Check for diagnoses
     expect(screen.getByText('Type 2 Diabetes Mellitus')).toBeInTheDocument();
     expect(screen.getByText('Hypertension')).toBeInTheDocument();
     expect(screen.getByText('Asthma')).toBeInTheDocument();
+  });
+
+  describe('Accessibility', () => {
+    test('accessible forms pass axe', async () => {
+      (useDiagnoses as jest.Mock).mockReturnValue({
+        diagnosesByDate: mockDiagnosesByDate,
+        isLoading: false,
+        isError: false,
+      });
+
+      const { container } = renderComponent();
+      expect(await axe(container)).toHaveNoViolations();
+    });
   });
 });
