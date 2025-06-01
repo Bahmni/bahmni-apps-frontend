@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Grid, Column, Section } from '@carbon/react';
-import { DashboardSectionConfig } from '@types/dashboardConfig';
+import { DashboardSectionConfig } from '@/types/dashboardConfig';
 import DashboardSection from '../dashboardSection/DashboardSection';
 import * as styles from './styles/DashboardContainer.module.scss';
 
@@ -22,7 +22,7 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
 }) => {
   // Create a ref map for each section - fix the type definition here
   const sectionRefs = useRef<{
-    [key: string]: React.RefObject<HTMLDivElement>;
+    [key: string]: React.RefObject<HTMLDivElement | null>;
   }>({});
 
   // Initialize refs for each section
@@ -44,9 +44,12 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
 
       if (activeSection && sectionRefs.current[activeSection.id]?.current) {
         // Added optional chaining and null check to prevent errors
-        sectionRefs.current[activeSection.id].current.scrollIntoView({
-          behavior: 'smooth',
-        });
+        const sectionDiv = sectionRefs.current[activeSection.id].current;
+        if (sectionDiv) {
+          sectionDiv.scrollIntoView({
+            behavior: 'smooth',
+          });
+        }
       }
     }
   }, [activeItemId, sections]);
@@ -66,7 +69,6 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
             sm={4}
             key={section.id}
             className={styles.sectionColumn}
-            ref={sectionRefs.current[section.id]}
           >
             <DashboardSection
               section={section}

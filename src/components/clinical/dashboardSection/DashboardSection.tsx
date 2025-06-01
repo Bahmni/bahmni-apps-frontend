@@ -10,11 +10,23 @@ import LabInvestigation from '@displayControls/labinvestigation/LabInvestigation
 
 export interface DashboardSectionProps {
   section: DashboardSectionConfig;
-  ref: React.RefObject<HTMLDivElement>;
+  ref: React.RefObject<HTMLDivElement | null>;
 }
 
 //TODO: Refactor this to depend on Controls configuration
 const renderSectionContent = (section: DashboardSectionConfig) => {
+  if (section.controls && section.controls.length > 0) {
+    return (
+      <div className="section-controls">
+        {section.controls.map((control, index) => (
+          <div key={index}>
+            {renderControlContent(control.type)}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   switch (section.name) {
     case 'Allergies':
       return <AllergiesTable />;
@@ -28,6 +40,22 @@ const renderSectionContent = (section: DashboardSectionConfig) => {
       return null;
   }
 };
+
+const renderControlContent = (controlType: string) => {
+  switch (controlType) {
+    case 'conditions':
+      return <ConditionsTable />;
+    case 'diagnoses':
+      return <DiagnosesControl />;
+    case 'allergies':
+      return <AllergiesTable />;
+    case 'labInvestigations':
+      return <LabInvestigation />;
+    default:
+      return null;
+  }
+};
+
 /**
  * DashboardSection component that renders a single dashboard section as a Carbon Tile
  *
