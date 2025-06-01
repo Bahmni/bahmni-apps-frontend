@@ -7,8 +7,8 @@ import { useEncounterConcepts } from '@hooks/useEncounterConcepts';
 import { useLocations } from '@hooks/useLocations';
 import { Column, Grid, Loading } from '@carbon/react';
 import * as styles from './styles/ConsultationPad.module.scss';
-import BasicForm from '@components/clinical/basicForm/BasicForm';
-import DiagnosesForm from '@components/clinical/diagnosesForm/DiagnosesForm';
+import BasicForm from '@components/clinical/forms/basic/BasicForm';
+import DiagnosesForm from '@components/clinical/forms/diagnoses/DiagnosesForm';
 import { Concept } from '@types/encounterConcepts';
 import { ConsultationBundle } from '@types/consultationBundle';
 import {

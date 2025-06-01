@@ -150,13 +150,13 @@ jest.mock('@components/common/actionArea/ActionArea', () => {
   };
 });
 
-jest.mock('@components/clinical/basicForm/BasicForm', () => {
+jest.mock('@components/clinical/forms/basic/BasicForm', () => {
   return function MockBasicForm() {
     return <div data-testid="mock-basic-form"></div>;
   };
 });
 
-jest.mock('@components/clinical/diagnosesForm/DiagnosesForm', () => {
+jest.mock('@components/clinical/forms/diagnoses/DiagnosesForm', () => {
   return function MockDiagnosesForm() {
     // Get access to the mocked store
     const mockStore = jest
