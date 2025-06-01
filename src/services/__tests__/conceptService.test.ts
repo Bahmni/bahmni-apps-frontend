@@ -69,16 +69,16 @@ describe('conceptService', () => {
             concept: [
               {
                 code: '121677AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-                display: 'Mental status change'
+                display: 'Mental status change',
               },
               {
                 code: '121629AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-                display: 'Anaemia'
-              }
-            ]
-          }
-        ]
-      }
+                display: 'Anaemia',
+              },
+            ],
+          },
+        ],
+      },
     };
 
     beforeEach(() => {

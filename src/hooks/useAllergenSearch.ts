@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import useDebounce from './useDebounce';
-import { fetchAndFormatAllergenConcepts } from '@services/allergenService';
-import { AllergenConcept } from '@types/concepts';
+import { fetchAndFormatAllergenConcepts } from '@services/allergyService';
+import { AllergenConcept } from '@/types/concepts';
 import { getFormattedError } from '@utils/common';
 
 interface UseAllergenSearchResult {
@@ -13,16 +13,15 @@ interface UseAllergenSearchResult {
 /**
  * A hook that provides debounced search functionality for allergen concepts.
  * It eagerly loads all allergen concepts and filters them based on the search term.
+ *
  * @param searchTerm - Optional search term to filter allergens
  * @returns Object containing filtered allergens, loading state, and any errors
  */
-const useAllergenSearch = (
-  searchTerm: string = '',
-): UseAllergenSearchResult => {
+const useAllergenSearch = (serchTerm: string = ''): UseAllergenSearchResult => {
   const [allergens, setAllergens] = useState<AllergenConcept[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const debouncedSearchTerm = useDebounce(searchTerm);
+  const debouncedSearchTerm = useDebounce(serchTerm);
 
   // Load all allergens on mount
   useEffect(() => {
@@ -49,9 +48,13 @@ const useAllergenSearch = (
     const searchTermLower = debouncedSearchTerm?.toLowerCase().trim() || '';
     if (!searchTermLower) return allergens;
 
+    // Split search term into words for more flexible matching
+    const searchWords = searchTermLower.split(/\s+/);
+
     return allergens.filter((allergen) => {
-      const displayLower = allergen.display.trim().toLowerCase();
-      return allergen && displayLower.includes(searchTermLower);
+      const displayLower = allergen.display.toLowerCase();
+      // Match if any search word is found anywhere in the display name
+      return searchWords.some((word) => displayLower.includes(word));
     });
   }, [allergens, debouncedSearchTerm]);
 

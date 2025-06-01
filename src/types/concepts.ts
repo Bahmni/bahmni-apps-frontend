@@ -10,7 +10,6 @@ export type AllergenType = 'food' | 'medication' | 'environment';
 export interface AllergenConcept {
   uuid: string;
   display: string;
-  retired: boolean;
   type: AllergenType;
 }
 

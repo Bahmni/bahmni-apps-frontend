@@ -2,11 +2,11 @@ import React from 'react';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import useAllergenSearch from '../useAllergenSearch';
 import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
-import { fetchAndFormatAllergenConcepts } from '@services/allergenService';
+import { fetchAndFormatAllergenConcepts } from '@services/allergyService';
 import { ALLERGEN_TYPES } from '@constants/concepts';
 import * as api from '@services/api';
 
-jest.mock('@services/allergenService');
+jest.mock('@services/allergyService');
 jest.mock('@services/api');
 jest.mock('@services/notificationService', () => ({
   showError: jest.fn(),
@@ -252,7 +252,7 @@ describe('useAllergenSearch', () => {
 
   it('should debounce search term updates', async () => {
     const { result, rerender } = renderHook(
-      (searchTerm) => useAllergenSearch(searchTerm),
+      (props) => useAllergenSearch(props),
       {
         wrapper,
         initialProps: '',

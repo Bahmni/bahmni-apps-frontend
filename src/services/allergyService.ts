@@ -7,6 +7,77 @@ import {
 } from '@types/allergy';
 import { getFormattedError } from '@utils/common';
 import notificationService from './notificationService';
+import { searchFHIRConcepts } from './conceptService';
+import { ALLERGEN_TYPES } from '@constants/concepts';
+import { AllergenConcept, AllergenType } from '@/types/concepts';
+import { Coding } from 'fhir/r4';
+
+interface RawAllergenConcepts {
+  medication?: Coding[];
+  food?: Coding[];
+  environment?: Coding[];
+}
+
+/**
+ * Extracts and formats allergen concepts from FHIR Concept data
+ * @param concepts - FHIR Coding data
+ * @param type - Allergen type identifier
+ * @returns Formatted allergen concepts
+ */
+const extractSetMembers = (
+  concepts: Coding[],
+  type: AllergenType,
+): AllergenConcept[] => {
+  return concepts.map((concept) => ({
+    uuid: concept.code || '',
+    display: concept.display || '',
+    type,
+  }));
+};
+
+/**
+ * Formats raw allergen concepts into a unified array with type information
+ * @param rawConcepts - Object containing allergen concepts grouped by type
+ * @returns Array of formatted allergen concepts with type information
+ */
+export const formatAllergenConcepts = (
+  rawConcepts: RawAllergenConcepts,
+): AllergenConcept[] => [
+  ...extractSetMembers(
+    rawConcepts.medication || [],
+    ALLERGEN_TYPES.MEDICATION.display,
+  ),
+  ...extractSetMembers(rawConcepts.food || [], ALLERGEN_TYPES.FOOD.display),
+  ...extractSetMembers(
+    rawConcepts.environment || [],
+    ALLERGEN_TYPES.ENVIRONMENT.display,
+  ),
+];
+
+/**
+ * Fetches and formats allergen concepts from FHIR ValueSets
+ * @returns Promise resolving to an array of formatted allergen concepts
+ */
+export const fetchAndFormatAllergenConcepts = async (): Promise<
+  AllergenConcept[]
+> => {
+  // Get ValueSets for each allergen type
+  const [medicationValueSet, foodValueSet, environmentValueSet] =
+    await Promise.all([
+      searchFHIRConcepts(ALLERGEN_TYPES.MEDICATION.code),
+      searchFHIRConcepts(ALLERGEN_TYPES.FOOD.code),
+      searchFHIRConcepts(ALLERGEN_TYPES.ENVIRONMENT.code),
+    ]);
+
+  // Extract concepts from the ValueSets
+  const rawConcepts: RawAllergenConcepts = {
+    medication: medicationValueSet.compose?.include[0]?.concept || [],
+    food: foodValueSet.compose?.include[0]?.concept || [],
+    environment: environmentValueSet.compose?.include[0]?.concept || [],
+  };
+
+  return formatAllergenConcepts(rawConcepts);
+};
 
 /**
  * Fetches allergies for a given patient UUID from the FHIR R4 endpoint
