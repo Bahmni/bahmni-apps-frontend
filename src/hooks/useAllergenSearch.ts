@@ -4,10 +4,6 @@ import { fetchAndFormatAllergenConcepts } from '@services/allergenService';
 import { AllergenConcept } from '@types/concepts';
 import { getFormattedError } from '@utils/common';
 
-interface UseAllergenSearchProps {
-  searchTerm?: string;
-}
-
 interface UseAllergenSearchResult {
   allergens: AllergenConcept[];
   isLoading: boolean;
@@ -17,13 +13,12 @@ interface UseAllergenSearchResult {
 /**
  * A hook that provides debounced search functionality for allergen concepts.
  * It eagerly loads all allergen concepts and filters them based on the search term.
- *
  * @param searchTerm - Optional search term to filter allergens
  * @returns Object containing filtered allergens, loading state, and any errors
  */
-const useAllergenSearch = ({
-  searchTerm = '',
-}: UseAllergenSearchProps = {}): UseAllergenSearchResult => {
+const useAllergenSearch = (
+  searchTerm: string = '',
+): UseAllergenSearchResult => {
   const [allergens, setAllergens] = useState<AllergenConcept[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);

@@ -106,10 +106,7 @@ describe('useAllergenSearch', () => {
 
   describe('search functionality', () => {
     it('should filter allergens based on single word search term', async () => {
-      const { result } = renderHook(
-        () => useAllergenSearch({ searchTerm: 'pe' }),
-        { wrapper },
-      );
+      const { result } = renderHook(() => useAllergenSearch('pe'), { wrapper });
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -131,10 +128,9 @@ describe('useAllergenSearch', () => {
     });
 
     it('should match allergens when search term contains multiple words', async () => {
-      const { result } = renderHook(
-        () => useAllergenSearch({ searchTerm: 'ace inh' }),
-        { wrapper },
-      );
+      const { result } = renderHook(() => useAllergenSearch('ace inh'), {
+        wrapper,
+      });
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -152,10 +148,9 @@ describe('useAllergenSearch', () => {
     });
 
     it('should handle search terms with extra whitespace', async () => {
-      const { result } = renderHook(
-        () => useAllergenSearch({ searchTerm: '  penicillin  ' }),
-        { wrapper },
-      );
+      const { result } = renderHook(() => useAllergenSearch('  penicillin  '), {
+        wrapper,
+      });
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -173,12 +168,9 @@ describe('useAllergenSearch', () => {
     });
 
     it('should return all allergens for empty search term', async () => {
-      const { result } = renderHook(
-        () => useAllergenSearch({ searchTerm: '' }),
-        {
-          wrapper,
-        },
-      );
+      const { result } = renderHook(() => useAllergenSearch(''), {
+        wrapper,
+      });
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -187,12 +179,9 @@ describe('useAllergenSearch', () => {
     });
 
     it('should return all allergens for whitespace-only search term', async () => {
-      const { result } = renderHook(
-        () => useAllergenSearch({ searchTerm: '   ' }),
-        {
-          wrapper,
-        },
-      );
+      const { result } = renderHook(() => useAllergenSearch('   '), {
+        wrapper,
+      });
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -202,10 +191,9 @@ describe('useAllergenSearch', () => {
 
     it('should return empty array when no allergens are loaded', async () => {
       mockFetchAndFormatAllergenConcepts.mockResolvedValue([]);
-      const { result } = renderHook(
-        () => useAllergenSearch({ searchTerm: 'test' }),
-        { wrapper },
-      );
+      const { result } = renderHook(() => useAllergenSearch('test'), {
+        wrapper,
+      });
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -245,10 +233,7 @@ describe('useAllergenSearch', () => {
   });
 
   it('should handle case-insensitive search', async () => {
-    const { result } = renderHook(
-      () => useAllergenSearch({ searchTerm: 'PENI' }),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useAllergenSearch('PENI'), { wrapper });
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -267,10 +252,10 @@ describe('useAllergenSearch', () => {
 
   it('should debounce search term updates', async () => {
     const { result, rerender } = renderHook(
-      ({ searchTerm }) => useAllergenSearch({ searchTerm }),
+      (searchTerm) => useAllergenSearch(searchTerm),
       {
         wrapper,
-        initialProps: { searchTerm: '' },
+        initialProps: '',
       },
     );
 
@@ -281,7 +266,7 @@ describe('useAllergenSearch', () => {
     });
 
     // Update search term
-    rerender({ searchTerm: 'pe' });
+    rerender('pe');
 
     // Advance timers to trigger debounce
     await act(async () => {
