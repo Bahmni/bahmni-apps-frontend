@@ -53,6 +53,7 @@ describe('useAllergyStore', () => {
       const expectedAllergy: AllergyInputEntry = {
         id: mockAllergen.uuid,
         display: mockAllergen.display,
+        type: mockAllergen.type,
         selectedSeverity: null,
         selectedReactions: [],
         errors: {},

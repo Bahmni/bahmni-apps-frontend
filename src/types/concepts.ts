@@ -11,6 +11,7 @@ export interface AllergenConcept {
   uuid: string;
   display: string;
   type: AllergenType;
+  disabled?: boolean;
 }
 
 export interface AllergenConceptResponse {

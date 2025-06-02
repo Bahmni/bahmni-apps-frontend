@@ -1,3 +1,5 @@
+import { Coding } from 'fhir/r4';
+
 /**
  * Enum representing the possible clinical statuses of an allergy
  */
@@ -96,4 +98,20 @@ export interface FormattedAllergy {
   }>;
   readonly severity?: string;
   readonly note?: string[];
+}
+
+/**
+ * Interface representing an allergy input entry for form handling
+ */
+export interface AllergyInputEntry {
+  id: string;
+  display: string;
+  type: string;
+  selectedSeverity: Coding | null;
+  selectedReactions: Coding[];
+  errors: {
+    severity?: string;
+    reactions?: string;
+  };
+  hasBeenValidated: boolean;
 }

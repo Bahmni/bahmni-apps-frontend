@@ -23,6 +23,7 @@ export const useAllergyStore = create<AllergyState>((set, get) => ({
     const newAllergy: AllergyInputEntry = {
       id: allergy.uuid,
       display: allergy.display,
+      type: allergy.type,
       selectedSeverity: null,
       selectedReactions: [],
       errors: {},
