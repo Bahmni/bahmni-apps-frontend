@@ -1,31 +1,30 @@
 import { useState, useCallback, useEffect } from 'react';
 import { FhirEncounter } from '@types/encounter';
 import { useNotification } from './useNotification';
-import { getCurrentEncounter } from '@services/encounterService';
+import { getActiveVisit } from '@services/encounterService';
 import { getFormattedError } from '@utils/common';
 
-interface UseCurrentEncounterResult {
-  currentEncounter: FhirEncounter | null;
+interface UseActiveVisitResult {
+  activeVisit: FhirEncounter | null;
   loading: boolean;
   error: Error | null;
   refetch: () => void;
 }
 
 /**
- * Custom hook to fetch and manage the current active encounter for a patient
+ * Custom hook to fetch and manage the current active visit for a patient
  * @param patientUUID - The UUID of the patient
- * @returns Object containing current encounter, loading state, error state, and refetch function
+ * @returns Object containing active visit, loading state, error state, and refetch function
  */
-export const useCurrentEncounter = (
+export const useActiveVisit = (
   patientUUID: string | null,
-): UseCurrentEncounterResult => {
-  const [currentEncounter, setCurrentEncounter] =
-    useState<FhirEncounter | null>(null);
+): UseActiveVisitResult => {
+  const [activeVisit, setActiveVisit] = useState<FhirEncounter | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const { addNotification } = useNotification();
 
-  const fetchCurrentEncounter = useCallback(async () => {
+  const fetchActiveVisit = useCallback(async () => {
     if (!patientUUID) {
       setLoading(false);
       setError(new Error('Invalid patient UUID'));
@@ -39,18 +38,18 @@ export const useCurrentEncounter = (
 
     try {
       setLoading(true);
-      const encounter = await getCurrentEncounter(patientUUID);
+      const encounter = await getActiveVisit(patientUUID);
       if (!encounter) {
         setLoading(false);
-        setError(new Error('No current encounter found'));
+        setError(new Error('No active visit found'));
         addNotification({
           type: 'error',
           title: 'Error',
-          message: 'No current encounter found',
+          message: 'No active visit found',
         });
         return;
       }
-      setCurrentEncounter(encounter);
+      setActiveVisit(encounter);
       setError(null);
     } catch (err) {
       const { title, message } = getFormattedError(err);
@@ -60,20 +59,20 @@ export const useCurrentEncounter = (
         message: message,
       });
       setError(new Error(message));
-      setCurrentEncounter(null);
+      setActiveVisit(null);
     } finally {
       setLoading(false);
     }
   }, [patientUUID, addNotification]);
 
   useEffect(() => {
-    fetchCurrentEncounter();
-  }, [fetchCurrentEncounter]);
+    fetchActiveVisit();
+  }, [fetchActiveVisit]);
 
   return {
-    currentEncounter,
+    activeVisit,
     loading,
     error,
-    refetch: fetchCurrentEncounter,
+    refetch: fetchActiveVisit,
   };
 };

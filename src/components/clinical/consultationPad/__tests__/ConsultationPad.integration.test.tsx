@@ -10,7 +10,7 @@ import {
   mockLocations,
   mockEncounterConcepts,
   mockPractitioner,
-  mockCurrentEncounter,
+  mockActiveVisit,
   mockDiagnosisSearchResults,
 } from '@__mocks__/consultationPadMocks';
 
@@ -89,7 +89,7 @@ describe('ConsultationPad Integration', () => {
         return Promise.resolve({ data: mockEncounterConcepts });
       }
       if (url.includes('/encounter')) {
-        return Promise.resolve({ data: mockCurrentEncounter });
+        return Promise.resolve({ data: mockActiveVisit });
       }
       if (url.includes('/concept')) {
         return Promise.resolve({

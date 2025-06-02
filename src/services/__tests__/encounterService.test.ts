@@ -1,14 +1,11 @@
 import { get } from '@services/api';
 import {
-  getPatientEncountersBundle,
-  getEncounters,
-  getCurrentEncounter,
+  getPatientVisits,
+  getVisits,
+  getActiveVisit,
 } from '@services/encounterService';
-import { PATIENT_ENCOUNTER_RESOURCE_URL } from '@constants/app';
-import {
-  mockEncounterBundle,
-  mockCurrentEncounter,
-} from '@__mocks__/encounterMocks';
+import { PATIENT_VISITS_URL } from '@constants/app';
+import { mockVisitBundle, mockActiveVisit } from '@__mocks__/encounterMocks';
 
 jest.mock('@services/api');
 const mockedGet = get as jest.MockedFunction<typeof get>;
@@ -20,59 +17,57 @@ describe('encounterService', () => {
     jest.clearAllMocks();
   });
 
-  describe('getPatientEncountersBundle', () => {
-    it('should fetch encounter bundle from the correct endpoint', async () => {
-      mockedGet.mockResolvedValueOnce(mockEncounterBundle);
+  describe('getPatientVisits', () => {
+    it('should fetch visits from the correct endpoint', async () => {
+      mockedGet.mockResolvedValueOnce(mockVisitBundle);
 
-      await getPatientEncountersBundle(patientUUID);
+      await getPatientVisits(patientUUID);
 
-      expect(mockedGet).toHaveBeenCalledWith(
-        PATIENT_ENCOUNTER_RESOURCE_URL(patientUUID),
-      );
+      expect(mockedGet).toHaveBeenCalledWith(PATIENT_VISITS_URL(patientUUID));
     });
 
     it('should return the encounter bundle', async () => {
-      mockedGet.mockResolvedValueOnce(mockEncounterBundle);
+      mockedGet.mockResolvedValueOnce(mockVisitBundle);
 
-      const result = await getPatientEncountersBundle(patientUUID);
+      const result = await getPatientVisits(patientUUID);
 
-      expect(result).toEqual(mockEncounterBundle);
+      expect(result).toEqual(mockVisitBundle);
     });
   });
 
   describe('getEncounters', () => {
     it('should extract encounters from the bundle', async () => {
-      mockedGet.mockResolvedValueOnce(mockEncounterBundle);
+      mockedGet.mockResolvedValueOnce(mockVisitBundle);
 
-      const encounters = await getEncounters(patientUUID);
+      const encounters = await getVisits(patientUUID);
 
       expect(encounters).toEqual(
-        mockEncounterBundle.entry.map((entry) => entry.resource),
+        mockVisitBundle.entry.map((entry) => entry.resource),
       );
     });
 
     it('should return empty array if no encounters are found', async () => {
       mockedGet.mockResolvedValueOnce({ entry: undefined });
 
-      const encounters = await getEncounters(patientUUID);
+      const encounters = await getVisits(patientUUID);
 
       expect(encounters).toEqual([]);
     });
   });
 
-  describe('getCurrentEncounter', () => {
-    it('should return the encounter without an end date', async () => {
-      mockedGet.mockResolvedValueOnce(mockEncounterBundle);
+  describe('getActiveVisit', () => {
+    it('should return the active visit', async () => {
+      mockedGet.mockResolvedValueOnce(mockVisitBundle);
 
-      const currentEncounter = await getCurrentEncounter(patientUUID);
+      const activeVisit = await getActiveVisit(patientUUID);
 
-      expect(currentEncounter).toEqual(mockCurrentEncounter);
+      expect(activeVisit).toEqual(mockActiveVisit);
     });
 
-    it('should return null if no current encounter is found', async () => {
-      const bundleWithoutCurrentEncounter = {
-        ...mockEncounterBundle,
-        entry: mockEncounterBundle.entry.map((entry) => ({
+    it('should return null if no active visit is found', async () => {
+      const bundleWithoutActiveVisit = {
+        ...mockVisitBundle,
+        entry: mockVisitBundle.entry.map((entry) => ({
           ...entry,
           resource: {
             ...entry.resource,
@@ -84,11 +79,11 @@ describe('encounterService', () => {
         })),
       };
 
-      mockedGet.mockResolvedValueOnce(bundleWithoutCurrentEncounter);
+      mockedGet.mockResolvedValueOnce(bundleWithoutActiveVisit);
 
-      const currentEncounter = await getCurrentEncounter(patientUUID);
+      const activeVisit = await getActiveVisit(patientUUID);
 
-      expect(currentEncounter).toBeNull();
+      expect(activeVisit).toBeNull();
     });
   });
 });

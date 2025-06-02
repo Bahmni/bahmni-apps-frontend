@@ -20,12 +20,12 @@ import { FhirEncounter } from '@types/encounter';
 /**
  * BasicForm props
  * @interface BasicFormProps
- * @property {FhirEncounter} currentEncounter - The current encounter for deriving visit type
+ * @property {FhirEncounter} activeVisit - The active visit for deriving visit type
  */
 interface BasicFormProps {
-  currentEncounter: FhirEncounter;
+  activeVisit: FhirEncounter;
 }
-const BasicForm: React.FC<BasicFormProps> = ({ currentEncounter }) => {
+const BasicForm: React.FC<BasicFormProps> = ({ activeVisit }) => {
   const { t } = useTranslation();
   const { locations, loading: loadingLocations } = useLocations();
   const { encounterConcepts, loading: loadingEncounterConcepts } =
@@ -63,17 +63,16 @@ const BasicForm: React.FC<BasicFormProps> = ({ currentEncounter }) => {
   }, [encounterConcepts, selectedEncounterType]);
 
   useEffect(() => {
-    if (encounterConcepts && currentEncounter && !selectedVisitType) {
-      const currentEncounterId =
-        currentEncounter.type?.[0]?.coding?.[0]?.code || '';
+    if (encounterConcepts && activeVisit && !selectedVisitType) {
+      const activeVisitId = activeVisit.type?.[0]?.coding?.[0]?.code || '';
       const visitType = encounterConcepts.visitTypes.find(
-        (item) => item.uuid === currentEncounterId,
+        (item) => item.uuid === activeVisitId,
       );
       if (visitType) {
         setSelectedVisitType(visitType);
       }
     }
-  }, [encounterConcepts, currentEncounter, selectedVisitType]);
+  }, [encounterConcepts, activeVisit, selectedVisitType]);
 
   useEffect(() => {
     if (practitioner && encounterParticipants.length === 0) {

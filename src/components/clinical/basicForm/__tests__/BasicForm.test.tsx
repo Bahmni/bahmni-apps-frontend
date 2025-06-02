@@ -151,7 +151,7 @@ describe('BasicForm', () => {
     },
   };
 
-  const mockCurrentEncounter: FhirEncounter = {
+  const mockActiveVisit: FhirEncounter = {
     resourceType: 'Encounter',
     id: 'encounter-1',
     status: 'in-progress',
@@ -228,7 +228,7 @@ describe('BasicForm', () => {
 
   const renderBasicForm = (props = {}) => {
     const defaultProps = {
-      currentEncounter: mockCurrentEncounter,
+      activeVisit: mockActiveVisit,
     };
 
     return render(<BasicForm {...defaultProps} {...props} />);
@@ -334,7 +334,7 @@ describe('BasicForm', () => {
       });
     });
 
-    it('should initialize visit type based on current encounter', async () => {
+    it('should initialize visit type based on active visit', async () => {
       // Act
       renderBasicForm();
 
@@ -496,12 +496,12 @@ describe('BasicForm', () => {
     it('should handle encounter without type coding', () => {
       // Arrange
       const encounterWithoutType: FhirEncounter = {
-        ...mockCurrentEncounter,
+        ...mockActiveVisit,
         type: [],
       };
 
       // Act
-      renderBasicForm({ currentEncounter: encounterWithoutType });
+      renderBasicForm({ activeVisit: encounterWithoutType });
 
       // Assert
       expect(mockStoreState.setSelectedVisitType).not.toHaveBeenCalled();

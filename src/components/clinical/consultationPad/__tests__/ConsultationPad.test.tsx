@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocations } from '@hooks/useLocations';
 import { useEncounterConcepts } from '@hooks/useEncounterConcepts';
 import { useActivePractitioner } from '@hooks/useActivePractitioner';
-import { useCurrentEncounter } from '@hooks/useCurrentEncounter';
+import { useActiveVisit } from '@/hooks/useActiveVisit';
 import useNotification from '@hooks/useNotification';
 import { postConsultationBundle } from '@services/consultationBundleService';
 import { Provider } from '@types/provider';
@@ -44,8 +44,8 @@ jest.mock('@hooks/useActivePractitioner', () => ({
   useActivePractitioner: jest.fn(),
 }));
 
-jest.mock('@hooks/useCurrentEncounter', () => ({
-  useCurrentEncounter: jest.fn(),
+jest.mock('@hooks/useActiveVisit', () => ({
+  useActiveVisit: jest.fn(),
 }));
 
 // Mock the Zustand store
@@ -343,7 +343,7 @@ describe('ConsultationPad', () => {
     },
   };
 
-  const mockCurrentEncounter = {
+  const mockActiveVisit = {
     id: 'encounter-1',
     type: [
       {
@@ -376,8 +376,8 @@ describe('ConsultationPad', () => {
       error: null,
     };
 
-    const currentEncounterHook = {
-      currentEncounter: mockCurrentEncounter,
+    const activeVisitHook = {
+      activeVisit: mockActiveVisit,
       loading: false,
       error: null,
     };
@@ -385,13 +385,13 @@ describe('ConsultationPad', () => {
     (useLocations as jest.Mock).mockReturnValue(locationsHook);
     (useEncounterConcepts as jest.Mock).mockReturnValue(encounterConceptsHook);
     (useActivePractitioner as jest.Mock).mockReturnValue(practitionerHook);
-    (useCurrentEncounter as jest.Mock).mockReturnValue(currentEncounterHook);
+    (useActiveVisit as jest.Mock).mockReturnValue(activeVisitHook);
 
     return {
       locations: locationsHook,
       encounterConcepts: encounterConceptsHook,
       practitioner: practitionerHook,
-      currentEncounter: currentEncounterHook,
+      activeVisitHook: activeVisitHook,
     };
   }
 
@@ -414,8 +414,8 @@ describe('ConsultationPad', () => {
       error: null,
     });
 
-    (useCurrentEncounter as jest.Mock).mockReturnValue({
-      currentEncounter: null,
+    (useActiveVisit as jest.Mock).mockReturnValue({
+      activeVisit: null,
       loading: true,
       error: null,
     });
@@ -451,12 +451,12 @@ describe('ConsultationPad', () => {
     });
   }
 
-  function mockHooksWithCurrentEncounterError() {
+  function mockHooksWithActiveVisitError() {
     const baseState = mockHooksForNormalState();
 
-    (useCurrentEncounter as jest.Mock).mockReturnValue({
-      ...baseState.currentEncounter,
-      error: new Error('Failed to fetch current encounter'),
+    (useActiveVisit as jest.Mock).mockReturnValue({
+      ...baseState.activeVisitHook,
+      error: new Error('Failed to fetch active visit'),
       loading: false,
     });
   }
@@ -663,9 +663,9 @@ describe('ConsultationPad', () => {
         expect(screen.getByText('CONSULTATION_PAD_ERROR')).toBeInTheDocument();
       });
 
-      it('should render error state when currentEncounter hook returns an error', () => {
+      it('should render error state when active visit hook returns an error', () => {
         // Arrange
-        mockHooksWithCurrentEncounterError();
+        mockHooksWithActiveVisitError();
 
         // Act
         render(
@@ -938,7 +938,7 @@ describe('ConsultationPad', () => {
             mockEncounterConcepts.encounterTypes[0].name,
             mockPatientUUID,
             [mockPractitioner.uuid], // Updated to use uuid instead of id
-            mockCurrentEncounter.id,
+            mockActiveVisit.id,
             mockLocations[0].uuid,
             mockDate,
           );
@@ -1084,7 +1084,7 @@ describe('ConsultationPad', () => {
             mockEncounterConcepts.encounterTypes[0].name,
             mockPatientUUID,
             [mockPractitioner.uuid],
-            mockCurrentEncounter.id,
+            mockActiveVisit.id,
             mockLocations[0].uuid,
             mockDate,
           );
@@ -1172,11 +1172,11 @@ describe('ConsultationPad', () => {
       expect(screen.getByText('CONSULTATION_PAD_ERROR')).toBeInTheDocument();
     });
 
-    it('should handle null currentEncounter', () => {
+    it('should handle null active visit', () => {
       // Arrange
       mockHooksForNormalState();
-      (useCurrentEncounter as jest.Mock).mockReturnValue({
-        currentEncounter: null,
+      (useActiveVisit as jest.Mock).mockReturnValue({
+        activeVisit: null,
         loading: false,
         error: null,
       });
@@ -1226,9 +1226,9 @@ describe('ConsultationPad', () => {
     it('should handle missing visit type', () => {
       // Arrange
       mockHooksForNormalState();
-      (useCurrentEncounter as jest.Mock).mockReturnValue({
-        currentEncounter: {
-          ...mockCurrentEncounter,
+      (useActiveVisit as jest.Mock).mockReturnValue({
+        activeVisit: {
+          ...mockActiveVisit,
           type: [{ coding: [{ code: 'non-existent-code' }] }],
         },
         loading: false,

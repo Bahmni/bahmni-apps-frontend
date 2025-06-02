@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import ActionArea from '@components/common/actionArea/ActionArea';
-import { useCurrentEncounter } from '@hooks/useCurrentEncounter';
+import { useActiveVisit } from '@/hooks/useActiveVisit';
 import { useActivePractitioner } from '@hooks/useActivePractitioner';
 import { Column, Grid, Loading } from '@carbon/react';
 import * as styles from './styles/ConsultationPad.module.scss';
@@ -59,10 +59,10 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   } = useActivePractitioner();
 
   const {
-    currentEncounter,
+    activeVisit,
     loading: loadingEncounter,
     error: errorEncounter,
-  } = useCurrentEncounter(patientUUID);
+  } = useActiveVisit(patientUUID);
 
   // Clean up on unmount
   useEffect(() => {
@@ -77,7 +77,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     patientUUID &&
     practitioner &&
     practitioner.uuid &&
-    currentEncounter &&
+    activeVisit &&
     selectedLocation &&
     selectedEncounterType &&
     encounterParticipants.length > 0
@@ -90,7 +90,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       selectedEncounterType!.name,
       patientUUID,
       encounterParticipants.map((p) => p.uuid),
-      currentEncounter!.id,
+      activeVisit!.id,
       selectedLocation!.uuid,
       consultationDate,
     );
@@ -180,7 +180,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     errorEncounter ||
     !practitioner ||
     !patientUUID ||
-    !currentEncounter
+    !activeVisit
   ) {
     return (
       <ActionArea
@@ -209,7 +209,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       onSecondaryButtonClick={handleOnSecondaryButtonClick}
       content={
         <>
-          <BasicForm currentEncounter={currentEncounter} />
+          <BasicForm activeVisit={activeVisit} />
           <DiagnosesForm />
         </>
       }
