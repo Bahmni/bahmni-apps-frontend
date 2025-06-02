@@ -22,6 +22,7 @@ describe('encounterDetailsStore', () => {
       expect(result.current.selectedVisitType).toBeNull();
       expect(result.current.encounterParticipants).toEqual([]);
       expect(result.current.consultationDate).toBeInstanceOf(Date);
+      expect(result.current.isEncounterDetailsFormReady).toBe(false);
     });
   });
 
@@ -172,6 +173,36 @@ describe('encounterDetailsStore', () => {
     });
   });
 
+  describe('setEncounterDetailsFormReady', () => {
+    it('should update form ready state to true', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setEncounterDetailsFormReady(true);
+      });
+
+      expect(result.current.isEncounterDetailsFormReady).toBe(true);
+    });
+
+    it('should update form ready state to false', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      // First set to true
+      act(() => {
+        result.current.setEncounterDetailsFormReady(true);
+      });
+
+      expect(result.current.isEncounterDetailsFormReady).toBe(true);
+
+      // Then set to false
+      act(() => {
+        result.current.setEncounterDetailsFormReady(false);
+      });
+
+      expect(result.current.isEncounterDetailsFormReady).toBe(false);
+    });
+  });
+
   describe('reset', () => {
     it('should reset all values to initial state', () => {
       const { result } = renderHook(() => useEncounterDetailsStore());
@@ -219,6 +250,7 @@ describe('encounterDetailsStore', () => {
           },
         ]);
         result.current.setConsultationDate(new Date('2024-01-15'));
+        result.current.setEncounterDetailsFormReady(true);
       });
 
       // Verify values were set
@@ -226,6 +258,7 @@ describe('encounterDetailsStore', () => {
       expect(result.current.selectedEncounterType).not.toBeNull();
       expect(result.current.selectedVisitType).not.toBeNull();
       expect(result.current.encounterParticipants).toHaveLength(1);
+      expect(result.current.isEncounterDetailsFormReady).toBe(true);
 
       // Reset
       act(() => {
@@ -238,6 +271,7 @@ describe('encounterDetailsStore', () => {
       expect(result.current.selectedVisitType).toBeNull();
       expect(result.current.encounterParticipants).toEqual([]);
       expect(result.current.consultationDate).toBeInstanceOf(Date);
+      expect(result.current.isEncounterDetailsFormReady).toBe(false);
     });
   });
 
@@ -261,6 +295,7 @@ describe('encounterDetailsStore', () => {
       expect(state).toHaveProperty('selectedVisitType');
       expect(state).toHaveProperty('encounterParticipants');
       expect(state).toHaveProperty('consultationDate');
+      expect(state).toHaveProperty('isEncounterDetailsFormReady');
     });
   });
 

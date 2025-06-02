@@ -39,10 +39,12 @@ const BasicForm: React.FC<BasicFormProps> = ({ activeVisit }) => {
     selectedVisitType,
     encounterParticipants,
     consultationDate,
+    isEncounterDetailsFormReady,
     setSelectedLocation,
     setSelectedEncounterType,
     setSelectedVisitType,
     setEncounterParticipants,
+    setEncounterDetailsFormReady,
   } = useEncounterDetailsStore();
 
   useEffect(() => {
@@ -80,13 +82,20 @@ const BasicForm: React.FC<BasicFormProps> = ({ activeVisit }) => {
     }
   }, [practitioner, encounterParticipants.length]);
 
+  // Set form ready state based on loading states
+  useEffect(() => {
+    const isAllDataLoaded =
+      !loadingLocations && !loadingEncounterConcepts && !loadingPractitioner;
+    setEncounterDetailsFormReady(isAllDataLoaded);
+  }, [loadingLocations, loadingEncounterConcepts, loadingPractitioner]);
+
   // TODO used the current practitioner as the only available option
   // Later this will be replaced with multiple practitioners
   const availablePractitioners = practitioner ? [practitioner] : [];
 
   const formattedDate = formatDate(consultationDate);
 
-  if (loadingLocations || loadingEncounterConcepts || loadingPractitioner) {
+  if (!isEncounterDetailsFormReady) {
     return (
       <Grid condensed={false} narrow={false}>
         <Column sm={4} md={8} lg={16}>

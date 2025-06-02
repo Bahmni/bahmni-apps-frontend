@@ -11,12 +11,16 @@ export interface EncounterDetailsState {
   encounterParticipants: Provider[]; // Selected participants for the encounter
   consultationDate: Date;
 
+  // Form readiness state
+  isEncounterDetailsFormReady: boolean;
+
   // Setters
   setSelectedLocation: (location: OpenMRSLocation | null) => void;
   setSelectedEncounterType: (encounterType: Concept | null) => void;
   setSelectedVisitType: (visitType: Concept | null) => void;
   setEncounterParticipants: (participants: Provider[]) => void;
   setConsultationDate: (date: Date) => void;
+  setEncounterDetailsFormReady: (ready: boolean) => void;
 
   // Reset
   reset: () => void;
@@ -32,6 +36,7 @@ export const useEncounterDetailsStore = create<EncounterDetailsState>(
     selectedVisitType: null,
     encounterParticipants: [],
     consultationDate: new Date(),
+    isEncounterDetailsFormReady: false,
 
     setSelectedLocation: (location) => set({ selectedLocation: location }),
     setSelectedEncounterType: (encounterType) =>
@@ -40,6 +45,8 @@ export const useEncounterDetailsStore = create<EncounterDetailsState>(
     setEncounterParticipants: (participants) =>
       set({ encounterParticipants: participants }),
     setConsultationDate: (date) => set({ consultationDate: date }),
+    setEncounterDetailsFormReady: (ready) =>
+      set({ isEncounterDetailsFormReady: ready }),
 
     reset: () =>
       set({
@@ -48,6 +55,7 @@ export const useEncounterDetailsStore = create<EncounterDetailsState>(
         selectedVisitType: null,
         encounterParticipants: [],
         consultationDate: new Date(),
+        isEncounterDetailsFormReady: false,
       }),
 
     getState: () => get(),

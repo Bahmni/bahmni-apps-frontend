@@ -48,6 +48,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     selectedEncounterType,
     encounterParticipants,
     consultationDate,
+    isEncounterDetailsFormReady,
     reset: resetEncounterDetails,
   } = useEncounterDetailsStore();
 
@@ -210,7 +211,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       content={
         <>
           <BasicForm activeVisit={activeVisit} />
-          <DiagnosesForm />
+          {isEncounterDetailsFormReady && <DiagnosesForm />}
         </>
       }
     />

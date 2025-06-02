@@ -110,11 +110,13 @@ jest.mock('@stores/encounterDetailsStore', () => {
       selectedVisitType: null,
       encounterParticipants: [],
       consultationDate: new Date(),
+      isEncounterDetailsFormReady: false,
       setSelectedLocation: jest.fn(),
       setSelectedEncounterType: jest.fn(),
       setSelectedVisitType: jest.fn(),
       setEncounterParticipants: jest.fn(),
       setConsultationDate: jest.fn(),
+      setEncounterDetailsFormReady: jest.fn(),
       reset: jest.fn(),
       getState: jest.fn(),
     };
@@ -511,6 +513,7 @@ describe('ConsultationPad', () => {
     encounterStore.selectedVisitType = mockEncounterConcepts.visitTypes[0];
     encounterStore.encounterParticipants = [mockPractitioner];
     encounterStore.consultationDate = new Date();
+    encounterStore.isEncounterDetailsFormReady = true;
 
     (useTranslation as jest.Mock).mockReturnValue(mockTranslation);
     (useNotification as jest.Mock).mockReturnValue({
@@ -1336,7 +1339,7 @@ describe('ConsultationPad', () => {
 
     // 1. Component Initialization and Hook Interactions
     describe('Component Initialization and Hook Interactions', () => {
-      it('should render DiagnosesForm component', () => {
+      it('should render DiagnosesForm component when isEncounterDetailsFormReady is true', () => {
         // Arrange
         mockHooksForNormalState();
 
@@ -1350,6 +1353,30 @@ describe('ConsultationPad', () => {
 
         // Assert
         expect(screen.getByTestId('mock-diagnoses-form')).toBeInTheDocument();
+      });
+
+      it('should not render DiagnosesForm component when isEncounterDetailsFormReady is false', () => {
+        // Arrange
+        mockHooksForNormalState();
+
+        // Set isEncounterDetailsFormReady to false
+        const encounterStore = jest
+          .requireMock('@stores/encounterDetailsStore')
+          .useEncounterDetailsStore();
+        encounterStore.isEncounterDetailsFormReady = false;
+
+        // Act
+        render(
+          <ConsultationPad
+            patientUUID={mockPatientUUID}
+            onClose={mockOnClose}
+          />,
+        );
+
+        // Assert
+        expect(
+          screen.queryByTestId('mock-diagnoses-form'),
+        ).not.toBeInTheDocument();
       });
     });
 

@@ -192,14 +192,22 @@ describe('BasicForm', () => {
     selectedVisitType: null,
     encounterParticipants: [],
     consultationDate: new Date(),
+    isEncounterDetailsFormReady: true,
     setSelectedLocation: jest.fn(),
     setSelectedEncounterType: jest.fn(),
     setSelectedVisitType: jest.fn(),
     setEncounterParticipants: jest.fn(),
     setConsultationDate: jest.fn(),
+    setEncounterDetailsFormReady: jest.fn(),
     reset: jest.fn(),
     getState: jest.fn(),
   };
+
+  // Helper to create store state with form not ready
+  const createMockStoreStateNotReady = () => ({
+    ...mockStoreState,
+    isEncounterDetailsFormReady: false,
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -288,6 +296,9 @@ describe('BasicForm', () => {
         loading: true,
         error: null,
       });
+      (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue(
+        createMockStoreStateNotReady(),
+      );
 
       // Act
       renderBasicForm();
@@ -390,6 +401,9 @@ describe('BasicForm', () => {
         loading: true,
         error: null,
       });
+      (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue(
+        createMockStoreStateNotReady(),
+      );
 
       // Act
       renderBasicForm();
@@ -405,6 +419,9 @@ describe('BasicForm', () => {
         loading: true,
         error: null,
       });
+      (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue(
+        createMockStoreStateNotReady(),
+      );
 
       // Act
       renderBasicForm();
@@ -421,6 +438,9 @@ describe('BasicForm', () => {
         loading: true,
         error: null,
       });
+      (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue(
+        createMockStoreStateNotReady(),
+      );
 
       // Act
       renderBasicForm();
@@ -588,6 +608,100 @@ describe('BasicForm', () => {
 
       // Assert
       expect(screen.getByText('PARTICIPANTS')).toBeInTheDocument();
+    });
+  });
+
+  describe('Form Ready State Management', () => {
+    it('should call setEncounterDetailsFormReady with true when all data is loaded', () => {
+      // Act
+      renderBasicForm();
+
+      // Assert
+      expect(mockStoreState.setEncounterDetailsFormReady).toHaveBeenCalledWith(
+        true,
+      );
+    });
+
+    it('should call setEncounterDetailsFormReady with false when locations are loading', () => {
+      // Arrange
+      (useLocations as jest.Mock).mockReturnValue({
+        locations: [],
+        loading: true,
+        error: null,
+      });
+
+      // Act
+      renderBasicForm();
+
+      // Assert
+      expect(mockStoreState.setEncounterDetailsFormReady).toHaveBeenCalledWith(
+        false,
+      );
+    });
+
+    it('should call setEncounterDetailsFormReady with false when encounter concepts are loading', () => {
+      // Arrange
+      (useEncounterConcepts as jest.Mock).mockReturnValue({
+        encounterConcepts: null,
+        loading: true,
+        error: null,
+      });
+
+      // Act
+      renderBasicForm();
+
+      // Assert
+      expect(mockStoreState.setEncounterDetailsFormReady).toHaveBeenCalledWith(
+        false,
+      );
+    });
+
+    it('should call setEncounterDetailsFormReady with false when practitioner is loading', () => {
+      // Arrange
+      (useActivePractitioner as jest.Mock).mockReturnValue({
+        practitioner: null,
+        user: null,
+        loading: true,
+        error: null,
+      });
+
+      // Act
+      renderBasicForm();
+
+      // Assert
+      expect(mockStoreState.setEncounterDetailsFormReady).toHaveBeenCalledWith(
+        false,
+      );
+    });
+
+    it('should update form ready state when loading states change', async () => {
+      // Arrange
+      const { rerender } = renderBasicForm();
+
+      // Initially all data is loaded
+      expect(mockStoreState.setEncounterDetailsFormReady).toHaveBeenCalledWith(
+        true,
+      );
+
+      // Clear previous calls
+      mockStoreState.setEncounterDetailsFormReady.mockClear();
+
+      // Update to loading state
+      (useLocations as jest.Mock).mockReturnValue({
+        locations: [],
+        loading: true,
+        error: null,
+      });
+
+      // Act - rerender with new loading state
+      rerender(<BasicForm activeVisit={mockActiveVisit} />);
+
+      // Assert
+      await waitFor(() => {
+        expect(
+          mockStoreState.setEncounterDetailsFormReady,
+        ).toHaveBeenCalledWith(false);
+      });
     });
   });
 });
