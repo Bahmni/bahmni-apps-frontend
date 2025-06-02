@@ -1,15 +1,24 @@
 import { post } from './api';
-import { ConsultationBundle } from '@types/consultationBundle';
+import { ConsultationBundle } from '../types/consultationBundle';
 import { CONSULTATION_BUNDLE_URL } from '@constants/app';
 import { BundleEntry, Reference } from 'fhir/r4';
 import { CONSULTATION_ERROR_MESSAGES } from '@constants/errors';
 import { createEncounterDiagnosisResource } from '@utils/fhir/conditionResourceCreator';
+import { createEncounterAllergyResource } from '@utils/fhir/allergyResourceCreator';
 import { createBundleEntry } from '@utils/fhir/consultationBundleCreator';
 import {
   createPractitionerReference,
   getPlaceholderReference,
 } from '@utils/fhir/referenceCreator';
-import { DiagnosisInputEntry } from '@types/diagnosis';
+import { DiagnosisInputEntry } from '../types/diagnosis';
+import { AllergyInputEntry } from '../types/allergy';
+
+interface CreateAllergiesBundleEntriesParams {
+  selectedAllergies: AllergyInputEntry[];
+  encounterSubject: Reference;
+  encounterReference: string;
+  practitionerUUID: string;
+}
 
 interface CreateDiagnosisBundleEntriesParams {
   selectedDiagnoses: DiagnosisInputEntry[];
@@ -85,6 +94,85 @@ export function createDiagnosisBundleEntries({
  * @param consultationBundle - The consultation bundle payload
  * @returns Promise resolving to the response data
  */
+/**
+ * Creates bundle entries for allergies as part of consultation bundle
+ * @param params - Parameters required for creating allergy bundle entries
+ * @returns Array of BundleEntry for allergies
+ * @throws Error with specific message key for translation
+ */
+export function createAllergiesBundleEntries({
+  selectedAllergies,
+  encounterSubject,
+  encounterReference,
+  practitionerUUID,
+}: CreateAllergiesBundleEntriesParams): BundleEntry[] {
+  // Validate required parameters
+  if (!selectedAllergies || !Array.isArray(selectedAllergies)) {
+    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ALLERGY_PARAMS);
+  }
+
+  if (!encounterSubject || !encounterSubject.reference) {
+    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_SUBJECT);
+  }
+
+  if (!encounterReference) {
+    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_REFERENCE);
+  }
+
+  if (!practitionerUUID) {
+    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_PRACTITIONER);
+  }
+
+  const allergyEntries: BundleEntry[] = [];
+
+  for (const allergy of selectedAllergies) {
+    if (
+      !allergy ||
+      !allergy.selectedSeverity ||
+      !allergy.selectedSeverity.code ||
+      !allergy.selectedReactions ||
+      allergy.selectedReactions.length === 0
+    ) {
+      throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ALLERGY_PARAMS);
+    }
+
+    const allergyResourceURL = `urn:uuid:${crypto.randomUUID()}`;
+    const allergyResource = createEncounterAllergyResource(
+      allergy.id,
+      [allergy.type] as Array<
+        'food' | 'medication' | 'environment' | 'biologic'
+      >,
+      [
+        {
+          manifestationUUIDs: allergy.selectedReactions
+            .filter(
+              (reaction): reaction is { code: string } =>
+                reaction.code !== undefined,
+            )
+            .map((reaction) => reaction.code),
+          severity: allergy.selectedSeverity.code as
+            | 'mild'
+            | 'moderate'
+            | 'severe',
+        },
+      ],
+      encounterSubject,
+      getPlaceholderReference(encounterReference),
+      createPractitionerReference(practitionerUUID),
+    );
+
+    const allergyBundleEntry = createBundleEntry(
+      allergyResourceURL,
+      allergyResource,
+      'POST',
+    );
+
+    allergyEntries.push(allergyBundleEntry);
+  }
+
+  return allergyEntries;
+}
+
 export async function postConsultationBundle<T>(
   consultationBundle: ConsultationBundle,
 ): Promise<T> {
