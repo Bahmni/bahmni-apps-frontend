@@ -25,6 +25,10 @@
   border-bottom: 1px solid $border-subtle-02;
 }
 
+.selectedDiagnosisItem:last-of-type {
+  border: 0 !important;
+}
+
 .inlineErrorNotification {
   min-width: -webkit-fill-available !important;
   margin-top: $spacing-03;
