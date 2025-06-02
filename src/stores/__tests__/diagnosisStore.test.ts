@@ -1,5 +1,5 @@
 import { useDiagnosisStore } from '../diagnosisStore';
-import { CERTAINITY_CONCEPTS } from '@/constants/concepts';
+import { CERTAINITY_CONCEPTS } from '@constants/concepts';
 
 // Mock data
 const mockDiagnosis = {

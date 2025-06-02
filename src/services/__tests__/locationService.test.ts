@@ -1,4 +1,4 @@
-import { COMMON_ERROR_MESSAGES } from '@/constants/errors';
+import { COMMON_ERROR_MESSAGES } from '@constants/errors';
 import { getLocations } from '../locationService';
 
 describe('locationService', () => {

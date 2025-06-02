@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import DashboardSection from '../DashboardSection';
-import { DashboardSectionConfig } from '@/types/dashboardConfig';
+import { DashboardSectionConfig } from '@types/dashboardConfig';
 
 // Mock dependencies
 jest.mock('@carbon/react', () => ({
@@ -30,6 +30,11 @@ jest.mock('@displayControls/allergies/AllergiesTable', () => ({
 jest.mock('@displayControls/conditions/ConditionsTable', () => ({
   __esModule: true,
   default: () => <div data-testid="conditions-table">Conditions Table</div>,
+}));
+
+jest.mock('@displayControls/labinvestigation/LabInvestigationControl', () => ({
+  __esModule: true,
+  default: () => <div data-testid="lab-investigation">Lab Investigation</div>,
 }));
 
 describe('DashboardSection Component', () => {
@@ -122,6 +127,21 @@ describe('DashboardSection Component', () => {
       render(<DashboardSection section={conditionsSection} ref={mockRef} />);
 
       expect(screen.getByTestId('conditions-table')).toBeInTheDocument();
+    });
+
+    it('renders LabInvestigation when section name is Lab Investigations', () => {
+      const labInvestigationSection: DashboardSectionConfig = {
+        id: 'lab-investigation-id',
+        name: 'Lab Investigations',
+        icon: 'test-icon',
+        controls: [],
+      };
+
+      render(
+        <DashboardSection section={labInvestigationSection} ref={mockRef} />,
+      );
+
+      expect(screen.getByTestId('lab-investigation')).toBeInTheDocument();
     });
 
     it('renders no content for unknown section types', () => {
