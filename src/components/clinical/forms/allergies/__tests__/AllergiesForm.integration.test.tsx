@@ -1,0 +1,254 @@
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { I18nextProvider } from 'react-i18next';
+import i18n from '@/setupTests.i18n';
+import AllergiesForm from '../AllergiesForm';
+import { useAllergyStore } from '@stores/allergyStore';
+import * as api from '@services/api';
+import { ALLERGEN_TYPES } from '@constants/concepts';
+import { Coding } from 'fhir/r4';
+
+// Mock the API module
+jest.mock('@services/api');
+jest.mock('@stores/allergyStore');
+
+// Mock CSS modules
+jest.mock('../styles/AllergiesForm.module.scss', () => ({
+  allergiesFormTile: 'allergiesFormTile',
+  allergiesFormTitle: 'allergiesFormTitle',
+  allergiesBox: 'allergiesBox',
+  selectedAllergyItem: 'selectedAllergyItem',
+}));
+
+const mockReactionConcepts: Coding[] = [
+  {
+    code: 'hives',
+    display: 'REACTION_HIVES',
+    system: 'http://snomed.info/sct',
+  },
+  {
+    code: 'rash',
+    display: 'REACTION_RASH',
+    system: 'http://snomed.info/sct',
+  },
+];
+
+describe('AllergiesForm Integration Tests', () => {
+  const mockStore = {
+    selectedAllergies: [],
+    addAllergy: jest.fn(),
+    removeAllergy: jest.fn(),
+    updateSeverity: jest.fn(),
+    updateReactions: jest.fn(),
+    validateAllAllergies: jest.fn(),
+    reset: jest.fn(),
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    // Mock scrollIntoView which is not available in jsdom
+    window.HTMLElement.prototype.scrollIntoView = jest.fn();
+
+    // Mock the API responses for ValueSet endpoints
+    (api.get as jest.Mock).mockImplementation((url) => {
+      if (url.includes('ValueSet/162552')) {
+        // Medication allergens
+        return Promise.resolve({
+          resourceType: 'ValueSet',
+          compose: {
+            include: [
+              {
+                concept: [
+                  {
+                    code: '123',
+                    display: 'Penicillin',
+                    system: 'http://snomed.info/sct',
+                  },
+                ],
+              },
+            ],
+          },
+        });
+      } else if (url.includes('ValueSet/162553')) {
+        // Food allergens
+        return Promise.resolve({
+          resourceType: 'ValueSet',
+          compose: {
+            include: [
+              {
+                concept: [
+                  {
+                    code: '456',
+                    display: 'Peanuts',
+                    system: 'http://snomed.info/sct',
+                  },
+                ],
+              },
+            ],
+          },
+        });
+      } else if (url.includes('ValueSet/162554')) {
+        // Environment allergens
+        return Promise.resolve({
+          resourceType: 'ValueSet',
+          compose: {
+            include: [
+              {
+                concept: [
+                  {
+                    code: '789',
+                    display: 'Dust',
+                    system: 'http://snomed.info/sct',
+                  },
+                ],
+              },
+            ],
+          },
+        });
+      } else if (url.includes('ValueSet/162555')) {
+        // Reaction concepts
+        return Promise.resolve({
+          resourceType: 'ValueSet',
+          compose: {
+            include: [
+              {
+                concept: mockReactionConcepts,
+              },
+            ],
+          },
+        });
+      }
+
+      return Promise.reject(new Error('Unknown URL'));
+    });
+
+    // Mock the store
+    (useAllergyStore as unknown as jest.Mock).mockReturnValue(mockStore);
+    i18n.changeLanguage('en');
+  });
+
+  test('loads and displays allergens from API', async () => {
+    render(
+      <I18nextProvider i18n={i18n}>
+        <AllergiesForm />
+      </I18nextProvider>,
+    );
+
+    const searchBox = screen.getByRole('combobox', {
+      name: /search for allergies/i,
+    });
+    await userEvent.type(searchBox, 'pen');
+
+    await waitFor(() => {
+      expect(screen.getByText('Penicillin [Medication]')).toBeInTheDocument();
+      expect(screen.getByText('Peanuts [Food]')).toBeInTheDocument();
+    });
+  });
+
+  test('adds allergy to store when selected', async () => {
+    render(
+      <I18nextProvider i18n={i18n}>
+        <AllergiesForm />
+      </I18nextProvider>,
+    );
+
+    const searchBox = screen.getByRole('combobox', {
+      name: /search for allergies/i,
+    });
+    await userEvent.type(searchBox, 'pen');
+
+    await waitFor(() => {
+      expect(screen.getByText('Penicillin [Medication]')).toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByText('Penicillin [Medication]'));
+
+    expect(mockStore.addAllergy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        uuid: '123',
+        display: 'Penicillin',
+        type: ALLERGEN_TYPES.MEDICATION.display,
+      }),
+    );
+  });
+
+  test('handles API error gracefully', async () => {
+    (api.get as jest.Mock).mockRejectedValue(new Error('API Error'));
+
+    render(
+      <I18nextProvider i18n={i18n}>
+        <AllergiesForm />
+      </I18nextProvider>,
+    );
+
+    const searchBox = screen.getByRole('combobox', {
+      name: /search for allergies/i,
+    });
+    await userEvent.type(searchBox, 'pen');
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          'An unexpected error occurred. Please try again later.',
+        ),
+      ).toBeInTheDocument();
+    });
+  });
+
+  test('full workflow: search, add, and remove allergy', async () => {
+    render(
+      <I18nextProvider i18n={i18n}>
+        <AllergiesForm />
+      </I18nextProvider>,
+    );
+
+    // Search and add allergy
+    const searchBox = screen.getByRole('combobox', {
+      name: /search for allergies/i,
+    });
+    await userEvent.type(searchBox, 'pen');
+
+    await waitFor(() => {
+      expect(screen.getByText('Penicillin [Medication]')).toBeInTheDocument();
+    });
+
+    // Mock the store to return the selected allergy after it's added
+    (useAllergyStore as unknown as jest.Mock).mockReturnValue({
+      ...mockStore,
+      selectedAllergies: [
+        {
+          id: '123',
+          display: 'Penicillin',
+          type: ALLERGEN_TYPES.MEDICATION.display,
+          selectedSeverity: null,
+          selectedReactions: [],
+          errors: {},
+          hasBeenValidated: false,
+        },
+      ],
+    });
+
+    await userEvent.click(screen.getByText('Penicillin [Medication]'));
+    expect(mockStore.addAllergy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        uuid: '123',
+        display: 'Penicillin',
+        type: ALLERGEN_TYPES.MEDICATION.display,
+      }),
+    );
+
+    // Re-render to show the selected allergy
+    render(
+      <I18nextProvider i18n={i18n}>
+        <AllergiesForm />
+      </I18nextProvider>,
+    );
+
+    // Remove allergy
+    const removeButton = screen.getAllByTestId('selected-item-close-button');
+    await userEvent.click(removeButton[0]);
+    expect(mockStore.removeAllergy).toHaveBeenCalledWith('123');
+  });
+});

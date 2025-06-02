@@ -2,10 +2,10 @@ import React from 'react';
 import { Column, Grid, Dropdown, FilterableMultiSelect } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import * as styles from './styles/SelectedAllergyItem.module.scss';
-import { AllergyInputEntry } from '@/types/allergy';
+import { AllergyInputEntry } from '@types/allergy';
 import { Coding } from 'fhir/r4';
 import { capitalize } from '@utils/common';
-import { ALLERGY_SEVERITY_CONCEPTS } from '@/constants/concepts';
+import { ALLERGY_SEVERITY_CONCEPTS } from '@constants/concepts';
 
 /**
  * Properties for a selected allergy item
@@ -15,7 +15,7 @@ export interface SelectedAllergyItemProps {
   allergy: AllergyInputEntry;
   reactionConcepts: Coding[];
   updateSeverity: (allergyId: string, severity: Coding | null) => void;
-  updateReactions: (allergyId: string, reactions: Coding[] | null) => void;
+  updateReactions: (allergyId: string, reactions: Coding[]) => void;
 }
 
 /**
@@ -91,7 +91,7 @@ const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
             selectedItems={selectedReactions}
             itemToString={(item) => (item?.display ? item.display : '')}
             onChange={(data) => {
-              updateReactions(id, data.selectedItems);
+              updateReactions(id, data.selectedItems!);
             }}
             invalid={hasReactionsError}
             invalidText={t(errors.reactions!)}
