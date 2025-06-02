@@ -1,25 +1,47 @@
 import React from 'react';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import useAllergenSearch from '../useAllergenSearch';
-import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
+import { useClinicalConfig } from '@hooks/useClinicalConfig';
 import {
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
 } from '@services/allergyService';
 import { ALLERGEN_TYPES } from '@constants/concepts';
 import * as api from '@services/api';
+import i18n from '@/setupTests.i18n';
 
+// Mock hooks
+jest.mock('@hooks/useClinicalConfig');
 jest.mock('@services/allergyService', () => ({
   fetchAndFormatAllergenConcepts: jest.fn(),
   fetchReactionConcepts: jest.fn(),
 }));
+
+const mockUseClinicalConfig = useClinicalConfig as jest.MockedFunction<
+  typeof useClinicalConfig
+>;
 jest.mock('@services/api');
 jest.mock('@services/notificationService', () => ({
   showError: jest.fn(),
 }));
 
+const mockClinicalConfig = {
+  patientInformation: {},
+  actions: [],
+  dashboards: [],
+  consultationPad: {
+    allergyConceptMap: {
+      medicationAllergenUuid: '162552AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      foodAllergenUuid: '162553AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      environmentalAllergenUuid: '162554AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      allergyReactionUuid: '162555AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    },
+  },
+};
+
+// Mock the clinical config context
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <ClinicalConfigProvider>{children}</ClinicalConfigProvider>
+  <>{children}</>
 );
 
 // Mock the api.get function
@@ -34,6 +56,20 @@ const mockFetchReactionConcepts = fetchReactionConcepts as jest.MockedFunction<
 >;
 
 describe('useAllergenSearch', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // Setup default mock implementation for useClinicalConfig
+    mockUseClinicalConfig.mockReturnValue({
+      clinicalConfig: mockClinicalConfig,
+      setClinicalConfig: jest.fn(),
+      isLoading: false,
+      setIsLoading: jest.fn(),
+      error: null,
+      setError: jest.fn(),
+    });
+    i18n.changeLanguage('en');
+  });
+
   const mockReactions = [
     {
       code: 'reaction1',
@@ -101,6 +137,98 @@ describe('useAllergenSearch', () => {
 
   afterEach(() => {
     jest.useRealTimers();
+  });
+
+  describe('clinical config integration', () => {
+    it('should wait for clinical config to load', async () => {
+      mockUseClinicalConfig.mockReturnValue({
+        clinicalConfig: null,
+        setClinicalConfig: jest.fn(),
+        isLoading: true,
+        setIsLoading: jest.fn(),
+        error: null,
+        setError: jest.fn(),
+      });
+
+      const { result } = renderHook(() => useAllergenSearch(), { wrapper });
+
+      expect(result.current.isLoading).toBe(true);
+      expect(result.current.allergens).toEqual([]);
+      expect(result.current.reactions).toEqual([]);
+      expect(mockFetchAndFormatAllergenConcepts).not.toHaveBeenCalled();
+      expect(mockFetchReactionConcepts).not.toHaveBeenCalled();
+    });
+
+    it('should handle missing clinical config', async () => {
+      mockUseClinicalConfig.mockReturnValue({
+        clinicalConfig: null,
+        setClinicalConfig: jest.fn(),
+        isLoading: false,
+        setIsLoading: jest.fn(),
+        error: null,
+        setError: jest.fn(),
+      });
+
+      const { result } = renderHook(() => useAllergenSearch(), { wrapper });
+
+      expect(result.current.error).toBeInstanceOf(Error);
+      expect(result.current.error?.message).toBe(
+        'Clinical configuration not found',
+      );
+      expect(result.current.allergens).toEqual([]);
+      expect(result.current.reactions).toEqual([]);
+    });
+
+    it('should handle missing consultationPad', async () => {
+      mockUseClinicalConfig.mockReturnValue({
+        clinicalConfig: {
+          patientInformation: {},
+          actions: [],
+          dashboards: [],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any,
+        setClinicalConfig: jest.fn(),
+        isLoading: false,
+        setIsLoading: jest.fn(),
+        error: null,
+        setError: jest.fn(),
+      });
+
+      const { result } = renderHook(() => useAllergenSearch(), { wrapper });
+
+      expect(result.current.error).toBeInstanceOf(Error);
+      expect(result.current.error?.message).toBe(
+        'Consultation pad configuration not found',
+      );
+      expect(result.current.allergens).toEqual([]);
+      expect(result.current.reactions).toEqual([]);
+    });
+
+    it('should handle missing allergyConceptMap', async () => {
+      mockUseClinicalConfig.mockReturnValue({
+        clinicalConfig: {
+          patientInformation: {},
+          actions: [],
+          dashboards: [],
+          consultationPad: {},
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any,
+        setClinicalConfig: jest.fn(),
+        isLoading: false,
+        setIsLoading: jest.fn(),
+        error: null,
+        setError: jest.fn(),
+      });
+
+      const { result } = renderHook(() => useAllergenSearch(), { wrapper });
+
+      expect(result.current.error).toBeInstanceOf(Error);
+      expect(result.current.error?.message).toBe(
+        'Allergy concept map configuration not found',
+      );
+      expect(result.current.allergens).toEqual([]);
+      expect(result.current.reactions).toEqual([]);
+    });
   });
 
   it('should set loading state during fetch', async () => {

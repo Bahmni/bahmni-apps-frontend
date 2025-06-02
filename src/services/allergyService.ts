@@ -58,15 +58,29 @@ export const formatAllergenConcepts = (
  * Fetches and formats allergen concepts from FHIR ValueSets
  * @returns Promise resolving to an array of formatted allergen concepts
  */
-export const fetchAndFormatAllergenConcepts = async (): Promise<
-  AllergenConcept[]
-> => {
+/**
+ * Fetches and formats allergen concepts from FHIR ValueSets
+ * @param medicationUuid - Optional UUID for medication allergen concepts
+ * @param foodUuid - Optional UUID for food allergen concepts
+ * @param environmentUuid - Optional UUID for environment allergen concepts
+ * @returns Promise resolving to an array of formatted allergen concepts
+ */
+export const fetchAndFormatAllergenConcepts = async (
+  medicationUuid?: string,
+  foodUuid?: string,
+  environmentUuid?: string,
+): Promise<AllergenConcept[]> => {
+  // Use provided UUIDs or fallback to constants
+  const medicationCode = medicationUuid || ALLERGEN_TYPES.MEDICATION.code;
+  const foodCode = foodUuid || ALLERGEN_TYPES.FOOD.code;
+  const environmentCode = environmentUuid || ALLERGEN_TYPES.ENVIRONMENT.code;
+
   // Get ValueSets for each allergen type
   const [medicationValueSet, foodValueSet, environmentValueSet] =
     await Promise.all([
-      searchFHIRConcepts(ALLERGEN_TYPES.MEDICATION.code),
-      searchFHIRConcepts(ALLERGEN_TYPES.FOOD.code),
-      searchFHIRConcepts(ALLERGEN_TYPES.ENVIRONMENT.code),
+      searchFHIRConcepts(medicationCode),
+      searchFHIRConcepts(foodCode),
+      searchFHIRConcepts(environmentCode),
     ]);
 
   // Extract concepts from the ValueSets
@@ -81,10 +95,14 @@ export const fetchAndFormatAllergenConcepts = async (): Promise<
 
 /**
  * Fetches and formats reaction concepts from FHIR ValueSet
+ * @param reactionUuid - Optional UUID for reaction concepts
  * @returns Promise resolving to an array of formatted reaction concepts
  */
-export const fetchReactionConcepts = async (): Promise<Coding[]> => {
-  const reactionValueSet = await searchFHIRConcepts(ALLERGY_REACTION.code);
+export const fetchReactionConcepts = async (
+  reactionUuid?: string,
+): Promise<Coding[]> => {
+  const reactionCode = reactionUuid || ALLERGY_REACTION.code;
+  const reactionValueSet = await searchFHIRConcepts(reactionCode);
   return reactionValueSet.compose?.include[0]?.concept || [];
 };
 /**

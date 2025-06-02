@@ -4,9 +4,11 @@ import {
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
 } from '@services/allergyService';
-import { AllergenConcept } from '@types/concepts';
+import { AllergenConcept } from '../types/concepts';
 import { getFormattedError } from '@utils/common';
 import { Coding } from 'fhir/r4';
+import { useClinicalConfig } from './useClinicalConfig';
+import { useTranslation } from 'react-i18next';
 
 interface UseAllergenSearchResult {
   allergens: AllergenConcept[];
@@ -29,15 +31,66 @@ const useAllergenSearch = (serchTerm: string = ''): UseAllergenSearchResult => {
   const [error, setError] = useState<Error | null>(null);
   const debouncedSearchTerm = useDebounce(serchTerm);
 
-  // Load all allergens on mount
+  const {
+    clinicalConfig,
+    isLoading: isConfigLoading,
+    error: configError,
+  } = useClinicalConfig();
+  const { t } = useTranslation();
+
+  // Load all allergens when config is available
   useEffect(() => {
     const loadAllergens = async () => {
       setIsLoading(true);
       setError(null);
+
+      if (configError) {
+        setError(configError);
+        setIsLoading(false);
+        return;
+      }
+
+      // Wait for config to load
+      if (isConfigLoading) {
+        return;
+      }
+
+      // Check if config is available
+      if (!clinicalConfig) {
+        setError(new Error(t('ERROR_CLINICAL_CONFIG_NOT_FOUND')));
+        setIsLoading(false);
+        return;
+      }
+
+      // Check if consultationPad is available
+      if (!clinicalConfig.consultationPad) {
+        setError(new Error(t('ERROR_CONSULTATION_PAD_NOT_FOUND')));
+        setIsLoading(false);
+        return;
+      }
+
+      // Check if allergyConceptMap is available
+      if (!clinicalConfig.consultationPad.allergyConceptMap) {
+        setError(new Error(t('ERROR_ALLERGY_CONCEPT_MAP_NOT_FOUND')));
+        setIsLoading(false);
+        return;
+      }
+
+      const {
+        medicationAllergenUuid,
+        foodAllergenUuid,
+        environmentalAllergenUuid,
+        allergyReactionUuid,
+      } = clinicalConfig.consultationPad.allergyConceptMap;
+
       try {
-        const allergens = await fetchAndFormatAllergenConcepts();
+        const allergens = await fetchAndFormatAllergenConcepts(
+          medicationAllergenUuid,
+          foodAllergenUuid,
+          environmentalAllergenUuid,
+        );
         setAllergens(allergens);
-        const reactions = await fetchReactionConcepts();
+        const reactions = await fetchReactionConcepts(allergyReactionUuid);
         setReactions(reactions);
       } catch (err) {
         const formattedError = getFormattedError(err);
@@ -47,7 +100,7 @@ const useAllergenSearch = (serchTerm: string = ''): UseAllergenSearchResult => {
       }
     };
     loadAllergens();
-  }, []);
+  }, [clinicalConfig, isConfigLoading]);
 
   // Filter allergens based on search term
   const filteredAllergens = useMemo(() => {

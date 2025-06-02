@@ -3,15 +3,54 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/setupTests.i18n';
+import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
+import { NotificationProvider } from '@providers/NotificationProvider';
+import { useClinicalConfig } from '@hooks/useClinicalConfig';
 import AllergiesForm from '../AllergiesForm';
 import { useAllergyStore } from '@stores/allergyStore';
 import * as api from '@services/api';
 import { ALLERGEN_TYPES } from '@constants/concepts';
 import { Coding } from 'fhir/r4';
 
-// Mock the API module
+// Mock hooks and services
 jest.mock('@services/api');
 jest.mock('@stores/allergyStore');
+jest.mock('@hooks/useClinicalConfig');
+jest.mock('@services/notificationService', () => ({
+  __esModule: true,
+  default: {
+    register: jest.fn(),
+    showError: jest.fn(),
+    showSuccess: jest.fn(),
+    showInfo: jest.fn(),
+    showWarning: jest.fn(),
+  },
+  notificationService: {
+    register: jest.fn(),
+    showError: jest.fn(),
+    showSuccess: jest.fn(),
+    showInfo: jest.fn(),
+    showWarning: jest.fn(),
+  },
+}));
+
+const mockUseClinicalConfig = useClinicalConfig as jest.MockedFunction<
+  typeof useClinicalConfig
+>;
+
+const mockClinicalConfig = {
+  patientInformation: {},
+  actions: [],
+  dashboards: [],
+  consultationPad: {
+    allergyConceptMap: {
+      medicationAllergenUuid: '162552AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      foodAllergenUuid: '162553AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      environmentalAllergenUuid: '162554AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      allergyReactionUuid: '162555AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    },
+  },
+};
 
 // Mock CSS modules
 jest.mock('../styles/AllergiesForm.module.scss', () => ({
@@ -47,6 +86,16 @@ describe('AllergiesForm Integration Tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Setup default mock implementation for useClinicalConfig
+    mockUseClinicalConfig.mockReturnValue({
+      clinicalConfig: mockClinicalConfig,
+      setClinicalConfig: jest.fn(),
+      isLoading: false,
+      setIsLoading: jest.fn(),
+      error: null,
+      setError: jest.fn(),
+    });
 
     // Mock scrollIntoView which is not available in jsdom
     window.HTMLElement.prototype.scrollIntoView = jest.fn();
@@ -132,7 +181,11 @@ describe('AllergiesForm Integration Tests', () => {
   test('loads and displays allergens from API', async () => {
     render(
       <I18nextProvider i18n={i18n}>
-        <AllergiesForm />
+        <NotificationProvider>
+          <ClinicalConfigProvider>
+            <AllergiesForm />
+          </ClinicalConfigProvider>
+        </NotificationProvider>
       </I18nextProvider>,
     );
 
@@ -150,7 +203,11 @@ describe('AllergiesForm Integration Tests', () => {
   test('adds allergy to store when selected', async () => {
     render(
       <I18nextProvider i18n={i18n}>
-        <AllergiesForm />
+        <NotificationProvider>
+          <ClinicalConfigProvider>
+            <AllergiesForm />
+          </ClinicalConfigProvider>
+        </NotificationProvider>
       </I18nextProvider>,
     );
 
@@ -179,7 +236,11 @@ describe('AllergiesForm Integration Tests', () => {
 
     render(
       <I18nextProvider i18n={i18n}>
-        <AllergiesForm />
+        <NotificationProvider>
+          <ClinicalConfigProvider>
+            <AllergiesForm />
+          </ClinicalConfigProvider>
+        </NotificationProvider>
       </I18nextProvider>,
     );
 
@@ -200,7 +261,11 @@ describe('AllergiesForm Integration Tests', () => {
   test('full workflow: search, add, and remove allergy', async () => {
     render(
       <I18nextProvider i18n={i18n}>
-        <AllergiesForm />
+        <NotificationProvider>
+          <ClinicalConfigProvider>
+            <AllergiesForm />
+          </ClinicalConfigProvider>
+        </NotificationProvider>
       </I18nextProvider>,
     );
 
@@ -242,7 +307,11 @@ describe('AllergiesForm Integration Tests', () => {
     // Re-render to show the selected allergy
     render(
       <I18nextProvider i18n={i18n}>
-        <AllergiesForm />
+        <NotificationProvider>
+          <ClinicalConfigProvider>
+            <AllergiesForm />
+          </ClinicalConfigProvider>
+        </NotificationProvider>
       </I18nextProvider>,
     );
 
