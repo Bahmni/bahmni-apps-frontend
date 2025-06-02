@@ -9,7 +9,7 @@ import { getFormattedError } from '@utils/common';
 import notificationService from './notificationService';
 import { searchFHIRConcepts } from './conceptService';
 import { ALLERGEN_TYPES, ALLERGY_REACTION } from '@constants/concepts';
-import { AllergenConcept, AllergenType } from '@/types/concepts';
+import { AllergenConcept, AllergenType } from '@types/concepts';
 import { Coding } from 'fhir/r4';
 
 interface RawAllergenConcepts {

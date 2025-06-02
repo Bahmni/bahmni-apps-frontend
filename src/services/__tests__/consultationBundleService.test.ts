@@ -7,8 +7,8 @@ import {
 import { CONSULTATION_ERROR_MESSAGES } from '@constants/errors';
 import { Coding } from 'fhir/r4';
 import { post } from '../api';
-import { DiagnosisInputEntry } from '@/types/diagnosis';
-import { AllergyInputEntry } from '@/types/allergy';
+import { DiagnosisInputEntry } from '@types/diagnosis';
+import { AllergyInputEntry } from '@types/allergy';
 
 // Mock crypto.randomUUID
 const mockUUID = '1d87ab20-8b86-4b41-a30d-984b2208d945';
