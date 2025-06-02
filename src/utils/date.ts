@@ -8,8 +8,8 @@ import {
   subMonths,
   format,
 } from 'date-fns';
-import { Age } from '@/types/patient';
-import { FormatDateResult } from '@/types/date';
+import { Age } from '@types/patient';
+import { FormatDateResult } from '@types/date';
 import { DATE_FORMAT, DATE_TIME_FORMAT } from '@constants/date';
 import { DATE_ERROR_MESSAGES } from '@constants/errors';
 import i18next from 'i18next';

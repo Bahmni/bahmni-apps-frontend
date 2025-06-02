@@ -6,7 +6,7 @@ import SelectedItem from '@components/common/selectedItem/SelectedItem';
 import BoxWHeader from '@components/common/boxWHeader/BoxWHeader';
 import { ConceptSearch } from '@types/concepts';
 import SelectedDiagnosisItem from './SelectedDiagnosisItem';
-import { useConceptSearch } from '@/hooks/useConceptSearch';
+import { useConceptSearch } from '@hooks/useConceptSearch';
 import { useDiagnosisStore } from '@stores/diagnosisStore';
 
 /**

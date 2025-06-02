@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { useTranslation, I18nextProvider } from 'react-i18next';
 import DiagnosesForm from '../DiagnosesForm';
 import { useConceptSearch } from '@hooks/useConceptSearch';
-import { ConceptSearch } from '@/types/concepts';
+import { ConceptSearch } from '@types/concepts';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import i18n from '@/setupTests.i18n';
 import { useDiagnosisStore } from '@stores/diagnosisStore';
@@ -22,7 +22,7 @@ jest.mock('react-i18next', () => ({
   ),
 }));
 
-jest.mock('@/hooks/useConceptSearch', () => ({
+jest.mock('@hooks/useConceptSearch', () => ({
   useConceptSearch: jest.fn(),
 }));
 

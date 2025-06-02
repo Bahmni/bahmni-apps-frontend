@@ -82,7 +82,7 @@ const BasicForm: React.FC<BasicFormProps> = ({
             titleText={t('ENCOUNTER_TYPE')}
             label={t('SELECT_ENCOUNTER_TYPE')}
             items={encounterTypes || []}
-            itemToString={(item) => (item ? item.name : '')}
+            itemToString={(item) => item!.name}
             initialSelectedItem={encounterTypeSelected}
             disabled
             size="md"

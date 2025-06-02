@@ -1,7 +1,7 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import HeaderWSideNav from '../HeaderWSideNav';
-import BahmniIcon from '@/components/common/bahmniIcon/BahmniIcon';
+import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
 
 // Create a decorator for better layout in Storybook
 const HeaderDecorator = (Story: React.ComponentType) => (

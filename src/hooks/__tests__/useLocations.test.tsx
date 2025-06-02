@@ -4,7 +4,7 @@ import { useLocations } from '../useLocations';
 import { getLocations } from '@services/locationService';
 import { useNotification } from '@hooks/useNotification';
 import { getFormattedError } from '@utils/common';
-import { OpenMRSLocation } from '@/types/location';
+import { OpenMRSLocation } from '@types/location';
 
 // Mock dependencies
 jest.mock('@services/locationService');

@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import BahmniIcon from '../BahmniIcon';
 import '@testing-library/jest-dom';
-import { ICON_PADDING, ICON_SIZE } from '@/constants/icon';
+import { ICON_PADDING, ICON_SIZE } from '@constants/icon';
 import { axe, toHaveNoViolations } from 'jest-axe';
 
 expect.extend(toHaveNoViolations);
