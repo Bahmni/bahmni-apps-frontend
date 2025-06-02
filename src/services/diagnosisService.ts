@@ -36,7 +36,6 @@ export async function getPatientDiagnosisBundle(
   patientUUID: string,
 ): Promise<FhirDiagnosisBundle> {
   const url = PATIENT_DIAGNOSIS_RESOURCE_URL(patientUUID);
-  console.log('Diagnosis API URL:', url);
   return await get<FhirDiagnosisBundle>(url);
 }
 
