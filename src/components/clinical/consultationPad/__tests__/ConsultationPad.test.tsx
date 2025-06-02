@@ -101,6 +101,36 @@ jest.mock('@stores/diagnosisStore', () => {
   };
 });
 
+// Mock the encounterDetailsStore
+jest.mock('@stores/encounterDetailsStore', () => {
+  const createMockEncounterStore = () => {
+    const store = {
+      selectedLocation: null,
+      selectedEncounterType: null,
+      selectedVisitType: null,
+      encounterParticipants: [],
+      consultationDate: new Date(),
+      setSelectedLocation: jest.fn(),
+      setSelectedEncounterType: jest.fn(),
+      setSelectedVisitType: jest.fn(),
+      setEncounterParticipants: jest.fn(),
+      setConsultationDate: jest.fn(),
+      reset: jest.fn(),
+      getState: jest.fn(),
+    };
+
+    store.getState = jest.fn().mockReturnValue(store);
+    return store;
+  };
+
+  const mockStoreInstance = createMockEncounterStore();
+
+  return {
+    useEncounterDetailsStore: jest.fn().mockReturnValue(mockStoreInstance),
+    createMockEncounterStore,
+  };
+});
+
 jest.mock('@services/consultationBundleService', () => ({
   postConsultationBundle: jest
     .fn()
@@ -438,6 +468,12 @@ describe('ConsultationPad', () => {
       ...baseState.locations,
       locations: [],
     });
+
+    // Clear the encounterDetailsStore location to make submission invalid
+    const encounterStore = jest
+      .requireMock('@stores/encounterDetailsStore')
+      .useEncounterDetailsStore();
+    encounterStore.selectedLocation = null;
   }
 
   function mockHooksWithInvalidSubmissionData() {
@@ -448,10 +484,34 @@ describe('ConsultationPad', () => {
       loading: false,
       error: null,
     });
+
+    // Clear the encounterDetailsStore location to make submission invalid
+    const encounterStore = jest
+      .requireMock('@stores/encounterDetailsStore')
+      .useEncounterDetailsStore();
+    encounterStore.selectedLocation = null;
   }
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Reset the mock stores
+    const diagnosisStore = jest
+      .requireMock('@stores/diagnosisStore')
+      .useDiagnosisStore();
+    diagnosisStore.selectedDiagnoses = [];
+    diagnosisStore.validateAllDiagnoses.mockReturnValue(true);
+
+    const encounterStore = jest
+      .requireMock('@stores/encounterDetailsStore')
+      .useEncounterDetailsStore();
+    encounterStore.selectedLocation = mockLocations[0];
+    encounterStore.selectedEncounterType =
+      mockEncounterConcepts.encounterTypes[0];
+    encounterStore.selectedVisitType = mockEncounterConcepts.visitTypes[0];
+    encounterStore.encounterParticipants = [mockPractitioner];
+    encounterStore.consultationDate = new Date();
+
     (useTranslation as jest.Mock).mockReturnValue(mockTranslation);
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: mockAddNotification,
@@ -528,7 +588,7 @@ describe('ConsultationPad', () => {
     });
 
     describe('Error State', () => {
-      it('should render error state when locations hook returns an error', () => {
+      it('should render normally when locations hook returns an error', () => {
         // Arrange
         mockHooksWithLocationError();
 
@@ -540,12 +600,12 @@ describe('ConsultationPad', () => {
           />,
         );
 
-        // Assert
+        // Assert - Should still render the form
         expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
-        expect(screen.getByText('CONSULTATION_PAD_ERROR')).toBeInTheDocument();
+        expect(screen.getByTestId('mock-basic-form')).toBeInTheDocument();
       });
 
-      it('should render error state when formatDate returns an error', () => {
+      it('should render normally when formatDate returns an error', () => {
         // Arrange
         mockHooksForNormalState();
         (formatDate as jest.Mock).mockReturnValue({
@@ -564,12 +624,12 @@ describe('ConsultationPad', () => {
           />,
         );
 
-        // Assert
+        // Assert - Should still render the form
         expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
-        expect(screen.getByText('CONSULTATION_PAD_ERROR')).toBeInTheDocument();
+        expect(screen.getByTestId('mock-basic-form')).toBeInTheDocument();
       });
 
-      it('should render error state when encounterConcepts hook returns an error', () => {
+      it('should render normally when encounterConcepts hook returns an error', () => {
         // Arrange
         mockHooksWithEncounterConceptsError();
 
@@ -581,9 +641,9 @@ describe('ConsultationPad', () => {
           />,
         );
 
-        // Assert
+        // Assert - Should still render the form
         expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
-        expect(screen.getByText('CONSULTATION_PAD_ERROR')).toBeInTheDocument();
+        expect(screen.getByTestId('mock-basic-form')).toBeInTheDocument();
       });
 
       it('should render error state when practitioner hook returns an error', () => {
@@ -620,7 +680,7 @@ describe('ConsultationPad', () => {
         expect(screen.getByText('CONSULTATION_PAD_ERROR')).toBeInTheDocument();
       });
 
-      it('should render error state when locations array is empty', () => {
+      it('should render normally when locations array is empty', () => {
         // Arrange
         mockHooksWithMissingData();
 
@@ -632,9 +692,9 @@ describe('ConsultationPad', () => {
           />,
         );
 
-        // Assert
+        // Assert - Should still render the form
         expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
-        expect(screen.getByText('CONSULTATION_PAD_ERROR')).toBeInTheDocument();
+        expect(screen.getByTestId('mock-basic-form')).toBeInTheDocument();
       });
 
       it('should render error state when patientUUID is empty', () => {
@@ -672,8 +732,7 @@ describe('ConsultationPad', () => {
         expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
         expect(screen.getByTestId('mock-basic-form')).toBeInTheDocument();
         expect(screen.getByText('CONSULTATION_PAD_TITLE')).toBeInTheDocument();
-        // Verify formatDate was called with current date
-        expect(formatDate).toHaveBeenCalledWith(expect.any(Date));
+        // formatDate is now called by BasicForm, not ConsultationPad
       });
 
       it('should render with correct button text', () => {
@@ -856,9 +915,12 @@ describe('ConsultationPad', () => {
         // Arrange
         mockHooksForNormalState();
         const mockDate = new Date(1466424490000);
-        const spy = jest
-          .spyOn(global, 'Date')
-          .mockImplementation(() => mockDate);
+
+        // Set the consultation date in the store
+        const encounterStore = jest
+          .requireMock('@stores/encounterDetailsStore')
+          .useEncounterDetailsStore();
+        encounterStore.consultationDate = mockDate;
 
         // Act
         render(
@@ -881,7 +943,6 @@ describe('ConsultationPad', () => {
             mockDate,
           );
         });
-        spy.mockRestore();
       });
 
       it('should set isSubmitting to true when submission starts and false when it completes', async () => {
@@ -1001,6 +1062,12 @@ describe('ConsultationPad', () => {
           .spyOn(global, 'Date')
           .mockImplementation(() => mockDate);
 
+        // Set the consultation date in the store
+        const encounterStore = jest
+          .requireMock('@stores/encounterDetailsStore')
+          .useEncounterDetailsStore();
+        encounterStore.consultationDate = mockDate;
+
         // Act
         render(
           <ConsultationPad
@@ -1042,8 +1109,8 @@ describe('ConsultationPad', () => {
         <ConsultationPad patientUUID={mockPatientUUID} onClose={mockOnClose} />,
       );
 
-      // Assert
-      expect(screen.getByText('CONSULTATION_PAD_ERROR')).toBeInTheDocument();
+      // Assert - Should still render the form
+      expect(screen.getByTestId('mock-basic-form')).toBeInTheDocument();
     });
 
     it('should handle formatDate function with empty string value', () => {
@@ -1061,8 +1128,7 @@ describe('ConsultationPad', () => {
 
       // Assert
       expect(screen.getByTestId('mock-basic-form')).toBeInTheDocument();
-      // BasicForm should receive empty string as defaultDate prop
-      expect(formatDate).toHaveBeenCalledWith(expect.any(Date));
+      // formatDate is now called by BasicForm, not ConsultationPad
     });
 
     it('should handle multiple error conditions gracefully', () => {
@@ -1138,6 +1204,12 @@ describe('ConsultationPad', () => {
         error: null,
       });
 
+      // Clear the encounterDetailsStore encounter type to make submission invalid
+      const encounterStore = jest
+        .requireMock('@stores/encounterDetailsStore')
+        .useEncounterDetailsStore();
+      encounterStore.selectedEncounterType = null;
+
       // Act
       render(
         <ConsultationPad patientUUID={mockPatientUUID} onClose={mockOnClose} />,
@@ -1168,8 +1240,8 @@ describe('ConsultationPad', () => {
         <ConsultationPad patientUUID={mockPatientUUID} onClose={mockOnClose} />,
       );
 
-      // Assert
-      expect(screen.getByText('CONSULTATION_PAD_ERROR')).toBeInTheDocument();
+      // Assert - Should still render the form
+      expect(screen.getByTestId('mock-basic-form')).toBeInTheDocument();
     });
   });
 

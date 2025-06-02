@@ -7,7 +7,7 @@ import { useLocations } from '@hooks/useLocations';
 import { useEncounterConcepts } from '@hooks/useEncounterConcepts';
 import { useActivePractitioner } from '@hooks/useActivePractitioner';
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
-import { FhirEncounter } from '@/types/encounter';
+import { FhirEncounter } from '@types/encounter';
 
 // Mock the hooks
 jest.mock('react-i18next', () => ({
@@ -495,7 +495,7 @@ describe('BasicForm', () => {
 
     it('should handle encounter without type coding', () => {
       // Arrange
-      const encounterWithoutType: Encounter = {
+      const encounterWithoutType: FhirEncounter = {
         ...mockCurrentEncounter,
         type: [],
       };
