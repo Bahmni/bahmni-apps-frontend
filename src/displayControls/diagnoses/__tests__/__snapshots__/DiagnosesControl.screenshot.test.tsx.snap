@@ -2938,3 +2938,1300 @@ exports[`DiagnosesControl Screenshot Tests should match snapshot with single dia
   </ul>
 </section>
 `;
+
+exports[`DiagnosesControl Visual Regression Tests Data States should render empty state correctly: diagnoses-control-empty 1`] = `
+<div>
+  <section
+    data-testid="diagnoses-control"
+  >
+    <ul
+      class="cds--accordion cds--accordion--end"
+    >
+      <li
+        class="cds--accordion__item cds--accordion__item--active"
+      >
+        <button
+          aria-controls="accordion-item-«r6»"
+          aria-expanded="true"
+          class="cds--accordion__heading"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="cds--accordion__arrow"
+            fill="currentColor"
+            focusable="false"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            viewBox="0 0 16 16"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+            />
+          </svg>
+          <div
+            class="cds--accordion__title"
+            dir="auto"
+          >
+            Diagnoses
+          </div>
+        </button>
+        <div
+          class="cds--accordion__wrapper"
+        >
+          <div
+            class="cds--accordion__content"
+            id="accordion-item-«r6»"
+          >
+            <div>
+              No diagnoses added for this patient
+            </div>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </section>
+</div>
+`;
+
+exports[`DiagnosesControl Visual Regression Tests Data States should render error state correctly: diagnoses-control-error 1`] = `
+<div>
+  <div>
+    Error loading diagnoses
+  </div>
+</div>
+`;
+
+exports[`DiagnosesControl Visual Regression Tests Data States should render with diagnoses data correctly: diagnoses-control-with-data 1`] = `
+<div>
+  <section
+    data-testid="diagnoses-control"
+  >
+    <ul
+      class="cds--accordion cds--accordion--end"
+    >
+      <li
+        class="cds--accordion__item cds--accordion__item--active"
+      >
+        <button
+          aria-controls="accordion-item-«r0»"
+          aria-expanded="true"
+          class="cds--accordion__heading"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="cds--accordion__arrow"
+            fill="currentColor"
+            focusable="false"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            viewBox="0 0 16 16"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+            />
+          </svg>
+          <div
+            class="cds--accordion__title"
+            dir="auto"
+          >
+            Diagnoses
+          </div>
+        </button>
+        <div
+          class="cds--accordion__wrapper"
+        >
+          <div
+            class="cds--accordion__content"
+            id="accordion-item-«r0»"
+          >
+            <div>
+              <div>
+                Diagnoses
+              </div>
+              <div>
+                Recorded by
+              </div>
+            </div>
+            <ul
+              class="cds--accordion cds--accordion--start cds--accordion--lg cds--layout--size-lg"
+            >
+              <li
+                class="cds--accordion__item cds--accordion__item--active"
+              >
+                <button
+                  aria-controls="accordion-item-«r1»"
+                  aria-expanded="true"
+                  class="cds--accordion__heading"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="cds--accordion__arrow"
+                    fill="currentColor"
+                    focusable="false"
+                    height="16"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--accordion__title"
+                    dir="auto"
+                  >
+                    Jan 15, 2025
+                  </div>
+                </button>
+                <div
+                  class="cds--accordion__wrapper"
+                >
+                  <div
+                    class="cds--accordion__content"
+                    id="accordion-item-«r1»"
+                  >
+                    <div>
+                      <div
+                        class="cds--data-table-content"
+                      >
+                        <table
+                          class="cds--data-table cds--data-table--sm"
+                        >
+                          <tbody
+                            aria-live="polite"
+                          >
+                            <tr
+                              data-testid="diagnosis-item"
+                            >
+                              <td
+                                style="background-color: white;"
+                              >
+                                <div>
+                                  <strong>
+                                    Type 2 Diabetes Mellitus
+                                  </strong>
+                                   
+                                  <div
+                                    class="cds--tag cds--tag--red"
+                                    id="tag-id-«r2»"
+                                    style="margin-left: 8px;"
+                                  >
+                                    <span
+                                      class="cds--tag__label"
+                                      dir="auto"
+                                      title="Confirmed"
+                                    >
+                                      Confirmed
+                                    </span>
+                                  </div>
+                                </div>
+                              </td>
+                              <td
+                                style="background-color: white;"
+                              >
+                                Dr. Jane Smith
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div
+                        class="cds--data-table-content"
+                      >
+                        <table
+                          class="cds--data-table cds--data-table--sm"
+                        >
+                          <tbody
+                            aria-live="polite"
+                          >
+                            <tr
+                              data-testid="diagnosis-item"
+                            >
+                              <td
+                                style="background-color: white;"
+                              >
+                                <div>
+                                  <strong>
+                                    Hypertension
+                                  </strong>
+                                   
+                                  <div
+                                    class="cds--tag cds--tag--green"
+                                    id="tag-id-«r3»"
+                                    style="margin-left: 8px;"
+                                  >
+                                    <span
+                                      class="cds--tag__label"
+                                      dir="auto"
+                                      title="Provisional"
+                                    >
+                                      Provisional
+                                    </span>
+                                  </div>
+                                </div>
+                              </td>
+                              <td
+                                style="background-color: white;"
+                              >
+                                Dr. Jane Smith
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <li
+                class="cds--accordion__item cds--accordion__item--active"
+              >
+                <button
+                  aria-controls="accordion-item-«r4»"
+                  aria-expanded="true"
+                  class="cds--accordion__heading"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="cds--accordion__arrow"
+                    fill="currentColor"
+                    focusable="false"
+                    height="16"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--accordion__title"
+                    dir="auto"
+                  >
+                    Jan 10, 2025
+                  </div>
+                </button>
+                <div
+                  class="cds--accordion__wrapper"
+                >
+                  <div
+                    class="cds--accordion__content"
+                    id="accordion-item-«r4»"
+                  >
+                    <div>
+                      <div
+                        class="cds--data-table-content"
+                      >
+                        <table
+                          class="cds--data-table cds--data-table--sm"
+                        >
+                          <tbody
+                            aria-live="polite"
+                          >
+                            <tr
+                              data-testid="diagnosis-item"
+                            >
+                              <td
+                                style="background-color: white;"
+                              >
+                                <div>
+                                  <strong>
+                                    Asthma
+                                  </strong>
+                                   
+                                  <div
+                                    class="cds--tag cds--tag--red"
+                                    id="tag-id-«r5»"
+                                    style="margin-left: 8px;"
+                                  >
+                                    <span
+                                      class="cds--tag__label"
+                                      dir="auto"
+                                      title="Confirmed"
+                                    >
+                                      Confirmed
+                                    </span>
+                                  </div>
+                                </div>
+                              </td>
+                              <td
+                                style="background-color: white;"
+                              >
+                                Dr. Robert Johnson
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </section>
+</div>
+`;
+
+exports[`DiagnosesControl Visual Regression Tests Different Data Scenarios should render long diagnosis names correctly: diagnoses-control-long-names 1`] = `
+<div>
+  <section
+    data-testid="diagnoses-control"
+  >
+    <ul
+      class="cds--accordion cds--accordion--end"
+    >
+      <li
+        class="cds--accordion__item cds--accordion__item--active"
+      >
+        <button
+          aria-controls="accordion-item-«rg»"
+          aria-expanded="true"
+          class="cds--accordion__heading"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="cds--accordion__arrow"
+            fill="currentColor"
+            focusable="false"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            viewBox="0 0 16 16"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+            />
+          </svg>
+          <div
+            class="cds--accordion__title"
+            dir="auto"
+          >
+            Diagnoses
+          </div>
+        </button>
+        <div
+          class="cds--accordion__wrapper"
+        >
+          <div
+            class="cds--accordion__content"
+            id="accordion-item-«rg»"
+          >
+            <div>
+              <div>
+                Diagnoses
+              </div>
+              <div>
+                Recorded by
+              </div>
+            </div>
+            <ul
+              class="cds--accordion cds--accordion--start cds--accordion--lg cds--layout--size-lg"
+            >
+              <li
+                class="cds--accordion__item cds--accordion__item--active"
+              >
+                <button
+                  aria-controls="accordion-item-«rh»"
+                  aria-expanded="true"
+                  class="cds--accordion__heading"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="cds--accordion__arrow"
+                    fill="currentColor"
+                    focusable="false"
+                    height="16"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--accordion__title"
+                    dir="auto"
+                  >
+                    Jan 15, 2025
+                  </div>
+                </button>
+                <div
+                  class="cds--accordion__wrapper"
+                >
+                  <div
+                    class="cds--accordion__content"
+                    id="accordion-item-«rh»"
+                  >
+                    <div>
+                      <div
+                        class="cds--data-table-content"
+                      >
+                        <table
+                          class="cds--data-table cds--data-table--sm"
+                        >
+                          <tbody
+                            aria-live="polite"
+                          >
+                            <tr
+                              data-testid="diagnosis-item"
+                            >
+                              <td
+                                style="background-color: white;"
+                              >
+                                <div>
+                                  <strong>
+                                    Very Long Diagnosis Name That Should Test Text Wrapping and Layout Behavior in the Component
+                                  </strong>
+                                   
+                                  <div
+                                    class="cds--tag cds--tag--red"
+                                    id="tag-id-«ri»"
+                                    style="margin-left: 8px;"
+                                  >
+                                    <span
+                                      class="cds--tag__label"
+                                      dir="auto"
+                                      title="Confirmed"
+                                    >
+                                      Confirmed
+                                    </span>
+                                  </div>
+                                </div>
+                              </td>
+                              <td
+                                style="background-color: white;"
+                              >
+                                Dr. Jane Smith with a Very Long Name
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </section>
+</div>
+`;
+
+exports[`DiagnosesControl Visual Regression Tests Different Data Scenarios should render multiple diagnoses with different certainties: diagnoses-control-different-certainties 1`] = `
+<div>
+  <section
+    data-testid="diagnoses-control"
+  >
+    <ul
+      class="cds--accordion cds--accordion--end"
+    >
+      <li
+        class="cds--accordion__item cds--accordion__item--active"
+      >
+        <button
+          aria-controls="accordion-item-«ra»"
+          aria-expanded="true"
+          class="cds--accordion__heading"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="cds--accordion__arrow"
+            fill="currentColor"
+            focusable="false"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            viewBox="0 0 16 16"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+            />
+          </svg>
+          <div
+            class="cds--accordion__title"
+            dir="auto"
+          >
+            Diagnoses
+          </div>
+        </button>
+        <div
+          class="cds--accordion__wrapper"
+        >
+          <div
+            class="cds--accordion__content"
+            id="accordion-item-«ra»"
+          >
+            <div>
+              <div>
+                Diagnoses
+              </div>
+              <div>
+                Recorded by
+              </div>
+            </div>
+            <ul
+              class="cds--accordion cds--accordion--start cds--accordion--lg cds--layout--size-lg"
+            >
+              <li
+                class="cds--accordion__item cds--accordion__item--active"
+              >
+                <button
+                  aria-controls="accordion-item-«rb»"
+                  aria-expanded="true"
+                  class="cds--accordion__heading"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="cds--accordion__arrow"
+                    fill="currentColor"
+                    focusable="false"
+                    height="16"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--accordion__title"
+                    dir="auto"
+                  >
+                    Jan 15, 2025
+                  </div>
+                </button>
+                <div
+                  class="cds--accordion__wrapper"
+                >
+                  <div
+                    class="cds--accordion__content"
+                    id="accordion-item-«rb»"
+                  >
+                    <div>
+                      <div
+                        class="cds--data-table-content"
+                      >
+                        <table
+                          class="cds--data-table cds--data-table--sm"
+                        >
+                          <tbody
+                            aria-live="polite"
+                          >
+                            <tr
+                              data-testid="diagnosis-item"
+                            >
+                              <td
+                                style="background-color: white;"
+                              >
+                                <div>
+                                  <strong>
+                                    Type 2 Diabetes Mellitus
+                                  </strong>
+                                   
+                                  <div
+                                    class="cds--tag cds--tag--red"
+                                    id="tag-id-«rc»"
+                                    style="margin-left: 8px;"
+                                  >
+                                    <span
+                                      class="cds--tag__label"
+                                      dir="auto"
+                                      title="Confirmed"
+                                    >
+                                      Confirmed
+                                    </span>
+                                  </div>
+                                </div>
+                              </td>
+                              <td
+                                style="background-color: white;"
+                              >
+                                Dr. Jane Smith
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div
+                        class="cds--data-table-content"
+                      >
+                        <table
+                          class="cds--data-table cds--data-table--sm"
+                        >
+                          <tbody
+                            aria-live="polite"
+                          >
+                            <tr
+                              data-testid="diagnosis-item"
+                            >
+                              <td
+                                style="background-color: white;"
+                              >
+                                <div>
+                                  <strong>
+                                    Hypertension
+                                  </strong>
+                                   
+                                  <div
+                                    class="cds--tag cds--tag--green"
+                                    id="tag-id-«rd»"
+                                    style="margin-left: 8px;"
+                                  >
+                                    <span
+                                      class="cds--tag__label"
+                                      dir="auto"
+                                      title="Provisional"
+                                    >
+                                      Provisional
+                                    </span>
+                                  </div>
+                                </div>
+                              </td>
+                              <td
+                                style="background-color: white;"
+                              >
+                                Dr. Jane Smith
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <li
+                class="cds--accordion__item cds--accordion__item--active"
+              >
+                <button
+                  aria-controls="accordion-item-«re»"
+                  aria-expanded="true"
+                  class="cds--accordion__heading"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="cds--accordion__arrow"
+                    fill="currentColor"
+                    focusable="false"
+                    height="16"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--accordion__title"
+                    dir="auto"
+                  >
+                    Jan 14, 2025
+                  </div>
+                </button>
+                <div
+                  class="cds--accordion__wrapper"
+                >
+                  <div
+                    class="cds--accordion__content"
+                    id="accordion-item-«re»"
+                  >
+                    <div>
+                      <div
+                        class="cds--data-table-content"
+                      >
+                        <table
+                          class="cds--data-table cds--data-table--sm"
+                        >
+                          <tbody
+                            aria-live="polite"
+                          >
+                            <tr
+                              data-testid="diagnosis-item"
+                            >
+                              <td
+                                style="background-color: white;"
+                              >
+                                <div>
+                                  <strong>
+                                    Suspected Pneumonia
+                                  </strong>
+                                   
+                                  <div
+                                    class="cds--tag cds--tag--green"
+                                    id="tag-id-«rf»"
+                                    style="margin-left: 8px;"
+                                  >
+                                    <span
+                                      class="cds--tag__label"
+                                      dir="auto"
+                                      title="CERTAINITY_DIFFERENTIAL"
+                                    >
+                                      CERTAINITY_DIFFERENTIAL
+                                    </span>
+                                  </div>
+                                </div>
+                              </td>
+                              <td
+                                style="background-color: white;"
+                              >
+                                Dr. Michael Brown
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </section>
+</div>
+`;
+
+exports[`DiagnosesControl Visual Regression Tests Different Data Scenarios should render single diagnosis correctly: diagnoses-control-single-diagnosis 1`] = `
+<div>
+  <section
+    data-testid="diagnoses-control"
+  >
+    <ul
+      class="cds--accordion cds--accordion--end"
+    >
+      <li
+        class="cds--accordion__item cds--accordion__item--active"
+      >
+        <button
+          aria-controls="accordion-item-«r7»"
+          aria-expanded="true"
+          class="cds--accordion__heading"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="cds--accordion__arrow"
+            fill="currentColor"
+            focusable="false"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            viewBox="0 0 16 16"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+            />
+          </svg>
+          <div
+            class="cds--accordion__title"
+            dir="auto"
+          >
+            Diagnoses
+          </div>
+        </button>
+        <div
+          class="cds--accordion__wrapper"
+        >
+          <div
+            class="cds--accordion__content"
+            id="accordion-item-«r7»"
+          >
+            <div>
+              <div>
+                Diagnoses
+              </div>
+              <div>
+                Recorded by
+              </div>
+            </div>
+            <ul
+              class="cds--accordion cds--accordion--start cds--accordion--lg cds--layout--size-lg"
+            >
+              <li
+                class="cds--accordion__item cds--accordion__item--active"
+              >
+                <button
+                  aria-controls="accordion-item-«r8»"
+                  aria-expanded="true"
+                  class="cds--accordion__heading"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="cds--accordion__arrow"
+                    fill="currentColor"
+                    focusable="false"
+                    height="16"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--accordion__title"
+                    dir="auto"
+                  >
+                    Jan 15, 2025
+                  </div>
+                </button>
+                <div
+                  class="cds--accordion__wrapper"
+                >
+                  <div
+                    class="cds--accordion__content"
+                    id="accordion-item-«r8»"
+                  >
+                    <div>
+                      <div
+                        class="cds--data-table-content"
+                      >
+                        <table
+                          class="cds--data-table cds--data-table--sm"
+                        >
+                          <tbody
+                            aria-live="polite"
+                          >
+                            <tr
+                              data-testid="diagnosis-item"
+                            >
+                              <td
+                                style="background-color: white;"
+                              >
+                                <div>
+                                  <strong>
+                                    Type 2 Diabetes Mellitus
+                                  </strong>
+                                   
+                                  <div
+                                    class="cds--tag cds--tag--red"
+                                    id="tag-id-«r9»"
+                                    style="margin-left: 8px;"
+                                  >
+                                    <span
+                                      class="cds--tag__label"
+                                      dir="auto"
+                                      title="Confirmed"
+                                    >
+                                      Confirmed
+                                    </span>
+                                  </div>
+                                </div>
+                              </td>
+                              <td
+                                style="background-color: white;"
+                              >
+                                Dr. Jane Smith
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </section>
+</div>
+`;
+
+exports[`DiagnosesControl Visual Regression Tests Loading States should render loading state correctly: diagnoses-control-loading 1`] = `
+<div>
+  <div>
+    Loading diagnoses...
+  </div>
+</div>
+`;
+
+exports[`DiagnosesControl Visual Regression Tests Responsive Layout Tests should render correctly in mobile viewport: diagnoses-control-mobile 1`] = `
+<div>
+  <section
+    data-testid="diagnoses-control"
+  >
+    <ul
+      class="cds--accordion cds--accordion--end"
+    >
+      <li
+        class="cds--accordion__item cds--accordion__item--active"
+      >
+        <button
+          aria-controls="accordion-item-«rj»"
+          aria-expanded="true"
+          class="cds--accordion__heading"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="cds--accordion__arrow"
+            fill="currentColor"
+            focusable="false"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            viewBox="0 0 16 16"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+            />
+          </svg>
+          <div
+            class="cds--accordion__title"
+            dir="auto"
+          >
+            Diagnoses
+          </div>
+        </button>
+        <div
+          class="cds--accordion__wrapper"
+        >
+          <div
+            class="cds--accordion__content"
+            id="accordion-item-«rj»"
+          >
+            <div>
+              <div>
+                Diagnoses
+              </div>
+              <div>
+                Recorded by
+              </div>
+            </div>
+            <ul
+              class="cds--accordion cds--accordion--start cds--accordion--lg cds--layout--size-lg"
+            >
+              <li
+                class="cds--accordion__item cds--accordion__item--active"
+              >
+                <button
+                  aria-controls="accordion-item-«rk»"
+                  aria-expanded="true"
+                  class="cds--accordion__heading"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="cds--accordion__arrow"
+                    fill="currentColor"
+                    focusable="false"
+                    height="16"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--accordion__title"
+                    dir="auto"
+                  >
+                    Jan 15, 2025
+                  </div>
+                </button>
+                <div
+                  class="cds--accordion__wrapper"
+                >
+                  <div
+                    class="cds--accordion__content"
+                    id="accordion-item-«rk»"
+                  >
+                    <div>
+                      <div
+                        class="cds--data-table-content"
+                      >
+                        <table
+                          class="cds--data-table cds--data-table--sm"
+                        >
+                          <tbody
+                            aria-live="polite"
+                          >
+                            <tr
+                              data-testid="diagnosis-item"
+                            >
+                              <td
+                                style="background-color: white;"
+                              >
+                                <div>
+                                  <strong>
+                                    Type 2 Diabetes Mellitus
+                                  </strong>
+                                   
+                                  <div
+                                    class="cds--tag cds--tag--red"
+                                    id="tag-id-«rl»"
+                                    style="margin-left: 8px;"
+                                  >
+                                    <span
+                                      class="cds--tag__label"
+                                      dir="auto"
+                                      title="Confirmed"
+                                    >
+                                      Confirmed
+                                    </span>
+                                  </div>
+                                </div>
+                              </td>
+                              <td
+                                style="background-color: white;"
+                              >
+                                Dr. Jane Smith
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </section>
+</div>
+`;
+
+exports[`DiagnosesControl Visual Regression Tests Responsive Layout Tests should render correctly in tablet viewport: diagnoses-control-tablet 1`] = `
+<div>
+  <section
+    data-testid="diagnoses-control"
+  >
+    <ul
+      class="cds--accordion cds--accordion--end"
+    >
+      <li
+        class="cds--accordion__item cds--accordion__item--active"
+      >
+        <button
+          aria-controls="accordion-item-«rm»"
+          aria-expanded="true"
+          class="cds--accordion__heading"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="cds--accordion__arrow"
+            fill="currentColor"
+            focusable="false"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            viewBox="0 0 16 16"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+            />
+          </svg>
+          <div
+            class="cds--accordion__title"
+            dir="auto"
+          >
+            Diagnoses
+          </div>
+        </button>
+        <div
+          class="cds--accordion__wrapper"
+        >
+          <div
+            class="cds--accordion__content"
+            id="accordion-item-«rm»"
+          >
+            <div>
+              <div>
+                Diagnoses
+              </div>
+              <div>
+                Recorded by
+              </div>
+            </div>
+            <ul
+              class="cds--accordion cds--accordion--start cds--accordion--lg cds--layout--size-lg"
+            >
+              <li
+                class="cds--accordion__item cds--accordion__item--active"
+              >
+                <button
+                  aria-controls="accordion-item-«rn»"
+                  aria-expanded="true"
+                  class="cds--accordion__heading"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="cds--accordion__arrow"
+                    fill="currentColor"
+                    focusable="false"
+                    height="16"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--accordion__title"
+                    dir="auto"
+                  >
+                    Jan 15, 2025
+                  </div>
+                </button>
+                <div
+                  class="cds--accordion__wrapper"
+                >
+                  <div
+                    class="cds--accordion__content"
+                    id="accordion-item-«rn»"
+                  >
+                    <div>
+                      <div
+                        class="cds--data-table-content"
+                      >
+                        <table
+                          class="cds--data-table cds--data-table--sm"
+                        >
+                          <tbody
+                            aria-live="polite"
+                          >
+                            <tr
+                              data-testid="diagnosis-item"
+                            >
+                              <td
+                                style="background-color: white;"
+                              >
+                                <div>
+                                  <strong>
+                                    Type 2 Diabetes Mellitus
+                                  </strong>
+                                   
+                                  <div
+                                    class="cds--tag cds--tag--red"
+                                    id="tag-id-«ro»"
+                                    style="margin-left: 8px;"
+                                  >
+                                    <span
+                                      class="cds--tag__label"
+                                      dir="auto"
+                                      title="Confirmed"
+                                    >
+                                      Confirmed
+                                    </span>
+                                  </div>
+                                </div>
+                              </td>
+                              <td
+                                style="background-color: white;"
+                              >
+                                Dr. Jane Smith
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div
+                        class="cds--data-table-content"
+                      >
+                        <table
+                          class="cds--data-table cds--data-table--sm"
+                        >
+                          <tbody
+                            aria-live="polite"
+                          >
+                            <tr
+                              data-testid="diagnosis-item"
+                            >
+                              <td
+                                style="background-color: white;"
+                              >
+                                <div>
+                                  <strong>
+                                    Hypertension
+                                  </strong>
+                                   
+                                  <div
+                                    class="cds--tag cds--tag--green"
+                                    id="tag-id-«rp»"
+                                    style="margin-left: 8px;"
+                                  >
+                                    <span
+                                      class="cds--tag__label"
+                                      dir="auto"
+                                      title="Provisional"
+                                    >
+                                      Provisional
+                                    </span>
+                                  </div>
+                                </div>
+                              </td>
+                              <td
+                                style="background-color: white;"
+                              >
+                                Dr. Jane Smith
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </section>
+</div>
+`;

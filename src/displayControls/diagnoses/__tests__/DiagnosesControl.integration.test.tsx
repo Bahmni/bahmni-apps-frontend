@@ -150,7 +150,7 @@ describe('DiagnosesControl Integration', () => {
       expect(screen.getByText('Dr. Robert Johnson')).toBeInTheDocument();
 
       // Assert - Certainty tags are displayed
-      expect(screen.getByText('Confirmed')).toBeInTheDocument();
+      expect(screen.getAllByText('Confirmed').length).toBeGreaterThan(0);
       expect(screen.getByText('Provisional')).toBeInTheDocument();
 
       // Verify service calls
