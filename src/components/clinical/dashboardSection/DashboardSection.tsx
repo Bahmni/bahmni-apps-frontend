@@ -19,7 +19,7 @@ const renderSectionContent = (section: DashboardSectionConfig) => {
     return (
       <div className="section-controls">
         {section.controls.map((control, index) => (
-          <div key={index}>
+          <div key={`${control.type}-${index}`}>
             {renderControlContent(control.type)}
           </div>
         ))}
@@ -68,7 +68,7 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
 }) => {
   const { t } = useTranslation();
   return (
-    <Tile id={`section-${section.id}`} ref={ref}>
+    <Tile id={`section-${section.name.toLowerCase().replace(/\s+/g, '-')}`} ref={ref}>
       <p className={styles.sectionTitle}>
         {t(section.translationKey || section.name)}
       </p>

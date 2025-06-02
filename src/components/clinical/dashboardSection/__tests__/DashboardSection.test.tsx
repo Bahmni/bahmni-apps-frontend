@@ -34,14 +34,13 @@ jest.mock('@displayControls/conditions/ConditionsTable', () => ({
 
 describe('DashboardSection Component', () => {
   const mockSection: DashboardSectionConfig = {
-    id: 'test-section-id',
     name: 'Test Section',
     icon: 'test-icon',
     controls: [],
   };
 
   // Handle for forwardRef in tests
-  const mockRef = jest.fn();
+  const mockRef = React.createRef<HTMLDivElement>();
 
   it('renders with the correct section name', () => {
     render(<DashboardSection section={mockSection} ref={mockRef} />);
@@ -50,14 +49,14 @@ describe('DashboardSection Component', () => {
     expect(screen.getByText('Test Section')).toBeInTheDocument();
   });
 
-  it('has the correct id attribute', () => {
+  it('has the correct id attribute based on section name', () => {
     const { container } = render(
       <DashboardSection section={mockSection} ref={mockRef} />,
     );
 
-    // Check if the div has the correct id
+    // Check if the div has the correct id based on section name
     const sectionDiv = container.querySelector(
-      `div[id="section-${mockSection.id}"]`,
+      `div[id="section-test-section"]`,
     );
     expect(sectionDiv).not.toBeNull();
   });
@@ -70,7 +69,7 @@ describe('DashboardSection Component', () => {
   });
 
   it('accepts a ref prop', () => {
-    const mockRefFn = jest.fn();
+    const mockRefFn = React.createRef<HTMLDivElement>();
 
     render(<DashboardSection section={mockSection} ref={mockRefFn} />);
 
@@ -81,7 +80,6 @@ describe('DashboardSection Component', () => {
 
   it('uses translationKey instead of name when available', () => {
     const sectionWithTranslationKey: DashboardSectionConfig = {
-      id: 'test-section-id',
       name: 'Test Section',
       translationKey: 'custom.translation.key',
       icon: 'test-icon',
@@ -100,7 +98,6 @@ describe('DashboardSection Component', () => {
   describe('content rendering', () => {
     it('renders AllergiesTable when section name is Allergies', () => {
       const allergiesSection: DashboardSectionConfig = {
-        id: 'allergies-id',
         name: 'Allergies',
         icon: 'test-icon',
         controls: [],
@@ -113,7 +110,6 @@ describe('DashboardSection Component', () => {
 
     it('renders ConditionsTable when section name is Conditions', () => {
       const conditionsSection: DashboardSectionConfig = {
-        id: 'conditions-id',
         name: 'Conditions',
         icon: 'test-icon',
         controls: [],
@@ -126,7 +122,6 @@ describe('DashboardSection Component', () => {
 
     it('renders no content for unknown section types', () => {
       const unknownSection: DashboardSectionConfig = {
-        id: 'unknown-section-id',
         name: 'Unknown Section',
         icon: 'test-icon',
         controls: [],

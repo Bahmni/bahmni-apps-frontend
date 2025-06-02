@@ -4,7 +4,7 @@
 
 .tableHeader {
   display: flex;
-  padding: 1rem 1rem;
+  padding: 1rem;
   background-color: #ffffff;
   border-bottom: 1px solid #e0e0e0;
   font-size: 0.875rem;
@@ -17,8 +17,8 @@
 }
 
 .recordedByColumn {
-  width: 200px;
-  padding-right: 1rem;
+  width: 180px;
+padding-right: 1rem;
 }
 
 .accordionItem {
@@ -27,10 +27,6 @@
     padding-inline: 0px;
   }
 
-  :global(.cds--accordion__heading) {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-  }
 
   :global(.cds--accordion__wrapper) {
    padding-inline: 0px !important;
@@ -46,12 +42,7 @@
 
 .diagnosisRow {
   display: flex;
-  padding: 1rem;
   align-items: center;
-
-  &:last-child {
-    border-bottom: none;
-  }
 }
 
 .diagnosisCell {

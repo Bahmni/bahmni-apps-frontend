@@ -20,7 +20,7 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
   sections,
   activeItemId,
 }) => {
-  // Create a ref map for each section - fix the type definition here
+  // Create a ref map for each section using section name as key
   const sectionRefs = useRef<{
     [key: string]: React.RefObject<HTMLDivElement | null>;
   }>({});
@@ -28,8 +28,8 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
   // Initialize refs for each section
   useEffect(() => {
     sections.forEach((section) => {
-      if (!sectionRefs.current[section.id]) {
-        sectionRefs.current[section.id] = React.createRef<HTMLDivElement>();
+      if (!sectionRefs.current[section.name]) {
+        sectionRefs.current[section.name] = React.createRef<HTMLDivElement>();
       }
     });
   }, [sections]);
@@ -39,12 +39,12 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
     if (activeItemId) {
       // Find the section that corresponds to the activeItemId
       const activeSection = sections.find(
-        (section) => section.id === activeItemId,
+        (section) => section.name === activeItemId,
       );
 
-      if (activeSection && sectionRefs.current[activeSection.id]?.current) {
+      if (activeSection && sectionRefs.current[activeSection.name]?.current) {
         // Added optional chaining and null check to prevent errors
-        const sectionDiv = sectionRefs.current[activeSection.id].current;
+        const sectionDiv = sectionRefs.current[activeSection.name].current;
         if (sectionDiv) {
           sectionDiv.scrollIntoView({
             behavior: 'smooth',
@@ -62,17 +62,17 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
   return (
     <Section>
       <Grid>
-        {sections.map((section) => (
+        {sections.map((section, index) => (
           <Column
             lg={16}
             md={8}
             sm={4}
-            key={section.id}
+            key={`${section.name}-${index}`}
             className={styles.sectionColumn}
           >
             <DashboardSection
               section={section}
-              ref={sectionRefs.current[section.id]}
+              ref={sectionRefs.current[section.name]}
             />
           </Column>
         ))}

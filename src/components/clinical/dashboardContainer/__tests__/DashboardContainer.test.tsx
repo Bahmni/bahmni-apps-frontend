@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import DashboardContainer from '../DashboardContainer';
-import { DashboardSectionConfig as DashboardSectionType } from '@types/dashboardConfig';
+import { DashboardSectionConfig as DashboardSectionType } from '@/types/dashboardConfig';
 
 // Mock scrollIntoView
 const mockScrollIntoView = jest.fn();
@@ -28,21 +28,6 @@ jest.mock('../../dashboardSection/DashboardSection', () => {
   ));
 });
 
-// Mock the Carbon components with ref forwarding
-jest.mock('@carbon/react', () => ({
-  Grid: jest.fn(({ children }) => (
-    <div data-testid="carbon-grid">{children}</div>
-  )),
-  Column: jest.fn(({ children, ref }) => (
-    <div data-testid="carbon-column" ref={ref}>
-      {children}
-    </div>
-  )),
-  Section: jest.fn(({ children }) => (
-    <div data-testid="carbon-section">{children}</div>
-  )),
-}));
-
 describe('DashboardContainer Component', () => {
   // Set up and reset mocks before each test
   beforeEach(() => {
@@ -59,19 +44,18 @@ describe('DashboardContainer Component', () => {
   afterEach(() => {
     // Clean up the mock after each test
     if (HTMLElement.prototype.scrollIntoView === mockScrollIntoView) {
-      delete HTMLElement.prototype.scrollIntoView;
+      // Use Reflect.deleteProperty to safely delete the property
+      Reflect.deleteProperty(HTMLElement.prototype, 'scrollIntoView');
     }
   });
 
   const mockSections: DashboardSectionType[] = [
     {
-      id: 'section-1-id',
       name: 'Section 1',
       icon: 'icon-1',
       controls: [],
     },
     {
-      id: 'section-2-id',
       name: 'Section 2',
       icon: 'icon-2',
       controls: [],
@@ -104,7 +88,7 @@ describe('DashboardContainer Component', () => {
     expect(screen.getAllByTestId('carbon-column').length).toBe(2); // One column per section
   });
 
-  it('scrolls to the active section when activeItemId matches section id', async () => {
+  it('scrolls to the active section when activeItemId matches section name', async () => {
     // Create a spy div element with scrollIntoView method
     const spyElement = document.createElement('div');
     const scrollSpy = jest.spyOn(spyElement, 'scrollIntoView');
@@ -114,11 +98,11 @@ describe('DashboardContainer Component', () => {
       current: spyElement,
     }));
 
-    // Render component with activeItemId matching a section id
+    // Render component with activeItemId matching a section name
     render(
       <DashboardContainer
         sections={mockSections}
-        activeItemId="section-1-id"
+        activeItemId="Section 1"
       />,
     );
 
@@ -176,7 +160,6 @@ describe('DashboardContainer Component', () => {
     const updatedSections: DashboardSectionType[] = [
       ...mockSections,
       {
-        id: 'section-3-id',
         name: 'Section 3',
         icon: 'icon-3',
         controls: [],
@@ -193,7 +176,7 @@ describe('DashboardContainer Component', () => {
     rerender(
       <DashboardContainer
         sections={updatedSections}
-        activeItemId="section-3-id"
+        activeItemId="Section 3"
       />,
     );
 
@@ -226,7 +209,7 @@ describe('DashboardContainer Component', () => {
     rerender(
       <DashboardContainer
         sections={reducedSections}
-        activeItemId="section-2-id"
+        activeItemId="Section 2"
       />,
     );
 
