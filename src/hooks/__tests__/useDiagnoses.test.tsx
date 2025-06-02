@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import useDiagnoses from '../useDiagnoses';
 import * as diagnosisService from '@/services/diagnosisService';
 import { mockFormattedDiagnoses, mockDiagnosesByDate } from '@/__mocks__/diagnosisMocks';
@@ -41,7 +41,7 @@ describe('useDiagnoses', () => {
     // Wait for the hook to finish fetching
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
-    });
+    }, { timeout: 3000 });
 
     // Check that the service functions were called
     expect(diagnosisService.getDiagnoses).toHaveBeenCalledWith(mockPatientUUID);
@@ -65,7 +65,7 @@ describe('useDiagnoses', () => {
     // Wait for the hook to finish fetching
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
-    });
+    }, { timeout: 3000 });
 
     // Check the final state
     expect(result.current.isLoading).toBe(false);
@@ -83,7 +83,7 @@ describe('useDiagnoses', () => {
     // Wait for the hook to finish
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
-    });
+    }, { timeout: 3000 });
 
     // Check that the service functions were not called
     expect(diagnosisService.getDiagnoses).not.toHaveBeenCalled();

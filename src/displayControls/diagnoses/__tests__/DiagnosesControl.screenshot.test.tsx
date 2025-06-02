@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, act, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import DiagnosesControl from '../DiagnosesControl';
 import * as diagnosisService from '@services/diagnosisService';
@@ -102,10 +102,12 @@ describe('DiagnosesControl Visual Regression Tests', () => {
       mockedGroupDiagnosesByDateAndRecorder.mockReturnValue(mockDiagnosesByDate);
 
       // Act
-      const { container } = renderComponent();
+      const { container, getByText } = renderComponent();
 
       // Wait for data to load
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await waitFor(() => {
+        expect(getByText('Type 2 Diabetes Mellitus')).toBeInTheDocument();
+      });
 
       // Assert - Take screenshot with data
       expect(container).toMatchSnapshot('diagnoses-control-with-data');
