@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, act, waitFor } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import DiagnosesControl from '../DiagnosesControl';
 import * as diagnosisService from '@services/diagnosisService';

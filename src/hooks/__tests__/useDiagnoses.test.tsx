@@ -1,4 +1,4 @@
-import { renderHook, waitFor, act } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 import useDiagnoses from '../useDiagnoses';
 import * as diagnosisService from '@/services/diagnosisService';
 import { mockFormattedDiagnoses, mockDiagnosesByDate } from '@/__mocks__/diagnosisMocks';
