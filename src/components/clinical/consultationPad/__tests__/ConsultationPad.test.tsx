@@ -1365,12 +1365,6 @@ describe('ConsultationPad', () => {
         expect(mockStore.selectedDiagnoses.length).toBe(1);
       });
 
-      it('should maintain certainty values when other diagnoses are modified', () => {
-        // This tests that certainty values are isolated per diagnosis
-        // Implementation would require more detailed mocking
-        expect(true).toBe(true);
-      });
-
       it('should properly update certainty for multiple diagnoses', () => {
         // Arrange
         mockHooksForNormalState();
