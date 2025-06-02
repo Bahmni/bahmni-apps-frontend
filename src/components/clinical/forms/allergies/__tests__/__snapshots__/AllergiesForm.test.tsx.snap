@@ -184,6 +184,13 @@ exports[`AllergiesForm Snapshot Tests matches snapshot with selected allergies 1
                   class="cds--dropdown__wrapper cds--list-box__wrapper"
                   data-testid="allergy-severity-dropdown-test-allergy-1"
                 >
+                  <label
+                    class="cds--label cds--visually-hidden"
+                    for="downshift-«r24»-toggle-button"
+                    id="downshift-«r24»-label"
+                  >
+                    Select Severity
+                  </label>
                   <div
                     class="cds--dropdown cds--autoalign cds--list-box"
                     id="allergy-severity-dropdown-test-allergy-1"
@@ -246,6 +253,18 @@ exports[`AllergiesForm Snapshot Tests matches snapshot with selected allergies 1
                 <div
                   class="cds--multi-select__wrapper cds--multi-select--filterable__wrapper cds--list-box__wrapper cds--autoalign"
                 >
+                  <label
+                    class="cds--label cds--visually-hidden"
+                    for="allergy-reactions-multiselect-test-allergy-1-input"
+                    id="allergy-reactions-multiselect-test-allergy-1-label"
+                  >
+                    Select Reactions
+                    <span
+                      class="cds--visually-hidden"
+                    >
+                      Total items selected:  1. To clear selection, press Delete or Backspace.
+                    </span>
+                  </label>
                   <div
                     class="cds--multi-select cds--combo-box cds--multi-select--filterable cds--multi-select--selected cds--list-box"
                     id="allergy-reactions-multiselect-test-allergy-1"

@@ -5,10 +5,10 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from '@/setupTests.i18n';
 import SelectedAllergyItem from '../SelectedAllergyItem';
 import { Coding } from 'fhir/r4';
-// import { axe, toHaveNoViolations } from 'jest-axe';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { ALLERGY_SEVERITY_CONCEPTS } from '@constants/concepts';
 
-// expect.extend(toHaveNoViolations);
+expect.extend(toHaveNoViolations);
 
 // Mock the CSS modules
 jest.mock('../styles/SelectedAllergyItem.module.scss', () => ({
@@ -118,7 +118,7 @@ describe('SelectedAllergyItem', () => {
       renderWithI18n(<SelectedAllergyItem {...defaultProps} />);
 
       const multiselect = screen.getByRole('combobox', {
-        name: '',
+        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
       });
       expect(multiselect).toBeInTheDocument();
       expect(multiselect).toHaveAttribute('placeholder', 'Select Reactions');
@@ -154,7 +154,7 @@ describe('SelectedAllergyItem', () => {
       renderWithI18n(<SelectedAllergyItem {...defaultProps} />);
 
       const multiselect = screen.getByRole('combobox', {
-        name: '',
+        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
       });
       await user.click(multiselect);
 
@@ -175,7 +175,7 @@ describe('SelectedAllergyItem', () => {
       renderWithI18n(<SelectedAllergyItem {...defaultProps} />);
 
       const multiselect = screen.getByRole('combobox', {
-        name: '',
+        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
       });
       await user.click(multiselect);
 
@@ -360,7 +360,7 @@ describe('SelectedAllergyItem', () => {
       ).toBeInTheDocument();
 
       const multiselect = screen.getByRole('combobox', {
-        name: '',
+        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
       });
       expect(multiselect).toBeInTheDocument();
       expect(multiselect).toHaveAttribute('placeholder', 'Select Reactions');
@@ -391,79 +391,15 @@ describe('SelectedAllergyItem', () => {
 
   // ACCESSIBILITY TESTS
   // The test is currently failing due to an accessibility issue with FilterableMultiSelect
-  // describe('Accessibility', () => {
-  //   test('should have no accessibility violations', async () => {
-  //     const { container } = renderWithI18n(
-  //       <SelectedAllergyItem {...defaultProps} />,
-  //     );
-  //     const results = await axe(container);
-  //     expect(results).toHaveNoViolations();
-  //   });
-
-  //   test('dropdown and multiselect have appropriate ARIA attributes', () => {
-  //     renderWithI18n(<SelectedAllergyItem {...defaultProps} />);
-
-  //     const severityDropdown = screen.getByRole('combobox', {
-  //       name: /Select severity for this allergy/i,
-  //     });
-  //     expect(severityDropdown).toHaveAttribute(
-  //       'aria-label',
-  //       'Select severity for this allergy',
-  //     );
-
-  //     const reactionsMultiselect = screen.getByRole('combobox', {
-  //       name: '',
-  //     });
-  //     expect(reactionsMultiselect).toHaveAttribute('placeholder', 'Select reactions');
-  //   });
-
-  //   test('components have unique IDs', () => {
-  //     const allergy1 = {
-  //       ...mockAllergy,
-  //       id: 'allergy-1',
-  //     };
-  //     const allergy2 = {
-  //       ...mockAllergy,
-  //       id: 'allergy-2',
-  //     };
-
-  //     const { rerender } = renderWithI18n(
-  //       <SelectedAllergyItem
-  //         allergy={allergy1}
-  //         reactionConcepts={defaultProps.reactionConcepts}
-  //         updateSeverity={defaultProps.updateSeverity}
-  //         updateReactions={defaultProps.updateReactions}
-  //       />,
-  //     );
-
-  //     const wrapper1 = screen.getByTestId(
-  //       'allergy-severity-dropdown-allergy-1',
-  //     );
-  //     const dropdown1 = wrapper1.querySelector(
-  //       '#allergy-severity-dropdown-allergy-1',
-  //     );
-  //     expect(dropdown1).toBeInTheDocument();
-
-  //     rerender(
-  //       <I18nextProvider i18n={i18n}>
-  //         <SelectedAllergyItem
-  //           allergy={allergy2}
-  //           reactionConcepts={defaultProps.reactionConcepts}
-  //           updateSeverity={defaultProps.updateSeverity}
-  //           updateReactions={defaultProps.updateReactions}
-  //         />
-  //       </I18nextProvider>,
-  //     );
-
-  //     const wrapper2 = screen.getByTestId(
-  //       'allergy-severity-dropdown-allergy-2',
-  //     );
-  //     const dropdown2 = wrapper2.querySelector(
-  //       '#allergy-severity-dropdown-allergy-2',
-  //     );
-  //     expect(dropdown2).toBeInTheDocument();
-  //   });
-  // });
+  describe('Accessibility', () => {
+    test('should have no accessibility violations', async () => {
+      const { container } = renderWithI18n(
+        <SelectedAllergyItem {...defaultProps} />,
+      );
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+  });
 
   // SNAPSHOT TESTS
   describe('Snapshot Tests', () => {

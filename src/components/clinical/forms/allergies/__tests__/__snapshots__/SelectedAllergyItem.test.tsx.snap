@@ -20,18 +20,25 @@ exports[`SelectedAllergyItem Snapshot Tests default rendering matches snapshot 1
         class="cds--dropdown__wrapper cds--list-box__wrapper"
         data-testid="allergy-severity-dropdown-test-allergy-1"
       >
+        <label
+          class="cds--label cds--visually-hidden"
+          for="downshift-«r3k»-toggle-button"
+          id="downshift-«r3k»-label"
+        >
+          Select Severity
+        </label>
         <div
           class="cds--dropdown cds--autoalign cds--list-box"
           id="allergy-severity-dropdown-test-allergy-1"
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-«r3e»-menu"
+            aria-controls="downshift-«r3k»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Select severity for this allergy"
             class="cds--list-box__field"
-            id="downshift-«r3e»-toggle-button"
+            id="downshift-«r3k»-toggle-button"
             role="combobox"
             tabindex="0"
             title="Mild"
@@ -67,9 +74,9 @@ exports[`SelectedAllergyItem Snapshot Tests default rendering matches snapshot 1
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-«r3e»-label"
+            aria-labelledby="downshift-«r3k»-label"
             class="cds--list-box__menu"
-            id="downshift-«r3e»-menu"
+            id="downshift-«r3k»-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
@@ -82,6 +89,18 @@ exports[`SelectedAllergyItem Snapshot Tests default rendering matches snapshot 1
       <div
         class="cds--multi-select__wrapper cds--multi-select--filterable__wrapper cds--list-box__wrapper cds--autoalign"
       >
+        <label
+          class="cds--label cds--visually-hidden"
+          for="allergy-reactions-multiselect-test-allergy-1-input"
+          id="allergy-reactions-multiselect-test-allergy-1-label"
+        >
+          Select Reactions
+          <span
+            class="cds--visually-hidden"
+          >
+            Total items selected:  1. To clear selection, press Delete or Backspace.
+          </span>
+        </label>
         <div
           class="cds--multi-select cds--combo-box cds--multi-select--filterable cds--multi-select--selected cds--list-box"
           id="allergy-reactions-multiselect-test-allergy-1"
@@ -193,6 +212,13 @@ exports[`SelectedAllergyItem Snapshot Tests rendering with validation errors mat
         class="cds--dropdown__wrapper cds--list-box__wrapper"
         data-testid="allergy-severity-dropdown-test-allergy-1"
       >
+        <label
+          class="cds--label cds--visually-hidden"
+          for="downshift-«r3q»-toggle-button"
+          id="downshift-«r3q»-label"
+        >
+          Select Severity
+        </label>
         <div
           class="cds--dropdown cds--dropdown--invalid cds--autoalign cds--list-box cds--list-box--invalid"
           data-invalid="true"
@@ -220,12 +246,12 @@ exports[`SelectedAllergyItem Snapshot Tests rendering with validation errors mat
           </svg>
           <button
             aria-activedescendant=""
-            aria-controls="downshift-«r3k»-menu"
+            aria-controls="downshift-«r3q»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Select severity for this allergy"
             class="cds--list-box__field"
-            id="downshift-«r3k»-toggle-button"
+            id="downshift-«r3q»-toggle-button"
             role="combobox"
             tabindex="0"
             title="Select Severity"
@@ -261,9 +287,9 @@ exports[`SelectedAllergyItem Snapshot Tests rendering with validation errors mat
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-«r3k»-label"
+            aria-labelledby="downshift-«r3q»-label"
             class="cds--list-box__menu"
-            id="downshift-«r3k»-menu"
+            id="downshift-«r3q»-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
@@ -281,6 +307,18 @@ exports[`SelectedAllergyItem Snapshot Tests rendering with validation errors mat
       <div
         class="cds--multi-select__wrapper cds--multi-select--filterable__wrapper cds--list-box__wrapper cds--autoalign"
       >
+        <label
+          class="cds--label cds--visually-hidden"
+          for="allergy-reactions-multiselect-test-allergy-1-input"
+          id="allergy-reactions-multiselect-test-allergy-1-label"
+        >
+          Select Reactions
+          <span
+            class="cds--visually-hidden"
+          >
+            Total items selected:  1. To clear selection, press Delete or Backspace.
+          </span>
+        </label>
         <div
           class="cds--multi-select cds--combo-box cds--multi-select--filterable cds--multi-select--selected cds--list-box"
           id="allergy-reactions-multiselect-test-allergy-1"
