@@ -3,7 +3,7 @@ import {
   formatDiagnoses,
   groupDiagnosesByDateAndRecorder,
 } from '../diagnosisService';
-import { mockFhirDiagnoses, mockFormattedDiagnoses, mockDiagnosesByDate } from '@/__mocks__/diagnosisMocks';
+import { mockFhirDiagnoses, mockFormattedDiagnoses } from '@/__mocks__/diagnosisMocks';
 import { DiagnosisCertainty } from '@/types/diagnosis';
 import * as utils from '@/utils/common';
 import notificationService from '../notificationService';
@@ -66,12 +66,13 @@ describe('diagnosisService', () => {
       jest.spyOn(console, 'error').mockImplementation(() => {});
       
       // Call the function with invalid data that will cause an error
-      const result = formatDiagnoses([
-        {
-          ...mockFhirDiagnoses[0],
-          code: null as any, // This will cause an error
-        },
-      ]);
+      const invalidDiagnosis = {
+        ...mockFhirDiagnoses[0],
+      };
+      // @ts-expect-error - Intentionally setting invalid data to test error handling
+      invalidDiagnosis.code = null;
+      
+      const result = formatDiagnoses([invalidDiagnosis]);
       
       // Check that the error was handled and notification was shown
       expect(utils.getFormattedError).toHaveBeenCalled();

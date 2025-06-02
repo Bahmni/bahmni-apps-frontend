@@ -10,6 +10,7 @@ import { NotificationProvider } from '@providers/NotificationProvider';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/setupTests.i18n';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import { DiagnosisCertainty } from '@/types/diagnosis';
 
 // Extend Jest matchers for accessibility testing
 expect.extend(toHaveNoViolations);
@@ -100,7 +101,7 @@ describe('DiagnosesControl Integration', () => {
         {
           id: 'diagnosis-1',
           display: 'Type 2 Diabetes Mellitus',
-          certainty: 'Confirmed' as any,
+          certainty: 'Confirmed' as DiagnosisCertainty,
           recordedDate: '2025-01-15T10:30:00Z',
           formattedDate: 'Jan 15, 2025',
           recorder: 'Dr. Jane Smith',
@@ -108,7 +109,7 @@ describe('DiagnosesControl Integration', () => {
         {
           id: 'diagnosis-2',
           display: 'Hypertension',
-          certainty: 'Provisional' as any,
+          certainty: 'Provisional' as DiagnosisCertainty,
           recordedDate: '2025-01-15T10:35:00Z',
           formattedDate: 'Jan 15, 2025',
           recorder: 'Dr. Jane Smith',
@@ -116,7 +117,7 @@ describe('DiagnosesControl Integration', () => {
         {
           id: 'diagnosis-3',
           display: 'Asthma',
-          certainty: 'Confirmed' as any,
+          certainty: 'Confirmed' as DiagnosisCertainty,
           recordedDate: '2025-01-10T14:20:00Z',
           formattedDate: 'Jan 10, 2025',
           recorder: 'Dr. Robert Johnson',
@@ -175,7 +176,7 @@ describe('DiagnosesControl Integration', () => {
         {
           id: 'diagnosis-1',
           display: 'Type 2 Diabetes Mellitus',
-          certainty: 'Confirmed' as any,
+          certainty: 'Confirmed' as DiagnosisCertainty,
           recordedDate: '2025-01-15T10:30:00Z',
           formattedDate: 'Jan 15, 2025',
           recorder: 'Dr. Jane Smith',
@@ -189,7 +190,7 @@ describe('DiagnosesControl Integration', () => {
             {
               id: 'diagnosis-1',
               display: 'Type 2 Diabetes Mellitus',
-              certainty: 'Confirmed' as any,
+              certainty: 'Confirmed' as DiagnosisCertainty,
               recordedDate: '2025-01-15T10:30:00Z',
               formattedDate: 'Jan 15, 2025',
               recorder: 'Dr. Jane Smith',
@@ -297,7 +298,7 @@ describe('DiagnosesControl Integration', () => {
       const largeDiagnosList = Array.from({ length: 50 }, (_, index) => ({
         id: `diagnosis-${index}`,
         display: `Diagnosis ${index}`,
-        certainty: index % 2 === 0 ? 'Confirmed' as any : 'Provisional' as any,
+        certainty: (index % 2 === 0 ? 'Confirmed' : 'Provisional') as DiagnosisCertainty,
         recordedDate: `2025-01-${String(index % 30 + 1).padStart(2, '0')}T10:30:00Z`,
         formattedDate: `Jan ${index % 30 + 1}, 2025`,
         recorder: `Dr. Provider ${index % 5}`,
@@ -350,7 +351,7 @@ describe('DiagnosesControl Integration', () => {
         {
           id: 'diagnosis-1',
           display: 'Type 2 Diabetes Mellitus',
-          certainty: 'Confirmed' as any,
+          certainty: 'Confirmed' as DiagnosisCertainty,
           recordedDate: '2025-01-15T10:30:00Z',
           formattedDate: 'Jan 15, 2025',
           recorder: 'Dr. Jane Smith',
@@ -364,7 +365,7 @@ describe('DiagnosesControl Integration', () => {
             {
               id: 'diagnosis-1',
               display: 'Type 2 Diabetes Mellitus',
-              certainty: 'Confirmed' as any,
+              certainty: 'Confirmed' as DiagnosisCertainty,
               recordedDate: '2025-01-15T10:30:00Z',
               formattedDate: 'Jan 15, 2025',
               recorder: 'Dr. Jane Smith',
@@ -395,7 +396,7 @@ describe('DiagnosesControl Integration', () => {
         {
           id: 'diagnosis-1',
           display: 'Type 2 Diabetes Mellitus',
-          certainty: 'Confirmed' as any,
+          certainty: 'Confirmed' as DiagnosisCertainty,
           recordedDate: '2025-01-15T10:30:00Z',
           formattedDate: 'Jan 15, 2025',
           recorder: 'Dr. Jane Smith',
@@ -457,7 +458,7 @@ describe('DiagnosesControl Integration', () => {
         {
           id: 'diagnosis-1',
           display: 'Type 2 Diabetes Mellitus',
-          certainty: 'Confirmed' as any,
+          certainty: 'Confirmed' as DiagnosisCertainty,
           recordedDate: '2025-01-15T10:30:00Z',
           formattedDate: 'Jan 15, 2025',
           recorder: 'Dr. Jane Smith',
@@ -465,7 +466,7 @@ describe('DiagnosesControl Integration', () => {
         {
           id: 'diagnosis-2',
           display: 'Hypertension',
-          certainty: 'Provisional' as any,
+          certainty: 'Provisional' as DiagnosisCertainty,
           recordedDate: '2025-01-15T10:35:00Z',
           formattedDate: 'Jan 15, 2025',
           recorder: 'Dr. Jane Smith',
@@ -479,7 +480,7 @@ describe('DiagnosesControl Integration', () => {
             {
               id: 'diagnosis-1',
               display: 'Type 2 Diabetes Mellitus',
-              certainty: 'Confirmed' as any,
+              certainty: 'Confirmed' as DiagnosisCertainty,
               recordedDate: '2025-01-15T10:30:00Z',
               formattedDate: 'Jan 15, 2025',
               recorder: 'Dr. Jane Smith',
@@ -487,7 +488,7 @@ describe('DiagnosesControl Integration', () => {
             {
               id: 'diagnosis-2',
               display: 'Hypertension',
-              certainty: 'Provisional' as any,
+              certainty: 'Provisional' as DiagnosisCertainty,
               recordedDate: '2025-01-15T10:35:00Z',
               formattedDate: 'Jan 15, 2025',
               recorder: 'Dr. Jane Smith',

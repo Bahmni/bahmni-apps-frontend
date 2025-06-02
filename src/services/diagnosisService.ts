@@ -49,7 +49,7 @@ export async function getDiagnoses(patientUUID: string): Promise<FhirDiagnosis[]
 
     const fhirDiagnosisBundle = await getPatientDiagnosisBundle(patientUUID);
 
-    let diagnoses = fhirDiagnosisBundle.entry?.map((entry) => entry.resource) || [];
+    const diagnoses = fhirDiagnosisBundle.entry?.map((entry) => entry.resource) || [];
 
     return diagnoses;
   } catch (error) {
