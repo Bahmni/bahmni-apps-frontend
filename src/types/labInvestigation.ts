@@ -108,7 +108,7 @@ export interface FormattedLabTest {
   readonly orderedDate: string; // ISO date string
   readonly formattedDate: string; // Formatted date for display
   readonly result?: string | LabTestResult[];
-  readonly testType: string; // "Panel" or "Single Test"
+  readonly testType: string; // "Panel" or not
 }
 
 /**

@@ -19,19 +19,20 @@ const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({
       <div className={styles.labHeader}>
         <div>
           <strong>{test.testName}</strong>
-          <span className={styles.testType}>
-            {' '}
-            {t(`LAB_TEST_${test.testType.replace(/\s+/g, '_').toUpperCase()}`)}
-          </span>
+          {test.testType === 'Panel' && (
+            <span className={styles.testType}>
+              {t(`LAB_TEST_${test.testType.toUpperCase()}`)}
+            </span>
+          )}
         </div>
-        <Tag
-          className={
-            test.priority === LabTestPriority.stat ? styles['yellow-tag'] : ''
-          }
-          data-testid={`lab-test-priority-${test.priority}`}
-        >
-          {t(`LAB_TEST_${test.priority.toUpperCase()}`)}
-        </Tag>
+        {test.priority === LabTestPriority.stat && (
+          <Tag
+            className={styles['yellow-tag']}
+            data-testid={`lab-test-priority-${test.priority}`}
+          >
+            {t(`LAB_TEST_${test.priority.toUpperCase()}`)}
+          </Tag>
+        )}
         <div className={styles.orderedBy}>
           <BahmniIcon name="fa-user" size={ICON_SIZE.SM} id="homeIcon" />
           {t('LAB_TEST_ORDERED_BY')}: {test.orderedBy}
