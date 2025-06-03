@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import ActionArea from '@components/common/actionArea/ActionArea';
-import { useActiveVisit } from '@/hooks/useActiveVisit';
+import { useActiveVisit } from '@hooks/useActiveVisit';
 import { useActivePractitioner } from '@hooks/useActivePractitioner';
 import { Column, Grid, Loading, MenuItemDivider } from '@carbon/react';
 import * as styles from './styles/ConsultationPad.module.scss';
@@ -51,7 +51,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     validateAllAllergies,
     reset: resetAllergies,
   } = useAllergyStore();
-
+  // Use the encounter details store
   const {
     selectedLocation,
     selectedEncounterType,
@@ -78,9 +78,10 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   useEffect(() => {
     return () => {
       resetEncounterDetails();
+      resetAllergies();
       resetDiagnoses();
     };
-  }, [resetEncounterDetails, resetDiagnoses]);
+  }, [resetEncounterDetails, resetAllergies, resetDiagnoses]);
 
   // Data validation check for consultation submission
   const canSubmitConsultation = !!(
@@ -114,6 +115,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       encounterSubject: encounterResource.subject!,
       encounterReference: enconterResourceURL,
       practitionerUUID: user!.uuid,
+      consultationDate,
     });
 
     const allergyEntries = createAllergiesBundleEntries({

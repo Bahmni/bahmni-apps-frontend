@@ -25,6 +25,7 @@ interface CreateDiagnosisBundleEntriesParams {
   encounterSubject: Reference;
   encounterReference: string;
   practitionerUUID: string;
+  consultationDate: Date;
 }
 
 /**
@@ -38,6 +39,7 @@ export function createDiagnosisBundleEntries({
   encounterSubject,
   encounterReference,
   practitionerUUID,
+  consultationDate,
 }: CreateDiagnosisBundleEntriesParams): BundleEntry[] {
   // Validate required parameters
   if (!selectedDiagnoses || !Array.isArray(selectedDiagnoses)) {
@@ -75,7 +77,7 @@ export function createDiagnosisBundleEntries({
       encounterSubject,
       getPlaceholderReference(encounterReference),
       createPractitionerReference(practitionerUUID),
-      new Date(),
+      consultationDate,
     );
     const diagnosisBundleEntry = createBundleEntry(
       diagnosisResourceURL,
