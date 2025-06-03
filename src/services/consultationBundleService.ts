@@ -1,5 +1,5 @@
 import { post } from './api';
-import { ConsultationBundle } from '../types/consultationBundle';
+import { ConsultationBundle } from '@types/consultationBundle';
 import { CONSULTATION_BUNDLE_URL } from '@constants/app';
 import { BundleEntry, Reference } from 'fhir/r4';
 import { CONSULTATION_ERROR_MESSAGES } from '@constants/errors';
@@ -10,8 +10,8 @@ import {
   createPractitionerReference,
   getPlaceholderReference,
 } from '@utils/fhir/referenceCreator';
-import { DiagnosisInputEntry } from '../types/diagnosis';
-import { AllergyInputEntry } from '../types/allergy';
+import { DiagnosisInputEntry } from '@types/diagnosis';
+import { AllergyInputEntry } from '@types/allergy';
 
 interface CreateAllergiesBundleEntriesParams {
   selectedAllergies: AllergyInputEntry[];
