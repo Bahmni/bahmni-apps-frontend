@@ -1,7 +1,8 @@
 import { get } from './api';
 import { ConceptSearch } from '@types/concepts';
 import { getUserPreferredLocale } from './translationService';
-import { CONCEPT_SEARCH_URL } from '@constants/app';
+import { CONCEPT_SEARCH_URL, FHIR_VALUESET_URL } from '@constants/app';
+import { ValueSet } from 'fhir/r4';
 
 /**
  * Search for concepts matching the provided term
@@ -16,4 +17,14 @@ export const searchConcepts = async (
   const locale = getUserPreferredLocale();
   const url = CONCEPT_SEARCH_URL(term, limit, locale);
   return get<ConceptSearch[]>(url);
+};
+
+/**
+ * Fetches a FHIR ValueSet by UUID
+ * @param uuid - The UUID of the ValueSet to fetch
+ * @returns Promise resolving to a FHIR ValueSet
+ */
+export const searchFHIRConcepts = async (uuid: string): Promise<ValueSet> => {
+  const url = FHIR_VALUESET_URL(uuid);
+  return get<ValueSet>(url);
 };

@@ -67,8 +67,34 @@ jest.mock('@schemas/clinicalConfig.schema.json', () => ({
           type: 'object',
         },
       },
+      consultationPad: {
+        type: 'object',
+        properties: {
+          allergyConceptMap: {
+            type: 'object',
+            properties: {
+              medicationAllergenUuid: { type: 'string' },
+              foodAllergenUuid: { type: 'string' },
+              environmentalAllergenUuid: { type: 'string' },
+              allergyReactionUuid: { type: 'string' },
+            },
+            required: [
+              'medicationAllergenUuid',
+              'foodAllergenUuid',
+              'environmentalAllergenUuid',
+              'allergyReactionUuid',
+            ],
+          },
+        },
+        required: ['allergyConceptMap'],
+      },
     },
-    required: ['patientInformation', 'actions', 'dashboards'],
+    required: [
+      'patientInformation',
+      'actions',
+      'dashboards',
+      'consultationPad',
+    ],
   },
 }));
 const mockSchema = {
@@ -89,8 +115,29 @@ const mockSchema = {
         type: 'object',
       },
     },
+    consultationPad: {
+      type: 'object',
+      properties: {
+        allergyConceptMap: {
+          type: 'object',
+          properties: {
+            medicationAllergenUuid: { type: 'string' },
+            foodAllergenUuid: { type: 'string' },
+            environmentalAllergenUuid: { type: 'string' },
+            allergyReactionUuid: { type: 'string' },
+          },
+          required: [
+            'medicationAllergenUuid',
+            'foodAllergenUuid',
+            'environmentalAllergenUuid',
+            'allergyReactionUuid',
+          ],
+        },
+      },
+      required: ['allergyConceptMap'],
+    },
   },
-  required: ['patientInformation', 'actions', 'dashboards'],
+  required: ['patientInformation', 'actions', 'dashboards', 'consultationPad'],
 };
 
 jest.mock('@schemas/dashboardConfig.schema.json', () => ({
@@ -244,6 +291,14 @@ describe('ConfigService', () => {
             url: string;
             requiredPrivileges: string[];
           }>;
+          consultationPad: {
+            allergyConceptMap: {
+              medicationAllergenUuid: string;
+              foodAllergenUuid: string;
+              environmentalAllergenUuid: string;
+              allergyReactionUuid: string;
+            };
+          };
         }
         mockGet.mockResolvedValueOnce(minimalClinicalConfig);
 

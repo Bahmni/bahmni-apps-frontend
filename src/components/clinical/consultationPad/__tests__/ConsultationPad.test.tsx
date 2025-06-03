@@ -48,7 +48,26 @@ jest.mock('@hooks/useCurrentEncounter', () => ({
   useCurrentEncounter: jest.fn(),
 }));
 
-// Mock the Zustand store
+// Mock the Zustand stores
+jest.mock('@stores/allergyStore', () => {
+  const createMockStore = () => {
+    const store = {
+      selectedAllergies: [],
+      validateAllAllergies: jest.fn().mockReturnValue(true),
+      reset: jest.fn(),
+      getState: jest.fn(),
+    };
+    store.getState = jest.fn().mockReturnValue(store);
+    return store;
+  };
+  const mockStoreInstance = createMockStore();
+  return {
+    __esModule: true,
+    default: jest.fn().mockReturnValue(mockStoreInstance),
+    createMockStore,
+  };
+});
+
 jest.mock('@stores/diagnosisStore', () => {
   // Create a factory function to get a fresh store for each test
   const createMockStore = () => {
@@ -117,6 +136,16 @@ jest.mock('@services/consultationBundleService', () => ({
           },
         }));
     }),
+  createAllergiesBundleEntries: jest
+    .fn()
+    .mockImplementation(({ selectedAllergies }) => {
+      if (!selectedAllergies?.length) return [];
+      return selectedAllergies.map(() => ({
+        resource: {
+          resourceType: 'AllergyIntolerance',
+        },
+      }));
+    }),
 }));
 
 jest.mock('@utils/fhir/encounterResourceCreator', () => ({
@@ -150,13 +179,28 @@ jest.mock('@components/common/actionArea/ActionArea', () => {
   };
 });
 
-jest.mock('@components/clinical/basicForm/BasicForm', () => {
+jest.mock('@components/clinical/forms/basic/BasicForm', () => {
   return function MockBasicForm() {
     return <div data-testid="mock-basic-form"></div>;
   };
 });
 
-jest.mock('@components/clinical/diagnosesForm/DiagnosesForm', () => {
+jest.mock('@components/clinical/forms/allergies/AllergiesForm', () => {
+  return function MockAllergiesForm() {
+    // Get access to the mocked store
+    const mockStore = jest.requireMock('@stores/allergyStore').default();
+
+    return (
+      <div data-testid="mock-allergies-form">
+        <div data-testid="allergies-form-selected">
+          {mockStore.selectedAllergies?.length || 0} selected
+        </div>
+      </div>
+    );
+  };
+});
+
+jest.mock('@components/clinical/forms/diagnoses/DiagnosesForm', () => {
   return function MockDiagnosesForm() {
     // Get access to the mocked store
     const mockStore = jest
@@ -1363,12 +1407,6 @@ describe('ConsultationPad', () => {
 
         // Assert - component should handle certainty changes
         expect(mockStore.selectedDiagnoses.length).toBe(1);
-      });
-
-      it('should maintain certainty values when other diagnoses are modified', () => {
-        // This tests that certainty values are isolated per diagnosis
-        // Implementation would require more detailed mocking
-        expect(true).toBe(true);
       });
 
       it('should properly update certainty for multiple diagnoses', () => {
