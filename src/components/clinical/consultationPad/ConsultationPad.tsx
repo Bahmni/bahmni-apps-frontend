@@ -5,15 +5,17 @@ import { useCurrentEncounter } from '@hooks/useCurrentEncounter';
 import { useActivePractitioner } from '@hooks/useActivePractitioner';
 import { useEncounterConcepts } from '@hooks/useEncounterConcepts';
 import { useLocations } from '@hooks/useLocations';
-import { Column, Grid, Loading } from '@carbon/react';
+import { Column, Grid, Loading, MenuItemDivider } from '@carbon/react';
 import * as styles from './styles/ConsultationPad.module.scss';
-import BasicForm from '@components/clinical/basicForm/BasicForm';
-import DiagnosesForm from '@components/clinical/diagnosesForm/DiagnosesForm';
+import BasicForm from '@components/clinical/forms/basic/BasicForm';
+import DiagnosesForm from '@components/clinical/forms/diagnoses/DiagnosesForm';
+import AllergiesForm from '@components/clinical/forms/allergies/AllergiesForm';
 import { Concept } from '@types/encounterConcepts';
 import { ConsultationBundle } from '@types/consultationBundle';
 import {
   postConsultationBundle,
   createDiagnosisBundleEntries,
+  createAllergiesBundleEntries,
 } from '@services/consultationBundleService';
 import useNotification from '@hooks/useNotification';
 import { formatDate } from '@utils/date';
@@ -24,6 +26,7 @@ import {
 } from '@utils/fhir/consultationBundleCreator';
 import { ERROR_TITLES } from '@constants/errors';
 import { useDiagnosisStore } from '@stores/diagnosisStore';
+import useAllergyStore from '@stores/allergyStore';
 
 interface ConsultationPadProps {
   patientUUID: string;
@@ -40,8 +43,17 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   const { addNotification } = useNotification();
 
   // Use the diagnosis store
-  const { selectedDiagnoses, validateAllDiagnoses, reset } =
-    useDiagnosisStore();
+  const {
+    selectedDiagnoses,
+    validateAllDiagnoses,
+    reset: resetDiagnoses,
+  } = useDiagnosisStore();
+  // Use the allergy store
+  const {
+    selectedAllergies,
+    validateAllAllergies,
+    reset: resetAllergies,
+  } = useAllergyStore();
 
   const {
     locations,
@@ -112,9 +124,17 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       practitionerUUID: user!.uuid,
     });
 
+    const allergyEntries = createAllergiesBundleEntries({
+      selectedAllergies,
+      encounterSubject: encounterResource.subject!,
+      encounterReference: enconterResourceURL,
+      practitionerUUID: user!.uuid,
+    });
+
     const consultationBundle = createConsultationBundle([
       encounterBundleEntry,
       ...diagnosisEntries,
+      ...allergyEntries,
     ]);
 
     return postConsultationBundle<ConsultationBundle>(consultationBundle);
@@ -123,7 +143,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   const handleOnPrimaryButtonClick = async () => {
     if (!isSubmitting && canSubmitConsultation) {
       const isDiagnosesValid = validateAllDiagnoses();
-      if (!isDiagnosesValid) {
+      const isAllergiesValid = validateAllAllergies();
+      if (!isDiagnosesValid || !isAllergiesValid) {
         return;
       }
 
@@ -131,7 +152,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         setIsSubmitting(true);
         await submitConsultation();
         setIsSubmitting(false);
-        reset();
+        resetDiagnoses();
+        resetAllergies();
         addNotification({
           title: t('CONSULTATION_SUBMITTED_SUCCESS_TITLE'),
           message: t('CONSULTATION_SUBMITTED_SUCCESS_MESSAGE'),
@@ -155,6 +177,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   };
 
   const handleOnSecondaryButtonClick = () => {
+    resetDiagnoses();
+    resetAllergies();
     onClose();
   };
 
@@ -240,6 +264,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
             defaultDate={formattedDate.formattedResult}
           />
           <DiagnosesForm />
+          <MenuItemDivider />
+          <AllergiesForm />
+          <MenuItemDivider />
         </>
       }
     />
