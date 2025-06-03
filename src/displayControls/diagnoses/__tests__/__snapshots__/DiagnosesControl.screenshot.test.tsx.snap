@@ -47,7 +47,7 @@ exports[`DiagnosesControl Visual Regression Tests Data States should render empt
             id="accordion-item-«r6»"
           >
             <div>
-              No diagnoses added for this patient
+              No diagnoses
             </div>
           </div>
         </div>

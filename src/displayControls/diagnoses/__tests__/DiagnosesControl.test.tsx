@@ -57,7 +57,7 @@ describe('DiagnosesControl', () => {
     });
 
     renderComponent();
-    expect(screen.getByText('No diagnoses added for this patient')).toBeInTheDocument();
+    expect(screen.getByText('No diagnoses')).toBeInTheDocument();
   });
 
   it('renders diagnoses grouped by date', () => {

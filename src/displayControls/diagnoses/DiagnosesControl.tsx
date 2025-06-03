@@ -69,8 +69,8 @@ const DiagnosesControl: React.FC = () => {
             <>
               {/* Table Header */}
               <div className={styles.tableHeader}>
-                <div className={styles.diagnosesColumn}>Diagnoses</div>
-                <div className={styles.recordedByColumn}>Recorded by</div>
+                <div className={styles.diagnosesColumn}>{t('DIAGNOSES_COLUMN_HEADER')}</div>
+                <div className={styles.recordedByColumn}>{t('DIAGNOSES_RECORDED_BY_COLUMN')}</div>
               </div>
               
               {/* Date Groups */}

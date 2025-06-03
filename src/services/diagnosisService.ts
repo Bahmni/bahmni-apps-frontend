@@ -10,6 +10,7 @@ import {
 import { getFormattedError } from '@utils/common';
 import { formatDate } from '@utils/date';
 import notificationService from './notificationService';
+import i18next from 'i18next';
 
 /**
  * Maps a FHIR verification status to DiagnosisCertainty enum
@@ -70,7 +71,17 @@ export function formatDiagnoses(diagnoses: FhirDiagnosis[]): FormattedDiagnosis[
       const certainty = mapDiagnosisCertainty(diagnosis);
 
       const recordedDate = diagnosis.recordedDate;
-      const dateFormatResult = formatDate(recordedDate,'MMMM d, yyyy');
+      
+      // Get current locale for date formatting
+      const currentLocale = i18next.language || 'en';
+      
+      // Use different date formats based on locale
+      let dateFormat = 'MMMM d, yyyy'; // Default English format
+      if (currentLocale === 'es') {
+        dateFormat = 'd \'de\' MMMM \'de\' yyyy'; // Spanish format
+      }
+      
+      const dateFormatResult = formatDate(recordedDate, dateFormat);
       const formattedDate =
         dateFormatResult.formattedResult || recordedDate.split('T')[0];
 

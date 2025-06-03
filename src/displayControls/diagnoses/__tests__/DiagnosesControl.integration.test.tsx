@@ -251,7 +251,7 @@ describe('DiagnosesControl Integration', () => {
 
       // Wait for empty state
       await waitFor(() => {
-        expect(screen.getByText('No diagnoses added for this patient')).toBeInTheDocument();
+        expect(screen.getByText('No diagnoses')).toBeInTheDocument();
       });
     });
 
@@ -284,7 +284,7 @@ describe('DiagnosesControl Integration', () => {
 
       // Wait for empty state
       await waitFor(() => {
-        expect(screen.getByText('No diagnoses added for this patient')).toBeInTheDocument();
+        expect(screen.getByText('No diagnoses')).toBeInTheDocument();
       });
 
       // Verify service calls
