@@ -1784,5 +1784,24 @@ describe('ConsultationPad', () => {
       // Assert
       expect(postConsultationBundle).not.toHaveBeenCalled();
     });
+
+    it('should not post consultation bundle when Diagnoses form has an error', () => {
+      // Arrange
+      // Reset the mock stores
+      const diagnosisStore = jest
+        .requireMock('@stores/diagnosisStore')
+        .useDiagnosisStore();
+      diagnosisStore.validateAllDiagnoses.mockReturnValue(false);
+
+      render(
+        <ConsultationPad patientUUID={mockPatientUUID} onClose={mockOnClose} />,
+      );
+
+      // Act
+      fireEvent.click(screen.getByTestId('primary-button'));
+
+      // Assert
+      expect(postConsultationBundle).not.toHaveBeenCalled();
+    });
   });
 });

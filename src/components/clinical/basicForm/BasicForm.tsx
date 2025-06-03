@@ -116,7 +116,6 @@ const BasicForm: React.FC<BasicFormProps> = ({ activeVisit }) => {
             items={locations}
             itemToString={(item) => (item ? item.display : '')}
             initialSelectedItem={selectedLocation}
-            onChange={({ selectedItem }) => setSelectedLocation(selectedItem)}
             disabled
             size="md"
             type="default"
@@ -130,9 +129,6 @@ const BasicForm: React.FC<BasicFormProps> = ({ activeVisit }) => {
             items={encounterConcepts?.encounterTypes || []}
             itemToString={(item) => (item ? item.name : '')}
             initialSelectedItem={selectedEncounterType}
-            onChange={({ selectedItem }) =>
-              setSelectedEncounterType(selectedItem)
-            }
             disabled
             size="md"
             type="default"
@@ -146,7 +142,6 @@ const BasicForm: React.FC<BasicFormProps> = ({ activeVisit }) => {
             items={encounterConcepts?.visitTypes || []}
             itemToString={(item) => (item ? item.name : '')}
             initialSelectedItem={selectedVisitType}
-            onChange={({ selectedItem }) => setSelectedVisitType(selectedItem)}
             disabled
             size="md"
             type="default"
@@ -163,13 +158,7 @@ const BasicForm: React.FC<BasicFormProps> = ({ activeVisit }) => {
                 ? item.person.preferredName.display
                 : ''
             }
-            initialSelectedItem={practitioner} // Show the selected participant
-            onChange={({ selectedItem }) => {
-              // For now, single select behavior
-              if (selectedItem) {
-                setEncounterParticipants([selectedItem]);
-              }
-            }}
+            initialSelectedItem={practitioner}
             disabled
             size="md"
             type="default"

@@ -1,3 +1,4 @@
+import { act, renderHook } from '@testing-library/react';
 import { useDiagnosisStore } from '../diagnosisStore';
 import { CERTAINITY_CONCEPTS } from '@/constants/concepts';
 
@@ -193,6 +194,18 @@ describe('diagnosisStore', () => {
       store.getState().reset();
 
       expect(store.getState().selectedDiagnoses).toHaveLength(0);
+    });
+  });
+  describe('getState', () => {
+    it('should return the current state', () => {
+      const { result } = renderHook(() => useDiagnosisStore());
+
+      act(() => {
+        result.current.addDiagnosis(mockDiagnosis);
+      });
+
+      const state = result.current.getState();
+      expect(state.selectedDiagnoses).toHaveLength(1);
     });
   });
 });
