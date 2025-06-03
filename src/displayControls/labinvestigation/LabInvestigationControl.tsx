@@ -16,17 +16,13 @@ const LabInvestigationControl: React.FC = () => {
     return groupLabTestsByDate(labTests);
   }, [labTests]);
 
-  if (isError) {
-    return <div>{t('LAB_TEST_ERROR_LOADING')}</div>;
-  }
-
-  if (!isLoading && labTests.length === 0) {
-    return <div>{t('LAB_TEST_UNAVAILABLE')}</div>;
-  }
-
   return (
     <section className={styles.labInvestigationWrapper}>
       <Accordion align="start" size="lg">
+        {isError && <div>{t('LAB_TEST_ERROR_LOADING')}</div>}
+        {!isLoading && labTests.length === 0 && (
+          <div>{t('LAB_TEST_UNAVAILABLE')}</div>
+        )}
         {isLoading && labTests.length === 0 && (
           <>
             <SkeletonText lineCount={3} width="100%" />
