@@ -7,6 +7,7 @@ import SelectedAllergyItem from '../SelectedAllergyItem';
 import { Coding } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { ALLERGY_SEVERITY_CONCEPTS } from '@constants/concepts';
+import { AllergenType } from '@types/concepts';
 
 expect.extend(toHaveNoViolations);
 
@@ -33,7 +34,7 @@ const mockReactionConcepts: Coding[] = [
 const mockAllergy = {
   id: 'test-allergy-1',
   display: 'Peanut Allergy',
-  type: 'food',
+  type: 'food' as AllergenType,
   selectedSeverity: ALLERGY_SEVERITY_CONCEPTS[0],
   selectedReactions: [mockReactionConcepts[0]],
   errors: {},
@@ -67,14 +68,14 @@ describe('SelectedAllergyItem', () => {
       expect(screen.getByText('Peanut Allergy [Food]')).toBeInTheDocument();
     });
 
-    test('handles different allergy types', () => {
-      const allergyTypes = [
-        { type: 'food', expected: 'Food' },
-        { type: 'medication', expected: 'Medication' },
-        { type: 'environment', expected: 'Environment' },
+    test('handles different allergy types with i18n translations', () => {
+      const allergyTypes: { type: AllergenType; i18nKey: string }[] = [
+        { type: 'food', i18nKey: 'ALLERGY_TYPE_FOOD' },
+        { type: 'medication', i18nKey: 'ALLERGY_TYPE_MEDICATION' },
+        { type: 'environment', i18nKey: 'ALLERGY_TYPE_ENVIRONMENT' },
       ];
 
-      allergyTypes.forEach(({ type, expected }) => {
+      allergyTypes.forEach(({ type, i18nKey }) => {
         const allergyWithType = {
           ...mockAllergy,
           type,
@@ -83,21 +84,26 @@ describe('SelectedAllergyItem', () => {
           <SelectedAllergyItem {...defaultProps} allergy={allergyWithType} />,
         );
         expect(
-          screen.getByText(`Peanut Allergy [${expected}]`),
+          screen.getByText(`Peanut Allergy [${i18n.t(i18nKey)}]`),
         ).toBeInTheDocument();
         rerender(<></>);
       });
     });
 
-    test('handles missing type value', () => {
-      const allergyWithoutType = {
+    test('handles invalid type value', () => {
+      const allergyWithInvalidType = {
         ...mockAllergy,
-        type: '',
+        type: 'invalid-type' as AllergenType,
       };
       renderWithI18n(
-        <SelectedAllergyItem {...defaultProps} allergy={allergyWithoutType} />,
+        <SelectedAllergyItem
+          {...defaultProps}
+          allergy={allergyWithInvalidType}
+        />,
       );
-      expect(screen.getByText('Peanut Allergy []')).toBeInTheDocument();
+      expect(
+        screen.getByText('Peanut Allergy [invalid-type]'),
+      ).toBeInTheDocument();
     });
 
     test('renders severity dropdown with selected value', () => {

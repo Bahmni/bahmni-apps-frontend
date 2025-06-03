@@ -175,6 +175,7 @@ exports[`AllergiesForm Snapshot Tests matches snapshot with selected allergies 1
               >
                 Peanut Allergy
                  [
+                undefined
                 ]
               </div>
               <div

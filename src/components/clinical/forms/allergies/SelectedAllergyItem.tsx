@@ -2,10 +2,10 @@ import React from 'react';
 import { Column, Grid, Dropdown, FilterableMultiSelect } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import * as styles from './styles/SelectedAllergyItem.module.scss';
-import { AllergyInputEntry } from '@types/allergy';
 import { Coding } from 'fhir/r4';
-import { capitalize } from '@utils/common';
 import { ALLERGY_SEVERITY_CONCEPTS } from '@constants/concepts';
+import { AllergyInputEntry } from '@types/allergy';
+import { getCategoryDisplayName } from '@utils/allergy';
 
 /**
  * Properties for a selected allergy item
@@ -47,7 +47,7 @@ const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
           xlg={8}
           className={styles.selectedAllergyTitle}
         >
-          {display} [{capitalize(type)}]
+          {display} [{t(getCategoryDisplayName(type))}]
         </Column>
         <Column
           sm={4}

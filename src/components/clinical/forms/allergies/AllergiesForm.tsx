@@ -8,7 +8,7 @@ import { AllergenConcept } from '@types/concepts';
 import SelectedAllergyItem from './SelectedAllergyItem';
 import useAllergenSearch from '@hooks/useAllergenSearch';
 import { useAllergyStore } from '@stores/allergyStore';
-import { capitalize } from '@utils/common';
+import { getCategoryDisplayName } from '@utils/allergy';
 
 /**
  * AllergiesForm component
@@ -122,7 +122,7 @@ const AllergiesForm: React.FC = React.memo(() => {
         items={filteredSearchResults}
         itemToString={(item) =>
           item?.type
-            ? `${item.display} [${capitalize(item.type)}]`
+            ? `${item.display} [${t(getCategoryDisplayName(item.type))}]`
             : item
               ? `${item.display}`
               : ''
