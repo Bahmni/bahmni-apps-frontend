@@ -6,7 +6,7 @@ import SelectedItem from '@components/common/selectedItem/SelectedItem';
 import BoxWHeader from '@components/common/boxWHeader/BoxWHeader';
 import { ConceptSearch } from '@types/concepts';
 import SelectedDiagnosisItem from './SelectedDiagnosisItem';
-import { useConceptSearch } from '@/hooks/useConceptSearch';
+import { useConceptSearch } from '@hooks/useConceptSearch';
 import { useDiagnosisStore } from '@stores/diagnosisStore';
 
 /**
@@ -47,6 +47,7 @@ const DiagnosesForm: React.FC = React.memo(() => {
   };
 
   const getFilteredSearchResults = () => {
+    if (searchDiagnosesTerm.length === 0) return [];
     if (isSearchLoading) {
       return [
         {
@@ -57,15 +58,12 @@ const DiagnosesForm: React.FC = React.memo(() => {
         },
       ];
     }
-    const isSearchEmpty =
-      searchResults.length === 0 &&
-      searchDiagnosesTerm.length > 2 &&
-      !searchError;
+    const isSearchEmpty = searchResults.length === 0 && !searchError;
 
     if (isSearchEmpty) {
       return [
         {
-          conceptName: t('NO_MATCHING_CONCEPTS_FOUND'),
+          conceptName: t('NO_MATCHING_DIAGNOSIS_FOUND'),
           conceptUuid: '',
           matchedName: '',
           disabled: true,

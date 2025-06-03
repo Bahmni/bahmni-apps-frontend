@@ -55,6 +55,24 @@ exports[`ConsultationPad Rendering Snapshots should match snapshot for error sta
            selected
         </div>
       </div>
+      <li
+        class="cds--menu-item-divider"
+        role="separator"
+      />
+      <div
+        data-testid="mock-allergies-form"
+      >
+        <div
+          data-testid="allergies-form-selected"
+        >
+          0
+           selected
+        </div>
+      </div>
+      <li
+        class="cds--menu-item-divider"
+        role="separator"
+      />
     </div>
     <button
       data-testid="primary-button"
@@ -181,6 +199,24 @@ exports[`ConsultationPad Rendering Snapshots should match snapshot for normal st
            selected
         </div>
       </div>
+      <li
+        class="cds--menu-item-divider"
+        role="separator"
+      />
+      <div
+        data-testid="mock-allergies-form"
+      >
+        <div
+          data-testid="allergies-form-selected"
+        >
+          0
+           selected
+        </div>
+      </div>
+      <li
+        class="cds--menu-item-divider"
+        role="separator"
+      />
     </div>
     <button
       data-testid="primary-button"

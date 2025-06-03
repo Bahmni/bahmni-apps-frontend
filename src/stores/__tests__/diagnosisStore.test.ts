@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
 import { useDiagnosisStore } from '../diagnosisStore';
-import { CERTAINITY_CONCEPTS } from '@/constants/concepts';
+import { CERTAINITY_CONCEPTS } from '@constants/concepts';
 
 // Mock data
 const mockDiagnosis = {

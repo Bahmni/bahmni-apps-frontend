@@ -3,14 +3,16 @@ import { useTranslation } from 'react-i18next';
 import ActionArea from '@components/common/actionArea/ActionArea';
 import { useActiveVisit } from '@/hooks/useActiveVisit';
 import { useActivePractitioner } from '@hooks/useActivePractitioner';
-import { Column, Grid, Loading } from '@carbon/react';
+import { Column, Grid, Loading, MenuItemDivider } from '@carbon/react';
 import * as styles from './styles/ConsultationPad.module.scss';
-import BasicForm from '@components/clinical/basicForm/BasicForm';
-import DiagnosesForm from '@components/clinical/diagnosesForm/DiagnosesForm';
+import BasicForm from '@components/clinical/forms/basic/BasicForm';
+import DiagnosesForm from '@components/clinical/forms/diagnoses/DiagnosesForm';
+import AllergiesForm from '@components/clinical/forms/allergies/AllergiesForm';
 import { ConsultationBundle } from '@types/consultationBundle';
 import {
   postConsultationBundle,
   createDiagnosisBundleEntries,
+  createAllergiesBundleEntries,
 } from '@services/consultationBundleService';
 import useNotification from '@hooks/useNotification';
 import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
@@ -20,6 +22,7 @@ import {
 } from '@utils/fhir/consultationBundleCreator';
 import { ERROR_TITLES } from '@constants/errors';
 import { useDiagnosisStore } from '@stores/diagnosisStore';
+import useAllergyStore from '@stores/allergyStore';
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 
 interface ConsultationPadProps {
@@ -40,8 +43,14 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   const {
     selectedDiagnoses,
     validateAllDiagnoses,
-    reset: resetDiagnosis,
+    reset: resetDiagnoses,
   } = useDiagnosisStore();
+  // Use the allergy store
+  const {
+    selectedAllergies,
+    validateAllAllergies,
+    reset: resetAllergies,
+  } = useAllergyStore();
 
   const {
     selectedLocation,
@@ -69,9 +78,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   useEffect(() => {
     return () => {
       resetEncounterDetails();
-      resetDiagnosis();
+      resetDiagnoses();
     };
-  }, [resetEncounterDetails, resetDiagnosis]);
+  }, [resetEncounterDetails, resetDiagnoses]);
 
   // Data validation check for consultation submission
   const canSubmitConsultation = !!(
@@ -107,9 +116,17 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       practitionerUUID: user!.uuid,
     });
 
+    const allergyEntries = createAllergiesBundleEntries({
+      selectedAllergies,
+      encounterSubject: encounterResource.subject!,
+      encounterReference: enconterResourceURL,
+      practitionerUUID: user!.uuid,
+    });
+
     const consultationBundle = createConsultationBundle([
       encounterBundleEntry,
       ...diagnosisEntries,
+      ...allergyEntries,
     ]);
 
     return postConsultationBundle<ConsultationBundle>(consultationBundle);
@@ -118,7 +135,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   const handleOnPrimaryButtonClick = async () => {
     if (!isSubmitting && canSubmitConsultation) {
       const isDiagnosesValid = validateAllDiagnoses();
-      if (!isDiagnosesValid) {
+      const isAllergiesValid = validateAllAllergies();
+      if (!isDiagnosesValid || !isAllergiesValid) {
         return;
       }
 
@@ -126,7 +144,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         setIsSubmitting(true);
         await submitConsultation();
         setIsSubmitting(false);
-        resetDiagnosis();
+        resetDiagnoses();
+        resetAllergies();
         resetEncounterDetails();
         addNotification({
           title: t('CONSULTATION_SUBMITTED_SUCCESS_TITLE'),
@@ -151,6 +170,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   };
 
   const handleOnSecondaryButtonClick = () => {
+    resetDiagnoses();
+    resetAllergies();
     onClose();
   };
 
@@ -212,6 +233,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         <>
           <BasicForm activeVisit={activeVisit} />
           {isEncounterDetailsFormReady && <DiagnosesForm />}
+          {isEncounterDetailsFormReady && <MenuItemDivider />}
+          {isEncounterDetailsFormReady && <AllergiesForm />}
+          {isEncounterDetailsFormReady && <MenuItemDivider />}
         </>
       }
     />

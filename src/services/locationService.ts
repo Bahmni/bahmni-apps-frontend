@@ -1,5 +1,5 @@
-import { COMMON_ERROR_MESSAGES } from '@/constants/errors';
-import { OpenMRSLocation } from '@/types/location';
+import { COMMON_ERROR_MESSAGES } from '@constants/errors';
+import { OpenMRSLocation } from '@types/location';
 import { getCookieByName } from '@utils/common';
 import { BAHMNI_USER_LOCATION_COOKIE_NAME } from '@constants/app';
 

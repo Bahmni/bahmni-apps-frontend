@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useNotification } from './useNotification';
 import { getFormattedError } from '@utils/common';
-import { getLocations } from '@/services/locationService';
-import { OpenMRSLocation } from '@/types/location';
+import { getLocations } from '@services/locationService';
+import { OpenMRSLocation } from '@types/location';
 
 interface UseLocationsResult {
   locations: OpenMRSLocation[];
