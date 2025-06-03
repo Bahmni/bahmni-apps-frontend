@@ -25,20 +25,29 @@ padding-right: 1rem;
   :global(.cds--accordion__content) {
     background-color: #f4f4f4;
     padding-inline: 0px;
+    margin-inline-start: 0px !important;
   }
-
-
   :global(.cds--accordion__wrapper) {
-   padding-inline: 0px !important;
-   background-color: #f4f4f4;
+    padding-inline: 0px !important;
+    background-color: #f4f4f4;
+    padding-block: 0px !important;
+    padding-block-end: 0px !important;
   }
 
   :global(.cds--accordion__item) {
     padding-inline: 0;
     background-color: white;
     border: none;
+    border-block-end: 1px solid var(--cds-border-subtle);
   }
-} 
+
+  :global(.cds--data-table td, .cds--data-table tbody th) {
+    border-block-end: 1px solid var(--cds-border-subtle-01, #ffffff);
+    border-block-start: 0px;
+    color: var(--cds-text-secondary, #f8f8f8);
+    background-color: #ffffff;
+  }
+}
 
 .diagnosisRow {
   display: flex;
@@ -47,13 +56,7 @@ padding-right: 1rem;
 
 .diagnosisCell {
   flex: 1;
-  padding-left: 1rem;
-}
-
-.diagnosisMainLine {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+ padding-left: 1rem;
 }
 
 .diagnosisName {
@@ -68,7 +71,6 @@ padding-right: 1rem;
 }
 
 .noData {
-
   text-align: center;
   color: #525252;
 }
