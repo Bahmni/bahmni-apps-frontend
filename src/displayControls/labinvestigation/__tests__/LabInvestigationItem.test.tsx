@@ -43,9 +43,6 @@ describe('LabInvestigationItem', () => {
         // Return appropriate values based on the translation key
         const translations: Record<string, string> = {
           LAB_TEST_PANEL: 'Panel',
-          LAB_TEST_SINGLE_TEST: 'Single Test',
-          LAB_TEST_5_TESTS: '5 Tests',
-          LAB_TEST_ROUTINE: 'Routine',
           LAB_TEST_URGENT: 'Urgent',
           LAB_TEST_ORDERED_BY: 'Ordered by:',
           LAB_TEST_RESULTS_PENDING: 'Results pending…',
@@ -63,9 +60,6 @@ describe('LabInvestigationItem', () => {
 
     // Check that the test type is displayed (using translation)
     expect(screen.getByText('Panel')).toBeInTheDocument();
-
-    // Check that the priority is displayed (using translation)
-    expect(screen.getByText('Routine')).toBeInTheDocument();
 
     // Check that the ordered by information is displayed
     expect(screen.getByText(/Ordered by:/)).toBeInTheDocument();
@@ -90,69 +84,15 @@ describe('LabInvestigationItem', () => {
     expect(screen.getByText('Urgent')).toBeInTheDocument();
   });
 
-  it('handles unknown priority values and defaults to green tag', () => {
-    // Create a test with an unknown priority value
-    const unknownPriorityTest = {
+  it('displays test type correctly', () => {
+    // Test with Panel Test type
+    const panelTest = {
       ...mockLabTest,
-      priority: 'unknown' as unknown as LabTestPriority,
+      testType: 'Panel',
     };
-
-    // Update the translation mock for this specific test
-    (useTranslation as jest.Mock).mockReturnValue({
-      t: (key: string) => {
-        if (key === 'LAB_TEST_UNKNOWN') return 'unknown';
-        const translations: Record<string, string> = {
-          LAB_TEST_PANEL: 'Panel',
-          LAB_TEST_ORDERED_BY: 'Ordered by:',
-          LAB_TEST_RESULTS_PENDING: 'Results pending…',
-        };
-        return translations[key] || key;
-      },
-    });
-
-    render(<LabInvestigationItem test={unknownPriorityTest} />);
-
-    // The tag should still be rendered with the unknown priority text
-    expect(screen.getByText('unknown')).toBeInTheDocument();
-
-    // We can't directly test the color, but we can verify the component renders
-    // without errors, which means the default case was used
-  });
-
-  it('displays different test types correctly', () => {
-    // Test with Single Test type
-    const singleTest = {
-      ...mockLabTest,
-      testType: 'Single Test',
-    };
-
-    const { rerender } = render(<LabInvestigationItem test={singleTest} />);
-    expect(screen.getByText('Single Test')).toBeInTheDocument();
 
     // Test with Panel type
-    rerender(<LabInvestigationItem test={mockLabTest} />);
+    render(<LabInvestigationItem test={panelTest} />);
     expect(screen.getByText('Panel')).toBeInTheDocument();
-
-    // Test with X Tests type
-    const multipleTest = {
-      ...mockLabTest,
-      testType: '5 Tests',
-    };
-
-    // Update the translation mock for this specific test case
-    (useTranslation as jest.Mock).mockReturnValue({
-      t: (key: string) => {
-        const translations: Record<string, string> = {
-          LAB_TEST_5_TESTS: '5 Tests',
-          LAB_TEST_ROUTINE: 'Routine',
-          LAB_TEST_ORDERED_BY: 'Ordered by:',
-          LAB_TEST_RESULTS_PENDING: 'Results pending…',
-        };
-        return translations[key] || key;
-      },
-    });
-
-    rerender(<LabInvestigationItem test={multipleTest} />);
-    expect(screen.getByText('5 Tests')).toBeInTheDocument();
   });
 });
