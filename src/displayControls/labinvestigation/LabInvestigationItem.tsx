@@ -14,18 +14,6 @@ const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  // Determine tag color based on priority
-  const getTagType = (priority: LabTestPriority): 'gray' | 'green' => {
-    switch (priority) {
-      case LabTestPriority.stat:
-        return 'gray' as const;
-      case LabTestPriority.routine:
-        return 'green' as const;
-      default:
-        return 'green' as const;
-    }
-  };
-
   return (
     <div className={styles.labBox}>
       <div className={styles.labHeader}>
@@ -36,7 +24,12 @@ const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({
             {t(`LAB_TEST_${test.testType.replace(/\s+/g, '_').toUpperCase()}`)}
           </span>
         </div>
-        <Tag type={getTagType(test.priority)}>
+        <Tag
+          className={
+            test.priority === LabTestPriority.stat ? styles['yellow-tag'] : ''
+          }
+          data-testid={`lab-test-priority-${test.priority}`}
+        >
           {t(`LAB_TEST_${test.priority.toUpperCase()}`)}
         </Tag>
         <div className={styles.orderedBy}>
