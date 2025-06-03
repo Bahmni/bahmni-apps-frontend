@@ -2,17 +2,12 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import BasicForm from '../BasicForm';
-import { useTranslation } from 'react-i18next';
 import { useLocations } from '@hooks/useLocations';
 import { useEncounterConcepts } from '@hooks/useEncounterConcepts';
 import { useActivePractitioner } from '@hooks/useActivePractitioner';
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 import { FhirEncounter } from '@types/encounter';
-
-// Mock the hooks
-jest.mock('react-i18next', () => ({
-  useTranslation: jest.fn(),
-}));
+import i18n from '@/setupTests.i18n';
 
 jest.mock('@hooks/useLocations');
 jest.mock('@hooks/useEncounterConcepts');
@@ -99,11 +94,8 @@ jest.mock('@carbon/react', () => {
 expect.extend(toHaveNoViolations);
 
 describe('BasicForm', () => {
+  i18n.changeLanguage('en');
   // Common setup
-  const mockTranslation = {
-    t: jest.fn((key) => key),
-  };
-
   const mockLocations = [
     {
       uuid: '123',
@@ -212,7 +204,6 @@ describe('BasicForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Setup default mock implementations
-    (useTranslation as jest.Mock).mockReturnValue(mockTranslation);
     (useLocations as jest.Mock).mockReturnValue({
       locations: mockLocations,
       loading: false,
@@ -256,11 +247,11 @@ describe('BasicForm', () => {
       renderBasicForm();
 
       // Assert
-      expect(screen.getByText('LOCATION')).toBeInTheDocument();
-      expect(screen.getByText('ENCOUNTER_TYPE')).toBeInTheDocument();
-      expect(screen.getByText('VISIT_TYPE')).toBeInTheDocument();
-      expect(screen.getByText('ENCOUNTER_DATE')).toBeInTheDocument();
-      expect(screen.getByText('PARTICIPANTS')).toBeInTheDocument();
+      expect(screen.getByText('Location')).toBeInTheDocument();
+      expect(screen.getByText('Encounter Type')).toBeInTheDocument();
+      expect(screen.getByText('Visit Type')).toBeInTheDocument();
+      expect(screen.getByText('Encounter Date')).toBeInTheDocument();
+      expect(screen.getByText('Participant(s)')).toBeInTheDocument();
     });
 
     it('should render all form fields as disabled', () => {
@@ -269,17 +260,17 @@ describe('BasicForm', () => {
 
       // Assert
       const locationDropdown = screen.getByRole('combobox', {
-        name: /LOCATION/i,
+        name: /Location/i,
       });
       const encounterTypeDropdown = screen.getByRole('combobox', {
-        name: /ENCOUNTER_TYPE/i,
+        name: /Encounter Type/i,
       });
       const visitTypeDropdown = screen.getByRole('combobox', {
-        name: /VISIT_TYPE/i,
+        name: /Visit Type/i,
       });
-      const datePickerInput = screen.getByLabelText(/ENCOUNTER_DATE/i);
+      const datePickerInput = screen.getByLabelText(/Encounter Date/i);
       const practitionerDropdown = screen.getByRole('combobox', {
-        name: /PARTICIPANTS/i,
+        name: 'Participant(s)',
       });
 
       expect(locationDropdown).toBeDisabled();
@@ -466,15 +457,15 @@ describe('BasicForm', () => {
 
       // Assert
       expect(
-        screen.getByRole('combobox', { name: /LOCATION/i }),
+        screen.getByRole('combobox', { name: /Location/i }),
       ).toHaveAttribute('disabled');
       expect(
-        screen.getByRole('combobox', { name: /ENCOUNTER_TYPE/i }),
+        screen.getByRole('combobox', { name: /Encounter Type/i }),
       ).toHaveAttribute('disabled');
       expect(
-        screen.getByRole('combobox', { name: /VISIT_TYPE/i }),
+        screen.getByRole('combobox', { name: /Visit Type/i }),
       ).toHaveAttribute('disabled');
-      expect(screen.getByLabelText(/ENCOUNTER_DATE/i)).toHaveAttribute(
+      expect(screen.getByLabelText(/Encounter Date/i)).toHaveAttribute(
         'disabled',
       );
     });
@@ -493,7 +484,7 @@ describe('BasicForm', () => {
       renderBasicForm();
 
       // Assert
-      expect(screen.getByText('LOCATION')).toBeInTheDocument();
+      expect(screen.getByText('Location')).toBeInTheDocument();
       expect(mockStoreState.setSelectedLocation).not.toHaveBeenCalled();
     });
 
@@ -509,7 +500,7 @@ describe('BasicForm', () => {
       renderBasicForm();
 
       // Assert
-      expect(screen.getByText('ENCOUNTER_TYPE')).toBeInTheDocument();
+      expect(screen.getByText('Encounter Type')).toBeInTheDocument();
       expect(mockStoreState.setSelectedEncounterType).not.toHaveBeenCalled();
     });
 
@@ -558,7 +549,7 @@ describe('BasicForm', () => {
       renderBasicForm();
 
       // Assert
-      expect(screen.getByText('PARTICIPANTS')).toBeInTheDocument();
+      expect(screen.getByText('Participant(s)')).toBeInTheDocument();
       expect(mockStoreState.setEncounterParticipants).not.toHaveBeenCalled();
     });
   });
@@ -576,7 +567,7 @@ describe('BasicForm', () => {
       renderBasicForm();
 
       // Assert
-      expect(screen.getByText('LOCATION')).toBeInTheDocument();
+      expect(screen.getByText('Location')).toBeInTheDocument();
     });
 
     it('should handle encounter concepts fetch error gracefully', () => {
@@ -591,7 +582,7 @@ describe('BasicForm', () => {
       renderBasicForm();
 
       // Assert
-      expect(screen.getByText('ENCOUNTER_TYPE')).toBeInTheDocument();
+      expect(screen.getByText('Encounter Type')).toBeInTheDocument();
     });
 
     it('should handle practitioner fetch error gracefully', () => {
@@ -607,7 +598,7 @@ describe('BasicForm', () => {
       renderBasicForm();
 
       // Assert
-      expect(screen.getByText('PARTICIPANTS')).toBeInTheDocument();
+      expect(screen.getByText('Participant(s)')).toBeInTheDocument();
     });
   });
 

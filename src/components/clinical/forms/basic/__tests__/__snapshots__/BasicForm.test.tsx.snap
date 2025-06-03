@@ -13,10 +13,10 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
         data-testid="location-dropdown"
       >
         <div>
-          LOCATION
+          Location
         </div>
         <select
-          aria-label="LOCATION"
+          aria-label="Location"
           disabled=""
         >
           <option
@@ -35,10 +35,10 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
         data-testid="encounter-type-dropdown"
       >
         <div>
-          ENCOUNTER_TYPE
+          Encounter Type
         </div>
         <select
-          aria-label="ENCOUNTER_TYPE"
+          aria-label="Encounter Type"
           disabled=""
         >
           <option
@@ -62,10 +62,10 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
         data-testid="visit-type-dropdown"
       >
         <div>
-          VISIT_TYPE
+          Visit Type
         </div>
         <select
-          aria-label="VISIT_TYPE"
+          aria-label="Visit Type"
           disabled=""
         >
           <option
@@ -88,10 +88,10 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
         data-testid="practitioner-dropdown"
       >
         <div>
-          PARTICIPANTS
+          Participant(s)
         </div>
         <select
-          aria-label="PARTICIPANTS"
+          aria-label="Participant(s)"
           disabled=""
         >
           <option
@@ -119,7 +119,7 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
               dir="auto"
               for="encounter-date-picker-input"
             >
-              ENCOUNTER_DATE
+              Encounter Date
             </label>
             <div
               class="cds--date-picker-input__wrapper"
@@ -131,7 +131,7 @@ exports[`BasicForm Rendering should match snapshot 1`] = `
                   id="encounter-date-picker-input"
                   pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
                   placeholder="16/05/2025"
-                  title="ENCOUNTER_DATE"
+                  title="Encounter Date"
                   type="text"
                   value="16/05/2025"
                 />

@@ -150,8 +150,8 @@ const BasicForm: React.FC<BasicFormProps> = ({ activeVisit }) => {
         <Column sm={4} md={8} lg={5} className={styles.column}>
           <Dropdown
             id="practitioner-dropdown"
-            titleText={t('PARTICIPANTS')}
-            label={t('SELECT_PARTICIPANTS')}
+            titleText={t('PARTICIPANT')}
+            label={t('SELECT_PRACTITIONER')}
             items={availablePractitioners}
             itemToString={(item) =>
               item?.person?.preferredName?.display
