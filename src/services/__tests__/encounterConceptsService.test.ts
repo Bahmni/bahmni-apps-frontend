@@ -5,22 +5,19 @@ import { COMMON_ERROR_MESSAGES } from '@constants/errors';
 import {
   EncounterConceptsResponse,
   EncounterConcepts,
-} from '@types/encounterConcepts';
-import i18next from 'i18next';
+} from '@/types/encounterConcepts';
+import i18n from '@/setupTests.i18n';
 
 // Mock dependencies
 jest.mock('../api');
-jest.mock('i18next', () => ({
-  t: jest.fn(() => 'Invalid response format'),
-}));
 
 // Type the mocked functions
 const mockedGet = get as jest.MockedFunction<typeof get>;
-const mockedI18next = i18next as jest.Mocked<typeof i18next>;
 
 describe('encounterConceptsService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    i18n.changeLanguage('en');
   });
 
   // Happy Path Tests
@@ -72,26 +69,30 @@ describe('encounterConceptsService', () => {
 
   // Sad Path Tests
   describe('Sad Paths', () => {
-    it('should propagate errors from API calls', async () => {
+    it('should translate generic errors to encounter details error', async () => {
       // Arrange
       const mockError = new Error('Network error');
       mockedGet.mockRejectedValueOnce(mockError);
 
       // Act & Assert
-      await expect(getEncounterConcepts()).rejects.toThrow('Network error');
+      await expect(getEncounterConcepts()).rejects.toThrow(
+        i18n.t('ERROR_FETCHING_ENCOUNTER_DETAILS'),
+      );
       expect(mockedGet).toHaveBeenCalledWith(ENCOUNTER_CONCEPTS_URL);
     });
 
-    it('should handle server errors properly', async () => {
+    it('should not translate invalid response errors', async () => {
       // Arrange
-      const serverError = new Error('Internal Server Error');
-      serverError.name = 'ServerError';
-      mockedGet.mockRejectedValueOnce(serverError);
+      const invalidResponseError = new Error(
+        i18n.t(COMMON_ERROR_MESSAGES.INVALID_RESPONSE),
+      );
+      mockedGet.mockRejectedValueOnce(invalidResponseError);
 
       // Act & Assert
       await expect(getEncounterConcepts()).rejects.toThrow(
-        'Internal Server Error',
+        i18n.t(COMMON_ERROR_MESSAGES.INVALID_RESPONSE),
       );
+      expect(mockedGet).toHaveBeenCalledWith(ENCOUNTER_CONCEPTS_URL);
     });
   });
 
@@ -168,10 +169,7 @@ describe('encounterConceptsService', () => {
 
       // Act & Assert
       await expect(getEncounterConcepts()).rejects.toThrow(
-        'Invalid response format',
-      );
-      expect(mockedI18next.t).toHaveBeenCalledWith(
-        COMMON_ERROR_MESSAGES.INVALID_RESPONSE,
+        i18n.t(COMMON_ERROR_MESSAGES.INVALID_RESPONSE),
       );
     });
 
@@ -181,10 +179,7 @@ describe('encounterConceptsService', () => {
 
       // Act & Assert
       await expect(getEncounterConcepts()).rejects.toThrow(
-        'Invalid response format',
-      );
-      expect(mockedI18next.t).toHaveBeenCalledWith(
-        COMMON_ERROR_MESSAGES.INVALID_RESPONSE,
+        i18n.t(COMMON_ERROR_MESSAGES.INVALID_RESPONSE),
       );
     });
 
