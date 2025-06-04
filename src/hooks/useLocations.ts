@@ -1,8 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useNotification } from './useNotification';
-import { getFormattedError } from '@utils/common';
 import { getLocations } from '@services/locationService';
-import { OpenMRSLocation } from '@types/location';
+import { OpenMRSLocation } from '@/types/location';
+import { useTranslation } from 'react-i18next';
 
 interface UseLocationsResult {
   locations: OpenMRSLocation[];
@@ -19,25 +18,27 @@ export const useLocations = (): UseLocationsResult => {
   const [locations, setLocations] = useState<OpenMRSLocation[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
-  const { addNotification } = useNotification();
+  const { t } = useTranslation();
 
   const fetchLocations = useCallback(async () => {
     try {
       setLoading(true);
       const locations = await getLocations();
+      if (!locations || locations.length === 0) {
+        setError(new Error(t('ERROR_FETCHING_LOCATIONS_DETAILS')));
+        return;
+      }
       setLocations(locations);
     } catch (err) {
-      const { title, message } = getFormattedError(err);
-      addNotification({
-        type: 'error',
-        title: title,
-        message: message,
-      });
-      setError(err instanceof Error ? err : new Error(message));
+      setError(
+        err instanceof Error
+          ? err
+          : new Error(t('ERROR_FETCHING_LOCATIONS_DETAILS')),
+      );
     } finally {
       setLoading(false);
     }
-  }, [addNotification]);
+  }, []);
 
   useEffect(() => {
     fetchLocations();
