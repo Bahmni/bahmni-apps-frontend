@@ -3,6 +3,49 @@ import { useEncounterDetailsStore } from '../encounterDetailsStore';
 import { OpenMRSLocation } from '@types/location';
 import { Concept } from '@types/encounterConcepts';
 import { Provider } from '@types/provider';
+import { FhirEncounter } from '@types/encounter';
+
+// Mock error
+const mockLocationError = new Error('Failed to fetch locations');
+const mockEncounterTypeError = new Error('Failed to fetch encounter types');
+
+// Mock data
+const mockActiveVisit: FhirEncounter = {
+  resourceType: 'Encounter',
+  id: 'encounter-1',
+  status: 'in-progress',
+  class: {
+    system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+    code: 'AMB',
+  },
+  type: [
+    {
+      coding: [
+        {
+          code: '345',
+          system: '',
+          display: '',
+        },
+      ],
+    },
+  ],
+  meta: {
+    versionId: '',
+    lastUpdated: '',
+    tag: [],
+  },
+  subject: {
+    reference: '',
+    type: '',
+    display: '',
+  },
+  period: {
+    start: '2025-05-16T00:00:00.000Z',
+  },
+  location: [],
+};
+
+const mockError = new Error('Failed to fetch active visit');
 
 describe('encounterDetailsStore', () => {
   beforeEach(() => {
@@ -23,6 +66,191 @@ describe('encounterDetailsStore', () => {
       expect(result.current.encounterParticipants).toEqual([]);
       expect(result.current.consultationDate).toBeInstanceOf(Date);
       expect(result.current.isEncounterDetailsFormReady).toBe(false);
+      expect(result.current.activeVisit).toBeNull();
+      expect(result.current.activeVisitError).toBeNull();
+      expect(result.current.errors).toEqual({});
+    });
+  });
+
+  describe('error management', () => {
+    it('should set errors correctly', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setErrors({
+          location: mockLocationError,
+        });
+      });
+
+      expect(result.current.errors.location).toEqual(mockLocationError);
+    });
+
+    it('should allow setting multiple errors', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setErrors({
+          location: mockLocationError,
+          encounterType: mockEncounterTypeError,
+        });
+      });
+
+      expect(result.current.errors.location).toEqual(mockLocationError);
+      expect(result.current.errors.encounterType).toEqual(mockEncounterTypeError);
+    });
+
+    it('should update specific error without affecting others', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      // Set initial errors
+      act(() => {
+        result.current.setErrors({
+          location: mockLocationError,
+          encounterType: mockEncounterTypeError,
+        });
+      });
+
+      // Update only location error
+      act(() => {
+        result.current.setErrors({
+          location: null,
+        });
+      });
+
+      expect(result.current.errors.location).toBeNull();
+      expect(result.current.errors.encounterType).toEqual(mockEncounterTypeError);
+    });
+
+    it('should include errors in getState', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setErrors({
+          location: mockLocationError,
+        });
+      });
+
+      const state = result.current.getState();
+      expect(state.errors.location).toEqual(mockLocationError);
+    });
+
+    it('should clear errors on reset', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setErrors({
+          location: mockLocationError,
+          encounterType: mockEncounterTypeError,
+        });
+      });
+
+      act(() => {
+        result.current.reset();
+      });
+
+      expect(result.current.errors).toEqual({});
+    });
+  });
+
+  describe('activeVisit management', () => {
+    it('should set activeVisit correctly', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setActiveVisit(mockActiveVisit);
+      });
+
+      expect(result.current.activeVisit).toEqual(mockActiveVisit);
+    });
+
+    it('should allow setting activeVisit to null', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setActiveVisit(mockActiveVisit);
+      });
+      expect(result.current.activeVisit).toEqual(mockActiveVisit);
+
+      act(() => {
+        result.current.setActiveVisit(null);
+      });
+      expect(result.current.activeVisit).toBeNull();
+    });
+
+    it('should include activeVisit in getState', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setActiveVisit(mockActiveVisit);
+      });
+
+      const state = result.current.getState();
+      expect(state.activeVisit).toEqual(mockActiveVisit);
+    });
+
+    it('should reset activeVisit to null on reset', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setActiveVisit(mockActiveVisit);
+      });
+      expect(result.current.activeVisit).toEqual(mockActiveVisit);
+
+      act(() => {
+        result.current.reset();
+      });
+      expect(result.current.activeVisit).toBeNull();
+    });
+  });
+
+  describe('activeVisitError management', () => {
+    it('should set activeVisitError correctly', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setActiveVisitError(mockError);
+      });
+
+      expect(result.current.activeVisitError).toEqual(mockError);
+    });
+
+    it('should allow setting activeVisitError to null', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setActiveVisitError(mockError);
+      });
+      expect(result.current.activeVisitError).toEqual(mockError);
+
+      act(() => {
+        result.current.setActiveVisitError(null);
+      });
+      expect(result.current.activeVisitError).toBeNull();
+    });
+
+    it('should include activeVisitError in getState', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setActiveVisitError(mockError);
+      });
+
+      const state = result.current.getState();
+      expect(state.activeVisitError).toEqual(mockError);
+    });
+
+    it('should reset activeVisitError to null on reset', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setActiveVisitError(mockError);
+      });
+      expect(result.current.activeVisitError).toEqual(mockError);
+
+      act(() => {
+        result.current.reset();
+      });
+      expect(result.current.activeVisitError).toBeNull();
     });
   });
 
@@ -251,6 +479,8 @@ describe('encounterDetailsStore', () => {
         ]);
         result.current.setConsultationDate(new Date('2024-01-15'));
         result.current.setEncounterDetailsFormReady(true);
+        result.current.setActiveVisit(mockActiveVisit);
+        result.current.setActiveVisitError(mockError);
       });
 
       // Verify values were set
@@ -259,6 +489,8 @@ describe('encounterDetailsStore', () => {
       expect(result.current.selectedVisitType).not.toBeNull();
       expect(result.current.encounterParticipants).toHaveLength(1);
       expect(result.current.isEncounterDetailsFormReady).toBe(true);
+      expect(result.current.activeVisit).not.toBeNull();
+      expect(result.current.activeVisitError).not.toBeNull();
 
       // Reset
       act(() => {
@@ -272,6 +504,8 @@ describe('encounterDetailsStore', () => {
       expect(result.current.encounterParticipants).toEqual([]);
       expect(result.current.consultationDate).toBeInstanceOf(Date);
       expect(result.current.isEncounterDetailsFormReady).toBe(false);
+      expect(result.current.activeVisit).toBeNull();
+      expect(result.current.activeVisitError).toBeNull();
     });
   });
 
@@ -296,6 +530,8 @@ describe('encounterDetailsStore', () => {
       expect(state).toHaveProperty('encounterParticipants');
       expect(state).toHaveProperty('consultationDate');
       expect(state).toHaveProperty('isEncounterDetailsFormReady');
+      expect(state).toHaveProperty('activeVisit');
+      expect(state).toHaveProperty('activeVisitError');
     });
   });
 
@@ -323,11 +559,13 @@ describe('encounterDetailsStore', () => {
         result.current.setSelectedLocation(mockLocation);
         result.current.setSelectedEncounterType(mockEncounterType);
         result.current.setSelectedVisitType(mockVisitType);
+        result.current.setActiveVisit(mockActiveVisit);
       });
 
       expect(result.current.selectedLocation).toEqual(mockLocation);
       expect(result.current.selectedEncounterType).toEqual(mockEncounterType);
       expect(result.current.selectedVisitType).toEqual(mockVisitType);
+      expect(result.current.activeVisit).toEqual(mockActiveVisit);
     });
   });
 });

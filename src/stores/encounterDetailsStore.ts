@@ -2,6 +2,16 @@ import { create } from 'zustand';
 import { OpenMRSLocation } from '@types/location';
 import { Concept } from '@types/encounterConcepts';
 import { Provider } from '@types/provider';
+import { FhirEncounter } from '@types/encounter';
+
+export interface EncounterDetailsErrors {
+  location?: Error | null;
+  encounterType?: Error | null;
+  visitType?: Error | null;
+  participants?: Error | null;
+  consultationDate?: Error | null;
+  general?: Error | null;
+}
 
 export interface EncounterDetailsState {
   // Selected values
@@ -11,8 +21,15 @@ export interface EncounterDetailsState {
   encounterParticipants: Provider[]; // Selected participants for the encounter
   consultationDate: Date;
 
+  // Active visit management
+  activeVisit: FhirEncounter | null;
+  activeVisitError: Error | null;
+
   // Form readiness state
   isEncounterDetailsFormReady: boolean;
+
+  // Error state
+  errors: EncounterDetailsErrors;
 
   // Setters
   setSelectedLocation: (location: OpenMRSLocation | null) => void;
@@ -21,6 +38,9 @@ export interface EncounterDetailsState {
   setEncounterParticipants: (participants: Provider[]) => void;
   setConsultationDate: (date: Date) => void;
   setEncounterDetailsFormReady: (ready: boolean) => void;
+  setActiveVisit: (visit: FhirEncounter | null) => void;
+  setActiveVisitError: (error: Error | null) => void;
+  setErrors: (errors: Partial<EncounterDetailsErrors>) => void;
 
   // Reset
   reset: () => void;
@@ -37,6 +57,9 @@ export const useEncounterDetailsStore = create<EncounterDetailsState>(
     encounterParticipants: [],
     consultationDate: new Date(),
     isEncounterDetailsFormReady: false,
+    activeVisit: null,
+    activeVisitError: null,
+    errors: {},
 
     setSelectedLocation: (location) => set({ selectedLocation: location }),
     setSelectedEncounterType: (encounterType) =>
@@ -47,6 +70,13 @@ export const useEncounterDetailsStore = create<EncounterDetailsState>(
     setConsultationDate: (date) => set({ consultationDate: date }),
     setEncounterDetailsFormReady: (ready) =>
       set({ isEncounterDetailsFormReady: ready }),
+    setActiveVisit: (visit) => set({ activeVisit: visit }),
+    setActiveVisitError: (error) => set({ activeVisitError: error }),
+
+    setErrors: (errors: Partial<EncounterDetailsErrors>) =>
+      set((state) => ({
+        errors: { ...state.errors, ...errors },
+      })),
 
     reset: () =>
       set({
@@ -56,6 +86,9 @@ export const useEncounterDetailsStore = create<EncounterDetailsState>(
         encounterParticipants: [],
         consultationDate: new Date(),
         isEncounterDetailsFormReady: false,
+        activeVisit: null,
+        activeVisitError: null,
+        errors: {},
       }),
 
     getState: () => get(),
