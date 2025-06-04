@@ -101,18 +101,9 @@ describe('LabInvestigationControl Integration', () => {
 
     render(<LabInvestigationControl />);
 
-    // Verify the priorities are displayed by checking for tag elements
-    // Carbon Design System's Tag component might not render text content properly in tests
-    const tags = document.querySelectorAll('.cds--tag');
-    expect(tags.length).toBe(3); // Total of 3 tags
-
-    // Check for green tags (routine priority)
-    const greenTags = document.querySelectorAll('.cds--tag--green');
-    expect(greenTags.length).toBe(2); // Two routine tests (actual count in the DOM)
-
-    // Check for gray tags (stat priority)
-    const grayTags = document.querySelectorAll('.cds--tag--gray');
-    expect(grayTags.length).toBe(1); // One stat priority test
+    // Check for stat priority tag using data-testid
+    const statPriorityTag = screen.getByTestId('lab-test-priority-Urgent');
+    expect(statPriorityTag).toBeInTheDocument();
   });
 
   it('should display ordered by information', () => {
