@@ -1,166 +1,366 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`BasicForm Rendering should match snapshot 1`] = `
-<div>
+exports[`BasicForm Snapshot Tests should match snapshot when fully loaded 1`] = `
+<div
+  data-testid="grid"
+>
   <div
-    class="cds--css-grid"
+    data-testid="column"
   >
     <div
-      class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-5 cds--css-grid-column"
-      xl="12"
+      data-testid="location-dropdown"
     >
-      <div
-        data-testid="location-dropdown"
-      >
-        <div>
-          Location
-        </div>
-        <select
-          aria-label="Location"
-          disabled=""
-        >
-          <option
-            value="123"
-          >
-            Location 1
-          </option>
-        </select>
+      <div>
+        Location
       </div>
-    </div>
-    <div
-      class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-5 cds--css-grid-column"
-      xl="12"
-    >
-      <div
-        data-testid="encounter-type-dropdown"
+      <select
+        aria-invalid="false"
+        aria-label="Location"
+        disabled=""
       >
-        <div>
-          Encounter Type
-        </div>
-        <select
-          aria-label="Encounter Type"
-          disabled=""
+        <option
+          value="selected"
         >
-          <option
-            value="789"
-          >
-            Consultation
-          </option>
-          <option
-            value="012"
-          >
-            Encounter Type 2
-          </option>
-        </select>
+          Location 1
+        </option>
+        <option
+          value="123"
+        >
+          Location 1
+        </option>
+      </select>
+    </div>
+  </div>
+  <div
+    data-testid="column"
+  >
+    <div
+      data-testid="encounter-type-dropdown"
+    >
+      <div>
+        Encounter Type
       </div>
-    </div>
-    <div
-      class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-5 cds--css-grid-column"
-      xl="12"
-    >
-      <div
-        data-testid="visit-type-dropdown"
+      <select
+        aria-invalid="false"
+        aria-label="Encounter Type"
+        disabled=""
       >
-        <div>
-          Visit Type
-        </div>
-        <select
-          aria-label="Visit Type"
-          disabled=""
+        <option
+          value="selected"
         >
-          <option
-            value="345"
-          >
-            Visit Type 1
-          </option>
-          <option
-            value="678"
-          >
-            Visit Type 2
-          </option>
-        </select>
+          Consultation
+        </option>
+        <option
+          value="789"
+        >
+          Consultation
+        </option>
+        <option
+          value="012"
+        >
+          Encounter Type 2
+        </option>
+      </select>
+    </div>
+  </div>
+  <div
+    data-testid="column"
+  >
+    <div
+      data-testid="visit-type-dropdown"
+    >
+      <div>
+        Visit Type
       </div>
-    </div>
-    <div
-      class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-5 cds--css-grid-column"
-    >
-      <div
-        data-testid="practitioner-dropdown"
+      <select
+        aria-invalid="false"
+        aria-label="Visit Type"
+        disabled=""
       >
-        <div>
-          Participant(s)
-        </div>
-        <select
-          aria-label="Participant(s)"
-          disabled=""
+        <option
+          value="selected"
         >
-          <option
-            value="provider-uuid-123"
-          >
-            Dr. John Smith
-          </option>
-        </select>
+          Visit Type 1
+        </option>
+        <option
+          value="345"
+        >
+          Visit Type 1
+        </option>
+        <option
+          value="678"
+        >
+          Visit Type 2
+        </option>
+      </select>
+    </div>
+  </div>
+  <div
+    data-testid="column"
+  >
+    <div
+      data-testid="practitioner-dropdown"
+    >
+      <div>
+        Participant(s)
       </div>
-    </div>
-    <div
-      class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-5 cds--css-grid-column"
-    >
-      <div
-        class="cds--form-item"
+      <select
+        aria-invalid="false"
+        aria-label="Participant(s)"
+        disabled=""
       >
-        <div
-          class="cds--date-picker cds--date-picker--single"
+        <option
+          value="selected"
         >
-          <div
-            class="cds--date-picker-container"
-          >
-            <label
-              class="cds--label cds--label--disabled"
-              dir="auto"
-              for="encounter-date-picker-input"
-            >
-              Encounter Date
-            </label>
-            <div
-              class="cds--date-picker-input__wrapper"
-            >
-              <span>
-                <input
-                  class="cds--date-picker__input cds--date-picker__input--md flatpickr-input"
-                  disabled=""
-                  id="encounter-date-picker-input"
-                  pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
-                  placeholder="16/05/2025"
-                  title="Encounter Date"
-                  type="text"
-                  value="16/05/2025"
-                />
-                <svg
-                  aria-hidden="true"
-                  class="cds--date-picker__icon"
-                  fill="currentColor"
-                  focusable="false"
-                  height="16"
-                  preserveAspectRatio="xMidYMid meet"
-                  role="img"
-                  viewBox="0 0 32 32"
-                  width="16"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M26,4h-4V2h-2v2h-8V2h-2v2H6C4.9,4,4,4.9,4,6v20c0,1.1,0.9,2,2,2h20c1.1,0,2-0.9,2-2V6C28,4.9,27.1,4,26,4z M26,26H6V12h20 V26z M26,10H6V6h4v2h2V6h8v2h2V6h4V10z"
-                  />
-                </svg>
-              </span>
-            </div>
-          </div>
-        </div>
+          Dr. John Smith
+        </option>
+        <option
+          value="provider-uuid-123"
+        >
+          Dr. John Smith
+        </option>
+      </select>
+    </div>
+  </div>
+  <div
+    data-testid="column"
+  >
+    <div
+      data-testid="date-picker"
+    >
+      <input
+        aria-label="Encounter Date"
+        data-testid="date-picker-input"
+        disabled=""
+        id="encounter-date-picker-input"
+        placeholder="16/05/2025"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`BasicForm Snapshot Tests should match snapshot when loading 1`] = `
+<div
+  data-testid="grid"
+>
+  <div
+    data-testid="column"
+  >
+    <div
+      data-testid="skeleton-placeholder"
+    />
+    <div
+      data-testid="skeleton-placeholder"
+    />
+  </div>
+  <div
+    data-testid="column"
+  >
+    <div
+      data-testid="skeleton-placeholder"
+    />
+    <div
+      data-testid="skeleton-placeholder"
+    />
+  </div>
+  <div
+    data-testid="column"
+  >
+    <div
+      data-testid="skeleton-placeholder"
+    />
+    <div
+      data-testid="skeleton-placeholder"
+    />
+  </div>
+  <div
+    data-testid="column"
+  >
+    <div
+      data-testid="skeleton-placeholder"
+    />
+    <div
+      data-testid="skeleton-placeholder"
+    />
+  </div>
+  <div
+    data-testid="column"
+  >
+    <div
+      data-testid="skeleton-placeholder"
+    />
+    <div
+      data-testid="skeleton-placeholder"
+    />
+  </div>
+</div>
+`;
+
+exports[`BasicForm Snapshot Tests should match snapshot with error states 1`] = `
+<div
+  data-testid="grid"
+>
+  <div
+    data-testid="column"
+  >
+    <div
+      data-testid="location-dropdown"
+    >
+      <div>
+        Location
+      </div>
+      <select
+        aria-errormessage="location-dropdown-error"
+        aria-invalid="true"
+        aria-label="Location"
+        disabled=""
+      >
+        <option
+          value="selected"
+        >
+          Location 1
+        </option>
+        <option
+          value="123"
+        >
+          Location 1
+        </option>
+      </select>
+      <div
+        id="location-dropdown-error"
+        role="alert"
+      >
+        Location error
       </div>
     </div>
   </div>
-  <li
-    class="cds--menu-item-divider"
-    role="separator"
-  />
+  <div
+    data-testid="column"
+  >
+    <div
+      data-testid="encounter-type-dropdown"
+    >
+      <div>
+        Encounter Type
+      </div>
+      <select
+        aria-errormessage="encounter-type-dropdown-error"
+        aria-invalid="true"
+        aria-label="Encounter Type"
+        disabled=""
+      >
+        <option
+          value="selected"
+        >
+          Consultation
+        </option>
+        <option
+          value="789"
+        >
+          Consultation
+        </option>
+        <option
+          value="012"
+        >
+          Encounter Type 2
+        </option>
+      </select>
+      <div
+        id="encounter-type-dropdown-error"
+        role="alert"
+      >
+        Encounter error
+      </div>
+    </div>
+  </div>
+  <div
+    data-testid="column"
+  >
+    <div
+      data-testid="visit-type-dropdown"
+    >
+      <div>
+        Visit Type
+      </div>
+      <select
+        aria-errormessage="visit-type-dropdown-error"
+        aria-invalid="true"
+        aria-label="Visit Type"
+        disabled=""
+      >
+        <option
+          value="selected"
+        >
+          Visit Type 1
+        </option>
+        <option
+          value="345"
+        >
+          Visit Type 1
+        </option>
+        <option
+          value="678"
+        >
+          Visit Type 2
+        </option>
+      </select>
+      <div
+        id="visit-type-dropdown-error"
+        role="alert"
+      >
+        Encounter error
+      </div>
+    </div>
+  </div>
+  <div
+    data-testid="column"
+  >
+    <div
+      data-testid="practitioner-dropdown"
+    >
+      <div>
+        Participant(s)
+      </div>
+      <select
+        aria-errormessage="practitioner-dropdown-error"
+        aria-invalid="true"
+        aria-label="Participant(s)"
+        disabled=""
+      >
+        <option
+          value="selected"
+        >
+          Dr. John Smith
+        </option>
+        <option
+          value="provider-uuid-123"
+        >
+          Dr. John Smith
+        </option>
+      </select>
+      <div
+        id="practitioner-dropdown-error"
+        role="alert"
+      >
+        Practitioner error
+      </div>
+    </div>
+  </div>
+  <div
+    data-testid="column"
+  >
+    <div
+      data-testid="date-picker"
+    >
+      <input
+        aria-label="Encounter Date"
+        data-testid="date-picker-input"
+        disabled=""
+        id="encounter-date-picker-input"
+        placeholder="16/05/2025"
+      />
+    </div>
+  </div>
 </div>
 `;
