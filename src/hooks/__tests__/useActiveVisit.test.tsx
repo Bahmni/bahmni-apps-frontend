@@ -144,6 +144,33 @@ describe('useActiveVisit', () => {
     expect(result.current.error).toEqual(new Error('Service error'));
   });
 
+  it('should handle non-Error objects thrown from service', async () => {
+    const nonErrorObject = { message: 'Non-error object thrown' };
+    const promise = Promise.reject(nonErrorObject);
+    mockedGetActiveVisit.mockReturnValueOnce(promise);
+
+    const { result } = renderHook(() => useActiveVisit(patientUUID), {
+      wrapper,
+    });
+
+    // Wait for the promise to reject and component to update
+    await act(async () => {
+      try {
+        await promise;
+      } catch {
+        // Expected rejection
+      }
+      // Add a small delay to ensure all state updates have processed
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    // Verify the state after the promise rejects
+    expect(result.current.loading).toBe(false);
+    expect(result.current.activeVisit).toBeNull();
+    expect(result.current.error).toBeInstanceOf(Error);
+    expect(result.current.error?.message).toBe('An unknown error occurred');
+  });
+
   it('should refetch data when patientUUID changes', async () => {
     const promise1 = Promise.resolve(mockActiveVisit);
     mockedGetActiveVisit.mockReturnValueOnce(promise1);

@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import { FhirEncounter } from '@types/encounter';
-import { useNotification } from './useNotification';
 import { getActiveVisit } from '@services/encounterService';
 import { getFormattedError } from '@utils/common';
+import { useTranslation } from 'react-i18next';
 
 interface UseActiveVisitResult {
   activeVisit: FhirEncounter | null;
@@ -22,17 +22,12 @@ export const useActiveVisit = (
   const [activeVisit, setActiveVisit] = useState<FhirEncounter | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
-  const { addNotification } = useNotification();
+  const { t } = useTranslation();
 
   const fetchActiveVisit = useCallback(async () => {
     if (!patientUUID) {
+      setError(new Error(t('ERROR_INVALID_PATIENT_UUID')));
       setLoading(false);
-      setError(new Error('Invalid patient UUID'));
-      addNotification({
-        type: 'error',
-        title: 'Error',
-        message: 'Invalid patient UUID',
-      });
       return;
     }
 
@@ -40,30 +35,19 @@ export const useActiveVisit = (
       setLoading(true);
       const encounter = await getActiveVisit(patientUUID);
       if (!encounter) {
-        setLoading(false);
-        setError(new Error('No active visit found'));
-        addNotification({
-          type: 'error',
-          title: 'Error',
-          message: 'No active visit found',
-        });
+        setError(new Error(t('ERROR_NO_ACTIVE_VISIT_FOUND')));
         return;
       }
       setActiveVisit(encounter);
       setError(null);
     } catch (err) {
-      const { title, message } = getFormattedError(err);
-      addNotification({
-        type: 'error',
-        title: title,
-        message: message,
-      });
-      setError(new Error(message));
+      const { message } = getFormattedError(err);
+      setError(err instanceof Error ? err : new Error(message));
       setActiveVisit(null);
     } finally {
       setLoading(false);
     }
-  }, [patientUUID, addNotification]);
+  }, [patientUUID]);
 
   useEffect(() => {
     fetchActiveVisit();
