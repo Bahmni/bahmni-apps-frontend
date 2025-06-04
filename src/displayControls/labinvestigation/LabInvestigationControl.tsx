@@ -5,7 +5,7 @@ import { Accordion, AccordionItem, SkeletonText } from '@carbon/react';
 import LabInvestigationItem from './LabInvestigationItem';
 import useLabInvestigations from '@/hooks/useLabInvestigations';
 import { groupLabTestsByDate } from '@/services/labInvestigationService';
-import { LabTestsByDate, FormattedLabTest } from '@/types/labInvestigation';
+import { LabTestsByDate } from '@/types/labInvestigation';
 
 const LabInvestigationControl: React.FC = () => {
   const { t } = useTranslation();
@@ -39,9 +39,25 @@ const LabInvestigationControl: React.FC = () => {
               </span>
             }
           >
-            {group.tests?.map((test: FormattedLabTest, testIndex: number) => (
-              <LabInvestigationItem key={testIndex} test={test} />
-            ))}
+            {/* Render 'urgent' tests first */}
+            {group.tests
+              ?.filter((test) => test.priority === 'Urgent')
+              .map((test, index) => (
+                <LabInvestigationItem
+                  key={`urgent-${group.date}-${test.testName}-${index}`}
+                  test={test}
+                />
+              ))}
+
+            {/* Then render non-urgent tests */}
+            {group.tests
+              ?.filter((test) => test.priority !== 'Urgent')
+              .map((test, index) => (
+                <LabInvestigationItem
+                  key={`nonurgent-${group.date}-${test.testName}-${index}`}
+                  test={test}
+                />
+              ))}
           </AccordionItem>
         ))}
       </Accordion>
