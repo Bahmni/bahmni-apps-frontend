@@ -3,6 +3,9 @@ import {
   getPatientAllergiesBundle,
   getAllergies,
   formatAllergies,
+  formatAllergenConcepts,
+  fetchAndFormatAllergenConcepts,
+  fetchReactionConcepts,
 } from '../allergyService';
 import { FhirAllergyIntolerance } from '@types/allergy';
 import {
@@ -27,6 +30,9 @@ import {
 } from '@__mocks__/allergyMocks';
 import notificationService from '../notificationService';
 import { getFormattedError } from '@utils/common';
+import { searchFHIRConcepts } from '../conceptService';
+import { ALLERGEN_TYPES, ALLERGY_REACTION } from '@constants/concepts';
+import { ValueSet } from 'fhir/r4';
 
 // Mock the api module
 jest.mock('../api');
@@ -34,6 +40,8 @@ jest.mock('../api');
 jest.mock('../notificationService');
 // Mock the common utils
 jest.mock('@utils/common');
+// Mock the concept service
+jest.mock('../conceptService');
 
 describe('allergyService', () => {
   const mockPatientUUID = 'patient-123';
@@ -308,6 +316,387 @@ describe('allergyService', () => {
       expect(result).toHaveLength(1);
       expect(result[0].status).toBe('Unknown');
       expect(result[0].display).toBe('Allergy with invalid coding');
+    });
+  });
+
+  describe('formatAllergenConcepts', () => {
+    it('should format FHIR concepts into AllergenConcepts with type information', () => {
+      const mockRawConcepts = {
+        medication: [
+          {
+            system: 'http://snomed.info/sct',
+            code: 'med1',
+            display: 'Medication 1',
+          },
+          {
+            system: 'http://snomed.info/sct',
+            code: 'med2',
+            display: 'Medication 2',
+          },
+        ],
+        food: [
+          {
+            system: 'http://snomed.info/sct',
+            code: 'food1',
+            display: 'Food 1',
+          },
+        ],
+        environment: [
+          {
+            system: 'http://snomed.info/sct',
+            code: 'env1',
+            display: 'Environment 1',
+          },
+        ],
+      };
+
+      const result = formatAllergenConcepts(mockRawConcepts);
+
+      expect(result).toHaveLength(4);
+      expect(result).toEqual(
+        expect.arrayContaining([
+          { uuid: 'med1', display: 'Medication 1', type: 'medication' },
+          { uuid: 'med2', display: 'Medication 2', type: 'medication' },
+          { uuid: 'food1', display: 'Food 1', type: 'food' },
+          { uuid: 'env1', display: 'Environment 1', type: 'environment' },
+        ]),
+      );
+    });
+
+    it('should handle empty or undefined concept arrays', () => {
+      const mockRawConcepts = {
+        medication: [],
+        food: undefined,
+        environment: [
+          {
+            system: 'http://snomed.info/sct',
+            code: 'env1',
+            display: 'Environment 1',
+          },
+        ],
+      };
+
+      const result = formatAllergenConcepts(mockRawConcepts);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual({
+        uuid: 'env1',
+        display: 'Environment 1',
+        type: 'environment',
+      });
+    });
+
+    it('should handle all undefined arrays', () => {
+      const mockRawConcepts = {
+        medication: undefined,
+        food: undefined,
+        environment: undefined,
+      };
+
+      const result = formatAllergenConcepts(mockRawConcepts);
+
+      expect(result).toHaveLength(0);
+    });
+
+    it('should handle concepts with undefined code and display', () => {
+      const mockRawConcepts = {
+        medication: [
+          { system: 'http://snomed.info/sct' },
+          { system: 'http://snomed.info/sct', code: 'med2' },
+          { system: 'http://snomed.info/sct', display: 'Medication 3' },
+        ],
+      };
+
+      const result = formatAllergenConcepts(mockRawConcepts);
+
+      expect(result).toHaveLength(3);
+      expect(result).toEqual(
+        expect.arrayContaining([
+          { uuid: '', display: '', type: 'medication' },
+          { uuid: 'med2', display: '', type: 'medication' },
+          { uuid: '', display: 'Medication 3', type: 'medication' },
+        ]),
+      );
+    });
+  });
+
+  describe('fetchReactionConcepts', () => {
+    const mockReactionValueSet = {
+      resourceType: 'ValueSet',
+      id: 'reaction',
+      status: 'active',
+      compose: {
+        include: [
+          {
+            concept: [
+              {
+                system: 'http://snomed.info/sct',
+                code: 'reaction1',
+                display: 'Rash',
+              },
+              {
+                system: 'http://snomed.info/sct',
+                code: 'reaction2',
+                display: 'Hives',
+              },
+            ],
+          },
+        ],
+      },
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      (searchFHIRConcepts as jest.Mock).mockResolvedValue(mockReactionValueSet);
+    });
+
+    it('should fetch and return reaction concepts', async () => {
+      const result = await fetchReactionConcepts();
+
+      expect(searchFHIRConcepts).toHaveBeenCalledWith(ALLERGY_REACTION.code);
+      expect(result).toEqual(mockReactionValueSet.compose.include[0].concept);
+    });
+
+    it('should handle empty concept array', async () => {
+      const emptyValueSet = {
+        ...mockReactionValueSet,
+        compose: {
+          include: [{ concept: [] }],
+        },
+      };
+      (searchFHIRConcepts as jest.Mock).mockResolvedValue(emptyValueSet);
+
+      const result = await fetchReactionConcepts();
+
+      expect(result).toEqual([]);
+    });
+
+    it('should handle missing concept array', async () => {
+      const noConceptValueSet = {
+        ...mockReactionValueSet,
+        compose: {
+          include: [{}],
+        },
+      };
+      (searchFHIRConcepts as jest.Mock).mockResolvedValue(noConceptValueSet);
+
+      const result = await fetchReactionConcepts();
+
+      expect(result).toEqual([]);
+    });
+
+    it('should handle API errors', async () => {
+      const error = new Error('Failed to fetch reactions');
+      (searchFHIRConcepts as jest.Mock).mockRejectedValue(error);
+
+      await expect(fetchReactionConcepts()).rejects.toThrow(
+        'Failed to fetch reactions',
+      );
+    });
+  });
+
+  describe('fetchAndFormatAllergenConcepts', () => {
+    const mockMedicationValueSet = {
+      resourceType: 'ValueSet',
+      id: ALLERGEN_TYPES.MEDICATION.code,
+      status: 'active',
+      compose: {
+        include: [
+          {
+            concept: [
+              {
+                system: 'http://snomed.info/sct',
+                code: 'med1',
+                display: 'Medication 1',
+              },
+              {
+                system: 'http://snomed.info/sct',
+                code: 'med2',
+                display: 'Medication 2',
+              },
+            ],
+          },
+        ],
+      },
+    };
+
+    const mockFoodValueSet = {
+      resourceType: 'ValueSet',
+      id: ALLERGEN_TYPES.FOOD.code,
+      status: 'active',
+      compose: {
+        include: [
+          {
+            concept: [
+              {
+                system: 'http://snomed.info/sct',
+                code: 'food1',
+                display: 'Food 1',
+              },
+            ],
+          },
+        ],
+      },
+    };
+
+    const mockEnvironmentValueSet = {
+      resourceType: 'ValueSet',
+      id: ALLERGEN_TYPES.ENVIRONMENT.code,
+      status: 'active',
+      compose: {
+        include: [
+          {
+            concept: [
+              {
+                system: 'http://snomed.info/sct',
+                code: 'env1',
+                display: 'Environment 1',
+              },
+            ],
+          },
+        ],
+      },
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      (searchFHIRConcepts as jest.Mock).mockImplementation((uuid) => {
+        if (uuid === ALLERGEN_TYPES.MEDICATION.code)
+          return Promise.resolve(mockMedicationValueSet);
+        if (uuid === ALLERGEN_TYPES.FOOD.code)
+          return Promise.resolve(mockFoodValueSet);
+        if (uuid === ALLERGEN_TYPES.ENVIRONMENT.code)
+          return Promise.resolve(mockEnvironmentValueSet);
+        return Promise.reject(new Error('Unknown UUID'));
+      });
+    });
+
+    it('should fetch ValueSets for each allergen type and format the concepts', async () => {
+      const result = await fetchAndFormatAllergenConcepts();
+
+      expect(searchFHIRConcepts).toHaveBeenCalledTimes(3);
+      expect(searchFHIRConcepts).toHaveBeenCalledWith(
+        ALLERGEN_TYPES.MEDICATION.code,
+      );
+      expect(searchFHIRConcepts).toHaveBeenCalledWith(ALLERGEN_TYPES.FOOD.code);
+      expect(searchFHIRConcepts).toHaveBeenCalledWith(
+        ALLERGEN_TYPES.ENVIRONMENT.code,
+      );
+
+      expect(result).toHaveLength(4);
+      expect(result).toEqual(
+        expect.arrayContaining([
+          { uuid: 'med1', display: 'Medication 1', type: 'medication' },
+          { uuid: 'med2', display: 'Medication 2', type: 'medication' },
+          { uuid: 'food1', display: 'Food 1', type: 'food' },
+          { uuid: 'env1', display: 'Environment 1', type: 'environment' },
+        ]),
+      );
+    });
+
+    it('should handle ValueSets with missing or empty include/concept arrays', async () => {
+      const emptyValueSet: ValueSet = {
+        resourceType: 'ValueSet',
+        id: 'empty',
+        status: 'active',
+        compose: { include: [] },
+      };
+
+      const noConceptsValueSet: ValueSet = {
+        resourceType: 'ValueSet',
+        id: 'noConcepts',
+        status: 'active',
+        compose: { include: [{ concept: [] }] },
+      };
+
+      (searchFHIRConcepts as jest.Mock).mockImplementation((uuid) => {
+        if (uuid === ALLERGEN_TYPES.MEDICATION.code)
+          return Promise.resolve(emptyValueSet);
+        if (uuid === ALLERGEN_TYPES.FOOD.code)
+          return Promise.resolve(noConceptsValueSet);
+        if (uuid === ALLERGEN_TYPES.ENVIRONMENT.code)
+          return Promise.resolve(mockEnvironmentValueSet);
+        return Promise.reject(new Error('Unknown UUID'));
+      });
+
+      const result = await fetchAndFormatAllergenConcepts();
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual({
+        uuid: 'env1',
+        display: 'Environment 1',
+        type: 'environment',
+      });
+    });
+
+    it('should handle ValueSets with undefined include[0]', async () => {
+      const valueSetWithUndefinedInclude = {
+        resourceType: 'ValueSet',
+        id: 'undefined-include',
+        status: 'active',
+        compose: {
+          include: [undefined],
+        },
+      };
+
+      (searchFHIRConcepts as jest.Mock).mockImplementation((uuid) => {
+        if (uuid === ALLERGEN_TYPES.MEDICATION.code)
+          return Promise.resolve(valueSetWithUndefinedInclude);
+        if (uuid === ALLERGEN_TYPES.FOOD.code)
+          return Promise.resolve(valueSetWithUndefinedInclude);
+        if (uuid === ALLERGEN_TYPES.ENVIRONMENT.code)
+          return Promise.resolve(mockEnvironmentValueSet);
+        return Promise.reject(new Error('Unknown UUID'));
+      });
+
+      const result = await fetchAndFormatAllergenConcepts();
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual({
+        uuid: 'env1',
+        display: 'Environment 1',
+        type: 'environment',
+      });
+    });
+
+    it('should handle environment ValueSet with undefined concept', async () => {
+      const mockEnvironmentValueSetWithoutConcept = {
+        resourceType: 'ValueSet',
+        id: ALLERGEN_TYPES.ENVIRONMENT.code,
+        status: 'active',
+        compose: {
+          include: [{}], // include[0].concept is undefined
+        },
+      };
+
+      (searchFHIRConcepts as jest.Mock).mockImplementation((uuid) => {
+        if (uuid === ALLERGEN_TYPES.MEDICATION.code)
+          return Promise.resolve(mockMedicationValueSet);
+        if (uuid === ALLERGEN_TYPES.FOOD.code)
+          return Promise.resolve(mockFoodValueSet);
+        if (uuid === ALLERGEN_TYPES.ENVIRONMENT.code)
+          return Promise.resolve(mockEnvironmentValueSetWithoutConcept);
+        return Promise.reject(new Error('Unknown UUID'));
+      });
+
+      const result = await fetchAndFormatAllergenConcepts();
+
+      // Should still get medication and food concepts
+      expect(result).toHaveLength(3);
+      expect(result).toEqual(
+        expect.arrayContaining([
+          { uuid: 'med1', display: 'Medication 1', type: 'medication' },
+          { uuid: 'med2', display: 'Medication 2', type: 'medication' },
+          { uuid: 'food1', display: 'Food 1', type: 'food' },
+        ]),
+      );
+    });
+
+    it('should handle API errors gracefully', async () => {
+      const mockError = new Error('API error');
+      (searchFHIRConcepts as jest.Mock).mockRejectedValue(mockError);
+
+      await expect(fetchAndFormatAllergenConcepts()).rejects.toThrow(mockError);
     });
   });
 });

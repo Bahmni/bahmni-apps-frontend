@@ -49,6 +49,11 @@ export const CONCEPT_SEARCH_URL = (
 ) =>
   OPENMRS_REST_V1 +
   `/bahmni/terminologies/concepts?limit=${limit}&locale=${locale}&term=${term}`;
+export const CONCEPT_DETAIL_URL = (uuid: string, locale: string): string =>
+  OPENMRS_REST_V1 +
+  `/concept/${uuid}?v=custom:(uuid,setMembers:(uuid,display,retired))&locale=${locale}`;
+export const FHIR_VALUESET_URL = (uuid: string) =>
+  OPENMRS_FHIR_R4 + `/ValueSet/${uuid}`;
 export const LOGIN_PATH = '/bahmni/home/index.html#/login';
 export const DEFAULT_LOCALE = 'en';
 export const LOCALE_STORAGE_KEY = 'NG_TRANSLATE_LANG_KEY';

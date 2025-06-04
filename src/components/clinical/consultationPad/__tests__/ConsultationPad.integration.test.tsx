@@ -14,6 +14,38 @@ import {
   mockDiagnosisSearchResults,
 } from '@__mocks__/consultationPadMocks';
 
+// Mock store factory functions
+const createDiagnosisStore = () => ({
+  selectedDiagnoses: [],
+  validateAllDiagnoses: jest.fn().mockReturnValue(true),
+  reset: jest.fn(),
+  addDiagnosis: jest.fn(),
+  removeDiagnosis: jest.fn(),
+  updateCertainty: jest.fn(),
+  getState: jest.fn(),
+});
+
+const createAllergyStore = () => ({
+  selectedAllergies: [],
+  validateAllAllergies: jest.fn().mockReturnValue(true),
+  reset: jest.fn(),
+  addAllergy: jest.fn(),
+  removeAllergy: jest.fn(),
+  updateSeverity: jest.fn(),
+  updateReactions: jest.fn(),
+  getState: jest.fn(),
+});
+
+// Mock the Zustand stores
+jest.mock('@stores/diagnosisStore', () => ({
+  useDiagnosisStore: jest.fn().mockImplementation(createDiagnosisStore),
+}));
+
+jest.mock('@stores/allergyStore', () => ({
+  __esModule: true,
+  default: jest.fn().mockImplementation(createAllergyStore),
+}));
+
 // Configure jest-axe
 expect.extend(toHaveNoViolations);
 
@@ -65,9 +97,21 @@ Element.prototype.scrollIntoView = jest.fn();
 describe('ConsultationPad Integration', () => {
   const mockPatientUUID = 'patient-123';
   const mockOnClose = jest.fn();
+  let mockDiagnosisStore: ReturnType<typeof createDiagnosisStore>;
+  let mockAllergyStore: ReturnType<typeof createAllergyStore>;
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Create fresh store instances for each test
+    mockDiagnosisStore = createDiagnosisStore();
+    mockAllergyStore = createAllergyStore();
+
+    // Update the mock implementations
+    const { useDiagnosisStore } = jest.requireMock('@stores/diagnosisStore');
+    const allergyStore = jest.requireMock('@stores/allergyStore');
+    useDiagnosisStore.mockReturnValue(mockDiagnosisStore);
+    allergyStore.default.mockReturnValue(mockAllergyStore);
 
     jest.spyOn(console, 'error').mockImplementation();
     const mockedAxios = axios.create() as jest.Mocked<typeof axios>;
@@ -177,7 +221,7 @@ describe('ConsultationPad Integration', () => {
   });
 
   describe('Form Interactions', () => {
-    it('should close when cancel button is clicked', async () => {
+    it('should close and reset stores when cancel button is clicked', async () => {
       renderConsultationPad();
 
       await waitFor(() => {
@@ -188,6 +232,8 @@ describe('ConsultationPad Integration', () => {
 
       fireEvent.click(screen.getByText('CONSULTATION_PAD_CANCEL_BUTTON'));
       expect(mockOnClose).toHaveBeenCalled();
+      expect(mockDiagnosisStore.reset).toHaveBeenCalled();
+      expect(mockAllergyStore.reset).toHaveBeenCalled();
     });
   });
 

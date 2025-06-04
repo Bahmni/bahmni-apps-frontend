@@ -50,6 +50,14 @@ export const validFullClinicalConfig = {
       icon: 'fa fa-exclamation-triangle',
     },
   ],
+  consultationPad: {
+    allergyConceptMap: {
+      medicationAllergenUuid: '162552AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      foodAllergenUuid: '162553AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      environmentalAllergenUuid: '162554AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      allergyReactionUuid: '162555AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    },
+  },
 };
 
 export const minimalClinicalConfig = {
@@ -62,6 +70,14 @@ export const minimalClinicalConfig = {
       requiredPrivileges: ['View Patient Dashboard'],
     },
   ],
+  consultationPad: {
+    allergyConceptMap: {
+      medicationAllergenUuid: '162552AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      foodAllergenUuid: '162553AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      environmentalAllergenUuid: '162554AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      allergyReactionUuid: '162555AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    },
+  },
 };
 
 export const mixedClinicalConfig = {
@@ -89,6 +105,14 @@ export const mixedClinicalConfig = {
       default: false,
     },
   ],
+  consultationPad: {
+    allergyConceptMap: {
+      medicationAllergenUuid: '162552AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      foodAllergenUuid: '162553AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      environmentalAllergenUuid: '162554AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      allergyReactionUuid: '162555AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    },
+  },
 };
 
 // Sad Path Mocks
@@ -122,6 +146,14 @@ export const largeConfig = {
       requiredPrivilege: `Privilege ${i}`,
     })),
   dashboards: generateLargeDashboards(50), // Generates 50 dashboards
+  consultationPad: {
+    allergyConceptMap: {
+      medicationAllergenUuid: '162552AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      foodAllergenUuid: '162553AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      environmentalAllergenUuid: '162554AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      allergyReactionUuid: '162555AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    },
+  },
 };
 
 export const allOptionalFieldsConfig = {
@@ -172,6 +204,14 @@ export const allOptionalFieldsConfig = {
       },
     },
   ],
+  consultationPad: {
+    allergyConceptMap: {
+      medicationAllergenUuid: '162552AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      foodAllergenUuid: '162553AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      environmentalAllergenUuid: '162554AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      allergyReactionUuid: '162555AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    },
+  },
 };
 
 // Helper function to generate large config

@@ -3,7 +3,12 @@
   "title": "Clinical App Configuration Schema",
   "description": "Schema for global clinical app configuration including patient information, actions and available dashboards",
   "type": "object",
-  "required": ["patientInformation", "actions", "dashboards"],
+  "required": [
+    "patientInformation",
+    "actions",
+    "dashboards",
+    "consultationPad"
+  ],
   "additionalProperties": false,
   "properties": {
     "patientInformation": {
@@ -45,6 +50,43 @@
           "url": {
             "type": "string",
             "description": "URL to access the dashboard data"
+          }
+        }
+      }
+    },
+    "consultationPad": {
+      "type": "object",
+      "description": "Configuration for consultation pad forms",
+      "required": ["allergyConceptMap"],
+      "additionalProperties": false,
+      "properties": {
+        "allergyConceptMap": {
+          "type": "object",
+          "description": "UUID mappings for allergy concepts",
+          "required": [
+            "medicationAllergenUuid",
+            "foodAllergenUuid",
+            "environmentalAllergenUuid",
+            "allergyReactionUuid"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "medicationAllergenUuid": {
+              "type": "string",
+              "description": "UUID for medication allergen concept"
+            },
+            "foodAllergenUuid": {
+              "type": "string",
+              "description": "UUID for food allergen concept"
+            },
+            "environmentalAllergenUuid": {
+              "type": "string",
+              "description": "UUID for environmental allergen concept"
+            },
+            "allergyReactionUuid": {
+              "type": "string",
+              "description": "UUID for allergy reaction concept"
+            }
           }
         }
       }

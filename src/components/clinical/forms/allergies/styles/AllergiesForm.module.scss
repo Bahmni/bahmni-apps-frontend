@@ -3,29 +3,34 @@
 @use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/theme" as *;
 
-.diagnosesFormTile {
+.allergiesFormTile {
   margin: $spacing-03;
   background-color: $background !important;
   overflow: hidden !important;
 }
 
-.diagnosesFormTitle {
+.allergiesFormTitle {
   @include type-style("heading-compact-02");
   padding-bottom: $spacing-05;
 }
 
-.diagnosesBox {
+.allergiesBox {
   margin: $spacing-06;
 }
 
-.selectedDiagnosisItem {
+.selectedAllergyItem {
   border-top: 0 !important;
   border-left: 0 !important;
   border-right: 0 !important;
   border-bottom: 1px solid $border-subtle-02;
 }
 
-.inlineErrorNotification {
-  min-width: -webkit-fill-available !important;
+.selectedAllergyItem:last-of-type {
+  border: 0 !important;
+}
+
+.errorMessage {
+  color: $text-error;
   margin-top: $spacing-03;
+  font-weight: 600;
 }

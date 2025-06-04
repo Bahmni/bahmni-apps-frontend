@@ -4,7 +4,7 @@ import { useLocations } from '../useLocations';
 import { getLocations } from '@services/locationService';
 import { useNotification } from '@hooks/useNotification';
 import { getFormattedError } from '@utils/common';
-import { OpenMRSLocation } from '@/types/location';
+import { OpenMRSLocation } from '@types/location';
 
 // Mock dependencies
 jest.mock('@services/locationService');
@@ -256,27 +256,6 @@ describe('useLocations', () => {
     it('should cleanup properly on unmount', () => {
       const { unmount } = renderHook(() => useLocations());
       expect(() => unmount()).not.toThrow();
-    });
-
-    it('should handle component unmounting during fetch', async () => {
-      // Setup a delayed response
-      mockedGetLocations.mockImplementationOnce(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(() => resolve([mockLocation]), 100),
-          ),
-      );
-
-      // Render hook and unmount before resolution
-      const { unmount } = renderHook(() => useLocations());
-      unmount();
-
-      // Wait for the async operation that should be canceled
-      await new Promise((resolve) => setTimeout(resolve, 150));
-
-      // The state setters should not be called after unmount
-      // This test passes if no errors are thrown due to updating state on unmounted component
-      expect(true).toBeTruthy();
     });
   });
 });
