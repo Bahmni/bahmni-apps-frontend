@@ -1,8 +1,8 @@
 import { get } from './api';
 import { USER_RESOURCE_URL, BAHMNI_USER_COOKIE_NAME } from '@constants/app';
 import { UserResponse, User } from '@types/user';
-import { getCookieByName, getFormattedError } from '@utils/common';
-import notificationService from '@services/notificationService';
+import { getCookieByName } from '@utils/common';
+import i18next from 'i18next';
 
 export async function getCurrentUser(): Promise<User | null> {
   // Get username from cookie
@@ -23,9 +23,8 @@ export async function getCurrentUser(): Promise<User | null> {
     }
 
     return userResponse.results[0];
-  } catch (error) {
-    const { title, message } = getFormattedError(error);
-    notificationService.showError(title, message);
-    return null;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_) {
+    throw new Error(i18next.t('ERROR_FETCHING_USER_DETAILS'));
   }
 }
