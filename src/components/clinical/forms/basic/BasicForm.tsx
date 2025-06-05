@@ -49,6 +49,7 @@ const BasicForm: React.FC = () => {
   } = useEncounterConcepts();
   const {
     practitioner,
+    user,
     loading: loadingPractitioner,
     error: practitionerError,
   } = useActivePractitioner();
@@ -69,6 +70,8 @@ const BasicForm: React.FC = () => {
     setEncounterDetailsFormReady,
     setActiveVisit,
     setActiveVisitError,
+    setPractitioner,
+    setUser,
     setErrors,
   } = useEncounterDetailsStore();
 
@@ -163,6 +166,16 @@ const BasicForm: React.FC = () => {
     );
     setEncounterDetailsFormReady(isAllDataLoaded);
   }, [allLoadingStates, setEncounterDetailsFormReady]);
+
+  // Set practitioner and user in store
+  useEffect(() => {
+    if (practitioner) {
+      setPractitioner(practitioner);
+    }
+    if (user) {
+      setUser(user);
+    }
+  }, [practitioner, user, setPractitioner, setUser]);
 
   // Update error state in store
   useEffect(() => {

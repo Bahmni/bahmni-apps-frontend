@@ -3,6 +3,7 @@ import { OpenMRSLocation } from '@types/location';
 import { Concept } from '@types/encounterConcepts';
 import { Provider } from '@types/provider';
 import { FhirEncounter } from '@types/encounter';
+import { User } from '@types/user';
 
 export interface EncounterDetailsErrors {
   location?: Error | null;
@@ -25,6 +26,10 @@ export interface EncounterDetailsState {
   activeVisit: FhirEncounter | null;
   activeVisitError: Error | null;
 
+  // Practitioner and user management
+  practitioner: Provider | null;
+  user: User | null;
+
   // Form readiness state
   isEncounterDetailsFormReady: boolean;
 
@@ -40,6 +45,8 @@ export interface EncounterDetailsState {
   setEncounterDetailsFormReady: (ready: boolean) => void;
   setActiveVisit: (visit: FhirEncounter | null) => void;
   setActiveVisitError: (error: Error | null) => void;
+  setPractitioner: (practitioner: Provider | null) => void;
+  setUser: (user: User | null) => void;
   setErrors: (errors: Partial<EncounterDetailsErrors>) => void;
 
   // Reset
@@ -59,6 +66,8 @@ export const useEncounterDetailsStore = create<EncounterDetailsState>(
     isEncounterDetailsFormReady: false,
     activeVisit: null,
     activeVisitError: null,
+    practitioner: null,
+    user: null,
     errors: {},
 
     setSelectedLocation: (location) => set({ selectedLocation: location }),
@@ -72,6 +81,8 @@ export const useEncounterDetailsStore = create<EncounterDetailsState>(
       set({ isEncounterDetailsFormReady: ready }),
     setActiveVisit: (visit) => set({ activeVisit: visit }),
     setActiveVisitError: (error) => set({ activeVisitError: error }),
+    setPractitioner: (practitioner) => set({ practitioner: practitioner }),
+    setUser: (user) => set({ user: user }),
 
     setErrors: (errors: Partial<EncounterDetailsErrors>) =>
       set((state) => ({
@@ -88,6 +99,8 @@ export const useEncounterDetailsStore = create<EncounterDetailsState>(
         isEncounterDetailsFormReady: false,
         activeVisit: null,
         activeVisitError: null,
+        practitioner: null,
+        user: null,
         errors: {},
       }),
 

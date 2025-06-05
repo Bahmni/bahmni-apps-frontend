@@ -4,10 +4,43 @@ import { OpenMRSLocation } from '@types/location';
 import { Concept } from '@types/encounterConcepts';
 import { Provider } from '@types/provider';
 import { FhirEncounter } from '@types/encounter';
+import { User } from '@types/user';
 
 // Mock error
 const mockLocationError = new Error('Failed to fetch locations');
 const mockEncounterTypeError = new Error('Failed to fetch encounter types');
+
+// Mock practitioner and user data
+const mockPractitioner: Provider = {
+  uuid: 'provider-uuid-123',
+  display: 'Dr. Smith - Clinician',
+  person: {
+    uuid: 'person-uuid-456',
+    display: 'Dr. John Smith',
+    gender: 'M',
+    age: 35,
+    birthdate: '1987-01-01T00:00:00.000+0000',
+    birthdateEstimated: false,
+    dead: false,
+    deathDate: null,
+    causeOfDeath: null,
+    preferredName: {
+      uuid: 'name-uuid-789',
+      display: 'Dr. John Smith',
+      links: [],
+    },
+    voided: false,
+    birthtime: null,
+    deathdateEstimated: false,
+    links: [],
+    resourceVersion: '1.9',
+  },
+};
+
+const mockUser: User = {
+  uuid: 'user-uuid-123',
+  username: 'admin',
+};
 
 // Mock data
 const mockActiveVisit: FhirEncounter = {
@@ -69,6 +102,8 @@ describe('encounterDetailsStore', () => {
       expect(result.current.activeVisit).toBeNull();
       expect(result.current.activeVisitError).toBeNull();
       expect(result.current.errors).toEqual({});
+      expect(result.current.practitioner).toBeNull();
+      expect(result.current.user).toBeNull();
     });
   });
 
@@ -566,6 +601,108 @@ describe('encounterDetailsStore', () => {
       expect(result.current.selectedEncounterType).toEqual(mockEncounterType);
       expect(result.current.selectedVisitType).toEqual(mockVisitType);
       expect(result.current.activeVisit).toEqual(mockActiveVisit);
+    });
+  });
+
+  describe('practitioner management', () => {
+    it('should set practitioner correctly', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setPractitioner(mockPractitioner);
+      });
+
+      expect(result.current.practitioner).toEqual(mockPractitioner);
+    });
+
+    it('should allow setting practitioner to null', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setPractitioner(mockPractitioner);
+      });
+      expect(result.current.practitioner).toEqual(mockPractitioner);
+
+      act(() => {
+        result.current.setPractitioner(null);
+      });
+      expect(result.current.practitioner).toBeNull();
+    });
+
+    it('should include practitioner in getState', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setPractitioner(mockPractitioner);
+      });
+
+      const state = result.current.getState();
+      expect(state.practitioner).toEqual(mockPractitioner);
+    });
+
+    it('should reset practitioner to null on reset', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setPractitioner(mockPractitioner);
+      });
+      expect(result.current.practitioner).toEqual(mockPractitioner);
+
+      act(() => {
+        result.current.reset();
+      });
+      expect(result.current.practitioner).toBeNull();
+    });
+  });
+
+  describe('user management', () => {
+    it('should set user correctly', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setUser(mockUser);
+      });
+
+      expect(result.current.user).toEqual(mockUser);
+    });
+
+    it('should allow setting user to null', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setUser(mockUser);
+      });
+      expect(result.current.user).toEqual(mockUser);
+
+      act(() => {
+        result.current.setUser(null);
+      });
+      expect(result.current.user).toBeNull();
+    });
+
+    it('should include user in getState', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setUser(mockUser);
+      });
+
+      const state = result.current.getState();
+      expect(state.user).toEqual(mockUser);
+    });
+
+    it('should reset user to null on reset', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setUser(mockUser);
+      });
+      expect(result.current.user).toEqual(mockUser);
+
+      act(() => {
+        result.current.reset();
+      });
+      expect(result.current.user).toBeNull();
     });
   });
 });
