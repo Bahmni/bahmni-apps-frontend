@@ -131,7 +131,9 @@ describe('encounterDetailsStore', () => {
       });
 
       expect(result.current.errors.location).toEqual(mockLocationError);
-      expect(result.current.errors.encounterType).toEqual(mockEncounterTypeError);
+      expect(result.current.errors.encounterType).toEqual(
+        mockEncounterTypeError,
+      );
     });
 
     it('should update specific error without affecting others', () => {
@@ -153,7 +155,9 @@ describe('encounterDetailsStore', () => {
       });
 
       expect(result.current.errors.location).toBeNull();
-      expect(result.current.errors.encounterType).toEqual(mockEncounterTypeError);
+      expect(result.current.errors.encounterType).toEqual(
+        mockEncounterTypeError,
+      );
     });
 
     it('should include errors in getState', () => {

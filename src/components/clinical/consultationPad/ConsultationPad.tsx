@@ -1,10 +1,7 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import ActionArea from '@components/common/actionArea/ActionArea';
-import { useActiveVisit } from '@hooks/useActiveVisit';
-import { useActivePractitioner } from '@hooks/useActivePractitioner';
-import { Column, Grid, Loading, MenuItemDivider } from '@carbon/react';
-import * as styles from './styles/ConsultationPad.module.scss';
+import { MenuItemDivider } from '@carbon/react';
 import BasicForm from '@components/clinical/forms/basic/BasicForm';
 import DiagnosesForm from '@components/clinical/forms/diagnoses/DiagnosesForm';
 import AllergiesForm from '@components/clinical/forms/allergies/AllergiesForm';
@@ -26,14 +23,10 @@ import useAllergyStore from '@stores/allergyStore';
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 
 interface ConsultationPadProps {
-  patientUUID: string;
   onClose: () => void;
 }
 
-const ConsultationPad: React.FC<ConsultationPadProps> = ({
-  patientUUID,
-  onClose,
-}) => {
+const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const { t } = useTranslation();
@@ -53,26 +46,17 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   } = useAllergyStore();
   // Use the encounter details store
   const {
+    activeVisit,
     selectedLocation,
     selectedEncounterType,
     encounterParticipants,
     consultationDate,
     isEncounterDetailsFormReady,
-    reset: resetEncounterDetails,
-  } = useEncounterDetailsStore();
-
-  const {
     practitioner,
     user,
-    loading: loadingPractitioner,
-    error: errorPractitioner,
-  } = useActivePractitioner();
-
-  const {
-    activeVisit,
-    loading: loadingEncounter,
-    error: errorEncounter,
-  } = useActiveVisit(patientUUID);
+    patientUUID,
+    reset: resetEncounterDetails,
+  } = useEncounterDetailsStore();
 
   // Clean up on unmount
   useEffect(() => {
@@ -99,7 +83,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     const encounterResource = createEncounterResource(
       selectedEncounterType!.uuid,
       selectedEncounterType!.name,
-      patientUUID,
+      patientUUID!,
       encounterParticipants.map((p) => p.uuid),
       activeVisit!.id,
       selectedLocation!.uuid,
@@ -177,67 +161,24 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     onClose();
   };
 
-  if (loadingPractitioner || loadingEncounter || isSubmitting) {
-    return (
-      <ActionArea
-        title={t('CONSULTATION_PAD_TITLE')}
-        primaryButtonText={t('CONSULTATION_PAD_DONE_BUTTON')}
-        onPrimaryButtonClick={handleOnPrimaryButtonClick}
-        secondaryButtonText={t('CONSULTATION_PAD_CANCEL_BUTTON')}
-        onSecondaryButtonClick={handleOnSecondaryButtonClick}
-        content={
-          <Grid>
-            <Column sm={3} md={8} lg={16} className={styles.loadingContent}>
-              <Loading
-                description={t('CONSULTATION_PAD_LOADING')}
-                withOverlay={false}
-              />
-            </Column>
-          </Grid>
-        }
-      />
-    );
-  }
-
-  if (
-    errorPractitioner ||
-    errorEncounter ||
-    !practitioner ||
-    !patientUUID ||
-    !activeVisit
-  ) {
-    return (
-      <ActionArea
-        title={t('CONSULTATION_PAD_TITLE')}
-        primaryButtonText={t('CONSULTATION_PAD_DONE_BUTTON')}
-        onPrimaryButtonClick={handleOnPrimaryButtonClick}
-        secondaryButtonText={t('CONSULTATION_PAD_CANCEL_BUTTON')}
-        onSecondaryButtonClick={handleOnSecondaryButtonClick}
-        content={
-          <Grid>
-            <Column sm={4} md={8} lg={16}>
-              <h2>{t('CONSULTATION_PAD_ERROR')}</h2>
-            </Column>
-          </Grid>
-        }
-      />
-    );
-  }
-
   return (
     <ActionArea
       title={t('CONSULTATION_PAD_TITLE')}
       primaryButtonText={t('CONSULTATION_PAD_DONE_BUTTON')}
       onPrimaryButtonClick={handleOnPrimaryButtonClick}
+      isPrimaryButtonDisabled={
+        !isEncounterDetailsFormReady || !canSubmitConsultation || isSubmitting
+      }
       secondaryButtonText={t('CONSULTATION_PAD_CANCEL_BUTTON')}
       onSecondaryButtonClick={handleOnSecondaryButtonClick}
       content={
         <>
-          <BasicForm activeVisit={activeVisit} />
-          {isEncounterDetailsFormReady && <DiagnosesForm />}
-          {isEncounterDetailsFormReady && <MenuItemDivider />}
-          {isEncounterDetailsFormReady && <AllergiesForm />}
-          {isEncounterDetailsFormReady && <MenuItemDivider />}
+          <BasicForm />
+          <MenuItemDivider />
+          <DiagnosesForm />
+          <MenuItemDivider />
+          <AllergiesForm />
+          <MenuItemDivider />
         </>
       }
     />

@@ -16,6 +16,10 @@ exports[`ConsultationPad Rendering Snapshots should match snapshot for error sta
       <div
         data-testid="mock-basic-form"
       />
+      <li
+        class="cds--menu-item-divider"
+        role="separator"
+      />
       <div
         data-testid="mock-diagnoses-form"
       >
@@ -102,33 +106,69 @@ exports[`ConsultationPad Rendering Snapshots should match snapshot for loading s
       data-testid="action-area-content"
     >
       <div
-        class="cds--css-grid"
+        data-testid="mock-basic-form"
+      />
+      <li
+        class="cds--menu-item-divider"
+        role="separator"
+      />
+      <div
+        data-testid="mock-diagnoses-form"
       >
-        <div
-          class="cds--sm:col-span-3 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
+        <button>
+          Search
+        </button>
+        <button>
+          Select
+        </button>
+        <button
+          data-testid="select-null-button"
         >
-          <div
-            aria-atomic="true"
-            aria-live="assertive"
-            class="cds--loading"
-          >
-            <svg
-              class="cds--loading__svg"
-              viewBox="0 0 100 100"
-            >
-              <title>
-                CONSULTATION_PAD_LOADING
-              </title>
-              <circle
-                class="cds--loading__stroke"
-                cx="50%"
-                cy="50%"
-                r="44"
-              />
-            </svg>
-          </div>
+          Select Null
+        </button>
+        <button>
+          Remove
+        </button>
+        <div
+          data-testid="diagnoses-form-errors"
+        />
+        <div
+          data-testid="diagnoses-form-loading"
+        >
+          Not Loading
+        </div>
+        <div
+          data-testid="diagnoses-form-results"
+        >
+          0
+           
+          results
+        </div>
+        <div
+          data-testid="diagnoses-form-selected"
+        >
+          0
+           selected
         </div>
       </div>
+      <li
+        class="cds--menu-item-divider"
+        role="separator"
+      />
+      <div
+        data-testid="mock-allergies-form"
+      >
+        <div
+          data-testid="allergies-form-selected"
+        >
+          0
+           selected
+        </div>
+      </div>
+      <li
+        class="cds--menu-item-divider"
+        role="separator"
+      />
     </div>
     <button
       data-testid="primary-button"
@@ -159,6 +199,10 @@ exports[`ConsultationPad Rendering Snapshots should match snapshot for normal st
     >
       <div
         data-testid="mock-basic-form"
+      />
+      <li
+        class="cds--menu-item-divider"
+        role="separator"
       />
       <div
         data-testid="mock-diagnoses-form"
