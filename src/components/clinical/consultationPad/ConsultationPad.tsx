@@ -80,6 +80,10 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     encounterParticipants.length > 0
   );
 
+  // TODO: Extract Business Logic
+  // 1. Create a consultationService to handle submission logic
+  // 2. Extract validation logic into a custom hook
+  // 3. Create utility functions for bundle creation
   const submitConsultation = () => {
     const enconterResourceURL = `urn:uuid:${crypto.randomUUID()}`;
     const encounterResource = createEncounterResource(

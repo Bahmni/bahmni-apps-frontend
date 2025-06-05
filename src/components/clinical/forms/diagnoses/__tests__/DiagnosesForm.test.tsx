@@ -275,6 +275,28 @@ describe('DiagnosesForm', () => {
       expect(screen.getByText('LOADING_CONCEPTS')).toBeInTheDocument();
     });
 
+    it('should display error message when search fails', async () => {
+      (useConceptSearch as jest.Mock).mockReturnValue({
+        searchResults: [],
+        loading: false,
+        error: new Error('API Error'),
+      });
+
+      render(<DiagnosesForm />);
+      const searchInput = screen.getByPlaceholderText(
+        'DIAGNOSES_SEARCH_PLACEHOLDER',
+      );
+      await userEvent.type(searchInput, 'test');
+
+      // Verify error message is displayed
+      const errorOption = screen.getByText('ERROR_FETCHING_CONCEPTS');
+      expect(errorOption).toBeInTheDocument();
+
+      // Verify the error option is disabled
+      const errorListItem = errorOption.closest('li');
+      expect(errorListItem).toHaveAttribute('disabled');
+    });
+
     it('should handle search term less than 3 characters', async () => {
       render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
