@@ -5,7 +5,11 @@ import i18n from '@/setupTests.i18n';
 import BasicForm from '../BasicForm';
 import * as api from '@services/api';
 import * as commonUtils from '@utils/common';
-import { ENCOUNTER_CONCEPTS_URL, PROVIDER_RESOURCE_URL, USER_RESOURCE_URL } from '@constants/app';
+import {
+  ENCOUNTER_CONCEPTS_URL,
+  PROVIDER_RESOURCE_URL,
+  USER_RESOURCE_URL,
+} from '@constants/app';
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 
 // Mock services
@@ -13,6 +17,11 @@ jest.mock('@services/api');
 jest.mock('@utils/common', () => ({
   ...jest.requireActual('@utils/common'),
   getCookieByName: jest.fn(),
+}));
+
+// Mock the usePatientUUID hook
+jest.mock('@hooks/usePatientUUID', () => ({
+  usePatientUUID: jest.fn(() => 'test-patient-uuid'),
 }));
 
 // Mock the date utility
@@ -60,10 +69,12 @@ jest.mock('@carbon/react', () => {
       invalid,
       invalidText,
     }: MockDropdownProps) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const safeItemToString = (item: any): string => {
         try {
           return itemToString(item);
-        } catch (e) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (_) {
           return '';
         }
       };
@@ -71,7 +82,11 @@ jest.mock('@carbon/react', () => {
       return (
         <div data-testid={id}>
           <div>{titleText}</div>
-          <select disabled={disabled} aria-label={titleText} aria-invalid={invalid}>
+          <select
+            disabled={disabled}
+            aria-label={titleText}
+            aria-invalid={invalid}
+          >
             {initialSelectedItem && (
               <option value="selected">
                 {safeItemToString(initialSelectedItem)}
@@ -137,11 +152,11 @@ describe('BasicForm Integration Tests', () => {
 
   const mockEncounterConcepts = {
     visitTypes: {
-      'OPD': '345',
-      'IPD': '678',
+      OPD: '345',
+      IPD: '678',
     },
     encounterTypes: {
-      'Consultation': '789',
+      Consultation: '789',
       'Follow-up': '012',
     },
     orderTypes: {},
@@ -208,14 +223,16 @@ describe('BasicForm Integration Tests', () => {
     i18n.changeLanguage('en');
 
     // Mock successful cookie access for location and user
-    (commonUtils.getCookieByName as jest.Mock).mockImplementation((cookieName) => {
-      if (cookieName === 'bahmni.user.location') {
-        return encodeURIComponent(JSON.stringify(mockLocationData));
-      } else if (cookieName === 'bahmni.user') {
-        return encodeURIComponent('"testuser"');
-      }
-      return null;
-    });
+    (commonUtils.getCookieByName as jest.Mock).mockImplementation(
+      (cookieName) => {
+        if (cookieName === 'bahmni.user.location') {
+          return encodeURIComponent(JSON.stringify(mockLocationData));
+        } else if (cookieName === 'bahmni.user') {
+          return encodeURIComponent('"testuser"');
+        }
+        return null;
+      },
+    );
 
     // Setup default successful API responses
     (api.get as jest.Mock).mockImplementation((url) => {
@@ -241,15 +258,11 @@ describe('BasicForm Integration Tests', () => {
     useEncounterDetailsStore.getState().reset();
   });
 
-  const renderBasicForm = (props = {}) => {
-    const defaultProps = {
-      patientUUID: 'test-patient-uuid',
-    };
-
+  const renderBasicForm = () => {
     return render(
       <I18nextProvider i18n={i18n}>
-        <BasicForm {...defaultProps} {...props} />
-      </I18nextProvider>
+        <BasicForm />
+      </I18nextProvider>,
     );
   };
 
@@ -276,7 +289,7 @@ describe('BasicForm Integration Tests', () => {
     expect(api.get).toHaveBeenCalledWith(USER_RESOURCE_URL('testuser'));
     expect(api.get).toHaveBeenCalledWith(PROVIDER_RESOURCE_URL(mockUser.uuid));
     expect(api.get).toHaveBeenCalledWith(
-      expect.stringContaining('/ws/fhir2/R4/Encounter')
+      expect.stringContaining('/ws/fhir2/R4/Encounter'),
     );
 
     // Verify store state is updated
@@ -294,14 +307,16 @@ describe('BasicForm Integration Tests', () => {
   });
 
   test('handles location cookie not found error', async () => {
-    (commonUtils.getCookieByName as jest.Mock).mockImplementation((cookieName) => {
-      if (cookieName === 'bahmni.user.location') {
+    (commonUtils.getCookieByName as jest.Mock).mockImplementation(
+      (cookieName) => {
+        if (cookieName === 'bahmni.user.location') {
+          return null;
+        } else if (cookieName === 'bahmni.user') {
+          return encodeURIComponent('"testuser"');
+        }
         return null;
-      } else if (cookieName === 'bahmni.user') {
-        return encodeURIComponent('"testuser"');
-      }
-      return null;
-    });
+      },
+    );
 
     renderBasicForm();
 
@@ -425,10 +440,18 @@ describe('BasicForm Integration Tests', () => {
     });
 
     // Verify all form fields are disabled
-    const locationSelect = screen.getByTestId('location-dropdown').querySelector('select');
-    const encounterSelect = screen.getByTestId('encounter-type-dropdown').querySelector('select');
-    const visitSelect = screen.getByTestId('visit-type-dropdown').querySelector('select');
-    const practitionerSelect = screen.getByTestId('practitioner-dropdown').querySelector('select');
+    const locationSelect = screen
+      .getByTestId('location-dropdown')
+      .querySelector('select');
+    const encounterSelect = screen
+      .getByTestId('encounter-type-dropdown')
+      .querySelector('select');
+    const visitSelect = screen
+      .getByTestId('visit-type-dropdown')
+      .querySelector('select');
+    const practitionerSelect = screen
+      .getByTestId('practitioner-dropdown')
+      .querySelector('select');
     const dateInput = screen.getByTestId('date-picker-input');
 
     expect(locationSelect).toHaveAttribute('disabled');

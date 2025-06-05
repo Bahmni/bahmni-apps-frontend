@@ -6,6 +6,7 @@ import { useLocations } from '@hooks/useLocations';
 import { useEncounterConcepts } from '@hooks/useEncounterConcepts';
 import { useActivePractitioner } from '@hooks/useActivePractitioner';
 import { useActiveVisit } from '@hooks/useActiveVisit';
+import { usePatientUUID } from '@hooks/usePatientUUID';
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 import { FhirEncounter } from '@/types/encounter';
 import i18n from '@/setupTests.i18n';
@@ -14,6 +15,7 @@ jest.mock('@hooks/useLocations');
 jest.mock('@hooks/useEncounterConcepts');
 jest.mock('@hooks/useActivePractitioner');
 jest.mock('@hooks/useActiveVisit');
+jest.mock('@hooks/usePatientUUID');
 jest.mock('@stores/encounterDetailsStore');
 
 // Mock the utils
@@ -271,18 +273,63 @@ describe('BasicForm', () => {
       loading: false,
       error: null,
     });
+    (usePatientUUID as jest.Mock).mockReturnValue('test-patient-uuid');
     (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue(
       mockStoreState,
     );
   });
 
-  const renderBasicForm = (props = {}) => {
-    const defaultProps = {
-      patientUUID: 'test-patient-uuid',
-    };
-
-    return render(<BasicForm {...defaultProps} {...props} />);
+  const renderBasicForm = () => {
+    return render(<BasicForm />);
   };
+
+  describe('usePatientUUID Hook Integration', () => {
+    it('should call useActiveVisit with patient UUID from hook', () => {
+      // Arrange
+      const testPatientUUID = 'test-patient-123';
+      (usePatientUUID as jest.Mock).mockReturnValue(testPatientUUID);
+
+      // Act
+      renderBasicForm();
+
+      // Assert
+      expect(useActiveVisit).toHaveBeenCalledWith(testPatientUUID);
+    });
+
+    it('should call useActiveVisit with null when usePatientUUID returns null', () => {
+      // Arrange
+      (usePatientUUID as jest.Mock).mockReturnValue(null);
+
+      // Act
+      renderBasicForm();
+
+      // Assert
+      expect(useActiveVisit).toHaveBeenCalledWith(null);
+    });
+
+    it('should handle null patientUUID gracefully', () => {
+      // Arrange
+      (usePatientUUID as jest.Mock).mockReturnValue(null);
+      (useActiveVisit as jest.Mock).mockReturnValue({
+        activeVisit: null,
+        loading: false,
+        error: new Error('ERROR_INVALID_PATIENT_UUID'),
+      });
+
+      // Act
+      renderBasicForm();
+
+      // Assert - Component should still render without crashing
+      expect(screen.getByTestId('grid')).toBeInTheDocument();
+      // The error from useActiveVisit should be handled by the normal error flow
+      expect(mockStoreState.setErrors).toHaveBeenCalledWith({
+        location: null,
+        encounterType: null,
+        participants: null,
+        general: new Error('ERROR_INVALID_PATIENT_UUID'),
+      });
+    });
+  });
 
   describe('Error Handling', () => {
     it('should handle errors without message property from hooks', async () => {

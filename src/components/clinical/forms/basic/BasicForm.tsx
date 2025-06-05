@@ -13,6 +13,7 @@ import { useLocations } from '@hooks/useLocations';
 import { useEncounterConcepts } from '@hooks/useEncounterConcepts';
 import { useActivePractitioner } from '@hooks/useActivePractitioner';
 import { useActiveVisit } from '@hooks/useActiveVisit';
+import { usePatientUUID } from '@hooks/usePatientUUID';
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 import { formatDate } from '@utils/date';
 import { OpenMRSLocation } from '@types/location';
@@ -21,15 +22,14 @@ import { Provider } from '@types/provider';
 import { DATE_FORMAT } from '@constants/date';
 import * as styles from './styles/BasicForm.module.scss';
 
-interface BasicFormProps {
-  patientUUID: string;
-}
-
 // Constants
 const CONSULTATION_ENCOUNTER_NAME = 'Consultation';
 
-const BasicForm: React.FC<BasicFormProps> = ({ patientUUID }) => {
+const BasicForm: React.FC = () => {
   const { t } = useTranslation();
+
+  // Get patient UUID from hook
+  const patientUUID = usePatientUUID();
 
   // Hooks
   const {
