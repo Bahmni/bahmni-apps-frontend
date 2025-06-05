@@ -95,7 +95,7 @@ describe('LabInvestigationControl', () => {
       id: 'test-3',
       testName: 'Liver Function',
       status: LabTestStatus.Pending,
-      priority: LabTestPriority.stat,
+      priority: LabTestPriority.routine,
       orderedBy: 'Dr. Williams',
       orderedDate: '2025-04-09T13:21:22+00:00',
       formattedDate: '04/09/2025',
@@ -108,12 +108,15 @@ describe('LabInvestigationControl', () => {
     {
       date: '05/08/2025',
       rawDate: '2025-05-08T12:44:24+00:00',
-      tests: [mockFormattedLabTests[0]],
+      tests: [mockFormattedLabTests[0]], // Complete Blood Count (routine)
     },
     {
       date: '04/09/2025',
       rawDate: '2025-04-09T13:21:22+00:00',
-      tests: [mockFormattedLabTests[1], mockFormattedLabTests[2]],
+      tests: [
+        mockFormattedLabTests[1], // Lipid Panel (stat/Urgent) - should be first
+        mockFormattedLabTests[2], // Liver Function (stat/Urgent) - should be second
+      ],
     },
   ];
 
@@ -180,7 +183,7 @@ describe('LabInvestigationControl', () => {
     expect(testPriorities).toHaveLength(3);
     expect(testPriorities[0].textContent).toBe(LabTestPriority.routine);
     expect(testPriorities[1].textContent).toBe(LabTestPriority.stat);
-    expect(testPriorities[2].textContent).toBe(LabTestPriority.stat);
+    expect(testPriorities[2].textContent).toBe(LabTestPriority.routine);
   });
 
   it('renders "No lab Investigations available" message when there are no lab tests and isLoading is false', () => {
@@ -214,5 +217,34 @@ describe('LabInvestigationControl', () => {
 
     // Check that the error message is displayed
     expect(screen.getByText('Error loading lab tests')).toBeInTheDocument();
+  });
+
+  it('renders urgent tests before non-urgent tests within each group', () => {
+    // Mock the hook to return lab tests
+    (useLabInvestigations as jest.Mock).mockReturnValue({
+      labTests: mockFormattedLabTests,
+      isLoading: false,
+      isError: false,
+    });
+
+    render(<LabInvestigationControl />);
+
+    // Get all test names in DOM order
+    const testNames = screen.getAllByTestId('test-name');
+    const testPriorities = screen.getAllByTestId('test-priority');
+
+    expect(testNames).toHaveLength(3);
+
+    // The component renders by date groups first, then by priority within each group
+    // First date group (05/08/2025): Complete Blood Count (routine)
+    expect(testNames[0].textContent).toBe('Complete Blood Count');
+    expect(testPriorities[0].textContent).toBe(LabTestPriority.routine);
+
+    // Second date group (04/09/2025): Urgent tests first within this group
+    expect(testNames[1].textContent).toBe('Lipid Panel');
+    expect(testPriorities[1].textContent).toBe(LabTestPriority.stat);
+
+    expect(testNames[2].textContent).toBe('Liver Function');
+    expect(testPriorities[2].textContent).toBe(LabTestPriority.routine);
   });
 });

@@ -14,31 +14,25 @@ const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  // Determine tag color based on priority
-  const getTagType = (priority: LabTestPriority): 'gray' | 'green' => {
-    switch (priority) {
-      case LabTestPriority.stat:
-        return 'gray' as const;
-      case LabTestPriority.routine:
-        return 'green' as const;
-      default:
-        return 'green' as const;
-    }
-  };
-
   return (
     <div className={styles.labBox}>
       <div className={styles.labHeader}>
         <div>
           <strong>{test.testName}</strong>
-          <span className={styles.testType}>
-            {' '}
-            {t(`LAB_TEST_${test.testType.replace(/\s+/g, '_').toUpperCase()}`)}
-          </span>
+          {test.testType === 'Panel' && (
+            <span className={styles.testType}>
+              {t(`LAB_TEST_${test.testType.toUpperCase()}`)}
+            </span>
+          )}
         </div>
-        <Tag type={getTagType(test.priority)}>
-          {t(`LAB_TEST_${test.priority.toUpperCase()}`)}
-        </Tag>
+        {test.priority === LabTestPriority.stat && (
+          <Tag
+            className={styles['yellow-tag']}
+            data-testid={`lab-test-priority-${test.priority}`}
+          >
+            {t(`LAB_TEST_${test.priority.toUpperCase()}`)}
+          </Tag>
+        )}
         <div className={styles.orderedBy}>
           <BahmniIcon name="fa-user" size={ICON_SIZE.SM} id="homeIcon" />
           {t('LAB_TEST_ORDERED_BY')}: {test.orderedBy}
