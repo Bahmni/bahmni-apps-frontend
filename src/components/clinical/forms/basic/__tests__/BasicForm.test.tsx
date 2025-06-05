@@ -237,6 +237,7 @@ describe('BasicForm', () => {
     activeVisitError: null,
     practitioner: null,
     user: null,
+    patientUUID: null,
     errors: {
       location: null,
       encounterType: null,
@@ -253,6 +254,7 @@ describe('BasicForm', () => {
     setActiveVisitError: jest.fn(),
     setPractitioner: jest.fn(),
     setUser: jest.fn(),
+    setPatientUUID: jest.fn(),
     setErrors: jest.fn(),
     reset: jest.fn(),
     getState: jest.fn(),
@@ -1500,7 +1502,9 @@ describe('BasicForm', () => {
 
       // Assert
       await waitFor(() => {
-        expect(mockStoreState.setPractitioner).toHaveBeenCalledWith(mockPractitioner);
+        expect(mockStoreState.setPractitioner).toHaveBeenCalledWith(
+          mockPractitioner,
+        );
       });
     });
 
@@ -1557,7 +1561,50 @@ describe('BasicForm', () => {
         expect(mockStoreState.setUser).not.toHaveBeenCalled();
       });
     });
+  });
 
+  describe('Patient UUID Store Integration', () => {
+    it('should set patientUUID in store when usePatientUUID returns a value', async () => {
+      // Arrange
+      const testPatientUUID = 'test-patient-123';
+      (usePatientUUID as jest.Mock).mockReturnValue(testPatientUUID);
+
+      // Act
+      renderBasicForm();
+
+      // Assert
+      await waitFor(() => {
+        expect(mockStoreState.setPatientUUID).toHaveBeenCalledWith(
+          testPatientUUID,
+        );
+      });
+    });
+
+    it('should set patientUUID to null in store when usePatientUUID returns null', async () => {
+      // Arrange
+      (usePatientUUID as jest.Mock).mockReturnValue(null);
+
+      // Act
+      renderBasicForm();
+
+      // Assert
+      await waitFor(() => {
+        expect(mockStoreState.setPatientUUID).toHaveBeenCalledWith(null);
+      });
+    });
+
+    it('should set patientUUID to undefined in store when usePatientUUID returns undefined', async () => {
+      // Arrange
+      (usePatientUUID as jest.Mock).mockReturnValue(undefined);
+
+      // Act
+      renderBasicForm();
+
+      // Assert
+      await waitFor(() => {
+        expect(mockStoreState.setPatientUUID).toHaveBeenCalledWith(undefined);
+      });
+    });
   });
 
   describe('Initialization Logic Branches', () => {
@@ -1573,7 +1620,9 @@ describe('BasicForm', () => {
         renderBasicForm();
 
         // Assert
-        expect(mockStoreState.setSelectedLocation).toHaveBeenCalledWith(mockLocations[0]);
+        expect(mockStoreState.setSelectedLocation).toHaveBeenCalledWith(
+          mockLocations[0],
+        );
       });
 
       it('should not set location when locations is empty', () => {
@@ -1623,7 +1672,7 @@ describe('BasicForm', () => {
 
         // Assert
         expect(mockStoreState.setSelectedEncounterType).toHaveBeenCalledWith(
-          mockEncounterConcepts.encounterTypes[0] // Consultation type
+          mockEncounterConcepts.encounterTypes[0], // Consultation type
         );
       });
 
@@ -1719,7 +1768,7 @@ describe('BasicForm', () => {
 
         // Assert
         expect(mockStoreState.setSelectedVisitType).toHaveBeenCalledWith(
-          mockEncounterConcepts.visitTypes[0]
+          mockEncounterConcepts.visitTypes[0],
         );
       });
 
@@ -1852,7 +1901,9 @@ describe('BasicForm', () => {
         renderBasicForm();
 
         // Assert
-        expect(mockStoreState.setEncounterParticipants).toHaveBeenCalledWith([mockPractitioner]);
+        expect(mockStoreState.setEncounterParticipants).toHaveBeenCalledWith([
+          mockPractitioner,
+        ]);
       });
 
       it('should not set practitioner as participant when no practitioner exists', () => {
@@ -1900,7 +1951,9 @@ describe('BasicForm', () => {
         renderBasicForm();
 
         // Assert
-        const practitionerDropdown = screen.getByTestId('practitioner-dropdown');
+        const practitionerDropdown = screen.getByTestId(
+          'practitioner-dropdown',
+        );
         const options = practitionerDropdown.querySelectorAll('option');
         expect(options).toHaveLength(2); // selected + practitioner option
       });
@@ -1926,7 +1979,9 @@ describe('BasicForm', () => {
         renderBasicForm();
 
         // Assert
-        const practitionerDropdown = screen.getByTestId('practitioner-dropdown');
+        const practitionerDropdown = screen.getByTestId(
+          'practitioner-dropdown',
+        );
         const options = practitionerDropdown.querySelectorAll('option');
         expect(options).toHaveLength(0); // No options when no practitioner
       });
@@ -1987,7 +2042,9 @@ describe('BasicForm', () => {
       renderBasicForm();
 
       // Assert
-      expect(screen.getByRole('alert')).toHaveTextContent('Location fetch failed');
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'Location fetch failed',
+      );
     });
 
     it('should handle undefined error messages gracefully', () => {
@@ -2014,7 +2071,9 @@ describe('BasicForm', () => {
       renderBasicForm();
 
       // Assert - Should not crash and encounter type dropdown should show invalid state
-      const encounterTypeDropdown = screen.getByTestId('encounter-type-dropdown');
+      const encounterTypeDropdown = screen.getByTestId(
+        'encounter-type-dropdown',
+      );
       expect(encounterTypeDropdown.querySelector('select')).toHaveAttribute(
         'aria-invalid',
         'true',
@@ -2052,7 +2111,9 @@ describe('BasicForm', () => {
 
       // Assert - Should not crash and show empty string
       const locationDropdown = screen.getByTestId('location-dropdown');
-      const selectedOption = locationDropdown.querySelector('option[value="selected"]');
+      const selectedOption = locationDropdown.querySelector(
+        'option[value="selected"]',
+      );
       expect(selectedOption).toHaveTextContent('');
     });
 
@@ -2078,7 +2139,8 @@ describe('BasicForm', () => {
       (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
         ...mockStoreState,
         selectedLocation: mockLocations[0],
-        selectedEncounterType: encounterConceptsWithMissingName.encounterTypes[0], // Set encounter type to show dropdown
+        selectedEncounterType:
+          encounterConceptsWithMissingName.encounterTypes[0], // Set encounter type to show dropdown
         selectedVisitType: mockEncounterConcepts.visitTypes[0],
         encounterParticipants: [mockPractitioner],
         isEncounterDetailsFormReady: true,
@@ -2088,7 +2150,9 @@ describe('BasicForm', () => {
       renderBasicForm();
 
       // Assert - Should not crash and show empty string
-      const encounterTypeDropdown = screen.getByTestId('encounter-type-dropdown');
+      const encounterTypeDropdown = screen.getByTestId(
+        'encounter-type-dropdown',
+      );
       const options = encounterTypeDropdown.querySelectorAll('option');
       expect(options[1]).toHaveTextContent(''); // Second option should be empty
     });
@@ -2118,7 +2182,9 @@ describe('BasicForm', () => {
 
       // Assert - Should not crash and show empty string
       const practitionerDropdown = screen.getByTestId('practitioner-dropdown');
-      const selectedOption = practitionerDropdown.querySelector('option[value="selected"]');
+      const selectedOption = practitionerDropdown.querySelector(
+        'option[value="selected"]',
+      );
       expect(selectedOption).toHaveTextContent('');
     });
 
@@ -2140,7 +2206,9 @@ describe('BasicForm', () => {
 
       // Assert - Should not crash and show empty string
       const practitionerDropdown = screen.getByTestId('practitioner-dropdown');
-      const selectedOption = practitionerDropdown.querySelector('option[value="selected"]');
+      const selectedOption = practitionerDropdown.querySelector(
+        'option[value="selected"]',
+      );
       expect(selectedOption).toHaveTextContent('');
     });
   });
@@ -2186,7 +2254,709 @@ describe('BasicForm', () => {
       expect(screen.getByTestId('encounter-type-dropdown')).toBeInTheDocument();
       expect(screen.getByTestId('visit-type-dropdown')).toBeInTheDocument();
       expect(screen.getByTestId('practitioner-dropdown')).toBeInTheDocument();
-      expect(screen.queryByTestId('skeleton-placeholder')).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('skeleton-placeholder'),
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Form Ready State Logic', () => {
+    describe('Happy Paths', () => {
+      it('should set form as ready when all required data is loaded successfully without errors', async () => {
+        // Arrange
+        const mockSetEncounterDetailsFormReady = jest.fn();
+        (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+          ...mockStoreState,
+          selectedLocation: mockLocations[0],
+          selectedEncounterType: mockEncounterConcepts.encounterTypes[0],
+          selectedVisitType: mockEncounterConcepts.visitTypes[0],
+          encounterParticipants: [mockPractitioner],
+          activeVisit: mockActiveVisit,
+          practitioner: mockPractitioner,
+          user: mockUser,
+          errors: {
+            location: null,
+            encounterType: null,
+            participants: null,
+            general: null,
+          },
+          setEncounterDetailsFormReady: mockSetEncounterDetailsFormReady,
+        });
+
+        // All hooks return successful data with no loading states
+        (useLocations as jest.Mock).mockReturnValue({
+          locations: mockLocations,
+          loading: false,
+          error: null,
+        });
+        (useEncounterConcepts as jest.Mock).mockReturnValue({
+          encounterConcepts: mockEncounterConcepts,
+          loading: false,
+          error: null,
+        });
+        (useActivePractitioner as jest.Mock).mockReturnValue({
+          practitioner: mockPractitioner,
+          user: mockUser,
+          loading: false,
+          error: null,
+        });
+        (useActiveVisit as jest.Mock).mockReturnValue({
+          activeVisit: mockActiveVisit,
+          loading: false,
+          error: null,
+        });
+
+        // Act
+        renderBasicForm();
+
+        // Assert
+        await waitFor(() => {
+          expect(mockSetEncounterDetailsFormReady).toHaveBeenCalledWith(true);
+        });
+      });
+    });
+
+    describe('Sad Paths - Loading States', () => {
+      it('should NOT set form as ready when locations are loading', async () => {
+        // Arrange
+        const mockSetEncounterDetailsFormReady = jest.fn();
+        (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+          ...mockStoreState,
+          selectedLocation: mockLocations[0],
+          selectedEncounterType: mockEncounterConcepts.encounterTypes[0],
+          selectedVisitType: mockEncounterConcepts.visitTypes[0],
+          encounterParticipants: [mockPractitioner],
+          activeVisit: mockActiveVisit,
+          practitioner: mockPractitioner,
+          user: mockUser,
+          errors: {},
+          setEncounterDetailsFormReady: mockSetEncounterDetailsFormReady,
+        });
+
+        (useLocations as jest.Mock).mockReturnValue({
+          locations: [],
+          loading: true, // Still loading
+          error: null,
+        });
+        (useEncounterConcepts as jest.Mock).mockReturnValue({
+          encounterConcepts: mockEncounterConcepts,
+          loading: false,
+          error: null,
+        });
+        (useActivePractitioner as jest.Mock).mockReturnValue({
+          practitioner: mockPractitioner,
+          user: mockUser,
+          loading: false,
+          error: null,
+        });
+        (useActiveVisit as jest.Mock).mockReturnValue({
+          activeVisit: mockActiveVisit,
+          loading: false,
+          error: null,
+        });
+
+        // Act
+        renderBasicForm();
+
+        // Assert
+        await waitFor(() => {
+          expect(mockSetEncounterDetailsFormReady).toHaveBeenCalledWith(false);
+        });
+      });
+
+      it('should NOT set form as ready when encounter concepts are loading', async () => {
+        // Arrange
+        const mockSetEncounterDetailsFormReady = jest.fn();
+        (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+          ...mockStoreState,
+          selectedLocation: mockLocations[0],
+          selectedEncounterType: mockEncounterConcepts.encounterTypes[0],
+          selectedVisitType: mockEncounterConcepts.visitTypes[0],
+          encounterParticipants: [mockPractitioner],
+          activeVisit: mockActiveVisit,
+          practitioner: mockPractitioner,
+          user: mockUser,
+          errors: {},
+          setEncounterDetailsFormReady: mockSetEncounterDetailsFormReady,
+        });
+
+        (useLocations as jest.Mock).mockReturnValue({
+          locations: mockLocations,
+          loading: false,
+          error: null,
+        });
+        (useEncounterConcepts as jest.Mock).mockReturnValue({
+          encounterConcepts: null,
+          loading: true, // Still loading
+          error: null,
+        });
+        (useActivePractitioner as jest.Mock).mockReturnValue({
+          practitioner: mockPractitioner,
+          user: mockUser,
+          loading: false,
+          error: null,
+        });
+        (useActiveVisit as jest.Mock).mockReturnValue({
+          activeVisit: mockActiveVisit,
+          loading: false,
+          error: null,
+        });
+
+        // Act
+        renderBasicForm();
+
+        // Assert
+        await waitFor(() => {
+          expect(mockSetEncounterDetailsFormReady).toHaveBeenCalledWith(false);
+        });
+      });
+
+      it('should NOT set form as ready when practitioner is loading', async () => {
+        // Arrange
+        const mockSetEncounterDetailsFormReady = jest.fn();
+        (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+          ...mockStoreState,
+          selectedLocation: mockLocations[0],
+          selectedEncounterType: mockEncounterConcepts.encounterTypes[0],
+          selectedVisitType: mockEncounterConcepts.visitTypes[0],
+          encounterParticipants: [mockPractitioner],
+          activeVisit: mockActiveVisit,
+          practitioner: mockPractitioner,
+          user: mockUser,
+          errors: {},
+          setEncounterDetailsFormReady: mockSetEncounterDetailsFormReady,
+        });
+
+        (useLocations as jest.Mock).mockReturnValue({
+          locations: mockLocations,
+          loading: false,
+          error: null,
+        });
+        (useEncounterConcepts as jest.Mock).mockReturnValue({
+          encounterConcepts: mockEncounterConcepts,
+          loading: false,
+          error: null,
+        });
+        (useActivePractitioner as jest.Mock).mockReturnValue({
+          practitioner: null,
+          user: null,
+          loading: true, // Still loading
+          error: null,
+        });
+        (useActiveVisit as jest.Mock).mockReturnValue({
+          activeVisit: mockActiveVisit,
+          loading: false,
+          error: null,
+        });
+
+        // Act
+        renderBasicForm();
+
+        // Assert
+        await waitFor(() => {
+          expect(mockSetEncounterDetailsFormReady).toHaveBeenCalledWith(false);
+        });
+      });
+
+      it('should NOT set form as ready when active visit is loading', async () => {
+        // Arrange
+        const mockSetEncounterDetailsFormReady = jest.fn();
+        (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+          ...mockStoreState,
+          selectedLocation: mockLocations[0],
+          selectedEncounterType: mockEncounterConcepts.encounterTypes[0],
+          selectedVisitType: mockEncounterConcepts.visitTypes[0],
+          encounterParticipants: [mockPractitioner],
+          activeVisit: mockActiveVisit,
+          practitioner: mockPractitioner,
+          user: mockUser,
+          errors: {},
+          setEncounterDetailsFormReady: mockSetEncounterDetailsFormReady,
+        });
+
+        (useLocations as jest.Mock).mockReturnValue({
+          locations: mockLocations,
+          loading: false,
+          error: null,
+        });
+        (useEncounterConcepts as jest.Mock).mockReturnValue({
+          encounterConcepts: mockEncounterConcepts,
+          loading: false,
+          error: null,
+        });
+        (useActivePractitioner as jest.Mock).mockReturnValue({
+          practitioner: mockPractitioner,
+          user: mockUser,
+          loading: false,
+          error: null,
+        });
+        (useActiveVisit as jest.Mock).mockReturnValue({
+          activeVisit: null,
+          loading: true, // Still loading
+          error: null,
+        });
+
+        // Act
+        renderBasicForm();
+
+        // Assert
+        await waitFor(() => {
+          expect(mockSetEncounterDetailsFormReady).toHaveBeenCalledWith(false);
+        });
+      });
+    });
+
+    describe('Sad Paths - Errors', () => {
+      it('should NOT set form as ready when location error exists', async () => {
+        // Arrange
+        const mockSetEncounterDetailsFormReady = jest.fn();
+        const locationError = new Error('Location error');
+        (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+          ...mockStoreState,
+          selectedLocation: mockLocations[0],
+          selectedEncounterType: mockEncounterConcepts.encounterTypes[0],
+          selectedVisitType: mockEncounterConcepts.visitTypes[0],
+          encounterParticipants: [mockPractitioner],
+          activeVisit: mockActiveVisit,
+          practitioner: mockPractitioner,
+          user: mockUser,
+          errors: {
+            location: locationError,
+            encounterType: null,
+            participants: null,
+            general: null,
+          },
+          setEncounterDetailsFormReady: mockSetEncounterDetailsFormReady,
+        });
+
+        (useLocations as jest.Mock).mockReturnValue({
+          locations: mockLocations,
+          loading: false,
+          error: locationError,
+        });
+        (useEncounterConcepts as jest.Mock).mockReturnValue({
+          encounterConcepts: mockEncounterConcepts,
+          loading: false,
+          error: null,
+        });
+        (useActivePractitioner as jest.Mock).mockReturnValue({
+          practitioner: mockPractitioner,
+          user: mockUser,
+          loading: false,
+          error: null,
+        });
+        (useActiveVisit as jest.Mock).mockReturnValue({
+          activeVisit: mockActiveVisit,
+          loading: false,
+          error: null,
+        });
+
+        // Act
+        renderBasicForm();
+
+        // Assert
+        await waitFor(() => {
+          expect(mockSetEncounterDetailsFormReady).toHaveBeenCalledWith(false);
+        });
+      });
+
+      it('should NOT set form as ready when encounter concepts error exists', async () => {
+        // Arrange
+        const mockSetEncounterDetailsFormReady = jest.fn();
+        const encounterError = new Error('Encounter concepts error');
+        (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+          ...mockStoreState,
+          selectedLocation: mockLocations[0],
+          selectedEncounterType: mockEncounterConcepts.encounterTypes[0],
+          selectedVisitType: mockEncounterConcepts.visitTypes[0],
+          encounterParticipants: [mockPractitioner],
+          activeVisit: mockActiveVisit,
+          practitioner: mockPractitioner,
+          user: mockUser,
+          errors: {
+            location: null,
+            encounterType: encounterError,
+            participants: null,
+            general: null,
+          },
+          setEncounterDetailsFormReady: mockSetEncounterDetailsFormReady,
+        });
+
+        (useLocations as jest.Mock).mockReturnValue({
+          locations: mockLocations,
+          loading: false,
+          error: null,
+        });
+        (useEncounterConcepts as jest.Mock).mockReturnValue({
+          encounterConcepts: mockEncounterConcepts,
+          loading: false,
+          error: encounterError,
+        });
+        (useActivePractitioner as jest.Mock).mockReturnValue({
+          practitioner: mockPractitioner,
+          user: mockUser,
+          loading: false,
+          error: null,
+        });
+        (useActiveVisit as jest.Mock).mockReturnValue({
+          activeVisit: mockActiveVisit,
+          loading: false,
+          error: null,
+        });
+
+        // Act
+        renderBasicForm();
+
+        // Assert
+        await waitFor(() => {
+          expect(mockSetEncounterDetailsFormReady).toHaveBeenCalledWith(false);
+        });
+      });
+
+      it('should NOT set form as ready when practitioner error exists', async () => {
+        // Arrange
+        const mockSetEncounterDetailsFormReady = jest.fn();
+        const practitionerError = new Error('Practitioner error');
+        (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+          ...mockStoreState,
+          selectedLocation: mockLocations[0],
+          selectedEncounterType: mockEncounterConcepts.encounterTypes[0],
+          selectedVisitType: mockEncounterConcepts.visitTypes[0],
+          encounterParticipants: [mockPractitioner],
+          activeVisit: mockActiveVisit,
+          practitioner: mockPractitioner,
+          user: mockUser,
+          errors: {
+            location: null,
+            encounterType: null,
+            participants: practitionerError,
+            general: null,
+          },
+          setEncounterDetailsFormReady: mockSetEncounterDetailsFormReady,
+        });
+
+        (useLocations as jest.Mock).mockReturnValue({
+          locations: mockLocations,
+          loading: false,
+          error: null,
+        });
+        (useEncounterConcepts as jest.Mock).mockReturnValue({
+          encounterConcepts: mockEncounterConcepts,
+          loading: false,
+          error: null,
+        });
+        (useActivePractitioner as jest.Mock).mockReturnValue({
+          practitioner: mockPractitioner,
+          user: mockUser,
+          loading: false,
+          error: practitionerError,
+        });
+        (useActiveVisit as jest.Mock).mockReturnValue({
+          activeVisit: mockActiveVisit,
+          loading: false,
+          error: null,
+        });
+
+        // Act
+        renderBasicForm();
+
+        // Assert
+        await waitFor(() => {
+          expect(mockSetEncounterDetailsFormReady).toHaveBeenCalledWith(false);
+        });
+      });
+
+      it('should NOT set form as ready when active visit error exists', async () => {
+        // Arrange
+        const mockSetEncounterDetailsFormReady = jest.fn();
+        const activeVisitError = new Error('Active visit error');
+        (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+          ...mockStoreState,
+          selectedLocation: mockLocations[0],
+          selectedEncounterType: mockEncounterConcepts.encounterTypes[0],
+          selectedVisitType: mockEncounterConcepts.visitTypes[0],
+          encounterParticipants: [mockPractitioner],
+          activeVisit: mockActiveVisit,
+          practitioner: mockPractitioner,
+          user: mockUser,
+          errors: {
+            location: null,
+            encounterType: null,
+            participants: null,
+            general: activeVisitError,
+          },
+          setEncounterDetailsFormReady: mockSetEncounterDetailsFormReady,
+        });
+
+        (useLocations as jest.Mock).mockReturnValue({
+          locations: mockLocations,
+          loading: false,
+          error: null,
+        });
+        (useEncounterConcepts as jest.Mock).mockReturnValue({
+          encounterConcepts: mockEncounterConcepts,
+          loading: false,
+          error: null,
+        });
+        (useActivePractitioner as jest.Mock).mockReturnValue({
+          practitioner: mockPractitioner,
+          user: mockUser,
+          loading: false,
+          error: null,
+        });
+        (useActiveVisit as jest.Mock).mockReturnValue({
+          activeVisit: mockActiveVisit,
+          loading: false,
+          error: activeVisitError,
+        });
+
+        // Act
+        renderBasicForm();
+
+        // Assert
+        await waitFor(() => {
+          expect(mockSetEncounterDetailsFormReady).toHaveBeenCalledWith(false);
+        });
+      });
+    });
+
+    describe('Sad Paths - Missing Required Fields', () => {
+      it('should NOT set form as ready when selectedLocation is null', async () => {
+        // Arrange
+        const mockSetEncounterDetailsFormReady = jest.fn();
+        (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+          ...mockStoreState,
+          selectedLocation: null, // Missing location
+          selectedEncounterType: mockEncounterConcepts.encounterTypes[0],
+          selectedVisitType: mockEncounterConcepts.visitTypes[0],
+          encounterParticipants: [mockPractitioner],
+          activeVisit: mockActiveVisit,
+          practitioner: mockPractitioner,
+          user: mockUser,
+          errors: {},
+          setEncounterDetailsFormReady: mockSetEncounterDetailsFormReady,
+        });
+
+        // Act
+        renderBasicForm();
+
+        // Assert
+        await waitFor(() => {
+          expect(mockSetEncounterDetailsFormReady).toHaveBeenCalledWith(false);
+        });
+      });
+
+      it('should NOT set form as ready when selectedEncounterType is null', async () => {
+        // Arrange
+        const mockSetEncounterDetailsFormReady = jest.fn();
+        (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+          ...mockStoreState,
+          selectedLocation: mockLocations[0],
+          selectedEncounterType: null, // Missing encounter type
+          selectedVisitType: mockEncounterConcepts.visitTypes[0],
+          encounterParticipants: [mockPractitioner],
+          activeVisit: mockActiveVisit,
+          practitioner: mockPractitioner,
+          user: mockUser,
+          errors: {},
+          setEncounterDetailsFormReady: mockSetEncounterDetailsFormReady,
+        });
+
+        // Act
+        renderBasicForm();
+
+        // Assert
+        await waitFor(() => {
+          expect(mockSetEncounterDetailsFormReady).toHaveBeenCalledWith(false);
+        });
+      });
+
+      it('should NOT set form as ready when selectedVisitType is null', async () => {
+        // Arrange
+        const mockSetEncounterDetailsFormReady = jest.fn();
+        (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+          ...mockStoreState,
+          selectedLocation: mockLocations[0],
+          selectedEncounterType: mockEncounterConcepts.encounterTypes[0],
+          selectedVisitType: null, // Missing visit type
+          encounterParticipants: [mockPractitioner],
+          activeVisit: mockActiveVisit,
+          practitioner: mockPractitioner,
+          user: mockUser,
+          errors: {},
+          setEncounterDetailsFormReady: mockSetEncounterDetailsFormReady,
+        });
+
+        // Act
+        renderBasicForm();
+
+        // Assert
+        await waitFor(() => {
+          expect(mockSetEncounterDetailsFormReady).toHaveBeenCalledWith(false);
+        });
+      });
+
+      it('should NOT set form as ready when practitioner is null', async () => {
+        // Arrange
+        const mockSetEncounterDetailsFormReady = jest.fn();
+        (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+          ...mockStoreState,
+          selectedLocation: mockLocations[0],
+          selectedEncounterType: mockEncounterConcepts.encounterTypes[0],
+          selectedVisitType: mockEncounterConcepts.visitTypes[0],
+          encounterParticipants: [mockPractitioner],
+          activeVisit: mockActiveVisit,
+          practitioner: null, // Missing practitioner
+          user: mockUser,
+          errors: {},
+          setEncounterDetailsFormReady: mockSetEncounterDetailsFormReady,
+        });
+
+        // Act
+        renderBasicForm();
+
+        // Assert
+        await waitFor(() => {
+          expect(mockSetEncounterDetailsFormReady).toHaveBeenCalledWith(false);
+        });
+      });
+
+      it('should NOT set form as ready when user is null', async () => {
+        // Arrange
+        const mockSetEncounterDetailsFormReady = jest.fn();
+        (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+          ...mockStoreState,
+          selectedLocation: mockLocations[0],
+          selectedEncounterType: mockEncounterConcepts.encounterTypes[0],
+          selectedVisitType: mockEncounterConcepts.visitTypes[0],
+          encounterParticipants: [mockPractitioner],
+          activeVisit: mockActiveVisit,
+          practitioner: mockPractitioner,
+          user: null, // Missing user
+          errors: {},
+          setEncounterDetailsFormReady: mockSetEncounterDetailsFormReady,
+        });
+
+        // Act
+        renderBasicForm();
+
+        // Assert
+        await waitFor(() => {
+          expect(mockSetEncounterDetailsFormReady).toHaveBeenCalledWith(false);
+        });
+      });
+
+      it('should NOT set form as ready when activeVisit is null', async () => {
+        // Arrange
+        const mockSetEncounterDetailsFormReady = jest.fn();
+        (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+          ...mockStoreState,
+          selectedLocation: mockLocations[0],
+          selectedEncounterType: mockEncounterConcepts.encounterTypes[0],
+          selectedVisitType: mockEncounterConcepts.visitTypes[0],
+          encounterParticipants: [mockPractitioner],
+          activeVisit: null, // Missing active visit
+          practitioner: mockPractitioner,
+          user: mockUser,
+          errors: {},
+          setEncounterDetailsFormReady: mockSetEncounterDetailsFormReady,
+        });
+
+        // Act
+        renderBasicForm();
+
+        // Assert
+        await waitFor(() => {
+          expect(mockSetEncounterDetailsFormReady).toHaveBeenCalledWith(false);
+        });
+      });
+
+      it('should NOT set form as ready when encounterParticipants is empty', async () => {
+        // Arrange
+        const mockSetEncounterDetailsFormReady = jest.fn();
+        (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+          ...mockStoreState,
+          selectedLocation: mockLocations[0],
+          selectedEncounterType: mockEncounterConcepts.encounterTypes[0],
+          selectedVisitType: mockEncounterConcepts.visitTypes[0],
+          encounterParticipants: [], // Empty participants
+          activeVisit: mockActiveVisit,
+          practitioner: mockPractitioner,
+          user: mockUser,
+          errors: {},
+          setEncounterDetailsFormReady: mockSetEncounterDetailsFormReady,
+        });
+
+        // Act
+        renderBasicForm();
+
+        // Assert
+        await waitFor(() => {
+          expect(mockSetEncounterDetailsFormReady).toHaveBeenCalledWith(false);
+        });
+      });
+    });
+
+    describe('Edge Cases', () => {
+      it('should NOT set form as ready with multiple simultaneous errors', async () => {
+        // Arrange
+        const mockSetEncounterDetailsFormReady = jest.fn();
+        const locationError = new Error('Location error');
+        const encounterError = new Error('Encounter error');
+        const practitionerError = new Error('Practitioner error');
+        const visitError = new Error('Visit error');
+
+        (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+          ...mockStoreState,
+          selectedLocation: mockLocations[0],
+          selectedEncounterType: mockEncounterConcepts.encounterTypes[0],
+          selectedVisitType: mockEncounterConcepts.visitTypes[0],
+          encounterParticipants: [mockPractitioner],
+          activeVisit: mockActiveVisit,
+          practitioner: mockPractitioner,
+          user: mockUser,
+          errors: {
+            location: locationError,
+            encounterType: encounterError,
+            participants: practitionerError,
+            general: visitError,
+          },
+          setEncounterDetailsFormReady: mockSetEncounterDetailsFormReady,
+        });
+
+        // Act
+        renderBasicForm();
+
+        // Assert
+        await waitFor(() => {
+          expect(mockSetEncounterDetailsFormReady).toHaveBeenCalledWith(false);
+        });
+      });
+
+      it('should NOT set form as ready with multiple missing fields', async () => {
+        // Arrange
+        const mockSetEncounterDetailsFormReady = jest.fn();
+        (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+          ...mockStoreState,
+          selectedLocation: null, // Missing
+          selectedEncounterType: null, // Missing
+          selectedVisitType: null, // Missing
+          encounterParticipants: [], // Empty
+          activeVisit: null, // Missing
+          practitioner: null, // Missing
+          user: null, // Missing
+          errors: {},
+          setEncounterDetailsFormReady: mockSetEncounterDetailsFormReady,
+        });
+
+        // Act
+        renderBasicForm();
+
+        // Assert
+        await waitFor(() => {
+          expect(mockSetEncounterDetailsFormReady).toHaveBeenCalledWith(false);
+        });
+      });
     });
   });
 });

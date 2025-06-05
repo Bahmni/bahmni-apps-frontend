@@ -30,6 +30,9 @@ export interface EncounterDetailsState {
   practitioner: Provider | null;
   user: User | null;
 
+  // Patient management
+  patientUUID: string | null;
+
   // Form readiness state
   isEncounterDetailsFormReady: boolean;
 
@@ -47,6 +50,7 @@ export interface EncounterDetailsState {
   setActiveVisitError: (error: Error | null) => void;
   setPractitioner: (practitioner: Provider | null) => void;
   setUser: (user: User | null) => void;
+  setPatientUUID: (patientUUID: string | null) => void;
   setErrors: (errors: Partial<EncounterDetailsErrors>) => void;
 
   // Reset
@@ -68,6 +72,7 @@ export const useEncounterDetailsStore = create<EncounterDetailsState>(
     activeVisitError: null,
     practitioner: null,
     user: null,
+    patientUUID: null,
     errors: {},
 
     setSelectedLocation: (location) => set({ selectedLocation: location }),
@@ -83,6 +88,7 @@ export const useEncounterDetailsStore = create<EncounterDetailsState>(
     setActiveVisitError: (error) => set({ activeVisitError: error }),
     setPractitioner: (practitioner) => set({ practitioner: practitioner }),
     setUser: (user) => set({ user: user }),
+    setPatientUUID: (patientUUID) => set({ patientUUID: patientUUID }),
 
     setErrors: (errors: Partial<EncounterDetailsErrors>) =>
       set((state) => ({
@@ -101,6 +107,7 @@ export const useEncounterDetailsStore = create<EncounterDetailsState>(
         activeVisitError: null,
         practitioner: null,
         user: null,
+        patientUUID: null,
         errors: {},
       }),
 

@@ -72,6 +72,7 @@ const BasicForm: React.FC = () => {
     setActiveVisitError,
     setPractitioner,
     setUser,
+    setPatientUUID,
     setErrors,
   } = useEncounterDetailsStore();
 
@@ -159,13 +160,57 @@ const BasicForm: React.FC = () => {
     setActiveVisitError(activeVisitError || null);
   }, [activeVisit, activeVisitError, setActiveVisit, setActiveVisitError]);
 
-  // Update form ready state
+  /**
+   * Updates the form ready state based on multiple criteria.
+   * The form is considered ready only when:
+   * 1. All data has finished loading (no loading states)
+   * 2. No errors are present
+   * 3. All required fields are populated:
+   *    - selectedLocation
+   *    - selectedEncounterType
+   *    - selectedVisitType
+   *    - practitioner
+   *    - user
+   *    - activeVisit
+   *    - encounterParticipants (at least one)
+   */
   useEffect(() => {
+    // Check all loading states are false
     const isAllDataLoaded = Object.values(allLoadingStates).every(
       (loading) => !loading,
     );
-    setEncounterDetailsFormReady(isAllDataLoaded);
-  }, [allLoadingStates, setEncounterDetailsFormReady]);
+
+    // Check no errors exist
+    const hasNoErrors = Object.values(errors).every(
+      (error) => error === null || error === undefined,
+    );
+
+    // Check all required fields are populated
+    const hasAllRequiredFields =
+      selectedLocation !== null &&
+      selectedEncounterType !== null &&
+      selectedVisitType !== null &&
+      practitioner !== null &&
+      user !== null &&
+      activeVisit !== null &&
+      encounterParticipants.length > 0;
+
+    // Form is ready only when ALL conditions are met
+    const isFormReady = isAllDataLoaded && hasNoErrors && hasAllRequiredFields;
+
+    setEncounterDetailsFormReady(isFormReady);
+  }, [
+    allLoadingStates,
+    errors,
+    selectedLocation,
+    selectedEncounterType,
+    selectedVisitType,
+    practitioner,
+    user,
+    activeVisit,
+    encounterParticipants,
+    setEncounterDetailsFormReady,
+  ]);
 
   // Set practitioner and user in store
   useEffect(() => {
@@ -176,6 +221,11 @@ const BasicForm: React.FC = () => {
       setUser(user);
     }
   }, [practitioner, user, setPractitioner, setUser]);
+
+  // Set patient UUID in store
+  useEffect(() => {
+    setPatientUUID(patientUUID);
+  }, [patientUUID, setPatientUUID]);
 
   // Update error state in store
   useEffect(() => {

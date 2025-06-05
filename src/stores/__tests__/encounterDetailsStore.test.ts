@@ -705,4 +705,63 @@ describe('encounterDetailsStore', () => {
       expect(result.current.user).toBeNull();
     });
   });
+
+  describe('patientUUID management', () => {
+    const mockPatientUUID = 'patient-uuid-123';
+
+    it('should set patientUUID correctly', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setPatientUUID(mockPatientUUID);
+      });
+
+      expect(result.current.patientUUID).toEqual(mockPatientUUID);
+    });
+
+    it('should allow setting patientUUID to null', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setPatientUUID(mockPatientUUID);
+      });
+      expect(result.current.patientUUID).toEqual(mockPatientUUID);
+
+      act(() => {
+        result.current.setPatientUUID(null);
+      });
+      expect(result.current.patientUUID).toBeNull();
+    });
+
+    it('should include patientUUID in getState', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setPatientUUID(mockPatientUUID);
+      });
+
+      const state = result.current.getState();
+      expect(state.patientUUID).toEqual(mockPatientUUID);
+    });
+
+    it('should reset patientUUID to null on reset', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      act(() => {
+        result.current.setPatientUUID(mockPatientUUID);
+      });
+      expect(result.current.patientUUID).toEqual(mockPatientUUID);
+
+      act(() => {
+        result.current.reset();
+      });
+      expect(result.current.patientUUID).toBeNull();
+    });
+
+    it('should start with null patientUUID in initial state', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      expect(result.current.patientUUID).toBeNull();
+    });
+  });
 });
