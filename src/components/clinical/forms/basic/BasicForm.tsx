@@ -5,7 +5,6 @@ import {
   DatePickerInput,
   Grid,
   Column,
-  MenuItemDivider,
   SkeletonPlaceholder,
 } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
@@ -346,7 +345,6 @@ const BasicForm: React.FC = () => {
           </FormField>
         </Column>
       </Grid>
-      <MenuItemDivider />
     </>
   );
 };

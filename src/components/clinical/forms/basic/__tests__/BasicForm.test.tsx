@@ -1351,14 +1351,6 @@ describe('BasicForm', () => {
       const columns = screen.getAllByTestId('column');
       expect(columns).toHaveLength(5); // Location, Encounter Type, Visit Type, Practitioner, Date
     });
-
-    it('should render a divider after the form fields', () => {
-      // Act
-      renderBasicForm();
-
-      // Assert
-      expect(screen.getByRole('separator')).toBeInTheDocument();
-    });
   });
 
   describe('Accessibility', () => {

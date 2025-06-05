@@ -88,9 +88,184 @@ describe('ActionArea', () => {
     expect(onTertiaryButtonClick).toHaveBeenCalledTimes(1);
   });
 
+  describe('Button Disabled States', () => {
+    it('disables primary button when isPrimaryButtonDisabled is true', () => {
+      render(
+        <ActionArea
+          {...defaultProps}
+          isPrimaryButtonDisabled={true}
+        />
+      );
+
+      const primaryButton = screen.getByText('Done');
+      expect(primaryButton).toBeDisabled();
+    });
+
+    it('disables secondary button when isSecondaryButtonDisabled is true', () => {
+      render(
+        <ActionArea
+          {...defaultProps}
+          isSecondaryButtonDisabled={true}
+        />
+      );
+
+      const secondaryButton = screen.getByText('Cancel');
+      expect(secondaryButton).toBeDisabled();
+    });
+
+    it('disables both primary and secondary buttons when both disabled props are true', () => {
+      render(
+        <ActionArea
+          {...defaultProps}
+          isPrimaryButtonDisabled={true}
+          isSecondaryButtonDisabled={true}
+        />
+      );
+
+      const primaryButton = screen.getByText('Done');
+      const secondaryButton = screen.getByText('Cancel');
+
+      expect(primaryButton).toBeDisabled();
+      expect(secondaryButton).toBeDisabled();
+    });
+
+    it('does not call primary button click handler when button is disabled', () => {
+      const onPrimaryButtonClick = jest.fn();
+      render(
+        <ActionArea
+          {...defaultProps}
+          onPrimaryButtonClick={onPrimaryButtonClick}
+          isPrimaryButtonDisabled={true}
+        />
+      );
+
+      const primaryButton = screen.getByText('Done');
+      fireEvent.click(primaryButton);
+
+      expect(onPrimaryButtonClick).not.toHaveBeenCalled();
+    });
+
+    it('does not call secondary button click handler when button is disabled', () => {
+      const onSecondaryButtonClick = jest.fn();
+      render(
+        <ActionArea
+          {...defaultProps}
+          onSecondaryButtonClick={onSecondaryButtonClick}
+          isSecondaryButtonDisabled={true}
+        />
+      );
+
+      const secondaryButton = screen.getByText('Cancel');
+      fireEvent.click(secondaryButton);
+
+      expect(onSecondaryButtonClick).not.toHaveBeenCalled();
+    });
+
+    it('disables tertiary button when isTertiaryButtonDisabled is true', () => {
+      render(
+        <ActionArea
+          {...defaultProps}
+          tertiaryButtonText="Discard"
+          onTertiaryButtonClick={jest.fn()}
+          isTertiaryButtonDisabled={true}
+        />
+      );
+
+      const tertiaryButton = screen.getByText('Discard');
+      expect(tertiaryButton).toBeDisabled();
+    });
+
+    it('disables all buttons when all disabled props are true', () => {
+      render(
+        <ActionArea
+          {...defaultProps}
+          tertiaryButtonText="Discard"
+          onTertiaryButtonClick={jest.fn()}
+          isPrimaryButtonDisabled={true}
+          isSecondaryButtonDisabled={true}
+          isTertiaryButtonDisabled={true}
+        />
+      );
+
+      const primaryButton = screen.getByText('Done');
+      const secondaryButton = screen.getByText('Cancel');
+      const tertiaryButton = screen.getByText('Discard');
+
+      expect(primaryButton).toBeDisabled();
+      expect(secondaryButton).toBeDisabled();
+      expect(tertiaryButton).toBeDisabled();
+    });
+
+    it('does not call tertiary button click handler when button is disabled', () => {
+      const onTertiaryButtonClick = jest.fn();
+      render(
+        <ActionArea
+          {...defaultProps}
+          tertiaryButtonText="Discard"
+          onTertiaryButtonClick={onTertiaryButtonClick}
+          isTertiaryButtonDisabled={true}
+        />
+      );
+
+      const tertiaryButton = screen.getByText('Discard');
+      fireEvent.click(tertiaryButton);
+
+      expect(onTertiaryButtonClick).not.toHaveBeenCalled();
+    });
+
+    it('tertiary button remains unaffected by primary and secondary disabled states', () => {
+      const onTertiaryButtonClick = jest.fn();
+      render(
+        <ActionArea
+          {...defaultProps}
+          tertiaryButtonText="Discard"
+          onTertiaryButtonClick={onTertiaryButtonClick}
+          isPrimaryButtonDisabled={true}
+          isSecondaryButtonDisabled={true}
+        />
+      );
+
+      const tertiaryButton = screen.getByText('Discard');
+      expect(tertiaryButton).toBeEnabled();
+
+      fireEvent.click(tertiaryButton);
+      expect(onTertiaryButtonClick).toHaveBeenCalledTimes(1);
+    });
+
+    it('maintains proper aria attributes when buttons are disabled', () => {
+      render(
+        <ActionArea
+          {...defaultProps}
+          isPrimaryButtonDisabled={true}
+          isSecondaryButtonDisabled={true}
+        />
+      );
+
+      const primaryButton = screen.getByText('Done');
+      const secondaryButton = screen.getByText('Cancel');
+
+      expect(primaryButton).toBeDisabled();
+      expect(secondaryButton).toBeDisabled();
+      expect(primaryButton).toHaveAttribute('aria-label', 'Done');
+      expect(secondaryButton).toHaveAttribute('aria-label', 'Cancel');
+    });
+  });
+
   describe('Accessibility', () => {
     it('should have no accessibility violations', async () => {
       const { container } = render(<ActionArea {...defaultProps} />);
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('should have no accessibility violations with disabled buttons', async () => {
+      const { container } = render(
+        <ActionArea
+          {...defaultProps}
+          isPrimaryButtonDisabled={true}
+          isSecondaryButtonDisabled={true}
+        />
+      );
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });
