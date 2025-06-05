@@ -16,9 +16,8 @@ exports[`ConsultationPad Rendering Snapshots should match snapshot for error sta
       <div
         data-testid="mock-basic-form"
       />
-      <li
-        class="cds--menu-item-divider"
-        role="separator"
+      <hr
+        data-testid="mock-divider"
       />
       <div
         data-testid="mock-diagnoses-form"
@@ -59,9 +58,8 @@ exports[`ConsultationPad Rendering Snapshots should match snapshot for error sta
            selected
         </div>
       </div>
-      <li
-        class="cds--menu-item-divider"
-        role="separator"
+      <hr
+        data-testid="mock-divider"
       />
       <div
         data-testid="mock-allergies-form"
@@ -73,9 +71,8 @@ exports[`ConsultationPad Rendering Snapshots should match snapshot for error sta
            selected
         </div>
       </div>
-      <li
-        class="cds--menu-item-divider"
-        role="separator"
+      <hr
+        data-testid="mock-divider"
       />
     </div>
     <button
@@ -108,9 +105,8 @@ exports[`ConsultationPad Rendering Snapshots should match snapshot for loading s
       <div
         data-testid="mock-basic-form"
       />
-      <li
-        class="cds--menu-item-divider"
-        role="separator"
+      <hr
+        data-testid="mock-divider"
       />
       <div
         data-testid="mock-diagnoses-form"
@@ -151,9 +147,8 @@ exports[`ConsultationPad Rendering Snapshots should match snapshot for loading s
            selected
         </div>
       </div>
-      <li
-        class="cds--menu-item-divider"
-        role="separator"
+      <hr
+        data-testid="mock-divider"
       />
       <div
         data-testid="mock-allergies-form"
@@ -165,9 +160,8 @@ exports[`ConsultationPad Rendering Snapshots should match snapshot for loading s
            selected
         </div>
       </div>
-      <li
-        class="cds--menu-item-divider"
-        role="separator"
+      <hr
+        data-testid="mock-divider"
       />
     </div>
     <button
@@ -200,9 +194,8 @@ exports[`ConsultationPad Rendering Snapshots should match snapshot for normal st
       <div
         data-testid="mock-basic-form"
       />
-      <li
-        class="cds--menu-item-divider"
-        role="separator"
+      <hr
+        data-testid="mock-divider"
       />
       <div
         data-testid="mock-diagnoses-form"
@@ -243,9 +236,8 @@ exports[`ConsultationPad Rendering Snapshots should match snapshot for normal st
            selected
         </div>
       </div>
-      <li
-        class="cds--menu-item-divider"
-        role="separator"
+      <hr
+        data-testid="mock-divider"
       />
       <div
         data-testid="mock-allergies-form"
@@ -257,9 +249,8 @@ exports[`ConsultationPad Rendering Snapshots should match snapshot for normal st
            selected
         </div>
       </div>
-      <li
-        class="cds--menu-item-divider"
-        role="separator"
+      <hr
+        data-testid="mock-divider"
       />
     </div>
     <button

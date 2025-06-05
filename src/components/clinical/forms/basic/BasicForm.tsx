@@ -60,7 +60,6 @@ const BasicForm: React.FC = () => {
     selectedVisitType,
     encounterParticipants,
     consultationDate,
-    isEncounterDetailsFormReady,
     hasError,
     setSelectedLocation,
     setSelectedEncounterType,
@@ -318,21 +317,16 @@ const BasicForm: React.FC = () => {
         </Column>
 
         <Column sm={4} md={8} lg={5} className={styles.column}>
-          <FormField
-            isLoading={!isEncounterDetailsFormReady}
-            placeholder={<DropdownPlaceholder />}
-          >
-            <DatePicker datePickerType="single" dateFormat={DATE_FORMAT}>
-              <DatePickerInput
-                id="encounter-date-picker-input"
-                placeholder={formattedDate.formattedResult}
-                title={t('ENCOUNTER_DATE')}
-                labelText={t('ENCOUNTER_DATE')}
-                defaultValue={formattedDate.formattedResult}
-                disabled
-              />
-            </DatePicker>
-          </FormField>
+          <DatePicker datePickerType="single" dateFormat={DATE_FORMAT}>
+            <DatePickerInput
+              id="encounter-date-picker-input"
+              placeholder={formattedDate.formattedResult}
+              title={t('ENCOUNTER_DATE')}
+              labelText={t('ENCOUNTER_DATE')}
+              defaultValue={formattedDate.formattedResult}
+              disabled
+            />
+          </DatePicker>
         </Column>
       </Grid>
     </>

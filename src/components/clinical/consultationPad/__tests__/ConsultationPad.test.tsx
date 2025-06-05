@@ -133,11 +133,13 @@ jest.mock('@stores/encounterDetailsStore', () => {
       practitioner: null,
       user: null,
       patientUUID: null,
+      hasError: false,
       setSelectedLocation: jest.fn(),
       setSelectedEncounterType: jest.fn(),
       setEncounterParticipants: jest.fn(),
       setConsultationDate: jest.fn(),
       setEncounterDetailsFormReady: jest.fn(),
+      setHasError: jest.fn(),
       reset: jest.fn(),
       getState: jest.fn(),
     };
@@ -199,6 +201,7 @@ jest.mock('@components/common/actionArea/ActionArea', () => {
         <button
           data-testid="primary-button"
           onClick={props.onPrimaryButtonClick}
+          disabled={props.isPrimaryButtonDisabled}
         >
           {props.primaryButtonText}
         </button>
@@ -231,6 +234,36 @@ jest.mock('@components/clinical/forms/allergies/AllergiesForm', () => {
         </div>
       </div>
     );
+  };
+});
+
+jest.mock('@carbon/react', () => {
+  const actual = jest.requireActual('@carbon/react');
+  return {
+    ...actual,
+    Grid: ({
+      className,
+      children,
+    }: {
+      className?: string;
+      children: React.ReactNode;
+    }) => (
+      <div data-testid="mock-grid" className={className}>
+        {children}
+      </div>
+    ),
+    Column: ({
+      className,
+      children,
+    }: {
+      className?: string;
+      children: React.ReactNode;
+    }) => (
+      <div data-testid="mock-column" className={className}>
+        {children}
+      </div>
+    ),
+    MenuItemDivider: () => <hr data-testid="mock-divider" />,
   };
 });
 

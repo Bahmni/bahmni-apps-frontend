@@ -184,11 +184,16 @@ exports[`BasicForm Snapshot Tests should match snapshot when loading 1`] = `
     data-testid="column"
   >
     <div
-      data-testid="skeleton-placeholder"
-    />
-    <div
-      data-testid="skeleton-placeholder"
-    />
+      data-testid="date-picker"
+    >
+      <input
+        aria-label="Encounter Date"
+        data-testid="date-picker-input"
+        disabled=""
+        id="encounter-date-picker-input"
+        placeholder="16/05/2025"
+      />
+    </div>
   </div>
 </div>
 `;

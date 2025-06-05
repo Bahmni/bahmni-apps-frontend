@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import ActionArea from '@components/common/actionArea/ActionArea';
-import { MenuItemDivider } from '@carbon/react';
+import { Column, Grid, MenuItemDivider } from '@carbon/react';
 import BasicForm from '@components/clinical/forms/basic/BasicForm';
 import DiagnosesForm from '@components/clinical/forms/diagnoses/DiagnosesForm';
 import AllergiesForm from '@components/clinical/forms/allergies/AllergiesForm';
@@ -21,6 +21,7 @@ import { ERROR_TITLES } from '@constants/errors';
 import { useDiagnosisStore } from '@stores/diagnosisStore';
 import useAllergyStore from '@stores/allergyStore';
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
+import * as styles from './styles/ConsultationPad.module.scss';
 
 interface ConsultationPadProps {
   onClose: () => void;
@@ -55,6 +56,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     practitioner,
     user,
     patientUUID,
+    hasError,
     reset: resetEncounterDetails,
   } = useEncounterDetailsStore();
 
@@ -163,7 +165,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
 
   return (
     <ActionArea
-      title={t('CONSULTATION_PAD_TITLE')}
+      title={hasError ? '' : t('CONSULTATION_PAD_TITLE')}
       primaryButtonText={t('CONSULTATION_PAD_DONE_BUTTON')}
       onPrimaryButtonClick={handleOnPrimaryButtonClick}
       isPrimaryButtonDisabled={
@@ -172,14 +174,39 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       secondaryButtonText={t('CONSULTATION_PAD_CANCEL_BUTTON')}
       onSecondaryButtonClick={handleOnSecondaryButtonClick}
       content={
-        <>
-          <BasicForm />
-          <MenuItemDivider />
-          <DiagnosesForm />
-          <MenuItemDivider />
-          <AllergiesForm />
-          <MenuItemDivider />
-        </>
+        hasError ? (
+          <>
+            <Grid className={styles.emptyState}>
+              <Column
+                sm={4}
+                md={8}
+                lg={16}
+                xlg={16}
+                className={styles.emptyStateTitle}
+              >
+                {t('CONSULTATION_PAD_ERROR_TITLE')}
+              </Column>
+              <Column
+                sm={4}
+                md={8}
+                lg={16}
+                xlg={16}
+                className={styles.emptyStateBody}
+              >
+                {t('CONSULTATION_PAD_ERROR_BODY')}
+              </Column>
+            </Grid>
+          </>
+        ) : (
+          <>
+            <BasicForm />
+            <MenuItemDivider />
+            <DiagnosesForm />
+            <MenuItemDivider />
+            <AllergiesForm />
+            <MenuItemDivider />
+          </>
+        )
       }
     />
   );

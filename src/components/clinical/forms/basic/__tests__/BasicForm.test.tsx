@@ -529,7 +529,7 @@ describe('BasicForm', () => {
 
       // Assert
       const skeletons = screen.getAllByTestId('skeleton-placeholder');
-      expect(skeletons).toHaveLength(6); // Both encounter type and visit type (2 each) + date field (2)
+      expect(skeletons).toHaveLength(4); // Both encounter type and visit type (2 each)
       expect(
         screen.queryByTestId('encounter-type-dropdown'),
       ).not.toBeInTheDocument();
@@ -610,7 +610,7 @@ describe('BasicForm', () => {
       // Assert
       // Visit type field should show loading, date field should show loading due to form not ready
       const skeletons = screen.getAllByTestId('skeleton-placeholder');
-      expect(skeletons).toHaveLength(4); // Visit type (2) + date field (2)
+      expect(skeletons).toHaveLength(2); // Visit type (2)
       expect(
         screen.queryByTestId('visit-type-dropdown'),
       ).not.toBeInTheDocument();
