@@ -8,7 +8,7 @@ import {
   LabTestStatus,
   LabTestPriority,
   FormattedLabTest,
-} from '@/types/labInvestigation';
+} from '@types/labInvestigation';
 import i18n from '@/setupTests.i18n';
 
 // Mock the useLabInvestigations hook

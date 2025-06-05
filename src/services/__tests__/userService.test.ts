@@ -2,20 +2,13 @@ import { getCurrentUser } from '@services/userService';
 import { get } from '@services/api';
 import { USER_RESOURCE_URL, BAHMNI_USER_COOKIE_NAME } from '@constants/app';
 import * as commonUtils from '@utils/common';
-import notificationService from '@services/notificationService';
+import i18n from '@/setupTests.i18n';
 
 // Mock dependencies
 jest.mock('@services/api');
-jest.mock('@services/notificationService', () => ({
-  showError: jest.fn(),
-}));
 jest.mock('@utils/common', () => ({
   ...jest.requireActual('@utils/common'),
   getCookieByName: jest.fn(),
-  getFormattedError: jest.fn().mockImplementation((error) => ({
-    title: 'Error Title',
-    message: error instanceof Error ? error.message : 'Unknown error',
-  })),
 }));
 
 describe('userService', () => {
@@ -50,8 +43,8 @@ describe('userService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (get as jest.Mock).mockReset();
+    i18n.changeLanguage('en'); // Reset language for each test
     (commonUtils.getCookieByName as jest.Mock).mockReset();
-    (notificationService.showError as jest.Mock).mockReset();
   });
 
   describe('getCurrentUser', () => {
@@ -70,7 +63,6 @@ describe('userService', () => {
       );
       expect(get).toHaveBeenCalledWith(USER_RESOURCE_URL(mockUsername));
       expect(result).toEqual(mockUserResponse.results[0]);
-      expect(notificationService.showError).not.toHaveBeenCalled();
     });
 
     it('should handle URL-encoded username in cookie', async () => {
@@ -86,7 +78,6 @@ describe('userService', () => {
       // Assert
       expect(get).toHaveBeenCalledWith(USER_RESOURCE_URL(mockUsername));
       expect(result).toEqual(mockUserResponse.results[0]);
-      expect(notificationService.showError).not.toHaveBeenCalled();
     });
 
     it('should handle quoted username in cookie', async () => {
@@ -102,7 +93,6 @@ describe('userService', () => {
       // Assert
       expect(get).toHaveBeenCalledWith(USER_RESOURCE_URL(mockUsername));
       expect(result).toEqual(mockUserResponse.results[0]);
-      expect(notificationService.showError).not.toHaveBeenCalled();
     });
 
     it('should handle special characters in username', async () => {
@@ -123,7 +113,6 @@ describe('userService', () => {
       // Assert
       expect(get).toHaveBeenCalledWith(USER_RESOURCE_URL(mockSpecialUsername));
       expect(result).toEqual(specialUserResponse.results[0]);
-      expect(notificationService.showError).not.toHaveBeenCalled();
     });
 
     // Sad Path Tests
@@ -137,7 +126,6 @@ describe('userService', () => {
       // Assert
       expect(result).toBeNull();
       expect(get).not.toHaveBeenCalled();
-      expect(notificationService.showError).not.toHaveBeenCalled();
     });
 
     it('should return null when cookie is empty string', async () => {
@@ -150,7 +138,6 @@ describe('userService', () => {
       // Assert
       expect(result).toBeNull();
       expect(get).not.toHaveBeenCalled();
-      expect(notificationService.showError).not.toHaveBeenCalled();
     });
 
     it('should return null when API returns empty results', async () => {
@@ -163,7 +150,6 @@ describe('userService', () => {
 
       // Assert
       expect(result).toBeNull();
-      expect(notificationService.showError).not.toHaveBeenCalled();
     });
 
     it('should return null when API returns null results', async () => {
@@ -176,42 +162,33 @@ describe('userService', () => {
 
       // Assert
       expect(result).toBeNull();
-      expect(notificationService.showError).not.toHaveBeenCalled();
     });
 
     // Error Handling Tests
-    it('should show notification and return null when API call fails', async () => {
+    it('should throw error when API call fails', async () => {
       // Arrange
       const mockError = new Error('API Error');
       (commonUtils.getCookieByName as jest.Mock).mockReturnValue(mockUsername);
       (get as jest.Mock).mockRejectedValue(mockError);
 
-      // Act
-      const result = await getCurrentUser();
-
-      // Assert
-      expect(result).toBeNull();
-      expect(commonUtils.getFormattedError).toHaveBeenCalledWith(mockError);
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        'Error Title',
-        'API Error',
+      // Act & Assert
+      await expect(getCurrentUser()).rejects.toThrow(
+        i18n.t('ERROR_FETCHING_USER_DETAILS'),
       );
+      expect(get).toHaveBeenCalledWith(USER_RESOURCE_URL(mockUsername));
     });
 
-    it('should show notification and return null when username decoding fails', async () => {
+    it('should throw error when username decoding fails', async () => {
       // Arrange
       const invalidEncoding = '%invalid';
       (commonUtils.getCookieByName as jest.Mock).mockReturnValue(
         invalidEncoding,
       );
 
-      // Act
-      const result = await getCurrentUser();
-
-      // Assert
-      expect(result).toBeNull();
-      expect(commonUtils.getFormattedError).toHaveBeenCalled();
-      expect(notificationService.showError).toHaveBeenCalled();
+      // Act & Assert
+      await expect(getCurrentUser()).rejects.toThrow(
+        i18n.t('ERROR_FETCHING_USER_DETAILS'),
+      );
       expect(get).not.toHaveBeenCalled();
     });
 
@@ -222,15 +199,12 @@ describe('userService', () => {
       (commonUtils.getCookieByName as jest.Mock).mockReturnValue(
         malformedValue,
       );
-      (get as jest.Mock).mockResolvedValue(mockUserResponse);
 
-      // Act
-      const result = await getCurrentUser();
-
-      // Assert
+      // Act & Assert
+      await expect(getCurrentUser()).rejects.toThrow(
+        i18n.t('ERROR_FETCHING_USER_DETAILS'),
+      );
       expect(get).not.toHaveBeenCalledWith(USER_RESOURCE_URL(malformedValue));
-      expect(result).toEqual(null);
-      expect(notificationService.showError).toHaveBeenCalled();
     });
 
     it('should handle whitespace in username', async () => {
@@ -253,7 +227,6 @@ describe('userService', () => {
       // Assert
       expect(get).toHaveBeenCalledWith(USER_RESOURCE_URL(usernameWithSpace));
       expect(result).toEqual(spaceUserResponse.results[0]);
-      expect(notificationService.showError).not.toHaveBeenCalled();
     });
 
     it('should return first result when API returns multiple results', async () => {
@@ -272,7 +245,6 @@ describe('userService', () => {
 
       // Assert
       expect(result).toEqual(multipleResults.results[0]);
-      expect(notificationService.showError).not.toHaveBeenCalled();
     });
   });
 });

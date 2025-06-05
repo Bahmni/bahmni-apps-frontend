@@ -1,22 +1,15 @@
-import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useLocations } from '../useLocations';
 import { getLocations } from '@services/locationService';
-import { useNotification } from '@hooks/useNotification';
-import { getFormattedError } from '@utils/common';
 import { OpenMRSLocation } from '@types/location';
+import i18n from '@/setupTests.i18n';
 
 // Mock dependencies
 jest.mock('@services/locationService');
-jest.mock('@hooks/useNotification');
-jest.mock('@utils/common');
 
 // Type the mocked functions
 const mockedGetLocations = getLocations as jest.MockedFunction<
   typeof getLocations
->;
-const mockedGetFormattedError = getFormattedError as jest.MockedFunction<
-  typeof getFormattedError
 >;
 
 // Mock location data
@@ -33,49 +26,9 @@ const mockLocation: OpenMRSLocation = {
 };
 
 describe('useLocations', () => {
-  // Mock state setters and notification hook
-  let mockSetLocations: jest.Mock;
-  let mockSetLoading: jest.Mock;
-  let mockSetError: jest.Mock;
-  let mockAddNotification: jest.Mock;
-
   beforeEach(() => {
     jest.clearAllMocks();
-
-    // Setup useState mock implementation
-    mockSetLocations = jest.fn();
-    mockSetLoading = jest.fn();
-    mockSetError = jest.fn();
-    mockAddNotification = jest.fn();
-
-    // Mock useNotification hook
-    (useNotification as jest.Mock).mockReturnValue({
-      addNotification: mockAddNotification,
-    });
-
-    // Mock getFormattedError
-    mockedGetFormattedError.mockReturnValue({
-      title: 'Error',
-      message: 'An error occurred',
-    });
-
-    // Mock React hooks
-    jest
-      .spyOn(React, 'useState')
-      .mockImplementationOnce(() => [[], mockSetLocations])
-      .mockImplementationOnce(() => [false, mockSetLoading])
-      .mockImplementationOnce(() => [null, mockSetError]);
-
-    let previousDeps: string | undefined;
-    jest.spyOn(React, 'useEffect').mockImplementation((effect, deps) => {
-      const depsString = JSON.stringify(deps);
-      if (depsString !== previousDeps) {
-        effect();
-        previousDeps = depsString;
-      }
-    });
-
-    jest.spyOn(React, 'useCallback').mockImplementation((callback) => callback);
+    i18n.changeLanguage('en');
   });
 
   // Happy Path Tests
@@ -85,28 +38,23 @@ describe('useLocations', () => {
       const mockLocations = [mockLocation];
       mockedGetLocations.mockResolvedValueOnce(mockLocations);
 
-      // Override useState to return the correct initial states
-      jest
-        .spyOn(React, 'useState')
-        .mockImplementationOnce(
-          () => [[], mockSetLocations] as [unknown, React.Dispatch<unknown>],
-        ) // locations state
-        .mockImplementationOnce(
-          () => [true, mockSetLoading] as [unknown, React.Dispatch<unknown>],
-        ) // loading state
-        .mockImplementationOnce(
-          () => [null, mockSetError] as [unknown, React.Dispatch<unknown>],
-        ); // error state
-
       // Act
-      renderHook(() => useLocations());
+      const { result } = renderHook(() => useLocations());
+
+      // Assert initial loading state
+      expect(result.current.loading).toBe(true);
+      expect(result.current.locations).toEqual([]);
+      expect(result.current.error).toBeNull();
 
       // Wait for async operations
       await waitFor(() => {
-        expect(mockedGetLocations).toHaveBeenCalled();
-        expect(mockSetLocations).toHaveBeenCalledWith(mockLocations);
-        expect(mockSetLoading).toHaveBeenCalledWith(false);
+        expect(result.current.loading).toBe(false);
       });
+
+      // Assert final state
+      expect(result.current.locations).toEqual(mockLocations);
+      expect(result.current.error).toBeNull();
+      expect(mockedGetLocations).toHaveBeenCalled();
     });
 
     it('should refetch locations when refetch function is called', async () => {
@@ -121,136 +69,143 @@ describe('useLocations', () => {
         },
       ];
 
-      mockedGetLocations.mockResolvedValueOnce(initialLocations);
-
-      // Mock useState to return initialLocations and false for loading
-      jest
-        .spyOn(React, 'useState')
-        .mockImplementationOnce(() => [initialLocations, mockSetLocations])
-        .mockImplementationOnce(() => [false, mockSetLoading])
-        .mockImplementationOnce(() => [null, mockSetError]);
+      mockedGetLocations
+        .mockResolvedValueOnce(initialLocations)
+        .mockResolvedValueOnce(updatedLocations);
 
       // Act - Initial render
       const { result } = renderHook(() => useLocations());
 
-      // Clear mocks for refetch test
-      mockSetLocations.mockClear();
-      mockSetLoading.mockClear();
-      mockSetError.mockClear();
-      mockedGetLocations.mockClear();
+      // Wait for initial fetch
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
 
-      // Setup for refetch
-      mockedGetLocations.mockResolvedValueOnce(updatedLocations);
+      expect(result.current.locations).toEqual(initialLocations);
 
       // Act - Call refetch
       act(() => {
         result.current.refetch();
       });
 
-      // Assert during refetch
-      expect(mockSetLoading).toHaveBeenCalledWith(true);
+      // Assert loading state during refetch
+      expect(result.current.loading).toBe(true);
 
       // Wait for refetch to complete
       await waitFor(() => {
-        expect(mockedGetLocations).toHaveBeenCalled();
-        expect(mockSetLocations).toHaveBeenCalledWith(updatedLocations);
-        expect(mockSetLoading).toHaveBeenCalledWith(false);
+        expect(result.current.loading).toBe(false);
       });
+
+      // Assert final state
+      expect(result.current.locations).toEqual(updatedLocations);
+      expect(result.current.error).toBeNull();
+      expect(mockedGetLocations).toHaveBeenCalledTimes(2);
     });
   });
 
   // Sad Path Tests
   describe('Sad Paths', () => {
-    it('should handle API call failure', async () => {
+    it('should handle API call failure with Error object', async () => {
       // Arrange
       const error = new Error('Network error');
       mockedGetLocations.mockRejectedValueOnce(error);
-      mockedGetFormattedError.mockReturnValueOnce({
-        title: 'Network Error',
-        message: 'Network error',
-      });
 
       // Act
-      renderHook(() => useLocations());
+      const { result } = renderHook(() => useLocations());
 
       // Wait for async operations
       await waitFor(() => {
-        expect(mockedGetLocations).toHaveBeenCalled();
-        expect(mockSetError).toHaveBeenCalledWith(error);
-        expect(mockedGetFormattedError).toHaveBeenCalledWith(error);
-        expect(mockAddNotification).toHaveBeenCalledWith({
-          type: 'error',
-          title: 'Network Error',
-          message: 'Network error',
-        });
-        expect(mockSetLoading).toHaveBeenCalledWith(false);
+        expect(result.current.loading).toBe(false);
       });
+
+      // Assert
+      expect(result.current.error).toBe(error);
+      expect(result.current.locations).toEqual([]);
+      expect(mockedGetLocations).toHaveBeenCalled();
     });
 
-    it('should handle invalid data from getLocations', async () => {
+    it('should handle API call failure with non-Error object', async () => {
+      // Arrange
+      const nonErrorObject = { message: 'Some API error' };
+      mockedGetLocations.mockRejectedValueOnce(nonErrorObject);
+
+      // Act
+      const { result } = renderHook(() => useLocations());
+
+      // Wait for async operations
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+
+      // Assert
+      expect(result.current.error?.message).toBe(
+        'Error fetching locations details',
+      );
+      expect(result.current.locations).toEqual([]);
+      expect(mockedGetLocations).toHaveBeenCalled();
+    });
+
+    it('should handle empty locations array from API', async () => {
+      // Arrange
+      mockedGetLocations.mockResolvedValueOnce([]);
+
+      // Act
+      const { result } = renderHook(() => useLocations());
+
+      // Wait for async operations
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+
+      // Assert
+      expect(result.current.error?.message).toBe(
+        'Error fetching locations details',
+      );
+      expect(result.current.locations).toEqual([]);
+      expect(mockedGetLocations).toHaveBeenCalled();
+    });
+
+    it('should handle null response from API', async () => {
       // Arrange
       mockedGetLocations.mockResolvedValueOnce(
         null as unknown as OpenMRSLocation[],
       );
 
       // Act
-      renderHook(() => useLocations());
+      const { result } = renderHook(() => useLocations());
 
       // Wait for async operations
       await waitFor(() => {
-        expect(mockedGetLocations).toHaveBeenCalled();
-        // The hook should handle null data gracefully
-        expect(mockSetLocations).toHaveBeenCalledWith(null);
-        expect(mockSetLoading).toHaveBeenCalledWith(false);
-      });
-    });
-
-    it('should handle malformed JSON responses', async () => {
-      const malformedJsonError = {
-        response: { status: 200, data: 'Invalid JSON' },
-        isAxiosError: true,
-      };
-      mockedGetLocations.mockRejectedValueOnce(malformedJsonError);
-      mockedGetFormattedError.mockReturnValueOnce({
-        title: 'Request Error',
-        message: 'Invalid JSON',
+        expect(result.current.loading).toBe(false);
       });
 
-      renderHook(() => useLocations());
-
-      await waitFor(() => {
-        expect(mockSetError).toHaveBeenCalled();
-        expect(mockAddNotification).toHaveBeenCalledWith({
-          type: 'error',
-          title: 'Request Error',
-          message: 'Invalid JSON',
-        });
-      });
+      // Assert
+      expect(result.current.error?.message).toBe(
+        'Error fetching locations details',
+      );
+      expect(result.current.locations).toEqual([]);
+      expect(mockedGetLocations).toHaveBeenCalled();
     });
   });
 
   // Edge Case Tests
   describe('Edge Cases', () => {
-    it('should handle empty locations array from API', async () => {
-      mockedGetLocations.mockResolvedValueOnce([]);
-
-      renderHook(() => useLocations());
-
-      await waitFor(() => {
-        expect(mockSetLocations).toHaveBeenCalledWith([]);
-        expect(mockSetLoading).toHaveBeenCalledWith(false);
-      });
-    });
-
     it('should handle malformed location data gracefully', async () => {
+      // Arrange
       mockedGetLocations.mockResolvedValueOnce([{} as OpenMRSLocation]);
 
-      renderHook(() => useLocations());
+      // Act
+      const { result } = renderHook(() => useLocations());
 
+      // Wait for async operations
       await waitFor(() => {
-        expect(mockSetLocations).toHaveBeenCalledWith([{}]);
-        expect(mockSetLoading).toHaveBeenCalledWith(false);
+        expect(result.current.loading).toBe(false);
       });
+
+      // Assert
+      expect(result.current.locations).toEqual([{}]);
+      expect(result.current.error).toBeNull();
+      expect(mockedGetLocations).toHaveBeenCalled();
     });
 
     it('should cleanup properly on unmount', () => {

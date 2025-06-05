@@ -56,11 +56,11 @@ exports[`DiagnosesForm Snapshot Tests duplicate diagnosis search should matches 
             </svg>
           </button>
           <button
-            aria-controls="downshift-«r3o»-menu"
+            aria-controls="downshift-«r3r»-menu"
             aria-expanded="true"
             aria-label="Close"
             class="cds--list-box__menu-icon cds--list-box__menu-icon--open"
-            id="downshift-«r3o»-toggle-button"
+            id="downshift-«r3r»-toggle-button"
             tabindex="-1"
             title="Close"
             type="button"
@@ -82,9 +82,9 @@ exports[`DiagnosesForm Snapshot Tests duplicate diagnosis search should matches 
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-«r3o»-label"
+          aria-labelledby="downshift-«r3r»-label"
           class="cds--list-box__menu"
-          id="downshift-«r3o»-menu"
+          id="downshift-«r3r»-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         >
@@ -92,7 +92,7 @@ exports[`DiagnosesForm Snapshot Tests duplicate diagnosis search should matches 
             aria-selected="false"
             class="cds--list-box__menu-item"
             disabled=""
-            id="downshift-«r3o»-item-0"
+            id="downshift-«r3r»-item-0"
             role="option"
           >
             <div
@@ -104,7 +104,7 @@ exports[`DiagnosesForm Snapshot Tests duplicate diagnosis search should matches 
           <li
             aria-selected="false"
             class="cds--list-box__menu-item"
-            id="downshift-«r3o»-item-1"
+            id="downshift-«r3r»-item-1"
             role="option"
           >
             <div
@@ -158,12 +158,12 @@ exports[`DiagnosesForm Snapshot Tests duplicate diagnosis search should matches 
                   >
                     <button
                       aria-activedescendant=""
-                      aria-controls="downshift-«r3r»-menu"
+                      aria-controls="downshift-«r3u»-menu"
                       aria-expanded="false"
                       aria-haspopup="listbox"
                       aria-label="DIAGNOSES_CERTAINTY_ARIA_LABEL"
                       class="cds--list-box__field"
-                      id="downshift-«r3r»-toggle-button"
+                      id="downshift-«r3u»-toggle-button"
                       role="combobox"
                       tabindex="0"
                       title="CERTAINITY_CONFIRMED"
@@ -199,9 +199,9 @@ exports[`DiagnosesForm Snapshot Tests duplicate diagnosis search should matches 
                       </div>
                     </button>
                     <ul
-                      aria-labelledby="downshift-«r3r»-label"
+                      aria-labelledby="downshift-«r3u»-label"
                       class="cds--list-box__menu"
-                      id="downshift-«r3r»-menu"
+                      id="downshift-«r3u»-menu"
                       role="listbox"
                       style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px); width: 0px;"
                     />
@@ -245,7 +245,7 @@ exports[`DiagnosesForm Snapshot Tests duplicate diagnosis search should matches 
               <span
                 aria-hidden="true"
                 class="cds--popover"
-                id="tooltip-«r3t»"
+                id="tooltip-«r40»"
                 role="tooltip"
               >
                 <span
@@ -267,79 +267,6 @@ exports[`DiagnosesForm Snapshot Tests duplicate diagnosis search should matches 
 `;
 
 exports[`DiagnosesForm Snapshot Tests empty form matches snapshot 1`] = `
-<div>
-  <div
-    class="cds--tile"
-  >
-    <div>
-      DIAGNOSES_FORM_TITLE
-    </div>
-    <div
-      class="cds--list-box__wrapper"
-    >
-      <div
-        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--lg"
-      >
-        <div
-          class="cds--list-box__field"
-        >
-          <input
-            aria-activedescendant=""
-            aria-autocomplete="list"
-            aria-controls="downshift-«r38»-menu"
-            aria-expanded="false"
-            aria-haspopup="listbox"
-            aria-label="DIAGNOSES_SEARCH_ARIA_LABEL"
-            autocomplete="off"
-            class="cds--text-input cds--text-input--empty"
-            id="diagnoses-search"
-            placeholder="DIAGNOSES_SEARCH_PLACEHOLDER"
-            role="combobox"
-            tabindex="0"
-            title=""
-            type="text"
-            value=""
-          />
-          <button
-            aria-controls="downshift-«r38»-menu"
-            aria-expanded="false"
-            aria-label="Open"
-            class="cds--list-box__menu-icon"
-            id="downshift-«r38»-toggle-button"
-            tabindex="-1"
-            title="Open"
-            type="button"
-          >
-            <svg
-              aria-hidden="true"
-              fill="currentColor"
-              focusable="false"
-              height="16"
-              preserveAspectRatio="xMidYMid meet"
-              viewBox="0 0 16 16"
-              width="16"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
-              />
-            </svg>
-          </button>
-        </div>
-        <ul
-          aria-labelledby="downshift-«r38»-label"
-          class="cds--list-box__menu"
-          id="downshift-«r38»-menu"
-          role="listbox"
-          style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
-        />
-      </div>
-    </div>
-  </div>
-</div>
-`;
-
-exports[`DiagnosesForm Snapshot Tests form with search results matches snapshot 1`] = `
 <div>
   <div
     class="cds--tile"
@@ -412,7 +339,7 @@ exports[`DiagnosesForm Snapshot Tests form with search results matches snapshot 
 </div>
 `;
 
-exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snapshot 1`] = `
+exports[`DiagnosesForm Snapshot Tests form with search results matches snapshot 1`] = `
 <div>
   <div
     class="cds--tile"
@@ -481,6 +408,79 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
         />
       </div>
     </div>
+  </div>
+</div>
+`;
+
+exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snapshot 1`] = `
+<div>
+  <div
+    class="cds--tile"
+  >
+    <div>
+      DIAGNOSES_FORM_TITLE
+    </div>
+    <div
+      class="cds--list-box__wrapper"
+    >
+      <div
+        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--lg"
+      >
+        <div
+          class="cds--list-box__field"
+        >
+          <input
+            aria-activedescendant=""
+            aria-autocomplete="list"
+            aria-controls="downshift-«r3h»-menu"
+            aria-expanded="false"
+            aria-haspopup="listbox"
+            aria-label="DIAGNOSES_SEARCH_ARIA_LABEL"
+            autocomplete="off"
+            class="cds--text-input cds--text-input--empty"
+            id="diagnoses-search"
+            placeholder="DIAGNOSES_SEARCH_PLACEHOLDER"
+            role="combobox"
+            tabindex="0"
+            title=""
+            type="text"
+            value=""
+          />
+          <button
+            aria-controls="downshift-«r3h»-menu"
+            aria-expanded="false"
+            aria-label="Open"
+            class="cds--list-box__menu-icon"
+            id="downshift-«r3h»-toggle-button"
+            tabindex="-1"
+            title="Open"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="currentColor"
+              focusable="false"
+              height="16"
+              preserveAspectRatio="xMidYMid meet"
+              viewBox="0 0 16 16"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+              />
+            </svg>
+          </button>
+        </div>
+        <ul
+          aria-labelledby="downshift-«r3h»-label"
+          class="cds--list-box__menu"
+          id="downshift-«r3h»-menu"
+          role="listbox"
+          style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+        />
+      </div>
+    </div>
     <div
       aria-label="DIAGNOSES_ADDED_DIAGNOSES"
       class="cds--css-grid cds--css-grid--narrow cds--css-grid--full-width"
@@ -523,12 +523,12 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
                   >
                     <button
                       aria-activedescendant=""
-                      aria-controls="downshift-«r3h»-menu"
+                      aria-controls="downshift-«r3k»-menu"
                       aria-expanded="false"
                       aria-haspopup="listbox"
                       aria-label="DIAGNOSES_CERTAINTY_ARIA_LABEL"
                       class="cds--list-box__field"
-                      id="downshift-«r3h»-toggle-button"
+                      id="downshift-«r3k»-toggle-button"
                       role="combobox"
                       tabindex="0"
                       title="CERTAINITY_CONFIRMED"
@@ -564,9 +564,9 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
                       </div>
                     </button>
                     <ul
-                      aria-labelledby="downshift-«r3h»-label"
+                      aria-labelledby="downshift-«r3k»-label"
                       class="cds--list-box__menu"
-                      id="downshift-«r3h»-menu"
+                      id="downshift-«r3k»-menu"
                       role="listbox"
                       style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
                     />
@@ -610,7 +610,7 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
               <span
                 aria-hidden="true"
                 class="cds--popover"
-                id="tooltip-«r3j»"
+                id="tooltip-«r3m»"
                 role="tooltip"
               >
                 <span

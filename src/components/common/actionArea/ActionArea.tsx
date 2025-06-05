@@ -11,10 +11,13 @@ export interface ActionAreaProps {
   title: string; // Title of the ActionArea
   primaryButtonText: string; // Text for the primary button
   onPrimaryButtonClick: () => void; // Function to be called when primary button is clicked
+  isPrimaryButtonDisabled?: boolean; // Whether the primary button should be disabled
   secondaryButtonText: string; // Text for the secondary button
   onSecondaryButtonClick: () => void; // Function to be called when secondary button is clicked
+  isSecondaryButtonDisabled?: boolean; // Whether the secondary button should be disabled
   tertiaryButtonText?: string; // Text for the tertiary button
   onTertiaryButtonClick?: () => void; // Function to be called when tertiary button is clicked
+  isTertiaryButtonDisabled?: boolean; // Whether the tertiary button should be disabled
   content: ReactNode; // Content to be rendered inside the ActionArea
   className?: string; // Optional CSS class
   ariaLabel?: string; // Accessible label for the component
@@ -31,10 +34,13 @@ const ActionArea: React.FC<ActionAreaProps> = ({
   title,
   primaryButtonText,
   onPrimaryButtonClick,
+  isPrimaryButtonDisabled = false,
   secondaryButtonText,
   onSecondaryButtonClick,
+  isSecondaryButtonDisabled = false,
   tertiaryButtonText,
   onTertiaryButtonClick,
+  isTertiaryButtonDisabled = false,
   content,
   className,
   ariaLabel,
@@ -73,6 +79,7 @@ const ActionArea: React.FC<ActionAreaProps> = ({
         <Button
           kind="secondary"
           onClick={onSecondaryButtonClick}
+          disabled={isSecondaryButtonDisabled}
           className={buttonCountClass}
           aria-label={t(secondaryButtonText)}
         >
@@ -83,6 +90,7 @@ const ActionArea: React.FC<ActionAreaProps> = ({
           <Button
             kind="tertiary"
             onClick={onTertiaryButtonClick}
+            disabled={isTertiaryButtonDisabled}
             className={buttonCountClass}
             aria-label={t(tertiaryButtonText)}
           >
@@ -93,6 +101,7 @@ const ActionArea: React.FC<ActionAreaProps> = ({
         <Button
           kind="primary"
           onClick={onPrimaryButtonClick}
+          disabled={isPrimaryButtonDisabled}
           className={buttonCountClass}
           aria-label={t(primaryButtonText)}
         >

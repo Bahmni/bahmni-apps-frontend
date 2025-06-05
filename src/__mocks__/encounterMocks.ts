@@ -1,4 +1,4 @@
-export const mockEncounterBundle = {
+export const mockVisitBundle = {
   resourceType: 'Bundle',
   id: '2c8da098-d083-42bf-a2d4-cc3bb4c67199',
   meta: {
@@ -227,5 +227,5 @@ export const mockEncounterBundle = {
   ],
 };
 
-// The current active encounter is the one without an end date
-export const mockCurrentEncounter = mockEncounterBundle.entry[3].resource;
+// The current active visit is the one without an end date
+export const mockActiveVisit = mockVisitBundle.entry[3].resource;

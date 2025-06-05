@@ -31,7 +31,7 @@ export async function getLocations(): Promise<OpenMRSLocation[]> {
 
     return [location];
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error) {
+  } catch (_) {
     throw new Error(COMMON_ERROR_MESSAGES.UNEXPECTED_ERROR);
   }
 }

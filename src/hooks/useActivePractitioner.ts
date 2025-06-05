@@ -1,10 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useNotification } from './useNotification';
 import { getCurrentProvider } from '@services/providerService';
 import { getFormattedError } from '@utils/common';
 import { Provider } from '@types/provider';
 import { User } from '@types/user';
 import { getCurrentUser } from '@services/userService';
+import { useTranslation } from 'react-i18next';
 
 interface useActivePractitionerResult {
   practitioner: Provider | null;
@@ -25,46 +25,31 @@ export const useActivePractitioner = (): useActivePractitionerResult => {
   const [activeUser, setActiveUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
-  const { addNotification } = useNotification();
+  const { t } = useTranslation();
 
   const fetchActivePractitioner = useCallback(async () => {
     try {
       setLoading(true);
       const user = await getCurrentUser();
       if (!user) {
-        setError(new Error('User not found'));
-        addNotification({
-          type: 'error',
-          title: 'Error',
-          message: 'User not found',
-        });
+        setError(new Error(t('ERROR_FETCHING_USER_DETAILS')));
         return;
       }
       setActiveUser(user);
       const practitioner = await getCurrentProvider(user.uuid);
       if (!practitioner) {
-        setError(new Error('Active Practitioner not found'));
-        addNotification({
-          type: 'error',
-          title: 'Error',
-          message: 'Active Practitioner not found',
-        });
+        setError(new Error(t('ERROR_FETCHING_PRACTITIONERS_DETAILS')));
         return;
       }
       setActivePractitioner(practitioner);
       setError(null);
     } catch (err) {
-      const { title, message } = getFormattedError(err);
-      addNotification({
-        type: 'error',
-        title: title,
-        message: message,
-      });
+      const { message } = getFormattedError(err);
       setError(err instanceof Error ? err : new Error(message));
     } finally {
       setLoading(false);
     }
-  }, [addNotification]);
+  }, []);
 
   useEffect(() => {
     fetchActivePractitioner();

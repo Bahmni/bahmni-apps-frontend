@@ -5,7 +5,7 @@ import {
   LabTestStatus,
   LabTestPriority,
   LabTestsByDate,
-} from '@/types/labInvestigation';
+} from '@types/labInvestigation';
 
 // Mock patient UUID
 export const mockPatientUUID = 'test-patient-uuid';

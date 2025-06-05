@@ -16,7 +16,6 @@ import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
 import { ICON_SIZE } from '@constants/icon';
 import { BAHMNI_CLINICAL_PATH, BAHMNI_HOME_PATH } from '@constants/app';
 import ConsultationPad from '@components/clinical/consultationPad/ConsultationPad';
-import { usePatientUUID } from '@hooks/usePatientUUID';
 import PatientHeader from '@components/clinical/patientHeader/PatientHeader';
 
 const breadcrumbItems = [
@@ -69,7 +68,6 @@ const ConsultationPage: React.FC = () => {
   const { t } = useTranslation();
   const { clinicalConfig } = useClinicalConfig();
   const { addNotification } = useNotification();
-  const patientUuid = usePatientUUID();
   const [isActionAreaVisible, setIsActionAreaVisible] = useState(false);
 
   const currentDashboard = useMemo(() => {
@@ -142,7 +140,6 @@ const ConsultationPage: React.FC = () => {
       isActionAreaVisible={isActionAreaVisible}
       actionArea={
         <ConsultationPad
-          patientUUID={patientUuid || ''}
           onClose={() => setIsActionAreaVisible((prev) => !prev)}
         />
       }

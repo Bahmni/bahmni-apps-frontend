@@ -1,51 +1,29 @@
+import { renderHook, act } from '@testing-library/react';
 import { useActivePractitioner } from '../useActivePractitioner';
 import { Provider, Person } from '@types/provider';
 import { User } from '@types/user';
 import { getCurrentProvider } from '@services/providerService';
 import { getCurrentUser } from '@services/userService';
 import { getFormattedError } from '@utils/common';
-import { useNotification } from '@hooks/useNotification';
-import { act } from '@testing-library/react';
+import i18n from '@/setupTests.i18n';
 
 // Mock dependencies
 jest.mock('@services/providerService');
 jest.mock('@services/userService');
+jest.mock('@utils/common');
+
+// Type the mocked functions
 const mockedGetCurrentProvider = getCurrentProvider as jest.MockedFunction<
   typeof getCurrentProvider
 >;
 const mockedGetCurrentUser = getCurrentUser as jest.MockedFunction<
   typeof getCurrentUser
 >;
-
-jest.mock('@utils/common');
 const mockedGetFormattedError = getFormattedError as jest.MockedFunction<
   typeof getFormattedError
 >;
 
-// Mock the useNotification hook
-jest.mock('@hooks/useNotification');
-const mockAddNotification = jest.fn();
-(useNotification as jest.Mock).mockReturnValue({
-  addNotification: mockAddNotification,
-});
-
-// Mock React hooks
-jest.mock('react', () => {
-  const originalReact = jest.requireActual('react');
-  return {
-    ...originalReact,
-    useState: jest.fn(),
-    useEffect: jest.fn((effect) => effect()),
-    useCallback: jest.fn((fn) => fn),
-  };
-});
-
 describe('useActivePractitioner hook', () => {
-  let mockSetPractitioner: jest.Mock;
-  let mockSetUser: jest.Mock;
-  let mockSetLoading: jest.Mock;
-  let mockSetError: jest.Mock;
-
   const mockUser: User = {
     uuid: 'user-uuid-123',
     username: 'johndoe',
@@ -81,58 +59,45 @@ describe('useActivePractitioner hook', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-
-    // Setup useState mock implementation
-    mockSetPractitioner = jest.fn();
-    mockSetUser = jest.fn();
-    mockSetLoading = jest.fn();
-    mockSetError = jest.fn();
-
-    const useStateMock = jest.requireMock('react').useState;
-
-    // Mock all state hooks
-    useStateMock
-      .mockImplementationOnce(() => [null, mockSetPractitioner]) // practitioner state
-      .mockImplementationOnce(() => [null, mockSetUser]) // user state
-      .mockImplementationOnce(() => [true, mockSetLoading]) // loading state
-      .mockImplementationOnce(() => [null, mockSetError]); // error state
+    i18n.changeLanguage('en');
+    jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   it('should initialize with correct default values', () => {
     // Act
-    const result = useActivePractitioner();
+    const { result } = renderHook(() => useActivePractitioner());
 
     // Assert
-    expect(result.practitioner).toBeNull();
-    expect(result.user).toBeNull();
-    expect(result.loading).toBe(true);
-    expect(result.error).toBeNull();
-    expect(typeof result.refetch).toBe('function');
+    expect(result.current.practitioner).toBeNull();
+    expect(result.current.user).toBeNull();
+    expect(result.current.loading).toBe(true);
+    expect(result.current.error).toBeNull();
+    expect(typeof result.current.refetch).toBe('function');
   });
 
-  it('should fetch user and provider in correct order', async () => {
+  it('should fetch user and provider successfully', async () => {
     // Arrange
     mockedGetCurrentUser.mockResolvedValueOnce(mockUser);
     mockedGetCurrentProvider.mockResolvedValueOnce(mockProvider);
 
     // Act
-    useActivePractitioner();
+    const { result } = renderHook(() => useActivePractitioner());
 
     // Assert initial loading state
-    expect(mockSetLoading).toHaveBeenNthCalledWith(1, true);
+    expect(result.current.loading).toBe(true);
 
     // Wait for async operations
     await act(async () => {
       await Promise.resolve();
     });
 
-    // Assert the sequence of operations
+    // Assert final state
     expect(mockedGetCurrentUser).toHaveBeenCalled();
-    expect(mockSetUser).toHaveBeenCalledWith(mockUser);
     expect(mockedGetCurrentProvider).toHaveBeenCalledWith(mockUser.uuid);
-    expect(mockSetPractitioner).toHaveBeenCalledWith(mockProvider);
-    expect(mockSetError).toHaveBeenCalledWith(null);
-    expect(mockSetLoading).toHaveBeenLastCalledWith(false);
+    expect(result.current.user).toEqual(mockUser);
+    expect(result.current.practitioner).toEqual(mockProvider);
+    expect(result.current.error).toBeNull();
+    expect(result.current.loading).toBe(false);
   });
 
   it('should handle null user correctly', async () => {
@@ -140,7 +105,7 @@ describe('useActivePractitioner hook', () => {
     mockedGetCurrentUser.mockResolvedValueOnce(null);
 
     // Act
-    useActivePractitioner();
+    const { result } = renderHook(() => useActivePractitioner());
 
     // Wait for async operations
     await act(async () => {
@@ -148,17 +113,12 @@ describe('useActivePractitioner hook', () => {
     });
 
     // Assert
-    expect(mockSetLoading).toHaveBeenNthCalledWith(1, true);
     expect(mockedGetCurrentUser).toHaveBeenCalled();
-    expect(mockSetUser).not.toHaveBeenCalled();
     expect(mockedGetCurrentProvider).not.toHaveBeenCalled();
-    expect(mockSetError).toHaveBeenCalledWith(expect.any(Error));
-    expect(mockAddNotification).toHaveBeenCalledWith({
-      type: 'error',
-      title: 'Error',
-      message: 'User not found',
-    });
-    expect(mockSetLoading).toHaveBeenLastCalledWith(false);
+    expect(result.current.user).toBeNull();
+    expect(result.current.practitioner).toBeNull();
+    expect(result.current.error?.message).toBe('Error fetching user details');
+    expect(result.current.loading).toBe(false);
   });
 
   it('should handle null provider correctly', async () => {
@@ -167,7 +127,7 @@ describe('useActivePractitioner hook', () => {
     mockedGetCurrentProvider.mockResolvedValueOnce(null);
 
     // Act
-    useActivePractitioner();
+    const { result } = renderHook(() => useActivePractitioner());
 
     // Wait for async operations
     await act(async () => {
@@ -175,18 +135,14 @@ describe('useActivePractitioner hook', () => {
     });
 
     // Assert
-    expect(mockSetLoading).toHaveBeenNthCalledWith(1, true);
     expect(mockedGetCurrentUser).toHaveBeenCalled();
-    expect(mockSetUser).toHaveBeenCalledWith(mockUser);
     expect(mockedGetCurrentProvider).toHaveBeenCalledWith(mockUser.uuid);
-    expect(mockSetPractitioner).not.toHaveBeenCalled();
-    expect(mockSetError).toHaveBeenCalledWith(expect.any(Error));
-    expect(mockAddNotification).toHaveBeenCalledWith({
-      type: 'error',
-      title: 'Error',
-      message: 'Active Practitioner not found',
-    });
-    expect(mockSetLoading).toHaveBeenLastCalledWith(false);
+    expect(result.current.user).toEqual(mockUser);
+    expect(result.current.practitioner).toBeNull();
+    expect(result.current.error?.message).toBe(
+      'Error fetching practitioners details',
+    );
+    expect(result.current.loading).toBe(false);
   });
 
   it('should handle user fetch error correctly', async () => {
@@ -199,7 +155,7 @@ describe('useActivePractitioner hook', () => {
     });
 
     // Act
-    useActivePractitioner();
+    const { result } = renderHook(() => useActivePractitioner());
 
     // Wait for async operations
     await act(async () => {
@@ -207,17 +163,13 @@ describe('useActivePractitioner hook', () => {
     });
 
     // Assert
-    expect(mockSetLoading).toHaveBeenNthCalledWith(1, true);
     expect(mockedGetCurrentUser).toHaveBeenCalled();
     expect(mockedGetCurrentProvider).not.toHaveBeenCalled();
     expect(mockedGetFormattedError).toHaveBeenCalledWith(mockError);
-    expect(mockSetError).toHaveBeenCalledWith(mockError);
-    expect(mockAddNotification).toHaveBeenCalledWith({
-      type: 'error',
-      title: 'Error Title',
-      message: 'Error Message',
-    });
-    expect(mockSetLoading).toHaveBeenLastCalledWith(false);
+    expect(result.current.error).toBe(mockError);
+    expect(result.current.user).toBeNull();
+    expect(result.current.practitioner).toBeNull();
+    expect(result.current.loading).toBe(false);
   });
 
   it('should handle provider fetch error correctly', async () => {
@@ -231,7 +183,7 @@ describe('useActivePractitioner hook', () => {
     });
 
     // Act
-    useActivePractitioner();
+    const { result } = renderHook(() => useActivePractitioner());
 
     // Wait for async operations
     await act(async () => {
@@ -239,54 +191,80 @@ describe('useActivePractitioner hook', () => {
     });
 
     // Assert
-    expect(mockSetLoading).toHaveBeenNthCalledWith(1, true);
     expect(mockedGetCurrentUser).toHaveBeenCalled();
-    expect(mockSetUser).toHaveBeenCalledWith(mockUser);
     expect(mockedGetCurrentProvider).toHaveBeenCalledWith(mockUser.uuid);
     expect(mockedGetFormattedError).toHaveBeenCalledWith(mockError);
-    expect(mockSetError).toHaveBeenCalledWith(mockError);
-    expect(mockAddNotification).toHaveBeenCalledWith({
-      type: 'error',
-      title: 'Error Title',
-      message: 'Error Message',
+    expect(result.current.error).toBe(mockError);
+    expect(result.current.user).toEqual(mockUser);
+    expect(result.current.practitioner).toBeNull();
+    expect(result.current.loading).toBe(false);
+  });
+
+  it('should handle non-Error object from API correctly', async () => {
+    // Arrange
+    const nonErrorObject = { message: 'API Error' };
+    mockedGetCurrentUser.mockRejectedValueOnce(nonErrorObject);
+    mockedGetFormattedError.mockReturnValueOnce({
+      title: 'Error',
+      message: 'API Error',
     });
-    expect(mockSetLoading).toHaveBeenLastCalledWith(false);
+
+    // Act
+    const { result } = renderHook(() => useActivePractitioner());
+
+    // Wait for async operations
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    // Assert
+    expect(result.current.error?.message).toBe('API Error');
+    expect(result.current.user).toBeNull();
+    expect(result.current.practitioner).toBeNull();
+    expect(result.current.loading).toBe(false);
   });
 
   it('should provide a refetch function that fetches data again', async () => {
     // Arrange
-    mockedGetCurrentUser.mockResolvedValueOnce(mockUser);
-    mockedGetCurrentProvider.mockResolvedValueOnce(mockProvider);
+    mockedGetCurrentUser
+      .mockResolvedValueOnce(mockUser)
+      .mockResolvedValueOnce({ ...mockUser, username: 'johndoe_updated' });
+    mockedGetCurrentProvider
+      .mockResolvedValueOnce(mockProvider)
+      .mockResolvedValueOnce({
+        ...mockProvider,
+        display: 'John Doe - Updated',
+      });
 
-    // Act
-    const result = useActivePractitioner();
+    // Act - Initial render
+    const { result } = renderHook(() => useActivePractitioner());
 
     // Wait for initial fetch
     await act(async () => {
       await Promise.resolve();
     });
 
-    // Clear mocks for refetch
-    jest.clearAllMocks();
+    expect(result.current.user).toEqual(mockUser);
+    expect(result.current.practitioner).toEqual(mockProvider);
 
-    // Setup for refetch
-    const updatedUser = { ...mockUser, username: 'johndoe_updated' };
-    const updatedProvider = { ...mockProvider, display: 'John Doe - Updated' };
-    mockedGetCurrentUser.mockResolvedValueOnce(updatedUser);
-    mockedGetCurrentProvider.mockResolvedValueOnce(updatedProvider);
-
-    // Call refetch
+    // Act - Call refetch
     await act(async () => {
-      await result.refetch();
+      result.current.refetch();
+      await Promise.resolve();
     });
 
-    // Assert
-    expect(mockSetLoading).toHaveBeenNthCalledWith(1, true);
-    expect(mockedGetCurrentUser).toHaveBeenCalled();
-    expect(mockSetUser).toHaveBeenCalledWith(updatedUser);
-    expect(mockedGetCurrentProvider).toHaveBeenCalledWith(updatedUser.uuid);
-    expect(mockSetPractitioner).toHaveBeenCalledWith(updatedProvider);
-    expect(mockSetError).toHaveBeenCalledWith(null);
-    expect(mockSetLoading).toHaveBeenLastCalledWith(false);
+    // Assert final state
+    expect(result.current.user).toEqual({
+      ...mockUser,
+      username: 'johndoe_updated',
+    });
+    expect(result.current.practitioner).toEqual({
+      ...mockProvider,
+      display: 'John Doe - Updated',
+    });
+    expect(result.current.error).toBeNull();
+    expect(result.current.loading).toBe(false);
+    expect(mockedGetCurrentUser).toHaveBeenCalledTimes(2);
+    expect(mockedGetCurrentProvider).toHaveBeenCalledTimes(2);
   });
 });
