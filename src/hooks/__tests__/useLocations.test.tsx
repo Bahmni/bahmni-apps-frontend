@@ -1,7 +1,7 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useLocations } from '../useLocations';
 import { getLocations } from '@services/locationService';
-import { OpenMRSLocation } from '@/types/location';
+import { OpenMRSLocation } from '@types/location';
 import i18n from '@/setupTests.i18n';
 
 // Mock dependencies

@@ -5,7 +5,7 @@ import { COMMON_ERROR_MESSAGES } from '@constants/errors';
 import {
   EncounterConceptsResponse,
   EncounterConcepts,
-} from '@/types/encounterConcepts';
+} from '@types/encounterConcepts';
 import i18n from '@/setupTests.i18n';
 
 // Mock dependencies

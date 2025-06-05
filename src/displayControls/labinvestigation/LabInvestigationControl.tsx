@@ -5,7 +5,7 @@ import { Accordion, AccordionItem, SkeletonText } from '@carbon/react';
 import LabInvestigationItem from './LabInvestigationItem';
 import useLabInvestigations from '@/hooks/useLabInvestigations';
 import { groupLabTestsByDate } from '@/services/labInvestigationService';
-import { LabTestsByDate, FormattedLabTest } from '@/types/labInvestigation';
+import { LabTestsByDate, FormattedLabTest } from '@types/labInvestigation';
 
 const LabInvestigationControl: React.FC = () => {
   const { t } = useTranslation();

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
 import { ICON_SIZE } from '@/constants/icon';
 import * as styles from './styles/LabInvestigation.module.scss';
-import { FormattedLabTest, LabTestPriority } from '@/types/labInvestigation';
+import { FormattedLabTest, LabTestPriority } from '@types/labInvestigation';
 
 interface LabInvestigationItemProps {
   test: FormattedLabTest;

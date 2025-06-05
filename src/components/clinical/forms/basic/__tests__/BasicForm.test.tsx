@@ -8,7 +8,7 @@ import { useActivePractitioner } from '@hooks/useActivePractitioner';
 import { useActiveVisit } from '@hooks/useActiveVisit';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
-import { FhirEncounter } from '@/types/encounter';
+import { FhirEncounter } from '@types/encounter';
 import i18n from '@/setupTests.i18n';
 
 jest.mock('@hooks/useLocations');

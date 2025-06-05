@@ -1,7 +1,7 @@
 import { renderHook, act } from '@testing-library/react';
 import { useActivePractitioner } from '../useActivePractitioner';
-import { Provider, Person } from '@/types/provider';
-import { User } from '@/types/user';
+import { Provider, Person } from '@types/provider';
+import { User } from '@types/user';
 import { getCurrentProvider } from '@services/providerService';
 import { getCurrentUser } from '@services/userService';
 import { getFormattedError } from '@utils/common';

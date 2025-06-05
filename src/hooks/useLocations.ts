@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { getLocations } from '@services/locationService';
-import { OpenMRSLocation } from '@/types/location';
+import { OpenMRSLocation } from '@types/location';
 import { useTranslation } from 'react-i18next';
 
 interface UseLocationsResult {

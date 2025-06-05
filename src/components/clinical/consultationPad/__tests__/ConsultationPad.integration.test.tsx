@@ -85,7 +85,7 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import ConsultationPad from '../ConsultationPad';
 import { NotificationProvider } from '@providers/NotificationProvider';
 import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
-import { ClinicalConfig } from '@/types/config';
+import { ClinicalConfig } from '@types/config';
 import notificationService from '@services/notificationService';
 
 // Mock browser cache if used

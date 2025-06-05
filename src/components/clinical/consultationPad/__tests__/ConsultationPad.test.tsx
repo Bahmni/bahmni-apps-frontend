@@ -9,13 +9,13 @@ import { useActivePractitioner } from '@hooks/useActivePractitioner';
 import { useActiveVisit } from '@/hooks/useActiveVisit';
 import useNotification from '@hooks/useNotification';
 import { postConsultationBundle } from '@services/consultationBundleService';
-import { Provider } from '@/types/provider';
+import { Provider } from '@types/provider';
 import { formatDate } from '@utils/date';
 import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
 import { useConceptSearch } from '@hooks/useConceptSearch';
-import { DiagnosisInputEntry } from '@/types/diagnosis';
+import { DiagnosisInputEntry } from '@types/diagnosis';
 import { DiagnosisState } from '@stores/diagnosisStore';
-import { ConceptSearch } from '@/types/concepts';
+import { ConceptSearch } from '@types/concepts';
 import { Coding } from 'fhir/r4';
 
 // Mock all dependencies
