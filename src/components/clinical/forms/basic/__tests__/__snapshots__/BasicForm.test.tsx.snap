@@ -14,7 +14,6 @@ exports[`BasicForm Snapshot Tests should match snapshot when fully loaded 1`] = 
         Location
       </div>
       <select
-        aria-invalid="false"
         aria-label="Location"
         disabled=""
       >
@@ -41,7 +40,6 @@ exports[`BasicForm Snapshot Tests should match snapshot when fully loaded 1`] = 
         Encounter Type
       </div>
       <select
-        aria-invalid="false"
         aria-label="Encounter Type"
         disabled=""
       >
@@ -73,7 +71,6 @@ exports[`BasicForm Snapshot Tests should match snapshot when fully loaded 1`] = 
         Visit Type
       </div>
       <select
-        aria-invalid="false"
         aria-label="Visit Type"
         disabled=""
       >
@@ -105,7 +102,6 @@ exports[`BasicForm Snapshot Tests should match snapshot when fully loaded 1`] = 
         Participant(s)
       </div>
       <select
-        aria-invalid="false"
         aria-label="Participant(s)"
         disabled=""
       >
@@ -211,8 +207,6 @@ exports[`BasicForm Snapshot Tests should match snapshot with error states 1`] = 
         Location
       </div>
       <select
-        aria-errormessage="location-dropdown-error"
-        aria-invalid="true"
         aria-label="Location"
         disabled=""
       >
@@ -227,12 +221,6 @@ exports[`BasicForm Snapshot Tests should match snapshot with error states 1`] = 
           Location 1
         </option>
       </select>
-      <div
-        id="location-dropdown-error"
-        role="alert"
-      >
-        Location error
-      </div>
     </div>
   </div>
   <div
@@ -245,8 +233,6 @@ exports[`BasicForm Snapshot Tests should match snapshot with error states 1`] = 
         Encounter Type
       </div>
       <select
-        aria-errormessage="encounter-type-dropdown-error"
-        aria-invalid="true"
         aria-label="Encounter Type"
         disabled=""
       >
@@ -266,12 +252,6 @@ exports[`BasicForm Snapshot Tests should match snapshot with error states 1`] = 
           Encounter Type 2
         </option>
       </select>
-      <div
-        id="encounter-type-dropdown-error"
-        role="alert"
-      >
-        Encounter error
-      </div>
     </div>
   </div>
   <div
@@ -284,8 +264,6 @@ exports[`BasicForm Snapshot Tests should match snapshot with error states 1`] = 
         Visit Type
       </div>
       <select
-        aria-errormessage="visit-type-dropdown-error"
-        aria-invalid="true"
         aria-label="Visit Type"
         disabled=""
       >
@@ -305,12 +283,6 @@ exports[`BasicForm Snapshot Tests should match snapshot with error states 1`] = 
           Visit Type 2
         </option>
       </select>
-      <div
-        id="visit-type-dropdown-error"
-        role="alert"
-      >
-        Encounter error
-      </div>
     </div>
   </div>
   <div
@@ -323,8 +295,6 @@ exports[`BasicForm Snapshot Tests should match snapshot with error states 1`] = 
         Participant(s)
       </div>
       <select
-        aria-errormessage="practitioner-dropdown-error"
-        aria-invalid="true"
         aria-label="Participant(s)"
         disabled=""
       >
@@ -339,12 +309,6 @@ exports[`BasicForm Snapshot Tests should match snapshot with error states 1`] = 
           Dr. John Smith
         </option>
       </select>
-      <div
-        id="practitioner-dropdown-error"
-        role="alert"
-      >
-        Practitioner error
-      </div>
     </div>
   </div>
   <div

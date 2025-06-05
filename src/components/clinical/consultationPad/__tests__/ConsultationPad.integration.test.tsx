@@ -410,33 +410,6 @@ describe('ConsultationPad Integration Tests', () => {
       expect(sharedMockPost).not.toHaveBeenCalled();
     });
 
-    it('should show error states for form fields', async () => {
-      const { container } = renderWithProviders(
-        <ConsultationPad onClose={mockOnClose} />,
-      );
-
-      // Wait for initial rendering
-      await waitFor(() => {
-        expect(
-          screen.getByRole('heading', { name: /New Consultation/i }),
-        ).toBeInTheDocument();
-      });
-
-      // Verify error states are shown (this matches the actual component behavior)
-      const locationDropdown = container.querySelector('#location-dropdown');
-      expect(locationDropdown).toHaveAttribute('data-invalid', 'true');
-
-      const encounterDropdown = container.querySelector(
-        '#encounter-type-dropdown',
-      );
-      expect(encounterDropdown).toHaveAttribute('data-invalid', 'true');
-
-      // Verify error messages are shown
-      expect(
-        screen.getByText('Error fetching locations details'),
-      ).toBeInTheDocument();
-    });
-
     it('should have no accessibility violations', async () => {
       const { container } = renderWithProviders(
         <ConsultationPad onClose={mockOnClose} />,

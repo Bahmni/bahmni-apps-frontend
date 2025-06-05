@@ -5,15 +5,6 @@ import { Provider } from '@types/provider';
 import { FhirEncounter } from '@types/encounter';
 import { User } from '@types/user';
 
-export interface EncounterDetailsErrors {
-  location?: Error | null;
-  encounterType?: Error | null;
-  visitType?: Error | null;
-  participants?: Error | null;
-  consultationDate?: Error | null;
-  general?: Error | null;
-}
-
 export interface EncounterDetailsState {
   // Selected values
   selectedLocation: OpenMRSLocation | null;
@@ -37,7 +28,7 @@ export interface EncounterDetailsState {
   isEncounterDetailsFormReady: boolean;
 
   // Error state
-  errors: EncounterDetailsErrors;
+  hasError: boolean;
 
   // Setters
   setSelectedLocation: (location: OpenMRSLocation | null) => void;
@@ -51,7 +42,7 @@ export interface EncounterDetailsState {
   setPractitioner: (practitioner: Provider | null) => void;
   setUser: (user: User | null) => void;
   setPatientUUID: (patientUUID: string | null) => void;
-  setErrors: (errors: Partial<EncounterDetailsErrors>) => void;
+  setHasError: (hasError: boolean) => void;
 
   // Reset
   reset: () => void;
@@ -73,7 +64,7 @@ export const useEncounterDetailsStore = create<EncounterDetailsState>(
     practitioner: null,
     user: null,
     patientUUID: null,
-    errors: {},
+    hasError: false,
 
     setSelectedLocation: (location) => set({ selectedLocation: location }),
     setSelectedEncounterType: (encounterType) =>
@@ -90,10 +81,7 @@ export const useEncounterDetailsStore = create<EncounterDetailsState>(
     setUser: (user) => set({ user: user }),
     setPatientUUID: (patientUUID) => set({ patientUUID: patientUUID }),
 
-    setErrors: (errors: Partial<EncounterDetailsErrors>) =>
-      set((state) => ({
-        errors: { ...state.errors, ...errors },
-      })),
+    setHasError: (hasError: boolean) => set({ hasError }),
 
     reset: () =>
       set({
@@ -108,7 +96,7 @@ export const useEncounterDetailsStore = create<EncounterDetailsState>(
         practitioner: null,
         user: null,
         patientUUID: null,
-        errors: {},
+        hasError: false,
       }),
 
     getState: () => get(),

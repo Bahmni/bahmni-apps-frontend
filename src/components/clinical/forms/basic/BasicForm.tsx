@@ -61,7 +61,7 @@ const BasicForm: React.FC = () => {
     encounterParticipants,
     consultationDate,
     isEncounterDetailsFormReady,
-    errors,
+    hasError,
     setSelectedLocation,
     setSelectedEncounterType,
     setSelectedVisitType,
@@ -72,7 +72,7 @@ const BasicForm: React.FC = () => {
     setPractitioner,
     setUser,
     setPatientUUID,
-    setErrors,
+    setHasError,
   } = useEncounterDetailsStore();
 
   // Memoized values
@@ -180,9 +180,7 @@ const BasicForm: React.FC = () => {
     );
 
     // Check no errors exist
-    const hasNoErrors = Object.values(errors).every(
-      (error) => error === null || error === undefined,
-    );
+    const hasNoErrors = !hasError;
 
     // Check all required fields are populated
     const hasAllRequiredFields =
@@ -200,7 +198,7 @@ const BasicForm: React.FC = () => {
     setEncounterDetailsFormReady(isFormReady);
   }, [
     allLoadingStates,
-    errors,
+    hasError,
     selectedLocation,
     selectedEncounterType,
     selectedVisitType,
@@ -228,14 +226,14 @@ const BasicForm: React.FC = () => {
 
   // Update error state in store
   useEffect(() => {
-    setErrors({
-      location: locationsError,
-      encounterType: encounterConceptsError,
-      participants: practitionerError,
-      general: activeVisitError,
-    });
+    setHasError(
+      !!locationsError ||
+        !!encounterConceptsError ||
+        !!practitionerError ||
+        !!activeVisitError,
+    );
   }, [
-    setErrors,
+    setHasError,
     locationsError,
     encounterConceptsError,
     practitionerError,
@@ -259,8 +257,6 @@ const BasicForm: React.FC = () => {
               initialSelectedItem={selectedLocation}
               disabled
               size="md"
-              invalid={!!errors.location}
-              invalidText={errors.location?.message || t('SELECT_LOCATION')}
             />
           </FormField>
         </Column>
@@ -279,8 +275,6 @@ const BasicForm: React.FC = () => {
               initialSelectedItem={selectedEncounterType}
               disabled
               size="md"
-              invalid={!!errors.encounterType}
-              invalidText={errors.encounterType?.message}
             />
           </FormField>
         </Column>
@@ -299,8 +293,6 @@ const BasicForm: React.FC = () => {
               initialSelectedItem={selectedVisitType}
               disabled
               size="md"
-              invalid={!!errors.encounterType}
-              invalidText={errors.encounterType?.message}
             />
           </FormField>
         </Column>
@@ -321,8 +313,6 @@ const BasicForm: React.FC = () => {
               initialSelectedItem={practitioner}
               disabled
               size="md"
-              invalid={!!errors.participants}
-              invalidText={errors.participants?.message}
             />
           </FormField>
         </Column>

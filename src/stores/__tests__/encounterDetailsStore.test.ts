@@ -6,10 +6,6 @@ import { Provider } from '@types/provider';
 import { FhirEncounter } from '@types/encounter';
 import { User } from '@types/user';
 
-// Mock error
-const mockLocationError = new Error('Failed to fetch locations');
-const mockEncounterTypeError = new Error('Failed to fetch encounter types');
-
 // Mock practitioner and user data
 const mockPractitioner: Provider = {
   uuid: 'provider-uuid-123',
@@ -101,93 +97,62 @@ describe('encounterDetailsStore', () => {
       expect(result.current.isEncounterDetailsFormReady).toBe(false);
       expect(result.current.activeVisit).toBeNull();
       expect(result.current.activeVisitError).toBeNull();
-      expect(result.current.errors).toEqual({});
+      expect(result.current.hasError).toBe(false);
       expect(result.current.practitioner).toBeNull();
       expect(result.current.user).toBeNull();
     });
   });
 
   describe('error management', () => {
-    it('should set errors correctly', () => {
+    it('should set hasError to true', () => {
       const { result } = renderHook(() => useEncounterDetailsStore());
 
       act(() => {
-        result.current.setErrors({
-          location: mockLocationError,
-        });
+        result.current.setHasError(true);
       });
 
-      expect(result.current.errors.location).toEqual(mockLocationError);
+      expect(result.current.hasError).toBe(true);
     });
 
-    it('should allow setting multiple errors', () => {
+    it('should set hasError to false', () => {
       const { result } = renderHook(() => useEncounterDetailsStore());
 
+      // First set to true
       act(() => {
-        result.current.setErrors({
-          location: mockLocationError,
-          encounterType: mockEncounterTypeError,
-        });
+        result.current.setHasError(true);
       });
+      expect(result.current.hasError).toBe(true);
 
-      expect(result.current.errors.location).toEqual(mockLocationError);
-      expect(result.current.errors.encounterType).toEqual(
-        mockEncounterTypeError,
-      );
+      // Then set to false
+      act(() => {
+        result.current.setHasError(false);
+      });
+      expect(result.current.hasError).toBe(false);
     });
 
-    it('should update specific error without affecting others', () => {
-      const { result } = renderHook(() => useEncounterDetailsStore());
-
-      // Set initial errors
-      act(() => {
-        result.current.setErrors({
-          location: mockLocationError,
-          encounterType: mockEncounterTypeError,
-        });
-      });
-
-      // Update only location error
-      act(() => {
-        result.current.setErrors({
-          location: null,
-        });
-      });
-
-      expect(result.current.errors.location).toBeNull();
-      expect(result.current.errors.encounterType).toEqual(
-        mockEncounterTypeError,
-      );
-    });
-
-    it('should include errors in getState', () => {
+    it('should include hasError in getState', () => {
       const { result } = renderHook(() => useEncounterDetailsStore());
 
       act(() => {
-        result.current.setErrors({
-          location: mockLocationError,
-        });
+        result.current.setHasError(true);
       });
 
       const state = result.current.getState();
-      expect(state.errors.location).toEqual(mockLocationError);
+      expect(state.hasError).toBe(true);
     });
 
-    it('should clear errors on reset', () => {
+    it('should reset hasError to false on reset', () => {
       const { result } = renderHook(() => useEncounterDetailsStore());
 
       act(() => {
-        result.current.setErrors({
-          location: mockLocationError,
-          encounterType: mockEncounterTypeError,
-        });
+        result.current.setHasError(true);
       });
+      expect(result.current.hasError).toBe(true);
 
       act(() => {
         result.current.reset();
       });
-
-      expect(result.current.errors).toEqual({});
+      expect(result.current.hasError).toBe(false);
     });
   });
 
@@ -520,6 +485,7 @@ describe('encounterDetailsStore', () => {
         result.current.setEncounterDetailsFormReady(true);
         result.current.setActiveVisit(mockActiveVisit);
         result.current.setActiveVisitError(mockError);
+        result.current.setHasError(true);
       });
 
       // Verify values were set
@@ -530,6 +496,7 @@ describe('encounterDetailsStore', () => {
       expect(result.current.isEncounterDetailsFormReady).toBe(true);
       expect(result.current.activeVisit).not.toBeNull();
       expect(result.current.activeVisitError).not.toBeNull();
+      expect(result.current.hasError).toBe(true);
 
       // Reset
       act(() => {
@@ -545,6 +512,7 @@ describe('encounterDetailsStore', () => {
       expect(result.current.isEncounterDetailsFormReady).toBe(false);
       expect(result.current.activeVisit).toBeNull();
       expect(result.current.activeVisitError).toBeNull();
+      expect(result.current.hasError).toBe(false);
     });
   });
 

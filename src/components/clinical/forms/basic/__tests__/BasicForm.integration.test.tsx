@@ -355,7 +355,7 @@ describe('BasicForm Integration Tests', () => {
     // Wait a bit more for the error to propagate to the store
     await waitFor(() => {
       const store = useEncounterDetailsStore.getState();
-      expect(store.errors.encounterType).toBeTruthy();
+      expect(store.hasError).toBe(true);
     });
   });
 
@@ -380,7 +380,7 @@ describe('BasicForm Integration Tests', () => {
     // Wait for the error to propagate to the store
     await waitFor(() => {
       const store = useEncounterDetailsStore.getState();
-      expect(store.errors.participants).toBeTruthy();
+      expect(store.hasError).toBe(true);
     });
   });
 
@@ -408,7 +408,7 @@ describe('BasicForm Integration Tests', () => {
     // Wait for the error to propagate to the store
     await waitFor(() => {
       const store = useEncounterDetailsStore.getState();
-      expect(store.errors.general).toBeTruthy();
+      expect(store.hasError).toBe(true);
     });
   });
 
@@ -479,10 +479,7 @@ describe('BasicForm Integration Tests', () => {
     // Wait for errors to propagate to the store
     await waitFor(() => {
       const store = useEncounterDetailsStore.getState();
-      expect(store.errors.location).toBeTruthy();
-      expect(store.errors.encounterType).toBeTruthy();
-      expect(store.errors.participants).toBeTruthy();
-      expect(store.errors.general).toBeTruthy();
+      expect(store.hasError).toBe(true);
     });
   });
 });
