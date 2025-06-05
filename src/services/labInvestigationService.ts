@@ -7,7 +7,7 @@ import {
   LabTestStatus,
   LabTestPriority,
   LabTestsByDate,
-} from '@/types/labInvestigation';
+} from '@types/labInvestigation';
 import { getFormattedError } from '@utils/common';
 import { formatDate } from '@utils/date';
 import notificationService from './notificationService';

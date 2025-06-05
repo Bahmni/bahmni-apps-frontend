@@ -14,102 +14,10 @@ exports[`ConsultationPad Rendering Snapshots should match snapshot for error sta
       data-testid="action-area-content"
     >
       <div
-        class="cds--css-grid"
-      >
-        <div
-          class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
-        >
-          <h2>
-            CONSULTATION_PAD_ERROR
-          </h2>
-        </div>
-      </div>
-    </div>
-    <button
-      data-testid="primary-button"
-    >
-      CONSULTATION_PAD_DONE_BUTTON
-    </button>
-    <button
-      data-testid="secondary-button"
-    >
-      CONSULTATION_PAD_CANCEL_BUTTON
-    </button>
-  </div>
-</div>
-`;
-
-exports[`ConsultationPad Rendering Snapshots should match snapshot for loading state 1`] = `
-<div>
-  <div
-    data-testid="mock-action-area"
-  >
-    <div
-      data-testid="action-area-title"
-    >
-      CONSULTATION_PAD_TITLE
-    </div>
-    <div
-      data-testid="action-area-content"
-    >
-      <div
-        class="cds--css-grid"
-      >
-        <div
-          class="cds--sm:col-span-3 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
-        >
-          <div
-            aria-atomic="true"
-            aria-live="assertive"
-            class="cds--loading"
-          >
-            <svg
-              class="cds--loading__svg"
-              viewBox="0 0 100 100"
-            >
-              <title>
-                CONSULTATION_PAD_LOADING
-              </title>
-              <circle
-                class="cds--loading__stroke"
-                cx="50%"
-                cy="50%"
-                r="44"
-              />
-            </svg>
-          </div>
-        </div>
-      </div>
-    </div>
-    <button
-      data-testid="primary-button"
-    >
-      CONSULTATION_PAD_DONE_BUTTON
-    </button>
-    <button
-      data-testid="secondary-button"
-    >
-      CONSULTATION_PAD_CANCEL_BUTTON
-    </button>
-  </div>
-</div>
-`;
-
-exports[`ConsultationPad Rendering Snapshots should match snapshot for normal state 1`] = `
-<div>
-  <div
-    data-testid="mock-action-area"
-  >
-    <div
-      data-testid="action-area-title"
-    >
-      CONSULTATION_PAD_TITLE
-    </div>
-    <div
-      data-testid="action-area-content"
-    >
-      <div
         data-testid="mock-basic-form"
+      />
+      <hr
+        data-testid="mock-divider"
       />
       <div
         data-testid="mock-diagnoses-form"
@@ -150,9 +58,8 @@ exports[`ConsultationPad Rendering Snapshots should match snapshot for normal st
            selected
         </div>
       </div>
-      <li
-        class="cds--menu-item-divider"
-        role="separator"
+      <hr
+        data-testid="mock-divider"
       />
       <div
         data-testid="mock-allergies-form"
@@ -164,9 +71,186 @@ exports[`ConsultationPad Rendering Snapshots should match snapshot for normal st
            selected
         </div>
       </div>
-      <li
-        class="cds--menu-item-divider"
-        role="separator"
+      <hr
+        data-testid="mock-divider"
+      />
+    </div>
+    <button
+      data-testid="primary-button"
+    >
+      CONSULTATION_PAD_DONE_BUTTON
+    </button>
+    <button
+      data-testid="secondary-button"
+    >
+      CONSULTATION_PAD_CANCEL_BUTTON
+    </button>
+  </div>
+</div>
+`;
+
+exports[`ConsultationPad Rendering Snapshots should match snapshot for loading state 1`] = `
+<div>
+  <div
+    data-testid="mock-action-area"
+  >
+    <div
+      data-testid="action-area-title"
+    >
+      CONSULTATION_PAD_TITLE
+    </div>
+    <div
+      data-testid="action-area-content"
+    >
+      <div
+        data-testid="mock-basic-form"
+      />
+      <hr
+        data-testid="mock-divider"
+      />
+      <div
+        data-testid="mock-diagnoses-form"
+      >
+        <button>
+          Search
+        </button>
+        <button>
+          Select
+        </button>
+        <button
+          data-testid="select-null-button"
+        >
+          Select Null
+        </button>
+        <button>
+          Remove
+        </button>
+        <div
+          data-testid="diagnoses-form-errors"
+        />
+        <div
+          data-testid="diagnoses-form-loading"
+        >
+          Not Loading
+        </div>
+        <div
+          data-testid="diagnoses-form-results"
+        >
+          0
+           
+          results
+        </div>
+        <div
+          data-testid="diagnoses-form-selected"
+        >
+          0
+           selected
+        </div>
+      </div>
+      <hr
+        data-testid="mock-divider"
+      />
+      <div
+        data-testid="mock-allergies-form"
+      >
+        <div
+          data-testid="allergies-form-selected"
+        >
+          0
+           selected
+        </div>
+      </div>
+      <hr
+        data-testid="mock-divider"
+      />
+    </div>
+    <button
+      data-testid="primary-button"
+    >
+      CONSULTATION_PAD_DONE_BUTTON
+    </button>
+    <button
+      data-testid="secondary-button"
+    >
+      CONSULTATION_PAD_CANCEL_BUTTON
+    </button>
+  </div>
+</div>
+`;
+
+exports[`ConsultationPad Rendering Snapshots should match snapshot for normal state 1`] = `
+<div>
+  <div
+    data-testid="mock-action-area"
+  >
+    <div
+      data-testid="action-area-title"
+    >
+      CONSULTATION_PAD_TITLE
+    </div>
+    <div
+      data-testid="action-area-content"
+    >
+      <div
+        data-testid="mock-basic-form"
+      />
+      <hr
+        data-testid="mock-divider"
+      />
+      <div
+        data-testid="mock-diagnoses-form"
+      >
+        <button>
+          Search
+        </button>
+        <button>
+          Select
+        </button>
+        <button
+          data-testid="select-null-button"
+        >
+          Select Null
+        </button>
+        <button>
+          Remove
+        </button>
+        <div
+          data-testid="diagnoses-form-errors"
+        />
+        <div
+          data-testid="diagnoses-form-loading"
+        >
+          Not Loading
+        </div>
+        <div
+          data-testid="diagnoses-form-results"
+        >
+          0
+           
+          results
+        </div>
+        <div
+          data-testid="diagnoses-form-selected"
+        >
+          0
+           selected
+        </div>
+      </div>
+      <hr
+        data-testid="mock-divider"
+      />
+      <div
+        data-testid="mock-allergies-form"
+      >
+        <div
+          data-testid="allergies-form-selected"
+        >
+          0
+           selected
+        </div>
+      </div>
+      <hr
+        data-testid="mock-divider"
       />
     </div>
     <button

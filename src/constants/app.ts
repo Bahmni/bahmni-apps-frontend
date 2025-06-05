@@ -19,7 +19,7 @@ export const PATIENT_CONDITION_RESOURCE_URL = (patientUUID: string) =>
   `/Condition?category=${HL7_CONDITION_CATEGORY_CONDITION_CODE}&patient=${patientUUID}`;
 export const PATIENT_ALLERGY_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 + `/AllergyIntolerance?patient=${patientUUID}`;
-export const PATIENT_ENCOUNTER_RESOURCE_URL = (patientUUID: string) =>
+export const PATIENT_VISITS_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 + `/Encounter?subject:Patient=${patientUUID}&_tag=visit`;
 export const PATIENT_LAB_INVESTIGATION_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 +

@@ -38,7 +38,7 @@ export const mockPractitioner = {
   },
 };
 
-export const mockCurrentEncounter = {
+export const mockActiveVisit = {
   id: 'encounter-1',
   type: [
     {

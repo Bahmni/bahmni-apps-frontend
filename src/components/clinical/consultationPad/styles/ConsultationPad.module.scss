@@ -1,6 +1,17 @@
-.loadingContent {
-  display: flex;
-  justify-items: center;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+
+.emptyState {
+  height: -webkit-fill-available !important;
+  padding-bottom: $spacing-10;
+  align-items: center;
   align-content: center;
-  height: 75vh;
+}
+
+.emptyStateTitle {
+  @include type-style("heading-compact-02");
+}
+
+.emptyStateBody {
+  @include type-style("body-long-01");
 }

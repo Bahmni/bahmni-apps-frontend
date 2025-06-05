@@ -3,9 +3,9 @@ import * as styles from './styles/LabInvestigation.module.scss';
 import { useTranslation } from 'react-i18next';
 import { Accordion, AccordionItem, SkeletonText } from '@carbon/react';
 import LabInvestigationItem from './LabInvestigationItem';
-import useLabInvestigations from '@/hooks/useLabInvestigations';
-import { groupLabTestsByDate } from '@/services/labInvestigationService';
-import { LabTestsByDate } from '@/types/labInvestigation';
+import useLabInvestigations from '@hooks/useLabInvestigations';
+import { groupLabTestsByDate } from '@services/labInvestigationService';
+import { LabTestsByDate } from '@types/labInvestigation';
 
 const LabInvestigationControl: React.FC = () => {
   const { t } = useTranslation();

@@ -26,17 +26,30 @@ function transformToConcepts<T>(record: Record<string, T> = {}): Concept[] {
  * @throws Error when the response has an unexpected structure or format
  */
 export async function getEncounterConcepts(): Promise<EncounterConcepts> {
-  const response = await get<EncounterConceptsResponse>(ENCOUNTER_CONCEPTS_URL);
+  try {
+    const response = await get<EncounterConceptsResponse>(
+      ENCOUNTER_CONCEPTS_URL,
+    );
 
-  // Check if response is a valid object with the expected structure
-  if (!response || typeof response !== 'object') {
-    throw new Error(i18next.t(COMMON_ERROR_MESSAGES.INVALID_RESPONSE));
+    // Check if response is a valid object with the expected structure
+    if (!response || typeof response !== 'object') {
+      throw new Error(i18next.t(COMMON_ERROR_MESSAGES.INVALID_RESPONSE));
+    }
+
+    return {
+      visitTypes: transformToConcepts(response.visitTypes),
+      encounterTypes: transformToConcepts(response.encounterTypes),
+      orderTypes: transformToConcepts(response.orderTypes),
+      conceptData: transformToConcepts(response.conceptData),
+    };
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message.includes(i18next.t(COMMON_ERROR_MESSAGES.INVALID_RESPONSE))
+    ) {
+      throw error;
+    }
+
+    throw new Error(i18next.t('ERROR_FETCHING_ENCOUNTER_DETAILS'));
   }
-
-  return {
-    visitTypes: transformToConcepts(response.visitTypes),
-    encounterTypes: transformToConcepts(response.encounterTypes),
-    orderTypes: transformToConcepts(response.orderTypes),
-    conceptData: transformToConcepts(response.conceptData),
-  };
 }

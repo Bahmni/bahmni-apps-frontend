@@ -71,6 +71,17 @@ const DiagnosesForm: React.FC = React.memo(() => {
       ];
     }
 
+    if (searchError) {
+      return [
+        {
+          conceptName: t('ERROR_FETCHING_CONCEPTS'),
+          conceptUuid: '',
+          matchedName: '',
+          disabled: true,
+        },
+      ];
+    }
+
     return searchResults.map((item) => {
       const isAlreadySelected = selectedDiagnoses.some(
         (d) => d.id === item.conceptUuid,

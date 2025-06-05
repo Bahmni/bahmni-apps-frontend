@@ -22,8 +22,11 @@ const meta: Meta<typeof ActionArea> = {
   argTypes: {
     title: { control: 'text' },
     primaryButtonText: { control: 'text' },
+    isPrimaryButtonDisabled: { control: 'boolean' },
     secondaryButtonText: { control: 'text' },
+    isSecondaryButtonDisabled: { control: 'boolean' },
     tertiaryButtonText: { control: 'text' },
+    isTertiaryButtonDisabled: { control: 'boolean' },
     onPrimaryButtonClick: { action: 'primary button clicked' },
     onSecondaryButtonClick: { action: 'secondary button clicked' },
     onTertiaryButtonClick: { action: 'tertiary button clicked' },
@@ -187,10 +190,67 @@ export const WithFormContent: Story = {
   },
 };
 
-// Interactive story with toggle visibility
+// Story with disabled primary button
+export const WithDisabledPrimaryButton: Story = {
+  render: (args) => (
+    <div style={{ top: '0', height: '100vh', position: 'fixed' }}>
+      <ActionArea {...args} />
+    </div>
+  ),
+  args: {
+    ...Default.args,
+    isPrimaryButtonDisabled: true,
+  },
+};
+
+// Story with disabled secondary button
+export const WithDisabledSecondaryButton: Story = {
+  render: (args) => (
+    <div style={{ top: '0', height: '100vh', position: 'fixed' }}>
+      <ActionArea {...args} />
+    </div>
+  ),
+  args: {
+    ...Default.args,
+    isSecondaryButtonDisabled: true,
+  },
+};
+
+// Story with disabled tertiary button
+export const WithDisabledTertiaryButton: Story = {
+  render: (args) => (
+    <div style={{ top: '0', height: '100vh', position: 'fixed' }}>
+      <ActionArea {...args} />
+    </div>
+  ),
+  args: {
+    ...WithAllButtons.args,
+    isTertiaryButtonDisabled: true,
+  },
+};
+
+// Story with all buttons disabled
+export const WithAllButtonsDisabled: Story = {
+  render: (args) => (
+    <div style={{ top: '0', height: '100vh', position: 'fixed' }}>
+      <ActionArea {...args} />
+    </div>
+  ),
+  args: {
+    ...WithAllButtons.args,
+    isPrimaryButtonDisabled: true,
+    isSecondaryButtonDisabled: true,
+    isTertiaryButtonDisabled: true,
+  },
+};
+
+// Interactive story with toggle visibility and dynamic disable states
 export const Interactive: Story = {
   render: (args) => {
     const [isVisible, setIsVisible] = useState(true);
+    const [isPrimaryDisabled, setIsPrimaryDisabled] = useState(false);
+    const [isSecondaryDisabled, setIsSecondaryDisabled] = useState(false);
+    const [isTertiaryDisabled, setIsTertiaryDisabled] = useState(false);
 
     const handlePrimaryClick = () => {
       action('Done clicked')();
@@ -200,15 +260,46 @@ export const Interactive: Story = {
 
     return (
       <>
-        <div style={{ marginBottom: '20px' }}>
+        <div
+          style={{
+            marginBottom: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+          }}
+        >
           <Button onClick={() => setIsVisible(!isVisible)}>
             {isVisible ? 'Hide Action Area' : 'Show Action Area'}
+          </Button>
+          <Button
+            kind="secondary"
+            onClick={() => setIsPrimaryDisabled(!isPrimaryDisabled)}
+          >
+            {isPrimaryDisabled ? 'Enable Primary' : 'Disable Primary'}
+          </Button>
+          <Button
+            kind="secondary"
+            onClick={() => setIsSecondaryDisabled(!isSecondaryDisabled)}
+          >
+            {isSecondaryDisabled ? 'Enable Secondary' : 'Disable Secondary'}
+          </Button>
+          <Button
+            kind="secondary"
+            onClick={() => setIsTertiaryDisabled(!isTertiaryDisabled)}
+          >
+            {isTertiaryDisabled ? 'Enable Tertiary' : 'Disable Tertiary'}
           </Button>
         </div>
 
         {isVisible && (
           <div style={{ top: '0', height: '100vh', position: 'fixed' }}>
-            <ActionArea {...args} onPrimaryButtonClick={handlePrimaryClick} />
+            <ActionArea
+              {...args}
+              onPrimaryButtonClick={handlePrimaryClick}
+              isPrimaryButtonDisabled={isPrimaryDisabled}
+              isSecondaryButtonDisabled={isSecondaryDisabled}
+              isTertiaryButtonDisabled={isTertiaryDisabled}
+            />
           </div>
         )}
       </>

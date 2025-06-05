@@ -44,12 +44,17 @@ describe('consultationBundleService', () => {
     };
 
     it('should create bundle entries for valid diagnoses', () => {
+      const mockDate = new Date('2025-01-01T10:00:00Z');
       const result = createDiagnosisBundleEntries({
         selectedDiagnoses: [mockDiagnosis],
         encounterSubject: mockEncounterSubject,
         encounterReference: mockDiagnosisEncounterReference,
         practitionerUUID: mockDiagnosisPractitionerUUID,
+        consultationDate: mockDate,
       });
+
+      const condition = result[0].resource as Condition;
+      expect(condition.recordedDate).toBe('2025-01-01T10:00:00.000Z');
 
       expect(result).toBeInstanceOf(Array);
       expect(result.length).toBe(1);
@@ -63,6 +68,7 @@ describe('consultationBundleService', () => {
         encounterSubject: mockEncounterSubject,
         encounterReference: mockDiagnosisEncounterReference,
         practitionerUUID: mockDiagnosisPractitionerUUID,
+        consultationDate: new Date(),
       });
 
       expect(result).toBeInstanceOf(Array);
@@ -77,6 +83,7 @@ describe('consultationBundleService', () => {
           encounterSubject: mockEncounterSubject,
           encounterReference: mockDiagnosisEncounterReference,
           practitionerUUID: mockDiagnosisPractitionerUUID,
+          consultationDate: new Date(),
         }),
       ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_DIAGNOSIS_PARAMS);
     });
@@ -89,6 +96,7 @@ describe('consultationBundleService', () => {
           encounterSubject: null as any,
           encounterReference: mockDiagnosisEncounterReference,
           practitionerUUID: mockDiagnosisPractitionerUUID,
+          consultationDate: new Date(),
         }),
       ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_SUBJECT);
     });
@@ -100,6 +108,7 @@ describe('consultationBundleService', () => {
           encounterSubject: mockEncounterSubject,
           encounterReference: '',
           practitionerUUID: mockPractitionerUUID,
+          consultationDate: new Date(),
         }),
       ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_REFERENCE);
     });
@@ -111,6 +120,7 @@ describe('consultationBundleService', () => {
           encounterSubject: mockEncounterSubject,
           encounterReference: mockDiagnosisEncounterReference,
           practitionerUUID: '',
+          consultationDate: new Date(),
         }),
       ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_PRACTITIONER);
     });
@@ -138,6 +148,7 @@ describe('consultationBundleService', () => {
           encounterSubject: mockEncounterSubject,
           encounterReference: mockDiagnosisEncounterReference,
           practitionerUUID: mockDiagnosisPractitionerUUID,
+          consultationDate: new Date(),
         }),
       ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_DIAGNOSIS_PARAMS);
     });
@@ -157,6 +168,7 @@ describe('consultationBundleService', () => {
         encounterSubject: mockEncounterSubject,
         encounterReference: mockDiagnosisEncounterReference,
         practitionerUUID: mockDiagnosisPractitionerUUID,
+        consultationDate: new Date(),
       });
 
       expect(result).toBeInstanceOf(Array);

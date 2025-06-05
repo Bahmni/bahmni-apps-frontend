@@ -5,7 +5,7 @@ import {
   FormattedLabTest,
   LabTestStatus,
   LabTestPriority,
-} from '@/types/labInvestigation';
+} from '@types/labInvestigation';
 import { useTranslation } from 'react-i18next';
 
 // Mock the BahmniIcon component
