@@ -2,19 +2,19 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import LabInvestigationControl from '../LabInvestigationControl';
 import { usePatientUUID } from '@hooks/usePatientUUID';
-import useLabInvestigations from '@/hooks/useLabInvestigations';
-import { groupLabTestsByDate } from '@/services/labInvestigationService';
+import useLabInvestigations from '@hooks/useLabInvestigations';
+import { groupLabTestsByDate } from '@services/labInvestigationService';
 import i18n from '@/setupTests.i18n';
 import {
   mockPatientUUID,
   mockLabTestsByDate,
   mockLabTestsByDateWithIncomplete,
-} from '@/__mocks__/labInvestigationMocks';
+} from '@__mocks__/labInvestigationMocks';
 
 // Mock the hooks and services
 jest.mock('@hooks/usePatientUUID');
-jest.mock('@/hooks/useLabInvestigations');
-jest.mock('@/services/labInvestigationService', () => ({
+jest.mock('@hooks/useLabInvestigations');
+jest.mock('@services/labInvestigationService', () => ({
   groupLabTestsByDate: jest.fn(),
 }));
 
