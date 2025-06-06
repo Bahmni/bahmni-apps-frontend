@@ -95,8 +95,7 @@ describe('useClinicalConfig', () => {
 
   it('should throw an error when used outside of ClinicalConfigProvider', () => {
     // Suppress console.error for this test to avoid noisy output
-    const originalConsoleError = console.error;
-    console.error = jest.fn();
+    jest.spyOn(console, 'error').mockImplementation(() => {});
 
     // Mock the ClinicalConfigContext
     jest.spyOn(React, 'useContext').mockReturnValue(null);
@@ -107,8 +106,5 @@ describe('useClinicalConfig', () => {
     }).toThrow(
       'useClinicalConfig must be used within a ClinicalConfigProvider',
     );
-
-    // Restore console.error
-    console.error = originalConsoleError;
   });
 });

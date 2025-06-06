@@ -35,7 +35,7 @@ const globalActions = [
     renderIcon: (
       <BahmniIcon id="search-icon" name="fa-search" size={ICON_SIZE.LG} />
     ),
-    onClick: () => console.log('Search clicked'),
+    onClick: () => {},
   },
   {
     id: 'notifications',
@@ -43,7 +43,7 @@ const globalActions = [
     renderIcon: (
       <BahmniIcon id="notifications-icon" name="fa-bell" size={ICON_SIZE.LG} />
     ),
-    onClick: () => console.log('Notifications clicked'),
+    onClick: () => {},
   },
   {
     id: 'user',
@@ -51,7 +51,7 @@ const globalActions = [
     renderIcon: (
       <BahmniIcon id="user-icon" name="fa-user" size={ICON_SIZE.LG} />
     ),
-    onClick: () => console.log('App Switcher clicked'),
+    onClick: () => {},
   },
 ];
 

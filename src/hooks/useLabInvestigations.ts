@@ -31,8 +31,8 @@ export default function useLabInvestigations() {
         const formattedTests = formatLabTests(labTestFhirBundle);
 
         setLabTests(formattedTests);
-      } catch (err) {
-        console.error('Error fetching lab investigations:', err);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_) {
         setIsError(true);
       } finally {
         setIsLoading(false);

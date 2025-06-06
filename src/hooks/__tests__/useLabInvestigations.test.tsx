@@ -321,9 +321,7 @@ describe('useLabInvestigations', () => {
       const error = new Error('Network error');
       mockedGetLabTests.mockRejectedValueOnce(error);
 
-      // Mock console.error to prevent test output pollution
-      const originalConsoleError = console.error;
-      console.error = jest.fn();
+      jest.spyOn(console, 'error').mockImplementation(() => {});
 
       // Act
       renderHook(() => useLabInvestigations());
@@ -331,16 +329,9 @@ describe('useLabInvestigations', () => {
       // Wait for async operations
       await waitFor(() => {
         expect(mockedGetLabTests).toHaveBeenCalledWith(patientUUID);
-        expect(console.error).toHaveBeenCalledWith(
-          'Error fetching lab investigations:',
-          error,
-        );
         expect(mockSetError).toHaveBeenCalledWith(true);
         expect(mockSetLoading).toHaveBeenCalledWith(false);
       });
-
-      // Restore console.error
-      console.error = originalConsoleError;
     });
 
     it('should handle empty lab tests array from API', async () => {

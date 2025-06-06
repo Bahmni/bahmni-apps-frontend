@@ -34,6 +34,7 @@ export const createNotificationService = (): NotificationServiceInterface & {
       if (addNotificationCallback) {
         addNotificationCallback({ title, message, type: 'success', timeout });
       } else {
+        // eslint-disable-next-line no-console
         console.error(
           'Notification service not properly initialized. Call register() first.',
         );
@@ -44,6 +45,7 @@ export const createNotificationService = (): NotificationServiceInterface & {
       if (addNotificationCallback) {
         addNotificationCallback({ title, message, type: 'info', timeout });
       } else {
+        // eslint-disable-next-line no-console
         console.error(
           'Notification service not properly initialized. Call register() first.',
         );
@@ -54,6 +56,7 @@ export const createNotificationService = (): NotificationServiceInterface & {
       if (addNotificationCallback) {
         addNotificationCallback({ title, message, type: 'warning', timeout });
       } else {
+        // eslint-disable-next-line no-console
         console.error(
           'Notification service not properly initialized. Call register() first.',
         );
@@ -64,6 +67,7 @@ export const createNotificationService = (): NotificationServiceInterface & {
       if (addNotificationCallback) {
         addNotificationCallback({ title, message, type: 'error', timeout });
       } else {
+        // eslint-disable-next-line no-console
         console.error(
           'Notification service not properly initialized. Call register() first.',
         );
