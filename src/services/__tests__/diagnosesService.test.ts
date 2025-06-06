@@ -1,4 +1,4 @@
-import { getPatientDiagnosisBundle, formatDiagnoses } from '../diagnosesService';
+import { getPatientDiagnosesByDate } from '../diagnosesService';
 import { get } from '../api';
 import { formatDate } from '@/utils/date';
 import { CERTAINITY_CONCEPTS } from '@/constants/concepts';
@@ -13,246 +13,13 @@ describe('diagnosesService', () => {
     jest.spyOn(console, 'error').mockImplementation();
   });
 
-  describe('getPatientDiagnosisBundle', () => {
-    const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
-    const expectedUrl = `/openmrs/ws/fhir2/R4/Condition?category=encounter-diagnosis&patient=${patientUUID}`;
-
-    const mockDiagnosisCondition: Condition = {
-      resourceType: 'Condition',
-      id: 'diagnosis-1',
-      meta: {
-        lastUpdated: '2025-03-25T06:48:32+00:00',
-      },
-      clinicalStatus: {
-        coding: [
-          {
-            system: 'http://terminology.hl7.org/CodeSystem/condition-clinical',
-            code: 'active',
-            display: 'Active',
-          },
-        ],
-      },
-      verificationStatus: {
-        coding: [
-          {
-            system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
-            code: 'confirmed',
-            display: 'Confirmed',
-          },
-        ],
-      },
-      category: [
-        {
-          coding: [
-            {
-              system: 'http://terminology.hl7.org/CodeSystem/condition-category',
-              code: 'encounter-diagnosis',
-              display: 'Encounter Diagnosis',
-            },
-          ],
-        },
-      ],
-      code: {
-        coding: [
-          {
-            system: 'http://snomed.info/sct',
-            code: '44054006',
-            display: 'Diabetes mellitus type 2',
-          },
-        ],
-        text: 'Type 2 Diabetes Mellitus',
-      },
-      subject: {
-        reference: `Patient/${patientUUID}`,
-        display: 'John Doe',
-      },
-      onsetDateTime: '2025-01-15T00:00:00+00:00',
-      recordedDate: '2025-03-25T06:48:32+00:00',
-      recorder: {
-        reference: 'Practitioner/practitioner-1',
-        display: 'Dr. Smith',
-      },
-    };
-
-    const mockDiagnosisBundle: Condition = {
-      resourceType: 'Bundle',
-      id: 'diagnosis-bundle-1',
-      type: 'searchset',
-      total: 1,
-      entry: [
-        {
-          resource: mockDiagnosisCondition,
-        },
-      ],
-    } as unknown as Condition;
-
-    const mockEmptyDiagnosisBundle: Condition = {
-      resourceType: 'Bundle',
-      id: 'empty-diagnosis-bundle',
-      type: 'searchset',
-      total: 0,
-      entry: [],
-    } as unknown as Condition;
-
-    describe('Successful Responses', () => {
-      it('should fetch diagnosis bundle for a valid patient UUID', async () => {
-        (get as jest.Mock).mockResolvedValueOnce(mockDiagnosisBundle);
-
-        const result = await getPatientDiagnosisBundle(patientUUID);
-
-        expect(get).toHaveBeenCalledWith(expectedUrl);
-        expect(result).toEqual(mockDiagnosisBundle);
-      });
-
-      it('should return empty bundle when no diagnoses exist', async () => {
-        (get as jest.Mock).mockResolvedValueOnce(mockEmptyDiagnosisBundle);
-
-        const result = await getPatientDiagnosisBundle(patientUUID);
-
-        expect(get).toHaveBeenCalledWith(expectedUrl);
-        expect(result).toEqual(mockEmptyDiagnosisBundle);
-      });
-
-      it('should construct correct URL with patient UUID', async () => {
-        const testPatientUUID = 'test-patient-uuid-123';
-        const expectedTestUrl = `/openmrs/ws/fhir2/R4/Condition?category=encounter-diagnosis&patient=${testPatientUUID}`;
-        
-        (get as jest.Mock).mockResolvedValueOnce(mockDiagnosisBundle);
-
-        await getPatientDiagnosisBundle(testPatientUUID);
-
-        expect(get).toHaveBeenCalledWith(expectedTestUrl);
-      });
-    });
-
-    describe('API Error Handling', () => {
-      it('should propagate network errors from the API', async () => {
-        const networkError = new Error('Network connection failed');
-        (get as jest.Mock).mockRejectedValueOnce(networkError);
-
-        await expect(getPatientDiagnosisBundle(patientUUID)).rejects.toThrow(
-          'Network connection failed',
-        );
-
-        expect(get).toHaveBeenCalledWith(expectedUrl);
-      });
-
-      it('should propagate 404 not found errors', async () => {
-        const notFoundError = new Error('Patient not found');
-        notFoundError.name = 'NotFoundError';
-        (get as jest.Mock).mockRejectedValueOnce(notFoundError);
-
-        await expect(getPatientDiagnosisBundle(patientUUID)).rejects.toThrow(
-          'Patient not found',
-        );
-      });
-
-      it('should propagate 401 unauthorized errors', async () => {
-        const unauthorizedError = new Error('Unauthorized access');
-        unauthorizedError.name = 'UnauthorizedError';
-        (get as jest.Mock).mockRejectedValueOnce(unauthorizedError);
-
-        await expect(getPatientDiagnosisBundle(patientUUID)).rejects.toThrow(
-          'Unauthorized access',
-        );
-      });
-
-      it('should propagate 500 server errors', async () => {
-        const serverError = new Error('Internal server error');
-        serverError.name = 'ServerError';
-        (get as jest.Mock).mockRejectedValueOnce(serverError);
-
-        await expect(getPatientDiagnosisBundle(patientUUID)).rejects.toThrow(
-          'Internal server error',
-        );
-      });
-
-      it('should propagate generic API errors', async () => {
-        const genericError = new Error('Something went wrong');
-        (get as jest.Mock).mockRejectedValueOnce(genericError);
-
-        await expect(getPatientDiagnosisBundle(patientUUID)).rejects.toThrow(
-          'Something went wrong',
-        );
-      });
-    });
-
-    describe('Edge Cases', () => {
-      it('should handle empty patient UUID', async () => {
-        const emptyUUID = '';
-        const expectedEmptyUrl = `/openmrs/ws/fhir2/R4/Condition?category=encounter-diagnosis&patient=${emptyUUID}`;
-        
-        (get as jest.Mock).mockResolvedValueOnce(mockEmptyDiagnosisBundle);
-
-        const result = await getPatientDiagnosisBundle(emptyUUID);
-
-        expect(get).toHaveBeenCalledWith(expectedEmptyUrl);
-        expect(result).toEqual(mockEmptyDiagnosisBundle);
-      });
-
-      it('should handle special characters in patient UUID', async () => {
-        const specialUUID = 'patient-uuid-with-special-chars-@#$%';
-        const expectedSpecialUrl = `/openmrs/ws/fhir2/R4/Condition?category=encounter-diagnosis&patient=${specialUUID}`;
-        
-        (get as jest.Mock).mockResolvedValueOnce(mockDiagnosisBundle);
-
-        await getPatientDiagnosisBundle(specialUUID);
-
-        expect(get).toHaveBeenCalledWith(expectedSpecialUrl);
-      });
-
-      it('should handle null response from API', async () => {
-        (get as jest.Mock).mockResolvedValueOnce(null);
-
-        const result = await getPatientDiagnosisBundle(patientUUID);
-
-        expect(result).toBeNull();
-      });
-
-      it('should handle undefined response from API', async () => {
-        (get as jest.Mock).mockResolvedValueOnce(undefined);
-
-        const result = await getPatientDiagnosisBundle(patientUUID);
-
-        expect(result).toBeUndefined();
-      });
-    });
-
-    describe('Response Validation', () => {
-      it('should return response as-is without modification', async () => {
-        const customResponse = {
-          resourceType: 'Bundle',
-          id: 'custom-bundle',
-          customField: 'custom-value',
-        } as unknown as Condition;
-
-        (get as jest.Mock).mockResolvedValueOnce(customResponse);
-
-        const result = await getPatientDiagnosisBundle(patientUUID);
-
-        expect(result).toEqual(customResponse);
-        expect(result).toBe(customResponse); // Should be the exact same object
-      });
-
-      it('should handle malformed bundle structure', async () => {
-        const malformedBundle = {
-          resourceType: 'InvalidType',
-          someField: 'someValue',
-        } as unknown as Condition;
-
-        (get as jest.Mock).mockResolvedValueOnce(malformedBundle);
-
-        const result = await getPatientDiagnosisBundle(patientUUID);
-
-        expect(result).toEqual(malformedBundle);
-      });
-    });
-  });
-
-  describe('formatDiagnoses', () => {
+  describe('getPatientDiagnosesByDate', () => {
     const mockFormatDate = formatDate as jest.MockedFunction<typeof formatDate>;
+    const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
 
-    const createMockDiagnosis = (overrides: Partial<Condition> = {}): Condition => ({
+    const createMockDiagnosis = (
+      overrides: Partial<Condition> = {},
+    ): Condition => ({
       resourceType: 'Condition',
       id: 'diagnosis-1',
       subject: {
@@ -272,7 +39,8 @@ describe('diagnosesService', () => {
       verificationStatus: {
         coding: [
           {
-            system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
+            system:
+              'http://terminology.hl7.org/CodeSystem/condition-ver-status',
             code: 'confirmed',
             display: 'Confirmed',
           },
@@ -293,92 +61,157 @@ describe('diagnosesService', () => {
     });
 
     describe('Happy Path Cases', () => {
-      it('should format a single diagnosis with confirmed certainty', () => {
-        const mockDiagnosis = createMockDiagnosis();
-        
-        const result = formatDiagnoses([mockDiagnosis]);
-
-        expect(result).toEqual([
-          {
-            id: 'diagnosis-1',
-            display: 'Type 2 Diabetes Mellitus',
-            certainty: CERTAINITY_CONCEPTS[0], // confirmed
-            recordedDate: '2025-03-25T06:48:32+00:00',
-            formattedDate: '25/03/2025',
-            recorder: 'Dr. Smith',
-          },
-        ]);
-        expect(mockFormatDate).toHaveBeenCalledWith('2025-03-25T06:48:32+00:00');
-      });
-
-      it('should format a single diagnosis with provisional certainty', () => {
-        const mockDiagnosis = createMockDiagnosis({
-          verificationStatus: {
-            coding: [
-              {
-                system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
-                code: 'Provisional',
-                display: 'Provisional',
-              },
-            ],
-          },
-        });
-
-        const result = formatDiagnoses([mockDiagnosis]);
-
-        expect(result[0].certainty).toEqual(CERTAINITY_CONCEPTS[1]); // provisional
-      });
-
-      it('should format multiple diagnoses correctly', () => {
+      it('should fetch, format, and group diagnoses by date', async () => {
         const mockDiagnoses = [
-          createMockDiagnosis({ id: 'diagnosis-1' }),
+          createMockDiagnosis({
+            id: 'diagnosis-1',
+            recordedDate: '2025-03-25T06:48:32+00:00',
+          }),
+          createMockDiagnosis({
+            id: 'diagnosis-2',
+            recordedDate: '2025-03-24T14:30:15+00:00',
+          }),
+        ];
+
+        (get as jest.Mock).mockResolvedValueOnce(mockDiagnoses);
+        mockFormatDate
+          .mockReturnValueOnce({ formattedResult: '25/03/2025' })
+          .mockReturnValueOnce({ formattedResult: '24/03/2025' });
+
+        const result = await getPatientDiagnosesByDate(patientUUID);
+
+        expect(get).toHaveBeenCalledWith(
+          `/openmrs/ws/fhir2/R4/Condition?category=encounter-diagnosis&patient=${patientUUID}`,
+        );
+        expect(result).toHaveLength(2);
+        expect(result[0].date).toBe('25/03/2025'); // Newer date first
+        expect(result[0].diagnoses).toHaveLength(1);
+        expect(result[1].date).toBe('24/03/2025');
+        expect(result[1].diagnoses).toHaveLength(1);
+      });
+
+      it('should return empty array when no diagnoses exist', async () => {
+        (get as jest.Mock).mockResolvedValueOnce([]);
+
+        const result = await getPatientDiagnosesByDate(patientUUID);
+
+        expect(result).toEqual([]);
+      });
+
+      it('should group multiple diagnoses from same date', async () => {
+        const mockDiagnoses = [
+          createMockDiagnosis({
+            id: 'diagnosis-1',
+            code: { text: 'Diabetes' },
+            recordedDate: '2025-03-25T06:48:32+00:00',
+          }),
           createMockDiagnosis({
             id: 'diagnosis-2',
             code: { text: 'Hypertension' },
+            recordedDate: '2025-03-25T14:30:15+00:00',
+          }),
+        ];
+
+        (get as jest.Mock).mockResolvedValueOnce(mockDiagnoses);
+
+        const result = await getPatientDiagnosesByDate(patientUUID);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].date).toBe('25/03/2025');
+        expect(result[0].diagnoses).toHaveLength(2);
+        expect(result[0].diagnoses[0].display).toBe('Diabetes');
+        expect(result[0].diagnoses[1].display).toBe('Hypertension');
+      });
+
+      it('should handle different verification statuses correctly', async () => {
+        const mockDiagnoses = [
+          createMockDiagnosis({
+            id: 'diagnosis-1',
+            code: { text: 'Confirmed Diabetes' },
             verificationStatus: {
               coding: [
-                {
-                  system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
-                  code: 'Provisional',
-                  display: 'Provisional',
-                },
+                { code: 'confirmed', display: 'Confirmed', system: 'test' },
+              ],
+            },
+          }),
+          createMockDiagnosis({
+            id: 'diagnosis-2',
+            code: { text: 'Provisional Hypertension' },
+            verificationStatus: {
+              coding: [
+                { code: 'Provisional', display: 'Provisional', system: 'test' },
               ],
             },
           }),
         ];
 
-        const result = formatDiagnoses(mockDiagnoses);
+        (get as jest.Mock).mockResolvedValueOnce(mockDiagnoses);
 
-        expect(result).toHaveLength(2);
-        expect(result[0].id).toBe('diagnosis-1');
-        expect(result[0].certainty).toEqual(CERTAINITY_CONCEPTS[0]);
-        expect(result[1].id).toBe('diagnosis-2');
-        expect(result[1].display).toBe('Hypertension');
-        expect(result[1].certainty).toEqual(CERTAINITY_CONCEPTS[1]);
+        const result = await getPatientDiagnosesByDate(patientUUID);
+
+        expect(result[0].diagnoses[0].certainty).toEqual(
+          CERTAINITY_CONCEPTS[0],
+        ); // confirmed
+        expect(result[0].diagnoses[1].certainty).toEqual(
+          CERTAINITY_CONCEPTS[1],
+        ); // provisional
       });
 
-      it('should handle diagnosis with unknown verification status (defaults to provisional)', () => {
-        const mockDiagnosis = createMockDiagnosis({
-          verificationStatus: {
-            coding: [
-              {
-                system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
-                code: 'unknown-status',
-                display: 'Unknown',
-              },
-            ],
-          },
-        });
+      it('should sort dates in descending order (newest first)', async () => {
+        const mockDiagnoses = [
+          createMockDiagnosis({
+            id: 'diagnosis-1',
+            recordedDate: '2025-03-20T06:48:32+00:00',
+          }),
+          createMockDiagnosis({
+            id: 'diagnosis-2',
+            recordedDate: '2025-03-25T14:30:15+00:00',
+          }),
+          createMockDiagnosis({
+            id: 'diagnosis-3',
+            recordedDate: '2025-03-22T10:15:00+00:00',
+          }),
+        ];
 
-        const result = formatDiagnoses([mockDiagnosis]);
+        (get as jest.Mock).mockResolvedValueOnce(mockDiagnoses);
+        mockFormatDate
+          .mockReturnValueOnce({ formattedResult: '20/03/2025' })
+          .mockReturnValueOnce({ formattedResult: '25/03/2025' })
+          .mockReturnValueOnce({ formattedResult: '22/03/2025' });
 
-        expect(result[0].certainty).toEqual(CERTAINITY_CONCEPTS[1]); // defaults to provisional
+        const result = await getPatientDiagnosesByDate(patientUUID);
+
+        expect(result).toHaveLength(3);
+        expect(result[0].date).toBe('25/03/2025'); // Newest first
+        expect(result[1].date).toBe('22/03/2025');
+        expect(result[2].date).toBe('20/03/2025'); // Oldest last
       });
     });
 
-    describe('Sad Path Cases', () => {
-      it('should throw error when formatDate returns an error', () => {
-        const mockDiagnosis = createMockDiagnosis();
+    describe('Error Handling', () => {
+      it('should throw error when API call fails', async () => {
+        const apiError = new Error('API Error');
+        (get as jest.Mock).mockRejectedValueOnce(apiError);
+
+        await expect(getPatientDiagnosesByDate(patientUUID)).rejects.toThrow(
+          'Error fetching patient diagnoses',
+        );
+      });
+
+      it('should throw error when diagnosis has missing required fields', async () => {
+        const mockDiagnoses = [
+          createMockDiagnosis({ id: undefined }), // Missing required field
+        ];
+
+        (get as jest.Mock).mockResolvedValueOnce(mockDiagnoses);
+
+        await expect(getPatientDiagnosesByDate(patientUUID)).rejects.toThrow(
+          'Error fetching patient diagnoses',
+        );
+      });
+
+      it('should throw error when formatDate fails', async () => {
+        const mockDiagnoses = [createMockDiagnosis()];
         mockFormatDate.mockReturnValue({
           formattedResult: '',
           error: {
@@ -387,247 +220,209 @@ describe('diagnosesService', () => {
           },
         });
 
-        expect(() => formatDiagnoses([mockDiagnosis])).toThrow('Error fetching patient diagnoses');
-      });
+        (get as jest.Mock).mockResolvedValueOnce(mockDiagnoses);
 
-      it('should handle diagnosis with undefined id (returns undefined in result)', () => {
-        const mockDiagnosis = createMockDiagnosis({ id: undefined });
-
-        const result = formatDiagnoses([mockDiagnosis]);
-
-        expect(result[0].id).toBeUndefined();
-        expect(result[0].display).toBe('Type 2 Diabetes Mellitus');
-      });
-
-      it('should handle diagnosis with undefined code.text (uses empty string)', () => {
-        const mockDiagnosis = createMockDiagnosis({
-          code: {
-            coding: [
-              {
-                system: 'http://snomed.info/sct',
-                code: '44054006',
-                display: 'Diabetes mellitus type 2',
-              },
-            ],
-          },
-        });
-
-        const result = formatDiagnoses([mockDiagnosis]);
-
-        expect(result[0].display).toBe('');
-      });
-
-      it('should handle diagnosis with undefined recordedDate', () => {
-        const mockDiagnosis = createMockDiagnosis({ recordedDate: undefined });
-
-        const result = formatDiagnoses([mockDiagnosis]);
-
-        expect(result[0].recordedDate).toBeUndefined();
-        expect(mockFormatDate).toHaveBeenCalledWith(undefined);
-      });
-
-      it('should handle diagnosis with undefined recorder.display (uses empty string)', () => {
-        const mockDiagnosis = createMockDiagnosis({
-          recorder: {
-            reference: 'Practitioner/practitioner-1',
-          },
-        });
-
-        const result = formatDiagnoses([mockDiagnosis]);
-
-        expect(result[0].recorder).toBe('');
-      });
-
-      it('should handle diagnosis with undefined recorder (uses empty string)', () => {
-        const mockDiagnosis = createMockDiagnosis({ recorder: undefined });
-
-        const result = formatDiagnoses([mockDiagnosis]);
-
-        expect(result[0].recorder).toBe('');
+        await expect(getPatientDiagnosesByDate(patientUUID)).rejects.toThrow(
+          'Error fetching patient diagnoses',
+        );
       });
     });
 
     describe('Edge Cases', () => {
-      it('should return empty array for empty input', () => {
-        const result = formatDiagnoses([]);
+      it('should handle empty patient UUID', async () => {
+        const emptyUUID = '';
+        (get as jest.Mock).mockResolvedValueOnce([]);
 
+        const result = await getPatientDiagnosesByDate(emptyUUID);
+
+        expect(get).toHaveBeenCalledWith(
+          `/openmrs/ws/fhir2/R4/Condition?category=encounter-diagnosis&patient=${emptyUUID}`,
+        );
         expect(result).toEqual([]);
-        expect(mockFormatDate).not.toHaveBeenCalled();
       });
 
-      it('should handle diagnosis with missing verificationStatus', () => {
-        const mockDiagnosis = createMockDiagnosis({
-          verificationStatus: undefined,
-        });
+      it('should handle special characters in patient UUID', async () => {
+        const specialUUID = 'patient-uuid-with-special-chars-@#$%';
+        (get as jest.Mock).mockResolvedValueOnce([]);
 
-        const result = formatDiagnoses([mockDiagnosis]);
+        await getPatientDiagnosesByDate(specialUUID);
 
-        expect(result[0].certainty).toEqual(CERTAINITY_CONCEPTS[1]); // defaults to provisional
+        expect(get).toHaveBeenCalledWith(
+          `/openmrs/ws/fhir2/R4/Condition?category=encounter-diagnosis&patient=${specialUUID}`,
+        );
       });
 
-      it('should handle diagnosis with missing verificationStatus.coding', () => {
-        const mockDiagnosis = createMockDiagnosis({
-          verificationStatus: {
-            coding: undefined,
-          },
-        });
-
-        const result = formatDiagnoses([mockDiagnosis]);
-
-        expect(result[0].certainty).toEqual(CERTAINITY_CONCEPTS[1]); // defaults to provisional
-      });
-
-      it('should handle diagnosis with empty verificationStatus.coding array', () => {
-        const mockDiagnosis = createMockDiagnosis({
-          verificationStatus: {
-            coding: [],
-          },
-        });
-
-        const result = formatDiagnoses([mockDiagnosis]);
-
-        expect(result[0].certainty).toEqual(CERTAINITY_CONCEPTS[1]); // defaults to provisional
-      });
-
-      it('should handle diagnosis with null verificationStatus.coding[0].code', () => {
-        const mockDiagnosis = createMockDiagnosis({
-          verificationStatus: {
-            coding: [
-              {
-                system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                code: null as any,
-                display: 'Unknown',
-              },
-            ],
-          },
-        });
-
-        const result = formatDiagnoses([mockDiagnosis]);
-
-        expect(result[0].certainty).toEqual(CERTAINITY_CONCEPTS[1]); // defaults to provisional
-      });
-    });
-
-    describe('mapDiagnosisCertainty Internal Function Tests', () => {
-      it('should map "confirmed" status to CERTAINITY_CONCEPTS[0]', () => {
-        const mockDiagnosis = createMockDiagnosis({
-          verificationStatus: {
-            coding: [
-              {
-                system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
-                code: 'confirmed',
-                display: 'Confirmed',
-              },
-            ],
-          },
-        });
-
-        const result = formatDiagnoses([mockDiagnosis]);
-
-        expect(result[0].certainty).toEqual(CERTAINITY_CONCEPTS[0]);
-        expect(result[0].certainty.code).toBe('confirmed');
-        expect(result[0].certainty.display).toBe('CERTAINITY_CONFIRMED');
-      });
-
-      it('should map "Provisional" status to CERTAINITY_CONCEPTS[1]', () => {
-        const mockDiagnosis = createMockDiagnosis({
-          verificationStatus: {
-            coding: [
-              {
-                system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
-                code: 'Provisional',
-                display: 'Provisional',
-              },
-            ],
-          },
-        });
-
-        const result = formatDiagnoses([mockDiagnosis]);
-
-        expect(result[0].certainty).toEqual(CERTAINITY_CONCEPTS[1]);
-        expect(result[0].certainty.code).toBe('provisional');
-        expect(result[0].certainty.display).toBe('CERTAINITY_PROVISIONAL');
-      });
-
-      it('should default to CERTAINITY_CONCEPTS[1] for any other status', () => {
-        const testCases = ['unconfirmed', 'entered-in-error', 'refuted', 'unknown'];
-
-        testCases.forEach((statusCode) => {
-          const mockDiagnosis = createMockDiagnosis({
-            verificationStatus: {
+      it('should handle diagnosis with missing code.text (uses empty string)', async () => {
+        const mockDiagnoses = [
+          createMockDiagnosis({
+            code: {
               coding: [
                 {
-                  system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
-                  code: statusCode,
-                  display: statusCode,
+                  system: 'http://snomed.info/sct',
+                  code: '44054006',
+                  display: 'Diabetes mellitus type 2',
                 },
               ],
             },
-          });
+          }),
+        ];
 
-          const result = formatDiagnoses([mockDiagnosis]);
+        (get as jest.Mock).mockResolvedValueOnce(mockDiagnoses);
 
-          expect(result[0].certainty).toEqual(CERTAINITY_CONCEPTS[1]);
-        });
+        const result = await getPatientDiagnosesByDate(patientUUID);
+
+        expect(result[0].diagnoses[0].display).toBe('');
       });
 
-      it('should default to CERTAINITY_CONCEPTS[1] when verificationStatus is completely missing', () => {
-        const mockDiagnosis = createMockDiagnosis({
-          verificationStatus: undefined,
-        });
+      it('should handle diagnosis with missing recorder (uses empty string)', async () => {
+        const mockDiagnoses = [createMockDiagnosis({ recorder: undefined })];
 
-        const result = formatDiagnoses([mockDiagnosis]);
+        (get as jest.Mock).mockResolvedValueOnce(mockDiagnoses);
 
-        expect(result[0].certainty).toEqual(CERTAINITY_CONCEPTS[1]);
+        const result = await getPatientDiagnosesByDate(patientUUID);
+
+        expect(result[0].diagnoses[0].recorder).toBe('');
+      });
+
+      it('should handle diagnosis with missing verificationStatus (defaults to provisional)', async () => {
+        const mockDiagnoses = [
+          createMockDiagnosis({
+            verificationStatus: undefined,
+          }),
+        ];
+
+        (get as jest.Mock).mockResolvedValueOnce(mockDiagnoses);
+
+        const result = await getPatientDiagnosesByDate(patientUUID);
+
+        expect(result[0].diagnoses[0].certainty).toEqual(
+          CERTAINITY_CONCEPTS[1],
+        ); // defaults to provisional
+      });
+
+      it('should handle diagnoses with same date but different times', async () => {
+        const mockDiagnoses = [
+          createMockDiagnosis({
+            id: 'diagnosis-1',
+            recordedDate: '2025-03-25T06:48:32+00:00',
+          }),
+          createMockDiagnosis({
+            id: 'diagnosis-2',
+            recordedDate: '2025-03-25T23:59:59+00:00',
+          }),
+        ];
+
+        (get as jest.Mock).mockResolvedValueOnce(mockDiagnoses);
+
+        const result = await getPatientDiagnosesByDate(patientUUID);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].diagnoses).toHaveLength(2);
+      });
+
+      it('should handle diagnoses across different years', async () => {
+        const mockDiagnoses = [
+          createMockDiagnosis({
+            id: 'diagnosis-1',
+            recordedDate: '2024-12-31T23:59:59+00:00',
+          }),
+          createMockDiagnosis({
+            id: 'diagnosis-2',
+            recordedDate: '2025-01-01T00:00:01+00:00',
+          }),
+        ];
+
+        (get as jest.Mock).mockResolvedValueOnce(mockDiagnoses);
+        mockFormatDate
+          .mockReturnValueOnce({ formattedResult: '31/12/2024' })
+          .mockReturnValueOnce({ formattedResult: '01/01/2025' });
+
+        const result = await getPatientDiagnosesByDate(patientUUID);
+
+        expect(result).toHaveLength(2);
+        expect(result[0].date).toBe('01/01/2025'); // 2025 first
+        expect(result[1].date).toBe('31/12/2024'); // 2024 second
       });
     });
 
     describe('Integration Tests', () => {
-      it('should handle complex scenario with mixed verification statuses', () => {
+      it('should handle complex scenario with multiple dates and diagnoses', async () => {
         const mockDiagnoses = [
           createMockDiagnosis({
-            id: 'confirmed-diagnosis',
-            code: { text: 'Confirmed Diabetes' },
+            id: 'diagnosis-1',
+            code: { text: 'Diabetes' },
+            recordedDate: '2025-03-25T06:48:32+00:00',
             verificationStatus: {
-              coding: [{ code: 'confirmed', display: 'Confirmed', system: 'test' }],
+              coding: [
+                { code: 'confirmed', display: 'Confirmed', system: 'test' },
+              ],
             },
           }),
           createMockDiagnosis({
-            id: 'provisional-diagnosis',
-            code: { text: 'Provisional Hypertension' },
+            id: 'diagnosis-2',
+            code: { text: 'Hypertension' },
+            recordedDate: '2025-03-25T14:30:15+00:00',
             verificationStatus: {
-              coding: [{ code: 'Provisional', display: 'Provisional', system: 'test' }],
+              coding: [
+                { code: 'Provisional', display: 'Provisional', system: 'test' },
+              ],
             },
           }),
           createMockDiagnosis({
-            id: 'unknown-diagnosis',
-            code: { text: 'Unknown Condition' },
+            id: 'diagnosis-3',
+            code: { text: 'Asthma' },
+            recordedDate: '2025-03-24T10:15:00+00:00',
             verificationStatus: {
-              coding: [{ code: 'unknown', display: 'Unknown', system: 'test' }],
+              coding: [
+                { code: 'confirmed', display: 'Confirmed', system: 'test' },
+              ],
             },
           }),
         ];
 
-        const result = formatDiagnoses(mockDiagnoses);
+        (get as jest.Mock).mockResolvedValueOnce(mockDiagnoses);
+        mockFormatDate
+          .mockReturnValueOnce({ formattedResult: '25/03/2025' })
+          .mockReturnValueOnce({ formattedResult: '25/03/2025' })
+          .mockReturnValueOnce({ formattedResult: '24/03/2025' });
 
-        expect(result).toHaveLength(3);
-        expect(result[0].certainty).toEqual(CERTAINITY_CONCEPTS[0]); // confirmed
-        expect(result[1].certainty).toEqual(CERTAINITY_CONCEPTS[1]); // provisional
-        expect(result[2].certainty).toEqual(CERTAINITY_CONCEPTS[1]); // defaults to provisional
+        const result = await getPatientDiagnosesByDate(patientUUID);
+
+        expect(result).toHaveLength(2);
+
+        // First date group (newer)
+        expect(result[0].date).toBe('25/03/2025');
+        expect(result[0].diagnoses).toHaveLength(2);
+        expect(result[0].diagnoses[0].display).toBe('Diabetes');
+        expect(result[0].diagnoses[0].certainty).toEqual(
+          CERTAINITY_CONCEPTS[0],
+        ); // confirmed
+        expect(result[0].diagnoses[1].display).toBe('Hypertension');
+        expect(result[0].diagnoses[1].certainty).toEqual(
+          CERTAINITY_CONCEPTS[1],
+        ); // provisional
+
+        // Second date group (older)
+        expect(result[1].date).toBe('24/03/2025');
+        expect(result[1].diagnoses).toHaveLength(1);
+        expect(result[1].diagnoses[0].display).toBe('Asthma');
+        expect(result[1].diagnoses[0].certainty).toEqual(
+          CERTAINITY_CONCEPTS[0],
+        ); // confirmed
       });
 
-      it('should call formatDate for each diagnosis', () => {
-        const mockDiagnoses = [
-          createMockDiagnosis({ recordedDate: '2025-01-01T00:00:00Z' }),
-          createMockDiagnosis({ recordedDate: '2025-02-01T00:00:00Z' }),
-        ];
+      it('should call all dependent functions in correct order', async () => {
+        const mockDiagnoses = [createMockDiagnosis()];
+        (get as jest.Mock).mockResolvedValueOnce(mockDiagnoses);
 
-        formatDiagnoses(mockDiagnoses);
+        await getPatientDiagnosesByDate(patientUUID);
 
-        expect(mockFormatDate).toHaveBeenCalledTimes(2);
-        expect(mockFormatDate).toHaveBeenNthCalledWith(1, '2025-01-01T00:00:00Z');
-        expect(mockFormatDate).toHaveBeenNthCalledWith(2, '2025-02-01T00:00:00Z');
+        expect(get).toHaveBeenCalledWith(
+          `/openmrs/ws/fhir2/R4/Condition?category=encounter-diagnosis&patient=${patientUUID}`,
+        );
+        expect(mockFormatDate).toHaveBeenCalledWith(
+          '2025-03-25T06:48:32+00:00',
+        );
       });
     });
   });

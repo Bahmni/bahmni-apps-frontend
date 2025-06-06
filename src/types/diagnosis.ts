@@ -11,7 +11,6 @@ export interface DiagnosisInputEntry {
   hasBeenValidated: boolean;
 }
 
-
 /**
  * Interface for formatted diagnosis data
  */
@@ -22,4 +21,13 @@ export interface FormattedDiagnosis {
   recordedDate: string;
   formattedDate: string;
   recorder: string;
+}
+
+/**
+ * Interface for diagnoses grouped by date
+ */
+export interface DiagnosesByDate {
+  date: string;
+  rawDate: string;
+  diagnoses: FormattedDiagnosis[];
 }
