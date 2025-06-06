@@ -75,18 +75,12 @@ describe('useNotification', () => {
 
   it('should throw an error when used outside of NotificationProvider', () => {
     // Suppress console.error for this test
-    const originalConsoleError = console.error;
-    console.error = jest.fn();
+    jest.spyOn(console, 'error').mockImplementation(() => {});
 
     // Render the hook outside of the NotificationProvider
 
     expect(() => {
-      const { result } = renderHook(() => useNotification());
-      // Access result.current to trigger the hook's execution
-      console.log(result.current);
+      renderHook(() => useNotification());
     }).toThrow('useNotification must be used within a NotificationProvider');
-
-    // Restore console.error
-    console.error = originalConsoleError;
   });
 });

@@ -29,11 +29,13 @@ export const getTranslationFile = async (
   try {
     const response = await axios.get(url);
     if (!response || !response.data) {
+      // eslint-disable-next-line no-console
       console.error(`Invalid response from ${url}`);
       return {};
     }
     return response.data;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error(`Failed to load translations from ${url}:`, error);
     return {};
   }

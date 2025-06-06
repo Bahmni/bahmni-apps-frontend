@@ -86,6 +86,7 @@ describe('Translation Service', () => {
       // Assert
       expect(result).toEqual(mockData);
       expect(axios.get).toHaveBeenCalledWith(url);
+      // eslint-disable-next-line no-console
       expect(console.error).not.toHaveBeenCalled();
     });
 
@@ -102,6 +103,7 @@ describe('Translation Service', () => {
       // Assert
       expect(result).toEqual({});
       expect(axios.get).toHaveBeenCalledWith(url);
+      // eslint-disable-next-line no-console
       expect(console.error).toHaveBeenCalledWith(
         `Failed to load translations from ${url}:`,
         error,

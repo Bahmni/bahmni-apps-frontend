@@ -29,13 +29,12 @@ jest.mock('../i18n', () => ({
 }));
 
 describe('Index', () => {
-  let originalConsoleError: typeof console.error;
   let originalEnv: NodeJS.ProcessEnv;
   let mockRoot: HTMLElement;
 
   beforeAll(() => {
     // Save original console.error
-    originalConsoleError = console.error;
+    jest.spyOn(console, 'error').mockImplementation(() => {});
     // Save original process.env
     originalEnv = { ...process.env };
   });
@@ -47,9 +46,6 @@ describe('Index', () => {
     mockRoot = document.createElement('div');
     mockRoot.id = 'root';
     document.body.appendChild(mockRoot);
-
-    // Silence console.error during tests
-    console.error = jest.fn();
   });
 
   afterEach(() => {
@@ -60,11 +56,6 @@ describe('Index', () => {
 
     // Reset process.env
     process.env = { ...originalEnv };
-  });
-
-  afterAll(() => {
-    // Restore console.error
-    console.error = originalConsoleError;
   });
 
   it('should render the app into the root element', () => {

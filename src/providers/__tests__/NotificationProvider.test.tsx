@@ -148,8 +148,7 @@ describe('NotificationProvider', () => {
   });
 
   test('allows notifications with same title and message but different type', () => {
-    jest.spyOn(console, 'error');
-    console.error.mockImplementation(() => null);
+    jest.spyOn(console, 'error').mockImplementation(() => null);
     render(
       <NotificationProvider>
         <TestComponent />
@@ -193,9 +192,8 @@ describe('NotificationProvider', () => {
   });
 
   test('clears all notifications', () => {
-    jest.spyOn(console, 'error');
-    // @ts-expect-error: jest.spyOn adds this functionallity
-    console.error.mockImplementation(() => null);
+    // Suppress console.error for this test to avoid noisy output
+    jest.spyOn(console, 'error').mockImplementation(() => null);
 
     render(
       <NotificationProvider>
