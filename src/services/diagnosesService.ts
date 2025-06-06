@@ -1,10 +1,8 @@
 import { PATIENT_DIAGNOSIS_RESOURCE_URL } from '@constants/app';
 import { get } from './api';
-import { Coding, Condition as Diagnoses } from 'fhir/r4';
+import { Coding, Condition as Diagnoses, Bundle } from 'fhir/r4';
 import { DiagnosesByDate, FormattedDiagnosis } from '@/types/diagnosis';
-import { formatDate } from '@/utils/date';
 import { CERTAINITY_CONCEPTS } from '@/constants/concepts';
-import { parseISO, startOfDay, isValid, compareDesc } from 'date-fns';
 
 // Constants for better maintainability
 const CONFIRMED_STATUS = 'confirmed';
@@ -13,11 +11,11 @@ const PROVISIONAL_STATUS = 'provisional';
 /**
  * Fetches diagnoses for a given patient UUID from the FHIR R4 endpoint
  * @param patientUUID - The UUID of the patient
- * @returns Promise resolving to an array of Diagnoses (Condition resources)
+ * @returns Promise resolving to a Bundle containing diagnoses
  */
-async function getPatientDiagnoses(patientUUID: string): Promise<Diagnoses[]> {
+async function getPatientDiagnoses(patientUUID: string): Promise<Bundle> {
   const url = PATIENT_DIAGNOSIS_RESOURCE_URL(patientUUID);
-  return await get<Diagnoses[]>(url);
+  return await get<Bundle>(url);
 }
 
 /**
@@ -48,20 +46,17 @@ const isValidDiagnosis = (diagnosis: Diagnoses): boolean => {
 };
 
 /**
- * Extracts the date part (YYYY-MM-DD) from an ISO datetime string
- * @param dateTimeString - ISO datetime string
- * @returns Date part as string
- */
-const extractDatePart = (dateTimeString: string): string => {
-  return dateTimeString.split('T')[0];
-};
-
-/**
  * Formats FHIR diagnoses into a more user-friendly format
  * @param diagnoses - The FHIR diagnosis array to format
  * @returns An array of formatted diagnosis objects
  */
-function formatDiagnoses(diagnoses: Diagnoses[]): FormattedDiagnosis[] {
+function formatDiagnoses(bundle: Bundle): FormattedDiagnosis[] {
+  // Extract conditions from bundle entries
+  const diagnoses =
+    bundle.entry
+      ?.filter((entry) => entry.resource?.resourceType === 'Condition')
+      .map((entry) => entry.resource as Diagnoses) || [];
+
   return diagnoses.map((diagnosis) => {
     if (!isValidDiagnosis(diagnosis)) {
       throw new Error('Incomplete diagnosis data');
@@ -69,18 +64,12 @@ function formatDiagnoses(diagnoses: Diagnoses[]): FormattedDiagnosis[] {
 
     const certainty = mapDiagnosisCertainty(diagnosis);
     const recordedDate = diagnosis.recordedDate as string;
-    const formattedDate = formatDate(recordedDate);
-
-    if (formattedDate.error) {
-      throw new Error('Invalid recorded date format');
-    }
 
     return {
       id: diagnosis.id as string,
       display: diagnosis.code?.text || '',
       certainty,
       recordedDate,
-      formattedDate: formattedDate.formattedResult,
       recorder: diagnosis.recorder?.display || '',
     };
   });
@@ -97,12 +86,12 @@ function groupDiagnosesByDate(
   const dateMap = new Map<string, DiagnosesByDate>();
 
   diagnoses.forEach((diagnosis) => {
-    const dateKey = extractDatePart(diagnosis.recordedDate);
+    const dateKey = diagnosis.recordedDate.substring(0, 10);
 
     if (!dateMap.has(dateKey)) {
       dateMap.set(dateKey, {
-        date: diagnosis.formattedDate,
-        rawDate: diagnosis.recordedDate,
+        date: dateKey,
+
         diagnoses: [], // Direct list of diagnoses, no recorder grouping
       });
     }
@@ -113,7 +102,7 @@ function groupDiagnosesByDate(
 
   // Sort by date (newest first)
   return Array.from(dateMap.values()).sort(
-    (a, b) => new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime(),
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
 }
 
@@ -125,12 +114,7 @@ function groupDiagnosesByDate(
 export async function getPatientDiagnosesByDate(
   patientUUID: string,
 ): Promise<DiagnosesByDate[]> {
-  try {
-    const diagnoses = await getPatientDiagnoses(patientUUID);
-    const formattedDiagnoses = formatDiagnoses(diagnoses);
-    return groupDiagnosesByDate(formattedDiagnoses);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (_) {
-    throw new Error('Error fetching patient diagnoses');
-  }
+  const diagnoses = await getPatientDiagnoses(patientUUID);
+  const formattedDiagnoses = formatDiagnoses(diagnoses);
+  return groupDiagnosesByDate(formattedDiagnoses);
 }

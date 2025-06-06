@@ -19,7 +19,6 @@ export interface FormattedDiagnosis {
   display: string;
   certainty: Coding;
   recordedDate: string;
-  formattedDate: string;
   recorder: string;
 }
 
@@ -28,6 +27,5 @@ export interface FormattedDiagnosis {
  */
 export interface DiagnosesByDate {
   date: string;
-  rawDate: string;
   diagnoses: FormattedDiagnosis[];
 }
