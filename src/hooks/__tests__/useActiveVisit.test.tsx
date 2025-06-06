@@ -1,6 +1,6 @@
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
-import { useActiveVisit } from '@/hooks/useActiveVisit';
+import { useActiveVisit } from '@hooks/useActiveVisit';
 import { getActiveVisit } from '@services/encounterService';
 import { mockActiveVisit } from '@__mocks__/encounterMocks';
 import { NotificationProvider } from '@providers/NotificationProvider';

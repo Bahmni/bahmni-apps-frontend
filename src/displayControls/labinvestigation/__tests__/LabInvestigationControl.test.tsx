@@ -1,8 +1,8 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import LabInvestigationControl from '../LabInvestigationControl';
-import useLabInvestigations from '@/hooks/useLabInvestigations';
-import { groupLabTestsByDate } from '@/services/labInvestigationService';
+import useLabInvestigations from '@hooks/useLabInvestigations';
+import { groupLabTestsByDate } from '@services/labInvestigationService';
 import {
   LabTestsByDate,
   LabTestStatus,
@@ -12,10 +12,10 @@ import {
 import i18n from '@/setupTests.i18n';
 
 // Mock the useLabInvestigations hook
-jest.mock('@/hooks/useLabInvestigations');
+jest.mock('@hooks/useLabInvestigations');
 
 // Mock the groupLabTestsByDate function
-jest.mock('@/services/labInvestigationService', () => ({
+jest.mock('@services/labInvestigationService', () => ({
   groupLabTestsByDate: jest.fn(),
 }));
 

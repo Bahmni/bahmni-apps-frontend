@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocations } from '@hooks/useLocations';
 import { useEncounterConcepts } from '@hooks/useEncounterConcepts';
 import { useActivePractitioner } from '@hooks/useActivePractitioner';
-import { useActiveVisit } from '@/hooks/useActiveVisit';
+import { useActiveVisit } from '@hooks/useActiveVisit';
 import useNotification from '@hooks/useNotification';
 import { postConsultationBundle } from '@services/consultationBundleService';
 import { Provider } from '@types/provider';

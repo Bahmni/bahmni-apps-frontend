@@ -13,8 +13,8 @@ import { getEncounterConcepts } from '@services/encounterConceptsService';
 import { getCurrentProvider } from '@services/providerService';
 import { getCurrentUser } from '@services/userService';
 import { getActiveVisit } from '@services/encounterService';
-import { User } from '@/types/user';
-import { FhirEncounter, FhirEncounterType } from '@/types/encounter';
+import { User } from '@types/user';
+import { FhirEncounter, FhirEncounterType } from '@types/encounter';
 import {
   mockLocations,
   mockEncounterConcepts,
