@@ -292,7 +292,7 @@ describe('useLabInvestigations', () => {
       // Assert the returned values
       expect(result.current.labTests).toEqual([]);
       expect(result.current.isLoading).toBe(true);
-      expect(result.current.isError).toBe(false);
+      expect(result.current.hasError).toBe(false);
     });
   });
 

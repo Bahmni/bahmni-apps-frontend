@@ -9,7 +9,7 @@ import { LabTestsByDate } from '@types/labInvestigation';
 
 const LabInvestigationControl: React.FC = () => {
   const { t } = useTranslation();
-  const { labTests, isLoading, isError } = useLabInvestigations();
+  const { labTests, isLoading, hasError } = useLabInvestigations();
 
   // Group the lab tests by date
   const labTestsByDate = useMemo<LabTestsByDate[]>(() => {
@@ -19,7 +19,7 @@ const LabInvestigationControl: React.FC = () => {
   return (
     <section className={styles.labInvestigationWrapper}>
       <Accordion align="start" size="lg">
-        {isError && <div>{t('LAB_TEST_ERROR_LOADING')}</div>}
+        {hasError && <div>{t('LAB_TEST_ERROR_LOADING')}</div>}
         {!isLoading && labTests.length === 0 && (
           <div>{t('LAB_TEST_UNAVAILABLE')}</div>
         )}

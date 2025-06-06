@@ -44,7 +44,7 @@ describe('LabInvestigationControl Integration', () => {
     mockedUseLabInvestigations.mockReturnValue({
       labTests: mockLabTestsByDate.flatMap((group) => group.tests),
       isLoading: false,
-      isError: false,
+      hasError: false,
     });
     mockedGroupLabTestsByDate.mockReturnValue(mockLabTestsByDate);
 
@@ -60,7 +60,7 @@ describe('LabInvestigationControl Integration', () => {
     mockedUseLabInvestigations.mockReturnValue({
       labTests: mockLabTestsByDate.flatMap((group) => group.tests),
       isLoading: false,
-      isError: false,
+      hasError: false,
     });
     mockedGroupLabTestsByDate.mockReturnValue(mockLabTestsByDate);
 
@@ -77,7 +77,7 @@ describe('LabInvestigationControl Integration', () => {
     mockedUseLabInvestigations.mockReturnValue({
       labTests: mockLabTestsByDate.flatMap((group) => group.tests),
       isLoading: false,
-      isError: false,
+      hasError: false,
     });
     mockedGroupLabTestsByDate.mockReturnValue(mockLabTestsByDate);
 
@@ -95,7 +95,7 @@ describe('LabInvestigationControl Integration', () => {
     mockedUseLabInvestigations.mockReturnValue({
       labTests: mockLabTestsByDate.flatMap((group) => group.tests),
       isLoading: false,
-      isError: false,
+      hasError: false,
     });
     mockedGroupLabTestsByDate.mockReturnValue(mockLabTestsByDate);
 
@@ -112,7 +112,7 @@ describe('LabInvestigationControl Integration', () => {
     mockedUseLabInvestigations.mockReturnValue({
       labTests: mockLabTestsByDate.flatMap((group) => group.tests),
       isLoading: false,
-      isError: false,
+      hasError: false,
     });
     mockedGroupLabTestsByDate.mockReturnValue(mockLabTestsByDate);
 
@@ -134,7 +134,7 @@ describe('LabInvestigationControl Integration', () => {
     mockedUseLabInvestigations.mockReturnValue({
       labTests: [],
       isLoading: true,
-      isError: false,
+      hasError: false,
     });
 
     render(<LabInvestigationControl />);
@@ -148,7 +148,7 @@ describe('LabInvestigationControl Integration', () => {
     mockedUseLabInvestigations.mockReturnValue({
       labTests: [],
       isLoading: false,
-      isError: false,
+      hasError: false,
     });
     mockedGroupLabTestsByDate.mockReturnValue([]);
 
@@ -167,7 +167,7 @@ describe('LabInvestigationControl Integration', () => {
         (group) => group.tests,
       ),
       isLoading: false,
-      isError: false,
+      hasError: false,
     });
     mockedGroupLabTestsByDate.mockReturnValue(mockLabTestsByDateWithIncomplete);
 
@@ -195,7 +195,7 @@ describe('LabInvestigationControl Integration', () => {
       return {
         labTests: mockLabTestsByDate.flatMap((group) => group.tests),
         isLoading: false,
-        isError: false,
+        hasError: false,
       };
     });
     mockedGroupLabTestsByDate.mockReturnValue(mockLabTestsByDate);
@@ -223,7 +223,7 @@ describe('LabInvestigationControl Integration', () => {
     mockedUseLabInvestigations.mockReturnValue({
       labTests: mockLabTestsByDate.flatMap((group) => group.tests),
       isLoading: false,
-      isError: false,
+      hasError: false,
     });
     mockedGroupLabTestsByDate.mockReturnValue(mockLabTestsByDate);
 
@@ -236,13 +236,13 @@ describe('LabInvestigationControl Integration', () => {
     expect(pendingTexts.length).toBe(3); // Three tests with pending results
   });
 
-  it('should display error message when isError is true', () => {
+  it('should display error message when hasError is true', () => {
     // Mock the hooks with error state
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedUseLabInvestigations.mockReturnValue({
       labTests: [],
       isLoading: false,
-      isError: true,
+      hasError: true,
     });
 
     render(<LabInvestigationControl />);
