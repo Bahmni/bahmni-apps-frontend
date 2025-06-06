@@ -133,7 +133,7 @@ describe('LabInvestigationControl', () => {
     (useLabInvestigations as jest.Mock).mockReturnValue({
       labTests: [],
       isLoading: true,
-      isError: false,
+      hasError: false,
     });
 
     render(<LabInvestigationControl />);
@@ -146,7 +146,7 @@ describe('LabInvestigationControl', () => {
     (useLabInvestigations as jest.Mock).mockReturnValue({
       labTests: mockFormattedLabTests,
       isLoading: false,
-      isError: false,
+      hasError: false,
     });
 
     render(<LabInvestigationControl />);
@@ -191,7 +191,7 @@ describe('LabInvestigationControl', () => {
     (useLabInvestigations as jest.Mock).mockReturnValue({
       labTests: [],
       isLoading: false,
-      isError: false,
+      hasError: false,
     });
 
     // Mock empty grouped tests
@@ -205,12 +205,12 @@ describe('LabInvestigationControl', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders error message when isError is true', () => {
+  it('renders error message when hasError is true', () => {
     // Mock the hook to return error state
     (useLabInvestigations as jest.Mock).mockReturnValue({
       labTests: [],
       isLoading: false,
-      isError: true,
+      hasError: true,
     });
 
     render(<LabInvestigationControl />);
@@ -224,7 +224,7 @@ describe('LabInvestigationControl', () => {
     (useLabInvestigations as jest.Mock).mockReturnValue({
       labTests: mockFormattedLabTests,
       isLoading: false,
-      isError: false,
+      hasError: false,
     });
 
     render(<LabInvestigationControl />);

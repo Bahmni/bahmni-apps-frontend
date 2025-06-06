@@ -10,7 +10,7 @@ import { usePatientUUID } from './usePatientUUID';
 export default function useLabInvestigations() {
   const [labTests, setLabTests] = useState<FormattedLabTest[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isError, setIsError] = useState<boolean>(false);
+  const [hasError, setHasError] = useState<boolean>(false);
   const patientUUID = usePatientUUID();
 
   useEffect(() => {
@@ -21,7 +21,7 @@ export default function useLabInvestigations() {
       }
 
       setIsLoading(true);
-      setIsError(false);
+      setHasError(false);
 
       try {
         // Fetch raw lab tests
@@ -33,7 +33,7 @@ export default function useLabInvestigations() {
         setLabTests(formattedTests);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_) {
-        setIsError(true);
+        setHasError(true);
       } finally {
         setIsLoading(false);
       }
@@ -42,5 +42,5 @@ export default function useLabInvestigations() {
     fetchLabInvestigations();
   }, [patientUUID]);
 
-  return { labTests, isLoading, isError };
+  return { labTests, isLoading, hasError };
 }
