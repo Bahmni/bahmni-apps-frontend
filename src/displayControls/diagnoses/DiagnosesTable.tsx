@@ -84,7 +84,7 @@ const DiagnosesTable: React.FC = () => {
       {!loading && !error && diagnoses.length === 0 && (
         <p className={styles.diagnosesTableBodyError}>{t('NO_DIAGNOSES')}</p>
       )}
-      {diagnoses.map((diagnosisByDate) => {
+      {diagnoses.map((diagnosisByDate, index) => {
         const { date, diagnoses: diagnosisList } = diagnosisByDate;
 
         // Format the date for display
@@ -104,6 +104,7 @@ const DiagnosesTable: React.FC = () => {
             ariaLabel={`${t('DIAGNOSES_DISPLAY_CONTROL_HEADING')} - ${formattedDate}`}
             emptyStateMessage={t('NO_DIAGNOSES')}
             className={styles.diagnosesTableBody}
+            isOpen={index === 0} // Open the first item by default
           />
         );
       })}

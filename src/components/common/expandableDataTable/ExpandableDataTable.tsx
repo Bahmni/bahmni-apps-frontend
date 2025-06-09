@@ -33,6 +33,7 @@ interface ExpandableDataTableProps<T> {
   emptyStateMessage?: string;
   className?: string;
   rowClassNames?: Record<string, string>;
+  isOpen?: boolean;
 }
 
 export const ExpandableDataTable = <T extends { id?: string }>({
@@ -48,6 +49,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
   emptyStateMessage,
   className = 'expandable-data-table-item',
   rowClassNames = {},
+  isOpen = false,
 }: ExpandableDataTableProps<T>) => {
   const { t } = useTranslation();
   emptyStateMessage =
@@ -111,7 +113,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
   return (
     <div className={className} data-testid="expandable-data-table">
       <Accordion align="start">
-        <AccordionItem title={tableTitle}>
+        <AccordionItem title={tableTitle} open={isOpen}>
           <DataTable rows={dataTableRows} headers={headers}>
             {({
               rows: tableRows,
