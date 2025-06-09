@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import DiagnosesTable from '../DiagnosesTable';
 import { useDiagnoses } from '@hooks/useDiagnoses';
-import { DiagnosesByDate, FormattedDiagnosis } from '@/types/diagnosis';
+import { DiagnosesByDate, FormattedDiagnosis } from '@types/diagnosis';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
 import { FULL_MONTH_DATE_FORMAT } from '@constants/date';
 import { formatDate } from '@utils/date';

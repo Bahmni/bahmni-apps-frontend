@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import i18n from '@/setupTests.i18n';
 import DiagnosesTable from '../DiagnosesTable';
 import { getPatientDiagnosesByDate } from '@services/diagnosesService';
-import { DiagnosesByDate } from '@/types/diagnosis';
+import { DiagnosesByDate } from '@types/diagnosis';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
 
 // Mock only the service layer

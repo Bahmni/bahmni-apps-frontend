@@ -3,7 +3,7 @@ import { Tag, Tile, DataTableSkeleton } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
 import { useDiagnoses } from '@hooks/useDiagnoses';
-import { FormattedDiagnosis } from '@/types/diagnosis';
+import { FormattedDiagnosis } from '@types/diagnosis';
 import { formatDate } from '@utils/date';
 import { FULL_MONTH_DATE_FORMAT } from '@constants/date';
 import * as styles from './styles/DiagnosesTable.module.scss';

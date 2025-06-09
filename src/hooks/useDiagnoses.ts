@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { DiagnosesByDate } from '@/types/diagnosis';
+import { DiagnosesByDate } from '@types/diagnosis';
 import { getPatientDiagnosesByDate } from '@services/diagnosesService';
 import { usePatientUUID } from './usePatientUUID';
 import { getFormattedError } from '@utils/common';

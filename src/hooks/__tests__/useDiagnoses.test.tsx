@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { useDiagnoses } from '../useDiagnoses';
-import { DiagnosesByDate, FormattedDiagnosis } from '@/types/diagnosis';
+import { DiagnosesByDate, FormattedDiagnosis } from '@types/diagnosis';
 import { getPatientDiagnosesByDate } from '@services/diagnosesService';
 import { usePatientUUID } from '../usePatientUUID';
 import { getFormattedError } from '@utils/common';
