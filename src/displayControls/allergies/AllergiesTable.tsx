@@ -104,10 +104,7 @@ const AllergiesTable: React.FC = () => {
   };
 
   return (
-    <div
-      style={{ width: '100%', paddingTop: '1rem' }}
-      data-testid="allergy-table"
-    >
+    <div data-testid="allergy-table">
       <ExpandableDataTable
         tableTitle={t('ALLERGIES_DISPLAY_CONTROL_HEADING')}
         rows={formattedAllergies}

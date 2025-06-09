@@ -95,10 +95,7 @@ const ConditionsTable: React.FC = () => {
   };
 
   return (
-    <div
-      style={{ width: '100%', paddingTop: '1rem' }}
-      data-testid="condition-table"
-    >
+    <div data-testid="condition-table">
       <ExpandableDataTable
         tableTitle={t('CONDITION_LIST_DISPLAY_CONTROL_TITLE')}
         rows={formattedConditions}

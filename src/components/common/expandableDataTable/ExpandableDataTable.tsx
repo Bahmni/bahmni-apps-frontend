@@ -26,7 +26,7 @@ interface ExpandableDataTableProps<T> {
   headers: DataTableHeader[];
   sortable?: { key: string; sortable: boolean }[];
   renderCell: (row: T, cellId: string) => React.ReactNode;
-  renderExpandedContent: (row: T) => React.ReactNode;
+  renderExpandedContent?: (row: T) => React.ReactNode;
   loading?: boolean;
   error?: unknown;
   ariaLabel?: string;
@@ -41,7 +41,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
   headers,
   sortable = headers.map((header) => ({ key: header.key, sortable: true })),
   renderCell,
-  renderExpandedContent,
+  renderExpandedContent = () => null,
   loading = false,
   error = null,
   ariaLabel = tableTitle,

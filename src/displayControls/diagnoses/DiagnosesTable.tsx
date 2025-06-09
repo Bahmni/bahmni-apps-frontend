@@ -82,7 +82,7 @@ const DiagnosesTable: React.FC = () => {
         </p>
       )}
       {!loading && !error && diagnoses.length === 0 && (
-        <p className={styles.diagnosesTableBodyEmpty}>{t('NO_DIAGNOSES')}</p>
+        <p className={styles.diagnosesTableBodyError}>{t('NO_DIAGNOSES')}</p>
       )}
       {diagnoses.map((diagnosisByDate) => {
         const { date, diagnoses: diagnosisList } = diagnosisByDate;
