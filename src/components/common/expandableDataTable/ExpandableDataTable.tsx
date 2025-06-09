@@ -56,7 +56,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
     const formattedError = getFormattedError(error);
     return (
       <div data-testid="expandable-table-error" className={className}>
-        <Accordion>
+        <Accordion align="start">
           <AccordionItem title={tableTitle}>
             <p style={{ padding: '0.5rem' }}>
               {t('EXPANDABLE_TABLE_ERROR_MESSAGE', {
@@ -74,7 +74,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
   if (loading) {
     return (
       <div data-testid="expandable-table-skeleton" className={className}>
-        <Accordion>
+        <Accordion align="start">
           <AccordionItem title={tableTitle}>
             <DataTableSkeleton
               columnCount={headers.length + 1}
@@ -93,7 +93,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
   if (!rows || rows.length === 0) {
     return (
       <div data-testid="expandable-data-table-empty" className={className}>
-        <Accordion>
+        <Accordion align="start">
           <AccordionItem title={tableTitle}>
             <p style={{ padding: '0.5rem' }}>{emptyStateMessage}</p>
           </AccordionItem>
@@ -110,7 +110,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
 
   return (
     <div className={className} data-testid="expandable-data-table">
-      <Accordion>
+      <Accordion align="start">
         <AccordionItem title={tableTitle}>
           <DataTable rows={dataTableRows} headers={headers}>
             {({
