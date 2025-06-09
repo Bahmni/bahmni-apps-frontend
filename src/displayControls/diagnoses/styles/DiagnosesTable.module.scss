@@ -1,0 +1,51 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.diagnosesTable {
+  padding: 0 !important;
+}
+
+.diagnosesTableTitle {
+  @include type-style("heading-compact-02");
+  padding: $spacing-05;
+  background-color: $background;
+}
+
+.diagnosesTableBodyError {
+  @include type-style("label-02");
+  background-color: $background;
+  padding: $spacing-03 !important;
+  border-top: 1px solid $border-subtle-02;
+}
+
+.diagnosesTableBody {
+  :global(.cds--data-table td) {
+    @include type-style("body-short-01");
+    background-color: $background;
+  }
+
+  :global(.cds--data-table td:nth-child(2)) {
+    @include type-style("body-short-01");
+    min-width: calc(100vw * 0.3);
+  }
+  :global(.cds--accordion__content) {
+    margin-inline: 0rem !important;
+    padding-inline: 0rem !important;
+  }
+  :global(.cds--accordion__wrapper) {
+    padding-block: 0rem !important;
+    padding-block-end: 0rem !important;
+  }
+}
+
+.confirmedCell {
+  background-color: $yellow-20 !important;
+  color: $yellow-70 !important;
+}
+
+.provisionalCell {
+  background-color: $red-20 !important;
+  color: $red-70 !important;
+}

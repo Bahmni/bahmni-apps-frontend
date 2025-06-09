@@ -81,7 +81,7 @@ describe('diagnosesService', () => {
         const result = await getPatientDiagnosesByDate(patientUUID);
 
         expect(get).toHaveBeenCalledWith(
-          `/openmrs/ws/fhir2/R4/Condition?category=encounter-diagnosis&patient=${patientUUID}`,
+          `/openmrs/ws/fhir2/R4/Condition?category=encounter-diagnosis&patient=${patientUUID}&_count=100&_sort=-_lastUpdated`,
         );
         expect(result).toHaveLength(2);
         expect(result[0].date).toBe('2025-03-25'); // Newer date first (date only)
@@ -301,7 +301,7 @@ describe('diagnosesService', () => {
         const result = await getPatientDiagnosesByDate(emptyUUID);
 
         expect(get).toHaveBeenCalledWith(
-          `/openmrs/ws/fhir2/R4/Condition?category=encounter-diagnosis&patient=${emptyUUID}`,
+          `/openmrs/ws/fhir2/R4/Condition?category=encounter-diagnosis&patient=${emptyUUID}&_count=100&_sort=-_lastUpdated`,
         );
         expect(result).toEqual([]);
       });
@@ -314,7 +314,7 @@ describe('diagnosesService', () => {
         await getPatientDiagnosesByDate(specialUUID);
 
         expect(get).toHaveBeenCalledWith(
-          `/openmrs/ws/fhir2/R4/Condition?category=encounter-diagnosis&patient=${specialUUID}`,
+          `/openmrs/ws/fhir2/R4/Condition?category=encounter-diagnosis&patient=${specialUUID}&_count=100&_sort=-_lastUpdated`,
         );
       });
 

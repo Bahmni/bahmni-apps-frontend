@@ -13,7 +13,7 @@ const PROVISIONAL_STATUS = 'provisional';
  * @param patientUUID - The UUID of the patient
  * @returns Promise resolving to a Bundle containing diagnoses
  */
-async function getPatientDiagnoses(patientUUID: string): Promise<Bundle> {
+async function getPatientDiagnosesBundle(patientUUID: string): Promise<Bundle> {
   const url = PATIENT_DIAGNOSIS_RESOURCE_URL(patientUUID);
   return await get<Bundle>(url);
 }
@@ -114,7 +114,7 @@ function groupDiagnosesByDate(
 export async function getPatientDiagnosesByDate(
   patientUUID: string,
 ): Promise<DiagnosesByDate[]> {
-  const diagnoses = await getPatientDiagnoses(patientUUID);
+  const diagnoses = await getPatientDiagnosesBundle(patientUUID);
   const formattedDiagnoses = formatDiagnoses(diagnoses);
   return groupDiagnosesByDate(formattedDiagnoses);
 }

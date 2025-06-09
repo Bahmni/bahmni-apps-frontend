@@ -31,7 +31,7 @@ export const DASHBOARD_CONFIG_URL = (dashboardURL: string) =>
   `/bahmni_config/openmrs/apps/clinical/v2/dashboards/${dashboardURL}`;
 export const PATIENT_DIAGNOSIS_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 +
-  `/Condition?category=${HL7_CONDITION_CATEGORY_DIAGNOSIS_CODE}&patient=${patientUUID}`;
+  `/Condition?category=${HL7_CONDITION_CATEGORY_DIAGNOSIS_CODE}&patient=${patientUUID}&_count=100&_sort=-_lastUpdated`;
 export const CLINICAL_CONFIG_URL =
   '/bahmni_config/openmrs/apps/clinical/v2/app.json';
 export const LOCATION_RESOURCE_URL = OPENMRS_REST_V1 + '/location';
