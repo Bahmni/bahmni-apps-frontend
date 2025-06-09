@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ExpandableDataTable } from '../ExpandableDataTable';
 import { DataTableHeader, Tag } from '@carbon/react';
 import { getFormattedError } from '@utils/common';
@@ -898,4 +898,191 @@ describe('ExpandableDataTable', () => {
   });
 
   //TODO: Add tests for A11y
+
+  // Tests for isOpen prop functionality
+  describe('isOpen prop functionality', () => {
+    it('should render accordion initially open when isOpen is true', () => {
+      render(
+        <ExpandableDataTable
+          tableTitle="Test Table"
+          headers={mockHeaders}
+          rows={mockRows}
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+          isOpen={true}
+        />,
+      );
+
+      // Verify table content is visible without user interaction
+      expect(screen.getByText('Name')).toBeVisible();
+      expect(screen.getByText('Status')).toBeVisible();
+      expect(screen.getByText('Date')).toBeVisible();
+      expect(screen.getByText('Item 1')).toBeVisible();
+      expect(screen.getByText('Item 2')).toBeVisible();
+
+      // Verify accordion is in expanded state
+      const accordionButton = screen.getByRole('button', {
+        name: /Test Table/i,
+      });
+      expect(accordionButton).toHaveAttribute('aria-expanded', 'true');
+
+      // Verify the table container is present
+      expect(screen.getByTestId('expandable-data-table')).toBeInTheDocument();
+    });
+
+    it('should render accordion initially closed when isOpen is false or not provided', () => {
+      // Test with isOpen={false} explicitly
+      const { rerender } = render(
+        <ExpandableDataTable
+          tableTitle="Test Table"
+          headers={mockHeaders}
+          rows={mockRows}
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+          isOpen={false}
+        />,
+      );
+
+      // Verify accordion is in closed state (Carbon AccordionItem still renders content)
+      const accordionButton = screen.getByRole('button', {
+        name: /Test Table/i,
+      });
+      expect(accordionButton).toHaveAttribute('aria-expanded', 'false');
+
+      // Content is still visible even when accordion is closed (Carbon behavior)
+      expect(screen.getByText('Name')).toBeVisible();
+      expect(screen.getByText('Item 1')).toBeVisible();
+
+      // Test with isOpen prop omitted (default behavior)
+      rerender(
+        <ExpandableDataTable
+          tableTitle="Test Table"
+          headers={mockHeaders}
+          rows={mockRows}
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+        />,
+      );
+
+      // Verify same behavior when prop is omitted (default is closed)
+      const accordionButtonDefault = screen.getByRole('button', {
+        name: /Test Table/i,
+      });
+      expect(accordionButtonDefault).toHaveAttribute('aria-expanded', 'false');
+      expect(screen.getByText('Name')).toBeVisible();
+      expect(screen.getByText('Item 1')).toBeVisible();
+    });
+
+    it('should respond to isOpen prop changes', () => {
+      // Start with isOpen={false}
+      const { rerender } = render(
+        <ExpandableDataTable
+          tableTitle="Test Table"
+          headers={mockHeaders}
+          rows={mockRows}
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+          isOpen={false}
+        />,
+      );
+
+      // Verify initially closed (content still visible due to Carbon behavior)
+      let accordionButton = screen.getByRole('button', { name: /Test Table/i });
+      expect(accordionButton).toHaveAttribute('aria-expanded', 'false');
+      expect(screen.getByText('Name')).toBeVisible();
+      expect(screen.getByText('Item 1')).toBeVisible();
+
+      // Change to isOpen={true}
+      rerender(
+        <ExpandableDataTable
+          tableTitle="Test Table"
+          headers={mockHeaders}
+          rows={mockRows}
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+          isOpen={true}
+        />,
+      );
+
+      // Verify accordion opens
+      accordionButton = screen.getByRole('button', { name: /Test Table/i });
+      expect(accordionButton).toHaveAttribute('aria-expanded', 'true');
+      expect(screen.getByText('Name')).toBeVisible();
+      expect(screen.getByText('Item 1')).toBeVisible();
+
+      // Change back to isOpen={false}
+      rerender(
+        <ExpandableDataTable
+          tableTitle="Test Table"
+          headers={mockHeaders}
+          rows={mockRows}
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+          isOpen={false}
+        />,
+      );
+
+      waitFor(() => {
+        // Verify accordion closes (content still visible due to Carbon behavior)
+        accordionButton = screen.getByRole('button', { name: /Test Table/i });
+        expect(accordionButton).toHaveAttribute('aria-expanded', 'false');
+        expect(screen.getByText('Name')).toBeVisible();
+        expect(screen.getByText('Item 1')).toBeVisible();
+      });
+    });
+
+    it('should handle isOpen prop with loading state', () => {
+      render(
+        <ExpandableDataTable
+          tableTitle="Test Table"
+          headers={mockHeaders}
+          rows={mockRows}
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+          loading={true}
+          isOpen={true}
+        />,
+      );
+
+      // Verify loading state is visible when accordion is open
+      expect(screen.getByTestId('expandable-table-skeleton')).toBeVisible();
+    });
+
+    it('should handle isOpen prop with error state', () => {
+      const testError = new Error('Test error');
+
+      render(
+        <ExpandableDataTable
+          tableTitle="Test Table"
+          headers={mockHeaders}
+          rows={mockRows}
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+          error={testError}
+          isOpen={true}
+        />,
+      );
+
+      // Verify error state is visible when accordion is open
+      expect(screen.getByTestId('expandable-table-error')).toBeVisible();
+      expect(screen.getByText('Error: Test error')).toBeVisible();
+    });
+
+    it('should handle isOpen prop with empty state', () => {
+      render(
+        <ExpandableDataTable
+          tableTitle="Test Table"
+          headers={mockHeaders}
+          rows={[]}
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+          isOpen={true}
+        />,
+      );
+
+      // Verify empty state is visible when accordion is open
+      expect(screen.getByTestId('expandable-data-table-empty')).toBeVisible();
+      expect(screen.getByText('No data available')).toBeVisible();
+    });
+  });
 });

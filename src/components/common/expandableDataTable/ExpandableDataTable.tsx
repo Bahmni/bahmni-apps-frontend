@@ -26,13 +26,14 @@ interface ExpandableDataTableProps<T> {
   headers: DataTableHeader[];
   sortable?: { key: string; sortable: boolean }[];
   renderCell: (row: T, cellId: string) => React.ReactNode;
-  renderExpandedContent: (row: T) => React.ReactNode;
+  renderExpandedContent?: (row: T) => React.ReactNode;
   loading?: boolean;
   error?: unknown;
   ariaLabel?: string;
   emptyStateMessage?: string;
   className?: string;
   rowClassNames?: Record<string, string>;
+  isOpen?: boolean;
 }
 
 export const ExpandableDataTable = <T extends { id?: string }>({
@@ -41,13 +42,14 @@ export const ExpandableDataTable = <T extends { id?: string }>({
   headers,
   sortable = headers.map((header) => ({ key: header.key, sortable: true })),
   renderCell,
-  renderExpandedContent,
+  renderExpandedContent = () => null,
   loading = false,
   error = null,
   ariaLabel = tableTitle,
   emptyStateMessage,
   className = 'expandable-data-table-item',
   rowClassNames = {},
+  isOpen = false,
 }: ExpandableDataTableProps<T>) => {
   const { t } = useTranslation();
   emptyStateMessage =
@@ -56,7 +58,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
     const formattedError = getFormattedError(error);
     return (
       <div data-testid="expandable-table-error" className={className}>
-        <Accordion>
+        <Accordion align="start">
           <AccordionItem title={tableTitle}>
             <p style={{ padding: '0.5rem' }}>
               {t('EXPANDABLE_TABLE_ERROR_MESSAGE', {
@@ -74,7 +76,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
   if (loading) {
     return (
       <div data-testid="expandable-table-skeleton" className={className}>
-        <Accordion>
+        <Accordion align="start">
           <AccordionItem title={tableTitle}>
             <DataTableSkeleton
               columnCount={headers.length + 1}
@@ -93,7 +95,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
   if (!rows || rows.length === 0) {
     return (
       <div data-testid="expandable-data-table-empty" className={className}>
-        <Accordion>
+        <Accordion align="start">
           <AccordionItem title={tableTitle}>
             <p style={{ padding: '0.5rem' }}>{emptyStateMessage}</p>
           </AccordionItem>
@@ -110,8 +112,8 @@ export const ExpandableDataTable = <T extends { id?: string }>({
 
   return (
     <div className={className} data-testid="expandable-data-table">
-      <Accordion>
-        <AccordionItem title={tableTitle}>
+      <Accordion align="start">
+        <AccordionItem title={tableTitle} open={isOpen}>
           <DataTable rows={dataTableRows} headers={headers}>
             {({
               rows: tableRows,

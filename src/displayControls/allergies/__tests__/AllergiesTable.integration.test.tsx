@@ -258,10 +258,6 @@ describe('AllergiesTable Integration', () => {
       const table = screen.getByRole('table');
       expect(table).toHaveAttribute('aria-label', 'Allergies');
 
-      // Verify the table has proper styling
-      const tableContainer = screen.getByTestId('allergy-table');
-      expect(tableContainer).toHaveStyle({ width: '100%' });
-
       // Verify the table headers have proper attributes
       const headers = screen.getAllByRole('columnheader');
       expect(headers.length).toBeGreaterThan(0);

@@ -10,3 +10,22 @@ export interface DiagnosisInputEntry {
   };
   hasBeenValidated: boolean;
 }
+
+/**
+ * Interface for formatted diagnosis data
+ */
+export interface FormattedDiagnosis {
+  id: string;
+  display: string;
+  certainty: Coding;
+  recordedDate: string;
+  recorder: string;
+}
+
+/**
+ * Interface for diagnoses grouped by date
+ */
+export interface DiagnosesByDate {
+  date: string;
+  diagnoses: FormattedDiagnosis[];
+}

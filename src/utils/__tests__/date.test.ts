@@ -3,6 +3,7 @@ import { calculateAge, formatDate, formatDateTime } from '../date';
 import { DATE_TIME_FORMAT } from '@constants/date';
 import { DATE_ERROR_MESSAGES } from '@constants/errors';
 import i18n from '@/setupTests.i18n';
+import { getUserPreferredLocale } from '@services/translationService';
 
 jest.mock('@utils/common', () => ({
   generateId: jest.fn().mockReturnValue('generated-id'),
@@ -12,6 +13,10 @@ jest.mock('@utils/common', () => ({
     }
     return { title: 'Error', message: 'An unexpected error occurred' };
   }),
+}));
+
+jest.mock('@services/translationService', () => ({
+  getUserPreferredLocale: jest.fn(),
 }));
 
 describe('calculateAge', () => {
@@ -165,7 +170,6 @@ describe('calculateAge', () => {
 describe('Date Utility Functions', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(console, 'error').mockImplementation();
   });
 
   describe('formatDate', () => {
@@ -296,6 +300,82 @@ describe('Date Utility Functions', () => {
       const formatted = formatDateTime({} as any);
       expect(formatted.formattedResult).toBe('');
       expect(formatted.error).toBeDefined();
+    });
+  });
+
+  describe('Locale Support for Date Formatting', () => {
+    const mockedGetUserPreferredLocale = jest.mocked(getUserPreferredLocale);
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should format date with English month names when locale is en', () => {
+      mockedGetUserPreferredLocale.mockReturnValue('en');
+      const result = formatDate('2024-03-28', 'MMMM dd, yyyy');
+      expect(result.formattedResult).toBe('March 28, 2024');
+      expect(result.error).toBeUndefined();
+    });
+
+    it('should format date with Spanish month names when locale is es', () => {
+      mockedGetUserPreferredLocale.mockReturnValue('es');
+      const result = formatDate('2024-03-28', 'MMMM dd, yyyy');
+      expect(result.formattedResult).toBe('marzo 28, 2024');
+      expect(result.error).toBeUndefined();
+    });
+
+    it('should format date with French month names when locale is fr', () => {
+      mockedGetUserPreferredLocale.mockReturnValue('fr');
+      const result = formatDate('2024-03-28', 'MMMM dd, yyyy');
+      expect(result.formattedResult).toBe('mars 28, 2024');
+      expect(result.error).toBeUndefined();
+    });
+
+    it('should use same numeric format for all locales with dd/MM/yyyy', () => {
+      const testCases = ['en', 'es', 'fr'];
+      testCases.forEach((locale) => {
+        mockedGetUserPreferredLocale.mockReturnValue(locale);
+        const result = formatDate('2024-03-28'); // Default dd/MM/yyyy
+        expect(result.formattedResult).toBe('28/03/2024');
+        expect(result.error).toBeUndefined();
+      });
+    });
+
+    it('should format datetime with localized month names', () => {
+      mockedGetUserPreferredLocale.mockReturnValue('es');
+      const result = formatDateTime('2024-03-28T12:30:00');
+      // Since formatDateTime uses the default DATE_TIME_FORMAT (dd/MM/yyyy HH:mm),
+      // the result should be numeric format regardless of locale
+      expect(result.formattedResult).toBe('28/03/2024 12:30');
+      expect(result.error).toBeUndefined();
+    });
+
+    it('should fallback to English for unsupported locale', () => {
+      mockedGetUserPreferredLocale.mockReturnValue('unsupported-locale');
+      const result = formatDate('2024-03-28', 'MMMM dd, yyyy');
+      expect(result.formattedResult).toBe('March 28, 2024');
+      expect(result.error).toBeUndefined();
+    });
+
+    it('should handle en-US locale', () => {
+      mockedGetUserPreferredLocale.mockReturnValue('en-US');
+      const result = formatDate('2024-03-28', 'MMMM dd, yyyy');
+      expect(result.formattedResult).toBe('March 28, 2024');
+      expect(result.error).toBeUndefined();
+    });
+
+    it('should handle en-GB locale', () => {
+      mockedGetUserPreferredLocale.mockReturnValue('en-GB');
+      const result = formatDate('2024-03-28', 'MMMM dd, yyyy');
+      expect(result.formattedResult).toBe('March 28, 2024');
+      expect(result.error).toBeUndefined();
+    });
+
+    it('should handle es-ES locale', () => {
+      mockedGetUserPreferredLocale.mockReturnValue('es-ES');
+      const result = formatDate('2024-03-28', 'MMMM dd, yyyy');
+      expect(result.formattedResult).toBe('marzo 28, 2024');
+      expect(result.error).toBeUndefined();
     });
   });
 });

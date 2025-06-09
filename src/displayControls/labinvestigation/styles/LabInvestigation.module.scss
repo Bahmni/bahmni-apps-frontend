@@ -2,12 +2,6 @@
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
 
-/* Container styles */
-.labInvestigationWrapper {
-  width: 100%;
-  margin: $spacing-05 auto;
-}
-
 .accordionTitle {
   display: flex;
   align-items: center;

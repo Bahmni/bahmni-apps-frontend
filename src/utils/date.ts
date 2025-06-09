@@ -8,11 +8,39 @@ import {
   subMonths,
   format,
 } from 'date-fns';
+import { enUS, enGB, es, fr, de } from 'date-fns/locale';
+import type { Locale } from 'date-fns';
 import { Age } from '@types/patient';
 import { FormatDateResult } from '@types/date';
 import { DATE_FORMAT, DATE_TIME_FORMAT } from '@constants/date';
 import { DATE_ERROR_MESSAGES } from '@constants/errors';
+import { getUserPreferredLocale } from '@services/translationService';
 import i18next from 'i18next';
+
+/**
+ * Mapping of user locale codes to date-fns locale objects
+ */
+const LOCALE_MAP: Record<string, Locale> = {
+  en: enGB,
+  'en-US': enUS,
+  'en-GB': enGB,
+  es: es,
+  'es-ES': es,
+  fr: fr,
+  'fr-FR': fr,
+  de: de,
+  'de-DE': de,
+};
+
+/**
+ * Gets the appropriate date-fns locale object based on user's preferred locale.
+ * Falls back to English (GB) if the locale is not supported or if an error occurs.
+ * @returns The date-fns locale object to use for formatting
+ */
+function getDateFnsLocale(): Locale {
+  const userLocale = getUserPreferredLocale();
+  return LOCALE_MAP[userLocale] || LOCALE_MAP['en'] || enGB;
+}
 
 /**
  * Calculates age based on a date string in the format yyyy-mm-dd
@@ -82,9 +110,13 @@ function safeParseDate(dateString: string): DateParseResult {
 }
 
 /**
- * Formats a date string or Date object into the specified date format.
+ * Formats a date string or Date object into the specified date format with locale support.
+ * Automatically uses the user's preferred locale from getUserPreferredLocale() for language-specific
+ * formatting such as month names and day names. Falls back to English (GB) if locale retrieval fails
+ * or if the locale is not supported.
+ *
  * @param date - The date string or Date object to format.
- * @param dateFormat - The date format to use (e.g., 'yyyy-MM-dd', 'dd/MM/yyyy').
+ * @param dateFormat - The date format to use (e.g., 'yyyy-MM-dd', 'dd/MM/yyyy', 'MMMM dd, yyyy').
  * @returns A FormatDateResult object containing either a formatted date string or an error.
  */
 function formatDateGeneric(
@@ -126,7 +158,8 @@ function formatDateGeneric(
     };
   }
 
-  return { formattedResult: format(dateToFormat, dateFormat) };
+  const locale = getDateFnsLocale();
+  return { formattedResult: format(dateToFormat, dateFormat, { locale }) };
 }
 
 /**

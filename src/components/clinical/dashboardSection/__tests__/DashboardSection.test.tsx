@@ -37,6 +37,11 @@ jest.mock('@displayControls/labinvestigation/LabInvestigationControl', () => ({
   default: () => <div data-testid="lab-investigation">Lab Investigation</div>,
 }));
 
+jest.mock('@displayControls/diagnoses/DiagnosesTable', () => ({
+  __esModule: true,
+  default: () => <div data-testid="diagnoses-table">Lab Investigation</div>,
+}));
+
 describe('DashboardSection Component', () => {
   const mockSection: DashboardSectionConfig = {
     id: 'test-section-id',
