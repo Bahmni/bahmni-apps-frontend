@@ -60,6 +60,7 @@ The ExpandableDataTable component accepts a generic type parameter `T` which rep
 | emptyStateMessage     | string                                        | Message to display when there are no rows                                             | No       |
 | className             | string                                        | Custom CSS class for the component                                                    | No       |
 | rowClassNames         | Record<string, string>                        | Object mapping row IDs to CSS class names to apply to specific rows                   | No       |
+| isOpen                | boolean                                       | Controls the initial state of the accordion (open/closed)                             | No       |
 
 ### Type Definitions
 
@@ -77,6 +78,7 @@ interface ExpandableDataTableProps<T> {
   emptyStateMessage?: string;
   className?: string;
   rowClassNames?: Record<string, string>;
+  isOpen?: boolean;
 }
 
 // Carbon Design System type
@@ -95,6 +97,7 @@ interface DataTableHeader {
 - `emptyStateMessage`: `'No data available'`
 - `className`: `'expandable-data-table-item'`
 - `rowClassNames`: `{}`
+- `isOpen`: `false`
 
 ## Row Expansion Behavior
 
@@ -131,6 +134,87 @@ Under the hood, the component uses different Carbon components based on whether 
 - **Non-Expandable Rows**: Uses regular `TableRow` from Carbon Design System
 
 This approach ensures that non-expandable rows don't have unnecessary expand/collapse buttons, providing a cleaner user interface.
+
+## Accordion State Management
+
+The ExpandableDataTable component includes an accordion wrapper that allows you to control the initial state of the table's visibility using the `isOpen` prop.
+
+### Default Behavior
+
+By default, the accordion starts in a **closed** state (`isOpen={false}`), meaning users need to click the accordion header to expand and view the table content.
+
+```tsx
+// Default behavior - accordion starts closed
+<ExpandableDataTable
+  tableTitle="Sample Table"
+  rows={data}
+  headers={headers}
+  renderCell={renderCell}
+  renderExpandedContent={renderExpandedContent}
+  // isOpen defaults to false
+/>
+```
+
+### Opening the Accordion Initially
+
+You can set the accordion to start in an **open** state by setting `isOpen={true}`. This is useful when you want the table content to be immediately visible to users.
+
+```tsx
+// Accordion starts open - table content immediately visible
+<ExpandableDataTable
+  tableTitle="Sample Table"
+  rows={data}
+  headers={headers}
+  renderCell={renderCell}
+  renderExpandedContent={renderExpandedContent}
+  isOpen={true}
+/>
+```
+
+### Use Cases for isOpen Prop
+
+1. **Critical Information Tables**: Set `isOpen={true}` for tables containing critical information that users should see immediately.
+
+2. **Primary Content**: Use `isOpen={true}` for main data tables that are the primary focus of the page.
+
+3. **Secondary Information**: Keep `isOpen={false}` (default) for supplementary tables that users can expand when needed.
+
+4. **User Preferences**: Dynamically set the `isOpen` value based on user preferences or application state.
+
+### Dynamic Accordion State
+
+You can also control the accordion state dynamically based on application logic:
+
+```tsx
+const MyDynamicTable: React.FC = () => {
+  const [shouldOpenByDefault, setShouldOpenByDefault] = useState(false);
+
+  useEffect(() => {
+    // Open accordion if there are critical items
+    const hasCriticalItems = data.some(item => item.priority === 'Critical');
+    setShouldOpenByDefault(hasCriticalItems);
+  }, [data]);
+
+  return (
+    <ExpandableDataTable
+      tableTitle="Priority Items"
+      rows={data}
+      headers={headers}
+      renderCell={renderCell}
+      renderExpandedContent={renderExpandedContent}
+      isOpen={shouldOpenByDefault}
+    />
+  );
+};
+```
+
+### Accordion State Behavior
+
+- **Initial State Only**: The `isOpen` prop only controls the **initial** state of the accordion. Once rendered, users can freely expand/collapse the accordion using the header button.
+
+- **State Persistence**: After user interaction, the accordion remembers its state within the component lifecycle (but not across page refreshes).
+
+- **All Component States**: The `isOpen` prop works consistently across all component states (normal, loading, error, and empty states).
 
 ## Sorting Configuration
 
@@ -810,6 +894,79 @@ const renderConditionExpandedContent = (condition: Condition) => (
 />;
 ```
 
+### Example with isOpen Prop
+
+```tsx
+import React, { useState, useEffect } from "react";
+import { ExpandableDataTable } from "@components/expandableDataTable/ExpandableDataTable";
+import { DataTableHeader } from "@carbon/react";
+
+interface AlertItem {
+  id: string;
+  title: string;
+  severity: "Critical" | "Warning" | "Info";
+  description: string;
+}
+
+const AlertTable: React.FC = () => {
+  const [alerts, setAlerts] = useState<AlertItem[]>([]);
+  const [shouldStartOpen, setShouldStartOpen] = useState(false);
+
+  useEffect(() => {
+    // Fetch alerts from API
+    fetchAlerts().then(alertData => {
+      setAlerts(alertData);
+      // Open accordion automatically if there are critical alerts
+      const hasCriticalAlerts = alertData.some(alert => alert.severity === 'Critical');
+      setShouldStartOpen(hasCriticalAlerts);
+    });
+  }, []);
+
+  const headers: DataTableHeader[] = [
+    { key: "title", header: "Alert Title" },
+    { key: "severity", header: "Severity" },
+    { key: "description", header: "Description" },
+  ];
+
+  const renderCell = (alert: AlertItem, cellId: string) => {
+    switch (cellId) {
+      case "title":
+        return alert.title;
+      case "severity":
+        return (
+          <Tag type={alert.severity === "Critical" ? "red" : 
+                     alert.severity === "Warning" ? "yellow" : "blue"}>
+            {alert.severity}
+          </Tag>
+        );
+      case "description":
+        return alert.description.substring(0, 50) + "...";
+      default:
+        return null;
+    }
+  };
+
+  const renderExpandedContent = (alert: AlertItem) => (
+    <div style={{ padding: "1rem" }}>
+      <h4>Alert Details</h4>
+      <p><strong>Full Description:</strong> {alert.description}</p>
+      <p><strong>Alert ID:</strong> {alert.id}</p>
+    </div>
+  );
+
+  return (
+    <ExpandableDataTable
+      tableTitle="System Alerts"
+      rows={alerts}
+      headers={headers}
+      renderCell={renderCell}
+      renderExpandedContent={renderExpandedContent}
+      isOpen={shouldStartOpen} // Opens automatically for critical alerts
+    />
+  );
+};
+```
+
 ## Best Practices
 
 ### Performance Considerations
@@ -979,6 +1136,7 @@ interface ExpandableDataTableProps<T> {
   emptyStateMessage?: string;
   className?: string;
   rowClassNames?: Record<string, string>;
+  isOpen?: boolean;
 }
 ```
 

@@ -17,7 +17,7 @@ const LabInvestigationControl: React.FC = () => {
   }, [labTests]);
 
   return (
-    <section className={styles.labInvestigationWrapper}>
+    <section>
       <Accordion align="start" size="lg">
         {hasError && <div>{t('LAB_TEST_ERROR_LOADING')}</div>}
         {!isLoading && labTests.length === 0 && (

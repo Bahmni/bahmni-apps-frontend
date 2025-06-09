@@ -1,4 +1,7 @@
-import { HL7_CONDITION_CATEGORY_CONDITION_CODE } from './fhir';
+import {
+  HL7_CONDITION_CATEGORY_CONDITION_CODE,
+  HL7_CONDITION_CATEGORY_DIAGNOSIS_CODE,
+} from './fhir';
 
 const BASE_PATH = process.env.PUBLIC_URL || '/';
 const OPENMRS_FHIR_R4 = '/openmrs/ws/fhir2/R4';
@@ -26,6 +29,9 @@ export const PATIENT_LAB_INVESTIGATION_RESOURCE_URL = (patientUUID: string) =>
   `/ServiceRequest?category=${LAB_ORDER_TYPE_UUID}&patient=${patientUUID}&numberOfVisits=5`;
 export const DASHBOARD_CONFIG_URL = (dashboardURL: string) =>
   `/bahmni_config/openmrs/apps/clinical/v2/dashboards/${dashboardURL}`;
+export const PATIENT_DIAGNOSIS_RESOURCE_URL = (patientUUID: string) =>
+  OPENMRS_FHIR_R4 +
+  `/Condition?category=${HL7_CONDITION_CATEGORY_DIAGNOSIS_CODE}&patient=${patientUUID}&_count=100&_sort=-_lastUpdated`;
 export const CLINICAL_CONFIG_URL =
   '/bahmni_config/openmrs/apps/clinical/v2/app.json';
 export const LOCATION_RESOURCE_URL = OPENMRS_REST_V1 + '/location';

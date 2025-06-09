@@ -6,6 +6,7 @@ import AllergiesTable from '@displayControls/allergies/AllergiesTable';
 import ConditionsTable from '@displayControls/conditions/ConditionsTable';
 import { useTranslation } from 'react-i18next';
 import LabInvestigation from '@displayControls/labinvestigation/LabInvestigationControl';
+import DiagnosesTable from '@displayControls/diagnoses/DiagnosesTable';
 
 export interface DashboardSectionProps {
   section: DashboardSectionConfig;
@@ -18,7 +19,12 @@ const renderSectionContent = (section: DashboardSectionConfig) => {
     case 'Allergies':
       return <AllergiesTable />;
     case 'Conditions':
-      return <ConditionsTable />;
+      return (
+        <>
+          <ConditionsTable />
+          <DiagnosesTable />
+        </>
+      );
     case 'Lab Investigations':
       return <LabInvestigation />;
     default:
@@ -37,7 +43,7 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
 }) => {
   const { t } = useTranslation();
   return (
-    <Tile id={`section-${section.id}`} ref={ref}>
+    <Tile id={`section-${section.id}`} ref={ref} className={styles.sectionTile}>
       <p className={styles.sectionTitle}>
         {t(section.translationKey || section.name)}
       </p>
