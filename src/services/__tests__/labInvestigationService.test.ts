@@ -300,6 +300,79 @@ describe('labInvestigationService', () => {
 
       await expect(getPatientLabTestsBundle(mockPatientUUID)).rejects.toThrow();
     });
+
+    it('should filter out entries with replaces field and entries being replaced', async () => {
+      // Create test data with replaces relationships
+      const originalTest = { ...mockFhirLabTests[0] };
+      const replacementTest = {
+        ...mockFhirLabTests[1],
+        replaces: [
+          {
+            reference: 'ServiceRequest/29e240ce-5a3d-4643-8d4b-ca5b4cbf665d',
+            type: 'ServiceRequest',
+            identifier: {
+              use: 'usual',
+              type: {
+                coding: [
+                  {
+                    system: 'http://terminology.hl7.org/CodeSystem/v2-0203',
+                    code: 'PLAC',
+                    display: 'Placer Identifier',
+                  },
+                ],
+              },
+              value: '29e240ce-5a3d-4643-8d4b-ca5b4cbf665d',
+            },
+          },
+        ],
+      };
+      const normalTest = { ...mockFhirLabTests[2] };
+
+      const mockBundleWithReplaces = {
+        ...mockFhirLabTestBundle,
+        entry: [
+          { fullUrl: 'test1', resource: originalTest },
+          { fullUrl: 'test2', resource: replacementTest },
+          { fullUrl: 'test3', resource: normalTest },
+        ],
+      };
+
+      (get as jest.Mock).mockResolvedValue(mockBundleWithReplaces);
+
+      const result = await getPatientLabTestsBundle(mockPatientUUID);
+
+      // Should only contain normalTest (both originalTest and replacementTest filtered out)
+      expect(result.entry).toHaveLength(1);
+      expect(result.entry?.[0].resource.id).toBe(
+        'aba2a637-05f5-44c6-9021-c5cd05548342',
+      );
+    });
+
+    it('should handle empty bundle entry', async () => {
+      const mockEmptyBundle = {
+        ...mockFhirLabTestBundle,
+        entry: [],
+      };
+
+      (get as jest.Mock).mockResolvedValue(mockEmptyBundle);
+
+      const result = await getPatientLabTestsBundle(mockPatientUUID);
+
+      expect(result.entry).toEqual([]);
+    });
+
+    it('should handle bundle with no entry field', async () => {
+      const mockBundleNoEntry = {
+        ...mockFhirLabTestBundle,
+        entry: undefined,
+      };
+
+      (get as jest.Mock).mockResolvedValue(mockBundleNoEntry);
+
+      const result = await getPatientLabTestsBundle(mockPatientUUID);
+
+      expect(result.entry).toEqual([]);
+    });
   });
 
   describe('getLabTests', () => {

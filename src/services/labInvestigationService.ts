@@ -42,6 +42,26 @@ export const mapLabTestPriority = (labTest: FhirLabTest): LabTestPriority => {
   }
 };
 
+function filterLabTestEntries(labTestBundle: FhirLabTestBundle) {
+  if (!labTestBundle.entry) return [];
+
+  //Collect all IDs that are being replaced
+  const replacedIds = new Set(
+    labTestBundle.entry
+      .flatMap((entry) => entry.resource?.replaces || [])
+      .map((ref) => ref.reference?.split('/').pop()) // extract ID from reference like "ServiceRequest/xyz"
+      .filter(Boolean), // remove undefined/null
+  );
+
+  // Filter out entries that either have a "replaces" field or are being replaced
+  return labTestBundle.entry.filter((entry) => {
+    const entryId = entry.resource?.id;
+    const isReplacer = entry.resource?.replaces;
+    const isReplaced = replacedIds.has(entryId);
+    return !isReplacer && !isReplaced;
+  });
+}
+
 /**
  * Fetches lab tests for a given patient UUID from the FHIR R4 endpoint
  * @param patientUUID - The UUID of the patient
@@ -50,9 +70,16 @@ export const mapLabTestPriority = (labTest: FhirLabTest): LabTestPriority => {
 export async function getPatientLabTestsBundle(
   patientUUID: string,
 ): Promise<FhirLabTestBundle> {
-  return await get<FhirLabTestBundle>(
+  const fhirLabTestBundle = await get<FhirLabTestBundle>(
     `${PATIENT_LAB_INVESTIGATION_RESOURCE_URL(patientUUID)}`,
   );
+
+  const filteredEntries = filterLabTestEntries(fhirLabTestBundle);
+
+  return {
+    ...fhirLabTestBundle,
+    entry: filteredEntries,
+  };
 }
 
 /**

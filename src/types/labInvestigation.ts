@@ -54,6 +54,21 @@ export interface FhirLabTest {
     readonly url: string;
     readonly valueString: string;
   }>;
+  readonly replaces?: ReadonlyArray<{
+    reference: string;
+    type: string;
+    identifier: {
+      use: string;
+      type: {
+        coding: {
+          system: string;
+          code: string;
+          display: string;
+        }[];
+      };
+      value: string;
+    };
+  }>;
   readonly status: string;
   readonly intent: string;
   readonly category: ReadonlyArray<{
