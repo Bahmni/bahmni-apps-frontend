@@ -20,20 +20,14 @@ interface ExtendedCoding extends Coding {
 }
 
 /**
- * Filters out inactive concepts and parent concepts from FHIR Coding array
+ * Filters out inactive concepts from FHIR Coding array
  * @param concepts - Array of FHIR Coding objects
- * @param parentConceptCode - The concept code of the parent ValueSet to exclude from results
- * @returns Filtered array with only active concepts excluding the parent concept
+ * @returns Filtered array with only active concepts
  */
-const filterConceptsForAllergenExtraction = (
+const filterInactiveConcepts = (
   concepts: ExtendedCoding[],
-  parentConceptCode: string,
 ): ExtendedCoding[] => {
-  return concepts.filter(
-    (concept) =>
-      concept.inactive !== true &&
-      concept.code?.toLowerCase() !== parentConceptCode.toLowerCase(),
-  );
+  return concepts.filter((concept) => concept.inactive !== true);
 };
 
 /**
@@ -55,19 +49,14 @@ const mapToAllergenConcept = (
  * Extracts and formats allergen concepts from ValueSet expansion
  * @param valueSet - FHIR ValueSet
  * @param type - Allergen type
- * @param parentConceptCode - The concept code of the parent ValueSet to exclude from results
  * @returns Array of formatted allergen concepts
  */
 const extractAllergenConceptsFromValueSet = (
   valueSet: ValueSet,
   type: AllergenType,
-  parentConceptCode: string,
 ): AllergenConcept[] => {
   const concepts = (valueSet.expansion?.contains || []) as ExtendedCoding[];
-  const filteredConcepts = filterConceptsForAllergenExtraction(
-    concepts,
-    parentConceptCode,
-  );
+  const filteredConcepts = filterInactiveConcepts(concepts);
   return filteredConcepts.map((concept) => mapToAllergenConcept(concept, type));
 };
 
@@ -101,17 +90,14 @@ export const fetchAndFormatAllergenConcepts = async (
     ...extractAllergenConceptsFromValueSet(
       medicationValueSet,
       ALLERGEN_TYPES.MEDICATION.display,
-      medicationCode,
     ),
     ...extractAllergenConceptsFromValueSet(
       foodValueSet,
       ALLERGEN_TYPES.FOOD.display,
-      foodCode,
     ),
     ...extractAllergenConceptsFromValueSet(
       environmentValueSet,
       ALLERGEN_TYPES.ENVIRONMENT.display,
-      environmentCode,
     ),
   ];
 };
