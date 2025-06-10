@@ -357,7 +357,7 @@ describe('DiagnosesTable Component', () => {
         const headers = JSON.parse(headerElement.textContent || '[]');
         expect(headers).toEqual([
           { key: 'display', header: 'Diagnosis' },
-          { key: 'recorder', header: 'Recorder' },
+          { key: 'recorder', header: 'Recorded By' },
         ]);
       });
     });
@@ -406,7 +406,7 @@ describe('DiagnosesTable Component', () => {
         expect(loadingElements[index]).toHaveTextContent('false');
         expect(errorElements[index]).toHaveTextContent('null');
         expect(emptyMessageElements[index]).toHaveTextContent(
-          'No diagnoses found for this patient',
+          'No diagnoses recorded',
         );
       });
     });
@@ -653,6 +653,226 @@ describe('DiagnosesTable Component', () => {
       expect(() => render(<DiagnosesTable />)).toThrow(
         "Cannot read properties of null (reading 'code')",
       );
+    });
+  });
+
+  describe('Diagnosis Sorting', () => {
+    it('should sort diagnoses by certainty - confirmed before provisional', () => {
+      const provisionalFirst: FormattedDiagnosis = {
+        id: 'diagnosis-1',
+        display: 'Provisional Diagnosis',
+        certainty: { ...CERTAINITY_CONCEPTS[1], code: 'provisional' },
+        recordedDate: '2024-01-15T10:30:00Z',
+        recorder: 'Dr. Smith',
+      };
+
+      const confirmedSecond: FormattedDiagnosis = {
+        id: 'diagnosis-2',
+        display: 'Confirmed Diagnosis',
+        certainty: { ...CERTAINITY_CONCEPTS[0], code: 'confirmed' },
+        recordedDate: '2024-01-15T11:00:00Z',
+        recorder: 'Dr. Johnson',
+      };
+
+      const unsortedDiagnoses: DiagnosesByDate[] = [
+        {
+          date: '2024-01-15',
+          diagnoses: [provisionalFirst, confirmedSecond], // Provisional first, should be reordered
+        },
+      ];
+
+      mockUseDiagnoses.mockReturnValue({
+        diagnoses: unsortedDiagnoses,
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      render(<DiagnosesTable />);
+
+      const rowElements = screen.getAllByTestId('table-rows');
+      const rows = JSON.parse(rowElements[0].textContent || '[]');
+
+      // After sorting, confirmed should come first
+      expect(rows[0].certainty.code).toBe('confirmed');
+      expect(rows[0].display).toBe('Confirmed Diagnosis');
+      expect(rows[1].certainty.code).toBe('provisional');
+      expect(rows[1].display).toBe('Provisional Diagnosis');
+    });
+
+    it('should maintain stable sorting for same certainty level', () => {
+      const firstConfirmed: FormattedDiagnosis = {
+        id: 'diagnosis-1',
+        display: 'First Confirmed',
+        certainty: { ...CERTAINITY_CONCEPTS[0], code: 'confirmed' },
+        recordedDate: '2024-01-15T10:00:00Z',
+        recorder: 'Dr. A',
+      };
+
+      const secondConfirmed: FormattedDiagnosis = {
+        id: 'diagnosis-2',
+        display: 'Second Confirmed',
+        certainty: { ...CERTAINITY_CONCEPTS[0], code: 'confirmed' },
+        recordedDate: '2024-01-15T11:00:00Z',
+        recorder: 'Dr. B',
+      };
+
+      const thirdConfirmed: FormattedDiagnosis = {
+        id: 'diagnosis-3',
+        display: 'Third Confirmed',
+        certainty: { ...CERTAINITY_CONCEPTS[0], code: 'confirmed' },
+        recordedDate: '2024-01-15T12:00:00Z',
+        recorder: 'Dr. C',
+      };
+
+      const sameCertaintyDiagnoses: DiagnosesByDate[] = [
+        {
+          date: '2024-01-15',
+          diagnoses: [firstConfirmed, secondConfirmed, thirdConfirmed],
+        },
+      ];
+
+      mockUseDiagnoses.mockReturnValue({
+        diagnoses: sameCertaintyDiagnoses,
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      render(<DiagnosesTable />);
+
+      const rowElements = screen.getAllByTestId('table-rows');
+      const rows = JSON.parse(rowElements[0].textContent || '[]');
+
+      // Order should be maintained
+      expect(rows[0].id).toBe('diagnosis-1');
+      expect(rows[1].id).toBe('diagnosis-2');
+      expect(rows[2].id).toBe('diagnosis-3');
+    });
+
+    it('should sort diagnoses within each date group independently', () => {
+      const dateGroup1: DiagnosesByDate = {
+        date: '2024-01-15',
+        diagnoses: [
+          {
+            id: 'diagnosis-1',
+            display: 'Group 1 Provisional',
+            certainty: { ...CERTAINITY_CONCEPTS[1], code: 'provisional' },
+            recordedDate: '2024-01-15T10:00:00Z',
+            recorder: 'Dr. A',
+          },
+          {
+            id: 'diagnosis-2',
+            display: 'Group 1 Confirmed',
+            certainty: { ...CERTAINITY_CONCEPTS[0], code: 'confirmed' },
+            recordedDate: '2024-01-15T11:00:00Z',
+            recorder: 'Dr. B',
+          },
+        ],
+      };
+
+      const dateGroup2: DiagnosesByDate = {
+        date: '2024-01-10',
+        diagnoses: [
+          {
+            id: 'diagnosis-3',
+            display: 'Group 2 Provisional',
+            certainty: { ...CERTAINITY_CONCEPTS[1], code: 'provisional' },
+            recordedDate: '2024-01-10T10:00:00Z',
+            recorder: 'Dr. C',
+          },
+          {
+            id: 'diagnosis-4',
+            display: 'Group 2 Confirmed',
+            certainty: { ...CERTAINITY_CONCEPTS[0], code: 'confirmed' },
+            recordedDate: '2024-01-10T11:00:00Z',
+            recorder: 'Dr. D',
+          },
+        ],
+      };
+
+      mockUseDiagnoses.mockReturnValue({
+        diagnoses: [dateGroup1, dateGroup2],
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      render(<DiagnosesTable />);
+
+      const rowElements = screen.getAllByTestId('table-rows');
+
+      // First date group - confirmed should come first
+      const group1Rows = JSON.parse(rowElements[0].textContent || '[]');
+      expect(group1Rows[0].certainty.code).toBe('confirmed');
+      expect(group1Rows[0].display).toBe('Group 1 Confirmed');
+      expect(group1Rows[1].certainty.code).toBe('provisional');
+      expect(group1Rows[1].display).toBe('Group 1 Provisional');
+
+      // Second date group - confirmed should come first
+      const group2Rows = JSON.parse(rowElements[1].textContent || '[]');
+      expect(group2Rows[0].certainty.code).toBe('confirmed');
+      expect(group2Rows[0].display).toBe('Group 2 Confirmed');
+      expect(group2Rows[1].certainty.code).toBe('provisional');
+      expect(group2Rows[1].display).toBe('Group 2 Provisional');
+    });
+
+    it('should handle unknown certainty codes by placing them last', () => {
+      const confirmedDiagnosis: FormattedDiagnosis = {
+        id: 'diagnosis-1',
+        display: 'Confirmed Diagnosis',
+        certainty: { ...CERTAINITY_CONCEPTS[0], code: 'confirmed' },
+        recordedDate: '2024-01-15T10:00:00Z',
+        recorder: 'Dr. A',
+      };
+
+      const unknownDiagnosis: FormattedDiagnosis = {
+        id: 'diagnosis-2',
+        display: 'Unknown Diagnosis',
+        certainty: {
+          code: 'unknown',
+          display: 'unknown',
+          system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
+        },
+        recordedDate: '2024-01-15T11:00:00Z',
+        recorder: 'Dr. B',
+      };
+
+      const provisionalDiagnosis: FormattedDiagnosis = {
+        id: 'diagnosis-3',
+        display: 'Provisional Diagnosis',
+        certainty: { ...CERTAINITY_CONCEPTS[1], code: 'provisional' },
+        recordedDate: '2024-01-15T12:00:00Z',
+        recorder: 'Dr. C',
+      };
+
+      const mixedCertaintyDiagnoses: DiagnosesByDate[] = [
+        {
+          date: '2024-01-15',
+          diagnoses: [
+            unknownDiagnosis,
+            provisionalDiagnosis,
+            confirmedDiagnosis,
+          ],
+        },
+      ];
+
+      mockUseDiagnoses.mockReturnValue({
+        diagnoses: mixedCertaintyDiagnoses,
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      render(<DiagnosesTable />);
+
+      const rowElements = screen.getAllByTestId('table-rows');
+      const rows = JSON.parse(rowElements[0].textContent || '[]');
+
+      // Order should be: confirmed, provisional, unknown
+      expect(rows[0].certainty.code).toBe('confirmed');
+      expect(rows[1].certainty.code).toBe('provisional');
+      expect(rows[2].certainty.code).toBe('unknown');
     });
   });
 
