@@ -1,11 +1,11 @@
 import { useState, useCallback, useEffect } from 'react';
-import { FhirAllergyIntolerance } from '@types/allergy';
+import { AllergyIntolerance } from 'fhir/r4';
 import { useNotification } from './useNotification';
 import { getAllergies } from '@services/allergyService';
 import { getFormattedError } from '@utils/common';
 
 interface UseAllergiesResult {
-  allergies: FhirAllergyIntolerance[];
+  allergies: AllergyIntolerance[];
   loading: boolean;
   error: Error | null;
   refetch: () => void;
@@ -19,7 +19,7 @@ interface UseAllergiesResult {
 export const useAllergies = (
   patientUUID: string | null,
 ): UseAllergiesResult => {
-  const [allergies, setAllergies] = useState<FhirAllergyIntolerance[]>([]);
+  const [allergies, setAllergies] = useState<AllergyIntolerance[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
   const { addNotification } = useNotification();

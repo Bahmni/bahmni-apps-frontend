@@ -1,9 +1,6 @@
-import {
-  FhirAllergyIntolerance,
-  FhirAllergyIntoleranceBundle,
-} from '@types/allergy';
+import { AllergyIntolerance, Bundle } from 'fhir/r4';
 
-export const mockAllergyIntolerance: FhirAllergyIntolerance = {
+export const mockAllergyIntolerance: AllergyIntolerance = {
   resourceType: 'AllergyIntolerance',
   id: 'allergy-123',
   meta: {
@@ -46,6 +43,7 @@ export const mockAllergyIntolerance: FhirAllergyIntolerance = {
     {
       manifestation: [
         {
+          text: 'Hives',
           coding: [
             {
               system: 'http://snomed.info/sct',
@@ -67,12 +65,13 @@ export const mockAllergyIntolerance: FhirAllergyIntolerance = {
     },
   ],
 };
-export const mockAllergyIntoleranceWithoutNote: FhirAllergyIntolerance = {
+
+export const mockAllergyIntoleranceWithoutNote: AllergyIntolerance = {
   ...mockAllergyIntolerance,
   note: undefined,
 };
 
-export const mockAllergyIntoleranceBundle: FhirAllergyIntoleranceBundle = {
+export const mockAllergyIntoleranceBundle: Bundle = {
   resourceType: 'Bundle',
   id: 'bundle-123',
   meta: {
@@ -94,7 +93,7 @@ export const mockAllergyIntoleranceBundle: FhirAllergyIntoleranceBundle = {
   ],
 };
 
-export const mockEmptyAllergyIntoleranceBundle: FhirAllergyIntoleranceBundle = {
+export const mockEmptyAllergyIntoleranceBundle: Bundle = {
   resourceType: 'Bundle',
   id: 'bundle-empty',
   meta: {
@@ -110,27 +109,26 @@ export const mockEmptyAllergyIntoleranceBundle: FhirAllergyIntoleranceBundle = {
   ],
 };
 
-export const mockAllergyIntoleranceBundleWithoutEntries: FhirAllergyIntoleranceBundle =
-  {
-    resourceType: 'Bundle',
-    id: 'bundle-no-entries',
-    meta: {
-      lastUpdated: '2023-01-01T12:00:00Z',
+export const mockAllergyIntoleranceBundleWithoutEntries: Bundle = {
+  resourceType: 'Bundle',
+  id: 'bundle-no-entries',
+  meta: {
+    lastUpdated: '2023-01-01T12:00:00Z',
+  },
+  type: 'searchset',
+  total: 0,
+  link: [
+    {
+      relation: 'self',
+      url: 'http://example.org/fhir/AllergyIntolerance?patient=patient-123',
     },
-    type: 'searchset',
-    total: 0,
-    link: [
-      {
-        relation: 'self',
-        url: 'http://example.org/fhir/AllergyIntolerance?patient=patient-123',
-      },
-    ],
-  };
+  ],
+};
 
 /**
  * Mock allergy with missing fields (recorder, reactions, note)
  */
-export const mockAllergyWithMissingFields: FhirAllergyIntolerance = {
+export const mockAllergyWithMissingFields: AllergyIntolerance = {
   resourceType: 'AllergyIntolerance',
   id: 'allergy-incomplete',
   meta: {
@@ -164,13 +162,13 @@ export const mockAllergyWithMissingFields: FhirAllergyIntolerance = {
   recordedDate: '2023-01-01T12:00:00Z',
 };
 
-export const mockAllergyWithEmptyReactions: FhirAllergyIntolerance = {
+export const mockAllergyWithEmptyReactions: AllergyIntolerance = {
   ...mockAllergyIntolerance,
   id: 'allergy-empty-reactions',
   reaction: [],
 };
 
-export const mockAllergyWithIncompleteReactions: FhirAllergyIntolerance = {
+export const mockAllergyWithIncompleteReactions: AllergyIntolerance = {
   ...mockAllergyIntolerance,
   id: 'allergy-incomplete-reactions',
   reaction: [
@@ -184,7 +182,7 @@ export const mockAllergyWithIncompleteReactions: FhirAllergyIntolerance = {
   ],
 };
 
-export const mockAllergyWithoutClinicalStatusDisplay: FhirAllergyIntolerance = {
+export const mockAllergyWithoutClinicalStatusDisplay: AllergyIntolerance = {
   ...mockAllergyIntolerance,
   id: 'allergy-no-status-display',
   clinicalStatus: {
@@ -195,7 +193,7 @@ export const mockAllergyWithoutClinicalStatusDisplay: FhirAllergyIntolerance = {
 /**
  * Mock allergy with multiple detailed notes
  */
-export const mockAllergyWithMultipleNotes: FhirAllergyIntolerance = {
+export const mockAllergyWithMultipleNotes: AllergyIntolerance = {
   ...mockAllergyIntolerance,
   id: 'allergy-with-notes',
   note: [
@@ -214,7 +212,7 @@ export const mockAllergyWithMultipleNotes: FhirAllergyIntolerance = {
 /**
  * Mock allergy with empty notes array
  */
-export const mockAllergyWithEmptyNotes: FhirAllergyIntolerance = {
+export const mockAllergyWithEmptyNotes: AllergyIntolerance = {
   ...mockAllergyIntolerance,
   id: 'allergy-empty-notes',
   note: [],
@@ -223,7 +221,7 @@ export const mockAllergyWithEmptyNotes: FhirAllergyIntolerance = {
 /**
  * Mock allergy with multiple categories
  */
-export const mockAllergyWithMultipleCategories: FhirAllergyIntolerance = {
+export const mockAllergyWithMultipleCategories: AllergyIntolerance = {
   ...mockAllergyIntolerance,
   id: 'allergy-multiple-categories',
   category: ['food', 'medication', 'environment'],
@@ -232,13 +230,13 @@ export const mockAllergyWithMultipleCategories: FhirAllergyIntolerance = {
 /**
  * Mock allergy with different criticality levels
  */
-export const mockAllergyWithHighCriticality: FhirAllergyIntolerance = {
+export const mockAllergyWithHighCriticality: AllergyIntolerance = {
   ...mockAllergyIntolerance,
   id: 'allergy-high-criticality',
   criticality: 'high',
 };
 
-export const mockAllergyWithLowCriticality: FhirAllergyIntolerance = {
+export const mockAllergyWithLowCriticality: AllergyIntolerance = {
   ...mockAllergyIntolerance,
   id: 'allergy-low-criticality',
   criticality: 'low',
@@ -247,13 +245,13 @@ export const mockAllergyWithLowCriticality: FhirAllergyIntolerance = {
 /**
  * Mock allergy with specific type
  */
-export const mockAllergyWithType: FhirAllergyIntolerance = {
+export const mockAllergyWithType: AllergyIntolerance = {
   ...mockAllergyIntolerance,
   id: 'allergy-with-type',
   type: 'allergy',
 };
 
-export const mockIntoleranceWithType: FhirAllergyIntolerance = {
+export const mockIntoleranceWithType: AllergyIntolerance = {
   ...mockAllergyIntolerance,
   id: 'intolerance-with-type',
   type: 'intolerance',
@@ -262,7 +260,7 @@ export const mockIntoleranceWithType: FhirAllergyIntolerance = {
 /**
  * Mock allergy with inactive status
  */
-export const mockInactiveAllergy: FhirAllergyIntolerance = {
+export const mockInactiveAllergy: AllergyIntolerance = {
   ...mockAllergyIntolerance,
   id: 'inactive-allergy',
   clinicalStatus: {
@@ -287,12 +285,12 @@ export const mockMalformedFhirBundle = {
     lastUpdated: '2023-01-01T12:00:00Z',
   },
   // Missing required fields like type, total, link
-} as unknown as FhirAllergyIntoleranceBundle;
+} as unknown as Bundle;
 
 /**
  * Mock bundle with invalid entry structure
  */
-export const mockBundleWithInvalidEntry: FhirAllergyIntoleranceBundle = {
+export const mockBundleWithInvalidEntry: Bundle = {
   resourceType: 'Bundle',
   id: 'bundle-invalid-entry',
   meta: {
@@ -313,7 +311,7 @@ export const mockBundleWithInvalidEntry: FhirAllergyIntoleranceBundle = {
         // Incomplete resource
         resourceType: 'AllergyIntolerance',
         id: 'incomplete-resource',
-      } as unknown as FhirAllergyIntolerance,
+      } as unknown as AllergyIntolerance,
     },
   ],
 };
@@ -321,7 +319,7 @@ export const mockBundleWithInvalidEntry: FhirAllergyIntoleranceBundle = {
 /**
  * Mock allergy with invalid coding array
  */
-export const mockAllergyWithInvalidCoding: FhirAllergyIntolerance = {
+export const mockAllergyWithInvalidCoding: AllergyIntolerance = {
   ...mockAllergyIntolerance,
   id: 'allergy-invalid-coding',
   clinicalStatus: {
@@ -336,13 +334,14 @@ export const mockAllergyWithInvalidCoding: FhirAllergyIntolerance = {
 /**
  * Mock allergy with multiple reactions of different severities
  */
-export const mockAllergyWithMultipleSeverities: FhirAllergyIntolerance = {
+export const mockAllergyWithMultipleSeverities: AllergyIntolerance = {
   ...mockAllergyIntolerance,
   id: 'allergy-multiple-severities',
   reaction: [
     {
       manifestation: [
         {
+          text: 'Hives',
           coding: [
             {
               system: 'http://snomed.info/sct',
@@ -357,6 +356,7 @@ export const mockAllergyWithMultipleSeverities: FhirAllergyIntolerance = {
     {
       manifestation: [
         {
+          text: 'Difficulty breathing',
           coding: [
             {
               system: 'http://snomed.info/sct',
@@ -371,6 +371,7 @@ export const mockAllergyWithMultipleSeverities: FhirAllergyIntolerance = {
     {
       manifestation: [
         {
+          text: 'Anaphylaxis',
           coding: [
             {
               system: 'http://snomed.info/sct',

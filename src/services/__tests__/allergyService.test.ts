@@ -6,7 +6,7 @@ import {
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
 } from '../allergyService';
-import { FhirAllergyIntolerance } from '@types/allergy';
+import { AllergyIntolerance } from 'fhir/r4';
 import {
   mockAllergyIntolerance,
   mockAllergyIntoleranceBundle,
@@ -209,8 +209,7 @@ describe('allergyService', () => {
     it('should handle undefined notes field', () => {
       // Create a copy of the allergy without the note field
       const { ...allergyWithoutNote } = mockAllergyIntoleranceWithoutNote;
-      const allergyWithUndefinedNote =
-        allergyWithoutNote as FhirAllergyIntolerance;
+      const allergyWithUndefinedNote = allergyWithoutNote as AllergyIntolerance;
 
       const result = formatAllergies([allergyWithUndefinedNote]);
 
@@ -218,11 +217,11 @@ describe('allergyService', () => {
     });
 
     it('should handle errors and show notification', () => {
-      // Mock an error by passing invalid data
+      // Mock an error by passing null instead of an array to trigger a real error
       /* eslint-disable @typescript-eslint/no-explicit-any */
-      const mockInvalidData = {} as any;
+      const mockInvalidData = null as any;
 
-      const result = formatAllergies([mockInvalidData]);
+      const result = formatAllergies(mockInvalidData);
 
       expect(getFormattedError).toHaveBeenCalled();
       expect(notificationService.showError).toHaveBeenCalledWith(
