@@ -403,7 +403,7 @@ describe('AllergiesTable Unit Tests', () => {
 
   // 3. Cell Rendering Tests
   describe('Cell Rendering Tests', () => {
-    it('should render display cell correctly', () => {
+    it('should render display cell correctly with category', () => {
       // Arrange
       mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
@@ -419,7 +419,7 @@ describe('AllergiesTable Unit Tests', () => {
 
       // Assert
       expect(screen.getByTestId('cell-display-0')).toHaveTextContent(
-        'Peanut Allergy',
+        'Peanut Allergy [Food]',
       );
     });
 
@@ -638,7 +638,7 @@ describe('AllergiesTable Unit Tests', () => {
 
       expect(screen.getByTestId('row-0')).toBeInTheDocument();
       expect(screen.getByTestId('cell-display-0')).toHaveTextContent(
-        'Peanut Allergy',
+        'Peanut Allergy [Food]',
       );
     });
 
@@ -851,7 +851,7 @@ describe('AllergiesTable Unit Tests', () => {
       // Assert
       expect(screen.getByTestId('mock-expandable-table')).toBeInTheDocument();
       expect(screen.getByTestId('cell-display-0')).toHaveTextContent(
-        'Peanut Allergy',
+        'Peanut Allergy [Food]',
       );
     });
 
@@ -878,7 +878,7 @@ describe('AllergiesTable Unit Tests', () => {
       // Assert
       expect(screen.getByTestId('mock-expandable-table')).toBeInTheDocument();
       expect(screen.getByTestId('cell-display-0')).toHaveTextContent(
-        'Peanut Allergy',
+        'Peanut Allergy [Food]',
       );
     });
 
@@ -908,7 +908,7 @@ describe('AllergiesTable Unit Tests', () => {
       // Assert
       expect(screen.getByTestId('mock-expandable-table')).toBeInTheDocument();
       expect(screen.getByTestId('cell-display-0')).toHaveTextContent(
-        'Peanut Allergy',
+        'Peanut Allergy [Food]',
       );
     });
 
@@ -938,7 +938,7 @@ describe('AllergiesTable Unit Tests', () => {
       // Assert
       expect(screen.getByTestId('mock-expandable-table')).toBeInTheDocument();
       expect(screen.getByTestId('cell-display-0')).toHaveTextContent(
-        'Peanut Allergy',
+        'Peanut Allergy [Food]',
       );
     });
 
@@ -968,7 +968,7 @@ describe('AllergiesTable Unit Tests', () => {
       // Assert
       expect(screen.getByTestId('mock-expandable-table')).toBeInTheDocument();
       expect(screen.getByTestId('cell-display-0')).toHaveTextContent(
-        'Peanut Allergy',
+        'Peanut Allergy [Food]',
       );
     });
 

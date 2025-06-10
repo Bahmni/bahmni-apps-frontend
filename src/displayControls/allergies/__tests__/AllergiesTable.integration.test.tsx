@@ -139,7 +139,7 @@ describe('AllergiesTable Integration', () => {
       expect(formatAllergies).toHaveBeenCalledWith(mockAllergies);
 
       // Verify the formatted allergies are displayed
-      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
+      expect(screen.getByText('Peanut Allergy [Food]')).toBeInTheDocument();
       expect(screen.getByText('Active')).toBeInTheDocument();
       expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
       expect(screen.getByText('Hives')).toBeInTheDocument();
@@ -202,9 +202,11 @@ describe('AllergiesTable Integration', () => {
       render(<AllergiesTable />);
 
       // Verify all allergies are displayed
-      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
-      expect(screen.getByText('Shellfish Allergy')).toBeInTheDocument();
-      expect(screen.getByText('Dust Allergy')).toBeInTheDocument();
+      expect(screen.getByText('Peanut Allergy [Food]')).toBeInTheDocument();
+      expect(screen.getByText('Shellfish Allergy [Food]')).toBeInTheDocument();
+      expect(
+        screen.getByText('Dust Allergy [Environment]'),
+      ).toBeInTheDocument();
 
       // Verify different statuses are displayed correctly
       expect(screen.getAllByText('Active').length).toBe(2);
@@ -287,7 +289,7 @@ describe('AllergiesTable Integration', () => {
       render(<AllergiesTable />);
 
       // Verify the allergy is displayed correctly
-      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
+      expect(screen.getByText('Peanut Allergy [Food]')).toBeInTheDocument();
       expect(screen.getByText('Active')).toBeInTheDocument();
     });
 
@@ -311,7 +313,7 @@ describe('AllergiesTable Integration', () => {
       render(<AllergiesTable />);
 
       // Verify the intolerance is displayed correctly
-      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
+      expect(screen.getByText('Peanut Allergy [Food]')).toBeInTheDocument();
       expect(screen.getByText('Active')).toBeInTheDocument();
     });
 
@@ -338,7 +340,7 @@ describe('AllergiesTable Integration', () => {
       render(<AllergiesTable />);
 
       // Verify the allergy with multiple categories is displayed correctly
-      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
+      expect(screen.getByText('Peanut Allergy [Food]')).toBeInTheDocument();
       expect(screen.getByText('Active')).toBeInTheDocument();
     });
 
@@ -374,8 +376,10 @@ describe('AllergiesTable Integration', () => {
       render(<AllergiesTable />);
 
       // Verify both allergies are displayed correctly
-      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
-      expect(screen.getByText('Low Criticality Allergy')).toBeInTheDocument();
+      expect(screen.getByText('Peanut Allergy [Food]')).toBeInTheDocument();
+      expect(
+        screen.getByText('Low Criticality Allergy [Food]'),
+      ).toBeInTheDocument();
       expect(screen.getAllByText('Active').length).toBe(2);
     });
 
@@ -415,7 +419,7 @@ describe('AllergiesTable Integration', () => {
       render(<AllergiesTable />);
 
       // Verify the allergy with multiple severities is displayed correctly
-      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
+      expect(screen.getByText('Peanut Allergy [Food]')).toBeInTheDocument();
       expect(
         screen.getByText('Hives, Difficulty breathing, Anaphylaxis'),
       ).toBeInTheDocument();
@@ -445,7 +449,7 @@ describe('AllergiesTable Integration', () => {
       render(<AllergiesTable />);
 
       // Verify the inactive allergy is displayed correctly
-      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
+      expect(screen.getByText('Peanut Allergy [Food]')).toBeInTheDocument();
       expect(screen.getByText('Inactive')).toBeInTheDocument();
     });
 
@@ -471,7 +475,7 @@ describe('AllergiesTable Integration', () => {
       render(<AllergiesTable />);
 
       // Verify the allergy with missing fields is displayed correctly
-      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
+      expect(screen.getByText('Peanut Allergy [Food]')).toBeInTheDocument();
       expect(screen.getAllByText('Not available')).toHaveLength(2); // For missing recorder and reactions
     });
 
@@ -498,7 +502,9 @@ describe('AllergiesTable Integration', () => {
       render(<AllergiesTable />);
 
       // Verify the component rendered without crashing
-      expect(screen.getByText('Malformed Allergy')).toBeInTheDocument();
+      expect(
+        screen.getByText('Malformed Allergy [undefined]'),
+      ).toBeInTheDocument();
     });
 
     it('should refetch allergies when patient UUID changes', () => {

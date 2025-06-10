@@ -7,6 +7,7 @@ import { useAllergies } from '@hooks/useAllergies';
 import { formatAllergies } from '@services/allergyService';
 import { FormattedAllergy } from '@types/allergy';
 import { generateId } from '@utils/common';
+import { getCategoryDisplayName } from '@utils/allergy';
 
 /**
  * Component to display patient allergies in a DataTable with expandable rows
@@ -60,7 +61,7 @@ const AllergiesTable: React.FC = () => {
   const renderCell = (allergy: FormattedAllergy, cellId: string) => {
     switch (cellId) {
       case 'display':
-        return allergy.display;
+        return `${allergy.display} [${t(getCategoryDisplayName(allergy.category?.[0]))}]`;
       case 'manifestation':
         return allergy.reactions
           ? allergy.reactions
