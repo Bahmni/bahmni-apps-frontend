@@ -6,8 +6,7 @@ import { usePatientUUID } from '@hooks/usePatientUUID';
 import { useAllergies } from '@hooks/useAllergies';
 import { formatAllergies } from '@services/allergyService';
 import { FormattedAllergy } from '@types/allergy';
-import { formatDateTime } from '@utils/date';
-import { generateId, capitalize } from '@utils/common';
+import { generateId } from '@utils/common';
 
 /**
  * Component to display patient allergies in a DataTable with expandable rows
@@ -21,11 +20,9 @@ const AllergiesTable: React.FC = () => {
   const headers = useMemo(
     () => [
       { key: 'display', header: t('ALLERGEN') },
-      { key: 'severity', header: t('SEVERITY') },
       { key: 'manifestation', header: t('REACTIONS') },
-      { key: 'status', header: t('ALLERGY_LIST_STATUS') },
       { key: 'recorder', header: t('ALLERGY_LIST_PROVIDER') },
-      { key: 'recordedDate', header: t('ALLERGY_LIST_RECORDED_DATE') },
+      { key: 'status', header: t('ALLERGY_LIST_STATUS') },
     ],
     [t],
   );
@@ -33,11 +30,9 @@ const AllergiesTable: React.FC = () => {
   const sortable = useMemo(
     () => [
       { key: 'display', sortable: true },
-      { key: 'severity', sortable: true },
       { key: 'manifestation', sortable: false },
-      { key: 'status', sortable: true },
       { key: 'recorder', sortable: true },
-      { key: 'recordedDate', sortable: true },
+      { key: 'status', sortable: true },
     ],
     [],
   );
@@ -66,6 +61,14 @@ const AllergiesTable: React.FC = () => {
     switch (cellId) {
       case 'display':
         return allergy.display;
+      case 'manifestation':
+        return allergy.reactions
+          ? allergy.reactions
+              .map((reaction) => reaction.manifestation.join(', '))
+              .join(', ')
+          : t('ALLERGY_TABLE_NOT_AVAILABLE');
+      case 'recorder':
+        return allergy.recorder || t('ALLERGY_TABLE_NOT_AVAILABLE');
       case 'status':
         return (
           <Tag type={allergy.status === 'Active' ? 'green' : 'gray'}>
@@ -74,20 +77,6 @@ const AllergiesTable: React.FC = () => {
               : t('ALLERGY_LIST_INACTIVE')}
           </Tag>
         );
-      case 'manifestation':
-        return allergy.reactions
-          ? allergy.reactions
-              .map((reaction) => reaction.manifestation.join(', '))
-              .join(', ')
-          : t('ALLERGY_TABLE_NOT_AVAILABLE');
-      case 'severity':
-        return capitalize(allergy.severity || 'Unknown');
-      case 'recorder':
-        return allergy.recorder || t('ALLERGY_TABLE_NOT_AVAILABLE');
-      case 'recordedDate': {
-        const recordedDate = formatDateTime(allergy.recordedDate || '');
-        return recordedDate.formattedResult || t('ALLERGY_TABLE_NOT_AVAILABLE');
-      }
     }
   };
 

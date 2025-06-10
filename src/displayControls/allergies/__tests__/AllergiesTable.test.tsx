@@ -187,11 +187,6 @@ const mockAllergyWithoutRecorder: FormattedAllergy = {
   recorder: undefined,
 };
 
-const mockAllergyWithoutRecordedDate: FormattedAllergy = {
-  ...mockFormattedAllergies[0],
-  recordedDate: '',
-};
-
 const mockMalformedAllergy = {
   id: 'malformed-allergy',
   // Missing required fields
@@ -381,16 +376,10 @@ describe('AllergiesTable Unit Tests', () => {
       expect(screen.getByTestId('header-manifestation')).toHaveTextContent(
         'Reaction(s)',
       );
-      expect(screen.getByTestId('header-status')).toHaveTextContent('Status');
-      expect(screen.getByTestId('header-severity')).toHaveTextContent(
-        'Severity',
-      );
       expect(screen.getByTestId('header-recorder')).toHaveTextContent(
         'Provider',
       );
-      expect(screen.getByTestId('header-recordedDate')).toHaveTextContent(
-        'Recorded Date',
-      );
+      expect(screen.getByTestId('header-status')).toHaveTextContent('Status');
     });
 
     it('should render table with correct title', () => {
@@ -533,71 +522,6 @@ describe('AllergiesTable Unit Tests', () => {
       );
     });
 
-    it('should render severity cell correctly', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyIntolerance],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      mockedFormatAllergies.mockReturnValue(mockFormattedAllergies);
-
-      // Act
-      render(<AllergiesTable />);
-
-      // Assert
-      expect(screen.getByTestId('cell-severity-0')).toHaveTextContent(
-        'Moderate',
-      );
-    });
-
-    it('should render severity cell correctly', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyIntolerance],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      mockedFormatAllergies.mockReturnValue(mockFormattedAllergies);
-
-      // Act
-      render(<AllergiesTable />);
-
-      // Assert
-      expect(screen.getByTestId('cell-severity-0')).toHaveTextContent(
-        'Moderate',
-      );
-    });
-
-    it('should render severity cell correctly with multiple severities', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyIntolerance],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      mockedFormatAllergies.mockReturnValue(
-        mockFormattedAllergiesWithMultipleReactions,
-      );
-
-      // Act
-      render(<AllergiesTable />);
-
-      // Assert
-      expect(screen.getByTestId('cell-severity-0')).toHaveTextContent(
-        'Moderate',
-      );
-    });
-
     it('should render recorder cell correctly', () => {
       // Arrange
       mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
@@ -617,28 +541,6 @@ describe('AllergiesTable Unit Tests', () => {
       expect(screen.getByTestId('cell-recorder-0')).toHaveTextContent(
         'Dr. Smith',
       );
-    });
-
-    it('should render recordedDate cell with formatted date', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyIntolerance],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      mockedFormatAllergies.mockReturnValue(mockFormattedAllergies);
-
-      // Act
-      render(<AllergiesTable />);
-
-      // Assert
-      expect(screen.getByTestId('cell-recordedDate-0')).toHaveTextContent(
-        'Formatted: 2023-01-01T12:00:00Z',
-      );
-      expect(formatDateTime).toHaveBeenCalledWith('2023-01-01T12:00:00Z');
     });
 
     it('should render "Not available" for missing recorder', () => {
@@ -1249,36 +1151,6 @@ describe('AllergiesTable Unit Tests', () => {
       expect(screen.getByTestId('mock-expandable-table')).toBeInTheDocument();
     });
 
-    it('should display "Not available" for missing date', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyIntolerance],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      const allergyWithoutDate: FormattedAllergy = {
-        ...mockFormattedAllergies[0],
-        recordedDate: undefined as unknown as string,
-      };
-
-      mockedFormatAllergies.mockReturnValue([allergyWithoutDate]);
-      mockedFormatDateTime.mockReturnValue({
-        formattedResult: '',
-        error: { title: 'Error', message: 'Invalid date' },
-      });
-
-      // Act
-      render(<AllergiesTable />);
-
-      // Assert
-      expect(screen.getByTestId('cell-recordedDate-0')).toHaveTextContent(
-        'Not available',
-      );
-    });
-
     it('should display "Not available" when the allergy reactions are missing', () => {
       // Arrange
       mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
@@ -1297,9 +1169,6 @@ describe('AllergiesTable Unit Tests', () => {
       // Assert
       expect(screen.getByTestId('cell-manifestation-0')).toHaveTextContent(
         'Not available',
-      );
-      expect(screen.getByTestId('cell-severity-0')).toHaveTextContent(
-        'Unknown',
       );
     });
 
@@ -1322,28 +1191,6 @@ describe('AllergiesTable Unit Tests', () => {
       expect(screen.getByTestId('cell-recorder-0')).toHaveTextContent(
         'Not available',
       );
-    });
-
-    it('should display "Not available" when recorded date is missing', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyIntolerance],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      mockedFormatAllergies.mockReturnValue([mockAllergyWithoutRecordedDate]);
-
-      // Act
-      render(<AllergiesTable />);
-
-      // Assert
-      expect(screen.getByTestId('cell-recordedDate-0')).toHaveTextContent(
-        'Formatted:',
-      );
-      expect(formatDateTime).toHaveBeenCalledWith('');
     });
 
     it('should return an empty array when no allergies data is provided', () => {

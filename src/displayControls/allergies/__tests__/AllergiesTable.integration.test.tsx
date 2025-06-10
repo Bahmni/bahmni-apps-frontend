@@ -143,7 +143,6 @@ describe('AllergiesTable Integration', () => {
       expect(screen.getByText('Active')).toBeInTheDocument();
       expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
       expect(screen.getByText('Hives')).toBeInTheDocument();
-      expect(screen.getByText('Moderate')).toBeInTheDocument();
     });
 
     it('should render the loading state when data is being fetched', () => {
@@ -231,11 +230,6 @@ describe('AllergiesTable Integration', () => {
         screen.getByText('Rash, Swelling, Difficulty breathing'),
       ).toBeInTheDocument();
       expect(screen.getByText('Sneezing, Runny nose')).toBeInTheDocument();
-
-      // Verify severity levels are displayed correctly
-      expect(screen.getByText('Moderate')).toBeInTheDocument();
-      expect(screen.getByText('Severe')).toBeInTheDocument();
-      expect(screen.getByText('Mild')).toBeInTheDocument();
     });
   });
 
@@ -478,7 +472,7 @@ describe('AllergiesTable Integration', () => {
 
       // Verify the allergy with missing fields is displayed correctly
       expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
-      expect(screen.getAllByText('Not available')).toHaveLength(3); // For missing reactions
+      expect(screen.getAllByText('Not available')).toHaveLength(2); // For missing recorder and reactions
     });
 
     it('should handle malformed data without crashing', () => {
