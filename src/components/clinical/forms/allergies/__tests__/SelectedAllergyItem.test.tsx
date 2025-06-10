@@ -71,7 +71,7 @@ describe('SelectedAllergyItem', () => {
     test('handles different allergy types with i18n translations', () => {
       const allergyTypes: { type: AllergenType; i18nKey: string }[] = [
         { type: 'food', i18nKey: 'ALLERGY_TYPE_FOOD' },
-        { type: 'medication', i18nKey: 'ALLERGY_TYPE_MEDICATION' },
+        { type: 'medication', i18nKey: 'ALLERGY_TYPE_DRUG' },
         { type: 'environment', i18nKey: 'ALLERGY_TYPE_ENVIRONMENT' },
       ];
 

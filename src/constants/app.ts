@@ -21,7 +21,8 @@ export const PATIENT_CONDITION_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 +
   `/Condition?category=${HL7_CONDITION_CATEGORY_CONDITION_CODE}&patient=${patientUUID}`;
 export const PATIENT_ALLERGY_RESOURCE_URL = (patientUUID: string) =>
-  OPENMRS_FHIR_R4 + `/AllergyIntolerance?patient=${patientUUID}`;
+  OPENMRS_FHIR_R4 +
+  `/AllergyIntolerance?patient=${patientUUID}&_count=100&_sort=-_lastUpdated`;
 export const PATIENT_VISITS_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 + `/Encounter?subject:Patient=${patientUUID}&_tag=visit`;
 export const PATIENT_LAB_INVESTIGATION_RESOURCE_URL = (patientUUID: string) =>
@@ -56,7 +57,7 @@ export const CONCEPT_DETAIL_URL = (uuid: string, locale: string): string =>
   OPENMRS_REST_V1 +
   `/concept/${uuid}?v=custom:(uuid,setMembers:(uuid,display,retired))&locale=${locale}`;
 export const FHIR_VALUESET_URL = (uuid: string) =>
-  OPENMRS_FHIR_R4 + `/ValueSet/${uuid}`;
+  OPENMRS_FHIR_R4 + `/ValueSet/${uuid}/$expand`;
 export const LOGIN_PATH = '/bahmni/home/index.html#/login';
 export const DEFAULT_LOCALE = 'en';
 export const LOCALE_STORAGE_KEY = 'NG_TRANSLATE_LANG_KEY';

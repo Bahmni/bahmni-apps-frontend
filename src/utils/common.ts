@@ -123,3 +123,25 @@ export function getCookieByName(name: string): string {
 export const isStringEmpty = (input?: string): boolean => {
   return !input || input.trim().length === 0;
 };
+
+/**
+ * Returns priority index based on position in priority order array
+ * Case insensitive matching with whitespace trimming
+ * @param value - The value to find priority for
+ * @param priorityOrder - Array defining priority order (index 0 = highest priority)
+ * @returns Priority number (lower = higher priority), 999 for unknown values
+ */
+export const getPriorityByOrder = (
+  value: string,
+  priorityOrder: string[],
+): number => {
+  if (!value || !priorityOrder || priorityOrder.length === 0) {
+    return 999;
+  }
+
+  const index = priorityOrder.findIndex(
+    (item) => item.toLowerCase() === value.toLowerCase().trim(),
+  );
+
+  return index === -1 ? 999 : index;
+};
