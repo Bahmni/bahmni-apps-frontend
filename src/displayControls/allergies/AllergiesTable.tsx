@@ -8,7 +8,11 @@ import { formatAllergies } from '@services/allergyService';
 import { FormattedAllergy } from '@types/allergy';
 import { generateId } from '@utils/common';
 import { DotMark } from '@carbon/icons-react';
-import { getCategoryDisplayName, getSeverityDisplayName } from '@utils/allergy';
+import {
+  getCategoryDisplayName,
+  getSeverityDisplayName,
+  sortAllergiesBySeverity,
+} from '@utils/allergy';
 import * as styles from './styles/AllergiesTable.module.scss';
 
 // Helper function to get severity CSS class
@@ -52,10 +56,11 @@ const AllergiesTable: React.FC = () => {
     [],
   );
 
-  // Format allergies for display
-  const formattedAllergies = useMemo(() => {
+  // Format and sort allergies for display
+  const displayAllergies = useMemo(() => {
     if (!allergies || allergies.length === 0) return [];
-    return formatAllergies(allergies);
+    const formatted = formatAllergies(allergies);
+    return sortAllergiesBySeverity(formatted);
   }, [allergies]);
 
   // Function to render cell content based on the cell ID
@@ -113,7 +118,7 @@ const AllergiesTable: React.FC = () => {
     <div data-testid="allergy-table">
       <ExpandableDataTable
         tableTitle={t('ALLERGIES_DISPLAY_CONTROL_HEADING')}
-        rows={formattedAllergies}
+        rows={displayAllergies}
         headers={headers}
         sortable={sortable}
         renderCell={renderCell}

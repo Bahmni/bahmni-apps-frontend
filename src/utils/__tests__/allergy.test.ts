@@ -1,5 +1,11 @@
-import { getCategoryDisplayName, getSeverityDisplayName } from '../allergy';
+import {
+  getCategoryDisplayName,
+  getSeverityDisplayName,
+  getSeverityPriority,
+  sortAllergiesBySeverity,
+} from '../allergy';
 import { AllergenType } from '@types/concepts';
+import { FormattedAllergy } from '@types/allergy';
 
 describe('allergy utils', () => {
   describe('getCategoryDisplayName', () => {
@@ -128,6 +134,111 @@ describe('allergy utils', () => {
         const result = getSeverityDisplayName(input as string);
         expect(result).toMatch(/^SEVERITY_(MILD|MODERATE|SEVERE)$/);
       });
+    });
+  });
+
+  describe('getSeverityPriority', () => {
+    // Test valid severity priority order (severity always lowercase)
+    test.each([
+      ['severe', 0],
+      ['moderate', 1],
+      ['mild', 2],
+    ])('returns correct priority for %s severity', (severity, expected) => {
+      expect(getSeverityPriority(severity)).toBe(expected);
+    });
+
+    // Test unknown severity
+    test('returns 999 for unknown severity', () => {
+      expect(getSeverityPriority('unknown')).toBe(999);
+      expect(getSeverityPriority('invalid')).toBe(999);
+      expect(getSeverityPriority('')).toBe(999);
+    });
+  });
+
+  describe('sortAllergiesBySeverity', () => {
+    const mockAllergies: FormattedAllergy[] = [
+      {
+        id: 'allergy-1',
+        display: 'Mild Allergy',
+        severity: 'mild',
+        status: 'Active',
+        recordedDate: '2023-01-01',
+      },
+      {
+        id: 'allergy-2',
+        display: 'Severe Allergy',
+        severity: 'severe',
+        status: 'Active',
+        recordedDate: '2023-01-02',
+      },
+      {
+        id: 'allergy-3',
+        display: 'Moderate Allergy',
+        severity: 'moderate',
+        status: 'Active',
+        recordedDate: '2023-01-03',
+      },
+    ];
+
+    test('sorts allergies by severity: severe → moderate → mild', () => {
+      const sorted = sortAllergiesBySeverity(mockAllergies);
+
+      expect(sorted[0].severity).toBe('severe');
+      expect(sorted[1].severity).toBe('moderate');
+      expect(sorted[2].severity).toBe('mild');
+    });
+
+    test('maintains stable sorting for allergies with same severity', () => {
+      const allergiesWithSameSeverity: FormattedAllergy[] = [
+        {
+          id: 'allergy-1',
+          display: 'First Severe',
+          severity: 'severe',
+          status: 'Active',
+          recordedDate: '2023-01-01',
+        },
+        {
+          id: 'allergy-2',
+          display: 'Mild Allergy',
+          severity: 'mild',
+          status: 'Active',
+          recordedDate: '2023-01-02',
+        },
+        {
+          id: 'allergy-3',
+          display: 'Second Severe',
+          severity: 'severe',
+          status: 'Active',
+          recordedDate: '2023-01-03',
+        },
+      ];
+
+      const sorted = sortAllergiesBySeverity(allergiesWithSameSeverity);
+
+      // Both severe allergies should come first, maintaining original order
+      expect(sorted[0].display).toBe('First Severe');
+      expect(sorted[1].display).toBe('Second Severe');
+      expect(sorted[2].display).toBe('Mild Allergy');
+    });
+
+    test('does not mutate original array', () => {
+      const original = [...mockAllergies];
+      const sorted = sortAllergiesBySeverity(mockAllergies);
+
+      // Original array should be unchanged
+      expect(mockAllergies).toEqual(original);
+      expect(sorted).not.toBe(mockAllergies); // Different array reference
+    });
+
+    test('handles empty array', () => {
+      const result = sortAllergiesBySeverity([]);
+      expect(result).toEqual([]);
+    });
+
+    test('handles single allergy', () => {
+      const singleAllergy = [mockAllergies[0]];
+      const result = sortAllergiesBySeverity(singleAllergy);
+      expect(result).toEqual(singleAllergy);
     });
   });
 });

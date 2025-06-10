@@ -30,7 +30,22 @@ jest.mock('@hooks/usePatientUUID');
 jest.mock('@hooks/useAllergies');
 jest.mock('@services/allergyService');
 jest.mock('@utils/date');
-jest.mock('@utils/common');
+jest.mock('@utils/common', () => ({
+  ...jest.requireActual('@utils/common'),
+  generateId: jest.fn(),
+  getPriorityByOrder: jest.fn((value: string, priorityOrder: string[]) => {
+    // Mock implementation that matches the real function behavior
+    if (!value || !priorityOrder || priorityOrder.length === 0) {
+      return 999;
+    }
+
+    const index = priorityOrder.findIndex(
+      (item) => item.toLowerCase() === value.toLowerCase().trim(),
+    );
+
+    return index === -1 ? 999 : index;
+  }),
+}));
 // Mock CSS modules
 jest.mock('../styles/AllergiesTable.module.scss', () => ({
   mildSeverity: 'mildSeverity',
@@ -696,7 +711,94 @@ describe('AllergiesTable Unit Tests', () => {
     });
   });
 
-  // 5. New Field Tests
+  // 5. Severity Sorting Tests
+  describe('Severity Sorting Tests', () => {
+    it('should sort allergies by severity on mount: severe → moderate → mild', () => {
+      // Arrange - unsorted allergies (mild, severe, moderate)
+      const unsortedAllergies: FormattedAllergy[] = [
+        {
+          ...mockFormattedAllergies[0],
+          id: 'mild-allergy',
+          display: 'Mild Allergy',
+          severity: 'mild',
+        },
+        {
+          ...mockFormattedAllergies[0],
+          id: 'severe-allergy',
+          display: 'Severe Allergy',
+          severity: 'severe',
+        },
+        {
+          ...mockFormattedAllergies[0],
+          id: 'moderate-allergy',
+          display: 'Moderate Allergy',
+          severity: 'moderate',
+        },
+      ];
+
+      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+      mockedUseAllergies.mockReturnValue({
+        allergies: [mockAllergyIntolerance],
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+      mockedFormatAllergies.mockReturnValue(unsortedAllergies);
+
+      // Act
+      render(<AllergiesTable />);
+
+      // Assert - verify correct order in DOM
+      const rows = screen.getAllByTestId(/^row-/);
+      expect(rows[0]).toHaveTextContent('Severe Allergy');
+      expect(rows[1]).toHaveTextContent('Moderate Allergy');
+      expect(rows[2]).toHaveTextContent('Mild Allergy');
+    });
+
+    it('should maintain stable sorting for allergies with same severity', () => {
+      // Arrange - multiple severe allergies to test stable sorting
+      const allergiesWithSameSeverity: FormattedAllergy[] = [
+        {
+          ...mockFormattedAllergies[0],
+          id: 'first-severe',
+          display: 'First Severe Allergy',
+          severity: 'severe',
+        },
+        {
+          ...mockFormattedAllergies[0],
+          id: 'mild-allergy',
+          display: 'Mild Allergy',
+          severity: 'mild',
+        },
+        {
+          ...mockFormattedAllergies[0],
+          id: 'second-severe',
+          display: 'Second Severe Allergy',
+          severity: 'severe',
+        },
+      ];
+
+      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+      mockedUseAllergies.mockReturnValue({
+        allergies: [mockAllergyIntolerance],
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+      mockedFormatAllergies.mockReturnValue(allergiesWithSameSeverity);
+
+      // Act
+      render(<AllergiesTable />);
+
+      // Assert - severe allergies should maintain original order
+      const rows = screen.getAllByTestId(/^row-/);
+      expect(rows[0]).toHaveTextContent('First Severe Allergy');
+      expect(rows[1]).toHaveTextContent('Second Severe Allergy');
+      expect(rows[2]).toHaveTextContent('Mild Allergy');
+    });
+  });
+
+  // 6. New Field Tests
   describe('New Field Tests', () => {
     it('should handle allergy type field correctly', () => {
       // Arrange

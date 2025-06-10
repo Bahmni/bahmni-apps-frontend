@@ -1,4 +1,13 @@
 import { AllergenType } from '@types/concepts';
+import { FormattedAllergy } from '@types/allergy';
+import { getPriorityByOrder } from './common';
+
+/**
+ * Priority order for allergy severity levels (case insensitive)
+ * Index 0 = highest priority, higher index = lower priority
+ * Used for sorting allergies by medical severity: severe → moderate → mild
+ */
+export const SEVERITY_PRIORITY_ORDER = ['severe', 'moderate', 'mild'];
 
 /**
  * Maps allergy types to their corresponding i18n translation keys
@@ -35,4 +44,28 @@ export const getSeverityDisplayName = (severity: string): string => {
     default:
       return 'SEVERITY_MILD'; // fallback
   }
+};
+
+/**
+ * Maps allergy severity to numeric priority for sorting
+ * Uses generic getPriorityByOrder function with SEVERITY_PRIORITY_ORDER
+ * @param severity - The severity level of the allergy
+ * @returns Numeric priority (lower = higher priority)
+ */
+export const getSeverityPriority = (severity: string): number => {
+  return getPriorityByOrder(severity, SEVERITY_PRIORITY_ORDER);
+};
+
+/**
+ * Sorts allergies by severity priority: severe → moderate → mild
+ * Maintains stable sorting (preserves original order for same severity)
+ * @param allergies - Array of formatted allergies to sort
+ * @returns New sorted array (does not mutate original)
+ */
+export const sortAllergiesBySeverity = (
+  allergies: FormattedAllergy[],
+): FormattedAllergy[] => {
+  return [...allergies].sort((a, b) => {
+    return getSeverityPriority(a.severity!) - getSeverityPriority(b.severity!);
+  });
 };
