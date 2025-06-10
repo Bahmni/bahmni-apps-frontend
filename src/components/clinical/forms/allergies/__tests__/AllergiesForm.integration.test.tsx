@@ -207,7 +207,7 @@ describe('AllergiesForm Integration Tests', () => {
     await userEvent.type(searchBox, 'pen');
 
     await waitFor(() => {
-      expect(screen.getByText('Penicillin [Medication]')).toBeInTheDocument();
+      expect(screen.getByText('Penicillin [Drug]')).toBeInTheDocument();
       expect(screen.getByText('Peanuts [Food]')).toBeInTheDocument();
     });
   });
@@ -229,10 +229,10 @@ describe('AllergiesForm Integration Tests', () => {
     await userEvent.type(searchBox, 'pen');
 
     await waitFor(() => {
-      expect(screen.getByText('Penicillin [Medication]')).toBeInTheDocument();
+      expect(screen.getByText('Penicillin [Drug]')).toBeInTheDocument();
     });
 
-    await userEvent.click(screen.getByText('Penicillin [Medication]'));
+    await userEvent.click(screen.getByText('Penicillin [Drug]'));
 
     expect(mockStore.addAllergy).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -288,7 +288,7 @@ describe('AllergiesForm Integration Tests', () => {
     await userEvent.type(searchBox, 'pen');
 
     await waitFor(() => {
-      expect(screen.getByText('Penicillin [Medication]')).toBeInTheDocument();
+      expect(screen.getByText('Penicillin [Drug]')).toBeInTheDocument();
     });
 
     // Mock the store to return the selected allergy after it's added
@@ -307,7 +307,7 @@ describe('AllergiesForm Integration Tests', () => {
       ],
     });
 
-    await userEvent.click(screen.getByText('Penicillin [Medication]'));
+    await userEvent.click(screen.getByText('Penicillin [Drug]'));
     expect(mockStore.addAllergy).toHaveBeenCalledWith(
       expect.objectContaining({
         uuid: '123',

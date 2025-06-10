@@ -13,7 +13,7 @@ export const getCategoryDisplayName = (
 
   const typeToI18nKey: Record<AllergenType, string> = {
     food: 'ALLERGY_TYPE_FOOD',
-    medication: 'ALLERGY_TYPE_MEDICATION',
+    medication: 'ALLERGY_TYPE_DRUG',
     environment: 'ALLERGY_TYPE_ENVIRONMENT',
   };
   return typeToI18nKey[type as AllergenType] || type;

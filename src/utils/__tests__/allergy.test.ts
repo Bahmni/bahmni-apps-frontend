@@ -6,7 +6,7 @@ describe('allergy utils', () => {
     // Test valid allergen types
     test.each([
       ['food', 'ALLERGY_TYPE_FOOD'],
-      ['medication', 'ALLERGY_TYPE_MEDICATION'],
+      ['medication', 'ALLERGY_TYPE_DRUG'],
       ['environment', 'ALLERGY_TYPE_ENVIRONMENT'],
     ])('returns correct i18n key for %s type', (type, expected) => {
       expect(getCategoryDisplayName(type as AllergenType)).toBe(expected);
