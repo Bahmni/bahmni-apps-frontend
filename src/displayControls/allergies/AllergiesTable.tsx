@@ -69,7 +69,11 @@ const AllergiesTable: React.FC = () => {
       case 'display':
         return (
           <>
-            {`${allergy.display} [${t(getCategoryDisplayName(allergy.category?.[0]))}] `}
+            {`${allergy.display} `}
+            <div className={styles.allergyCategory}>
+              [{t(getCategoryDisplayName(allergy.category?.[0]))}] &nbsp;
+            </div>
+            {}
             <Tag className={getSeverityClassName(allergy.severity!)}>
               {t(getSeverityDisplayName(allergy.severity!))}
             </Tag>

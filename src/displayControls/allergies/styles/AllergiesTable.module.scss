@@ -17,6 +17,13 @@
   color: $red-70 !important;
 }
 
+.allergyCategory {
+  @include type-style("body-compact-01");
+  color: $text-secondary;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
 .allergiesNote {
   @include type-style("label-02");
 }
