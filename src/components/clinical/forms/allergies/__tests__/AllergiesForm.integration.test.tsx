@@ -103,61 +103,73 @@ describe('AllergiesForm Integration Tests', () => {
     // Mock the API responses for ValueSet endpoints
     (api.get as jest.Mock).mockImplementation((url) => {
       if (url.includes('ValueSet/162552')) {
-        // Medication allergens
+        // Medication allergens - using new expansion.contains format
         return Promise.resolve({
           resourceType: 'ValueSet',
-          compose: {
-            include: [
+          expansion: {
+            timestamp: '2025-06-10T04:02:11+00:00',
+            contains: [
               {
-                concept: [
-                  {
-                    code: '123',
-                    display: 'Penicillin',
-                    system: 'http://snomed.info/sct',
-                  },
-                ],
+                code: '162552AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', // Parent concept - will be filtered out
+                display: 'Reference application common drug allergens',
+                system: 'http://snomed.info/sct',
+              },
+              {
+                code: '123',
+                display: 'Penicillin',
+                system: 'http://snomed.info/sct',
+              },
+              {
+                code: 'inactive-med',
+                display: 'Inactive Medication',
+                system: 'http://snomed.info/sct',
+                inactive: true, // Will be filtered out
               },
             ],
           },
         });
       } else if (url.includes('ValueSet/162553')) {
-        // Food allergens
+        // Food allergens - using new expansion.contains format
         return Promise.resolve({
           resourceType: 'ValueSet',
-          compose: {
-            include: [
+          expansion: {
+            timestamp: '2025-06-10T04:02:11+00:00',
+            contains: [
               {
-                concept: [
-                  {
-                    code: '456',
-                    display: 'Peanuts',
-                    system: 'http://snomed.info/sct',
-                  },
-                ],
+                code: '162553AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', // Parent concept - will be filtered out
+                display: 'Food allergens parent concept',
+                system: 'http://snomed.info/sct',
+              },
+              {
+                code: '456',
+                display: 'Peanuts',
+                system: 'http://snomed.info/sct',
               },
             ],
           },
         });
       } else if (url.includes('ValueSet/162554')) {
-        // Environment allergens
+        // Environment allergens - using new expansion.contains format
         return Promise.resolve({
           resourceType: 'ValueSet',
-          compose: {
-            include: [
+          expansion: {
+            timestamp: '2025-06-10T04:02:11+00:00',
+            contains: [
               {
-                concept: [
-                  {
-                    code: '789',
-                    display: 'Dust',
-                    system: 'http://snomed.info/sct',
-                  },
-                ],
+                code: '162554AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', // Parent concept - will be filtered out
+                display: 'Environment allergens parent concept',
+                system: 'http://snomed.info/sct',
+              },
+              {
+                code: '789',
+                display: 'Dust',
+                system: 'http://snomed.info/sct',
               },
             ],
           },
         });
       } else if (url.includes('ValueSet/162555')) {
-        // Reaction concepts
+        // Reaction concepts - keeping old format as this endpoint hasn't changed
         return Promise.resolve({
           resourceType: 'ValueSet',
           compose: {

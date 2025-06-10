@@ -4,60 +4,73 @@ import {
   FhirAllergyIntolerance,
   FhirAllergyIntoleranceBundle,
   FormattedAllergy,
-} from '@types/allergy';
+} from '@/types/allergy';
 import { getFormattedError } from '@utils/common';
 import notificationService from './notificationService';
 import { searchFHIRConcepts } from './conceptService';
 import { ALLERGEN_TYPES, ALLERGY_REACTION } from '@constants/concepts';
-import { AllergenConcept, AllergenType } from '@types/concepts';
-import { Coding } from 'fhir/r4';
+import { AllergenConcept, AllergenType } from '@/types/concepts';
+import { Coding, ValueSet } from 'fhir/r4';
 
-interface RawAllergenConcepts {
-  medication?: Coding[];
-  food?: Coding[];
-  environment?: Coding[];
+/**
+ * Extended Coding interface to include inactive property
+ */
+interface ExtendedCoding extends Coding {
+  inactive?: boolean;
 }
 
 /**
- * Extracts and formats allergen concepts from FHIR Concept data
- * @param concepts - FHIR Coding data
- * @param type - Allergen type identifier
- * @returns Formatted allergen concepts
+ * Filters out inactive concepts and parent concepts from FHIR Coding array
+ * @param concepts - Array of FHIR Coding objects
+ * @param parentConceptCode - The concept code of the parent ValueSet to exclude from results
+ * @returns Filtered array with only active concepts excluding the parent concept
  */
-const extractSetMembers = (
-  concepts: Coding[],
-  type: AllergenType,
-): AllergenConcept[] => {
-  return concepts.map((concept) => ({
-    uuid: concept.code || '',
-    display: concept.display || '',
-    type,
-  }));
+const filterConceptsForAllergenExtraction = (
+  concepts: ExtendedCoding[],
+  parentConceptCode: string,
+): ExtendedCoding[] => {
+  return concepts.filter(
+    (concept) =>
+      concept.inactive !== true &&
+      concept.code?.toLowerCase() !== parentConceptCode.toLowerCase(),
+  );
 };
 
 /**
- * Formats raw allergen concepts into a unified array with type information
- * @param rawConcepts - Object containing allergen concepts grouped by type
- * @returns Array of formatted allergen concepts with type information
+ * Maps a FHIR Coding to AllergenConcept with specified type
+ * @param concept - FHIR Coding object
+ * @param type - Allergen type
+ * @returns AllergenConcept object
  */
-export const formatAllergenConcepts = (
-  rawConcepts: RawAllergenConcepts,
-): AllergenConcept[] => [
-  ...extractSetMembers(
-    rawConcepts.medication || [],
-    ALLERGEN_TYPES.MEDICATION.display,
-  ),
-  ...extractSetMembers(rawConcepts.food || [], ALLERGEN_TYPES.FOOD.display),
-  ...extractSetMembers(
-    rawConcepts.environment || [],
-    ALLERGEN_TYPES.ENVIRONMENT.display,
-  ),
-];
+const mapToAllergenConcept = (
+  concept: ExtendedCoding,
+  type: AllergenType,
+): AllergenConcept => ({
+  uuid: concept.code || '',
+  display: concept.display || '',
+  type,
+});
 
 /**
- * Fetches and formats allergen concepts from FHIR ValueSets
- * @returns Promise resolving to an array of formatted allergen concepts
+ * Extracts and formats allergen concepts from ValueSet expansion
+ * @param valueSet - FHIR ValueSet
+ * @param type - Allergen type
+ * @param parentConceptCode - The concept code of the parent ValueSet to exclude from results
+ * @returns Array of formatted allergen concepts
  */
+const extractAllergenConceptsFromValueSet = (
+  valueSet: ValueSet,
+  type: AllergenType,
+  parentConceptCode: string,
+): AllergenConcept[] => {
+  const concepts = (valueSet.expansion?.contains || []) as ExtendedCoding[];
+  const filteredConcepts = filterConceptsForAllergenExtraction(
+    concepts,
+    parentConceptCode,
+  );
+  return filteredConcepts.map((concept) => mapToAllergenConcept(concept, type));
+};
+
 /**
  * Fetches and formats allergen concepts from FHIR ValueSets
  * @param medicationUuid - Optional UUID for medication allergen concepts
@@ -83,14 +96,24 @@ export const fetchAndFormatAllergenConcepts = async (
       searchFHIRConcepts(environmentCode),
     ]);
 
-  // Extract concepts from the ValueSets
-  const rawConcepts: RawAllergenConcepts = {
-    medication: medicationValueSet.compose?.include[0]?.concept || [],
-    food: foodValueSet.compose?.include[0]?.concept || [],
-    environment: environmentValueSet.compose?.include[0]?.concept || [],
-  };
-
-  return formatAllergenConcepts(rawConcepts);
+  // Extract and combine all allergen concepts
+  return [
+    ...extractAllergenConceptsFromValueSet(
+      medicationValueSet,
+      ALLERGEN_TYPES.MEDICATION.display,
+      medicationCode,
+    ),
+    ...extractAllergenConceptsFromValueSet(
+      foodValueSet,
+      ALLERGEN_TYPES.FOOD.display,
+      foodCode,
+    ),
+    ...extractAllergenConceptsFromValueSet(
+      environmentValueSet,
+      ALLERGEN_TYPES.ENVIRONMENT.display,
+      environmentCode,
+    ),
+  ];
 };
 
 /**
