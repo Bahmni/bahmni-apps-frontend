@@ -1,4 +1,4 @@
-import { getCategoryDisplayName } from '../allergy';
+import { getCategoryDisplayName, getSeverityDisplayName } from '../allergy';
 import { AllergenType } from '@types/concepts';
 
 describe('allergy utils', () => {
@@ -45,6 +45,89 @@ describe('allergy utils', () => {
     test('handles special characters in input', () => {
       const specialChars = '!@#$%^&*()';
       expect(getCategoryDisplayName(specialChars)).toBe(specialChars);
+    });
+  });
+
+  describe('getSeverityDisplayName', () => {
+    // Test valid severity levels
+    test.each([
+      ['mild', 'SEVERITY_MILD'],
+      ['moderate', 'SEVERITY_MODERATE'],
+      ['severe', 'SEVERITY_SEVERE'],
+    ])('returns correct i18n key for %s severity', (severity, expected) => {
+      expect(getSeverityDisplayName(severity)).toBe(expected);
+    });
+
+    // Test case insensitivity
+    test.each([
+      ['MILD', 'SEVERITY_MILD'],
+      ['Mild', 'SEVERITY_MILD'],
+      ['MiLd', 'SEVERITY_MILD'],
+      ['MODERATE', 'SEVERITY_MODERATE'],
+      ['Moderate', 'SEVERITY_MODERATE'],
+      ['MoDeRaTe', 'SEVERITY_MODERATE'],
+      ['SEVERE', 'SEVERITY_SEVERE'],
+      ['Severe', 'SEVERITY_SEVERE'],
+      ['SeVeRe', 'SEVERITY_SEVERE'],
+    ])('handles case insensitive input: %s', (severity, expected) => {
+      expect(getSeverityDisplayName(severity)).toBe(expected);
+    });
+
+    // Test invalid severity level
+    test('returns mild i18n key for invalid severity', () => {
+      const invalidSeverity = 'invalid-severity';
+      expect(getSeverityDisplayName(invalidSeverity)).toBe('SEVERITY_MILD');
+    });
+
+    // Test empty string
+    test('returns mild i18n key for empty string', () => {
+      expect(getSeverityDisplayName('')).toBe('SEVERITY_MILD');
+    });
+
+    // Test undefined handling
+    test('returns mild i18n key for undefined input', () => {
+      expect(getSeverityDisplayName(undefined as unknown as string)).toBe(
+        'SEVERITY_MILD',
+      );
+    });
+
+    // Test null handling
+    test('returns mild i18n key for null input', () => {
+      expect(getSeverityDisplayName(null as unknown as string)).toBe(
+        'SEVERITY_MILD',
+      );
+    });
+    // Test special characters
+    test('returns mild i18n key for special characters', () => {
+      const specialChars = '!@#$%^&*()';
+      expect(getSeverityDisplayName(specialChars)).toBe('SEVERITY_MILD');
+    });
+
+    // Test numeric input
+    test('returns mild i18n key for numeric input', () => {
+      expect(getSeverityDisplayName('123')).toBe('SEVERITY_MILD');
+      expect(getSeverityDisplayName('0')).toBe('SEVERITY_MILD');
+    });
+
+    // Test fallback behavior
+    test('always returns a valid i18n key', () => {
+      const randomInputs = [
+        'unknown',
+        'high',
+        'low',
+        'critical',
+        'minor',
+        'major',
+        '',
+        ' ',
+        null,
+        undefined,
+      ];
+
+      randomInputs.forEach((input) => {
+        const result = getSeverityDisplayName(input as string);
+        expect(result).toMatch(/^SEVERITY_(MILD|MODERATE|SEVERE)$/);
+      });
     });
   });
 });

@@ -140,6 +140,7 @@ describe('AllergiesTable Integration', () => {
 
       // Verify the formatted allergies are displayed
       expect(screen.getByText('Peanut Allergy [Food]')).toBeInTheDocument();
+      expect(screen.getByText('Moderate')).toBeInTheDocument(); // Severity tag
       expect(screen.getByText('Active')).toBeInTheDocument();
       expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
       expect(screen.getByText('Hives')).toBeInTheDocument();
@@ -207,6 +208,11 @@ describe('AllergiesTable Integration', () => {
       expect(
         screen.getByText('Dust Allergy [Environment]'),
       ).toBeInTheDocument();
+
+      // Verify severity tags are displayed correctly
+      expect(screen.getByText('Moderate')).toBeInTheDocument(); // Peanut allergy
+      expect(screen.getByText('Severe')).toBeInTheDocument(); // Shellfish allergy
+      expect(screen.getByText('Mild')).toBeInTheDocument(); // Dust allergy
 
       // Verify different statuses are displayed correctly
       expect(screen.getAllByText('Active').length).toBe(2);

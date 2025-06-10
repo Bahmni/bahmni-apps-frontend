@@ -7,7 +7,21 @@ import { useAllergies } from '@hooks/useAllergies';
 import { formatAllergies } from '@services/allergyService';
 import { FormattedAllergy } from '@types/allergy';
 import { generateId } from '@utils/common';
-import { getCategoryDisplayName } from '@utils/allergy';
+import { DotMark } from '@carbon/icons-react';
+import { getCategoryDisplayName, getSeverityDisplayName } from '@utils/allergy';
+import * as styles from './styles/AllergiesTable.module.scss';
+
+// Helper function to get severity CSS class
+const getSeverityClassName = (severity: string): string | undefined => {
+  switch (severity?.toLowerCase()) {
+    case 'mild':
+      return styles.mildSeverity;
+    case 'moderate':
+      return styles.moderateSeverity;
+    case 'severe':
+      return styles.severeSeverity;
+  }
+};
 
 /**
  * Component to display patient allergies in a DataTable with expandable rows
@@ -44,24 +58,18 @@ const AllergiesTable: React.FC = () => {
     return formatAllergies(allergies);
   }, [allergies]);
 
-  // Create row class names array for styling rows with severe allergies
-  const rowClassNames = useMemo(() => {
-    const classNames: Record<string, string> = {};
-
-    formattedAllergies.forEach((allergy) => {
-      if (allergy.id && allergy.severity && allergy.severity === 'severe') {
-        classNames[allergy.id] = 'criticalCell';
-      }
-    });
-
-    return classNames;
-  }, [formattedAllergies]);
-
   // Function to render cell content based on the cell ID
   const renderCell = (allergy: FormattedAllergy, cellId: string) => {
     switch (cellId) {
       case 'display':
-        return `${allergy.display} [${t(getCategoryDisplayName(allergy.category?.[0]))}]`;
+        return (
+          <>
+            {`${allergy.display} [${t(getCategoryDisplayName(allergy.category?.[0]))}] `}
+            <Tag className={getSeverityClassName(allergy.severity!)}>
+              {t(getSeverityDisplayName(allergy.severity!))}
+            </Tag>
+          </>
+        );
       case 'manifestation':
         return allergy.reactions
           ? allergy.reactions
@@ -72,7 +80,15 @@ const AllergiesTable: React.FC = () => {
         return allergy.recorder || t('ALLERGY_TABLE_NOT_AVAILABLE');
       case 'status':
         return (
-          <Tag type={allergy.status === 'Active' ? 'green' : 'gray'}>
+          <Tag
+            type="outline"
+            renderIcon={DotMark}
+            className={
+              allergy.status === 'Active'
+                ? styles.activeStatus
+                : styles.inactiveStatus
+            }
+          >
             {allergy.status === 'Active'
               ? t('ALLERGY_LIST_ACTIVE')
               : t('ALLERGY_LIST_INACTIVE')}
@@ -85,7 +101,7 @@ const AllergiesTable: React.FC = () => {
   const renderExpandedContent = (allergy: FormattedAllergy) => {
     if (allergy.note && allergy.note.length > 0) {
       return (
-        <p style={{ padding: '0.5rem' }} key={generateId()}>
+        <p className={styles.allergiesNote} key={generateId()}>
           {allergy.note.join(', ')}
         </p>
       );
@@ -106,7 +122,7 @@ const AllergiesTable: React.FC = () => {
         error={error}
         ariaLabel={t('ALLERGIES_DISPLAY_CONTROL_HEADING')}
         emptyStateMessage={t('NO_ALLERGIES')}
-        rowClassNames={rowClassNames}
+        className={styles.allergiesTableBody}
       />
     </div>
   );

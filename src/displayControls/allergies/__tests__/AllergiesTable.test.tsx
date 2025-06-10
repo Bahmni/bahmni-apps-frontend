@@ -31,6 +31,13 @@ jest.mock('@hooks/useAllergies');
 jest.mock('@services/allergyService');
 jest.mock('@utils/date');
 jest.mock('@utils/common');
+// Mock CSS modules
+jest.mock('../styles/AllergiesTable.module.scss', () => ({
+  mildSeverity: 'mildSeverity',
+  moderateSeverity: 'moderateSeverity',
+  severeSeverity: 'severeSeverity',
+}));
+
 jest.mock('@components/common/expandableDataTable/ExpandableDataTable', () => ({
   ExpandableDataTable: jest.fn(
     ({
@@ -403,7 +410,7 @@ describe('AllergiesTable Unit Tests', () => {
 
   // 3. Cell Rendering Tests
   describe('Cell Rendering Tests', () => {
-    it('should render display cell correctly with category', () => {
+    it('should render display cell correctly with category and severity tag', () => {
       // Arrange
       mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
@@ -418,9 +425,9 @@ describe('AllergiesTable Unit Tests', () => {
       render(<AllergiesTable />);
 
       // Assert
-      expect(screen.getByTestId('cell-display-0')).toHaveTextContent(
-        'Peanut Allergy [Food]',
-      );
+      const displayCell = screen.getByTestId('cell-display-0');
+      expect(displayCell).toHaveTextContent('Peanut Allergy [Food]');
+      expect(displayCell).toHaveTextContent('Moderate');
     });
 
     it('should render status cell with correct tag type for active status', () => {
@@ -689,143 +696,6 @@ describe('AllergiesTable Unit Tests', () => {
     });
   });
 
-  // Row Styling Tests
-  describe('Row Styling Tests', () => {
-    it('should apply criticalCell class to rows with severe reactions', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyIntolerance],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      // Create an allergy with severe reaction
-      const allergyWithSevereReaction: FormattedAllergy = {
-        ...mockFormattedAllergies[0],
-        id: 'allergy-123', // Ensure ID is set
-        reactions: [
-          {
-            manifestation: ['Difficulty breathing'],
-            severity: 'severe',
-          },
-        ],
-        severity: 'severe',
-      };
-
-      mockedFormatAllergies.mockReturnValue([allergyWithSevereReaction]);
-
-      // Act
-      render(<AllergiesTable />);
-
-      // Assert
-      const row = screen.getByTestId('row-0');
-      expect(row).toHaveClass('criticalCell');
-    });
-
-    it('should not apply class to rows without severe reactions', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyIntolerance],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      // Create an allergy with moderate reaction
-      const allergyWithModerateReaction: FormattedAllergy = {
-        ...mockFormattedAllergies[0],
-        reactions: [
-          {
-            manifestation: ['Hives'],
-            severity: 'moderate',
-          },
-        ],
-      };
-
-      mockedFormatAllergies.mockReturnValue([allergyWithModerateReaction]);
-
-      // Act
-      render(<AllergiesTable />);
-
-      // Assert
-      const row = screen.getByTestId('row-0');
-      expect(row).not.toHaveClass('criticalCell');
-    });
-
-    it('should handle multiple allergies with different severities', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyIntolerance, mockAllergyIntolerance],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      // Create allergies with different severities
-      const allergyWithSevereReaction: FormattedAllergy = {
-        ...mockFormattedAllergies[0],
-        id: 'severe-allergy',
-        reactions: [
-          {
-            manifestation: ['Difficulty breathing'],
-            severity: 'severe',
-          },
-        ],
-        severity: 'severe',
-      };
-
-      const allergyWithModerateReaction: FormattedAllergy = {
-        ...mockFormattedAllergies[0],
-        id: 'moderate-allergy',
-        reactions: [
-          {
-            manifestation: ['Hives'],
-            severity: 'moderate',
-          },
-        ],
-      };
-
-      mockedFormatAllergies.mockReturnValue([
-        allergyWithSevereReaction,
-        allergyWithModerateReaction,
-      ]);
-
-      // Act
-      render(<AllergiesTable />);
-
-      // Assert
-      const severeRow = screen.getByTestId('row-0');
-      const moderateRow = screen.getByTestId('row-1');
-
-      expect(severeRow).toHaveClass('criticalCell');
-      expect(moderateRow).not.toHaveClass('criticalCell');
-    });
-
-    it('should handle allergies with no reactions when generating row classes', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyIntolerance],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      mockedFormatAllergies.mockReturnValue([mockAllergyWithoutReactions]);
-
-      // Act
-      render(<AllergiesTable />);
-
-      // Assert
-      const row = screen.getByTestId('row-0');
-      expect(row).not.toHaveClass('criticalCell');
-    });
-  });
-
   // 5. New Field Tests
   describe('New Field Tests', () => {
     it('should handle allergy type field correctly', () => {
@@ -1040,10 +910,6 @@ describe('AllergiesTable Unit Tests', () => {
       expect(screen.getByTestId('cell-manifestation-0')).toHaveTextContent(
         'Hives, Difficulty breathing, Anaphylaxis',
       );
-
-      // Check if the row has the criticalCell class due to severe reaction
-      const row = screen.getByTestId('row-0');
-      expect(row).toHaveClass('criticalCell');
     });
   });
 

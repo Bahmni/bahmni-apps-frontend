@@ -18,3 +18,21 @@ export const getCategoryDisplayName = (
   };
   return typeToI18nKey[type as AllergenType] || type;
 };
+
+/**
+ * Maps allergy severity to i18n translation key
+ * @param severity - The severity level of the allergy
+ * @returns The i18n translation key for the severity
+ */
+export const getSeverityDisplayName = (severity: string): string => {
+  switch (severity?.toLowerCase()) {
+    case 'mild':
+      return 'SEVERITY_MILD';
+    case 'moderate':
+      return 'SEVERITY_MODERATE';
+    case 'severe':
+      return 'SEVERITY_SEVERE';
+    default:
+      return 'SEVERITY_MILD'; // fallback
+  }
+};
