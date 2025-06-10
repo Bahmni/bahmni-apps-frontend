@@ -6,7 +6,7 @@ import {
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
 } from '../allergyService';
-import { FhirAllergyIntolerance } from '@/types/allergy';
+import { FhirAllergyIntolerance } from '@types/allergy';
 import {
   mockAllergyIntolerance,
   mockAllergyIntoleranceBundle,

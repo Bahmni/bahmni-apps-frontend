@@ -4,12 +4,12 @@ import {
   FhirAllergyIntolerance,
   FhirAllergyIntoleranceBundle,
   FormattedAllergy,
-} from '@/types/allergy';
+} from '@types/allergy';
 import { getFormattedError } from '@utils/common';
 import notificationService from './notificationService';
 import { searchFHIRConcepts } from './conceptService';
 import { ALLERGEN_TYPES, ALLERGY_REACTION } from '@constants/concepts';
-import { AllergenConcept, AllergenType } from '@/types/concepts';
+import { AllergenConcept, AllergenType } from '@types/concepts';
 import { Coding, ValueSet } from 'fhir/r4';
 
 /**

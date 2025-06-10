@@ -31,7 +31,7 @@ export const useAllergyStore = create<AllergyState>((set, get) => ({
     };
 
     set((state) => ({
-      selectedAllergies: [...state.selectedAllergies, newAllergy],
+      selectedAllergies: [newAllergy, ...state.selectedAllergies],
     }));
   },
 
