@@ -64,7 +64,7 @@
   "DIAGNOSES_SELECT_CERTAINTY": "Seleccionar Certeza",
   "DIAGNOSIS_ALREADY_SELECTED": "(Ya seleccionado)",
   "DIAGNOSIS_LIST_DIAGNOSIS": "Diagnóstico",
-  "DIAGNOSIS_LIST_RECORDER": "Registrador",
+  "DIAGNOSIS_LIST_RECORDED_BY": "Grabado por",
   "DIAGNOSIS_TABLE_NOT_AVAILABLE": "No disponible",
   "DROPDOWN_VALUE_REQUIRED": "Por favor seleccione un valor",
   "ENCOUNTER_DATE": "Fecha de Encuentro",

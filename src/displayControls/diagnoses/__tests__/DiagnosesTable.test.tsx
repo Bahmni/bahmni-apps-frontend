@@ -357,7 +357,7 @@ describe('DiagnosesTable Component', () => {
         const headers = JSON.parse(headerElement.textContent || '[]');
         expect(headers).toEqual([
           { key: 'display', header: 'Diagnosis' },
-          { key: 'recorder', header: 'Recorder' },
+          { key: 'recorder', header: 'Recorded By' },
         ]);
       });
     });

@@ -21,7 +21,7 @@ const DiagnosesTable: React.FC = () => {
   const headers = useMemo(
     () => [
       { key: 'display', header: t('DIAGNOSIS_LIST_DIAGNOSIS') },
-      { key: 'recorder', header: t('DIAGNOSIS_LIST_RECORDER') },
+      { key: 'recorder', header: t('DIAGNOSIS_LIST_RECORDED_BY') },
     ],
     [t],
   );
