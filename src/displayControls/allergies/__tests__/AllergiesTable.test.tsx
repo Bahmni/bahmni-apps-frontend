@@ -377,7 +377,7 @@ describe('AllergiesTable Unit Tests', () => {
         'Reaction(s)',
       );
       expect(screen.getByTestId('header-recorder')).toHaveTextContent(
-        'Provider',
+        'Recorded By',
       );
       expect(screen.getByTestId('header-status')).toHaveTextContent('Status');
     });
