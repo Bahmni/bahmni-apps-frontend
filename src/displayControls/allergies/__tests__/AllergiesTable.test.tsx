@@ -30,7 +30,29 @@ jest.mock('@hooks/usePatientUUID');
 jest.mock('@hooks/useAllergies');
 jest.mock('@services/allergyService');
 jest.mock('@utils/date');
-jest.mock('@utils/common');
+jest.mock('@utils/common', () => ({
+  ...jest.requireActual('@utils/common'),
+  generateId: jest.fn(),
+  getPriorityByOrder: jest.fn((value: string, priorityOrder: string[]) => {
+    // Mock implementation that matches the real function behavior
+    if (!value || !priorityOrder || priorityOrder.length === 0) {
+      return 999;
+    }
+
+    const index = priorityOrder.findIndex(
+      (item) => item.toLowerCase() === value.toLowerCase().trim(),
+    );
+
+    return index === -1 ? 999 : index;
+  }),
+}));
+// Mock CSS modules
+jest.mock('../styles/AllergiesTable.module.scss', () => ({
+  mildSeverity: 'mildSeverity',
+  moderateSeverity: 'moderateSeverity',
+  severeSeverity: 'severeSeverity',
+}));
+
 jest.mock('@components/common/expandableDataTable/ExpandableDataTable', () => ({
   ExpandableDataTable: jest.fn(
     ({
@@ -185,11 +207,6 @@ const mockAllergyWithoutReactions: FormattedAllergy = {
 const mockAllergyWithoutRecorder: FormattedAllergy = {
   ...mockFormattedAllergies[0],
   recorder: undefined,
-};
-
-const mockAllergyWithoutRecordedDate: FormattedAllergy = {
-  ...mockFormattedAllergies[0],
-  recordedDate: '',
 };
 
 const mockMalformedAllergy = {
@@ -381,16 +398,10 @@ describe('AllergiesTable Unit Tests', () => {
       expect(screen.getByTestId('header-manifestation')).toHaveTextContent(
         'Reaction(s)',
       );
-      expect(screen.getByTestId('header-status')).toHaveTextContent('Status');
-      expect(screen.getByTestId('header-severity')).toHaveTextContent(
-        'Severity',
-      );
       expect(screen.getByTestId('header-recorder')).toHaveTextContent(
-        'Provider',
+        'Recorded By',
       );
-      expect(screen.getByTestId('header-recordedDate')).toHaveTextContent(
-        'Recorded Date',
-      );
+      expect(screen.getByTestId('header-status')).toHaveTextContent('Status');
     });
 
     it('should render table with correct title', () => {
@@ -414,7 +425,7 @@ describe('AllergiesTable Unit Tests', () => {
 
   // 3. Cell Rendering Tests
   describe('Cell Rendering Tests', () => {
-    it('should render display cell correctly', () => {
+    it('should render display cell correctly with category and severity tag', () => {
       // Arrange
       mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
@@ -429,9 +440,9 @@ describe('AllergiesTable Unit Tests', () => {
       render(<AllergiesTable />);
 
       // Assert
-      expect(screen.getByTestId('cell-display-0')).toHaveTextContent(
-        'Peanut Allergy',
-      );
+      const displayCell = screen.getByTestId('cell-display-0');
+      expect(displayCell).toHaveTextContent('Peanut Allergy [Food]');
+      expect(displayCell).toHaveTextContent('Moderate');
     });
 
     it('should render status cell with correct tag type for active status', () => {
@@ -533,71 +544,6 @@ describe('AllergiesTable Unit Tests', () => {
       );
     });
 
-    it('should render severity cell correctly', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyIntolerance],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      mockedFormatAllergies.mockReturnValue(mockFormattedAllergies);
-
-      // Act
-      render(<AllergiesTable />);
-
-      // Assert
-      expect(screen.getByTestId('cell-severity-0')).toHaveTextContent(
-        'Moderate',
-      );
-    });
-
-    it('should render severity cell correctly', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyIntolerance],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      mockedFormatAllergies.mockReturnValue(mockFormattedAllergies);
-
-      // Act
-      render(<AllergiesTable />);
-
-      // Assert
-      expect(screen.getByTestId('cell-severity-0')).toHaveTextContent(
-        'Moderate',
-      );
-    });
-
-    it('should render severity cell correctly with multiple severities', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyIntolerance],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      mockedFormatAllergies.mockReturnValue(
-        mockFormattedAllergiesWithMultipleReactions,
-      );
-
-      // Act
-      render(<AllergiesTable />);
-
-      // Assert
-      expect(screen.getByTestId('cell-severity-0')).toHaveTextContent(
-        'Moderate',
-      );
-    });
-
     it('should render recorder cell correctly', () => {
       // Arrange
       mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
@@ -617,28 +563,6 @@ describe('AllergiesTable Unit Tests', () => {
       expect(screen.getByTestId('cell-recorder-0')).toHaveTextContent(
         'Dr. Smith',
       );
-    });
-
-    it('should render recordedDate cell with formatted date', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyIntolerance],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      mockedFormatAllergies.mockReturnValue(mockFormattedAllergies);
-
-      // Act
-      render(<AllergiesTable />);
-
-      // Assert
-      expect(screen.getByTestId('cell-recordedDate-0')).toHaveTextContent(
-        'Formatted: 2023-01-01T12:00:00Z',
-      );
-      expect(formatDateTime).toHaveBeenCalledWith('2023-01-01T12:00:00Z');
     });
 
     it('should render "Not available" for missing recorder', () => {
@@ -736,7 +660,7 @@ describe('AllergiesTable Unit Tests', () => {
 
       expect(screen.getByTestId('row-0')).toBeInTheDocument();
       expect(screen.getByTestId('cell-display-0')).toHaveTextContent(
-        'Peanut Allergy',
+        'Peanut Allergy [Food]',
       );
     });
 
@@ -787,10 +711,31 @@ describe('AllergiesTable Unit Tests', () => {
     });
   });
 
-  // Row Styling Tests
-  describe('Row Styling Tests', () => {
-    it('should apply criticalCell class to rows with severe reactions', () => {
-      // Arrange
+  // 5. Severity Sorting Tests
+  describe('Severity Sorting Tests', () => {
+    it('should sort allergies by severity on mount: severe → moderate → mild', () => {
+      // Arrange - unsorted allergies (mild, severe, moderate)
+      const unsortedAllergies: FormattedAllergy[] = [
+        {
+          ...mockFormattedAllergies[0],
+          id: 'mild-allergy',
+          display: 'Mild Allergy',
+          severity: 'mild',
+        },
+        {
+          ...mockFormattedAllergies[0],
+          id: 'severe-allergy',
+          display: 'Severe Allergy',
+          severity: 'severe',
+        },
+        {
+          ...mockFormattedAllergies[0],
+          id: 'moderate-allergy',
+          display: 'Moderate Allergy',
+          severity: 'moderate',
+        },
+      ];
+
       mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [mockAllergyIntolerance],
@@ -798,32 +743,41 @@ describe('AllergiesTable Unit Tests', () => {
         error: null,
         refetch: jest.fn(),
       });
-
-      // Create an allergy with severe reaction
-      const allergyWithSevereReaction: FormattedAllergy = {
-        ...mockFormattedAllergies[0],
-        id: 'allergy-123', // Ensure ID is set
-        reactions: [
-          {
-            manifestation: ['Difficulty breathing'],
-            severity: 'severe',
-          },
-        ],
-        severity: 'severe',
-      };
-
-      mockedFormatAllergies.mockReturnValue([allergyWithSevereReaction]);
+      mockedFormatAllergies.mockReturnValue(unsortedAllergies);
 
       // Act
       render(<AllergiesTable />);
 
-      // Assert
-      const row = screen.getByTestId('row-0');
-      expect(row).toHaveClass('criticalCell');
+      // Assert - verify correct order in DOM
+      const rows = screen.getAllByTestId(/^row-/);
+      expect(rows[0]).toHaveTextContent('Severe Allergy');
+      expect(rows[1]).toHaveTextContent('Moderate Allergy');
+      expect(rows[2]).toHaveTextContent('Mild Allergy');
     });
 
-    it('should not apply class to rows without severe reactions', () => {
-      // Arrange
+    it('should maintain stable sorting for allergies with same severity', () => {
+      // Arrange - multiple severe allergies to test stable sorting
+      const allergiesWithSameSeverity: FormattedAllergy[] = [
+        {
+          ...mockFormattedAllergies[0],
+          id: 'first-severe',
+          display: 'First Severe Allergy',
+          severity: 'severe',
+        },
+        {
+          ...mockFormattedAllergies[0],
+          id: 'mild-allergy',
+          display: 'Mild Allergy',
+          severity: 'mild',
+        },
+        {
+          ...mockFormattedAllergies[0],
+          id: 'second-severe',
+          display: 'Second Severe Allergy',
+          severity: 'severe',
+        },
+      ];
+
       mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [mockAllergyIntolerance],
@@ -831,100 +785,20 @@ describe('AllergiesTable Unit Tests', () => {
         error: null,
         refetch: jest.fn(),
       });
-
-      // Create an allergy with moderate reaction
-      const allergyWithModerateReaction: FormattedAllergy = {
-        ...mockFormattedAllergies[0],
-        reactions: [
-          {
-            manifestation: ['Hives'],
-            severity: 'moderate',
-          },
-        ],
-      };
-
-      mockedFormatAllergies.mockReturnValue([allergyWithModerateReaction]);
+      mockedFormatAllergies.mockReturnValue(allergiesWithSameSeverity);
 
       // Act
       render(<AllergiesTable />);
 
-      // Assert
-      const row = screen.getByTestId('row-0');
-      expect(row).not.toHaveClass('criticalCell');
-    });
-
-    it('should handle multiple allergies with different severities', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyIntolerance, mockAllergyIntolerance],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      // Create allergies with different severities
-      const allergyWithSevereReaction: FormattedAllergy = {
-        ...mockFormattedAllergies[0],
-        id: 'severe-allergy',
-        reactions: [
-          {
-            manifestation: ['Difficulty breathing'],
-            severity: 'severe',
-          },
-        ],
-        severity: 'severe',
-      };
-
-      const allergyWithModerateReaction: FormattedAllergy = {
-        ...mockFormattedAllergies[0],
-        id: 'moderate-allergy',
-        reactions: [
-          {
-            manifestation: ['Hives'],
-            severity: 'moderate',
-          },
-        ],
-      };
-
-      mockedFormatAllergies.mockReturnValue([
-        allergyWithSevereReaction,
-        allergyWithModerateReaction,
-      ]);
-
-      // Act
-      render(<AllergiesTable />);
-
-      // Assert
-      const severeRow = screen.getByTestId('row-0');
-      const moderateRow = screen.getByTestId('row-1');
-
-      expect(severeRow).toHaveClass('criticalCell');
-      expect(moderateRow).not.toHaveClass('criticalCell');
-    });
-
-    it('should handle allergies with no reactions when generating row classes', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyIntolerance],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      mockedFormatAllergies.mockReturnValue([mockAllergyWithoutReactions]);
-
-      // Act
-      render(<AllergiesTable />);
-
-      // Assert
-      const row = screen.getByTestId('row-0');
-      expect(row).not.toHaveClass('criticalCell');
+      // Assert - severe allergies should maintain original order
+      const rows = screen.getAllByTestId(/^row-/);
+      expect(rows[0]).toHaveTextContent('First Severe Allergy');
+      expect(rows[1]).toHaveTextContent('Second Severe Allergy');
+      expect(rows[2]).toHaveTextContent('Mild Allergy');
     });
   });
 
-  // 5. New Field Tests
+  // 6. New Field Tests
   describe('New Field Tests', () => {
     it('should handle allergy type field correctly', () => {
       // Arrange
@@ -949,7 +823,7 @@ describe('AllergiesTable Unit Tests', () => {
       // Assert
       expect(screen.getByTestId('mock-expandable-table')).toBeInTheDocument();
       expect(screen.getByTestId('cell-display-0')).toHaveTextContent(
-        'Peanut Allergy',
+        'Peanut Allergy [Food]',
       );
     });
 
@@ -976,7 +850,7 @@ describe('AllergiesTable Unit Tests', () => {
       // Assert
       expect(screen.getByTestId('mock-expandable-table')).toBeInTheDocument();
       expect(screen.getByTestId('cell-display-0')).toHaveTextContent(
-        'Peanut Allergy',
+        'Peanut Allergy [Food]',
       );
     });
 
@@ -1006,7 +880,7 @@ describe('AllergiesTable Unit Tests', () => {
       // Assert
       expect(screen.getByTestId('mock-expandable-table')).toBeInTheDocument();
       expect(screen.getByTestId('cell-display-0')).toHaveTextContent(
-        'Peanut Allergy',
+        'Peanut Allergy [Food]',
       );
     });
 
@@ -1036,7 +910,7 @@ describe('AllergiesTable Unit Tests', () => {
       // Assert
       expect(screen.getByTestId('mock-expandable-table')).toBeInTheDocument();
       expect(screen.getByTestId('cell-display-0')).toHaveTextContent(
-        'Peanut Allergy',
+        'Peanut Allergy [Food]',
       );
     });
 
@@ -1066,7 +940,7 @@ describe('AllergiesTable Unit Tests', () => {
       // Assert
       expect(screen.getByTestId('mock-expandable-table')).toBeInTheDocument();
       expect(screen.getByTestId('cell-display-0')).toHaveTextContent(
-        'Peanut Allergy',
+        'Peanut Allergy [Food]',
       );
     });
 
@@ -1138,10 +1012,6 @@ describe('AllergiesTable Unit Tests', () => {
       expect(screen.getByTestId('cell-manifestation-0')).toHaveTextContent(
         'Hives, Difficulty breathing, Anaphylaxis',
       );
-
-      // Check if the row has the criticalCell class due to severe reaction
-      const row = screen.getByTestId('row-0');
-      expect(row).toHaveClass('criticalCell');
     });
   });
 
@@ -1249,36 +1119,6 @@ describe('AllergiesTable Unit Tests', () => {
       expect(screen.getByTestId('mock-expandable-table')).toBeInTheDocument();
     });
 
-    it('should display "Not available" for missing date', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyIntolerance],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      const allergyWithoutDate: FormattedAllergy = {
-        ...mockFormattedAllergies[0],
-        recordedDate: undefined as unknown as string,
-      };
-
-      mockedFormatAllergies.mockReturnValue([allergyWithoutDate]);
-      mockedFormatDateTime.mockReturnValue({
-        formattedResult: '',
-        error: { title: 'Error', message: 'Invalid date' },
-      });
-
-      // Act
-      render(<AllergiesTable />);
-
-      // Assert
-      expect(screen.getByTestId('cell-recordedDate-0')).toHaveTextContent(
-        'Not available',
-      );
-    });
-
     it('should display "Not available" when the allergy reactions are missing', () => {
       // Arrange
       mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
@@ -1297,9 +1137,6 @@ describe('AllergiesTable Unit Tests', () => {
       // Assert
       expect(screen.getByTestId('cell-manifestation-0')).toHaveTextContent(
         'Not available',
-      );
-      expect(screen.getByTestId('cell-severity-0')).toHaveTextContent(
-        'Unknown',
       );
     });
 
@@ -1322,28 +1159,6 @@ describe('AllergiesTable Unit Tests', () => {
       expect(screen.getByTestId('cell-recorder-0')).toHaveTextContent(
         'Not available',
       );
-    });
-
-    it('should display "Not available" when recorded date is missing', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyIntolerance],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      mockedFormatAllergies.mockReturnValue([mockAllergyWithoutRecordedDate]);
-
-      // Act
-      render(<AllergiesTable />);
-
-      // Assert
-      expect(screen.getByTestId('cell-recordedDate-0')).toHaveTextContent(
-        'Formatted:',
-      );
-      expect(formatDateTime).toHaveBeenCalledWith('');
     });
 
     it('should return an empty array when no allergies data is provided', () => {

@@ -78,8 +78,50 @@ describe('useAllergyStore', () => {
       });
 
       expect(result.current.selectedAllergies).toHaveLength(2);
+      // Updated expectation: newest allergy should be at index 0 (newest first)
+      expect(result.current.selectedAllergies[0].id).toBe(secondAllergen.uuid);
+      expect(result.current.selectedAllergies[1].id).toBe(mockAllergen.uuid);
+    });
+
+    test('should add new allergies to the start of the array (newest first)', () => {
+      const { result } = renderHook(() => useAllergyStore());
+      const secondAllergen = {
+        ...mockAllergen,
+        uuid: 'test-allergy-2',
+        display: 'Milk Allergy',
+      };
+      const thirdAllergen = {
+        ...mockAllergen,
+        uuid: 'test-allergy-3',
+        display: 'Shellfish Allergy',
+      };
+
+      // Add first allergy
+      act(() => {
+        result.current.addAllergy(mockAllergen);
+      });
+
+      expect(result.current.selectedAllergies).toHaveLength(1);
       expect(result.current.selectedAllergies[0].id).toBe(mockAllergen.uuid);
+
+      // Add second allergy - should be at start
+      act(() => {
+        result.current.addAllergy(secondAllergen);
+      });
+
+      expect(result.current.selectedAllergies).toHaveLength(2);
+      expect(result.current.selectedAllergies[0].id).toBe(secondAllergen.uuid);
+      expect(result.current.selectedAllergies[1].id).toBe(mockAllergen.uuid);
+
+      // Add third allergy - should be at start
+      act(() => {
+        result.current.addAllergy(thirdAllergen);
+      });
+
+      expect(result.current.selectedAllergies).toHaveLength(3);
+      expect(result.current.selectedAllergies[0].id).toBe(thirdAllergen.uuid);
       expect(result.current.selectedAllergies[1].id).toBe(secondAllergen.uuid);
+      expect(result.current.selectedAllergies[2].id).toBe(mockAllergen.uuid);
     });
   });
 

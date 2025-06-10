@@ -4,6 +4,7 @@ import {
   getFormattedError,
   getCookieByName,
   isStringEmpty,
+  getPriorityByOrder,
 } from '../common';
 import axios, { AxiosError } from 'axios';
 import i18n from '@/setupTests.i18n';
@@ -522,6 +523,102 @@ describe('common utility functions', () => {
       expect(isStringEmpty('hello')).toBe(false);
       expect(isStringEmpty(' hello ')).toBe(false);
       expect(isStringEmpty('hello world')).toBe(false);
+    });
+  });
+
+  describe('getPriorityByOrder', () => {
+    const mockPriorityOrder = ['high', 'medium', 'low'];
+
+    // Test valid values in priority array
+    test.each([
+      ['high', 0],
+      ['medium', 1],
+      ['low', 2],
+    ])(
+      'returns correct index %i for %s in priority array',
+      (value, expected) => {
+        expect(getPriorityByOrder(value, mockPriorityOrder)).toBe(expected);
+      },
+    );
+
+    // Test case insensitive matching
+    test.each([
+      ['HIGH', 0],
+      ['High', 0],
+      ['HiGh', 0],
+      ['MEDIUM', 1],
+      ['Medium', 1],
+      ['MeDiUm', 1],
+      ['LOW', 2],
+      ['Low', 2],
+      ['LoW', 2],
+    ])(
+      'handles case insensitive matching: %s should return %i',
+      (value, expected) => {
+        expect(getPriorityByOrder(value, mockPriorityOrder)).toBe(expected);
+      },
+    );
+
+    // Test values not in priority array
+    test('returns 999 for values not in priority array', () => {
+      expect(getPriorityByOrder('unknown', mockPriorityOrder)).toBe(999);
+      expect(getPriorityByOrder('invalid', mockPriorityOrder)).toBe(999);
+      expect(getPriorityByOrder('critical', mockPriorityOrder)).toBe(999);
+    });
+
+    // Test empty priority array
+    test('returns 999 for empty priority array', () => {
+      expect(getPriorityByOrder('high', [])).toBe(999);
+      expect(getPriorityByOrder('any-value', [])).toBe(999);
+    });
+
+    // Test null/undefined values
+    test('returns 999 for null/undefined value', () => {
+      expect(getPriorityByOrder('', mockPriorityOrder)).toBe(999);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect(getPriorityByOrder(null as any, mockPriorityOrder)).toBe(999);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect(getPriorityByOrder(undefined as any, mockPriorityOrder)).toBe(999);
+    });
+
+    // Test null/undefined priority array
+    test('returns 999 for null/undefined priority array', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect(getPriorityByOrder('high', null as any)).toBe(999);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect(getPriorityByOrder('high', undefined as any)).toBe(999);
+    });
+
+    // Test whitespace handling
+    test('handles whitespace in values', () => {
+      expect(getPriorityByOrder(' high ', mockPriorityOrder)).toBe(0);
+      expect(getPriorityByOrder('  medium  ', mockPriorityOrder)).toBe(1);
+      expect(getPriorityByOrder('\tlow\n', mockPriorityOrder)).toBe(2);
+    });
+
+    // Test order consistency
+    test('maintains consistent ordering', () => {
+      const customOrder = ['severe', 'moderate', 'mild', 'none'];
+
+      expect(getPriorityByOrder('severe', customOrder)).toBe(0);
+      expect(getPriorityByOrder('moderate', customOrder)).toBe(1);
+      expect(getPriorityByOrder('mild', customOrder)).toBe(2);
+      expect(getPriorityByOrder('none', customOrder)).toBe(3);
+    });
+
+    // Test single item array
+    test('works with single item priority array', () => {
+      const singleItem = ['only'];
+      expect(getPriorityByOrder('only', singleItem)).toBe(0);
+      expect(getPriorityByOrder('other', singleItem)).toBe(999);
+    });
+
+    // Test duplicate values in priority array (should return first match)
+    test('returns first match for duplicate values in priority array', () => {
+      const duplicateOrder = ['high', 'medium', 'high', 'low'];
+      expect(getPriorityByOrder('high', duplicateOrder)).toBe(0);
+      expect(getPriorityByOrder('medium', duplicateOrder)).toBe(1);
+      expect(getPriorityByOrder('low', duplicateOrder)).toBe(3);
     });
   });
 });
