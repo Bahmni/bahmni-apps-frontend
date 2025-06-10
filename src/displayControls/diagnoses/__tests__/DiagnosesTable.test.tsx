@@ -406,7 +406,7 @@ describe('DiagnosesTable Component', () => {
         expect(loadingElements[index]).toHaveTextContent('false');
         expect(errorElements[index]).toHaveTextContent('null');
         expect(emptyMessageElements[index]).toHaveTextContent(
-          'No diagnoses found for this patient',
+          'No diagnoses recorded',
         );
       });
     });

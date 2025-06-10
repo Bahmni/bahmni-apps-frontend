@@ -124,7 +124,7 @@
   "LOCATION": "Ubicación",
   "NETWORK_ERROR": "Se produjo un error de red",
   "NO_ALLERGIES": "No hay alergias registradas para este paciente",
-  "NO_DIAGNOSES": "No se encontraron diagnósticos para este paciente",
+  "NO_DIAGNOSES": "No hay diagnósticos registrados",
   "NO_MATCHING_ALLERGEN_FOUND": "No se encontró ningún alérgeno coincidente",
   "NO_MATCHING_DIAGNOSIS_FOUND": "No se encontraron diagnósticos coincidentes",
   "PARTICIPANT": "Partícipe(es)",

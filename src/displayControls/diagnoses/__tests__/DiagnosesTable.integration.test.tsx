@@ -385,9 +385,7 @@ describe('DiagnosesTable Integration', () => {
       expect(screen.getByText('January 31, 2024')).toBeInTheDocument();
 
       // Verify empty state message
-      expect(
-        screen.getByText('No diagnoses found for this patient'),
-      ).toBeInTheDocument();
+      expect(screen.getByText('No diagnoses recorded')).toBeInTheDocument();
 
       // Verify the main component is still rendered
       expect(
