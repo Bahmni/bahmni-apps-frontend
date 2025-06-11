@@ -1,8 +1,7 @@
 import { get } from './api';
 import { PATIENT_LAB_INVESTIGATION_RESOURCE_URL } from '@constants/app';
 import {
-  FhirLabTest,
-  FhirLabTestBundle,
+
   FormattedLabTest,
   LabTestStatus,
   LabTestPriority,
@@ -11,27 +10,13 @@ import {
 import { getFormattedError } from '@utils/common';
 import { formatDate } from '@utils/date';
 import notificationService from './notificationService';
-
-/**
- * Maps a FHIR status code to LabTestStatus enum
- */
-export const mapLabTestStatus = (labTest: FhirLabTest): LabTestStatus => {
-  switch (labTest.status) {
-    case 'Pending':
-      return LabTestStatus.Pending;
-    case 'Abnormal':
-      return LabTestStatus.Abnormal;
-    case 'Normal':
-      return LabTestStatus.Normal;
-    default:
-      return LabTestStatus.Normal;
-  }
-};
+import { Bundle, ServiceRequest } from 'fhir/r4';
+import { start } from 'repl';
 
 /**
  * Maps a FHIR priority code to LabTestPriority enum
  */
-export const mapLabTestPriority = (labTest: FhirLabTest): LabTestPriority => {
+export const mapLabTestPriority = (labTest: ServiceRequest): LabTestPriority => {
   switch (labTest.priority) {
     case 'routine':
       return LabTestPriority.routine;
@@ -42,7 +27,7 @@ export const mapLabTestPriority = (labTest: FhirLabTest): LabTestPriority => {
   }
 };
 
-function filterLabTestEntries(labTestBundle: FhirLabTestBundle) {
+function filterLabTestEntries(labTestBundle: Bundle<ServiceRequest>) {
   if (!labTestBundle.entry) return [];
 
   //Collect all IDs that are being replaced
@@ -69,8 +54,8 @@ function filterLabTestEntries(labTestBundle: FhirLabTestBundle) {
  */
 export async function getPatientLabTestsBundle(
   patientUUID: string,
-): Promise<FhirLabTestBundle> {
-  const fhirLabTestBundle = await get<FhirLabTestBundle>(
+): Promise<Bundle<ServiceRequest>> {
+  const fhirLabTestBundle = await get<Bundle<ServiceRequest>>(
     `${PATIENT_LAB_INVESTIGATION_RESOURCE_URL(patientUUID)}`,
   );
 
@@ -87,10 +72,10 @@ export async function getPatientLabTestsBundle(
  * @param patientUUID - The UUID of the patient
  * @returns Promise resolving to an array of FhirLabTest
  */
-export async function getLabTests(patientUUID: string): Promise<FhirLabTest[]> {
+export async function getLabTests(patientUUID: string): Promise<ServiceRequest[]> {
   try {
     const fhirLabTestBundle = await getPatientLabTestsBundle(patientUUID);
-    return fhirLabTestBundle.entry?.map((entry) => entry.resource) || [];
+    return fhirLabTestBundle.entry?.map((entry) => entry.resource).filter((r): r is ServiceRequest => r !== undefined) || [];
   } catch (error) {
     const { title, message } = getFormattedError(error);
     notificationService.showError(title, message);
@@ -103,7 +88,7 @@ export async function getLabTests(patientUUID: string): Promise<FhirLabTest[]> {
  * @param labTest - The FHIR lab test to check
  * @returns A string indicating the test type: "Panel", "Single Test", or "X Tests"
  */
-export const determineTestType = (labTest: FhirLabTest): string => {
+export const determineTestType = (labTest: ServiceRequest): string => {
   // Check if the test has an extension that indicates it's a panel
   const panelExtension = labTest.extension?.find(
     (ext) =>
@@ -124,25 +109,28 @@ export const determineTestType = (labTest: FhirLabTest): string => {
  * @param labTests - The FHIR lab test array to format
  * @returns An array of formatted lab test objects
  */
-export function formatLabTests(labTests: FhirLabTest[]): FormattedLabTest[] {
+export function formatLabTests(labTests: ServiceRequest[]): FormattedLabTest[] {
   try {
-    return labTests.map((labTest) => {
-      const status = mapLabTestStatus(labTest);
+    return labTests.filter((labTest): labTest is ServiceRequest & { id: string } => !!labTest.id).map((labTest) => {
       const priority = mapLabTestPriority(labTest);
-      const orderedDate = labTest.occurrencePeriod.start;
-      const dateFormatResult = formatDate(orderedDate, 'MMMM d, yyyy');
-      const formattedDate =
+      const orderedDate = labTest.occurrencePeriod?.start;
+      let formattedDate;
+      if(orderedDate)
+      {
+        const dateFormatResult = formatDate(orderedDate, 'MMMM d, yyyy');
+        formattedDate =
         dateFormatResult.formattedResult || orderedDate.split('T')[0];
+      }
+    
       const testType = determineTestType(labTest);
 
       return {
         id: labTest.id,
-        testName: labTest.code.text,
-        status,
+        testName: labTest.code?.text??"",
         priority,
-        orderedBy: labTest.requester.display,
-        orderedDate,
-        formattedDate,
+        orderedBy: labTest.requester?.display??"",
+        orderedDate:orderedDate??"",
+        formattedDate:formattedDate??"",
         // Result would typically come from a separate Observation resource
         result: undefined,
         testType,
