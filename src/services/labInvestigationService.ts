@@ -1,9 +1,7 @@
 import { get } from './api';
 import { PATIENT_LAB_INVESTIGATION_RESOURCE_URL } from '@constants/app';
 import {
-
   FormattedLabTest,
-  LabTestStatus,
   LabTestPriority,
   LabTestsByDate,
 } from '@types/labInvestigation';
@@ -11,12 +9,13 @@ import { getFormattedError } from '@utils/common';
 import { formatDate } from '@utils/date';
 import notificationService from './notificationService';
 import { Bundle, ServiceRequest } from 'fhir/r4';
-import { start } from 'repl';
 
 /**
  * Maps a FHIR priority code to LabTestPriority enum
  */
-export const mapLabTestPriority = (labTest: ServiceRequest): LabTestPriority => {
+export const mapLabTestPriority = (
+  labTest: ServiceRequest,
+): LabTestPriority => {
   switch (labTest.priority) {
     case 'routine':
       return LabTestPriority.routine;
@@ -72,10 +71,16 @@ export async function getPatientLabTestsBundle(
  * @param patientUUID - The UUID of the patient
  * @returns Promise resolving to an array of FhirLabTest
  */
-export async function getLabTests(patientUUID: string): Promise<ServiceRequest[]> {
+export async function getLabTests(
+  patientUUID: string,
+): Promise<ServiceRequest[]> {
   try {
     const fhirLabTestBundle = await getPatientLabTestsBundle(patientUUID);
-    return fhirLabTestBundle.entry?.map((entry) => entry.resource).filter((r): r is ServiceRequest => r !== undefined) || [];
+    return (
+      fhirLabTestBundle.entry
+        ?.map((entry) => entry.resource)
+        .filter((r): r is ServiceRequest => r !== undefined) || []
+    );
   } catch (error) {
     const { title, message } = getFormattedError(error);
     notificationService.showError(title, message);
@@ -111,31 +116,34 @@ export const determineTestType = (labTest: ServiceRequest): string => {
  */
 export function formatLabTests(labTests: ServiceRequest[]): FormattedLabTest[] {
   try {
-    return labTests.filter((labTest): labTest is ServiceRequest & { id: string } => !!labTest.id).map((labTest) => {
-      const priority = mapLabTestPriority(labTest);
-      const orderedDate = labTest.occurrencePeriod?.start;
-      let formattedDate;
-      if(orderedDate)
-      {
-        const dateFormatResult = formatDate(orderedDate, 'MMMM d, yyyy');
-        formattedDate =
-        dateFormatResult.formattedResult || orderedDate.split('T')[0];
-      }
-    
-      const testType = determineTestType(labTest);
+    return labTests
+      .filter(
+        (labTest): labTest is ServiceRequest & { id: string } => !!labTest.id,
+      )
+      .map((labTest) => {
+        const priority = mapLabTestPriority(labTest);
+        const orderedDate = labTest.occurrencePeriod?.start;
+        let formattedDate;
+        if (orderedDate) {
+          const dateFormatResult = formatDate(orderedDate, 'MMMM d, yyyy');
+          formattedDate =
+            dateFormatResult.formattedResult || orderedDate.split('T')[0];
+        }
 
-      return {
-        id: labTest.id,
-        testName: labTest.code?.text??"",
-        priority,
-        orderedBy: labTest.requester?.display??"",
-        orderedDate:orderedDate??"",
-        formattedDate:formattedDate??"",
-        // Result would typically come from a separate Observation resource
-        result: undefined,
-        testType,
-      };
-    });
+        const testType = determineTestType(labTest);
+
+        return {
+          id: labTest.id,
+          testName: labTest.code?.text ?? '',
+          priority,
+          orderedBy: labTest.requester?.display ?? '',
+          orderedDate: orderedDate ?? '',
+          formattedDate: formattedDate ?? '',
+          // Result would typically come from a separate Observation resource
+          result: undefined,
+          testType,
+        };
+      });
   } catch (error) {
     const { title, message } = getFormattedError(error);
     notificationService.showError(title, message);

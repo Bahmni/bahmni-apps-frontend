@@ -1,17 +1,15 @@
 import {
-  FhirLabTest,
-  FhirLabTestBundle,
   FormattedLabTest,
-  LabTestStatus,
   LabTestPriority,
   LabTestsByDate,
 } from '@types/labInvestigation';
+import { Bundle, ServiceRequest } from 'fhir/r4';
 
 // Mock patient UUID
 export const mockPatientUUID = 'test-patient-uuid';
 
 // Mock FHIR lab tests
-export const mockFhirLabTests: FhirLabTest[] = [
+export const mockFhirLabTests: ServiceRequest[] = [
   {
     resourceType: 'ServiceRequest',
     id: 'lab-test-1',
@@ -29,7 +27,7 @@ export const mockFhirLabTests: FhirLabTest[] = [
         valueString: 'Panel',
       },
     ],
-    status: 'Pending',
+    status: 'completed',
     intent: 'order',
     category: [
       {
@@ -43,7 +41,7 @@ export const mockFhirLabTests: FhirLabTest[] = [
         text: 'Laboratory',
       },
     ],
-    priority: 'Routine',
+    priority: 'routine',
     code: {
       coding: [
         {
@@ -94,7 +92,7 @@ export const mockFhirLabTests: FhirLabTest[] = [
         valueString: 'Panel',
       },
     ],
-    status: 'Pending',
+    status: 'revoked',
     intent: 'order',
     category: [
       {
@@ -108,7 +106,7 @@ export const mockFhirLabTests: FhirLabTest[] = [
         text: 'Laboratory',
       },
     ],
-    priority: 'Stat',
+    priority: 'stat',
     code: {
       coding: [
         {
@@ -158,7 +156,7 @@ export const mockFhirLabTests: FhirLabTest[] = [
         valueString: 'Test',
       },
     ],
-    status: 'Pending',
+    status: 'completed',
     intent: 'order',
     category: [
       {
@@ -172,7 +170,7 @@ export const mockFhirLabTests: FhirLabTest[] = [
         text: 'Laboratory',
       },
     ],
-    priority: 'Routine',
+    priority: 'routine',
     code: {
       coding: [
         {
@@ -208,7 +206,7 @@ export const mockFhirLabTests: FhirLabTest[] = [
 ];
 
 // Mock FHIR lab test bundle
-export const mockFhirLabTestBundle: FhirLabTestBundle = {
+export const mockFhirLabTestBundle: Bundle = {
   resourceType: 'Bundle',
   id: 'test-bundle',
   meta: {
@@ -233,7 +231,6 @@ export const mockFormattedLabTests: FormattedLabTest[] = [
   {
     id: 'lab-test-1',
     testName: 'Complete Blood Count',
-    status: LabTestStatus.Pending,
     priority: LabTestPriority.routine,
     orderedBy: 'Dr. John Doe',
     orderedDate: '2025-03-25T06:48:32.000+00:00',
@@ -243,7 +240,6 @@ export const mockFormattedLabTests: FormattedLabTest[] = [
   {
     id: 'lab-test-2',
     testName: 'Lipid Panel',
-    status: LabTestStatus.Pending,
     priority: LabTestPriority.stat,
     orderedBy: 'Dr. Jane Smith',
     orderedDate: '2025-03-25T06:48:32.000+00:00',
@@ -253,7 +249,6 @@ export const mockFormattedLabTests: FormattedLabTest[] = [
   {
     id: 'lab-test-3',
     testName: 'Glucose Test',
-    status: LabTestStatus.Pending,
     priority: LabTestPriority.routine,
     orderedBy: 'Dr. John Doe',
     orderedDate: '2025-03-24T06:48:32.000+00:00',
@@ -277,7 +272,7 @@ export const mockLabTestsByDate: LabTestsByDate[] = [
 ];
 
 // Mock lab test with missing optional fields
-export const mockLabTestWithMissingFields: FhirLabTest = {
+export const mockLabTestWithMissingFields: ServiceRequest = {
   resourceType: 'ServiceRequest',
   id: 'lab-test-incomplete',
   meta: {
@@ -290,7 +285,7 @@ export const mockLabTestWithMissingFields: FhirLabTest = {
       valueString: 'Test',
     },
   ],
-  status: 'Pending',
+  status: 'completed',
   intent: 'order',
   category: [
     {
@@ -304,7 +299,7 @@ export const mockLabTestWithMissingFields: FhirLabTest = {
       text: 'Laboratory',
     },
   ],
-  priority: 'Routine',
+  priority: 'routine',
   code: {
     coding: [
       {
@@ -337,7 +332,6 @@ export const mockLabTestWithMissingFields: FhirLabTest = {
 export const mockFormattedLabTestWithMissingFields: FormattedLabTest = {
   id: 'lab-test-incomplete',
   testName: 'Incomplete Test',
-  status: LabTestStatus.Pending,
   priority: LabTestPriority.routine,
   orderedBy: 'Unknown Doctor',
   orderedDate: '2025-03-25T06:48:32.000+00:00',
