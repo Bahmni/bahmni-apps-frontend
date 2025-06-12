@@ -1,5 +1,5 @@
 import { Bundle, ServiceRequest } from 'fhir/r4';
-import { getPatientRadiologyOrdersByDate } from '../radiologyInvestigationService';
+import { getPatientRadiologyInvestigationsByDate } from '../radiologyInvestigationService';
 import { get } from '../api';
 
 // Mock the API module
@@ -43,7 +43,8 @@ describe('radiologyOrderService', () => {
 
       mockGet.mockResolvedValue(mockBundle);
 
-      const result = await getPatientRadiologyOrdersByDate(mockPatientUUID);
+      const result =
+        await getPatientRadiologyInvestigationsByDate(mockPatientUUID);
 
       expect(mockGet).toHaveBeenCalledWith(
         `/openmrs/ws/fhir2/R4/ServiceRequest?category=d3561dc0-5e07-11ef-8f7c-0242ac120002&patient=${mockPatientUUID}&_count=100&_sort=-_lastUpdated&numberOfVisits=5`,
@@ -69,7 +70,8 @@ describe('radiologyOrderService', () => {
 
       mockGet.mockResolvedValue(mockBundle);
 
-      const result = await getPatientRadiologyOrdersByDate(mockPatientUUID);
+      const result =
+        await getPatientRadiologyInvestigationsByDate(mockPatientUUID);
 
       expect(result).toEqual([]);
     });
@@ -83,7 +85,8 @@ describe('radiologyOrderService', () => {
 
       mockGet.mockResolvedValue(mockBundle);
 
-      const result = await getPatientRadiologyOrdersByDate(mockPatientUUID);
+      const result =
+        await getPatientRadiologyInvestigationsByDate(mockPatientUUID);
 
       expect(result).toEqual([]);
     });
@@ -93,7 +96,7 @@ describe('radiologyOrderService', () => {
       mockGet.mockRejectedValue(error);
 
       await expect(
-        getPatientRadiologyOrdersByDate(mockPatientUUID),
+        getPatientRadiologyInvestigationsByDate(mockPatientUUID),
       ).rejects.toThrow('API Error');
     });
 
@@ -126,7 +129,8 @@ describe('radiologyOrderService', () => {
 
       mockGet.mockResolvedValue(mockBundle);
 
-      const result = await getPatientRadiologyOrdersByDate(mockPatientUUID);
+      const result =
+        await getPatientRadiologyInvestigationsByDate(mockPatientUUID);
 
       expect(result).toHaveLength(1);
       expect(result[0].orders[0]).toEqual({
@@ -205,7 +209,8 @@ describe('radiologyOrderService', () => {
 
       mockGet.mockResolvedValue(mockBundle);
 
-      const result = await getPatientRadiologyOrdersByDate(mockPatientUUID);
+      const result =
+        await getPatientRadiologyInvestigationsByDate(mockPatientUUID);
 
       expect(result).toHaveLength(2);
       expect(result[0].date).toBe('2023-10-15T10:30:00.000Z'); // Newer timestamp first

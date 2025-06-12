@@ -8,11 +8,11 @@ import {
 import { groupByDate } from '@utils/common';
 
 /**
- * Fetches radiology orders for a given patient UUID from the FHIR R4 endpoint
+ * Fetches radiology investigations for a given patient UUID from the FHIR R4 endpoint
  * @param patientUUID - The UUID of the patient
- * @returns Promise resolving to a Bundle containing radiology orders
+ * @returns Promise resolving to a Bundle containing radiology investigations
  */
-async function getPatientRadiologyOrdersBundle(
+async function getPatientRadiologyInvestigationBundle(
   patientUUID: string,
 ): Promise<Bundle> {
   const url = PATIENT_RADIOLOGY_RESOURCE_URL(patientUUID);
@@ -20,11 +20,13 @@ async function getPatientRadiologyOrdersBundle(
 }
 
 /**
- * Formats FHIR radiology orders into a more user-friendly format
+ * Formats FHIR radiology investigations into a more user-friendly format
  * @param bundle - The FHIR bundle to format
- * @returns An array of formatted radiology order objects
+ * @returns An array of formatted radiology order investigation objects
  */
-function formatRadiologyOrders(bundle: Bundle): RadiologyInvestigation[] {
+function formatRadiologyInvestigations(
+  bundle: Bundle,
+): RadiologyInvestigation[] {
   const orders =
     bundle.entry?.map((entry) => entry.resource as ServiceRequest) || [];
 
@@ -42,17 +44,20 @@ function formatRadiologyOrders(bundle: Bundle): RadiologyInvestigation[] {
 }
 
 /**
- * Fetches and formats radiology orders for a given patient UUID
+ * Fetches and formats radiology investigations for a given patient UUID
  * @param patientUUID - The UUID of the patient
- * @returns Promise resolving to an array of radiology orders grouped by date
+ * @returns Promise resolving to an array of radiology investigations grouped by date
  */
-export async function getPatientRadiologyOrdersByDate(
+export async function getPatientRadiologyInvestigationsByDate(
   patientUUID: string,
 ): Promise<RadiologyInvestigationByDate[]> {
-  const bundle = await getPatientRadiologyOrdersBundle(patientUUID);
-  const formattedOrders = formatRadiologyOrders(bundle);
+  const bundle = await getPatientRadiologyInvestigationBundle(patientUUID);
+  const formattedInvestigations = formatRadiologyInvestigations(bundle);
 
-  const grouped = groupByDate(formattedOrders, (order) => order.orderedDate);
+  const grouped = groupByDate(
+    formattedInvestigations,
+    (order) => order.orderedDate,
+  );
 
   return grouped.map((group) => ({
     date: group.date,

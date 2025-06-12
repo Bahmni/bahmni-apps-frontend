@@ -1,21 +1,23 @@
 import { renderHook, act } from '@testing-library/react';
-import { useDiagnoses } from '../useDiagnoses';
-import { DiagnosesByDate, Diagnosis } from '@types/diagnosis';
-import { getPatientDiagnosesByDate } from '@services/diagnosesService';
+import { useRadiologyInvestigation } from '../useRadiologyInvestigation';
+import {
+  RadiologyInvestigationByDate,
+  RadiologyInvestigation,
+} from '@types/radiologyInvestigation';
+import { getPatientRadiologyInvestigationsByDate } from '@services/radiologyInvestigationService';
 import { usePatientUUID } from '../usePatientUUID';
 import { getFormattedError } from '@utils/common';
-import { Coding } from 'fhir/r4';
 import i18n from '@/setupTests.i18n';
 
 // Mock dependencies
-jest.mock('@services/diagnosesService');
+jest.mock('@services/radiologyInvestigationService');
 jest.mock('../usePatientUUID');
 jest.mock('@utils/common');
 
 // Type the mocked functions
-const mockedGetPatientDiagnosesByDate =
-  getPatientDiagnosesByDate as jest.MockedFunction<
-    typeof getPatientDiagnosesByDate
+const mockedGetPatientRadiologyOrdersByDate =
+  getPatientRadiologyInvestigationsByDate as jest.MockedFunction<
+    typeof getPatientRadiologyInvestigationsByDate
   >;
 const mockedUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
@@ -24,29 +26,21 @@ const mockedGetFormattedError = getFormattedError as jest.MockedFunction<
   typeof getFormattedError
 >;
 
-describe('useDiagnoses hook', () => {
+describe('useRadiologyOrders hook', () => {
   const mockPatientUUID = 'patient-uuid-123';
 
-  const mockCertainty: Coding = {
-    system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
-    code: 'confirmed',
-    display: 'Confirmed',
+  const mockFormattedRadiologyOrder: RadiologyInvestigation = {
+    id: 'order-uuid-123',
+    testName: 'Chest X-Ray',
+    priority: 'urgent',
+    orderedBy: 'Dr. John Doe',
+    orderedDate: '2023-12-01',
   };
 
-  const mockFormattedDiagnosis: Diagnosis = {
-    id: 'diagnosis-uuid-123',
-    display: 'Hypertension',
-    certainty: mockCertainty,
-    recordedDate: '2023-12-01T10:30:00.000+0000',
-    formattedDate: '01 Dec 2023',
-    recorder: 'Dr. John Doe',
-  };
-
-  const mockDiagnosesByDate: DiagnosesByDate[] = [
+  const mockRadiologyOrdersByDate: RadiologyInvestigationByDate[] = [
     {
-      date: '01 Dec 2023',
-      rawDate: '2023-12-01T10:30:00.000+0000',
-      diagnoses: [mockFormattedDiagnosis],
+      date: '2023-12-01',
+      orders: [mockFormattedRadiologyOrder],
     },
   ];
 
@@ -61,26 +55,28 @@ describe('useDiagnoses hook', () => {
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
 
     // Act
-    const { result } = renderHook(() => useDiagnoses());
+    const { result } = renderHook(() => useRadiologyInvestigation());
 
     // Assert
-    expect(result.current.diagnoses).toEqual([]);
+    expect(result.current.radiologyInvestigations).toEqual([]);
     expect(result.current.loading).toBe(true);
     expect(result.current.error).toBeNull();
     expect(typeof result.current.refetch).toBe('function');
   });
 
-  it('should fetch diagnoses successfully when patient UUID is available', async () => {
+  it('should fetch radiology orders successfully when patient UUID is available', async () => {
     // Arrange
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedGetPatientDiagnosesByDate.mockResolvedValueOnce(mockDiagnosesByDate);
+    mockedGetPatientRadiologyOrdersByDate.mockResolvedValueOnce(
+      mockRadiologyOrdersByDate,
+    );
 
     // Act
-    const { result } = renderHook(() => useDiagnoses());
+    const { result } = renderHook(() => useRadiologyInvestigation());
 
     // Assert initial loading state
     expect(result.current.loading).toBe(true);
-    expect(result.current.diagnoses).toEqual([]);
+    expect(result.current.radiologyInvestigations).toEqual([]);
 
     // Wait for async operations
     await act(async () => {
@@ -88,10 +84,12 @@ describe('useDiagnoses hook', () => {
     });
 
     // Assert final state
-    expect(mockedGetPatientDiagnosesByDate).toHaveBeenCalledWith(
+    expect(mockedGetPatientRadiologyOrdersByDate).toHaveBeenCalledWith(
       mockPatientUUID,
     );
-    expect(result.current.diagnoses).toEqual(mockDiagnosesByDate);
+    expect(result.current.radiologyInvestigations).toEqual(
+      mockRadiologyOrdersByDate,
+    );
     expect(result.current.error).toBeNull();
     expect(result.current.loading).toBe(false);
   });
@@ -101,7 +99,7 @@ describe('useDiagnoses hook', () => {
     mockedUsePatientUUID.mockReturnValue(null);
 
     // Act
-    const { result } = renderHook(() => useDiagnoses());
+    const { result } = renderHook(() => useRadiologyInvestigation());
 
     // Wait for async operations
     await act(async () => {
@@ -109,18 +107,18 @@ describe('useDiagnoses hook', () => {
     });
 
     // Assert
-    expect(mockedGetPatientDiagnosesByDate).not.toHaveBeenCalled();
-    expect(result.current.diagnoses).toEqual([]);
+    expect(mockedGetPatientRadiologyOrdersByDate).not.toHaveBeenCalled();
+    expect(result.current.radiologyInvestigations).toEqual([]);
     expect(result.current.error?.message).toBe('Invalid patient UUID');
     expect(result.current.loading).toBe(false);
   });
 
   it('should handle undefined patient UUID correctly', async () => {
     // Arrange
-    mockedUsePatientUUID.mockReturnValue(undefined);
+    mockedUsePatientUUID.mockReturnValue(null);
 
     // Act
-    const { result } = renderHook(() => useDiagnoses());
+    const { result } = renderHook(() => useRadiologyInvestigation());
 
     // Wait for async operations
     await act(async () => {
@@ -128,8 +126,8 @@ describe('useDiagnoses hook', () => {
     });
 
     // Assert
-    expect(mockedGetPatientDiagnosesByDate).not.toHaveBeenCalled();
-    expect(result.current.diagnoses).toEqual([]);
+    expect(mockedGetPatientRadiologyOrdersByDate).not.toHaveBeenCalled();
+    expect(result.current.radiologyInvestigations).toEqual([]);
     expect(result.current.error?.message).toBe('Invalid patient UUID');
     expect(result.current.loading).toBe(false);
   });
@@ -139,7 +137,7 @@ describe('useDiagnoses hook', () => {
     mockedUsePatientUUID.mockReturnValue('');
 
     // Act
-    const { result } = renderHook(() => useDiagnoses());
+    const { result } = renderHook(() => useRadiologyInvestigation());
 
     // Wait for async operations
     await act(async () => {
@@ -147,24 +145,24 @@ describe('useDiagnoses hook', () => {
     });
 
     // Assert
-    expect(mockedGetPatientDiagnosesByDate).not.toHaveBeenCalled();
-    expect(result.current.diagnoses).toEqual([]);
+    expect(mockedGetPatientRadiologyOrdersByDate).not.toHaveBeenCalled();
+    expect(result.current.radiologyInvestigations).toEqual([]);
     expect(result.current.error?.message).toBe('Invalid patient UUID');
     expect(result.current.loading).toBe(false);
   });
 
   it('should handle service error correctly', async () => {
     // Arrange
-    const mockError = new Error('Failed to fetch diagnoses');
+    const mockError = new Error('Failed to fetch radiology orders');
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedGetPatientDiagnosesByDate.mockRejectedValueOnce(mockError);
+    mockedGetPatientRadiologyOrdersByDate.mockRejectedValueOnce(mockError);
     mockedGetFormattedError.mockReturnValueOnce({
       title: 'Error Title',
-      message: 'Failed to fetch diagnoses',
+      message: 'Failed to fetch radiology orders',
     });
 
     // Act
-    const { result } = renderHook(() => useDiagnoses());
+    const { result } = renderHook(() => useRadiologyInvestigation());
 
     // Wait for async operations
     await act(async () => {
@@ -172,12 +170,12 @@ describe('useDiagnoses hook', () => {
     });
 
     // Assert
-    expect(mockedGetPatientDiagnosesByDate).toHaveBeenCalledWith(
+    expect(mockedGetPatientRadiologyOrdersByDate).toHaveBeenCalledWith(
       mockPatientUUID,
     );
     expect(mockedGetFormattedError).toHaveBeenCalledWith(mockError);
     expect(result.current.error).toBe(mockError);
-    expect(result.current.diagnoses).toEqual([]);
+    expect(result.current.radiologyInvestigations).toEqual([]);
     expect(result.current.loading).toBe(false);
   });
 
@@ -185,14 +183,14 @@ describe('useDiagnoses hook', () => {
     // Arrange
     const nonErrorObject = { message: 'API Error' };
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedGetPatientDiagnosesByDate.mockRejectedValueOnce(nonErrorObject);
+    mockedGetPatientRadiologyOrdersByDate.mockRejectedValueOnce(nonErrorObject);
     mockedGetFormattedError.mockReturnValueOnce({
       title: 'Error',
       message: 'An unexpected error occurred',
     });
 
     // Act
-    const { result } = renderHook(() => useDiagnoses());
+    const { result } = renderHook(() => useRadiologyInvestigation());
 
     // Wait for async operations
     await act(async () => {
@@ -201,40 +199,41 @@ describe('useDiagnoses hook', () => {
 
     // Assert
     expect(result.current.error?.message).toBe('An unexpected error occurred');
-    expect(result.current.diagnoses).toEqual([]);
+    expect(result.current.radiologyInvestigations).toEqual([]);
     expect(result.current.loading).toBe(false);
   });
 
   it('should provide a refetch function that fetches data again', async () => {
     // Arrange
-    const updatedDiagnoses: DiagnosesByDate[] = [
+    const updatedRadiologyOrders: RadiologyInvestigationByDate[] = [
       {
-        date: '02 Dec 2023',
-        rawDate: '2023-12-02T11:30:00.000+0000',
-        diagnoses: [
+        date: '2023-12-02',
+        orders: [
           {
-            ...mockFormattedDiagnosis,
-            id: 'diagnosis-uuid-456',
-            display: 'Diabetes',
+            ...mockFormattedRadiologyOrder,
+            id: 'order-uuid-456',
+            testName: 'CT Scan',
           },
         ],
       },
     ];
 
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedGetPatientDiagnosesByDate
-      .mockResolvedValueOnce(mockDiagnosesByDate)
-      .mockResolvedValueOnce(updatedDiagnoses);
+    mockedGetPatientRadiologyOrdersByDate
+      .mockResolvedValueOnce(mockRadiologyOrdersByDate)
+      .mockResolvedValueOnce(updatedRadiologyOrders);
 
     // Act - Initial render
-    const { result } = renderHook(() => useDiagnoses());
+    const { result } = renderHook(() => useRadiologyInvestigation());
 
     // Wait for initial fetch
     await act(async () => {
       await Promise.resolve();
     });
 
-    expect(result.current.diagnoses).toEqual(mockDiagnosesByDate);
+    expect(result.current.radiologyInvestigations).toEqual(
+      mockRadiologyOrdersByDate,
+    );
 
     // Act - Call refetch
     await act(async () => {
@@ -243,11 +242,13 @@ describe('useDiagnoses hook', () => {
     });
 
     // Assert final state
-    expect(result.current.diagnoses).toEqual(updatedDiagnoses);
+    expect(result.current.radiologyInvestigations).toEqual(
+      updatedRadiologyOrders,
+    );
     expect(result.current.error).toBeNull();
     expect(result.current.loading).toBe(false);
-    expect(mockedGetPatientDiagnosesByDate).toHaveBeenCalledTimes(2);
-    expect(mockedGetPatientDiagnosesByDate).toHaveBeenCalledWith(
+    expect(mockedGetPatientRadiologyOrdersByDate).toHaveBeenCalledTimes(2);
+    expect(mockedGetPatientRadiologyOrdersByDate).toHaveBeenCalledWith(
       mockPatientUUID,
     );
   });
@@ -256,8 +257,8 @@ describe('useDiagnoses hook', () => {
     // Arrange
     const mockError = new Error('Refetch failed');
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedGetPatientDiagnosesByDate
-      .mockResolvedValueOnce(mockDiagnosesByDate)
+    mockedGetPatientRadiologyOrdersByDate
+      .mockResolvedValueOnce(mockRadiologyOrdersByDate)
       .mockRejectedValueOnce(mockError);
     mockedGetFormattedError.mockReturnValueOnce({
       title: 'Error',
@@ -265,14 +266,16 @@ describe('useDiagnoses hook', () => {
     });
 
     // Act - Initial render
-    const { result } = renderHook(() => useDiagnoses());
+    const { result } = renderHook(() => useRadiologyInvestigation());
 
     // Wait for initial fetch
     await act(async () => {
       await Promise.resolve();
     });
 
-    expect(result.current.diagnoses).toEqual(mockDiagnosesByDate);
+    expect(result.current.radiologyInvestigations).toEqual(
+      mockRadiologyOrdersByDate,
+    );
     expect(result.current.error).toBeNull();
 
     // Act - Call refetch with error
@@ -283,42 +286,43 @@ describe('useDiagnoses hook', () => {
 
     // Assert error state
     expect(result.current.error).toBe(mockError);
-    expect(result.current.diagnoses).toEqual([]); // Should reset on error
+    expect(result.current.radiologyInvestigations).toEqual([]); // Should reset on error
     expect(result.current.loading).toBe(false);
-    expect(mockedGetPatientDiagnosesByDate).toHaveBeenCalledTimes(2);
+    expect(mockedGetPatientRadiologyOrdersByDate).toHaveBeenCalledTimes(2);
   });
 
   it('should update when patient UUID changes', async () => {
     // Arrange
     const newPatientUUID = 'patient-uuid-456';
-    const newDiagnoses: DiagnosesByDate[] = [
+    const newRadiologyOrders: RadiologyInvestigationByDate[] = [
       {
-        date: '03 Dec 2023',
-        rawDate: '2023-12-03T12:30:00.000+0000',
-        diagnoses: [
+        date: '2023-12-03',
+        orders: [
           {
-            ...mockFormattedDiagnosis,
-            id: 'diagnosis-uuid-789',
-            display: 'Asthma',
+            ...mockFormattedRadiologyOrder,
+            id: 'order-uuid-789',
+            testName: 'MRI',
           },
         ],
       },
     ];
 
-    mockedGetPatientDiagnosesByDate
-      .mockResolvedValueOnce(mockDiagnosesByDate)
-      .mockResolvedValueOnce(newDiagnoses);
+    mockedGetPatientRadiologyOrdersByDate
+      .mockResolvedValueOnce(mockRadiologyOrdersByDate)
+      .mockResolvedValueOnce(newRadiologyOrders);
 
     // Act - Initial render with first patient UUID
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    const { result, rerender } = renderHook(() => useDiagnoses());
+    const { result, rerender } = renderHook(() => useRadiologyInvestigation());
 
     // Wait for initial fetch
     await act(async () => {
       await Promise.resolve();
     });
 
-    expect(result.current.diagnoses).toEqual(mockDiagnosesByDate);
+    expect(result.current.radiologyInvestigations).toEqual(
+      mockRadiologyOrdersByDate,
+    );
 
     // Act - Change patient UUID
     mockedUsePatientUUID.mockReturnValue(newPatientUUID);
@@ -330,13 +334,13 @@ describe('useDiagnoses hook', () => {
     });
 
     // Assert final state
-    expect(result.current.diagnoses).toEqual(newDiagnoses);
-    expect(mockedGetPatientDiagnosesByDate).toHaveBeenCalledTimes(2);
-    expect(mockedGetPatientDiagnosesByDate).toHaveBeenNthCalledWith(
+    expect(result.current.radiologyInvestigations).toEqual(newRadiologyOrders);
+    expect(mockedGetPatientRadiologyOrdersByDate).toHaveBeenCalledTimes(2);
+    expect(mockedGetPatientRadiologyOrdersByDate).toHaveBeenNthCalledWith(
       1,
       mockPatientUUID,
     );
-    expect(mockedGetPatientDiagnosesByDate).toHaveBeenNthCalledWith(
+    expect(mockedGetPatientRadiologyOrdersByDate).toHaveBeenNthCalledWith(
       2,
       newPatientUUID,
     );
@@ -346,16 +350,16 @@ describe('useDiagnoses hook', () => {
     // Arrange
     const mockError = new Error('Initial error');
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedGetPatientDiagnosesByDate
+    mockedGetPatientRadiologyOrdersByDate
       .mockRejectedValueOnce(mockError)
-      .mockResolvedValueOnce(mockDiagnosesByDate);
+      .mockResolvedValueOnce(mockRadiologyOrdersByDate);
     mockedGetFormattedError.mockReturnValueOnce({
       title: 'Error',
       message: 'Initial error',
     });
 
     // Act - Initial render with error
-    const { result } = renderHook(() => useDiagnoses());
+    const { result } = renderHook(() => useRadiologyInvestigation());
 
     // Wait for initial fetch (error)
     await act(async () => {
@@ -363,7 +367,7 @@ describe('useDiagnoses hook', () => {
     });
 
     expect(result.current.error).toBe(mockError);
-    expect(result.current.diagnoses).toEqual([]);
+    expect(result.current.radiologyInvestigations).toEqual([]);
 
     // Act - Successful refetch
     await act(async () => {
@@ -373,7 +377,9 @@ describe('useDiagnoses hook', () => {
 
     // Assert error is cleared
     expect(result.current.error).toBeNull();
-    expect(result.current.diagnoses).toEqual(mockDiagnosesByDate);
+    expect(result.current.radiologyInvestigations).toEqual(
+      mockRadiologyOrdersByDate,
+    );
     expect(result.current.loading).toBe(false);
   });
 });
