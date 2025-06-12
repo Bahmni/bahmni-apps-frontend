@@ -98,7 +98,6 @@ const RadiologyInvestigationTable: React.FC = () => {
       {sortedRadiologyInvestigations.map((ordersByDate, index) => {
         const { date, orders } = ordersByDate;
 
-        // Format the date for display
         const formattedDate = formatDate(
           date,
           FULL_MONTH_DATE_FORMAT,
