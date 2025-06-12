@@ -29,10 +29,11 @@ const LabInvestigationControl: React.FC = () => {
             <div>{t('LAB_TEST_LOADING')}</div>
           </>
         )}
-        {labTestsByDate.map((group: LabTestsByDate) => (
+        {labTestsByDate.map((group: LabTestsByDate, index) => (
           <AccordionItem
             key={group.date}
             className={styles.accordionItem}
+            open={index === 0}
             title={
               <span className={styles.accordionTitle}>
                 <strong>{group.date}</strong>
