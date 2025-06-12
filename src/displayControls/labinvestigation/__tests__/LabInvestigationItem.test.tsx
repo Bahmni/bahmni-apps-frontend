@@ -1,11 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import LabInvestigationItem from '../LabInvestigationItem';
-import {
-  FormattedLabTest,
-  LabTestStatus,
-  LabTestPriority,
-} from '@types/labInvestigation';
+import { FormattedLabTest, LabTestPriority } from '@types/labInvestigation';
 import { useTranslation } from 'react-i18next';
 
 // Mock the BahmniIcon component
@@ -26,7 +22,6 @@ describe('LabInvestigationItem', () => {
   const mockLabTest: FormattedLabTest = {
     id: 'test-123',
     testName: 'Complete Blood Count',
-    status: LabTestStatus.Normal,
     priority: LabTestPriority.routine,
     orderedBy: 'Dr. Smith',
     orderedDate: '2025-05-08T12:44:24+00:00',

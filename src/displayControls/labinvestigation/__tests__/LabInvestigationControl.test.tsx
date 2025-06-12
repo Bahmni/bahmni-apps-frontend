@@ -5,7 +5,6 @@ import useLabInvestigations from '@hooks/useLabInvestigations';
 import { groupLabTestsByDate } from '@services/labInvestigationService';
 import {
   LabTestsByDate,
-  LabTestStatus,
   LabTestPriority,
   FormattedLabTest,
 } from '@types/labInvestigation';
@@ -25,7 +24,6 @@ jest.mock('../LabInvestigationItem', () => ({
   default: ({ test }: { test: FormattedLabTest }) => (
     <div data-testid="lab-investigation-item">
       <span data-testid="test-name">{test.testName}</span>
-      <span data-testid="test-status">{test.status}</span>
       <span data-testid="test-priority">{test.priority}</span>
     </div>
   ),
@@ -72,7 +70,6 @@ describe('LabInvestigationControl', () => {
     {
       id: 'test-1',
       testName: 'Complete Blood Count',
-      status: LabTestStatus.Normal,
       priority: LabTestPriority.routine,
       orderedBy: 'Dr. Smith',
       orderedDate: '2025-05-08T12:44:24+00:00',
@@ -83,7 +80,6 @@ describe('LabInvestigationControl', () => {
     {
       id: 'test-2',
       testName: 'Lipid Panel',
-      status: LabTestStatus.Abnormal,
       priority: LabTestPriority.stat,
       orderedBy: 'Dr. Johnson',
       orderedDate: '2025-04-09T13:21:22+00:00',
@@ -94,7 +90,6 @@ describe('LabInvestigationControl', () => {
     {
       id: 'test-3',
       testName: 'Liver Function',
-      status: LabTestStatus.Pending,
       priority: LabTestPriority.routine,
       orderedBy: 'Dr. Williams',
       orderedDate: '2025-04-09T13:21:22+00:00',
@@ -170,13 +165,6 @@ describe('LabInvestigationControl', () => {
     expect(testNames[0].textContent).toBe('Complete Blood Count');
     expect(testNames[1].textContent).toBe('Lipid Panel');
     expect(testNames[2].textContent).toBe('Liver Function');
-
-    // Check that the test statuses are displayed
-    const testStatuses = screen.getAllByTestId('test-status');
-    expect(testStatuses).toHaveLength(3);
-    expect(testStatuses[0].textContent).toBe(LabTestStatus.Normal);
-    expect(testStatuses[1].textContent).toBe(LabTestStatus.Abnormal);
-    expect(testStatuses[2].textContent).toBe(LabTestStatus.Pending);
 
     // Check that the test priorities are displayed
     const testPriorities = screen.getAllByTestId('test-priority');

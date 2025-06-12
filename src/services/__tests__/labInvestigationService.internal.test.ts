@@ -1,16 +1,12 @@
-import {
-  FhirLabTest,
-  LabTestStatus,
-  LabTestPriority,
-} from '../../types/labInvestigation';
+import { LabTestPriority } from '../../types/labInvestigation';
 import { getFormattedError } from '../../utils/common';
 import notificationService from '../notificationService';
 import {
-  mapLabTestStatus,
   mapLabTestPriority,
   getPatientLabTestsByDate,
 } from '../labInvestigationService';
 import * as api from '../api';
+import { ServiceRequest } from 'fhir/r4';
 
 // Mock dependencies
 jest.mock('../../utils/common');
@@ -26,44 +22,22 @@ describe('labInvestigationService internal functions', () => {
     });
   });
 
-  describe('mapLabTestStatus', () => {
-    it('should map known status values correctly', () => {
-      const pendingTest = { status: 'Pending' } as FhirLabTest;
-      const abnormalTest = { status: 'Abnormal' } as FhirLabTest;
-      const normalTest = { status: 'Normal' } as FhirLabTest;
-
-      expect(mapLabTestStatus(pendingTest)).toBe(LabTestStatus.Pending);
-      expect(mapLabTestStatus(abnormalTest)).toBe(LabTestStatus.Abnormal);
-      expect(mapLabTestStatus(normalTest)).toBe(LabTestStatus.Normal);
-    });
-
-    it('should default to Normal for unknown, null, or undefined status', () => {
-      const unknownTest = { status: 'Unknown' } as FhirLabTest;
-      const nullTest = { status: null } as unknown as FhirLabTest;
-      const undefinedTest = { status: undefined } as unknown as FhirLabTest;
-      const emptyTest = {} as FhirLabTest;
-
-      expect(mapLabTestStatus(unknownTest)).toBe(LabTestStatus.Normal);
-      expect(mapLabTestStatus(nullTest)).toBe(LabTestStatus.Normal);
-      expect(mapLabTestStatus(undefinedTest)).toBe(LabTestStatus.Normal);
-      expect(mapLabTestStatus(emptyTest)).toBe(LabTestStatus.Normal);
-    });
-  });
-
   describe('mapLabTestPriority', () => {
     it('should map known priority values correctly', () => {
-      const routineTest = { priority: 'routine' } as FhirLabTest;
-      const statTest = { priority: 'stat' } as FhirLabTest;
+      const routineTest = { priority: 'routine' } as ServiceRequest;
+      const statTest = { priority: 'stat' } as ServiceRequest;
 
       expect(mapLabTestPriority(routineTest)).toBe(LabTestPriority.routine);
       expect(mapLabTestPriority(statTest)).toBe(LabTestPriority.stat);
     });
 
     it('should default to routine for unknown, null, or undefined priority', () => {
-      const unknownTest = { priority: 'unknown' } as FhirLabTest;
-      const nullTest = { priority: null } as unknown as FhirLabTest;
-      const undefinedTest = { priority: undefined } as unknown as FhirLabTest;
-      const emptyTest = {} as FhirLabTest;
+      const unknownTest = { priority: 'unknown' } as unknown as ServiceRequest;
+      const nullTest = { priority: null } as unknown as ServiceRequest;
+      const undefinedTest = {
+        priority: undefined,
+      } as unknown as ServiceRequest;
+      const emptyTest = {} as ServiceRequest;
 
       expect(mapLabTestPriority(unknownTest)).toBe(LabTestPriority.routine);
       expect(mapLabTestPriority(nullTest)).toBe(LabTestPriority.routine);

@@ -7,14 +7,13 @@ import {
   getPatientLabTestsBundle,
 } from '../labInvestigationService';
 import {
-  FhirLabTest,
-  LabTestStatus,
   LabTestPriority,
   FormattedLabTest,
 } from '../../types/labInvestigation';
 import '../../utils/date';
 import { getFormattedError } from '../../utils/common';
 import notificationService from '../notificationService';
+import { ServiceRequest } from 'fhir/r4';
 
 // Mock dependencies
 jest.mock('../api');
@@ -24,8 +23,8 @@ jest.mock('../notificationService');
 describe('labInvestigationService', () => {
   const mockPatientUUID = '58493859-63f7-48b6-bd0b-698d5a119a21';
 
-  // Mock FHIR lab test data
-  const mockFhirLabTests: FhirLabTest[] = [
+  // Mock FHIR lab test data - includes tests with replaces relationships to test filtering
+  const mockFhirLabTests: ServiceRequest[] = [
     {
       resourceType: 'ServiceRequest',
       id: '29e240ce-5a3d-4643-8d4b-ca5b4cbf665d',
@@ -113,6 +112,26 @@ describe('labInvestigationService', () => {
         },
       ],
       priority: 'routine',
+      // This test replaces the first test (will be filtered out due to having replaces field)
+      replaces: [
+        {
+          reference: 'ServiceRequest/29e240ce-5a3d-4643-8d4b-ca5b4cbf665d',
+          type: 'ServiceRequest',
+          identifier: {
+            use: 'usual',
+            type: {
+              coding: [
+                {
+                  system: 'http://terminology.hl7.org/CodeSystem/v2-0203',
+                  code: 'PLAC',
+                  display: 'Placer Identifier',
+                },
+              ],
+            },
+            value: '29e240ce-5a3d-4643-8d4b-ca5b4cbf665d',
+          },
+        },
+      ],
       code: {
         coding: [
           {
@@ -226,34 +245,14 @@ describe('labInvestigationService', () => {
     })),
   };
 
-  // Mock formatted lab tests
+  // Expected filtered results - only CD8% test should remain after filtering
+  const mockFilteredLabTests = [mockFhirLabTests[2]]; // Only the CD8% test
+
+  // Mock formatted lab tests (after filtering)
   const mockFormattedLabTests: FormattedLabTest[] = [
-    {
-      id: '29e240ce-5a3d-4643-8d4b-ca5b4cbf665d',
-      testName: 'Absolute eosinophil count test',
-      status: LabTestStatus.Normal,
-      priority: LabTestPriority.routine,
-      orderedBy: 'Super Man',
-      orderedDate: '2025-04-09T13:21:22+00:00',
-      formattedDate: 'April 9, 2025',
-      result: undefined,
-      testType: 'Single Test',
-    },
-    {
-      id: 'e7eca932-1d6f-44a4-bd94-e1105860ab77',
-      testName: 'Clotting Panel',
-      status: LabTestStatus.Normal,
-      priority: LabTestPriority.routine,
-      orderedBy: 'Super Man',
-      orderedDate: '2025-04-09T13:21:22+00:00',
-      formattedDate: 'April 9, 2025',
-      result: undefined,
-      testType: 'Panel',
-    },
     {
       id: 'aba2a637-05f5-44c6-9021-c5cd05548342',
       testName: 'CD8%',
-      status: LabTestStatus.Normal,
       priority: LabTestPriority.routine,
       orderedBy: 'Super Man',
       orderedDate: '2025-05-08T12:44:24+00:00',
@@ -285,13 +284,18 @@ describe('labInvestigationService', () => {
   });
 
   describe('getPatientLabTestsBundle', () => {
-    it('should fetch lab test bundle for a patient', async () => {
+    it('should fetch lab test bundle for a patient and apply filtering', async () => {
       const result = await getPatientLabTestsBundle(mockPatientUUID);
 
       expect(get).toHaveBeenCalledWith(
         expect.stringContaining(mockPatientUUID),
       );
-      expect(result).toEqual(mockFhirLabTestBundle);
+
+      // Should filter out the first test (being replaced) and second test (has replaces field)
+      expect(result.entry).toHaveLength(1);
+      expect(result.entry?.[0].resource?.id).toBe(
+        'aba2a637-05f5-44c6-9021-c5cd05548342',
+      );
     });
 
     it('should throw an error when API call fails', async () => {
@@ -300,16 +304,43 @@ describe('labInvestigationService', () => {
 
       await expect(getPatientLabTestsBundle(mockPatientUUID)).rejects.toThrow();
     });
+
+    it('should handle empty bundle entry', async () => {
+      const mockEmptyBundle = {
+        ...mockFhirLabTestBundle,
+        entry: [],
+      };
+
+      (get as jest.Mock).mockResolvedValue(mockEmptyBundle);
+
+      const result = await getPatientLabTestsBundle(mockPatientUUID);
+
+      expect(result.entry).toEqual([]);
+    });
+
+    it('should handle bundle with no entry field', async () => {
+      const mockBundleNoEntry = {
+        ...mockFhirLabTestBundle,
+        entry: undefined,
+      };
+
+      (get as jest.Mock).mockResolvedValue(mockBundleNoEntry);
+
+      const result = await getPatientLabTestsBundle(mockPatientUUID);
+
+      expect(result.entry).toEqual([]);
+    });
   });
 
   describe('getLabTests', () => {
-    it('should fetch lab tests for a patient', async () => {
+    it('should fetch lab tests for a patient and return filtered results', async () => {
       const result = await getLabTests(mockPatientUUID);
 
       expect(get).toHaveBeenCalledWith(
         expect.stringContaining(mockPatientUUID),
       );
-      expect(result).toEqual(mockFhirLabTests);
+      // Should return only the filtered test (CD8%)
+      expect(result).toEqual(mockFilteredLabTests);
     });
 
     it('should handle errors and return an empty array', async () => {
@@ -324,50 +355,15 @@ describe('labInvestigationService', () => {
 
   describe('formatLabTests', () => {
     it('should format lab tests correctly', () => {
-      const result = formatLabTests(mockFhirLabTests);
+      const result = formatLabTests(mockFilteredLabTests);
 
       expect(result).toEqual(mockFormattedLabTests);
-    });
-
-    it('should handle unknown status values and default to Normal', () => {
-      // Create a test with unknown status
-      const testWithUnknownStatus = {
-        ...mockFhirLabTests[0],
-        status: 'unknown_status',
-      };
-
-      const result = formatLabTests([testWithUnknownStatus]);
-
-      // Verify the status defaults to Normal
-      expect(result[0].status).toBe(LabTestStatus.Normal);
-
-      // Create another test with undefined status to ensure default case is covered
-      const testWithUndefinedStatus = {
-        ...mockFhirLabTests[0],
-        status: undefined as unknown as string,
-      };
-
-      const resultUndefined = formatLabTests([testWithUndefinedStatus]);
-
-      // Verify the status defaults to Normal
-      expect(resultUndefined[0].status).toBe(LabTestStatus.Normal);
-
-      // Create a test with null status to ensure default case is covered
-      const testWithNullStatus = {
-        ...mockFhirLabTests[0],
-        status: null as unknown as string,
-      };
-
-      const resultNull = formatLabTests([testWithNullStatus]);
-
-      // Verify the status defaults to Normal
-      expect(resultNull[0].status).toBe(LabTestStatus.Normal);
     });
 
     it('should handle unknown priority values and default to Routine', () => {
       // Create a test with unknown priority
       const testWithUnknownPriority = {
-        ...mockFhirLabTests[0],
+        ...mockFilteredLabTests[0],
         priority: 'unknown_priority',
       };
 
@@ -378,7 +374,7 @@ describe('labInvestigationService', () => {
 
       // Create another test with undefined priority to ensure default case is covered
       const testWithUndefinedPriority = {
-        ...mockFhirLabTests[0],
+        ...mockFilteredLabTests[0],
         priority: undefined as unknown as string,
       };
 
@@ -389,7 +385,7 @@ describe('labInvestigationService', () => {
 
       // Create a test with null priority to ensure default case is covered
       const testWithNullPriority = {
-        ...mockFhirLabTests[0],
+        ...mockFilteredLabTests[0],
         priority: null as unknown as string,
       };
 
@@ -408,7 +404,7 @@ describe('labInvestigationService', () => {
     it('should handle malformed lab test data', () => {
       // Create a test with minimal required properties to pass type checking
       const malformedTest = {
-        ...mockFhirLabTests[0],
+        ...mockFilteredLabTests[0],
         code: {
           coding: [{ code: 'malformed-code' }], // Minimal required properties
           text: 'Malformed Test',
@@ -437,7 +433,7 @@ describe('labInvestigationService', () => {
       });
 
       // Force an error by passing invalid data
-      const result = formatLabTests(null as unknown as FhirLabTest[]);
+      const result = formatLabTests(null as unknown as ServiceRequest[]);
 
       expect(result).toEqual([]);
       expect(notificationService.showError).toHaveBeenCalled();
@@ -448,20 +444,12 @@ describe('labInvestigationService', () => {
     it('should group lab tests by date', () => {
       const result = groupLabTestsByDate(mockFormattedLabTests);
 
-      expect(result).toHaveLength(2); // Two unique dates
+      expect(result).toHaveLength(1); // Only one date after filtering
 
-      // First date (newest)
+      // Only one date (May 8, 2025)
       expect(result[0].date).toBe('May 8, 2025');
       expect(result[0].tests).toHaveLength(1);
       expect(result[0].tests[0].testName).toBe('CD8%');
-
-      // Second date (older)
-      expect(result[1].date).toBe('April 9, 2025');
-      expect(result[1].tests).toHaveLength(2);
-      expect(result[1].tests[0].testName).toBe(
-        'Absolute eosinophil count test',
-      );
-      expect(result[1].tests[1].testName).toBe('Clotting Panel');
     });
 
     it('should handle empty arrays', () => {
@@ -529,21 +517,18 @@ describe('labInvestigationService', () => {
   });
 
   describe('getPatientLabTestsByDate', () => {
-    it('should fetch, format, and group lab tests', async () => {
+    it('should fetch, format, and group lab tests with filtering applied', async () => {
       const result = await getPatientLabTestsByDate(mockPatientUUID);
 
       expect(get).toHaveBeenCalledWith(
         expect.stringContaining(mockPatientUUID),
       );
-      expect(result).toHaveLength(2); // Two unique dates
+      expect(result).toHaveLength(1); // Only one date after filtering
 
-      // First date (newest)
+      // Only one date (May 8, 2025) with one test
       expect(result[0].date).toBe('May 8, 2025');
       expect(result[0].tests).toHaveLength(1);
-
-      // Second date (older)
-      expect(result[1].date).toBe('April 9, 2025');
-      expect(result[1].tests).toHaveLength(2);
+      expect(result[0].tests[0].testName).toBe('CD8%');
     });
 
     it('should handle errors from API and return an empty array', async () => {

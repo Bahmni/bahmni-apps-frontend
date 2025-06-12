@@ -5,7 +5,6 @@ import { getLabTests, formatLabTests } from '@services/labInvestigationService';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import {
   FormattedLabTest,
-  LabTestStatus,
   LabTestPriority,
 } from '../../types/labInvestigation';
 
@@ -35,7 +34,6 @@ describe('useLabInvestigations', () => {
     {
       id: 'aba2a637-05f5-44c6-9021-c5cd05548342',
       testName: 'CD8%',
-      status: LabTestStatus.Normal,
       priority: LabTestPriority.routine,
       orderedBy: 'Super Man',
       orderedDate: '2025-05-08T12:44:24+00:00',
@@ -46,7 +44,6 @@ describe('useLabInvestigations', () => {
     {
       id: '29e240ce-5a3d-4643-8d4b-ca5b4cbf665d',
       testName: 'Absolute eosinophil count test',
-      status: LabTestStatus.Normal,
       priority: LabTestPriority.routine,
       orderedBy: 'Super Man',
       orderedDate: '2025-04-09T13:21:22+00:00',
@@ -57,7 +54,6 @@ describe('useLabInvestigations', () => {
     {
       id: 'e7eca932-1d6f-44a4-bd94-e1105860ab77',
       testName: 'Clotting Panel',
-      status: LabTestStatus.Normal,
       priority: LabTestPriority.routine,
       orderedBy: 'Super Man',
       orderedDate: '2025-04-09T13:21:22+00:00',
