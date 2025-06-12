@@ -37,11 +37,13 @@ jest.mock('@carbon/react', () => ({
   AccordionItem: ({
     title,
     children,
+    open,
   }: {
     title: React.ReactNode;
     children: React.ReactNode;
+    open?: boolean;
   }) => (
-    <div>
+    <div data-testid="accordion-item" data-open={open}>
       <div data-testid="accordion-title">{title}</div>
       <div data-testid="accordion-content">{children}</div>
     </div>
@@ -234,5 +236,111 @@ describe('LabInvestigationControl', () => {
 
     expect(testNames[2].textContent).toBe('Liver Function');
     expect(testPriorities[2].textContent).toBe(LabTestPriority.routine);
+  });
+
+  it('renders the first accordion item as open by default', () => {
+    // Mock the hook to return lab tests
+    (useLabInvestigations as jest.Mock).mockReturnValue({
+      labTests: mockFormattedLabTests,
+      isLoading: false,
+      hasError: false,
+    });
+
+    render(<LabInvestigationControl />);
+
+    // Get all accordion items
+    const accordionItems = screen.getAllByTestId('accordion-item');
+
+    // Verify we have the expected number of accordion items
+    expect(accordionItems).toHaveLength(2);
+
+    // Check that the first accordion item has open=true
+    expect(accordionItems[0]).toHaveAttribute('data-open', 'true');
+
+    // Check that subsequent accordion items have open=false (or undefined)
+    expect(accordionItems[1]).toHaveAttribute('data-open', 'false');
+  });
+
+  it('maintains first accordion open state even with different data', () => {
+    // Test with a single date group
+    const singleDateGroup: LabTestsByDate[] = [
+      {
+        date: '06/01/2025',
+        rawDate: '2025-06-01T10:00:00+00:00',
+        tests: [
+          {
+            id: 'test-single',
+            testName: 'Single Test',
+            priority: LabTestPriority.routine,
+            orderedBy: 'Dr. Test',
+            orderedDate: '2025-06-01T10:00:00+00:00',
+            formattedDate: '06/01/2025',
+            result: undefined,
+            testType: 'Single Test',
+          },
+        ],
+      },
+    ];
+
+    (groupLabTestsByDate as jest.Mock).mockReturnValue(singleDateGroup);
+    (useLabInvestigations as jest.Mock).mockReturnValue({
+      labTests: [singleDateGroup[0].tests[0]],
+      isLoading: false,
+      hasError: false,
+    });
+
+    render(<LabInvestigationControl />);
+
+    const accordionItems = screen.getAllByTestId('accordion-item');
+
+    // Even with just one accordion item, it should be open
+    expect(accordionItems).toHaveLength(1);
+    expect(accordionItems[0]).toHaveAttribute('data-open', 'true');
+  });
+
+  it('renders first accordion as open even when there are many date groups', () => {
+    // Create multiple date groups
+    const manyDateGroups: LabTestsByDate[] = [
+      {
+        date: '06/10/2025',
+        rawDate: '2025-06-10T10:00:00+00:00',
+        tests: [mockFormattedLabTests[0]],
+      },
+      {
+        date: '06/09/2025',
+        rawDate: '2025-06-09T10:00:00+00:00',
+        tests: [mockFormattedLabTests[1]],
+      },
+      {
+        date: '06/08/2025',
+        rawDate: '2025-06-08T10:00:00+00:00',
+        tests: [mockFormattedLabTests[2]],
+      },
+      {
+        date: '06/07/2025',
+        rawDate: '2025-06-07T10:00:00+00:00',
+        tests: [mockFormattedLabTests[0]],
+      },
+    ];
+
+    (groupLabTestsByDate as jest.Mock).mockReturnValue(manyDateGroups);
+    (useLabInvestigations as jest.Mock).mockReturnValue({
+      labTests: mockFormattedLabTests,
+      isLoading: false,
+      hasError: false,
+    });
+
+    render(<LabInvestigationControl />);
+
+    const accordionItems = screen.getAllByTestId('accordion-item');
+
+    // Verify we have all accordion items
+    expect(accordionItems).toHaveLength(4);
+
+    // Only the first should be open
+    expect(accordionItems[0]).toHaveAttribute('data-open', 'true');
+    expect(accordionItems[1]).toHaveAttribute('data-open', 'false');
+    expect(accordionItems[2]).toHaveAttribute('data-open', 'false');
+    expect(accordionItems[3]).toHaveAttribute('data-open', 'false');
   });
 });
