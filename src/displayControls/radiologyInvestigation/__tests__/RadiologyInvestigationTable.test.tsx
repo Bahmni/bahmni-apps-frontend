@@ -4,6 +4,9 @@ import RadiologyOrdersTable from '../RadiologyInvestigationTable';
 import { useRadiologyInvestigation } from '@/hooks/useRadiologyInvestigation';
 import { RadiologyInvestigationByDate } from '@/types/radiologyInvestigation';
 import i18n from '@/setupTests.i18n';
+import { axe, toHaveNoViolations } from 'jest-axe';
+
+expect.extend(toHaveNoViolations);
 
 // Mock the hook
 jest.mock('@hooks/useRadiologyInvestigation');
@@ -611,6 +614,24 @@ describe('RadiologyOrdersTable', () => {
 
       expect(routineCell).toHaveTextContent('Routine X-Ray');
       expect(routineCell).not.toHaveTextContent('routine'); // Should NOT have tag for routine
+    });
+  });
+
+  describe('Accessibility', () => {
+    it('should have no accessibility violations when data is loaded', async () => {
+      // Arrange
+      mockUseRadiologyOrders.mockReturnValue({
+        radiologyInvestigations: mockRadiologyOrders,
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      // Act
+      const { container } = render(<RadiologyOrdersTable />);
+
+      // Assert
+      expect(await axe(container)).toHaveNoViolations();
     });
   });
 });
