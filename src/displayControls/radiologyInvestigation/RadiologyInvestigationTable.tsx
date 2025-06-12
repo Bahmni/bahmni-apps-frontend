@@ -1,25 +1,24 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { Tag, Tile, DataTableSkeleton } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
 import { useRadiologyInvestigation } from '@hooks/useRadiologyInvestigation';
 import { RadiologyInvestigation } from '@types/radiologyInvestigation';
 import { formatDate } from '@utils/date';
-import { FULL_MONTH_DATE_FORMAT } from '@constants/date';
+import { FULL_MONTH_DATE_FORMAT, ISO_DATE_FORMAT } from '@constants/date';
 import { sortRadiologyInvestigationsByPriority } from '@utils/radiologyInvestigation';
 import { groupByDate } from '@utils/common';
 import * as styles from './styles/RadiologyInvestigationTable.module.scss';
 
 /**
- * Component to display patient radiology orders grouped by date in accordion format
- * Each accordion item contains an ExpandableDataTable with radiology orders for that date
+ * Component to display patient radiology investigations grouped by date in accordion format
+ * Each accordion item contains an ExpandableDataTable with radiology investigations for that date
  */
 const RadiologyInvestigationTable: React.FC = () => {
   const { t } = useTranslation();
   const { radiologyInvestigations, loading, error } =
     useRadiologyInvestigation();
 
-  // Define table headers
   const headers = useMemo(
     () => [
       { key: 'testName', header: t('RADIOLOGY_TEST_NAME') },
@@ -38,47 +37,47 @@ const RadiologyInvestigationTable: React.FC = () => {
     [],
   );
 
-  // Group investigations by date
-  const groupedInvestigations = useMemo(() => {
-    const grouped = groupByDate(radiologyInvestigations, (order) =>
-      order.orderedDate.substring(0, 10),
-    );
+  const processedInvestigations = useMemo(() => {
+    const grouped = groupByDate(radiologyInvestigations, (order) => {
+      const result = formatDate(order.orderedDate, ISO_DATE_FORMAT);
+      return result.formattedResult;
+    });
 
-    return grouped.map((group) => ({
+    const groupedData = grouped.map((group) => ({
       date: group.date,
       orders: group.items,
     }));
-  }, [radiologyInvestigations]);
 
-  // Apply sorting to grouped data
-  const sortedRadiologyInvestigations = useMemo(() => {
-    return groupedInvestigations.map((investigationsByDate) => ({
+    return groupedData.map((investigationsByDate) => ({
       ...investigationsByDate,
       orders: sortRadiologyInvestigationsByPriority(
         investigationsByDate.orders,
       ),
     }));
-  }, [groupedInvestigations]);
+  }, [radiologyInvestigations]);
 
-  const renderCell = (order: RadiologyInvestigation, cellId: string) => {
-    switch (cellId) {
-      case 'testName':
-        return (
-          <>
-            {order.testName + ' '}
-            {order.priority === 'stat' && (
-              <Tag className={styles.urgentCell}>
-                {t('RADIOLOGY_PRIORITY_URGENT')}
-              </Tag>
-            )}
-          </>
-        );
-      case 'results':
-        return '--';
-      case 'orderedBy':
-        return order.orderedBy;
-    }
-  };
+  const renderCell = useCallback(
+    (order: RadiologyInvestigation, cellId: string) => {
+      switch (cellId) {
+        case 'testName':
+          return (
+            <>
+              {order.testName + ' '}
+              {order.priority === 'stat' && (
+                <Tag className={styles.urgentCell}>
+                  {t('RADIOLOGY_PRIORITY_URGENT')}
+                </Tag>
+              )}
+            </>
+          );
+        case 'results':
+          return '--';
+        case 'orderedBy':
+          return order.orderedBy;
+      }
+    },
+    [t, styles.urgentCell],
+  );
 
   return (
     <Tile
@@ -109,7 +108,7 @@ const RadiologyInvestigationTable: React.FC = () => {
           {t('NO_RADIOLOGY_ORDERS')}
         </p>
       )}
-      {sortedRadiologyInvestigations.map((ordersByDate, index) => {
+      {processedInvestigations.map((ordersByDate, index) => {
         const { date, orders } = ordersByDate;
 
         const formattedDate = formatDate(

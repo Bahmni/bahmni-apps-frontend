@@ -8,11 +8,3 @@ export interface RadiologyInvestigation {
   orderedBy: string;
   orderedDate: string;
 }
-
-/**
- * Interface for radiology investigations grouped by date
- */
-export interface RadiologyInvestigationByDate {
-  date: string;
-  orders: RadiologyInvestigation[];
-}

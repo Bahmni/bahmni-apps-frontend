@@ -20,15 +20,24 @@ jest.mock('@hooks/usePatientUUID', () => ({
 
 // Mock utilities
 jest.mock('@utils/date', () => ({
-  formatDate: jest.fn((date: string) => ({
-    formattedResult:
-      date === '2023-12-01'
-        ? 'December 01, 2023'
-        : date === '2023-11-30'
-          ? 'November 30, 2023'
-          : 'Formatted Date',
-    error: null,
-  })),
+  formatDate: jest.fn((date: string, format: string) => {
+    // Handle ISO date format for grouping
+    if (format === 'yyyy-MM-dd') {
+      if (date.startsWith('2023-12-01'))
+        return { formattedResult: '2023-12-01', error: null };
+      if (date.startsWith('2023-11-30'))
+        return { formattedResult: '2023-11-30', error: null };
+      return { formattedResult: date.substring(0, 10), error: null };
+    }
+    // Handle full month format for display
+    if (format === 'MMMM dd, yyyy') {
+      if (date === '2023-12-01')
+        return { formattedResult: 'December 01, 2023', error: null };
+      if (date === '2023-11-30')
+        return { formattedResult: 'November 30, 2023', error: null };
+    }
+    return { formattedResult: 'Formatted Date', error: null };
+  }),
 }));
 
 jest.mock('@utils/radiologyInvestigation', () => ({

@@ -13,8 +13,8 @@ interface UseRadiologyInvestigationResult {
 }
 
 /**
- * Custom hook to fetch and manage radiology orders for the current patient
- * @returns Object containing radiology orders, loading state, error state, and refetch function
+ * Custom hook to fetch and manage radiology investigations for the current patient
+ * @returns Object containing radiology investigations, loading state, error state, and refetch function
  */
 export const useRadiologyInvestigation =
   (): UseRadiologyInvestigationResult => {
@@ -51,7 +51,7 @@ export const useRadiologyInvestigation =
     }, [fetchRadiologyInvestigations]);
 
     return {
-      radiologyInvestigations: radiologyInvestigations,
+      radiologyInvestigations,
       loading,
       error,
       refetch: fetchRadiologyInvestigations,
