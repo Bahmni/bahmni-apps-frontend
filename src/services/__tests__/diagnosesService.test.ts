@@ -1,4 +1,4 @@
-import { getPatientDiagnosesByDate } from '../diagnosesService';
+import { getPatientDiagnoses } from '../diagnosesService';
 import { get } from '../api';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
 import { Condition, Bundle } from 'fhir/r4';
@@ -11,7 +11,7 @@ describe('diagnosesService', () => {
     jest.spyOn(console, 'error').mockImplementation();
   });
 
-  describe('getPatientDiagnosesByDate', () => {
+  describe('getPatientDiagnoses', () => {
     const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
 
     const createMockDiagnosis = (
@@ -63,57 +63,7 @@ describe('diagnosesService', () => {
     });
 
     describe('Happy Path Cases', () => {
-      it('should fetch, format, and group diagnoses by date', async () => {
-        const mockConditions = [
-          createMockDiagnosis({
-            id: 'diagnosis-1',
-            recordedDate: '2025-03-25T06:48:32+00:00',
-          }),
-          createMockDiagnosis({
-            id: 'diagnosis-2',
-            recordedDate: '2025-03-24T14:30:15+00:00',
-          }),
-        ];
-        const mockBundle = createMockBundle(mockConditions);
-
-        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
-
-        const result = await getPatientDiagnosesByDate(patientUUID);
-
-        expect(get).toHaveBeenCalledWith(
-          `/openmrs/ws/fhir2/R4/Condition?category=encounter-diagnosis&patient=${patientUUID}&_count=100&_sort=-_lastUpdated`,
-        );
-        expect(result).toHaveLength(2);
-        expect(result[0].date).toBe('2025-03-25'); // Newer date first (date only)
-        expect(result[0].diagnoses).toHaveLength(1);
-        expect(result[1].date).toBe('2025-03-24');
-        expect(result[1].diagnoses).toHaveLength(1);
-      });
-
-      it('should return empty array when no diagnoses exist', async () => {
-        const emptyBundle = createMockBundle([]);
-        (get as jest.Mock).mockResolvedValueOnce(emptyBundle);
-
-        const result = await getPatientDiagnosesByDate(patientUUID);
-
-        expect(result).toEqual([]);
-      });
-
-      it('should return empty array when bundle has no entries', async () => {
-        const bundleWithoutEntries: Bundle = {
-          resourceType: 'Bundle',
-          id: 'bundle-id',
-          type: 'searchset',
-          total: 0,
-        };
-        (get as jest.Mock).mockResolvedValueOnce(bundleWithoutEntries);
-
-        const result = await getPatientDiagnosesByDate(patientUUID);
-
-        expect(result).toEqual([]);
-      });
-
-      it('should group multiple diagnoses from same date', async () => {
+      it('should return array of diagnoses', async () => {
         const mockConditions = [
           createMockDiagnosis({
             id: 'diagnosis-1',
@@ -123,27 +73,55 @@ describe('diagnosesService', () => {
           createMockDiagnosis({
             id: 'diagnosis-2',
             code: { text: 'Hypertension' },
-            recordedDate: '2025-03-25T14:30:15+00:00',
+            recordedDate: '2025-03-24T14:30:15+00:00',
           }),
         ];
         const mockBundle = createMockBundle(mockConditions);
 
         (get as jest.Mock).mockResolvedValueOnce(mockBundle);
 
-        const result = await getPatientDiagnosesByDate(patientUUID);
+        const result = await getPatientDiagnoses(patientUUID);
 
-        expect(result).toHaveLength(1); // Same date means same group in new implementation
-        expect(result[0].date).toBe('2025-03-25'); // Date only
-        expect(result[0].diagnoses).toHaveLength(2);
-        expect(result[0].diagnoses[0].display).toBe('Diabetes');
-        expect(result[0].diagnoses[1].display).toBe('Hypertension');
+        expect(get).toHaveBeenCalledWith(
+          `/openmrs/ws/fhir2/R4/Condition?category=encounter-diagnosis&patient=${patientUUID}&_count=100&_sort=-_lastUpdated`,
+        );
+        expect(result).toHaveLength(2);
+        expect(result[0].id).toBe('diagnosis-1');
+        expect(result[0].display).toBe('Diabetes');
+        expect(result[1].id).toBe('diagnosis-2');
+        expect(result[1].display).toBe('Hypertension');
       });
 
-      it('should handle different verification statuses correctly', async () => {
+      it('should handle empty bundle gracefully', async () => {
+        const emptyBundle = createMockBundle([]);
+        (get as jest.Mock).mockResolvedValueOnce(emptyBundle);
+
+        const result = await getPatientDiagnoses(patientUUID);
+
+        expect(result).toEqual([]);
+      });
+
+      it('should validate diagnosis data properly', async () => {
+        const validCondition = createMockDiagnosis({
+          id: 'valid-diagnosis',
+          code: { text: 'Valid Diagnosis' },
+          recordedDate: '2025-03-25T06:48:32+00:00',
+        });
+        const mockBundle = createMockBundle([validCondition]);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientDiagnoses(patientUUID);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].id).toBe('valid-diagnosis');
+        expect(result[0].display).toBe('Valid Diagnosis');
+      });
+
+      it('should map certainty correctly', async () => {
         const mockConditions = [
           createMockDiagnosis({
-            id: 'diagnosis-1',
-            code: { text: 'Confirmed Diabetes' },
+            id: 'confirmed-diagnosis',
             verificationStatus: {
               coding: [
                 { code: 'confirmed', display: 'Confirmed', system: 'test' },
@@ -151,8 +129,7 @@ describe('diagnosesService', () => {
             },
           }),
           createMockDiagnosis({
-            id: 'diagnosis-2',
-            code: { text: 'Provisional Hypertension' },
+            id: 'provisional-diagnosis',
             verificationStatus: {
               coding: [
                 { code: 'provisional', display: 'Provisional', system: 'test' },
@@ -164,41 +141,87 @@ describe('diagnosesService', () => {
 
         (get as jest.Mock).mockResolvedValueOnce(mockBundle);
 
-        const result = await getPatientDiagnosesByDate(patientUUID);
+        const result = await getPatientDiagnoses(patientUUID);
 
-        expect(result[0].diagnoses[0].certainty).toEqual(
-          CERTAINITY_CONCEPTS[0],
-        ); // confirmed
-        expect(result[0].diagnoses[1].certainty).toEqual(
-          CERTAINITY_CONCEPTS[1],
-        ); // provisional
+        expect(result[0].certainty).toEqual(CERTAINITY_CONCEPTS[0]); // confirmed
+        expect(result[1].certainty).toEqual(CERTAINITY_CONCEPTS[1]); // provisional
       });
 
-      it('should sort dates in descending order (newest first)', async () => {
+      it('should handle malformed FHIR data', async () => {
+        const invalidCondition = createMockDiagnosis({ id: undefined });
+        const mockBundle = createMockBundle([invalidCondition]);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        await expect(getPatientDiagnoses(patientUUID)).rejects.toThrow(
+          'Incomplete diagnosis data',
+        );
+      });
+
+      it('should handle missing code.text (uses empty string)', async () => {
         const mockConditions = [
           createMockDiagnosis({
-            id: 'diagnosis-1',
-            recordedDate: '2025-03-20T06:48:32+00:00',
-          }),
-          createMockDiagnosis({
-            id: 'diagnosis-2',
-            recordedDate: '2025-03-25T14:30:15+00:00',
-          }),
-          createMockDiagnosis({
-            id: 'diagnosis-3',
-            recordedDate: '2025-03-22T10:15:00+00:00',
+            code: {
+              coding: [
+                {
+                  system: 'http://snomed.info/sct',
+                  code: '44054006',
+                  display: 'Diabetes mellitus type 2',
+                },
+              ],
+            },
           }),
         ];
         const mockBundle = createMockBundle(mockConditions);
 
         (get as jest.Mock).mockResolvedValueOnce(mockBundle);
 
-        const result = await getPatientDiagnosesByDate(patientUUID);
+        const result = await getPatientDiagnoses(patientUUID);
 
-        expect(result).toHaveLength(3);
-        expect(result[0].date).toBe('2025-03-25'); // Newest first (date only)
-        expect(result[1].date).toBe('2025-03-22');
-        expect(result[2].date).toBe('2025-03-20'); // Oldest last
+        expect(result[0].display).toBe('');
+      });
+
+      it('should handle missing recorder (uses empty string)', async () => {
+        const mockConditions = [createMockDiagnosis({ recorder: undefined })];
+        const mockBundle = createMockBundle(mockConditions);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientDiagnoses(patientUUID);
+
+        expect(result[0].recorder).toBe('');
+      });
+
+      it('should handle unknown verification status (defaults to provisional)', async () => {
+        const mockConditions = [
+          createMockDiagnosis({
+            verificationStatus: {
+              coding: [{ code: 'unknown', display: 'Unknown', system: 'test' }],
+            },
+          }),
+        ];
+        const mockBundle = createMockBundle(mockConditions);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientDiagnoses(patientUUID);
+
+        expect(result[0].certainty).toEqual(CERTAINITY_CONCEPTS[1]); // defaults to provisional
+      });
+
+      it('should handle missing verificationStatus (defaults to provisional)', async () => {
+        const mockConditions = [
+          createMockDiagnosis({
+            verificationStatus: undefined,
+          }),
+        ];
+        const mockBundle = createMockBundle(mockConditions);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientDiagnoses(patientUUID);
+
+        expect(result[0].certainty).toEqual(CERTAINITY_CONCEPTS[1]); // defaults to provisional
       });
 
       it('should filter out non-Condition resources from bundle', async () => {
@@ -225,11 +248,24 @@ describe('diagnosesService', () => {
 
         (get as jest.Mock).mockResolvedValueOnce(bundle);
 
-        const result = await getPatientDiagnosesByDate(patientUUID);
+        const result = await getPatientDiagnoses(patientUUID);
 
         expect(result).toHaveLength(1);
-        expect(result[0].diagnoses).toHaveLength(1);
-        expect(result[0].diagnoses[0].id).toBe('diagnosis-1');
+        expect(result[0].id).toBe('diagnosis-1');
+      });
+
+      it('should return empty array when bundle has no entries', async () => {
+        const bundleWithoutEntries: Bundle = {
+          resourceType: 'Bundle',
+          id: 'bundle-id',
+          type: 'searchset',
+          total: 0,
+        };
+        (get as jest.Mock).mockResolvedValueOnce(bundleWithoutEntries);
+
+        const result = await getPatientDiagnoses(patientUUID);
+
+        expect(result).toEqual([]);
       });
     });
 
@@ -238,7 +274,7 @@ describe('diagnosesService', () => {
         const apiError = new Error('API Error');
         (get as jest.Mock).mockRejectedValueOnce(apiError);
 
-        await expect(getPatientDiagnosesByDate(patientUUID)).rejects.toThrow(
+        await expect(getPatientDiagnoses(patientUUID)).rejects.toThrow(
           'API Error',
         );
       });
@@ -249,7 +285,18 @@ describe('diagnosesService', () => {
 
         (get as jest.Mock).mockResolvedValueOnce(mockBundle);
 
-        await expect(getPatientDiagnosesByDate(patientUUID)).rejects.toThrow(
+        await expect(getPatientDiagnoses(patientUUID)).rejects.toThrow(
+          'Incomplete diagnosis data',
+        );
+      });
+
+      it('should throw error when diagnosis has empty id', async () => {
+        const invalidCondition = createMockDiagnosis({ id: '' });
+        const mockBundle = createMockBundle([invalidCondition]);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        await expect(getPatientDiagnoses(patientUUID)).rejects.toThrow(
           'Incomplete diagnosis data',
         );
       });
@@ -260,7 +307,7 @@ describe('diagnosesService', () => {
 
         (get as jest.Mock).mockResolvedValueOnce(mockBundle);
 
-        await expect(getPatientDiagnosesByDate(patientUUID)).rejects.toThrow(
+        await expect(getPatientDiagnoses(patientUUID)).rejects.toThrow(
           'Incomplete diagnosis data',
         );
       });
@@ -273,20 +320,7 @@ describe('diagnosesService', () => {
 
         (get as jest.Mock).mockResolvedValueOnce(mockBundle);
 
-        await expect(getPatientDiagnosesByDate(patientUUID)).rejects.toThrow(
-          'Incomplete diagnosis data',
-        );
-      });
-
-      it('should throw error when diagnosis validation fails', async () => {
-        const invalidCondition = createMockDiagnosis({
-          id: '', // Empty string should fail validation
-        });
-        const mockBundle = createMockBundle([invalidCondition]);
-
-        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
-
-        await expect(getPatientDiagnosesByDate(patientUUID)).rejects.toThrow(
+        await expect(getPatientDiagnoses(patientUUID)).rejects.toThrow(
           'Incomplete diagnosis data',
         );
       });
@@ -298,7 +332,7 @@ describe('diagnosesService', () => {
         const emptyBundle = createMockBundle([]);
         (get as jest.Mock).mockResolvedValueOnce(emptyBundle);
 
-        const result = await getPatientDiagnosesByDate(emptyUUID);
+        const result = await getPatientDiagnoses(emptyUUID);
 
         expect(get).toHaveBeenCalledWith(
           `/openmrs/ws/fhir2/R4/Condition?category=encounter-diagnosis&patient=${emptyUUID}&_count=100&_sort=-_lastUpdated`,
@@ -311,50 +345,52 @@ describe('diagnosesService', () => {
         const emptyBundle = createMockBundle([]);
         (get as jest.Mock).mockResolvedValueOnce(emptyBundle);
 
-        await getPatientDiagnosesByDate(specialUUID);
+        const result = await getPatientDiagnoses(specialUUID);
 
         expect(get).toHaveBeenCalledWith(
           `/openmrs/ws/fhir2/R4/Condition?category=encounter-diagnosis&patient=${specialUUID}&_count=100&_sort=-_lastUpdated`,
         );
+        expect(result).toEqual([]);
       });
 
-      it('should handle diagnosis with missing code.text (uses empty string)', async () => {
+      it('should handle bundle with empty entry array', async () => {
+        const bundleWithEmptyEntries: Bundle = {
+          resourceType: 'Bundle',
+          id: 'bundle-id',
+          type: 'searchset',
+          total: 0,
+          entry: [],
+        };
+        (get as jest.Mock).mockResolvedValueOnce(bundleWithEmptyEntries);
+
+        const result = await getPatientDiagnoses(patientUUID);
+
+        expect(result).toEqual([]);
+      });
+
+      it('should handle multiple diagnoses with different statuses', async () => {
         const mockConditions = [
           createMockDiagnosis({
-            code: {
+            id: 'confirmed-diagnosis',
+            code: { text: 'Confirmed Diagnosis' },
+            verificationStatus: {
               coding: [
-                {
-                  system: 'http://snomed.info/sct',
-                  code: '44054006',
-                  display: 'Diabetes mellitus type 2',
-                },
+                { code: 'confirmed', display: 'Confirmed', system: 'test' },
               ],
             },
           }),
-        ];
-        const mockBundle = createMockBundle(mockConditions);
-
-        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
-
-        const result = await getPatientDiagnosesByDate(patientUUID);
-
-        expect(result[0].diagnoses[0].display).toBe('');
-      });
-
-      it('should handle diagnosis with missing recorder (uses empty string)', async () => {
-        const mockConditions = [createMockDiagnosis({ recorder: undefined })];
-        const mockBundle = createMockBundle(mockConditions);
-
-        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
-
-        const result = await getPatientDiagnosesByDate(patientUUID);
-
-        expect(result[0].diagnoses[0].recorder).toBe('');
-      });
-
-      it('should handle diagnosis with missing verificationStatus (defaults to provisional)', async () => {
-        const mockConditions = [
           createMockDiagnosis({
+            id: 'provisional-diagnosis',
+            code: { text: 'Provisional Diagnosis' },
+            verificationStatus: {
+              coding: [
+                { code: 'provisional', display: 'Provisional', system: 'test' },
+              ],
+            },
+          }),
+          createMockDiagnosis({
+            id: 'unknown-diagnosis',
+            code: { text: 'Unknown Diagnosis' },
             verificationStatus: undefined,
           }),
         ];
@@ -362,56 +398,12 @@ describe('diagnosesService', () => {
 
         (get as jest.Mock).mockResolvedValueOnce(mockBundle);
 
-        const result = await getPatientDiagnosesByDate(patientUUID);
+        const result = await getPatientDiagnoses(patientUUID);
 
-        expect(result[0].diagnoses[0].certainty).toEqual(
-          CERTAINITY_CONCEPTS[1],
-        ); // defaults to provisional
-      });
-
-      it('should handle diagnoses with same date but different times', async () => {
-        const mockConditions = [
-          createMockDiagnosis({
-            id: 'diagnosis-1',
-            recordedDate: '2025-03-25T06:48:32+00:00',
-          }),
-          createMockDiagnosis({
-            id: 'diagnosis-2',
-            recordedDate: '2025-03-25T23:59:59+00:00',
-          }),
-        ];
-        const mockBundle = createMockBundle(mockConditions);
-
-        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
-
-        const result = await getPatientDiagnosesByDate(patientUUID);
-
-        // In new implementation, same date means same group regardless of time
-        expect(result).toHaveLength(1);
-        expect(result[0].date).toBe('2025-03-25'); // Date only
-        expect(result[0].diagnoses).toHaveLength(2);
-      });
-
-      it('should handle diagnoses across different years', async () => {
-        const mockConditions = [
-          createMockDiagnosis({
-            id: 'diagnosis-1',
-            recordedDate: '2024-12-31T23:59:59+00:00',
-          }),
-          createMockDiagnosis({
-            id: 'diagnosis-2',
-            recordedDate: '2025-01-01T00:00:01+00:00',
-          }),
-        ];
-        const mockBundle = createMockBundle(mockConditions);
-
-        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
-
-        const result = await getPatientDiagnosesByDate(patientUUID);
-
-        expect(result).toHaveLength(2);
-        expect(result[0].date).toBe('2025-01-01'); // 2025 first (date only)
-        expect(result[1].date).toBe('2024-12-31'); // 2024 second (date only)
+        expect(result).toHaveLength(3);
+        expect(result[0].certainty).toEqual(CERTAINITY_CONCEPTS[0]); // confirmed
+        expect(result[1].certainty).toEqual(CERTAINITY_CONCEPTS[1]); // provisional
+        expect(result[2].certainty).toEqual(CERTAINITY_CONCEPTS[1]); // defaults to provisional
       });
     });
   });

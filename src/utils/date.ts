@@ -39,7 +39,7 @@ const LOCALE_MAP: Record<string, Locale> = {
  */
 function getDateFnsLocale(): Locale {
   const userLocale = getUserPreferredLocale();
-  return LOCALE_MAP[userLocale] || LOCALE_MAP['en'] || enGB;
+  return LOCALE_MAP[userLocale] || LOCALE_MAP['en'];
 }
 
 /**

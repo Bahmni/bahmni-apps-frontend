@@ -145,3 +145,43 @@ export const getPriorityByOrder = (
 
   return index === -1 ? 999 : index;
 };
+
+/**
+ * Interface for grouped items by date
+ */
+export interface GroupedByDate<T> {
+  date: string;
+  items: T[];
+}
+
+/**
+ * Groups items by date extracted from each item
+ * @param items - Array of items to group
+ * @param dateExtractor - Function to extract date string from item
+ * @returns Array of grouped items by date (no sorting applied)
+ */
+export function groupByDate<T>(
+  items: T[],
+  dateExtractor: (item: T) => string,
+): GroupedByDate<T>[] {
+  if (!items || items.length === 0) {
+    return [];
+  }
+
+  const dateMap = new Map<string, T[]>();
+
+  items.forEach((item) => {
+    const dateKey = dateExtractor(item);
+
+    if (!dateMap.has(dateKey)) {
+      dateMap.set(dateKey, []);
+    }
+
+    dateMap.get(dateKey)!.push(item);
+  });
+
+  return Array.from(dateMap.entries()).map(([date, items]) => ({
+    date,
+    items,
+  }));
+}

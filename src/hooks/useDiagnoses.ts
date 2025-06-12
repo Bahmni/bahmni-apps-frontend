@@ -1,12 +1,12 @@
 import { useState, useCallback, useEffect } from 'react';
-import { DiagnosesByDate } from '@types/diagnosis';
-import { getPatientDiagnosesByDate } from '@services/diagnosesService';
+import { Diagnosis } from '@types/diagnosis';
+import { getPatientDiagnoses } from '@services/diagnosesService';
 import { usePatientUUID } from './usePatientUUID';
 import { getFormattedError } from '@utils/common';
 import { useTranslation } from 'react-i18next';
 
 interface UseDiagnosesResult {
-  diagnoses: DiagnosesByDate[];
+  diagnoses: Diagnosis[];
   loading: boolean;
   error: Error | null;
   refetch: () => void;
@@ -17,7 +17,7 @@ interface UseDiagnosesResult {
  * @returns Object containing diagnoses, loading state, error state, and refetch function
  */
 export const useDiagnoses = (): UseDiagnosesResult => {
-  const [diagnoses, setDiagnoses] = useState<DiagnosesByDate[]>([]);
+  const [diagnoses, setDiagnoses] = useState<Diagnosis[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const patientUUID = usePatientUUID();
@@ -30,7 +30,7 @@ export const useDiagnoses = (): UseDiagnosesResult => {
         setError(new Error(t('ERROR_INVALID_PATIENT_UUID')));
         return;
       }
-      const diagnosesData = await getPatientDiagnosesByDate(patientUUID);
+      const diagnosesData = await getPatientDiagnoses(patientUUID);
       setDiagnoses(diagnosesData);
       setError(null);
     } catch (err) {

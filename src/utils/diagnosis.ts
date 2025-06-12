@@ -1,4 +1,4 @@
-import { FormattedDiagnosis } from '@types/diagnosis';
+import { Diagnosis } from '@types/diagnosis';
 import { getPriorityByOrder } from './common';
 
 /**
@@ -25,8 +25,8 @@ export const getCertaintyPriority = (certainty: string): number => {
  * @returns New sorted array (does not mutate original)
  */
 export const sortDiagnosesByCertainty = (
-  diagnoses: FormattedDiagnosis[],
-): FormattedDiagnosis[] => {
+  diagnoses: Diagnosis[],
+): Diagnosis[] => {
   return [...diagnoses].sort((a, b) => {
     return (
       getCertaintyPriority(a.certainty.code!) -

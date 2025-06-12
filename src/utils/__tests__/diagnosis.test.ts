@@ -1,4 +1,4 @@
-import { FormattedDiagnosis } from '@types/diagnosis';
+import { Diagnosis } from '@types/diagnosis';
 import {
   CERTAINTY_PRIORITY_ORDER,
   getCertaintyPriority,
@@ -10,7 +10,7 @@ const createMockDiagnosis = (
   id: string,
   display: string,
   certaintyCode: string,
-): FormattedDiagnosis => ({
+): Diagnosis => ({
   id,
   display,
   certainty: {

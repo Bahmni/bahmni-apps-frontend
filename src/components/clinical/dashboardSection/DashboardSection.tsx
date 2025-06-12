@@ -4,13 +4,14 @@ import { DashboardSectionConfig } from '@types/dashboardConfig';
 import * as styles from './styles/DashboardSection.module.scss';
 import AllergiesTable from '@displayControls/allergies/AllergiesTable';
 import ConditionsTable from '@displayControls/conditions/ConditionsTable';
-import { useTranslation } from 'react-i18next';
 import LabInvestigation from '@displayControls/labinvestigation/LabInvestigationControl';
 import DiagnosesTable from '@displayControls/diagnoses/DiagnosesTable';
+import RadiologyOrdersTable from '@displayControls/radiologyInvestigation/RadiologyInvestigationTable';
+import { useTranslation } from 'react-i18next';
 
 export interface DashboardSectionProps {
   section: DashboardSectionConfig;
-  ref: React.RefObject<HTMLDivElement>;
+  ref: React.RefObject<HTMLDivElement | null>;
 }
 
 //TODO: Refactor this to depend on Controls configuration
@@ -27,6 +28,8 @@ const renderSectionContent = (section: DashboardSectionConfig) => {
       );
     case 'Lab Investigations':
       return <LabInvestigation />;
+    case 'Radiology Investigations':
+      return <RadiologyOrdersTable />;
     default:
       return null;
   }
