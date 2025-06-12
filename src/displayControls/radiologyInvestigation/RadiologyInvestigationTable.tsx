@@ -37,7 +37,6 @@ const RadiologyInvestigationTable: React.FC = () => {
     [],
   );
 
-  // Sort radiology investigations within each date group by priority: urgent → routine
   const sortedRadiologyInvestigations = useMemo(() => {
     return radiologyInvestigations.map((investigationsByDate) => ({
       ...investigationsByDate,
@@ -47,15 +46,16 @@ const RadiologyInvestigationTable: React.FC = () => {
     }));
   }, [radiologyInvestigations]);
 
-  // Function to render cell content based on the cell ID
   const renderCell = (order: RadiologyInvestigation, cellId: string) => {
     switch (cellId) {
       case 'testName':
         return (
           <>
             {order.testName + ' '}
-            {order.priority === 'urgent' && (
-              <Tag className={styles.urgentCell}>{order.priority}</Tag>
+            {order.priority === 'stat' && (
+              <Tag className={styles.urgentCell}>
+                {t('RADIOLOGY_PRIORITY_URGENT')}
+              </Tag>
             )}
           </>
         );

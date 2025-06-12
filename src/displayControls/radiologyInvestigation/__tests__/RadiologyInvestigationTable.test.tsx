@@ -64,7 +64,7 @@ describe('RadiologyOrdersTable', () => {
         {
           id: 'order-1',
           testName: 'Chest X-Ray',
-          priority: 'urgent',
+          priority: 'stat',
           orderedBy: 'Dr. Smith',
           orderedDate: '2023-12-01',
         },
@@ -287,7 +287,7 @@ describe('RadiologyOrdersTable', () => {
     await waitFor(() => {
       const testNameCells = screen.getAllByTestId('cell-testName-0');
       expect(testNameCells[0]).toHaveTextContent('Chest X-Ray');
-      expect(testNameCells[0]).toHaveTextContent('urgent');
+      expect(testNameCells[0]).toHaveTextContent('Urgent');
     });
   });
 
@@ -311,7 +311,7 @@ describe('RadiologyOrdersTable', () => {
     });
   });
 
-  it('should render priority tag only for urgent orders', async () => {
+  it('should render priority tag only for stat orders (displayed as Urgent)', async () => {
     // Arrange
     mockUseRadiologyOrders.mockReturnValue({
       radiologyInvestigations: mockRadiologyOrders,
@@ -325,10 +325,10 @@ describe('RadiologyOrdersTable', () => {
 
     // Assert
     await waitFor(() => {
-      // Check urgent priority - should have tag
-      const urgentCell = screen.getAllByTestId('cell-testName-0')[0];
-      expect(urgentCell).toHaveTextContent('Chest X-Ray');
-      expect(urgentCell).toHaveTextContent('urgent');
+      // Check stat priority - should have tag displayed as "Urgent"
+      const statCell = screen.getAllByTestId('cell-testName-0')[0];
+      expect(statCell).toHaveTextContent('Chest X-Ray');
+      expect(statCell).toHaveTextContent('Urgent');
 
       // Check routine priority - should NOT have tag
       const routineCell = screen.getByTestId('cell-testName-1');
@@ -394,7 +394,7 @@ describe('RadiologyOrdersTable', () => {
     expect(screen.getByTestId('radiology-orders-table')).toBeInTheDocument();
   });
 
-  it('should handle stat priority correctly - no tag displayed', async () => {
+  it('should handle stat priority correctly - should display Urgent tag', async () => {
     // Arrange
     const ordersWithStat: RadiologyInvestigationByDate[] = [
       {
@@ -425,6 +425,7 @@ describe('RadiologyOrdersTable', () => {
     await waitFor(() => {
       const statCell = screen.getByTestId('cell-testName-0');
       expect(statCell).toHaveTextContent('Emergency CT');
+      expect(statCell).toHaveTextContent('Urgent');
       expect(statCell).not.toHaveTextContent('stat');
     });
   });
@@ -508,7 +509,7 @@ describe('RadiologyOrdersTable', () => {
           {
             id: 'order-1',
             testName: 'Recent X-Ray',
-            priority: 'urgent',
+            priority: 'stat',
             orderedBy: 'Dr. Recent',
             orderedDate: '2023-12-01',
           },
@@ -573,24 +574,17 @@ describe('RadiologyOrdersTable', () => {
         date: '2023-12-01',
         orders: [
           {
-            id: 'order-3',
-            testName: 'Stat MRI',
-            priority: 'stat',
-            orderedBy: 'Dr. Stat',
-            orderedDate: '2023-12-01',
-          },
-          {
-            id: 'order-1',
-            testName: 'Urgent CT Scan',
-            priority: 'urgent',
-            orderedBy: 'Dr. Urgent',
-            orderedDate: '2023-12-01',
-          },
-          {
             id: 'order-2',
             testName: 'Routine X-Ray',
             priority: 'routine',
             orderedBy: 'Dr. Routine',
+            orderedDate: '2023-12-01',
+          },
+          {
+            id: 'order-1',
+            testName: 'Stat CT Scan',
+            priority: 'stat',
+            orderedBy: 'Dr. Stat',
             orderedDate: '2023-12-01',
           },
         ],
@@ -607,20 +601,16 @@ describe('RadiologyOrdersTable', () => {
     // Act
     render(<RadiologyOrdersTable />);
 
-    // Assert - Verify urgent comes first, then routine, then stat
+    // Assert - Verify stat comes first, then routine
     await waitFor(() => {
-      const urgentCell = screen.getByTestId('cell-testName-0');
+      const statCell = screen.getByTestId('cell-testName-0');
       const routineCell = screen.getByTestId('cell-testName-1');
-      const statCell = screen.getByTestId('cell-testName-2');
 
-      expect(urgentCell).toHaveTextContent('Urgent CT Scan');
-      expect(urgentCell).toHaveTextContent('urgent'); // Should have tag for urgent
+      expect(statCell).toHaveTextContent('Stat CT Scan');
+      expect(statCell).toHaveTextContent('Urgent'); // Should have tag for stat (displayed as Urgent)
 
       expect(routineCell).toHaveTextContent('Routine X-Ray');
       expect(routineCell).not.toHaveTextContent('routine'); // Should NOT have tag for routine
-
-      expect(statCell).toHaveTextContent('Stat MRI');
-      expect(statCell).not.toHaveTextContent('stat'); // Should NOT have tag for stat
     });
   });
 });

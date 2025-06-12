@@ -4,7 +4,7 @@ import { Bundle, ServiceRequest } from 'fhir/r4';
 import {
   RadiologyInvestigation,
   RadiologyInvestigationByDate,
-} from '@/types/radiologyInvestigation';
+} from '@types/radiologyInvestigation';
 import { groupByDate } from '@utils/common';
 
 /**
