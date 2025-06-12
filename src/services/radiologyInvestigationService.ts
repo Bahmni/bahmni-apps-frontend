@@ -54,9 +54,8 @@ export async function getPatientRadiologyInvestigationsByDate(
   const bundle = await getPatientRadiologyInvestigationBundle(patientUUID);
   const formattedInvestigations = formatRadiologyInvestigations(bundle);
 
-  const grouped = groupByDate(
-    formattedInvestigations,
-    (order) => order.orderedDate,
+  const grouped = groupByDate(formattedInvestigations, (order) =>
+    order.orderedDate.substring(0, 10),
   );
 
   return grouped.map((group) => ({

@@ -50,7 +50,7 @@ describe('radiologyOrderService', () => {
         `/openmrs/ws/fhir2/R4/ServiceRequest?category=d3561dc0-5e07-11ef-8f7c-0242ac120002&patient=${mockPatientUUID}&_count=100&_sort=-_lastUpdated&numberOfVisits=5`,
       );
       expect(result).toHaveLength(1);
-      expect(result[0].date).toBe('2023-10-15T10:30:00.000Z');
+      expect(result[0].date).toBe('2023-10-15');
       expect(result[0].orders).toHaveLength(1);
       expect(result[0].orders[0]).toEqual({
         id: 'order-1',
@@ -120,7 +120,7 @@ describe('radiologyOrderService', () => {
                 display: 'Dr. Johnson',
               },
               occurrencePeriod: {
-                start: '2023-10-15T00:00:00.000Z',
+                start: '2023-10-15',
               },
             } as ServiceRequest,
           },
@@ -138,7 +138,7 @@ describe('radiologyOrderService', () => {
         testName: 'X-Ray',
         priority: 'routine',
         orderedBy: 'Dr. Johnson',
-        orderedDate: '2023-10-15T00:00:00.000Z',
+        orderedDate: '2023-10-15',
       });
     });
 
@@ -213,9 +213,9 @@ describe('radiologyOrderService', () => {
         await getPatientRadiologyInvestigationsByDate(mockPatientUUID);
 
       expect(result).toHaveLength(2);
-      expect(result[0].date).toBe('2023-10-15T10:30:00.000Z'); // Newer timestamp first
+      expect(result[0].date).toBe('2023-10-15'); // Newer timestamp first
       expect(result[0].orders).toHaveLength(2);
-      expect(result[1].date).toBe('2023-10-14T09:15:00.000Z');
+      expect(result[1].date).toBe('2023-10-14');
       expect(result[1].orders).toHaveLength(1);
     });
   });
