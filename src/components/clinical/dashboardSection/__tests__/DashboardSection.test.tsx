@@ -21,6 +21,12 @@ jest.mock('react-i18next', () => ({
   }),
 }));
 
+// Mock CSS modules
+jest.mock('../styles/DashboardSection.module.scss', () => ({
+  sectionTitle: 'sectionTitle',
+  sectionTile: 'sectionTile',
+}));
+
 // Mock the display control components
 jest.mock('@displayControls/allergies/AllergiesTable', () => ({
   __esModule: true,
@@ -39,8 +45,18 @@ jest.mock('@displayControls/labinvestigation/LabInvestigationControl', () => ({
 
 jest.mock('@displayControls/diagnoses/DiagnosesTable', () => ({
   __esModule: true,
-  default: () => <div data-testid="diagnoses-table">Lab Investigation</div>,
+  default: () => <div data-testid="diagnoses-table">Diagnoses Table</div>,
 }));
+
+jest.mock(
+  '@displayControls/radiologyInvestigation/RadiologyInvestigationTable',
+  () => ({
+    __esModule: true,
+    default: () => (
+      <div data-testid="radiology-orders-table">Radiology Orders Table</div>
+    ),
+  }),
+);
 
 describe('DashboardSection Component', () => {
   const mockSection: DashboardSectionConfig = {
@@ -51,7 +67,7 @@ describe('DashboardSection Component', () => {
   };
 
   // Handle for forwardRef in tests
-  const mockRef = jest.fn();
+  const mockRef = React.createRef<HTMLDivElement>();
 
   it('renders with the correct section name', () => {
     render(<DashboardSection section={mockSection} ref={mockRef} />);
@@ -80,9 +96,9 @@ describe('DashboardSection Component', () => {
   });
 
   it('accepts a ref prop', () => {
-    const mockRefFn = jest.fn();
+    const testRef = React.createRef<HTMLDivElement>();
 
-    render(<DashboardSection section={mockSection} ref={mockRefFn} />);
+    render(<DashboardSection section={mockSection} ref={testRef} />);
 
     // In a real component, we'd check ref.current
     // For our mocked component, we just verify the ref was passed
@@ -121,7 +137,7 @@ describe('DashboardSection Component', () => {
       expect(screen.getByTestId('allergies-table')).toBeInTheDocument();
     });
 
-    it('renders ConditionsTable when section name is Conditions', () => {
+    it('renders both ConditionsTable and DiagnosesTable when section name is Conditions', () => {
       const conditionsSection: DashboardSectionConfig = {
         id: 'conditions-id',
         name: 'Conditions',
@@ -132,6 +148,7 @@ describe('DashboardSection Component', () => {
       render(<DashboardSection section={conditionsSection} ref={mockRef} />);
 
       expect(screen.getByTestId('conditions-table')).toBeInTheDocument();
+      expect(screen.getByTestId('diagnoses-table')).toBeInTheDocument();
     });
 
     it('renders LabInvestigation when section name is Lab Investigations', () => {
@@ -147,6 +164,19 @@ describe('DashboardSection Component', () => {
       );
 
       expect(screen.getByTestId('lab-investigation')).toBeInTheDocument();
+    });
+
+    it('renders RadiologyOrdersTable when section name is Radiology Investigations', () => {
+      const radiologySection: DashboardSectionConfig = {
+        id: 'radiology-id',
+        name: 'Radiology Investigations',
+        icon: 'test-icon',
+        controls: [],
+      };
+
+      render(<DashboardSection section={radiologySection} ref={mockRef} />);
+
+      expect(screen.getByTestId('radiology-orders-table')).toBeInTheDocument();
     });
 
     it('renders no content for unknown section types', () => {

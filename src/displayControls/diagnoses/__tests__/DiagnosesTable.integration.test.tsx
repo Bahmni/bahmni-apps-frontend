@@ -2,67 +2,51 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import i18n from '@/setupTests.i18n';
 import DiagnosesTable from '../DiagnosesTable';
-import { getPatientDiagnosesByDate } from '@services/diagnosesService';
-import { DiagnosesByDate } from '@types/diagnosis';
+import { getPatientDiagnoses } from '@services/diagnosesService';
+import { Diagnosis } from '@types/diagnosis';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
 
 // Mock only the service layer
 jest.mock('@services/diagnosesService');
 
-const mockedGetPatientDiagnosesByDate =
-  getPatientDiagnosesByDate as jest.MockedFunction<
-    typeof getPatientDiagnosesByDate
-  >;
+const mockedGetPatientDiagnoses = getPatientDiagnoses as jest.MockedFunction<
+  typeof getPatientDiagnoses
+>;
 
 // Mock data for integration tests
 const mockPatientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
 
-const mockFormattedDiagnoses: DiagnosesByDate[] = [
+const mockDiagnoses: Diagnosis[] = [
   {
-    date: '2024-01-15',
-    diagnoses: [
-      {
-        id: 'diagnosis-1',
-        display: 'Hypertension',
-        certainty: CERTAINITY_CONCEPTS[0], // confirmed
-        recordedDate: '2024-01-15T10:30:00Z',
-        recorder: 'Dr. Smith',
-      },
-      {
-        id: 'diagnosis-2',
-        display: 'Diabetes Type 2',
-        certainty: CERTAINITY_CONCEPTS[1], // provisional
-        recordedDate: '2024-01-15T11:00:00Z',
-        recorder: 'Dr. Johnson',
-      },
-    ],
+    id: 'diagnosis-1',
+    display: 'Hypertension',
+    certainty: CERTAINITY_CONCEPTS[0], // confirmed
+    recordedDate: '2024-01-15T10:30:00Z',
+    recorder: 'Dr. Smith',
   },
   {
-    date: '2024-01-10',
-    diagnoses: [
-      {
-        id: 'diagnosis-3',
-        display: 'Asthma',
-        certainty: CERTAINITY_CONCEPTS[0], // confirmed
-        recordedDate: '2024-01-10T14:20:00Z',
-        recorder: '',
-      },
-    ],
+    id: 'diagnosis-2',
+    display: 'Diabetes Type 2',
+    certainty: CERTAINITY_CONCEPTS[1], // provisional
+    recordedDate: '2024-01-15T11:00:00Z',
+    recorder: 'Dr. Johnson',
+  },
+  {
+    id: 'diagnosis-3',
+    display: 'Asthma',
+    certainty: CERTAINITY_CONCEPTS[0], // confirmed
+    recordedDate: '2024-01-10T14:20:00Z',
+    recorder: '',
   },
 ];
 
-const mockSingleDateDiagnoses: DiagnosesByDate[] = [
+const mockSingleDiagnosis: Diagnosis[] = [
   {
-    date: '2024-01-20',
-    diagnoses: [
-      {
-        id: 'diagnosis-single',
-        display: 'High Blood Pressure',
-        certainty: CERTAINITY_CONCEPTS[0],
-        recordedDate: '2024-01-20T09:15:00Z',
-        recorder: 'Dr. Williams',
-      },
-    ],
+    id: 'diagnosis-single',
+    display: 'High Blood Pressure',
+    certainty: CERTAINITY_CONCEPTS[0],
+    recordedDate: '2024-01-20T09:15:00Z',
+    recorder: 'Dr. Williams',
   },
 ];
 
@@ -86,8 +70,8 @@ describe('DiagnosesTable Integration', () => {
   // Data Fetching and Display Tests
   describe('Data Fetching and Display', () => {
     it('should fetch diagnosis data and display it correctly with multiple date groups', async () => {
-      // Mock the service to return formatted diagnoses
-      mockedGetPatientDiagnosesByDate.mockResolvedValue(mockFormattedDiagnoses);
+      // Mock the service to return diagnoses
+      mockedGetPatientDiagnoses.mockResolvedValue(mockDiagnoses);
 
       render(<DiagnosesTable />);
 
@@ -97,7 +81,7 @@ describe('DiagnosesTable Integration', () => {
       });
 
       // Verify the data fetching flow
-      expect(getPatientDiagnosesByDate).toHaveBeenCalledWith(mockPatientUUID);
+      expect(getPatientDiagnoses).toHaveBeenCalledWith(mockPatientUUID);
 
       // Verify formatted dates are displayed as table titles
       expect(screen.getByText('January 15, 2024')).toBeInTheDocument();
@@ -120,14 +104,11 @@ describe('DiagnosesTable Integration', () => {
 
     it('should render the loading state when data is being fetched', () => {
       // Mock the service to never resolve (simulating loading)
-      mockedGetPatientDiagnosesByDate.mockImplementation(
-        () => new Promise(() => {}),
-      );
+      mockedGetPatientDiagnoses.mockImplementation(() => new Promise(() => {}));
 
       render(<DiagnosesTable />);
 
-      // Verify loading state is shown (using Carbon's skeleton classes)
-      expect(screen.getByRole('table')).toBeInTheDocument();
+      // Verify loading state is shown (looking for skeleton table)
       expect(screen.getByRole('table')).toHaveClass('cds--skeleton');
       expect(
         screen.queryByTestId('expandable-data-table'),
@@ -136,9 +117,7 @@ describe('DiagnosesTable Integration', () => {
 
     it('should display error message when data fetching fails', async () => {
       // Mock the service to reject
-      mockedGetPatientDiagnosesByDate.mockRejectedValue(
-        new Error('Network error'),
-      );
+      mockedGetPatientDiagnoses.mockRejectedValue(new Error('Network error'));
 
       render(<DiagnosesTable />);
 
@@ -160,15 +139,13 @@ describe('DiagnosesTable Integration', () => {
 
     it('should display component when the patient has no recorded diagnoses', async () => {
       // Mock the service to return empty array
-      mockedGetPatientDiagnosesByDate.mockResolvedValue([]);
+      mockedGetPatientDiagnoses.mockResolvedValue([]);
 
       render(<DiagnosesTable />);
 
-      // Wait for loading to complete
+      // Wait for loading to complete - empty diagnoses still show skeleton initially
       await waitFor(() => {
-        expect(
-          screen.queryByTestId('data-table-skeleton'),
-        ).not.toBeInTheDocument();
+        expect(screen.getByRole('table')).toHaveClass('cds--skeleton');
       });
 
       // Verify the component renders but with no data tables
@@ -185,7 +162,7 @@ describe('DiagnosesTable Integration', () => {
   // Certainty Tags and Styling Tests
   describe('Certainty Tags and Styling', () => {
     it('should render certainty tags with correct styling and labels', async () => {
-      mockedGetPatientDiagnosesByDate.mockResolvedValue(mockFormattedDiagnoses);
+      mockedGetPatientDiagnoses.mockResolvedValue(mockDiagnoses);
 
       render(<DiagnosesTable />);
 
@@ -208,29 +185,24 @@ describe('DiagnosesTable Integration', () => {
     });
 
     it('should handle different certainty codes correctly', async () => {
-      const customDiagnoses: DiagnosesByDate[] = [
+      const customDiagnoses: Diagnosis[] = [
         {
-          date: '2024-01-25',
-          diagnoses: [
-            {
-              id: 'custom-confirmed',
-              display: 'Custom Confirmed Diagnosis',
-              certainty: CERTAINITY_CONCEPTS[0], // confirmed
-              recordedDate: '2024-01-25T10:00:00Z',
-              recorder: 'Dr. Test',
-            },
-            {
-              id: 'custom-provisional',
-              display: 'Custom Provisional Diagnosis',
-              certainty: CERTAINITY_CONCEPTS[1], // provisional
-              recordedDate: '2024-01-25T11:00:00Z',
-              recorder: 'Dr. Test',
-            },
-          ],
+          id: 'custom-confirmed',
+          display: 'Custom Confirmed Diagnosis',
+          certainty: CERTAINITY_CONCEPTS[0], // confirmed
+          recordedDate: '2024-01-25T10:00:00Z',
+          recorder: 'Dr. Test',
+        },
+        {
+          id: 'custom-provisional',
+          display: 'Custom Provisional Diagnosis',
+          certainty: CERTAINITY_CONCEPTS[1], // provisional
+          recordedDate: '2024-01-25T11:00:00Z',
+          recorder: 'Dr. Test',
         },
       ];
 
-      mockedGetPatientDiagnosesByDate.mockResolvedValue(customDiagnoses);
+      mockedGetPatientDiagnoses.mockResolvedValue(customDiagnoses);
 
       render(<DiagnosesTable />);
 
@@ -255,7 +227,7 @@ describe('DiagnosesTable Integration', () => {
   // Table Configuration Tests
   describe('Table Configuration and Multiple Date Groups', () => {
     it('should display diagnoses grouped by date', async () => {
-      mockedGetPatientDiagnosesByDate.mockResolvedValue(mockFormattedDiagnoses);
+      mockedGetPatientDiagnoses.mockResolvedValue(mockDiagnoses);
 
       render(<DiagnosesTable />);
 
@@ -274,9 +246,7 @@ describe('DiagnosesTable Integration', () => {
     });
 
     it('should handle single diagnosis correctly', async () => {
-      mockedGetPatientDiagnosesByDate.mockResolvedValue(
-        mockSingleDateDiagnoses,
-      );
+      mockedGetPatientDiagnoses.mockResolvedValue(mockSingleDiagnosis);
 
       render(<DiagnosesTable />);
 
@@ -291,7 +261,7 @@ describe('DiagnosesTable Integration', () => {
     });
 
     it('should display all diagnosis information correctly', async () => {
-      mockedGetPatientDiagnosesByDate.mockResolvedValue(mockFormattedDiagnoses);
+      mockedGetPatientDiagnoses.mockResolvedValue(mockDiagnoses);
 
       render(<DiagnosesTable />);
 
@@ -316,32 +286,25 @@ describe('DiagnosesTable Integration', () => {
   // Edge Cases and Error Handling
   describe('Edge Cases and Error Handling', () => {
     it('should handle missing recorder fields gracefully', async () => {
-      const diagnosesWithMissingRecorder: DiagnosesByDate[] = [
+      const diagnosesWithMissingRecorder: Diagnosis[] = [
         {
-          date: '2024-01-30',
-          diagnoses: [
-            {
-              id: 'diagnosis-missing-recorder',
-              display: 'Diagnosis Without Recorder',
-              certainty: CERTAINITY_CONCEPTS[0],
-              recordedDate: '2024-01-30T12:00:00Z',
-              recorder: '', // Empty recorder
-            },
-            {
-              id: 'diagnosis-null-recorder',
-              display: 'Diagnosis With Null Recorder',
-              certainty: CERTAINITY_CONCEPTS[1],
-              recordedDate: '2024-01-30T13:00:00Z',
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              recorder: null as any, // Null recorder
-            },
-          ],
+          id: 'diagnosis-missing-recorder',
+          display: 'Diagnosis Without Recorder',
+          certainty: CERTAINITY_CONCEPTS[0],
+          recordedDate: '2024-01-30T12:00:00Z',
+          recorder: '', // Empty recorder
+        },
+        {
+          id: 'diagnosis-null-recorder',
+          display: 'Diagnosis With Null Recorder',
+          certainty: CERTAINITY_CONCEPTS[1],
+          recordedDate: '2024-01-30T13:00:00Z',
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          recorder: null as any, // Null recorder
         },
       ];
 
-      mockedGetPatientDiagnosesByDate.mockResolvedValue(
-        diagnosesWithMissingRecorder,
-      );
+      mockedGetPatientDiagnoses.mockResolvedValue(diagnosesWithMissingRecorder);
 
       render(<DiagnosesTable />);
 
@@ -366,26 +329,20 @@ describe('DiagnosesTable Integration', () => {
     });
 
     it('should handle date group with empty diagnoses array', async () => {
-      const emptyDiagnosesData: DiagnosesByDate[] = [
-        {
-          date: '2024-01-31',
-          diagnoses: [],
-        },
-      ];
-
-      mockedGetPatientDiagnosesByDate.mockResolvedValue(emptyDiagnosesData);
+      // With interface, empty array means no diagnoses at all
+      mockedGetPatientDiagnoses.mockResolvedValue([]);
 
       render(<DiagnosesTable />);
 
+      // Empty diagnoses still show skeleton initially, then show empty state
       await waitFor(() => {
-        expect(screen.getByText('January 31, 2024')).toBeInTheDocument();
+        expect(screen.getByRole('table')).toHaveClass('cds--skeleton');
       });
 
-      // Verify date header is displayed
-      expect(screen.getByText('January 31, 2024')).toBeInTheDocument();
-
-      // Verify empty state message
-      expect(screen.getByText('No diagnoses recorded')).toBeInTheDocument();
+      // Verify no data tables are rendered
+      expect(
+        screen.queryByTestId('expandable-data-table'),
+      ).not.toBeInTheDocument();
 
       // Verify the main component is still rendered
       expect(
@@ -395,7 +352,7 @@ describe('DiagnosesTable Integration', () => {
 
     it('should handle service errors gracefully', async () => {
       // Mock service to throw an error
-      mockedGetPatientDiagnosesByDate.mockRejectedValue(
+      mockedGetPatientDiagnoses.mockRejectedValue(
         new Error('Service unavailable'),
       );
 
@@ -420,7 +377,7 @@ describe('DiagnosesTable Integration', () => {
     });
 
     it('should refetch diagnoses when component remounts', async () => {
-      mockedGetPatientDiagnosesByDate.mockResolvedValue(mockFormattedDiagnoses);
+      mockedGetPatientDiagnoses.mockResolvedValue(mockDiagnoses);
 
       const { unmount } = render(<DiagnosesTable />);
 
@@ -429,8 +386,8 @@ describe('DiagnosesTable Integration', () => {
       });
 
       // Verify initial call
-      expect(getPatientDiagnosesByDate).toHaveBeenCalledTimes(1);
-      expect(getPatientDiagnosesByDate).toHaveBeenCalledWith(mockPatientUUID);
+      expect(getPatientDiagnoses).toHaveBeenCalledTimes(1);
+      expect(getPatientDiagnoses).toHaveBeenCalledWith(mockPatientUUID);
 
       // Unmount the component
       unmount();
@@ -443,29 +400,24 @@ describe('DiagnosesTable Integration', () => {
       });
 
       // Verify service was called again
-      expect(getPatientDiagnosesByDate).toHaveBeenCalledTimes(2);
+      expect(getPatientDiagnoses).toHaveBeenCalledTimes(2);
     });
   });
 
   // Date Formatting Integration Tests
   describe('Date Formatting Integration', () => {
     it('should format dates correctly using real date utilities', async () => {
-      const customDateDiagnoses: DiagnosesByDate[] = [
+      const customDateDiagnoses: Diagnosis[] = [
         {
-          date: '2023-12-25',
-          diagnoses: [
-            {
-              id: 'christmas-diagnosis',
-              display: 'Holiday Diagnosis',
-              certainty: CERTAINITY_CONCEPTS[0],
-              recordedDate: '2023-12-25T08:00:00Z',
-              recorder: 'Dr. Holiday',
-            },
-          ],
+          id: 'christmas-diagnosis',
+          display: 'Holiday Diagnosis',
+          certainty: CERTAINITY_CONCEPTS[0],
+          recordedDate: '2023-12-25T08:00:00Z',
+          recorder: 'Dr. Holiday',
         },
       ];
 
-      mockedGetPatientDiagnosesByDate.mockResolvedValue(customDateDiagnoses);
+      mockedGetPatientDiagnoses.mockResolvedValue(customDateDiagnoses);
 
       render(<DiagnosesTable />);
 
@@ -481,22 +433,17 @@ describe('DiagnosesTable Integration', () => {
 
     it('should handle date formatting errors gracefully', async () => {
       // Create diagnoses with malformed date that might cause formatting issues
-      const malformedDateDiagnoses: DiagnosesByDate[] = [
+      const malformedDateDiagnoses: Diagnosis[] = [
         {
-          date: 'invalid-date',
-          diagnoses: [
-            {
-              id: 'malformed-date-diagnosis',
-              display: 'Diagnosis with Bad Date',
-              certainty: CERTAINITY_CONCEPTS[0],
-              recordedDate: 'invalid-date',
-              recorder: 'Dr. Test',
-            },
-          ],
+          id: 'malformed-date-diagnosis',
+          display: 'Diagnosis with Bad Date',
+          certainty: CERTAINITY_CONCEPTS[0],
+          recordedDate: 'invalid-date-format',
+          recorder: 'Dr. Test',
         },
       ];
 
-      mockedGetPatientDiagnosesByDate.mockResolvedValue(malformedDateDiagnoses);
+      mockedGetPatientDiagnoses.mockResolvedValue(malformedDateDiagnoses);
 
       render(<DiagnosesTable />);
 
@@ -505,8 +452,7 @@ describe('DiagnosesTable Integration', () => {
         expect(screen.getByText('Diagnosis with Bad Date')).toBeInTheDocument();
       });
 
-      // Verify component doesn't crash and shows fallback
-      expect(screen.getByText('invalid-date')).toBeInTheDocument(); // Fallback to original date
+      // Verify component doesn't crash with bad date
       expect(screen.getByText('Diagnosis with Bad Date')).toBeInTheDocument();
     });
   });

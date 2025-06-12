@@ -5,6 +5,7 @@ import {
   getCookieByName,
   isStringEmpty,
   getPriorityByOrder,
+  groupByDate,
 } from '../common';
 import axios, { AxiosError } from 'axios';
 import i18n from '@/setupTests.i18n';
@@ -619,6 +620,215 @@ describe('common utility functions', () => {
       expect(getPriorityByOrder('high', duplicateOrder)).toBe(0);
       expect(getPriorityByOrder('medium', duplicateOrder)).toBe(1);
       expect(getPriorityByOrder('low', duplicateOrder)).toBe(3);
+    });
+  });
+
+  describe('groupByDate', () => {
+    it('should group items by date correctly', () => {
+      // Arrange
+      const items = [
+        { id: 1, date: '2023-01-01', name: 'Item 1' },
+        { id: 2, date: '2023-01-01', name: 'Item 2' },
+        { id: 3, date: '2023-01-02', name: 'Item 3' },
+      ];
+
+      // Act
+      const result = groupByDate(
+        items,
+        (item: { id: number; date: string; name: string }) => item.date,
+      );
+
+      // Assert
+      expect(result).toHaveLength(2);
+      expect(
+        result.find(
+          (g: { date: string; items: typeof items }) => g.date === '2023-01-01',
+        )?.items,
+      ).toHaveLength(2);
+      expect(
+        result.find(
+          (g: { date: string; items: typeof items }) => g.date === '2023-01-02',
+        )?.items,
+      ).toHaveLength(1);
+      expect(
+        result.find(
+          (g: { date: string; items: typeof items }) => g.date === '2023-01-01',
+        )?.items,
+      ).toEqual([
+        { id: 1, date: '2023-01-01', name: 'Item 1' },
+        { id: 2, date: '2023-01-01', name: 'Item 2' },
+      ]);
+    });
+
+    it('should handle empty array', () => {
+      // Act
+      const result = groupByDate([], () => '');
+
+      // Assert
+      expect(result).toEqual([]);
+    });
+
+    it('should handle null/undefined items', () => {
+      // Act & Assert
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect(groupByDate(null as any, () => '')).toEqual([]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect(groupByDate(undefined as any, () => '')).toEqual([]);
+    });
+
+    it('should group multiple items with same date', () => {
+      // Arrange
+      const items = [
+        { id: 1, date: '2023-01-01' },
+        { id: 2, date: '2023-01-01' },
+        { id: 3, date: '2023-01-01' },
+      ];
+
+      // Act
+      const result = groupByDate(
+        items,
+        (item: { id: number; date: string }) => item.date,
+      );
+
+      // Assert
+      expect(result).toHaveLength(1);
+      expect(result[0].date).toBe('2023-01-01');
+      expect(result[0].items).toHaveLength(3);
+    });
+
+    it('should handle single item', () => {
+      // Arrange
+      const items = [{ id: 1, date: '2023-01-01', name: 'Single Item' }];
+
+      // Act
+      const result = groupByDate(
+        items,
+        (item: { id: number; date: string; name: string }) => item.date,
+      );
+
+      // Assert
+      expect(result).toHaveLength(1);
+      expect(result[0].date).toBe('2023-01-01');
+      expect(result[0].items).toEqual([
+        { id: 1, date: '2023-01-01', name: 'Single Item' },
+      ]);
+    });
+
+    it('should handle complex date extraction', () => {
+      // Arrange
+      const items = [
+        { orderedDate: '2023-01-01T10:30:00Z', testName: 'Test 1' },
+        { orderedDate: '2023-01-01T15:45:00Z', testName: 'Test 2' },
+        { orderedDate: '2023-01-02T09:15:00Z', testName: 'Test 3' },
+      ];
+
+      // Act
+      const result = groupByDate(
+        items,
+        (item: { orderedDate: string; testName: string }) =>
+          item.orderedDate.substring(0, 10),
+      );
+
+      // Assert
+      expect(result).toHaveLength(2);
+      expect(
+        result.find(
+          (g: { date: string; items: typeof items }) => g.date === '2023-01-01',
+        )?.items,
+      ).toHaveLength(2);
+      expect(
+        result.find(
+          (g: { date: string; items: typeof items }) => g.date === '2023-01-02',
+        )?.items,
+      ).toHaveLength(1);
+    });
+
+    it('should preserve original item structure', () => {
+      // Arrange
+      const items = [
+        { id: 1, date: '2023-01-01', priority: 'urgent', testName: 'Test A' },
+        { id: 2, date: '2023-01-01', priority: 'routine', testName: 'Test B' },
+      ];
+
+      // Act
+      const result = groupByDate(
+        items,
+        (item: {
+          id: number;
+          date: string;
+          priority: string;
+          testName: string;
+        }) => item.date,
+      );
+
+      // Assert
+      expect(result[0].items[0]).toEqual({
+        id: 1,
+        date: '2023-01-01',
+        priority: 'urgent',
+        testName: 'Test A',
+      });
+      expect(result[0].items[1]).toEqual({
+        id: 2,
+        date: '2023-01-01',
+        priority: 'routine',
+        testName: 'Test B',
+      });
+    });
+
+    it('should handle items with different date formats', () => {
+      // Arrange
+      const items = [
+        { id: 1, shortDate: '2023-01-01' },
+        { id: 2, shortDate: '2023-01-02' },
+        { id: 3, shortDate: '2023-01-01' },
+      ];
+
+      // Act
+      const result = groupByDate(
+        items,
+        (item: { id: number; shortDate: string }) => item.shortDate,
+      );
+
+      // Assert
+      expect(result).toHaveLength(2);
+      expect(
+        result.find(
+          (g: { date: string; items: typeof items }) => g.date === '2023-01-01',
+        )?.items,
+      ).toHaveLength(2);
+      expect(
+        result.find(
+          (g: { date: string; items: typeof items }) => g.date === '2023-01-02',
+        )?.items,
+      ).toHaveLength(1);
+    });
+
+    it('should handle edge case with empty string dates', () => {
+      // Arrange
+      const items = [
+        { id: 1, date: '' },
+        { id: 2, date: '2023-01-01' },
+        { id: 3, date: '' },
+      ];
+
+      // Act
+      const result = groupByDate(
+        items,
+        (item: { id: number; date: string }) => item.date,
+      );
+
+      // Assert
+      expect(result).toHaveLength(2);
+      expect(
+        result.find((g: { date: string; items: typeof items }) => g.date === '')
+          ?.items,
+      ).toHaveLength(2);
+      expect(
+        result.find(
+          (g: { date: string; items: typeof items }) => g.date === '2023-01-01',
+        )?.items,
+      ).toHaveLength(1);
     });
   });
 });

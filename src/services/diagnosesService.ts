@@ -1,7 +1,7 @@
 import { PATIENT_DIAGNOSIS_RESOURCE_URL } from '@constants/app';
 import { get } from './api';
 import { Coding, Condition as Diagnoses, Bundle } from 'fhir/r4';
-import { DiagnosesByDate, FormattedDiagnosis } from '@types/diagnosis';
+import { Diagnosis } from '@types/diagnosis';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
 
 // Constants for better maintainability
@@ -50,7 +50,7 @@ const isValidDiagnosis = (diagnosis: Diagnoses): boolean => {
  * @param diagnoses - The FHIR diagnosis array to format
  * @returns An array of formatted diagnosis objects
  */
-function formatDiagnoses(bundle: Bundle): FormattedDiagnosis[] {
+function formatDiagnoses(bundle: Bundle): Diagnosis[] {
   // Extract conditions from bundle entries
   const diagnoses =
     bundle.entry
@@ -76,45 +76,13 @@ function formatDiagnoses(bundle: Bundle): FormattedDiagnosis[] {
 }
 
 /**
- * Groups diagnoses by date only (no recorder grouping)
- * @param diagnoses - The formatted diagnoses to group
- * @returns An array of diagnoses grouped by date
- */
-function groupDiagnosesByDate(
-  diagnoses: FormattedDiagnosis[],
-): DiagnosesByDate[] {
-  const dateMap = new Map<string, DiagnosesByDate>();
-
-  diagnoses.forEach((diagnosis) => {
-    const dateKey = diagnosis.recordedDate.substring(0, 10);
-
-    if (!dateMap.has(dateKey)) {
-      dateMap.set(dateKey, {
-        date: dateKey,
-
-        diagnoses: [], // Direct list of diagnoses, no recorder grouping
-      });
-    }
-
-    const dateGroup = dateMap.get(dateKey) as DiagnosesByDate;
-    dateGroup.diagnoses.push(diagnosis);
-  });
-
-  // Sort by date (newest first)
-  return Array.from(dateMap.values()).sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-  );
-}
-
-/**
  * Fetches and formats diagnoses for a given patient UUID
  * @param patientUUID - The UUID of the patient
- * @returns Promise resolving to an array of diagnoses grouped by date and recorder
+ * @returns Promise resolving to an array of diagnoses
  */
-export async function getPatientDiagnosesByDate(
+export async function getPatientDiagnoses(
   patientUUID: string,
-): Promise<DiagnosesByDate[]> {
-  const diagnoses = await getPatientDiagnosesBundle(patientUUID);
-  const formattedDiagnoses = formatDiagnoses(diagnoses);
-  return groupDiagnosesByDate(formattedDiagnoses);
+): Promise<Diagnosis[]> {
+  const bundle = await getPatientDiagnosesBundle(patientUUID);
+  return formatDiagnoses(bundle);
 }
