@@ -1,37 +1,21 @@
 import { get } from './api';
 import { PATIENT_LAB_INVESTIGATION_RESOURCE_URL } from '@constants/app';
 import {
-  FhirLabTest,
-  FhirLabTestBundle,
   FormattedLabTest,
-  LabTestStatus,
   LabTestPriority,
   LabTestsByDate,
 } from '@types/labInvestigation';
 import { getFormattedError } from '@utils/common';
 import { formatDate } from '@utils/date';
 import notificationService from './notificationService';
-
-/**
- * Maps a FHIR status code to LabTestStatus enum
- */
-export const mapLabTestStatus = (labTest: FhirLabTest): LabTestStatus => {
-  switch (labTest.status) {
-    case 'Pending':
-      return LabTestStatus.Pending;
-    case 'Abnormal':
-      return LabTestStatus.Abnormal;
-    case 'Normal':
-      return LabTestStatus.Normal;
-    default:
-      return LabTestStatus.Normal;
-  }
-};
+import { Bundle, ServiceRequest } from 'fhir/r4';
 
 /**
  * Maps a FHIR priority code to LabTestPriority enum
  */
-export const mapLabTestPriority = (labTest: FhirLabTest): LabTestPriority => {
+export const mapLabTestPriority = (
+  labTest: ServiceRequest,
+): LabTestPriority => {
   switch (labTest.priority) {
     case 'routine':
       return LabTestPriority.routine;
@@ -42,6 +26,26 @@ export const mapLabTestPriority = (labTest: FhirLabTest): LabTestPriority => {
   }
 };
 
+function filterLabTestEntries(labTestBundle: Bundle<ServiceRequest>) {
+  if (!labTestBundle.entry) return [];
+
+  //Collect all IDs that are being replaced
+  const replacedIds = new Set(
+    labTestBundle.entry
+      .flatMap((entry) => entry.resource?.replaces || [])
+      .map((ref) => ref.reference?.split('/').pop()) // extract ID from reference like "ServiceRequest/xyz"
+      .filter(Boolean), // remove undefined/null
+  );
+
+  // Filter out entries that either have a "replaces" field or are being replaced
+  return labTestBundle.entry.filter((entry) => {
+    const entryId = entry.resource?.id;
+    const isReplacer = entry.resource?.replaces;
+    const isReplaced = replacedIds.has(entryId);
+    return !isReplacer && !isReplaced;
+  });
+}
+
 /**
  * Fetches lab tests for a given patient UUID from the FHIR R4 endpoint
  * @param patientUUID - The UUID of the patient
@@ -49,10 +53,17 @@ export const mapLabTestPriority = (labTest: FhirLabTest): LabTestPriority => {
  */
 export async function getPatientLabTestsBundle(
   patientUUID: string,
-): Promise<FhirLabTestBundle> {
-  return await get<FhirLabTestBundle>(
+): Promise<Bundle<ServiceRequest>> {
+  const fhirLabTestBundle = await get<Bundle<ServiceRequest>>(
     `${PATIENT_LAB_INVESTIGATION_RESOURCE_URL(patientUUID)}`,
   );
+
+  const filteredEntries = filterLabTestEntries(fhirLabTestBundle);
+
+  return {
+    ...fhirLabTestBundle,
+    entry: filteredEntries,
+  };
 }
 
 /**
@@ -60,10 +71,16 @@ export async function getPatientLabTestsBundle(
  * @param patientUUID - The UUID of the patient
  * @returns Promise resolving to an array of FhirLabTest
  */
-export async function getLabTests(patientUUID: string): Promise<FhirLabTest[]> {
+export async function getLabTests(
+  patientUUID: string,
+): Promise<ServiceRequest[]> {
   try {
     const fhirLabTestBundle = await getPatientLabTestsBundle(patientUUID);
-    return fhirLabTestBundle.entry?.map((entry) => entry.resource) || [];
+    return (
+      fhirLabTestBundle.entry
+        ?.map((entry) => entry.resource)
+        .filter((r): r is ServiceRequest => r !== undefined) || []
+    );
   } catch (error) {
     const { title, message } = getFormattedError(error);
     notificationService.showError(title, message);
@@ -76,7 +93,7 @@ export async function getLabTests(patientUUID: string): Promise<FhirLabTest[]> {
  * @param labTest - The FHIR lab test to check
  * @returns A string indicating the test type: "Panel", "Single Test", or "X Tests"
  */
-export const determineTestType = (labTest: FhirLabTest): string => {
+export const determineTestType = (labTest: ServiceRequest): string => {
   // Check if the test has an extension that indicates it's a panel
   const panelExtension = labTest.extension?.find(
     (ext) =>
@@ -97,30 +114,36 @@ export const determineTestType = (labTest: FhirLabTest): string => {
  * @param labTests - The FHIR lab test array to format
  * @returns An array of formatted lab test objects
  */
-export function formatLabTests(labTests: FhirLabTest[]): FormattedLabTest[] {
+export function formatLabTests(labTests: ServiceRequest[]): FormattedLabTest[] {
   try {
-    return labTests.map((labTest) => {
-      const status = mapLabTestStatus(labTest);
-      const priority = mapLabTestPriority(labTest);
-      const orderedDate = labTest.occurrencePeriod.start;
-      const dateFormatResult = formatDate(orderedDate, 'MMMM d, yyyy');
-      const formattedDate =
-        dateFormatResult.formattedResult || orderedDate.split('T')[0];
-      const testType = determineTestType(labTest);
+    return labTests
+      .filter(
+        (labTest): labTest is ServiceRequest & { id: string } => !!labTest.id,
+      )
+      .map((labTest) => {
+        const priority = mapLabTestPriority(labTest);
+        const orderedDate = labTest.occurrencePeriod?.start;
+        let formattedDate;
+        if (orderedDate) {
+          const dateFormatResult = formatDate(orderedDate, 'MMMM d, yyyy');
+          formattedDate =
+            dateFormatResult.formattedResult || orderedDate.split('T')[0];
+        }
 
-      return {
-        id: labTest.id,
-        testName: labTest.code.text,
-        status,
-        priority,
-        orderedBy: labTest.requester.display,
-        orderedDate,
-        formattedDate,
-        // Result would typically come from a separate Observation resource
-        result: undefined,
-        testType,
-      };
-    });
+        const testType = determineTestType(labTest);
+
+        return {
+          id: labTest.id,
+          testName: labTest.code?.text ?? '',
+          priority,
+          orderedBy: labTest.requester?.display ?? '',
+          orderedDate: orderedDate ?? '',
+          formattedDate: formattedDate ?? '',
+          // Result would typically come from a separate Observation resource
+          result: undefined,
+          testType,
+        };
+      });
   } catch (error) {
     const { title, message } = getFormattedError(error);
     notificationService.showError(title, message);

@@ -27,7 +27,7 @@ export const PATIENT_VISITS_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 + `/Encounter?subject:Patient=${patientUUID}&_tag=visit`;
 export const PATIENT_LAB_INVESTIGATION_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 +
-  `/ServiceRequest?category=${LAB_ORDER_TYPE_UUID}&patient=${patientUUID}&numberOfVisits=5`;
+  `/ServiceRequest?category=${LAB_ORDER_TYPE_UUID}&patient=${patientUUID}&numberOfVisits=5&_count=100&_sort=_lastUpdated`;
 export const DASHBOARD_CONFIG_URL = (dashboardURL: string) =>
   `/bahmni_config/openmrs/apps/clinical/v2/dashboards/${dashboardURL}`;
 export const PATIENT_DIAGNOSIS_RESOURCE_URL = (patientUUID: string) =>
