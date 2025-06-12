@@ -1,8 +1,8 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import RadiologyOrdersTable from '../RadiologyInvestigationTable';
-import { useRadiologyInvestigation } from '@/hooks/useRadiologyInvestigation';
-import { RadiologyInvestigationByDate } from '@/types/radiologyInvestigation';
+import { useRadiologyInvestigation } from '@hooks/useRadiologyInvestigation';
+import { RadiologyInvestigationByDate } from '@types/radiologyInvestigation';
 import i18n from '@/setupTests.i18n';
 import { axe, toHaveNoViolations } from 'jest-axe';
 

@@ -2,12 +2,12 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { I18nextProvider } from 'react-i18next';
 import RadiologyInvestigationTable from '../RadiologyInvestigationTable';
-import { getPatientRadiologyInvestigationsByDate } from '@/services/radiologyInvestigationService';
-import { RadiologyInvestigationByDate } from '@/types/radiologyInvestigation';
+import { getPatientRadiologyInvestigationsByDate } from '@services/radiologyInvestigationService';
+import { RadiologyInvestigationByDate } from '@types/radiologyInvestigation';
 import i18n from '@/setupTests.i18n';
 
 // Mock the service layer only (integration test pattern)
-jest.mock('@/services/radiologyInvestigationService');
+jest.mock('@services/radiologyInvestigationService');
 const mockGetPatientRadiologyInvestigationsByDate =
   getPatientRadiologyInvestigationsByDate as jest.MockedFunction<
     typeof getPatientRadiologyInvestigationsByDate

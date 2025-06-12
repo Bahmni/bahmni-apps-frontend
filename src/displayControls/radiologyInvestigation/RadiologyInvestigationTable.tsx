@@ -3,7 +3,7 @@ import { Tag, Tile, DataTableSkeleton } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
 import { useRadiologyInvestigation } from '@hooks/useRadiologyInvestigation';
-import { RadiologyInvestigation } from '@/types/radiologyInvestigation';
+import { RadiologyInvestigation } from '@types/radiologyInvestigation';
 import { formatDate } from '@utils/date';
 import { FULL_MONTH_DATE_FORMAT } from '@constants/date';
 import { sortRadiologyInvestigationsByPriority } from '@utils/radiologyInvestigation';

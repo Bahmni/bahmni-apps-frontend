@@ -1,4 +1,4 @@
-import { RadiologyInvestigation } from '@/types/radiologyInvestigation';
+import { RadiologyInvestigation } from '@types/radiologyInvestigation';
 import {
   PRIORITY_ORDER,
   getRadiologyPriority,

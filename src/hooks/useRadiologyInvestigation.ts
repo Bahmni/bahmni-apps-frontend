@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { RadiologyInvestigationByDate } from '@types/radiologyInvestigation';
-import { getPatientRadiologyInvestigationsByDate } from '@/services/radiologyInvestigationService';
+import { getPatientRadiologyInvestigationsByDate } from '@services/radiologyInvestigationService';
 import { usePatientUUID } from './usePatientUUID';
 import { getFormattedError } from '@utils/common';
 import { useTranslation } from 'react-i18next';

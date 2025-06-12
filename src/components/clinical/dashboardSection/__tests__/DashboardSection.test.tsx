@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import DashboardSection from '../DashboardSection';
-import { DashboardSectionConfig } from '@/types/dashboardConfig';
+import { DashboardSectionConfig } from '@types/dashboardConfig';
 
 // Mock dependencies
 jest.mock('@carbon/react', () => ({
