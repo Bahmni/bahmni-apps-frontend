@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import DiagnosesTable from '../DiagnosesTable';
 import { useDiagnoses } from '@hooks/useDiagnoses';
-import { DiagnosesByDate, FormattedDiagnosis } from '@types/diagnosis';
+import { DiagnosesByDate, Diagnosis } from '@types/diagnosis';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
 import { FULL_MONTH_DATE_FORMAT } from '@constants/date';
 import { formatDate } from '@utils/date';
@@ -103,7 +103,7 @@ const mockUseDiagnoses = useDiagnoses as jest.MockedFunction<
 const mockFormatDate = formatDate as jest.MockedFunction<typeof formatDate>;
 
 // Test data
-const mockConfirmedDiagnosis: FormattedDiagnosis = {
+const mockConfirmedDiagnosis: Diagnosis = {
   id: 'diagnosis-1',
   display: 'Hypertension',
   certainty: CERTAINITY_CONCEPTS[0], // confirmed
@@ -111,7 +111,7 @@ const mockConfirmedDiagnosis: FormattedDiagnosis = {
   recorder: 'Dr. Smith',
 };
 
-const mockProvisionalDiagnosis: FormattedDiagnosis = {
+const mockProvisionalDiagnosis: Diagnosis = {
   id: 'diagnosis-2',
   display: 'Diabetes Type 2',
   certainty: CERTAINITY_CONCEPTS[1], // provisional
@@ -119,7 +119,7 @@ const mockProvisionalDiagnosis: FormattedDiagnosis = {
   recorder: 'Dr. Johnson',
 };
 
-const mockDiagnosisWithoutRecorder: FormattedDiagnosis = {
+const mockDiagnosisWithoutRecorder: Diagnosis = {
   id: 'diagnosis-3',
   display: 'Asthma',
   certainty: CERTAINITY_CONCEPTS[0],
@@ -459,7 +459,7 @@ describe('DiagnosesTable Component', () => {
       });
 
       it('should handle different certainty codes correctly', () => {
-        const customDiagnosis: FormattedDiagnosis = {
+        const customDiagnosis: Diagnosis = {
           ...mockConfirmedDiagnosis,
           certainty: { ...CERTAINITY_CONCEPTS[1], code: 'provisional' },
         };
@@ -505,7 +505,7 @@ describe('DiagnosesTable Component', () => {
       });
 
       it('should handle null recorder', () => {
-        const diagnosisWithNullRecorder: FormattedDiagnosis = {
+        const diagnosisWithNullRecorder: Diagnosis = {
           ...mockConfirmedDiagnosis,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           recorder: null as any,
@@ -527,7 +527,7 @@ describe('DiagnosesTable Component', () => {
       });
 
       it('should handle undefined recorder', () => {
-        const diagnosisWithUndefinedRecorder: FormattedDiagnosis = {
+        const diagnosisWithUndefinedRecorder: Diagnosis = {
           ...mockConfirmedDiagnosis,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           recorder: undefined as any,
@@ -658,7 +658,7 @@ describe('DiagnosesTable Component', () => {
 
   describe('Diagnosis Sorting', () => {
     it('should sort diagnoses by certainty - confirmed before provisional', () => {
-      const provisionalFirst: FormattedDiagnosis = {
+      const provisionalFirst: Diagnosis = {
         id: 'diagnosis-1',
         display: 'Provisional Diagnosis',
         certainty: { ...CERTAINITY_CONCEPTS[1], code: 'provisional' },
@@ -666,7 +666,7 @@ describe('DiagnosesTable Component', () => {
         recorder: 'Dr. Smith',
       };
 
-      const confirmedSecond: FormattedDiagnosis = {
+      const confirmedSecond: Diagnosis = {
         id: 'diagnosis-2',
         display: 'Confirmed Diagnosis',
         certainty: { ...CERTAINITY_CONCEPTS[0], code: 'confirmed' },
@@ -701,7 +701,7 @@ describe('DiagnosesTable Component', () => {
     });
 
     it('should maintain stable sorting for same certainty level', () => {
-      const firstConfirmed: FormattedDiagnosis = {
+      const firstConfirmed: Diagnosis = {
         id: 'diagnosis-1',
         display: 'First Confirmed',
         certainty: { ...CERTAINITY_CONCEPTS[0], code: 'confirmed' },
@@ -709,7 +709,7 @@ describe('DiagnosesTable Component', () => {
         recorder: 'Dr. A',
       };
 
-      const secondConfirmed: FormattedDiagnosis = {
+      const secondConfirmed: Diagnosis = {
         id: 'diagnosis-2',
         display: 'Second Confirmed',
         certainty: { ...CERTAINITY_CONCEPTS[0], code: 'confirmed' },
@@ -717,7 +717,7 @@ describe('DiagnosesTable Component', () => {
         recorder: 'Dr. B',
       };
 
-      const thirdConfirmed: FormattedDiagnosis = {
+      const thirdConfirmed: Diagnosis = {
         id: 'diagnosis-3',
         display: 'Third Confirmed',
         certainty: { ...CERTAINITY_CONCEPTS[0], code: 'confirmed' },
@@ -818,7 +818,7 @@ describe('DiagnosesTable Component', () => {
     });
 
     it('should handle unknown certainty codes by placing them last', () => {
-      const confirmedDiagnosis: FormattedDiagnosis = {
+      const confirmedDiagnosis: Diagnosis = {
         id: 'diagnosis-1',
         display: 'Confirmed Diagnosis',
         certainty: { ...CERTAINITY_CONCEPTS[0], code: 'confirmed' },
@@ -826,7 +826,7 @@ describe('DiagnosesTable Component', () => {
         recorder: 'Dr. A',
       };
 
-      const unknownDiagnosis: FormattedDiagnosis = {
+      const unknownDiagnosis: Diagnosis = {
         id: 'diagnosis-2',
         display: 'Unknown Diagnosis',
         certainty: {
@@ -838,7 +838,7 @@ describe('DiagnosesTable Component', () => {
         recorder: 'Dr. B',
       };
 
-      const provisionalDiagnosis: FormattedDiagnosis = {
+      const provisionalDiagnosis: Diagnosis = {
         id: 'diagnosis-3',
         display: 'Provisional Diagnosis',
         certainty: { ...CERTAINITY_CONCEPTS[1], code: 'provisional' },

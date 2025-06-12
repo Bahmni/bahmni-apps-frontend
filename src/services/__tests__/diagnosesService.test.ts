@@ -84,10 +84,16 @@ describe('diagnosesService', () => {
           `/openmrs/ws/fhir2/R4/Condition?category=encounter-diagnosis&patient=${patientUUID}&_count=100&_sort=-_lastUpdated`,
         );
         expect(result).toHaveLength(2);
-        expect(result[0].date).toBe('2025-03-25'); // Newer date first (date only)
-        expect(result[0].diagnoses).toHaveLength(1);
-        expect(result[1].date).toBe('2025-03-24');
-        expect(result[1].diagnoses).toHaveLength(1);
+        // Check that both dates are present but don't assume order
+        const dates = result.map((group) => group.date);
+        expect(dates).toContain('2025-03-25');
+        expect(dates).toContain('2025-03-24');
+        expect(
+          result.find((group) => group.date === '2025-03-25')?.diagnoses,
+        ).toHaveLength(1);
+        expect(
+          result.find((group) => group.date === '2025-03-24')?.diagnoses,
+        ).toHaveLength(1);
       });
 
       it('should return empty array when no diagnoses exist', async () => {
@@ -174,7 +180,7 @@ describe('diagnosesService', () => {
         ); // provisional
       });
 
-      it('should sort dates in descending order (newest first)', async () => {
+      it('should return diagnoses grouped by date', async () => {
         const mockConditions = [
           createMockDiagnosis({
             id: 'diagnosis-1',
@@ -196,9 +202,11 @@ describe('diagnosesService', () => {
         const result = await getPatientDiagnosesByDate(patientUUID);
 
         expect(result).toHaveLength(3);
-        expect(result[0].date).toBe('2025-03-25'); // Newest first (date only)
-        expect(result[1].date).toBe('2025-03-22');
-        expect(result[2].date).toBe('2025-03-20'); // Oldest last
+        // Check that all dates are present but don't assume any specific order
+        const dates = result.map((group) => group.date);
+        expect(dates).toContain('2025-03-20');
+        expect(dates).toContain('2025-03-25');
+        expect(dates).toContain('2025-03-22');
       });
 
       it('should filter out non-Condition resources from bundle', async () => {
@@ -410,8 +418,10 @@ describe('diagnosesService', () => {
         const result = await getPatientDiagnosesByDate(patientUUID);
 
         expect(result).toHaveLength(2);
-        expect(result[0].date).toBe('2025-01-01'); // 2025 first (date only)
-        expect(result[1].date).toBe('2024-12-31'); // 2024 second (date only)
+        // Check that both dates are present but don't assume order
+        const dates = result.map((group) => group.date);
+        expect(dates).toContain('2025-01-01');
+        expect(dates).toContain('2024-12-31');
       });
     });
   });

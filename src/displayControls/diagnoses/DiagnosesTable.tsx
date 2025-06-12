@@ -3,7 +3,7 @@ import { Tag, Tile, DataTableSkeleton } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
 import { useDiagnoses } from '@hooks/useDiagnoses';
-import { FormattedDiagnosis } from '@types/diagnosis';
+import { Diagnosis } from '@types/diagnosis';
 import { formatDate } from '@utils/date';
 import { FULL_MONTH_DATE_FORMAT } from '@constants/date';
 import { sortDiagnosesByCertainty } from '@utils/diagnosis';
@@ -43,7 +43,7 @@ const DiagnosesTable: React.FC = () => {
   }, [diagnoses]);
 
   // Function to render cell content based on the cell ID
-  const renderCell = (diagnosis: FormattedDiagnosis, cellId: string) => {
+  const renderCell = (diagnosis: Diagnosis, cellId: string) => {
     switch (cellId) {
       case 'display':
         return (
