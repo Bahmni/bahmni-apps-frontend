@@ -2,15 +2,15 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { I18nextProvider } from 'react-i18next';
 import RadiologyInvestigationTable from '../RadiologyInvestigationTable';
-import { getPatientRadiologyInvestigationsByDate } from '@services/radiologyInvestigationService';
-import { RadiologyInvestigationByDate } from '@types/radiologyInvestigation';
+import { getPatientRadiologyInvestigations } from '@services/radiologyInvestigationService';
+import { RadiologyInvestigation } from '@types/radiologyInvestigation';
 import i18n from '@/setupTests.i18n';
 
 // Mock the service layer only (integration test pattern)
 jest.mock('@services/radiologyInvestigationService');
-const mockGetPatientRadiologyInvestigationsByDate =
-  getPatientRadiologyInvestigationsByDate as jest.MockedFunction<
-    typeof getPatientRadiologyInvestigationsByDate
+const mockGetPatientRadiologyInvestigations =
+  getPatientRadiologyInvestigations as jest.MockedFunction<
+    typeof getPatientRadiologyInvestigations
   >;
 
 // Mock patient UUID
@@ -89,37 +89,27 @@ jest.mock('@components/common/expandableDataTable/ExpandableDataTable', () => {
 });
 
 describe('RadiologyInvestigationTable Integration Tests', () => {
-  const mockRadiologyInvestigations: RadiologyInvestigationByDate[] = [
+  const mockRadiologyInvestigations: RadiologyInvestigation[] = [
     {
-      date: '2023-12-01',
-      orders: [
-        {
-          id: 'order-1',
-          testName: 'Chest X-Ray',
-          priority: 'stat',
-          orderedBy: 'Dr. Smith',
-          orderedDate: '2023-12-01T10:00:00Z',
-        },
-        {
-          id: 'order-2',
-          testName: 'CT Scan Abdomen',
-          priority: 'routine',
-          orderedBy: 'Dr. Johnson',
-          orderedDate: '2023-12-01T14:30:00Z',
-        },
-      ],
+      id: 'order-1',
+      testName: 'Chest X-Ray',
+      priority: 'stat',
+      orderedBy: 'Dr. Smith',
+      orderedDate: '2023-12-01T10:00:00Z',
     },
     {
-      date: '2023-11-30',
-      orders: [
-        {
-          id: 'order-3',
-          testName: 'MRI Brain',
-          priority: 'stat',
-          orderedBy: 'Dr. Brown',
-          orderedDate: '2023-11-30T09:15:00Z',
-        },
-      ],
+      id: 'order-2',
+      testName: 'CT Scan Abdomen',
+      priority: 'routine',
+      orderedBy: 'Dr. Johnson',
+      orderedDate: '2023-12-01T14:30:00Z',
+    },
+    {
+      id: 'order-3',
+      testName: 'MRI Brain',
+      priority: 'stat',
+      orderedBy: 'Dr. Brown',
+      orderedDate: '2023-11-30T09:15:00Z',
     },
   ];
 
@@ -135,7 +125,7 @@ describe('RadiologyInvestigationTable Integration Tests', () => {
   describe('Happy Path', () => {
     it('should successfully load and display radiology investigations through complete integration', async () => {
       // Arrange
-      mockGetPatientRadiologyInvestigationsByDate.mockResolvedValueOnce(
+      mockGetPatientRadiologyInvestigations.mockResolvedValueOnce(
         mockRadiologyInvestigations,
       );
 
@@ -146,7 +136,7 @@ describe('RadiologyInvestigationTable Integration Tests', () => {
       expect(screen.getByTestId('data-table-skeleton')).toBeInTheDocument();
 
       // Assert - Service should be called with correct patient UUID
-      expect(mockGetPatientRadiologyInvestigationsByDate).toHaveBeenCalledWith(
+      expect(mockGetPatientRadiologyInvestigations).toHaveBeenCalledWith(
         'test-patient-uuid-123',
       );
 
@@ -157,7 +147,7 @@ describe('RadiologyInvestigationTable Integration Tests', () => {
         ).not.toBeInTheDocument();
       });
 
-      // Assert - Verify date groups are rendered
+      // Assert - Verify date groups are rendered (component should group the ungrouped data)
       const tableTitles = screen.getAllByTestId('table-title');
       expect(tableTitles).toHaveLength(2);
       expect(tableTitles[0]).toHaveTextContent('December 01, 2023');
@@ -187,29 +177,24 @@ describe('RadiologyInvestigationTable Integration Tests', () => {
 
     it('should handle multiple date groups and display them correctly with priority sorting', async () => {
       // Arrange - Mixed priority orders to test sorting
-      const mixedPriorityOrders: RadiologyInvestigationByDate[] = [
+      const mixedPriorityOrders: RadiologyInvestigation[] = [
         {
-          date: '2023-12-01',
-          orders: [
-            {
-              id: 'order-routine',
-              testName: 'Routine X-Ray',
-              priority: 'routine',
-              orderedBy: 'Dr. Routine',
-              orderedDate: '2023-12-01T08:00:00Z',
-            },
-            {
-              id: 'order-stat',
-              testName: 'Emergency CT',
-              priority: 'stat',
-              orderedBy: 'Dr. Emergency',
-              orderedDate: '2023-12-01T10:00:00Z',
-            },
-          ],
+          id: 'order-routine',
+          testName: 'Routine X-Ray',
+          priority: 'routine',
+          orderedBy: 'Dr. Routine',
+          orderedDate: '2023-12-01T08:00:00Z',
+        },
+        {
+          id: 'order-stat',
+          testName: 'Emergency CT',
+          priority: 'stat',
+          orderedBy: 'Dr. Emergency',
+          orderedDate: '2023-12-01T10:00:00Z',
         },
       ];
 
-      mockGetPatientRadiologyInvestigationsByDate.mockResolvedValueOnce(
+      mockGetPatientRadiologyInvestigations.mockResolvedValueOnce(
         mixedPriorityOrders,
       );
 
@@ -240,7 +225,7 @@ describe('RadiologyInvestigationTable Integration Tests', () => {
 
     it('should display empty state when no radiology investigations are found', async () => {
       // Arrange
-      mockGetPatientRadiologyInvestigationsByDate.mockResolvedValueOnce([]);
+      mockGetPatientRadiologyInvestigations.mockResolvedValueOnce([]);
 
       // Act
       renderWithProviders(<RadiologyInvestigationTable />);
@@ -266,9 +251,7 @@ describe('RadiologyInvestigationTable Integration Tests', () => {
     it('should handle network errors gracefully and display error message', async () => {
       // Arrange
       const networkError = new Error('Network request failed');
-      mockGetPatientRadiologyInvestigationsByDate.mockRejectedValueOnce(
-        networkError,
-      );
+      mockGetPatientRadiologyInvestigations.mockRejectedValueOnce(networkError);
 
       // Act
       renderWithProviders(<RadiologyInvestigationTable />);
@@ -277,7 +260,7 @@ describe('RadiologyInvestigationTable Integration Tests', () => {
       expect(screen.getByTestId('data-table-skeleton')).toBeInTheDocument();
 
       // Assert - Service should be called
-      expect(mockGetPatientRadiologyInvestigationsByDate).toHaveBeenCalledWith(
+      expect(mockGetPatientRadiologyInvestigations).toHaveBeenCalledWith(
         'test-patient-uuid-123',
       );
 
@@ -303,9 +286,7 @@ describe('RadiologyInvestigationTable Integration Tests', () => {
     it('should handle API timeout errors appropriately', async () => {
       // Arrange
       const timeoutError = new Error('Request timeout');
-      mockGetPatientRadiologyInvestigationsByDate.mockRejectedValueOnce(
-        timeoutError,
-      );
+      mockGetPatientRadiologyInvestigations.mockRejectedValueOnce(timeoutError);
 
       // Act
       renderWithProviders(<RadiologyInvestigationTable />);
@@ -330,22 +311,17 @@ describe('RadiologyInvestigationTable Integration Tests', () => {
   describe('Edge Cases', () => {
     it('should handle malformed service response gracefully', async () => {
       // Arrange - Simulate malformed data that passes initial type checks but has issues
-      const malformedData: RadiologyInvestigationByDate[] = [
+      const malformedData: RadiologyInvestigation[] = [
         {
-          date: '2023-12-01',
-          orders: [
-            {
-              id: 'order-1',
-              testName: '', // Empty test name
-              priority: 'unknown', // Unknown priority
-              orderedBy: '',
-              orderedDate: '2023-12-01T10:00:00Z',
-            },
-          ],
+          id: 'order-1',
+          testName: '', // Empty test name
+          priority: 'unknown', // Unknown priority
+          orderedBy: '',
+          orderedDate: '2023-12-01T10:00:00Z',
         },
       ];
 
-      mockGetPatientRadiologyInvestigationsByDate.mockResolvedValueOnce(
+      mockGetPatientRadiologyInvestigations.mockResolvedValueOnce(
         malformedData,
       );
 
@@ -369,7 +345,7 @@ describe('RadiologyInvestigationTable Integration Tests', () => {
 
     it('should render component structure correctly even when no data', async () => {
       // Arrange
-      mockGetPatientRadiologyInvestigationsByDate.mockResolvedValueOnce([]);
+      mockGetPatientRadiologyInvestigations.mockResolvedValueOnce([]);
 
       // Act
       renderWithProviders(<RadiologyInvestigationTable />);
@@ -391,29 +367,24 @@ describe('RadiologyInvestigationTable Integration Tests', () => {
   describe('Data Flow Integration', () => {
     it('should complete the full data flow from service through hook to component display', async () => {
       // Arrange
-      const realisticData: RadiologyInvestigationByDate[] = [
+      const realisticData: RadiologyInvestigation[] = [
         {
-          date: '2023-12-01',
-          orders: [
-            {
-              id: 'rad-001',
-              testName: 'Chest X-Ray PA & Lateral',
-              priority: 'stat',
-              orderedBy: 'Dr. Sarah Wilson, MD',
-              orderedDate: '2023-12-01T08:30:00Z',
-            },
-            {
-              id: 'rad-002',
-              testName: 'CT Scan Chest without Contrast',
-              priority: 'routine',
-              orderedBy: 'Dr. Michael Chen, MD',
-              orderedDate: '2023-12-01T14:15:00Z',
-            },
-          ],
+          id: 'rad-001',
+          testName: 'Chest X-Ray PA & Lateral',
+          priority: 'stat',
+          orderedBy: 'Dr. Sarah Wilson, MD',
+          orderedDate: '2023-12-01T08:30:00Z',
+        },
+        {
+          id: 'rad-002',
+          testName: 'CT Scan Chest without Contrast',
+          priority: 'routine',
+          orderedBy: 'Dr. Michael Chen, MD',
+          orderedDate: '2023-12-01T14:15:00Z',
         },
       ];
 
-      mockGetPatientRadiologyInvestigationsByDate.mockResolvedValueOnce(
+      mockGetPatientRadiologyInvestigations.mockResolvedValueOnce(
         realisticData,
       );
 
@@ -422,7 +393,7 @@ describe('RadiologyInvestigationTable Integration Tests', () => {
 
       // Assert - Verify complete integration flow
       // 1. Service call
-      expect(mockGetPatientRadiologyInvestigationsByDate).toHaveBeenCalledWith(
+      expect(mockGetPatientRadiologyInvestigations).toHaveBeenCalledWith(
         'test-patient-uuid-123',
       );
 
@@ -439,7 +410,7 @@ describe('RadiologyInvestigationTable Integration Tests', () => {
       // 4. Verify hook state management worked
       expect(screen.getByTestId('expandable-data-table')).toBeInTheDocument();
 
-      // 5. Verify data rendering through component
+      // 5. Verify data rendering through component (component groups the ungrouped data)
       await waitFor(() => {
         // Stat order should be first due to priority sorting
         const statCell = screen.getByTestId('cell-testName-0');

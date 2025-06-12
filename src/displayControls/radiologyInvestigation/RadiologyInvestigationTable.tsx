@@ -7,6 +7,7 @@ import { RadiologyInvestigation } from '@types/radiologyInvestigation';
 import { formatDate } from '@utils/date';
 import { FULL_MONTH_DATE_FORMAT } from '@constants/date';
 import { sortRadiologyInvestigationsByPriority } from '@utils/radiologyInvestigation';
+import { groupByDate } from '@utils/common';
 import * as styles from './styles/RadiologyInvestigationTable.module.scss';
 
 /**
@@ -37,14 +38,27 @@ const RadiologyInvestigationTable: React.FC = () => {
     [],
   );
 
+  // Group investigations by date
+  const groupedInvestigations = useMemo(() => {
+    const grouped = groupByDate(radiologyInvestigations, (order) =>
+      order.orderedDate.substring(0, 10),
+    );
+
+    return grouped.map((group) => ({
+      date: group.date,
+      orders: group.items,
+    }));
+  }, [radiologyInvestigations]);
+
+  // Apply sorting to grouped data
   const sortedRadiologyInvestigations = useMemo(() => {
-    return radiologyInvestigations.map((investigationsByDate) => ({
+    return groupedInvestigations.map((investigationsByDate) => ({
       ...investigationsByDate,
       orders: sortRadiologyInvestigationsByPriority(
         investigationsByDate.orders,
       ),
     }));
-  }, [radiologyInvestigations]);
+  }, [groupedInvestigations]);
 
   const renderCell = (order: RadiologyInvestigation, cellId: string) => {
     switch (cellId) {

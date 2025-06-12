@@ -1,12 +1,12 @@
 import { useState, useCallback, useEffect } from 'react';
-import { RadiologyInvestigationByDate } from '@types/radiologyInvestigation';
-import { getPatientRadiologyInvestigationsByDate } from '@services/radiologyInvestigationService';
+import { RadiologyInvestigation } from '@types/radiologyInvestigation';
+import { getPatientRadiologyInvestigations } from '@services/radiologyInvestigationService';
 import { usePatientUUID } from './usePatientUUID';
 import { getFormattedError } from '@utils/common';
 import { useTranslation } from 'react-i18next';
 
 interface UseRadiologyInvestigationResult {
-  radiologyInvestigations: RadiologyInvestigationByDate[];
+  radiologyInvestigations: RadiologyInvestigation[];
   loading: boolean;
   error: Error | null;
   refetch: () => void;
@@ -19,7 +19,7 @@ interface UseRadiologyInvestigationResult {
 export const useRadiologyInvestigation =
   (): UseRadiologyInvestigationResult => {
     const [radiologyInvestigations, setRadiologyInvestigations] = useState<
-      RadiologyInvestigationByDate[]
+      RadiologyInvestigation[]
     >([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<Error | null>(null);
@@ -34,7 +34,7 @@ export const useRadiologyInvestigation =
           return;
         }
         const radiologyInvestigationsData =
-          await getPatientRadiologyInvestigationsByDate(patientUUID);
+          await getPatientRadiologyInvestigations(patientUUID);
         setRadiologyInvestigations(radiologyInvestigationsData);
         setError(null);
       } catch (err) {

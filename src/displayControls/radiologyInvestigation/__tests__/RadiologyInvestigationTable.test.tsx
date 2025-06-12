@@ -1,8 +1,8 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import RadiologyOrdersTable from '../RadiologyInvestigationTable';
+import RadiologyInvestigationTable from '../RadiologyInvestigationTable';
 import { useRadiologyInvestigation } from '@hooks/useRadiologyInvestigation';
-import { RadiologyInvestigationByDate } from '@types/radiologyInvestigation';
+import { RadiologyInvestigation } from '@types/radiologyInvestigation';
 import i18n from '@/setupTests.i18n';
 import { axe, toHaveNoViolations } from 'jest-axe';
 
@@ -10,9 +10,10 @@ expect.extend(toHaveNoViolations);
 
 // Mock the hook
 jest.mock('@hooks/useRadiologyInvestigation');
-const mockUseRadiologyOrders = useRadiologyInvestigation as jest.MockedFunction<
-  typeof useRadiologyInvestigation
->;
+const mockUseRadiologyInvestigation =
+  useRadiologyInvestigation as jest.MockedFunction<
+    typeof useRadiologyInvestigation
+  >;
 
 // Mock ExpandableDataTable
 jest.mock('@components/common/expandableDataTable/ExpandableDataTable', () => {
@@ -59,38 +60,28 @@ jest.mock('@components/common/expandableDataTable/ExpandableDataTable', () => {
   };
 });
 
-describe('RadiologyOrdersTable', () => {
-  const mockRadiologyOrders: RadiologyInvestigationByDate[] = [
+describe('RadiologyInvestigationTable', () => {
+  const mockRadiologyInvestigations: RadiologyInvestigation[] = [
     {
-      date: '2023-12-01',
-      orders: [
-        {
-          id: 'order-1',
-          testName: 'Chest X-Ray',
-          priority: 'stat',
-          orderedBy: 'Dr. Smith',
-          orderedDate: '2023-12-01',
-        },
-        {
-          id: 'order-2',
-          testName: 'CT Scan',
-          priority: 'routine',
-          orderedBy: 'Dr. Johnson',
-          orderedDate: '2023-12-01',
-        },
-      ],
+      id: 'order-1',
+      testName: 'Chest X-Ray',
+      priority: 'stat',
+      orderedBy: 'Dr. Smith',
+      orderedDate: '2023-12-01T10:30:00.000Z',
     },
     {
-      date: '2023-11-30',
-      orders: [
-        {
-          id: 'order-3',
-          testName: 'MRI',
-          priority: 'stat',
-          orderedBy: 'Dr. Brown',
-          orderedDate: '2023-11-30',
-        },
-      ],
+      id: 'order-2',
+      testName: 'CT Scan',
+      priority: 'routine',
+      orderedBy: 'Dr. Johnson',
+      orderedDate: '2023-12-01T14:15:00.000Z',
+    },
+    {
+      id: 'order-3',
+      testName: 'MRI',
+      priority: 'stat',
+      orderedBy: 'Dr. Brown',
+      orderedDate: '2023-11-30T09:00:00.000Z',
     },
   ];
 
@@ -101,7 +92,7 @@ describe('RadiologyOrdersTable', () => {
 
   it('should render title correctly', () => {
     // Arrange
-    mockUseRadiologyOrders.mockReturnValue({
+    mockUseRadiologyInvestigation.mockReturnValue({
       radiologyInvestigations: [],
       loading: false,
       error: null,
@@ -109,7 +100,7 @@ describe('RadiologyOrdersTable', () => {
     });
 
     // Act
-    render(<RadiologyOrdersTable />);
+    render(<RadiologyInvestigationTable />);
 
     // Assert
     expect(screen.getByText('Radiology Investigations')).toBeInTheDocument();
@@ -117,7 +108,7 @@ describe('RadiologyOrdersTable', () => {
 
   it('should display loading skeleton when loading', () => {
     // Arrange
-    mockUseRadiologyOrders.mockReturnValue({
+    mockUseRadiologyInvestigation.mockReturnValue({
       radiologyInvestigations: [],
       loading: true,
       error: null,
@@ -125,54 +116,146 @@ describe('RadiologyOrdersTable', () => {
     });
 
     // Act
-    render(<RadiologyOrdersTable />);
+    render(<RadiologyInvestigationTable />);
 
     // Assert
     expect(screen.getByTestId('data-table-skeleton')).toBeInTheDocument();
   });
 
-  it('should have results column header', async () => {
+  it('should group investigations by date and display in accordion', async () => {
     // Arrange
-    mockUseRadiologyOrders.mockReturnValue({
-      radiologyInvestigations: mockRadiologyOrders,
+    mockUseRadiologyInvestigation.mockReturnValue({
+      radiologyInvestigations: mockRadiologyInvestigations,
       loading: false,
       error: null,
       refetch: jest.fn(),
     });
 
     // Act
-    render(<RadiologyOrdersTable />);
+    render(<RadiologyInvestigationTable />);
 
-    // Assert - Headers are passed to ExpandableDataTable component
-    // We can verify this through the rendered cells
+    // Assert
     await waitFor(() => {
-      expect(screen.getAllByTestId('cell-testName-0')[0]).toBeInTheDocument();
-      expect(screen.getAllByTestId('cell-results-0')[0]).toBeInTheDocument();
-      expect(screen.getAllByTestId('cell-orderedBy-0')[0]).toBeInTheDocument();
+      expect(screen.getAllByTestId('table-title')[0]).toHaveTextContent(
+        'December 01, 2023',
+      );
+      expect(screen.getAllByTestId('table-title')[1]).toHaveTextContent(
+        'November 30, 2023',
+      );
+      expect(screen.getAllByTestId('expandable-data-table')).toHaveLength(2);
     });
+  });
+
+  it('should sort investigations by priority within groups', async () => {
+    // Arrange
+    const mixedPriorityInvestigations: RadiologyInvestigation[] = [
+      {
+        id: 'order-1',
+        testName: 'Routine X-Ray',
+        priority: 'routine',
+        orderedBy: 'Dr. Routine',
+        orderedDate: '2023-12-01T10:30:00.000Z',
+      },
+      {
+        id: 'order-2',
+        testName: 'Stat CT Scan',
+        priority: 'stat',
+        orderedBy: 'Dr. Stat',
+        orderedDate: '2023-12-01T14:15:00.000Z',
+      },
+    ];
+
+    mockUseRadiologyInvestigation.mockReturnValue({
+      radiologyInvestigations: mixedPriorityInvestigations,
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    // Act
+    render(<RadiologyInvestigationTable />);
+
+    // Assert - Stat should come first
+    await waitFor(() => {
+      const statCell = screen.getByTestId('cell-testName-0');
+      const routineCell = screen.getByTestId('cell-testName-1');
+
+      expect(statCell).toHaveTextContent('Stat CT Scan');
+      expect(statCell).toHaveTextContent('Urgent');
+
+      expect(routineCell).toHaveTextContent('Routine X-Ray');
+      expect(routineCell).not.toHaveTextContent('routine');
+    });
+  });
+
+  it('should handle empty data gracefully', () => {
+    // Arrange
+    mockUseRadiologyInvestigation.mockReturnValue({
+      radiologyInvestigations: [],
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    // Act
+    render(<RadiologyInvestigationTable />);
+
+    // Assert
+    expect(screen.getByText('No radiology orders found')).toBeInTheDocument();
+  });
+
+  it('should display loading and error states', () => {
+    // Arrange - Loading state
+    mockUseRadiologyInvestigation.mockReturnValue({
+      radiologyInvestigations: [],
+      loading: true,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    // Act
+    const { rerender } = render(<RadiologyInvestigationTable />);
+
+    // Assert - Loading
+    expect(screen.getByTestId('data-table-skeleton')).toBeInTheDocument();
+
+    // Arrange - Error state
+    mockUseRadiologyInvestigation.mockReturnValue({
+      radiologyInvestigations: [],
+      loading: false,
+      error: new Error('Failed to fetch'),
+      refetch: jest.fn(),
+    });
+
+    // Act
+    rerender(<RadiologyInvestigationTable />);
+
+    // Assert - Error
+    expect(
+      screen.getByText('Error fetching radiology orders'),
+    ).toBeInTheDocument();
   });
 
   it('should display -- in results column for all orders', async () => {
     // Arrange
-    mockUseRadiologyOrders.mockReturnValue({
-      radiologyInvestigations: mockRadiologyOrders,
+    mockUseRadiologyInvestigation.mockReturnValue({
+      radiologyInvestigations: mockRadiologyInvestigations,
       loading: false,
       error: null,
       refetch: jest.fn(),
     });
 
     // Act
-    render(<RadiologyOrdersTable />);
+    render(<RadiologyInvestigationTable />);
 
     // Assert
     await waitFor(() => {
-      // Check first date group, first order
+      // Check first date group orders
       expect(screen.getAllByTestId('cell-results-0')[0]).toHaveTextContent(
         '--',
       );
-      // Check first date group, second order
       expect(screen.getByTestId('cell-results-1')).toHaveTextContent('--');
-      // Check second date group, first order
+      // Check second date group order
       expect(screen.getAllByTestId('cell-results-0')[1]).toHaveTextContent(
         '--',
       );
@@ -181,17 +264,17 @@ describe('RadiologyOrdersTable', () => {
 
   it('should have correct column order: testName, results, orderedBy', async () => {
     // Arrange
-    mockUseRadiologyOrders.mockReturnValue({
-      radiologyInvestigations: mockRadiologyOrders,
+    mockUseRadiologyInvestigation.mockReturnValue({
+      radiologyInvestigations: mockRadiologyInvestigations,
       loading: false,
       error: null,
       refetch: jest.fn(),
     });
 
     // Act
-    render(<RadiologyOrdersTable />);
+    render(<RadiologyInvestigationTable />);
 
-    // Assert - Verify columns exist in correct order through cell testing
+    // Assert
     await waitFor(() => {
       expect(screen.getAllByTestId('cell-testName-0')[0]).toBeInTheDocument();
       expect(screen.getAllByTestId('cell-results-0')[0]).toBeInTheDocument();
@@ -199,72 +282,17 @@ describe('RadiologyOrdersTable', () => {
     });
   });
 
-  it('should display error message when there is an error', () => {
-    // Arrange
-    mockUseRadiologyOrders.mockReturnValue({
-      radiologyInvestigations: [],
-      loading: false,
-      error: new Error('Failed to fetch'),
-      refetch: jest.fn(),
-    });
-
-    // Act
-    render(<RadiologyOrdersTable />);
-
-    // Assert
-    expect(
-      screen.getByText('Error fetching radiology orders'),
-    ).toBeInTheDocument();
-  });
-
-  it('should display no radiology orders message when empty', () => {
-    // Arrange
-    mockUseRadiologyOrders.mockReturnValue({
-      radiologyInvestigations: [],
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
-
-    // Act
-    render(<RadiologyOrdersTable />);
-
-    // Assert
-    expect(screen.getByText('No radiology orders found')).toBeInTheDocument();
-  });
-
-  it('should render radiology orders grouped by date', async () => {
-    // Arrange
-    mockUseRadiologyOrders.mockReturnValue({
-      radiologyInvestigations: mockRadiologyOrders,
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
-
-    // Act
-    render(<RadiologyOrdersTable />);
-
-    // Assert
-    await waitFor(() => {
-      expect(screen.getAllByTestId('table-title')[0]).toHaveTextContent(
-        'December 01, 2023',
-      );
-      expect(screen.getAllByTestId('expandable-data-table')).toHaveLength(2);
-    });
-  });
-
   it('should open first accordion item by default', async () => {
     // Arrange
-    mockUseRadiologyOrders.mockReturnValue({
-      radiologyInvestigations: mockRadiologyOrders,
+    mockUseRadiologyInvestigation.mockReturnValue({
+      radiologyInvestigations: mockRadiologyInvestigations,
       loading: false,
       error: null,
       refetch: jest.fn(),
     });
 
     // Act
-    render(<RadiologyOrdersTable />);
+    render(<RadiologyInvestigationTable />);
 
     // Assert
     await waitFor(() => {
@@ -274,37 +302,37 @@ describe('RadiologyOrdersTable', () => {
     });
   });
 
-  it('should render test name with priority tag', async () => {
+  it('should render test name with priority tag for stat orders', async () => {
     // Arrange
-    mockUseRadiologyOrders.mockReturnValue({
-      radiologyInvestigations: mockRadiologyOrders,
+    mockUseRadiologyInvestigation.mockReturnValue({
+      radiologyInvestigations: mockRadiologyInvestigations,
       loading: false,
       error: null,
       refetch: jest.fn(),
     });
 
     // Act
-    render(<RadiologyOrdersTable />);
+    render(<RadiologyInvestigationTable />);
 
     // Assert
     await waitFor(() => {
-      const testNameCells = screen.getAllByTestId('cell-testName-0');
-      expect(testNameCells[0]).toHaveTextContent('Chest X-Ray');
-      expect(testNameCells[0]).toHaveTextContent('Urgent');
+      const statCell = screen.getAllByTestId('cell-testName-0')[0];
+      expect(statCell).toHaveTextContent('Chest X-Ray');
+      expect(statCell).toHaveTextContent('Urgent');
     });
   });
 
   it('should render ordered by information', async () => {
     // Arrange
-    mockUseRadiologyOrders.mockReturnValue({
-      radiologyInvestigations: mockRadiologyOrders,
+    mockUseRadiologyInvestigation.mockReturnValue({
+      radiologyInvestigations: mockRadiologyInvestigations,
       loading: false,
       error: null,
       refetch: jest.fn(),
     });
 
     // Act
-    render(<RadiologyOrdersTable />);
+    render(<RadiologyInvestigationTable />);
 
     // Assert
     await waitFor(() => {
@@ -314,64 +342,60 @@ describe('RadiologyOrdersTable', () => {
     });
   });
 
-  it('should render priority tag only for stat orders (displayed as Urgent)', async () => {
+  it('should render priority tag only for stat orders', async () => {
     // Arrange
-    mockUseRadiologyOrders.mockReturnValue({
-      radiologyInvestigations: mockRadiologyOrders,
+    const investigations: RadiologyInvestigation[] = [
+      {
+        id: 'order-1',
+        testName: 'Stat X-Ray',
+        priority: 'stat',
+        orderedBy: 'Dr. Stat',
+        orderedDate: '2023-12-01T10:30:00.000Z',
+      },
+      {
+        id: 'order-2',
+        testName: 'Routine CT',
+        priority: 'routine',
+        orderedBy: 'Dr. Routine',
+        orderedDate: '2023-12-01T14:15:00.000Z',
+      },
+    ];
+
+    mockUseRadiologyInvestigation.mockReturnValue({
+      radiologyInvestigations: investigations,
       loading: false,
       error: null,
       refetch: jest.fn(),
     });
 
     // Act
-    render(<RadiologyOrdersTable />);
+    render(<RadiologyInvestigationTable />);
 
     // Assert
     await waitFor(() => {
       // Check stat priority - should have tag displayed as "Urgent"
-      const statCell = screen.getAllByTestId('cell-testName-0')[0];
-      expect(statCell).toHaveTextContent('Chest X-Ray');
+      const statCell = screen.getByTestId('cell-testName-0');
+      expect(statCell).toHaveTextContent('Stat X-Ray');
       expect(statCell).toHaveTextContent('Urgent');
 
       // Check routine priority - should NOT have tag
       const routineCell = screen.getByTestId('cell-testName-1');
-      expect(routineCell).toHaveTextContent('CT Scan');
+      expect(routineCell).toHaveTextContent('Routine CT');
       expect(routineCell).not.toHaveTextContent('routine');
-    });
-  });
-
-  it('should have correct table headers', async () => {
-    // Arrange
-    mockUseRadiologyOrders.mockReturnValue({
-      radiologyInvestigations: mockRadiologyOrders,
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
-
-    // Act
-    render(<RadiologyOrdersTable />);
-
-    // Assert - Headers are passed to ExpandableDataTable component
-    // We can verify this through the rendered cells
-    await waitFor(() => {
-      expect(screen.getAllByTestId('cell-testName-0')[0]).toBeInTheDocument();
-      expect(screen.getAllByTestId('cell-results-0')[0]).toBeInTheDocument();
-      expect(screen.getAllByTestId('cell-orderedBy-0')[0]).toBeInTheDocument();
     });
   });
 
   it('should format dates correctly for display', async () => {
     // Arrange
-    mockUseRadiologyOrders.mockReturnValue({
-      radiologyInvestigations: mockRadiologyOrders,
+    mockUseRadiologyInvestigation.mockReturnValue({
+      radiologyInvestigations: mockRadiologyInvestigations,
       loading: false,
       error: null,
       refetch: jest.fn(),
     });
 
     // Act
-    render(<RadiologyOrdersTable />);
+    render(<RadiologyInvestigationTable />);
 
     // Assert
     await waitFor(() => {
@@ -383,252 +407,87 @@ describe('RadiologyOrdersTable', () => {
 
   it('should render with correct accessibility attributes', () => {
     // Arrange
-    mockUseRadiologyOrders.mockReturnValue({
-      radiologyInvestigations: mockRadiologyOrders,
+    mockUseRadiologyInvestigation.mockReturnValue({
+      radiologyInvestigations: mockRadiologyInvestigations,
       loading: false,
       error: null,
       refetch: jest.fn(),
     });
 
     // Act
-    render(<RadiologyOrdersTable />);
+    render(<RadiologyInvestigationTable />);
 
     // Assert
     expect(screen.getByTestId('radiology-orders-table')).toBeInTheDocument();
   });
 
-  it('should handle stat priority correctly - should display Urgent tag', async () => {
+  it('should handle multiple priority types correctly', async () => {
     // Arrange
-    const ordersWithStat: RadiologyInvestigationByDate[] = [
+    const multiPriorityInvestigations: RadiologyInvestigation[] = [
       {
-        date: '2023-12-01',
-        orders: [
-          {
-            id: 'order-1',
-            testName: 'Emergency CT',
-            priority: 'stat',
-            orderedBy: 'Dr. Emergency',
-            orderedDate: '2023-12-01',
-          },
-        ],
+        id: 'order-1',
+        testName: 'Emergency CT',
+        priority: 'stat',
+        orderedBy: 'Dr. Emergency',
+        orderedDate: '2023-12-01T10:30:00.000Z',
+      },
+      {
+        id: 'order-2',
+        testName: 'Routine X-Ray',
+        priority: 'routine',
+        orderedBy: 'Dr. Routine',
+        orderedDate: '2023-12-01T14:15:00.000Z',
+      },
+      {
+        id: 'order-3',
+        testName: 'Standard MRI',
+        priority: '',
+        orderedBy: 'Dr. Standard',
+        orderedDate: '2023-12-01T16:30:00.000Z',
       },
     ];
 
-    mockUseRadiologyOrders.mockReturnValue({
-      radiologyInvestigations: ordersWithStat,
+    mockUseRadiologyInvestigation.mockReturnValue({
+      radiologyInvestigations: multiPriorityInvestigations,
       loading: false,
       error: null,
       refetch: jest.fn(),
     });
 
     // Act
-    render(<RadiologyOrdersTable />);
+    render(<RadiologyInvestigationTable />);
 
     // Assert
     await waitFor(() => {
+      // Check stat priority
       const statCell = screen.getByTestId('cell-testName-0');
       expect(statCell).toHaveTextContent('Emergency CT');
       expect(statCell).toHaveTextContent('Urgent');
-      expect(statCell).not.toHaveTextContent('stat');
-    });
-  });
 
-  it('should handle routine priority correctly - no tag displayed', async () => {
-    // Arrange
-    const ordersWithRoutine: RadiologyInvestigationByDate[] = [
-      {
-        date: '2023-12-01',
-        orders: [
-          {
-            id: 'order-1',
-            testName: 'Routine X-Ray',
-            priority: 'routine',
-            orderedBy: 'Dr. Routine',
-            orderedDate: '2023-12-01',
-          },
-        ],
-      },
-    ];
-
-    mockUseRadiologyOrders.mockReturnValue({
-      radiologyInvestigations: ordersWithRoutine,
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
-
-    // Act
-    render(<RadiologyOrdersTable />);
-
-    // Assert
-    await waitFor(() => {
-      const routineCell = screen.getByTestId('cell-testName-0');
+      // Check routine priority
+      const routineCell = screen.getByTestId('cell-testName-1');
       expect(routineCell).toHaveTextContent('Routine X-Ray');
       expect(routineCell).not.toHaveTextContent('routine');
-    });
-  });
 
-  it('should handle empty priority correctly - no tag displayed', async () => {
-    // Arrange
-    const ordersWithEmptyPriority: RadiologyInvestigationByDate[] = [
-      {
-        date: '2023-12-01',
-        orders: [
-          {
-            id: 'order-1',
-            testName: 'Standard X-Ray',
-            priority: '',
-            orderedBy: 'Dr. Standard',
-            orderedDate: '2023-12-01',
-          },
-        ],
-      },
-    ];
-
-    mockUseRadiologyOrders.mockReturnValue({
-      radiologyInvestigations: ordersWithEmptyPriority,
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
-
-    // Act
-    render(<RadiologyOrdersTable />);
-
-    // Assert
-    await waitFor(() => {
-      const emptyPriorityCell = screen.getByTestId('cell-testName-0');
-      expect(emptyPriorityCell).toHaveTextContent('Standard X-Ray');
-      expect(emptyPriorityCell).not.toHaveTextContent('routine'); // Default fallback should not show
-    });
-  });
-
-  it('should only open the first accordion item when multiple date groups exist', async () => {
-    // Arrange - Using multiple date groups to verify only first is open
-    const multipleOrdersByDate: RadiologyInvestigationByDate[] = [
-      {
-        date: '2023-12-01',
-        orders: [
-          {
-            id: 'order-1',
-            testName: 'Recent X-Ray',
-            priority: 'stat',
-            orderedBy: 'Dr. Recent',
-            orderedDate: '2023-12-01',
-          },
-        ],
-      },
-      {
-        date: '2023-11-30',
-        orders: [
-          {
-            id: 'order-2',
-            testName: 'Older CT Scan',
-            priority: 'routine',
-            orderedBy: 'Dr. Older',
-            orderedDate: '2023-11-30',
-          },
-        ],
-      },
-      {
-        date: '2023-11-29',
-        orders: [
-          {
-            id: 'order-3',
-            testName: 'Oldest MRI',
-            priority: 'stat',
-            orderedBy: 'Dr. Oldest',
-            orderedDate: '2023-11-29',
-          },
-        ],
-      },
-    ];
-
-    mockUseRadiologyOrders.mockReturnValue({
-      radiologyInvestigations: multipleOrdersByDate,
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
-
-    // Act
-    render(<RadiologyOrdersTable />);
-
-    // Assert
-    await waitFor(() => {
-      const isOpenElements = screen.getAllByTestId('is-open');
-
-      // First accordion should be open
-      expect(isOpenElements[0]).toHaveTextContent('true');
-
-      // All other accordions should be closed
-      expect(isOpenElements[1]).toHaveTextContent('false');
-      expect(isOpenElements[2]).toHaveTextContent('false');
-
-      // Verify we have exactly 3 accordion items
-      expect(isOpenElements).toHaveLength(3);
-    });
-  });
-
-  it('should sort radiology investigations by priority within each date group', async () => {
-    // Arrange - Mixed priorities within same date group
-    const ordersWithMixedPriorities: RadiologyInvestigationByDate[] = [
-      {
-        date: '2023-12-01',
-        orders: [
-          {
-            id: 'order-2',
-            testName: 'Routine X-Ray',
-            priority: 'routine',
-            orderedBy: 'Dr. Routine',
-            orderedDate: '2023-12-01',
-          },
-          {
-            id: 'order-1',
-            testName: 'Stat CT Scan',
-            priority: 'stat',
-            orderedBy: 'Dr. Stat',
-            orderedDate: '2023-12-01',
-          },
-        ],
-      },
-    ];
-
-    mockUseRadiologyOrders.mockReturnValue({
-      radiologyInvestigations: ordersWithMixedPriorities,
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
-
-    // Act
-    render(<RadiologyOrdersTable />);
-
-    // Assert - Verify stat comes first, then routine
-    await waitFor(() => {
-      const statCell = screen.getByTestId('cell-testName-0');
-      const routineCell = screen.getByTestId('cell-testName-1');
-
-      expect(statCell).toHaveTextContent('Stat CT Scan');
-      expect(statCell).toHaveTextContent('Urgent'); // Should have tag for stat (displayed as Urgent)
-
-      expect(routineCell).toHaveTextContent('Routine X-Ray');
-      expect(routineCell).not.toHaveTextContent('routine'); // Should NOT have tag for routine
+      // Check empty priority
+      const emptyCell = screen.getByTestId('cell-testName-2');
+      expect(emptyCell).toHaveTextContent('Standard MRI');
+      expect(emptyCell).not.toHaveTextContent('Urgent');
     });
   });
 
   describe('Accessibility', () => {
     it('should have no accessibility violations when data is loaded', async () => {
       // Arrange
-      mockUseRadiologyOrders.mockReturnValue({
-        radiologyInvestigations: mockRadiologyOrders,
+      mockUseRadiologyInvestigation.mockReturnValue({
+        radiologyInvestigations: mockRadiologyInvestigations,
         loading: false,
         error: null,
         refetch: jest.fn(),
       });
 
       // Act
-      const { container } = render(<RadiologyOrdersTable />);
+      const { container } = render(<RadiologyInvestigationTable />);
 
       // Assert
       expect(await axe(container)).toHaveNoViolations();

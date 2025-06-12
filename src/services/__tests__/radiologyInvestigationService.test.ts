@@ -1,20 +1,20 @@
 import { Bundle, ServiceRequest } from 'fhir/r4';
-import { getPatientRadiologyInvestigationsByDate } from '../radiologyInvestigationService';
+import { getPatientRadiologyInvestigations } from '../radiologyInvestigationService';
 import { get } from '../api';
 
 // Mock the API module
 jest.mock('../api');
 const mockGet = get as jest.MockedFunction<typeof get>;
 
-describe('radiologyOrderService', () => {
+describe('radiologyInvestigationService', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('getPatientRadiologyOrdersByDate', () => {
+  describe('getPatientRadiologyInvestigations', () => {
     const mockPatientUUID = 'test-patient-uuid';
 
-    it('should fetch and format radiology orders successfully', async () => {
+    it('should fetch and format radiology investigations', async () => {
       const mockBundle: Bundle = {
         resourceType: 'Bundle',
         type: 'searchset',
@@ -43,16 +43,13 @@ describe('radiologyOrderService', () => {
 
       mockGet.mockResolvedValue(mockBundle);
 
-      const result =
-        await getPatientRadiologyInvestigationsByDate(mockPatientUUID);
+      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
 
       expect(mockGet).toHaveBeenCalledWith(
         `/openmrs/ws/fhir2/R4/ServiceRequest?category=d3561dc0-5e07-11ef-8f7c-0242ac120002&patient=${mockPatientUUID}&_count=100&_sort=-_lastUpdated&numberOfVisits=5`,
       );
       expect(result).toHaveLength(1);
-      expect(result[0].date).toBe('2023-10-15');
-      expect(result[0].orders).toHaveLength(1);
-      expect(result[0].orders[0]).toEqual({
+      expect(result[0]).toEqual({
         id: 'order-1',
         testName: 'Chest X-Ray',
         priority: 'urgent',
@@ -70,8 +67,7 @@ describe('radiologyOrderService', () => {
 
       mockGet.mockResolvedValue(mockBundle);
 
-      const result =
-        await getPatientRadiologyInvestigationsByDate(mockPatientUUID);
+      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
 
       expect(result).toEqual([]);
     });
@@ -80,13 +76,12 @@ describe('radiologyOrderService', () => {
       const mockBundle: Bundle = {
         resourceType: 'Bundle',
         type: 'searchset',
-        // entry is undefined - this tests the || [] fallback on line 30
+        // entry is undefined - this tests the || [] fallback
       };
 
       mockGet.mockResolvedValue(mockBundle);
 
-      const result =
-        await getPatientRadiologyInvestigationsByDate(mockPatientUUID);
+      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
 
       expect(result).toEqual([]);
     });
@@ -96,11 +91,11 @@ describe('radiologyOrderService', () => {
       mockGet.mockRejectedValue(error);
 
       await expect(
-        getPatientRadiologyInvestigationsByDate(mockPatientUUID),
+        getPatientRadiologyInvestigations(mockPatientUUID),
       ).rejects.toThrow('API Error');
     });
 
-    it('should format radiology orders with all required fields', async () => {
+    it('should format radiology investigations with all required fields', async () => {
       const mockBundle: Bundle = {
         resourceType: 'Bundle',
         type: 'searchset',
@@ -129,11 +124,10 @@ describe('radiologyOrderService', () => {
 
       mockGet.mockResolvedValue(mockBundle);
 
-      const result =
-        await getPatientRadiologyInvestigationsByDate(mockPatientUUID);
+      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
 
       expect(result).toHaveLength(1);
-      expect(result[0].orders[0]).toEqual({
+      expect(result[0]).toEqual({
         id: 'order-1',
         testName: 'X-Ray',
         priority: 'routine',
@@ -142,7 +136,7 @@ describe('radiologyOrderService', () => {
       });
     });
 
-    it('should group orders by timestamp correctly', async () => {
+    it('should return investigations in order from FHIR bundle', async () => {
       const mockBundle: Bundle = {
         resourceType: 'Bundle',
         type: 'searchset',
@@ -181,7 +175,7 @@ describe('radiologyOrderService', () => {
                 display: 'Dr. Johnson',
               },
               occurrencePeriod: {
-                start: '2023-10-15T10:30:00.000Z', // Same timestamp as order-1
+                start: '2023-10-14T09:15:00.000Z',
               },
             } as ServiceRequest,
           },
@@ -200,7 +194,7 @@ describe('radiologyOrderService', () => {
                 display: 'Dr. Brown',
               },
               occurrencePeriod: {
-                start: '2023-10-14T09:15:00.000Z',
+                start: '2023-10-13T14:45:00.000Z',
               },
             } as ServiceRequest,
           },
@@ -209,14 +203,15 @@ describe('radiologyOrderService', () => {
 
       mockGet.mockResolvedValue(mockBundle);
 
-      const result =
-        await getPatientRadiologyInvestigationsByDate(mockPatientUUID);
+      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
 
-      expect(result).toHaveLength(2);
-      expect(result[0].date).toBe('2023-10-15'); // Newer timestamp first
-      expect(result[0].orders).toHaveLength(2);
-      expect(result[1].date).toBe('2023-10-14');
-      expect(result[1].orders).toHaveLength(1);
+      expect(result).toHaveLength(3);
+      expect(result[0].id).toBe('order-1');
+      expect(result[1].id).toBe('order-2');
+      expect(result[2].id).toBe('order-3');
+      expect(result[0].testName).toBe('X-Ray');
+      expect(result[1].testName).toBe('CT Scan');
+      expect(result[2].testName).toBe('MRI');
     });
   });
 });

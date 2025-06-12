@@ -1,11 +1,7 @@
 import { PATIENT_RADIOLOGY_RESOURCE_URL } from '@constants/app';
 import { get } from './api';
 import { Bundle, ServiceRequest } from 'fhir/r4';
-import {
-  RadiologyInvestigation,
-  RadiologyInvestigationByDate,
-} from '@types/radiologyInvestigation';
-import { groupByDate } from '@utils/common';
+import { RadiologyInvestigation } from '@types/radiologyInvestigation';
 
 /**
  * Fetches radiology investigations for a given patient UUID from the FHIR R4 endpoint
@@ -46,20 +42,11 @@ function formatRadiologyInvestigations(
 /**
  * Fetches and formats radiology investigations for a given patient UUID
  * @param patientUUID - The UUID of the patient
- * @returns Promise resolving to an array of radiology investigations grouped by date
+ * @returns Promise resolving to an array of radiology investigations
  */
-export async function getPatientRadiologyInvestigationsByDate(
+export async function getPatientRadiologyInvestigations(
   patientUUID: string,
-): Promise<RadiologyInvestigationByDate[]> {
+): Promise<RadiologyInvestigation[]> {
   const bundle = await getPatientRadiologyInvestigationBundle(patientUUID);
-  const formattedInvestigations = formatRadiologyInvestigations(bundle);
-
-  const grouped = groupByDate(formattedInvestigations, (order) =>
-    order.orderedDate.substring(0, 10),
-  );
-
-  return grouped.map((group) => ({
-    date: group.date,
-    orders: group.items,
-  }));
+  return formatRadiologyInvestigations(bundle);
 }
