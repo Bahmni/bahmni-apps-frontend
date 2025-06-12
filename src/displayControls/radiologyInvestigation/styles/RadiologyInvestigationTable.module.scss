@@ -28,7 +28,7 @@
 
   :global(.cds--data-table td:nth-child(2)) {
     @include type-style("body-short-01");
-    min-width: calc(100vw * 0.25);
+    max-width: calc(100vw * 0.1);
   }
   :global(.cds--accordion__content) {
     margin-inline: 0rem !important;
