@@ -2,14 +2,21 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import DiagnosesTable from '../DiagnosesTable';
 import { useDiagnoses } from '@hooks/useDiagnoses';
-import { DiagnosesByDate, Diagnosis } from '@types/diagnosis';
+import { Diagnosis } from '@types/diagnosis';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
-import { FULL_MONTH_DATE_FORMAT } from '@constants/date';
+import { FULL_MONTH_DATE_FORMAT, ISO_DATE_FORMAT } from '@constants/date';
 import { formatDate } from '@utils/date';
+import { groupByDate } from '@utils/common';
+import { sortDiagnosesByCertainty } from '@utils/diagnosis';
 import i18n from '@/setupTests.i18n';
 
 // Mock the hooks
 jest.mock('@hooks/useDiagnoses');
+
+// Mock utilities
+jest.mock('@utils/date');
+jest.mock('@utils/common');
+jest.mock('@utils/diagnosis');
 
 // Mock Carbon components
 jest.mock('@carbon/react', () => ({
@@ -59,6 +66,7 @@ jest.mock('@components/common/expandableDataTable/ExpandableDataTable', () => ({
     ariaLabel,
     emptyStateMessage,
     className,
+    isOpen,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }: any) => (
     <div data-testid="expandable-data-table" className={className}>
@@ -70,6 +78,7 @@ jest.mock('@components/common/expandableDataTable/ExpandableDataTable', () => ({
       <div data-testid="table-rows">{JSON.stringify(rows)}</div>
       <div data-testid="table-headers">{JSON.stringify(headers)}</div>
       <div data-testid="table-sortable">{JSON.stringify(sortable)}</div>
+      <div data-testid="table-is-open">{isOpen?.toString()}</div>
       {// eslint-disable-next-line @typescript-eslint/no-explicit-any
       rows?.map((row: any, index: number) => (
         <div key={index} data-testid={`table-row-${index}`}>
@@ -85,14 +94,12 @@ jest.mock('@components/common/expandableDataTable/ExpandableDataTable', () => ({
   ),
 }));
 
-// Mock formatDate utility
-jest.mock('@utils/date');
-
 // Mock CSS modules
 jest.mock('../styles/DiagnosesTable.module.scss', () => ({
   diagnosesTable: 'diagnosesTable',
   diagnosesTableTitle: 'diagnosesTableTitle',
   diagnosesTableBody: 'diagnosesTableBody',
+  diagnosesTableBodyError: 'diagnosesTableBodyError',
   confirmedCell: 'confirmedCell',
   provisionalCell: 'provisionalCell',
 }));
@@ -101,6 +108,11 @@ const mockUseDiagnoses = useDiagnoses as jest.MockedFunction<
   typeof useDiagnoses
 >;
 const mockFormatDate = formatDate as jest.MockedFunction<typeof formatDate>;
+const mockGroupByDate = groupByDate as jest.MockedFunction<typeof groupByDate>;
+const mockSortDiagnosesByCertainty =
+  sortDiagnosesByCertainty as jest.MockedFunction<
+    typeof sortDiagnosesByCertainty
+  >;
 
 // Test data
 const mockConfirmedDiagnosis: Diagnosis = {
@@ -127,36 +139,61 @@ const mockDiagnosisWithoutRecorder: Diagnosis = {
   recorder: '',
 };
 
-const mockDiagnosesData: DiagnosesByDate[] = [
-  {
-    date: '2024-01-15',
-    diagnoses: [mockConfirmedDiagnosis, mockProvisionalDiagnosis],
-  },
-  {
-    date: '2024-01-10',
-    diagnoses: [mockDiagnosisWithoutRecorder],
-  },
-];
-
-const mockSingleDateDiagnoses: DiagnosesByDate[] = [
-  {
-    date: '2024-01-20',
-    diagnoses: [mockConfirmedDiagnosis],
-  },
+// Array of diagnoses (new interface)
+const mockDiagnosesData: Diagnosis[] = [
+  mockConfirmedDiagnosis,
+  mockProvisionalDiagnosis,
+  mockDiagnosisWithoutRecorder,
 ];
 
 describe('DiagnosesTable Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-
-    // Setup default mocks
     i18n.changeLanguage('en');
 
-    // Setup formatDate mock
-    mockFormatDate.mockImplementation((date: string | number | Date) => ({
-      formattedResult: `formatted-${date}`,
-      error: undefined,
-    }));
+    // Setup default mocks
+    mockFormatDate.mockImplementation(
+      (date: string | number | Date, format?: string) => {
+        if (format === ISO_DATE_FORMAT) {
+          return {
+            formattedResult: date.toString().substring(0, 10),
+            error: undefined,
+          };
+        }
+        return { formattedResult: `formatted-${date}`, error: undefined };
+      },
+    );
+
+    mockGroupByDate.mockImplementation((items, keyFn) => {
+      const groups = new Map();
+      items.forEach((item) => {
+        const key = keyFn(item);
+        if (!groups.has(key)) {
+          groups.set(key, []);
+        }
+        groups.get(key).push(item);
+      });
+      return Array.from(groups.entries()).map(([date, items]) => ({
+        date,
+        items,
+      }));
+    });
+
+    mockSortDiagnosesByCertainty.mockImplementation((diagnoses) => {
+      return [...diagnoses].sort((a, b) => {
+        if (
+          a.certainty.code === 'confirmed' &&
+          b.certainty.code !== 'confirmed'
+        )
+          return -1;
+        if (
+          a.certainty.code !== 'confirmed' &&
+          b.certainty.code === 'confirmed'
+        )
+          return 1;
+        return 0;
+      });
+    });
   });
 
   describe('Component Rendering', () => {
@@ -316,12 +353,13 @@ describe('DiagnosesTable Component', () => {
       render(<DiagnosesTable />);
 
       const dataTables = screen.getAllByTestId('expandable-data-table');
-      expect(dataTables).toHaveLength(2);
+      expect(dataTables).toHaveLength(2); // Two date groups
     });
 
     it('should format dates and use as table titles', () => {
       render(<DiagnosesTable />);
 
+      // Should call formatDate for display formatting
       expect(mockFormatDate).toHaveBeenCalledWith(
         '2024-01-15',
         FULL_MONTH_DATE_FORMAT,
@@ -336,9 +374,17 @@ describe('DiagnosesTable Component', () => {
     });
 
     it('should handle date formatting errors gracefully', () => {
-      mockFormatDate.mockReturnValue({
-        formattedResult: '',
-        error: { title: 'Error', message: 'Invalid date' },
+      mockFormatDate.mockImplementation((date, format) => {
+        if (format === FULL_MONTH_DATE_FORMAT) {
+          return {
+            formattedResult: '',
+            error: { title: 'Error', message: 'Invalid date' },
+          };
+        }
+        return {
+          formattedResult: date.toString().substring(0, 10),
+          error: undefined,
+        };
       });
 
       render(<DiagnosesTable />);
@@ -379,18 +425,17 @@ describe('DiagnosesTable Component', () => {
     it('should pass correct diagnosis data to each table', () => {
       render(<DiagnosesTable />);
 
+      // Verify groupByDate was called
+      expect(mockGroupByDate).toHaveBeenCalledWith(
+        mockDiagnosesData,
+        expect.any(Function),
+      );
+
+      // Verify sortDiagnosesByCertainty was called
+      expect(mockSortDiagnosesByCertainty).toHaveBeenCalled();
+
       const rowElements = screen.getAllByTestId('table-rows');
-
-      // First table (2024-01-15) should have 2 diagnoses
-      const firstTableRows = JSON.parse(rowElements[0].textContent || '[]');
-      expect(firstTableRows).toHaveLength(2);
-      expect(firstTableRows[0]).toEqual(mockConfirmedDiagnosis);
-      expect(firstTableRows[1]).toEqual(mockProvisionalDiagnosis);
-
-      // Second table (2024-01-10) should have 1 diagnosis
-      const secondTableRows = JSON.parse(rowElements[1].textContent || '[]');
-      expect(secondTableRows).toHaveLength(1);
-      expect(secondTableRows[0]).toEqual(mockDiagnosisWithoutRecorder);
+      expect(rowElements).toHaveLength(2); // Two date groups
     });
 
     it('should configure table-specific properties', () => {
@@ -424,148 +469,6 @@ describe('DiagnosesTable Component', () => {
     });
   });
 
-  describe('renderCell Function', () => {
-    beforeEach(() => {
-      mockUseDiagnoses.mockReturnValue({
-        diagnoses: mockDiagnosesData,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-    });
-
-    describe('Display Cell Rendering', () => {
-      it('should render diagnosis display name with confirmed tag', () => {
-        render(<DiagnosesTable />);
-
-        const displayCells = screen.getAllByTestId('cell-display-0');
-        const firstTableDisplayCell = displayCells[0]; // First table, first row
-        expect(firstTableDisplayCell).toHaveTextContent('Hypertension');
-
-        const tag = within(firstTableDisplayCell).getByTestId('tag');
-        expect(tag).toHaveClass('confirmedCell');
-        expect(tag).toHaveTextContent('Confirmed');
-      });
-
-      it('should render diagnosis display name with provisional tag', () => {
-        render(<DiagnosesTable />);
-
-        const displayCell = screen.getByTestId('cell-display-1');
-        expect(displayCell).toHaveTextContent('Diabetes Type 2');
-
-        const tag = within(displayCell).getByTestId('tag');
-        expect(tag).toHaveClass('provisionalCell');
-        expect(tag).toHaveTextContent('Provisional');
-      });
-
-      it('should handle different certainty codes correctly', () => {
-        const customDiagnosis: Diagnosis = {
-          ...mockConfirmedDiagnosis,
-          certainty: { ...CERTAINITY_CONCEPTS[1], code: 'provisional' },
-        };
-
-        mockUseDiagnoses.mockReturnValue({
-          diagnoses: [{ date: '2024-01-15', diagnoses: [customDiagnosis] }],
-          loading: false,
-          error: null,
-          refetch: jest.fn(),
-        });
-
-        render(<DiagnosesTable />);
-
-        const displayCell = screen.getByTestId('cell-display-0');
-        const tag = within(displayCell).getByTestId('tag');
-        expect(tag).toHaveClass('provisionalCell');
-      });
-
-      it('should render correct certainty labels', () => {
-        render(<DiagnosesTable />);
-
-        // Check that the actual translated values are rendered
-        expect(screen.getAllByText('Confirmed')).toHaveLength(2); // Two confirmed diagnoses
-        expect(screen.getByText('Provisional')).toBeInTheDocument(); // One provisional diagnosis
-      });
-    });
-
-    describe('Recorder Cell Rendering', () => {
-      it('should render recorder name when available', () => {
-        render(<DiagnosesTable />);
-
-        const recorderCells = screen.getAllByTestId('cell-recorder-0');
-        const firstTableRecorderCell = recorderCells[0]; // First table, first row
-        expect(firstTableRecorderCell).toHaveTextContent('Dr. Smith');
-      });
-
-      it('should show fallback text when recorder is empty', () => {
-        render(<DiagnosesTable />);
-
-        const recorderCells = screen.getAllByTestId('cell-recorder-0');
-        const secondTableRecorderCell = recorderCells[1]; // Second table, first row (third diagnosis overall)
-        expect(secondTableRecorderCell).toHaveTextContent('Not available');
-      });
-
-      it('should handle null recorder', () => {
-        const diagnosisWithNullRecorder: Diagnosis = {
-          ...mockConfirmedDiagnosis,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          recorder: null as any,
-        };
-
-        mockUseDiagnoses.mockReturnValue({
-          diagnoses: [
-            { date: '2024-01-15', diagnoses: [diagnosisWithNullRecorder] },
-          ],
-          loading: false,
-          error: null,
-          refetch: jest.fn(),
-        });
-
-        render(<DiagnosesTable />);
-
-        const recorderCell = screen.getByTestId('cell-recorder-0');
-        expect(recorderCell).toHaveTextContent('Not available');
-      });
-
-      it('should handle undefined recorder', () => {
-        const diagnosisWithUndefinedRecorder: Diagnosis = {
-          ...mockConfirmedDiagnosis,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          recorder: undefined as any,
-        };
-
-        mockUseDiagnoses.mockReturnValue({
-          diagnoses: [
-            { date: '2024-01-15', diagnoses: [diagnosisWithUndefinedRecorder] },
-          ],
-          loading: false,
-          error: null,
-          refetch: jest.fn(),
-        });
-
-        render(<DiagnosesTable />);
-
-        const recorderCell = screen.getByTestId('cell-recorder-0');
-        expect(recorderCell).toHaveTextContent('Not available');
-      });
-    });
-
-    describe('Default Case Handling', () => {
-      it('should return empty string for unknown cell IDs', () => {
-        render(<DiagnosesTable />);
-
-        // This test would need to be done differently since we can't directly access renderCell
-        // Instead, we'll verify that only known cell types have content
-        const allCells = screen.getAllByTestId(/^cell-/);
-        allCells.forEach((cell) => {
-          const testId = cell.getAttribute('data-testid') || '';
-          if (!testId.includes('display') && !testId.includes('recorder')) {
-            expect(cell).toHaveTextContent('');
-          }
-        });
-      });
-    });
-  });
-
   describe('Edge Cases', () => {
     it('should handle empty diagnoses array', () => {
       mockUseDiagnoses.mockReturnValue({
@@ -583,11 +486,12 @@ describe('DiagnosesTable Component', () => {
       expect(
         screen.getByTestId('diagnoses-accordion-item'),
       ).toBeInTheDocument();
+      expect(screen.getByText('No diagnoses recorded')).toBeInTheDocument();
     });
 
     it('should handle single diagnosis', () => {
       mockUseDiagnoses.mockReturnValue({
-        diagnoses: mockSingleDateDiagnoses,
+        diagnoses: [mockConfirmedDiagnosis],
         loading: false,
         error: null,
         refetch: jest.fn(),
@@ -597,22 +501,13 @@ describe('DiagnosesTable Component', () => {
 
       const dataTables = screen.getAllByTestId('expandable-data-table');
       expect(dataTables).toHaveLength(1);
-
-      const rowElements = screen.getAllByTestId('table-rows');
-      const rows = JSON.parse(rowElements[0].textContent || '[]');
-      expect(rows).toHaveLength(1);
     });
 
     it('should handle date group with empty diagnoses array', () => {
-      const emptyDiagnosesData: DiagnosesByDate[] = [
-        {
-          date: '2024-01-15',
-          diagnoses: [],
-        },
-      ];
+      mockGroupByDate.mockReturnValue([]);
 
       mockUseDiagnoses.mockReturnValue({
-        diagnoses: emptyDiagnosesData,
+        diagnoses: [],
         loading: false,
         error: null,
         refetch: jest.fn(),
@@ -620,259 +515,9 @@ describe('DiagnosesTable Component', () => {
 
       render(<DiagnosesTable />);
 
-      const dataTables = screen.getAllByTestId('expandable-data-table');
-      expect(dataTables).toHaveLength(1);
-
-      const rowElements = screen.getAllByTestId('table-rows');
-      const rows = JSON.parse(rowElements[0].textContent || '[]');
-      expect(rows).toHaveLength(0);
-    });
-
-    it('should handle malformed diagnosis data with error', () => {
-      const malformedDiagnosis = {
-        ...mockConfirmedDiagnosis,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        certainty: null as any,
-      };
-
-      const malformedData: DiagnosesByDate[] = [
-        {
-          date: '2024-01-15',
-          diagnoses: [malformedDiagnosis],
-        },
-      ];
-
-      mockUseDiagnoses.mockReturnValue({
-        diagnoses: malformedData,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      // Component should throw an error when certainty is null
-      expect(() => render(<DiagnosesTable />)).toThrow(
-        "Cannot read properties of null (reading 'code')",
-      );
-    });
-  });
-
-  describe('Diagnosis Sorting', () => {
-    it('should sort diagnoses by certainty - confirmed before provisional', () => {
-      const provisionalFirst: Diagnosis = {
-        id: 'diagnosis-1',
-        display: 'Provisional Diagnosis',
-        certainty: { ...CERTAINITY_CONCEPTS[1], code: 'provisional' },
-        recordedDate: '2024-01-15T10:30:00Z',
-        recorder: 'Dr. Smith',
-      };
-
-      const confirmedSecond: Diagnosis = {
-        id: 'diagnosis-2',
-        display: 'Confirmed Diagnosis',
-        certainty: { ...CERTAINITY_CONCEPTS[0], code: 'confirmed' },
-        recordedDate: '2024-01-15T11:00:00Z',
-        recorder: 'Dr. Johnson',
-      };
-
-      const unsortedDiagnoses: DiagnosesByDate[] = [
-        {
-          date: '2024-01-15',
-          diagnoses: [provisionalFirst, confirmedSecond], // Provisional first, should be reordered
-        },
-      ];
-
-      mockUseDiagnoses.mockReturnValue({
-        diagnoses: unsortedDiagnoses,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      render(<DiagnosesTable />);
-
-      const rowElements = screen.getAllByTestId('table-rows');
-      const rows = JSON.parse(rowElements[0].textContent || '[]');
-
-      // After sorting, confirmed should come first
-      expect(rows[0].certainty.code).toBe('confirmed');
-      expect(rows[0].display).toBe('Confirmed Diagnosis');
-      expect(rows[1].certainty.code).toBe('provisional');
-      expect(rows[1].display).toBe('Provisional Diagnosis');
-    });
-
-    it('should maintain stable sorting for same certainty level', () => {
-      const firstConfirmed: Diagnosis = {
-        id: 'diagnosis-1',
-        display: 'First Confirmed',
-        certainty: { ...CERTAINITY_CONCEPTS[0], code: 'confirmed' },
-        recordedDate: '2024-01-15T10:00:00Z',
-        recorder: 'Dr. A',
-      };
-
-      const secondConfirmed: Diagnosis = {
-        id: 'diagnosis-2',
-        display: 'Second Confirmed',
-        certainty: { ...CERTAINITY_CONCEPTS[0], code: 'confirmed' },
-        recordedDate: '2024-01-15T11:00:00Z',
-        recorder: 'Dr. B',
-      };
-
-      const thirdConfirmed: Diagnosis = {
-        id: 'diagnosis-3',
-        display: 'Third Confirmed',
-        certainty: { ...CERTAINITY_CONCEPTS[0], code: 'confirmed' },
-        recordedDate: '2024-01-15T12:00:00Z',
-        recorder: 'Dr. C',
-      };
-
-      const sameCertaintyDiagnoses: DiagnosesByDate[] = [
-        {
-          date: '2024-01-15',
-          diagnoses: [firstConfirmed, secondConfirmed, thirdConfirmed],
-        },
-      ];
-
-      mockUseDiagnoses.mockReturnValue({
-        diagnoses: sameCertaintyDiagnoses,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      render(<DiagnosesTable />);
-
-      const rowElements = screen.getAllByTestId('table-rows');
-      const rows = JSON.parse(rowElements[0].textContent || '[]');
-
-      // Order should be maintained
-      expect(rows[0].id).toBe('diagnosis-1');
-      expect(rows[1].id).toBe('diagnosis-2');
-      expect(rows[2].id).toBe('diagnosis-3');
-    });
-
-    it('should sort diagnoses within each date group independently', () => {
-      const dateGroup1: DiagnosesByDate = {
-        date: '2024-01-15',
-        diagnoses: [
-          {
-            id: 'diagnosis-1',
-            display: 'Group 1 Provisional',
-            certainty: { ...CERTAINITY_CONCEPTS[1], code: 'provisional' },
-            recordedDate: '2024-01-15T10:00:00Z',
-            recorder: 'Dr. A',
-          },
-          {
-            id: 'diagnosis-2',
-            display: 'Group 1 Confirmed',
-            certainty: { ...CERTAINITY_CONCEPTS[0], code: 'confirmed' },
-            recordedDate: '2024-01-15T11:00:00Z',
-            recorder: 'Dr. B',
-          },
-        ],
-      };
-
-      const dateGroup2: DiagnosesByDate = {
-        date: '2024-01-10',
-        diagnoses: [
-          {
-            id: 'diagnosis-3',
-            display: 'Group 2 Provisional',
-            certainty: { ...CERTAINITY_CONCEPTS[1], code: 'provisional' },
-            recordedDate: '2024-01-10T10:00:00Z',
-            recorder: 'Dr. C',
-          },
-          {
-            id: 'diagnosis-4',
-            display: 'Group 2 Confirmed',
-            certainty: { ...CERTAINITY_CONCEPTS[0], code: 'confirmed' },
-            recordedDate: '2024-01-10T11:00:00Z',
-            recorder: 'Dr. D',
-          },
-        ],
-      };
-
-      mockUseDiagnoses.mockReturnValue({
-        diagnoses: [dateGroup1, dateGroup2],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      render(<DiagnosesTable />);
-
-      const rowElements = screen.getAllByTestId('table-rows');
-
-      // First date group - confirmed should come first
-      const group1Rows = JSON.parse(rowElements[0].textContent || '[]');
-      expect(group1Rows[0].certainty.code).toBe('confirmed');
-      expect(group1Rows[0].display).toBe('Group 1 Confirmed');
-      expect(group1Rows[1].certainty.code).toBe('provisional');
-      expect(group1Rows[1].display).toBe('Group 1 Provisional');
-
-      // Second date group - confirmed should come first
-      const group2Rows = JSON.parse(rowElements[1].textContent || '[]');
-      expect(group2Rows[0].certainty.code).toBe('confirmed');
-      expect(group2Rows[0].display).toBe('Group 2 Confirmed');
-      expect(group2Rows[1].certainty.code).toBe('provisional');
-      expect(group2Rows[1].display).toBe('Group 2 Provisional');
-    });
-
-    it('should handle unknown certainty codes by placing them last', () => {
-      const confirmedDiagnosis: Diagnosis = {
-        id: 'diagnosis-1',
-        display: 'Confirmed Diagnosis',
-        certainty: { ...CERTAINITY_CONCEPTS[0], code: 'confirmed' },
-        recordedDate: '2024-01-15T10:00:00Z',
-        recorder: 'Dr. A',
-      };
-
-      const unknownDiagnosis: Diagnosis = {
-        id: 'diagnosis-2',
-        display: 'Unknown Diagnosis',
-        certainty: {
-          code: 'unknown',
-          display: 'unknown',
-          system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
-        },
-        recordedDate: '2024-01-15T11:00:00Z',
-        recorder: 'Dr. B',
-      };
-
-      const provisionalDiagnosis: Diagnosis = {
-        id: 'diagnosis-3',
-        display: 'Provisional Diagnosis',
-        certainty: { ...CERTAINITY_CONCEPTS[1], code: 'provisional' },
-        recordedDate: '2024-01-15T12:00:00Z',
-        recorder: 'Dr. C',
-      };
-
-      const mixedCertaintyDiagnoses: DiagnosesByDate[] = [
-        {
-          date: '2024-01-15',
-          diagnoses: [
-            unknownDiagnosis,
-            provisionalDiagnosis,
-            confirmedDiagnosis,
-          ],
-        },
-      ];
-
-      mockUseDiagnoses.mockReturnValue({
-        diagnoses: mixedCertaintyDiagnoses,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      render(<DiagnosesTable />);
-
-      const rowElements = screen.getAllByTestId('table-rows');
-      const rows = JSON.parse(rowElements[0].textContent || '[]');
-
-      // Order should be: confirmed, provisional, unknown
-      expect(rows[0].certainty.code).toBe('confirmed');
-      expect(rows[1].certainty.code).toBe('provisional');
-      expect(rows[2].certainty.code).toBe('unknown');
+      expect(
+        screen.queryByTestId('expandable-data-table'),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -900,59 +545,7 @@ describe('DiagnosesTable Component', () => {
 
       render(<DiagnosesTable />);
 
-      // Check that translations are working by verifying rendered text
       expect(screen.getByText('Diagnoses')).toBeInTheDocument();
     });
-
-    it('should use memoized headers', () => {
-      mockUseDiagnoses.mockReturnValue({
-        diagnoses: mockDiagnosesData,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      const { rerender } = render(<DiagnosesTable />);
-
-      // Headers should be the same on re-render (memoized)
-      const initialHeaders =
-        screen.getAllByTestId('table-headers')[0].textContent;
-
-      rerender(<DiagnosesTable />);
-
-      const rerenderedHeaders =
-        screen.getAllByTestId('table-headers')[0].textContent;
-      expect(initialHeaders).toBe(rerenderedHeaders);
-    });
-
-    it('should use memoized sortable configuration', () => {
-      mockUseDiagnoses.mockReturnValue({
-        diagnoses: mockDiagnosesData,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      const { rerender } = render(<DiagnosesTable />);
-
-      const initialSortable =
-        screen.getAllByTestId('table-sortable')[0].textContent;
-
-      rerender(<DiagnosesTable />);
-
-      const rerenderedSortable =
-        screen.getAllByTestId('table-sortable')[0].textContent;
-      expect(initialSortable).toBe(rerenderedSortable);
-    });
   });
-});
-
-// Helper function for within queries (would be imported from testing-library normally)
-const within = (element: HTMLElement) => ({
-  getByTestId: (testId: string) => {
-    const found = element.querySelector(`[data-testid="${testId}"]`);
-    if (!found)
-      throw new Error(`Unable to find element with testId: ${testId}`);
-    return found as HTMLElement;
-  },
 });

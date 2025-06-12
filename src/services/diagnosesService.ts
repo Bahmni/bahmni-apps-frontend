@@ -1,9 +1,8 @@
 import { PATIENT_DIAGNOSIS_RESOURCE_URL } from '@constants/app';
 import { get } from './api';
 import { Coding, Condition as Diagnoses, Bundle } from 'fhir/r4';
-import { DiagnosesByDate, Diagnosis } from '../types/diagnosis';
+import { Diagnosis } from '@types/diagnosis';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
-import { groupByDate } from '@utils/common';
 
 // Constants for better maintainability
 const CONFIRMED_STATUS = 'confirmed';
@@ -79,20 +78,11 @@ function formatDiagnoses(bundle: Bundle): Diagnosis[] {
 /**
  * Fetches and formats diagnoses for a given patient UUID
  * @param patientUUID - The UUID of the patient
- * @returns Promise resolving to an array of diagnoses grouped by date
+ * @returns Promise resolving to an array of diagnoses
  */
-export async function getPatientDiagnosesByDate(
+export async function getPatientDiagnoses(
   patientUUID: string,
-): Promise<DiagnosesByDate[]> {
+): Promise<Diagnosis[]> {
   const bundle = await getPatientDiagnosesBundle(patientUUID);
-  const formattedDiagnoses = formatDiagnoses(bundle);
-
-  const grouped = groupByDate(formattedDiagnoses, (diagnosis) =>
-    diagnosis.recordedDate.substring(0, 10),
-  );
-
-  return grouped.map((group) => ({
-    date: group.date,
-    diagnoses: group.items,
-  }));
+  return formatDiagnoses(bundle);
 }

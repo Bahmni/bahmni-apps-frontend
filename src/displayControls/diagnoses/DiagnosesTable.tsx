@@ -1,12 +1,13 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { Tag, Tile, DataTableSkeleton } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
 import { useDiagnoses } from '@hooks/useDiagnoses';
 import { Diagnosis } from '@types/diagnosis';
 import { formatDate } from '@utils/date';
-import { FULL_MONTH_DATE_FORMAT } from '@constants/date';
+import { FULL_MONTH_DATE_FORMAT, ISO_DATE_FORMAT } from '@constants/date';
 import { sortDiagnosesByCertainty } from '@utils/diagnosis';
+import { groupByDate } from '@utils/common';
 import * as styles from './styles/DiagnosesTable.module.scss';
 
 /**
@@ -34,16 +35,19 @@ const DiagnosesTable: React.FC = () => {
     [],
   );
 
-  // Sort diagnoses within each date group by certainty: confirmed → provisional
-  const sortedDiagnoses = useMemo(() => {
-    return diagnoses.map((diagnosisByDate) => ({
-      ...diagnosisByDate,
-      diagnoses: sortDiagnosesByCertainty(diagnosisByDate.diagnoses),
+  const processedDiagnoses = useMemo(() => {
+    const grouped = groupByDate(diagnoses, (diagnosis) => {
+      const result = formatDate(diagnosis.recordedDate, ISO_DATE_FORMAT);
+      return result.formattedResult;
+    });
+
+    return grouped.map((group) => ({
+      date: group.date,
+      diagnoses: sortDiagnosesByCertainty(group.items),
     }));
   }, [diagnoses]);
 
-  // Function to render cell content based on the cell ID
-  const renderCell = (diagnosis: Diagnosis, cellId: string) => {
+  const renderCell = useCallback((diagnosis: Diagnosis, cellId: string) => {
     switch (cellId) {
       case 'display':
         return (
@@ -65,7 +69,7 @@ const DiagnosesTable: React.FC = () => {
       case 'recorder':
         return diagnosis.recorder || t('DIAGNOSIS_TABLE_NOT_AVAILABLE');
     }
-  };
+  }, []);
 
   return (
     <Tile
@@ -93,7 +97,7 @@ const DiagnosesTable: React.FC = () => {
       {!loading && !error && diagnoses.length === 0 && (
         <p className={styles.diagnosesTableBodyError}>{t('NO_DIAGNOSES')}</p>
       )}
-      {sortedDiagnoses.map((diagnosisByDate, index) => {
+      {processedDiagnoses.map((diagnosisByDate, index) => {
         const { date, diagnoses: diagnosisList } = diagnosisByDate;
 
         // Format the date for display

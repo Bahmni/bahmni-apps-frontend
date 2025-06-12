@@ -76,7 +76,7 @@ const RadiologyInvestigationTable: React.FC = () => {
           return order.orderedBy;
       }
     },
-    [t, styles.urgentCell],
+    [],
   );
 
   return (
