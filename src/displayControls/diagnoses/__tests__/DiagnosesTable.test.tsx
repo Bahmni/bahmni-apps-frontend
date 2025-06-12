@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import DiagnosesTable from '../DiagnosesTable';
 import { useDiagnoses } from '@hooks/useDiagnoses';
 import { Diagnosis } from '@types/diagnosis';
@@ -9,6 +10,8 @@ import { formatDate } from '@utils/date';
 import { groupByDate } from '@utils/common';
 import { sortDiagnosesByCertainty } from '@utils/diagnosis';
 import i18n from '@/setupTests.i18n';
+
+expect.extend(toHaveNoViolations);
 
 // Mock the hooks
 jest.mock('@hooks/useDiagnoses');
@@ -546,6 +549,24 @@ describe('DiagnosesTable Component', () => {
       render(<DiagnosesTable />);
 
       expect(screen.getByText('Diagnoses')).toBeInTheDocument();
+    });
+  });
+
+  describe('Accessibility', () => {
+    it('should have no accessibility violations when data is loaded', async () => {
+      // Arrange
+      mockUseDiagnoses.mockReturnValue({
+        diagnoses: mockDiagnosesData,
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      // Act
+      const { container } = render(<DiagnosesTable />);
+
+      // Assert
+      expect(await axe(container)).toHaveNoViolations();
     });
   });
 });
