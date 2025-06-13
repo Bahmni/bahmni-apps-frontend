@@ -6,7 +6,10 @@ import { useRadiologyInvestigation } from '@hooks/useRadiologyInvestigation';
 import { RadiologyInvestigation } from '@types/radiologyInvestigation';
 import { formatDate } from '@utils/date';
 import { FULL_MONTH_DATE_FORMAT, ISO_DATE_FORMAT } from '@constants/date';
-import { sortRadiologyInvestigationsByPriority } from '@utils/radiologyInvestigation';
+import {
+  sortRadiologyInvestigationsByPriority,
+  filterReplacementEntries,
+} from '@utils/radiologyInvestigation';
 import { groupByDate } from '@utils/common';
 import * as styles from './styles/RadiologyInvestigationTable.module.scss';
 
@@ -38,7 +41,11 @@ const RadiologyInvestigationTable: React.FC = () => {
   );
 
   const processedInvestigations = useMemo(() => {
-    const grouped = groupByDate(radiologyInvestigations, (order) => {
+    const filteredInvestigations = filterReplacementEntries(
+      radiologyInvestigations,
+    );
+
+    const grouped = groupByDate(filteredInvestigations, (order) => {
       const result = formatDate(order.orderedDate, ISO_DATE_FORMAT);
       return result.formattedResult;
     });
