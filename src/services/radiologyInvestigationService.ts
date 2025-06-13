@@ -29,12 +29,20 @@ function formatRadiologyInvestigations(
   return orders.map((order) => {
     const orderedDate = order.occurrencePeriod?.start as string;
 
+    const replaces = order.replaces
+      ?.map((replace) => {
+        const reference = replace.reference || '';
+        return reference.split('/').pop() || '';
+      })
+      .filter((id) => id.length > 0);
+
     return {
       id: order.id as string,
       testName: order.code!.text!,
       priority: order.priority!,
       orderedBy: order.requester!.display!,
       orderedDate: orderedDate,
+      ...(replaces && replaces.length > 0 && { replaces }),
     };
   });
 }

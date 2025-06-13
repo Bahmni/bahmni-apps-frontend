@@ -7,4 +7,5 @@ export interface RadiologyInvestigation {
   priority: string;
   orderedBy: string;
   orderedDate: string;
+  replaces?: string[]; // Array of IDs that this investigation replaces
 }

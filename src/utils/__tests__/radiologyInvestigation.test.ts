@@ -3,20 +3,13 @@ import {
   PRIORITY_ORDER,
   getRadiologyPriority,
   sortRadiologyInvestigationsByPriority,
+  filterReplacementEntries,
 } from '../radiologyInvestigation';
-
-// Mock radiology investigation data for testing
-const createMockRadiologyInvestigation = (
-  id: string,
-  testName: string,
-  priority: string,
-): RadiologyInvestigation => ({
-  id,
-  testName,
-  priority,
-  orderedBy: 'Dr. Test',
-  orderedDate: '2023-01-01',
-});
+import {
+  createMockRadiologyInvestigation,
+  mockRadiologyInvestigationsForFiltering,
+  mockRadiologyChainReplacement,
+} from '@__mocks__/radiologyInvestigationMocks';
 
 describe('radiologyInvestigation utilities', () => {
   describe('PRIORITY_ORDER', () => {
@@ -183,6 +176,191 @@ describe('radiologyInvestigation utilities', () => {
       expect(sorted[0].priority).toBe('STAT');
       expect(sorted[1].priority).toBe('ROUTINE');
       expect(sorted[2].priority).toBe('UNKNOWN');
+    });
+  });
+
+  describe('filterReplacementEntries', () => {
+    const createMockInvestigationWithReplaces = (
+      id: string,
+      testName: string,
+      priority: string,
+      replaces?: string[],
+    ): RadiologyInvestigation => ({
+      id,
+      testName,
+      priority,
+      orderedBy: 'Dr. Test',
+      orderedDate: '2023-01-01',
+      ...(replaces && replaces.length > 0 && { replaces }),
+    });
+
+    it('should filter out both replacing and replaced entries', async () => {
+      const filtered = filterReplacementEntries(
+        mockRadiologyInvestigationsForFiltering,
+      );
+
+      expect(filtered).toHaveLength(1);
+      expect(filtered[0].id).toBe('9c847638-295b-4e3e-933d-47d5cad34faf');
+      expect(filtered[0].testName).toBe('X-Ray - Standalone');
+    });
+
+    it('should handle single replacement relationship', async () => {
+      const investigations = [
+        createMockInvestigationWithReplaces(
+          'replacing-1',
+          'New Order',
+          'stat',
+          ['replaced-1'],
+        ),
+        createMockInvestigationWithReplaces(
+          'replaced-1',
+          'Old Order',
+          'routine',
+        ),
+      ];
+
+      const filtered = filterReplacementEntries(investigations);
+
+      expect(filtered).toHaveLength(0);
+    });
+
+    it('should handle multiple replacements by single entry', async () => {
+      const investigations = [
+        createMockInvestigationWithReplaces(
+          'replacing-1',
+          'New Combined Order',
+          'stat',
+          ['replaced-1', 'replaced-2'],
+        ),
+        createMockInvestigationWithReplaces(
+          'replaced-1',
+          'Old Order 1',
+          'routine',
+        ),
+        createMockInvestigationWithReplaces(
+          'replaced-2',
+          'Old Order 2',
+          'routine',
+        ),
+        createMockInvestigationWithReplaces(
+          'standalone-1',
+          'Standalone Order',
+          'routine',
+        ),
+      ];
+
+      const filtered = filterReplacementEntries(investigations);
+
+      expect(filtered).toHaveLength(1);
+      expect(filtered[0].id).toBe('standalone-1');
+    });
+
+    it('should handle investigations without any replacements', async () => {
+      const investigations = [
+        createMockInvestigationWithReplaces('1', 'X-Ray', 'routine'),
+        createMockInvestigationWithReplaces('2', 'CT Scan', 'stat'),
+        createMockInvestigationWithReplaces('3', 'MRI', 'routine'),
+      ];
+
+      const filtered = filterReplacementEntries(investigations);
+
+      expect(filtered).toHaveLength(3);
+      expect(filtered).toEqual(investigations);
+    });
+
+    it('should handle empty array', async () => {
+      const filtered = filterReplacementEntries([]);
+      expect(filtered).toEqual([]);
+    });
+
+    it('should handle chain of replacements', async () => {
+      const filtered = filterReplacementEntries(mockRadiologyChainReplacement);
+
+      expect(filtered).toHaveLength(1);
+      expect(filtered[0].id).toBe('standalone');
+    });
+
+    it('should not mutate original array', async () => {
+      const investigations = [
+        createMockInvestigationWithReplaces('replacing', 'New', 'stat', [
+          'replaced',
+        ]),
+        createMockInvestigationWithReplaces('replaced', 'Old', 'routine'),
+      ];
+      const originalLength = investigations.length;
+
+      filterReplacementEntries(investigations);
+
+      expect(investigations).toHaveLength(originalLength);
+      expect(investigations[0].id).toBe('replacing');
+      expect(investigations[1].id).toBe('replaced');
+    });
+
+    it('should handle investigations with empty replaces array', async () => {
+      const investigations = [
+        createMockInvestigationWithReplaces('1', 'Test 1', 'routine', []),
+        createMockInvestigationWithReplaces('2', 'Test 2', 'stat'),
+      ];
+
+      const filtered = filterReplacementEntries(investigations);
+
+      expect(filtered).toHaveLength(2);
+      expect(filtered).toEqual(investigations);
+    });
+
+    it('should handle complex scenario with multiple replacement relationships', async () => {
+      const investigations = [
+        // Standalone entries (should remain)
+        createMockInvestigationWithReplaces(
+          'standalone-1',
+          'Standalone 1',
+          'routine',
+        ),
+        createMockInvestigationWithReplaces(
+          'standalone-2',
+          'Standalone 2',
+          'stat',
+        ),
+
+        // First replacement pair (both should be filtered)
+        createMockInvestigationWithReplaces(
+          'replacing-a',
+          'Replacing A',
+          'stat',
+          ['replaced-a'],
+        ),
+        createMockInvestigationWithReplaces(
+          'replaced-a',
+          'Replaced A',
+          'routine',
+        ),
+
+        // Second replacement (multiple replaces, all should be filtered)
+        createMockInvestigationWithReplaces(
+          'replacing-b',
+          'Replacing B',
+          'routine',
+          ['replaced-b1', 'replaced-b2'],
+        ),
+        createMockInvestigationWithReplaces(
+          'replaced-b1',
+          'Replaced B1',
+          'routine',
+        ),
+        createMockInvestigationWithReplaces(
+          'replaced-b2',
+          'Replaced B2',
+          'stat',
+        ),
+      ];
+
+      const filtered = filterReplacementEntries(investigations);
+
+      expect(filtered).toHaveLength(2);
+      expect(filtered.map((i: RadiologyInvestigation) => i.id)).toEqual([
+        'standalone-1',
+        'standalone-2',
+      ]);
     });
   });
 });

@@ -31,3 +31,32 @@ export const sortRadiologyInvestigationsByPriority = (
     return getRadiologyPriority(a.priority) - getRadiologyPriority(b.priority);
   });
 };
+
+/**
+ * Filters out radiology investigations that have replacement relationships
+ * Removes both the replacing entry (has replaces field) and the replaced entries (referenced in replaces)
+ * This prevents duplicate entries from showing in the UI where one investigation replaces another
+ * @param investigations - Array of formatted radiology investigations
+ * @returns Filtered array without replacement-related entries
+ */
+export const filterReplacementEntries = (
+  investigations: RadiologyInvestigation[],
+): RadiologyInvestigation[] => {
+  const replacingIds = new Set<string>();
+  const replacedIds = new Set<string>();
+
+  investigations.forEach((investigation) => {
+    if (investigation.replaces && investigation.replaces.length > 0) {
+      replacingIds.add(investigation.id);
+      investigation.replaces.forEach((replacedId) => {
+        replacedIds.add(replacedId);
+      });
+    }
+  });
+
+  return investigations.filter((investigation) => {
+    const isReplacing = replacingIds.has(investigation.id);
+    const isReplaced = replacedIds.has(investigation.id);
+    return !isReplacing && !isReplaced;
+  });
+};
