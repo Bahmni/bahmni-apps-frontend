@@ -6,7 +6,7 @@ exports[`DiagnosesForm Snapshot Tests duplicate diagnosis search should matches 
     class="cds--tile"
   >
     <div>
-      DIAGNOSES_FORM_TITLE
+      Diagnoses
     </div>
     <div
       class="cds--list-box__wrapper"
@@ -22,11 +22,11 @@ exports[`DiagnosesForm Snapshot Tests duplicate diagnosis search should matches 
             aria-autocomplete="list"
             aria-expanded="true"
             aria-haspopup="listbox"
-            aria-label="DIAGNOSES_SEARCH_ARIA_LABEL"
+            aria-label="Search for diagnoses"
             autocomplete="off"
             class="cds--text-input cds--combo-box--input--focus"
             id="diagnoses-search"
-            placeholder="DIAGNOSES_SEARCH_PLACEHOLDER"
+            placeholder="Search to add new diagnosis"
             role="combobox"
             tabindex="0"
             title="hyper"
@@ -98,7 +98,7 @@ exports[`DiagnosesForm Snapshot Tests duplicate diagnosis search should matches 
             <div
               class="cds--list-box__menu-item__option"
             >
-              Hypertension DIAGNOSIS_ALREADY_SELECTED
+              Hypertension (Already selected)
             </div>
           </li>
           <li
@@ -117,7 +117,7 @@ exports[`DiagnosesForm Snapshot Tests duplicate diagnosis search should matches 
       </div>
     </div>
     <div
-      aria-label="DIAGNOSES_ADDED_DIAGNOSES"
+      aria-label="Added Diagnoses"
       class="cds--css-grid cds--css-grid--narrow cds--css-grid--full-width"
       data-testid="box-w-title"
       role="region"
@@ -125,7 +125,7 @@ exports[`DiagnosesForm Snapshot Tests duplicate diagnosis search should matches 
       <div
         class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
       >
-        DIAGNOSES_ADDED_DIAGNOSES
+        Added Diagnoses
       </div>
       <div
         class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
@@ -161,18 +161,18 @@ exports[`DiagnosesForm Snapshot Tests duplicate diagnosis search should matches 
                       aria-controls="downshift-«r3u»-menu"
                       aria-expanded="false"
                       aria-haspopup="listbox"
-                      aria-label="DIAGNOSES_CERTAINTY_ARIA_LABEL"
+                      aria-label="Diagnoses Certainty"
                       class="cds--list-box__field"
                       id="downshift-«r3u»-toggle-button"
                       role="combobox"
                       tabindex="0"
-                      title="CERTAINITY_CONFIRMED"
+                      title="Confirmed"
                       type="button"
                     >
                       <span
                         class="cds--list-box__label"
                       >
-                        CERTAINITY_CONFIRMED
+                        Confirmed
                       </span>
                       <div
                         class="cds--list-box__menu-icon"
@@ -220,7 +220,7 @@ exports[`DiagnosesForm Snapshot Tests duplicate diagnosis search should matches 
                 class="cds--tooltip-trigger__wrapper"
               >
                 <button
-                  aria-label="SELECTED_ITEM_CLOSE_ARIA_LABEL"
+                  aria-label="Close Selected Item"
                   class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
                   data-testid="selected-item-close-button"
                   id="close-selected-item"
@@ -251,7 +251,7 @@ exports[`DiagnosesForm Snapshot Tests duplicate diagnosis search should matches 
                 <span
                   class="cds--popover-content cds--tooltip-content"
                 >
-                  SELECTED_ITEM_CLOSE
+                  Close
                 </span>
                 <span
                   class="cds--popover-caret"
@@ -272,7 +272,7 @@ exports[`DiagnosesForm Snapshot Tests empty form matches snapshot 1`] = `
     class="cds--tile"
   >
     <div>
-      DIAGNOSES_FORM_TITLE
+      Diagnoses
     </div>
     <div
       class="cds--list-box__wrapper"
@@ -289,11 +289,11 @@ exports[`DiagnosesForm Snapshot Tests empty form matches snapshot 1`] = `
             aria-controls="downshift-«r3b»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
-            aria-label="DIAGNOSES_SEARCH_ARIA_LABEL"
+            aria-label="Search for diagnoses"
             autocomplete="off"
             class="cds--text-input cds--text-input--empty"
             id="diagnoses-search"
-            placeholder="DIAGNOSES_SEARCH_PLACEHOLDER"
+            placeholder="Search to add new diagnosis"
             role="combobox"
             tabindex="0"
             title=""
@@ -345,7 +345,7 @@ exports[`DiagnosesForm Snapshot Tests form with search results matches snapshot 
     class="cds--tile"
   >
     <div>
-      DIAGNOSES_FORM_TITLE
+      Diagnoses
     </div>
     <div
       class="cds--list-box__wrapper"
@@ -362,11 +362,11 @@ exports[`DiagnosesForm Snapshot Tests form with search results matches snapshot 
             aria-controls="downshift-«r3e»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
-            aria-label="DIAGNOSES_SEARCH_ARIA_LABEL"
+            aria-label="Search for diagnoses"
             autocomplete="off"
             class="cds--text-input cds--text-input--empty"
             id="diagnoses-search"
-            placeholder="DIAGNOSES_SEARCH_PLACEHOLDER"
+            placeholder="Search to add new diagnosis"
             role="combobox"
             tabindex="0"
             title=""
@@ -418,7 +418,7 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
     class="cds--tile"
   >
     <div>
-      DIAGNOSES_FORM_TITLE
+      Diagnoses
     </div>
     <div
       class="cds--list-box__wrapper"
@@ -435,11 +435,11 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
             aria-controls="downshift-«r3h»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
-            aria-label="DIAGNOSES_SEARCH_ARIA_LABEL"
+            aria-label="Search for diagnoses"
             autocomplete="off"
             class="cds--text-input cds--text-input--empty"
             id="diagnoses-search"
-            placeholder="DIAGNOSES_SEARCH_PLACEHOLDER"
+            placeholder="Search to add new diagnosis"
             role="combobox"
             tabindex="0"
             title=""
@@ -482,7 +482,7 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
       </div>
     </div>
     <div
-      aria-label="DIAGNOSES_ADDED_DIAGNOSES"
+      aria-label="Added Diagnoses"
       class="cds--css-grid cds--css-grid--narrow cds--css-grid--full-width"
       data-testid="box-w-title"
       role="region"
@@ -490,7 +490,7 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
       <div
         class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
       >
-        DIAGNOSES_ADDED_DIAGNOSES
+        Added Diagnoses
       </div>
       <div
         class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
@@ -526,18 +526,18 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
                       aria-controls="downshift-«r3k»-menu"
                       aria-expanded="false"
                       aria-haspopup="listbox"
-                      aria-label="DIAGNOSES_CERTAINTY_ARIA_LABEL"
+                      aria-label="Diagnoses Certainty"
                       class="cds--list-box__field"
                       id="downshift-«r3k»-toggle-button"
                       role="combobox"
                       tabindex="0"
-                      title="CERTAINITY_CONFIRMED"
+                      title="Confirmed"
                       type="button"
                     >
                       <span
                         class="cds--list-box__label"
                       >
-                        CERTAINITY_CONFIRMED
+                        Confirmed
                       </span>
                       <div
                         class="cds--list-box__menu-icon"
@@ -585,7 +585,7 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
                 class="cds--tooltip-trigger__wrapper"
               >
                 <button
-                  aria-label="SELECTED_ITEM_CLOSE_ARIA_LABEL"
+                  aria-label="Close Selected Item"
                   class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
                   data-testid="selected-item-close-button"
                   id="close-selected-item"
@@ -616,7 +616,7 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
                 <span
                   class="cds--popover-content cds--tooltip-content"
                 >
-                  SELECTED_ITEM_CLOSE
+                  Close
                 </span>
                 <span
                   class="cds--popover-caret"

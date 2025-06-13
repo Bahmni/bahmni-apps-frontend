@@ -262,7 +262,7 @@ describe('AllergiesForm', () => {
       // Use a more flexible text matcher
       await waitFor(() => {
         expect(
-          screen.getByText(/no matching allergen found/i),
+          screen.getByText(/No matching allergen recorded/i),
         ).toBeInTheDocument();
       });
     });

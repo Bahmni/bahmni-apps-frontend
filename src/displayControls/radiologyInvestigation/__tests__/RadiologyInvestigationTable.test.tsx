@@ -203,7 +203,7 @@ describe('RadiologyInvestigationTable', () => {
 
     // Assert
     expect(
-      screen.getByText('No radiology investigations found'),
+      screen.getByText('No radiology investigations recorded'),
     ).toBeInTheDocument();
   });
 

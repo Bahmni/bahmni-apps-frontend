@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useTranslation, I18nextProvider } from 'react-i18next';
+import { I18nextProvider } from 'react-i18next';
 import DiagnosesForm from '../DiagnosesForm';
 import { useConceptSearch } from '@hooks/useConceptSearch';
 import { ConceptSearch } from '@types/concepts';
@@ -13,14 +13,6 @@ import { DiagnosisState } from '@stores/diagnosisStore';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
 
 expect.extend(toHaveNoViolations);
-
-// Mock the hooks
-jest.mock('react-i18next', () => ({
-  useTranslation: jest.fn(),
-  I18nextProvider: ({ children }: { children: React.ReactNode }) => (
-    <>{children}</>
-  ),
-}));
 
 jest.mock('@hooks/useConceptSearch', () => ({
   useConceptSearch: jest.fn(),
@@ -34,10 +26,6 @@ jest.mock('@stores/diagnosisStore', () => {
     useDiagnosisStore: jest.fn(),
   };
 });
-
-// Mock translation function
-const mockT = jest.fn((key: string) => key);
-(useTranslation as jest.Mock).mockReturnValue({ t: mockT });
 
 // Mock data
 const mockConcepts: ConceptSearch[] = [
@@ -132,9 +120,9 @@ describe('DiagnosesForm', () => {
   describe('Rendering', () => {
     it('should render the component with default state', () => {
       render(<DiagnosesForm />);
-      expect(screen.getByText('DIAGNOSES_FORM_TITLE')).toBeInTheDocument();
+      expect(screen.getByText('Diagnoses')).toBeInTheDocument();
       expect(
-        screen.getByPlaceholderText('DIAGNOSES_SEARCH_PLACEHOLDER'),
+        screen.getByPlaceholderText('Search to add new diagnosis'),
       ).toBeInTheDocument();
     });
 
@@ -146,9 +134,7 @@ describe('DiagnosesForm', () => {
       });
 
       render(<DiagnosesForm />);
-      expect(
-        screen.queryByText('DIAGNOSES_ADDED_DIAGNOSES'),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText('Added Diagnoses')).not.toBeInTheDocument();
     });
 
     it('should render selected diagnoses section when diagnoses are present', () => {
@@ -159,7 +145,7 @@ describe('DiagnosesForm', () => {
       });
 
       render(<DiagnosesForm />);
-      expect(screen.getByText('DIAGNOSES_ADDED_DIAGNOSES')).toBeInTheDocument();
+      expect(screen.getByText('Added Diagnoses')).toBeInTheDocument();
       expect(screen.getByText('Hypertension')).toBeInTheDocument();
     });
   });
@@ -192,7 +178,7 @@ describe('DiagnosesForm', () => {
       });
       render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
-        'DIAGNOSES_SEARCH_PLACEHOLDER',
+        'Search to add new diagnosis',
       );
 
       // Type something first
@@ -204,7 +190,7 @@ describe('DiagnosesForm', () => {
       // Should have called handleSearch with empty string
       expect(useConceptSearch).toHaveBeenCalledWith('');
       expect(
-        screen.queryByText('NO_MATCHING_DIAGNOSIS_FOUND'),
+        screen.queryByText('No matching diagnosis recorded'),
       ).not.toBeInTheDocument();
     });
 
@@ -217,7 +203,7 @@ describe('DiagnosesForm', () => {
 
       render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
-        'DIAGNOSES_SEARCH_PLACEHOLDER',
+        'Search to add new diagnosis',
       );
       await userEvent.type(searchInput, 'hyper');
 
@@ -233,7 +219,7 @@ describe('DiagnosesForm', () => {
 
       render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
-        'DIAGNOSES_SEARCH_PLACEHOLDER',
+        'Search to add new diagnosis',
       );
       await userEvent.type(searchInput, 'hyper');
 
@@ -250,12 +236,12 @@ describe('DiagnosesForm', () => {
 
       render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
-        'DIAGNOSES_SEARCH_PLACEHOLDER',
+        'Search to add new diagnosis',
       );
       await userEvent.type(searchInput, 'nonexistent');
 
       expect(
-        screen.getByText('NO_MATCHING_DIAGNOSIS_FOUND'),
+        screen.getByText('No matching diagnosis recorded'),
       ).toBeInTheDocument();
     });
 
@@ -268,11 +254,11 @@ describe('DiagnosesForm', () => {
 
       render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
-        'DIAGNOSES_SEARCH_PLACEHOLDER',
+        'Search to add new diagnosis',
       );
       await userEvent.type(searchInput, 'nonexistent');
 
-      expect(screen.getByText('LOADING_CONCEPTS')).toBeInTheDocument();
+      expect(screen.getByText('Loading concepts...')).toBeInTheDocument();
     });
 
     it('should display error message when search fails', async () => {
@@ -284,12 +270,14 @@ describe('DiagnosesForm', () => {
 
       render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
-        'DIAGNOSES_SEARCH_PLACEHOLDER',
+        'Search to add new diagnosis',
       );
       await userEvent.type(searchInput, 'test');
 
       // Verify error message is displayed
-      const errorOption = screen.getByText('ERROR_FETCHING_CONCEPTS');
+      const errorOption = screen.getByText(
+        'An unexpected error occurred. Please try again later.',
+      );
       expect(errorOption).toBeInTheDocument();
 
       // Verify the error option is disabled
@@ -300,7 +288,7 @@ describe('DiagnosesForm', () => {
     it('should handle search term less than 3 characters', async () => {
       render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
-        'DIAGNOSES_SEARCH_PLACEHOLDER',
+        'Search to add new diagnosis',
       );
       await userEvent.type(searchInput, 'hy');
 
@@ -319,7 +307,7 @@ describe('DiagnosesForm', () => {
 
       render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
-        'DIAGNOSES_SEARCH_PLACEHOLDER',
+        'Search to add new diagnosis',
       );
       await userEvent.type(searchInput, 'hyper');
 
@@ -357,13 +345,13 @@ describe('DiagnosesForm', () => {
 
       render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
-        'DIAGNOSES_SEARCH_PLACEHOLDER',
+        'Search to add new diagnosis',
       );
       await userEvent.type(searchInput, 'hyper');
 
       // Check that the already selected item shows with indicator text
       const disabledOption = await screen.findByText(
-        `${mockConcepts[0].conceptName} DIAGNOSIS_ALREADY_SELECTED`,
+        `${mockConcepts[0].conceptName} (Already selected)`,
       );
       expect(disabledOption).toBeInTheDocument();
     });
@@ -390,13 +378,13 @@ describe('DiagnosesForm', () => {
 
       render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
-        'DIAGNOSES_SEARCH_PLACEHOLDER',
+        'Search to add new diagnosis',
       );
       await userEvent.type(searchInput, 'hyper');
 
       // Find the disabled option
       const disabledOption = await screen.findByText(
-        `${mockConcepts[0].conceptName} DIAGNOSIS_ALREADY_SELECTED`,
+        `${mockConcepts[0].conceptName} (Already selected)`,
       );
       expect(disabledOption).toBeInTheDocument();
 
@@ -426,7 +414,7 @@ describe('DiagnosesForm', () => {
 
       // Initially no diagnoses selected
       const searchInput = screen.getByPlaceholderText(
-        'DIAGNOSES_SEARCH_PLACEHOLDER',
+        'Search to add new diagnosis',
       );
       await userEvent.type(searchInput, 'hyper');
 
@@ -436,9 +424,7 @@ describe('DiagnosesForm', () => {
       });
 
       // All items should be enabled (no "Already selected" text)
-      expect(
-        screen.queryByText(/DIAGNOSIS_ALREADY_SELECTED/),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText(/(Already selected)/)).not.toBeInTheDocument();
 
       // Now simulate adding a diagnosis to selected list
       const newDiagnosis: DiagnosisInputEntry = {
@@ -465,9 +451,7 @@ describe('DiagnosesForm', () => {
       // Now the item should show as disabled
       await waitFor(() => {
         expect(
-          screen.getByText(
-            `${mockConcepts[0].conceptName} DIAGNOSIS_ALREADY_SELECTED`,
-          ),
+          screen.getByText(`${mockConcepts[0].conceptName} (Already selected)`),
         ).toBeInTheDocument();
       });
     });
@@ -521,7 +505,7 @@ describe('DiagnosesForm', () => {
 
       render(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
-        'DIAGNOSES_SEARCH_PLACEHOLDER',
+        'Search to add new diagnosis',
       );
       await userEvent.type(searchInput, 'Test');
 
@@ -540,9 +524,7 @@ describe('DiagnosesForm', () => {
   describe('Accessibility', () => {
     it('should have proper ARIA labels', () => {
       render(<DiagnosesForm />);
-      expect(
-        screen.getByLabelText('DIAGNOSES_SEARCH_ARIA_LABEL'),
-      ).toBeInTheDocument();
+      expect(screen.getByLabelText('Search for diagnoses')).toBeInTheDocument();
     });
 
     test('accessible forms pass axe', async () => {
@@ -611,7 +593,7 @@ describe('DiagnosesForm', () => {
       });
       const { container } = renderWithI18n(<DiagnosesForm />);
       const searchInput = screen.getByPlaceholderText(
-        'DIAGNOSES_SEARCH_PLACEHOLDER',
+        'Search to add new diagnosis',
       );
       await userEvent.type(searchInput, 'hyper');
       expect(container).toMatchSnapshot();
