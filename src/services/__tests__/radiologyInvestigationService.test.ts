@@ -1,6 +1,11 @@
 import { Bundle, ServiceRequest } from 'fhir/r4';
 import { getPatientRadiologyInvestigations } from '../radiologyInvestigationService';
 import { get } from '../api';
+import {
+  mockRadiologyTestBasic,
+  mockRadiologyTestWithMultipleReplaces,
+  mockRadiologyTestWithEmptyReplaces,
+} from '@__mocks__/radiologyInvestigationMocks';
 
 // Mock the API module
 jest.mock('../api');
@@ -20,23 +25,7 @@ describe('radiologyInvestigationService', () => {
         type: 'searchset',
         entry: [
           {
-            resource: {
-              resourceType: 'ServiceRequest',
-              id: 'order-1',
-              status: 'active',
-              intent: 'order',
-              subject: { reference: 'Patient/test-patient-uuid' },
-              code: {
-                text: 'Chest X-Ray',
-              },
-              priority: 'urgent',
-              requester: {
-                display: 'Dr. Smith',
-              },
-              occurrencePeriod: {
-                start: '2023-10-15T10:30:00.000Z',
-              },
-            } as ServiceRequest,
+            resource: mockRadiologyTestBasic,
           },
         ],
       };
@@ -212,6 +201,164 @@ describe('radiologyInvestigationService', () => {
       expect(result[0].testName).toBe('X-Ray');
       expect(result[1].testName).toBe('CT Scan');
       expect(result[2].testName).toBe('MRI');
+    });
+
+    it('should handle ServiceRequest with replaces field', async () => {
+      const mockBundle: Bundle = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: {
+              resourceType: 'ServiceRequest',
+              id: '207172a2-27e3-4fef-bea2-85fb826575e4',
+              status: 'unknown',
+              intent: 'order',
+              subject: { reference: 'Patient/test-patient-uuid' },
+              code: {
+                text: 'Magnetic resonance imaging of thoracolumbar spine',
+              },
+              priority: 'routine',
+              requester: {
+                display: 'Super Man',
+              },
+              occurrencePeriod: {
+                start: '2025-06-13T08:48:15+00:00',
+              },
+              replaces: [
+                {
+                  reference:
+                    'ServiceRequest/271f2b4f-a239-418b-ba9e-f23014093df3',
+                  type: 'ServiceRequest',
+                  identifier: {
+                    use: 'usual',
+                    type: {
+                      coding: [
+                        {
+                          system:
+                            'http://terminology.hl7.org/CodeSystem/v2-0203',
+                          code: 'PLAC',
+                          display: 'Placer Identifier',
+                        },
+                      ],
+                    },
+                    value: 'ORD-30',
+                  },
+                },
+              ],
+            } as ServiceRequest,
+          },
+        ],
+      };
+
+      mockGet.mockResolvedValue(mockBundle);
+
+      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual({
+        id: '207172a2-27e3-4fef-bea2-85fb826575e4',
+        testName: 'Magnetic resonance imaging of thoracolumbar spine',
+        priority: 'routine',
+        orderedBy: 'Super Man',
+        orderedDate: '2025-06-13T08:48:15+00:00',
+        replaces: ['271f2b4f-a239-418b-ba9e-f23014093df3'],
+      });
+    });
+
+    it('should handle ServiceRequest with multiple replaces', async () => {
+      const mockBundle: Bundle = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: mockRadiologyTestWithMultipleReplaces,
+          },
+        ],
+      };
+
+      mockGet.mockResolvedValue(mockBundle);
+
+      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual({
+        id: 'order-new',
+        testName: 'Updated X-Ray',
+        priority: 'urgent',
+        orderedBy: 'Dr. Smith',
+        orderedDate: '2023-10-15T10:30:00.000Z',
+        replaces: ['order-1', 'order-2'],
+      });
+    });
+
+    it('should handle ServiceRequest with empty replaces reference', async () => {
+      const mockBundle: Bundle = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: mockRadiologyTestWithEmptyReplaces,
+          },
+        ],
+      };
+
+      mockGet.mockResolvedValue(mockBundle);
+
+      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual({
+        id: 'order-1',
+        testName: 'X-Ray',
+        priority: 'urgent',
+        orderedBy: 'Dr. Smith',
+        orderedDate: '2023-10-15T10:30:00.000Z',
+        // replaces field should not be present when filtered empty references
+      });
+    });
+
+    it('should handle ServiceRequest without replaces field', async () => {
+      const mockBundle: Bundle = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: {
+              resourceType: 'ServiceRequest',
+              id: 'order-1',
+              status: 'active',
+              intent: 'order',
+              subject: { reference: 'Patient/test-patient-uuid' },
+              code: {
+                text: 'X-Ray',
+              },
+              priority: 'urgent',
+              requester: {
+                display: 'Dr. Smith',
+              },
+              occurrencePeriod: {
+                start: '2023-10-15T10:30:00.000Z',
+              },
+              // No replaces field
+            } as ServiceRequest,
+          },
+        ],
+      };
+
+      mockGet.mockResolvedValue(mockBundle);
+
+      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual({
+        id: 'order-1',
+        testName: 'X-Ray',
+        priority: 'urgent',
+        orderedBy: 'Dr. Smith',
+        orderedDate: '2023-10-15T10:30:00.000Z',
+        // replaces field should not be present
+      });
     });
   });
 });

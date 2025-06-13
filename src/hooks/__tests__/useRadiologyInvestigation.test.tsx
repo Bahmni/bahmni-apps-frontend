@@ -5,6 +5,11 @@ import { getPatientRadiologyInvestigations } from '@services/radiologyInvestigat
 import { usePatientUUID } from '../usePatientUUID';
 import { getFormattedError } from '@utils/common';
 import i18n from '@/setupTests.i18n';
+import {
+  mockPatientUUID,
+  mockFormattedRadiologyInvestigations,
+  createMockRadiologyInvestigation,
+} from '@__mocks__/radiologyInvestigationMocks';
 
 // Mock dependencies
 jest.mock('@services/radiologyInvestigationService');
@@ -24,24 +29,8 @@ const mockedGetFormattedError = getFormattedError as jest.MockedFunction<
 >;
 
 describe('useRadiologyInvestigation hook', () => {
-  const mockPatientUUID = 'patient-uuid-123';
-
-  const mockRadiologyInvestigations: RadiologyInvestigation[] = [
-    {
-      id: 'order-uuid-123',
-      testName: 'Chest X-Ray',
-      priority: 'urgent',
-      orderedBy: 'Dr. John Doe',
-      orderedDate: '2023-12-01T10:30:00.000Z',
-    },
-    {
-      id: 'order-uuid-456',
-      testName: 'CT Scan',
-      priority: 'routine',
-      orderedBy: 'Dr. Jane Smith',
-      orderedDate: '2023-12-02T14:15:00.000Z',
-    },
-  ];
+  const mockRadiologyInvestigations =
+    mockFormattedRadiologyInvestigations.slice(0, 2);
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -146,13 +135,7 @@ describe('useRadiologyInvestigation hook', () => {
   it('should refetch data when refetch is called', async () => {
     // Arrange
     const updatedInvestigations: RadiologyInvestigation[] = [
-      {
-        id: 'order-uuid-789',
-        testName: 'MRI',
-        priority: 'stat',
-        orderedBy: 'Dr. Bob Wilson',
-        orderedDate: '2023-12-03T16:20:00.000Z',
-      },
+      createMockRadiologyInvestigation('order-uuid-789', 'MRI', 'stat'),
     ];
 
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
