@@ -214,7 +214,9 @@ describe('RadiologyInvestigationTable Integration Tests', () => {
       });
 
       // Assert - Empty state message should be displayed
-      expect(screen.getByText('No radiology orders found')).toBeInTheDocument();
+      expect(
+        screen.getByText('No radiology investigations found'),
+      ).toBeInTheDocument();
 
       // Assert - No accordion tables should be rendered
       expect(
@@ -249,7 +251,7 @@ describe('RadiologyInvestigationTable Integration Tests', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText('Error fetching radiology orders'),
+          screen.getByText('Error fetching radiology investigations'),
         ).toBeInTheDocument();
       });
 
@@ -276,7 +278,7 @@ describe('RadiologyInvestigationTable Integration Tests', () => {
 
       // Assert - Error message should be displayed
       expect(
-        screen.getByText('Error fetching radiology orders'),
+        screen.getByText('Error fetching radiology investigations'),
       ).toBeInTheDocument();
 
       // Assert - Component title should still be present
@@ -334,9 +336,13 @@ describe('RadiologyInvestigationTable Integration Tests', () => {
       });
 
       // Assert - Basic component structure should be present
-      expect(screen.getByTestId('radiology-orders-table')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('radiology-investigations-table'),
+      ).toBeInTheDocument();
       expect(screen.getByText('Radiology Investigations')).toBeInTheDocument();
-      expect(screen.getByText('No radiology orders found')).toBeInTheDocument();
+      expect(
+        screen.getByText('No radiology investigations found'),
+      ).toBeInTheDocument();
     });
   });
 

@@ -202,7 +202,9 @@ describe('RadiologyInvestigationTable', () => {
     render(<RadiologyInvestigationTable />);
 
     // Assert
-    expect(screen.getByText('No radiology orders found')).toBeInTheDocument();
+    expect(
+      screen.getByText('No radiology investigations found'),
+    ).toBeInTheDocument();
   });
 
   it('should display loading and error states', () => {
@@ -233,7 +235,7 @@ describe('RadiologyInvestigationTable', () => {
 
     // Assert - Error
     expect(
-      screen.getByText('Error fetching radiology orders'),
+      screen.getByText('Error fetching radiology investigations'),
     ).toBeInTheDocument();
   });
 
@@ -419,7 +421,9 @@ describe('RadiologyInvestigationTable', () => {
     render(<RadiologyInvestigationTable />);
 
     // Assert
-    expect(screen.getByTestId('radiology-orders-table')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('radiology-investigations-table'),
+    ).toBeInTheDocument();
   });
 
   it('should handle multiple priority types correctly', async () => {
