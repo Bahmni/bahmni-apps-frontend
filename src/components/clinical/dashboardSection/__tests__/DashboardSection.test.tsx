@@ -53,7 +53,9 @@ jest.mock(
   () => ({
     __esModule: true,
     default: () => (
-      <div data-testid="radiology-orders-table">Radiology Orders Table</div>
+      <div data-testid="radiology-investigations-table">
+        Radiology Orders Table
+      </div>
     ),
   }),
 );
@@ -176,7 +178,9 @@ describe('DashboardSection Component', () => {
 
       render(<DashboardSection section={radiologySection} ref={mockRef} />);
 
-      expect(screen.getByTestId('radiology-orders-table')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('radiology-investigations-table'),
+      ).toBeInTheDocument();
     });
 
     it('renders no content for unknown section types', () => {

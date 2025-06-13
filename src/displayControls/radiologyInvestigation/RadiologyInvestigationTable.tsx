@@ -45,32 +45,32 @@ const RadiologyInvestigationTable: React.FC = () => {
       radiologyInvestigations,
     );
 
-    const grouped = groupByDate(filteredInvestigations, (order) => {
-      const result = formatDate(order.orderedDate, ISO_DATE_FORMAT);
+    const grouped = groupByDate(filteredInvestigations, (investigation) => {
+      const result = formatDate(investigation.orderedDate, ISO_DATE_FORMAT);
       return result.formattedResult;
     });
 
     const groupedData = grouped.map((group) => ({
       date: group.date,
-      orders: group.items,
+      investigations: group.items,
     }));
 
     return groupedData.map((investigationsByDate) => ({
       ...investigationsByDate,
-      orders: sortRadiologyInvestigationsByPriority(
-        investigationsByDate.orders,
+      investigations: sortRadiologyInvestigationsByPriority(
+        investigationsByDate.investigations,
       ),
     }));
   }, [radiologyInvestigations]);
 
   const renderCell = useCallback(
-    (order: RadiologyInvestigation, cellId: string) => {
+    (investigation: RadiologyInvestigation, cellId: string) => {
       switch (cellId) {
         case 'testName':
           return (
             <>
-              {order.testName + ' '}
-              {order.priority === 'stat' && (
+              {investigation.testName + ' '}
+              {investigation.priority === 'stat' && (
                 <Tag className={styles.urgentCell}>
                   {t('RADIOLOGY_PRIORITY_URGENT')}
                 </Tag>
@@ -80,7 +80,7 @@ const RadiologyInvestigationTable: React.FC = () => {
         case 'results':
           return '--';
         case 'orderedBy':
-          return order.orderedBy;
+          return investigation.orderedBy;
       }
     },
     [],
@@ -89,7 +89,7 @@ const RadiologyInvestigationTable: React.FC = () => {
   return (
     <Tile
       title={t('RADIOLOGY_INVESTIGATION_HEADING')}
-      data-testid="radiology-orders-table"
+      data-testid="radiology-investigations-table"
       className={styles.radiologyInvestigationTable}
     >
       <div className={styles.radiologyInvestigationTableTitle}>
@@ -107,16 +107,16 @@ const RadiologyInvestigationTable: React.FC = () => {
       )}
       {error && (
         <p className={styles.radiologyInvestigationTableBodyError}>
-          {t('ERROR_FETCHING_RADIOLOGY_ORDERS')}
+          {t('ERROR_FETCHING_RADIOLOGY_INVESTIGATIONS')}
         </p>
       )}
       {!loading && !error && radiologyInvestigations.length === 0 && (
         <p className={styles.radiologyInvestigationTableBodyError}>
-          {t('NO_RADIOLOGY_ORDERS')}
+          {t('NO_RADIOLOGY_INVESTIGATIONS')}
         </p>
       )}
-      {processedInvestigations.map((ordersByDate, index) => {
-        const { date, orders } = ordersByDate;
+      {processedInvestigations.map((investigationsByDate, index) => {
+        const { date, investigations } = investigationsByDate;
 
         const formattedDate = formatDate(
           date,
@@ -127,13 +127,13 @@ const RadiologyInvestigationTable: React.FC = () => {
           <ExpandableDataTable
             key={date}
             tableTitle={formattedDate}
-            rows={orders}
+            rows={investigations}
             headers={headers}
             sortable={sortable}
             renderCell={renderCell}
             loading={false}
             error={null}
-            emptyStateMessage={t('NO_RADIOLOGY_ORDERS')}
+            emptyStateMessage={t('NO_RADIOLOGY_INVESTIGATIONS')}
             className={styles.radiologyInvestigationTableBody}
             isOpen={index === 0}
           />
