@@ -185,3 +185,47 @@ export function groupByDate<T>(
     items,
   }));
 }
+
+/**
+ * Filters out items that have replacement relationships
+ * Removes both the replacing items (have replacement references) and the replaced items (referenced by others)
+ * This prevents duplicate entries from showing in the UI where one item replaces another
+ *
+ * @param items - Array of items to filter
+ * @param idExtractor - Function to extract unique identifier from each item
+ * @param replacesExtractor - Function to extract array of replaced item IDs from each item
+ * @returns Filtered array without replacement-related entries
+ */
+export function filterReplacementEntries<T>(
+  items: T[],
+  idExtractor: (item: T) => string,
+  replacesExtractor: (item: T) => string[] | undefined,
+): T[] {
+  if (!items || items.length === 0) {
+    return [];
+  }
+
+  const replacingIds = new Set<string>();
+  const replacedIds = new Set<string>();
+
+  // First pass: collect all replacing and replaced IDs
+  items.forEach((item) => {
+    const replaces = replacesExtractor(item);
+    if (replaces && replaces.length > 0) {
+      // This item is replacing others
+      replacingIds.add(idExtractor(item));
+      // Add all the IDs this item replaces
+      replaces.forEach((replacedId) => {
+        replacedIds.add(replacedId);
+      });
+    }
+  });
+
+  // Second pass: filter out items that are either replacing or replaced
+  return items.filter((item) => {
+    const itemId = idExtractor(item);
+    const isReplacing = replacingIds.has(itemId);
+    const isReplaced = replacedIds.has(itemId);
+    return !isReplacing && !isReplaced;
+  });
+}

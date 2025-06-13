@@ -1,5 +1,5 @@
 import { RadiologyInvestigation } from '@types/radiologyInvestigation';
-import { getPriorityByOrder } from './common';
+import { getPriorityByOrder, filterReplacementEntries } from './common';
 
 /**
  * Priority order for radiology investigation priorities (case insensitive)
@@ -39,24 +39,12 @@ export const sortRadiologyInvestigationsByPriority = (
  * @param investigations - Array of formatted radiology investigations
  * @returns Filtered array without replacement-related entries
  */
-export const filterReplacementEntries = (
+export const filterRadiologyInvestionsReplacementEntries = (
   investigations: RadiologyInvestigation[],
 ): RadiologyInvestigation[] => {
-  const replacingIds = new Set<string>();
-  const replacedIds = new Set<string>();
-
-  investigations.forEach((investigation) => {
-    if (investigation.replaces && investigation.replaces.length > 0) {
-      replacingIds.add(investigation.id);
-      investigation.replaces.forEach((replacedId) => {
-        replacedIds.add(replacedId);
-      });
-    }
-  });
-
-  return investigations.filter((investigation) => {
-    const isReplacing = replacingIds.has(investigation.id);
-    const isReplaced = replacedIds.has(investigation.id);
-    return !isReplacing && !isReplaced;
-  });
+  return filterReplacementEntries(
+    investigations,
+    (investigation) => investigation.id,
+    (investigation) => investigation.replaces,
+  );
 };
