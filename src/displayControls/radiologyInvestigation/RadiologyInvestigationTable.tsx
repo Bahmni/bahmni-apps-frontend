@@ -8,7 +8,7 @@ import { formatDate } from '@utils/date';
 import { FULL_MONTH_DATE_FORMAT, ISO_DATE_FORMAT } from '@constants/date';
 import {
   sortRadiologyInvestigationsByPriority,
-  filterReplacementEntries,
+  filterRadiologyInvestionsReplacementEntries,
 } from '@utils/radiologyInvestigation';
 import { groupByDate } from '@utils/common';
 import * as styles from './styles/RadiologyInvestigationTable.module.scss';
@@ -41,7 +41,7 @@ const RadiologyInvestigationTable: React.FC = () => {
   );
 
   const processedInvestigations = useMemo(() => {
-    const filteredInvestigations = filterReplacementEntries(
+    const filteredInvestigations = filterRadiologyInvestionsReplacementEntries(
       radiologyInvestigations,
     );
 

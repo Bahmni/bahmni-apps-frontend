@@ -3,7 +3,7 @@ import {
   PRIORITY_ORDER,
   getRadiologyPriority,
   sortRadiologyInvestigationsByPriority,
-  filterReplacementEntries,
+  filterRadiologyInvestionsReplacementEntries,
 } from '../radiologyInvestigation';
 import {
   createMockRadiologyInvestigation,
@@ -195,7 +195,7 @@ describe('radiologyInvestigation utilities', () => {
     });
 
     it('should filter out both replacing and replaced entries', async () => {
-      const filtered = filterReplacementEntries(
+      const filtered = filterRadiologyInvestionsReplacementEntries(
         mockRadiologyInvestigationsForFiltering,
       );
 
@@ -219,7 +219,8 @@ describe('radiologyInvestigation utilities', () => {
         ),
       ];
 
-      const filtered = filterReplacementEntries(investigations);
+      const filtered =
+        filterRadiologyInvestionsReplacementEntries(investigations);
 
       expect(filtered).toHaveLength(0);
     });
@@ -249,7 +250,8 @@ describe('radiologyInvestigation utilities', () => {
         ),
       ];
 
-      const filtered = filterReplacementEntries(investigations);
+      const filtered =
+        filterRadiologyInvestionsReplacementEntries(investigations);
 
       expect(filtered).toHaveLength(1);
       expect(filtered[0].id).toBe('standalone-1');
@@ -262,19 +264,22 @@ describe('radiologyInvestigation utilities', () => {
         createMockInvestigationWithReplaces('3', 'MRI', 'routine'),
       ];
 
-      const filtered = filterReplacementEntries(investigations);
+      const filtered =
+        filterRadiologyInvestionsReplacementEntries(investigations);
 
       expect(filtered).toHaveLength(3);
       expect(filtered).toEqual(investigations);
     });
 
     it('should handle empty array', async () => {
-      const filtered = filterReplacementEntries([]);
+      const filtered = filterRadiologyInvestionsReplacementEntries([]);
       expect(filtered).toEqual([]);
     });
 
     it('should handle chain of replacements', async () => {
-      const filtered = filterReplacementEntries(mockRadiologyChainReplacement);
+      const filtered = filterRadiologyInvestionsReplacementEntries(
+        mockRadiologyChainReplacement,
+      );
 
       expect(filtered).toHaveLength(1);
       expect(filtered[0].id).toBe('standalone');
@@ -289,7 +294,7 @@ describe('radiologyInvestigation utilities', () => {
       ];
       const originalLength = investigations.length;
 
-      filterReplacementEntries(investigations);
+      filterRadiologyInvestionsReplacementEntries(investigations);
 
       expect(investigations).toHaveLength(originalLength);
       expect(investigations[0].id).toBe('replacing');
@@ -302,7 +307,8 @@ describe('radiologyInvestigation utilities', () => {
         createMockInvestigationWithReplaces('2', 'Test 2', 'stat'),
       ];
 
-      const filtered = filterReplacementEntries(investigations);
+      const filtered =
+        filterRadiologyInvestionsReplacementEntries(investigations);
 
       expect(filtered).toHaveLength(2);
       expect(filtered).toEqual(investigations);
@@ -354,7 +360,8 @@ describe('radiologyInvestigation utilities', () => {
         ),
       ];
 
-      const filtered = filterReplacementEntries(investigations);
+      const filtered =
+        filterRadiologyInvestionsReplacementEntries(investigations);
 
       expect(filtered).toHaveLength(2);
       expect(filtered.map((i: RadiologyInvestigation) => i.id)).toEqual([
