@@ -58,7 +58,7 @@
   "DIAGNOSES_ADDED_DIAGNOSES": "Added Diagnoses",
   "DIAGNOSES_CERTAINTY_ARIA_LABEL": "Diagnoses Certainty",
   "DIAGNOSES_DISPLAY_CONTROL_HEADING": "Diagnoses",
-  "DIAGNOSES_FORM_TITLE": "Diagnoses",
+  "CONDITIONS_AND_DIAGNOSES_FORM_TITLE": "Conditions and Diagnoses",
   "DIAGNOSES_SEARCH_ARIA_LABEL": "Search for diagnoses",
   "DIAGNOSES_SEARCH_PLACEHOLDER": "Search to add new diagnosis",
   "DIAGNOSES_SELECT_CERTAINTY": "Select Certainty",

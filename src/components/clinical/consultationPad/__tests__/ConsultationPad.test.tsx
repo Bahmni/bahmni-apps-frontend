@@ -270,107 +270,111 @@ jest.mock('@carbon/react', () => {
   };
 });
 
-jest.mock('@components/clinical/forms/diagnoses/DiagnosesForm', () => {
-  return function MockDiagnosesForm() {
-    // Get access to the mocked store
-    const mockStore = jest
-      .requireMock('@stores/diagnosisStore')
-      .useDiagnosisStore();
+jest.mock(
+  '@components/clinical/forms/conditionsAndDiagnoses/ConditionsAndDiagnoses',
+  () => {
+    return function MockDiagnosesForm() {
+      // Get access to the mocked store
+      const mockStore = jest
+        .requireMock('@stores/diagnosisStore')
+        .useDiagnosisStore();
 
-    // Add a diagnosis with the test data
-    const handleSelect = () => {
-      // Create a diagnosis with a fixed ID for testing
-      const newDiagnosis = {
-        id: 'test-diagnosis-id',
-        display: 'Test Diagnosis',
-        selectedCertainty: null,
-        errors: {},
-        hasBeenValidated: false,
+      // Add a diagnosis with the test data
+      const handleSelect = () => {
+        // Create a diagnosis with a fixed ID for testing
+        const newDiagnosis = {
+          id: 'test-diagnosis-id',
+          display: 'Test Diagnosis',
+          selectedCertainty: null,
+          errors: {},
+          hasBeenValidated: false,
+        };
+
+        // Directly modify the store's selectedDiagnoses array
+        mockStore.selectedDiagnoses = [newDiagnosis];
+
+        return newDiagnosis;
       };
 
-      // Directly modify the store's selectedDiagnoses array
-      mockStore.selectedDiagnoses = [newDiagnosis];
+      // Remove a diagnosis
+      const handleRemove = () => {
+        // Clear the diagnoses array
+        mockStore.selectedDiagnoses = [];
+      };
 
-      return newDiagnosis;
-    };
+      // Update certainty
+      const handleCertaintyChange = () => {
+        // Directly update the certainty on the first diagnosis
+        if (mockStore.selectedDiagnoses.length > 0) {
+          mockStore.selectedDiagnoses[0].selectedCertainty = {
+            code: 'confirmed',
+            display: 'Confirmed',
+            system:
+              'http://terminology.hl7.org/CodeSystem/condition-ver-status',
+          };
+        }
+      };
 
-    // Remove a diagnosis
-    const handleRemove = () => {
-      // Clear the diagnoses array
-      mockStore.selectedDiagnoses = [];
-    };
-
-    // Update certainty
-    const handleCertaintyChange = () => {
-      // Directly update the certainty on the first diagnosis
-      if (mockStore.selectedDiagnoses.length > 0) {
-        mockStore.selectedDiagnoses[0].selectedCertainty = {
-          code: 'confirmed',
-          display: 'Confirmed',
-          system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
-        };
-      }
-    };
-
-    return (
-      <div data-testid="mock-diagnoses-form">
-        <button
-          onClick={() => {
-            // Simulate search - no need to do anything here
-          }}
-        >
-          Search
-        </button>
-        <button onClick={handleSelect}>Select</button>
-        <button
-          data-testid="select-null-button"
-          onClick={() => {
-            // Handle null selection - no-op
-          }}
-        >
-          Select Null
-        </button>
-        <button onClick={handleRemove}>Remove</button>
-        <div data-testid="diagnoses-form-errors">
-          {/* No errors to display in mock */}
-        </div>
-        <div data-testid="diagnoses-form-loading">
-          {/* Get loading state from useConceptSearch mock */}
-          {jest.requireMock('@hooks/useConceptSearch').useConceptSearch()
-            .loading
-            ? 'Loading'
-            : 'Not Loading'}
-        </div>
-        <div data-testid="diagnoses-form-results">
-          {/* Get results from useConceptSearch mock */}
-          {jest.requireMock('@hooks/useConceptSearch').useConceptSearch()
-            .searchResults?.length || 0}{' '}
-          results
-        </div>
-        <div data-testid="diagnoses-form-selected">
-          {mockStore.selectedDiagnoses?.length || 0} selected
-        </div>
-        {/* Mock selected diagnoses with certainty change capability */}
-        {mockStore.selectedDiagnoses?.map(
-          (diagnosis: DiagnosisInputEntry, index: number) => (
-            <div
-              key={`diagnosis-${index}`}
-              data-testid={`selected-diagnosis-${index}`}
-            >
-              <span>{diagnosis.display}</span>
-              <button
-                data-testid={`change-certainty-${index}`}
-                onClick={() => handleCertaintyChange()}
+      return (
+        <div data-testid="mock-diagnoses-form">
+          <button
+            onClick={() => {
+              // Simulate search - no need to do anything here
+            }}
+          >
+            Search
+          </button>
+          <button onClick={handleSelect}>Select</button>
+          <button
+            data-testid="select-null-button"
+            onClick={() => {
+              // Handle null selection - no-op
+            }}
+          >
+            Select Null
+          </button>
+          <button onClick={handleRemove}>Remove</button>
+          <div data-testid="diagnoses-form-errors">
+            {/* No errors to display in mock */}
+          </div>
+          <div data-testid="diagnoses-form-loading">
+            {/* Get loading state from useConceptSearch mock */}
+            {jest.requireMock('@hooks/useConceptSearch').useConceptSearch()
+              .loading
+              ? 'Loading'
+              : 'Not Loading'}
+          </div>
+          <div data-testid="diagnoses-form-results">
+            {/* Get results from useConceptSearch mock */}
+            {jest.requireMock('@hooks/useConceptSearch').useConceptSearch()
+              .searchResults?.length || 0}{' '}
+            results
+          </div>
+          <div data-testid="diagnoses-form-selected">
+            {mockStore.selectedDiagnoses?.length || 0} selected
+          </div>
+          {/* Mock selected diagnoses with certainty change capability */}
+          {mockStore.selectedDiagnoses?.map(
+            (diagnosis: DiagnosisInputEntry, index: number) => (
+              <div
+                key={`diagnosis-${index}`}
+                data-testid={`selected-diagnosis-${index}`}
               >
-                Change Certainty
-              </button>
-            </div>
-          ),
-        )}
-      </div>
-    );
-  };
-});
+                <span>{diagnosis.display}</span>
+                <button
+                  data-testid={`change-certainty-${index}`}
+                  onClick={() => handleCertaintyChange()}
+                >
+                  Change Certainty
+                </button>
+              </div>
+            ),
+          )}
+        </div>
+      );
+    };
+  },
+);
 
 jest.mock('@hooks/useConceptSearch', () => ({
   useConceptSearch: jest.fn(),

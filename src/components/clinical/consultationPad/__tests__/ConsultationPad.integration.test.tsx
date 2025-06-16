@@ -228,8 +228,8 @@ describe('ConsultationPad Integration', () => {
       expect(screen.getByText('Encounter Date')).toBeInTheDocument();
     });
 
-    // Verify that the DiagnosesForm is rendered
-    expect(screen.getByText('Diagnoses')).toBeInTheDocument();
+    // Verify that the conditionsAndDiagnoses form is rendered
+    expect(screen.getByText('Conditions and Diagnoses')).toBeInTheDocument();
 
     // Verify that the AllergiesForm is rendered
     expect(screen.getByText('Allergies')).toBeInTheDocument();

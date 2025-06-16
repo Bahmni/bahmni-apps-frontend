@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { I18nextProvider } from 'react-i18next';
-import DiagnosesForm from '../DiagnosesForm';
+import DiagnosesForm from '../ConditionsAndDiagnoses';
 import { useConceptSearch } from '@hooks/useConceptSearch';
 import { ConceptSearch } from '@types/concepts';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -120,7 +120,7 @@ describe('DiagnosesForm', () => {
   describe('Rendering', () => {
     it('should render the component with default state', () => {
       render(<DiagnosesForm />);
-      expect(screen.getByText('Diagnoses')).toBeInTheDocument();
+      expect(screen.getByText('Conditions and Diagnoses')).toBeInTheDocument();
       expect(
         screen.getByPlaceholderText('Search to add new diagnosis'),
       ).toBeInTheDocument();

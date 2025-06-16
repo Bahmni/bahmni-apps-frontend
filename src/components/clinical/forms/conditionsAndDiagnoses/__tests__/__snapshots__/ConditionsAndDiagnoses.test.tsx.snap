@@ -6,7 +6,7 @@ exports[`DiagnosesForm Snapshot Tests duplicate diagnosis search should matches 
     class="cds--tile"
   >
     <div>
-      Diagnoses
+      Conditions and Diagnoses
     </div>
     <div
       class="cds--list-box__wrapper"
@@ -272,7 +272,7 @@ exports[`DiagnosesForm Snapshot Tests empty form matches snapshot 1`] = `
     class="cds--tile"
   >
     <div>
-      Diagnoses
+      Conditions and Diagnoses
     </div>
     <div
       class="cds--list-box__wrapper"
@@ -345,7 +345,7 @@ exports[`DiagnosesForm Snapshot Tests form with search results matches snapshot 
     class="cds--tile"
   >
     <div>
-      Diagnoses
+      Conditions and Diagnoses
     </div>
     <div
       class="cds--list-box__wrapper"
@@ -418,7 +418,7 @@ exports[`DiagnosesForm Snapshot Tests form with selected diagnoses matches snaps
     class="cds--tile"
   >
     <div>
-      Diagnoses
+      Conditions and Diagnoses
     </div>
     <div
       class="cds--list-box__wrapper"

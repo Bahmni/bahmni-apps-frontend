@@ -3,18 +3,18 @@
 @use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/theme" as *;
 
-.diagnosesFormTile {
+.conditionsAndDiagnosesTile {
   margin: $spacing-03;
   background-color: $background !important;
   overflow: hidden !important;
 }
 
-.diagnosesFormTitle {
+.conditionsAndDiagnosesTitle {
   @include type-style("heading-compact-02");
   padding-bottom: $spacing-05;
 }
 
-.diagnosesBox {
+.conditionsAndDiagnosesBox {
   margin: $spacing-06;
 }
 
