@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/setupTests.i18n';
-import BasicForm from '../BasicForm';
+import BasicForm from '../EncounterDetails';
 import * as api from '@services/api';
 import * as commonUtils from '@utils/common';
 import {

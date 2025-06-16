@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import ActionArea from '@components/common/actionArea/ActionArea';
 import { Column, Grid, MenuItemDivider } from '@carbon/react';
-import BasicForm from '@components/clinical/forms/basic/BasicForm';
+import BasicForm from '@/components/clinical/forms/encounterDetails/EncounterDetails';
 import DiagnosesForm from '@components/clinical/forms/diagnoses/DiagnosesForm';
 import AllergiesForm from '@components/clinical/forms/allergies/AllergiesForm';
 import { ConsultationBundle } from '@types/consultationBundle';
