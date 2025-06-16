@@ -216,11 +216,14 @@ jest.mock('@components/common/actionArea/ActionArea', () => {
   };
 });
 
-jest.mock('@components/clinical/forms/basic/BasicForm', () => {
-  return function MockBasicForm() {
-    return <div data-testid="mock-basic-form"></div>;
-  };
-});
+jest.mock(
+  '@components/clinical/forms/encounterDetails/EncounterDetails',
+  () => {
+    return function MockBasicForm() {
+      return <div data-testid="mock-basic-form"></div>;
+    };
+  },
+);
 
 jest.mock('@components/clinical/forms/allergies/AllergiesForm', () => {
   return function MockAllergiesForm() {

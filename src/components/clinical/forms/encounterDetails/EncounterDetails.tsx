@@ -19,12 +19,12 @@ import { OpenMRSLocation } from '@types/location';
 import { Concept } from '@types/encounterConcepts';
 import { Provider } from '@types/provider';
 import { DATE_FORMAT } from '@constants/date';
-import * as styles from './styles/BasicForm.module.scss';
+import * as styles from './styles/EncounterDetails.module.scss';
 
 // Constants
 const CONSULTATION_ENCOUNTER_NAME = 'Consultation';
 
-const BasicForm: React.FC = () => {
+const EncounterDetails: React.FC = () => {
   const { t } = useTranslation();
 
   // Get patient UUID from hook
@@ -359,4 +359,4 @@ const DropdownPlaceholder: React.FC = React.memo(() => {
 });
 
 DropdownPlaceholder.displayName = 'DropdownPlaceholder';
-export default React.memo(BasicForm);
+export default React.memo(EncounterDetails);
