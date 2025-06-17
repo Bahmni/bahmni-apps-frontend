@@ -103,6 +103,8 @@
   "EXPANDABLE_TABLE_EMPTY_STATE_MESSAGE": "No data available",
   "EXPANDABLE_TABLE_ERROR_MESSAGE": "{{title}}: {{message}}",
   "INVALID_RESPONSE": "Invalid response received from the server",
+  "INVESTIGATIONS_FORM_TITLE": "Order Investigations",
+  "INVESTIGATIONS_SEARCH_PLACEHOLDER" :"Search to add laboratory or radiology investigations",
   "LAB_TEST_ACTIONS": "Actions",
   "LAB_TEST_ERROR_LOADING": "Error loading lab tests",
   "LAB_TEST_LOADING": "Loading lab tests...",

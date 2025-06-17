@@ -74,6 +74,27 @@ exports[`ConsultationPad Rendering Snapshots should match snapshot for error sta
       <hr
         data-testid="mock-divider"
       />
+      <div
+        data-testid="mock-investigations-form"
+      >
+        <div
+          data-testid="investigations-form-title"
+        >
+          INVESTIGATIONS_FORM_TITLE
+        </div>
+        <div
+          data-testid="investigations-search-input"
+        >
+          <input
+            aria-label="INVESTIGATIONS_SEARCH_ARIA_LABEL"
+            data-testid="investigations-search"
+            placeholder="INVESTIGATIONS_SEARCH_PLACEHOLDER"
+          />
+        </div>
+      </div>
+      <hr
+        data-testid="mock-divider"
+      />
     </div>
     <button
       data-testid="primary-button"
@@ -163,6 +184,27 @@ exports[`ConsultationPad Rendering Snapshots should match snapshot for loading s
       <hr
         data-testid="mock-divider"
       />
+      <div
+        data-testid="mock-investigations-form"
+      >
+        <div
+          data-testid="investigations-form-title"
+        >
+          INVESTIGATIONS_FORM_TITLE
+        </div>
+        <div
+          data-testid="investigations-search-input"
+        >
+          <input
+            aria-label="INVESTIGATIONS_SEARCH_ARIA_LABEL"
+            data-testid="investigations-search"
+            placeholder="INVESTIGATIONS_SEARCH_PLACEHOLDER"
+          />
+        </div>
+      </div>
+      <hr
+        data-testid="mock-divider"
+      />
     </div>
     <button
       data-testid="primary-button"
@@ -247,6 +289,27 @@ exports[`ConsultationPad Rendering Snapshots should match snapshot for normal st
         >
           0
            selected
+        </div>
+      </div>
+      <hr
+        data-testid="mock-divider"
+      />
+      <div
+        data-testid="mock-investigations-form"
+      >
+        <div
+          data-testid="investigations-form-title"
+        >
+          INVESTIGATIONS_FORM_TITLE
+        </div>
+        <div
+          data-testid="investigations-search-input"
+        >
+          <input
+            aria-label="INVESTIGATIONS_SEARCH_ARIA_LABEL"
+            data-testid="investigations-search"
+            placeholder="INVESTIGATIONS_SEARCH_PLACEHOLDER"
+          />
         </div>
       </div>
       <hr

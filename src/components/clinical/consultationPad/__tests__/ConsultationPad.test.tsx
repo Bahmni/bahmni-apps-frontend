@@ -9,14 +9,14 @@ import { useActivePractitioner } from '@hooks/useActivePractitioner';
 import { useActiveVisit } from '@hooks/useActiveVisit';
 import useNotification from '@hooks/useNotification';
 import { postConsultationBundle } from '@services/consultationBundleService';
-import { Provider } from '@types/provider';
 import { formatDate } from '@utils/date';
 import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
 import { useConceptSearch } from '@hooks/useConceptSearch';
+import { Coding } from 'fhir/r4';
+import { Provider } from '@types/provider';
 import { DiagnosisInputEntry } from '@types/diagnosis';
 import { DiagnosisState } from '@stores/diagnosisStore';
 import { ConceptSearch } from '@types/concepts';
-import { Coding } from 'fhir/r4';
 
 // Mock all dependencies
 jest.mock('@utils/date', () => ({
@@ -236,6 +236,28 @@ jest.mock('@components/clinical/forms/allergies/AllergiesForm', () => {
     );
   };
 });
+
+jest.mock(
+  '@components/clinical/forms/orderInvestigations/InvestigationsForm',
+  () => {
+    return function MockInvestigationsForm() {
+      return (
+        <div data-testid="mock-investigations-form">
+          <div data-testid="investigations-form-title">
+            INVESTIGATIONS_FORM_TITLE
+          </div>
+          <div data-testid="investigations-search-input">
+            <input
+              data-testid="investigations-search"
+              placeholder="INVESTIGATIONS_SEARCH_PLACEHOLDER"
+              aria-label="INVESTIGATIONS_SEARCH_ARIA_LABEL"
+            />
+          </div>
+        </div>
+      );
+    };
+  },
+);
 
 jest.mock('@carbon/react', () => {
   const actual = jest.requireActual('@carbon/react');

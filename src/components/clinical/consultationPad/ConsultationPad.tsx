@@ -5,6 +5,7 @@ import { Column, Grid, MenuItemDivider } from '@carbon/react';
 import BasicForm from '@components/clinical/forms/basic/BasicForm';
 import DiagnosesForm from '@components/clinical/forms/diagnoses/DiagnosesForm';
 import AllergiesForm from '@components/clinical/forms/allergies/AllergiesForm';
+import InvestigationsForm from '../forms/orderInvestigations/InvestigationsForm';
 import { ConsultationBundle } from '@types/consultationBundle';
 import {
   postConsultationBundle,
@@ -208,6 +209,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
             <DiagnosesForm />
             <MenuItemDivider />
             <AllergiesForm />
+            <MenuItemDivider />
+            <InvestigationsForm />
             <MenuItemDivider />
           </>
         )

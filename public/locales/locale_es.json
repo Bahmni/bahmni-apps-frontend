@@ -103,6 +103,8 @@
   "EXPANDABLE_TABLE_EMPTY_STATE_MESSAGE": "No hay datos disponibles",
   "EXPANDABLE_TABLE_ERROR_MESSAGE": "{{title}}: {{message}}",
   "INVALID_RESPONSE": "Se recibió una respuesta no válida del servidor",
+  "INVESTIGATIONS_FORM_TITLE": "Investigaciones de pedidos",
+  "INVESTIGATIONS_SEARCH_PLACEHOLDER" :"Busque para agregar investigaciones de laboratorio o radiología",
   "LAB_TEST_ACTIONS": "Acciones",
   "LAB_TEST_ERROR_LOADING": "Error al cargar pruebas de laboratorio",
   "LAB_TEST_LOADING": "Cargando pruebas de laboratorio...",
