@@ -1,7 +1,13 @@
-import { Reference, Condition, AllergyIntolerance } from 'fhir/r4';
+import {
+  Reference,
+  Condition,
+  AllergyIntolerance,
+  ServiceRequest,
+} from 'fhir/r4';
 import {
   createDiagnosisBundleEntries,
   createAllergiesBundleEntries,
+  createServiceRequestBundleEntries,
   postConsultationBundle,
 } from '../consultationBundleService';
 import { CONSULTATION_ERROR_MESSAGES } from '@constants/errors';
@@ -9,6 +15,7 @@ import { Coding } from 'fhir/r4';
 import { post } from '../api';
 import { DiagnosisInputEntry } from '@types/diagnosis';
 import { AllergyInputEntry } from '@types/allergy';
+import { ServiceRequestInputEntry } from '@types/serviceRequest';
 
 // Mock crypto.randomUUID
 const mockUUID = '1d87ab20-8b86-4b41-a30d-984b2208d945';
@@ -366,6 +373,348 @@ describe('consultationBundleService', () => {
         });
 
         expect(result).toEqual([]);
+      });
+    });
+  });
+
+  describe('createServiceRequestBundleEntries', () => {
+    const mockServiceRequest: ServiceRequestInputEntry = {
+      id: 'service-request-123',
+      display: 'Blood Test',
+      selectedPriority: 'routine',
+    };
+
+    const mockStatServiceRequest: ServiceRequestInputEntry = {
+      id: 'service-request-456',
+      display: 'Emergency CT Scan',
+      selectedPriority: 'stat',
+    };
+
+    describe('Happy Paths', () => {
+      it('should create bundle entries for valid service requests', () => {
+        const serviceRequestsMap = new Map<
+          string,
+          ServiceRequestInputEntry[]
+        >();
+        serviceRequestsMap.set('lab', [mockServiceRequest]);
+
+        const result = createServiceRequestBundleEntries({
+          selectedServiceRequests: serviceRequestsMap,
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(1);
+        const serviceRequest = result[0].resource as ServiceRequest;
+        expect(serviceRequest.resourceType).toBe('ServiceRequest');
+        expect(serviceRequest.code?.coding?.[0]?.code).toBe(
+          mockServiceRequest.id,
+        );
+        expect(serviceRequest.subject).toEqual(mockEncounterSubject);
+        expect(serviceRequest.encounter?.reference).toBe(
+          mockEncounterReference,
+        );
+        expect(serviceRequest.requester?.reference).toBe(
+          `Practitioner/${mockPractitionerUUID}`,
+        );
+        expect(serviceRequest.priority).toBe('routine');
+        expect(result[0].request?.method).toBe('POST');
+        expect(result[0].fullUrl).toBe(`urn:uuid:${mockUUID}`);
+      });
+
+      it('should handle multiple service requests in the same category', () => {
+        const serviceRequestsMap = new Map<
+          string,
+          ServiceRequestInputEntry[]
+        >();
+        serviceRequestsMap.set('lab', [
+          mockServiceRequest,
+          mockStatServiceRequest,
+        ]);
+
+        const result = createServiceRequestBundleEntries({
+          selectedServiceRequests: serviceRequestsMap,
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(2);
+        const firstRequest = result[0].resource as ServiceRequest;
+        const secondRequest = result[1].resource as ServiceRequest;
+
+        expect(firstRequest.code?.coding?.[0]?.code).toBe(
+          mockServiceRequest.id,
+        );
+        expect(firstRequest.priority).toBe('routine');
+
+        expect(secondRequest.code?.coding?.[0]?.code).toBe(
+          mockStatServiceRequest.id,
+        );
+        expect(secondRequest.priority).toBe('stat');
+      });
+
+      it('should handle multiple categories with multiple service requests', () => {
+        const serviceRequestsMap = new Map<
+          string,
+          ServiceRequestInputEntry[]
+        >();
+        serviceRequestsMap.set('lab', [mockServiceRequest]);
+        serviceRequestsMap.set('radiology', [mockStatServiceRequest]);
+
+        const result = createServiceRequestBundleEntries({
+          selectedServiceRequests: serviceRequestsMap,
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(2);
+        const labRequest = result.find(
+          (entry) =>
+            (entry.resource as ServiceRequest).code?.coding?.[0]?.code ===
+            mockServiceRequest.id,
+        );
+        const radiologyRequest = result.find(
+          (entry) =>
+            (entry.resource as ServiceRequest).code?.coding?.[0]?.code ===
+            mockStatServiceRequest.id,
+        );
+
+        expect(labRequest).toBeDefined();
+        expect(radiologyRequest).toBeDefined();
+      });
+
+      it('should handle stat priority correctly', () => {
+        const serviceRequestsMap = new Map<
+          string,
+          ServiceRequestInputEntry[]
+        >();
+        serviceRequestsMap.set('emergency', [mockStatServiceRequest]);
+
+        const result = createServiceRequestBundleEntries({
+          selectedServiceRequests: serviceRequestsMap,
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        const serviceRequest = result[0].resource as ServiceRequest;
+        expect(serviceRequest.priority).toBe('stat');
+      });
+    });
+
+    describe('Sad Paths - Validation Errors', () => {
+      it('should throw error for missing encounter subject', () => {
+        const serviceRequestsMap = new Map<
+          string,
+          ServiceRequestInputEntry[]
+        >();
+        serviceRequestsMap.set('lab', [mockServiceRequest]);
+
+        expect(() =>
+          createServiceRequestBundleEntries({
+            selectedServiceRequests: serviceRequestsMap,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            encounterSubject: null as any,
+            encounterReference: mockEncounterReference,
+            practitionerUUID: mockPractitionerUUID,
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_SUBJECT);
+      });
+
+      it('should throw error for encounter subject without reference', () => {
+        const serviceRequestsMap = new Map<
+          string,
+          ServiceRequestInputEntry[]
+        >();
+        serviceRequestsMap.set('lab', [mockServiceRequest]);
+
+        expect(() =>
+          createServiceRequestBundleEntries({
+            selectedServiceRequests: serviceRequestsMap,
+            encounterSubject: {} as Reference,
+            encounterReference: mockEncounterReference,
+            practitionerUUID: mockPractitionerUUID,
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_SUBJECT);
+      });
+
+      it('should throw error for missing encounter reference', () => {
+        const serviceRequestsMap = new Map<
+          string,
+          ServiceRequestInputEntry[]
+        >();
+        serviceRequestsMap.set('lab', [mockServiceRequest]);
+
+        expect(() =>
+          createServiceRequestBundleEntries({
+            selectedServiceRequests: serviceRequestsMap,
+            encounterSubject: mockEncounterSubject,
+            encounterReference: '',
+            practitionerUUID: mockPractitionerUUID,
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_REFERENCE);
+      });
+
+      it('should throw error for null encounter reference', () => {
+        const serviceRequestsMap = new Map<
+          string,
+          ServiceRequestInputEntry[]
+        >();
+        serviceRequestsMap.set('lab', [mockServiceRequest]);
+
+        expect(() =>
+          createServiceRequestBundleEntries({
+            selectedServiceRequests: serviceRequestsMap,
+            encounterSubject: mockEncounterSubject,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            encounterReference: null as any,
+            practitionerUUID: mockPractitionerUUID,
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_REFERENCE);
+      });
+
+      it('should throw error for missing practitioner UUID', () => {
+        const serviceRequestsMap = new Map<
+          string,
+          ServiceRequestInputEntry[]
+        >();
+        serviceRequestsMap.set('lab', [mockServiceRequest]);
+
+        expect(() =>
+          createServiceRequestBundleEntries({
+            selectedServiceRequests: serviceRequestsMap,
+            encounterSubject: mockEncounterSubject,
+            encounterReference: mockEncounterReference,
+            practitionerUUID: '',
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_PRACTITIONER);
+      });
+
+      it('should throw error for null practitioner UUID', () => {
+        const serviceRequestsMap = new Map<
+          string,
+          ServiceRequestInputEntry[]
+        >();
+        serviceRequestsMap.set('lab', [mockServiceRequest]);
+
+        expect(() =>
+          createServiceRequestBundleEntries({
+            selectedServiceRequests: serviceRequestsMap,
+            encounterSubject: mockEncounterSubject,
+            encounterReference: mockEncounterReference,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            practitionerUUID: null as any,
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_PRACTITIONER);
+      });
+    });
+
+    describe('Edge Cases', () => {
+      it('should return empty array for empty Map', () => {
+        const emptyMap = new Map<string, ServiceRequestInputEntry[]>();
+
+        const result = createServiceRequestBundleEntries({
+          selectedServiceRequests: emptyMap,
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toEqual([]);
+      });
+
+      it('should skip categories with empty arrays', () => {
+        const serviceRequestsMap = new Map<
+          string,
+          ServiceRequestInputEntry[]
+        >();
+        serviceRequestsMap.set('lab', []);
+        serviceRequestsMap.set('radiology', [mockServiceRequest]);
+
+        const result = createServiceRequestBundleEntries({
+          selectedServiceRequests: serviceRequestsMap,
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(1);
+        const serviceRequest = result[0].resource as ServiceRequest;
+        expect(serviceRequest.code?.coding?.[0]?.code).toBe(
+          mockServiceRequest.id,
+        );
+      });
+
+      it('should skip categories with null values', () => {
+        const serviceRequestsMap = new Map<
+          string,
+          ServiceRequestInputEntry[]
+        >();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        serviceRequestsMap.set('lab', null as any);
+        serviceRequestsMap.set('radiology', [mockServiceRequest]);
+
+        const result = createServiceRequestBundleEntries({
+          selectedServiceRequests: serviceRequestsMap,
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(1);
+        const serviceRequest = result[0].resource as ServiceRequest;
+        expect(serviceRequest.code?.coding?.[0]?.code).toBe(
+          mockServiceRequest.id,
+        );
+      });
+
+      it('should handle Map with all empty/null categories', () => {
+        const serviceRequestsMap = new Map<
+          string,
+          ServiceRequestInputEntry[]
+        >();
+        serviceRequestsMap.set('lab', []);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        serviceRequestsMap.set('radiology', null as any);
+        serviceRequestsMap.set('other', []);
+
+        const result = createServiceRequestBundleEntries({
+          selectedServiceRequests: serviceRequestsMap,
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toEqual([]);
+      });
+    });
+
+    describe('Integration with Bundle Creation', () => {
+      it('should create valid bundle entries with correct structure', () => {
+        const serviceRequestsMap = new Map<
+          string,
+          ServiceRequestInputEntry[]
+        >();
+        serviceRequestsMap.set('lab', [mockServiceRequest]);
+
+        const result = createServiceRequestBundleEntries({
+          selectedServiceRequests: serviceRequestsMap,
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        // Verify bundle entry structure
+        expect(result[0]).toHaveProperty('fullUrl');
+        expect(result[0]).toHaveProperty('resource');
+        expect(result[0]).toHaveProperty('request');
+        expect(result[0].request).toEqual({
+          method: 'POST',
+          url: 'ServiceRequest',
+        });
       });
     });
   });

@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import BasicForm from '../BasicForm';
+import BasicForm from '../EncounterDetails';
 import { useLocations } from '@hooks/useLocations';
 import { useEncounterConcepts } from '@hooks/useEncounterConcepts';
 import { useActivePractitioner } from '@hooks/useActivePractitioner';

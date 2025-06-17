@@ -12,6 +12,8 @@ import {
 } from '@utils/fhir/referenceCreator';
 import { DiagnosisInputEntry } from '@types/diagnosis';
 import { AllergyInputEntry } from '@types/allergy';
+import { ServiceRequestInputEntry } from '@types/serviceRequest';
+import { createServiceRequestResource } from '@utils/fhir/serviceRequestResourceCreator';
 
 interface CreateAllergiesBundleEntriesParams {
   selectedAllergies: AllergyInputEntry[];
@@ -26,6 +28,13 @@ interface CreateDiagnosisBundleEntriesParams {
   encounterReference: string;
   practitionerUUID: string;
   consultationDate: Date;
+}
+
+interface CreateServiceRequestBundleEntriesParams {
+  selectedServiceRequests: Map<string, ServiceRequestInputEntry[]>;
+  encounterSubject: Reference;
+  encounterReference: string;
+  practitionerUUID: string;
 }
 
 /**
@@ -173,6 +182,48 @@ export function createAllergiesBundleEntries({
   }
 
   return allergyEntries;
+}
+
+export function createServiceRequestBundleEntries({
+  selectedServiceRequests,
+  encounterSubject,
+  encounterReference,
+  practitionerUUID,
+}: CreateServiceRequestBundleEntriesParams): BundleEntry[] {
+  const serviceRequestEntries: BundleEntry[] = [];
+  if (!encounterSubject || !encounterSubject.reference) {
+    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_SUBJECT);
+  }
+
+  if (!encounterReference) {
+    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_REFERENCE);
+  }
+
+  if (!practitionerUUID) {
+    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_PRACTITIONER);
+  }
+  selectedServiceRequests.forEach((serviceRequests) => {
+    if (!serviceRequests || serviceRequests.length === 0) {
+      return;
+    }
+    for (const serviceRequest of serviceRequests) {
+      const resourceURL = `urn:uuid:${crypto.randomUUID()}`;
+      const resource = createServiceRequestResource(
+        serviceRequest.id,
+        encounterSubject,
+        getPlaceholderReference(encounterReference),
+        createPractitionerReference(practitionerUUID),
+        serviceRequest.selectedPriority,
+      );
+      const serviceRequestEntry = createBundleEntry(
+        resourceURL,
+        resource,
+        'POST',
+      );
+      serviceRequestEntries.push(serviceRequestEntry);
+    }
+  });
+  return serviceRequestEntries;
 }
 
 export async function postConsultationBundle<T>(

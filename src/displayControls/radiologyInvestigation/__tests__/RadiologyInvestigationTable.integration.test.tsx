@@ -215,7 +215,7 @@ describe('RadiologyInvestigationTable Integration Tests', () => {
 
       // Assert - Empty state message should be displayed
       expect(
-        screen.getByText('No radiology investigations found'),
+        screen.getByText('No radiology investigations recorded'),
       ).toBeInTheDocument();
 
       // Assert - No accordion tables should be rendered
@@ -341,7 +341,7 @@ describe('RadiologyInvestigationTable Integration Tests', () => {
       ).toBeInTheDocument();
       expect(screen.getByText('Radiology Investigations')).toBeInTheDocument();
       expect(
-        screen.getByText('No radiology investigations found'),
+        screen.getByText('No radiology investigations recorded'),
       ).toBeInTheDocument();
     });
   });
