@@ -1,5 +1,6 @@
 import { ServiceRequest, Reference } from 'fhir/r4';
 import { createCodeableConcept, createCoding } from './codeableConceptCreator';
+import { SupportedServiceRequestPriority } from '@/types/serviceRequest';
 
 /**
  * Creates a FHIR ServiceRequest resource for an encounter
@@ -15,13 +16,13 @@ export const createServiceRequestResource = (
   subjectReference: Reference,
   encounterReference: Reference,
   requesterReference: Reference,
-  priority: 'routine' | 'stat',
+  priority: SupportedServiceRequestPriority,
 ): ServiceRequest => {
   return {
     resourceType: 'ServiceRequest',
     status: 'active',
     intent: 'order',
-    priority,
+    priority: priority,
     code: createCodeableConcept([createCoding(serviceConceptUUID)]),
     subject: subjectReference,
     encounter: encounterReference,
