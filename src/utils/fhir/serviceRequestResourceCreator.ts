@@ -1,6 +1,6 @@
 import { ServiceRequest, Reference } from 'fhir/r4';
 import { createCodeableConcept, createCoding } from './codeableConceptCreator';
-import { SupportedServiceRequestPriority } from '@/types/serviceRequest';
+import { SupportedServiceRequestPriority } from '@types/serviceRequest';
 
 /**
  * Creates a FHIR ServiceRequest resource for an encounter
