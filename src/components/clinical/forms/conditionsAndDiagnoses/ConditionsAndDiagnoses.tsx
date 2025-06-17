@@ -6,9 +6,9 @@ import SelectedItem from '@components/common/selectedItem/SelectedItem';
 import BoxWHeader from '@components/common/boxWHeader/BoxWHeader';
 import { ConceptSearch } from '@types/concepts';
 import SelectedDiagnosisItem from './SelectedDiagnosisItem';
+import SelectedConditionItem from './SelectedConditionItem';
 import { useConceptSearch } from '@hooks/useConceptSearch';
-import { useDiagnosisStore } from '@stores/diagnosisStore';
-
+import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
 /**
  * ConditionsAndDiagnoses component
  *
@@ -20,8 +20,16 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
   const [searchDiagnosesTerm, setSearchDiagnosesTerm] = useState('');
 
   // Use Zustand store
-  const { selectedDiagnoses, addDiagnosis, removeDiagnosis, updateCertainty } =
-    useDiagnosisStore();
+  const {
+    selectedDiagnoses,
+    selectedConditions,
+    addDiagnosis,
+    removeDiagnosis,
+    updateCertainty,
+    markAsCondition,
+    removeCondition,
+    updateConditionDuration,
+  } = useConditionsAndDiagnosesStore();
 
   // Use concept search hook for diagnoses
   const {
@@ -44,6 +52,13 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
     }
 
     addDiagnosis(selectedItem);
+  };
+
+  const isConditionExists = (diagnosisId: string): boolean => {
+    return (
+      selectedConditions?.some((condition) => condition.id === diagnosisId) ||
+      false
+    );
   };
 
   const getFilteredSearchResults = () => {
@@ -137,6 +152,27 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
               <SelectedDiagnosisItem
                 diagnosis={diagnosis}
                 updateCertainty={updateCertainty}
+                onMarkAsCondition={() => markAsCondition(diagnosis.id)}
+                doesConditionExist={isConditionExists(diagnosis.id)}
+              />
+            </SelectedItem>
+          ))}
+        </BoxWHeader>
+      )}
+      {selectedConditions && selectedConditions.length > 0 && (
+        <BoxWHeader
+          title={t('CONDITIONS_SECTION_TITLE')}
+          className={styles.conditionsAndDiagnosesBox}
+        >
+          {selectedConditions.map((condition) => (
+            <SelectedItem
+              key={condition.id}
+              className={styles.selectedConditionItem}
+              onClose={() => removeCondition(condition.id)}
+            >
+              <SelectedConditionItem
+                condition={condition}
+                updateConditionDuration={updateConditionDuration}
               />
             </SelectedItem>
           ))}
