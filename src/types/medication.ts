@@ -21,6 +21,7 @@ export interface DrugOrder {
 
 // FHIR MedicationRequest
 export interface FhirMedicationRequest {
+  medicationReference: any;
   id: string;
   medication: {
     code: string;
