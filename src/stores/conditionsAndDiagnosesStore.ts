@@ -31,10 +31,10 @@ export interface ConditionsAndDiagnosesState {
   updateCertainty: (diagnosisId: string, certainty: Coding | null) => void;
 
   /**
-   * Validates all selected diagnoses and returns validation status
-   * @returns True if all diagnoses are valid, false otherwise
+   * Validates all selected diagnoses and conditions
+   * @returns True if all diagnoses and conditions are valid, false otherwise
    */
-  validateAllDiagnoses: () => boolean;
+  validate: () => boolean;
 
   /**
    * Moves a diagnosis from diagnoses list to conditions list
@@ -60,12 +60,6 @@ export interface ConditionsAndDiagnosesState {
     value: number | null,
     unit: 'days' | 'months' | 'years' | null,
   ) => void;
-
-  /**
-   * Validates all selected conditions and returns validation status
-   * @returns True if all conditions are valid, false otherwise
-   */
-  validateConditions: () => boolean;
 
   /**
    * Resets the store to its initial state
@@ -166,8 +160,9 @@ export const useConditionsAndDiagnosesStore =
       }));
     },
 
-    validateAllDiagnoses: () => {
-      let isValid = true;
+    validate: () => {
+      let diagnosesValid = true;
+      let conditionsValid = true;
 
       set((state) => ({
         selectedDiagnoses: state.selectedDiagnoses.map((diagnosis) => {
@@ -175,7 +170,7 @@ export const useConditionsAndDiagnosesStore =
 
           if (!diagnosis.selectedCertainty) {
             errors.certainty = 'DROPDOWN_VALUE_REQUIRED';
-            isValid = false;
+            diagnosesValid = false;
           } else {
             delete errors.certainty;
           }
@@ -188,7 +183,34 @@ export const useConditionsAndDiagnosesStore =
         }),
       }));
 
-      return isValid;
+      set((state) => ({
+        selectedConditions: state.selectedConditions.map((condition) => {
+          const errors = { ...condition.errors };
+
+          if (!condition.durationValue) {
+            errors.durationValue = 'CONDITIONS_DURATION_VALUE_REQUIRED';
+            conditionsValid = false;
+          } else {
+            delete errors.durationValue;
+          }
+
+          if (!condition.durationUnit) {
+            errors.durationUnit = 'CONDITIONS_DURATION_UNIT_REQUIRED';
+            conditionsValid = false;
+          } else {
+            delete errors.durationUnit;
+          }
+
+          return {
+            ...condition,
+            errors,
+            hasBeenValidated: true,
+          };
+        }),
+      }));
+
+      // Return overall validation result
+      return diagnosesValid && conditionsValid;
     },
 
     markAsCondition: (diagnosisId: string) => {
@@ -274,47 +296,19 @@ export const useConditionsAndDiagnosesStore =
             durationUnit: unit,
           };
 
-          if (condition.hasBeenValidated && value && unit) {
+          if (condition.hasBeenValidated) {
             updatedCondition.errors = { ...condition.errors };
-            delete updatedCondition.errors.durationValue;
-            delete updatedCondition.errors.durationUnit;
+            if (value) {
+              delete updatedCondition.errors.durationValue;
+            }
+            if (unit) {
+              delete updatedCondition.errors.durationUnit;
+            }
           }
 
           return updatedCondition;
         }),
       }));
-    },
-
-    validateConditions: () => {
-      let isValid = true;
-
-      set((state) => ({
-        selectedConditions: state.selectedConditions.map((condition) => {
-          const errors = { ...condition.errors };
-
-          if (!condition.durationValue) {
-            errors.durationValue = 'CONDITIONS_DURATION_VALUE_REQUIRED';
-            isValid = false;
-          } else {
-            delete errors.durationValue;
-          }
-
-          if (!condition.durationUnit) {
-            errors.durationUnit = 'CONDITIONS_DURATION_UNIT_REQUIRED';
-            isValid = false;
-          } else {
-            delete errors.durationUnit;
-          }
-
-          return {
-            ...condition,
-            errors,
-            hasBeenValidated: true,
-          };
-        }),
-      }));
-
-      return isValid;
     },
 
     reset: () => {

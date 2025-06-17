@@ -222,7 +222,7 @@ describe('useConditionsAndDiagnosesStore', () => {
 
       act(() => {
         result.current.addDiagnosis(mockConcept);
-        result.current.validateAllDiagnoses();
+        result.current.validate();
       });
 
       expect(
@@ -278,8 +278,8 @@ describe('useConditionsAndDiagnosesStore', () => {
     });
   });
 
-  // VALIDATE ALL DIAGNOSES TESTS
-  describe('validateAllDiagnoses', () => {
+  // VALIDATE TESTS
+  describe('validate', () => {
     test('should return false and set errors when certainty is missing', () => {
       const { result } = renderHook(() => useConditionsAndDiagnosesStore());
 
@@ -289,7 +289,7 @@ describe('useConditionsAndDiagnosesStore', () => {
 
       let isValid: boolean = true;
       act(() => {
-        isValid = result.current.validateAllDiagnoses();
+        isValid = result.current.validate();
       });
 
       expect(isValid).toBe(false);
@@ -309,7 +309,7 @@ describe('useConditionsAndDiagnosesStore', () => {
 
       let isValid: boolean = false;
       act(() => {
-        isValid = result.current.validateAllDiagnoses();
+        isValid = result.current.validate();
       });
 
       expect(isValid).toBe(true);
@@ -329,7 +329,7 @@ describe('useConditionsAndDiagnosesStore', () => {
 
       let isValid: boolean = true;
       act(() => {
-        isValid = result.current.validateAllDiagnoses();
+        isValid = result.current.validate();
       });
 
       expect(isValid).toBe(false);
@@ -344,6 +344,266 @@ describe('useConditionsAndDiagnosesStore', () => {
 
       expect(diagnosis1?.errors).toEqual({});
       expect(diagnosis2?.errors.certainty).toBe('DROPDOWN_VALUE_REQUIRED');
+    });
+
+    test('should return false and set errors when condition duration is missing', () => {
+      const { result } = renderHook(() => useConditionsAndDiagnosesStore());
+
+      act(() => {
+        result.current.addDiagnosis(mockConcept);
+        result.current.markAsCondition(mockConcept.conceptUuid);
+      });
+
+      let isValid: boolean = true;
+      act(() => {
+        isValid = result.current.validate();
+      });
+
+      expect(isValid).toBe(false);
+      expect(result.current.selectedConditions[0].errors.durationValue).toBe(
+        'CONDITIONS_DURATION_VALUE_REQUIRED',
+      );
+      expect(result.current.selectedConditions[0].errors.durationUnit).toBe(
+        'CONDITIONS_DURATION_UNIT_REQUIRED',
+      );
+      expect(result.current.selectedConditions[0].hasBeenValidated).toBe(true);
+    });
+
+    test('should return false when only condition duration value is provided', () => {
+      const { result } = renderHook(() => useConditionsAndDiagnosesStore());
+
+      act(() => {
+        result.current.addDiagnosis(mockConcept);
+        result.current.markAsCondition(mockConcept.conceptUuid);
+        result.current.updateConditionDuration(
+          mockConcept.conceptUuid,
+          5,
+          null,
+        );
+      });
+
+      let isValid: boolean = true;
+      act(() => {
+        isValid = result.current.validate();
+      });
+
+      expect(isValid).toBe(false);
+      expect(
+        result.current.selectedConditions[0].errors.durationValue,
+      ).toBeUndefined();
+      expect(result.current.selectedConditions[0].errors.durationUnit).toBe(
+        'CONDITIONS_DURATION_UNIT_REQUIRED',
+      );
+    });
+
+    test('should return false when only condition duration unit is provided', () => {
+      const { result } = renderHook(() => useConditionsAndDiagnosesStore());
+
+      act(() => {
+        result.current.addDiagnosis(mockConcept);
+        result.current.markAsCondition(mockConcept.conceptUuid);
+        result.current.updateConditionDuration(
+          mockConcept.conceptUuid,
+          null,
+          'days',
+        );
+      });
+
+      let isValid: boolean = true;
+      act(() => {
+        isValid = result.current.validate();
+      });
+
+      expect(isValid).toBe(false);
+      expect(result.current.selectedConditions[0].errors.durationValue).toBe(
+        'CONDITIONS_DURATION_VALUE_REQUIRED',
+      );
+      expect(
+        result.current.selectedConditions[0].errors.durationUnit,
+      ).toBeUndefined();
+    });
+
+    test('should return true when all conditions have valid duration', () => {
+      const { result } = renderHook(() => useConditionsAndDiagnosesStore());
+
+      act(() => {
+        result.current.addDiagnosis(mockConcept);
+        result.current.markAsCondition(mockConcept.conceptUuid);
+        result.current.updateConditionDuration(
+          mockConcept.conceptUuid,
+          5,
+          'days',
+        );
+      });
+
+      let isValid: boolean = false;
+      act(() => {
+        isValid = result.current.validate();
+      });
+
+      expect(isValid).toBe(true);
+      expect(result.current.selectedConditions[0].errors).toEqual({});
+      expect(result.current.selectedConditions[0].hasBeenValidated).toBe(true);
+    });
+
+    test('should validate multiple conditions correctly', () => {
+      const { result } = renderHook(() => useConditionsAndDiagnosesStore());
+
+      act(() => {
+        result.current.addDiagnosis(mockConcept);
+        result.current.addDiagnosis(mockConcept2);
+        result.current.markAsCondition(mockConcept.conceptUuid);
+        result.current.markAsCondition(mockConcept2.conceptUuid);
+        result.current.updateConditionDuration(
+          mockConcept.conceptUuid,
+          5,
+          'days',
+        );
+        // mockConcept2 has no duration
+      });
+
+      let isValid: boolean = true;
+      act(() => {
+        isValid = result.current.validate();
+      });
+
+      expect(isValid).toBe(false);
+
+      // Find the conditions by ID since order matters
+      const condition1 = result.current.selectedConditions.find(
+        (c) => c.id === mockConcept.conceptUuid,
+      );
+      const condition2 = result.current.selectedConditions.find(
+        (c) => c.id === mockConcept2.conceptUuid,
+      );
+
+      expect(condition1?.errors).toEqual({});
+      expect(condition2?.errors.durationValue).toBe(
+        'CONDITIONS_DURATION_VALUE_REQUIRED',
+      );
+      expect(condition2?.errors.durationUnit).toBe(
+        'CONDITIONS_DURATION_UNIT_REQUIRED',
+      );
+    });
+
+    test('should validate both diagnoses and conditions together', () => {
+      const { result } = renderHook(() => useConditionsAndDiagnosesStore());
+
+      act(() => {
+        result.current.addDiagnosis(mockConcept);
+        result.current.addDiagnosis(mockConcept2);
+        result.current.addDiagnosis(mockConcept3);
+        result.current.markAsCondition(mockConcept2.conceptUuid);
+        // mockConcept has no certainty
+        // mockConcept2 condition has no duration
+        // mockConcept3 has no certainty
+      });
+
+      let isValid: boolean = true;
+      act(() => {
+        isValid = result.current.validate();
+      });
+
+      expect(isValid).toBe(false);
+
+      // Check diagnoses errors
+      const diagnosis1 = result.current.selectedDiagnoses.find(
+        (d) => d.id === mockConcept.conceptUuid,
+      );
+      const diagnosis3 = result.current.selectedDiagnoses.find(
+        (d) => d.id === mockConcept3.conceptUuid,
+      );
+
+      expect(diagnosis1?.errors.certainty).toBe('DROPDOWN_VALUE_REQUIRED');
+      expect(diagnosis3?.errors.certainty).toBe('DROPDOWN_VALUE_REQUIRED');
+
+      // Check conditions errors
+      const condition2 = result.current.selectedConditions.find(
+        (c) => c.id === mockConcept2.conceptUuid,
+      );
+
+      expect(condition2?.errors.durationValue).toBe(
+        'CONDITIONS_DURATION_VALUE_REQUIRED',
+      );
+      expect(condition2?.errors.durationUnit).toBe(
+        'CONDITIONS_DURATION_UNIT_REQUIRED',
+      );
+    });
+
+    test('should return true when both diagnoses and conditions are valid', () => {
+      const { result } = renderHook(() => useConditionsAndDiagnosesStore());
+
+      act(() => {
+        result.current.addDiagnosis(mockConcept);
+        result.current.addDiagnosis(mockConcept2);
+        result.current.updateCertainty(mockConcept.conceptUuid, mockCertainty);
+        result.current.updateCertainty(
+          mockConcept2.conceptUuid,
+          mockCertainty2,
+        );
+        result.current.markAsCondition(mockConcept2.conceptUuid);
+        result.current.updateConditionDuration(
+          mockConcept2.conceptUuid,
+          7,
+          'days',
+        );
+      });
+
+      let isValid: boolean = false;
+      act(() => {
+        isValid = result.current.validate();
+      });
+
+      expect(isValid).toBe(true);
+      expect(result.current.selectedDiagnoses[0].errors).toEqual({});
+      expect(result.current.selectedConditions[0].errors).toEqual({});
+    });
+
+    test('should return true for empty store', () => {
+      const { result } = renderHook(() => useConditionsAndDiagnosesStore());
+
+      let isValid: boolean = false;
+      act(() => {
+        isValid = result.current.validate();
+      });
+
+      expect(isValid).toBe(true);
+    });
+
+    test('should validate all items even if some fail early', () => {
+      const { result } = renderHook(() => useConditionsAndDiagnosesStore());
+
+      act(() => {
+        result.current.addDiagnosis(mockConcept);
+        result.current.addDiagnosis(mockConcept2);
+        result.current.addDiagnosis(mockConcept3);
+        result.current.markAsCondition(mockConcept2.conceptUuid);
+        result.current.markAsCondition(mockConcept3.conceptUuid);
+        // All items are invalid
+      });
+
+      act(() => {
+        result.current.validate();
+      });
+
+      // All diagnoses should be marked as validated with errors
+      expect(result.current.selectedDiagnoses).toHaveLength(1);
+      expect(result.current.selectedDiagnoses[0].hasBeenValidated).toBe(true);
+      expect(result.current.selectedDiagnoses[0].errors.certainty).toBe(
+        'DROPDOWN_VALUE_REQUIRED',
+      );
+
+      // All conditions should be marked as validated with errors
+      expect(result.current.selectedConditions).toHaveLength(2);
+      result.current.selectedConditions.forEach((condition) => {
+        expect(condition.hasBeenValidated).toBe(true);
+        expect(condition.errors.durationValue).toBe(
+          'CONDITIONS_DURATION_VALUE_REQUIRED',
+        );
+        expect(condition.errors.durationUnit).toBe(
+          'CONDITIONS_DURATION_UNIT_REQUIRED',
+        );
+      });
     });
   });
 
@@ -575,7 +835,7 @@ describe('useConditionsAndDiagnosesStore', () => {
       const { result } = renderHook(() => useConditionsAndDiagnosesStore());
 
       act(() => {
-        result.current.validateConditions();
+        result.current.validate();
       });
 
       expect(
@@ -739,39 +999,24 @@ describe('useConditionsAndDiagnosesStore', () => {
       });
       expect(result.current.selectedConditions[0].durationValue).toBe(10); // Should remain unchanged
     });
-  });
 
-  // VALIDATE CONDITIONS TESTS
-  describe('validateConditions', () => {
-    test('should return false and set errors when duration value is missing', () => {
+    test('should clear only durationValue error when only value is provided', () => {
       const { result } = renderHook(() => useConditionsAndDiagnosesStore());
 
+      // Validate to create errors
       act(() => {
-        result.current.addDiagnosis(mockConcept);
-        result.current.markAsCondition(mockConcept.conceptUuid);
+        result.current.validate();
       });
 
-      let isValid: boolean = true;
+      expect(
+        result.current.selectedConditions[0].errors.durationValue,
+      ).toBeDefined();
+      expect(
+        result.current.selectedConditions[0].errors.durationUnit,
+      ).toBeDefined();
+
+      // Update only the value, unit remains null
       act(() => {
-        isValid = result.current.validateConditions();
-      });
-
-      expect(isValid).toBe(false);
-      expect(result.current.selectedConditions[0].errors.durationValue).toBe(
-        'CONDITIONS_DURATION_VALUE_REQUIRED',
-      );
-      expect(result.current.selectedConditions[0].errors.durationUnit).toBe(
-        'CONDITIONS_DURATION_UNIT_REQUIRED',
-      );
-      expect(result.current.selectedConditions[0].hasBeenValidated).toBe(true);
-    });
-
-    test('should return false when only duration value is provided', () => {
-      const { result } = renderHook(() => useConditionsAndDiagnosesStore());
-
-      act(() => {
-        result.current.addDiagnosis(mockConcept);
-        result.current.markAsCondition(mockConcept.conceptUuid);
         result.current.updateConditionDuration(
           mockConcept.conceptUuid,
           5,
@@ -779,26 +1024,31 @@ describe('useConditionsAndDiagnosesStore', () => {
         );
       });
 
-      let isValid: boolean = true;
-      act(() => {
-        isValid = result.current.validateConditions();
-      });
-
-      expect(isValid).toBe(false);
       expect(
         result.current.selectedConditions[0].errors.durationValue,
       ).toBeUndefined();
-      expect(result.current.selectedConditions[0].errors.durationUnit).toBe(
-        'CONDITIONS_DURATION_UNIT_REQUIRED',
-      );
+      expect(
+        result.current.selectedConditions[0].errors.durationUnit,
+      ).toBeDefined();
     });
 
-    test('should return false when only duration unit is provided', () => {
+    test('should clear only durationUnit error when only unit is provided', () => {
       const { result } = renderHook(() => useConditionsAndDiagnosesStore());
 
+      // Validate to create errors
       act(() => {
-        result.current.addDiagnosis(mockConcept);
-        result.current.markAsCondition(mockConcept.conceptUuid);
+        result.current.validate();
+      });
+
+      expect(
+        result.current.selectedConditions[0].errors.durationValue,
+      ).toBeDefined();
+      expect(
+        result.current.selectedConditions[0].errors.durationUnit,
+      ).toBeDefined();
+
+      // Update only the unit, value remains null
+      act(() => {
         result.current.updateConditionDuration(
           mockConcept.conceptUuid,
           null,
@@ -806,26 +1056,19 @@ describe('useConditionsAndDiagnosesStore', () => {
         );
       });
 
-      let isValid: boolean = true;
-      act(() => {
-        isValid = result.current.validateConditions();
-      });
-
-      expect(isValid).toBe(false);
-      expect(result.current.selectedConditions[0].errors.durationValue).toBe(
-        'CONDITIONS_DURATION_VALUE_REQUIRED',
-      );
+      expect(
+        result.current.selectedConditions[0].errors.durationValue,
+      ).toBeDefined();
       expect(
         result.current.selectedConditions[0].errors.durationUnit,
       ).toBeUndefined();
     });
 
-    test('should return true when all conditions have valid duration', () => {
+    test('should not clear any errors when both value and unit are null', () => {
       const { result } = renderHook(() => useConditionsAndDiagnosesStore());
 
+      // First set some values
       act(() => {
-        result.current.addDiagnosis(mockConcept);
-        result.current.markAsCondition(mockConcept.conceptUuid);
         result.current.updateConditionDuration(
           mockConcept.conceptUuid,
           5,
@@ -833,54 +1076,43 @@ describe('useConditionsAndDiagnosesStore', () => {
         );
       });
 
-      let isValid: boolean = false;
+      // Validate to create errors (won't create errors since values are set)
       act(() => {
-        isValid = result.current.validateConditions();
+        result.current.validate();
       });
 
-      expect(isValid).toBe(true);
-      expect(result.current.selectedConditions[0].errors).toEqual({});
-      expect(result.current.selectedConditions[0].hasBeenValidated).toBe(true);
-    });
-
-    test('should validate multiple conditions correctly', () => {
-      const { result } = renderHook(() => useConditionsAndDiagnosesStore());
-
+      // Now reset to null to create error state
       act(() => {
-        result.current.addDiagnosis(mockConcept);
-        result.current.addDiagnosis(mockConcept2);
-        result.current.markAsCondition(mockConcept.conceptUuid);
-        result.current.markAsCondition(mockConcept2.conceptUuid);
         result.current.updateConditionDuration(
           mockConcept.conceptUuid,
-          5,
-          'days',
+          null,
+          null,
         );
-        // mockConcept2 has no duration
+        result.current.validate();
       });
 
-      let isValid: boolean = true;
+      expect(
+        result.current.selectedConditions[0].errors.durationValue,
+      ).toBeDefined();
+      expect(
+        result.current.selectedConditions[0].errors.durationUnit,
+      ).toBeDefined();
+
+      // Update with both null again - should not clear errors
       act(() => {
-        isValid = result.current.validateConditions();
+        result.current.updateConditionDuration(
+          mockConcept.conceptUuid,
+          null,
+          null,
+        );
       });
 
-      expect(isValid).toBe(false);
-
-      // Find the conditions by ID since order matters
-      const condition1 = result.current.selectedConditions.find(
-        (c) => c.id === mockConcept.conceptUuid,
-      );
-      const condition2 = result.current.selectedConditions.find(
-        (c) => c.id === mockConcept2.conceptUuid,
-      );
-
-      expect(condition1?.errors).toEqual({});
-      expect(condition2?.errors.durationValue).toBe(
-        'CONDITIONS_DURATION_VALUE_REQUIRED',
-      );
-      expect(condition2?.errors.durationUnit).toBe(
-        'CONDITIONS_DURATION_UNIT_REQUIRED',
-      );
+      expect(
+        result.current.selectedConditions[0].errors.durationValue,
+      ).toBeDefined();
+      expect(
+        result.current.selectedConditions[0].errors.durationUnit,
+      ).toBeDefined();
     });
   });
 
@@ -939,14 +1171,14 @@ describe('useConditionsAndDiagnosesStore', () => {
       // Validate without certainty (should fail)
       let diagnosisValid: boolean = true;
       act(() => {
-        diagnosisValid = result.current.validateAllDiagnoses();
+        diagnosisValid = result.current.validate();
       });
       expect(diagnosisValid).toBe(false);
 
       // Add certainty and validate (should pass)
       act(() => {
         result.current.updateCertainty(mockConcept.conceptUuid, mockCertainty);
-        diagnosisValid = result.current.validateAllDiagnoses();
+        diagnosisValid = result.current.validate();
       });
       expect(diagnosisValid).toBe(true);
 
@@ -962,7 +1194,7 @@ describe('useConditionsAndDiagnosesStore', () => {
       // Validate condition without duration (should fail)
       let conditionValid: boolean = true;
       act(() => {
-        conditionValid = result.current.validateConditions();
+        conditionValid = result.current.validate();
       });
       expect(conditionValid).toBe(false);
 
@@ -973,7 +1205,7 @@ describe('useConditionsAndDiagnosesStore', () => {
           5,
           'days',
         );
-        conditionValid = result.current.validateConditions();
+        conditionValid = result.current.validate();
       });
       expect(conditionValid).toBe(true);
     });
@@ -1014,19 +1246,12 @@ describe('useConditionsAndDiagnosesStore', () => {
         // mockConcept2 condition has no duration
       });
 
-      // Validate diagnoses
-      let diagnosisValid: boolean = true;
+      // Validate diagnoses and conditions
+      let allValid: boolean = true;
       act(() => {
-        diagnosisValid = result.current.validateAllDiagnoses();
+        allValid = result.current.validate();
       });
-      expect(diagnosisValid).toBe(false); // mockConcept3 has no certainty
-
-      // Validate conditions
-      let conditionsValid: boolean = true;
-      act(() => {
-        conditionsValid = result.current.validateConditions();
-      });
-      expect(conditionsValid).toBe(false); // mockConcept2 condition has no duration
+      expect(allValid).toBe(false); // mockConcept3 has no certainty and mockConcept2 condition has no duration
 
       expect(result.current.selectedDiagnoses).toHaveLength(1);
       expect(result.current.selectedConditions).toHaveLength(2);
@@ -1082,15 +1307,12 @@ describe('useConditionsAndDiagnosesStore', () => {
         result.current.updateConditionDuration('non-existent', 5, 'days');
       });
 
-      let diagnosisValid: boolean = false;
-      let conditionsValid: boolean = false;
+      let isValid: boolean = false;
       act(() => {
-        diagnosisValid = result.current.validateAllDiagnoses();
-        conditionsValid = result.current.validateConditions();
+        isValid = result.current.validate();
       });
 
-      expect(diagnosisValid).toBe(true); // No diagnoses to validate
-      expect(conditionsValid).toBe(true); // No conditions to validate
+      expect(isValid).toBe(true); // No items to validate
       expect(result.current.selectedDiagnoses).toHaveLength(0);
       expect(result.current.selectedConditions).toHaveLength(0);
     });
@@ -1104,7 +1326,7 @@ describe('useConditionsAndDiagnosesStore', () => {
 
       // Validate (should fail and mark as validated)
       act(() => {
-        result.current.validateAllDiagnoses();
+        result.current.validate();
       });
 
       expect(result.current.selectedDiagnoses[0].hasBeenValidated).toBe(true);
@@ -1129,7 +1351,7 @@ describe('useConditionsAndDiagnosesStore', () => {
       act(() => {
         result.current.addDiagnosis(mockConcept);
         result.current.markAsCondition(mockConcept.conceptUuid);
-        result.current.validateConditions();
+        result.current.validate();
       });
 
       expect(result.current.selectedConditions[0].hasBeenValidated).toBe(true);
