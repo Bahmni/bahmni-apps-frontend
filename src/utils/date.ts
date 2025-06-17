@@ -6,6 +6,7 @@ import {
   differenceInDays,
   subYears,
   subMonths,
+  subDays,
   format,
 } from 'date-fns';
 import { enUS, enGB, es, fr, de } from 'date-fns/locale';
@@ -182,4 +183,41 @@ export function formatDate(
   format: string = DATE_FORMAT,
 ): FormatDateResult {
   return formatDateGeneric(date, format);
+}
+
+/**
+ * Calculates onset date by subtracting duration from given date
+ * @param givenDate - The given date as baseline
+ * @param durationValue - The duration value to subtract
+ * @param durationUnit - The unit of duration ('days', 'months', 'years')
+ * @returns Calculated onset date or undefined if inputs are invalid
+ */
+export function calculateOnsetDate(
+  givenDate: Date,
+  durationValue: number | null,
+  durationUnit: 'days' | 'months' | 'years' | null,
+): Date | undefined {
+  if (
+    !givenDate ||
+    !isValid(givenDate) ||
+    durationValue === null ||
+    durationValue === undefined ||
+    !durationUnit ||
+    typeof durationValue !== 'number'
+  ) {
+    return undefined;
+  }
+
+  const onsetDate = new Date(givenDate);
+
+  switch (durationUnit) {
+    case 'days':
+      return subDays(onsetDate, durationValue);
+    case 'months':
+      return subMonths(onsetDate, durationValue);
+    case 'years':
+      return subYears(onsetDate, durationValue);
+    default:
+      return undefined;
+  }
 }

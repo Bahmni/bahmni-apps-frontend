@@ -1,5 +1,10 @@
 import { format, parseISO } from 'date-fns';
-import { calculateAge, formatDate, formatDateTime } from '../date';
+import {
+  calculateAge,
+  formatDate,
+  formatDateTime,
+  calculateOnsetDate,
+} from '../date';
 import { DATE_TIME_FORMAT } from '@constants/date';
 import { DATE_ERROR_MESSAGES } from '@constants/errors';
 import i18n from '@/setupTests.i18n';
@@ -164,6 +169,238 @@ describe('calculateAge', () => {
   it('should return null for date string with non-numeric characters', () => {
     const result = calculateAge('199O-05-15'); // Using letter O instead of zero
     expect(result).toBeNull();
+  });
+});
+
+describe('calculateOnsetDate', () => {
+  // Mock date for consistent testing
+  const mockConsultationDate = new Date(2025, 2, 24); // March 24, 2025
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(mockConsultationDate);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  describe('Happy Path Tests', () => {
+    it('should calculate onset date correctly for days duration', () => {
+      const result = calculateOnsetDate(mockConsultationDate, 10, 'days');
+      expect(result).toBeInstanceOf(Date);
+      expect(result?.getFullYear()).toBe(2025);
+      expect(result?.getMonth()).toBe(2); // March (0-indexed)
+      expect(result?.getDate()).toBe(14); // 24 - 10 = 14
+    });
+
+    it('should calculate onset date correctly for months duration', () => {
+      const result = calculateOnsetDate(mockConsultationDate, 3, 'months');
+      expect(result).toBeInstanceOf(Date);
+      expect(result?.getFullYear()).toBe(2024);
+      expect(result?.getMonth()).toBe(11); // December (0-indexed)
+      expect(result?.getDate()).toBe(24); // Same date, 3 months back
+    });
+
+    it('should calculate onset date correctly for years duration', () => {
+      const result = calculateOnsetDate(mockConsultationDate, 2, 'years');
+      expect(result).toBeInstanceOf(Date);
+      expect(result?.getFullYear()).toBe(2023);
+      expect(result?.getMonth()).toBe(2); // March (0-indexed)
+      expect(result?.getDate()).toBe(24); // Same date and month, 2 years back
+    });
+
+    it('should handle single day duration', () => {
+      const result = calculateOnsetDate(mockConsultationDate, 1, 'days');
+      expect(result).toBeInstanceOf(Date);
+      expect(result?.getFullYear()).toBe(2025);
+      expect(result?.getMonth()).toBe(2); // March (0-indexed)
+      expect(result?.getDate()).toBe(23); // Yesterday
+    });
+
+    it('should handle single month duration', () => {
+      const result = calculateOnsetDate(mockConsultationDate, 1, 'months');
+      expect(result).toBeInstanceOf(Date);
+      expect(result?.getFullYear()).toBe(2025);
+      expect(result?.getMonth()).toBe(1); // February (0-indexed)
+      expect(result?.getDate()).toBe(24); // Same date, 1 month back
+    });
+
+    it('should handle single year duration', () => {
+      const result = calculateOnsetDate(mockConsultationDate, 1, 'years');
+      expect(result).toBeInstanceOf(Date);
+      expect(result?.getFullYear()).toBe(2024);
+      expect(result?.getMonth()).toBe(2); // March (0-indexed)
+      expect(result?.getDate()).toBe(24); // Same date and month, 1 year back
+    });
+
+    it('should handle large duration values', () => {
+      const result = calculateOnsetDate(mockConsultationDate, 365, 'days');
+      expect(result).toBeInstanceOf(Date);
+      expect(result?.getFullYear()).toBe(2024);
+      expect(result?.getMonth()).toBe(2); // March (0-indexed)
+      expect(result?.getDate()).toBe(24); // Approximately 1 year back
+    });
+  });
+
+  describe('Edge Cases', () => {
+    it('should return undefined when duration value is null', () => {
+      const result = calculateOnsetDate(mockConsultationDate, null, 'days');
+      expect(result).toBeUndefined();
+    });
+
+    it('should return undefined when duration unit is null', () => {
+      const result = calculateOnsetDate(mockConsultationDate, 10, null);
+      expect(result).toBeUndefined();
+    });
+
+    it('should return undefined when both duration value and unit are null', () => {
+      const result = calculateOnsetDate(mockConsultationDate, null, null);
+      expect(result).toBeUndefined();
+    });
+
+    it('should handle zero duration value', () => {
+      const result = calculateOnsetDate(mockConsultationDate, 0, 'days');
+      expect(result).toBeInstanceOf(Date);
+      expect(result?.getTime()).toBe(mockConsultationDate.getTime());
+    });
+
+    it('should handle zero duration for months', () => {
+      const result = calculateOnsetDate(mockConsultationDate, 0, 'months');
+      expect(result).toBeInstanceOf(Date);
+      expect(result?.getTime()).toBe(mockConsultationDate.getTime());
+    });
+
+    it('should handle zero duration for years', () => {
+      const result = calculateOnsetDate(mockConsultationDate, 0, 'years');
+      expect(result).toBeInstanceOf(Date);
+      expect(result?.getTime()).toBe(mockConsultationDate.getTime());
+    });
+
+    it('should handle month boundary correctly - from March to February', () => {
+      const result = calculateOnsetDate(mockConsultationDate, 1, 'months');
+      expect(result?.getMonth()).toBe(1); // February (0-indexed)
+      expect(result?.getDate()).toBe(24); // Same date
+    });
+
+    it('should handle year boundary correctly - from March to previous year', () => {
+      const result = calculateOnsetDate(mockConsultationDate, 12, 'months');
+      expect(result?.getFullYear()).toBe(2024);
+      expect(result?.getMonth()).toBe(2); // March (0-indexed)
+      expect(result?.getDate()).toBe(24); // Same date
+    });
+
+    it('should handle leap year correctly', () => {
+      const leapYearDate = new Date(2024, 1, 29); // February 29, 2024 (leap year)
+      const result = calculateOnsetDate(leapYearDate, 1, 'years');
+      expect(result?.getFullYear()).toBe(2023);
+      expect(result?.getMonth()).toBe(1); // February (0-indexed)
+      // Should handle leap year date appropriately
+      expect(result?.getDate()).toBe(28); // Feb 28 in non-leap year
+    });
+
+    it('should handle end of month dates correctly', () => {
+      const endOfMonth = new Date(2025, 0, 31); // January 31, 2025
+      const result = calculateOnsetDate(endOfMonth, 1, 'months');
+      expect(result?.getFullYear()).toBe(2024);
+      expect(result?.getMonth()).toBe(11); // December (0-indexed)
+      expect(result?.getDate()).toBe(31); // December has 31 days
+    });
+
+    it('should handle month with fewer days correctly', () => {
+      const marchEnd = new Date(2025, 2, 31); // March 31, 2025
+      const result = calculateOnsetDate(marchEnd, 1, 'months');
+      expect(result?.getFullYear()).toBe(2025);
+      expect(result?.getMonth()).toBe(1); // February (0-indexed)
+      // February 2025 has 28 days, so should adjust to Feb 28
+      expect(result?.getDate()).toBe(28);
+    });
+  });
+
+  describe('Validation Tests', () => {
+    it('should handle negative duration values gracefully', () => {
+      const result = calculateOnsetDate(mockConsultationDate, -10, 'days');
+      expect(result).toBeInstanceOf(Date);
+      // Negative values should add to the date instead of subtracting
+      expect(result?.getDate()).toBe(3); // 24 + 10 = 34, which becomes April 3rd
+    });
+
+    it('should handle very large duration values', () => {
+      const result = calculateOnsetDate(mockConsultationDate, 10000, 'days');
+      expect(result).toBeInstanceOf(Date);
+      // Should still return a valid date, even if very far in the past
+      expect(result?.getFullYear()).toBeLessThan(2000);
+    });
+
+    it('should not mutate the original consultation date', () => {
+      const originalTime = mockConsultationDate.getTime();
+      calculateOnsetDate(mockConsultationDate, 10, 'days');
+      expect(mockConsultationDate.getTime()).toBe(originalTime);
+    });
+  });
+
+  describe('Type Safety Tests', () => {
+    it('should handle invalid duration unit gracefully', () => {
+      const result = calculateOnsetDate(
+        mockConsultationDate,
+        10,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        'invalid' as any,
+      );
+      expect(result).toBeUndefined();
+    });
+
+    it('should handle string duration value by treating as undefined', () => {
+      const result = calculateOnsetDate(
+        mockConsultationDate,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        '10' as any,
+        'days',
+      );
+      expect(result).toBeUndefined();
+    });
+
+    it('should handle undefined consultation date', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = calculateOnsetDate(undefined as any, 10, 'days');
+      expect(result).toBeUndefined();
+    });
+
+    it('should handle null consultation date', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = calculateOnsetDate(null as any, 10, 'days');
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('Real-world Scenarios', () => {
+    it('should calculate onset for chronic conditions (years)', () => {
+      const result = calculateOnsetDate(mockConsultationDate, 5, 'years');
+      expect(result?.getFullYear()).toBe(2020);
+      expect(result?.getMonth()).toBe(2); // March
+      expect(result?.getDate()).toBe(24);
+    });
+
+    it('should calculate onset for recent conditions (days)', () => {
+      const result = calculateOnsetDate(mockConsultationDate, 7, 'days');
+      expect(result?.getFullYear()).toBe(2025);
+      expect(result?.getMonth()).toBe(2); // March
+      expect(result?.getDate()).toBe(17); // A week ago
+    });
+
+    it('should calculate onset for medium-term conditions (months)', () => {
+      const result = calculateOnsetDate(mockConsultationDate, 6, 'months');
+      expect(result?.getFullYear()).toBe(2024);
+      expect(result?.getMonth()).toBe(8); // September (0-indexed)
+      expect(result?.getDate()).toBe(24);
+    });
+
+    it('should handle COVID-related timeline (2-3 years)', () => {
+      const result = calculateOnsetDate(mockConsultationDate, 2, 'years');
+      expect(result?.getFullYear()).toBe(2023);
+      expect(result?.getMonth()).toBe(2); // March 2023
+      expect(result?.getDate()).toBe(24);
+    });
   });
 });
 
