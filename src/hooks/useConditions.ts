@@ -1,11 +1,11 @@
 import { useState, useCallback, useEffect } from 'react';
-import { FhirCondition } from '@types/condition';
+import { Condition } from 'fhir/r4';
 import { useNotification } from './useNotification';
 import { getConditions } from '@services/conditionService';
 import { getFormattedError } from '@utils/common';
 
 interface UseConditionsResult {
-  conditions: FhirCondition[];
+  conditions: Condition[];
   loading: boolean;
   error: Error | null;
   refetch: () => void;
@@ -20,7 +20,7 @@ interface UseConditionsResult {
 export const useConditions = (
   patientUUID: string | null,
 ): UseConditionsResult => {
-  const [conditions, setConditions] = useState<FhirCondition[]>([]);
+  const [conditions, setConditions] = useState<Condition[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
   const { addNotification } = useNotification();

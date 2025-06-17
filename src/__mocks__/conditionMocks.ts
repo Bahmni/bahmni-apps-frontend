@@ -1,12 +1,8 @@
-import {
-  FhirCondition,
-  FhirConditionBundle,
-  ConditionStatus,
-  FormattedCondition,
-} from '../types/condition';
+import { Condition, Bundle } from 'fhir/r4';
+import { ConditionStatus, FormattedCondition } from '../types/condition';
 
 export const mockPatientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
-export const mockCondition: FhirCondition = {
+export const mockCondition: Condition = {
   resourceType: 'Condition',
   id: '21fc9270-5e82-4073-9468-0bc3c1a105a5',
   meta: {
@@ -54,7 +50,7 @@ export const mockCondition: FhirCondition = {
   },
 };
 
-export const mockConditions: FhirCondition[] = [mockCondition];
+export const mockConditions: Condition[] = [mockCondition];
 
 export const mockFormattedConditions: FormattedCondition[] = [
   {
@@ -94,7 +90,7 @@ export const mockFormattedConditionsWithNotes: FormattedCondition[] = [
     note: ['Patient reports pain in the upper right quadrant'],
   },
 ];
-export const mockConditionBundle: FhirConditionBundle = {
+export const mockConditionBundle: Bundle = {
   resourceType: 'Bundle',
   id: '8c9cde77-2ae9-4c05-b149-964b4cf3e8f5',
   meta: {
@@ -117,7 +113,7 @@ export const mockConditionBundle: FhirConditionBundle = {
   ],
 };
 
-export const mockEmptyConditionBundle: FhirConditionBundle = {
+export const mockEmptyConditionBundle: Bundle = {
   resourceType: 'Bundle',
   id: 'empty-bundle',
   meta: {
@@ -154,7 +150,7 @@ export const mockMalformedBundle = {
   ],
 };
 
-export const mockConditionWithoutOptionalFields: FhirCondition = {
+export const mockConditionWithoutOptionalFields: Condition = {
   resourceType: 'Condition',
   id: 'condition-without-optionals',
   meta: {
@@ -177,7 +173,7 @@ export const mockConditionWithoutOptionalFields: FhirCondition = {
   },
 };
 
-export const mockConditionBundleWithoutOptionals: FhirConditionBundle = {
+export const mockConditionBundleWithoutOptionals: Bundle = {
   resourceType: 'Bundle',
   id: 'bundle-without-optionals',
   meta: {
