@@ -51,6 +51,8 @@
   "CONFIG_ERROR_SCHEMA_VALIDATION_FAILED": "La configuración no coincide con el esquema requerido",
   "CONFIG_ERROR_VALIDATION_FAILED": "La validación de la configuración falló",
   "CONSULTATION_ERROR_GENERIC": "Error al crear el paquete de consulta",
+  "CONSULTATION_ERROR_INVALID_ALLERGY_PARAMS": "Parámetros de alergia inválidos o faltantes",
+  "CONSULTATION_ERROR_INVALID_CONDITION_PARAMS": "Parámetros de condición inválidos o faltantes",
   "CONSULTATION_ERROR_INVALID_DIAGNOSIS_PARAMS": "Parámetros de diagnóstico inválidos o faltantes",
   "CONSULTATION_ERROR_INVALID_ENCOUNTER_REFERENCE": "Referencia de encuentro inválida o faltante",
   "CONSULTATION_ERROR_INVALID_ENCOUNTER_SUBJECT": "Sujeto de encuentro inválido o faltante",

@@ -3,15 +3,20 @@ import { ConsultationBundle } from '@types/consultationBundle';
 import { CONSULTATION_BUNDLE_URL } from '@constants/app';
 import { BundleEntry, Reference } from 'fhir/r4';
 import { CONSULTATION_ERROR_MESSAGES } from '@constants/errors';
-import { createEncounterDiagnosisResource } from '@utils/fhir/conditionResourceCreator';
+import {
+  createEncounterDiagnosisResource,
+  createEncounterConditionResource,
+} from '@utils/fhir/conditionResourceCreator';
 import { createEncounterAllergyResource } from '@utils/fhir/allergyResourceCreator';
 import { createBundleEntry } from '@utils/fhir/consultationBundleCreator';
 import {
   createPractitionerReference,
   getPlaceholderReference,
 } from '@utils/fhir/referenceCreator';
+import { calculateOnsetDate } from '@utils/date';
 import { DiagnosisInputEntry } from '@types/diagnosis';
 import { AllergyInputEntry } from '@types/allergy';
+import { ConditionInputEntry } from '@types/condition';
 
 interface CreateAllergiesBundleEntriesParams {
   selectedAllergies: AllergyInputEntry[];
@@ -22,6 +27,14 @@ interface CreateAllergiesBundleEntriesParams {
 
 interface CreateDiagnosisBundleEntriesParams {
   selectedDiagnoses: DiagnosisInputEntry[];
+  encounterSubject: Reference;
+  encounterReference: string;
+  practitionerUUID: string;
+  consultationDate: Date;
+}
+
+interface CreateConditionsBundleEntriesParams {
+  selectedConditions: ConditionInputEntry[];
   encounterSubject: Reference;
   encounterReference: string;
   practitionerUUID: string;
@@ -41,7 +54,6 @@ export function createDiagnosisBundleEntries({
   practitionerUUID,
   consultationDate,
 }: CreateDiagnosisBundleEntriesParams): BundleEntry[] {
-  // Validate required parameters
   if (!selectedDiagnoses || !Array.isArray(selectedDiagnoses)) {
     throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_DIAGNOSIS_PARAMS);
   }
@@ -108,7 +120,6 @@ export function createAllergiesBundleEntries({
   encounterReference,
   practitionerUUID,
 }: CreateAllergiesBundleEntriesParams): BundleEntry[] {
-  // Validate required parameters
   if (!selectedAllergies || !Array.isArray(selectedAllergies)) {
     throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ALLERGY_PARAMS);
   }
@@ -173,6 +184,81 @@ export function createAllergiesBundleEntries({
   }
 
   return allergyEntries;
+}
+
+/**
+ * Creates bundle entries for conditions as part of consultation bundle
+ * @param params - Parameters required for creating condition bundle entries
+ * @returns Array of BundleEntry for conditions
+ * @throws Error with specific message key for translation
+ */
+export function createConditionsBundleEntries({
+  selectedConditions,
+  encounterSubject,
+  encounterReference,
+  practitionerUUID,
+  consultationDate,
+}: CreateConditionsBundleEntriesParams): BundleEntry[] {
+  if (!selectedConditions || !Array.isArray(selectedConditions)) {
+    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
+  }
+
+  if (!encounterSubject || !encounterSubject.reference) {
+    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_SUBJECT);
+  }
+
+  if (!encounterReference) {
+    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_REFERENCE);
+  }
+
+  if (!practitionerUUID) {
+    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_PRACTITIONER);
+  }
+
+  if (selectedConditions.length === 0) {
+    return [];
+  }
+
+  const conditionEntries: BundleEntry[] = [];
+
+  for (const condition of selectedConditions) {
+    if (
+      !condition ||
+      typeof condition.durationValue !== 'number' ||
+      !condition.durationUnit ||
+      condition.durationValue === null ||
+      condition.durationUnit === null
+    ) {
+      throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
+    }
+
+    const onsetDate = calculateOnsetDate(
+      consultationDate,
+      condition.durationValue,
+      condition.durationUnit,
+    );
+
+    const conditionResourceURL = `urn:uuid:${crypto.randomUUID()}`;
+    const conditionResource = createEncounterConditionResource(
+      condition.id,
+      encounterSubject,
+      getPlaceholderReference(encounterReference),
+      createPractitionerReference(practitionerUUID),
+      consultationDate,
+      onsetDate!,
+      'active',
+    );
+
+    const conditionBundleEntry = createBundleEntry(
+      conditionResourceURL,
+      conditionResource,
+      'POST',
+    );
+
+    conditionEntries.push(conditionBundleEntry);
+  }
+
+  return conditionEntries;
 }
 
 export async function postConsultationBundle<T>(

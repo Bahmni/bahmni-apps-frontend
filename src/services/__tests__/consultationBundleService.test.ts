@@ -2,6 +2,7 @@ import { Reference, Condition, AllergyIntolerance } from 'fhir/r4';
 import {
   createDiagnosisBundleEntries,
   createAllergiesBundleEntries,
+  createConditionsBundleEntries,
   postConsultationBundle,
 } from '../consultationBundleService';
 import { CONSULTATION_ERROR_MESSAGES } from '@constants/errors';
@@ -9,6 +10,7 @@ import { Coding } from 'fhir/r4';
 import { post } from '../api';
 import { DiagnosisInputEntry } from '@types/diagnosis';
 import { AllergyInputEntry } from '@types/allergy';
+import { ConditionInputEntry } from '@types/condition';
 
 // Mock crypto.randomUUID
 const mockUUID = '1d87ab20-8b86-4b41-a30d-984b2208d945';
@@ -366,6 +368,303 @@ describe('consultationBundleService', () => {
         });
 
         expect(result).toEqual([]);
+      });
+    });
+  });
+
+  describe('createConditionsBundleEntries', () => {
+    const mockValidCondition: ConditionInputEntry = {
+      id: '162539AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      display: 'Diabetes Mellitus',
+      durationValue: 2,
+      durationUnit: 'years',
+      errors: {},
+      hasBeenValidated: true,
+    };
+
+    describe('Happy Path Tests', () => {
+      it('should create bundle entries for valid conditions', () => {
+        const mockDate = new Date('2025-01-15T10:30:00Z');
+        const result = createConditionsBundleEntries({
+          selectedConditions: [mockValidCondition],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+          consultationDate: mockDate,
+        });
+
+        expect(result).toBeInstanceOf(Array);
+        expect(result.length).toBe(1);
+        expect(result[0].request?.method).toBe('POST');
+        expect(result[0].resource?.resourceType).toBe('Condition');
+
+        const condition = result[0].resource as Condition;
+        expect(condition.recordedDate).toBe('2025-01-15T10:30:00.000Z');
+        expect(condition.onsetDateTime).toBeDefined(); // Should be calculated from duration
+        expect(condition.category?.[0]?.coding?.[0]?.code).toBe('problem-list-item');
+      });
+
+      it('should handle multiple conditions correctly', () => {
+        const secondCondition: ConditionInputEntry = {
+          id: '162540AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+          display: 'Hypertension',
+          durationValue: 6,
+          durationUnit: 'months',
+          errors: {},
+          hasBeenValidated: true,
+        };
+
+        const result = createConditionsBundleEntries({
+          selectedConditions: [mockValidCondition, secondCondition],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+          consultationDate: new Date('2025-01-15T10:30:00Z'),
+        });
+
+        expect(result).toHaveLength(2);
+        const firstResource = result[0].resource as Condition;
+        const secondResource = result[1].resource as Condition;
+        expect(firstResource.code?.coding?.[0]?.code).toBe(mockValidCondition.id);
+        expect(secondResource.code?.coding?.[0]?.code).toBe(secondCondition.id);
+      });
+
+      it('should calculate onset date from duration correctly', () => {
+        const mockDate = new Date('2025-01-15T10:30:00Z');
+        const result = createConditionsBundleEntries({
+          selectedConditions: [mockValidCondition],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+          consultationDate: mockDate,
+        });
+
+        const condition = result[0].resource as Condition;
+        expect(condition.onsetDateTime).toBeDefined();
+        // 2 years ago from 2025-01-15 should be 2023-01-15
+        expect(condition.onsetDateTime).toBe('2023-01-15T10:30:00.000Z');
+      });
+
+      it('should handle conditions with days duration', () => {
+        const conditionWithDays: ConditionInputEntry = {
+          ...mockValidCondition,
+          durationValue: 30,
+          durationUnit: 'days',
+        };
+
+        const mockDate = new Date('2025-01-15T10:30:00Z');
+        const result = createConditionsBundleEntries({
+          selectedConditions: [conditionWithDays],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+          consultationDate: mockDate,
+        });
+
+        const condition = result[0].resource as Condition;
+        // 30 days ago from 2025-01-15 should be 2024-12-16
+        expect(condition.onsetDateTime).toBe('2024-12-16T10:30:00.000Z');
+      });
+
+      it('should handle conditions with months duration', () => {
+        const conditionWithMonths: ConditionInputEntry = {
+          ...mockValidCondition,
+          durationValue: 3,
+          durationUnit: 'months',
+        };
+
+        const mockDate = new Date('2025-01-15T10:30:00Z');
+        const result = createConditionsBundleEntries({
+          selectedConditions: [conditionWithMonths],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+          consultationDate: mockDate,
+        });
+
+        const condition = result[0].resource as Condition;
+        // 3 months ago from 2025-01-15 should be 2024-10-15
+        expect(condition.onsetDateTime).toBe('2024-10-15T10:30:00.000Z');
+      });
+    });
+
+    describe('Validation Tests (Sad Paths)', () => {
+      it('should throw error for null/undefined selectedConditions', () => {
+        expect(() =>
+          createConditionsBundleEntries({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            selectedConditions: null as any,
+            encounterSubject: mockEncounterSubject,
+            encounterReference: mockEncounterReference,
+            practitionerUUID: mockPractitionerUUID,
+            consultationDate: new Date(),
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
+      });
+
+      it('should throw error for invalid encounterSubject', () => {
+        expect(() =>
+          createConditionsBundleEntries({
+            selectedConditions: [mockValidCondition],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            encounterSubject: null as any,
+            encounterReference: mockEncounterReference,
+            practitionerUUID: mockPractitionerUUID,
+            consultationDate: new Date(),
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_SUBJECT);
+      });
+
+      it('should throw error for missing encounterReference', () => {
+        expect(() =>
+          createConditionsBundleEntries({
+            selectedConditions: [mockValidCondition],
+            encounterSubject: mockEncounterSubject,
+            encounterReference: '',
+            practitionerUUID: mockPractitionerUUID,
+            consultationDate: new Date(),
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_REFERENCE);
+      });
+
+      it('should throw error for missing practitionerUUID', () => {
+        expect(() =>
+          createConditionsBundleEntries({
+            selectedConditions: [mockValidCondition],
+            encounterSubject: mockEncounterSubject,
+            encounterReference: mockEncounterReference,
+            practitionerUUID: '',
+            consultationDate: new Date(),
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_PRACTITIONER);
+      });
+
+      it('should throw error for conditions with invalid duration values', () => {
+        const invalidCondition: ConditionInputEntry = {
+          ...mockValidCondition,
+          durationValue: null,
+          durationUnit: 'days',
+        };
+
+        expect(() =>
+          createConditionsBundleEntries({
+            selectedConditions: [invalidCondition],
+            encounterSubject: mockEncounterSubject,
+            encounterReference: mockEncounterReference,
+            practitionerUUID: mockPractitionerUUID,
+            consultationDate: new Date(),
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
+      });
+
+      it('should throw error for conditions with invalid duration units', () => {
+        const invalidCondition: ConditionInputEntry = {
+          ...mockValidCondition,
+          durationValue: 5,
+          durationUnit: null,
+        };
+
+        expect(() =>
+          createConditionsBundleEntries({
+            selectedConditions: [invalidCondition],
+            encounterSubject: mockEncounterSubject,
+            encounterReference: mockEncounterReference,
+            practitionerUUID: mockPractitionerUUID,
+            consultationDate: new Date(),
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
+      });
+    });
+
+    describe('Edge Cases', () => {
+      it('should return empty array for empty conditions list', () => {
+        const result = createConditionsBundleEntries({
+          selectedConditions: [],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+          consultationDate: new Date(),
+        });
+
+        expect(result).toEqual([]);
+      });
+
+      it('should handle conditions with zero duration', () => {
+        const conditionWithZeroDuration: ConditionInputEntry = {
+          ...mockValidCondition,
+          durationValue: 0,
+          durationUnit: 'days',
+        };
+
+        const mockDate = new Date('2025-01-15T10:30:00Z');
+        const result = createConditionsBundleEntries({
+          selectedConditions: [conditionWithZeroDuration],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+          consultationDate: mockDate,
+        });
+
+        const condition = result[0].resource as Condition;
+        // 0 days ago should be the same as consultation date
+        expect(condition.onsetDateTime).toBe('2025-01-15T10:30:00.000Z');
+      });
+
+      it('should handle conditions with very large duration values', () => {
+        const conditionWithLargeDuration: ConditionInputEntry = {
+          ...mockValidCondition,
+          durationValue: 50,
+          durationUnit: 'years',
+        };
+
+        const mockDate = new Date('2025-01-15T10:30:00Z');
+        const result = createConditionsBundleEntries({
+          selectedConditions: [conditionWithLargeDuration],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+          consultationDate: mockDate,
+        });
+
+        const condition = result[0].resource as Condition;
+        // 50 years ago should be 1975-01-15
+        expect(condition.onsetDateTime).toBe('1975-01-15T10:30:00.000Z');
+      });
+
+      it('should handle conditions with minimal Reference objects', () => {
+        const minimalSubjectRef: Reference = { reference: 'Patient/123' };
+        const minimalEncounterRef = 'Encounter/456';
+        const minimalRecorderRef = 'practitioner-789';
+
+        const result = createConditionsBundleEntries({
+          selectedConditions: [mockValidCondition],
+          encounterSubject: minimalSubjectRef,
+          encounterReference: minimalEncounterRef,
+          practitionerUUID: minimalRecorderRef,
+          consultationDate: new Date('2025-01-15T10:30:00Z'),
+        });
+
+        expect(result).toHaveLength(1);
+        const condition = result[0].resource as Condition;
+        expect(condition.subject).toEqual(minimalSubjectRef);
+      });
+
+      it('should handle conditions without hasBeenValidated flag', () => {
+        const conditionWithoutValidation: ConditionInputEntry = {
+          ...mockValidCondition,
+          hasBeenValidated: false,
+        };
+
+        const result = createConditionsBundleEntries({
+          selectedConditions: [conditionWithoutValidation],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+          consultationDate: new Date('2025-01-15T10:30:00Z'),
+        });
+
+        expect(result).toHaveLength(1);
+        expect(result[0].resource?.resourceType).toBe('Condition');
       });
     });
   });

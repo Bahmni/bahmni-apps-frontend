@@ -51,6 +51,8 @@
   "CONFIG_ERROR_SCHEMA_VALIDATION_FAILED": "Configuration does not match required schema",
   "CONFIG_ERROR_VALIDATION_FAILED": "Configuration validation failed",
   "CONSULTATION_ERROR_GENERIC": "Error creating consultation bundle",
+  "CONSULTATION_ERROR_INVALID_ALLERGY_PARAMS": "Invalid or missing allergy parameters",
+  "CONSULTATION_ERROR_INVALID_CONDITION_PARAMS": "Invalid or missing condition parameters",
   "CONSULTATION_ERROR_INVALID_DIAGNOSIS_PARAMS": "Invalid or missing diagnosis parameters",
   "CONSULTATION_ERROR_INVALID_ENCOUNTER_REFERENCE": "Invalid or missing encounter reference",
   "CONSULTATION_ERROR_INVALID_ENCOUNTER_SUBJECT": "Invalid or missing encounter subject",
