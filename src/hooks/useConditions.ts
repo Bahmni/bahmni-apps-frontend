@@ -1,8 +1,9 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Condition } from 'fhir/r4';
-import { useNotification } from './useNotification';
 import { getConditions } from '@services/conditionService';
+import { usePatientUUID } from './usePatientUUID';
 import { getFormattedError } from '@utils/common';
+import { useTranslation } from 'react-i18next';
 
 interface UseConditionsResult {
   conditions: Condition[];
@@ -12,55 +13,45 @@ interface UseConditionsResult {
 }
 
 /**
- * Custom hook to fetch and manage patient conditions
- * @param patientUUID - The UUID of the patient
- * @param options - Optional parameters for pagination and filtering
+ * Custom hook to fetch and manage conditions for the current patient
  * @returns Object containing conditions, loading state, error state, and refetch function
  */
-export const useConditions = (
-  patientUUID: string | null,
-): UseConditionsResult => {
+export const useConditions = (): UseConditionsResult => {
   const [conditions, setConditions] = useState<Condition[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
-  const { addNotification } = useNotification();
+  const patientUUID = usePatientUUID();
+  const { t } = useTranslation();
 
   const fetchConditions = useCallback(async () => {
-    if (!patientUUID) {
-      setError(new Error('Invalid patient UUID'));
-      addNotification({
-        type: 'error',
-        title: 'Error',
-        message: 'Invalid patient UUID',
-      });
-      return;
-    }
-
     try {
       setLoading(true);
-      const conditions = await getConditions(patientUUID);
-      setConditions(conditions);
+      if (!patientUUID) {
+        setError(new Error(t('ERROR_INVALID_PATIENT_UUID')));
+        return;
+      }
+      const conditionsData = await getConditions(patientUUID);
+      setConditions(conditionsData);
+      setError(null);
     } catch (err) {
-      const { title, message } = getFormattedError(err);
-      addNotification({
-        type: 'error',
-        title: title,
-        message: message,
-      });
+      const { message } = getFormattedError(err);
       setError(err instanceof Error ? err : new Error(message));
+      setConditions([]);
     } finally {
       setLoading(false);
     }
-  }, [patientUUID, addNotification]);
+  }, [patientUUID]);
 
   useEffect(() => {
     fetchConditions();
-  }, [patientUUID, fetchConditions]);
+  }, [fetchConditions]);
 
   return {
-    conditions: conditions,
-    loading: loading,
-    error: error,
+    conditions,
+    loading,
+    error,
     refetch: fetchConditions,
   };
 };
+
+export default useConditions;
