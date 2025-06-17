@@ -77,10 +77,7 @@ export const createEncounterConditionResource = (
     ],
     code: createCodeableConcept([createCoding(conditionConceptUUID)]),
     clinicalStatus: createCodeableConcept([
-      createCoding(
-        clinicalStatus,
-        HL7_CONDITION_CLINICAL_STATUS_CODE_SYSTEM,
-      ),
+      createCoding(clinicalStatus, HL7_CONDITION_CLINICAL_STATUS_CODE_SYSTEM),
     ]),
     encounter: encounterReference,
     recorder: recorderReference,

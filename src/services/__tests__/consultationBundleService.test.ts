@@ -401,7 +401,9 @@ describe('consultationBundleService', () => {
         const condition = result[0].resource as Condition;
         expect(condition.recordedDate).toBe('2025-01-15T10:30:00.000Z');
         expect(condition.onsetDateTime).toBeDefined(); // Should be calculated from duration
-        expect(condition.category?.[0]?.coding?.[0]?.code).toBe('problem-list-item');
+        expect(condition.category?.[0]?.coding?.[0]?.code).toBe(
+          'problem-list-item',
+        );
       });
 
       it('should handle multiple conditions correctly', () => {
@@ -425,7 +427,9 @@ describe('consultationBundleService', () => {
         expect(result).toHaveLength(2);
         const firstResource = result[0].resource as Condition;
         const secondResource = result[1].resource as Condition;
-        expect(firstResource.code?.coding?.[0]?.code).toBe(mockValidCondition.id);
+        expect(firstResource.code?.coding?.[0]?.code).toBe(
+          mockValidCondition.id,
+        );
         expect(secondResource.code?.coding?.[0]?.code).toBe(secondCondition.id);
       });
 

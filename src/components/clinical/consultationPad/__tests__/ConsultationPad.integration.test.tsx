@@ -13,15 +13,15 @@ import { getEncounterConcepts } from '@services/encounterConceptsService';
 import { getCurrentProvider } from '@services/providerService';
 import { getCurrentUser } from '@services/userService';
 import { getActiveVisit } from '@services/encounterService';
-import { User } from '@types/user';
-import { FhirEncounter, FhirEncounterType } from '@types/encounter';
+import { User } from '@/types/user';
+import { FhirEncounter, FhirEncounterType } from '@/types/encounter';
 import {
   mockLocations,
   mockEncounterConcepts,
   mockPractitioner,
   mockActiveVisit,
 } from '@__mocks__/consultationPadMocks';
-import { useDiagnosisStore } from '@stores/diagnosisStore';
+import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
 import useAllergyStore from '@stores/allergyStore';
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 import notificationService from '@services/notificationService';
@@ -186,6 +186,21 @@ describe('ConsultationPad Integration', () => {
       },
     ]);
 
+    (
+      consultationBundleService.createConditionsBundleEntries as jest.Mock
+    ).mockReturnValue([
+      {
+        resource: {
+          resourceType: 'Condition',
+          id: 'test-condition-id',
+        },
+        request: {
+          method: 'POST',
+          url: 'Condition',
+        },
+      },
+    ]);
+
     // Mock the notification service
     jest
       .spyOn(notificationService, 'showSuccess')
@@ -194,7 +209,7 @@ describe('ConsultationPad Integration', () => {
 
     // Reset all stores before each test
     act(() => {
-      const diagnosisStore = useDiagnosisStore.getState();
+      const diagnosisStore = useConditionsAndDiagnosesStore.getState();
       diagnosisStore.reset();
 
       const allergyStore = useAllergyStore.getState();
@@ -263,7 +278,9 @@ describe('ConsultationPad Integration', () => {
     // Verify onClose was called
 
     // Verify stores were reset
-    expect(useDiagnosisStore.getState().selectedDiagnoses).toHaveLength(0);
+    expect(
+      useConditionsAndDiagnosesStore.getState().selectedDiagnoses,
+    ).toHaveLength(0);
     expect(useAllergyStore.getState().selectedAllergies).toHaveLength(0);
   });
 
@@ -278,7 +295,7 @@ describe('ConsultationPad Integration', () => {
 
     // Mock validation functions to return true
     jest
-      .spyOn(useDiagnosisStore.getState(), 'validateAllDiagnoses')
+      .spyOn(useConditionsAndDiagnosesStore.getState(), 'validate')
       .mockReturnValue(true);
     jest
       .spyOn(useAllergyStore.getState(), 'validateAllAllergies')
@@ -307,6 +324,7 @@ describe('ConsultationPad Integration', () => {
       store.setUser(mockUser);
       store.setPatientUUID('patient-1');
       store.setActiveVisit(fullMockActiveVisit);
+      store.setConsultationDate(new Date());
       store.setEncounterDetailsFormReady(true);
     });
 
@@ -324,7 +342,9 @@ describe('ConsultationPad Integration', () => {
     });
 
     // Verify stores were reset
-    expect(useDiagnosisStore.getState().selectedDiagnoses).toHaveLength(0);
+    expect(
+      useConditionsAndDiagnosesStore.getState().selectedDiagnoses,
+    ).toHaveLength(0);
     expect(useAllergyStore.getState().selectedAllergies).toHaveLength(0);
   });
 
@@ -357,6 +377,7 @@ describe('ConsultationPad Integration', () => {
       store.setUser(mockUser);
       store.setPatientUUID('patient-1');
       store.setActiveVisit(fullMockActiveVisit);
+      store.setConsultationDate(new Date());
       store.setEncounterDetailsFormReady(true);
     });
 
@@ -429,12 +450,13 @@ describe('ConsultationPad Integration', () => {
       store.setUser(mockUser);
       store.setPatientUUID('patient-1');
       store.setActiveVisit(fullMockActiveVisit);
+      store.setConsultationDate(new Date());
       store.setEncounterDetailsFormReady(true);
     });
 
     // Add a diagnosis without certainty to trigger validation error
     await act(async () => {
-      const diagnosisStore = useDiagnosisStore.getState();
+      const diagnosisStore = useConditionsAndDiagnosesStore.getState();
       diagnosisStore.addDiagnosis({
         conceptUuid: 'diagnosis-1',
         conceptName: 'Test Diagnosis',
@@ -514,6 +536,421 @@ describe('ConsultationPad Integration', () => {
     });
 
     // Verify postConsultationBundle was not called due to validation failure
+    expect(
+      consultationBundleService.postConsultationBundle,
+    ).not.toHaveBeenCalled();
+  });
+
+  it('should handle component unmount and cleanup stores', async () => {
+    // Render component
+    const { unmount } = render(
+      <TestWrapper>
+        <ConsultationPad onClose={onCloseMock} />
+      </TestWrapper>,
+    );
+
+    // Wait for component to load
+    await waitFor(() => {
+      expect(screen.getByText('New Consultation')).toBeInTheDocument();
+    });
+
+    // Add some data to stores
+    await act(async () => {
+      const diagnosisStore = useConditionsAndDiagnosesStore.getState();
+      diagnosisStore.addDiagnosis({
+        conceptUuid: 'diagnosis-1',
+        conceptName: 'Test Diagnosis',
+        matchedName: 'Test',
+      });
+
+      const allergyStore = useAllergyStore.getState();
+      allergyStore.addAllergy({
+        uuid: 'allergy-1',
+        display: 'Test Allergy',
+        type: 'food',
+      });
+    });
+
+    // Verify data exists before unmount
+    expect(
+      useConditionsAndDiagnosesStore.getState().selectedDiagnoses,
+    ).toHaveLength(1);
+    expect(useAllergyStore.getState().selectedAllergies).toHaveLength(1);
+
+    // Unmount component
+    await act(async () => {
+      unmount();
+    });
+
+    // Verify stores were cleaned up
+    expect(
+      useConditionsAndDiagnosesStore.getState().selectedDiagnoses,
+    ).toHaveLength(0);
+    expect(useAllergyStore.getState().selectedAllergies).toHaveLength(0);
+  });
+
+  it('should render form dividers between sections', async () => {
+    // Render component
+    render(
+      <TestWrapper>
+        <ConsultationPad onClose={onCloseMock} />
+      </TestWrapper>,
+    );
+
+    // Wait for all data to load
+    await waitFor(() => {
+      expect(screen.getByText('New Consultation')).toBeInTheDocument();
+    });
+
+    // Verify forms are rendered in correct order with dividers
+    expect(screen.getByText('Location')).toBeInTheDocument(); // BasicForm
+    expect(screen.getByText('Conditions and Diagnoses')).toBeInTheDocument();
+    expect(screen.getByText('Allergies')).toBeInTheDocument();
+
+    // Check for divider elements (rendered as hr elements)
+    const dividers = screen.getAllByRole('separator');
+    expect(dividers.length).toBeGreaterThanOrEqual(2); // At least 2 dividers between 3 forms
+  });
+
+  // TODO:Fix this test
+  // it('should create complete consultation bundle with all entry types', async () => {
+  //   // Mock successful bundle creation
+  //   (
+  //     consultationBundleService.postConsultationBundle as jest.Mock
+  //   ).mockResolvedValue({
+  //     id: 'test-bundle-id',
+  //     type: 'transaction-response',
+  //   });
+
+  //   // Mock validation functions to return true
+  //   jest
+  //     .spyOn(useConditionsAndDiagnosesStore.getState(), 'validate')
+  //     .mockReturnValue(true);
+  //   jest
+  //     .spyOn(useAllergyStore.getState(), 'validateAllAllergies')
+  //     .mockReturnValue(true);
+
+  //   // Render component
+  //   render(
+  //     <TestWrapper>
+  //       <ConsultationPad onClose={onCloseMock} />
+  //     </TestWrapper>,
+  //   );
+
+  //   // Wait for all data to load
+  //   await waitFor(() => {
+  //     expect(screen.getByText('New Consultation')).toBeInTheDocument();
+  //   });
+
+  //   // Set up the encounter details store with all required data
+  //   await act(async () => {
+  //     const store = useEncounterDetailsStore.getState();
+  //     store.setSelectedLocation(mockLocations[0]);
+  //     store.setSelectedEncounterType(mockEncounterConcepts.encounterTypes[0]);
+  //     store.setSelectedVisitType(mockEncounterConcepts.visitTypes[0]);
+  //     store.setEncounterParticipants([mockPractitioner]);
+  //     store.setPractitioner(mockPractitioner);
+  //     store.setUser(mockUser);
+  //     store.setPatientUUID('patient-1');
+  //     store.setActiveVisit(fullMockActiveVisit);
+  //     store.setConsultationDate(new Date());
+  //     store.setEncounterDetailsFormReady(true);
+  //   });
+
+  //   // Add valid diagnoses with certainty
+  //   await act(async () => {
+  //     const diagnosisStore = useConditionsAndDiagnosesStore.getState();
+  //     diagnosisStore.addDiagnosis({
+  //       conceptUuid: 'diagnosis-1',
+  //       conceptName: 'Test Diagnosis',
+  //       matchedName: 'Test',
+  //     });
+  //     diagnosisStore.updateCertainty('diagnosis-1', {
+  //       code: 'confirmed',
+  //       display: 'Confirmed',
+  //       system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
+  //     });
+  //   });
+
+  //   // Add valid allergy with severity and reactions
+  //   await act(async () => {
+  //     const allergyStore = useAllergyStore.getState();
+  //     allergyStore.addAllergy({
+  //       uuid: 'allergy-1',
+  //       display: 'Test Allergy',
+  //       type: 'food',
+  //     });
+  //     allergyStore.updateSeverity('allergy-1', {
+  //       code: 'severe',
+  //       display: 'Severe',
+  //       system: 'http://hl7.org/fhir/reaction-event-severity',
+  //     });
+  //     allergyStore.updateReactions('allergy-1', [
+  //       {
+  //         code: 'rash',
+  //         display: 'Rash',
+  //         system: 'http://snomed.info/sct',
+  //       },
+  //     ]);
+  //   });
+
+  //   // Add valid condition with duration
+  //   await act(async () => {
+  //     const conditionsStore = useConditionsAndDiagnosesStore.getState();
+  //     conditionsStore.addDiagnosis({
+  //       conceptUuid: 'condition-1',
+  //       conceptName: 'Test Condition',
+  //       matchedName: 'Condition',
+  //     });
+  //     conditionsStore.markAsCondition('condition-1');
+  //     conditionsStore.updateConditionDuration('condition-1', 2, 'years');
+  //   });
+
+  //   // Find the submit button
+  //   const submitButton = screen.getByRole('button', { name: /Done/i });
+
+  //   // Wait for button to be enabled
+  //   await waitFor(() => {
+  //     expect(submitButton).not.toBeDisabled();
+  //   });
+  //   screen.debug(undefined, Infinity);
+  //   // Click the submit button
+  //   await waitFor(async () => {
+  //     userEvent.click(submitButton);
+  //   });
+
+  //   // Wait for submission to complete
+  //   await waitFor(() => {
+  //     // Verify all bundle creation functions were called
+  //     expect(
+  //       consultationBundleService.createDiagnosisBundleEntries,
+  //     ).toHaveBeenCalled();
+  //     expect(
+  //       consultationBundleService.createAllergiesBundleEntries,
+  //     ).toHaveBeenCalled();
+  //     expect(
+  //       consultationBundleService.createConditionsBundleEntries,
+  //     ).toHaveBeenCalled();
+
+  //     // Verify consultation bundle was posted
+  //     expect(
+  //       consultationBundleService.postConsultationBundle,
+  //     ).toHaveBeenCalled();
+  //   });
+
+  //   // Verify stores were reset after successful submission
+  //   expect(
+  //     useConditionsAndDiagnosesStore.getState().selectedDiagnoses,
+  //   ).toHaveLength(0);
+  //   expect(
+  //     useConditionsAndDiagnosesStore.getState().selectedConditions,
+  //   ).toHaveLength(0);
+  //   expect(useAllergyStore.getState().selectedAllergies).toHaveLength(0);
+  // });
+
+  it('should validate conditions before submission', async () => {
+    // Render component
+    render(
+      <TestWrapper>
+        <ConsultationPad onClose={onCloseMock} />
+      </TestWrapper>,
+    );
+
+    // Wait for all data to load
+    await waitFor(() => {
+      expect(screen.getByText('New Consultation')).toBeInTheDocument();
+    });
+
+    // Set up the encounter details store with all required data
+    await act(async () => {
+      const store = useEncounterDetailsStore.getState();
+      store.setSelectedLocation(mockLocations[0]);
+      store.setSelectedEncounterType(mockEncounterConcepts.encounterTypes[0]);
+      store.setSelectedVisitType(mockEncounterConcepts.visitTypes[0]);
+      store.setEncounterParticipants([mockPractitioner]);
+      store.setPractitioner(mockPractitioner);
+      store.setUser(mockUser);
+      store.setPatientUUID('patient-1');
+      store.setActiveVisit(fullMockActiveVisit);
+      store.setEncounterDetailsFormReady(true);
+    });
+
+    // Add a condition without required duration to trigger validation error
+    await act(async () => {
+      const conditionsStore = useConditionsAndDiagnosesStore.getState();
+      conditionsStore.addDiagnosis({
+        conceptUuid: 'condition-1',
+        conceptName: 'Test Condition',
+        matchedName: 'Condition',
+      });
+      conditionsStore.markAsCondition('condition-1');
+      // Don't set duration - this should cause validation to fail
+    });
+
+    // Mock validation to return false for conditions
+    jest
+      .spyOn(useConditionsAndDiagnosesStore.getState(), 'validate')
+      .mockReturnValue(false);
+
+    // Find and click the submit button
+    const submitButton = screen.getByRole('button', { name: /Done/i });
+
+    // Wait for button to be enabled
+    await waitFor(() => {
+      expect(submitButton).not.toBeDisabled();
+    });
+
+    // Click the submit button
+    await act(async () => {
+      userEvent.click(submitButton);
+    });
+
+    // Verify postConsultationBundle was not called due to validation failure
+    expect(
+      consultationBundleService.postConsultationBundle,
+    ).not.toHaveBeenCalled();
+  });
+
+  it('should handle errors during conditions bundle creation', async () => {
+    // Mock conditions bundle creation to throw an error
+    (
+      consultationBundleService.createConditionsBundleEntries as jest.Mock
+    ).mockImplementation(() => {
+      throw new Error('CONSULTATION_ERROR_INVALID_CONDITION_PARAMS');
+    });
+
+    // Render component
+    render(
+      <TestWrapper>
+        <ConsultationPad onClose={onCloseMock} />
+      </TestWrapper>,
+    );
+
+    // Wait for all data to load
+    await waitFor(() => {
+      expect(screen.getByText('New Consultation')).toBeInTheDocument();
+    });
+
+    // Set up the encounter details store with all required data
+    await act(async () => {
+      const store = useEncounterDetailsStore.getState();
+      store.setSelectedLocation(mockLocations[0]);
+      store.setSelectedEncounterType(mockEncounterConcepts.encounterTypes[0]);
+      store.setSelectedVisitType(mockEncounterConcepts.visitTypes[0]);
+      store.setEncounterParticipants([mockPractitioner]);
+      store.setPractitioner(mockPractitioner);
+      store.setUser(mockUser);
+      store.setPatientUUID('patient-1');
+      store.setActiveVisit(fullMockActiveVisit);
+      store.setEncounterDetailsFormReady(true);
+    });
+
+    // Add a valid condition to trigger bundle creation
+    await act(async () => {
+      const conditionsStore = useConditionsAndDiagnosesStore.getState();
+      conditionsStore.addDiagnosis({
+        conceptUuid: 'condition-1',
+        conceptName: 'Test Condition',
+        matchedName: 'Condition',
+      });
+      conditionsStore.markAsCondition('condition-1');
+      conditionsStore.updateConditionDuration('condition-1', 2, 'years');
+    });
+
+    // Find the submit button
+    const submitButton = screen.getByRole('button', { name: /Done/i });
+
+    // Wait for button to be enabled
+    await waitFor(() => {
+      expect(submitButton).not.toBeDisabled();
+    });
+
+    // Click the submit button
+    await act(async () => {
+      userEvent.click(submitButton);
+    });
+
+    // Verify that an error notification would be shown
+    // (The actual error handling would be caught in the component's try-catch)
+    expect(onCloseMock).not.toHaveBeenCalled();
+  });
+
+  it('should handle combined validation of diagnoses, allergies, and conditions', async () => {
+    // Render component
+    render(
+      <TestWrapper>
+        <ConsultationPad onClose={onCloseMock} />
+      </TestWrapper>,
+    );
+
+    // Wait for all data to load
+    await waitFor(() => {
+      expect(screen.getByText('New Consultation')).toBeInTheDocument();
+    });
+
+    // Set up the encounter details store with all required data
+    await act(async () => {
+      const store = useEncounterDetailsStore.getState();
+      store.setSelectedLocation(mockLocations[0]);
+      store.setSelectedEncounterType(mockEncounterConcepts.encounterTypes[0]);
+      store.setSelectedVisitType(mockEncounterConcepts.visitTypes[0]);
+      store.setEncounterParticipants([mockPractitioner]);
+      store.setPractitioner(mockPractitioner);
+      store.setUser(mockUser);
+      store.setPatientUUID('patient-1');
+      store.setActiveVisit(fullMockActiveVisit);
+      store.setEncounterDetailsFormReady(true);
+    });
+
+    // Add invalid data to all forms
+    await act(async () => {
+      // Add diagnosis without certainty
+      const diagnosisStore = useConditionsAndDiagnosesStore.getState();
+      diagnosisStore.addDiagnosis({
+        conceptUuid: 'diagnosis-1',
+        conceptName: 'Test Diagnosis',
+        matchedName: 'Test',
+      });
+
+      // Add allergy without severity
+      const allergyStore = useAllergyStore.getState();
+      allergyStore.addAllergy({
+        uuid: 'allergy-1',
+        display: 'Test Allergy',
+        type: 'food',
+      });
+
+      // Add condition without duration
+      diagnosisStore.addDiagnosis({
+        conceptUuid: 'condition-1',
+        conceptName: 'Test Condition',
+        matchedName: 'Condition',
+      });
+      diagnosisStore.markAsCondition('condition-1');
+    });
+
+    // Mock all validations to return false
+    jest
+      .spyOn(useConditionsAndDiagnosesStore.getState(), 'validate')
+      .mockReturnValue(false);
+    jest
+      .spyOn(useAllergyStore.getState(), 'validateAllAllergies')
+      .mockReturnValue(false);
+
+    // Find and click the submit button
+    const submitButton = screen.getByRole('button', { name: /Done/i });
+
+    // Wait for button to be enabled
+    await waitFor(() => {
+      expect(submitButton).not.toBeDisabled();
+    });
+
+    // Click the submit button
+    await act(async () => {
+      userEvent.click(submitButton);
+    });
+
+    // Verify postConsultationBundle was not called due to validation failures
     expect(
       consultationBundleService.postConsultationBundle,
     ).not.toHaveBeenCalled();
