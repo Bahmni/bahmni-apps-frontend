@@ -6,7 +6,7 @@ import { ExpandableDataTable } from '@components/common/expandableDataTable/Expa
 import { useConditions } from '@hooks/useConditions';
 import { formatConditions } from '@services/conditionService';
 import { ConditionStatus, FormattedCondition } from '@types/condition';
-import { formatDate } from '@utils/date';
+import { formatDateDistance } from '@utils/date';
 import { FormatDateResult } from '@types/date';
 import * as styles from './styles/ConditionsTable.module.scss';
 
@@ -56,10 +56,15 @@ const ConditionsTable: React.FC = () => {
           </Tag>
         );
       case 'onsetDate': {
-        const onsetDate: FormatDateResult = formatDate(
+        const onsetDate: FormatDateResult = formatDateDistance(
           condition.onsetDate || '',
         );
-        return onsetDate.formattedResult;
+        if (onsetDate.error) {
+          return t('CONDITION_TABLE_NOT_AVAILABLE');
+        }
+        return t('CONDITION_ONSET_SINCE_FORMAT', {
+          formatDateDistance: onsetDate.formattedResult,
+        });
       }
       case 'recorder':
         return condition.recorder;

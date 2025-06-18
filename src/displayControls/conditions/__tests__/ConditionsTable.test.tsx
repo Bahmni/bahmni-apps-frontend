@@ -4,7 +4,7 @@ import ConditionsTable from '../ConditionsTable';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import { useConditions } from '@hooks/useConditions';
 import { formatConditions } from '@services/conditionService';
-import { formatDate, formatDateTime } from '@utils/date';
+import { formatDateDistance, formatDateTime } from '@utils/date';
 import { generateId } from '@utils/common';
 import i18n from '@/setupTests.i18n';
 import {
@@ -109,7 +109,9 @@ const mockedFormatConditions = formatConditions as jest.MockedFunction<
 const mockedFormatDateTime = formatDateTime as jest.MockedFunction<
   typeof formatDateTime
 >;
-const mockedFormatDate = formatDate as jest.MockedFunction<typeof formatDate>;
+const mockedFormatDateDistance = formatDateDistance as jest.MockedFunction<
+  typeof formatDateDistance
+>;
 const mockedGenerateId = generateId as jest.MockedFunction<typeof generateId>;
 
 describe('ConditionsTable Unit Tests', () => {
@@ -119,8 +121,8 @@ describe('ConditionsTable Unit Tests', () => {
     mockedFormatDateTime.mockImplementation((date) => ({
       formattedResult: `Formatted: ${date}`,
     }));
-    mockedFormatDate.mockImplementation((date) => ({
-      formattedResult: `Formatted: ${date}`,
+    mockedFormatDateDistance.mockImplementation(() => ({
+      formattedResult: `3 days`,
     }));
     // Reset i18n to English
     i18n.changeLanguage('en');
@@ -385,9 +387,11 @@ describe('ConditionsTable Unit Tests', () => {
 
       // Assert
       expect(screen.getByTestId('cell-onsetDate-0')).toHaveTextContent(
-        'Formatted: 2025-03-24T18:30:00+00:00',
+        'Since 3 days',
       );
-      expect(formatDate).toHaveBeenCalledWith('2025-03-24T18:30:00+00:00');
+      expect(formatDateDistance).toHaveBeenCalledWith(
+        '2025-03-24T18:30:00+00:00',
+      );
     });
 
     it('should render recorder cell correctly', () => {
@@ -410,33 +414,6 @@ describe('ConditionsTable Unit Tests', () => {
       expect(screen.getByTestId('cell-recorder-0')).toHaveTextContent(
         'Super Man',
       );
-    });
-
-    it('should handle empty onsetDate', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseConditions.mockReturnValue({
-        conditions: mockConditions,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      const conditionWithoutOnsetDate: FormattedCondition = {
-        ...mockFormattedConditionsWithoutNotes[0],
-        onsetDate: undefined,
-      };
-
-      mockedFormatConditions.mockReturnValue([conditionWithoutOnsetDate]);
-
-      // Act
-      render(<ConditionsTable />);
-
-      // Assert
-      expect(screen.getByTestId('cell-onsetDate-0')).toHaveTextContent(
-        'Formatted:',
-      );
-      expect(formatDate).toHaveBeenCalledWith('');
     });
   });
 

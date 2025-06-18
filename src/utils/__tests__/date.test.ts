@@ -4,6 +4,7 @@ import {
   formatDate,
   formatDateTime,
   calculateOnsetDate,
+  formatDateDistance,
 } from '../date';
 import { DATE_TIME_FORMAT } from '@constants/date';
 import { DATE_ERROR_MESSAGES } from '@constants/errors';
@@ -73,7 +74,7 @@ describe('calculateAge', () => {
     expect(result?.days).toBe(24); // Days since Feb 29 (treated as Feb 28 in non-leap years)
   });
 
-  it('should calculate age correctly for a date many years ago', () => {
+  it('should calculate age correctly for a date many years', () => {
     const result = calculateAge('1925-01-01');
     expect(result).not.toBeNull();
     expect(result?.years).toBe(100); // 2025 - 1925 = 100, birthday has occurred this year
@@ -92,16 +93,16 @@ describe('calculateAge', () => {
   it('should calculate age as 0 years for a child less than 1 year old', () => {
     const result = calculateAge('2024-12-31');
     expect(result).not.toBeNull();
-    expect(result?.years).toBe(0); // Child born less than a year ago
+    expect(result?.years).toBe(0); // Child born less than a year
     expect(result?.months).toBe(2); // 2 months since December 31
     expect(result?.days).toBe(24); // 24 days in current month
   });
 
-  it('should calculate months and days correctly for a child born 2 months ago', () => {
+  it('should calculate months and days correctly for a child born 2 months', () => {
     const result = calculateAge('2025-01-24');
     expect(result).not.toBeNull();
-    expect(result?.years).toBe(0); // Child born less than a year ago
-    expect(result?.months).toBe(2); // Exactly 2 months ago
+    expect(result?.years).toBe(0); // Child born less than a year
+    expect(result?.months).toBe(2); // Exactly 2 months
     expect(result?.days).toBe(0); // Exactly on the day
   });
 
@@ -385,7 +386,7 @@ describe('calculateOnsetDate', () => {
       const result = calculateOnsetDate(mockConsultationDate, 7, 'days');
       expect(result?.getFullYear()).toBe(2025);
       expect(result?.getMonth()).toBe(2); // March
-      expect(result?.getDate()).toBe(17); // A week ago
+      expect(result?.getDate()).toBe(17); // A week
     });
 
     it('should calculate onset for medium-term conditions (months)', () => {
@@ -613,6 +614,225 @@ describe('Date Utility Functions', () => {
       const result = formatDate('2024-03-28', 'MMMM dd, yyyy');
       expect(result.formattedResult).toBe('marzo 28, 2024');
       expect(result.error).toBeUndefined();
+    });
+  });
+
+  describe('formatDateDistance', () => {
+    const mockedGetUserPreferredLocale = jest.mocked(getUserPreferredLocale);
+    const mockCurrentDate = new Date('2025-06-18T07:02:38.000Z'); // June 18, 2025, 7:02:38 AM UTC
+
+    beforeEach(() => {
+      jest.useFakeTimers();
+      jest.setSystemTime(mockCurrentDate);
+      jest.clearAllMocks();
+      mockedGetUserPreferredLocale.mockReturnValue('en');
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    describe('Happy Path Tests', () => {
+      it('should format distance for date 1 day', () => {
+        const oneDayAgo = '2025-06-17T07:02:38.000Z'; // 1 day
+        const result = formatDateDistance(oneDayAgo);
+        expect(result.formattedResult).toBe('1 day');
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should format distance for date 2 days', () => {
+        const twoDaysAgo = '2025-06-16T07:02:38.000Z'; // 2 days
+        const result = formatDateDistance(twoDaysAgo);
+        expect(result.formattedResult).toBe('2 days');
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should format distance for date 1 week', () => {
+        const oneWeekAgo = '2025-06-11T07:02:38.000Z'; // 1 week
+        const result = formatDateDistance(oneWeekAgo);
+        expect(result.formattedResult).toBe('7 days');
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should format distance for date 1 month', () => {
+        const oneMonthAgo = '2025-05-18T07:02:38.000Z'; // 1 month
+        const result = formatDateDistance(oneMonthAgo);
+        expect(result.formattedResult).toBe('1 month');
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should format distance for date 3 months', () => {
+        const threeMonthsAgo = '2025-03-18T07:02:38.000Z'; // 3 months
+        const result = formatDateDistance(threeMonthsAgo);
+        expect(result.formattedResult).toBe('3 months');
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should format distance for date 1 year', () => {
+        const oneYearAgo = '2024-06-18T07:02:38.000Z'; // 1 year
+        const result = formatDateDistance(oneYearAgo);
+        expect(result.formattedResult).toBe('1 year');
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should format distance for date 2 years', () => {
+        const twoYearsAgo = '2023-06-18T07:02:38.000Z'; // 2 years
+        const result = formatDateDistance(twoYearsAgo);
+        expect(result.formattedResult).toBe('2 years');
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should format distance for recent dates (hours)', () => {
+        const hoursAgo = '2025-06-18T03:02:38.000Z'; // 4 hours
+        const result = formatDateDistance(hoursAgo);
+        expect(result.formattedResult).toBe('1 day'); // hours converted to 1 day
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should format distance for very recent dates (minutes)', () => {
+        const minutesAgo = '2025-06-18T06:32:38.000Z'; // 30 minutes
+        const result = formatDateDistance(minutesAgo);
+        expect(result.formattedResult).toBe('1 day'); // minutes converted to 1 day
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should format distance for date without time component (ISO date only)', () => {
+        const dateOnly = '2025-06-17'; // 1 day, date only
+        const result = formatDateDistance(dateOnly);
+        expect(result.formattedResult).toBe('1 day');
+        expect(result.error).toBeUndefined();
+      });
+    });
+
+    describe('Error Handling Tests', () => {
+      it('should return error for empty string input', () => {
+        const result = formatDateDistance('');
+        expect(result.formattedResult).toBe('');
+        expect(result.error).toBeDefined();
+        expect(result.error?.title).toBe(
+          i18n.t(DATE_ERROR_MESSAGES.PARSE_ERROR),
+        );
+        expect(result.error?.message).toBe(
+          i18n.t(DATE_ERROR_MESSAGES.EMPTY_OR_INVALID),
+        );
+      });
+
+      it('should return error for invalid date string', () => {
+        const result = formatDateDistance('invalid-date');
+        expect(result.formattedResult).toBe('');
+        expect(result.error).toBeDefined();
+        expect(result.error?.title).toBe(
+          i18n.t(DATE_ERROR_MESSAGES.PARSE_ERROR),
+        );
+        expect(result.error?.message).toBe(
+          i18n.t(DATE_ERROR_MESSAGES.INVALID_FORMAT),
+        );
+      });
+
+      it('should return error for null input', () => {
+        /* eslint-disable  @typescript-eslint/no-explicit-any */
+        const result = formatDateDistance(null as any);
+        expect(result.formattedResult).toBe('');
+        expect(result.error).toBeDefined();
+        expect(result.error?.title).toBe(
+          i18n.t(DATE_ERROR_MESSAGES.FORMAT_ERROR),
+        );
+        expect(result.error?.message).toBe(
+          i18n.t(DATE_ERROR_MESSAGES.NULL_OR_UNDEFINED),
+        );
+      });
+
+      it('should return error for undefined input', () => {
+        /* eslint-disable  @typescript-eslint/no-explicit-any */
+        const result = formatDateDistance(undefined as any);
+        expect(result.formattedResult).toBe('');
+        expect(result.error).toBeDefined();
+        expect(result.error?.title).toBe(
+          i18n.t(DATE_ERROR_MESSAGES.FORMAT_ERROR),
+        );
+        expect(result.error?.message).toBe(
+          i18n.t(DATE_ERROR_MESSAGES.NULL_OR_UNDEFINED),
+        );
+      });
+
+      it('should handle malformed ISO date strings', () => {
+        const result = formatDateDistance('2025-13-32T25:65:70.000Z'); // Invalid month, day, hour, minute, second
+        expect(result.formattedResult).toBe('');
+        expect(result.error).toBeDefined();
+        expect(result.error?.title).toBe(
+          i18n.t(DATE_ERROR_MESSAGES.PARSE_ERROR),
+        );
+        expect(result.error?.message).toBe(
+          i18n.t(DATE_ERROR_MESSAGES.INVALID_FORMAT),
+        );
+      });
+
+      it('should handle non-string input', () => {
+        /* eslint-disable  @typescript-eslint/no-explicit-any */
+        const result = formatDateDistance(123 as any);
+        expect(result.formattedResult).toBe('');
+        expect(result.error).toBeDefined();
+      });
+    });
+
+    describe('Edge Cases', () => {
+      it('should handle date from the same day (few seconds)', () => {
+        const fewSecondsAgo = '2025-06-18T07:02:35.000Z'; // Just 3 seconds
+        const result = formatDateDistance(fewSecondsAgo);
+        expect(result.formattedResult).toBe('1 day'); // rounds up to 1 day
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should handle leap year dates correctly', () => {
+        const leapYearDate = '2024-02-29T07:02:38.000Z'; // Feb 29, 2024 (leap year)
+        const result = formatDateDistance(leapYearDate);
+        expect(result.formattedResult).toBe('1 year'); // about 1 year ago
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should handle very old dates (decades)', () => {
+        const decadesAgo = '1990-06-18T07:02:38.000Z'; // 35 years
+        const result = formatDateDistance(decadesAgo);
+        expect(result.formattedResult).toBe('35 years');
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should handle end of month dates correctly', () => {
+        const endOfMonth = '2025-05-31T07:02:38.000Z'; // End of previous month
+        const result = formatDateDistance(endOfMonth);
+        expect(result.formattedResult).toBe('18 days');
+        expect(result.error).toBeUndefined();
+      });
+    });
+
+    describe('Real-world Clinical Scenarios', () => {
+      it('should format acute condition onset (few days)', () => {
+        const acuteOnset = '2025-06-15T07:02:38.000Z'; // 3 days - typical for acute conditions
+        const result = formatDateDistance(acuteOnset);
+        expect(result.formattedResult).toBe('3 days');
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should format chronic condition onset (years)', () => {
+        const chronicOnset = '2020-06-18T07:02:38.000Z'; // 5 years - typical for chronic conditions
+        const result = formatDateDistance(chronicOnset);
+        expect(result.formattedResult).toBe('5 years');
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should format recent symptoms onset (hours)', () => {
+        const recentOnset = '2025-06-18T01:02:38.000Z'; // 6 hours - recent symptoms
+        const result = formatDateDistance(recentOnset);
+        expect(result.formattedResult).toBe('1 day'); // hours converted to 1 day
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should format seasonal condition onset (months)', () => {
+        const seasonalOnset = '2024-12-18T07:02:38.000Z'; // 6 months - seasonal conditions
+        const result = formatDateDistance(seasonalOnset);
+        expect(result.formattedResult).toBe('6 months');
+        expect(result.error).toBeUndefined();
+      });
     });
   });
 });
