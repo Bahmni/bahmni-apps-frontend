@@ -21,8 +21,8 @@ const ConditionsTable: React.FC = () => {
   const headers = useMemo(
     () => [
       { key: 'display', header: t('CONDITION_LIST_CONDITION') },
-      { key: 'onsetDate', header: t('CONDITION_TABLE_ONSET_DATE') },
-      { key: 'recorder', header: t('CONDITION_TABLE_PROVIDER') },
+      { key: 'onsetDate', header: t('CONDITION_TABLE_DURATION') },
+      { key: 'recorder', header: t('CONDITION_TABLE_RECORDED_BY') },
       { key: 'status', header: t('CONDITION_LIST_STATUS') },
     ],
     [t],

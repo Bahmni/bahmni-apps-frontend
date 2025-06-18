@@ -238,7 +238,7 @@ describe('ConditionsTable Unit Tests', () => {
 
       // Assert
       expect(screen.getByTestId('mock-empty-state')).toBeInTheDocument();
-      expect(screen.getByText('No conditions found')).toBeInTheDocument();
+      expect(screen.getByText('No conditions recorded')).toBeInTheDocument();
     });
 
     it('should render table with correct headers', () => {
@@ -263,10 +263,10 @@ describe('ConditionsTable Unit Tests', () => {
       );
       expect(screen.getByTestId('header-status')).toHaveTextContent('Status');
       expect(screen.getByTestId('header-onsetDate')).toHaveTextContent(
-        'Onset Date',
+        'Duration',
       );
       expect(screen.getByTestId('header-recorder')).toHaveTextContent(
-        'Provider',
+        'Recorded By',
       );
     });
 
