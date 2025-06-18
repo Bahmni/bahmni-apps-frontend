@@ -4,7 +4,7 @@ import {
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
 } from '@services/allergyService';
-import { AllergenConcept } from '../types/concepts';
+import { AllergenConcept } from '@types/concepts';
 import { getFormattedError } from '@utils/common';
 import { Coding } from 'fhir/r4';
 import { useClinicalConfig } from './useClinicalConfig';

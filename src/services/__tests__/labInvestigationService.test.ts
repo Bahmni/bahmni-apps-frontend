@@ -6,18 +6,15 @@ import {
   getPatientLabTestsByDate,
   getPatientLabTestsBundle,
 } from '../labInvestigationService';
-import {
-  LabTestPriority,
-  FormattedLabTest,
-} from '../../types/labInvestigation';
-import '../../utils/date';
-import { getFormattedError } from '../../utils/common';
+import { LabTestPriority, FormattedLabTest } from '@types/labInvestigation';
+import '@utils/date';
+import { getFormattedError } from '@utils/common';
 import notificationService from '../notificationService';
 import { ServiceRequest } from 'fhir/r4';
 
 // Mock dependencies
 jest.mock('../api');
-jest.mock('../../utils/common');
+jest.mock('@utils/common');
 jest.mock('../notificationService');
 
 describe('labInvestigationService', () => {
@@ -263,7 +260,7 @@ describe('labInvestigationService', () => {
   ];
 
   // Mock date formatter
-  jest.mock('../../utils/date', () => ({
+  jest.mock('@utils/date', () => ({
     formatDate: jest.fn().mockImplementation((date) => {
       if (date.includes('2025-04-09')) {
         return { formattedResult: 'April 9, 2025' };

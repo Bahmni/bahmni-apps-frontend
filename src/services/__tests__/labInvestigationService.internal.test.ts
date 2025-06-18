@@ -1,5 +1,5 @@
-import { LabTestPriority } from '../../types/labInvestigation';
-import { getFormattedError } from '../../utils/common';
+import { LabTestPriority } from '@types/labInvestigation';
+import { getFormattedError } from '@utils/common';
 import notificationService from '../notificationService';
 import {
   mapLabTestPriority,
@@ -9,7 +9,7 @@ import * as api from '../api';
 import { ServiceRequest } from 'fhir/r4';
 
 // Mock dependencies
-jest.mock('../../utils/common');
+jest.mock('@utils/common');
 jest.mock('../notificationService');
 jest.mock('../api');
 

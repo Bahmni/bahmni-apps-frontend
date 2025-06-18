@@ -4,8 +4,7 @@ import {
   getPatientConditionsBundle,
 } from '../conditionService';
 import { get } from '../api';
-import notificationService from '../notificationService';
-import { getFormattedError } from '@utils/common';
+import { ConditionStatus } from '@types/condition';
 import {
   mockCondition,
   mockConditionBundle,
@@ -13,12 +12,9 @@ import {
   mockMalformedBundle,
   mockConditionWithoutOptionalFields,
   mockApiErrors,
-} from '../../__mocks__/conditionMocks';
-import { ConditionStatus } from '@types/condition';
+} from '@__mocks__/conditionMocks';
 
 jest.mock('../api');
-jest.mock('../notificationService');
-jest.mock('@utils/common');
 
 describe('conditionService', () => {
   beforeEach(() => {
@@ -34,7 +30,7 @@ describe('conditionService', () => {
       const result = await getPatientConditionsBundle(patientUUID);
 
       expect(get).toHaveBeenCalledWith(
-        `/openmrs/ws/fhir2/R4/Condition?category=problem-list-item&patient=${patientUUID}`,
+        `/openmrs/ws/fhir2/R4/Condition?category=problem-list-item&patient=${patientUUID}&_count=100&_sort=-_lastUpdated`,
       );
       expect(result).toEqual(mockConditionBundle);
     });
@@ -59,7 +55,7 @@ describe('conditionService', () => {
         const result = await getConditions(patientUUID);
 
         expect(get).toHaveBeenCalledWith(
-          `/openmrs/ws/fhir2/R4/Condition?category=problem-list-item&patient=${patientUUID}`,
+          `/openmrs/ws/fhir2/R4/Condition?category=problem-list-item&patient=${patientUUID}&_count=100&_sort=-_lastUpdated`,
         );
         expect(result).toEqual([mockCondition]);
       });
@@ -76,87 +72,46 @@ describe('conditionService', () => {
     });
 
     describe('API Error Handling', () => {
-      it('should return empty array and show notification on error', async () => {
+      it('should propagate network errors', async () => {
         const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
         const error = new Error('Network error');
         (get as jest.Mock).mockRejectedValueOnce(error);
 
-        const formattedError = {
-          title: 'Network Error',
-          message: 'Connection failed',
-        };
-        (getFormattedError as jest.Mock).mockReturnValueOnce(formattedError);
-
-        const result = await getConditions(patientUUID);
-
-        expect(result).toEqual([]);
-        expect(getFormattedError).toHaveBeenCalledWith(error);
-        expect(notificationService.showError).toHaveBeenCalledWith(
-          formattedError.title,
-          formattedError.message,
+        await expect(getConditions(patientUUID)).rejects.toThrow(
+          'Network error',
         );
       });
 
-      it('should handle 404 not found error', async () => {
+      it('should propagate 404 not found error', async () => {
         const patientUUID = 'non-existent';
         const error = new Error(mockApiErrors.notFound.message);
         error.name = 'NotFoundError';
         (get as jest.Mock).mockRejectedValueOnce(error);
 
-        const formattedError = {
-          title: 'Not Found',
-          message: 'Patient not found',
-        };
-        (getFormattedError as jest.Mock).mockReturnValueOnce(formattedError);
-
-        const result = await getConditions(patientUUID);
-
-        expect(result).toEqual([]);
-        expect(notificationService.showError).toHaveBeenCalledWith(
-          formattedError.title,
-          formattedError.message,
+        await expect(getConditions(patientUUID)).rejects.toThrow(
+          'Patient not found',
         );
       });
 
-      it('should handle 401 unauthorized error', async () => {
+      it('should propagate 401 unauthorized error', async () => {
         const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
         const error = new Error(mockApiErrors.unauthorized.message);
         error.name = 'UnauthorizedError';
         (get as jest.Mock).mockRejectedValueOnce(error);
 
-        const formattedError = {
-          title: 'Unauthorized',
-          message: 'Unauthorized access',
-        };
-        (getFormattedError as jest.Mock).mockReturnValueOnce(formattedError);
-
-        const result = await getConditions(patientUUID);
-
-        expect(result).toEqual([]);
-        expect(notificationService.showError).toHaveBeenCalledWith(
-          formattedError.title,
-          formattedError.message,
+        await expect(getConditions(patientUUID)).rejects.toThrow(
+          'Unauthorized access',
         );
       });
 
-      it('should handle 500 server error', async () => {
+      it('should propagate 500 server error', async () => {
         const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
         const error = new Error(mockApiErrors.serverError.message);
         error.name = 'ServerError';
         (get as jest.Mock).mockRejectedValueOnce(error);
 
-        const formattedError = {
-          title: 'Server Error',
-          message: 'Internal server error',
-        };
-        (getFormattedError as jest.Mock).mockReturnValueOnce(formattedError);
-
-        const result = await getConditions(patientUUID);
-
-        expect(result).toEqual([]);
-        expect(notificationService.showError).toHaveBeenCalledWith(
-          formattedError.title,
-          formattedError.message,
+        await expect(getConditions(patientUUID)).rejects.toThrow(
+          'Internal server error',
         );
       });
     });
@@ -171,14 +126,12 @@ describe('conditionService', () => {
         expect(result).toEqual([]);
       });
 
-      it('should handle invalid resource type', async () => {
+      it('should filter out invalid resource types', async () => {
         const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
         (get as jest.Mock).mockResolvedValueOnce(mockMalformedBundle);
 
         const result = await getConditions(patientUUID);
-        expect(result).toEqual([
-          { id: 'invalid-condition', resourceType: 'InvalidType' },
-        ]);
+        expect(result).toEqual([]);
       });
     });
   });
@@ -191,7 +144,7 @@ describe('conditionService', () => {
         expect(result).toEqual([
           {
             id: mockCondition.id,
-            display: mockCondition.code.text,
+            display: mockCondition.code!.text,
             status: ConditionStatus.Active,
             onsetDate: mockCondition.onsetDateTime,
             recordedDate: mockCondition.recordedDate,
@@ -270,45 +223,21 @@ describe('conditionService', () => {
         expect(result).toEqual([]);
       });
 
-      it('should handle condition without optional fields', () => {
-        const result = formatConditions([mockConditionWithoutOptionalFields]);
-
-        expect(result).toEqual([
-          {
-            id: mockConditionWithoutOptionalFields.id,
-            display: mockConditionWithoutOptionalFields.code.text,
-            status: ConditionStatus.Inactive,
-            onsetDate: undefined,
-            recordedDate: undefined,
-            recorder: undefined,
-            code: mockConditionWithoutOptionalFields.code.coding[0].code,
-            codeDisplay:
-              mockConditionWithoutOptionalFields.code.coding[0].display,
-            note: undefined,
-          },
-        ]);
+      it('should throw error for condition without required fields', () => {
+        expect(() =>
+          formatConditions([mockConditionWithoutOptionalFields]),
+        ).toThrow('Incomplete condition data');
       });
 
-      it('should handle errors and show notification', () => {
-        //
+      it('should throw error for malformed condition data', () => {
         const malformedCondition = {
           id: 'malformed',
           // Missing required code property
           /* eslint-disable  @typescript-eslint/no-explicit-any */
         } as any;
 
-        const formattedError = {
-          title: 'Error',
-          message: 'Data formatting error',
-        };
-        (getFormattedError as jest.Mock).mockReturnValueOnce(formattedError);
-
-        const result = formatConditions([malformedCondition]);
-
-        expect(result).toEqual([]);
-        expect(notificationService.showError).toHaveBeenCalledWith(
-          formattedError.title,
-          formattedError.message,
+        expect(() => formatConditions([malformedCondition])).toThrow(
+          'Incomplete condition data',
         );
       });
     });

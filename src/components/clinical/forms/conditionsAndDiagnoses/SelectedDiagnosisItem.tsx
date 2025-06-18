@@ -1,18 +1,16 @@
 import React from 'react';
-import { Column, Grid, Dropdown } from '@carbon/react';
+import { Column, Grid, Dropdown, Link } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import * as styles from './styles/SelectedDiagnosisItem.module.scss';
 import { Coding } from 'fhir/r4';
 import { DiagnosisInputEntry } from '@types/diagnosis';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
 
-/**
- * Properties for a selected diagnosis item
- * @interface SelectedDiagnosisItemProps
- */
 export interface SelectedDiagnosisItemProps {
   diagnosis: DiagnosisInputEntry;
   updateCertainty: (diagnosisId: string, certainty: Coding | null) => void;
+  onMarkAsCondition: (diagnosisId: string) => void;
+  doesConditionExist?: boolean;
 }
 
 /**
@@ -21,7 +19,12 @@ export interface SelectedDiagnosisItemProps {
  * @param {SelectedDiagnosisItemProps} props - Component props
  */
 const SelectedDiagnosisItem: React.FC<SelectedDiagnosisItemProps> = React.memo(
-  ({ diagnosis, updateCertainty }) => {
+  ({
+    diagnosis,
+    updateCertainty,
+    onMarkAsCondition,
+    doesConditionExist = false,
+  }) => {
     const { t } = useTranslation();
 
     const { id, display, selectedCertainty, errors, hasBeenValidated } =
@@ -38,6 +41,17 @@ const SelectedDiagnosisItem: React.FC<SelectedDiagnosisItemProps> = React.memo(
           className={styles.selectedDiagnosisTitle}
         >
           {display}
+          <Link
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              onMarkAsCondition(id);
+            }}
+            aria-disabled={doesConditionExist}
+            className={styles.addAsConditionLink}
+          >
+            {t('CONDITIONS_ADD_AS_CONDITION')}
+          </Link>
         </Column>
         <Column
           sm={4}

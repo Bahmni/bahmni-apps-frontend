@@ -15,6 +15,7 @@ expect.extend(toHaveNoViolations);
 jest.mock('../styles/SelectedDiagnosisItem.module.scss', () => ({
   selectedDiagnosisTitle: 'selectedDiagnosisTitle',
   selectedDiagnosisCertainty: 'selectedDiagnosisCertainty',
+  addAsConditionLink: 'addAsConditionLink',
 }));
 
 const mockDiagnosis: DiagnosisInputEntry = {
@@ -28,6 +29,8 @@ const mockDiagnosis: DiagnosisInputEntry = {
 const defaultProps = {
   diagnosis: mockDiagnosis,
   updateCertainty: jest.fn(),
+  onMarkAsCondition: jest.fn(),
+  doesConditionExist: false,
 };
 
 const renderWithI18n = (component: React.ReactElement) => {
@@ -129,6 +132,7 @@ describe('SelectedDiagnosisItem', () => {
         <SelectedDiagnosisItem
           diagnosis={diagnosisWithNullCertainty}
           updateCertainty={defaultProps.updateCertainty}
+          onMarkAsCondition={defaultProps.onMarkAsCondition}
         />,
       );
 
@@ -154,6 +158,7 @@ describe('SelectedDiagnosisItem', () => {
         <SelectedDiagnosisItem
           diagnosis={diagnosisWithMissingDisplay}
           updateCertainty={defaultProps.updateCertainty}
+          onMarkAsCondition={defaultProps.onMarkAsCondition}
         />,
       );
 
@@ -173,6 +178,7 @@ describe('SelectedDiagnosisItem', () => {
         <SelectedDiagnosisItem
           diagnosis={diagnosisWithError}
           updateCertainty={defaultProps.updateCertainty}
+          onMarkAsCondition={defaultProps.onMarkAsCondition}
         />,
       );
 
@@ -199,6 +205,7 @@ describe('SelectedDiagnosisItem', () => {
         <SelectedDiagnosisItem
           diagnosis={diagnosisWithErrorButNotValidated}
           updateCertainty={defaultProps.updateCertainty}
+          onMarkAsCondition={defaultProps.onMarkAsCondition}
         />,
       );
 
@@ -226,6 +233,7 @@ describe('SelectedDiagnosisItem', () => {
         <SelectedDiagnosisItem
           diagnosis={diagnosisWithLongDisplay}
           updateCertainty={defaultProps.updateCertainty}
+          onMarkAsCondition={defaultProps.onMarkAsCondition}
         />,
       );
 
@@ -243,6 +251,7 @@ describe('SelectedDiagnosisItem', () => {
         <SelectedDiagnosisItem
           diagnosis={diagnosisWithSpecialChars}
           updateCertainty={defaultProps.updateCertainty}
+          onMarkAsCondition={defaultProps.onMarkAsCondition}
         />,
       );
 
@@ -257,6 +266,37 @@ describe('SelectedDiagnosisItem', () => {
       );
       // The dropdown should render without a title text
       expect(dropdown).toBeInTheDocument();
+    });
+
+    test('renders "Add to condition" link below diagnosis title', () => {
+      renderWithI18n(<SelectedDiagnosisItem {...defaultProps} />);
+      expect(
+        screen.getByRole('link', { name: 'Add to condition' }),
+      ).toBeInTheDocument();
+    });
+
+    test('calls onMarkAsCondition when "Add to condition" link is clicked', async () => {
+      const user = userEvent.setup();
+      renderWithI18n(<SelectedDiagnosisItem {...defaultProps} />);
+
+      const addLink = screen.getByRole('link', { name: 'Add to condition' });
+      await user.click(addLink);
+
+      expect(defaultProps.onMarkAsCondition).toHaveBeenCalledWith(
+        'test-diagnosis-1',
+      );
+    });
+
+    test('shows disabled styling for "Add to condition" link when condition already exists', () => {
+      const propsWithExistingCondition = {
+        ...defaultProps,
+        doesConditionExist: true,
+      };
+
+      renderWithI18n(<SelectedDiagnosisItem {...propsWithExistingCondition} />);
+
+      const addLink = screen.getByRole('link', { name: 'Add to condition' });
+      expect(addLink).toHaveAttribute('aria-disabled', 'true');
     });
   });
 
@@ -312,6 +352,7 @@ describe('SelectedDiagnosisItem', () => {
         <SelectedDiagnosisItem
           diagnosis={diagnosisWithNullCertainty}
           updateCertainty={defaultProps.updateCertainty}
+          onMarkAsCondition={defaultProps.onMarkAsCondition}
         />,
       );
       expect(container).toMatchSnapshot();
