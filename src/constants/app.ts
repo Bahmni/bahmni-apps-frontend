@@ -66,6 +66,9 @@ export const CONCEPT_DETAIL_URL = (uuid: string, locale: string): string =>
   `/concept/${uuid}?v=custom:(uuid,setMembers:(uuid,display,retired))&locale=${locale}`;
 export const FHIR_VALUESET_URL = (uuid: string) =>
   OPENMRS_FHIR_R4 + `/ValueSet/${uuid}/$expand`;
+export const FHIR_VALUESET_FILTER_EXPAND_URL = (filter: string) =>
+  OPENMRS_FHIR_R4 + `/ValueSet/$expand?filter=${encodeURIComponent(filter)}`;
+export const ALL_ORDERABLES_CONCEPT_NAME = 'All Orderables';
 export const LOGIN_PATH = '/bahmni/home/index.html#/login';
 export const DEFAULT_LOCALE = 'en';
 export const LOCALE_STORAGE_KEY = 'NG_TRANSLATE_LANG_KEY';
