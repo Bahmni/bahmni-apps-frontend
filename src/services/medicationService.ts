@@ -1,28 +1,57 @@
-import { MEDICATION_RESOURCE_URL } from '@constants/app';
-import { MedicationOrder , FhirMedicationRequest} from '@types/medication';
-import { Bundle } from 'fhir/r4';
 import { get } from './api';
-// import or define FhirMedicationRequest if needed 
+import { PATIENT_MEDICATION_RESOURCE_URL } from '@constants/app';
+import { FormattedMedication, MedicationStatus } from '@types/medication';
+import { getFormattedError } from '@utils/common';
+import notificationService from './notificationService';
+import { Bundle, MedicationRequest, Medication, Practitioner } from 'fhir/r4';
 
-/** Fetches the FHIR MedicationRequest bundle for a patient */
-async function getPatientMedicationBundle(patientUuid: string): Promise<Bundle> {
-  const url = MEDICATION_RESOURCE_URL(patientUuid);
+/**
+ * Maps a FHIR medication request status to MedicationStatus enum
+ */
+const mapMedicationStatus = (medicationRequest: MedicationRequest): MedicationStatus => {
+  const status = medicationRequest.status;
+  switch (status) {
+    case 'active':
+      return MedicationStatus.Active;
+    case 'completed':
+      return MedicationStatus.Completed;
+    case 'stopped':
+      return MedicationStatus.Stopped;
+    case 'draft':
+    case 'on-hold':
+      return MedicationStatus.Scheduled;
+    default:
+      return MedicationStatus.Scheduled;
+  }
+};
+
+/**
+ * Fetches medications for a given patient UUID from the FHIR R4 endpoint
+ * @param patientUUID - The UUID of the patient
+ * @returns Promise resolving to a Bundle containing medications
+ */
+async function getPatientMedicationBundle(patientUUID: string): Promise<Bundle> {
+  const url = PATIENT_MEDICATION_RESOURCE_URL(patientUUID);
   return await get<Bundle>(url);
 }
 
-/** Builds a map of referenced resources from the bundle */
-function buildResourceMap(bundle: any) {
+/**
+ * Builds a map of referenced resources from the bundle
+ */
+function buildResourceMap(bundle: Bundle) {
   const map: { [reference: string]: any } = {};
-  (bundle.entry || []).forEach((entry: any) => {
-    if (entry.resource && entry.resource.resourceType && entry.resource.id) {
-      map[`${entry.resource.resourceType}/${entry.resource.id}`] = entry.resource;
+  (bundle.entry || []).forEach((entry) => {
+    if (entry.resource && entry.resource.resourceType && (entry.resource as any).id) {
+      map[`${entry.resource.resourceType}/${(entry.resource as any).id}`] = entry.resource;
     }
   });
   return map;
 }
 
-/** Helper to get drug form from Medication resource */
-function getDrugForm(medicationResource?: any): string {
+/**
+ * Helper to get drug form from Medication resource
+ */
+function getDrugForm(medicationResource?: Medication): string {
   return (
     medicationResource?.form?.coding?.[0]?.display ||
     medicationResource?.form?.text ||
@@ -30,8 +59,10 @@ function getDrugForm(medicationResource?: any): string {
   );
 }
 
-/** Helper to get provider name from Practitioner resource */
-function getProviderName(practitionerResource?: any): string {
+/**
+ * Helper to get provider name from Practitioner resource
+ */
+function getProviderName(practitionerResource?: Practitioner): string {
   if (!practitionerResource) return '';
   if (practitionerResource.name && practitionerResource.name.length > 0) {
     const name = practitionerResource.name[0];
@@ -43,14 +74,20 @@ function getProviderName(practitionerResource?: any): string {
   return '';
 }
 
-function getDose(dosageInstruction?: any[]): string {
+/**
+ * Helper to get dose
+ */
+function getDose(dosageInstruction?: MedicationRequest['dosageInstruction']): string {
   const dose = dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity;
   if (dose?.value && dose?.unit) return `${dose.value} ${dose.unit}`;
   if (dose?.value) return `${dose.value}`;
   return '';
 }
 
-function getFrequency(dosageInstruction?: any[]): string {
+/**
+ * Helper to get frequency
+ */
+function getFrequency(dosageInstruction?: MedicationRequest['dosageInstruction']): string {
   const repeat = dosageInstruction?.[0]?.timing?.repeat;
   if (repeat?.frequency && repeat?.period && repeat?.periodUnit) {
     return `${repeat.frequency} / ${repeat.period}${repeat.periodUnit}`;
@@ -58,20 +95,29 @@ function getFrequency(dosageInstruction?: any[]): string {
   return dosageInstruction?.[0]?.text || '';
 }
 
-function getRoute(dosageInstruction?: any[]): string {
+/**
+ * Helper to get route
+ */
+function getRoute(dosageInstruction?: MedicationRequest['dosageInstruction']): string {
   const route = dosageInstruction?.[0]?.route;
   if (route?.text) return route.text;
   if (route?.coding?.[0]?.display) return route.coding[0].display;
   return '';
 }
 
-function getDuration(med: FhirMedicationRequest): string {
+/**
+ * Helper to get duration
+ */
+function getDuration(med: MedicationRequest): string {
   const duration = med.dispenseRequest?.expectedSupplyDuration;
   if (duration?.value && duration?.unit) return `${duration.value} ${duration.unit}`;
   return '';
 }
 
-function getPriority(dosageInstruction?: any[]): string {
+/**
+ * Helper to get priority
+ */
+function getPriority(dosageInstruction?: MedicationRequest['dosageInstruction']): string {
   const ext = dosageInstruction?.[0]?.extension;
   if (!ext) return '';
   if (ext.find((e: any) => e.valueCode === 'STAT')) return 'STAT';
@@ -79,74 +125,103 @@ function getPriority(dosageInstruction?: any[]): string {
   return '';
 }
 
-function getNotes(med: FhirMedicationRequest): string {
+/**
+ * Helper to get notes
+ */
+function getNotes(med: MedicationRequest): string {
   if (med.note && med.note.length) return med.note.map(n => n.text).join('; ');
   return '';
 }
 
-function getStatus(med: FhirMedicationRequest): string {
-  switch (med.status) {
-    case 'active':
-      return 'active';
-    case 'completed':
-      return 'completed';
-    case 'stopped':
-      return 'stopped';
-    case 'draft':
-    case 'on-hold':
-      return 'scheduled';
-    default:
-      return med.status || '';
+/**
+ * Helper to check if medication is active
+ */
+function isActive(status: MedicationStatus): boolean {
+  return status === MedicationStatus.Active;
+}
+
+/**
+ * Helper to check if medication is scheduled
+ */
+function isScheduled(status: MedicationStatus): boolean {
+  return status === MedicationStatus.Scheduled;
+}
+
+/**
+ * Validates that a medication request has all required fields
+ * @param medication - The FHIR MedicationRequest resource to validate
+ * @returns true if valid, false otherwise
+ */
+const isValidMedication = (medication: MedicationRequest): boolean => {
+  return !!(medication.id && medication.status);
+};
+
+/**
+ * Formats FHIR medication requests into a more user-friendly format
+ * @param bundle - The FHIR bundle containing medication requests
+ * @returns An array of formatted medication objects
+ */
+function formatMedications(bundle: Bundle): FormattedMedication[] {
+  try {
+    // Extract medication requests from bundle entries
+    const medications =
+      bundle.entry
+        ?.filter((entry) => entry.resource?.resourceType === 'MedicationRequest')
+        .map((entry) => entry.resource as MedicationRequest) || [];
+
+    const resourceMap = buildResourceMap(bundle);
+
+    return medications.map((med) => {
+      if (!isValidMedication(med)) {
+        throw new Error('Incomplete medication data');
+      }
+
+      const medicationResource = (med.medicationReference as any)?.reference
+        ? resourceMap[(med.medicationReference as any).reference]
+        : undefined;
+      const practitionerResource = med.requester?.reference
+        ? resourceMap[med.requester.reference]
+        : undefined;
+
+      const status = mapMedicationStatus(med);
+
+      return {
+        id: med.id as string,
+        name: (med.medicationReference as any)?.display ?? '',
+        form: getDrugForm(medicationResource),
+        dose: getDose(med.dosageInstruction),
+        frequency: getFrequency(med.dosageInstruction),
+        route: getRoute(med.dosageInstruction),
+        duration: getDuration(med),
+        status,
+        priority: getPriority(med.dosageInstruction),
+        startDate: med.dispenseRequest?.validityPeriod?.start ?? '',
+        orderDate: med.authoredOn ?? '',
+        orderedBy: getProviderName(practitionerResource) || med.requester?.display || '',
+        notes: getNotes(med),
+        isActive: isActive(status),
+        isScheduled: isScheduled(status),
+      };
+    });
+  } catch (error) {
+    const { title, message } = getFormattedError(error);
+    notificationService.showError(title, message);
+    return [];
   }
 }
 
-function isActive(status: string): boolean {
-  return status === 'active';
-}
-
-function isScheduled(status: string): boolean {
-  return status === 'scheduled' || status === 'draft' || status === 'on-hold';
-}
-
-/** Formats the bundle into MedicationOrder[] */
-function formatMedications(bundle: any): MedicationOrder[] {
-  const resourceMap = buildResourceMap(bundle);
-  const meds: FhirMedicationRequest[] = (bundle.entry || [])
-    .filter((entry: any) => entry.resource.resourceType === 'MedicationRequest')
-    .map((entry: any) => entry.resource);
-
-  return meds.map((medicine) => {
-    const medicationResource = medicine.medication
-      ? resourceMap[medicine.medicationReference?.reference || '']
-      : undefined; 
-    const practitionerResource = medicine.requester?.reference
-      ? resourceMap[medicine.requester.reference]
-      : undefined;
-
-    const status = getStatus(medicine);
-
-    return {
-      id: medicine.id ?? '',
-      name: medicine.medicationReference.display ?? '',
-      form: getDrugForm(medicationResource),
-      dose: getDose(medicine.dosageInstruction),
-      frequency: getFrequency(medicine.dosageInstruction),
-      route: getRoute(medicine.dosageInstruction),
-      duration: getDuration(medicine),
-      status,
-      priority: getPriority(medicine.dosageInstruction),
-      startDate: medicine.dispenseRequest?.validityPeriod?.start ?? '',
-      orderDate: medicine.authoredOn ?? '',
-      orderedBy: getProviderName(practitionerResource) || medicine.requester?.display || '',
-      notes: getNotes(medicine),
-      isActive: isActive(status),
-      isScheduled: isScheduled(status),
-    };
-  });
-}
-
-/** Fetches and formats medications for a patient */
-export async function getPatientMedications(patientUuid: string): Promise<MedicationOrder[]> {
-  const bundle = await getPatientMedicationBundle(patientUuid);
-  return formatMedications(bundle);
+/**
+ * Fetches and formats medications for a given patient UUID
+ * @param patientUUID - The UUID of the patient
+ * @returns Promise resolving to an array of medications
+ */
+export async function getPatientMedications(patientUUID: string): Promise<FormattedMedication[]> {
+  try {
+    const bundle = await getPatientMedicationBundle(patientUUID);
+    return formatMedications(bundle);
+  } catch (error) {
+    const { title, message } = getFormattedError(error);
+    notificationService.showError(title, message);
+    return [];
+  }
 }
