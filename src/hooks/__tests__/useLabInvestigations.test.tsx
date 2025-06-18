@@ -3,10 +3,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import useLabInvestigations from '../useLabInvestigations';
 import { getLabTests, formatLabTests } from '@services/labInvestigationService';
 import { usePatientUUID } from '@hooks/usePatientUUID';
-import {
-  FormattedLabTest,
-  LabTestPriority,
-} from '../../types/labInvestigation';
+import { FormattedLabTest, LabTestPriority } from '@types/labInvestigation';
 
 // Mock dependencies
 jest.mock('@services/labInvestigationService');

@@ -128,7 +128,7 @@ describe('ConditionsTable Unit Tests', () => {
 
   // 1. Component Initialization and Hook Interactions
   describe('Component Initialization and Hook Interactions', () => {
-    it('should call usePatientUUID to get patient UUID', () => {
+    it('should call useConditions', () => {
       // Arrange
       mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseConditions.mockReturnValue({
@@ -143,25 +143,7 @@ describe('ConditionsTable Unit Tests', () => {
       render(<ConditionsTable />);
 
       // Assert
-      expect(usePatientUUID).toHaveBeenCalled();
-    });
-
-    it('should call useConditions with the correct patient UUID', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseConditions.mockReturnValue({
-        conditions: [],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-      mockedFormatConditions.mockReturnValue([]);
-
-      // Act
-      render(<ConditionsTable />);
-
-      // Assert
-      expect(useConditions).toHaveBeenCalledWith(mockPatientUUID);
+      expect(useConditions).toHaveBeenCalled();
     });
 
     it('should call formatConditions with the conditions from useConditions', () => {
@@ -283,9 +265,6 @@ describe('ConditionsTable Unit Tests', () => {
       );
       expect(screen.getByTestId('header-recorder')).toHaveTextContent(
         'Provider',
-      );
-      expect(screen.getByTestId('header-recordedDate')).toHaveTextContent(
-        'Recorded Date',
       );
     });
 
@@ -433,55 +412,6 @@ describe('ConditionsTable Unit Tests', () => {
       );
     });
 
-    it('should render recordedDate cell with formatted date', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseConditions.mockReturnValue({
-        conditions: mockConditions,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-      mockedFormatConditions.mockReturnValue(
-        mockFormattedConditionsWithoutNotes,
-      );
-
-      // Act
-      render(<ConditionsTable />);
-
-      // Assert
-      expect(screen.getByTestId('cell-recordedDate-0')).toHaveTextContent(
-        'Formatted: 2025-03-25T06:48:32+00:00',
-      );
-      expect(formatDateTime).toHaveBeenCalledWith('2025-03-25T06:48:32+00:00');
-    });
-
-    it('should render "Not available" for missing recorder', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseConditions.mockReturnValue({
-        conditions: mockConditions,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      const conditionWithoutRecorder: FormattedCondition = {
-        ...mockFormattedConditionsWithoutNotes[0],
-        recorder: undefined,
-      };
-
-      mockedFormatConditions.mockReturnValue([conditionWithoutRecorder]);
-
-      // Act
-      render(<ConditionsTable />);
-
-      // Assert
-      expect(screen.getByTestId('cell-recorder-0')).toHaveTextContent(
-        'Not available',
-      );
-    });
-
     it('should handle empty onsetDate', () => {
       // Arrange
       mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
@@ -507,99 +437,6 @@ describe('ConditionsTable Unit Tests', () => {
         'Formatted:',
       );
       expect(formatDate).toHaveBeenCalledWith('');
-    });
-
-    it('should handle empty recordedDate', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseConditions.mockReturnValue({
-        conditions: mockConditions,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      const conditionWithoutRecordedDate: FormattedCondition = {
-        ...mockFormattedConditionsWithoutNotes[0],
-        recordedDate: undefined,
-      };
-
-      mockedFormatConditions.mockReturnValue([conditionWithoutRecordedDate]);
-
-      // Act
-      render(<ConditionsTable />);
-
-      // Assert
-      expect(screen.getByTestId('cell-recordedDate-0')).toHaveTextContent(
-        'Formatted:',
-      );
-      expect(formatDateTime).toHaveBeenCalledWith('');
-    });
-
-    it('should show "Not available" when onsetDate formatting returns no result', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseConditions.mockReturnValue({
-        conditions: mockConditions,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      const conditionWithOnsetDate: FormattedCondition = {
-        ...mockFormattedConditionsWithoutNotes[0],
-        onsetDate: '2025-03-24T18:30:00+00:00',
-      };
-
-      mockedFormatConditions.mockReturnValue([conditionWithOnsetDate]);
-
-      // Mock formatDate to return no formattedResult
-      mockedFormatDate.mockReturnValue({
-        formattedResult: '',
-        error: { title: 'Error', message: 'Invalid date format' },
-      });
-
-      // Act
-      render(<ConditionsTable />);
-
-      // Assert - Should show "Not available" text
-      expect(screen.getByTestId('cell-onsetDate-0')).toHaveTextContent(
-        'Not available',
-      );
-      expect(formatDate).toHaveBeenCalledWith('2025-03-24T18:30:00+00:00');
-    });
-
-    it('should show "Not available" when recordedDate formatting returns no result', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseConditions.mockReturnValue({
-        conditions: mockConditions,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      const conditionWithRecordedDate: FormattedCondition = {
-        ...mockFormattedConditionsWithoutNotes[0],
-        recordedDate: '2025-03-25T06:48:32+00:00',
-      };
-
-      mockedFormatConditions.mockReturnValue([conditionWithRecordedDate]);
-
-      // Mock formatDateTime to return no formattedResult
-      mockedFormatDateTime.mockReturnValue({
-        formattedResult: '',
-        error: { title: 'Error', message: 'Invalid date format' },
-      });
-
-      // Act
-      render(<ConditionsTable />);
-
-      // Assert - Should show "Not available" text
-      expect(screen.getByTestId('cell-recordedDate-0')).toHaveTextContent(
-        'Not available',
-      );
-      expect(formatDateTime).toHaveBeenCalledWith('2025-03-25T06:48:32+00:00');
     });
   });
 

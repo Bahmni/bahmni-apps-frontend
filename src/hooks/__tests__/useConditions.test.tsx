@@ -5,7 +5,7 @@ import { getConditions } from '@services/conditionService';
 import { usePatientUUID } from '../usePatientUUID';
 import { getFormattedError } from '@utils/common';
 import i18n from '@/setupTests.i18n';
-import { mockCondition } from '../../__mocks__/conditionMocks';
+import { mockCondition } from '@__mocks__/conditionMocks';
 
 // Mock dependencies
 jest.mock('@services/conditionService');

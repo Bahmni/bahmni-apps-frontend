@@ -5,7 +5,7 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import SelectedConditionItem, {
   SelectedConditionItemProps,
 } from '../SelectedConditionItem';
-import { ConditionInputEntry } from '@/types/condition';
+import { ConditionInputEntry } from '@types/condition';
 import { DURATION_UNITS } from '@constants/conditions';
 import i18n from '@/setupTests.i18n';
 

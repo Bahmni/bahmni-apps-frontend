@@ -12,7 +12,7 @@ import {
   mockMalformedBundle,
   mockConditionWithoutOptionalFields,
   mockApiErrors,
-} from '../../__mocks__/conditionMocks';
+} from '@__mocks__/conditionMocks';
 
 jest.mock('../api');
 

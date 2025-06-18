@@ -4,14 +4,14 @@ import userEvent from '@testing-library/user-event';
 import { I18nextProvider } from 'react-i18next';
 import DiagnosesForm from '../ConditionsAndDiagnoses';
 import { useConceptSearch } from '@hooks/useConceptSearch';
-import { ConceptSearch } from '@/types/concepts';
+import { ConceptSearch } from '@types/concepts';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import i18n from '@/setupTests.i18n';
 import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
-import { DiagnosisInputEntry } from '@/types/diagnosis';
+import { DiagnosisInputEntry } from '@types/diagnosis';
 import { ConditionsAndDiagnosesState } from '@stores/conditionsAndDiagnosesStore';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
-import { ConditionInputEntry } from '@/types/condition';
+import { ConditionInputEntry } from '@types/condition';
 
 expect.extend(toHaveNoViolations);
 

@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { I18nextProvider } from 'react-i18next';
 import ConditionsAndDiagnoses from '../ConditionsAndDiagnoses';
 import { useConceptSearch } from '@hooks/useConceptSearch';
-import { ConceptSearch } from '@/types/concepts';
+import { ConceptSearch } from '@types/concepts';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import i18n from '@/setupTests.i18n';
 import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
