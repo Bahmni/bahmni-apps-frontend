@@ -4,7 +4,7 @@ import { getPatientById } from '@services/patientService';
 import { useNotification } from '@hooks/useNotification';
 
 // Mock the patientService
-jest.mock('../../services/patientService');
+jest.mock('@services/patientService');
 const mockedGetPatientById = getPatientById as jest.MockedFunction<
   typeof getPatientById
 >;

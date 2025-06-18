@@ -2,14 +2,15 @@ import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import ActionArea from '@components/common/actionArea/ActionArea';
 import { Column, Grid, MenuItemDivider } from '@carbon/react';
-import BasicForm from '@/components/clinical/forms/encounterDetails/EncounterDetails';
-import DiagnosesForm from '@components/clinical/forms/diagnoses/DiagnosesForm';
+import BasicForm from '@components/clinical/forms/encounterDetails/EncounterDetails';
+import DiagnosesForm from '@components/clinical/forms/conditionsAndDiagnoses/ConditionsAndDiagnoses';
 import AllergiesForm from '@components/clinical/forms/allergies/AllergiesForm';
 import { ConsultationBundle } from '@types/consultationBundle';
 import {
   postConsultationBundle,
   createDiagnosisBundleEntries,
   createAllergiesBundleEntries,
+  createConditionsBundleEntries,
 } from '@services/consultationBundleService';
 import useNotification from '@hooks/useNotification';
 import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
@@ -18,7 +19,7 @@ import {
   createConsultationBundle,
 } from '@utils/fhir/consultationBundleCreator';
 import { ERROR_TITLES } from '@constants/errors';
-import { useDiagnosisStore } from '@stores/diagnosisStore';
+import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
 import useAllergyStore from '@stores/allergyStore';
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 import * as styles from './styles/ConsultationPad.module.scss';
@@ -36,9 +37,10 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   // Use the diagnosis store
   const {
     selectedDiagnoses,
-    validateAllDiagnoses,
+    selectedConditions,
+    validate,
     reset: resetDiagnoses,
-  } = useDiagnosisStore();
+  } = useConditionsAndDiagnosesStore();
   // Use the allergy store
   const {
     selectedAllergies,
@@ -115,10 +117,19 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       practitionerUUID: user!.uuid,
     });
 
+    const conditionEntries = createConditionsBundleEntries({
+      selectedConditions,
+      encounterSubject: encounterResource.subject!,
+      encounterReference: enconterResourceURL,
+      practitionerUUID: user!.uuid,
+      consultationDate,
+    });
+
     const consultationBundle = createConsultationBundle([
       encounterBundleEntry,
       ...diagnosisEntries,
       ...allergyEntries,
+      ...conditionEntries,
     ]);
 
     return postConsultationBundle<ConsultationBundle>(consultationBundle);
@@ -126,9 +137,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
 
   const handleOnPrimaryButtonClick = async () => {
     if (!isSubmitting && canSubmitConsultation) {
-      const isDiagnosesValid = validateAllDiagnoses();
+      const isConditionsAndDiagnosesValid = validate();
       const isAllergiesValid = validateAllAllergies();
-      if (!isDiagnosesValid || !isAllergiesValid) {
+      if (!isConditionsAndDiagnosesValid || !isAllergiesValid) {
         return;
       }
 

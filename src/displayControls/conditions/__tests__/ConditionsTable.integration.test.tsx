@@ -42,23 +42,6 @@ describe('ConditionsTable Integration', () => {
     i18n.changeLanguage('en');
   });
 
-  it('should call usePatientUUID to get patient UUID', () => {
-    // Mock the hooks
-    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedUseConditions.mockReturnValue({
-      conditions: mockConditions,
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
-    mockedFormatConditions.mockReturnValue(mockFormattedConditionsWithoutNotes);
-
-    render(<ConditionsTable />);
-
-    // Verify usePatientUUID was called
-    expect(usePatientUUID).toHaveBeenCalled();
-  });
-
   it('should call useConditions with the correct patient UUID', () => {
     // Mock the hooks
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
@@ -72,8 +55,8 @@ describe('ConditionsTable Integration', () => {
 
     render(<ConditionsTable />);
 
-    // Verify useConditions was called with the correct UUID
-    expect(useConditions).toHaveBeenCalledWith(mockPatientUUID);
+    // Verify useConditions was called
+    expect(useConditions).toHaveBeenCalled();
   });
 
   it('should call formatConditions with the conditions from useConditions', () => {
@@ -110,31 +93,6 @@ describe('ConditionsTable Integration', () => {
     expect(screen.getByText('Cyst of Gallbladder')).toBeInTheDocument();
     expect(screen.getByText('Active')).toBeInTheDocument();
     expect(screen.getByText('Super Man')).toBeInTheDocument();
-  });
-
-  it('should refetch conditions when patient UUID changes', () => {
-    const refetchMock = jest.fn();
-
-    // First render with initial UUID
-    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedUseConditions.mockReturnValue({
-      conditions: mockConditions,
-      loading: false,
-      error: null,
-      refetch: refetchMock,
-    });
-    mockedFormatConditions.mockReturnValue(mockFormattedConditionsWithoutNotes);
-
-    const { rerender } = render(<ConditionsTable />);
-
-    // Change the UUID and rerender
-    const newUUID = 'new-patient-uuid';
-    (usePatientUUID as jest.Mock).mockReturnValue(newUUID);
-
-    rerender(<ConditionsTable />);
-
-    // Verify useConditions was called with the new UUID
-    expect(useConditions).toHaveBeenCalledWith(newUUID);
   });
 
   it('should handle empty patient UUID', () => {

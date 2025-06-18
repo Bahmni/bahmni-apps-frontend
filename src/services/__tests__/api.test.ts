@@ -4,7 +4,7 @@ import { getFormattedError } from '@utils/common';
 import * as common from '@utils/common';
 import { notificationService } from '../notificationService';
 
-jest.mock('../../constants/app', () => ({
+jest.mock('@constants/app', () => ({
   hostUrl: 'https://api.example.com',
   LOGIN_PATH: '/login',
 }));

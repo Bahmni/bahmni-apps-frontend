@@ -1,27 +1,35 @@
 import React, { useState, useMemo } from 'react';
 import { ComboBox, Tile } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
-import * as styles from './styles/DiagnosesForm.module.scss';
+import * as styles from './styles/ConditionsAndDiagnoses.module.scss';
 import SelectedItem from '@components/common/selectedItem/SelectedItem';
 import BoxWHeader from '@components/common/boxWHeader/BoxWHeader';
 import { ConceptSearch } from '@types/concepts';
 import SelectedDiagnosisItem from './SelectedDiagnosisItem';
+import SelectedConditionItem from './SelectedConditionItem';
 import { useConceptSearch } from '@hooks/useConceptSearch';
-import { useDiagnosisStore } from '@stores/diagnosisStore';
-
+import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
 /**
- * DiagnosesForm component
+ * ConditionsAndDiagnoses component
  *
  * A component that displays a search interface for diagnoses and a list of selected diagnoses.
  * It allows users to search for diagnoses, select them, and specify the certainty level.
  */
-const DiagnosesForm: React.FC = React.memo(() => {
+const ConditionsAndDiagnoses: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const [searchDiagnosesTerm, setSearchDiagnosesTerm] = useState('');
 
   // Use Zustand store
-  const { selectedDiagnoses, addDiagnosis, removeDiagnosis, updateCertainty } =
-    useDiagnosisStore();
+  const {
+    selectedDiagnoses,
+    selectedConditions,
+    addDiagnosis,
+    removeDiagnosis,
+    updateCertainty,
+    markAsCondition,
+    removeCondition,
+    updateConditionDuration,
+  } = useConditionsAndDiagnosesStore();
 
   // Use concept search hook for diagnoses
   const {
@@ -44,6 +52,13 @@ const DiagnosesForm: React.FC = React.memo(() => {
     }
 
     addDiagnosis(selectedItem);
+  };
+
+  const isConditionExists = (diagnosisId: string): boolean => {
+    return (
+      selectedConditions?.some((condition) => condition.id === diagnosisId) ||
+      false
+    );
   };
 
   const getFilteredSearchResults = () => {
@@ -108,9 +123,9 @@ const DiagnosesForm: React.FC = React.memo(() => {
   ]);
 
   return (
-    <Tile className={styles.diagnosesFormTile}>
-      <div className={styles.diagnosesFormTitle}>
-        {t('DIAGNOSES_FORM_TITLE')}
+    <Tile className={styles.conditionsAndDiagnosesTile}>
+      <div className={styles.conditionsAndDiagnosesTitle}>
+        {t('CONDITIONS_AND_DIAGNOSES_FORM_TITLE')}
       </div>
       <ComboBox
         id="diagnoses-search"
@@ -126,7 +141,7 @@ const DiagnosesForm: React.FC = React.memo(() => {
       {selectedDiagnoses && selectedDiagnoses.length > 0 && (
         <BoxWHeader
           title={t('DIAGNOSES_ADDED_DIAGNOSES')}
-          className={styles.diagnosesBox}
+          className={styles.conditionsAndDiagnosesBox}
         >
           {selectedDiagnoses.map((diagnosis) => (
             <SelectedItem
@@ -137,6 +152,27 @@ const DiagnosesForm: React.FC = React.memo(() => {
               <SelectedDiagnosisItem
                 diagnosis={diagnosis}
                 updateCertainty={updateCertainty}
+                onMarkAsCondition={() => markAsCondition(diagnosis.id)}
+                doesConditionExist={isConditionExists(diagnosis.id)}
+              />
+            </SelectedItem>
+          ))}
+        </BoxWHeader>
+      )}
+      {selectedConditions && selectedConditions.length > 0 && (
+        <BoxWHeader
+          title={t('CONDITIONS_SECTION_TITLE')}
+          className={styles.conditionsAndDiagnosesBox}
+        >
+          {selectedConditions.map((condition) => (
+            <SelectedItem
+              key={condition.id}
+              className={styles.selectedConditionItem}
+              onClose={() => removeCondition(condition.id)}
+            >
+              <SelectedConditionItem
+                condition={condition}
+                updateConditionDuration={updateConditionDuration}
               />
             </SelectedItem>
           ))}
@@ -146,6 +182,6 @@ const DiagnosesForm: React.FC = React.memo(() => {
   );
 });
 
-DiagnosesForm.displayName = 'DiagnosesForm';
+ConditionsAndDiagnoses.displayName = 'ConditionsAndDiagnoses';
 
-export default DiagnosesForm;
+export default ConditionsAndDiagnoses;

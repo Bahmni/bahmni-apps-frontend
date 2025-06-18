@@ -20,7 +20,7 @@ jest.mock('@carbon/react', () => ({
 }));
 
 // Mock the DashboardSection component
-jest.mock('../../dashboardSection/DashboardSection', () => {
+jest.mock('@components/clinical/dashboardSection/DashboardSection', () => {
   return jest.fn(({ section, ref }) => (
     <div data-testid={`mocked-section-${section.name}`} ref={ref}>
       Mocked Section: {section.name}

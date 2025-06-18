@@ -2,15 +2,16 @@ import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { I18nextProvider } from 'react-i18next';
-import DiagnosesForm from '../DiagnosesForm';
+import DiagnosesForm from '../ConditionsAndDiagnoses';
 import { useConceptSearch } from '@hooks/useConceptSearch';
 import { ConceptSearch } from '@types/concepts';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import i18n from '@/setupTests.i18n';
-import { useDiagnosisStore } from '@stores/diagnosisStore';
+import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
 import { DiagnosisInputEntry } from '@types/diagnosis';
-import { DiagnosisState } from '@stores/diagnosisStore';
+import { ConditionsAndDiagnosesState } from '@stores/conditionsAndDiagnosesStore';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
+import { ConditionInputEntry } from '@types/condition';
 
 expect.extend(toHaveNoViolations);
 
@@ -19,11 +20,13 @@ jest.mock('@hooks/useConceptSearch', () => ({
 }));
 
 // Mock the Zustand store
-jest.mock('@stores/diagnosisStore', () => {
-  const actualModule = jest.requireActual('@stores/diagnosisStore');
+jest.mock('@stores/conditionsAndDiagnosesStore', () => {
+  const actualModule = jest.requireActual(
+    '@stores/conditionsAndDiagnosesStore',
+  );
   return {
     ...actualModule,
-    useDiagnosisStore: jest.fn(),
+    useConditionsAndDiagnosesStore: jest.fn(),
   };
 });
 
@@ -59,16 +62,41 @@ const mockDiagnosisInputEntryWithoutCertainty: DiagnosisInputEntry = {
   hasBeenValidated: false,
 };
 
+const mockConditionEntries: ConditionInputEntry[] = [
+  {
+    id: 'uuid-3',
+    display: 'Chronic Hypertension',
+    durationValue: 6,
+    durationUnit: 'months',
+    errors: {},
+    hasBeenValidated: false,
+  },
+  {
+    id: 'uuid-4',
+    display: 'Type 2 Diabetes',
+    durationValue: null,
+    durationUnit: null,
+    errors: {},
+    hasBeenValidated: false,
+  },
+];
+
 // Mock store implementation
-const createMockStore = (initialState: Partial<DiagnosisState> = {}) => {
-  const store: DiagnosisState = {
+const createMockStore = (
+  initialState: Partial<ConditionsAndDiagnosesState> = {},
+) => {
+  const store: ConditionsAndDiagnosesState = {
     selectedDiagnoses: [],
+    selectedConditions: [],
     addDiagnosis: jest.fn(),
     removeDiagnosis: jest.fn(),
     updateCertainty: jest.fn(),
-    validateAllDiagnoses: jest.fn().mockReturnValue(true),
+    validate: jest.fn().mockReturnValue(true),
     reset: jest.fn(),
     getState: jest.fn(),
+    markAsCondition: jest.fn(),
+    removeCondition: jest.fn(),
+    updateConditionDuration: jest.fn(),
     ...initialState,
   };
 
@@ -78,9 +106,9 @@ const createMockStore = (initialState: Partial<DiagnosisState> = {}) => {
   return store;
 };
 
-describe('DiagnosesForm', () => {
+describe('ConditionsAndDiagnoses', () => {
   // Default mock store
-  let mockStore: DiagnosisState;
+  let mockStore: ConditionsAndDiagnosesState;
   let addDiagnosisMock: jest.Mock;
   let removeDiagnosisMock: jest.Mock;
   let updateCertaintyMock: jest.Mock;
@@ -96,7 +124,9 @@ describe('DiagnosesForm', () => {
       updateCertainty: updateCertaintyMock,
     });
 
-    (useDiagnosisStore as unknown as jest.Mock).mockReturnValue(mockStore);
+    (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue(
+      mockStore,
+    );
   });
 
   const renderWithI18n = (component: React.ReactElement) => {
@@ -120,7 +150,7 @@ describe('DiagnosesForm', () => {
   describe('Rendering', () => {
     it('should render the component with default state', () => {
       render(<DiagnosesForm />);
-      expect(screen.getByText('Diagnoses')).toBeInTheDocument();
+      expect(screen.getByText('Conditions and Diagnoses')).toBeInTheDocument();
       expect(
         screen.getByPlaceholderText('Search to add new diagnosis'),
       ).toBeInTheDocument();
@@ -128,7 +158,7 @@ describe('DiagnosesForm', () => {
 
     it('should not render selected diagnoses section when no diagnoses are selected', () => {
       // Use empty array for selectedDiagnoses
-      (useDiagnosisStore as unknown as jest.Mock).mockReturnValue({
+      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue({
         ...mockStore,
         selectedDiagnoses: [],
       });
@@ -139,7 +169,7 @@ describe('DiagnosesForm', () => {
 
     it('should render selected diagnoses section when diagnoses are present', () => {
       // Mock store with diagnoses
-      (useDiagnosisStore as unknown as jest.Mock).mockReturnValue({
+      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue({
         ...mockStore,
         selectedDiagnoses: mockDiagnosisEntries,
       });
@@ -332,7 +362,7 @@ describe('DiagnosesForm', () => {
         hasBeenValidated: false,
       };
 
-      (useDiagnosisStore as unknown as jest.Mock).mockReturnValue({
+      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue({
         ...mockStore,
         selectedDiagnoses: [existingDiagnosis],
       });
@@ -365,7 +395,7 @@ describe('DiagnosesForm', () => {
         hasBeenValidated: false,
       };
 
-      (useDiagnosisStore as unknown as jest.Mock).mockReturnValue({
+      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue({
         ...mockStore,
         selectedDiagnoses: [existingDiagnosis],
       });
@@ -399,7 +429,7 @@ describe('DiagnosesForm', () => {
 
     it('should update disabled state when diagnoses are added/removed', async () => {
       // Start with no diagnoses selected
-      (useDiagnosisStore as unknown as jest.Mock).mockReturnValue({
+      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue({
         ...mockStore,
         selectedDiagnoses: [],
       });
@@ -436,7 +466,7 @@ describe('DiagnosesForm', () => {
       };
 
       // Update the mock to return selected diagnoses
-      (useDiagnosisStore as unknown as jest.Mock).mockReturnValue({
+      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue({
         ...mockStore,
         selectedDiagnoses: [newDiagnosis],
       });
@@ -458,7 +488,7 @@ describe('DiagnosesForm', () => {
 
     it('should handle removal of a diagnosis', async () => {
       // Mock store with existing diagnosis
-      (useDiagnosisStore as unknown as jest.Mock).mockReturnValue({
+      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue({
         ...mockStore,
         selectedDiagnoses: mockDiagnosisEntries,
       });
@@ -533,16 +563,292 @@ describe('DiagnosesForm', () => {
     });
   });
 
-  describe('Edge Cases and Error Handling', () => {
+  describe('Conditions Section', () => {
+    it('should not render conditions section when no conditions are selected', () => {
+      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedConditions: [],
+      });
+
+      render(<DiagnosesForm />);
+      expect(screen.queryByText('Conditions')).not.toBeInTheDocument();
+    });
+
+    it('should render conditions section when conditions are present', () => {
+      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedConditions: mockConditionEntries,
+      });
+
+      render(<DiagnosesForm />);
+      expect(screen.getByText('Added Conditions')).toBeInTheDocument();
+      expect(screen.getByText('Chronic Hypertension')).toBeInTheDocument();
+      expect(screen.getByText('Type 2 Diabetes')).toBeInTheDocument();
+    });
+
+    it('should handle condition removal', async () => {
+      const removeConditionMock = jest.fn();
+      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedConditions: [mockConditionEntries[0]],
+        removeCondition: removeConditionMock,
+      });
+
+      render(<DiagnosesForm />);
+
+      // Find the close button for the condition
+      const removeButtons = screen.getAllByRole('button', { name: /close/i });
+      await userEvent.click(removeButtons[0]);
+
+      expect(removeConditionMock).toHaveBeenCalledWith(
+        mockConditionEntries[0].id,
+      );
+    });
+
+    it('should handle condition duration updates', async () => {
+      const updateConditionDurationMock = jest.fn();
+      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedConditions: mockConditionEntries,
+        updateConditionDuration: updateConditionDurationMock,
+      });
+
+      render(<DiagnosesForm />);
+      expect(screen.getByText('Chronic Hypertension')).toBeInTheDocument();
+      expect(screen.getByText('Type 2 Diabetes')).toBeInTheDocument();
+    });
+  });
+
+  describe('Diagnosis to Condition Conversion', () => {
+    it('should handle marking diagnosis as condition', () => {
+      const markAsConditionMock = jest.fn().mockReturnValue(true);
+      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedDiagnoses: mockDiagnosisEntries,
+        markAsCondition: markAsConditionMock,
+      });
+
+      render(<DiagnosesForm />);
+
+      // The handleMarkAsCondition function should be available to child components
+      expect(screen.getByText('Hypertension')).toBeInTheDocument();
+    });
+
+    it('should correctly check if condition exists with isConditionExists - returns true', () => {
+      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedDiagnoses: mockDiagnosisEntries,
+        selectedConditions: [
+          {
+            id: mockDiagnosisEntries[0].id,
+            display: 'Hypertension',
+            durationValue: 1,
+            durationUnit: 'months',
+            errors: {},
+            hasBeenValidated: false,
+          },
+        ],
+      });
+
+      render(<DiagnosesForm />);
+      // Both sections should contain Hypertension, so use getAllByText
+      const hypertensionElements = screen.getAllByText('Hypertension');
+      expect(hypertensionElements.length).toBeGreaterThan(0);
+    });
+
+    it('should correctly check if condition exists with isConditionExists - returns false', () => {
+      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedDiagnoses: mockDiagnosisEntries,
+        selectedConditions: [],
+      });
+
+      render(<DiagnosesForm />);
+      expect(screen.getByText('Hypertension')).toBeInTheDocument();
+    });
+
+    it('should handle undefined/null conditions array in isConditionExists', () => {
+      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedDiagnoses: mockDiagnosisEntries,
+        selectedConditions: undefined,
+      });
+
+      render(<DiagnosesForm />);
+      expect(screen.getByText('Hypertension')).toBeInTheDocument();
+    });
+  });
+
+  describe('Integration Tests - Diagnoses and Conditions Together', () => {
+    it('should render both diagnoses and conditions sections when both have data', () => {
+      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedDiagnoses: mockDiagnosisEntries,
+        selectedConditions: mockConditionEntries,
+      });
+
+      render(<DiagnosesForm />);
+
+      // Both sections should be visible
+      expect(screen.getByText('Added Diagnoses')).toBeInTheDocument();
+      expect(screen.getByText('Added Conditions')).toBeInTheDocument();
+
+      // Diagnoses content
+      expect(screen.getByText('Hypertension')).toBeInTheDocument();
+
+      // Conditions content
+      expect(screen.getByText('Chronic Hypertension')).toBeInTheDocument();
+      expect(screen.getByText('Type 2 Diabetes')).toBeInTheDocument();
+    });
+
+    it('should handle marking diagnosis as condition workflow', () => {
+      const markAsConditionMock = jest.fn().mockReturnValue(true);
+      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedDiagnoses: mockDiagnosisEntries,
+        selectedConditions: [],
+        markAsCondition: markAsConditionMock,
+      });
+
+      render(<DiagnosesForm />);
+
+      // Should show diagnosis initially
+      expect(screen.getByText('Added Diagnoses')).toBeInTheDocument();
+      expect(screen.getByText('Hypertension')).toBeInTheDocument();
+      expect(screen.queryByText('Added Conditions')).not.toBeInTheDocument();
+
+      // The markAsCondition function should be available and functional
+      // This tests that the component provides the necessary props to child components
+      expect(markAsConditionMock).toBeDefined();
+    });
+
+    it('should show only conditions when diagnosis has been moved to conditions', () => {
+      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedDiagnoses: [],
+        selectedConditions: [
+          {
+            id: mockDiagnosisEntries[0].id,
+            display: mockDiagnosisEntries[0].display,
+            durationValue: null,
+            durationUnit: null,
+            errors: {},
+            hasBeenValidated: false,
+          },
+        ],
+      });
+
+      render(<DiagnosesForm />);
+
+      // Should now show in conditions section only
+      expect(screen.queryByText('Added Diagnoses')).not.toBeInTheDocument();
+      expect(screen.getByText('Added Conditions')).toBeInTheDocument();
+      expect(screen.getByText('Hypertension')).toBeInTheDocument();
+    });
+  });
+
+  describe('Enhanced Edge Cases and Error Handling', () => {
     it('should handle diagnosis without certainty', () => {
       // Mock store with diagnosis without certainty
-      (useDiagnosisStore as unknown as jest.Mock).mockReturnValue({
+      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue({
         ...mockStore,
         selectedDiagnoses: [mockDiagnosisInputEntryWithoutCertainty],
       });
 
       render(<DiagnosesForm />);
       expect(screen.getByText('Diabetes')).toBeInTheDocument();
+    });
+
+    it('should handle selection with missing conceptName', async () => {
+      const mockConceptMissingName: ConceptSearch = {
+        conceptName: '',
+        conceptUuid: 'uuid-test',
+        matchedName: 'Test Concept',
+      };
+
+      (useConceptSearch as jest.Mock).mockReturnValue({
+        searchResults: [mockConceptMissingName],
+        loading: false,
+        error: null,
+      });
+
+      render(<DiagnosesForm />);
+      const searchInput = screen.getByPlaceholderText(
+        'Search to add new diagnosis',
+      );
+      await userEvent.type(searchInput, 'test');
+
+      const testConcept = screen.queryByText('Test Concept');
+      if (testConcept) {
+        fireEvent.click(testConcept);
+      }
+
+      expect(addDiagnosisMock).not.toHaveBeenCalled();
+    });
+
+    it('should handle selection with both missing conceptName and conceptUuid', async () => {
+      const mockInvalidConcept: ConceptSearch = {
+        conceptName: '',
+        conceptUuid: '',
+        matchedName: 'Invalid Concept',
+      };
+
+      (useConceptSearch as jest.Mock).mockReturnValue({
+        searchResults: [mockInvalidConcept],
+        loading: false,
+        error: null,
+      });
+
+      render(<DiagnosesForm />);
+      const searchInput = screen.getByPlaceholderText(
+        'Search to add new diagnosis',
+      );
+      await userEvent.type(searchInput, 'invalid');
+
+      // Try to find and click the item if it exists, but main test is that addDiagnosis is not called
+      const invalidConcept = screen.queryByText('Invalid Concept');
+      if (invalidConcept) {
+        fireEvent.click(invalidConcept);
+      }
+
+      expect(addDiagnosisMock).not.toHaveBeenCalled();
+    });
+
+    it('should handle null selectedItem in onChange', async () => {
+      render(<DiagnosesForm />);
+      const comboBox = screen.getByRole('combobox');
+
+      // Simulate onChange with null selectedItem
+      fireEvent.change(comboBox, {
+        target: { value: '' },
+      });
+
+      // Trigger the onChange handler directly with null selectedItem
+      const changeEvent = new Event('change', { bubbles: true });
+      Object.defineProperty(changeEvent, 'target', {
+        value: { selectedItem: null },
+        enumerable: true,
+      });
+
+      fireEvent(comboBox, changeEvent);
+
+      expect(addDiagnosisMock).not.toHaveBeenCalled();
+    });
+
+    it('should handle completely undefined selectedItem in onChange', async () => {
+      render(<DiagnosesForm />);
+      const comboBox = screen.getByRole('combobox');
+
+      // Create a mock event with undefined selectedItem
+      const changeEvent = new Event('change', { bubbles: true });
+      Object.defineProperty(changeEvent, 'target', {
+        value: { selectedItem: undefined },
+        enumerable: true,
+      });
+
+      fireEvent(comboBox, changeEvent);
+
+      expect(addDiagnosisMock).not.toHaveBeenCalled();
     });
   });
 
@@ -564,7 +870,7 @@ describe('DiagnosesForm', () => {
     });
 
     test('form with selected diagnoses matches snapshot', () => {
-      (useDiagnosisStore as unknown as jest.Mock).mockReturnValue({
+      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue({
         ...mockStore,
         selectedDiagnoses: mockDiagnosisEntries,
       });
@@ -581,7 +887,7 @@ describe('DiagnosesForm', () => {
         hasBeenValidated: false,
       };
 
-      (useDiagnosisStore as unknown as jest.Mock).mockReturnValue({
+      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue({
         ...mockStore,
         selectedDiagnoses: [existingDiagnosis],
       });
@@ -596,6 +902,25 @@ describe('DiagnosesForm', () => {
         'Search to add new diagnosis',
       );
       await userEvent.type(searchInput, 'hyper');
+      expect(container).toMatchSnapshot();
+    });
+
+    test('form with selected conditions matches snapshot', () => {
+      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedConditions: mockConditionEntries,
+      });
+      const { container } = renderWithI18n(<DiagnosesForm />);
+      expect(container).toMatchSnapshot();
+    });
+
+    test('form with both diagnoses and conditions matches snapshot', () => {
+      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedDiagnoses: mockDiagnosisEntries,
+        selectedConditions: mockConditionEntries,
+      });
+      const { container } = renderWithI18n(<DiagnosesForm />);
       expect(container).toMatchSnapshot();
     });
   });

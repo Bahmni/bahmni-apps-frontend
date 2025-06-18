@@ -24,7 +24,7 @@ export const PATIENT_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 + `/Patient/${patientUUID}?_summary=data`;
 export const PATIENT_CONDITION_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 +
-  `/Condition?category=${HL7_CONDITION_CATEGORY_CONDITION_CODE}&patient=${patientUUID}`;
+  `/Condition?category=${HL7_CONDITION_CATEGORY_CONDITION_CODE}&patient=${patientUUID}&_count=100&_sort=-_lastUpdated`;
 export const PATIENT_ALLERGY_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 +
   `/AllergyIntolerance?patient=${patientUUID}&_count=100&_sort=-_lastUpdated`;

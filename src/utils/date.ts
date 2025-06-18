@@ -6,6 +6,7 @@ import {
   differenceInDays,
   subYears,
   subMonths,
+  subDays,
   format,
 } from 'date-fns';
 import { enUS, enGB, es, fr, de } from 'date-fns/locale';
@@ -182,4 +183,112 @@ export function formatDate(
   format: string = DATE_FORMAT,
 ): FormatDateResult {
   return formatDateGeneric(date, format);
+}
+
+/**
+ * Calculates onset date by subtracting duration from given date
+ * @param givenDate - The given date as baseline
+ * @param durationValue - The duration value to subtract
+ * @param durationUnit - The unit of duration ('days', 'months', 'years')
+ * @returns Calculated onset date or undefined if inputs are invalid
+ */
+export function calculateOnsetDate(
+  givenDate: Date,
+  durationValue: number | null,
+  durationUnit: 'days' | 'months' | 'years' | null,
+): Date | undefined {
+  if (
+    !givenDate ||
+    !isValid(givenDate) ||
+    durationValue === null ||
+    durationValue === undefined ||
+    !durationUnit ||
+    typeof durationValue !== 'number'
+  ) {
+    return undefined;
+  }
+
+  const onsetDate = new Date(givenDate);
+
+  switch (durationUnit) {
+    case 'days':
+      return subDays(onsetDate, durationValue);
+    case 'months':
+      return subMonths(onsetDate, durationValue);
+    case 'years':
+      return subYears(onsetDate, durationValue);
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * Formats a date string into a clean relative time format for use with i18n templates.
+ * Converts all time periods to days/months/years only and removes qualifiers like "about", "almost", "ago".
+ * Minutes and hours are rounded up to "1 day".
+ *
+ * @param date - ISO date string to format (e.g., "2025-06-17T07:02:38.000Z" or "2025-06-17")
+ * @returns FormatDateResult with clean time format (e.g., "3 days", "1 month", "2 years")
+ */
+export function formatDateDistance(date: string): FormatDateResult {
+  if (date === null || date === undefined) {
+    return {
+      formattedResult: '',
+      error: {
+        title: i18next.t(DATE_ERROR_MESSAGES.FORMAT_ERROR),
+        message: i18next.t(DATE_ERROR_MESSAGES.NULL_OR_UNDEFINED),
+      },
+    };
+  }
+
+  if (typeof date !== 'string') {
+    return {
+      formattedResult: '',
+      error: {
+        title: i18next.t(DATE_ERROR_MESSAGES.FORMAT_ERROR),
+        message: i18next.t(DATE_ERROR_MESSAGES.INVALID_FORMAT),
+      },
+    };
+  }
+
+  const parseResult = safeParseDate(date);
+  if (parseResult.error) {
+    return {
+      formattedResult: '',
+      error: parseResult.error,
+    };
+  }
+
+  const now = new Date();
+
+  // Calculate differences in various units
+  const diffInMilliseconds = now.getTime() - parseResult.date!.getTime();
+  const diffInDays = Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24));
+  const diffInMonths = differenceInMonths(now, parseResult.date!);
+  const diffInYears = differenceInYears(now, parseResult.date!);
+
+  let formattedResult: string;
+
+  if (diffInYears >= 1) {
+    // Use years for periods >= 1 year
+    const yearUnit = i18next.t('CLINICAL_YEARS_TRANSLATION_KEY', {
+      count: diffInYears,
+    });
+    formattedResult = `${diffInYears} ${yearUnit}`;
+  } else if (diffInMonths >= 1) {
+    // Use months for periods >= 1 month but < 1 year
+    const monthUnit = i18next.t('CLINICAL_MONTHS_TRANSLATION_KEY', {
+      count: diffInMonths,
+    });
+    formattedResult = `${diffInMonths} ${monthUnit}`;
+  } else {
+    // Use days for everything else (including hours, minutes - round up to at least 1 day)
+    const days = Math.max(1, diffInDays);
+    const dayUnit = i18next.t('CLINICAL_DAYS_TRANSLATION_KEY', {
+      count: days,
+    });
+    formattedResult = `${days} ${dayUnit}`;
+  }
+
+  return { formattedResult };
 }
