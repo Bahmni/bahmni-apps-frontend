@@ -7,7 +7,11 @@ import {
 export interface ServiceRequestState {
   selectedServiceRequests: Map<string, ServiceRequestInputEntry[]>;
 
-  addServiceRequest: (category: string, conceptUUID: string) => void;
+  addServiceRequest: (
+    category: string,
+    conceptUUID: string,
+    display: string,
+  ) => void;
   removeServiceRequest: (category: string, serviceRequestId: string) => void;
   updatePriority: (
     category: string,
@@ -22,11 +26,15 @@ export const useServiceRequestStore = create<ServiceRequestState>(
   (set, get) => ({
     selectedServiceRequests: new Map<string, ServiceRequestInputEntry[]>(),
 
-    addServiceRequest: (category: string, conceptUUID: string) => {
+    addServiceRequest: (
+      category: string,
+      conceptUUID: string,
+      display: string,
+    ) => {
       const newServiceRequest: ServiceRequestInputEntry = {
         id: conceptUUID,
         selectedPriority: 'routine',
-        display: '',
+        display: display,
       };
 
       const currentServiceRequests =

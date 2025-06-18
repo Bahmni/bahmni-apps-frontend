@@ -28,7 +28,7 @@ describe('useServiceRequestStore', () => {
       const conceptUUID = 'test-uuid-1';
 
       act(() => {
-        result.current.addServiceRequest(category, conceptUUID);
+        result.current.addServiceRequest(category, conceptUUID, 'Test Display');
       });
 
       const categoryRequests =
@@ -38,7 +38,7 @@ describe('useServiceRequestStore', () => {
       expect(categoryRequests![0]).toEqual({
         id: conceptUUID,
         selectedPriority: 'routine',
-        display: '',
+        display: 'Test Display',
       });
     });
 
@@ -49,8 +49,16 @@ describe('useServiceRequestStore', () => {
       const conceptUUID2 = 'test-uuid-2';
 
       act(() => {
-        result.current.addServiceRequest(category, conceptUUID1);
-        result.current.addServiceRequest(category, conceptUUID2);
+        result.current.addServiceRequest(
+          category,
+          conceptUUID1,
+          'Test Display 1',
+        );
+        result.current.addServiceRequest(
+          category,
+          conceptUUID2,
+          'Test Display 2',
+        );
       });
 
       const categoryRequests =
@@ -68,8 +76,12 @@ describe('useServiceRequestStore', () => {
       const conceptUUID2 = 'test-uuid-2';
 
       act(() => {
-        result.current.addServiceRequest(category1, conceptUUID1);
-        result.current.addServiceRequest(category2, conceptUUID2);
+        result.current.addServiceRequest(category1, conceptUUID1, 'Lab Test');
+        result.current.addServiceRequest(
+          category2,
+          conceptUUID2,
+          'Radiology Test',
+        );
       });
 
       expect(result.current.selectedServiceRequests.size).toBe(2);
@@ -87,12 +99,75 @@ describe('useServiceRequestStore', () => {
       const conceptUUID = 'test-uuid-1';
 
       act(() => {
-        result.current.addServiceRequest(category, conceptUUID);
+        result.current.addServiceRequest(category, conceptUUID, 'Test Display');
       });
 
       const categoryRequests =
         result.current.selectedServiceRequests.get(category);
       expect(categoryRequests![0].selectedPriority).toBe('routine');
+    });
+
+    test('should store the display name provided', () => {
+      const { result } = renderHook(() => useServiceRequestStore());
+      const category = 'lab';
+      const conceptUUID = 'test-uuid-1';
+      const displayName = 'Complete Blood Count';
+
+      act(() => {
+        result.current.addServiceRequest(category, conceptUUID, displayName);
+      });
+
+      const categoryRequests =
+        result.current.selectedServiceRequests.get(category);
+      expect(categoryRequests![0].display).toBe(displayName);
+    });
+
+    test('should handle empty display name', () => {
+      const { result } = renderHook(() => useServiceRequestStore());
+      const category = 'lab';
+      const conceptUUID = 'test-uuid-1';
+
+      act(() => {
+        result.current.addServiceRequest(category, conceptUUID, '');
+      });
+
+      const categoryRequests =
+        result.current.selectedServiceRequests.get(category);
+      expect(categoryRequests![0].display).toBe('');
+    });
+
+    test('should handle special characters in display name', () => {
+      const { result } = renderHook(() => useServiceRequestStore());
+      const category = 'lab';
+      const conceptUUID = 'test-uuid-1';
+      const displayName = 'Test & Measurement (Special) - 123';
+
+      act(() => {
+        result.current.addServiceRequest(category, conceptUUID, displayName);
+      });
+
+      const categoryRequests =
+        result.current.selectedServiceRequests.get(category);
+      expect(categoryRequests![0].display).toBe(displayName);
+    });
+
+    test('should maintain unique display names for different service requests', () => {
+      const { result } = renderHook(() => useServiceRequestStore());
+      const category = 'lab';
+      const conceptUUID1 = 'test-uuid-1';
+      const conceptUUID2 = 'test-uuid-2';
+      const displayName1 = 'Blood Test';
+      const displayName2 = 'Urine Test';
+
+      act(() => {
+        result.current.addServiceRequest(category, conceptUUID1, displayName1);
+        result.current.addServiceRequest(category, conceptUUID2, displayName2);
+      });
+
+      const categoryRequests =
+        result.current.selectedServiceRequests.get(category);
+      expect(categoryRequests![0].display).toBe(displayName2); // Most recent first
+      expect(categoryRequests![1].display).toBe(displayName1);
     });
   });
 
@@ -104,7 +179,7 @@ describe('useServiceRequestStore', () => {
       const conceptUUID = 'test-uuid-1';
 
       act(() => {
-        result.current.addServiceRequest(category, conceptUUID);
+        result.current.addServiceRequest(category, conceptUUID, 'Test Display');
       });
 
       expect(result.current.selectedServiceRequests.get(category)).toHaveLength(
@@ -130,9 +205,9 @@ describe('useServiceRequestStore', () => {
       const conceptUUID3 = 'test-uuid-3';
 
       act(() => {
-        result.current.addServiceRequest(category, conceptUUID1);
-        result.current.addServiceRequest(category, conceptUUID2);
-        result.current.addServiceRequest(category, conceptUUID3);
+        result.current.addServiceRequest(category, conceptUUID1, 'Test 1');
+        result.current.addServiceRequest(category, conceptUUID2, 'Test 2');
+        result.current.addServiceRequest(category, conceptUUID3, 'Test 3');
       });
 
       act(() => {
@@ -178,7 +253,11 @@ describe('useServiceRequestStore', () => {
       const conceptUUID2 = 'test-uuid-2';
 
       act(() => {
-        result.current.addServiceRequest(category, conceptUUID1);
+        result.current.addServiceRequest(
+          category,
+          conceptUUID1,
+          'Test Display',
+        );
       });
 
       act(() => {
@@ -201,7 +280,7 @@ describe('useServiceRequestStore', () => {
       const newPriority: SupportedServiceRequestPriority = 'stat';
 
       act(() => {
-        result.current.addServiceRequest(category, conceptUUID);
+        result.current.addServiceRequest(category, conceptUUID, 'Test Display');
       });
 
       act(() => {
@@ -221,8 +300,8 @@ describe('useServiceRequestStore', () => {
       const newPriority: SupportedServiceRequestPriority = 'stat';
 
       act(() => {
-        result.current.addServiceRequest(category, conceptUUID1);
-        result.current.addServiceRequest(category, conceptUUID2);
+        result.current.addServiceRequest(category, conceptUUID1, 'Test 1');
+        result.current.addServiceRequest(category, conceptUUID2, 'Test 2');
       });
 
       act(() => {
@@ -265,7 +344,11 @@ describe('useServiceRequestStore', () => {
       const newPriority: SupportedServiceRequestPriority = 'stat';
 
       act(() => {
-        result.current.addServiceRequest(category, conceptUUID1);
+        result.current.addServiceRequest(
+          category,
+          conceptUUID1,
+          'Test Display',
+        );
       });
 
       act(() => {
@@ -285,7 +368,7 @@ describe('useServiceRequestStore', () => {
       const newPriority: SupportedServiceRequestPriority = 'stat';
 
       act(() => {
-        result.current.addServiceRequest(category, conceptUUID);
+        result.current.addServiceRequest(category, conceptUUID, 'Test Display');
       });
 
       const originalRequest =
@@ -311,9 +394,9 @@ describe('useServiceRequestStore', () => {
       const category2 = 'radiology';
 
       act(() => {
-        result.current.addServiceRequest(category1, 'test-uuid-1');
-        result.current.addServiceRequest(category1, 'test-uuid-2');
-        result.current.addServiceRequest(category2, 'test-uuid-3');
+        result.current.addServiceRequest(category1, 'test-uuid-1', 'Test 1');
+        result.current.addServiceRequest(category1, 'test-uuid-2', 'Test 2');
+        result.current.addServiceRequest(category2, 'test-uuid-3', 'Test 3');
       });
 
       expect(result.current.selectedServiceRequests.size).toBe(2);
@@ -330,7 +413,7 @@ describe('useServiceRequestStore', () => {
       const { result } = renderHook(() => useServiceRequestStore());
 
       act(() => {
-        result.current.addServiceRequest('lab', 'test-uuid-1');
+        result.current.addServiceRequest('lab', 'test-uuid-1', 'Test Display');
       });
 
       const originalMap = result.current.selectedServiceRequests;
@@ -352,7 +435,7 @@ describe('useServiceRequestStore', () => {
       const conceptUUID = 'test-uuid-1';
 
       act(() => {
-        result.current.addServiceRequest(category, conceptUUID);
+        result.current.addServiceRequest(category, conceptUUID, 'Test Display');
       });
 
       const state = result.current.getState();
@@ -375,8 +458,8 @@ describe('useServiceRequestStore', () => {
 
       // Add multiple service requests
       act(() => {
-        uuids.forEach((uuid) =>
-          result.current.addServiceRequest(category, uuid),
+        uuids.forEach((uuid, index) =>
+          result.current.addServiceRequest(category, uuid, `Test ${index + 1}`),
         );
       });
 
@@ -411,8 +494,12 @@ describe('useServiceRequestStore', () => {
       const radiologyCategory = 'radiology';
 
       act(() => {
-        result.current.addServiceRequest(labCategory, 'lab-uuid-1');
-        result.current.addServiceRequest(radiologyCategory, 'rad-uuid-1');
+        result.current.addServiceRequest(labCategory, 'lab-uuid-1', 'Lab Test');
+        result.current.addServiceRequest(
+          radiologyCategory,
+          'rad-uuid-1',
+          'Radiology Test',
+        );
         result.current.updatePriority(labCategory, 'lab-uuid-1', 'stat');
       });
 
@@ -423,6 +510,93 @@ describe('useServiceRequestStore', () => {
 
       expect(labRequests![0].selectedPriority).toBe('stat');
       expect(radiologyRequests![0].selectedPriority).toBe('routine');
+    });
+
+    test('should handle adding duplicate service requests with different display names', () => {
+      const { result } = renderHook(() => useServiceRequestStore());
+      const category = 'lab';
+      const conceptUUID = 'test-uuid-1';
+
+      act(() => {
+        result.current.addServiceRequest(
+          category,
+          conceptUUID,
+          'First Display',
+        );
+        result.current.addServiceRequest(
+          category,
+          conceptUUID,
+          'Second Display',
+        );
+      });
+
+      const categoryRequests =
+        result.current.selectedServiceRequests.get(category);
+      expect(categoryRequests).toHaveLength(2);
+      expect(categoryRequests![0].display).toBe('Second Display');
+      expect(categoryRequests![1].display).toBe('First Display');
+      // Both should have the same ID
+      expect(categoryRequests![0].id).toBe(conceptUUID);
+      expect(categoryRequests![1].id).toBe(conceptUUID);
+    });
+
+    test('should preserve display name when updating priority', () => {
+      const { result } = renderHook(() => useServiceRequestStore());
+      const category = 'lab';
+      const conceptUUID = 'test-uuid-1';
+      const displayName = 'Blood Glucose Test';
+
+      act(() => {
+        result.current.addServiceRequest(category, conceptUUID, displayName);
+      });
+
+      act(() => {
+        result.current.updatePriority(category, conceptUUID, 'stat');
+      });
+
+      const categoryRequests =
+        result.current.selectedServiceRequests.get(category);
+      expect(categoryRequests![0].display).toBe(displayName);
+      expect(categoryRequests![0].selectedPriority).toBe('stat');
+    });
+
+    test('should handle very long display names', () => {
+      const { result } = renderHook(() => useServiceRequestStore());
+      const category = 'lab';
+      const conceptUUID = 'test-uuid-1';
+      const longDisplayName = 'A'.repeat(500); // 500 character display name
+
+      act(() => {
+        result.current.addServiceRequest(
+          category,
+          conceptUUID,
+          longDisplayName,
+        );
+      });
+
+      const categoryRequests =
+        result.current.selectedServiceRequests.get(category);
+      expect(categoryRequests![0].display).toBe(longDisplayName);
+      expect(categoryRequests![0].display.length).toBe(500);
+    });
+
+    test('should handle unicode characters in display name', () => {
+      const { result } = renderHook(() => useServiceRequestStore());
+      const category = 'lab';
+      const conceptUUID = 'test-uuid-1';
+      const unicodeDisplayName = '血液検査 🩸 (Blood Test)';
+
+      act(() => {
+        result.current.addServiceRequest(
+          category,
+          conceptUUID,
+          unicodeDisplayName,
+        );
+      });
+
+      const categoryRequests =
+        result.current.selectedServiceRequests.get(category);
+      expect(categoryRequests![0].display).toBe(unicodeDisplayName);
     });
   });
 });
