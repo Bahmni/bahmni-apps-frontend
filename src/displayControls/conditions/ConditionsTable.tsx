@@ -63,7 +63,7 @@ const ConditionsTable: React.FC = () => {
           return t('CONDITION_TABLE_NOT_AVAILABLE');
         }
         return t('CONDITION_ONSET_SINCE_FORMAT', {
-          formatDateDistance: onsetDate.formattedResult,
+          timeAgo: onsetDate.formattedResult,
         });
       }
       case 'recorder':

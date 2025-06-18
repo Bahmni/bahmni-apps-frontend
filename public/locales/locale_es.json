@@ -38,7 +38,7 @@
   "CONDITION_TABLE_DURATION": "Duración",
   "CONDITION_TABLE_RECORDED_BY": "Grabado por",
   "CONDITION_TABLE_RECORDED_DATE": "Fecha de grabación",
-  "CONDITION_ONSET_SINCE_FORMAT": "Hace {{formatDateDistance}}",
+  "CONDITION_ONSET_SINCE_FORMAT": "Hace {{timeAgo}}",
   "CONDITIONS_ADD_AS_CONDITION": "Agregar como Condición",
   "CONDITIONS_ALREADY_EXISTS": "La condición ya existe",
   "CONDITIONS_DURATION_DAYS": "Días",

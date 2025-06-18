@@ -38,7 +38,7 @@
   "CONDITION_TABLE_DURATION": "Duration",
   "CONDITION_TABLE_RECORDED_BY": "Recorded By",
   "CONDITION_TABLE_RECORDED_DATE": "Recorded Date",
-  "CONDITION_ONSET_SINCE_FORMAT": "Since {{formatDateDistance}}",
+  "CONDITION_ONSET_SINCE_FORMAT": "Since {{timeAgo}}",
   "CONDITIONS_ADD_AS_CONDITION": "Add to condition",
   "CONDITIONS_ALREADY_EXISTS": "Condition already exists",
   "CONDITIONS_DURATION_DAYS": "Days",

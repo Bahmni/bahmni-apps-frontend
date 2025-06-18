@@ -1,5 +1,5 @@
 import { Condition, Bundle } from 'fhir/r4';
-import { ConditionStatus, FormattedCondition } from '../types/condition';
+import { ConditionStatus, FormattedCondition } from '@types/condition';
 
 export const mockPatientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
 export const mockCondition: Condition = {
