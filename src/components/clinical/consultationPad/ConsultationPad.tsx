@@ -5,7 +5,7 @@ import { Column, Grid, MenuItemDivider } from '@carbon/react';
 import BasicForm from '@/components/clinical/forms/encounterDetails/EncounterDetails';
 import DiagnosesForm from '@components/clinical/forms/diagnoses/DiagnosesForm';
 import AllergiesForm from '@components/clinical/forms/allergies/AllergiesForm';
-import InvestigationsForm from '../forms/orderInvestigations/InvestigationsForm';
+import InvestigationsForm from '../forms/investigations/InvestigationsForm';
 import { ConsultationBundle } from '@types/consultationBundle';
 import {
   postConsultationBundle,

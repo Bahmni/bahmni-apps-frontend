@@ -241,7 +241,7 @@ jest.mock('@components/clinical/forms/allergies/AllergiesForm', () => {
 });
 
 jest.mock(
-  '@components/clinical/forms/orderInvestigations/InvestigationsForm',
+  '@components/clinical/forms/investigations/InvestigationsForm',
   () => {
     return function MockInvestigationsForm() {
       return (
