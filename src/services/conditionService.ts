@@ -1,23 +1,32 @@
 import { get } from './api';
 import { PATIENT_CONDITION_RESOURCE_URL } from '@constants/app';
-import {
-  FhirCondition,
-  FhirConditionBundle,
-  FormattedCondition,
-  ConditionStatus,
-} from '@types/condition';
-import { getFormattedError } from '@utils/common';
-import notificationService from './notificationService';
+import { Condition, Bundle } from 'fhir/r4';
+import { FormattedCondition, ConditionStatus } from '@types/condition';
+
+// Constants for better maintainability
+const ACTIVE_STATUS = 'active';
+const INACTIVE_STATUS = 'inactive';
+
+/**
+ * Validates that a condition has all required fields
+ * @param condition - The FHIR Condition resource to validate
+ * @returns true if valid, false otherwise
+ */
+const isValidCondition = (condition: Condition): boolean => {
+  return !!(condition.id && condition.code && condition.recordedDate);
+};
 
 /**
  * Maps a FHIR clinical status code to ConditionStatus enum
+ * @param condition - The FHIR Condition resource
+ * @returns The corresponding ConditionStatus
  */
-const mapConditionStatus = (condition: FhirCondition): ConditionStatus => {
+const mapConditionStatus = (condition: Condition): ConditionStatus => {
   const code = condition.clinicalStatus?.coding?.[0]?.code;
   switch (code) {
-    case 'active':
+    case ACTIVE_STATUS:
       return ConditionStatus.Active;
-    case 'inactive':
+    case INACTIVE_STATUS:
       return ConditionStatus.Inactive;
     default:
       return ConditionStatus.Inactive;
@@ -28,57 +37,61 @@ const mapConditionStatus = (condition: FhirCondition): ConditionStatus => {
 /**
  * Fetches conditions for a given patient UUID from the FHIR R4 endpoint
  * @param patientUUID - The UUID of the patient
- * @returns Promise resolving to a FhirConditionBundle
+ * @returns Promise resolving to a Bundle containing conditions
  */
 export async function getPatientConditionsBundle(
   patientUUID: string,
-): Promise<FhirConditionBundle> {
-  return await get<FhirConditionBundle>(
-    `${PATIENT_CONDITION_RESOURCE_URL(patientUUID)}`,
-  );
-}
-
-export async function getConditions(
-  patientUUID: string,
-): Promise<FhirCondition[]> {
-  try {
-    const fhirConditionBundle = await getPatientConditionsBundle(patientUUID);
-    return fhirConditionBundle.entry?.map((entry) => entry.resource) || [];
-  } catch (error) {
-    const { title, message } = getFormattedError(error);
-    notificationService.showError(title, message);
-    return [];
-  }
+): Promise<Bundle> {
+  return await get<Bundle>(`${PATIENT_CONDITION_RESOURCE_URL(patientUUID)}`);
 }
 
 /**
- * Formats a FHIR condition into a more user-friendly format
+ * Fetches and extracts conditions for a given patient UUID
+ * @param patientUUID - The UUID of the patient
+ * @returns Promise resolving to an array of conditions
+ */
+export async function getConditions(patientUUID: string): Promise<Condition[]> {
+  const bundle = await getPatientConditionsBundle(patientUUID);
+
+  // Safe filtering and extraction like diagnosesService
+  const conditions =
+    bundle.entry
+      ?.filter((entry) => entry.resource?.resourceType === 'Condition')
+      .map((entry) => entry.resource as Condition) || [];
+
+  return conditions;
+}
+
+/**
+ * Formats FHIR conditions into a more user-friendly format
  * @param conditions - The FHIR condition array to format
- * @returns A formatted condition object
+ * @returns An array of formatted condition objects
  */
 export function formatConditions(
-  conditions: FhirCondition[],
+  conditions: Condition[],
 ): FormattedCondition[] {
-  try {
-    return conditions.map((condition) => {
-      const status = mapConditionStatus(condition);
-      const coding = condition.code.coding[0];
+  return conditions.map((condition) => {
+    if (!isValidCondition(condition)) {
+      throw new Error('Incomplete condition data');
+    }
 
-      return {
-        id: condition.id,
-        display: condition.code.text,
-        status,
-        onsetDate: condition.onsetDateTime,
-        recordedDate: condition.recordedDate,
-        recorder: condition.recorder?.display,
-        code: coding.code,
-        codeDisplay: coding.display,
-        note: condition.note?.map((note) => note.text),
-      };
-    });
-  } catch (error) {
-    const { title, message } = getFormattedError(error);
-    notificationService.showError(title, message);
-    return [];
-  }
+    const status = mapConditionStatus(condition);
+    const coding = condition.code?.coding?.[0];
+
+    if (!coding) {
+      throw new Error('Missing condition coding information');
+    }
+
+    return {
+      id: condition.id!,
+      display: condition.code?.text || coding.display || '',
+      status,
+      onsetDate: condition.onsetDateTime,
+      recordedDate: condition.recordedDate,
+      recorder: condition.recorder?.display,
+      code: coding.code || '',
+      codeDisplay: coding.display || '',
+      note: condition.note?.map((note) => note.text).filter(Boolean),
+    };
+  });
 }

@@ -1,0 +1,23 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/type" as *;
+
+.selectedConditionTitle {
+  @include type-style("heading-compact-01");
+  margin: 0;
+  justify-self: start;
+  align-items: start !important;
+}
+
+.selectedConditionDuration {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: start !important;
+}
+
+.selectedConditionDurationValue {
+  width: $spacing-13;
+}
+
+.selectedConditionDurationUnit {
+  width: $spacing-13;
+}

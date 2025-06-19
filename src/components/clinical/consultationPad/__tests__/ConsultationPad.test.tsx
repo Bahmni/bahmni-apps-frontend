@@ -15,7 +15,7 @@ import { useConceptSearch } from '@hooks/useConceptSearch';
 import { Coding } from 'fhir/r4';
 import { Provider } from '@types/provider';
 import { DiagnosisInputEntry } from '@types/diagnosis';
-import { DiagnosisState } from '@stores/diagnosisStore';
+import { ConditionsAndDiagnosesState } from '@stores/conditionsAndDiagnosesStore';
 import { ConceptSearch } from '@types/concepts';
 
 // Mock all dependencies
@@ -68,13 +68,14 @@ jest.mock('@stores/allergyStore', () => {
   };
 });
 
-jest.mock('@stores/diagnosisStore', () => {
+jest.mock('@stores/conditionsAndDiagnosesStore', () => {
   // Create a factory function to get a fresh store for each test
   const createMockStore = () => {
     const store = {
       selectedDiagnoses: [] as DiagnosisInputEntry[],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      selectedConditions: [] as any[],
       addDiagnosis: jest.fn((diagnosis) => {
-        // Actually update the selectedDiagnoses array when addDiagnosis is called
         const newDiagnosis = {
           id: diagnosis.conceptUuid,
           display: diagnosis.conceptName,
@@ -98,9 +99,10 @@ jest.mock('@stores/diagnosisStore', () => {
           diagnosis.selectedCertainty = certainty;
         }
       }),
-      validateAllDiagnoses: jest.fn().mockReturnValue(true),
+      validate: jest.fn().mockReturnValue(true),
       reset: jest.fn(() => {
         store.selectedDiagnoses = [];
+        store.selectedConditions = []; // Reset conditions as well
       }),
       getState: jest.fn(),
     };
@@ -115,7 +117,9 @@ jest.mock('@stores/diagnosisStore', () => {
   const mockStoreInstance = createMockStore();
 
   return {
-    useDiagnosisStore: jest.fn().mockReturnValue(mockStoreInstance),
+    useConditionsAndDiagnosesStore: jest
+      .fn()
+      .mockReturnValue(mockStoreInstance),
     createMockStore, // Export the factory for tests that need to reset the store
   };
 });
@@ -179,6 +183,16 @@ jest.mock('@services/consultationBundleService', () => ({
       return selectedAllergies.map(() => ({
         resource: {
           resourceType: 'AllergyIntolerance',
+        },
+      }));
+    }),
+  createConditionsBundleEntries: jest
+    .fn()
+    .mockImplementation(({ selectedConditions }) => {
+      if (!selectedConditions?.length) return [];
+      return selectedConditions.map(() => ({
+        resource: {
+          resourceType: 'Condition',
         },
       }));
     }),
@@ -292,107 +306,111 @@ jest.mock('@carbon/react', () => {
   };
 });
 
-jest.mock('@components/clinical/forms/diagnoses/DiagnosesForm', () => {
-  return function MockDiagnosesForm() {
-    // Get access to the mocked store
-    const mockStore = jest
-      .requireMock('@stores/diagnosisStore')
-      .useDiagnosisStore();
+jest.mock(
+  '@components/clinical/forms/conditionsAndDiagnoses/ConditionsAndDiagnoses',
+  () => {
+    return function MockDiagnosesForm() {
+      // Get access to the mocked store
+      const mockStore = jest
+        .requireMock('@stores/conditionsAndDiagnosesStore')
+        .useConditionsAndDiagnosesStore();
 
-    // Add a diagnosis with the test data
-    const handleSelect = () => {
-      // Create a diagnosis with a fixed ID for testing
-      const newDiagnosis = {
-        id: 'test-diagnosis-id',
-        display: 'Test Diagnosis',
-        selectedCertainty: null,
-        errors: {},
-        hasBeenValidated: false,
+      // Add a diagnosis with the test data
+      const handleSelect = () => {
+        // Create a diagnosis with a fixed ID for testing
+        const newDiagnosis = {
+          id: 'test-diagnosis-id',
+          display: 'Test Diagnosis',
+          selectedCertainty: null,
+          errors: {},
+          hasBeenValidated: false,
+        };
+
+        // Directly modify the store's selectedDiagnoses array
+        mockStore.selectedDiagnoses = [newDiagnosis];
+
+        return newDiagnosis;
       };
 
-      // Directly modify the store's selectedDiagnoses array
-      mockStore.selectedDiagnoses = [newDiagnosis];
+      // Remove a diagnosis
+      const handleRemove = () => {
+        // Clear the diagnoses array
+        mockStore.selectedDiagnoses = [];
+      };
 
-      return newDiagnosis;
-    };
+      // Update certainty
+      const handleCertaintyChange = () => {
+        // Directly update the certainty on the first diagnosis
+        if (mockStore.selectedDiagnoses.length > 0) {
+          mockStore.selectedDiagnoses[0].selectedCertainty = {
+            code: 'confirmed',
+            display: 'Confirmed',
+            system:
+              'http://terminology.hl7.org/CodeSystem/condition-ver-status',
+          };
+        }
+      };
 
-    // Remove a diagnosis
-    const handleRemove = () => {
-      // Clear the diagnoses array
-      mockStore.selectedDiagnoses = [];
-    };
-
-    // Update certainty
-    const handleCertaintyChange = () => {
-      // Directly update the certainty on the first diagnosis
-      if (mockStore.selectedDiagnoses.length > 0) {
-        mockStore.selectedDiagnoses[0].selectedCertainty = {
-          code: 'confirmed',
-          display: 'Confirmed',
-          system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
-        };
-      }
-    };
-
-    return (
-      <div data-testid="mock-diagnoses-form">
-        <button
-          onClick={() => {
-            // Simulate search - no need to do anything here
-          }}
-        >
-          Search
-        </button>
-        <button onClick={handleSelect}>Select</button>
-        <button
-          data-testid="select-null-button"
-          onClick={() => {
-            // Handle null selection - no-op
-          }}
-        >
-          Select Null
-        </button>
-        <button onClick={handleRemove}>Remove</button>
-        <div data-testid="diagnoses-form-errors">
-          {/* No errors to display in mock */}
-        </div>
-        <div data-testid="diagnoses-form-loading">
-          {/* Get loading state from useConceptSearch mock */}
-          {jest.requireMock('@hooks/useConceptSearch').useConceptSearch()
-            .loading
-            ? 'Loading'
-            : 'Not Loading'}
-        </div>
-        <div data-testid="diagnoses-form-results">
-          {/* Get results from useConceptSearch mock */}
-          {jest.requireMock('@hooks/useConceptSearch').useConceptSearch()
-            .searchResults?.length || 0}{' '}
-          results
-        </div>
-        <div data-testid="diagnoses-form-selected">
-          {mockStore.selectedDiagnoses?.length || 0} selected
-        </div>
-        {/* Mock selected diagnoses with certainty change capability */}
-        {mockStore.selectedDiagnoses?.map(
-          (diagnosis: DiagnosisInputEntry, index: number) => (
-            <div
-              key={`diagnosis-${index}`}
-              data-testid={`selected-diagnosis-${index}`}
-            >
-              <span>{diagnosis.display}</span>
-              <button
-                data-testid={`change-certainty-${index}`}
-                onClick={() => handleCertaintyChange()}
+      return (
+        <div data-testid="mock-diagnoses-form">
+          <button
+            onClick={() => {
+              // Simulate search - no need to do anything here
+            }}
+          >
+            Search
+          </button>
+          <button onClick={handleSelect}>Select</button>
+          <button
+            data-testid="select-null-button"
+            onClick={() => {
+              // Handle null selection - no-op
+            }}
+          >
+            Select Null
+          </button>
+          <button onClick={handleRemove}>Remove</button>
+          <div data-testid="diagnoses-form-errors">
+            {/* No errors to display in mock */}
+          </div>
+          <div data-testid="diagnoses-form-loading">
+            {/* Get loading state from useConceptSearch mock */}
+            {jest.requireMock('@hooks/useConceptSearch').useConceptSearch()
+              .loading
+              ? 'Loading'
+              : 'Not Loading'}
+          </div>
+          <div data-testid="diagnoses-form-results">
+            {/* Get results from useConceptSearch mock */}
+            {jest.requireMock('@hooks/useConceptSearch').useConceptSearch()
+              .searchResults?.length || 0}{' '}
+            results
+          </div>
+          <div data-testid="diagnoses-form-selected">
+            {mockStore.selectedDiagnoses?.length || 0} selected
+          </div>
+          {/* Mock selected diagnoses with certainty change capability */}
+          {mockStore.selectedDiagnoses?.map(
+            (diagnosis: DiagnosisInputEntry, index: number) => (
+              <div
+                key={`diagnosis-${index}`}
+                data-testid={`selected-diagnosis-${index}`}
               >
-                Change Certainty
-              </button>
-            </div>
-          ),
-        )}
-      </div>
-    );
-  };
-});
+                <span>{diagnosis.display}</span>
+                <button
+                  data-testid={`change-certainty-${index}`}
+                  onClick={() => handleCertaintyChange()}
+                >
+                  Change Certainty
+                </button>
+              </div>
+            ),
+          )}
+        </div>
+      );
+    };
+  },
+);
 
 jest.mock('@hooks/useConceptSearch', () => ({
   useConceptSearch: jest.fn(),
@@ -602,11 +620,11 @@ describe('ConsultationPad', () => {
     jest.clearAllMocks();
 
     // Reset the mock stores
-    const diagnosisStore = jest
-      .requireMock('@stores/diagnosisStore')
-      .useDiagnosisStore();
-    diagnosisStore.selectedDiagnoses = [];
-    diagnosisStore.validateAllDiagnoses.mockReturnValue(true);
+    const conditionsAndDiagnosesStore = jest
+      .requireMock('@stores/conditionsAndDiagnosesStore')
+      .useConditionsAndDiagnosesStore();
+    conditionsAndDiagnosesStore.selectedDiagnoses = [];
+    conditionsAndDiagnosesStore.validate.mockReturnValue(true);
 
     const encounterStore = jest
       .requireMock('@stores/encounterDetailsStore')
@@ -1236,12 +1254,15 @@ describe('ConsultationPad', () => {
     ];
 
     beforeEach(() => {
-      // Import the useDiagnosisStore mock
-      const { useDiagnosisStore } = jest.requireMock('@stores/diagnosisStore');
+      // Import the useConditionsAndDiagnosesStore mock
+      const { useConditionsAndDiagnosesStore } = jest.requireMock(
+        '@stores/conditionsAndDiagnosesStore',
+      );
 
       // Reset the store before each test
-      const freshStore: DiagnosisState = {
+      const freshStore: ConditionsAndDiagnosesState = {
         selectedDiagnoses: [],
+        selectedConditions: [],
         addDiagnosis: jest.fn((diagnosis: ConceptSearch) => {
           // Actually update the selectedDiagnoses array when addDiagnosis is called
           const newDiagnosis = {
@@ -1269,9 +1290,13 @@ describe('ConsultationPad', () => {
             diagnosis.selectedCertainty = certainty;
           }
         }),
-        validateAllDiagnoses: jest.fn().mockReturnValue(true),
+        validate: jest.fn().mockReturnValue(true),
+        markAsCondition: jest.fn(),
+        removeCondition: jest.fn(),
+        updateConditionDuration: jest.fn(),
         reset: jest.fn(() => {
           freshStore.selectedDiagnoses = [];
+          freshStore.selectedConditions = [];
         }),
         getState: jest.fn(),
       };
@@ -1280,7 +1305,9 @@ describe('ConsultationPad', () => {
       freshStore.getState = jest.fn().mockReturnValue(freshStore);
 
       // Update the mock to use the fresh store
-      (useDiagnosisStore as unknown as jest.Mock).mockReturnValue(freshStore);
+      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue(
+        freshStore,
+      );
 
       // Setup default mock for useConceptSearch
       (useConceptSearch as jest.Mock).mockReturnValue({
@@ -1366,8 +1393,8 @@ describe('ConsultationPad', () => {
 
         // Get the store mock
         const mockStore = jest
-          .requireMock('@stores/diagnosisStore')
-          .useDiagnosisStore();
+          .requireMock('@stores/conditionsAndDiagnosesStore')
+          .useConditionsAndDiagnosesStore();
 
         // Act
         render(<ConsultationPad onClose={mockOnClose} />);
@@ -1396,8 +1423,8 @@ describe('ConsultationPad', () => {
 
         // Get the store mock
         const mockStore = jest
-          .requireMock('@stores/diagnosisStore')
-          .useDiagnosisStore();
+          .requireMock('@stores/conditionsAndDiagnosesStore')
+          .useConditionsAndDiagnosesStore();
 
         // Act
         render(<ConsultationPad onClose={mockOnClose} />);
@@ -1429,8 +1456,8 @@ describe('ConsultationPad', () => {
 
         // Get the store mock
         const mockStore = jest
-          .requireMock('@stores/diagnosisStore')
-          .useDiagnosisStore();
+          .requireMock('@stores/conditionsAndDiagnosesStore')
+          .useConditionsAndDiagnosesStore();
 
         // Act
         render(<ConsultationPad onClose={mockOnClose} />);
@@ -1662,10 +1689,10 @@ describe('ConsultationPad', () => {
     it('should not post consultation bundle when Diagnoses form has an error', () => {
       // Arrange
       // Reset the mock stores
-      const diagnosisStore = jest
-        .requireMock('@stores/diagnosisStore')
-        .useDiagnosisStore();
-      diagnosisStore.validateAllDiagnoses.mockReturnValue(false);
+      const conditionsAndDiagnosesStore = jest
+        .requireMock('@stores/conditionsAndDiagnosesStore')
+        .useConditionsAndDiagnosesStore();
+      conditionsAndDiagnosesStore.validate.mockReturnValue(false);
 
       render(<ConsultationPad onClose={mockOnClose} />);
 
@@ -1696,9 +1723,9 @@ describe('ConsultationPad', () => {
     it('should clean up stores on component unmount', () => {
       // Arrange
       mockHooksForNormalState();
-      const diagnosisStore = jest
-        .requireMock('@stores/diagnosisStore')
-        .useDiagnosisStore();
+      const conditionsAndDiagnosesStore = jest
+        .requireMock('@stores/conditionsAndDiagnosesStore')
+        .useConditionsAndDiagnosesStore();
       const allergyStore = jest.requireMock('@stores/allergyStore').default();
       const encounterStore = jest
         .requireMock('@stores/encounterDetailsStore')
@@ -1708,14 +1735,14 @@ describe('ConsultationPad', () => {
       const { unmount } = render(<ConsultationPad onClose={mockOnClose} />);
 
       // Reset the mocks before unmounting
-      diagnosisStore.reset.mockClear();
+      conditionsAndDiagnosesStore.reset.mockClear();
       allergyStore.reset.mockClear();
       encounterStore.reset.mockClear();
 
       unmount();
 
       // Assert
-      expect(diagnosisStore.reset).toHaveBeenCalled();
+      expect(conditionsAndDiagnosesStore.reset).toHaveBeenCalled();
       expect(allergyStore.reset).toHaveBeenCalled();
       expect(encounterStore.reset).toHaveBeenCalled();
     });
@@ -1741,12 +1768,12 @@ describe('ConsultationPad', () => {
     it('should validate both diagnoses and allergies before submission', () => {
       // Arrange
       mockHooksForNormalState();
-      const diagnosisStore = jest
-        .requireMock('@stores/diagnosisStore')
-        .useDiagnosisStore();
+      const conditionsAndDiagnosesStore = jest
+        .requireMock('@stores/conditionsAndDiagnosesStore')
+        .useConditionsAndDiagnosesStore();
       const allergyStore = jest.requireMock('@stores/allergyStore').default();
 
-      diagnosisStore.validateAllDiagnoses.mockReturnValue(false);
+      conditionsAndDiagnosesStore.validate.mockReturnValue(false);
       allergyStore.validateAllAllergies.mockReturnValue(false);
 
       // Act
@@ -1755,7 +1782,7 @@ describe('ConsultationPad', () => {
 
       // Assert
       expect(postConsultationBundle).not.toHaveBeenCalled();
-      expect(diagnosisStore.validateAllDiagnoses).toHaveBeenCalled();
+      expect(conditionsAndDiagnosesStore.validate).toHaveBeenCalled();
       expect(allergyStore.validateAllAllergies).toHaveBeenCalled(); // Both are called
     });
 
@@ -1783,13 +1810,13 @@ describe('ConsultationPad', () => {
     it('should reset stores on secondary button click', () => {
       // Arrange
       mockHooksForNormalState();
-      const diagnosisStore = jest
-        .requireMock('@stores/diagnosisStore')
-        .useDiagnosisStore();
+      const conditionsAndDiagnosesStore = jest
+        .requireMock('@stores/conditionsAndDiagnosesStore')
+        .useConditionsAndDiagnosesStore();
       const allergyStore = jest.requireMock('@stores/allergyStore').default();
 
       // Clear any previous calls
-      diagnosisStore.reset.mockClear();
+      conditionsAndDiagnosesStore.reset.mockClear();
       allergyStore.reset.mockClear();
 
       // Act
@@ -1797,7 +1824,7 @@ describe('ConsultationPad', () => {
       fireEvent.click(screen.getByTestId('secondary-button'));
 
       // Assert
-      expect(diagnosisStore.reset).toHaveBeenCalled();
+      expect(conditionsAndDiagnosesStore.reset).toHaveBeenCalled();
       expect(allergyStore.reset).toHaveBeenCalled();
       expect(mockOnClose).toHaveBeenCalled();
     });
@@ -1818,6 +1845,332 @@ describe('ConsultationPad', () => {
       // Assert - Try to click and verify submission doesn't happen
       fireEvent.click(screen.getByTestId('primary-button'));
       expect(postConsultationBundle).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('ConsultationPad - Conditions Integration', () => {
+    const { createConditionsBundleEntries } = jest.requireMock(
+      '@services/consultationBundleService',
+    );
+
+    beforeEach(() => {
+      mockHooksForNormalState();
+
+      // Reset the store mock completely
+      const conditionsAndDiagnosesStore = jest
+        .requireMock('@stores/conditionsAndDiagnosesStore')
+        .useConditionsAndDiagnosesStore();
+      conditionsAndDiagnosesStore.selectedConditions = [];
+      conditionsAndDiagnosesStore.selectedDiagnoses = [];
+      conditionsAndDiagnosesStore.validate.mockReturnValue(true);
+    });
+
+    describe('Validation Integration Tests', () => {
+      it('should prevent submission when conditions validation fails', () => {
+        // Arrange
+        const mockConditions = [
+          {
+            id: 'condition-123',
+            display: 'Diabetes Mellitus',
+            durationValue: null, // Invalid - should cause validation to fail
+            durationUnit: 'years',
+            errors: { durationValue: 'CONDITIONS_DURATION_VALUE_REQUIRED' },
+            hasBeenValidated: true,
+          },
+        ];
+
+        const conditionsAndDiagnosesStore = jest
+          .requireMock('@stores/conditionsAndDiagnosesStore')
+          .useConditionsAndDiagnosesStore();
+        conditionsAndDiagnosesStore.selectedConditions = mockConditions;
+        conditionsAndDiagnosesStore.validate.mockReturnValue(false);
+
+        // Act
+        render(<ConsultationPad onClose={mockOnClose} />);
+        fireEvent.click(screen.getByTestId('primary-button'));
+
+        // Assert
+        expect(postConsultationBundle).not.toHaveBeenCalled();
+        expect(conditionsAndDiagnosesStore.validate).toHaveBeenCalled();
+      });
+
+      it('should allow submission when all validations pass including conditions', async () => {
+        // Arrange
+        const mockConditions = [
+          {
+            id: 'condition-123',
+            display: 'Diabetes Mellitus',
+            durationValue: 2,
+            durationUnit: 'years',
+            errors: {},
+            hasBeenValidated: true,
+          },
+        ];
+
+        const conditionsAndDiagnosesStore = jest
+          .requireMock('@stores/conditionsAndDiagnosesStore')
+          .useConditionsAndDiagnosesStore();
+        conditionsAndDiagnosesStore.selectedConditions = mockConditions;
+        conditionsAndDiagnosesStore.validate.mockReturnValue(true);
+
+        const allergyStore = jest.requireMock('@stores/allergyStore').default();
+        allergyStore.validateAllAllergies.mockReturnValue(true);
+
+        // Act
+        render(<ConsultationPad onClose={mockOnClose} />);
+        fireEvent.click(screen.getByTestId('primary-button'));
+
+        // Assert
+        await waitFor(() => {
+          expect(postConsultationBundle).toHaveBeenCalled();
+          expect(conditionsAndDiagnosesStore.validate).toHaveBeenCalled();
+          expect(allergyStore.validateAllAllergies).toHaveBeenCalled();
+        });
+      });
+
+      it('should call conditions validation as part of overall validation', () => {
+        // Arrange
+        const mockConditions = [
+          {
+            id: 'condition-123',
+            display: 'Diabetes Mellitus',
+            durationValue: 2,
+            durationUnit: 'years',
+            errors: {},
+            hasBeenValidated: true,
+          },
+        ];
+
+        const conditionsAndDiagnosesStore = jest
+          .requireMock('@stores/conditionsAndDiagnosesStore')
+          .useConditionsAndDiagnosesStore();
+        conditionsAndDiagnosesStore.selectedConditions = mockConditions;
+
+        // Act
+        render(<ConsultationPad onClose={mockOnClose} />);
+        fireEvent.click(screen.getByTestId('primary-button'));
+
+        // Assert
+        expect(conditionsAndDiagnosesStore.validate).toHaveBeenCalled();
+      });
+    });
+
+    describe('Error Handling Tests', () => {
+      it('should handle createConditionsBundleEntries throwing an error', async () => {
+        // Arrange
+        const mockError = new Error('Conditions bundle creation failed');
+        createConditionsBundleEntries.mockImplementation(() => {
+          throw mockError;
+        });
+
+        const mockConditions = [
+          {
+            id: 'condition-123',
+            display: 'Diabetes Mellitus',
+            durationValue: 2,
+            durationUnit: 'years',
+            errors: {},
+            hasBeenValidated: true,
+          },
+        ];
+
+        const conditionsAndDiagnosesStore = jest
+          .requireMock('@stores/conditionsAndDiagnosesStore')
+          .useConditionsAndDiagnosesStore();
+        conditionsAndDiagnosesStore.selectedConditions = mockConditions;
+
+        // Act
+        render(<ConsultationPad onClose={mockOnClose} />);
+        fireEvent.click(screen.getByTestId('primary-button'));
+
+        // Assert
+        await waitFor(() => {
+          expect(mockAddNotification).toHaveBeenCalledWith(
+            expect.objectContaining({
+              type: 'error',
+              message: 'Conditions bundle creation failed',
+            }),
+          );
+        });
+      });
+
+      it('should show error notification when conditions bundle creation fails', async () => {
+        // Arrange
+        const mockError = new Error(
+          'CONSULTATION_ERROR_INVALID_CONDITION_PARAMS',
+        );
+        createConditionsBundleEntries.mockImplementation(() => {
+          throw mockError;
+        });
+
+        const mockConditions = [
+          {
+            id: 'condition-123',
+            display: 'Diabetes Mellitus',
+            durationValue: 2,
+            durationUnit: 'years',
+            errors: {},
+            hasBeenValidated: true,
+          },
+        ];
+
+        const conditionsAndDiagnosesStore = jest
+          .requireMock('@stores/conditionsAndDiagnosesStore')
+          .useConditionsAndDiagnosesStore();
+        conditionsAndDiagnosesStore.selectedConditions = mockConditions;
+
+        // Act
+        render(<ConsultationPad onClose={mockOnClose} />);
+        fireEvent.click(screen.getByTestId('primary-button'));
+
+        // Assert
+        await waitFor(() => {
+          expect(mockAddNotification).toHaveBeenCalledWith(
+            expect.objectContaining({
+              type: 'error',
+              title: expect.any(String),
+              message: 'CONSULTATION_ERROR_INVALID_CONDITION_PARAMS',
+            }),
+          );
+        });
+      });
+    });
+
+    describe('Store Integration Tests', () => {
+      it('should use selectedConditions from store for bundle creation', async () => {
+        // Arrange
+        const mockConditions = [
+          {
+            id: 'condition-123',
+            display: 'Diabetes Mellitus',
+            durationValue: 2,
+            durationUnit: 'years',
+            errors: {},
+            hasBeenValidated: true,
+          },
+          {
+            id: 'condition-456',
+            display: 'Hypertension',
+            durationValue: 6,
+            durationUnit: 'months',
+            errors: {},
+            hasBeenValidated: true,
+          },
+        ];
+
+        const conditionsAndDiagnosesStore = jest
+          .requireMock('@stores/conditionsAndDiagnosesStore')
+          .useConditionsAndDiagnosesStore();
+        conditionsAndDiagnosesStore.selectedConditions = mockConditions;
+
+        // Act
+        render(<ConsultationPad onClose={mockOnClose} />);
+        fireEvent.click(screen.getByTestId('primary-button'));
+
+        // Assert
+        await waitFor(() => {
+          expect(createConditionsBundleEntries).toHaveBeenCalledWith(
+            expect.objectContaining({
+              selectedConditions: mockConditions,
+            }),
+          );
+        });
+      });
+
+      it('should handle store state changes during submission', async () => {
+        // Arrange
+        const conditionsAndDiagnosesStore = jest
+          .requireMock('@stores/conditionsAndDiagnosesStore')
+          .useConditionsAndDiagnosesStore();
+
+        // Start with no conditions
+        conditionsAndDiagnosesStore.selectedConditions = [];
+
+        render(<ConsultationPad onClose={mockOnClose} />);
+
+        // Add conditions during submission
+        conditionsAndDiagnosesStore.selectedConditions = [
+          {
+            id: 'condition-123',
+            display: 'Diabetes Mellitus',
+            durationValue: 2,
+            durationUnit: 'years',
+            errors: {},
+            hasBeenValidated: true,
+          },
+        ];
+
+        // Act
+        fireEvent.click(screen.getByTestId('primary-button'));
+
+        // Assert
+        await waitFor(() => {
+          expect(createConditionsBundleEntries).toHaveBeenCalled();
+        });
+      });
+    });
+
+    describe('Performance and Edge Cases', () => {
+      it('should handle large numbers of conditions efficiently', async () => {
+        // Arrange
+        const largeConditionsList = Array.from({ length: 50 }, (_, i) => ({
+          id: `condition-${i}`,
+          display: `Condition ${i}`,
+          durationValue: i + 1,
+          durationUnit: 'days' as const,
+          errors: {},
+          hasBeenValidated: true,
+        }));
+
+        const conditionsAndDiagnosesStore = jest
+          .requireMock('@stores/conditionsAndDiagnosesStore')
+          .useConditionsAndDiagnosesStore();
+        conditionsAndDiagnosesStore.selectedConditions = largeConditionsList;
+
+        // Act
+        render(<ConsultationPad onClose={mockOnClose} />);
+        fireEvent.click(screen.getByTestId('primary-button'));
+
+        // Assert
+        await waitFor(() => {
+          expect(createConditionsBundleEntries).toHaveBeenCalledWith(
+            expect.objectContaining({
+              selectedConditions: largeConditionsList,
+            }),
+          );
+        });
+      });
+
+      it('should handle conditions with missing/invalid duration data', async () => {
+        // Arrange
+        const invalidConditions = [
+          {
+            id: 'condition-123',
+            display: 'Invalid Condition',
+            durationValue: null,
+            durationUnit: null,
+            errors: {
+              durationValue: 'CONDITIONS_DURATION_VALUE_REQUIRED',
+              durationUnit: 'CONDITIONS_DURATION_UNIT_REQUIRED',
+            },
+            hasBeenValidated: true,
+          },
+        ];
+
+        const conditionsAndDiagnosesStore = jest
+          .requireMock('@stores/conditionsAndDiagnosesStore')
+          .useConditionsAndDiagnosesStore();
+        conditionsAndDiagnosesStore.selectedConditions = invalidConditions;
+        conditionsAndDiagnosesStore.validate.mockReturnValue(false);
+
+        // Act
+        render(<ConsultationPad onClose={mockOnClose} />);
+        fireEvent.click(screen.getByTestId('primary-button'));
+
+        // Assert - Should not proceed with submission due to validation failure
+        expect(postConsultationBundle).not.toHaveBeenCalled();
+        expect(conditionsAndDiagnosesStore.validate).toHaveBeenCalled();
+      });
     });
   });
 });
