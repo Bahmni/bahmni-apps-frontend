@@ -67,8 +67,28 @@ const InvestigationsForm: React.FC = React.memo(() => {
         },
       ];
     }
+
+    const mappedItems = investigations.map((item) => {
+      if (!selectedServiceRequests.has(item.category.toUpperCase()) === false)
+        return item;
+      const selectedItemsInCategory = selectedServiceRequests.get(
+        item.category,
+      );
+      const isAlreadySelected =
+        selectedItemsInCategory?.some(
+          (selectedItem) => selectedItem.id === item.code,
+        ) ?? false;
+      return {
+        ...item,
+        display: isAlreadySelected
+          ? `${item.display} ${t('INVESTIGATION_ALREADY_SELECTED')}`
+          : item.display,
+        disabled: isAlreadySelected,
+      };
+    });
+
     let currentCategory: string | null = null;
-    const investigationsCopy = [...investigations];
+    const investigationsCopy = [...mappedItems];
     for (let i = 0; i < investigationsCopy.length; i++) {
       const investigation = investigationsCopy[i];
       if (investigation.category.toUpperCase() !== currentCategory) {

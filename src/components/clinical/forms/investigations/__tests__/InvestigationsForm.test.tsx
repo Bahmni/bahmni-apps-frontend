@@ -430,6 +430,334 @@ describe('InvestigationsForm', () => {
     });
   });
 
+  describe('Already Selected Items', () => {
+    test('displays already selected items as disabled with appropriate text', async () => {
+      const selectedMap = new Map([
+        [
+          'Laboratory',
+          [
+            {
+              id: 'cbc-001',
+              display: 'Complete Blood Count',
+              selectedPriority: 'routine',
+            },
+          ],
+        ],
+      ]);
+
+      (useServiceRequestStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedServiceRequests: selectedMap,
+      });
+
+      (useInvestigationsSearch as jest.Mock).mockReturnValue({
+        investigations: mockInvestigations,
+        isLoading: false,
+        error: null,
+      });
+
+      const user = userEvent.setup();
+
+      render(
+        <I18nextProvider i18n={i18n}>
+          <InvestigationsForm />
+        </I18nextProvider>,
+      );
+
+      const combobox = screen.getByRole('combobox');
+      await user.type(combobox, 'blood');
+
+      await waitFor(() => {
+        const options = screen.getAllByRole('option');
+        // Find the Complete Blood Count option
+        const cbcOption = options.find((option) =>
+          option.textContent?.includes('Complete Blood Count'),
+        );
+        expect(cbcOption).toHaveTextContent(
+          'Complete Blood Count (Already selected)',
+        );
+        expect(cbcOption).toHaveAttribute('disabled');
+      });
+    });
+
+    test('prevents selection of already selected items', async () => {
+      const selectedMap = new Map([
+        [
+          'Laboratory',
+          [
+            {
+              id: 'cbc-001',
+              display: 'Complete Blood Count',
+              selectedPriority: 'routine',
+            },
+          ],
+        ],
+      ]);
+
+      (useServiceRequestStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedServiceRequests: selectedMap,
+      });
+
+      (useInvestigationsSearch as jest.Mock).mockReturnValue({
+        investigations: mockInvestigations,
+        isLoading: false,
+        error: null,
+      });
+
+      const user = userEvent.setup();
+
+      render(
+        <I18nextProvider i18n={i18n}>
+          <InvestigationsForm />
+        </I18nextProvider>,
+      );
+
+      const combobox = screen.getByRole('combobox');
+      await user.type(combobox, 'complete');
+
+      await waitFor(() => {
+        const cbcOption = screen.getByText(
+          'Complete Blood Count (Already selected)',
+        );
+        expect(cbcOption).toBeInTheDocument();
+      });
+
+      // Try to click the disabled option
+      const cbcOption = screen.getByText(
+        'Complete Blood Count (Already selected)',
+      );
+      await user.click(cbcOption);
+
+      // Verify that addServiceRequest was NOT called since the item is disabled
+      expect(mockStore.addServiceRequest).not.toHaveBeenCalled();
+    });
+
+    test('allows selection of non-selected items when some items are already selected', async () => {
+      const selectedMap = new Map([
+        [
+          'Laboratory',
+          [
+            {
+              id: 'cbc-001',
+              display: 'Complete Blood Count',
+              selectedPriority: 'routine',
+            },
+          ],
+        ],
+      ]);
+
+      (useServiceRequestStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedServiceRequests: selectedMap,
+      });
+
+      (useInvestigationsSearch as jest.Mock).mockReturnValue({
+        investigations: mockInvestigations,
+        isLoading: false,
+        error: null,
+      });
+
+      const user = userEvent.setup();
+
+      render(
+        <I18nextProvider i18n={i18n}>
+          <InvestigationsForm />
+        </I18nextProvider>,
+      );
+
+      const combobox = screen.getByRole('combobox');
+      await user.type(combobox, 'glucose');
+
+      await waitFor(() => {
+        // Verify Blood Glucose Test is not marked as already selected
+        const glucoseOption = screen.getByText('Blood Glucose Test');
+        expect(glucoseOption).toBeInTheDocument();
+        expect(glucoseOption).not.toHaveTextContent('(Already selected)');
+      });
+
+      // Click on the non-selected item
+      await user.click(screen.getByText('Blood Glucose Test'));
+
+      // Verify the store was called correctly
+      await waitFor(() => {
+        expect(mockStore.addServiceRequest).toHaveBeenCalledWith(
+          'Laboratory',
+          'glucose-001',
+          'Blood Glucose Test',
+        );
+      });
+    });
+
+    test('handles multiple already selected items across different categories', async () => {
+      const selectedMap = new Map([
+        [
+          'Laboratory',
+          [
+            {
+              id: 'cbc-001',
+              display: 'Complete Blood Count',
+              selectedPriority: 'routine',
+            },
+            {
+              id: 'glucose-001',
+              display: 'Blood Glucose Test',
+              selectedPriority: 'stat',
+            },
+          ],
+        ],
+        [
+          'Radiology',
+          [
+            {
+              id: 'xray-001',
+              display: 'Chest X-Ray',
+              selectedPriority: 'routine',
+            },
+          ],
+        ],
+      ]);
+
+      (useServiceRequestStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedServiceRequests: selectedMap,
+      });
+
+      (useInvestigationsSearch as jest.Mock).mockReturnValue({
+        investigations: mockInvestigations,
+        isLoading: false,
+        error: null,
+      });
+
+      const user = userEvent.setup();
+
+      render(
+        <I18nextProvider i18n={i18n}>
+          <InvestigationsForm />
+        </I18nextProvider>,
+      );
+
+      const combobox = screen.getByRole('combobox');
+      await user.type(combobox, 'test');
+
+      await waitFor(() => {
+        const options = screen.getAllByRole('option');
+
+        // Check that all selected items are marked as already selected
+        const cbcOption = options.find((option) =>
+          option.textContent?.includes('Complete Blood Count'),
+        );
+        const glucoseOption = options.find((option) =>
+          option.textContent?.includes('Blood Glucose Test'),
+        );
+        const xrayOption = options.find((option) =>
+          option.textContent?.includes('Chest X-Ray'),
+        );
+
+        expect(cbcOption).toHaveTextContent(
+          'Complete Blood Count (Already selected)',
+        );
+        expect(cbcOption).toHaveAttribute('disabled');
+
+        expect(glucoseOption).toHaveTextContent(
+          'Blood Glucose Test (Already selected)',
+        );
+        expect(glucoseOption).toHaveAttribute('disabled');
+
+        expect(xrayOption).toHaveTextContent('Chest X-Ray (Already selected)');
+        expect(xrayOption).toHaveAttribute('disabled');
+      });
+    });
+
+    test('updates already selected status when item is removed and search is performed again', async () => {
+      let selectedMap = new Map([
+        [
+          'Laboratory',
+          [
+            {
+              id: 'cbc-001',
+              display: 'Complete Blood Count',
+              selectedPriority: 'routine',
+            },
+          ],
+        ],
+      ]);
+
+      const mockStoreWithDynamicMap = {
+        ...mockStore,
+        get selectedServiceRequests() {
+          return selectedMap;
+        },
+        removeServiceRequest: jest.fn((category, id) => {
+          const currentItems = selectedMap.get(category);
+          const updatedItems = currentItems?.filter((item) => item.id !== id);
+          if (updatedItems && updatedItems.length > 0) {
+            selectedMap.set(category, updatedItems);
+          } else {
+            selectedMap.delete(category);
+          }
+        }),
+      };
+
+      (useServiceRequestStore as unknown as jest.Mock).mockReturnValue(
+        mockStoreWithDynamicMap,
+      );
+
+      (useInvestigationsSearch as jest.Mock).mockReturnValue({
+        investigations: mockInvestigations,
+        isLoading: false,
+        error: null,
+      });
+
+      const user = userEvent.setup();
+
+      const { rerender } = render(
+        <I18nextProvider i18n={i18n}>
+          <InvestigationsForm />
+        </I18nextProvider>,
+      );
+
+      // First search - CBC should be marked as already selected
+      const combobox = screen.getByRole('combobox');
+      await user.type(combobox, 'complete');
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('Complete Blood Count (Already selected)'),
+        ).toBeInTheDocument();
+      });
+
+      // Clear the search
+      await user.clear(combobox);
+
+      // Remove the CBC from selected items
+      const removeButton = screen.getByLabelText('Remove');
+      await user.click(removeButton);
+
+      // Update the mock to reflect the empty selected items
+      selectedMap = new Map();
+
+      // Rerender to reflect the state change
+      rerender(
+        <I18nextProvider i18n={i18n}>
+          <InvestigationsForm />
+        </I18nextProvider>,
+      );
+
+      // Search again - CBC should NOT be marked as already selected
+      await user.type(combobox, 'complete');
+
+      await waitFor(() => {
+        const cbcOption = screen.getByText('Complete Blood Count');
+        expect(cbcOption).toBeInTheDocument();
+        expect(cbcOption).not.toHaveTextContent('(Already selected)');
+        expect(cbcOption.closest('[role="option"]')).not.toHaveAttribute(
+          'disabled',
+        );
+      });
+    });
+  });
+
   describe('Edge Cases', () => {
     test('handles empty search term correctly', () => {
       render(
