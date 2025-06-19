@@ -126,6 +126,7 @@
   "INVESTIGATIONS_ADDED": "{{investigationType}} agregadas",
   "INVESTIGATIONS_FORM_TITLE": "Investigaciones de pedidos",
   "INVESTIGATIONS_SEARCH_PLACEHOLDER" :"Busque para agregar investigaciones de laboratorio o radiología",
+  "LAB_INVESTIGATIONS_CATEGORY": "Investigaciones de Laboratorio",
   "LAB_TEST_ACTIONS": "Acciones",
   "LAB_TEST_ERROR_LOADING": "Error al cargar pruebas de laboratorio",
   "LAB_TEST_LOADING": "Cargando pruebas de laboratorio...",

@@ -2,6 +2,7 @@ import { ValueSet } from 'fhir/r4';
 import { FlattenedInvestigations } from '@types/investigations';
 import { searchFHIRConceptsByName } from './conceptService';
 import { ALL_ORDERABLES_CONCEPT_NAME } from '@constants/app';
+import i18next from 'i18next';
 
 const fetchInvestigations = async (): Promise<ValueSet> => {
   return await searchFHIRConceptsByName(ALL_ORDERABLES_CONCEPT_NAME);
@@ -17,7 +18,9 @@ const flattenInvestigations = (
   }
   valueSet.expansion.contains.forEach((topLevelCategory) => {
     const categoryCode = topLevelCategory.code || '';
-    const categoryDisplay = topLevelCategory.display || 'Unknown Category';
+    const categoryDisplay = translateCategory(
+      topLevelCategory.display || 'Unknown Category',
+    );
     topLevelCategory.contains?.forEach((subCategory) => {
       subCategory.contains?.forEach((investigation) => {
         results.push({
@@ -38,4 +41,11 @@ export const getFlattenedInvestigations = async (): Promise<
 > => {
   const valueSet = await fetchInvestigations();
   return flattenInvestigations(valueSet);
+};
+
+const translateCategory = (category: string): string => {
+  if (category === 'Lab Samples') {
+    return i18next.t('LAB_INVESTIGATIONS_CATEGORY');
+  }
+  return category;
 };

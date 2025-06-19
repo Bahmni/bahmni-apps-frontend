@@ -2,12 +2,18 @@ import { ValueSet } from 'fhir/r4';
 import { getFlattenedInvestigations } from '../investigationService';
 import * as conceptService from '../conceptService';
 import { ALL_ORDERABLES_CONCEPT_NAME } from '@constants/app';
+import i18next from 'i18next';
 
 jest.mock('../conceptService');
+jest.mock('i18next');
 
 describe('investigationService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Mock i18next.t to return the translation key by default
+    (i18next.t as unknown as jest.Mock).mockImplementation(
+      (key: string) => key,
+    );
   });
 
   describe('getFlattenedInvestigations', () => {
@@ -384,6 +390,184 @@ describe('investigationService', () => {
           categoryCode: 'RAD',
         },
       ]);
+    });
+
+    describe('translateCategory', () => {
+      it('should translate "Lab Samples" category to localized string', async () => {
+        const mockValueSetWithLabSamples: ValueSet = {
+          resourceType: 'ValueSet',
+          id: 'test-valueset',
+          status: 'active',
+          expansion: {
+            timestamp: '2024-01-01T00:00:00Z',
+            contains: [
+              {
+                code: 'LAB',
+                display: 'Lab Samples', // This should be translated
+                contains: [
+                  {
+                    code: 'BIOCHEM',
+                    display: 'Biochemistry',
+                    contains: [
+                      {
+                        code: 'GLU',
+                        display: 'Glucose',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        };
+
+        // Mock i18next to return the expected translation
+        (i18next.t as unknown as jest.Mock).mockImplementation(
+          (key: string) => {
+            if (key === 'LAB_INVESTIGATIONS_CATEGORY') {
+              return 'Lab Investigations';
+            }
+            return key;
+          },
+        );
+
+        (
+          conceptService.searchFHIRConceptsByName as jest.Mock
+        ).mockResolvedValue(mockValueSetWithLabSamples);
+
+        const result = await getFlattenedInvestigations();
+
+        // Verify that i18next.t was called with the correct key
+        expect(i18next.t).toHaveBeenCalledWith('LAB_INVESTIGATIONS_CATEGORY');
+
+        // Verify that the category was translated
+        expect(result[0].category).toBe('Lab Investigations');
+        expect(result).toEqual([
+          {
+            code: 'GLU',
+            display: 'Glucose',
+            category: 'Lab Investigations',
+            categoryCode: 'LAB',
+          },
+        ]);
+      });
+
+      it('should not translate categories other than "Lab Samples"', async () => {
+        const mockValueSetWithOtherCategories: ValueSet = {
+          resourceType: 'ValueSet',
+          id: 'test-valueset',
+          status: 'active',
+          expansion: {
+            timestamp: '2024-01-01T00:00:00Z',
+            contains: [
+              {
+                code: 'RAD',
+                display: 'Radiology', // This should NOT be translated
+                contains: [
+                  {
+                    code: 'XRAY',
+                    display: 'X-Ray',
+                    contains: [
+                      {
+                        code: 'CXR',
+                        display: 'Chest X-Ray',
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                code: 'LAB',
+                display: 'Laboratory', // This should NOT be translated (not "Lab Samples")
+                contains: [
+                  {
+                    code: 'BIOCHEM',
+                    display: 'Biochemistry',
+                    contains: [
+                      {
+                        code: 'GLU',
+                        display: 'Glucose',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        };
+
+        (
+          conceptService.searchFHIRConceptsByName as jest.Mock
+        ).mockResolvedValue(mockValueSetWithOtherCategories);
+
+        const result = await getFlattenedInvestigations();
+
+        // Verify that i18next.t was NOT called for non-"Lab Samples" categories
+        expect(i18next.t).not.toHaveBeenCalled();
+
+        // Verify that categories remain unchanged
+        expect(result).toEqual([
+          {
+            code: 'CXR',
+            display: 'Chest X-Ray',
+            category: 'Radiology',
+            categoryCode: 'RAD',
+          },
+          {
+            code: 'GLU',
+            display: 'Glucose',
+            category: 'Laboratory',
+            categoryCode: 'LAB',
+          },
+        ]);
+      });
+
+      it('should handle translation with different locales', async () => {
+        const mockValueSetWithLabSamples: ValueSet = {
+          resourceType: 'ValueSet',
+          id: 'test-valueset',
+          status: 'active',
+          expansion: {
+            timestamp: '2024-01-01T00:00:00Z',
+            contains: [
+              {
+                code: 'LAB',
+                display: 'Lab Samples',
+                contains: [
+                  {
+                    code: 'BIOCHEM',
+                    display: 'Biochemistry',
+                    contains: [
+                      {
+                        code: 'GLU',
+                        display: 'Glucose',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        };
+
+        // Mock i18next to return Spanish translation
+        (i18next.t as unknown as jest.Mock).mockImplementation(
+          (key: string) => {
+            if (key === 'LAB_INVESTIGATIONS_CATEGORY') {
+              return 'Investigaciones de Laboratorio';
+            }
+            return key;
+          },
+        );
+
+        (
+          conceptService.searchFHIRConceptsByName as jest.Mock
+        ).mockResolvedValue(mockValueSetWithLabSamples);
+
+        const result = await getFlattenedInvestigations();
+
+        expect(result[0].category).toBe('Investigaciones de Laboratorio');
+      });
     });
   });
 });

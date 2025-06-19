@@ -14,7 +14,6 @@ import i18n from '@/setupTests.i18n';
 // Mock all child components
 jest.mock('@components/common/actionArea/ActionArea', () => ({
   __esModule: true,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   default: ({
     title,
     primaryButtonText,
@@ -23,6 +22,7 @@ jest.mock('@components/common/actionArea/ActionArea', () => ({
     secondaryButtonText,
     onSecondaryButtonClick,
     content,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }: any) => (
     <div data-testid="mock-action-area">
       <div data-testid="action-area-title">{title}</div>
