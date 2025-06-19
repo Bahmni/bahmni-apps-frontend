@@ -1,0 +1,116 @@
+@import '../../../styles/theme-variables.scss';
+
+.medicationsTable {
+  margin-bottom: 1rem;
+  
+  .medicationsTableTitle {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--cds-text-primary);
+  }
+
+  .medicationsTableBody {
+    margin-bottom: 0.5rem;
+  }
+
+  .emptyState {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--cds-text-secondary);
+    font-style: italic;
+  }
+
+  .errorState {
+    padding: 1rem;
+    color: var(--cds-support-error);
+    background-color: var(--cds-support-error-inverse);
+    border: 1px solid var(--cds-support-error);
+    border-radius: 4px;
+    margin: 1rem 0;
+  }
+
+  // Status tags
+  .activeTag {
+    background-color: var(--cds-support-success);
+    color: var(--cds-text-on-color);
+  }
+
+  .scheduledTag {
+    background-color: var(--cds-support-info);
+    color: var(--cds-text-on-color);
+  }
+
+  .otherStatusTag {
+    background-color: var(--cds-tag-background-gray);
+    color: var(--cds-text-primary);
+  }
+
+  // Priority tags
+  .statTag {
+    background-color: var(--cds-support-error);
+    color: var(--cds-text-on-color);
+    margin-left: 0.5rem;
+  }
+
+  .prnTag {
+    background-color: var(--cds-support-warning);
+    color: var(--cds-text-primary);
+    margin-left: 0.5rem;
+  }
+
+  // Custom tab styling
+  .tabsContainer {
+    margin-bottom: 1rem;
+  }
+
+  :global(.cds-layout-size-height-local){ height: 0px; }
+
+  .tabList {
+    display: flex;
+    border-bottom: 1px solid var(--cds-border-subtle);
+    margin-bottom: 1rem;
+  }
+
+  .tabButton {
+    border-radius: 0;
+    border-bottom: 2px solid transparent;
+    margin-right: 0.5rem;
+    
+    &.activeTab {
+      border-bottom-color: var(--cds-border-interactive);
+      background-color: var(--cds-background-selected);
+    }
+    
+    &:hover {
+      background-color: var(--cds-background-hover);
+    }
+  }
+
+  .tabContent {
+    padding: 0;
+  }
+
+  // Table cell styling
+  :global(.cds--data-table td) {
+    vertical-align: top;
+    padding: 0.75rem 1rem;
+  }
+
+  // Responsive design
+  @media (max-width: 768px) {
+    .medicationsTableTitle {
+      font-size: 1rem;
+    }
+
+    :global(.cds--data-table td) {
+      padding: 0.5rem;
+      font-size: 0.875rem;
+    }
+    .statTag,
+    .prnTag {
+      margin-left: 0.25rem;
+      font-size: 0.75rem;
+    }
+  }
+}

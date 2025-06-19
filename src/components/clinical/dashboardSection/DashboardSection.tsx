@@ -8,6 +8,7 @@ import LabInvestigation from '@displayControls/labinvestigation/LabInvestigation
 import DiagnosesTable from '@displayControls/diagnoses/DiagnosesTable';
 import RadiologyOrdersTable from '@displayControls/radiologyInvestigation/RadiologyInvestigationTable';
 import { useTranslation } from 'react-i18next';
+import MedicationsTable from '@displayControls/medications/MedicationsTable';
 
 export interface DashboardSectionProps {
   section: DashboardSectionConfig;
@@ -30,6 +31,8 @@ const renderSectionContent = (section: DashboardSectionConfig) => {
       return <LabInvestigation />;
     case 'Radiology Investigations':
       return <RadiologyOrdersTable />;
+    case 'Medications':
+      return <MedicationsTable />;
     default:
       return null;
   }
