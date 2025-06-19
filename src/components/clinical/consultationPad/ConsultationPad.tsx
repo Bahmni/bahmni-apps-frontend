@@ -5,13 +5,14 @@ import { Column, Grid, MenuItemDivider } from '@carbon/react';
 import BasicForm from '@components/clinical/forms/encounterDetails/EncounterDetails';
 import DiagnosesForm from '@components/clinical/forms/conditionsAndDiagnoses/ConditionsAndDiagnoses';
 import AllergiesForm from '@components/clinical/forms/allergies/AllergiesForm';
-import InvestigationsForm from '../forms/investigations/InvestigationsForm';
+import InvestigationsForm from '@components/clinical/forms/investigations/InvestigationsForm';
 import { ConsultationBundle } from '@types/consultationBundle';
 import {
   postConsultationBundle,
   createDiagnosisBundleEntries,
   createAllergiesBundleEntries,
   createConditionsBundleEntries,
+  createServiceRequestBundleEntries,
 } from '@services/consultationBundleService';
 import useNotification from '@hooks/useNotification';
 import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
@@ -24,6 +25,7 @@ import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesSt
 import useAllergyStore from '@stores/allergyStore';
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 import * as styles from './styles/ConsultationPad.module.scss';
+import useServiceRequestStore from '@stores/serviceRequestStore';
 
 interface ConsultationPadProps {
   onClose: () => void;
@@ -63,14 +65,23 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     reset: resetEncounterDetails,
   } = useEncounterDetailsStore();
 
+  const { selectedServiceRequests, reset: resetServiceRequests } =
+    useServiceRequestStore();
+
   // Clean up on unmount
   useEffect(() => {
     return () => {
       resetEncounterDetails();
       resetAllergies();
       resetDiagnoses();
+      resetServiceRequests();
     };
-  }, [resetEncounterDetails, resetAllergies, resetDiagnoses]);
+  }, [
+    resetEncounterDetails,
+    resetAllergies,
+    resetDiagnoses,
+    resetServiceRequests,
+  ]);
 
   // Data validation check for consultation submission
   const canSubmitConsultation = !!(
@@ -126,11 +137,19 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       consultationDate,
     });
 
+    const serviceRequestEntries = createServiceRequestBundleEntries({
+      selectedServiceRequests,
+      encounterSubject: encounterResource.subject!,
+      encounterReference: enconterResourceURL,
+      practitionerUUID: practitioner!.uuid,
+    });
+
     const consultationBundle = createConsultationBundle([
       encounterBundleEntry,
       ...diagnosisEntries,
       ...allergyEntries,
       ...conditionEntries,
+      ...serviceRequestEntries,
     ]);
 
     return postConsultationBundle<ConsultationBundle>(consultationBundle);
@@ -151,6 +170,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         resetDiagnoses();
         resetAllergies();
         resetEncounterDetails();
+        resetServiceRequests();
         addNotification({
           title: t('CONSULTATION_SUBMITTED_SUCCESS_TITLE'),
           message: t('CONSULTATION_SUBMITTED_SUCCESS_MESSAGE'),
@@ -176,6 +196,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   const handleOnSecondaryButtonClick = () => {
     resetDiagnoses();
     resetAllergies();
+    resetServiceRequests();
     onClose();
   };
 

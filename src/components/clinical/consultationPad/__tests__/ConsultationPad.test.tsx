@@ -17,6 +17,7 @@ import { Provider } from '@types/provider';
 import { DiagnosisInputEntry } from '@types/diagnosis';
 import { ConditionsAndDiagnosesState } from '@stores/conditionsAndDiagnosesStore';
 import { ConceptSearch } from '@types/concepts';
+import { ServiceRequestInputEntry } from '@/types/serviceRequest';
 
 // Mock all dependencies
 jest.mock('@utils/date', () => ({
@@ -160,6 +161,33 @@ jest.mock('@stores/encounterDetailsStore', () => {
   };
 });
 
+jest.mock('@stores/serviceRequestStore', () => {
+  const createMockStore = () => {
+    const store = {
+      selectedServiceRequests: new Map(),
+      addServiceRequest: jest.fn(),
+      removeServiceRequest: jest.fn(),
+      reset: jest.fn(),
+      getState: jest.fn(),
+    };
+    store.getState = jest.fn().mockReturnValue(store);
+    return store;
+  };
+
+  // Create a single instance that will be returned by default
+  const mockStoreInstance = createMockStore();
+
+  // Create the hook function that returns the store
+  const useServiceRequestStore = jest.fn(() => mockStoreInstance);
+
+  return {
+    __esModule: true,
+    default: useServiceRequestStore,
+    useServiceRequestStore,
+    createMockStore,
+  };
+});
+
 jest.mock('@services/consultationBundleService', () => ({
   postConsultationBundle: jest
     .fn()
@@ -195,6 +223,25 @@ jest.mock('@services/consultationBundleService', () => ({
           resourceType: 'Condition',
         },
       }));
+    }),
+  createServiceRequestBundleEntries: jest
+    .fn()
+    .mockImplementation(({ selectedServiceRequests }) => {
+      if (!selectedServiceRequests || selectedServiceRequests.size === 0)
+        return [];
+      const entries: { resource: { resourceType: string } }[] = [];
+      selectedServiceRequests.forEach(
+        (requests: ServiceRequestInputEntry[]) => {
+          requests.forEach(() => {
+            entries.push({
+              resource: {
+                resourceType: 'ServiceRequest',
+              },
+            });
+          });
+        },
+      );
+      return entries;
     }),
 }));
 
