@@ -258,7 +258,7 @@ describe('SelectedConditionItem Unit Tests', () => {
       );
     });
 
-    it('should handle large valid numbers', async () => {
+    it('should handle numbers that are less than 999', async () => {
       const user = userEvent.setup();
       render(<SelectedConditionItem {...defaultProps} />);
 
@@ -266,11 +266,20 @@ describe('SelectedConditionItem Unit Tests', () => {
         'condition-duration-value-test-condition-1',
       );
       await user.clear(durationInput);
+      fireEvent.change(durationInput, { target: { value: '999' } });
+
+      expect(mockUpdateConditionDuration).toHaveBeenCalledWith(
+        'test-condition-1',
+        999,
+        'days',
+      );
+
+      await user.clear(durationInput);
       fireEvent.change(durationInput, { target: { value: '9999' } });
 
       expect(mockUpdateConditionDuration).toHaveBeenCalledWith(
         'test-condition-1',
-        9999,
+        999,
         'days',
       );
     });
@@ -563,10 +572,7 @@ describe('SelectedConditionItem Unit Tests', () => {
 
       expect(durationInput).toHaveFocus();
     });
-  });
 
-  // 5. INTEGRATION TESTS
-  describe('Integration Tests', () => {
     it('should work with different duration units', async () => {
       const user = userEvent.setup();
 
@@ -631,28 +637,6 @@ describe('SelectedConditionItem Unit Tests', () => {
 
         // Should not call updateConditionDuration because numValue is not > 0
         expect(mockUpdateConditionDuration).not.toHaveBeenCalled();
-      }
-    });
-
-    it('should call updateConditionDuration when numValue is positive', async () => {
-      render(<SelectedConditionItem {...defaultProps} />);
-
-      const durationInput = screen.getByTestId(
-        'condition-duration-value-test-condition-1',
-      );
-
-      const positiveInputs = ['1', '5', '100', '9999'];
-
-      for (const input of positiveInputs) {
-        jest.clearAllMocks();
-        fireEvent.change(durationInput, { target: { value: input } });
-
-        // Should call updateConditionDuration because numValue > 0
-        expect(mockUpdateConditionDuration).toHaveBeenCalledWith(
-          'test-condition-1',
-          parseInt(input, 10),
-          'days',
-        );
       }
     });
 
