@@ -14,7 +14,7 @@ exports[`SelectedDiagnosisItem Snapshot Tests default rendering matches snapshot
         class="cds--link addAsConditionLink"
         href="#"
       >
-        Add to condition
+        Add as condition
       </a>
     </div>
     <div
@@ -98,7 +98,7 @@ exports[`SelectedDiagnosisItem Snapshot Tests rendering with null selectedCertai
         class="cds--link addAsConditionLink"
         href="#"
       >
-        Add to condition
+        Add as condition
       </a>
     </div>
     <div

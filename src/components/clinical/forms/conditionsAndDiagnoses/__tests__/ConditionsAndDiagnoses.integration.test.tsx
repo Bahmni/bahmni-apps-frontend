@@ -108,7 +108,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
       await user.click(confirmedOption);
 
       // Step 4: Convert diagnosis to condition
-      const addToConditionsButton = screen.getByText('Add to condition');
+      const addToConditionsButton = screen.getByText('Add as condition');
       await user.click(addToConditionsButton);
 
       // Step 5: Verify diagnosis moves to conditions section
@@ -272,7 +272,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
       }
 
       // Convert first diagnosis to condition
-      const addToConditionsButtons = screen.getAllByText('Add to condition');
+      const addToConditionsButtons = screen.getAllByText('Add as condition');
       expect(addToConditionsButtons).toHaveLength(3);
 
       await user.click(addToConditionsButtons[0]); // Convert first diagnosis
@@ -387,11 +387,11 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
       // Verify initial diagnosis state
       await waitFor(() => {
         expect(screen.getByText('Hypertension')).toBeInTheDocument();
-        expect(screen.getByText('Add to condition')).toBeInTheDocument();
+        expect(screen.getByText('Add as condition')).toBeInTheDocument();
       });
 
       // Convert to condition
-      await user.click(screen.getByText('Add to condition'));
+      await user.click(screen.getByText('Add as condition'));
 
       // Verify the conversion worked
       await waitFor(() => {
@@ -452,7 +452,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
 
       // Check that the diagnosis that was converted shows appropriate state
       // The converted item should show in conditions, remaining one in diagnoses
-      const addToConditionsButtons = screen.getAllByText('Add to condition');
+      const addToConditionsButtons = screen.getAllByText('Add as condition');
       expect(addToConditionsButtons).toHaveLength(1); // Only one diagnosis left
 
       // The condition should show in conditions section - check by text instead of display value
@@ -739,7 +739,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
 
       // Existing diagnosis should still be there and functional
       expect(screen.getByText('Hypertension')).toBeInTheDocument();
-      expect(screen.getByText('Add to condition')).toBeInTheDocument();
+      expect(screen.getByText('Add as condition')).toBeInTheDocument();
     });
   });
 
@@ -780,7 +780,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
       expect(await axe(container)).toHaveNoViolations();
 
       // Convert to condition
-      await user.click(screen.getByText('Add to condition'));
+      await user.click(screen.getByText('Add as condition'));
 
       // Test accessibility with condition
       expect(await axe(container)).toHaveNoViolations();

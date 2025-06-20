@@ -74,6 +74,7 @@
   "DATE_ERROR_NULL_OR_UNDEFINED": "La fecha es nula o no está definida",
   "DATE_ERROR_PARSE": "Error al analizar la fecha",
   "DIAGNOSES_ADDED_DIAGNOSES": "Diagnósticos Agregados",
+  "DIAGNOSES_ALREADY_ADDED_AS_CONDITION": "Ya agregado como condición",
   "DIAGNOSES_CERTAINTY_ARIA_LABEL": "Certeza del Diagnóstico",
   "DIAGNOSES_DISPLAY_CONTROL_HEADING": "Diagnósticos",
   "CONDITIONS_AND_DIAGNOSES_FORM_TITLE": "Condiciones y Diagnósticos",
