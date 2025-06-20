@@ -59,7 +59,7 @@ const SelectedConditionItem: React.FC<SelectedConditionItemProps> = React.memo(
                 return;
               }
               const numValue = parseInt(value, 10);
-              if (!isNaN(numValue) && numValue > 0) {
+              if (!isNaN(numValue) && numValue > 0 && numValue <= 999) {
                 updateConditionDuration(id, numValue, durationUnit);
               }
             }}
@@ -80,7 +80,7 @@ const SelectedConditionItem: React.FC<SelectedConditionItemProps> = React.memo(
             selectedItem={
               DURATION_UNITS.find((unit) => unit.id === durationUnit) || null
             }
-            itemToString={(item) => (item?.display ? t(item.display!) : '')}
+            itemToString={(item) => t(item.display!)}
             onChange={(event) => {
               const unit = event.selectedItem?.id as
                 | 'days'
