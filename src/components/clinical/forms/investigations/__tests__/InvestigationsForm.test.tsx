@@ -128,7 +128,7 @@ describe('InvestigationsForm', () => {
       expect(combobox).toHaveAttribute('id', 'investigations-search');
       expect(combobox).toHaveAttribute(
         'placeholder',
-        'Search to add laboratory or radiology investigations',
+        'Search to add investigations',
       );
       expect(combobox).toHaveAttribute(
         'aria-label',

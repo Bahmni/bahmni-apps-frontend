@@ -1,4 +1,4 @@
-import { ValueSet } from 'fhir/r4';
+import { ValueSet, ValueSetExpansionContains } from 'fhir/r4';
 import { FlattenedInvestigations } from '@types/investigations';
 import { searchFHIRConceptsByName } from './conceptService';
 import { ALL_ORDERABLES_CONCEPT_NAME } from '@constants/app';
@@ -6,6 +6,16 @@ import i18next from 'i18next';
 
 const fetchInvestigations = async (): Promise<ValueSet> => {
   return await searchFHIRConceptsByName(ALL_ORDERABLES_CONCEPT_NAME);
+};
+
+const getInvestigationDisplay = (
+  investigation: ValueSetExpansionContains,
+): string => {
+  let investigationDisplay = investigation.display || 'Unknown investigation';
+  if (investigation.contains && investigation.contains.length > 0) {
+    investigationDisplay += ` (${i18next.t('INVESTIGATION_PANEL')})`;
+  }
+  return investigationDisplay;
 };
 
 const flattenInvestigations = (
@@ -23,14 +33,9 @@ const flattenInvestigations = (
     );
     topLevelCategory.contains?.forEach((subCategory) => {
       subCategory.contains?.forEach((investigation) => {
-        let investigationDisplay =
-          investigation.display || 'Unknown investigation';
-        if (investigation.contains && investigation.contains.length > 0) {
-          investigationDisplay += ` (${i18next.t('INVESTIGATION_PANEL')})`;
-        }
         results.push({
           code: investigation.code || '',
-          display: investigationDisplay,
+          display: getInvestigationDisplay(investigation),
           category: categoryDisplay,
           categoryCode: categoryCode,
         });

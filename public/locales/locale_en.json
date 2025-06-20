@@ -127,7 +127,7 @@
   "INVESTIGATION_PRIORITY_URGENT": "Urgent",
   "INVESTIGATIONS_ADDED": "Added {{investigationType}}",
   "INVESTIGATIONS_FORM_TITLE": "Order Investigations",
-  "INVESTIGATIONS_SEARCH_PLACEHOLDER" :"Search to add laboratory or radiology investigations",
+  "INVESTIGATIONS_SEARCH_PLACEHOLDER" :"Search to add investigations",
   "LAB_INVESTIGATIONS_CATEGORY": "Lab Investigations",
   "LAB_TEST_ACTIONS": "Actions",
   "LAB_TEST_ERROR_LOADING": "Error loading lab tests",
