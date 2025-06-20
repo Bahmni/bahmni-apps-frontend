@@ -136,6 +136,7 @@ const InvestigationsForm: React.FC = React.memo(() => {
         onInputChange={(input) => setSearchTerm(input)}
         autoAlign
         aria-label={t('INVESTIGATIONS_SEARCH_ARIA_LABEL')}
+        size="lg"
       />
 
       {selectedServiceRequests &&
