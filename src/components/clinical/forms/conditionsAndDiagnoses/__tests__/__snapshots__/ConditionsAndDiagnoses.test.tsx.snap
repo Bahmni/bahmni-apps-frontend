@@ -149,7 +149,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
                   class="cds--link"
                   href="#"
                 >
-                  Add to condition
+                  Add as condition
                 </a>
               </div>
               <div
@@ -448,7 +448,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                   class="cds--link"
                   href="#"
                 >
-                  Add to condition
+                  Add as condition
                 </a>
               </div>
               <div
@@ -1548,7 +1548,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
                   class="cds--link"
                   href="#"
                 >
-                  Add to condition
+                  Add as condition
                 </a>
               </div>
               <div

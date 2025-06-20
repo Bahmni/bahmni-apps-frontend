@@ -50,7 +50,9 @@ const SelectedDiagnosisItem: React.FC<SelectedDiagnosisItemProps> = React.memo(
             aria-disabled={doesConditionExist}
             className={styles.addAsConditionLink}
           >
-            {t('CONDITIONS_ADD_AS_CONDITION')}
+            {doesConditionExist
+              ? t('DIAGNOSES_ALREADY_ADDED_AS_CONDITION')
+              : t('CONDITIONS_ADD_AS_CONDITION')}
           </Link>
         </Column>
         <Column
