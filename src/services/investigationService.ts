@@ -23,9 +23,14 @@ const flattenInvestigations = (
     );
     topLevelCategory.contains?.forEach((subCategory) => {
       subCategory.contains?.forEach((investigation) => {
+        let investigationDisplay =
+          investigation.display || 'Unknown investigation';
+        if (investigation.contains && investigation.contains.length > 0) {
+          investigationDisplay += ` (${i18next.t('INVESTIGATION_PANEL')})`;
+        }
         results.push({
           code: investigation.code || '',
-          display: investigation.display || 'Unknown investigation',
+          display: investigationDisplay,
           category: categoryDisplay,
           categoryCode: categoryCode,
         });

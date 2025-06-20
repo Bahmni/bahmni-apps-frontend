@@ -392,6 +392,186 @@ describe('investigationService', () => {
       ]);
     });
 
+    it('should append (Panel) to investigations with nested contains', async () => {
+      const panelValueSet: ValueSet = {
+        resourceType: 'ValueSet',
+        id: 'panel-valueset',
+        status: 'active',
+        expansion: {
+          timestamp: '2024-01-01T00:00:00Z',
+          contains: [
+            {
+              code: 'LAB',
+              display: 'Laboratory',
+              contains: [
+                {
+                  code: 'BIOCHEM',
+                  display: 'Biochemistry',
+                  contains: [
+                    {
+                      code: 'LIPID_PANEL',
+                      display: 'Lipid Panel',
+                      contains: [
+                        {
+                          code: 'CHOL',
+                          display: 'Cholesterol',
+                        },
+                        {
+                          code: 'TRIG',
+                          display: 'Triglycerides',
+                        },
+                        {
+                          code: 'HDL',
+                          display: 'HDL Cholesterol',
+                        },
+                      ],
+                    },
+                    {
+                      code: 'GLU',
+                      display: 'Glucose',
+                      // No contains - not a panel
+                    },
+                    {
+                      code: 'LIVER_PANEL',
+                      display: 'Liver Function Tests',
+                      contains: [
+                        {
+                          code: 'ALT',
+                          display: 'ALT',
+                        },
+                        {
+                          code: 'AST',
+                          display: 'AST',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      };
+
+      // Mock i18next to return the translation key
+      (i18next.t as unknown as jest.Mock).mockImplementation((key: string) => {
+        if (key === 'INVESTIGATION_PANEL') {
+          return 'Panel';
+        }
+        return key;
+      });
+
+      (conceptService.searchFHIRConceptsByName as jest.Mock).mockResolvedValue(
+        panelValueSet,
+      );
+
+      const result = await getFlattenedInvestigations();
+
+      // Verify that i18next.t was called with the correct key for panels
+      expect(i18next.t).toHaveBeenCalledWith('INVESTIGATION_PANEL');
+
+      // Verify the results
+      expect(result).toHaveLength(3);
+      expect(result).toEqual([
+        {
+          code: 'LIPID_PANEL',
+          display: 'Lipid Panel (Panel)',
+          category: 'Laboratory',
+          categoryCode: 'LAB',
+        },
+        {
+          code: 'GLU',
+          display: 'Glucose',
+          category: 'Laboratory',
+          categoryCode: 'LAB',
+        },
+        {
+          code: 'LIVER_PANEL',
+          display: 'Liver Function Tests (Panel)',
+          category: 'Laboratory',
+          categoryCode: 'LAB',
+        },
+      ]);
+    });
+
+    it('should not append (Panel) to investigations with empty contains array', async () => {
+      const emptyContainsValueSet: ValueSet = {
+        resourceType: 'ValueSet',
+        id: 'empty-contains-valueset',
+        status: 'active',
+        expansion: {
+          timestamp: '2024-01-01T00:00:00Z',
+          contains: [
+            {
+              code: 'LAB',
+              display: 'Laboratory',
+              contains: [
+                {
+                  code: 'BIOCHEM',
+                  display: 'Biochemistry',
+                  contains: [
+                    {
+                      code: 'TEST1',
+                      display: 'Test 1',
+                      contains: [],
+                    },
+                    {
+                      code: 'TEST2',
+                      display: 'Test 2',
+                    },
+                    {
+                      code: 'TEST3',
+                      display: 'Test 3',
+                      contains: [
+                        {
+                          code: 'SUBTEST',
+                          display: 'Sub Test',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      };
+
+      (i18next.t as unknown as jest.Mock).mockImplementation((key: string) => {
+        if (key === 'INVESTIGATION_PANEL') {
+          return 'Panel';
+        }
+        return key;
+      });
+
+      (conceptService.searchFHIRConceptsByName as jest.Mock).mockResolvedValue(
+        emptyContainsValueSet,
+      );
+
+      const result = await getFlattenedInvestigations();
+
+      expect(result).toEqual([
+        {
+          code: 'TEST1',
+          display: 'Test 1',
+          category: 'Laboratory',
+          categoryCode: 'LAB',
+        },
+        {
+          code: 'TEST2',
+          display: 'Test 2',
+          category: 'Laboratory',
+          categoryCode: 'LAB',
+        },
+        {
+          code: 'TEST3',
+          display: 'Test 3 (Panel)',
+          category: 'Laboratory',
+          categoryCode: 'LAB',
+        },
+      ]);
+    });
+
     describe('translateCategory', () => {
       it('should translate "Lab Samples" category to localized string', async () => {
         const mockValueSetWithLabSamples: ValueSet = {

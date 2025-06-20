@@ -122,6 +122,8 @@
   "EXPANDABLE_TABLE_EMPTY_STATE_MESSAGE": "No data available",
   "EXPANDABLE_TABLE_ERROR_MESSAGE": "{{title}}: {{message}}",
   "INVALID_RESPONSE": "Invalid response received from the server",
+  "INVESTIGATION_ALREADY_SELECTED": "(Already selected)",
+  "INVESTIGATION_PANEL": "Panel",
   "INVESTIGATION_PRIORITY_URGENT": "Urgent",
   "INVESTIGATIONS_ADDED": "Added {{investigationType}}",
   "INVESTIGATIONS_FORM_TITLE": "Order Investigations",

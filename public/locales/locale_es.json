@@ -122,6 +122,8 @@
   "EXPANDABLE_TABLE_EMPTY_STATE_MESSAGE": "No hay datos disponibles",
   "EXPANDABLE_TABLE_ERROR_MESSAGE": "{{title}}: {{message}}",
   "INVALID_RESPONSE": "Se recibió una respuesta no válida del servidor",
+  "INVESTIGATION_ALREADY_SELECTED": "(Ya seleccionado)",
+  "INVESTIGATION_PANEL": "Panel",
   "INVESTIGATION_PRIORITY_URGENT": "Urgente",
   "INVESTIGATIONS_ADDED": "{{investigationType}} agregadas",
   "INVESTIGATIONS_FORM_TITLE": "Investigaciones de pedidos",
