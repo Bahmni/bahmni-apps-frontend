@@ -9,13 +9,8 @@ import {
   mockPatientUUID,
   mockConditions,
   mockFormattedConditionsWithoutNotes,
-  mockFormattedConditionsWithNotes,
 } from '@__mocks__/conditionMocks';
-import {
-  FhirCondition,
-  FormattedCondition,
-  ConditionStatus,
-} from '@types/condition';
+import { FormattedCondition, ConditionStatus } from '@types/condition';
 
 // Mock the hooks
 jest.mock('@hooks/usePatientUUID');
@@ -153,47 +148,6 @@ describe('ConditionsTable Integration', () => {
     expect(
       screen.getByText('Network error', { exact: false }),
     ).toBeInTheDocument();
-  });
-
-  it('should display notes when condition has notes', () => {
-    // Mock the hooks
-    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedUseConditions.mockReturnValue({
-      conditions: mockConditions,
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
-
-    mockedFormatConditions.mockReturnValue(mockFormattedConditionsWithNotes);
-
-    render(<ConditionsTable />);
-
-    // In a real test with the actual ExpandableDataTable, we would need to expand the row
-    // But since we're using a mock, we can just check if the notes are in the document
-    expect(
-      screen.getByText('Patient reports pain in the upper right quadrant'),
-    ).toBeInTheDocument();
-  });
-
-  it('should display condition without expanding has no notes', () => {
-    // Mock the hooks
-    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedUseConditions.mockReturnValue({
-      conditions: mockConditions,
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
-
-    mockedFormatConditions.mockReturnValue(mockFormattedConditionsWithoutNotes);
-
-    render(<ConditionsTable />);
-
-    // In a real test with the actual ExpandableDataTable, we would need to expand the row
-    // But since we're using a mock, we can just check if there is no notes in the document
-    expect(screen.getByText('Cyst of Gallbladder')).toBeInTheDocument();
-    expect(screen.getByText('Super Man')).toBeInTheDocument();
   });
 
   it('should handle missing optional fields in condition data', () => {

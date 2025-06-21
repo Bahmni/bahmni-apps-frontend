@@ -131,7 +131,11 @@ export const ExpandableDataTable = <T extends { id?: string }>({
                 >
                   <TableHead>
                     <TableRow>
-                      <TableExpandHeader />
+                      <TableExpandHeader>
+                        <span className="cds--visually-hidden">
+                          {t('TABLE_EXPAND_COLUMN_ARIA_LABEL')}
+                        </span>
+                      </TableExpandHeader>
                       {tableHeaders.map((header) => (
                         <TableHeader
                           {...getHeaderProps({
