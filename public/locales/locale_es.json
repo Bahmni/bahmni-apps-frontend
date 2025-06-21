@@ -169,6 +169,7 @@
   "SEVERITY_MODERATE": "Moderado",
   "SEVERITY_SEVERE": "Grave",
   "SIDE_NAVIGATION": "Navegación lateral",
+  "TABLE_EXPAND_COLUMN_ARIA_LABEL": "Expandir o contraer fila",
   "UNEXPECTED_ERROR": "Se produjo un error inesperado",
   "VISIT_TYPE": "Tipo de visita"
 }
