@@ -7,6 +7,9 @@ import InvestigationsForm from '../InvestigationsForm';
 import { NotificationProvider } from '@providers/NotificationProvider';
 import { ValueSet } from 'fhir/r4';
 import useServiceRequestStore from '@stores/serviceRequestStore';
+import { OrderTypeResponse } from '@types/orderType';
+import { FHIR_CONCEPT_CLASS_EXTENSION_URL } from '@constants/fhir';
+import { ORDER_TYPE_URL, ALL_ORDERABLES_CONCEPT_NAME } from '@constants/app';
 
 // Mock only the API layer
 jest.mock('@services/api', () => ({
@@ -18,6 +21,27 @@ Element.prototype.scrollIntoView = jest.fn();
 
 import { get } from '@services/api';
 import { ServiceRequestInputEntry } from '@types/serviceRequest';
+
+// Mock data for the OrderType response
+const mockOrderTypeResponse: OrderTypeResponse = {
+  results: [
+    {
+      uuid: 'd3560b17-5e07-11ef-8f7c-0242ac120002',
+      display: 'Laboratory',
+      conceptClasses: [
+        { uuid: 'class-1', name: 'Test' },
+        { uuid: 'class-2', name: 'LabTest' },
+      ],
+    },
+    {
+      uuid: 'd3561dc0-5e07-11ef-8f7c-0242ac120002',
+      display: 'Radiology',
+      conceptClasses: [
+        { uuid: 'class-3', name: 'Radiology/Imaging Procedure' },
+      ],
+    },
+  ],
+};
 
 // Mock data for the ValueSet response
 const mockValueSetResponse: ValueSet = {
@@ -37,10 +61,22 @@ const mockValueSetResponse: ValueSet = {
               {
                 code: 'cbc-001',
                 display: 'Complete Blood Count',
+                extension: [
+                  {
+                    url: FHIR_CONCEPT_CLASS_EXTENSION_URL,
+                    valueString: 'Test',
+                  },
+                ],
               },
               {
                 code: 'hb-001',
                 display: 'Hemoglobin',
+                extension: [
+                  {
+                    url: FHIR_CONCEPT_CLASS_EXTENSION_URL,
+                    valueString: 'LabTest',
+                  },
+                ],
               },
             ],
           },
@@ -51,10 +87,22 @@ const mockValueSetResponse: ValueSet = {
               {
                 code: 'glucose-001',
                 display: 'Blood Glucose Test',
+                extension: [
+                  {
+                    url: FHIR_CONCEPT_CLASS_EXTENSION_URL,
+                    valueString: 'Test',
+                  },
+                ],
               },
               {
                 code: 'lipid-001',
                 display: 'Lipid Profile',
+                extension: [
+                  {
+                    url: FHIR_CONCEPT_CLASS_EXTENSION_URL,
+                    valueString: 'LabTest',
+                  },
+                ],
               },
             ],
           },
@@ -71,10 +119,22 @@ const mockValueSetResponse: ValueSet = {
               {
                 code: 'xray-chest-001',
                 display: 'Chest X-Ray',
+                extension: [
+                  {
+                    url: FHIR_CONCEPT_CLASS_EXTENSION_URL,
+                    valueString: 'Radiology/Imaging Procedure',
+                  },
+                ],
               },
               {
                 code: 'xray-abdomen-001',
                 display: 'Abdomen X-Ray',
+                extension: [
+                  {
+                    url: FHIR_CONCEPT_CLASS_EXTENSION_URL,
+                    valueString: 'Radiology/Imaging Procedure',
+                  },
+                ],
               },
             ],
           },
@@ -85,6 +145,12 @@ const mockValueSetResponse: ValueSet = {
               {
                 code: 'ct-head-001',
                 display: 'CT Head',
+                extension: [
+                  {
+                    url: FHIR_CONCEPT_CLASS_EXTENSION_URL,
+                    valueString: 'Radiology/Imaging Procedure',
+                  },
+                ],
               },
             ],
           },
@@ -116,8 +182,16 @@ describe('InvestigationsForm Integration Tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // Setup default mock for successful API response
-    (get as jest.Mock).mockResolvedValue(mockValueSetResponse);
+    // Setup default mock for successful API responses
+    (get as jest.Mock).mockImplementation((url: string) => {
+      if (url === ORDER_TYPE_URL) {
+        return Promise.resolve(mockOrderTypeResponse);
+      }
+      if (url.includes('/ValueSet/$expand')) {
+        return Promise.resolve(mockValueSetResponse);
+      }
+      return Promise.reject(new Error('Unknown URL'));
+    });
     (useServiceRequestStore as unknown as jest.Mock).mockReturnValue(mockStore);
     mockStore.reset();
   });
@@ -128,7 +202,9 @@ describe('InvestigationsForm Integration Tests', () => {
       renderWithProviders(<InvestigationsForm />);
 
       // Verify the form renders with title
-      expect(screen.getByText('Order Investigations')).toBeInTheDocument();
+      expect(
+        screen.getByText('Order Investigations/Procedures'),
+      ).toBeInTheDocument();
 
       // Verify the search combobox is present
       const combobox = screen.getByRole('combobox');
@@ -137,10 +213,15 @@ describe('InvestigationsForm Integration Tests', () => {
       // Type in the search box
       await user.type(combobox, 'blood');
 
-      // Wait for the API call to complete and results to be displayed
+      // Wait for the API calls to complete and results to be displayed
       await waitFor(() => {
+        // Should call order types first
+        expect(get).toHaveBeenCalledWith(ORDER_TYPE_URL);
+        // Then call ValueSet expand
         expect(get).toHaveBeenCalledWith(
-          expect.stringContaining('/ValueSet/$expand?filter=All%20Orderables'),
+          expect.stringContaining(
+            `/ValueSet/$expand?filter=${encodeURIComponent(ALL_ORDERABLES_CONCEPT_NAME)}`,
+          ),
         );
       });
 
@@ -353,13 +434,21 @@ describe('InvestigationsForm Integration Tests', () => {
 
   describe('Error Handling', () => {
     test('should handle empty ValueSet response gracefully', async () => {
-      (get as jest.Mock).mockResolvedValue({
-        resourceType: 'ValueSet',
-        status: 'active',
-        expansion: {
-          timestamp: new Date().toISOString(),
-          contains: [],
-        },
+      (get as jest.Mock).mockImplementation((url: string) => {
+        if (url === ORDER_TYPE_URL) {
+          return Promise.resolve(mockOrderTypeResponse);
+        }
+        if (url.includes('/ValueSet/$expand')) {
+          return Promise.resolve({
+            resourceType: 'ValueSet',
+            status: 'active',
+            expansion: {
+              timestamp: new Date().toISOString(),
+              contains: [],
+            },
+          });
+        }
+        return Promise.reject(new Error('Unknown URL'));
       });
 
       const user = userEvent.setup();
@@ -374,17 +463,74 @@ describe('InvestigationsForm Integration Tests', () => {
         ).toBeInTheDocument();
       });
     });
+
+    test('should handle API errors gracefully', async () => {
+      const errorMessage = 'Failed to fetch investigations';
+      (get as jest.Mock).mockImplementation((url: string) => {
+        if (url === ORDER_TYPE_URL) {
+          return Promise.resolve(mockOrderTypeResponse);
+        }
+        if (url.includes('/ValueSet/$expand')) {
+          return Promise.reject(new Error(errorMessage));
+        }
+        return Promise.reject(new Error('Unknown URL'));
+      });
+
+      const user = userEvent.setup();
+      renderWithProviders(<InvestigationsForm />);
+
+      const combobox = screen.getByRole('combobox');
+      await user.type(combobox, 'test');
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('option', {
+            name: new RegExp('error searching investigations', 'i'),
+          }),
+        ).toBeInTheDocument();
+      });
+    });
+
+    test('should handle empty order types response', async () => {
+      (get as jest.Mock).mockImplementation((url: string) => {
+        if (url === ORDER_TYPE_URL) {
+          return Promise.resolve({ results: [] });
+        }
+        if (url.includes('/ValueSet/$expand')) {
+          return Promise.resolve(mockValueSetResponse);
+        }
+        return Promise.reject(new Error('Unknown URL'));
+      });
+
+      const user = userEvent.setup();
+      renderWithProviders(<InvestigationsForm />);
+
+      const combobox = screen.getByRole('combobox');
+      await user.type(combobox, 'test');
+
+      await waitFor(() => {
+        // Should show no matching investigations since no order types are configured
+        expect(
+          screen.getByText(/no matching investigations found/i),
+        ).toBeInTheDocument();
+      });
+    });
   });
 
   describe('Loading States', () => {
     test('should show loading state while fetching investigations', async () => {
       // Mock a delayed response
-      (get as jest.Mock).mockImplementation(
-        () =>
-          new Promise((resolve) =>
+      (get as jest.Mock).mockImplementation((url: string) => {
+        if (url === ORDER_TYPE_URL) {
+          return Promise.resolve(mockOrderTypeResponse);
+        }
+        if (url.includes('/ValueSet/$expand')) {
+          return new Promise((resolve) =>
             setTimeout(() => resolve(mockValueSetResponse), 100),
-          ),
-      );
+          );
+        }
+        return Promise.reject(new Error('Unknown URL'));
+      });
 
       const user = userEvent.setup();
       renderWithProviders(<InvestigationsForm />);
@@ -422,7 +568,7 @@ describe('InvestigationsForm Integration Tests', () => {
         screen.getByRole('option', { name: 'Complete Blood Count' }),
       );
 
-      // Verify the first was added
+      // Verify the first was added with the order type UUID
       expect(mockStore.addServiceRequest).toHaveBeenCalledWith(
         'Laboratory',
         'cbc-001',
@@ -438,7 +584,7 @@ describe('InvestigationsForm Integration Tests', () => {
       });
       await user.click(screen.getByRole('option', { name: 'Hemoglobin' }));
 
-      // Verify the second was added
+      // Verify the second was added with the order type UUID
       expect(mockStore.addServiceRequest).toHaveBeenCalledWith(
         'Laboratory',
         'hb-001',
@@ -469,6 +615,111 @@ describe('InvestigationsForm Integration Tests', () => {
 
       // Carbon ComboBox updates the value to the selected item's display text
       expect(combobox).toHaveValue('Blood Glucose Test');
+    });
+
+    test('should display panel indicator for LabSet concept class', async () => {
+      // Add a panel investigation to the mock data
+      const mockValueSetWithPanel: ValueSet = {
+        ...mockValueSetResponse,
+        expansion: {
+          ...mockValueSetResponse.expansion!,
+          contains: [
+            {
+              code: 'lab',
+              display: 'Laboratory',
+              contains: [
+                {
+                  code: 'panels',
+                  display: 'Panels',
+                  contains: [
+                    {
+                      code: 'panel-001',
+                      display: 'Liver Function Test',
+                      extension: [
+                        {
+                          url: FHIR_CONCEPT_CLASS_EXTENSION_URL,
+                          valueString: 'LabSet',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      };
+
+      (get as jest.Mock).mockImplementation((url: string) => {
+        if (url === ORDER_TYPE_URL) {
+          return Promise.resolve({
+            results: [
+              {
+                uuid: 'd3560b17-5e07-11ef-8f7c-0242ac120002',
+                display: 'Laboratory',
+                conceptClasses: [{ uuid: 'class-1', name: 'LabSet' }],
+              },
+            ],
+          });
+        }
+        if (url.includes('/ValueSet/$expand')) {
+          return Promise.resolve(mockValueSetWithPanel);
+        }
+        return Promise.reject(new Error('Unknown URL'));
+      });
+
+      const user = userEvent.setup();
+      renderWithProviders(<InvestigationsForm />);
+
+      const combobox = screen.getByRole('combobox');
+      await user.type(combobox, 'liver');
+
+      await waitFor(() => {
+        // Should show the panel investigation with panel indicator
+        const option = screen.getByRole('option', {
+          name: /Liver Function Test.*Panel/i,
+        });
+        expect(option).toBeInTheDocument();
+      });
+    });
+
+    test('should prevent selection of already selected investigations', async () => {
+      const user = userEvent.setup();
+
+      // Mock store with an already selected investigation
+      const mockStoreWithSelection = {
+        ...mockStore,
+        selectedServiceRequests: new Map([
+          [
+            'Laboratory',
+            [
+              {
+                id: 'cbc-001',
+                display: 'Complete Blood Count',
+                selectedPriority: 'routine',
+              },
+            ],
+          ],
+        ]),
+      };
+
+      (useServiceRequestStore as unknown as jest.Mock).mockReturnValue(
+        mockStoreWithSelection,
+      );
+
+      renderWithProviders(<InvestigationsForm />);
+
+      const combobox = screen.getByRole('combobox');
+      await user.type(combobox, 'complete blood');
+
+      await waitFor(() => {
+        // Should show the investigation as already selected
+        const option = screen.getByRole('option', {
+          name: /Complete Blood Count.*already selected/i,
+        });
+        expect(option).toBeInTheDocument();
+        expect(option).toHaveAttribute('disabled');
+      });
     });
   });
 });

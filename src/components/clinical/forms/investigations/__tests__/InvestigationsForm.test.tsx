@@ -122,17 +122,22 @@ describe('InvestigationsForm', () => {
         </I18nextProvider>,
       );
 
-      expect(screen.getByText('Order Investigations')).toBeInTheDocument();
+      expect(
+        screen.getByText('Order Investigations/Procedures'),
+      ).toBeInTheDocument();
       const combobox = screen.getByRole('combobox');
       expect(combobox).toBeInTheDocument();
-      expect(combobox).toHaveAttribute('id', 'investigations-search');
+      expect(combobox).toHaveAttribute(
+        'id',
+        'investigations-procedures-search',
+      );
       expect(combobox).toHaveAttribute(
         'placeholder',
-        'Search to add investigations',
+        'Search to add investigations/procedures',
       );
       expect(combobox).toHaveAttribute(
         'aria-label',
-        'INVESTIGATIONS_SEARCH_ARIA_LABEL',
+        'Search for investigations/prcedures',
       );
     });
   });

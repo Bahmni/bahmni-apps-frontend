@@ -251,7 +251,9 @@ describe('ConsultationPad Integration', () => {
     expect(screen.getByText('Allergies')).toBeInTheDocument();
 
     // Verify that the InvestigationsForm is rendered
-    expect(screen.getByText('Order Investigations')).toBeInTheDocument();
+    expect(
+      screen.getByText('Order Investigations/Procedures'),
+    ).toBeInTheDocument();
 
     // Verify that action buttons are rendered
     expect(screen.getByText('Done')).toBeInTheDocument();

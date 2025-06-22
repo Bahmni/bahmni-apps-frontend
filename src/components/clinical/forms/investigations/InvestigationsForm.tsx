@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { ComboBox, Tile } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import * as styles from './styles/InvestigationsForm.module.scss';
@@ -24,6 +24,22 @@ const InvestigationsForm: React.FC = React.memo(() => {
 
   const { addNotification } = useNotification();
 
+  useEffect(() => {
+    if (error) {
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: t('ERROR_SEARCHING_INVESTIGATIONS', { error: error.message }),
+        type: 'error',
+      });
+    }
+  }, [error, addNotification, t]);
+
+  const translateOrderType = (category: string): string => {
+    return t(`ORDER_TYPE_${category.toUpperCase().replace(/\s/g, '_')}`, {
+      defaultValue: category,
+    });
+  };
+
   const getFilteredInvestigations = (): FlattenedInvestigations[] => {
     if (searchTerm.length === 0) return [];
     if (isLoading) {
@@ -38,11 +54,6 @@ const InvestigationsForm: React.FC = React.memo(() => {
       ];
     }
     if (error) {
-      addNotification({
-        title: t('ERROR_DEFAULT_TITLE'),
-        message: t('ERROR_SEARCHING_INVESTIGATIONS', { error: error.message }),
-        type: 'error',
-      });
       return [
         {
           code: '',
@@ -95,7 +106,7 @@ const InvestigationsForm: React.FC = React.memo(() => {
         currentCategory = investigation.category.toUpperCase();
         investigationsCopy.splice(i, 0, {
           code: '',
-          display: currentCategory,
+          display: translateOrderType(currentCategory),
           category: '',
           categoryCode: '',
           disabled: true,
@@ -128,7 +139,7 @@ const InvestigationsForm: React.FC = React.memo(() => {
         {t('INVESTIGATIONS_FORM_TITLE')}
       </div>
       <ComboBox
-        id="investigations-search"
+        id="investigations-procedures-search"
         placeholder={t('INVESTIGATIONS_SEARCH_PLACEHOLDER')}
         items={filteredInvestigations}
         itemToString={(item) => item?.display || ''}
@@ -145,7 +156,7 @@ const InvestigationsForm: React.FC = React.memo(() => {
           <BoxWHeader
             key={category}
             title={t('INVESTIGATIONS_ADDED', {
-              investigationType: category,
+              investigationType: translateOrderType(category),
             })}
             className={styles.addedInvestigationsBox}
           >

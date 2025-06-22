@@ -1,10 +1,18 @@
 import { ValueSet } from 'fhir/r4';
 import { getFlattenedInvestigations } from '../investigationService';
 import * as conceptService from '../conceptService';
-import { ALL_ORDERABLES_CONCEPT_NAME } from '@constants/app';
+import * as api from '../api';
+import {
+  ALL_ORDERABLES_CONCEPT_NAME,
+  ORDER_TYPE_URL,
+  PANEL_CONCEPT_CLASS_NAME,
+} from '@constants/app';
+import { FHIR_CONCEPT_CLASS_EXTENSION_URL } from '@constants/fhir';
 import i18next from 'i18next';
+import { OrderTypeResponse } from '@types/orderType';
 
 jest.mock('../conceptService');
+jest.mock('../api');
 jest.mock('i18next');
 
 describe('investigationService', () => {
@@ -17,6 +25,29 @@ describe('investigationService', () => {
   });
 
   describe('getFlattenedInvestigations', () => {
+    const mockOrderTypeResponse: OrderTypeResponse = {
+      results: [
+        {
+          uuid: 'lab-order-type-uuid',
+          display: 'Lab Order',
+          conceptClasses: [
+            { uuid: 'test-class-uuid', name: 'Test' },
+            { uuid: 'labtest-class-uuid', name: 'LabTest' },
+          ],
+        },
+        {
+          uuid: 'radiology-order-type-uuid',
+          display: 'Radiology Order',
+          conceptClasses: [
+            {
+              uuid: 'radiology-class-uuid',
+              name: 'Radiology/Imaging Procedure',
+            },
+          ],
+        },
+      ],
+    };
+
     const mockValueSet: ValueSet = {
       resourceType: 'ValueSet',
       id: 'test-valueset',
@@ -35,10 +66,22 @@ describe('investigationService', () => {
                   {
                     code: 'GLU',
                     display: 'Glucose',
+                    extension: [
+                      {
+                        url: FHIR_CONCEPT_CLASS_EXTENSION_URL,
+                        valueString: 'LabTest',
+                      },
+                    ],
                   },
                   {
                     code: 'CREAT',
                     display: 'Creatinine',
+                    extension: [
+                      {
+                        url: FHIR_CONCEPT_CLASS_EXTENSION_URL,
+                        valueString: 'LabTest',
+                      },
+                    ],
                   },
                 ],
               },
@@ -49,6 +92,12 @@ describe('investigationService', () => {
                   {
                     code: 'CBC',
                     display: 'Complete Blood Count',
+                    extension: [
+                      {
+                        url: FHIR_CONCEPT_CLASS_EXTENSION_URL,
+                        valueString: 'Test',
+                      },
+                    ],
                   },
                 ],
               },
@@ -65,6 +114,12 @@ describe('investigationService', () => {
                   {
                     code: 'CXR',
                     display: 'Chest X-Ray',
+                    extension: [
+                      {
+                        url: FHIR_CONCEPT_CLASS_EXTENSION_URL,
+                        valueString: 'Radiology/Imaging Procedure',
+                      },
+                    ],
                   },
                 ],
               },
@@ -78,37 +133,39 @@ describe('investigationService', () => {
       (conceptService.searchFHIRConceptsByName as jest.Mock).mockResolvedValue(
         mockValueSet,
       );
+      (api.get as jest.Mock).mockResolvedValue(mockOrderTypeResponse);
 
       const result = await getFlattenedInvestigations();
 
       expect(conceptService.searchFHIRConceptsByName).toHaveBeenCalledWith(
         ALL_ORDERABLES_CONCEPT_NAME,
       );
+      expect(api.get).toHaveBeenCalledWith(ORDER_TYPE_URL);
       expect(result).toHaveLength(4);
       expect(result).toEqual([
         {
           code: 'GLU',
           display: 'Glucose',
-          category: 'Laboratory',
-          categoryCode: 'LAB',
+          category: 'Lab Order',
+          categoryCode: 'lab-order-type-uuid',
         },
         {
           code: 'CREAT',
           display: 'Creatinine',
-          category: 'Laboratory',
-          categoryCode: 'LAB',
+          category: 'Lab Order',
+          categoryCode: 'lab-order-type-uuid',
         },
         {
           code: 'CBC',
           display: 'Complete Blood Count',
-          category: 'Laboratory',
-          categoryCode: 'LAB',
+          category: 'Lab Order',
+          categoryCode: 'lab-order-type-uuid',
         },
         {
           code: 'CXR',
           display: 'Chest X-Ray',
-          category: 'Radiology',
-          categoryCode: 'RAD',
+          category: 'Radiology Order',
+          categoryCode: 'radiology-order-type-uuid',
         },
       ]);
     });
@@ -127,6 +184,7 @@ describe('investigationService', () => {
       (conceptService.searchFHIRConceptsByName as jest.Mock).mockResolvedValue(
         emptyValueSet,
       );
+      (api.get as jest.Mock).mockResolvedValue(mockOrderTypeResponse);
 
       const result = await getFlattenedInvestigations();
 
@@ -143,6 +201,7 @@ describe('investigationService', () => {
       (conceptService.searchFHIRConceptsByName as jest.Mock).mockResolvedValue(
         noExpansionValueSet,
       );
+      (api.get as jest.Mock).mockResolvedValue(mockOrderTypeResponse);
 
       const result = await getFlattenedInvestigations();
 
@@ -168,10 +227,22 @@ describe('investigationService', () => {
                     {
                       // Missing display
                       code: 'GLU',
+                      extension: [
+                        {
+                          url: FHIR_CONCEPT_CLASS_EXTENSION_URL,
+                          valueString: 'LabTest',
+                        },
+                      ],
                     },
                     {
                       // Missing code
                       display: 'Creatinine',
+                      extension: [
+                        {
+                          url: FHIR_CONCEPT_CLASS_EXTENSION_URL,
+                          valueString: 'LabTest',
+                        },
+                      ],
                     },
                   ],
                 },
@@ -184,6 +255,7 @@ describe('investigationService', () => {
       (conceptService.searchFHIRConceptsByName as jest.Mock).mockResolvedValue(
         incompleteValueSet,
       );
+      (api.get as jest.Mock).mockResolvedValue(mockOrderTypeResponse);
 
       const result = await getFlattenedInvestigations();
 
@@ -191,68 +263,36 @@ describe('investigationService', () => {
         {
           code: 'GLU',
           display: 'Unknown investigation',
-          category: 'Laboratory',
-          categoryCode: '',
+          category: 'Lab Order',
+          categoryCode: 'lab-order-type-uuid',
         },
         {
           code: '',
           display: 'Creatinine',
-          category: 'Laboratory',
-          categoryCode: '',
+          category: 'Lab Order',
+          categoryCode: 'lab-order-type-uuid',
         },
       ]);
     });
 
-    it('should handle missing category display', async () => {
-      const noCategoryDisplayValueSet: ValueSet = {
-        resourceType: 'ValueSet',
-        id: 'no-category-display-valueset',
-        status: 'active',
-        expansion: {
-          timestamp: '2024-01-01T00:00:00Z',
-          contains: [
-            {
-              code: 'LAB',
-              // Missing display
-              contains: [
-                {
-                  code: 'BIOCHEM',
-                  display: 'Biochemistry',
-                  contains: [
-                    {
-                      code: 'GLU',
-                      display: 'Glucose',
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-      };
-
-      (conceptService.searchFHIRConceptsByName as jest.Mock).mockResolvedValue(
-        noCategoryDisplayValueSet,
-      );
-
-      const result = await getFlattenedInvestigations();
-
-      expect(result).toEqual([
-        {
-          code: 'GLU',
-          display: 'Glucose',
-          category: 'Unknown Category',
-          categoryCode: 'LAB',
-        },
-      ]);
-    });
-
-    it('should handle API errors', async () => {
-      const mockError = new Error('API Error');
+    it('should handle API errors from concept service', async () => {
+      const mockError = new Error('Concept API Error');
 
       (conceptService.searchFHIRConceptsByName as jest.Mock).mockRejectedValue(
         mockError,
       );
+      (api.get as jest.Mock).mockResolvedValue(mockOrderTypeResponse);
+
+      await expect(getFlattenedInvestigations()).rejects.toThrow(mockError);
+    });
+
+    it('should handle API errors from order type service', async () => {
+      const mockError = new Error('Order Type API Error');
+
+      (conceptService.searchFHIRConceptsByName as jest.Mock).mockResolvedValue(
+        mockValueSet,
+      );
+      (api.get as jest.Mock).mockRejectedValue(mockError);
 
       await expect(getFlattenedInvestigations()).rejects.toThrow(mockError);
     });
@@ -283,6 +323,7 @@ describe('investigationService', () => {
       (conceptService.searchFHIRConceptsByName as jest.Mock).mockResolvedValue(
         noSubcategoryValueSet,
       );
+      (api.get as jest.Mock).mockResolvedValue(mockOrderTypeResponse);
 
       const result = await getFlattenedInvestigations();
 
@@ -308,10 +349,22 @@ describe('investigationService', () => {
                     {
                       code: 'GLU',
                       display: 'Glucose',
+                      extension: [
+                        {
+                          url: FHIR_CONCEPT_CLASS_EXTENSION_URL,
+                          valueString: 'LabTest',
+                        },
+                      ],
                     },
                     {
                       code: 'LIPID',
                       display: 'Lipid Panel',
+                      extension: [
+                        {
+                          url: FHIR_CONCEPT_CLASS_EXTENSION_URL,
+                          valueString: 'LabTest',
+                        },
+                      ],
                     },
                   ],
                 },
@@ -322,6 +375,12 @@ describe('investigationService', () => {
                     {
                       code: 'CULTURE',
                       display: 'Culture',
+                      extension: [
+                        {
+                          url: FHIR_CONCEPT_CLASS_EXTENSION_URL,
+                          valueString: 'Test',
+                        },
+                      ],
                     },
                   ],
                 },
@@ -338,10 +397,22 @@ describe('investigationService', () => {
                     {
                       code: 'CT_HEAD',
                       display: 'CT Head',
+                      extension: [
+                        {
+                          url: FHIR_CONCEPT_CLASS_EXTENSION_URL,
+                          valueString: 'Radiology/Imaging Procedure',
+                        },
+                      ],
                     },
                     {
                       code: 'CT_CHEST',
                       display: 'CT Chest',
+                      extension: [
+                        {
+                          url: FHIR_CONCEPT_CLASS_EXTENSION_URL,
+                          valueString: 'Radiology/Imaging Procedure',
+                        },
+                      ],
                     },
                   ],
                 },
@@ -354,6 +425,7 @@ describe('investigationService', () => {
       (conceptService.searchFHIRConceptsByName as jest.Mock).mockResolvedValue(
         deeplyNestedValueSet,
       );
+      (api.get as jest.Mock).mockResolvedValue(mockOrderTypeResponse);
 
       const result = await getFlattenedInvestigations();
 
@@ -362,37 +434,37 @@ describe('investigationService', () => {
         {
           code: 'GLU',
           display: 'Glucose',
-          category: 'Laboratory',
-          categoryCode: 'LAB',
+          category: 'Lab Order',
+          categoryCode: 'lab-order-type-uuid',
         },
         {
           code: 'LIPID',
           display: 'Lipid Panel',
-          category: 'Laboratory',
-          categoryCode: 'LAB',
+          category: 'Lab Order',
+          categoryCode: 'lab-order-type-uuid',
         },
         {
           code: 'CULTURE',
           display: 'Culture',
-          category: 'Laboratory',
-          categoryCode: 'LAB',
+          category: 'Lab Order',
+          categoryCode: 'lab-order-type-uuid',
         },
         {
           code: 'CT_HEAD',
           display: 'CT Head',
-          category: 'Radiology',
-          categoryCode: 'RAD',
+          category: 'Radiology Order',
+          categoryCode: 'radiology-order-type-uuid',
         },
         {
           code: 'CT_CHEST',
           display: 'CT Chest',
-          category: 'Radiology',
-          categoryCode: 'RAD',
+          category: 'Radiology Order',
+          categoryCode: 'radiology-order-type-uuid',
         },
       ]);
     });
 
-    it('should append (Panel) to investigations with nested contains', async () => {
+    it('should append (Panel) to investigations with LabSet concept class', async () => {
       const panelValueSet: ValueSet = {
         resourceType: 'ValueSet',
         id: 'panel-valueset',
@@ -411,37 +483,30 @@ describe('investigationService', () => {
                     {
                       code: 'LIPID_PANEL',
                       display: 'Lipid Panel',
-                      contains: [
+                      extension: [
                         {
-                          code: 'CHOL',
-                          display: 'Cholesterol',
-                        },
-                        {
-                          code: 'TRIG',
-                          display: 'Triglycerides',
-                        },
-                        {
-                          code: 'HDL',
-                          display: 'HDL Cholesterol',
+                          url: FHIR_CONCEPT_CLASS_EXTENSION_URL,
+                          valueString: PANEL_CONCEPT_CLASS_NAME,
                         },
                       ],
                     },
                     {
                       code: 'GLU',
                       display: 'Glucose',
-                      // No contains - not a panel
+                      extension: [
+                        {
+                          url: FHIR_CONCEPT_CLASS_EXTENSION_URL,
+                          valueString: 'LabTest',
+                        },
+                      ],
                     },
                     {
                       code: 'LIVER_PANEL',
                       display: 'Liver Function Tests',
-                      contains: [
+                      extension: [
                         {
-                          code: 'ALT',
-                          display: 'ALT',
-                        },
-                        {
-                          code: 'AST',
-                          display: 'AST',
+                          url: FHIR_CONCEPT_CLASS_EXTENSION_URL,
+                          valueString: PANEL_CONCEPT_CLASS_NAME,
                         },
                       ],
                     },
@@ -451,6 +516,20 @@ describe('investigationService', () => {
             },
           ],
         },
+      };
+
+      const panelOrderTypeResponse: OrderTypeResponse = {
+        results: [
+          {
+            uuid: 'lab-order-type-uuid',
+            display: 'Lab Order',
+            conceptClasses: [
+              { uuid: 'test-class-uuid', name: 'Test' },
+              { uuid: 'labtest-class-uuid', name: 'LabTest' },
+              { uuid: 'labset-class-uuid', name: PANEL_CONCEPT_CLASS_NAME },
+            ],
+          },
+        ],
       };
 
       // Mock i18next to return the translation key
@@ -464,6 +543,7 @@ describe('investigationService', () => {
       (conceptService.searchFHIRConceptsByName as jest.Mock).mockResolvedValue(
         panelValueSet,
       );
+      (api.get as jest.Mock).mockResolvedValue(panelOrderTypeResponse);
 
       const result = await getFlattenedInvestigations();
 
@@ -476,28 +556,43 @@ describe('investigationService', () => {
         {
           code: 'LIPID_PANEL',
           display: 'Lipid Panel (Panel)',
-          category: 'Laboratory',
-          categoryCode: 'LAB',
+          category: 'Lab Order',
+          categoryCode: 'lab-order-type-uuid',
         },
         {
           code: 'GLU',
           display: 'Glucose',
-          category: 'Laboratory',
-          categoryCode: 'LAB',
+          category: 'Lab Order',
+          categoryCode: 'lab-order-type-uuid',
         },
         {
           code: 'LIVER_PANEL',
           display: 'Liver Function Tests (Panel)',
-          category: 'Laboratory',
-          categoryCode: 'LAB',
+          category: 'Lab Order',
+          categoryCode: 'lab-order-type-uuid',
         },
       ]);
     });
 
-    it('should not append (Panel) to investigations with empty contains array', async () => {
-      const emptyContainsValueSet: ValueSet = {
+    it('should handle empty order type response', async () => {
+      const emptyOrderTypeResponse: OrderTypeResponse = {
+        results: [],
+      };
+
+      (conceptService.searchFHIRConceptsByName as jest.Mock).mockResolvedValue(
+        mockValueSet,
+      );
+      (api.get as jest.Mock).mockResolvedValue(emptyOrderTypeResponse);
+
+      const result = await getFlattenedInvestigations();
+
+      expect(result).toEqual([]);
+    });
+
+    it('should handle duplicate investigations with same code and category', async () => {
+      const duplicateValueSet: ValueSet = {
         resourceType: 'ValueSet',
-        id: 'empty-contains-valueset',
+        id: 'duplicate-valueset',
         status: 'active',
         expansion: {
           timestamp: '2024-01-01T00:00:00Z',
@@ -511,21 +606,28 @@ describe('investigationService', () => {
                   display: 'Biochemistry',
                   contains: [
                     {
-                      code: 'TEST1',
-                      display: 'Test 1',
-                      contains: [],
-                    },
-                    {
-                      code: 'TEST2',
-                      display: 'Test 2',
-                    },
-                    {
-                      code: 'TEST3',
-                      display: 'Test 3',
-                      contains: [
+                      code: 'GLU',
+                      display: 'Glucose',
+                      extension: [
                         {
-                          code: 'SUBTEST',
-                          display: 'Sub Test',
+                          url: FHIR_CONCEPT_CLASS_EXTENSION_URL,
+                          valueString: 'LabTest',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  code: 'HEMA',
+                  display: 'Hematology',
+                  contains: [
+                    {
+                      code: 'GLU',
+                      display: 'Glucose Test',
+                      extension: [
+                        {
+                          url: FHIR_CONCEPT_CLASS_EXTENSION_URL,
+                          valueString: 'LabTest',
                         },
                       ],
                     },
@@ -537,217 +639,16 @@ describe('investigationService', () => {
         },
       };
 
-      (i18next.t as unknown as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'INVESTIGATION_PANEL') {
-          return 'Panel';
-        }
-        return key;
-      });
-
       (conceptService.searchFHIRConceptsByName as jest.Mock).mockResolvedValue(
-        emptyContainsValueSet,
+        duplicateValueSet,
       );
+      (api.get as jest.Mock).mockResolvedValue(mockOrderTypeResponse);
 
       const result = await getFlattenedInvestigations();
 
-      expect(result).toEqual([
-        {
-          code: 'TEST1',
-          display: 'Test 1',
-          category: 'Laboratory',
-          categoryCode: 'LAB',
-        },
-        {
-          code: 'TEST2',
-          display: 'Test 2',
-          category: 'Laboratory',
-          categoryCode: 'LAB',
-        },
-        {
-          code: 'TEST3',
-          display: 'Test 3 (Panel)',
-          category: 'Laboratory',
-          categoryCode: 'LAB',
-        },
-      ]);
-    });
-
-    describe('translateCategory', () => {
-      it('should translate "Lab Samples" category to localized string', async () => {
-        const mockValueSetWithLabSamples: ValueSet = {
-          resourceType: 'ValueSet',
-          id: 'test-valueset',
-          status: 'active',
-          expansion: {
-            timestamp: '2024-01-01T00:00:00Z',
-            contains: [
-              {
-                code: 'LAB',
-                display: 'Lab Samples', // This should be translated
-                contains: [
-                  {
-                    code: 'BIOCHEM',
-                    display: 'Biochemistry',
-                    contains: [
-                      {
-                        code: 'GLU',
-                        display: 'Glucose',
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-        };
-
-        // Mock i18next to return the expected translation
-        (i18next.t as unknown as jest.Mock).mockImplementation(
-          (key: string) => {
-            if (key === 'LAB_INVESTIGATIONS_CATEGORY') {
-              return 'Lab Investigations';
-            }
-            return key;
-          },
-        );
-
-        (
-          conceptService.searchFHIRConceptsByName as jest.Mock
-        ).mockResolvedValue(mockValueSetWithLabSamples);
-
-        const result = await getFlattenedInvestigations();
-
-        // Verify that i18next.t was called with the correct key
-        expect(i18next.t).toHaveBeenCalledWith('LAB_INVESTIGATIONS_CATEGORY');
-
-        // Verify that the category was translated
-        expect(result[0].category).toBe('Lab Investigations');
-        expect(result).toEqual([
-          {
-            code: 'GLU',
-            display: 'Glucose',
-            category: 'Lab Investigations',
-            categoryCode: 'LAB',
-          },
-        ]);
-      });
-
-      it('should not translate categories other than "Lab Samples"', async () => {
-        const mockValueSetWithOtherCategories: ValueSet = {
-          resourceType: 'ValueSet',
-          id: 'test-valueset',
-          status: 'active',
-          expansion: {
-            timestamp: '2024-01-01T00:00:00Z',
-            contains: [
-              {
-                code: 'RAD',
-                display: 'Radiology', // This should NOT be translated
-                contains: [
-                  {
-                    code: 'XRAY',
-                    display: 'X-Ray',
-                    contains: [
-                      {
-                        code: 'CXR',
-                        display: 'Chest X-Ray',
-                      },
-                    ],
-                  },
-                ],
-              },
-              {
-                code: 'LAB',
-                display: 'Laboratory', // This should NOT be translated (not "Lab Samples")
-                contains: [
-                  {
-                    code: 'BIOCHEM',
-                    display: 'Biochemistry',
-                    contains: [
-                      {
-                        code: 'GLU',
-                        display: 'Glucose',
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-        };
-
-        (
-          conceptService.searchFHIRConceptsByName as jest.Mock
-        ).mockResolvedValue(mockValueSetWithOtherCategories);
-
-        const result = await getFlattenedInvestigations();
-
-        // Verify that i18next.t was NOT called for non-"Lab Samples" categories
-        expect(i18next.t).not.toHaveBeenCalled();
-
-        // Verify that categories remain unchanged
-        expect(result).toEqual([
-          {
-            code: 'CXR',
-            display: 'Chest X-Ray',
-            category: 'Radiology',
-            categoryCode: 'RAD',
-          },
-          {
-            code: 'GLU',
-            display: 'Glucose',
-            category: 'Laboratory',
-            categoryCode: 'LAB',
-          },
-        ]);
-      });
-
-      it('should handle translation with different locales', async () => {
-        const mockValueSetWithLabSamples: ValueSet = {
-          resourceType: 'ValueSet',
-          id: 'test-valueset',
-          status: 'active',
-          expansion: {
-            timestamp: '2024-01-01T00:00:00Z',
-            contains: [
-              {
-                code: 'LAB',
-                display: 'Lab Samples',
-                contains: [
-                  {
-                    code: 'BIOCHEM',
-                    display: 'Biochemistry',
-                    contains: [
-                      {
-                        code: 'GLU',
-                        display: 'Glucose',
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-        };
-
-        // Mock i18next to return Spanish translation
-        (i18next.t as unknown as jest.Mock).mockImplementation(
-          (key: string) => {
-            if (key === 'LAB_INVESTIGATIONS_CATEGORY') {
-              return 'Investigaciones de Laboratorio';
-            }
-            return key;
-          },
-        );
-
-        (
-          conceptService.searchFHIRConceptsByName as jest.Mock
-        ).mockResolvedValue(mockValueSetWithLabSamples);
-
-        const result = await getFlattenedInvestigations();
-
-        expect(result[0].category).toBe('Investigaciones de Laboratorio');
-      });
+      // Should only have one GLU investigation
+      expect(result).toHaveLength(1);
+      expect(result[0].code).toBe('GLU');
     });
   });
 });
