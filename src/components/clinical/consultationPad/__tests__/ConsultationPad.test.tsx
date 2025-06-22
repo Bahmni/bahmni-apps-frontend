@@ -396,7 +396,9 @@ describe('ConsultationPad', () => {
 
       expect(container).toMatchSnapshot();
 
-      resolveSubmission({ id: 'bundle-123' });
+      await act(async () => {
+        resolveSubmission({ id: 'bundle-123' });
+      });
     });
   });
 
