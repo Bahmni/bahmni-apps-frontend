@@ -1,10 +1,11 @@
 import React from 'react';
-import { Column, Grid, Dropdown, Link } from '@carbon/react';
+import { Column, Grid, Dropdown, Link, DataTableSkeleton } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import * as styles from './styles/SelectedDiagnosisItem.module.scss';
 import { Coding } from 'fhir/r4';
 import { DiagnosisInputEntry } from '@types/diagnosis';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
+import useConditions from '@hooks/useConditions';
 
 export interface SelectedDiagnosisItemProps {
   diagnosis: DiagnosisInputEntry;
@@ -30,6 +31,26 @@ const SelectedDiagnosisItem: React.FC<SelectedDiagnosisItemProps> = React.memo(
     const { id, display, selectedCertainty, errors, hasBeenValidated } =
       diagnosis;
     const hasCertaintyError = !!(hasBeenValidated && errors.certainty);
+    const {
+      conditions: existingConditions,
+      loading: existingConditionsLoading,
+    } = useConditions();
+
+    if (existingConditionsLoading) {
+      return (
+        <DataTableSkeleton
+          columnCount={2}
+          rowCount={0}
+          showHeader={false}
+          showToolbar={false}
+          compact
+        />
+      );
+    }
+
+    const isExistingCondition = existingConditions.some(
+      (d) => d.code?.coding?.[0]?.code === diagnosis.id,
+    );
 
     return (
       <Grid>
@@ -45,12 +66,16 @@ const SelectedDiagnosisItem: React.FC<SelectedDiagnosisItemProps> = React.memo(
             href="#"
             onClick={(e) => {
               e.preventDefault();
+              if (doesConditionExist || isExistingCondition) {
+                return;
+              }
               onMarkAsCondition(id);
             }}
-            aria-disabled={doesConditionExist}
+            disabled={doesConditionExist || isExistingCondition}
+            aria-disabled={doesConditionExist || isExistingCondition}
             className={styles.addAsConditionLink}
           >
-            {doesConditionExist
+            {doesConditionExist || isExistingCondition
               ? t('DIAGNOSES_ALREADY_ADDED_AS_CONDITION')
               : t('CONDITIONS_ADD_AS_CONDITION')}
           </Link>

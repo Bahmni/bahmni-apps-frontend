@@ -4,19 +4,19 @@ import userEvent from '@testing-library/user-event';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/setupTests.i18n';
 import SelectedDiagnosisItem from '../SelectedDiagnosisItem';
-import { Coding } from 'fhir/r4';
+import { Coding, Condition } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { DiagnosisInputEntry } from '@types/diagnosis';
+import { DiagnosisInputEntry } from '@/types/diagnosis';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
+import { useConditions } from '@hooks/useConditions';
 
 expect.extend(toHaveNoViolations);
 
-// Mock the CSS modules
-jest.mock('../styles/SelectedDiagnosisItem.module.scss', () => ({
-  selectedDiagnosisTitle: 'selectedDiagnosisTitle',
-  selectedDiagnosisCertainty: 'selectedDiagnosisCertainty',
-  addAsConditionLink: 'addAsConditionLink',
-}));
+// Mock the useConditions hook
+jest.mock('@hooks/useConditions');
+const mockedUseConditions = useConditions as jest.MockedFunction<
+  typeof useConditions
+>;
 
 const mockDiagnosis: DiagnosisInputEntry = {
   id: 'test-diagnosis-1',
@@ -24,6 +24,30 @@ const mockDiagnosis: DiagnosisInputEntry = {
   selectedCertainty: CERTAINITY_CONCEPTS[0],
   errors: {},
   hasBeenValidated: false,
+};
+
+const mockCondition: Condition = {
+  resourceType: 'Condition',
+  id: 'existing-condition-1',
+  subject: {
+    reference: 'Patient/test-patient-id',
+  },
+  code: {
+    coding: [
+      {
+        code: 'existing-condition-code',
+        display: 'Existing Condition',
+        system: 'http://terminology.hl7.org/CodeSystem/condition-code',
+      },
+    ],
+  },
+};
+
+const defaultUseConditionsReturn = {
+  conditions: [],
+  loading: false,
+  error: null,
+  refetch: jest.fn(),
 };
 
 const defaultProps = {
@@ -44,10 +68,30 @@ describe('SelectedDiagnosisItem', () => {
     i18n.changeLanguage('en');
     // Mock scrollIntoView which is not available in jsdom
     window.HTMLElement.prototype.scrollIntoView = jest.fn();
+    // Set default mock return for useConditions
+    mockedUseConditions.mockReturnValue(defaultUseConditionsReturn);
   });
 
-  // HAPPY PATH TESTS
-  describe('Happy Path Scenarios', () => {
+  // LOADING STATE TESTS
+  describe('Loading State', () => {
+    test('renders DataTableSkeleton when conditions are loading', () => {
+      mockedUseConditions.mockReturnValue({
+        conditions: [],
+        loading: true,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      renderWithI18n(<SelectedDiagnosisItem {...defaultProps} />);
+
+      // Check for skeleton component characteristics
+      expect(screen.getByRole('table')).toBeInTheDocument();
+      expect(screen.queryByText('Diabetes Mellitus')).not.toBeInTheDocument();
+    });
+  });
+
+  // EXISTING CONDITION LOGIC TESTS
+  describe('Existing Condition Logic', () => {
     test('renders diagnosis title correctly', () => {
       renderWithI18n(<SelectedDiagnosisItem {...defaultProps} />);
       expect(screen.getByText('Diabetes Mellitus')).toBeInTheDocument();
@@ -267,38 +311,135 @@ describe('SelectedDiagnosisItem', () => {
       // The dropdown should render without a title text
       expect(dropdown).toBeInTheDocument();
     });
+  });
 
-    test('renders "Add as condition" link below diagnosis title', () => {
-      renderWithI18n(<SelectedDiagnosisItem {...defaultProps} />);
-      expect(
-        screen.getByRole('link', { name: 'Add as condition' }),
-      ).toBeInTheDocument();
-    });
+  // Add as Condition Link Tests
+  describe('Add as Condition Link', () => {
+    // Link State and Text
+    describe('Link State and Text', () => {
+      test('renders "Add as condition" link enabled when not an existing condition', () => {
+        mockedUseConditions.mockReturnValue({
+          conditions: [],
+          loading: false,
+          error: null,
+          refetch: jest.fn(),
+        });
 
-    test('calls onMarkAsCondition when "Add as condition" link is clicked', async () => {
-      const user = userEvent.setup();
-      renderWithI18n(<SelectedDiagnosisItem {...defaultProps} />);
-
-      const addLink = screen.getByRole('link', { name: 'Add as condition' });
-      await user.click(addLink);
-
-      expect(defaultProps.onMarkAsCondition).toHaveBeenCalledWith(
-        'test-diagnosis-1',
-      );
-    });
-
-    test('disables link when condition already exists', () => {
-      const propsWithExistingCondition = {
-        ...defaultProps,
-        doesConditionExist: true,
-      };
-
-      renderWithI18n(<SelectedDiagnosisItem {...propsWithExistingCondition} />);
-
-      const addLink = screen.getByRole('link', {
-        name: 'Already added as a condition',
+        renderWithI18n(<SelectedDiagnosisItem {...defaultProps} />);
+        const addLink = screen.getByRole('link', { name: 'Add as condition' });
+        expect(addLink).toBeInTheDocument();
+        expect(addLink).toHaveAttribute('aria-disabled', 'false');
+        expect(addLink).not.toHaveAttribute('disabled');
       });
-      expect(addLink).toHaveAttribute('aria-disabled', 'true');
+
+      test('renders "Already added as a condition" link disabled when doesConditionExist prop is true', () => {
+        const propsWithExistingCondition = {
+          ...defaultProps,
+          doesConditionExist: true,
+        };
+
+        renderWithI18n(
+          <SelectedDiagnosisItem {...propsWithExistingCondition} />,
+        );
+        const addLink = screen.getByRole('link', {
+          name: 'Already added as a condition',
+        });
+        expect(addLink).toBeInTheDocument();
+        expect(addLink).toHaveAttribute('aria-disabled', 'true');
+      });
+
+      test('renders "Already added as a condition" link disabled when it is an existing condition from hook', () => {
+        const conditionWithSameCode: Condition = {
+          ...mockCondition,
+          code: {
+            coding: [
+              {
+                code: 'test-diagnosis-1', // Same as diagnosis id
+                display: 'Test Condition',
+                system: 'http://terminology.hl7.org/CodeSystem/condition-code',
+              },
+            ],
+          },
+        };
+
+        mockedUseConditions.mockReturnValue({
+          conditions: [conditionWithSameCode],
+          loading: false,
+          error: null,
+          refetch: jest.fn(),
+        });
+
+        renderWithI18n(<SelectedDiagnosisItem {...defaultProps} />);
+        const addLink = screen.getByRole('link', {
+          name: 'Already added as a condition',
+        });
+        expect(addLink).toBeInTheDocument();
+        expect(addLink).toHaveAttribute('aria-disabled', 'true');
+      });
+    });
+
+    // Interaction Tests
+    describe('Interaction Tests', () => {
+      test('calls onMarkAsCondition when "Add as condition" link is clicked and enabled', async () => {
+        const user = userEvent.setup();
+        renderWithI18n(<SelectedDiagnosisItem {...defaultProps} />);
+
+        const addLink = screen.getByRole('link', { name: 'Add as condition' });
+        await user.click(addLink);
+
+        expect(defaultProps.onMarkAsCondition).toHaveBeenCalledWith(
+          'test-diagnosis-1',
+        );
+      });
+
+      test('does NOT call onMarkAsCondition when "Add as condition" link is clicked and disabled by prop', async () => {
+        const user = userEvent.setup();
+        const propsWithExistingCondition = {
+          ...defaultProps,
+          doesConditionExist: true,
+        };
+
+        renderWithI18n(
+          <SelectedDiagnosisItem {...propsWithExistingCondition} />,
+        );
+        const addLink = screen.getByRole('link', {
+          name: 'Already added as a condition',
+        });
+        await user.click(addLink);
+
+        expect(defaultProps.onMarkAsCondition).not.toHaveBeenCalled();
+      });
+
+      test('does NOT call onMarkAsCondition when "Add as condition" link is clicked and disabled by hook', async () => {
+        const user = userEvent.setup();
+        const conditionWithSameCode: Condition = {
+          ...mockCondition,
+          code: {
+            coding: [
+              {
+                code: 'test-diagnosis-1', // Same as diagnosis id
+                display: 'Test Condition',
+                system: 'http://terminology.hl7.org/CodeSystem/condition-code',
+              },
+            ],
+          },
+        };
+
+        mockedUseConditions.mockReturnValue({
+          conditions: [conditionWithSameCode],
+          loading: false,
+          error: null,
+          refetch: jest.fn(),
+        });
+
+        renderWithI18n(<SelectedDiagnosisItem {...defaultProps} />);
+        const addLink = screen.getByRole('link', {
+          name: 'Already added as a condition',
+        });
+        await user.click(addLink);
+
+        expect(defaultProps.onMarkAsCondition).not.toHaveBeenCalled();
+      });
     });
   });
 
@@ -356,6 +497,32 @@ describe('SelectedDiagnosisItem', () => {
           updateCertainty={defaultProps.updateCertainty}
           onMarkAsCondition={defaultProps.onMarkAsCondition}
         />,
+      );
+      expect(container).toMatchSnapshot();
+    });
+
+    test('loading state matches snapshot', () => {
+      mockedUseConditions.mockReturnValue({
+        conditions: [],
+        loading: true,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      const { container } = renderWithI18n(
+        <SelectedDiagnosisItem {...defaultProps} />,
+      );
+      expect(container).toMatchSnapshot();
+    });
+
+    test('disabled condition link matches snapshot', () => {
+      const propsWithExistingCondition = {
+        ...defaultProps,
+        doesConditionExist: true,
+      };
+
+      const { container } = renderWithI18n(
+        <SelectedDiagnosisItem {...propsWithExistingCondition} />,
       );
       expect(container).toMatchSnapshot();
     });
