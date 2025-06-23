@@ -1,8 +1,8 @@
-@import '../../../styles/theme-variables.scss';
+@use "@carbon/react/scss/type" as *;
 
 .medicationsTable {
   margin-bottom: 1rem;
-  
+
   .medicationsTableTitle {
     font-size: 1.125rem;
     font-weight: 600;
@@ -12,13 +12,6 @@
 
   .medicationsTableBody {
     margin-bottom: 0.5rem;
-  }
-
-  .emptyState {
-    padding: 2rem 1rem;
-    text-align: center;
-    color: var(--cds-text-secondary);
-    font-style: italic;
   }
 
   .errorState {
@@ -64,7 +57,9 @@
     margin-bottom: 1rem;
   }
 
-  :global(.cds-layout-size-height-local){ height: 0px; }
+  :global(.cds-layout-size-height-local) {
+    height: 0px;
+  }
 
   .tabList {
     display: flex;
@@ -76,12 +71,12 @@
     border-radius: 0;
     border-bottom: 2px solid transparent;
     margin-right: 0.5rem;
-    
+
     &.activeTab {
       border-bottom-color: var(--cds-border-interactive);
       background-color: var(--cds-background-selected);
     }
-    
+
     &:hover {
       background-color: var(--cds-background-hover);
     }

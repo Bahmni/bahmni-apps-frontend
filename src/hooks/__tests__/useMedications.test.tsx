@@ -12,9 +12,8 @@ jest.mock('../usePatientUUID');
 jest.mock('@utils/common');
 
 // Type the mocked functions
-const mockedGetPatientMedications = getPatientMedications as jest.MockedFunction<
-  typeof getPatientMedications
->;
+const mockedGetPatientMedications =
+  getPatientMedications as jest.MockedFunction<typeof getPatientMedications>;
 const mockedUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
 >;
@@ -151,7 +150,9 @@ describe('useMedications hook', () => {
       ];
 
       mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedGetPatientMedications.mockResolvedValueOnce(medicationsWithDifferentStatuses);
+      mockedGetPatientMedications.mockResolvedValueOnce(
+        medicationsWithDifferentStatuses,
+      );
 
       // Act
       const { result } = renderHook(() => useMedications());
@@ -163,11 +164,17 @@ describe('useMedications hook', () => {
 
       // Assert
       expect(result.current.medications).toHaveLength(3);
-      expect(result.current.medications[0].status).toBe(MedicationStatus.Active);
+      expect(result.current.medications[0].status).toBe(
+        MedicationStatus.Active,
+      );
       expect(result.current.medications[0].isActive).toBe(true);
-      expect(result.current.medications[1].status).toBe(MedicationStatus.Scheduled);
+      expect(result.current.medications[1].status).toBe(
+        MedicationStatus.Scheduled,
+      );
       expect(result.current.medications[1].isScheduled).toBe(true);
-      expect(result.current.medications[2].status).toBe(MedicationStatus.Stopped);
+      expect(result.current.medications[2].status).toBe(
+        MedicationStatus.Stopped,
+      );
       expect(result.current.medications[2].isActive).toBe(false);
     });
   });
@@ -275,7 +282,9 @@ describe('useMedications hook', () => {
       });
 
       // Assert
-      expect(result.current.error?.message).toBe('An unexpected error occurred');
+      expect(result.current.error?.message).toBe(
+        'An unexpected error occurred',
+      );
       expect(result.current.medications).toEqual([]);
       expect(result.current.loading).toBe(false);
     });
@@ -567,23 +576,29 @@ describe('useMedications hook', () => {
 
     it('should handle large number of medications', async () => {
       // Arrange
-      const largeMedicationList: FormattedMedication[] = Array.from({ length: 100 }, (_, index) => ({
-        id: `medication-${index}`,
-        name: `Medication ${index}`,
-        form: 'Tablet',
-        dose: `${(index + 1) * 10} mg`,
-        frequency: '1 / 1day',
-        route: 'Oral',
-        duration: '30 days',
-        status: index % 2 === 0 ? MedicationStatus.Active : MedicationStatus.Completed,
-        priority: '',
-        startDate: '2023-12-01T10:30:00.000+0000',
-        orderDate: '2023-12-01T09:30:00.000+0000',
-        orderedBy: 'Dr. Test',
-        notes: `Notes for medication ${index}`,
-        isActive: index % 2 === 0,
-        isScheduled: false,
-      }));
+      const largeMedicationList: FormattedMedication[] = Array.from(
+        { length: 100 },
+        (_, index) => ({
+          id: `medication-${index}`,
+          name: `Medication ${index}`,
+          form: 'Tablet',
+          dose: `${(index + 1) * 10} mg`,
+          frequency: '1 / 1day',
+          route: 'Oral',
+          duration: '30 days',
+          status:
+            index % 2 === 0
+              ? MedicationStatus.Active
+              : MedicationStatus.Completed,
+          priority: '',
+          startDate: '2023-12-01T10:30:00.000+0000',
+          orderDate: '2023-12-01T09:30:00.000+0000',
+          orderedBy: 'Dr. Test',
+          notes: `Notes for medication ${index}`,
+          isActive: index % 2 === 0,
+          isScheduled: false,
+        }),
+      );
 
       mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedGetPatientMedications.mockResolvedValueOnce(largeMedicationList);

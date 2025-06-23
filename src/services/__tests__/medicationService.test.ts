@@ -142,16 +142,25 @@ describe('medicationService', () => {
         const mockMedications = [
           createMockMedicationRequest({
             id: 'medication-1',
-            medicationReference: { display: 'Aspirin 100mg', reference: 'Medication/med-1' },
+            medicationReference: {
+              display: 'Aspirin 100mg',
+              reference: 'Medication/med-1',
+            },
             status: 'active',
           }),
           createMockMedicationRequest({
             id: 'medication-2',
-            medicationReference: { display: 'Metformin 500mg', reference: 'Medication/med-2' },
+            medicationReference: {
+              display: 'Metformin 500mg',
+              reference: 'Medication/med-2',
+            },
             status: 'completed',
           }),
         ];
-        const mockBundle = createMockBundle(mockMedications, [createMockMedication(), createMockPractitioner()]);
+        const mockBundle = createMockBundle(mockMedications, [
+          createMockMedication(),
+          createMockPractitioner(),
+        ]);
 
         (get as jest.Mock).mockResolvedValueOnce(mockBundle);
 
@@ -183,11 +192,18 @@ describe('medicationService', () => {
       it('should map medication statuses correctly', async () => {
         const mockMedications = [
           createMockMedicationRequest({ id: 'active-med', status: 'active' }),
-          createMockMedicationRequest({ id: 'completed-med', status: 'completed' }),
+          createMockMedicationRequest({
+            id: 'completed-med',
+            status: 'completed',
+          }),
           createMockMedicationRequest({ id: 'stopped-med', status: 'stopped' }),
           createMockMedicationRequest({ id: 'draft-med', status: 'draft' }),
           createMockMedicationRequest({ id: 'onhold-med', status: 'on-hold' }),
-          createMockMedicationRequest({ id: 'unknown-med', status: 'unknown' as any }),
+          createMockMedicationRequest({
+            id: 'unknown-med',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            status: 'unknown' as any,
+          }),
         ];
         const mockBundle = createMockBundle(mockMedications);
 
@@ -218,7 +234,13 @@ describe('medicationService', () => {
               },
               route: {
                 text: 'Oral',
-                coding: [{ code: '26643006', display: 'Oral', system: 'http://snomed.info/sct' }],
+                coding: [
+                  {
+                    code: '26643006',
+                    display: 'Oral',
+                    system: 'http://snomed.info/sct',
+                  },
+                ],
               },
               doseAndRate: [
                 {
@@ -241,7 +263,10 @@ describe('medicationService', () => {
           },
           note: [{ text: 'Take with food' }],
         });
-        const mockBundle = createMockBundle([mockMedication], [createMockMedication()]);
+        const mockBundle = createMockBundle(
+          [mockMedication],
+          [createMockMedication()],
+        );
 
         (get as jest.Mock).mockResolvedValueOnce(mockBundle);
 
@@ -341,6 +366,7 @@ describe('medicationService', () => {
               resource: {
                 resourceType: 'Patient',
                 id: 'patient-1',
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
               } as any,
               fullUrl: 'http://example.com/Patient/patient-1',
             },
@@ -381,12 +407,17 @@ describe('medicationService', () => {
 
         const result = await getPatientMedications(patientUUID);
 
-        expect(notificationService.showError).toHaveBeenCalledWith('Error Title', 'API Error');
+        expect(notificationService.showError).toHaveBeenCalledWith(
+          'Error Title',
+          'API Error',
+        );
         expect(result).toEqual([]);
       });
 
       it('should handle invalid medication data and show notification', async () => {
-        const invalidMedication = createMockMedicationRequest({ id: undefined });
+        const invalidMedication = createMockMedicationRequest({
+          id: undefined,
+        });
         const mockBundle = createMockBundle([invalidMedication]);
 
         (get as jest.Mock).mockResolvedValueOnce(mockBundle);
@@ -397,7 +428,10 @@ describe('medicationService', () => {
 
         const result = await getPatientMedications(patientUUID);
 
-        expect(notificationService.showError).toHaveBeenCalledWith('Validation Error', 'Incomplete medication data');
+        expect(notificationService.showError).toHaveBeenCalledWith(
+          'Validation Error',
+          'Incomplete medication data',
+        );
         expect(result).toEqual([]);
       });
 
@@ -417,7 +451,10 @@ describe('medicationService', () => {
       });
 
       it('should handle missing medication status', async () => {
-        const invalidMedication = createMockMedicationRequest({ status: undefined as any });
+        const invalidMedication = createMockMedicationRequest({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          status: undefined as any,
+        });
         const mockBundle = createMockBundle([invalidMedication]);
 
         (get as jest.Mock).mockResolvedValueOnce(mockBundle);
@@ -500,7 +537,10 @@ describe('medicationService', () => {
           ],
         });
 
-        const mockBundle = createMockBundle([medicationWithValueOnly, medicationWithoutDose]);
+        const mockBundle = createMockBundle([
+          medicationWithValueOnly,
+          medicationWithoutDose,
+        ]);
         (get as jest.Mock).mockResolvedValueOnce(mockBundle);
 
         const result = await getPatientMedications(patientUUID);
@@ -562,9 +602,7 @@ describe('medicationService', () => {
           id: 'med-stat',
           dosageInstruction: [
             {
-              extension: [
-                { valueCode: 'STAT' },
-              ],
+              extension: [{ valueCode: 'STAT' }],
             },
           ],
         });
@@ -573,14 +611,15 @@ describe('medicationService', () => {
           id: 'med-prn',
           dosageInstruction: [
             {
-              extension: [
-                { valueCode: 'PRN' },
-              ],
+              extension: [{ valueCode: 'PRN' }],
             },
           ],
         });
 
-        const mockBundle = createMockBundle([medicationWithSTAT, medicationWithPRN]);
+        const mockBundle = createMockBundle([
+          medicationWithSTAT,
+          medicationWithPRN,
+        ]);
         (get as jest.Mock).mockResolvedValueOnce(mockBundle);
 
         const result = await getPatientMedications(patientUUID);
@@ -604,14 +643,19 @@ describe('medicationService', () => {
 
         const result = await getPatientMedications(patientUUID);
 
-        expect(result[0].notes).toBe('Take with food; Avoid alcohol; Monitor blood pressure');
+        expect(result[0].notes).toBe(
+          'Take with food; Avoid alcohol; Monitor blood pressure',
+        );
       });
 
       it('should handle isActive and isScheduled flags correctly', async () => {
         const mockMedications = [
           createMockMedicationRequest({ id: 'active-med', status: 'active' }),
           createMockMedicationRequest({ id: 'scheduled-med', status: 'draft' }),
-          createMockMedicationRequest({ id: 'completed-med', status: 'completed' }),
+          createMockMedicationRequest({
+            id: 'completed-med',
+            status: 'completed',
+          }),
         ];
 
         const mockBundle = createMockBundle(mockMedications);

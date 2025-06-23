@@ -142,7 +142,7 @@ describe('LabInvestigationControl Integration', () => {
     expect(screen.getByText(i18n.t('LAB_TEST_LOADING'))).toBeInTheDocument();
   });
 
-  it('should display "No lab Investigations available" message when there are no lab tests and not loading', () => {
+  it('should display "No lab investigations recorded" message when there are no lab tests and not loading', () => {
     // Mock the hooks with no data and not loading
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedUseLabInvestigations.mockReturnValue({

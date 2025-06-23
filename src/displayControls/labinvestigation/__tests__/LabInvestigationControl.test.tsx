@@ -176,7 +176,7 @@ describe('LabInvestigationControl', () => {
     expect(testPriorities[2].textContent).toBe(LabTestPriority.routine);
   });
 
-  it('renders "No lab Investigations available" message when there are no lab tests and isLoading is false', () => {
+  it('renders "No lab investigations recorded" message when there are no lab tests and isLoading is false', () => {
     // Mock the hook to return no lab tests
     (useLabInvestigations as jest.Mock).mockReturnValue({
       labTests: [],
@@ -191,7 +191,7 @@ describe('LabInvestigationControl', () => {
 
     // Check that the message is displayed
     expect(
-      screen.getByText('No lab Investigations available'),
+      screen.getByText('No lab investigations recorded'),
     ).toBeInTheDocument();
   });
 

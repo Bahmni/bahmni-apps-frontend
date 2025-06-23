@@ -60,7 +60,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
       <div data-testid="expandable-table-error" className={className}>
         <Accordion align="start">
           <AccordionItem title={tableTitle} open={isOpen}>
-            <p style={{ padding: '0.5rem' }}>
+            <p className={'emptyState'}>
               {t('EXPANDABLE_TABLE_ERROR_MESSAGE', {
                 title: formattedError.title,
                 message: formattedError.message,
@@ -97,7 +97,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
       <div data-testid="expandable-data-table-empty" className={className}>
         <Accordion align="start">
           <AccordionItem title={tableTitle} open={isOpen}>
-            <p style={{ padding: '0.5rem' }}>{emptyStateMessage}</p>
+            <p className={'emptyState'}>{emptyStateMessage}</p>
           </AccordionItem>
         </Accordion>
       </div>

@@ -135,7 +135,7 @@
   "LAB_TEST_RESULTS_PENDING": "Resultados pendientes",
   "LAB_TEST_SINGLE_TEST": "Prueba única",
   "LAB_TEST_STATUS": "Estado",
-  "LAB_TEST_UNAVAILABLE": "No disponible",
+  "LAB_TEST_UNAVAILABLE": "No se registraron pruebas de laboratorio",
   "LAB_TEST_URGENT": "Urgente",
   "LOADING_CLINICAL_CONFIG": "Cargando configuración clínica...",
   "LOADING_CONCEPTS": "Cargando conceptos...",

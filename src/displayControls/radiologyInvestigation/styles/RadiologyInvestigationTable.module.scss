@@ -16,7 +16,8 @@
 .radiologyInvestigationTableBodyError {
   @include type-style("label-02");
   background-color: $background;
-  padding: $spacing-03 !important;
+  padding: $spacing-07 $spacing-05;
+  text-align: center;
   border-top: 1px solid $border-subtle-02;
 }
 

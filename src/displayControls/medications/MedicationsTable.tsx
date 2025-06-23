@@ -1,5 +1,13 @@
 import React, { useMemo, useCallback, useState } from 'react';
-import { Tag, Tile, DataTableSkeleton, Tabs, Tab, TabPanel, TabPanels, TabList } from '@carbon/react';
+import {
+  Tag,
+  Tile,
+  DataTableSkeleton,
+  Tabs,
+  Tab,
+  TabPanel,
+  TabList,
+} from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
 import { useMedications } from '@hooks/useMedications';
@@ -41,34 +49,43 @@ const MedicationsTable: React.FC = () => {
     [],
   );
 
-  const sortMedicationsByPriority = useCallback((meds: FormattedMedication[]) => {
-    return [...meds].sort((a, b) => {
-      const statusPriority = { active: 0, scheduled: 1, completed: 2, stopped: 3 };
-      const aPriority = statusPriority[a.status] ?? 4;
-      const bPriority = statusPriority[b.status] ?? 4;
-      if (aPriority !== bPriority) return aPriority - bPriority;
-      const aDate = new Date(a.orderDate || '').getTime();
-      const bDate = new Date(b.orderDate || '').getTime();
-      return bDate - aDate;
-    });
-  }, []);
+  const sortMedicationsByPriority = useCallback(
+    (meds: FormattedMedication[]) => {
+      return [...meds].sort((a, b) => {
+        const statusPriority = {
+          active: 0,
+          scheduled: 1,
+          completed: 2,
+          stopped: 3,
+        };
+        const aPriority = statusPriority[a.status] ?? 4;
+        const bPriority = statusPriority[b.status] ?? 4;
+        if (aPriority !== bPriority) return aPriority - bPriority;
+        const aDate = new Date(a.orderDate || '').getTime();
+        const bDate = new Date(b.orderDate || '').getTime();
+        return bDate - aDate;
+      });
+    },
+    [],
+  );
 
   const activeAndScheduledMedications = useMemo(
-    () => medications.filter(med => med.isActive || med.isScheduled),
-    [medications]
+    () => medications.filter((med) => med.isActive || med.isScheduled),
+    [medications],
   );
 
   const processedActiveScheduledMedications = useMemo(
     () => sortMedicationsByPriority(activeAndScheduledMedications),
-    [activeAndScheduledMedications, sortMedicationsByPriority]
+    [activeAndScheduledMedications, sortMedicationsByPriority],
   );
 
   const processedAllMedications = useMemo(() => {
     const sorted = sortMedicationsByPriority(medications);
-    const grouped = groupByDate(sorted, (med) =>
-      formatDate(med.orderDate || '', ISO_DATE_FORMAT).formattedResult
+    const grouped = groupByDate(
+      sorted,
+      (med) => formatDate(med.orderDate || '', ISO_DATE_FORMAT).formattedResult,
     );
-    return grouped.map(group => ({
+    return grouped.map((group) => ({
       date: group.date,
       medications: group.items,
     }));
@@ -100,11 +117,13 @@ const MedicationsTable: React.FC = () => {
           return medication.frequency || '--';
         case 'startDate':
           return medication.startDate
-            ? formatDate(medication.startDate, FULL_MONTH_DATE_FORMAT).formattedResult
+            ? formatDate(medication.startDate, FULL_MONTH_DATE_FORMAT)
+                .formattedResult
             : '--';
         case 'orderDate':
           return medication.orderDate
-            ? formatDate(medication.orderDate, FULL_MONTH_DATE_FORMAT).formattedResult
+            ? formatDate(medication.orderDate, FULL_MONTH_DATE_FORMAT)
+                .formattedResult
             : '--';
         case 'orderedBy':
           return medication.orderedBy || '--';
@@ -131,17 +150,17 @@ const MedicationsTable: React.FC = () => {
   );
 
   const renderAllMedicationsTable = useCallback(
-    (processedMedications: Array<{ date: string; medications: FormattedMedication[] }>, emptyMessage: string) => {
-      if (processedMedications.length === 0) {
-        return (
-          <div className={styles.emptyState}>
-            <p>{emptyMessage}</p>
-          </div>
-        );
-      }
+    (
+      processedMedications: Array<{
+        date: string;
+        medications: FormattedMedication[];
+      }>,
+      emptyMessage: string,
+    ) => {
       return processedMedications.map((medicationsByDate, index) => {
         const { date, medications: medicationsList } = medicationsByDate;
-        const formattedDate = formatDate(date, FULL_MONTH_DATE_FORMAT).formattedResult || date;
+        const formattedDate =
+          formatDate(date, FULL_MONTH_DATE_FORMAT).formattedResult || date;
         return (
           <ExpandableDataTable
             key={date}
@@ -165,13 +184,6 @@ const MedicationsTable: React.FC = () => {
 
   const renderActiveandScheduledMedicationsTable = useCallback(
     (medications: FormattedMedication[], emptyMessage: string) => {
-      if (medications.length === 0) {
-        return (
-          <div className={styles.emptyState}>
-            <p>{emptyMessage}</p>
-          </div>
-        );
-      }
       return (
         <ExpandableDataTable
           tableTitle={t('MEDICATIONS_TAB_ACTIVE_SCHEDULED')}
@@ -229,13 +241,13 @@ const MedicationsTable: React.FC = () => {
           <TabPanel>
             {renderActiveandScheduledMedicationsTable(
               processedActiveScheduledMedications,
-              t('NO_ACTIVE_MEDICATIONS')
+              t('NO_ACTIVE_MEDICATIONS'),
             )}
           </TabPanel>
           <TabPanel>
             {renderAllMedicationsTable(
               processedAllMedications,
-              t('NO_MEDICATION_HISTORY')
+              t('NO_MEDICATION_HISTORY'),
             )}
           </TabPanel>
         </Tabs>
