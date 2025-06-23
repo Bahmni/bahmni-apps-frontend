@@ -273,8 +273,11 @@ export function formatDateDistance(date: string): FormatDateResult {
     const yearUnit = i18next.t('CLINICAL_YEARS_TRANSLATION_KEY', {
       count: diffInYears,
     });
-    const absDiffInYears = Math.round(diffInMonths / 12);
-    formattedResult = `${absDiffInYears} ${yearUnit}`;
+    const monthInFraction = diffInMonths % 12;
+    formattedResult =
+      monthInFraction > 6
+        ? `${diffInYears + 1} ${yearUnit}`
+        : `${diffInYears} ${yearUnit}`;
   } else if (diffInYears >= 1) {
     // Use years for periods >= 1 year
     const monthInFraction = diffInMonths % 12;
@@ -292,7 +295,11 @@ export function formatDateDistance(date: string): FormatDateResult {
     const monthUnit = i18next.t('CLINICAL_MONTHS_TRANSLATION_KEY', {
       count: diffInMonths,
     });
-    formattedResult = `${diffInMonths} ${monthUnit}`;
+    const daysInFraction = diffInDays % 30;
+    formattedResult =
+      daysInFraction > 15
+        ? `${diffInMonths + 1} ${monthUnit}`
+        : `${diffInMonths} ${monthUnit}`;
   } else {
     // Use days for everything else (including hours, minutes - round up to at least 1 day)
     const days = Math.max(1, diffInDays);
