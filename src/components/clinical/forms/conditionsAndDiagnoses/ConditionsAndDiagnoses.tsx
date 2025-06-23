@@ -9,6 +9,8 @@ import SelectedDiagnosisItem from './SelectedDiagnosisItem';
 import SelectedConditionItem from './SelectedConditionItem';
 import { useConceptSearch } from '@hooks/useConceptSearch';
 import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
+import useConditions from '@hooks/useConditions';
+
 /**
  * ConditionsAndDiagnoses component
  *
@@ -38,6 +40,12 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
     error: searchError,
   } = useConceptSearch(searchDiagnosesTerm);
 
+  const {
+    conditions: existingConditions,
+    loading: existingConditionsLoading,
+    error: existingConditionsError,
+  } = useConditions();
+
   const handleSearch = (searchTerm: string) => {
     setSearchDiagnosesTerm(searchTerm);
   };
@@ -54,16 +62,19 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
     addDiagnosis(selectedItem);
   };
 
-  const isConditionExists = (diagnosisId: string): boolean => {
-    return (
-      selectedConditions?.some((condition) => condition.id === diagnosisId) ||
-      false
+  const isConditionDuplicate = (diagnosisId: string): boolean => {
+    const isExistingCondition = existingConditions.some(
+      (d) => d.code?.coding?.[0]?.code === diagnosisId,
     );
+    const isSelectedConditions =
+      selectedConditions?.some((condition) => condition.id === diagnosisId) ||
+      false;
+    return isExistingCondition || isSelectedConditions;
   };
 
   const getFilteredSearchResults = () => {
     if (searchDiagnosesTerm.length === 0) return [];
-    if (isSearchLoading) {
+    if (isSearchLoading || existingConditionsLoading) {
       return [
         {
           conceptName: t('LOADING_CONCEPTS'),
@@ -86,7 +97,7 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
       ];
     }
 
-    if (searchError) {
+    if (searchError || existingConditionsError) {
       return [
         {
           conceptName: t('ERROR_FETCHING_CONCEPTS'),
@@ -153,7 +164,7 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
                 diagnosis={diagnosis}
                 updateCertainty={updateCertainty}
                 onMarkAsCondition={() => markAsCondition(diagnosis.id)}
-                doesConditionExist={isConditionExists(diagnosis.id)}
+                doesConditionExist={isConditionDuplicate(diagnosis.id)}
               />
             </SelectedItem>
           ))}
