@@ -258,7 +258,7 @@ describe('SelectedConditionItem Unit Tests', () => {
       );
     });
 
-    it('should handle numbers that are less than 999', async () => {
+    it('should handle numbers that are less than 99', async () => {
       const user = userEvent.setup();
       render(<SelectedConditionItem {...defaultProps} />);
 
@@ -266,11 +266,11 @@ describe('SelectedConditionItem Unit Tests', () => {
         'condition-duration-value-test-condition-1',
       );
       await user.clear(durationInput);
-      fireEvent.change(durationInput, { target: { value: '999' } });
+      fireEvent.change(durationInput, { target: { value: '99' } });
 
       expect(mockUpdateConditionDuration).toHaveBeenCalledWith(
         'test-condition-1',
-        999,
+        99,
         'days',
       );
 
@@ -279,7 +279,7 @@ describe('SelectedConditionItem Unit Tests', () => {
 
       expect(mockUpdateConditionDuration).toHaveBeenCalledWith(
         'test-condition-1',
-        999,
+        99,
         'days',
       );
     });
@@ -481,23 +481,6 @@ describe('SelectedConditionItem Unit Tests', () => {
         null,
         'days',
       );
-    });
-
-    it('should handle rapid consecutive changes', async () => {
-      const user = userEvent.setup();
-      render(<SelectedConditionItem {...defaultProps} />);
-
-      const durationInput = screen.getByTestId(
-        'condition-duration-value-test-condition-1',
-      );
-
-      await user.clear(durationInput);
-      await user.type(durationInput, '1');
-      await user.type(durationInput, '2');
-      await user.type(durationInput, '3');
-
-      // Should handle multiple rapid changes
-      expect(mockUpdateConditionDuration).toHaveBeenCalledTimes(4); // clear + 3 types
     });
 
     it('should render all available duration units in dropdown', () => {

@@ -59,7 +59,7 @@ const SelectedConditionItem: React.FC<SelectedConditionItemProps> = React.memo(
                 return;
               }
               const numValue = parseInt(value, 10);
-              if (!isNaN(numValue) && numValue > 0 && numValue <= 999) {
+              if (!isNaN(numValue) && numValue > 0 && numValue <= 99) {
                 updateConditionDuration(id, numValue, durationUnit);
               }
             }}
