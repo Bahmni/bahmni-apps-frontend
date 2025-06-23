@@ -1,0 +1,30 @@
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.investigationsFormTile {
+  margin: $spacing-03;
+  background-color: $background !important;
+  overflow: hidden !important;
+}
+
+.investigationsFormTitle {
+  @include type-style("heading-compact-02");
+  padding-bottom: $spacing-05;
+}
+
+.addedInvestigationsBox {
+  margin: $spacing-06;
+}
+
+.selectedInvestigationItem {
+  border-top: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 1px solid $border-subtle-02;
+}
+
+.selectedInvestigationItem:last-of-type {
+  border: 0 !important;
+}

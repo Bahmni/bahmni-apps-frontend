@@ -25,6 +25,7 @@ import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesSt
 import useAllergyStore from '@stores/allergyStore';
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 import notificationService from '@services/notificationService';
+import useServiceRequestStore from '@stores/serviceRequestStore';
 
 // Mock axios to prevent actual HTTP requests and SSL certificate errors
 jest.mock('axios', () => ({
@@ -249,6 +250,11 @@ describe('ConsultationPad Integration', () => {
     // Verify that the AllergiesForm is rendered
     expect(screen.getByText('Allergies')).toBeInTheDocument();
 
+    // Verify that the InvestigationsForm is rendered
+    expect(
+      screen.getByText('Order Investigations/Procedures'),
+    ).toBeInTheDocument();
+
     // Verify that action buttons are rendered
     expect(screen.getByText('Done')).toBeInTheDocument();
     expect(screen.getByText('Cancel')).toBeInTheDocument();
@@ -282,6 +288,9 @@ describe('ConsultationPad Integration', () => {
       useConditionsAndDiagnosesStore.getState().selectedDiagnoses,
     ).toHaveLength(0);
     expect(useAllergyStore.getState().selectedAllergies).toHaveLength(0);
+    expect(useServiceRequestStore.getState().selectedServiceRequests).toEqual(
+      new Map(),
+    );
   });
 
   it('should submit consultation successfully when form is valid', async () => {

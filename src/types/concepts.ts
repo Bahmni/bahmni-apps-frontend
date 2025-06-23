@@ -22,3 +22,8 @@ export interface AllergenConceptResponse {
     retired: boolean;
   }[];
 }
+
+export interface ConceptClass {
+  uuid: string;
+  name: string;
+}

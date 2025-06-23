@@ -66,9 +66,16 @@ export const CONCEPT_DETAIL_URL = (uuid: string, locale: string): string =>
   `/concept/${uuid}?v=custom:(uuid,setMembers:(uuid,display,retired))&locale=${locale}`;
 export const FHIR_VALUESET_URL = (uuid: string) =>
   OPENMRS_FHIR_R4 + `/ValueSet/${uuid}/$expand`;
+export const FHIR_VALUESET_FILTER_EXPAND_URL = (filter: string) =>
+  OPENMRS_FHIR_R4 + `/ValueSet/$expand?filter=${encodeURIComponent(filter)}`;
+export const ORDER_TYPE_URL =
+  OPENMRS_REST_V1 +
+  '/ordertype?v=custom:(uuid,display,conceptClasses:(uuid,name))';
+export const ALL_ORDERABLES_CONCEPT_NAME = 'All Orderables';
 export const LOGIN_PATH = '/bahmni/home/index.html#/login';
 export const DEFAULT_LOCALE = 'en';
 export const LOCALE_STORAGE_KEY = 'NG_TRANSLATE_LANG_KEY';
 export const CLINICAL_NAMESPACE = 'clinical';
 export const BAHMNI_HOME_PATH = '/bahmni/home/index.html';
 export const BAHMNI_CLINICAL_PATH = '/bahmni/clinical/index.html';
+export const PANEL_CONCEPT_CLASS_NAME = 'LabSet';

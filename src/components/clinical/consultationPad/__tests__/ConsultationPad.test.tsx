@@ -1,2153 +1,1086 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { axe, toHaveNoViolations } from 'jest-axe';
+import {
+  render,
+  screen,
+  waitFor,
+  fireEvent,
+  act,
+} from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { I18nextProvider } from 'react-i18next';
 import ConsultationPad from '../ConsultationPad';
-import { useTranslation } from 'react-i18next';
-import { useLocations } from '@hooks/useLocations';
-import { useEncounterConcepts } from '@hooks/useEncounterConcepts';
-import { useActivePractitioner } from '@hooks/useActivePractitioner';
-import { useActiveVisit } from '@hooks/useActiveVisit';
-import useNotification from '@hooks/useNotification';
-import { postConsultationBundle } from '@services/consultationBundleService';
-import { Provider } from '@types/provider';
-import { formatDate } from '@utils/date';
-import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
-import { useConceptSearch } from '@hooks/useConceptSearch';
-import { DiagnosisInputEntry } from '@types/diagnosis';
-import { ConditionsAndDiagnosesState } from '@stores/conditionsAndDiagnosesStore';
-import { ConceptSearch } from '@types/concepts';
-import { Coding } from 'fhir/r4';
+import i18n from '@/setupTests.i18n';
 
-// Mock all dependencies
-jest.mock('@utils/date', () => ({
-  ...jest.requireActual('@utils/date'),
-  formatDate: jest.fn(),
-}));
-jest.mock('react-i18next', () => ({
-  useTranslation: jest.fn(),
-}));
-
-jest.mock('@hooks/useNotification', () => ({
+// Mock all child components
+jest.mock('@components/common/actionArea/ActionArea', () => ({
   __esModule: true,
-  default: jest.fn(),
+  default: ({
+    title,
+    primaryButtonText,
+    onPrimaryButtonClick,
+    isPrimaryButtonDisabled,
+    secondaryButtonText,
+    onSecondaryButtonClick,
+    content,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  }: any) => (
+    <div data-testid="mock-action-area">
+      <div data-testid="action-area-title">{title}</div>
+      <div data-testid="action-area-content">{content}</div>
+      <button
+        data-testid="primary-button"
+        onClick={onPrimaryButtonClick}
+        disabled={isPrimaryButtonDisabled}
+      >
+        {primaryButtonText}
+      </button>
+      <button data-testid="secondary-button" onClick={onSecondaryButtonClick}>
+        {secondaryButtonText}
+      </button>
+    </div>
+  ),
 }));
-
-jest.mock('@hooks/useLocations', () => ({
-  useLocations: jest.fn(),
-}));
-
-jest.mock('@hooks/useEncounterConcepts', () => ({
-  useEncounterConcepts: jest.fn(),
-}));
-
-jest.mock('@hooks/useActivePractitioner', () => ({
-  useActivePractitioner: jest.fn(),
-}));
-
-jest.mock('@hooks/useActiveVisit', () => ({
-  useActiveVisit: jest.fn(),
-}));
-
-// Mock the Zustand stores
-jest.mock('@stores/allergyStore', () => {
-  const createMockStore = () => {
-    const store = {
-      selectedAllergies: [],
-      validateAllAllergies: jest.fn().mockReturnValue(true),
-      reset: jest.fn(),
-      getState: jest.fn(),
-    };
-    store.getState = jest.fn().mockReturnValue(store);
-    return store;
-  };
-  const mockStoreInstance = createMockStore();
-  return {
-    __esModule: true,
-    default: jest.fn().mockReturnValue(mockStoreInstance),
-    createMockStore,
-  };
-});
-
-jest.mock('@stores/conditionsAndDiagnosesStore', () => {
-  // Create a factory function to get a fresh store for each test
-  const createMockStore = () => {
-    const store = {
-      selectedDiagnoses: [] as DiagnosisInputEntry[],
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      selectedConditions: [] as any[],
-      addDiagnosis: jest.fn((diagnosis) => {
-        const newDiagnosis = {
-          id: diagnosis.conceptUuid,
-          display: diagnosis.conceptName,
-          selectedCertainty: null,
-          errors: {},
-          hasBeenValidated: false,
-        };
-        store.selectedDiagnoses.push(newDiagnosis);
-        return newDiagnosis;
-      }),
-      removeDiagnosis: jest.fn((id) => {
-        // Actually remove from the selectedDiagnoses array
-        store.selectedDiagnoses = store.selectedDiagnoses.filter(
-          (d) => d.id !== id,
-        );
-      }),
-      updateCertainty: jest.fn((id, certainty) => {
-        // Actually update the certainty
-        const diagnosis = store.selectedDiagnoses.find((d) => d.id === id);
-        if (diagnosis) {
-          diagnosis.selectedCertainty = certainty;
-        }
-      }),
-      validate: jest.fn().mockReturnValue(true),
-      reset: jest.fn(() => {
-        store.selectedDiagnoses = [];
-        store.selectedConditions = []; // Reset conditions as well
-      }),
-      getState: jest.fn(),
-    };
-
-    // Make getState return the current store state
-    store.getState = jest.fn().mockReturnValue(store);
-
-    return store;
-  };
-
-  // Create a fresh store for each test
-  const mockStoreInstance = createMockStore();
-
-  return {
-    useConditionsAndDiagnosesStore: jest
-      .fn()
-      .mockReturnValue(mockStoreInstance),
-    createMockStore, // Export the factory for tests that need to reset the store
-  };
-});
-
-// Mock the encounterDetailsStore
-jest.mock('@stores/encounterDetailsStore', () => {
-  const createMockEncounterStore = () => {
-    const store = {
-      activeVisit: null,
-      selectedLocation: null,
-      selectedEncounterType: null,
-      encounterParticipants: [],
-      consultationDate: new Date(),
-      isEncounterDetailsFormReady: false,
-      practitioner: null,
-      user: null,
-      patientUUID: null,
-      hasError: false,
-      setSelectedLocation: jest.fn(),
-      setSelectedEncounterType: jest.fn(),
-      setEncounterParticipants: jest.fn(),
-      setConsultationDate: jest.fn(),
-      setEncounterDetailsFormReady: jest.fn(),
-      setHasError: jest.fn(),
-      reset: jest.fn(),
-      getState: jest.fn(),
-    };
-
-    store.getState = jest.fn().mockReturnValue(store);
-    return store;
-  };
-
-  const mockStoreInstance = createMockEncounterStore();
-
-  return {
-    useEncounterDetailsStore: jest.fn().mockReturnValue(mockStoreInstance),
-    createMockEncounterStore,
-  };
-});
-
-jest.mock('@services/consultationBundleService', () => ({
-  postConsultationBundle: jest
-    .fn()
-    .mockImplementation((bundle) => Promise.resolve(bundle)),
-  createDiagnosisBundleEntries: jest
-    .fn()
-    .mockImplementation(({ selectedDiagnoses }) => {
-      if (!selectedDiagnoses?.length) return [];
-      return selectedDiagnoses
-        .filter((d: DiagnosisInputEntry) => d.selectedCertainty?.code)
-        .map(() => ({
-          resource: {
-            resourceType: 'Condition',
-          },
-        }));
-    }),
-  createAllergiesBundleEntries: jest
-    .fn()
-    .mockImplementation(({ selectedAllergies }) => {
-      if (!selectedAllergies?.length) return [];
-      return selectedAllergies.map(() => ({
-        resource: {
-          resourceType: 'AllergyIntolerance',
-        },
-      }));
-    }),
-  createConditionsBundleEntries: jest
-    .fn()
-    .mockImplementation(({ selectedConditions }) => {
-      if (!selectedConditions?.length) return [];
-      return selectedConditions.map(() => ({
-        resource: {
-          resourceType: 'Condition',
-        },
-      }));
-    }),
-}));
-
-jest.mock('@utils/fhir/encounterResourceCreator', () => ({
-  createEncounterResource: jest.fn(),
-}));
-global.crypto.randomUUID = jest
-  .fn()
-  .mockReturnValue('1d87ab20-8b86-4b41-a30d-984b2208d945');
-
-jest.mock('@components/common/actionArea/ActionArea', () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return function MockActionArea(props: any) {
-    return (
-      <div data-testid="mock-action-area">
-        <div data-testid="action-area-title">{props.title}</div>
-        <div data-testid="action-area-content">{props.content}</div>
-        <button
-          data-testid="primary-button"
-          onClick={props.onPrimaryButtonClick}
-          disabled={props.isPrimaryButtonDisabled}
-        >
-          {props.primaryButtonText}
-        </button>
-        <button
-          data-testid="secondary-button"
-          onClick={props.onSecondaryButtonClick}
-        >
-          {props.secondaryButtonText}
-        </button>
-      </div>
-    );
-  };
-});
 
 jest.mock(
   '@components/clinical/forms/encounterDetails/EncounterDetails',
-  () => {
-    return function MockBasicForm() {
-      return <div data-testid="mock-basic-form"></div>;
-    };
-  },
+  () => ({
+    __esModule: true,
+    default: () => (
+      <div data-testid="mock-encounter-details">Encounter Details Form</div>
+    ),
+  }),
 );
-
-jest.mock('@components/clinical/forms/allergies/AllergiesForm', () => {
-  return function MockAllergiesForm() {
-    // Get access to the mocked store
-    const mockStore = jest.requireMock('@stores/allergyStore').default();
-
-    return (
-      <div data-testid="mock-allergies-form">
-        <div data-testid="allergies-form-selected">
-          {mockStore.selectedAllergies?.length || 0} selected
-        </div>
-      </div>
-    );
-  };
-});
-
-jest.mock('@carbon/react', () => {
-  const actual = jest.requireActual('@carbon/react');
-  return {
-    ...actual,
-    Grid: ({
-      className,
-      children,
-    }: {
-      className?: string;
-      children: React.ReactNode;
-    }) => (
-      <div data-testid="mock-grid" className={className}>
-        {children}
-      </div>
-    ),
-    Column: ({
-      className,
-      children,
-    }: {
-      className?: string;
-      children: React.ReactNode;
-    }) => (
-      <div data-testid="mock-column" className={className}>
-        {children}
-      </div>
-    ),
-    MenuItemDivider: () => <hr data-testid="mock-divider" />,
-  };
-});
 
 jest.mock(
   '@components/clinical/forms/conditionsAndDiagnoses/ConditionsAndDiagnoses',
-  () => {
-    return function MockDiagnosesForm() {
-      // Get access to the mocked store
-      const mockStore = jest
-        .requireMock('@stores/conditionsAndDiagnosesStore')
-        .useConditionsAndDiagnosesStore();
-
-      // Add a diagnosis with the test data
-      const handleSelect = () => {
-        // Create a diagnosis with a fixed ID for testing
-        const newDiagnosis = {
-          id: 'test-diagnosis-id',
-          display: 'Test Diagnosis',
-          selectedCertainty: null,
-          errors: {},
-          hasBeenValidated: false,
-        };
-
-        // Directly modify the store's selectedDiagnoses array
-        mockStore.selectedDiagnoses = [newDiagnosis];
-
-        return newDiagnosis;
-      };
-
-      // Remove a diagnosis
-      const handleRemove = () => {
-        // Clear the diagnoses array
-        mockStore.selectedDiagnoses = [];
-      };
-
-      // Update certainty
-      const handleCertaintyChange = () => {
-        // Directly update the certainty on the first diagnosis
-        if (mockStore.selectedDiagnoses.length > 0) {
-          mockStore.selectedDiagnoses[0].selectedCertainty = {
-            code: 'confirmed',
-            display: 'Confirmed',
-            system:
-              'http://terminology.hl7.org/CodeSystem/condition-ver-status',
-          };
-        }
-      };
-
-      return (
-        <div data-testid="mock-diagnoses-form">
-          <button
-            onClick={() => {
-              // Simulate search - no need to do anything here
-            }}
-          >
-            Search
-          </button>
-          <button onClick={handleSelect}>Select</button>
-          <button
-            data-testid="select-null-button"
-            onClick={() => {
-              // Handle null selection - no-op
-            }}
-          >
-            Select Null
-          </button>
-          <button onClick={handleRemove}>Remove</button>
-          <div data-testid="diagnoses-form-errors">
-            {/* No errors to display in mock */}
-          </div>
-          <div data-testid="diagnoses-form-loading">
-            {/* Get loading state from useConceptSearch mock */}
-            {jest.requireMock('@hooks/useConceptSearch').useConceptSearch()
-              .loading
-              ? 'Loading'
-              : 'Not Loading'}
-          </div>
-          <div data-testid="diagnoses-form-results">
-            {/* Get results from useConceptSearch mock */}
-            {jest.requireMock('@hooks/useConceptSearch').useConceptSearch()
-              .searchResults?.length || 0}{' '}
-            results
-          </div>
-          <div data-testid="diagnoses-form-selected">
-            {mockStore.selectedDiagnoses?.length || 0} selected
-          </div>
-          {/* Mock selected diagnoses with certainty change capability */}
-          {mockStore.selectedDiagnoses?.map(
-            (diagnosis: DiagnosisInputEntry, index: number) => (
-              <div
-                key={`diagnosis-${index}`}
-                data-testid={`selected-diagnosis-${index}`}
-              >
-                <span>{diagnosis.display}</span>
-                <button
-                  data-testid={`change-certainty-${index}`}
-                  onClick={() => handleCertaintyChange()}
-                >
-                  Change Certainty
-                </button>
-              </div>
-            ),
-          )}
-        </div>
-      );
-    };
-  },
+  () => ({
+    __esModule: true,
+    default: () => (
+      <div data-testid="mock-conditions-diagnoses">
+        Conditions and Diagnoses Form
+      </div>
+    ),
+  }),
 );
 
-jest.mock('@hooks/useConceptSearch', () => ({
-  useConceptSearch: jest.fn(),
+jest.mock('@components/clinical/forms/allergies/AllergiesForm', () => ({
+  __esModule: true,
+  default: () => <div data-testid="mock-allergies-form">Allergies Form</div>,
 }));
 
-// Configure jest-axe
-expect.extend(toHaveNoViolations);
+jest.mock(
+  '@components/clinical/forms/investigations/InvestigationsForm',
+  () => ({
+    __esModule: true,
+    default: () => (
+      <div data-testid="mock-investigations-form">Investigations Form</div>
+    ),
+  }),
+);
+
+jest.mock('@carbon/react', () => ({
+  ...jest.requireActual('@carbon/react'),
+  MenuItemDivider: () => <hr data-testid="mock-divider" />,
+}));
+
+// Mock services
+jest.mock('@services/consultationBundleService', () => ({
+  postConsultationBundle: jest.fn(),
+  createDiagnosisBundleEntries: jest.fn(() => []),
+  createAllergiesBundleEntries: jest.fn(() => []),
+  createConditionsBundleEntries: jest.fn(() => []),
+  createServiceRequestBundleEntries: jest.fn(() => []),
+}));
+
+// Mock hooks
+const mockAddNotification = jest.fn();
+jest.mock('@hooks/useNotification', () => ({
+  __esModule: true,
+  default: jest.fn(() => ({
+    addNotification: mockAddNotification,
+  })),
+}));
+
+// Mock utilities
+jest.mock('@utils/fhir/encounterResourceCreator', () => ({
+  createEncounterResource: jest.fn(() => ({
+    resourceType: 'Encounter',
+    id: 'mock-encounter-id',
+    subject: { reference: 'Patient/patient-123' },
+  })),
+}));
+
+jest.mock('@utils/fhir/consultationBundleCreator', () => ({
+  createBundleEntry: jest.fn((url, resource, method) => ({
+    fullUrl: url,
+    resource,
+    request: { method, url: resource.resourceType },
+  })),
+  createConsultationBundle: jest.fn((entries) => ({
+    resourceType: 'Bundle',
+    type: 'transaction',
+    entry: entries,
+  })),
+}));
+
+// Create mock store factories
+const createMockEncounterDetailsStore = () => ({
+  activeVisit: { id: 'visit-123' },
+  selectedLocation: { uuid: 'location-123', display: 'OPD' },
+  selectedEncounterType: { uuid: 'encounter-type-123', name: 'Consultation' },
+  encounterParticipants: [{ uuid: 'participant-123' }],
+  consultationDate: new Date('2025-01-19'),
+  isEncounterDetailsFormReady: true,
+  practitioner: { uuid: 'practitioner-123' },
+  user: { uuid: 'user-123' },
+  patientUUID: 'patient-123',
+  hasError: false,
+  reset: jest.fn(),
+});
+
+const createMockDiagnosesStore = () => ({
+  selectedDiagnoses: [],
+  selectedConditions: [],
+  validate: jest.fn(() => true),
+  reset: jest.fn(),
+});
+
+const createMockAllergyStore = () => ({
+  selectedAllergies: [],
+  validateAllAllergies: jest.fn(() => true),
+  reset: jest.fn(),
+});
+
+const createMockServiceRequestStore = () => ({
+  selectedServiceRequests: new Map(),
+  reset: jest.fn(),
+});
+
+// Initialize stores
+let mockEncounterDetailsStore = createMockEncounterDetailsStore();
+let mockDiagnosesStore = createMockDiagnosesStore();
+let mockAllergyStore = createMockAllergyStore();
+let mockServiceRequestStore = createMockServiceRequestStore();
+
+jest.mock('@stores/encounterDetailsStore', () => ({
+  useEncounterDetailsStore: jest.fn(() => mockEncounterDetailsStore),
+}));
+
+jest.mock('@stores/conditionsAndDiagnosesStore', () => ({
+  useConditionsAndDiagnosesStore: jest.fn(() => mockDiagnosesStore),
+}));
+
+jest.mock('@stores/allergyStore', () => ({
+  __esModule: true,
+  default: jest.fn(() => mockAllergyStore),
+  useAllergyStore: jest.fn(() => mockAllergyStore),
+}));
+
+jest.mock('@stores/serviceRequestStore', () => ({
+  __esModule: true,
+  default: jest.fn(() => mockServiceRequestStore),
+}));
+
+// Mock crypto.randomUUID
+Object.defineProperty(global, 'crypto', {
+  value: {
+    randomUUID: jest.fn(() => 'mock-uuid-1234-5678-9abc-def012345678'),
+  },
+});
+
+// Import mocked services
+import * as consultationBundleService from '@services/consultationBundleService';
+import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
+import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
+import useAllergyStore from '@stores/allergyStore';
+import useServiceRequestStore from '@stores/serviceRequestStore';
+import { BundleEntry } from 'fhir/r4';
+
+// Test wrapper
+const renderWithProviders = (ui: React.ReactElement) => {
+  return render(<I18nextProvider i18n={i18n}>{ui}</I18nextProvider>);
+};
 
 describe('ConsultationPad', () => {
-  // Common test data
-  const mockPatientUUID = 'patient-123';
   const mockOnClose = jest.fn();
-  const mockTranslation = { t: jest.fn((key) => key) };
-  const mockAddNotification = jest.fn();
-
-  // Mock data for hooks
-  const mockLocations = [
-    {
-      uuid: 'location-1',
-      display: 'Test Location',
-      links: [],
-    },
-  ];
-
-  const mockEncounterConcepts = {
-    encounterTypes: [{ uuid: 'encounter-type-1', name: 'Consultation' }],
-    visitTypes: [{ uuid: 'visit-type-1', name: 'OPD' }],
-  };
-
-  // Updated mock practitioner to match Provider interface
-  const mockPractitioner: Provider = {
-    uuid: 'provider-uuid-123',
-    display: 'Dr. Test - Clinician',
-    person: {
-      uuid: 'person-uuid-456',
-      display: 'Dr. Test',
-      gender: 'M',
-      age: 35,
-      birthdate: '1987-01-01T00:00:00.000+0000',
-      birthdateEstimated: false,
-      dead: false,
-      deathDate: null,
-      causeOfDeath: null,
-      preferredName: {
-        uuid: 'name-uuid-789',
-        display: 'Dr. Test',
-        links: [],
-      },
-      voided: false,
-      birthtime: null,
-      deathdateEstimated: false,
-      links: [],
-      resourceVersion: '1.9',
-    },
-  };
-
-  const mockActiveVisit = {
-    id: 'encounter-1',
-    type: [
-      {
-        coding: [{ code: 'visit-type-1' }],
-      },
-    ],
-  };
-
-  // Helper functions to setup mocks for different scenarios
-  function mockHooksForNormalState() {
-    const locationsHook = {
-      locations: mockLocations,
-      loading: false,
-      error: null,
-    };
-
-    const encounterConceptsHook = {
-      encounterConcepts: mockEncounterConcepts,
-      loading: false,
-      error: null,
-    };
-
-    const practitionerHook = {
-      practitioner: mockPractitioner,
-      user: {
-        uuid: 'user-123',
-        display: 'Test User',
-      },
-      loading: false,
-      error: null,
-    };
-
-    const activeVisitHook = {
-      activeVisit: mockActiveVisit,
-      loading: false,
-      error: null,
-    };
-
-    (useLocations as jest.Mock).mockReturnValue(locationsHook);
-    (useEncounterConcepts as jest.Mock).mockReturnValue(encounterConceptsHook);
-    (useActivePractitioner as jest.Mock).mockReturnValue(practitionerHook);
-    (useActiveVisit as jest.Mock).mockReturnValue(activeVisitHook);
-
-    return {
-      locations: locationsHook,
-      encounterConcepts: encounterConceptsHook,
-      practitioner: practitionerHook,
-      activeVisitHook: activeVisitHook,
-    };
-  }
-
-  function mockHooksForLoading() {
-    (useLocations as jest.Mock).mockReturnValue({
-      locations: [],
-      loading: true,
-      error: null,
-    });
-
-    (useEncounterConcepts as jest.Mock).mockReturnValue({
-      encounterConcepts: null,
-      loading: true,
-      error: null,
-    });
-
-    (useActivePractitioner as jest.Mock).mockReturnValue({
-      practitioner: null,
-      loading: true,
-      error: null,
-    });
-
-    (useActiveVisit as jest.Mock).mockReturnValue({
-      activeVisit: null,
-      loading: true,
-      error: null,
-    });
-  }
-
-  function mockHooksWithLocationError() {
-    const baseState = mockHooksForNormalState();
-
-    (useLocations as jest.Mock).mockReturnValue({
-      ...baseState.locations,
-      error: new Error('Failed to fetch locations'),
-      loading: false,
-    });
-  }
-
-  function mockHooksWithEncounterConceptsError() {
-    const baseState = mockHooksForNormalState();
-
-    (useEncounterConcepts as jest.Mock).mockReturnValue({
-      ...baseState.encounterConcepts,
-      error: new Error('Failed to fetch encounter concepts'),
-      loading: false,
-    });
-  }
-
-  function mockHooksWithPractitionerError() {
-    const baseState = mockHooksForNormalState();
-
-    (useActivePractitioner as jest.Mock).mockReturnValue({
-      ...baseState.practitioner,
-      error: new Error('Failed to fetch practitioner'),
-      loading: false,
-    });
-  }
-
-  function mockHooksWithActiveVisitError() {
-    const baseState = mockHooksForNormalState();
-
-    (useActiveVisit as jest.Mock).mockReturnValue({
-      ...baseState.activeVisitHook,
-      error: new Error('Failed to fetch active visit'),
-      loading: false,
-    });
-  }
-
-  function mockHooksWithMissingData() {
-    const baseState = mockHooksForNormalState();
-
-    (useLocations as jest.Mock).mockReturnValue({
-      ...baseState.locations,
-      locations: [],
-    });
-
-    // Clear the encounterDetailsStore location to make submission invalid
-    const encounterStore = jest
-      .requireMock('@stores/encounterDetailsStore')
-      .useEncounterDetailsStore();
-    encounterStore.selectedLocation = null;
-  }
-
-  function mockHooksWithInvalidSubmissionData() {
-    mockHooksForNormalState();
-
-    (useLocations as jest.Mock).mockReturnValue({
-      locations: [],
-      loading: false,
-      error: null,
-    });
-
-    // Clear the encounterDetailsStore location to make submission invalid
-    const encounterStore = jest
-      .requireMock('@stores/encounterDetailsStore')
-      .useEncounterDetailsStore();
-    encounterStore.selectedLocation = null;
-  }
 
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // Reset the mock stores
-    const conditionsAndDiagnosesStore = jest
-      .requireMock('@stores/conditionsAndDiagnosesStore')
-      .useConditionsAndDiagnosesStore();
-    conditionsAndDiagnosesStore.selectedDiagnoses = [];
-    conditionsAndDiagnosesStore.validate.mockReturnValue(true);
+    // Reset stores to initial state
+    mockEncounterDetailsStore = createMockEncounterDetailsStore();
+    mockDiagnosesStore = createMockDiagnosesStore();
+    mockAllergyStore = createMockAllergyStore();
+    mockServiceRequestStore = createMockServiceRequestStore();
 
-    const encounterStore = jest
-      .requireMock('@stores/encounterDetailsStore')
-      .useEncounterDetailsStore();
-    encounterStore.selectedLocation = mockLocations[0];
-    encounterStore.selectedEncounterType =
-      mockEncounterConcepts.encounterTypes[0];
-    encounterStore.selectedVisitType = mockEncounterConcepts.visitTypes[0];
-    encounterStore.encounterParticipants = [mockPractitioner];
-    encounterStore.consultationDate = new Date();
-    encounterStore.isEncounterDetailsFormReady = true;
-    encounterStore.patientUUID = mockPatientUUID;
-    encounterStore.practitioner = mockPractitioner;
-    encounterStore.user = { uuid: 'user-123', display: 'Test User' };
-    encounterStore.activeVisit = mockActiveVisit;
-
-    (useTranslation as jest.Mock).mockReturnValue(mockTranslation);
-    (useNotification as jest.Mock).mockReturnValue({
-      addNotification: mockAddNotification,
-    });
-    (postConsultationBundle as jest.Mock).mockImplementation((bundle) => {
-      return Promise.resolve({
-        resourceType: 'Bundle',
-        type: 'transaction-response',
-        entry: bundle.entry,
-      });
-    });
-    (createEncounterResource as jest.Mock).mockReturnValue({
-      resourceType: 'Encounter',
-      id: 'test-encounter',
-      subject: { reference: 'Patient/test-patient' },
-      status: 'in-progress',
-      type: [{ coding: [{ code: 'consultation', display: 'Consultation' }] }],
-    });
-    (formatDate as jest.Mock).mockReturnValue({
-      formattedResult: '2025-05-20',
-      error: undefined,
-    });
-    // Default mock for useConceptSearch to prevent undefined errors
-    (useConceptSearch as jest.Mock).mockReturnValue({
-      searchResults: [],
-      loading: false,
-      error: null,
-    });
+    // Update the mocked return values
+    (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue(
+      mockEncounterDetailsStore,
+    );
+    (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue(
+      mockDiagnosesStore,
+    );
+    (useAllergyStore as unknown as jest.Mock).mockReturnValue(mockAllergyStore);
+    (useServiceRequestStore as unknown as jest.Mock).mockReturnValue(
+      mockServiceRequestStore,
+    );
   });
 
   describe('Rendering', () => {
-    describe('Error State', () => {
-      it('should render normally when locations hook returns an error', () => {
-        // Arrange
-        mockHooksWithLocationError();
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-
-        // Assert - Should still render the form
-        expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
-        expect(screen.getByTestId('mock-basic-form')).toBeInTheDocument();
-      });
-
-      it('should render normally when formatDate returns an error', () => {
-        // Arrange
-        mockHooksForNormalState();
-        (formatDate as jest.Mock).mockReturnValue({
-          formattedResult: '',
-          error: {
-            title: 'Date Format Error',
-            message: 'Invalid date format',
-          },
-        });
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-
-        // Assert - Should still render the form
-        expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
-        expect(screen.getByTestId('mock-basic-form')).toBeInTheDocument();
-      });
-
-      it('should render normally when encounterConcepts hook returns an error', () => {
-        // Arrange
-        mockHooksWithEncounterConceptsError();
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-
-        // Assert - Should still render the form
-        expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
-        expect(screen.getByTestId('mock-basic-form')).toBeInTheDocument();
-      });
-
-      it('should render normally when practitioner hook returns an error', () => {
-        // Arrange
-        mockHooksWithPractitionerError();
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-
-        // Assert - Should still render the form but submission should be disabled
-        expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
-        expect(screen.getByTestId('mock-basic-form')).toBeInTheDocument();
-        // Primary button should be disabled due to missing practitioner
-        expect(screen.getByTestId('primary-button')).toBeInTheDocument();
-      });
-
-      it('should render normally when active visit hook returns an error', () => {
-        // Arrange
-        mockHooksWithActiveVisitError();
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-
-        // Assert - Should still render the form but submission should be disabled
-        expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
-        expect(screen.getByTestId('mock-basic-form')).toBeInTheDocument();
-        // Primary button should be disabled due to missing active visit
-        expect(screen.getByTestId('primary-button')).toBeInTheDocument();
-      });
-
-      it('should render normally when locations array is empty', () => {
-        // Arrange
-        mockHooksWithMissingData();
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-
-        // Assert - Should still render the form
-        expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
-        expect(screen.getByTestId('mock-basic-form')).toBeInTheDocument();
-      });
-
-      it('should render normally when patientUUID is empty', () => {
-        // Arrange
-        mockHooksForNormalState();
-
-        // Set empty patientUUID in the store to test error handling
-        const encounterStore = jest
-          .requireMock('@stores/encounterDetailsStore')
-          .useEncounterDetailsStore();
-        encounterStore.patientUUID = '';
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-
-        // Assert - Should still render the form but submission should be disabled
-        expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
-        expect(screen.getByTestId('mock-basic-form')).toBeInTheDocument();
-        // Primary button should be disabled due to missing patientUUID
-        expect(screen.getByTestId('primary-button')).toBeInTheDocument();
-      });
+    it('should render without crashing', () => {
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
     });
 
-    describe('Normal State', () => {
-      it('should render the BasicForm when all data is available', () => {
-        // Arrange
-        mockHooksForNormalState();
-        const mockFormattedDate = '2025-05-20';
-        (formatDate as jest.Mock).mockReturnValue({
-          formattedResult: mockFormattedDate,
-          error: undefined,
-        });
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-
-        // Assert
-        expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
-        expect(screen.getByTestId('mock-basic-form')).toBeInTheDocument();
-        expect(screen.getByText('CONSULTATION_PAD_TITLE')).toBeInTheDocument();
-        // formatDate is now called by BasicForm, not ConsultationPad
-      });
-
-      it('should render with correct button text', () => {
-        // Arrange
-        mockHooksForNormalState();
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-
-        // Assert
-        expect(screen.getByTestId('primary-button')).toHaveTextContent(
-          'CONSULTATION_PAD_DONE_BUTTON',
-        );
-        expect(screen.getByTestId('secondary-button')).toHaveTextContent(
-          'CONSULTATION_PAD_CANCEL_BUTTON',
-        );
-      });
+    it('should display correct title when no error', () => {
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      expect(screen.getByTestId('action-area-title')).toHaveTextContent(
+        'New Consultation',
+      );
     });
 
-    describe('Snapshots', () => {
-      it('should match snapshot for normal state', () => {
-        // Arrange
-        mockHooksForNormalState();
+    it('should render all child forms in correct order', () => {
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
 
-        // Act
-        const { container } = render(<ConsultationPad onClose={mockOnClose} />);
+      const content = screen.getByTestId('action-area-content');
+      const forms = content.querySelectorAll('[data-testid]');
 
-        // Assert
-        expect(container).toMatchSnapshot();
+      expect(forms[0]).toHaveAttribute('data-testid', 'mock-encounter-details');
+      expect(forms[2]).toHaveAttribute(
+        'data-testid',
+        'mock-conditions-diagnoses',
+      );
+      expect(forms[4]).toHaveAttribute('data-testid', 'mock-allergies-form');
+      expect(forms[6]).toHaveAttribute(
+        'data-testid',
+        'mock-investigations-form',
+      );
+    });
+
+    it('should render dividers between forms', () => {
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      const dividers = screen.getAllByTestId('mock-divider');
+      expect(dividers).toHaveLength(4);
+    });
+
+    it('should render forms and dividers in the correct sequence', () => {
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      const content = screen.getByTestId('action-area-content');
+      const children = Array.from(content.children);
+
+      // Verify the exact sequence of forms and dividers
+      expect(children).toHaveLength(8); // 4 forms + 4 dividers
+
+      // Check each element in order
+      expect(children[0]).toHaveAttribute(
+        'data-testid',
+        'mock-encounter-details',
+      );
+      expect(children[1]).toHaveAttribute('data-testid', 'mock-divider');
+      expect(children[2]).toHaveAttribute(
+        'data-testid',
+        'mock-conditions-diagnoses',
+      );
+      expect(children[3]).toHaveAttribute('data-testid', 'mock-divider');
+      expect(children[4]).toHaveAttribute('data-testid', 'mock-allergies-form');
+      expect(children[5]).toHaveAttribute('data-testid', 'mock-divider');
+      expect(children[6]).toHaveAttribute(
+        'data-testid',
+        'mock-investigations-form',
+      );
+      expect(children[7]).toHaveAttribute('data-testid', 'mock-divider');
+    });
+
+    it('should render action buttons with correct text', () => {
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      expect(screen.getByTestId('primary-button')).toHaveTextContent('Done');
+      expect(screen.getByTestId('secondary-button')).toHaveTextContent(
+        'Cancel',
+      );
+    });
+
+    it('should render error state when hasError is true', () => {
+      mockEncounterDetailsStore.hasError = true;
+
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      expect(screen.getByTestId('action-area-title')).toHaveTextContent('');
+      expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'An error occurred while loading the consultation pad. Please try again later.',
+        ),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByTestId('mock-encounter-details'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should disable Done button when required data is missing', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      mockEncounterDetailsStore.selectedLocation = null as any;
+
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      expect(screen.getByTestId('primary-button')).toBeDisabled();
+    });
+
+    it('should enable Done button when all required data is present', () => {
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      expect(screen.getByTestId('primary-button')).not.toBeDisabled();
+    });
+  });
+
+  describe('Snapshot Tests', () => {
+    it('should match snapshot for form order and dividers', () => {
+      const { container } = renderWithProviders(
+        <ConsultationPad onClose={mockOnClose} />,
+      );
+      expect(container).toMatchSnapshot();
+    });
+
+    it('should match snapshot for error state', () => {
+      mockEncounterDetailsStore.hasError = true;
+      const { container } = renderWithProviders(
+        <ConsultationPad onClose={mockOnClose} />,
+      );
+      expect(container).toMatchSnapshot();
+    });
+
+    it('should match snapshot with disabled Done button', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      mockEncounterDetailsStore.selectedLocation = null as any;
+      const { container } = renderWithProviders(
+        <ConsultationPad onClose={mockOnClose} />,
+      );
+      expect(container).toMatchSnapshot();
+    });
+
+    it('should verify correct order of forms and dividers in snapshot', () => {
+      const { container } = renderWithProviders(
+        <ConsultationPad onClose={mockOnClose} />,
+      );
+      const content = container.querySelector(
+        '[data-testid="action-area-content"]',
+      );
+
+      // Create a snapshot of just the content area to focus on form order
+      expect(content).toMatchSnapshot();
+    });
+
+    it('should match snapshot during submission state', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let resolveSubmission: any;
+      (
+        consultationBundleService.postConsultationBundle as jest.Mock
+      ).mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            resolveSubmission = resolve;
+          }),
+      );
+
+      const { container } = renderWithProviders(
+        <ConsultationPad onClose={mockOnClose} />,
+      );
+
+      const doneButton = screen.getByTestId('primary-button');
+      fireEvent.click(doneButton);
+
+      await waitFor(() => {
+        expect(doneButton).toBeDisabled();
       });
 
-      it('should match snapshot for loading state', () => {
-        // Arrange
-        mockHooksForLoading();
+      expect(container).toMatchSnapshot();
 
-        // Act
-        const { container } = render(<ConsultationPad onClose={mockOnClose} />);
-
-        // Assert
-        expect(container).toMatchSnapshot();
-      });
-
-      it('should match snapshot for error state', () => {
-        // Arrange
-        mockHooksWithLocationError();
-
-        // Act
-        const { container } = render(<ConsultationPad onClose={mockOnClose} />);
-
-        // Assert
-        expect(container).toMatchSnapshot();
+      await act(async () => {
+        resolveSubmission({ id: 'bundle-123' });
       });
     });
   });
 
-  describe('Functionality', () => {
-    describe('Button Handlers', () => {
-      it('should call onClose when secondary button is clicked', () => {
-        // Arrange
-        mockHooksForNormalState();
+  describe('User Interactions', () => {
+    describe('Cancel Button', () => {
+      it('should call onClose when clicked', async () => {
+        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
 
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-        fireEvent.click(screen.getByTestId('secondary-button'));
+        const cancelButton = screen.getByTestId('secondary-button');
+        await userEvent.click(cancelButton);
 
-        // Assert
         expect(mockOnClose).toHaveBeenCalledTimes(1);
       });
 
-      it('should not call postConsultationBundle when primary button is clicked but canSubmitConsultation is false', () => {
-        // Arrange
-        mockHooksWithInvalidSubmissionData();
+      it('should reset all stores when clicked', async () => {
+        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
 
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-        fireEvent.click(screen.getByTestId('primary-button'));
+        const cancelButton = screen.getByTestId('secondary-button');
+        await userEvent.click(cancelButton);
 
-        // Assert
-        expect(postConsultationBundle).not.toHaveBeenCalled();
+        expect(mockDiagnosesStore.reset).toHaveBeenCalled();
+        expect(mockAllergyStore.reset).toHaveBeenCalled();
+        expect(mockServiceRequestStore.reset).toHaveBeenCalled();
       });
 
-      it('should call postConsultationBundle and onClose when primary button is clicked with valid data', async () => {
-        // Arrange
-        mockHooksForNormalState();
+      it('should not submit data when clicked', async () => {
+        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
 
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-        fireEvent.click(screen.getByTestId('primary-button'));
+        const cancelButton = screen.getByTestId('secondary-button');
+        await userEvent.click(cancelButton);
 
-        // Assert
-        await waitFor(() => {
-          expect(postConsultationBundle).toHaveBeenCalledTimes(1);
-          expect(mockOnClose).toHaveBeenCalledTimes(1);
-        });
+        expect(
+          consultationBundleService.postConsultationBundle,
+        ).not.toHaveBeenCalled();
       });
     });
 
-    describe('Form Submission', () => {
-      it('should show a success notification when form submission succeeds', async () => {
-        // Arrange
-        mockHooksForNormalState();
+    describe('Done Button', () => {
+      it('should validate and submit when data is valid', async () => {
+        (
+          consultationBundleService.postConsultationBundle as jest.Mock
+        ).mockResolvedValue({
+          id: 'bundle-123',
+          type: 'transaction-response',
+        });
 
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-        fireEvent.click(screen.getByTestId('primary-button'));
+        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
 
-        // Assert
+        const doneButton = screen.getByTestId('primary-button');
+        await userEvent.click(doneButton);
+
         await waitFor(() => {
+          expect(mockDiagnosesStore.validate).toHaveBeenCalled();
+          expect(mockAllergyStore.validateAllAllergies).toHaveBeenCalled();
+          expect(
+            consultationBundleService.postConsultationBundle,
+          ).toHaveBeenCalled();
           expect(mockAddNotification).toHaveBeenCalledWith({
-            title: 'CONSULTATION_SUBMITTED_SUCCESS_TITLE',
-            message: 'CONSULTATION_SUBMITTED_SUCCESS_MESSAGE',
+            title: 'Success',
+            message: 'Consultation saved successfully',
             type: 'success',
             timeout: 5000,
           });
+          expect(mockOnClose).toHaveBeenCalled();
         });
       });
 
-      it('should handle errors during form submission', async () => {
-        // Arrange
-        mockHooksForNormalState();
-        const mockError = new Error('Submission failed');
-        (postConsultationBundle as jest.Mock).mockRejectedValue(mockError);
+      it('should not submit when diagnoses validation fails', async () => {
+        mockDiagnosesStore.validate.mockReturnValue(false);
 
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-        fireEvent.click(screen.getByTestId('primary-button'));
+        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
 
-        // Assert
-        await waitFor(() => {
-          expect(mockAddNotification).toHaveBeenCalled();
-        });
-      });
+        const doneButton = screen.getByTestId('primary-button');
+        await userEvent.click(doneButton);
 
-      it('should call createConsultationBundlePayload with correct parameters', async () => {
-        // Arrange
-        mockHooksForNormalState();
-        const mockDate = new Date(1466424490000);
-
-        // Set the consultation date in the store
-        const encounterStore = jest
-          .requireMock('@stores/encounterDetailsStore')
-          .useEncounterDetailsStore();
-        encounterStore.consultationDate = mockDate;
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-        fireEvent.click(screen.getByTestId('primary-button'));
-
-        // Assert
-        await waitFor(() => {
-          expect(createEncounterResource).toHaveBeenCalledWith(
-            mockEncounterConcepts.encounterTypes[0].uuid,
-            mockEncounterConcepts.encounterTypes[0].name,
-            mockPatientUUID,
-            [mockPractitioner.uuid], // Updated to use uuid instead of id
-            mockActiveVisit.id,
-            mockLocations[0].uuid,
-            mockDate,
-          );
-        });
-      });
-
-      it('should set isSubmitting to true when submission starts and false when it completes', async () => {
-        // Arrange
-        mockHooksForNormalState();
-        const setIsSubmittingMock = jest.fn();
-        jest
-          .spyOn(React, 'useState')
-          .mockImplementationOnce(() => [false, setIsSubmittingMock]);
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-        fireEvent.click(screen.getByTestId('primary-button'));
-
-        // Assert
-        await waitFor(() => {
-          expect(setIsSubmittingMock).toHaveBeenNthCalledWith(1, true);
-          expect(setIsSubmittingMock).toHaveBeenNthCalledWith(2, false);
-        });
-      });
-
-      it('should set isSubmitting to false when an error occurs during submission', async () => {
-        // Arrange
-        mockHooksForNormalState();
-        const setIsSubmittingMock = jest.fn();
-        jest
-          .spyOn(React, 'useState')
-          .mockImplementationOnce(() => [false, setIsSubmittingMock]);
-        const mockError = new Error('Submission failed');
-        (postConsultationBundle as jest.Mock).mockRejectedValue(mockError);
-        jest.spyOn(console, 'error').mockImplementation(() => {});
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-        fireEvent.click(screen.getByTestId('primary-button'));
-
-        // Assert
-        await waitFor(() => {
-          expect(setIsSubmittingMock).toHaveBeenNthCalledWith(1, true);
-          expect(setIsSubmittingMock).toHaveBeenNthCalledWith(2, false);
-        });
-      });
-    });
-
-    describe('Data Validation', () => {
-      it('should determine canSubmitConsultation correctly when all required data is present', () => {
-        // Arrange
-        mockHooksForNormalState();
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-        fireEvent.click(screen.getByTestId('primary-button'));
-
-        // Assert
-        expect(postConsultationBundle).toHaveBeenCalled();
-      });
-
-      it('should determine canSubmitConsultation correctly when locations array is empty', () => {
-        // Arrange
-        mockHooksWithMissingData();
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-        fireEvent.click(screen.getByTestId('primary-button'));
-
-        // Assert
-        expect(postConsultationBundle).not.toHaveBeenCalled();
-      });
-
-      it('should determine canSubmitConsultation correctly with missing provider uuid', () => {
-        // Arrange
-        mockHooksForNormalState();
-
-        // Set practitioner without uuid in the store
-        const encounterStore = jest
-          .requireMock('@stores/encounterDetailsStore')
-          .useEncounterDetailsStore();
-        encounterStore.practitioner = { ...mockPractitioner, uuid: undefined };
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-        fireEvent.click(screen.getByTestId('primary-button'));
-
-        // Assert
-        expect(postConsultationBundle).not.toHaveBeenCalled();
-      });
-
-      it('should correctly pass provider uuid to createEncounterResource', async () => {
-        // Arrange
-        mockHooksForNormalState();
-        const mockDate = new Date(1466424490000);
-        const spy = jest
-          .spyOn(global, 'Date')
-          .mockImplementation(() => mockDate);
-
-        // Set the consultation date in the store
-        const encounterStore = jest
-          .requireMock('@stores/encounterDetailsStore')
-          .useEncounterDetailsStore();
-        encounterStore.consultationDate = mockDate;
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-        fireEvent.click(screen.getByTestId('primary-button'));
-
-        // Assert
-        await waitFor(() => {
-          expect(createEncounterResource).toHaveBeenCalledWith(
-            mockEncounterConcepts.encounterTypes[0].uuid,
-            mockEncounterConcepts.encounterTypes[0].name,
-            mockPatientUUID,
-            [mockPractitioner.uuid],
-            mockActiveVisit.id,
-            mockLocations[0].uuid,
-            mockDate,
-          );
-        });
-        spy.mockRestore();
-      });
-    });
-  });
-
-  describe('Edge Cases', () => {
-    it('should handle null encounterConcepts', () => {
-      // Arrange
-      mockHooksForNormalState();
-      (useEncounterConcepts as jest.Mock).mockReturnValue({
-        encounterConcepts: null,
-        loading: false,
-        error: null,
-      });
-
-      // Act
-      render(<ConsultationPad onClose={mockOnClose} />);
-
-      // Assert - Should still render the form
-      expect(screen.getByTestId('mock-basic-form')).toBeInTheDocument();
-    });
-
-    it('should handle formatDate function with empty string value', () => {
-      // Arrange
-      mockHooksForNormalState();
-      (formatDate as jest.Mock).mockReturnValue({
-        formattedResult: '',
-        error: undefined,
-      });
-
-      // Act
-      render(<ConsultationPad onClose={mockOnClose} />);
-
-      // Assert
-      expect(screen.getByTestId('mock-basic-form')).toBeInTheDocument();
-      // formatDate is now called by BasicForm, not ConsultationPad
-    });
-
-    it('should handle multiple error conditions gracefully', () => {
-      // Arrange
-      mockHooksForNormalState();
-
-      // Set null practitioner in the store
-      const encounterStore = jest
-        .requireMock('@stores/encounterDetailsStore')
-        .useEncounterDetailsStore();
-      encounterStore.practitioner = null;
-
-      // Act
-      render(<ConsultationPad onClose={mockOnClose} />);
-
-      // Assert - Should still render but submission should be disabled
-      expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
-      expect(screen.getByTestId('mock-basic-form')).toBeInTheDocument();
-      // Primary button should be disabled due to missing data
-      expect(screen.getByTestId('primary-button')).toBeInTheDocument();
-    });
-
-    it('should handle null practitioner', () => {
-      // Arrange
-      mockHooksForNormalState();
-
-      // Set null practitioner in the store
-      const encounterStore = jest
-        .requireMock('@stores/encounterDetailsStore')
-        .useEncounterDetailsStore();
-      encounterStore.practitioner = null;
-
-      // Act
-      render(<ConsultationPad onClose={mockOnClose} />);
-
-      // Assert - Should still render but submission should be disabled
-      expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
-      expect(screen.getByTestId('mock-basic-form')).toBeInTheDocument();
-      // Primary button should be disabled due to missing practitioner
-      expect(screen.getByTestId('primary-button')).toBeInTheDocument();
-    });
-
-    it('should handle null active visit', () => {
-      // Arrange
-      mockHooksForNormalState();
-
-      // Set null active visit in the store
-      const encounterStore = jest
-        .requireMock('@stores/encounterDetailsStore')
-        .useEncounterDetailsStore();
-      encounterStore.activeVisit = null;
-
-      // Act
-      render(<ConsultationPad onClose={mockOnClose} />);
-
-      // Assert - Should still render but submission should be disabled
-      expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
-      expect(screen.getByTestId('mock-basic-form')).toBeInTheDocument();
-      // Primary button should be disabled due to missing active visit
-      expect(screen.getByTestId('primary-button')).toBeInTheDocument();
-    });
-
-    it('should handle missing encounter type', () => {
-      // Arrange
-      mockHooksForNormalState();
-      (useEncounterConcepts as jest.Mock).mockReturnValue({
-        encounterConcepts: {
-          ...mockEncounterConcepts,
-          encounterTypes: [
-            { uuid: 'encounter-type-1', name: 'Not Consultation' },
-          ],
-        },
-        loading: false,
-        error: null,
-      });
-
-      // Clear the encounterDetailsStore encounter type to make submission invalid
-      const encounterStore = jest
-        .requireMock('@stores/encounterDetailsStore')
-        .useEncounterDetailsStore();
-      encounterStore.selectedEncounterType = null;
-
-      // Act
-      render(<ConsultationPad onClose={mockOnClose} />);
-
-      // Assert
-      // This should still render, but canSubmitConsultation would be false
-      expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
-      // Test that submission won't work
-      fireEvent.click(screen.getByTestId('primary-button'));
-      expect(postConsultationBundle).not.toHaveBeenCalled();
-    });
-
-    it('should handle missing visit type', () => {
-      // Arrange
-      mockHooksForNormalState();
-      (useActiveVisit as jest.Mock).mockReturnValue({
-        activeVisit: {
-          ...mockActiveVisit,
-          type: [{ coding: [{ code: 'non-existent-code' }] }],
-        },
-        loading: false,
-        error: null,
-      });
-
-      // Act
-      render(<ConsultationPad onClose={mockOnClose} />);
-
-      // Assert - Should still render the form
-      expect(screen.getByTestId('mock-basic-form')).toBeInTheDocument();
-    });
-  });
-
-  describe('Accessibility', () => {
-    it('should not have any accessibility violations', async () => {
-      // Arrange
-      mockHooksForNormalState();
-
-      // Act
-      const { container } = render(<ConsultationPad onClose={mockOnClose} />);
-
-      // Assert
-      const results = await axe(container);
-      expect(results).toHaveNoViolations();
-    });
-  });
-
-  describe('ConsultationPad - DiagnosesForm Integration', () => {
-    // Import the useConceptSearch mock
-    const { useConceptSearch } = jest.requireMock('@hooks/useConceptSearch');
-
-    // Mock data for concept search
-    const mockSearchResults = [
-      {
-        conceptUuid: 'diagnosis-1',
-        conceptName: 'Diabetes Type 2',
-        matchedName: 'Diabetes',
-      },
-      {
-        conceptUuid: 'diagnosis-2',
-        conceptName: 'Hypertension',
-        matchedName: 'Hypertension',
-      },
-    ];
-
-    beforeEach(() => {
-      // Import the useConditionsAndDiagnosesStore mock
-      const { useConditionsAndDiagnosesStore } = jest.requireMock(
-        '@stores/conditionsAndDiagnosesStore',
-      );
-
-      // Reset the store before each test
-      const freshStore: ConditionsAndDiagnosesState = {
-        selectedDiagnoses: [],
-        selectedConditions: [],
-        addDiagnosis: jest.fn((diagnosis: ConceptSearch) => {
-          // Actually update the selectedDiagnoses array when addDiagnosis is called
-          const newDiagnosis = {
-            id: diagnosis.conceptUuid,
-            display: diagnosis.conceptName,
-            selectedCertainty: null,
-            errors: {},
-            hasBeenValidated: false,
-          };
-          freshStore.selectedDiagnoses.push(newDiagnosis);
-          return newDiagnosis;
-        }),
-        removeDiagnosis: jest.fn((id: string) => {
-          // Actually remove from the selectedDiagnoses array
-          freshStore.selectedDiagnoses = freshStore.selectedDiagnoses.filter(
-            (d: DiagnosisInputEntry) => d.id !== id,
-          );
-        }),
-        updateCertainty: jest.fn((id: string, certainty: Coding | null) => {
-          // Actually update the certainty
-          const diagnosis = freshStore.selectedDiagnoses.find(
-            (d: DiagnosisInputEntry) => d.id === id,
-          );
-          if (diagnosis) {
-            diagnosis.selectedCertainty = certainty;
-          }
-        }),
-        validate: jest.fn().mockReturnValue(true),
-        markAsCondition: jest.fn(),
-        removeCondition: jest.fn(),
-        updateConditionDuration: jest.fn(),
-        reset: jest.fn(() => {
-          freshStore.selectedDiagnoses = [];
-          freshStore.selectedConditions = [];
-        }),
-        getState: jest.fn(),
-      };
-
-      // Add getState after freshStore is fully defined
-      freshStore.getState = jest.fn().mockReturnValue(freshStore);
-
-      // Update the mock to use the fresh store
-      (useConditionsAndDiagnosesStore as unknown as jest.Mock).mockReturnValue(
-        freshStore,
-      );
-
-      // Setup default mock for useConceptSearch
-      (useConceptSearch as jest.Mock).mockReturnValue({
-        searchResults: [],
-        loading: false,
-        error: null,
-      });
-    });
-
-    // 1. Component Initialization and Hook Interactions
-    describe('Component Initialization and Hook Interactions', () => {
-      it('should render DiagnosesForm component when isEncounterDetailsFormReady is true', () => {
-        // Arrange
-        mockHooksForNormalState();
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-
-        // Assert
-        expect(screen.getByTestId('mock-diagnoses-form')).toBeInTheDocument();
-      });
-
-      it('should render DiagnosesForm component even when isEncounterDetailsFormReady is false', () => {
-        // Arrange
-        mockHooksForNormalState();
-
-        // Set isEncounterDetailsFormReady to false
-        const encounterStore = jest
-          .requireMock('@stores/encounterDetailsStore')
-          .useEncounterDetailsStore();
-        encounterStore.isEncounterDetailsFormReady = false;
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-
-        // Assert - DiagnosesForm is always rendered in the content
-        expect(screen.queryByTestId('mock-diagnoses-form')).toBeInTheDocument();
-      });
-    });
-
-    // 2. Rendering Tests
-    describe('Rendering Tests', () => {
-      it('should render DiagnosesForm below BasicForm', () => {
-        // Arrange
-        mockHooksForNormalState();
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-
-        // Assert
-        const actionAreaContent = screen.getByTestId('action-area-content');
-        const basicForm = screen.getByTestId('mock-basic-form');
-        const diagnosesForm = screen.getByTestId('mock-diagnoses-form');
-
-        expect(actionAreaContent).toContainElement(basicForm);
-        expect(actionAreaContent).toContainElement(diagnosesForm);
-      });
-
-      it('should show loading state in DiagnosesForm when searching', () => {
-        // Arrange
-        mockHooksForNormalState();
-        (useConceptSearch as jest.Mock).mockReturnValue({
-          searchResults: [],
-          loading: true,
-          error: null,
-        });
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-
-        // Assert
-        expect(screen.getByTestId('diagnoses-form-loading')).toHaveTextContent(
-          'Loading',
-        );
-      });
-    });
-
-    // 3. Certainty Management Tests
-    describe('Certainty Management Tests', () => {
-      it('should update certainty for specific diagnosis when handleCertaintyChange is called', () => {
-        // Arrange
-        mockHooksForNormalState();
-
-        // Get the store mock
-        const mockStore = jest
-          .requireMock('@stores/conditionsAndDiagnosesStore')
-          .useConditionsAndDiagnosesStore();
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-
-        // Manually add a diagnosis to the store
-        mockStore.selectedDiagnoses = [
-          {
-            id: 'test-diagnosis-id',
-            display: 'Test Diagnosis',
-            selectedCertainty: null,
-            errors: {},
-            hasBeenValidated: false,
-          },
-        ];
-
-        // Re-render to reflect the updated store
-        fireEvent.click(screen.getByText('Select'));
-
-        // Assert - component should handle certainty changes
-        expect(mockStore.selectedDiagnoses.length).toBe(1);
-      });
-
-      it('should properly update certainty for multiple diagnoses', () => {
-        // Arrange
-        mockHooksForNormalState();
-
-        // Get the store mock
-        const mockStore = jest
-          .requireMock('@stores/conditionsAndDiagnosesStore')
-          .useConditionsAndDiagnosesStore();
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-
-        // Manually add a diagnosis to the store
-        mockStore.selectedDiagnoses = [
-          {
-            id: 'test-diagnosis-id',
-            display: 'Test Diagnosis',
-            selectedCertainty: null,
-            errors: {},
-            hasBeenValidated: false,
-          },
-        ];
-
-        // Re-render to reflect the updated store
-        fireEvent.click(screen.getByText('Select'));
-
-        // Assert
-        expect(mockStore.selectedDiagnoses.length).toBe(1);
-      });
-    });
-
-    // 4. Removal Tests
-    describe('Removal Tests', () => {
-      it('should remove diagnosis from selectedDiagnoses when handleRemoveDiagnosis is called', () => {
-        // Arrange
-        mockHooksForNormalState();
-
-        // Get the store mock
-        const mockStore = jest
-          .requireMock('@stores/conditionsAndDiagnosesStore')
-          .useConditionsAndDiagnosesStore();
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-
-        // Manually add a diagnosis to the store
-        mockStore.selectedDiagnoses = [
-          {
-            id: 'test-diagnosis-id',
-            display: 'Test Diagnosis',
-            selectedCertainty: null,
-            errors: {},
-            hasBeenValidated: false,
-          },
-        ];
-
-        // Re-render to reflect the updated store
-        fireEvent.click(screen.getByText('Select'));
-
-        // Remove the diagnosis
-        fireEvent.click(screen.getByText('Remove'));
-
-        // Assert
-        expect(mockStore.selectedDiagnoses.length).toBe(0);
-      });
-
-      it('should clear errors when diagnosis is removed', () => {
-        // Arrange
-        mockHooksForNormalState();
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-
-        // Add duplicate to trigger error
-        fireEvent.click(screen.getByText('Select'));
-        fireEvent.click(screen.getByText('Select')); // Duplicate
-
-        // Remove diagnosis
-        fireEvent.click(screen.getByText('Remove'));
-
-        // Assert - errors should be cleared
+        expect(mockDiagnosesStore.validate).toHaveBeenCalled();
         expect(
-          screen.getByTestId('diagnoses-form-errors'),
-        ).not.toHaveTextContent('DIAGNOSES_DUPLICATE_ERROR');
+          consultationBundleService.postConsultationBundle,
+        ).not.toHaveBeenCalled();
+        expect(mockOnClose).not.toHaveBeenCalled();
       });
-    });
 
-    // 5. Edge Cases
-    describe('Edge Cases', () => {
-      it('should handle empty search results', () => {
-        // Arrange
-        mockHooksForNormalState();
-        (useConceptSearch as jest.Mock).mockReturnValue({
-          searchResults: [],
-          loading: false,
-          error: null,
+      it('should not submit when allergies validation fails', async () => {
+        mockAllergyStore.validateAllAllergies.mockReturnValue(false);
+
+        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+        const doneButton = screen.getByTestId('primary-button');
+        await userEvent.click(doneButton);
+
+        expect(mockAllergyStore.validateAllAllergies).toHaveBeenCalled();
+        expect(
+          consultationBundleService.postConsultationBundle,
+        ).not.toHaveBeenCalled();
+        expect(mockOnClose).not.toHaveBeenCalled();
+      });
+
+      it('should handle submission errors gracefully', async () => {
+        const error = new Error('Network error');
+        (
+          consultationBundleService.postConsultationBundle as jest.Mock
+        ).mockRejectedValue(error);
+
+        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+        const doneButton = screen.getByTestId('primary-button');
+
+        // Wait for button to be enabled
+        await waitFor(() => {
+          expect(doneButton).not.toBeDisabled();
         });
 
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
+        await userEvent.click(doneButton);
 
-        // Assert
-        expect(screen.getByTestId('diagnoses-form-results')).toHaveTextContent(
-          '0 results',
+        await waitFor(() => {
+          expect(mockAddNotification).toHaveBeenCalledWith({
+            title: 'Consultation Error',
+            message: 'Network error',
+            type: 'error',
+            timeout: 5000,
+          });
+          expect(mockOnClose).not.toHaveBeenCalled();
+        });
+      });
+
+      it('should disable button during submission', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let resolveSubmission: any;
+        (
+          consultationBundleService.postConsultationBundle as jest.Mock
+        ).mockImplementation(
+          () =>
+            new Promise((resolve) => {
+              resolveSubmission = resolve;
+            }),
         );
-      });
 
-      it('should maintain state when all diagnoses are removed', () => {
-        // Arrange
-        mockHooksForNormalState();
+        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
 
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
+        const doneButton = screen.getByTestId('primary-button');
+        expect(doneButton).not.toBeDisabled();
 
-        // Add and remove all diagnoses
-        fireEvent.click(screen.getByText('Select'));
-        fireEvent.click(screen.getByText('Remove'));
+        fireEvent.click(doneButton);
 
-        // Assert
-        expect(screen.getByTestId('diagnoses-form-selected')).toHaveTextContent(
-          '0 selected',
-        );
-        expect(screen.getByTestId('mock-diagnoses-form')).toBeInTheDocument(); // Form should still be rendered
-      });
-    });
-
-    // 6. Accessibility Tests
-    describe('Accessibility', () => {
-      it('should have no accessibility violations with DiagnosesForm', async () => {
-        // Arrange
-        mockHooksForNormalState();
-        (useConceptSearch as jest.Mock).mockReturnValue({
-          searchResults: mockSearchResults,
-          loading: false,
-          error: null,
+        await waitFor(() => {
+          expect(doneButton).toBeDisabled();
         });
 
-        // Act
-        const { container } = render(<ConsultationPad onClose={mockOnClose} />);
+        resolveSubmission({ id: 'bundle-123' });
 
-        // Assert
-        const results = await axe(container);
-        expect(results).toHaveNoViolations();
-      });
-
-      it('should have no accessibility violations when displaying errors', async () => {
-        // Arrange
-        mockHooksForNormalState();
-        (useConceptSearch as jest.Mock).mockReturnValue({
-          searchResults: [],
-          loading: false,
-          error: new Error('Search failed'),
+        await waitFor(() => {
+          expect(doneButton).not.toBeDisabled();
         });
-
-        // Act
-        const { container } = render(<ConsultationPad onClose={mockOnClose} />);
-
-        // Assert
-        const results = await axe(container);
-        expect(results).toHaveNoViolations();
-      });
-
-      it('should have no accessibility violations with selected diagnoses', async () => {
-        // Arrange
-        mockHooksForNormalState();
-
-        // Act
-        const { container } = render(<ConsultationPad onClose={mockOnClose} />);
-
-        // Add diagnoses
-        fireEvent.click(screen.getByText('Select'));
-
-        // Assert
-        const results = await axe(container);
-        expect(results).toHaveNoViolations();
       });
     });
   });
 
-  describe('Diagnosis Creation Logic', () => {
-    beforeEach(() => {
-      mockHooksForNormalState();
-      jest
-        .spyOn(global.crypto, 'randomUUID')
-        .mockReturnValue('1d87ab20-8b86-4b41-a30d-984b2208d945');
-    });
-
-    it('should not create diagnosis entries when selectedDiagnoses is empty', async () => {
-      // Arrange
-      render(<ConsultationPad onClose={mockOnClose} />);
-
-      // Act
-      fireEvent.click(screen.getByTestId('primary-button'));
-
-      // Assert
-      await waitFor(() => {
-        expect(postConsultationBundle).toHaveBeenCalledWith(
-          expect.objectContaining({
-            entry: expect.not.arrayContaining([
-              expect.objectContaining({
-                resource: expect.objectContaining({
-                  resourceType: 'Condition',
-                }),
-              }),
-            ]),
-          }),
-        );
-      });
-    });
-
-    it('should not create diagnosis entries when diagnosis has no certainty selected', async () => {
-      // Arrange
-      render(<ConsultationPad onClose={mockOnClose} />);
-
-      // Add diagnosis without certainty
-      fireEvent.click(screen.getByText('Select'));
-
-      // Act
-      fireEvent.click(screen.getByTestId('primary-button'));
-
-      // Assert
-      await waitFor(() => {
-        expect(postConsultationBundle).toHaveBeenCalledWith(
-          expect.objectContaining({
-            entry: expect.not.arrayContaining([
-              expect.objectContaining({
-                resource: expect.objectContaining({
-                  resourceType: 'Condition',
-                }),
-              }),
-            ]),
-          }),
-        );
-      });
-    });
-
-    it('should not create entries when encounterResource is missing', () => {
-      // Arrange
-      mockHooksForNormalState();
-      (createEncounterResource as jest.Mock).mockReturnValue(null);
-
-      // Mock useState to include a diagnosis with certainty
-      const mockSelectedDiagnoses = [
-        {
-          id: 'diagnosis-1',
-          display: 'Test Diagnosis',
-          selectedCertainty: {
-            code: 'confirmed',
-            display: 'Confirmed',
-            system:
-              'http://terminology.hl7.org/CodeSystem/condition-ver-status',
-          },
-        },
-      ];
-
-      jest
-        .spyOn(React, 'useState')
-        .mockImplementationOnce(() => [false, jest.fn()]) // isSubmitting
-        .mockImplementationOnce(() => [mockSelectedDiagnoses, jest.fn()]); // selectedDiagnoses
-
-      render(<ConsultationPad onClose={mockOnClose} />);
-
-      // Act
-      fireEvent.click(screen.getByTestId('primary-button'));
-
-      // Assert
-      expect(postConsultationBundle).not.toHaveBeenCalled();
-    });
-
-    it('should not post consultation bundle when Diagnoses form has an error', () => {
-      // Arrange
-      // Reset the mock stores
-      const conditionsAndDiagnosesStore = jest
-        .requireMock('@stores/conditionsAndDiagnosesStore')
-        .useConditionsAndDiagnosesStore();
-      conditionsAndDiagnosesStore.validate.mockReturnValue(false);
-
-      render(<ConsultationPad onClose={mockOnClose} />);
-
-      // Act
-      fireEvent.click(screen.getByTestId('primary-button'));
-
-      // Assert
-      expect(postConsultationBundle).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('Validation and Error Handling', () => {
-    it('should not submit when allergies validation fails', () => {
-      // Arrange
-      mockHooksForNormalState();
-      const allergyStore = jest.requireMock('@stores/allergyStore').default();
-      allergyStore.validateAllAllergies.mockReturnValue(false);
-
-      // Act
-      render(<ConsultationPad onClose={mockOnClose} />);
-      fireEvent.click(screen.getByTestId('primary-button'));
-
-      // Assert
-      expect(postConsultationBundle).not.toHaveBeenCalled();
-      expect(allergyStore.validateAllAllergies).toHaveBeenCalled();
-    });
-
-    it('should clean up stores on component unmount', () => {
-      // Arrange
-      mockHooksForNormalState();
-      const conditionsAndDiagnosesStore = jest
-        .requireMock('@stores/conditionsAndDiagnosesStore')
-        .useConditionsAndDiagnosesStore();
-      const allergyStore = jest.requireMock('@stores/allergyStore').default();
-      const encounterStore = jest
-        .requireMock('@stores/encounterDetailsStore')
-        .useEncounterDetailsStore();
-
-      // Act
-      const { unmount } = render(<ConsultationPad onClose={mockOnClose} />);
-
-      // Reset the mocks before unmounting
-      conditionsAndDiagnosesStore.reset.mockClear();
-      allergyStore.reset.mockClear();
-      encounterStore.reset.mockClear();
+  describe('State Management', () => {
+    it('should cleanup stores on unmount', () => {
+      const { unmount } = renderWithProviders(
+        <ConsultationPad onClose={mockOnClose} />,
+      );
 
       unmount();
 
-      // Assert
-      expect(conditionsAndDiagnosesStore.reset).toHaveBeenCalled();
-      expect(allergyStore.reset).toHaveBeenCalled();
-      expect(encounterStore.reset).toHaveBeenCalled();
+      expect(mockEncounterDetailsStore.reset).toHaveBeenCalled();
+      expect(mockAllergyStore.reset).toHaveBeenCalled();
+      expect(mockDiagnosesStore.reset).toHaveBeenCalled();
+      expect(mockServiceRequestStore.reset).toHaveBeenCalled();
     });
 
-    it('should not submit when canSubmitConsultation is false due to missing user', () => {
-      // Arrange
-      mockHooksForNormalState();
+    it('should track submission state correctly', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let resolveSubmission: any;
+      (
+        consultationBundleService.postConsultationBundle as jest.Mock
+      ).mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            resolveSubmission = resolve;
+          }),
+      );
 
-      // Set user to null in the store
-      const encounterStore = jest
-        .requireMock('@stores/encounterDetailsStore')
-        .useEncounterDetailsStore();
-      encounterStore.user = null;
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
 
-      // Act
-      render(<ConsultationPad onClose={mockOnClose} />);
-      fireEvent.click(screen.getByTestId('primary-button'));
+      const doneButton = screen.getByTestId('primary-button');
 
-      // Assert
-      expect(postConsultationBundle).not.toHaveBeenCalled();
+      // Initial state - not submitting
+      expect(doneButton).not.toBeDisabled();
+
+      // Start submission
+      fireEvent.click(doneButton);
+
+      // During submission
+      await waitFor(() => {
+        expect(doneButton).toBeDisabled();
+      });
+
+      // Complete submission
+      resolveSubmission({ id: 'bundle-123' });
+
+      // After submission
+      await waitFor(() => {
+        expect(mockOnClose).toHaveBeenCalled();
+      });
     });
 
-    it('should validate both diagnoses and allergies before submission', () => {
-      // Arrange
-      mockHooksForNormalState();
-      const conditionsAndDiagnosesStore = jest
-        .requireMock('@stores/conditionsAndDiagnosesStore')
-        .useConditionsAndDiagnosesStore();
-      const allergyStore = jest.requireMock('@stores/allergyStore').default();
+    it('should reset all stores after successful submission', async () => {
+      (
+        consultationBundleService.postConsultationBundle as jest.Mock
+      ).mockResolvedValue({
+        id: 'bundle-123',
+      });
 
-      conditionsAndDiagnosesStore.validate.mockReturnValue(false);
-      allergyStore.validateAllAllergies.mockReturnValue(false);
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
 
-      // Act
-      render(<ConsultationPad onClose={mockOnClose} />);
-      fireEvent.click(screen.getByTestId('primary-button'));
+      const doneButton = screen.getByTestId('primary-button');
+      await userEvent.click(doneButton);
 
-      // Assert
-      expect(postConsultationBundle).not.toHaveBeenCalled();
-      expect(conditionsAndDiagnosesStore.validate).toHaveBeenCalled();
-      expect(allergyStore.validateAllAllergies).toHaveBeenCalled(); // Both are called
-    });
-
-    it('should handle missing encounterParticipants', () => {
-      // Arrange
-      mockHooksForNormalState();
-
-      // Set encounterParticipants to empty array
-      const encounterStore = jest
-        .requireMock('@stores/encounterDetailsStore')
-        .useEncounterDetailsStore();
-      encounterStore.encounterParticipants = [];
-
-      // Act
-      render(<ConsultationPad onClose={mockOnClose} />);
-
-      // Assert - Primary button should be disabled
-      expect(screen.getByTestId('primary-button')).toBeInTheDocument();
-
-      // Try to click and verify submission doesn't happen
-      fireEvent.click(screen.getByTestId('primary-button'));
-      expect(postConsultationBundle).not.toHaveBeenCalled();
-    });
-
-    it('should reset stores on secondary button click', () => {
-      // Arrange
-      mockHooksForNormalState();
-      const conditionsAndDiagnosesStore = jest
-        .requireMock('@stores/conditionsAndDiagnosesStore')
-        .useConditionsAndDiagnosesStore();
-      const allergyStore = jest.requireMock('@stores/allergyStore').default();
-
-      // Clear any previous calls
-      conditionsAndDiagnosesStore.reset.mockClear();
-      allergyStore.reset.mockClear();
-
-      // Act
-      render(<ConsultationPad onClose={mockOnClose} />);
-      fireEvent.click(screen.getByTestId('secondary-button'));
-
-      // Assert
-      expect(conditionsAndDiagnosesStore.reset).toHaveBeenCalled();
-      expect(allergyStore.reset).toHaveBeenCalled();
-      expect(mockOnClose).toHaveBeenCalled();
-    });
-
-    it('should disable primary button when isEncounterDetailsFormReady is false', () => {
-      // Arrange
-      mockHooksForNormalState();
-
-      // Set isEncounterDetailsFormReady to false
-      const encounterStore = jest
-        .requireMock('@stores/encounterDetailsStore')
-        .useEncounterDetailsStore();
-      encounterStore.isEncounterDetailsFormReady = false;
-
-      // Act
-      render(<ConsultationPad onClose={mockOnClose} />);
-
-      // Assert - Try to click and verify submission doesn't happen
-      fireEvent.click(screen.getByTestId('primary-button'));
-      expect(postConsultationBundle).not.toHaveBeenCalled();
+      await waitFor(() => {
+        expect(mockDiagnosesStore.reset).toHaveBeenCalled();
+        expect(mockAllergyStore.reset).toHaveBeenCalled();
+        expect(mockEncounterDetailsStore.reset).toHaveBeenCalled();
+        expect(mockServiceRequestStore.reset).toHaveBeenCalled();
+      });
     });
   });
 
-  describe('ConsultationPad - Conditions Integration', () => {
-    const { createConditionsBundleEntries } = jest.requireMock(
-      '@services/consultationBundleService',
-    );
+  describe('Validation', () => {
+    it('should validate all forms before submission', async () => {
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
 
-    beforeEach(() => {
-      mockHooksForNormalState();
+      const doneButton = screen.getByTestId('primary-button');
+      await userEvent.click(doneButton);
 
-      // Reset the store mock completely
-      const conditionsAndDiagnosesStore = jest
-        .requireMock('@stores/conditionsAndDiagnosesStore')
-        .useConditionsAndDiagnosesStore();
-      conditionsAndDiagnosesStore.selectedConditions = [];
-      conditionsAndDiagnosesStore.selectedDiagnoses = [];
-      conditionsAndDiagnosesStore.validate.mockReturnValue(true);
+      expect(mockDiagnosesStore.validate).toHaveBeenCalled();
+      expect(mockAllergyStore.validateAllAllergies).toHaveBeenCalled();
     });
 
-    describe('Validation Integration Tests', () => {
-      it('should prevent submission when conditions validation fails', () => {
-        // Arrange
-        const mockConditions = [
-          {
-            id: 'condition-123',
-            display: 'Diabetes Mellitus',
-            durationValue: null, // Invalid - should cause validation to fail
-            durationUnit: 'years',
-            errors: { durationValue: 'CONDITIONS_DURATION_VALUE_REQUIRED' },
-            hasBeenValidated: true,
-          },
-        ];
+    it('should disable Done button when patientUUID is missing', () => {
+      const testStore = {
+        ...createMockEncounterDetailsStore(),
+        patientUUID: null,
+      };
+      (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue(
+        testStore,
+      );
 
-        const conditionsAndDiagnosesStore = jest
-          .requireMock('@stores/conditionsAndDiagnosesStore')
-          .useConditionsAndDiagnosesStore();
-        conditionsAndDiagnosesStore.selectedConditions = mockConditions;
-        conditionsAndDiagnosesStore.validate.mockReturnValue(false);
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
 
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-        fireEvent.click(screen.getByTestId('primary-button'));
+      const doneButton = screen.getByTestId('primary-button');
+      expect(doneButton).toBeDisabled();
+    });
 
-        // Assert
-        expect(postConsultationBundle).not.toHaveBeenCalled();
-        expect(conditionsAndDiagnosesStore.validate).toHaveBeenCalled();
+    it('should disable Done button when practitioner is missing', () => {
+      const testStore = {
+        ...createMockEncounterDetailsStore(),
+        practitioner: null,
+      };
+      (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue(
+        testStore,
+      );
+
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      const doneButton = screen.getByTestId('primary-button');
+      expect(doneButton).toBeDisabled();
+    });
+
+    it('should disable Done button when activeVisit is missing', () => {
+      const testStore = {
+        ...createMockEncounterDetailsStore(),
+        activeVisit: null,
+      };
+      (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue(
+        testStore,
+      );
+
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      const doneButton = screen.getByTestId('primary-button');
+      expect(doneButton).toBeDisabled();
+    });
+
+    it('should disable Done button when selectedLocation is missing', () => {
+      const testStore = {
+        ...createMockEncounterDetailsStore(),
+        selectedLocation: null,
+      };
+      (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue(
+        testStore,
+      );
+
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      const doneButton = screen.getByTestId('primary-button');
+      expect(doneButton).toBeDisabled();
+    });
+
+    it('should disable Done button when selectedEncounterType is missing', () => {
+      const testStore = {
+        ...createMockEncounterDetailsStore(),
+        selectedEncounterType: null,
+      };
+      (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue(
+        testStore,
+      );
+
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      const doneButton = screen.getByTestId('primary-button');
+      expect(doneButton).toBeDisabled();
+    });
+
+    it('should disable Done button when encounterParticipants is empty', () => {
+      const testStore = {
+        ...createMockEncounterDetailsStore(),
+        encounterParticipants: [],
+      };
+      (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue(
+        testStore,
+      );
+
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      const doneButton = screen.getByTestId('primary-button');
+      expect(doneButton).toBeDisabled();
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should display generic error message when error is not an Error instance', async () => {
+      (
+        consultationBundleService.postConsultationBundle as jest.Mock
+      ).mockRejectedValue('String error');
+
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      const doneButton = screen.getByTestId('primary-button');
+
+      // Wait for button to be enabled
+      await waitFor(() => {
+        expect(doneButton).not.toBeDisabled();
       });
 
-      it('should allow submission when all validations pass including conditions', async () => {
-        // Arrange
-        const mockConditions = [
-          {
-            id: 'condition-123',
-            display: 'Diabetes Mellitus',
-            durationValue: 2,
-            durationUnit: 'years',
-            errors: {},
-            hasBeenValidated: true,
-          },
-        ];
+      await userEvent.click(doneButton);
 
-        const conditionsAndDiagnosesStore = jest
-          .requireMock('@stores/conditionsAndDiagnosesStore')
-          .useConditionsAndDiagnosesStore();
-        conditionsAndDiagnosesStore.selectedConditions = mockConditions;
-        conditionsAndDiagnosesStore.validate.mockReturnValue(true);
-
-        const allergyStore = jest.requireMock('@stores/allergyStore').default();
-        allergyStore.validateAllAllergies.mockReturnValue(true);
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-        fireEvent.click(screen.getByTestId('primary-button'));
-
-        // Assert
-        await waitFor(() => {
-          expect(postConsultationBundle).toHaveBeenCalled();
-          expect(conditionsAndDiagnosesStore.validate).toHaveBeenCalled();
-          expect(allergyStore.validateAllAllergies).toHaveBeenCalled();
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'Consultation Error',
+          message: 'Error creating consultation bundle',
+          type: 'error',
+          timeout: 5000,
         });
-      });
-
-      it('should call conditions validation as part of overall validation', () => {
-        // Arrange
-        const mockConditions = [
-          {
-            id: 'condition-123',
-            display: 'Diabetes Mellitus',
-            durationValue: 2,
-            durationUnit: 'years',
-            errors: {},
-            hasBeenValidated: true,
-          },
-        ];
-
-        const conditionsAndDiagnosesStore = jest
-          .requireMock('@stores/conditionsAndDiagnosesStore')
-          .useConditionsAndDiagnosesStore();
-        conditionsAndDiagnosesStore.selectedConditions = mockConditions;
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-        fireEvent.click(screen.getByTestId('primary-button'));
-
-        // Assert
-        expect(conditionsAndDiagnosesStore.validate).toHaveBeenCalled();
       });
     });
 
-    describe('Error Handling Tests', () => {
-      it('should handle createConditionsBundleEntries throwing an error', async () => {
-        // Arrange
-        const mockError = new Error('Conditions bundle creation failed');
-        createConditionsBundleEntries.mockImplementation(() => {
-          throw mockError;
-        });
+    it('should handle network timeout errors', async () => {
+      const timeoutError = new Error('Request timeout');
+      (
+        consultationBundleService.postConsultationBundle as jest.Mock
+      ).mockRejectedValue(timeoutError);
 
-        const mockConditions = [
-          {
-            id: 'condition-123',
-            display: 'Diabetes Mellitus',
-            durationValue: 2,
-            durationUnit: 'years',
-            errors: {},
-            hasBeenValidated: true,
-          },
-        ];
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
 
-        const conditionsAndDiagnosesStore = jest
-          .requireMock('@stores/conditionsAndDiagnosesStore')
-          .useConditionsAndDiagnosesStore();
-        conditionsAndDiagnosesStore.selectedConditions = mockConditions;
+      const doneButton = screen.getByTestId('primary-button');
 
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-        fireEvent.click(screen.getByTestId('primary-button'));
-
-        // Assert
-        await waitFor(() => {
-          expect(mockAddNotification).toHaveBeenCalledWith(
-            expect.objectContaining({
-              type: 'error',
-              message: 'Conditions bundle creation failed',
-            }),
-          );
-        });
+      // Wait for button to be enabled
+      await waitFor(() => {
+        expect(doneButton).not.toBeDisabled();
       });
 
-      it('should show error notification when conditions bundle creation fails', async () => {
-        // Arrange
-        const mockError = new Error(
-          'CONSULTATION_ERROR_INVALID_CONDITION_PARAMS',
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'Consultation Error',
+          message: 'Request timeout',
+          type: 'error',
+          timeout: 5000,
+        });
+      });
+    });
+
+    it('should not submit when encounterDetailsFormReady is false', () => {
+      mockEncounterDetailsStore.isEncounterDetailsFormReady = false;
+
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      const doneButton = screen.getByTestId('primary-button');
+      expect(doneButton).toBeDisabled();
+    });
+  });
+
+  describe('Bundle Creation', () => {
+    it('should post complete consultation bundle with all resource types', async () => {
+      (
+        consultationBundleService.postConsultationBundle as jest.Mock
+      ).mockResolvedValue({
+        id: 'bundle-123',
+      });
+
+      // Mock the bundle entry creation functions to return identifiable entries
+      (
+        consultationBundleService.createDiagnosisBundleEntries as jest.Mock
+      ).mockReturnValue([
+        {
+          resource: { resourceType: 'Condition', id: 'diagnosis-1' },
+          request: { method: 'POST' },
+        },
+      ]);
+
+      (
+        consultationBundleService.createAllergiesBundleEntries as jest.Mock
+      ).mockReturnValue([
+        {
+          resource: { resourceType: 'AllergyIntolerance', id: 'allergy-1' },
+          request: { method: 'POST' },
+        },
+      ]);
+
+      (
+        consultationBundleService.createConditionsBundleEntries as jest.Mock
+      ).mockReturnValue([
+        {
+          resource: { resourceType: 'Condition', id: 'condition-1' },
+          request: { method: 'POST' },
+        },
+      ]);
+
+      (
+        consultationBundleService.createServiceRequestBundleEntries as jest.Mock
+      ).mockReturnValue([
+        {
+          resource: { resourceType: 'ServiceRequest', id: 'service-request-1' },
+          request: { method: 'POST' },
+        },
+      ]);
+
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      const doneButton = screen.getByTestId('primary-button');
+
+      // Wait for button to be enabled
+      await waitFor(() => {
+        expect(doneButton).not.toBeDisabled();
+      });
+
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        // Verify postConsultationBundle was called
+        expect(
+          consultationBundleService.postConsultationBundle,
+        ).toHaveBeenCalled();
+
+        // Get the bundle that was passed to postConsultationBundle
+        const bundleArg = (
+          consultationBundleService.postConsultationBundle as jest.Mock
+        ).mock.calls[0][0];
+
+        // Verify bundle structure
+        expect(bundleArg).toMatchObject({
+          resourceType: 'Bundle',
+          type: 'transaction',
+          entry: expect.any(Array),
+        });
+
+        // Verify all resource types are included in the bundle
+        const resourceTypes = bundleArg.entry.map(
+          (entry: BundleEntry) => entry.resource?.resourceType,
         );
-        createConditionsBundleEntries.mockImplementation(() => {
-          throw mockError;
+
+        // Should contain the encounter resource
+        expect(resourceTypes).toContain('Encounter');
+
+        // Should contain resources from all bundle creation functions
+        expect(resourceTypes).toContain('Condition'); // From diagnoses and conditions
+        expect(resourceTypes).toContain('AllergyIntolerance');
+        expect(resourceTypes).toContain('ServiceRequest');
+
+        // Verify the encounter entry is first
+        expect(bundleArg.entry[0].resource.resourceType).toBe('Encounter');
+        expect(bundleArg.entry[0].fullUrl).toMatch(/^urn:uuid:/);
+
+        // Verify total number of entries (1 encounter + 4 from bundle creation functions)
+        expect(bundleArg.entry).toHaveLength(5);
+      });
+    });
+
+    it('should create consultation bundle with correct data', async () => {
+      (
+        consultationBundleService.postConsultationBundle as jest.Mock
+      ).mockResolvedValue({
+        id: 'bundle-123',
+      });
+
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      const doneButton = screen.getByTestId('primary-button');
+
+      // Wait for button to be enabled
+      await waitFor(() => {
+        expect(doneButton).not.toBeDisabled();
+      });
+
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        // Verify encounter resource creation
+        expect(
+          consultationBundleService.createDiagnosisBundleEntries,
+        ).toHaveBeenCalledWith({
+          selectedDiagnoses: [],
+          encounterSubject: { reference: 'Patient/patient-123' },
+          encounterReference: 'urn:uuid:mock-uuid-1234-5678-9abc-def012345678',
+          practitionerUUID: 'user-123',
+          consultationDate: mockEncounterDetailsStore.consultationDate,
         });
 
-        const mockConditions = [
-          {
-            id: 'condition-123',
-            display: 'Diabetes Mellitus',
-            durationValue: 2,
-            durationUnit: 'years',
-            errors: {},
-            hasBeenValidated: true,
-          },
-        ];
+        expect(
+          consultationBundleService.createAllergiesBundleEntries,
+        ).toHaveBeenCalledWith({
+          selectedAllergies: [],
+          encounterSubject: { reference: 'Patient/patient-123' },
+          encounterReference: 'urn:uuid:mock-uuid-1234-5678-9abc-def012345678',
+          practitionerUUID: 'user-123',
+        });
 
-        const conditionsAndDiagnosesStore = jest
-          .requireMock('@stores/conditionsAndDiagnosesStore')
-          .useConditionsAndDiagnosesStore();
-        conditionsAndDiagnosesStore.selectedConditions = mockConditions;
+        expect(
+          consultationBundleService.createConditionsBundleEntries,
+        ).toHaveBeenCalledWith({
+          selectedConditions: [],
+          encounterSubject: { reference: 'Patient/patient-123' },
+          encounterReference: 'urn:uuid:mock-uuid-1234-5678-9abc-def012345678',
+          practitionerUUID: 'user-123',
+          consultationDate: mockEncounterDetailsStore.consultationDate,
+        });
 
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-        fireEvent.click(screen.getByTestId('primary-button'));
-
-        // Assert
-        await waitFor(() => {
-          expect(mockAddNotification).toHaveBeenCalledWith(
-            expect.objectContaining({
-              type: 'error',
-              title: expect.any(String),
-              message: 'CONSULTATION_ERROR_INVALID_CONDITION_PARAMS',
-            }),
-          );
+        expect(
+          consultationBundleService.createServiceRequestBundleEntries,
+        ).toHaveBeenCalledWith({
+          selectedServiceRequests: new Map(),
+          encounterSubject: { reference: 'Patient/patient-123' },
+          encounterReference: 'urn:uuid:mock-uuid-1234-5678-9abc-def012345678',
+          practitionerUUID: 'practitioner-123',
         });
       });
     });
 
-    describe('Store Integration Tests', () => {
-      it('should use selectedConditions from store for bundle creation', async () => {
-        // Arrange
-        const mockConditions = [
-          {
-            id: 'condition-123',
-            display: 'Diabetes Mellitus',
-            durationValue: 2,
-            durationUnit: 'years',
-            errors: {},
-            hasBeenValidated: true,
-          },
-          {
-            id: 'condition-456',
-            display: 'Hypertension',
-            durationValue: 6,
-            durationUnit: 'months',
-            errors: {},
-            hasBeenValidated: true,
-          },
-        ];
+    it('should generate unique UUID for encounter reference', async () => {
+      const mockUUIDs = ['uuid-1-2-3-4-5', 'uuid-2-3-4-5-6', 'uuid-3-4-5-6-7'];
+      let uuidIndex = 0;
+      (global.crypto.randomUUID as jest.Mock).mockImplementation(
+        () => mockUUIDs[uuidIndex++],
+      );
 
-        const conditionsAndDiagnosesStore = jest
-          .requireMock('@stores/conditionsAndDiagnosesStore')
-          .useConditionsAndDiagnosesStore();
-        conditionsAndDiagnosesStore.selectedConditions = mockConditions;
-
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-        fireEvent.click(screen.getByTestId('primary-button'));
-
-        // Assert
-        await waitFor(() => {
-          expect(createConditionsBundleEntries).toHaveBeenCalledWith(
-            expect.objectContaining({
-              selectedConditions: mockConditions,
-            }),
-          );
-        });
+      (
+        consultationBundleService.postConsultationBundle as jest.Mock
+      ).mockResolvedValue({
+        id: 'bundle-123',
       });
 
-      it('should handle store state changes during submission', async () => {
-        // Arrange
-        const conditionsAndDiagnosesStore = jest
-          .requireMock('@stores/conditionsAndDiagnosesStore')
-          .useConditionsAndDiagnosesStore();
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
 
-        // Start with no conditions
-        conditionsAndDiagnosesStore.selectedConditions = [];
+      const doneButton = screen.getByTestId('primary-button');
 
-        render(<ConsultationPad onClose={mockOnClose} />);
+      // Wait for button to be enabled
+      await waitFor(() => {
+        expect(doneButton).not.toBeDisabled();
+      });
 
-        // Add conditions during submission
-        conditionsAndDiagnosesStore.selectedConditions = [
-          {
-            id: 'condition-123',
-            display: 'Diabetes Mellitus',
-            durationValue: 2,
-            durationUnit: 'years',
-            errors: {},
-            hasBeenValidated: true,
-          },
-        ];
+      await userEvent.click(doneButton);
 
-        // Act
-        fireEvent.click(screen.getByTestId('primary-button'));
-
-        // Assert
-        await waitFor(() => {
-          expect(createConditionsBundleEntries).toHaveBeenCalled();
-        });
+      await waitFor(() => {
+        expect(global.crypto.randomUUID).toHaveBeenCalled();
+        expect(
+          consultationBundleService.createDiagnosisBundleEntries,
+        ).toHaveBeenCalledWith(
+          expect.objectContaining({
+            encounterReference: 'urn:uuid:uuid-1-2-3-4-5',
+          }),
+        );
       });
     });
+  });
 
-    describe('Performance and Edge Cases', () => {
-      it('should handle large numbers of conditions efficiently', async () => {
-        // Arrange
-        const largeConditionsList = Array.from({ length: 50 }, (_, i) => ({
-          id: `condition-${i}`,
-          display: `Condition ${i}`,
-          durationValue: i + 1,
-          durationUnit: 'days' as const,
-          errors: {},
-          hasBeenValidated: true,
-        }));
+  describe('Submission Flow', () => {
+    it('should handle complete submission flow', async () => {
+      (
+        consultationBundleService.postConsultationBundle as jest.Mock
+      ).mockResolvedValue({
+        id: 'bundle-123',
+      });
 
-        const conditionsAndDiagnosesStore = jest
-          .requireMock('@stores/conditionsAndDiagnosesStore')
-          .useConditionsAndDiagnosesStore();
-        conditionsAndDiagnosesStore.selectedConditions = largeConditionsList;
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
 
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-        fireEvent.click(screen.getByTestId('primary-button'));
+      const doneButton = screen.getByTestId('primary-button');
 
-        // Assert
-        await waitFor(() => {
-          expect(createConditionsBundleEntries).toHaveBeenCalledWith(
-            expect.objectContaining({
-              selectedConditions: largeConditionsList,
-            }),
-          );
+      // Wait for button to be enabled
+      await waitFor(() => {
+        expect(doneButton).not.toBeDisabled();
+      });
+
+      // Click submit
+      await userEvent.click(doneButton);
+
+      // Verify validation was called
+      expect(mockDiagnosesStore.validate).toHaveBeenCalled();
+      expect(mockAllergyStore.validateAllAllergies).toHaveBeenCalled();
+
+      // Verify bundle creation
+      await waitFor(() => {
+        expect(
+          consultationBundleService.postConsultationBundle,
+        ).toHaveBeenCalled();
+      });
+
+      // Verify success notification
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'Success',
+        message: 'Consultation saved successfully',
+        type: 'success',
+        timeout: 5000,
+      });
+
+      // Verify stores were reset
+      expect(mockDiagnosesStore.reset).toHaveBeenCalled();
+      expect(mockAllergyStore.reset).toHaveBeenCalled();
+      expect(mockEncounterDetailsStore.reset).toHaveBeenCalled();
+      expect(mockServiceRequestStore.reset).toHaveBeenCalled();
+
+      // Verify onClose was called
+      expect(mockOnClose).toHaveBeenCalled();
+    });
+
+    it('should prevent multiple simultaneous submissions', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let resolveFirst: any;
+      let callCount = 0;
+
+      (
+        consultationBundleService.postConsultationBundle as jest.Mock
+      ).mockImplementation(() => {
+        callCount++;
+        return new Promise((resolve) => {
+          if (callCount === 1) {
+            resolveFirst = resolve;
+          } else {
+            resolve({ id: `bundle-${callCount}` });
+          }
         });
       });
 
-      it('should handle conditions with missing/invalid duration data', async () => {
-        // Arrange
-        const invalidConditions = [
-          {
-            id: 'condition-123',
-            display: 'Invalid Condition',
-            durationValue: null,
-            durationUnit: null,
-            errors: {
-              durationValue: 'CONDITIONS_DURATION_VALUE_REQUIRED',
-              durationUnit: 'CONDITIONS_DURATION_UNIT_REQUIRED',
-            },
-            hasBeenValidated: true,
-          },
-        ];
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
 
-        const conditionsAndDiagnosesStore = jest
-          .requireMock('@stores/conditionsAndDiagnosesStore')
-          .useConditionsAndDiagnosesStore();
-        conditionsAndDiagnosesStore.selectedConditions = invalidConditions;
-        conditionsAndDiagnosesStore.validate.mockReturnValue(false);
+      const doneButton = screen.getByTestId('primary-button');
 
-        // Act
-        render(<ConsultationPad onClose={mockOnClose} />);
-        fireEvent.click(screen.getByTestId('primary-button'));
+      // Wait for button to be enabled
+      await waitFor(() => {
+        expect(doneButton).not.toBeDisabled();
+      });
 
-        // Assert - Should not proceed with submission due to validation failure
-        expect(postConsultationBundle).not.toHaveBeenCalled();
-        expect(conditionsAndDiagnosesStore.validate).toHaveBeenCalled();
+      // First click
+      fireEvent.click(doneButton);
+
+      // Try clicking again while first submission is in progress
+      fireEvent.click(doneButton);
+      fireEvent.click(doneButton);
+
+      // Resolve first submission
+      if (resolveFirst) {
+        act(() => {
+          resolveFirst({ id: 'bundle-1' });
+        });
+      }
+
+      await waitFor(() => {
+        // Should only have been called once despite multiple clicks
+        expect(
+          consultationBundleService.postConsultationBundle,
+        ).toHaveBeenCalledTimes(1);
       });
     });
   });

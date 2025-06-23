@@ -1,7 +1,11 @@
 import { get } from './api';
 import { ConceptSearch } from '@types/concepts';
 import { getUserPreferredLocale } from './translationService';
-import { CONCEPT_SEARCH_URL, FHIR_VALUESET_URL } from '@constants/app';
+import {
+  CONCEPT_SEARCH_URL,
+  FHIR_VALUESET_FILTER_EXPAND_URL,
+  FHIR_VALUESET_URL,
+} from '@constants/app';
 import { ValueSet } from 'fhir/r4';
 
 /**
@@ -26,5 +30,12 @@ export const searchConcepts = async (
  */
 export const searchFHIRConcepts = async (uuid: string): Promise<ValueSet> => {
   const url = FHIR_VALUESET_URL(uuid);
+  return get<ValueSet>(url);
+};
+
+export const searchFHIRConceptsByName = async (
+  name: string,
+): Promise<ValueSet> => {
+  const url = `${FHIR_VALUESET_FILTER_EXPAND_URL(name)}`;
   return get<ValueSet>(url);
 };

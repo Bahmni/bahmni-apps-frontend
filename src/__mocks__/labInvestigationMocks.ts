@@ -23,7 +23,7 @@ export const mockFhirLabTests: ServiceRequest[] = [
     },
     extension: [
       {
-        url: 'http://fhir.bahmni.org/lab-order-concept-type-extension',
+        url: 'http://fhir.bahmni.org/ext/lab-order-concept-type',
         valueString: 'Panel',
       },
     ],
@@ -88,7 +88,7 @@ export const mockFhirLabTests: ServiceRequest[] = [
     },
     extension: [
       {
-        url: 'http://fhir.bahmni.org/lab-order-concept-type-extension',
+        url: 'http://fhir.bahmni.org/ext/lab-order-concept-type',
         valueString: 'Panel',
       },
     ],
@@ -152,7 +152,7 @@ export const mockFhirLabTests: ServiceRequest[] = [
     },
     extension: [
       {
-        url: 'http://fhir.bahmni.org/lab-order-concept-type-extension',
+        url: 'http://fhir.bahmni.org/ext/lab-order-concept-type',
         valueString: 'Test',
       },
     ],
@@ -281,7 +281,7 @@ export const mockLabTestWithMissingFields: ServiceRequest = {
   },
   extension: [
     {
-      url: 'http://fhir.bahmni.org/lab-order-concept-type-extension',
+      url: 'http://fhir.bahmni.org/ext/lab-order-concept-type',
       valueString: 'Test',
     },
   ],
