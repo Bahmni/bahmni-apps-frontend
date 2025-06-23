@@ -20,7 +20,6 @@ jest.mock('../styles/InvestigationsForm.module.scss', () => ({
 
 jest.mock('@hooks/useInvestigationsSearch');
 jest.mock('@stores/serviceRequestStore');
-jest.mock('@hooks/useNotification');
 jest.mock('@components/common/boxWHeader/BoxWHeader', () => ({
   __esModule: true,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -62,7 +61,6 @@ jest.mock('../SelectedInvestigationItem', () => ({
 
 import useInvestigationsSearch from '@hooks/useInvestigationsSearch';
 import useServiceRequestStore from '@stores/serviceRequestStore';
-import useNotification from '@hooks/useNotification';
 
 const mockInvestigations: FlattenedInvestigations[] = [
   {
@@ -96,8 +94,6 @@ const mockStore = {
 };
 
 describe('InvestigationsForm', () => {
-  const mockAddNotification = jest.fn();
-
   beforeEach(() => {
     jest.clearAllMocks();
     // Setup default mocks
@@ -108,10 +104,6 @@ describe('InvestigationsForm', () => {
     });
 
     (useServiceRequestStore as unknown as jest.Mock).mockReturnValue(mockStore);
-
-    (useNotification as jest.Mock).mockReturnValue({
-      addNotification: mockAddNotification,
-    });
   });
 
   describe('Component Rendering', () => {
@@ -199,11 +191,6 @@ describe('InvestigationsForm', () => {
       const combobox = screen.getByRole('combobox');
       await user.type(combobox, 'test');
 
-      expect(mockAddNotification).toHaveBeenCalledWith({
-        title: 'Error',
-        message: 'Error searching investigations',
-        type: 'error',
-      });
       await waitFor(() => {
         expect(
           screen.getByText(/error searching investigations/i),

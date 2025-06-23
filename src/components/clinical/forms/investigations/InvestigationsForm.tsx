@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { ComboBox, Tile } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import * as styles from './styles/InvestigationsForm.module.scss';
@@ -8,7 +8,6 @@ import useServiceRequestStore from '@stores/serviceRequestStore';
 import BoxWHeader from '@components/common/boxWHeader/BoxWHeader';
 import SelectedInvestigationItem from './SelectedInvestigationItem';
 import SelectedItem from '@components/common/selectedItem/SelectedItem';
-import useNotification from '@hooks/useNotification';
 
 const InvestigationsForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
@@ -21,18 +20,6 @@ const InvestigationsForm: React.FC = React.memo(() => {
     updatePriority,
     removeServiceRequest,
   } = useServiceRequestStore();
-
-  const { addNotification } = useNotification();
-
-  useEffect(() => {
-    if (error) {
-      addNotification({
-        title: t('ERROR_DEFAULT_TITLE'),
-        message: t('ERROR_SEARCHING_INVESTIGATIONS', { error: error.message }),
-        type: 'error',
-      });
-    }
-  }, [error, addNotification, t]);
 
   const translateOrderType = (category: string): string => {
     return t(`ORDER_TYPE_${category.toUpperCase().replace(/\s/g, '_')}`, {
