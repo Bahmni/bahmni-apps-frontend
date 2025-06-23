@@ -74,7 +74,7 @@
   "DATE_ERROR_NULL_OR_UNDEFINED": "Date is null or undefined",
   "DATE_ERROR_PARSE": "Date Parse Error",
   "DIAGNOSES_ADDED_DIAGNOSES": "Added Diagnoses",
-  "DIAGNOSES_ALREADY_ADDED_AS_CONDITION": "Already added as a condition",
+  "DIAGNOSES_ALREADY_ADDED_AS_CONDITION": "Added as a condition",
   "DIAGNOSES_CERTAINTY_ARIA_LABEL": "Diagnoses Certainty",
   "DIAGNOSES_DISPLAY_CONTROL_HEADING": "Diagnoses",
   "CONDITIONS_AND_DIAGNOSES_FORM_TITLE": "Conditions and Diagnoses",

@@ -98,7 +98,7 @@ exports[`SelectedDiagnosisItem Snapshot Tests disabled condition link matches sn
         class="cds--link cds--link--disabled"
         role="link"
       >
-        Already added as a condition
+        Added as a condition
       </a>
     </div>
     <div

@@ -926,9 +926,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
 
       // Verify the "Add as condition" link is disabled
       await waitFor(() => {
-        const addAsConditionLink = screen.getByText(
-          'Already added as a condition',
-        );
+        const addAsConditionLink = screen.getByText('Added as a condition');
         expect(addAsConditionLink).toBeInTheDocument();
         expect(addAsConditionLink).toHaveAttribute('aria-disabled', 'true');
       });

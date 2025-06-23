@@ -274,7 +274,7 @@ describe('SelectedDiagnosisItem', () => {
         expect(addLink).not.toHaveAttribute('disabled');
       });
 
-      test('renders "Already added as a condition" link disabled when doesConditionExist prop is true', () => {
+      test('renders "Added as a condition" link disabled when doesConditionExist prop is true', () => {
         const propsWithExistingCondition = {
           ...defaultProps,
           doesConditionExist: true,
@@ -284,7 +284,7 @@ describe('SelectedDiagnosisItem', () => {
           <SelectedDiagnosisItem {...propsWithExistingCondition} />,
         );
         const addLink = screen.getByRole('link', {
-          name: 'Already added as a condition',
+          name: 'Added as a condition',
         });
         expect(addLink).toBeInTheDocument();
         expect(addLink).toHaveAttribute('aria-disabled', 'true');
@@ -316,7 +316,7 @@ describe('SelectedDiagnosisItem', () => {
           <SelectedDiagnosisItem {...propsWithExistingCondition} />,
         );
         const addLink = screen.getByRole('link', {
-          name: 'Already added as a condition',
+          name: 'Added as a condition',
         });
         await user.click(addLink);
 
