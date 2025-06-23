@@ -165,12 +165,12 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
                   >
                     <button
                       aria-activedescendant=""
-                      aria-controls="downshift-«r8k»-menu"
+                      aria-controls="downshift-«r8o»-menu"
                       aria-expanded="false"
                       aria-haspopup="listbox"
                       aria-label="Diagnoses Certainty"
                       class="cds--list-box__field"
-                      id="downshift-«r8k»-toggle-button"
+                      id="downshift-«r8o»-toggle-button"
                       role="combobox"
                       tabindex="0"
                       title="Confirmed"
@@ -206,9 +206,9 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
                       </div>
                     </button>
                     <ul
-                      aria-labelledby="downshift-«r8k»-label"
+                      aria-labelledby="downshift-«r8o»-label"
                       class="cds--list-box__menu"
-                      id="downshift-«r8k»-menu"
+                      id="downshift-«r8o»-menu"
                       role="listbox"
                       style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px); width: 0px;"
                     />
@@ -252,7 +252,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
               <span
                 aria-hidden="true"
                 class="cds--popover"
-                id="tooltip-«r8m»"
+                id="tooltip-«r8j»"
                 role="tooltip"
               >
                 <span
@@ -464,12 +464,12 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                   >
                     <button
                       aria-activedescendant=""
-                      aria-controls="downshift-«r9f»-menu"
+                      aria-controls="downshift-«ra1»-menu"
                       aria-expanded="false"
                       aria-haspopup="listbox"
                       aria-label="Diagnoses Certainty"
                       class="cds--list-box__field"
-                      id="downshift-«r9f»-toggle-button"
+                      id="downshift-«ra1»-toggle-button"
                       role="combobox"
                       tabindex="0"
                       title="Confirmed"
@@ -505,9 +505,9 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                       </div>
                     </button>
                     <ul
-                      aria-labelledby="downshift-«r9f»-label"
+                      aria-labelledby="downshift-«ra1»-label"
                       class="cds--list-box__menu"
-                      id="downshift-«r9f»-menu"
+                      id="downshift-«ra1»-menu"
                       role="listbox"
                       style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
                     />
@@ -551,7 +551,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
               <span
                 aria-hidden="true"
                 class="cds--popover"
-                id="tooltip-«r9h»"
+                id="tooltip-«r9e»"
                 role="tooltip"
               >
                 <span
@@ -643,8 +643,8 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                 >
                   <label
                     class="cds--label cds--visually-hidden"
-                    for="downshift-«r9m»-toggle-button"
-                    id="downshift-«r9m»-label"
+                    for="downshift-«r9j»-toggle-button"
+                    id="downshift-«r9j»-label"
                   >
                     Unit
                   </label>
@@ -654,12 +654,12 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                   >
                     <button
                       aria-activedescendant=""
-                      aria-controls="downshift-«r9m»-menu"
+                      aria-controls="downshift-«r9j»-menu"
                       aria-expanded="false"
                       aria-haspopup="listbox"
-                      aria-labelledby="downshift-«r9m»-label"
+                      aria-labelledby="downshift-«r9j»-label"
                       class="cds--list-box__field"
-                      id="downshift-«r9m»-toggle-button"
+                      id="downshift-«r9j»-toggle-button"
                       role="combobox"
                       tabindex="0"
                       title="Months"
@@ -695,9 +695,9 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                       </div>
                     </button>
                     <ul
-                      aria-labelledby="downshift-«r9m»-label"
+                      aria-labelledby="downshift-«r9j»-label"
                       class="cds--list-box__menu"
-                      id="downshift-«r9m»-menu"
+                      id="downshift-«r9j»-menu"
                       role="listbox"
                       style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
                     />
@@ -741,7 +741,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
               <span
                 aria-hidden="true"
                 class="cds--popover"
-                id="tooltip-«r9o»"
+                id="tooltip-«r9l»"
                 role="tooltip"
               >
                 <span
@@ -817,8 +817,8 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                 >
                   <label
                     class="cds--label cds--visually-hidden"
-                    for="downshift-«r9t»-toggle-button"
-                    id="downshift-«r9t»-label"
+                    for="downshift-«r9q»-toggle-button"
+                    id="downshift-«r9q»-label"
                   >
                     Unit
                   </label>
@@ -828,12 +828,12 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                   >
                     <button
                       aria-activedescendant=""
-                      aria-controls="downshift-«r9t»-menu"
+                      aria-controls="downshift-«r9q»-menu"
                       aria-expanded="false"
                       aria-haspopup="listbox"
-                      aria-labelledby="downshift-«r9t»-label"
+                      aria-labelledby="downshift-«r9q»-label"
                       class="cds--list-box__field"
-                      id="downshift-«r9t»-toggle-button"
+                      id="downshift-«r9q»-toggle-button"
                       role="combobox"
                       tabindex="0"
                       title="Unit"
@@ -869,9 +869,9 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                       </div>
                     </button>
                     <ul
-                      aria-labelledby="downshift-«r9t»-label"
+                      aria-labelledby="downshift-«r9q»-label"
                       class="cds--list-box__menu"
-                      id="downshift-«r9t»-menu"
+                      id="downshift-«r9q»-menu"
                       role="listbox"
                       style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
                     />
@@ -915,7 +915,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
               <span
                 aria-hidden="true"
                 class="cds--popover"
-                id="tooltip-«r9v»"
+                id="tooltip-«r9s»"
                 role="tooltip"
               >
                 <span
@@ -1564,12 +1564,12 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
                   >
                     <button
                       aria-activedescendant=""
-                      aria-controls="downshift-«r8a»-menu"
+                      aria-controls="downshift-«r8e»-menu"
                       aria-expanded="false"
                       aria-haspopup="listbox"
                       aria-label="Diagnoses Certainty"
                       class="cds--list-box__field"
-                      id="downshift-«r8a»-toggle-button"
+                      id="downshift-«r8e»-toggle-button"
                       role="combobox"
                       tabindex="0"
                       title="Confirmed"
@@ -1605,9 +1605,9 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
                       </div>
                     </button>
                     <ul
-                      aria-labelledby="downshift-«r8a»-label"
+                      aria-labelledby="downshift-«r8e»-label"
                       class="cds--list-box__menu"
-                      id="downshift-«r8a»-menu"
+                      id="downshift-«r8e»-menu"
                       role="listbox"
                       style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
                     />
@@ -1651,7 +1651,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
               <span
                 aria-hidden="true"
                 class="cds--popover"
-                id="tooltip-«r8c»"
+                id="tooltip-«r89»"
                 role="tooltip"
               >
                 <span
