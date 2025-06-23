@@ -31,7 +31,7 @@ describe('labInvestigationService', () => {
       },
       extension: [
         {
-          url: 'http://fhir.bahmni.org/lab-order-concept-type-extension',
+          url: 'http://fhir.bahmni.org/ext/lab-order-concept-type',
           valueString: 'Test',
         },
       ],
@@ -90,7 +90,7 @@ describe('labInvestigationService', () => {
       },
       extension: [
         {
-          url: 'http://fhir.bahmni.org/lab-order-concept-type-extension',
+          url: 'http://fhir.bahmni.org/ext/lab-order-concept-type',
           valueString: 'Panel',
         },
       ],
@@ -169,7 +169,7 @@ describe('labInvestigationService', () => {
       },
       extension: [
         {
-          url: 'http://fhir.bahmni.org/lab-order-concept-type-extension',
+          url: 'http://fhir.bahmni.org/ext/lab-order-concept-type',
           valueString: 'Test',
         },
       ],

@@ -9,6 +9,7 @@ import { getFormattedError } from '@utils/common';
 import { formatDate } from '@utils/date';
 import notificationService from './notificationService';
 import { Bundle, ServiceRequest } from 'fhir/r4';
+import { FHIR_LAB_ORDER_CONCEPT_TYPE_EXTENSION_URL } from '@constants/fhir';
 
 /**
  * Maps a FHIR priority code to LabTestPriority enum
@@ -97,7 +98,7 @@ export const determineTestType = (labTest: ServiceRequest): string => {
   // Check if the test has an extension that indicates it's a panel
   const panelExtension = labTest.extension?.find(
     (ext) =>
-      ext.url === 'http://fhir.bahmni.org/lab-order-concept-type-extension' &&
+      ext.url === FHIR_LAB_ORDER_CONCEPT_TYPE_EXTENSION_URL &&
       ext.valueString === 'Panel',
   );
 
