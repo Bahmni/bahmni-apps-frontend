@@ -284,7 +284,9 @@ export function formatDateDistance(date: string): FormatDateResult {
     formattedResult =
       monthInFraction === 0
         ? `${diffInYears} ${yearUnit}`
-        : `${diffInYears}.${monthInFraction} ${yearUnit}`;
+        : monthInFraction > 6
+          ? `${diffInYears + 1} ${yearUnit}`
+          : `${diffInYears}.5 ${yearUnit}`;
   } else if (diffInMonths >= 1) {
     // Use months for periods >= 1 month but < 1 year
     const monthUnit = i18next.t('CLINICAL_MONTHS_TRANSLATION_KEY', {

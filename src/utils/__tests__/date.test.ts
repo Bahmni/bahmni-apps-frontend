@@ -786,7 +786,7 @@ describe('Date Utility Functions', () => {
       it('should handle leap year dates correctly', () => {
         const leapYearDate = '2024-02-29T07:02:38.000Z'; // Feb 29, 2024 (leap year)
         const result = formatDateDistance(leapYearDate);
-        expect(result.formattedResult).toBe('1.3 years'); // about 1 year ago
+        expect(result.formattedResult).toBe('1.5 years');
         expect(result.error).toBeUndefined();
       });
 
@@ -834,24 +834,24 @@ describe('Date Utility Functions', () => {
         expect(result.error).toBeUndefined();
       });
 
-      it('should format 1 year and 6 months as "1.6 years"', () => {
+      it('should format 1 year and 6 months as "1.5 years"', () => {
         const date = '2023-12-18T07:02:38.000Z'; // 1 year, 6 months ago from mockCurrentDate
         const result = formatDateDistance(date);
-        expect(result.formattedResult).toBe('1.6 years');
+        expect(result.formattedResult).toBe('1.5 years');
         expect(result.error).toBeUndefined();
       });
 
-      it('should format 2 years and 3 months as "2.3 years"', () => {
+      it('should format 2 years and 3 months as "2.5 years"', () => {
         const date = '2023-03-18T07:02:38.000Z'; // 2 years, 3 months ago
         const result = formatDateDistance(date);
-        expect(result.formattedResult).toBe('2.3 years');
+        expect(result.formattedResult).toBe('2.5 years');
         expect(result.error).toBeUndefined();
       });
 
-      it('should format 4 years and 11 months as "4.11 years"', () => {
+      it('should format 4 years and 11 months as "5 years"', () => {
         const date = '2020-07-18T07:02:38.000Z'; // 4 years, 11 months ago
         const result = formatDateDistance(date);
-        expect(result.formattedResult).toBe('4.11 years');
+        expect(result.formattedResult).toBe('5 years');
         expect(result.error).toBeUndefined();
       });
 
