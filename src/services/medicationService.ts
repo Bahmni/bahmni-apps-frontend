@@ -1,15 +1,20 @@
 import { get } from './api';
 import { PATIENT_MEDICATION_RESOURCE_URL } from '@constants/app';
-import { FormattedMedication, MedicationStatus } from '@types/medication';
+import { MedicationRequest, MedicationStatus } from '@types/medication';
 import { getFormattedError } from '@utils/common';
 import notificationService from './notificationService';
-import { Bundle, MedicationRequest, Medication, Practitioner } from 'fhir/r4';
+import {
+  Bundle,
+  MedicationRequest as FhirMedicationRequest,
+  Medication,
+  Practitioner,
+} from 'fhir/r4';
 
 /**
  * Maps a FHIR medication request status to MedicationStatus enum
  */
 const mapMedicationStatus = (
-  medicationRequest: MedicationRequest,
+  medicationRequest: FhirMedicationRequest,
 ): MedicationStatus => {
   const status = medicationRequest.status;
   switch (status) {
@@ -90,7 +95,7 @@ function getProviderName(practitionerResource?: Practitioner): string {
  * Helper to get dose
  */
 function getDose(
-  dosageInstruction?: MedicationRequest['dosageInstruction'],
+  dosageInstruction?: FhirMedicationRequest['dosageInstruction'],
 ): string {
   const dose = dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity;
   if (dose?.value && dose?.unit) return `${dose.value} ${dose.unit}`;
@@ -102,7 +107,7 @@ function getDose(
  * Helper to get frequency
  */
 function getFrequency(
-  dosageInstruction?: MedicationRequest['dosageInstruction'],
+  dosageInstruction?: FhirMedicationRequest['dosageInstruction'],
 ): string {
   const repeat = dosageInstruction?.[0]?.timing?.repeat;
   if (repeat?.frequency && repeat?.period && repeat?.periodUnit) {
@@ -115,7 +120,7 @@ function getFrequency(
  * Helper to get route
  */
 function getRoute(
-  dosageInstruction?: MedicationRequest['dosageInstruction'],
+  dosageInstruction?: FhirMedicationRequest['dosageInstruction'],
 ): string {
   const route = dosageInstruction?.[0]?.route;
   if (route?.text) return route.text;
@@ -126,7 +131,7 @@ function getRoute(
 /**
  * Helper to get duration
  */
-function getDuration(med: MedicationRequest): string {
+function getDuration(med: FhirMedicationRequest): string {
   const duration = med.dispenseRequest?.expectedSupplyDuration;
   if (duration?.value && duration?.unit)
     return `${duration.value} ${duration.unit}`;
@@ -137,7 +142,7 @@ function getDuration(med: MedicationRequest): string {
  * Helper to get priority
  */
 function getPriority(
-  dosageInstruction?: MedicationRequest['dosageInstruction'],
+  dosageInstruction?: FhirMedicationRequest['dosageInstruction'],
 ): string {
   const ext = dosageInstruction?.[0]?.extension;
   if (!ext) return '';
@@ -151,7 +156,7 @@ function getPriority(
 /**
  * Helper to get notes
  */
-function getNotes(med: MedicationRequest): string {
+function getNotes(med: FhirMedicationRequest): string {
   if (med.note && med.note.length)
     return med.note.map((n) => n.text).join('; ');
   return '';
@@ -176,7 +181,7 @@ function isScheduled(status: MedicationStatus): boolean {
  * @param medication - The FHIR MedicationRequest resource to validate
  * @returns true if valid, false otherwise
  */
-const isValidMedication = (medication: MedicationRequest): boolean => {
+const isValidMedication = (medication: FhirMedicationRequest): boolean => {
   return !!(medication.id && medication.status);
 };
 
@@ -185,7 +190,7 @@ const isValidMedication = (medication: MedicationRequest): boolean => {
  * @param bundle - The FHIR bundle containing medication requests
  * @returns An array of formatted medication objects
  */
-function formatMedications(bundle: Bundle): FormattedMedication[] {
+function formatMedications(bundle: Bundle): MedicationRequest[] {
   try {
     // Extract medication requests from bundle entries
     const medications =
@@ -193,7 +198,7 @@ function formatMedications(bundle: Bundle): FormattedMedication[] {
         ?.filter(
           (entry) => entry.resource?.resourceType === 'MedicationRequest',
         )
-        .map((entry) => entry.resource as MedicationRequest) || [];
+        .map((entry) => entry.resource as FhirMedicationRequest) || [];
 
     const resourceMap = buildResourceMap(bundle);
 
@@ -246,7 +251,7 @@ function formatMedications(bundle: Bundle): FormattedMedication[] {
  */
 export async function getPatientMedications(
   patientUUID: string,
-): Promise<FormattedMedication[]> {
+): Promise<MedicationRequest[]> {
   try {
     const bundle = await getPatientMedicationBundle(patientUUID);
     return formatMedications(bundle);

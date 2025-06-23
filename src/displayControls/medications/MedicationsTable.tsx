@@ -11,7 +11,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
 import { useMedicationRequest } from '@/hooks/useMedicationRequest';
-import { FormattedMedication, MedicationStatus } from '@types/medication';
+import { MedicationRequest, MedicationStatus } from '@types/medication';
 import { formatDate } from '@utils/date';
 import { FULL_MONTH_DATE_FORMAT, ISO_DATE_FORMAT } from '@constants/date';
 import { groupByDate } from '@utils/common';
@@ -49,25 +49,22 @@ const MedicationsTable: React.FC = () => {
     [],
   );
 
-  const sortMedicationsByPriority = useCallback(
-    (meds: FormattedMedication[]) => {
-      return [...meds].sort((a, b) => {
-        const statusPriority = {
-          active: 0,
-          scheduled: 1,
-          completed: 2,
-          stopped: 3,
-        };
-        const aPriority = statusPriority[a.status] ?? 4;
-        const bPriority = statusPriority[b.status] ?? 4;
-        if (aPriority !== bPriority) return aPriority - bPriority;
-        const aDate = new Date(a.orderDate || '').getTime();
-        const bDate = new Date(b.orderDate || '').getTime();
-        return bDate - aDate;
-      });
-    },
-    [],
-  );
+  const sortMedicationsByPriority = useCallback((meds: MedicationRequest[]) => {
+    return [...meds].sort((a, b) => {
+      const statusPriority = {
+        active: 0,
+        scheduled: 1,
+        completed: 2,
+        stopped: 3,
+      };
+      const aPriority = statusPriority[a.status] ?? 4;
+      const bPriority = statusPriority[b.status] ?? 4;
+      if (aPriority !== bPriority) return aPriority - bPriority;
+      const aDate = new Date(a.orderDate || '').getTime();
+      const bDate = new Date(b.orderDate || '').getTime();
+      return bDate - aDate;
+    });
+  }, []);
 
   const activeAndScheduledMedications = useMemo(
     () => medications.filter((med) => med.isActive || med.isScheduled),
@@ -92,7 +89,7 @@ const MedicationsTable: React.FC = () => {
   }, [medications, sortMedicationsByPriority]);
 
   const renderCell = useCallback(
-    (medication: FormattedMedication, cellId: string) => {
+    (medication: MedicationRequest, cellId: string) => {
       switch (cellId) {
         case 'name':
           return (
@@ -153,7 +150,7 @@ const MedicationsTable: React.FC = () => {
     (
       processedMedications: Array<{
         date: string;
-        medications: FormattedMedication[];
+        medications: MedicationRequest[];
       }>,
       emptyMessage: string,
     ) => {
@@ -183,7 +180,7 @@ const MedicationsTable: React.FC = () => {
   );
 
   const renderActiveandScheduledMedicationsTable = useCallback(
-    (medications: FormattedMedication[], emptyMessage: string) => {
+    (medications: MedicationRequest[], emptyMessage: string) => {
       return (
         <ExpandableDataTable
           tableTitle={t('MEDICATIONS_TAB_ACTIVE_SCHEDULED')}

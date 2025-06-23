@@ -1,12 +1,12 @@
 import { useState, useCallback, useEffect } from 'react';
-import { FormattedMedication } from '@types/medication';
+import { MedicationRequest } from '@types/medication';
 import { getPatientMedications } from '@services/medicationService';
 import { usePatientUUID } from './usePatientUUID';
 import { getFormattedError } from '@utils/common';
 import { useTranslation } from 'react-i18next';
 
 interface MedicationRequestResult {
-  medications: FormattedMedication[];
+  medications: MedicationRequest[];
   loading: boolean;
   error: Error | null;
   refetch: () => void;
@@ -17,7 +17,7 @@ interface MedicationRequestResult {
  * @returns Object containing medications, loading state, error state, and refetch function
  */
 export const useMedicationRequest = (): MedicationRequestResult => {
-  const [medications, setMedications] = useState<FormattedMedication[]>([]);
+  const [medications, setMedications] = useState<MedicationRequest[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const patientUUID = usePatientUUID();

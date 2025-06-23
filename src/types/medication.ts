@@ -11,7 +11,7 @@ export enum MedicationStatus {
 /**
  * Interface representing a formatted medication for easier consumption by components
  */
-export interface FormattedMedication {
+export interface MedicationRequest {
   readonly id: string;
   readonly name: string;
   readonly form?: string;

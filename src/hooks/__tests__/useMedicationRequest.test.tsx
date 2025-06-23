@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { useMedicationRequest } from '../useMedicationRequest';
-import { FormattedMedication, MedicationStatus } from '@types/medication';
+import { MedicationRequest, MedicationStatus } from '@types/medication';
 import { getPatientMedications } from '@services/medicationService';
 import { usePatientUUID } from '../usePatientUUID';
 import { getFormattedError } from '@utils/common';
@@ -24,7 +24,7 @@ const mockedGetFormattedError = getFormattedError as jest.MockedFunction<
 describe('useMedications hook', () => {
   const mockPatientUUID = 'patient-uuid-123';
 
-  const mockMedications: FormattedMedication[] = [
+  const mockMedications: MedicationRequest[] = [
     {
       id: 'medication-uuid-123',
       name: 'Aspirin 100mg',
@@ -127,7 +127,7 @@ describe('useMedications hook', () => {
 
     it('should handle medications with different statuses', async () => {
       // Arrange
-      const medicationsWithDifferentStatuses: FormattedMedication[] = [
+      const medicationsWithDifferentStatuses: MedicationRequest[] = [
         {
           ...mockMedications[0],
           status: MedicationStatus.Active,
@@ -318,7 +318,7 @@ describe('useMedications hook', () => {
   describe('Refetch Functionality', () => {
     it('should provide a refetch function that fetches data again', async () => {
       // Arrange
-      const updatedMedications: FormattedMedication[] = [
+      const updatedMedications: MedicationRequest[] = [
         {
           id: 'medication-uuid-999',
           name: 'Lisinopril 10mg',
@@ -443,7 +443,7 @@ describe('useMedications hook', () => {
     it('should update when patient UUID changes', async () => {
       // Arrange
       const newPatientUUID = 'patient-uuid-456';
-      const newMedications: FormattedMedication[] = [
+      const newMedications: MedicationRequest[] = [
         {
           id: 'medication-uuid-888',
           name: 'Atorvastatin 20mg',
@@ -536,7 +536,7 @@ describe('useMedications hook', () => {
   describe('Edge Cases', () => {
     it('should handle medications with minimal data', async () => {
       // Arrange
-      const minimalMedications: FormattedMedication[] = [
+      const minimalMedications: MedicationRequest[] = [
         {
           id: 'minimal-med',
           name: 'Unknown Medication',
@@ -576,7 +576,7 @@ describe('useMedications hook', () => {
 
     it('should handle large number of medications', async () => {
       // Arrange
-      const largeMedicationList: FormattedMedication[] = Array.from(
+      const largeMedicationList: MedicationRequest[] = Array.from(
         { length: 100 },
         (_, index) => ({
           id: `medication-${index}`,
