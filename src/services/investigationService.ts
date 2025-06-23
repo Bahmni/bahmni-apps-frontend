@@ -9,7 +9,7 @@ import {
 import i18next from 'i18next';
 import { get } from './api';
 import { OrderType, OrderTypeResponse } from '@types/orderType';
-import { FHIR_CONCEPT_CLASS_EXTENSION_URL } from '@/constants/fhir';
+import { FHIR_CONCEPT_CLASS_EXTENSION_URL } from '@constants/fhir';
 
 const fetchInvestigations = async (): Promise<ValueSet> => {
   return await searchFHIRConceptsByName(ALL_ORDERABLES_CONCEPT_NAME);
