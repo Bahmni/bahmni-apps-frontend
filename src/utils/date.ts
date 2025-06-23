@@ -269,12 +269,22 @@ export function formatDateDistance(date: string): FormatDateResult {
 
   let formattedResult: string;
 
-  if (diffInYears >= 1) {
-    // Use years for periods >= 1 year
+  if (diffInYears >= 5) {
     const yearUnit = i18next.t('CLINICAL_YEARS_TRANSLATION_KEY', {
       count: diffInYears,
     });
-    formattedResult = `${diffInYears} ${yearUnit}`;
+    const absDiffInYears = Math.round(diffInMonths / 12);
+    formattedResult = `${absDiffInYears} ${yearUnit}`;
+  } else if (diffInYears >= 1) {
+    // Use years for periods >= 1 year
+    const monthInFraction = diffInMonths % 12;
+    const yearUnit = i18next.t('CLINICAL_YEARS_TRANSLATION_KEY', {
+      count: diffInYears + monthInFraction,
+    });
+    formattedResult =
+      monthInFraction === 0
+        ? `${diffInYears} ${yearUnit}`
+        : `${diffInYears}.${monthInFraction} ${yearUnit}`;
   } else if (diffInMonths >= 1) {
     // Use months for periods >= 1 month but < 1 year
     const monthUnit = i18next.t('CLINICAL_MONTHS_TRANSLATION_KEY', {
