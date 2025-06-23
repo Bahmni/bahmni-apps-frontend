@@ -85,22 +85,22 @@ const InvestigationsForm: React.FC = React.memo(() => {
     });
 
     let currentCategory: string | null = null;
-    const investigationsCopy = [...mappedItems];
-    for (let i = 0; i < investigationsCopy.length; i++) {
-      const investigation = investigationsCopy[i];
+    const result = [];
+    for (const investigation of mappedItems) {
       if (investigation.category.toUpperCase() !== currentCategory) {
         currentCategory = investigation.category.toUpperCase();
-        investigationsCopy.splice(i, 0, {
+        result.push({
           code: '',
           display: translateOrderType(currentCategory),
           category: '',
           categoryCode: '',
           disabled: true,
         });
-        i++;
       }
+      result.push(investigation);
     }
-    return investigationsCopy;
+
+    return result;
   };
   const filteredInvestigations: FlattenedInvestigations[] = useMemo(
     () => getFilteredInvestigations(),
