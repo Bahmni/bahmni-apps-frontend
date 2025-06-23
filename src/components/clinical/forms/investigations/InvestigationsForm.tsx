@@ -67,8 +67,7 @@ const InvestigationsForm: React.FC = React.memo(() => {
     }
 
     const mappedItems = investigations.map((item) => {
-      if (!selectedServiceRequests.has(item.category.toUpperCase()) === false)
-        return item;
+      if (!selectedServiceRequests.has(item.category)) return item;
       const selectedItemsInCategory = selectedServiceRequests.get(
         item.category,
       );
