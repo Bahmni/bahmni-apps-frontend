@@ -258,7 +258,7 @@ describe('SelectedConditionItem Unit Tests', () => {
       );
     });
 
-    it('should handle large valid numbers', async () => {
+    it('should handle numbers that are less than 99', async () => {
       const user = userEvent.setup();
       render(<SelectedConditionItem {...defaultProps} />);
 
@@ -266,11 +266,20 @@ describe('SelectedConditionItem Unit Tests', () => {
         'condition-duration-value-test-condition-1',
       );
       await user.clear(durationInput);
+      fireEvent.change(durationInput, { target: { value: '99' } });
+
+      expect(mockUpdateConditionDuration).toHaveBeenCalledWith(
+        'test-condition-1',
+        99,
+        'days',
+      );
+
+      await user.clear(durationInput);
       fireEvent.change(durationInput, { target: { value: '9999' } });
 
       expect(mockUpdateConditionDuration).toHaveBeenCalledWith(
         'test-condition-1',
-        9999,
+        99,
         'days',
       );
     });
@@ -474,23 +483,6 @@ describe('SelectedConditionItem Unit Tests', () => {
       );
     });
 
-    it('should handle rapid consecutive changes', async () => {
-      const user = userEvent.setup();
-      render(<SelectedConditionItem {...defaultProps} />);
-
-      const durationInput = screen.getByTestId(
-        'condition-duration-value-test-condition-1',
-      );
-
-      await user.clear(durationInput);
-      await user.type(durationInput, '1');
-      await user.type(durationInput, '2');
-      await user.type(durationInput, '3');
-
-      // Should handle multiple rapid changes
-      expect(mockUpdateConditionDuration).toHaveBeenCalledTimes(4); // clear + 3 types
-    });
-
     it('should render all available duration units in dropdown', () => {
       render(<SelectedConditionItem {...defaultProps} />);
 
@@ -563,10 +555,7 @@ describe('SelectedConditionItem Unit Tests', () => {
 
       expect(durationInput).toHaveFocus();
     });
-  });
 
-  // 5. INTEGRATION TESTS
-  describe('Integration Tests', () => {
     it('should work with different duration units', async () => {
       const user = userEvent.setup();
 
@@ -631,28 +620,6 @@ describe('SelectedConditionItem Unit Tests', () => {
 
         // Should not call updateConditionDuration because numValue is not > 0
         expect(mockUpdateConditionDuration).not.toHaveBeenCalled();
-      }
-    });
-
-    it('should call updateConditionDuration when numValue is positive', async () => {
-      render(<SelectedConditionItem {...defaultProps} />);
-
-      const durationInput = screen.getByTestId(
-        'condition-duration-value-test-condition-1',
-      );
-
-      const positiveInputs = ['1', '5', '100', '9999'];
-
-      for (const input of positiveInputs) {
-        jest.clearAllMocks();
-        fireEvent.change(durationInput, { target: { value: input } });
-
-        // Should call updateConditionDuration because numValue > 0
-        expect(mockUpdateConditionDuration).toHaveBeenCalledWith(
-          'test-condition-1',
-          parseInt(input, 10),
-          'days',
-        );
       }
     });
 

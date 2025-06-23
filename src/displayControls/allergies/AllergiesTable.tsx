@@ -6,7 +6,6 @@ import { usePatientUUID } from '@hooks/usePatientUUID';
 import { useAllergies } from '@hooks/useAllergies';
 import { formatAllergies } from '@services/allergyService';
 import { FormattedAllergy } from '@types/allergy';
-import { generateId } from '@utils/common';
 import { DotMark } from '@carbon/icons-react';
 import {
   getCategoryDisplayName,
@@ -106,18 +105,6 @@ const AllergiesTable: React.FC = () => {
     }
   };
 
-  // Function to render expanded content for an allergy
-  const renderExpandedContent = (allergy: FormattedAllergy) => {
-    if (allergy.note && allergy.note.length > 0) {
-      return (
-        <p className={styles.allergiesNote} key={generateId()}>
-          {allergy.note.join(', ')}
-        </p>
-      );
-    }
-    return undefined;
-  };
-
   return (
     <div data-testid="allergy-table">
       <ExpandableDataTable
@@ -126,12 +113,12 @@ const AllergiesTable: React.FC = () => {
         headers={headers}
         sortable={sortable}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
         loading={loading}
         error={error}
         ariaLabel={t('ALLERGIES_DISPLAY_CONTROL_HEADING')}
         emptyStateMessage={t('NO_ALLERGIES')}
         className={styles.allergiesTableBody}
+        isOpen={true}
       />
     </div>
   );

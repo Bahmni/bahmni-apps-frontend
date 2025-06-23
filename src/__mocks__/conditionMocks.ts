@@ -77,19 +77,7 @@ export const mockFormattedConditionsWithoutNotes: FormattedCondition[] = [
     codeDisplay: 'Cyst of Gallbladder',
   },
 ];
-export const mockFormattedConditionsWithNotes: FormattedCondition[] = [
-  {
-    id: '21fc9270-5e82-4073-9468-0bc3c1a105a5',
-    display: 'Cyst of Gallbladder',
-    status: ConditionStatus.Active,
-    onsetDate: '2025-03-24T18:30:00+00:00',
-    recordedDate: '2025-03-25T06:48:32+00:00',
-    recorder: 'Super Man',
-    code: '143017AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-    codeDisplay: 'Cyst of Gallbladder',
-    note: ['Patient reports pain in the upper right quadrant'],
-  },
-];
+
 export const mockConditionBundle: Bundle = {
   resourceType: 'Bundle',
   id: '8c9cde77-2ae9-4c05-b149-964b4cf3e8f5',
