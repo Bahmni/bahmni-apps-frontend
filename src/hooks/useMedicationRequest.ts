@@ -5,7 +5,7 @@ import { usePatientUUID } from './usePatientUUID';
 import { getFormattedError } from '@utils/common';
 import { useTranslation } from 'react-i18next';
 
-interface UseMedicationsResult {
+interface MedicationRequestResult {
   medications: FormattedMedication[];
   loading: boolean;
   error: Error | null;
@@ -16,7 +16,7 @@ interface UseMedicationsResult {
  * Custom hook to fetch and manage medications for the current patient
  * @returns Object containing medications, loading state, error state, and refetch function
  */
-export const useMedications = (): UseMedicationsResult => {
+export const useMedicationRequest = (): MedicationRequestResult => {
   const [medications, setMedications] = useState<FormattedMedication[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
@@ -40,7 +40,7 @@ export const useMedications = (): UseMedicationsResult => {
     } finally {
       setLoading(false);
     }
-  }, [patientUUID, t]);
+  }, [patientUUID]);
 
   useEffect(() => {
     fetchMedications();
@@ -54,4 +54,4 @@ export const useMedications = (): UseMedicationsResult => {
   };
 };
 
-export default useMedications;
+export default useMedicationRequest;

@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
-import { useMedications } from '../useMedications';
+import { useMedicationRequest } from '../useMedicationRequest';
 import { FormattedMedication, MedicationStatus } from '@types/medication';
 import { getPatientMedications } from '@services/medicationService';
 import { usePatientUUID } from '../usePatientUUID';
@@ -73,7 +73,7 @@ describe('useMedications hook', () => {
       mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
 
       // Act
-      const { result } = renderHook(() => useMedications());
+      const { result } = renderHook(() => useMedicationRequest());
 
       // Assert
       expect(result.current.medications).toEqual([]);
@@ -88,7 +88,7 @@ describe('useMedications hook', () => {
       mockedGetPatientMedications.mockResolvedValueOnce(mockMedications);
 
       // Act
-      const { result } = renderHook(() => useMedications());
+      const { result } = renderHook(() => useMedicationRequest());
 
       // Assert initial loading state
       expect(result.current.loading).toBe(true);
@@ -112,7 +112,7 @@ describe('useMedications hook', () => {
       mockedGetPatientMedications.mockResolvedValueOnce([]);
 
       // Act
-      const { result } = renderHook(() => useMedications());
+      const { result } = renderHook(() => useMedicationRequest());
 
       // Wait for async operations
       await act(async () => {
@@ -155,7 +155,7 @@ describe('useMedications hook', () => {
       );
 
       // Act
-      const { result } = renderHook(() => useMedications());
+      const { result } = renderHook(() => useMedicationRequest());
 
       // Wait for async operations
       await act(async () => {
@@ -185,7 +185,7 @@ describe('useMedications hook', () => {
       mockedUsePatientUUID.mockReturnValue(null);
 
       // Act
-      const { result } = renderHook(() => useMedications());
+      const { result } = renderHook(() => useMedicationRequest());
 
       // Wait for async operations
       await act(async () => {
@@ -204,7 +204,7 @@ describe('useMedications hook', () => {
       mockedUsePatientUUID.mockReturnValue(null);
 
       // Act
-      const { result } = renderHook(() => useMedications());
+      const { result } = renderHook(() => useMedicationRequest());
 
       // Wait for async operations
       await act(async () => {
@@ -223,7 +223,7 @@ describe('useMedications hook', () => {
       mockedUsePatientUUID.mockReturnValue('');
 
       // Act
-      const { result } = renderHook(() => useMedications());
+      const { result } = renderHook(() => useMedicationRequest());
 
       // Wait for async operations
       await act(async () => {
@@ -248,7 +248,7 @@ describe('useMedications hook', () => {
       });
 
       // Act
-      const { result } = renderHook(() => useMedications());
+      const { result } = renderHook(() => useMedicationRequest());
 
       // Wait for async operations
       await act(async () => {
@@ -274,7 +274,7 @@ describe('useMedications hook', () => {
       });
 
       // Act
-      const { result } = renderHook(() => useMedications());
+      const { result } = renderHook(() => useMedicationRequest());
 
       // Wait for async operations
       await act(async () => {
@@ -301,7 +301,7 @@ describe('useMedications hook', () => {
       });
 
       // Act
-      const { result } = renderHook(() => useMedications());
+      const { result } = renderHook(() => useMedicationRequest());
 
       // Wait for async operations
       await act(async () => {
@@ -344,7 +344,7 @@ describe('useMedications hook', () => {
         .mockResolvedValueOnce(updatedMedications);
 
       // Act - Initial render
-      const { result } = renderHook(() => useMedications());
+      const { result } = renderHook(() => useMedicationRequest());
 
       // Wait for initial fetch
       await act(async () => {
@@ -380,7 +380,7 @@ describe('useMedications hook', () => {
       });
 
       // Act - Initial render
-      const { result } = renderHook(() => useMedications());
+      const { result } = renderHook(() => useMedicationRequest());
 
       // Wait for initial fetch
       await act(async () => {
@@ -416,7 +416,7 @@ describe('useMedications hook', () => {
       });
 
       // Act - Initial render with error
-      const { result } = renderHook(() => useMedications());
+      const { result } = renderHook(() => useMedicationRequest());
 
       // Wait for initial fetch (error)
       await act(async () => {
@@ -469,7 +469,7 @@ describe('useMedications hook', () => {
 
       // Act - Initial render with first patient UUID
       mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      const { result, rerender } = renderHook(() => useMedications());
+      const { result, rerender } = renderHook(() => useMedicationRequest());
 
       // Wait for initial fetch
       await act(async () => {
@@ -506,7 +506,7 @@ describe('useMedications hook', () => {
       mockedGetPatientMedications.mockResolvedValueOnce(mockMedications);
 
       // Act - Initial render with valid UUID
-      const { result, rerender } = renderHook(() => useMedications());
+      const { result, rerender } = renderHook(() => useMedicationRequest());
 
       // Wait for initial fetch
       await act(async () => {
@@ -560,7 +560,7 @@ describe('useMedications hook', () => {
       mockedGetPatientMedications.mockResolvedValueOnce(minimalMedications);
 
       // Act
-      const { result } = renderHook(() => useMedications());
+      const { result } = renderHook(() => useMedicationRequest());
 
       // Wait for async operations
       await act(async () => {
@@ -604,7 +604,7 @@ describe('useMedications hook', () => {
       mockedGetPatientMedications.mockResolvedValueOnce(largeMedicationList);
 
       // Act
-      const { result } = renderHook(() => useMedications());
+      const { result } = renderHook(() => useMedicationRequest());
 
       // Wait for async operations
       await act(async () => {
@@ -630,7 +630,7 @@ describe('useMedications hook', () => {
 
       // Act - Rapid UUID changes
       mockedUsePatientUUID.mockReturnValue(uuid1);
-      const { result, rerender } = renderHook(() => useMedications());
+      const { result, rerender } = renderHook(() => useMedicationRequest());
 
       mockedUsePatientUUID.mockReturnValue(uuid2);
       rerender();

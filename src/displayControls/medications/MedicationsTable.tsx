@@ -10,7 +10,7 @@ import {
 } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
-import { useMedications } from '@hooks/useMedications';
+import { useMedicationRequest } from '@/hooks/useMedicationRequest';
 import { FormattedMedication, MedicationStatus } from '@types/medication';
 import { formatDate } from '@utils/date';
 import { FULL_MONTH_DATE_FORMAT, ISO_DATE_FORMAT } from '@constants/date';
@@ -19,7 +19,7 @@ import * as styles from './styles/MedicationsTable.module.scss';
 
 const MedicationsTable: React.FC = () => {
   const { t } = useTranslation();
-  const { medications, loading, error } = useMedications();
+  const { medications, loading, error } = useMedicationRequest();
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
 
   // Table headers
