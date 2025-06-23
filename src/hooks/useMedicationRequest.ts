@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { MedicationRequest } from '@types/medication';
-import { getPatientMedications } from '@services/medicationService';
+import { getPatientMedications } from '@/services/medicationRequestService';
 import { usePatientUUID } from './usePatientUUID';
 import { getFormattedError } from '@utils/common';
 import { useTranslation } from 'react-i18next';

@@ -1,4 +1,4 @@
-import { getPatientMedications } from '../medicationService';
+import { getPatientMedications } from '../medicationRequestService';
 import { get } from '../api';
 import { MedicationStatus } from '@types/medication';
 import { MedicationRequest, Bundle, Medication, Practitioner } from 'fhir/r4';
