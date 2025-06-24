@@ -252,6 +252,57 @@ describe('InvestigationsForm', () => {
         expect(options[4]).toHaveTextContent('Chest X-Ray');
       });
     });
+
+    test('displays investigations grouped by category when search results are mixed by category', async () => {
+      const mixedMockInvestigations = [
+        {
+          code: 'cd8',
+          display: 'CD8%',
+          category: 'Laboratory',
+          categoryCode: 'lab',
+        },
+        {
+          code: 'chest-xray-002',
+          display: 'Chest X-Ray AP',
+          category: 'Radiology',
+          categoryCode: 'rad',
+        },
+        {
+          code: 'cd3',
+          display: 'CD3%',
+          category: 'Laboratory',
+          categoryCode: 'lab',
+        },
+      ];
+      (useInvestigationsSearch as jest.Mock).mockReturnValue({
+        investigations: mixedMockInvestigations,
+        isLoading: false,
+        error: null,
+      });
+
+      const user = userEvent.setup();
+
+      render(
+        <I18nextProvider i18n={i18n}>
+          <InvestigationsForm />
+        </I18nextProvider>,
+      );
+
+      const combobox = screen.getByRole('combobox');
+      await user.type(combobox, 'test');
+
+      // The investigations are filtered and grouped in the component
+      expect(combobox).toHaveValue('test');
+      await waitFor(() => {
+        const options = screen.getAllByRole('option');
+        expect(options).toHaveLength(5);
+        expect(options[0]).toHaveTextContent('LABORATORY');
+        expect(options[1]).toHaveTextContent('CD8%');
+        expect(options[2]).toHaveTextContent('CD3%');
+        expect(options[3]).toHaveTextContent('RADIOLOGY');
+        expect(options[4]).toHaveTextContent('Chest X-Ray AP');
+      });
+    });
   });
 
   describe('Investigation Selection', () => {
