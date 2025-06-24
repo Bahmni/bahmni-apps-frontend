@@ -108,7 +108,7 @@ export function formatMedicationRequest(
   }
   if (duration) {
     dosageParts.push(
-      `${duration.duration} ${formatMedicationRequestDate(duration.durationUnit )}`,
+      `${duration.duration} ${formatMedicationRequestDate(duration.durationUnit)}`,
     );
   }
 
