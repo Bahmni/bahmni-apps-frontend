@@ -27,6 +27,34 @@ const InvestigationsForm: React.FC = React.memo(() => {
     });
   };
 
+  const arrangeFilteredInvestigationsByCategory = (
+    investigations: FlattenedInvestigations[],
+  ): FlattenedInvestigations[] => {
+    let currentCategory: string | null = null;
+    const investigationsByCategory: Map<string, FlattenedInvestigations[]> =
+      new Map();
+    for (const investigation of investigations) {
+      currentCategory = investigation.category.toUpperCase();
+      if (!investigationsByCategory.has(currentCategory)) {
+        investigationsByCategory.set(currentCategory, []);
+      }
+      investigationsByCategory.get(currentCategory)?.push(investigation);
+    }
+    const result: FlattenedInvestigations[] = [];
+    Array.from(investigationsByCategory.keys()).forEach((category) => {
+      const categoryItems = investigationsByCategory.get(category) || [];
+      result.push({
+        code: '',
+        display: translateOrderType(category),
+        category,
+        categoryCode: category,
+        disabled: true,
+      });
+      result.push(...categoryItems);
+    });
+    return result;
+  };
+
   const getFilteredInvestigations = (): FlattenedInvestigations[] => {
     if (searchTerm.length === 0) return [];
     if (isLoading) {
@@ -84,23 +112,7 @@ const InvestigationsForm: React.FC = React.memo(() => {
       };
     });
 
-    let currentCategory: string | null = null;
-    const result = [];
-    for (const investigation of mappedItems) {
-      if (investigation.category.toUpperCase() !== currentCategory) {
-        currentCategory = investigation.category.toUpperCase();
-        result.push({
-          code: '',
-          display: translateOrderType(currentCategory),
-          category: '',
-          categoryCode: '',
-          disabled: true,
-        });
-      }
-      result.push(investigation);
-    }
-
-    return result;
+    return arrangeFilteredInvestigationsByCategory(mappedItems);
   };
   const filteredInvestigations: FlattenedInvestigations[] = useMemo(
     () => getFilteredInvestigations(),
