@@ -45,6 +45,12 @@ const useInvestigationsSearch = (
 
     const searchWords = searchTermLower.split(/\s+/);
 
+    const exactMatch = investigations.find(
+      (investigation) =>
+        investigation.display.toLowerCase() === searchTermLower,
+    );
+    if (exactMatch) return [exactMatch];
+
     return investigations.filter((investigation) => {
       const displayLower = investigation.display.toLowerCase();
       return searchWords.some((word) => displayLower.includes(word));

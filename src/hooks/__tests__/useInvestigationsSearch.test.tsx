@@ -235,6 +235,21 @@ describe('useInvestigationsSearch', () => {
 
       expect(result.current.investigations).toEqual([]);
     });
+    test('should return only exact match if it exists', async () => {
+      const { result } = renderHook(() =>
+        useInvestigationsSearch('Complete Blood Count'),
+      );
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(500);
+      });
+
+      expect(result.current.investigations).toEqual([mockInvestigations[0]]);
+    });
   });
 
   describe('Debounce Behavior', () => {
