@@ -1,14 +1,7 @@
 import { get } from './api';
 import { PATIENT_MEDICATION_RESOURCE_URL } from '@constants/app';
 import { MedicationRequest, MedicationStatus } from '@types/medication';
-import { getFormattedError } from '@utils/common';
-import notificationService from './notificationService';
-import {
-  Bundle,
-  MedicationRequest as FhirMedicationRequest,
-  Medication,
-  Practitioner,
-} from 'fhir/r4';
+import { Bundle, MedicationRequest as FhirMedicationRequest } from 'fhir/r4';
 
 /**
  * Maps a FHIR medication request status to MedicationStatus enum
@@ -45,145 +38,76 @@ async function getPatientMedicationBundle(
 }
 
 /**
- * Builds a map of referenced resources from the bundle
- */
-function buildResourceMap(bundle: Bundle) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const map: { [reference: string]: any } = {};
-  (bundle.entry || []).forEach((entry) => {
-    if (
-      entry.resource &&
-      entry.resource.resourceType &&
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (entry.resource as any).id
-    ) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      map[`${entry.resource.resourceType}/${(entry.resource as any).id}`] =
-        entry.resource;
-    }
-  });
-  return map;
-}
-
-/**
- * Helper to get drug form from Medication resource
- */
-function getDrugForm(medicationResource?: Medication): string {
-  return (
-    medicationResource?.form?.coding?.[0]?.display ||
-    medicationResource?.form?.text ||
-    ''
-  );
-}
-
-/**
- * Helper to get provider name from Practitioner resource
- */
-function getProviderName(practitionerResource?: Practitioner): string {
-  if (!practitionerResource) return '';
-  if (practitionerResource.name && practitionerResource.name.length > 0) {
-    const name = practitionerResource.name[0];
-    return (
-      name.text ||
-      [name.given?.join(' '), name.family].filter(Boolean).join(' ')
-    );
-  }
-  return '';
-}
-
-/**
  * Helper to get dose
  */
 function getDose(
-  dosageInstruction?: FhirMedicationRequest['dosageInstruction'],
-): string {
-  const dose = dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity;
-  if (dose?.value && dose?.unit) return `${dose.value} ${dose.unit}`;
-  if (dose?.value) return `${dose.value}`;
-  return '';
+  dosageInstruction: FhirMedicationRequest['dosageInstruction'],
+): { value: number; unit: string } {
+  const doseQuantity = dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity;
+  return {
+    value: doseQuantity?.value ?? 0,
+    unit: doseQuantity?.unit ?? '',
+  };
 }
 
 /**
  * Helper to get frequency
  */
 function getFrequency(
-  dosageInstruction?: FhirMedicationRequest['dosageInstruction'],
+  dosageInstruction: FhirMedicationRequest['dosageInstruction'],
 ): string {
-  const repeat = dosageInstruction?.[0]?.timing?.repeat;
-  if (repeat?.frequency && repeat?.period && repeat?.periodUnit) {
-    return `${repeat.frequency} / ${repeat.period}${repeat.periodUnit}`;
-  }
-  return dosageInstruction?.[0]?.text || '';
+  return dosageInstruction?.[0]?.timing?.code?.coding?.[0]?.display ?? '';
 }
 
 /**
  * Helper to get route
  */
 function getRoute(
-  dosageInstruction?: FhirMedicationRequest['dosageInstruction'],
+  dosageInstruction: FhirMedicationRequest['dosageInstruction'],
 ): string {
   const route = dosageInstruction?.[0]?.route;
-  if (route?.text) return route.text;
-  if (route?.coding?.[0]?.display) return route.coding[0].display;
+  if (
+    route &&
+    Array.isArray(route.coding) &&
+    route.coding[0] &&
+    route.coding[0].display
+  ) {
+    return route.coding[0].display;
+  }
   return '';
 }
 
 /**
  * Helper to get duration
  */
-function getDuration(med: FhirMedicationRequest): string {
-  const duration = med.dispenseRequest?.expectedSupplyDuration;
-  if (duration?.value && duration?.unit)
-    return `${duration.value} ${duration.unit}`;
-  return '';
-}
-
-/**
- * Helper to get priority
- */
-function getPriority(
-  dosageInstruction?: FhirMedicationRequest['dosageInstruction'],
-): string {
-  const ext = dosageInstruction?.[0]?.extension;
-  if (!ext) return '';
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if (ext.find((e: any) => e.valueCode === 'STAT')) return 'STAT';
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if (ext.find((e: any) => e.valueCode === 'PRN')) return 'PRN';
-  return '';
+function getDuration(
+  dosageInstruction: FhirMedicationRequest['dosageInstruction'],
+): {
+  duration: number;
+  durationUnit: string;
+} {
+  const repeat = dosageInstruction?.[0]?.timing?.repeat;
+  return {
+    duration: repeat?.duration ?? 0,
+    durationUnit: repeat?.durationUnit ?? '',
+  };
 }
 
 /**
  * Helper to get notes
  */
-function getNotes(med: FhirMedicationRequest): string {
-  if (med.note && med.note.length)
-    return med.note.map((n) => n.text).join('; ');
-  return '';
+function getNotes(
+  dosageInstruction: FhirMedicationRequest['dosageInstruction'],
+): string {
+  try {
+    const text = dosageInstruction?.[0]?.text;
+    if (!text) return '';
+    const parsed = JSON.parse(text);
+    return parsed.additionalInstructions ?? '';
+  } catch {
+    return '';
+  }
 }
-
-/**
- * Helper to check if medication is active
- */
-function isActive(status: MedicationStatus): boolean {
-  return status === MedicationStatus.Active;
-}
-
-/**
- * Helper to check if medication is scheduled
- */
-function isScheduled(status: MedicationStatus): boolean {
-  return status === MedicationStatus.Scheduled;
-}
-
-/**
- * Validates that a medication request has all required fields
- * @param medication - The FHIR MedicationRequest resource to validate
- * @returns true if valid, false otherwise
- */
-const isValidMedication = (medication: FhirMedicationRequest): boolean => {
-  return !!(medication.id && medication.status);
-};
 
 /**
  * Formats FHIR medication requests into a more user-friendly format
@@ -191,57 +115,33 @@ const isValidMedication = (medication: FhirMedicationRequest): boolean => {
  * @returns An array of formatted medication objects
  */
 function formatMedications(bundle: Bundle): MedicationRequest[] {
-  try {
-    // Extract medication requests from bundle entries
-    const medications =
-      bundle.entry
-        ?.filter(
-          (entry) => entry.resource?.resourceType === 'MedicationRequest',
-        )
-        .map((entry) => entry.resource as FhirMedicationRequest) || [];
+  // Extract medication requests from bundle entries
+  const medications =
+    bundle.entry?.map((entry) => entry.resource as FhirMedicationRequest) || [];
 
-    const resourceMap = buildResourceMap(bundle);
+  return medications.map((medication) => {
+    const medicationReference = medication.medicationReference!;
+    const medicationRequester = medication.requester!;
 
-    return medications.map((med) => {
-      if (!isValidMedication(med)) {
-        throw new Error('Incomplete medication data');
-      }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const medicationResource = (med.medicationReference as any)?.reference
-        ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          resourceMap[(med.medicationReference as any).reference]
-        : undefined;
-      const practitionerResource = med.requester?.reference
-        ? resourceMap[med.requester.reference]
-        : undefined;
+    const status = mapMedicationStatus(medication);
 
-      const status = mapMedicationStatus(med);
-
-      return {
-        id: med.id as string,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        name: (med.medicationReference as any)?.display ?? '',
-        form: getDrugForm(medicationResource),
-        dose: getDose(med.dosageInstruction),
-        frequency: getFrequency(med.dosageInstruction),
-        route: getRoute(med.dosageInstruction),
-        duration: getDuration(med),
-        status,
-        priority: getPriority(med.dosageInstruction),
-        startDate: med.dispenseRequest?.validityPeriod?.start ?? '',
-        orderDate: med.authoredOn ?? '',
-        orderedBy:
-          getProviderName(practitionerResource) || med.requester?.display || '',
-        notes: getNotes(med),
-        isActive: isActive(status),
-        isScheduled: isScheduled(status),
-      };
-    });
-  } catch (error) {
-    const { title, message } = getFormattedError(error);
-    notificationService.showError(title, message);
-    return [];
-  }
+    return {
+      id: medication.id!,
+      name: medicationReference.display!,
+      dose: getDose(medication.dosageInstruction),
+      frequency: getFrequency(medication.dosageInstruction),
+      route: getRoute(medication.dosageInstruction),
+      duration: getDuration(medication.dosageInstruction),
+      status,
+      priority: medication.priority,
+      startDate: medication.dispenseRequest!.validityPeriod!.start!,
+      orderDate: medication.authoredOn!,
+      orderedBy: medicationRequester.display!,
+      notes: getNotes(medication.dosageInstruction),
+      isActive: status === MedicationStatus.Active,
+      isScheduled: status === MedicationStatus.Scheduled,
+    };
+  });
 }
 
 /**
@@ -252,12 +152,6 @@ function formatMedications(bundle: Bundle): MedicationRequest[] {
 export async function getPatientMedications(
   patientUUID: string,
 ): Promise<MedicationRequest[]> {
-  try {
-    const bundle = await getPatientMedicationBundle(patientUUID);
-    return formatMedications(bundle);
-  } catch (error) {
-    const { title, message } = getFormattedError(error);
-    notificationService.showError(title, message);
-    return [];
-  }
+  const bundle = await getPatientMedicationBundle(patientUUID);
+  return formatMedications(bundle);
 }

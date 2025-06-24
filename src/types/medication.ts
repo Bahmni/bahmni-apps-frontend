@@ -14,11 +14,16 @@ export enum MedicationStatus {
 export interface MedicationRequest {
   readonly id: string;
   readonly name: string;
-  readonly form?: string;
-  readonly dose?: string;
+  readonly dose?: {
+    readonly value: number;
+    readonly unit: string;
+  };
   readonly frequency?: string;
   readonly route?: string;
-  readonly duration?: string;
+  readonly duration?: {
+    readonly duration: number;
+    readonly durationUnit: string;
+  };
   readonly status: MedicationStatus;
   readonly priority?: string;
   readonly startDate?: string;

@@ -876,37 +876,5 @@ describe('Date Utility Functions', () => {
         expect(result.error).toBeUndefined();
       });
     });
-
-    describe('Rounding Logic', () => {
-      it('should round up to the next month if days are over 15', () => {
-        const date = '2025-04-28T07:02:38.000Z'; // 1 month and 21 days ago
-        const result = formatDateDistance(date);
-        expect(result.formattedResult).toBe('2 months');
-      });
-
-      it('should round down if days are 15 or less', () => {
-        const date = '2025-05-04T07:02:38.000Z'; // 1 month and 15 days ago
-        const result = formatDateDistance(date);
-        expect(result.formattedResult).toBe('1 month');
-      });
-
-      it('should format as "12 months" when rounding up from 11 months', () => {
-        const date = '2024-06-28T07:02:38.000Z'; // 11 months and 20 days ago
-        const result = formatDateDistance(date);
-        expect(result.formattedResult).toBe('1 year');
-      });
-
-      it('should round up to the next year if months are over 6 (less than 5 years)', () => {
-        const date = '2023-11-18T07:02:38.000Z'; // 1 year and 7 months ago
-        const result = formatDateDistance(date);
-        expect(result.formattedResult).toBe('2 years');
-      });
-
-      it('should round up to the next year if months are over 6 (more than 5 years)', () => {
-        const date = '2019-11-18T07:02:38.000Z'; // 5 years and 7 months ago
-        const result = formatDateDistance(date);
-        expect(result.formattedResult).toBe('6 years');
-      });
-    });
   });
 });

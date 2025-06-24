@@ -1,144 +1,103 @@
 import { getPatientMedications } from '../medicationRequestService';
 import { get } from '../api';
 import { MedicationStatus } from '@types/medication';
-import { MedicationRequest, Bundle, Medication, Practitioner } from 'fhir/r4';
-import notificationService from '../notificationService';
-import { getFormattedError } from '@utils/common';
+import { MedicationRequest as FhirMedicationRequest, Bundle } from 'fhir/r4';
 
 jest.mock('../api');
-jest.mock('../notificationService');
-jest.mock('@utils/common');
 
-describe('medicationService', () => {
+const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
+function createMockMedicationRequest(
+  overrides: Partial<FhirMedicationRequest> = {},
+): FhirMedicationRequest {
+  return {
+    resourceType: 'MedicationRequest',
+    id: 'default-id',
+    status: 'active',
+    subject: {
+      reference: 'Patient/test-patient',
+      display: 'Test Patient',
+    },
+    medicationReference: {
+      reference: 'Medication/med-1',
+      display: 'Aspirin 100mg',
+    },
+    authoredOn: '2025-03-25T06:48:32+00:00',
+    requester: {
+      reference: 'Practitioner/practitioner-1',
+      display: 'Dr. Smith',
+    },
+    priority: 'routine',
+    dosageInstruction: [
+      {
+        text: '{"instructions":"As directed","additionalInstructions":"Take with food"}',
+        timing: {
+          code: {
+            coding: [
+              {
+                system:
+                  'http://terminology.hl7.org/CodeSystem/timing-abbreviation',
+                code: 'BID',
+                display: 'Twice daily',
+              },
+            ],
+          },
+          repeat: {
+            duration: 30,
+            durationUnit: 'd',
+          },
+        },
+        route: {
+          coding: [
+            {
+              system: 'http://snomed.info/sct',
+              code: '26643006',
+              display: 'Oral',
+            },
+          ],
+          text: 'Oral',
+        },
+        doseAndRate: [
+          {
+            doseQuantity: {
+              value: 100,
+              unit: 'mg',
+            },
+          },
+        ],
+      },
+    ],
+    dispenseRequest: {
+      validityPeriod: {
+        start: '2025-03-25T06:48:32+00:00',
+        end: '2025-04-25T06:48:32+00:00',
+      },
+    },
+    ...overrides,
+  } as FhirMedicationRequest;
+}
+
+const createMockBundle = (
+  medications: FhirMedicationRequest[] = [],
+): Bundle => ({
+  resourceType: 'Bundle',
+  id: 'bundle-id',
+  type: 'searchset',
+  total: medications.length,
+  entry: medications.map((medication) => ({
+    resource: medication,
+    fullUrl: `http://example.com/MedicationRequest/${medication.id}`,
+  })),
+});
+
+describe('medicationRequestService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(console, 'error').mockImplementation();
-    // Setup default mock for getFormattedError
-    (getFormattedError as jest.Mock).mockReturnValue({
-      title: 'Error',
-      message: 'An error occurred',
-    });
   });
 
   describe('getPatientMedications', () => {
-    const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
-
-    const createMockMedicationRequest = (
-      overrides: Partial<MedicationRequest> = {},
-    ): MedicationRequest => ({
-      resourceType: 'MedicationRequest',
-      id: 'medication-1',
-      status: 'active',
-      subject: {
-        reference: 'Patient/test-patient',
-        display: 'Test Patient',
-      },
-      medicationReference: {
-        reference: 'Medication/med-1',
-        display: 'Aspirin 100mg',
-      },
-      authoredOn: '2025-03-25T06:48:32+00:00',
-      requester: {
-        reference: 'Practitioner/practitioner-1',
-        display: 'Dr. Smith',
-      },
-      dosageInstruction: [
-        {
-          text: 'Take one tablet daily',
-          timing: {
-            repeat: {
-              frequency: 1,
-              period: 1,
-              periodUnit: 'day',
-            },
-          },
-          route: {
-            coding: [
-              {
-                system: 'http://snomed.info/sct',
-                code: '26643006',
-                display: 'Oral',
-              },
-            ],
-            text: 'Oral',
-          },
-          doseAndRate: [
-            {
-              doseQuantity: {
-                value: 100,
-                unit: 'mg',
-              },
-            },
-          ],
-        },
-      ],
-      dispenseRequest: {
-        validityPeriod: {
-          start: '2025-03-25T06:48:32+00:00',
-          end: '2025-04-25T06:48:32+00:00',
-        },
-        expectedSupplyDuration: {
-          value: 30,
-          unit: 'days',
-        },
-      },
-      note: [
-        {
-          text: 'Take with food',
-        },
-      ],
-      ...overrides,
-    });
-
-    const createMockMedication = (): Medication => ({
-      resourceType: 'Medication',
-      id: 'med-1',
-      form: {
-        coding: [
-          {
-            system: 'http://snomed.info/sct',
-            code: '385055001',
-            display: 'Tablet',
-          },
-        ],
-        text: 'Tablet',
-      },
-    });
-
-    const createMockPractitioner = (): Practitioner => ({
-      resourceType: 'Practitioner',
-      id: 'practitioner-1',
-      name: [
-        {
-          text: 'Dr. John Smith',
-          given: ['John'],
-          family: 'Smith',
-        },
-      ],
-    });
-
-    const createMockBundle = (
-      medications: MedicationRequest[] = [],
-      includedResources: (Medication | Practitioner)[] = [],
-    ): Bundle => ({
-      resourceType: 'Bundle',
-      id: 'bundle-id',
-      type: 'searchset',
-      total: medications.length + includedResources.length,
-      entry: [
-        ...medications.map((medication) => ({
-          resource: medication,
-          fullUrl: `http://example.com/MedicationRequest/${medication.id}`,
-        })),
-        ...includedResources.map((resource) => ({
-          resource,
-          fullUrl: `http://example.com/${resource.resourceType}/${resource.id}`,
-        })),
-      ],
-    });
-
     describe('Happy Path Cases', () => {
-      it('should return array of formatted medications', async () => {
+      it('should return array of formatted medications with all fields populated', async () => {
         const mockMedications = [
           createMockMedicationRequest({
             id: 'medication-1',
@@ -147,6 +106,7 @@ describe('medicationService', () => {
               reference: 'Medication/med-1',
             },
             status: 'active',
+            priority: 'urgent',
           }),
           createMockMedicationRequest({
             id: 'medication-2',
@@ -155,29 +115,43 @@ describe('medicationService', () => {
               reference: 'Medication/med-2',
             },
             status: 'completed',
+            priority: 'routine',
           }),
         ];
-        const mockBundle = createMockBundle(mockMedications, [
-          createMockMedication(),
-          createMockPractitioner(),
-        ]);
+        const mockBundle = createMockBundle(mockMedications);
 
         (get as jest.Mock).mockResolvedValueOnce(mockBundle);
 
         const result = await getPatientMedications(patientUUID);
 
-        expect(get).toHaveBeenCalledWith(
-          `/openmrs/ws/fhir2/R4/MedicationRequest?patient=${patientUUID}&_count=100&_sort=-_lastUpdated`,
-        );
+        expect(get).toHaveBeenCalledWith(expect.stringContaining(patientUUID));
         expect(result).toHaveLength(2);
+
+        // First medication assertions
         expect(result[0].id).toBe('medication-1');
         expect(result[0].name).toBe('Aspirin 100mg');
         expect(result[0].status).toBe(MedicationStatus.Active);
         expect(result[0].isActive).toBe(true);
+        expect(result[0].isScheduled).toBe(false);
+        expect(result[0].priority).toBe('urgent');
+        expect(result[0].dose).toEqual({ value: 100, unit: 'mg' });
+        expect(result[0].frequency).toBe('Twice daily');
+        expect(result[0].route).toBe('Oral');
+        expect(result[0].duration).toEqual({
+          duration: 30,
+          durationUnit: 'd',
+        });
+        expect(result[0].startDate).toBe('2025-03-25T06:48:32+00:00');
+        expect(result[0].orderDate).toBe('2025-03-25T06:48:32+00:00');
+        expect(result[0].orderedBy).toBe('Dr. Smith');
+        expect(result[0].notes).toBe('Take with food');
+
+        // Second medication assertions
         expect(result[1].id).toBe('medication-2');
         expect(result[1].name).toBe('Metformin 500mg');
         expect(result[1].status).toBe(MedicationStatus.Completed);
         expect(result[1].isActive).toBe(false);
+        expect(result[1].isScheduled).toBe(false);
       });
 
       it('should handle empty bundle gracefully', async () => {
@@ -189,7 +163,7 @@ describe('medicationService', () => {
         expect(result).toEqual([]);
       });
 
-      it('should map medication statuses correctly', async () => {
+      it('should map all medication statuses correctly', async () => {
         const mockMedications = [
           createMockMedicationRequest({ id: 'active-med', status: 'active' }),
           createMockMedicationRequest({
@@ -201,8 +175,7 @@ describe('medicationService', () => {
           createMockMedicationRequest({ id: 'onhold-med', status: 'on-hold' }),
           createMockMedicationRequest({
             id: 'unknown-med',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            status: 'unknown' as any,
+            status: undefined,
           }),
         ];
         const mockBundle = createMockBundle(mockMedications);
@@ -219,76 +192,21 @@ describe('medicationService', () => {
         expect(result[5].status).toBe(MedicationStatus.Scheduled); // defaults to scheduled
       });
 
-      it('should extract medication details correctly', async () => {
+      it('should extract dose information correctly', async () => {
         const mockMedication = createMockMedicationRequest({
-          id: 'detailed-med',
+          id: 'dose-test',
           dosageInstruction: [
             {
-              text: 'Take twice daily',
-              timing: {
-                repeat: {
-                  frequency: 2,
-                  period: 1,
-                  periodUnit: 'day',
-                },
-              },
-              route: {
-                text: 'Oral',
-                coding: [
-                  {
-                    code: '26643006',
-                    display: 'Oral',
-                    system: 'http://snomed.info/sct',
-                  },
-                ],
-              },
               doseAndRate: [
                 {
                   doseQuantity: {
-                    value: 500,
-                    unit: 'mg',
+                    value: 250,
+                    unit: 'mcg',
                   },
                 },
               ],
             },
           ],
-          dispenseRequest: {
-            validityPeriod: {
-              start: '2025-03-25T06:48:32+00:00',
-            },
-            expectedSupplyDuration: {
-              value: 30,
-              unit: 'days',
-            },
-          },
-          note: [{ text: 'Take with food' }],
-        });
-        const mockBundle = createMockBundle(
-          [mockMedication],
-          [createMockMedication()],
-        );
-
-        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
-
-        const result = await getPatientMedications(patientUUID);
-
-        expect(result[0].dose).toBe('500 mg');
-        expect(result[0].frequency).toBe('2 / 1day');
-        expect(result[0].route).toBe('Oral');
-        expect(result[0].duration).toBe('30 days');
-        expect(result[0].startDate).toBe('2025-03-25T06:48:32+00:00');
-        expect(result[0].notes).toBe('Take with food');
-        expect(result[0].form).toBe('Tablet');
-      });
-
-      it('should handle missing optional fields gracefully', async () => {
-        const mockMedication = createMockMedicationRequest({
-          id: 'minimal-med',
-          dosageInstruction: undefined,
-          dispenseRequest: undefined,
-          note: undefined,
-          authoredOn: undefined,
-          requester: undefined,
         });
         const mockBundle = createMockBundle([mockMedication]);
 
@@ -296,359 +214,136 @@ describe('medicationService', () => {
 
         const result = await getPatientMedications(patientUUID);
 
-        expect(result[0].dose).toBe('');
-        expect(result[0].frequency).toBe('');
-        expect(result[0].route).toBe('');
-        expect(result[0].duration).toBe('');
-        expect(result[0].startDate).toBe('');
-        expect(result[0].orderDate).toBe('');
-        expect(result[0].orderedBy).toBe('');
-        expect(result[0].notes).toBe('');
-        expect(result[0].priority).toBe('');
-        expect(result[0].form).toBe('');
+        expect(result[0].dose).toEqual({ value: 250, unit: 'mcg' });
       });
 
-      it('should handle practitioner name extraction', async () => {
-        const practitionerWithFullName = createMockPractitioner();
-        const practitionerWithTextOnly: Practitioner = {
-          resourceType: 'Practitioner',
-          id: 'practitioner-2',
-          name: [{ text: 'Dr. Jane Doe' }],
-        };
-        const practitionerWithGivenFamily: Practitioner = {
-          resourceType: 'Practitioner',
-          id: 'practitioner-3',
-          name: [{ given: ['Alice'], family: 'Johnson' }],
-        };
-
-        const mockMedications = [
-          createMockMedicationRequest({
-            id: 'med-1',
-            requester: { reference: 'Practitioner/practitioner-1' },
-          }),
-          createMockMedicationRequest({
-            id: 'med-2',
-            requester: { reference: 'Practitioner/practitioner-2' },
-          }),
-          createMockMedicationRequest({
-            id: 'med-3',
-            requester: { reference: 'Practitioner/practitioner-3' },
-          }),
-        ];
-
-        const mockBundle = createMockBundle(mockMedications, [
-          practitionerWithFullName,
-          practitionerWithTextOnly,
-          practitionerWithGivenFamily,
-        ]);
-
-        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
-
-        const result = await getPatientMedications(patientUUID);
-
-        expect(result[0].orderedBy).toBe('Dr. John Smith');
-        expect(result[1].orderedBy).toBe('Dr. Jane Doe');
-        expect(result[2].orderedBy).toBe('Alice Johnson');
-      });
-
-      it('should filter out non-MedicationRequest resources from bundle', async () => {
-        const bundle: Bundle = {
-          resourceType: 'Bundle',
-          id: 'bundle-id',
-          type: 'searchset',
-          total: 2,
-          entry: [
-            {
-              resource: createMockMedicationRequest({ id: 'medication-1' }),
-              fullUrl: 'http://example.com/MedicationRequest/medication-1',
-            },
-            {
-              resource: {
-                resourceType: 'Patient',
-                id: 'patient-1',
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              } as any,
-              fullUrl: 'http://example.com/Patient/patient-1',
-            },
-          ],
-        };
-
-        (get as jest.Mock).mockResolvedValueOnce(bundle);
-
-        const result = await getPatientMedications(patientUUID);
-
-        expect(result).toHaveLength(1);
-        expect(result[0].id).toBe('medication-1');
-      });
-
-      it('should return empty array when bundle has no entries', async () => {
-        const bundleWithoutEntries: Bundle = {
-          resourceType: 'Bundle',
-          id: 'bundle-id',
-          type: 'searchset',
-          total: 0,
-        };
-        (get as jest.Mock).mockResolvedValueOnce(bundleWithoutEntries);
-
-        const result = await getPatientMedications(patientUUID);
-
-        expect(result).toEqual([]);
-      });
-    });
-
-    describe('Error Handling', () => {
-      it('should handle API call failure and show notification', async () => {
-        const apiError = new Error('API Error');
-        (get as jest.Mock).mockRejectedValueOnce(apiError);
-        (getFormattedError as jest.Mock).mockReturnValueOnce({
-          title: 'Error Title',
-          message: 'API Error',
-        });
-
-        const result = await getPatientMedications(patientUUID);
-
-        expect(notificationService.showError).toHaveBeenCalledWith(
-          'Error Title',
-          'API Error',
-        );
-        expect(result).toEqual([]);
-      });
-
-      it('should handle invalid medication data and show notification', async () => {
-        const invalidMedication = createMockMedicationRequest({
-          id: undefined,
-        });
-        const mockBundle = createMockBundle([invalidMedication]);
-
-        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
-        (getFormattedError as jest.Mock).mockReturnValueOnce({
-          title: 'Validation Error',
-          message: 'Incomplete medication data',
-        });
-
-        const result = await getPatientMedications(patientUUID);
-
-        expect(notificationService.showError).toHaveBeenCalledWith(
-          'Validation Error',
-          'Incomplete medication data',
-        );
-        expect(result).toEqual([]);
-      });
-
-      it('should handle missing medication id', async () => {
-        const invalidMedication = createMockMedicationRequest({ id: '' });
-        const mockBundle = createMockBundle([invalidMedication]);
-
-        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
-        (getFormattedError as jest.Mock).mockReturnValueOnce({
-          title: 'Validation Error',
-          message: 'Incomplete medication data',
-        });
-
-        const result = await getPatientMedications(patientUUID);
-
-        expect(result).toEqual([]);
-      });
-
-      it('should handle missing medication status', async () => {
-        const invalidMedication = createMockMedicationRequest({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          status: undefined as any,
-        });
-        const mockBundle = createMockBundle([invalidMedication]);
-
-        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
-        (getFormattedError as jest.Mock).mockReturnValueOnce({
-          title: 'Validation Error',
-          message: 'Incomplete medication data',
-        });
-
-        const result = await getPatientMedications(patientUUID);
-
-        expect(result).toEqual([]);
-      });
-    });
-
-    describe('Edge Cases', () => {
-      it('should handle empty patient UUID', async () => {
-        const emptyUUID = '';
-        const emptyBundle = createMockBundle([]);
-        (get as jest.Mock).mockResolvedValueOnce(emptyBundle);
-
-        const result = await getPatientMedications(emptyUUID);
-
-        expect(get).toHaveBeenCalledWith(
-          `/openmrs/ws/fhir2/R4/MedicationRequest?patient=${emptyUUID}&_count=100&_sort=-_lastUpdated`,
-        );
-        expect(result).toEqual([]);
-      });
-
-      it('should handle special characters in patient UUID', async () => {
-        const specialUUID = 'patient-uuid-with-special-chars-@#$%';
-        const emptyBundle = createMockBundle([]);
-        (get as jest.Mock).mockResolvedValueOnce(emptyBundle);
-
-        const result = await getPatientMedications(specialUUID);
-
-        expect(get).toHaveBeenCalledWith(
-          `/openmrs/ws/fhir2/R4/MedicationRequest?patient=${specialUUID}&_count=100&_sort=-_lastUpdated`,
-        );
-        expect(result).toEqual([]);
-      });
-
-      it('should handle bundle with empty entry array', async () => {
-        const bundleWithEmptyEntries: Bundle = {
-          resourceType: 'Bundle',
-          id: 'bundle-id',
-          type: 'searchset',
-          total: 0,
-          entry: [],
-        };
-        (get as jest.Mock).mockResolvedValueOnce(bundleWithEmptyEntries);
-
-        const result = await getPatientMedications(patientUUID);
-
-        expect(result).toEqual([]);
-      });
-
-      it('should handle dose extraction edge cases', async () => {
-        const medicationWithValueOnly = createMockMedicationRequest({
-          id: 'med-value-only',
+      it('should extract frequency from timing code display', async () => {
+        const mockMedication = createMockMedicationRequest({
+          id: 'frequency-test',
           dosageInstruction: [
             {
-              doseAndRate: [
-                {
-                  doseQuantity: {
-                    value: 100,
-                    // unit is missing
-                  },
-                },
-              ],
-            },
-          ],
-        });
-
-        const medicationWithoutDose = createMockMedicationRequest({
-          id: 'med-no-dose',
-          dosageInstruction: [
-            {
-              // doseAndRate is missing
-            },
-          ],
-        });
-
-        const mockBundle = createMockBundle([
-          medicationWithValueOnly,
-          medicationWithoutDose,
-        ]);
-        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
-
-        const result = await getPatientMedications(patientUUID);
-
-        expect(result[0].dose).toBe('100'); // value without unit
-        expect(result[1].dose).toBe(''); // no dose info
-      });
-
-      it('should handle frequency extraction with text fallback', async () => {
-        const medicationWithTextFrequency = createMockMedicationRequest({
-          id: 'med-text-freq',
-          dosageInstruction: [
-            {
-              text: 'Take as needed',
               timing: {
-                // repeat is missing, should fall back to text
+                code: {
+                  coding: [
+                    {
+                      system:
+                        'http://terminology.hl7.org/CodeSystem/timing-abbreviation',
+                      code: 'QID',
+                      display: 'Four times daily',
+                    },
+                  ],
+                },
               },
             },
           ],
         });
+        const mockBundle = createMockBundle([mockMedication]);
 
-        const mockBundle = createMockBundle([medicationWithTextFrequency]);
         (get as jest.Mock).mockResolvedValueOnce(mockBundle);
 
         const result = await getPatientMedications(patientUUID);
 
-        expect(result[0].frequency).toBe('Take as needed');
+        expect(result[0].frequency).toBe('Four times daily');
       });
 
-      it('should handle route extraction with coding fallback', async () => {
-        const medicationWithCodingRoute = createMockMedicationRequest({
-          id: 'med-coding-route',
+      it('should extract route from text when available', async () => {
+        const mockMedication = createMockMedicationRequest({
+          id: 'route-text-test',
+          dosageInstruction: [
+            {
+              route: {
+                text: 'Subcutaneous route',
+                coding: [
+                  {
+                    system: 'http://snomed.info/sct',
+                    code: '34206005',
+                    display: 'Subcutaneous route',
+                  },
+                ],
+              },
+            },
+          ],
+        });
+        const mockBundle = createMockBundle([mockMedication]);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientMedications(patientUUID);
+
+        expect(result[0].route).toBe('Subcutaneous route');
+      });
+
+      it('should fallback to coding display for route when text is not available', async () => {
+        const mockMedication = createMockMedicationRequest({
+          id: 'route-coding-test',
           dosageInstruction: [
             {
               route: {
                 coding: [
                   {
                     system: 'http://snomed.info/sct',
-                    code: '26643006',
-                    display: 'Oral route',
+                    code: '78421000',
+                    display: 'Intramuscular route',
                   },
                 ],
-                // text is missing, should use coding display
               },
             },
           ],
         });
+        const mockBundle = createMockBundle([mockMedication]);
 
-        const mockBundle = createMockBundle([medicationWithCodingRoute]);
         (get as jest.Mock).mockResolvedValueOnce(mockBundle);
 
         const result = await getPatientMedications(patientUUID);
 
-        expect(result[0].route).toBe('Oral route');
+        expect(result[0].route).toBe('Intramuscular route');
       });
 
-      it('should handle priority extraction from extensions', async () => {
-        const medicationWithSTAT = createMockMedicationRequest({
-          id: 'med-stat',
+      it('should extract duration information correctly', async () => {
+        const mockMedication = createMockMedicationRequest({
+          id: 'duration-test',
           dosageInstruction: [
             {
-              extension: [{ valueCode: 'STAT' }],
+              timing: {
+                repeat: {
+                  duration: 14,
+                  durationUnit: 'wk',
+                },
+              },
             },
           ],
         });
+        const mockBundle = createMockBundle([mockMedication]);
 
-        const medicationWithPRN = createMockMedicationRequest({
-          id: 'med-prn',
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientMedications(patientUUID);
+
+        expect(result[0].duration).toEqual({
+          duration: 14,
+          durationUnit: 'wk',
+        });
+      });
+
+      it('should extract notes from parsed JSON text', async () => {
+        const mockMedication = createMockMedicationRequest({
+          id: 'notes-test',
           dosageInstruction: [
             {
-              extension: [{ valueCode: 'PRN' }],
+              text: '{"instructions":"As directed","additionalInstructions":"Monitor liver function"}',
             },
           ],
         });
+        const mockBundle = createMockBundle([mockMedication]);
 
-        const mockBundle = createMockBundle([
-          medicationWithSTAT,
-          medicationWithPRN,
-        ]);
         (get as jest.Mock).mockResolvedValueOnce(mockBundle);
 
         const result = await getPatientMedications(patientUUID);
 
-        expect(result[0].priority).toBe('STAT');
-        expect(result[1].priority).toBe('PRN');
+        expect(result[0].notes).toBe('Monitor liver function');
       });
 
-      it('should handle multiple notes correctly', async () => {
-        const medicationWithMultipleNotes = createMockMedicationRequest({
-          id: 'med-multi-notes',
-          note: [
-            { text: 'Take with food' },
-            { text: 'Avoid alcohol' },
-            { text: 'Monitor blood pressure' },
-          ],
-        });
-
-        const mockBundle = createMockBundle([medicationWithMultipleNotes]);
-        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
-
-        const result = await getPatientMedications(patientUUID);
-
-        expect(result[0].notes).toBe(
-          'Take with food; Avoid alcohol; Monitor blood pressure',
-        );
-      });
-
-      it('should handle isActive and isScheduled flags correctly', async () => {
+      it('should set isActive and isScheduled flags correctly', async () => {
         const mockMedications = [
           createMockMedicationRequest({ id: 'active-med', status: 'active' }),
           createMockMedicationRequest({ id: 'scheduled-med', status: 'draft' }),
@@ -657,8 +352,8 @@ describe('medicationService', () => {
             status: 'completed',
           }),
         ];
-
         const mockBundle = createMockBundle(mockMedications);
+
         (get as jest.Mock).mockResolvedValueOnce(mockBundle);
 
         const result = await getPatientMedications(patientUUID);
@@ -669,6 +364,269 @@ describe('medicationService', () => {
         expect(result[1].isScheduled).toBe(true);
         expect(result[2].isActive).toBe(false);
         expect(result[2].isScheduled).toBe(false);
+      });
+    });
+
+    describe('Edge Cases', () => {
+      it('should handle missing doseAndRate in dosageInstruction', async () => {
+        const mockMedication = createMockMedicationRequest({
+          id: 'no-dose-rate',
+          dosageInstruction: [
+            {
+              text: 'Apply topically',
+              // doseAndRate is missing
+            },
+          ],
+        });
+        const mockBundle = createMockBundle([mockMedication]);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientMedications(patientUUID);
+
+        expect(result[0].dose).toEqual({ value: 0, unit: '' });
+      });
+
+      it('should return empty string if additionalInstructions is missing in parsed JSON text', async () => {
+        const mockMedication = createMockMedicationRequest({
+          id: 'notes-no-additional',
+          dosageInstruction: [
+            {
+              text: '{"instructions":"Do not skip doses"}',
+            },
+          ],
+        });
+        const mockBundle = createMockBundle([mockMedication]);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientMedications(patientUUID);
+
+        expect(result[0].notes).toBe('');
+      });
+
+      it('should return empty string if dosageInstruction text is invalid JSON', async () => {
+        const mockMedication = createMockMedicationRequest({
+          id: 'notes-invalid-json',
+          dosageInstruction: [
+            {
+              text: '{not-a-valid-json}',
+            },
+          ],
+        });
+        const mockBundle = createMockBundle([mockMedication]);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientMedications(patientUUID);
+
+        expect(result[0].notes).toBe('');
+      });
+
+      it('should return empty string if dosageInstruction text is missing or falsy', async () => {
+        const mockMedication = createMockMedicationRequest({
+          id: 'notes-missing-text',
+          dosageInstruction: [
+            {
+              // no text field
+            },
+          ],
+        });
+        const mockBundle = createMockBundle([mockMedication]);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientMedications(patientUUID);
+
+        expect(result[0].notes).toBe('');
+      });
+
+      it('should handle missing doseQuantity in doseAndRate', async () => {
+        const mockMedication = createMockMedicationRequest({
+          id: 'no-dose-quantity',
+          dosageInstruction: [
+            {
+              doseAndRate: [
+                {
+                  // doseQuantity is missing
+                },
+              ],
+            },
+          ],
+        });
+        const mockBundle = createMockBundle([mockMedication]);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientMedications(patientUUID);
+
+        expect(result[0].dose).toEqual({ value: 0, unit: '' });
+      });
+    });
+    it('should handle missing repeat in timing', async () => {
+      const mockMedication = createMockMedicationRequest({
+        id: 'no-repeat',
+        dosageInstruction: [
+          {
+            timing: {
+              // repeat is missing
+            },
+          },
+        ],
+      });
+      const mockBundle = createMockBundle([mockMedication]);
+
+      (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+      const result = await getPatientMedications(patientUUID);
+
+      expect(result[0].duration).toEqual({
+        duration: 0,
+        durationUnit: '',
+      });
+    });
+
+    it('should handle bundle with no entries property', async () => {
+      const bundleWithoutEntries: Bundle = {
+        resourceType: 'Bundle',
+        id: 'bundle-id',
+        type: 'searchset',
+        total: 0,
+        // entry property is missing
+      };
+      (get as jest.Mock).mockResolvedValueOnce(bundleWithoutEntries);
+
+      const result = await getPatientMedications(patientUUID);
+
+      expect(result).toEqual([]);
+    });
+
+    it('should handle empty patient UUID', async () => {
+      const emptyUUID = '';
+      const emptyBundle = createMockBundle([]);
+      (get as jest.Mock).mockResolvedValueOnce(emptyBundle);
+
+      const result = await getPatientMedications(emptyUUID);
+
+      expect(get).toHaveBeenCalledWith(
+        '/openmrs/ws/fhir2/R4/MedicationRequest?patient=&_count=100&_sort=-_lastUpdated',
+      );
+      expect(result).toEqual([]);
+    });
+
+    it('should handle special characters in patient UUID', async () => {
+      const specialUUID = 'patient-uuid-with-special-chars-@#$%';
+      const emptyBundle = createMockBundle([]);
+      (get as jest.Mock).mockResolvedValueOnce(emptyBundle);
+
+      const result = await getPatientMedications(specialUUID);
+
+      expect(get).toHaveBeenCalledWith(expect.stringContaining(specialUUID));
+      expect(result).toEqual([]);
+    });
+
+    it('should handle invalid JSON in dosageInstruction text', async () => {
+      const mockMedication = createMockMedicationRequest({
+        id: 'invalid-json',
+        dosageInstruction: [
+          {
+            text: 'invalid json string',
+          },
+        ],
+      });
+      const mockBundle = createMockBundle([mockMedication]);
+
+      (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+      expect(async () => {
+        await getPatientMedications(patientUUID);
+      }).not.toThrow();
+    });
+
+    it('should handle missing coding array in timing code', async () => {
+      const mockMedication = createMockMedicationRequest({
+        id: 'no-timing-coding',
+        dosageInstruction: [
+          {
+            timing: {
+              code: {
+                // coding array is missing
+              },
+            },
+          },
+        ],
+      });
+      const mockBundle = createMockBundle([mockMedication]);
+
+      (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+      const result = await getPatientMedications(patientUUID);
+
+      expect(result[0].frequency).toBe('');
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should handle API call failure', async () => {
+      const apiError = new Error('Network error');
+      (get as jest.Mock).mockRejectedValueOnce(apiError);
+
+      await expect(getPatientMedications(patientUUID)).rejects.toThrow(
+        'Network error',
+      );
+    });
+
+    it('should handle malformed bundle response', async () => {
+      const malformedBundle = {
+        // Missing required properties
+        notAValidBundle: true,
+      };
+      (get as jest.Mock).mockResolvedValueOnce(malformedBundle);
+
+      const result = await getPatientMedications(patientUUID);
+
+      expect(result).toEqual([]);
+    });
+
+    it('should handle JSON parsing errors in notes extraction', async () => {
+      const mockMedication = createMockMedicationRequest({
+        id: 'json-parse-error',
+        dosageInstruction: [
+          {
+            text: '{"instructions":"As directed","additionalInstructions":"Take with food"}', // Invalid JSON
+          },
+        ],
+      });
+      const mockBundle = createMockBundle([mockMedication]);
+
+      (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+      // Should not throw an error
+      await expect(getPatientMedications(patientUUID)).resolves.toBeDefined();
+    });
+  });
+
+  describe('Data Transformation', () => {
+    it('should preserve all original FHIR data in the transformed output', async () => {
+      const mockMedication = createMockMedicationRequest({
+        id: 'transformation-test',
+        status: 'active',
+        priority: 'urgent',
+        authoredOn: '2025-03-25T10:30:00Z',
+      });
+      const mockBundle = createMockBundle([mockMedication]);
+
+      (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+      const result = await getPatientMedications(patientUUID);
+
+      expect(result[0]).toMatchObject({
+        id: 'transformation-test',
+        status: MedicationStatus.Active,
+        priority: 'urgent',
+        orderDate: '2025-03-25T10:30:00Z',
+        isActive: true,
+        isScheduled: false,
       });
     });
   });
