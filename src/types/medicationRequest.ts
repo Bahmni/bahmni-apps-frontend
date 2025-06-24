@@ -22,14 +22,31 @@ export interface MedicationRequest {
   readonly route?: string;
   readonly duration?: {
     readonly duration: number;
-    readonly durationUnit: string;
+    readonly durationUnit?: string;
+  };
+  readonly quantity: {
+    readonly value: number;
+    readonly unit: string;
   };
   readonly status: MedicationStatus;
-  readonly priority?: string;
-  readonly startDate?: string;
-  readonly orderDate?: string;
-  readonly orderedBy?: string;
+  readonly priority: string;
+  readonly startDate: string;
+  readonly orderDate: string;
+  readonly orderedBy: string;
   readonly notes?: string;
   readonly isActive: boolean;
   readonly isScheduled: boolean;
+}
+
+export interface FormattedMedicationRequest {
+  readonly id: string;
+  readonly name: string;
+  readonly dosage: string;
+  readonly dosageUnit: string;
+  readonly quantity: string;
+  readonly instruction: string;
+  readonly startDate: string;
+  readonly orderDate: string;
+  readonly orderedBy: string;
+  readonly status: MedicationStatus;
 }

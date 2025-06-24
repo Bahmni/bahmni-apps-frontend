@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { MedicationRequest } from '@types/medication';
+import { MedicationRequest } from '@types/medicationRequest';
 import { getPatientMedications } from '@/services/medicationRequestService';
 import { usePatientUUID } from './usePatientUUID';
 import { getFormattedError } from '@utils/common';

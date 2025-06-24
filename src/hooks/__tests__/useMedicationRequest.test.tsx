@@ -1,7 +1,7 @@
 import { renderHook, act } from '@testing-library/react';
 import { useMedicationRequest } from '../useMedicationRequest';
-import { MedicationRequest, MedicationStatus } from '@types/medication';
-import { getPatientMedications } from '@/services/medicationRequestService';
+import { MedicationRequest, MedicationStatus } from '@types/medicationRequest';
+import { getPatientMedications } from '@services/medicationRequestService';
 import { usePatientUUID } from '../usePatientUUID';
 import { getFormattedError } from '@utils/common';
 import i18n from '@/setupTests.i18n';

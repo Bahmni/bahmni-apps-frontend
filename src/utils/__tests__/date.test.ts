@@ -797,10 +797,32 @@ describe('Date Utility Functions', () => {
         expect(result.error).toBeUndefined();
       });
 
+      it('should format exactly 11 months as "1 year"', () => {
+        const elevenMonthsAgo = '2024-07-18T07:02:38.000Z'; // 11 months before mockCurrentDate
+        const result = formatDateDistance(elevenMonthsAgo);
+        expect(result.formattedResult).toBe('1 year'); // or whatever localized version "1 year" is
+        expect(result.error).toBeUndefined();
+      });
+
       it('should handle end of month dates correctly', () => {
         const endOfMonth = '2025-05-31T07:02:38.000Z'; // End of previous month
         const result = formatDateDistance(endOfMonth);
         expect(result.formattedResult).toBe('18 days');
+        expect(result.error).toBeUndefined();
+      });
+      it('should round up to next month when daysInFraction > 15', () => {
+        const date = '2025-05-01'; // ~2 months ago
+
+        const result = formatDateDistance(date);
+
+        expect(result.formattedResult).toBe('2 months');
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should not round up when daysInFraction <= 15', () => {
+        const date = '2025-05-10'; // ~1 month + 8 days ago
+        const result = formatDateDistance(date);
+        expect(result.formattedResult).toBe('1 month'); // or localized equivalent
         expect(result.error).toBeUndefined();
       });
     });

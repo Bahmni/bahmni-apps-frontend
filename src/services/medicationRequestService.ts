@@ -1,6 +1,6 @@
 import { get } from './api';
 import { PATIENT_MEDICATION_RESOURCE_URL } from '@constants/app';
-import { MedicationRequest, MedicationStatus } from '@types/medication';
+import { MedicationRequest, MedicationStatus } from '@types/medicationRequest';
 import { Bundle, MedicationRequest as FhirMedicationRequest } from 'fhir/r4';
 
 /**
@@ -87,9 +87,11 @@ function getDuration(
   durationUnit: string;
 } {
   const repeat = dosageInstruction?.[0]?.timing?.repeat;
+  const durationUnit = repeat?.durationUnit;
+
   return {
     duration: repeat?.duration ?? 0,
-    durationUnit: repeat?.durationUnit ?? '',
+    durationUnit: durationUnit ?? '',
   };
 }
 
@@ -109,6 +111,15 @@ function getNotes(
   }
 }
 
+function getQuantity(
+  dispenseRequest: FhirMedicationRequest['dispenseRequest'],
+) {
+  const quantity = dispenseRequest?.quantity;
+  return {
+    value: quantity?.value ?? 0,
+    unit: quantity?.unit ?? '',
+  };
+}
 /**
  * Formats FHIR medication requests into a more user-friendly format
  * @param bundle - The FHIR bundle containing medication requests
@@ -133,7 +144,8 @@ function formatMedications(bundle: Bundle): MedicationRequest[] {
       route: getRoute(medication.dosageInstruction),
       duration: getDuration(medication.dosageInstruction),
       status,
-      priority: medication.priority,
+      priority: medication.priority ?? 'routine',
+      quantity: getQuantity(medication.dispenseRequest!),
       startDate: medication.dispenseRequest!.validityPeriod!.start!,
       orderDate: medication.authoredOn!,
       orderedBy: medicationRequester.display!,
