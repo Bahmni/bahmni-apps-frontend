@@ -3,6 +3,7 @@ import useDebounce from './useDebounce';
 import { FlattenedInvestigations } from '@types/investigations';
 import { getFlattenedInvestigations } from '@services/investigationService';
 import { getFormattedError } from '@utils/common';
+import i18next from 'i18next';
 
 interface UseInvestigationsSearchResult {
   investigations: FlattenedInvestigations[];
@@ -44,10 +45,13 @@ const useInvestigationsSearch = (
     if (!searchTermLower) return investigations;
 
     const searchWords = searchTermLower.split(/\s+/);
+    const panelSuffix = ` (${i18next.t('INVESTIGATION_PANEL')})`.toLowerCase();
 
     const exactMatch = investigations.find(
       (investigation) =>
-        investigation.display.toLowerCase() === searchTermLower,
+        investigation.display.toLowerCase() === searchTermLower ||
+        investigation.display.toLowerCase() ===
+          `${searchTermLower}${panelSuffix}`,
     );
     if (exactMatch) return [exactMatch];
 
