@@ -31,6 +31,7 @@ function createMockMedicationRequest(
       {
         text: '{"instructions":"As directed","additionalInstructions":"Take with food"}',
         timing: {
+          event: ['2025-03-25T06:48:32+00:00'],
           code: {
             coding: [
               {

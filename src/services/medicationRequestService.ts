@@ -156,7 +156,7 @@ function formatMedications(bundle: Bundle): MedicationRequest[] {
         medication.dosageInstruction?.[0]?.timing?.code?.text ===
           'Immediately' || false,
       quantity: getQuantity(medication.dispenseRequest!),
-      startDate: medication.dispenseRequest!.validityPeriod!.start!,
+      startDate: medication.dosageInstruction?.[0]?.timing?.event?.[0],
       orderDate: medication.authoredOn!,
       orderedBy: medicationRequester.display!,
       notes: getNotes(medication.dosageInstruction),
