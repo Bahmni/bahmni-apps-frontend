@@ -23,6 +23,9 @@ import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesSt
 import useAllergyStore from '@stores/allergyStore';
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 import * as styles from './styles/ConsultationPad.module.scss';
+import useServiceRequestStore from '@stores/serviceRequestStore';
+import MedicinesForm from '../forms/prescribeMedicines/MedicationsForm';
+import MedicationsForm from '../forms/prescribeMedicines/MedicationsForm';
 
 interface ConsultationPadProps {
   onClose: () => void;
@@ -219,6 +222,10 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
             <DiagnosesForm />
             <MenuItemDivider />
             <AllergiesForm />
+            <MenuItemDivider />
+            <InvestigationsForm />
+            <MenuItemDivider />
+            <MedicationsForm/>
             <MenuItemDivider />
           </>
         )
