@@ -46,6 +46,7 @@ function createMockMedicationRequest(
             durationUnit: 'd',
           },
         },
+        asNeededBoolean: false,
         route: {
           coding: [
             {
@@ -131,8 +132,6 @@ describe('medicationRequestService', () => {
         expect(result[0].id).toBe('medication-1');
         expect(result[0].name).toBe('Aspirin 100mg');
         expect(result[0].status).toBe(MedicationStatus.Active);
-        expect(result[0].isActive).toBe(true);
-        expect(result[0].isScheduled).toBe(false);
         expect(result[0].priority).toBe('urgent');
         expect(result[0].dose).toEqual({ value: 100, unit: 'mg' });
         expect(result[0].frequency).toBe('Twice daily');
@@ -145,13 +144,12 @@ describe('medicationRequestService', () => {
         expect(result[0].orderDate).toBe('2025-03-25T06:48:32+00:00');
         expect(result[0].orderedBy).toBe('Dr. Smith');
         expect(result[0].notes).toBe('Take with food');
+        expect(result[0].asNeeded).toBe(false);
 
         // Second medication assertions
         expect(result[1].id).toBe('medication-2');
         expect(result[1].name).toBe('Metformin 500mg');
         expect(result[1].status).toBe(MedicationStatus.Completed);
-        expect(result[1].isActive).toBe(false);
-        expect(result[1].isScheduled).toBe(false);
       });
 
       it('should handle empty bundle gracefully', async () => {
@@ -163,33 +161,30 @@ describe('medicationRequestService', () => {
         expect(result).toEqual([]);
       });
 
-      it('should map all medication statuses correctly', async () => {
+      it('maps all FHIR statuses correctly', async () => {
         const mockMedications = [
-          createMockMedicationRequest({ id: 'active-med', status: 'active' }),
-          createMockMedicationRequest({
-            id: 'completed-med',
-            status: 'completed',
-          }),
-          createMockMedicationRequest({ id: 'stopped-med', status: 'stopped' }),
-          createMockMedicationRequest({ id: 'draft-med', status: 'draft' }),
-          createMockMedicationRequest({ id: 'onhold-med', status: 'on-hold' }),
-          createMockMedicationRequest({
-            id: 'unknown-med',
-            status: undefined,
-          }),
+          createMockMedicationRequest({ id: '1', status: 'active' }),
+          createMockMedicationRequest({ id: '2', status: 'completed' }),
+          createMockMedicationRequest({ id: '3', status: 'stopped' }),
+          createMockMedicationRequest({ id: '4', status: 'draft' }),
+          createMockMedicationRequest({ id: '5', status: 'entered-in-error' }),
+          createMockMedicationRequest({ id: '6', status: 'cancelled' }),
+          createMockMedicationRequest({ id: '7', status: 'unknown' }),
+          createMockMedicationRequest({ id: '8', status: 'on-hold' }),
         ];
-        const mockBundle = createMockBundle(mockMedications);
-
-        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+        (get as jest.Mock).mockResolvedValueOnce(
+          createMockBundle(mockMedications),
+        );
 
         const result = await getPatientMedications(patientUUID);
-
         expect(result[0].status).toBe(MedicationStatus.Active);
         expect(result[1].status).toBe(MedicationStatus.Completed);
         expect(result[2].status).toBe(MedicationStatus.Stopped);
-        expect(result[3].status).toBe(MedicationStatus.Scheduled);
-        expect(result[4].status).toBe(MedicationStatus.Scheduled);
-        expect(result[5].status).toBe(MedicationStatus.Scheduled); // defaults to scheduled
+        expect(result[3].status).toBe(MedicationStatus.Draft);
+        expect(result[4].status).toBe(MedicationStatus.EnteredInError);
+        expect(result[5].status).toBe(MedicationStatus.Cancelled);
+        expect(result[6].status).toBe(MedicationStatus.Unknown);
+        expect(result[7].status).toBe(MedicationStatus.Scheduled);
       });
 
       it('should extract dose information correctly', async () => {
@@ -215,6 +210,21 @@ describe('medicationRequestService', () => {
         const result = await getPatientMedications(patientUUID);
 
         expect(result[0].dose).toEqual({ value: 250, unit: 'mcg' });
+      });
+
+      it('should return empty string if priority is missing', async () => {
+        const mockMedication = createMockMedicationRequest({
+          id: 'no-route-coding-0',
+          priority: undefined,
+        });
+
+        const mockBundle = createMockBundle([mockMedication]);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientMedications(patientUUID);
+
+        expect(result[0].priority).toBe('');
       });
 
       it('should extract frequency from timing code display', async () => {
@@ -341,29 +351,6 @@ describe('medicationRequestService', () => {
         const result = await getPatientMedications(patientUUID);
 
         expect(result[0].notes).toBe('Monitor liver function');
-      });
-
-      it('should set isActive and isScheduled flags correctly', async () => {
-        const mockMedications = [
-          createMockMedicationRequest({ id: 'active-med', status: 'active' }),
-          createMockMedicationRequest({ id: 'scheduled-med', status: 'draft' }),
-          createMockMedicationRequest({
-            id: 'completed-med',
-            status: 'completed',
-          }),
-        ];
-        const mockBundle = createMockBundle(mockMedications);
-
-        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
-
-        const result = await getPatientMedications(patientUUID);
-
-        expect(result[0].isActive).toBe(true);
-        expect(result[0].isScheduled).toBe(false);
-        expect(result[1].isActive).toBe(false);
-        expect(result[1].isScheduled).toBe(true);
-        expect(result[2].isActive).toBe(false);
-        expect(result[2].isScheduled).toBe(false);
       });
     });
 
@@ -625,8 +612,6 @@ describe('medicationRequestService', () => {
         status: MedicationStatus.Active,
         priority: 'urgent',
         orderDate: '2025-03-25T10:30:00Z',
-        isActive: true,
-        isScheduled: false,
       });
     });
   });

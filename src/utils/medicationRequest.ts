@@ -1,20 +1,25 @@
 import {
   MedicationRequest,
   FormattedMedicationRequest,
-} from '@/types/medicationRequest';
+} from '@types/medicationRequest';
 import { formatDate } from '@utils/date';
 import { getPriorityByOrder } from './common';
 
 /**
  * Priority order for medication status levels (case insensitive)
  * Index 0 = highest priority, higher index = lower priority
- * Used for sorting medications by status: active → scheduled → completed → stopped
+ * Used for sorting medications by status: active → on-hold → cancelled → completed →
+ * entered-in-error → stopped → draft → unknown
  */
 export const MEDICATION_STATUS_PRIORITY_ORDER = [
   'active',
-  'scheduled',
+  'on-hold',
+  'cancelled',
   'completed',
+  'entered-in-error',
   'stopped',
+  'draft',
+  'unknown',
 ];
 
 /**
@@ -37,8 +42,8 @@ export const getMedicationStatusPriority = (status: string): number => {
  * @returns A new sorted array of MedicationRequest objects.
  */
 export const sortMedicationsByStatus = (
-  medications: MedicationRequest[],
-): MedicationRequest[] => {
+  medications: FormattedMedicationRequest[],
+): FormattedMedicationRequest[] => {
   return [...medications].sort((a, b) => {
     return (
       getMedicationStatusPriority(a.status) -
@@ -96,6 +101,8 @@ export function formatMedicationRequest(
     orderedBy,
     notes = '',
     status,
+    asNeeded,
+    isImmediate,
   } = medication;
 
   const dosageParts: string[] = [];
@@ -138,5 +145,7 @@ export function formatMedicationRequest(
     orderedBy,
     quantity,
     status,
+    asNeeded,
+    isImmediate,
   };
 }

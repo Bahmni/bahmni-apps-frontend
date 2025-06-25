@@ -10,7 +10,7 @@ import {
   mockConditions,
   mockFormattedConditionsWithoutNotes,
 } from '@__mocks__/conditionMocks';
-import { ConditionStatus, FormattedCondition } from '@/types/condition';
+import { ConditionStatus, FormattedCondition } from '@types/condition';
 import { axe, toHaveNoViolations } from 'jest-axe';
 
 expect.extend(toHaveNoViolations);

@@ -1,11 +1,15 @@
 /**
- * Enum representing the possible statuses of a medication request
+ * Enum representing canonical statuses of a medication request
  */
 export enum MedicationStatus {
   Active = 'active',
   Scheduled = 'scheduled',
   Completed = 'completed',
   Stopped = 'stopped',
+  Cancelled = 'cancelled',
+  EnteredInError = 'entered-in-error',
+  Draft = 'draft',
+  Unknown = 'unknown',
 }
 
 /**
@@ -34,8 +38,8 @@ export interface MedicationRequest {
   readonly orderDate: string;
   readonly orderedBy: string;
   readonly notes?: string;
-  readonly isActive: boolean;
-  readonly isScheduled: boolean;
+  readonly asNeeded: boolean;
+  readonly isImmediate: boolean;
 }
 
 export interface FormattedMedicationRequest {
@@ -49,4 +53,6 @@ export interface FormattedMedicationRequest {
   readonly orderDate: string;
   readonly orderedBy: string;
   readonly status: MedicationStatus;
+  readonly asNeeded: boolean;
+  readonly isImmediate: boolean;
 }

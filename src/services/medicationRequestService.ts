@@ -4,24 +4,30 @@ import { MedicationRequest, MedicationStatus } from '@types/medicationRequest';
 import { Bundle, MedicationRequest as FhirMedicationRequest } from 'fhir/r4';
 
 /**
- * Maps a FHIR medication request status to MedicationStatus enum
+ * Maps FHIR medication request statuses to canonical MedicationStatus values
  */
 const mapMedicationStatus = (
   medicationRequest: FhirMedicationRequest,
 ): MedicationStatus => {
   const status = medicationRequest.status;
+
   switch (status) {
     case 'active':
       return MedicationStatus.Active;
+    case 'on-hold':
+      return MedicationStatus.Scheduled;
+    case 'cancelled':
+      return MedicationStatus.Cancelled;
     case 'completed':
       return MedicationStatus.Completed;
+    case 'entered-in-error':
+      return MedicationStatus.EnteredInError;
     case 'stopped':
       return MedicationStatus.Stopped;
     case 'draft':
-    case 'on-hold':
-      return MedicationStatus.Scheduled;
-    default:
-      return MedicationStatus.Scheduled;
+      return MedicationStatus.Draft;
+    case 'unknown':
+      return MedicationStatus.Unknown;
   }
 };
 
@@ -140,18 +146,20 @@ function formatMedications(bundle: Bundle): MedicationRequest[] {
       id: medication.id!,
       name: medicationReference.display!,
       dose: getDose(medication.dosageInstruction),
+      asNeeded: medication.dosageInstruction?.[0]?.asNeededBoolean ?? false,
       frequency: getFrequency(medication.dosageInstruction),
       route: getRoute(medication.dosageInstruction),
       duration: getDuration(medication.dosageInstruction),
       status,
-      priority: medication.priority ?? 'routine',
+      priority: medication.priority ?? '',
+      isImmediate:
+        medication.dosageInstruction?.[0]?.timing?.code?.text ===
+          'Immediately' || false,
       quantity: getQuantity(medication.dispenseRequest!),
       startDate: medication.dispenseRequest!.validityPeriod!.start!,
       orderDate: medication.authoredOn!,
       orderedBy: medicationRequester.display!,
       notes: getNotes(medication.dosageInstruction),
-      isActive: status === MedicationStatus.Active,
-      isScheduled: status === MedicationStatus.Scheduled,
     };
   });
 }
