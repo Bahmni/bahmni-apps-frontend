@@ -235,6 +235,56 @@ describe('useInvestigationsSearch', () => {
 
       expect(result.current.investigations).toEqual([]);
     });
+    test('should return only exact match if it exists', async () => {
+      const { result } = renderHook(() =>
+        useInvestigationsSearch('Complete Blood Count'),
+      );
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(500);
+      });
+
+      expect(result.current.investigations).toEqual([mockInvestigations[0]]);
+    });
+    test('should return only exact match for panel if it exists', async () => {
+      const mockPanelInvestigations: FlattenedInvestigations[] = [
+        {
+          code: 'LAB001',
+          display: 'Complete Blood Count (Panel)',
+          category: 'Laboratory',
+          categoryCode: 'LAB',
+        },
+        {
+          code: 'LAB002',
+          display: 'Blood Glucose Test',
+          category: 'Laboratory',
+          categoryCode: 'LAB',
+        },
+      ];
+
+      (
+        investigationService.getFlattenedInvestigations as jest.Mock
+      ).mockResolvedValue(mockPanelInvestigations);
+      const { result } = renderHook(() =>
+        useInvestigationsSearch('Complete Blood Count'),
+      );
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(500);
+      });
+
+      expect(result.current.investigations).toEqual([
+        mockPanelInvestigations[0],
+      ]);
+    });
   });
 
   describe('Debounce Behavior', () => {
