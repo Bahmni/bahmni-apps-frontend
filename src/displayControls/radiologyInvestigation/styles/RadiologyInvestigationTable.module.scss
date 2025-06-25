@@ -27,7 +27,7 @@
     background-color: $background;
   }
 
-  :global(.cds--data-table td:nth-child(2)) {
+  :global(.cds--data-table td:nth-child(1)) {
     @include type-style("body-short-01");
     max-width: calc(100vw * 0.1);
   }

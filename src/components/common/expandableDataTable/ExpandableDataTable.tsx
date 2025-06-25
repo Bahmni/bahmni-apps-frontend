@@ -10,9 +10,6 @@ import {
   TableBody,
   TableCell,
   TableContainer,
-  TableExpandHeader,
-  TableExpandRow,
-  TableExpandedRow,
   DataTableHeader,
   Accordion,
   AccordionItem,
@@ -26,7 +23,6 @@ interface ExpandableDataTableProps<T> {
   headers: DataTableHeader[];
   sortable?: { key: string; sortable: boolean }[];
   renderCell: (row: T, cellId: string) => React.ReactNode;
-  renderExpandedContent?: (row: T) => React.ReactNode;
   loading?: boolean;
   error?: unknown;
   ariaLabel?: string;
@@ -42,7 +38,6 @@ export const ExpandableDataTable = <T extends { id?: string }>({
   headers,
   sortable = headers.map((header) => ({ key: header.key, sortable: true })),
   renderCell,
-  renderExpandedContent = () => null,
   loading = false,
   error = null,
   ariaLabel = tableTitle,
@@ -79,7 +74,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
         <Accordion align="start">
           <AccordionItem title={tableTitle} open={isOpen}>
             <DataTableSkeleton
-              columnCount={headers.length + 1}
+              columnCount={headers.length}
               rowCount={5}
               showHeader={false}
               showToolbar={false}
@@ -131,11 +126,6 @@ export const ExpandableDataTable = <T extends { id?: string }>({
                 >
                   <TableHead>
                     <TableRow>
-                      <TableExpandHeader>
-                        <span className="cds--visually-hidden">
-                          {t('TABLE_EXPAND_COLUMN_ARIA_LABEL')}
-                        </span>
-                      </TableExpandHeader>
                       {tableHeaders.map((header) => (
                         <TableHeader
                           {...getHeaderProps({
@@ -158,44 +148,20 @@ export const ExpandableDataTable = <T extends { id?: string }>({
                       ) as T;
                       return (
                         <React.Fragment key={row.id}>
-                          {!renderExpandedContent(originalRow) ? (
-                            <TableRow
-                              {...getRowProps({ row })}
-                              key={generateId()}
-                              style={{ width: '100%' }}
-                            >
-                              <TableCell />
-                              {tableHeaders.map((header) => (
-                                <TableCell
-                                  key={`cell-${generateId()}`}
-                                  className={rowClassNames[row.id]}
-                                >
-                                  {renderCell(originalRow, header.key)}
-                                </TableCell>
-                              ))}
-                            </TableRow>
-                          ) : (
-                            <>
-                              <TableExpandRow
-                                {...getRowProps({ row })}
-                                key={generateId()}
+                          <TableRow
+                            {...getRowProps({ row })}
+                            key={generateId()}
+                            style={{ width: '100%' }}
+                          >
+                            {tableHeaders.map((header) => (
+                              <TableCell
+                                key={`cell-${generateId()}`}
+                                className={rowClassNames[row.id]}
                               >
-                                {tableHeaders.map((header) => (
-                                  <TableCell
-                                    key={`cell-${generateId()}`}
-                                    className={rowClassNames[row.id]}
-                                  >
-                                    {renderCell(originalRow, header.key)}
-                                  </TableCell>
-                                ))}
-                              </TableExpandRow>
-                              <TableExpandedRow
-                                colSpan={tableHeaders.length + 1}
-                              >
-                                {renderExpandedContent(originalRow)}
-                              </TableExpandedRow>
-                            </>
-                          )}
+                                {renderCell(originalRow, header.key)}
+                              </TableCell>
+                            ))}
+                          </TableRow>
                         </React.Fragment>
                       );
                     })}

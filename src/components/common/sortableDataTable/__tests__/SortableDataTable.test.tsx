@@ -2,7 +2,9 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { SortableDataTable } from '../SortableDataTable';
 import { DataTableHeader } from '@carbon/react';
-import { FormattedMedicationRequest } from '@types/medicationRequest';
+import { axe, toHaveNoViolations } from 'jest-axe';
+
+expect.extend(toHaveNoViolations);
 
 const mockHeaders: DataTableHeader[] = [
   { key: 'name', header: 'Medication' },
@@ -15,7 +17,7 @@ const mockHeaders: DataTableHeader[] = [
   { key: 'status', header: 'Status' },
 ];
 
-const mockMedicationRows: FormattedMedicationRequest[] = [
+const mockMedicationRows = [
   {
     id: '2c6a89df-64a5-4a99-a078-4c3fda0b2f15',
     name: 'Acetylsalicylic acid 150 mg',
@@ -90,7 +92,7 @@ const mockMedicationRows: FormattedMedicationRequest[] = [
   },
 ];
 
-describe('SortableDataTable with medication data', () => {
+describe('SortableDataTable', () => {
   const renderCell = (
     row: (typeof mockMedicationRows)[number],
     cellId: string,
@@ -254,5 +256,57 @@ describe('SortableDataTable with medication data', () => {
     expect(headers[0].querySelector('button')).toBeNull(); // name not sortable
     // status not in `sortable` array, default = false
     expect(headers[1].querySelector('button')).toBeNull();
+  });
+
+  describe('Snapshots', () => {
+    it('matches snapshot with full data', () => {
+      const { container } = render(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={mockMedicationRows}
+          ariaLabel="Snapshot Test Full"
+          renderCell={renderCell}
+        />,
+      );
+      expect(container).toMatchSnapshot();
+    });
+
+    it('matches snapshot when loading', () => {
+      const { container } = render(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={mockMedicationRows}
+          loading
+          ariaLabel="Snapshot Loading"
+        />,
+      );
+      expect(container).toMatchSnapshot();
+    });
+
+    it('matches snapshot when empty', () => {
+      const { container } = render(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={[]}
+          emptyStateMessage="No medications found"
+          ariaLabel="Snapshot Empty"
+        />,
+      );
+      expect(container).toMatchSnapshot();
+    });
+  });
+  describe('Accessibility', () => {
+    it('has no accessibility violations', async () => {
+      // Arrange
+      const { container } = render(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={mockMedicationRows}
+          ariaLabel="Accessibility Test"
+          renderCell={renderCell}
+        />,
+      );
+      expect(await axe(container)).toHaveNoViolations();
+    });
   });
 });
