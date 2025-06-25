@@ -184,7 +184,7 @@ describe('medicationRequestService', () => {
         expect(result[4].status).toBe(MedicationStatus.EnteredInError);
         expect(result[5].status).toBe(MedicationStatus.Cancelled);
         expect(result[6].status).toBe(MedicationStatus.Unknown);
-        expect(result[7].status).toBe(MedicationStatus.Scheduled);
+        expect(result[7].status).toBe(MedicationStatus.OnHold);
       });
 
       it('should extract dose information correctly', async () => {

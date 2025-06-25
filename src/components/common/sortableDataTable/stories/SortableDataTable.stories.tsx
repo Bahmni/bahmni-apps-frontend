@@ -179,7 +179,7 @@ export const EmptyWithCustomMessage: Story = {
     headers,
     rows: [],
     ariaLabel: 'Empty table with custom message',
-    emptyStateMessage: 'No medications found.',
+    emptyStateMessage: 'No medication history.',
   },
 };
 

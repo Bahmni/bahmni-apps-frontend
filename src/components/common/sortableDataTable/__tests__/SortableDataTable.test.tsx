@@ -288,7 +288,7 @@ describe('SortableDataTable', () => {
         <SortableDataTable
           headers={mockHeaders}
           rows={[]}
-          emptyStateMessage="No medications found"
+          emptyStateMessage="No medication history"
           ariaLabel="Snapshot Empty"
         />,
       );

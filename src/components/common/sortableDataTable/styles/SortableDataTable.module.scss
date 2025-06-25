@@ -11,6 +11,9 @@
     &:focus-visible {
       border: 0px !important;
     }
+    min-height: $spacing-12;
+    align-content: start;
+    padding-block: $spacing-03;
   }
 }
 

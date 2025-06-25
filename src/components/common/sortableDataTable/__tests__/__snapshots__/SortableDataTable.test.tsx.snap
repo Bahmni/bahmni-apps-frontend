@@ -5,7 +5,7 @@ exports[`SortableDataTable Snapshots matches snapshot when empty 1`] = `
   <p
     data-testid="sortable-table-empty"
   >
-    No medications found
+    No medication history
   </p>
 </div>
 `;

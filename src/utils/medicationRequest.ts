@@ -2,7 +2,6 @@ import {
   MedicationRequest,
   FormattedMedicationRequest,
 } from '@types/medicationRequest';
-import { formatDate } from '@utils/date';
 import { getPriorityByOrder } from './common';
 
 /**
@@ -35,11 +34,11 @@ export const getMedicationStatusPriority = (status: string): number => {
 
 /**
  * Sorts an array of medication requests by status priority in the order:
- * active → scheduled → completed → stopped. Stable sort ensures original
+ * active → on-hold → completed → stopped. Stable sort ensures original
  * order is preserved for medications with the same status.
  *
- * @param medications - The array of MedicationRequest objects to be sorted.
- * @returns A new sorted array of MedicationRequest objects.
+ * @param medications - The array of FormattedMedicationRequest objects to be sorted.
+ * @returns A new sorted array of FormattedMedicationRequest objects.
  */
 export const sortMedicationsByStatus = (
   medications: FormattedMedicationRequest[],
@@ -113,9 +112,9 @@ export function formatMedicationRequest(
   if (frequency) {
     dosageParts.push(frequency);
   }
-  if (duration) {
+  if (duration && duration.durationUnit) {
     dosageParts.push(
-      `${duration.duration} ${formatMedicationRequestDate(duration.durationUnit)}`,
+      `${duration.duration} ${formatMedicationRequestDate(duration.durationUnit as 's' | 'min' | 'h' | 'd' | 'wk' | 'mo' | 'a')}`,
     );
   }
 
@@ -130,8 +129,6 @@ export function formatMedicationRequest(
   }
 
   const instruction = instructionParts.join(' | ');
-  const formattedStartDate = formatDate(startDate).formattedResult;
-  const formattedOrderDate = formatDate(orderDate).formattedResult;
   const quantity = `${medication.quantity.value} ${medication.quantity.unit}`;
 
   return {
@@ -140,8 +137,8 @@ export function formatMedicationRequest(
     dosage,
     dosageUnit: dose ? dose.unit : '',
     instruction,
-    startDate: formattedStartDate,
-    orderDate: formattedOrderDate,
+    startDate: startDate ?? '',
+    orderDate: orderDate ?? '',
     orderedBy,
     quantity,
     status,

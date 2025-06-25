@@ -1,111 +1,166 @@
+@use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/spacing" as *;
 
-.medicationsTable {
-  margin-bottom: 1rem;
+.medicationTableEmpty {
+  @include type-style("label-02");
+  background-color: $background;
+  padding: $spacing-07 $spacing-05;
+  text-align: center;
+  border-top: 1px solid $border-subtle-02;
+}
 
-  .medicationsTableTitle {
-    font-size: 1.125rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--cds-text-primary);
+.medicationTabs {
+  padding: 0 !important;
+}
+.medicineName {
+  @include type-style("body-compact-01");
+  color: $text-primary;
+  font-weight: 700;
+}
+
+.dosage {
+  @include type-style("body-compact-01");
+  color: $text-primary;
+  font-weight: 700;
+}
+
+.medicineDetails {
+  @include type-style("body-compact-01");
+  color: $text-primary;
+  font-weight: 400;
+}
+
+.PRN {
+  background-color: $yellow-20 !important;
+  color: $yellow-50 !important;
+}
+
+.STAT {
+  background-color: $red-20 !important;
+  color: $red-50 !important;
+}
+
+.activeStatus {
+  :global(.cds--tag__custom-icon) {
+    color: $green-50;
   }
-
-  .medicationsTableBody {
-    margin-bottom: 0.5rem;
+}
+.scheduledStatus {
+  :global(.cds--tag__custom-icon) {
+    color: $purple-50;
   }
+}
 
-  .errorState {
-    padding: 1rem;
-    color: var(--cds-support-error);
-    background-color: var(--cds-support-error-inverse);
-    border: 1px solid var(--cds-support-error);
-    border-radius: 4px;
-    margin: 1rem 0;
+.cancelledStatus {
+  :global(.cds--tag__custom-icon) {
+    color: $yellow-50;
   }
-
-  // Status tags
-  .activeTag {
-    background-color: var(--cds-support-success);
-    color: var(--cds-text-on-color);
+}
+.completedStatus {
+  :global(.cds--tag__custom-icon) {
+    color: $green-50;
   }
+}
 
-  .scheduledTag {
-    background-color: var(--cds-support-info);
-    color: var(--cds-text-on-color);
+.stoppedStatus {
+  :global(.cds--tag__custom-icon) {
+    color: $red-50;
   }
+}
 
-  .otherStatusTag {
-    background-color: var(--cds-tag-background-gray);
-    color: var(--cds-text-primary);
+.unknownStatus {
+  :global(.cds--tag__custom-icon) {
+    color: $cool-gray-20;
   }
+}
 
-  // Priority tags
-  .statTag {
-    background-color: var(--cds-support-error);
-    color: var(--cds-text-on-color);
-    margin-left: 0.5rem;
+.activeMedicationsTableBody {
+  :global(.cds--data-table td:nth-child(1)) {
+    @include type-style("body-short-01");
+    min-width: calc(100vw * 0.175);
   }
-
-  .prnTag {
-    background-color: var(--cds-support-warning);
-    color: var(--cds-text-primary);
-    margin-left: 0.5rem;
+  :global(.cds--data-table td:nth-child(2)) {
+    @include type-style("body-short-01");
+    max-width: calc(100vw * 0.1);
   }
-
-  // Custom tab styling
-  .tabsContainer {
-    margin-bottom: 1rem;
+  :global(.cds--data-table td:nth-child(3)) {
+    @include type-style("body-short-01");
+    max-width: calc(100vw * 0.1);
   }
-
-  :global(.cds-layout-size-height-local) {
-    height: 0px;
+  :global(.cds--data-table td:nth-child(4)) {
+    @include type-style("body-short-01");
+    max-width: calc(100vw * 0.025);
   }
-
-  .tabList {
-    display: flex;
-    border-bottom: 1px solid var(--cds-border-subtle);
-    margin-bottom: 1rem;
+  :global(.cds--data-table td:nth-child(5)) {
+    @include type-style("body-short-01");
+    max-width: calc(100vw * 0.075);
   }
-
-  .tabButton {
-    border-radius: 0;
-    border-bottom: 2px solid transparent;
-    margin-right: 0.5rem;
-
-    &.activeTab {
-      border-bottom-color: var(--cds-border-interactive);
-      background-color: var(--cds-background-selected);
-    }
-
-    &:hover {
-      background-color: var(--cds-background-hover);
-    }
+  :global(.cds--data-table td:nth-child(6)) {
+    @include type-style("body-short-01");
+    max-width: calc(100vw * 0.025);
   }
-
-  .tabContent {
-    padding: 0;
+  :global(.cds--data-table td:nth-child(7)) {
+    @include type-style("body-short-01");
+    max-width: calc(100vw * 0.025);
   }
+  :global(.cds--accordion__content) {
+    margin-inline: 0rem !important;
+    padding-inline: 0rem !important;
+  }
+  :global(.cds--accordion__wrapper) {
+    padding-block: 0rem !important;
+    padding-block-end: 0rem !important;
+  }
+}
 
-  // Table cell styling
+.allMedicationsTableBody {
   :global(.cds--data-table td) {
-    vertical-align: top;
-    padding: 0.75rem 1rem;
+    @include type-style("body-short-01");
+    background-color: $background;
+    border-block-end: 0px !important;
+    &:focus-visible {
+      border: 0px !important;
+    }
+    min-height: $spacing-12;
+    align-content: start;
+    padding-block: $spacing-03;
   }
-
-  // Responsive design
-  @media (max-width: 768px) {
-    .medicationsTableTitle {
-      font-size: 1rem;
-    }
-
-    :global(.cds--data-table td) {
-      padding: 0.5rem;
-      font-size: 0.875rem;
-    }
-    .statTag,
-    .prnTag {
-      margin-left: 0.25rem;
-      font-size: 0.75rem;
-    }
+  :global(.cds--data-table td:nth-child(1)) {
+    @include type-style("body-short-01");
+    min-width: calc(100vw * 0.175);
+  }
+  :global(.cds--data-table td:nth-child(2)) {
+    @include type-style("body-short-01");
+    max-width: calc(100vw * 0.1);
+  }
+  :global(.cds--data-table td:nth-child(3)) {
+    @include type-style("body-short-01");
+    max-width: calc(100vw * 0.1);
+  }
+  :global(.cds--data-table td:nth-child(4)) {
+    @include type-style("body-short-01");
+    max-width: calc(100vw * 0.025);
+  }
+  :global(.cds--data-table td:nth-child(5)) {
+    @include type-style("body-short-01");
+    max-width: calc(100vw * 0.075);
+  }
+  :global(.cds--data-table td:nth-child(6)) {
+    @include type-style("body-short-01");
+    max-width: calc(100vw * 0.025);
+  }
+  :global(.cds--data-table td:nth-child(7)) {
+    @include type-style("body-short-01");
+    max-width: calc(100vw * 0.025);
+  }
+  :global(.cds--accordion__content) {
+    margin-inline: 0rem !important;
+    padding-inline: 0rem !important;
+  }
+  :global(.cds--accordion__wrapper) {
+    padding-block: 0rem !important;
+    padding-block-end: 0rem !important;
   }
 }

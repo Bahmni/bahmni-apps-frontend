@@ -15,7 +15,7 @@ const mapMedicationStatus = (
     case 'active':
       return MedicationStatus.Active;
     case 'on-hold':
-      return MedicationStatus.Scheduled;
+      return MedicationStatus.OnHold;
     case 'cancelled':
       return MedicationStatus.Cancelled;
     case 'completed':

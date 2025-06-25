@@ -3,7 +3,7 @@
  */
 export enum MedicationStatus {
   Active = 'active',
-  Scheduled = 'scheduled',
+  OnHold = 'on-hold',
   Completed = 'completed',
   Stopped = 'stopped',
   Cancelled = 'cancelled',

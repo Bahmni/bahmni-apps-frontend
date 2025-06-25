@@ -5,7 +5,11 @@ import {
   sortMedicationsByStatus,
   MEDICATION_STATUS_PRIORITY_ORDER,
 } from '../medicationRequest';
-import { MedicationRequest, MedicationStatus } from '@types/medicationRequest';
+import {
+  MedicationRequest,
+  MedicationStatus,
+  FormattedMedicationRequest,
+} from '@types/medicationRequest';
 
 jest.mock('@utils/date', () => ({
   formatDate: (date: string | undefined) => ({
@@ -34,8 +38,8 @@ describe('formatMedicationRequest', () => {
       frequency: '2x/day',
       route: 'oral',
       duration: { duration: 5, durationUnit: 'd' },
-      startDate: '2025-01-01',
-      orderDate: '2025-01-02',
+      startDate: '2025-03-25T06:48:32+00:00',
+      orderDate: '2025-03-25T06:48:32+00:00',
       orderedBy: 'Dr. Smith',
       notes: 'Take with food',
       status: MedicationStatus.Active,
@@ -53,8 +57,8 @@ describe('formatMedicationRequest', () => {
       dosage: '500 mg | 2x/day | 5 days',
       dosageUnit: 'mg',
       instruction: 'oral | Take with food',
-      startDate: 'Formatted(2025-01-01)',
-      orderDate: 'Formatted(2025-01-02)',
+      startDate: '2025-03-25T06:48:32+00:00',
+      orderDate: '2025-03-25T06:48:32+00:00',
       orderedBy: 'Dr. Smith',
       quantity: '10 ml',
       status: 'active',
@@ -67,8 +71,14 @@ describe('formatMedicationRequest', () => {
     const input: MedicationRequest = {
       id: '456',
       name: 'Ibuprofen',
-      status: MedicationStatus.Scheduled,
+      status: MedicationStatus.OnHold,
       quantity: { value: 10, unit: 'ml' },
+      priority: '',
+      startDate: '',
+      orderDate: '',
+      orderedBy: '',
+      asNeeded: false,
+      isImmediate: false,
     };
 
     const result = formatMedicationRequest(input);
@@ -81,11 +91,11 @@ describe('formatMedicationRequest', () => {
       instruction: '',
       startDate: '',
       orderDate: '',
-      orderedBy: undefined,
+      orderedBy: '',
       quantity: '10 ml',
-      status: 'scheduled',
-      asNeeded: undefined,
-      isImmediate: undefined,
+      status: 'on-hold',
+      asNeeded: false,
+      isImmediate: false,
     });
   });
 
@@ -95,6 +105,10 @@ describe('formatMedicationRequest', () => {
       name: 'Ciprofloxacin',
       quantity: { value: 20, unit: 'tablets' },
       status: MedicationStatus.Active,
+      priority: '',
+      startDate: '',
+      orderDate: '',
+      orderedBy: '',
       asNeeded: true,
       isImmediate: false,
     };
@@ -109,7 +123,7 @@ describe('formatMedicationRequest', () => {
       instruction: '',
       startDate: '',
       orderDate: '',
-      orderedBy: undefined,
+      orderedBy: '',
       quantity: '20 tablets',
       status: 'active',
       asNeeded: true,
@@ -121,20 +135,44 @@ describe('formatMedicationRequest', () => {
     const input: MedicationRequest = {
       id: '789',
       name: 'Amoxicillin',
-      startDate: undefined,
-      orderDate: undefined,
+      startDate: '',
+      orderDate: '',
       status: MedicationStatus.Cancelled,
       quantity: { value: 10, unit: 'ml' },
-      isActive: false,
-      isScheduled: false,
+      priority: '',
+      orderedBy: '',
+      asNeeded: false,
+      isImmediate: false,
     };
 
     const result = formatMedicationRequest(input);
 
     expect(result.startDate).toBe('');
     expect(result.orderDate).toBe('');
-    expect(result.asNeeded).toBeUndefined();
-    expect(result.isImmediate).toBeUndefined();
+    expect(result.asNeeded).toBe(false);
+    expect(result.isImmediate).toBe(false);
+  });
+
+  it('formats date fields with nullish coalescing when undefined', () => {
+    const input: MedicationRequest = {
+      id: '790',
+      name: 'Penicillin',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      startDate: undefined as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      orderDate: undefined as any,
+      status: MedicationStatus.Active,
+      quantity: { value: 5, unit: 'tablets' },
+      priority: '',
+      orderedBy: '',
+      asNeeded: false,
+      isImmediate: false,
+    };
+
+    const result = formatMedicationRequest(input);
+
+    expect(result.startDate).toBe('');
+    expect(result.orderDate).toBe('');
   });
 });
 
@@ -157,15 +195,22 @@ describe('getMedicationStatusPriority', () => {
 
 describe('sortMedicationsByStatus', () => {
   it('sorts medications by full status priority list', () => {
-    const meds: MedicationRequest[] = MEDICATION_STATUS_PRIORITY_ORDER.map(
-      (status, i) => ({
+    const meds: FormattedMedicationRequest[] =
+      MEDICATION_STATUS_PRIORITY_ORDER.map((status, i) => ({
         id: `${i}`,
         name: `Med-${status}`,
-        status,
-        isActive: false,
-        isScheduled: false,
-      }),
-    ).reverse(); // reverse order to test sorting
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        status: status as any,
+        dosage: '',
+        dosageUnit: '',
+        quantity: '',
+        instruction: '',
+        startDate: '',
+        orderDate: '',
+        orderedBy: '',
+        asNeeded: false,
+        isImmediate: false,
+      })).reverse(); // reverse order to test sorting
 
     const sorted = sortMedicationsByStatus(meds);
     const sortedStatuses = sorted.map((m) => m.status);
@@ -174,20 +219,34 @@ describe('sortMedicationsByStatus', () => {
   });
 
   it('maintains stable sort for same priority', () => {
-    const meds: MedicationRequest[] = [
+    const meds: FormattedMedicationRequest[] = [
       {
         id: '1',
         name: 'A',
-        status: 'active',
-        isActive: true,
-        isScheduled: false,
+        status: MedicationStatus.Active,
+        dosage: '',
+        dosageUnit: '',
+        quantity: '',
+        instruction: '',
+        startDate: '',
+        orderDate: '',
+        orderedBy: '',
+        asNeeded: false,
+        isImmediate: false,
       },
       {
         id: '2',
         name: 'B',
-        status: 'active',
-        isActive: true,
-        isScheduled: false,
+        status: MedicationStatus.Active,
+        dosage: '',
+        dosageUnit: '',
+        quantity: '',
+        instruction: '',
+        startDate: '',
+        orderDate: '',
+        orderedBy: '',
+        asNeeded: false,
+        isImmediate: false,
       },
     ];
 
@@ -196,20 +255,35 @@ describe('sortMedicationsByStatus', () => {
   });
 
   it('places unknown statuses at the end', () => {
-    const meds: MedicationRequest[] = [
+    const meds: FormattedMedicationRequest[] = [
       {
         id: '1',
         name: 'Valid',
-        status: 'active',
-        isActive: true,
-        isScheduled: false,
+        status: MedicationStatus.Active,
+        dosage: '',
+        dosageUnit: '',
+        quantity: '',
+        instruction: '',
+        startDate: '',
+        orderDate: '',
+        orderedBy: '',
+        asNeeded: false,
+        isImmediate: false,
       },
       {
         id: '2',
         name: 'Invalid',
-        status: 'bogus',
-        isActive: false,
-        isScheduled: false,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        status: 'bogus' as any,
+        dosage: '',
+        dosageUnit: '',
+        quantity: '',
+        instruction: '',
+        startDate: '',
+        orderDate: '',
+        orderedBy: '',
+        asNeeded: false,
+        isImmediate: false,
       },
     ];
 
