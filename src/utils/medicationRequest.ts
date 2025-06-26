@@ -130,7 +130,8 @@ export function formatMedicationRequest(
     startDate,
     orderDate,
     orderedBy,
-    notes = '',
+    instructions,
+    additionalInstructions,
     status,
     asNeeded,
     isImmediate,
@@ -156,10 +157,10 @@ export function formatMedicationRequest(
   if (route) {
     instructionParts.push(route);
   }
-  if (notes) {
-    instructionParts.push(notes);
+  instructionParts.push(instructions);
+  if (additionalInstructions) {
+    instructionParts.push(additionalInstructions);
   }
-
   const instruction = instructionParts.join(' | ');
   const quantity = `${medication.quantity.value} ${medication.quantity.unit}`;
 

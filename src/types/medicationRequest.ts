@@ -37,7 +37,8 @@ export interface MedicationRequest {
   readonly startDate: string;
   readonly orderDate: string;
   readonly orderedBy: string;
-  readonly notes?: string;
+  readonly instructions: string;
+  readonly additionalInstructions?: string;
   readonly asNeeded: boolean;
   readonly isImmediate: boolean;
 }

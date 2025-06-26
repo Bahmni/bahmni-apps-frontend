@@ -104,7 +104,7 @@ function getDuration(
 /**
  * Helper to get notes
  */
-function getNotes(
+function getAdditionalInstructions(
   dosageInstruction: FhirMedicationRequest['dosageInstruction'],
 ): string {
   try {
@@ -112,6 +112,22 @@ function getNotes(
     if (!text) return '';
     const parsed = JSON.parse(text);
     return parsed.additionalInstructions ?? '';
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Helper to get notes
+ */
+function getInstructions(
+  dosageInstruction: FhirMedicationRequest['dosageInstruction'],
+): string {
+  try {
+    const text = dosageInstruction?.[0]?.text;
+    if (!text) return '';
+    const parsed = JSON.parse(text);
+    return parsed.instructions ?? '';
   } catch {
     return '';
   }
@@ -159,7 +175,10 @@ function formatMedications(bundle: Bundle): MedicationRequest[] {
       startDate: medication.dosageInstruction?.[0]?.timing?.event?.[0],
       orderDate: medication.authoredOn!,
       orderedBy: medicationRequester.display!,
-      notes: getNotes(medication.dosageInstruction),
+      instructions: getInstructions(medication.dosageInstruction),
+      additionalInstructions: getAdditionalInstructions(
+        medication.dosageInstruction,
+      ),
     };
   });
 }
