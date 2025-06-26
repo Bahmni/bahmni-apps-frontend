@@ -164,7 +164,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> = React.memo
           </div>
         </div>
 
-        Row 2: Dosage, Frequency, Duration controls
+        {/* Row 2: Dosage, Frequency, Duration controls */}
         <div className={styles.controlsRow}>
           <div className={styles.dosageControls}>
             <div className={styles.dosageInputGroup}>
@@ -190,7 +190,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> = React.memo
                 selectedItem={selectedDosageUnit}
                 itemToString={(item) => item ? t(item.display) : ''}
                 onChange={({ selectedItem }) => handleDosageUnitChange(selectedItem)}
-                size="sm"
+                size="md"
               />
             </div>
           </div>
@@ -208,6 +208,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> = React.memo
               onChange={({ selectedItem }) => handleFrequencyChange(selectedItem)}
               invalid={hasFrequencyError}
               invalidText={hasFrequencyError && t(errors.frequency!)}
+              size="md"
             />
           </div>
 
@@ -235,7 +236,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> = React.memo
                 selectedItem={selectedDurationUnit}
                 itemToString={(item) => item ? t(item.display) : ''}
                 onChange={({ selectedItem }) => handleDurationUnitChange(selectedItem)}
-                size="sm"
+                size="md"
               />
             </div>
           </div>
@@ -253,7 +254,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> = React.memo
               selectedItem={selectedTiming}
               itemToString={(item) => item ? t(item.display) : ''}
               onChange={({ selectedItem }) => handleTimingChange(selectedItem)}
-              size='md'
+              size="md"
             />
           </div>
 
@@ -269,7 +270,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> = React.memo
               onChange={({ selectedItem }) => handleRouteChange(selectedItem)}
               invalid={hasRouteError}
               invalidText={hasRouteError && t(errors.route!)}
-              size='md'
+              size="md"
             />
           </div>
 
@@ -284,7 +285,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> = React.memo
                 placeholder="mm/dd/yyyy"
                 labelText="Start Date"
                 hideLabel
-                size="sm"
+                size="md"
               />
             </DatePicker>
           </div>
