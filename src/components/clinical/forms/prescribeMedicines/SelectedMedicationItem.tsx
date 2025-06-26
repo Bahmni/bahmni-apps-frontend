@@ -8,10 +8,8 @@ import {
   Checkbox,
   DatePicker,
   DatePickerInput,
-  TextArea,
-  ComboBox
 } from '@carbon/react';
-import { Add, Subtract, Close } from '@carbon/icons-react';
+import { Close } from '@carbon/icons-react';
 import { useTranslation } from 'react-i18next';
 import * as styles from './styles/SelectedMedicationItem.module.scss';
 import { MedicationInputEntry } from '../../../../types/medication';
@@ -20,7 +18,7 @@ import {
   ROUTE_OPTIONS,
   TIMING_OPTIONS,
   DOSAGE_UNIT_OPTIONS,
-  DURATION_UNIT_OPTIONS
+  DURATION_UNIT_OPTIONS,
 } from '../../../../constants/medications';
 
 export interface SelectedMedicationItemProps {
@@ -28,7 +26,11 @@ export interface SelectedMedicationItemProps {
   updateDosage: (medicationId: string, dosage: number, unit: string) => void;
   updateFrequency: (medicationId: string, frequency: string) => void;
   updateRoute: (medicationId: string, route: string) => void;
-  updateDuration: (medicationId: string, duration: number, unit: string) => void;
+  updateDuration: (
+    medicationId: string,
+    duration: number,
+    unit: string,
+  ) => void;
   updateTiming: (medicationId: string, timing: string) => void;
   updateFlags: (medicationId: string, isSTAT: boolean, isPRN: boolean) => void;
   updateStartDate: (medicationId: string, date: string) => void;
@@ -37,110 +39,128 @@ export interface SelectedMedicationItemProps {
   removeMedication: (medicationId: string) => void;
 }
 
-const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> = React.memo(
-  ({
-    medication,
-    updateDosage,
-    updateFrequency,
-    updateRoute,
-    updateDuration,
-    updateTiming,
-    updateFlags,
-    updateStartDate,
-    updateInstructions,
-    calculateTotalQuantity,
-    removeMedication,
-  }) => {
-    const { t } = useTranslation();
-    const [showInstructions, setShowInstructions] = useState(false);
-    const [isEditingQuantity, setIsEditingQuantity] = useState(false);
+const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
+  React.memo(
+    ({
+      medication,
+      updateDosage,
+      updateFrequency,
+      updateRoute,
+      updateDuration,
+      updateTiming,
+      updateFlags,
+      updateStartDate,
+      calculateTotalQuantity,
+      removeMedication,
+    }) => {
+      const { t } = useTranslation();
+      const [showInstructions, setShowInstructions] = useState(false);
+      const [isEditingQuantity, setIsEditingQuantity] = useState(false);
 
-    const {
-      id,
-      display,
-      dosage,
-      dosageUnit,
-      frequency,
-      timing,
-      route,
-      duration,
-      durationUnit,
-      isSTAT,
-      isPRN,
-      startDate,
-      instructions,
-      errors,
-      hasBeenValidated,
-    } = medication;
+      const {
+        id,
+        display,
+        dosage,
+        dosageUnit,
+        frequency,
+        timing,
+        route,
+        duration,
+        durationUnit,
+        isSTAT,
+        isPRN,
+        startDate,
+        errors,
+        hasBeenValidated,
+      } = medication;
 
-    const hasDosageError = !!(hasBeenValidated && errors.dosage);
-    const hasFrequencyError = !!(hasBeenValidated && errors.frequency);
-    const hasRouteError = !!(hasBeenValidated && errors.route);
-    const hasDurationError = !!(hasBeenValidated && errors.duration);
+      const hasFrequencyError = !!(hasBeenValidated && errors.frequency);
+      const hasRouteError = !!(hasBeenValidated && errors.route);
 
-    const totalQuantity = calculateTotalQuantity(id);
+      const totalQuantity = calculateTotalQuantity(id);
 
-    const handleDosageChange = (newDosage: number) => {
-      updateDosage(id, newDosage, dosageUnit);
-    };
+      const handleDosageChange = (newDosage: number) => {
+        updateDosage(id, newDosage, dosageUnit);
+      };
 
-    const handleDosageUnitChange = (selectedItem: any) => {
-      updateDosage(id, dosage, selectedItem.code);
-    };
+      const handleDosageUnitChange = (
+        selectedItem: { code: string; display: string } | null,
+      ) => {
+        if (selectedItem) {
+          updateDosage(id, dosage, selectedItem.code);
+        }
+      };
 
-    const handleDurationChange = (newDuration: number) => {
-      updateDuration(id, newDuration, durationUnit);
-    };
+      const handleDurationChange = (newDuration: number) => {
+        updateDuration(id, newDuration, durationUnit);
+      };
 
-    const handleDurationUnitChange = (selectedItem: any) => {
-      updateDuration(id, duration, selectedItem.code);
-    };
+      const handleDurationUnitChange = (
+        selectedItem: { code: string; display: string } | null,
+      ) => {
+        if (selectedItem) {
+          updateDuration(id, duration, selectedItem.code);
+        }
+      };
 
-    const handleFrequencyChange = (selectedItem: any) => {
-      updateFrequency(id, selectedItem.code);
-    };
+      const handleFrequencyChange = (
+        selectedItem: { code: string; display: string } | null,
+      ) => {
+        if (selectedItem) {
+          updateFrequency(id, selectedItem.code);
+        }
+      };
 
-    const handleRouteChange = (selectedItem: any) => {
-      updateRoute(id, selectedItem.code);
-    };
+      const handleRouteChange = (
+        selectedItem: { code: string; display: string } | null,
+      ) => {
+        if (selectedItem) {
+          updateRoute(id, selectedItem.code);
+        }
+      };
 
-    const handleTimingChange = (selectedItem: any) => {
-      updateTiming(id, selectedItem.code);
-    };
+      const handleTimingChange = (
+        selectedItem: { code: string; display: string } | null,
+      ) => {
+        if (selectedItem) {
+          updateTiming(id, selectedItem.code);
+        }
+      };
 
-    const handleSTATChange = (checked: boolean) => {
-      updateFlags(id, checked, isPRN);
-    };
+      const handleSTATChange = (checked: boolean) => {
+        updateFlags(id, checked, isPRN);
+      };
 
-    const handlePRNChange = (checked: boolean) => {
-      updateFlags(id, isSTAT, checked);
-    };
+      const handlePRNChange = (checked: boolean) => {
+        updateFlags(id, isSTAT, checked);
+      };
 
-    const handleDateChange = (dates: Date[]) => {
-      if (dates.length > 0 && dates[0]) {
-        const dateString = dates[0].toISOString().split('T')[0];
-        updateStartDate(id, dateString);
-      }
-    };
+      const handleDateChange = (dates: Date[]) => {
+        if (dates.length > 0 && dates[0]) {
+          const dateString = dates[0].toISOString().split('T')[0];
+          updateStartDate(id, dateString);
+        }
+      };
 
-    const handleInstructionsChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-      updateInstructions(id, event.target.value);
-    };
+      const selectedFrequency = FREQUENCY_OPTIONS.find(
+        (f) => f.code === frequency,
+      );
+      const selectedRoute = ROUTE_OPTIONS.find((r) => r.code === route);
+      const selectedTiming = TIMING_OPTIONS.find((t) => t.code === timing);
+      const selectedDosageUnit = DOSAGE_UNIT_OPTIONS.find(
+        (d) => d.code === dosageUnit,
+      );
+      const selectedDurationUnit = DURATION_UNIT_OPTIONS.find(
+        (d) => d.code === durationUnit,
+      );
 
-    const selectedFrequency = FREQUENCY_OPTIONS.find(f => f.code === frequency);
-    const selectedRoute = ROUTE_OPTIONS.find(r => r.code === route);
-    const selectedTiming = TIMING_OPTIONS.find(t => t.code === timing);
-    const selectedDosageUnit = DOSAGE_UNIT_OPTIONS.find(d => d.code === dosageUnit);
-    const selectedDurationUnit = DURATION_UNIT_OPTIONS.find(d => d.code === durationUnit);
-
-    return (
-      <div className={styles.selectedMedicationItem}>
-        {/* Row 1: Medication name with STAT/PRN checkboxes and remove button */}
-        <div className={styles.medicationHeader}>
-          <div className={styles.medicationTitle}>
+      return (
+        <Grid className={styles.selectedMedicationItem}>
+          {/* Row 1: Medication name with STAT/PRN checkboxes and remove button */}
+          <Column span={12} className={styles.medicationTitle}>
             {display} {medication.strength && `(${medication.strength})`}
-          </div>
-          <div className={styles.medicationActions}>
+          </Column>
+          <Column span={4} className={styles.medicationActions}>
             <Checkbox
               id={`stat-${id}`}
               labelText={t('MEDICATION_STAT')}
@@ -161,21 +181,31 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> = React.memo
               renderIcon={Close}
               onClick={() => removeMedication(id)}
             />
-          </div>
-        </div>
+          </Column>
 
-        {/*Row 2: Dosage, Frequency, Duration controls*/}
-        <div className={styles.controlsRow}>
-          <div className={styles.dosageControls}>
+          {/*Row 2: Dosage, Frequency, Duration controls*/}
+          <Column span={5} className={styles.dosageControls}>
             <NumberInput
               id={`dosage-unit-${id}`}
               style={{ width: '107px' }}
               invalidText="Number of tablets are invalid. Must be more than 0"
-              min={0}
-              onChange={() => { }}
+              min={1}
+              onChange={(event, { value }) => {
+                const newValue = Number(value);
+                if (newValue > dosage) {
+                  // User clicked + button
+                  handleDosageChange(dosage + 1);
+                } else if (newValue < dosage) {
+                  // User clicked - button
+                  handleDosageChange(Math.max(1, dosage - 1));
+                } else {
+                  // Direct input change
+                  handleDosageChange(Math.max(1, newValue));
+                }
+              }}
               size="sm"
               step={1}
-              value={1}
+              value={dosage}
               warnText="Warning: Dosage should be a positive number."
             />
             <Dropdown
@@ -187,37 +217,51 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> = React.memo
               items={DOSAGE_UNIT_OPTIONS}
               selectedItem={selectedDosageUnit}
               size="sm"
-              itemToString={(item) => item ? t(item.display) : ''}
-              onChange={({ selectedItem }) => handleDosageUnitChange(selectedItem)}
-
+              itemToString={(item) => (item ? t(item.display) : '')}
+              onChange={({ selectedItem }) =>
+                handleDosageUnitChange(selectedItem)
+              }
             />
-          </div>
-          <div>
+          </Column>
+          <Column span={6} className={styles.frequencyControl}>
             <Dropdown
               id={`frequency-${id}`}
-              style={{ width: '262px' }}
+              style={{ width: '100%' }}
               titleText="Frequency"
               label="Frequency"
-
               hideLabel
               items={FREQUENCY_OPTIONS}
               selectedItem={selectedFrequency}
               size="sm"
-              itemToString={(item) => item ? t(item.display) : ''}
-              onChange={({ selectedItem }) => handleFrequencyChange(selectedItem)}
+              itemToString={(item) => (item ? t(item.display) : '')}
+              onChange={({ selectedItem }) =>
+                handleFrequencyChange(selectedItem)
+              }
               invalid={hasFrequencyError}
               invalidText={hasFrequencyError && t(errors.frequency!)}
             />
-          </div>
-          <div className={styles.durationControls}>
+          </Column>
+          <Column span={5} className={styles.durationControls}>
             <NumberInput
-              id={`dosage-unit-${id}`}
+              id={`duration-${id}`}
               style={{ width: '107px' }}
               min={0}
-              onChange={() => { }}
+              onChange={(event, { value }) => {
+                const newValue = Number(value);
+                if (newValue > duration) {
+                  // User clicked + button
+                  handleDurationChange(duration + 1);
+                } else if (newValue < duration) {
+                  // User clicked - button
+                  handleDurationChange(Math.max(0, duration - 1));
+                } else {
+                  // Direct input change
+                  handleDurationChange(Math.max(0, newValue));
+                }
+              }}
               size="sm"
               step={1}
-              value={0}
+              value={duration}
               warnText="Warning: Duration should be a positive number."
             />
             <Dropdown
@@ -228,16 +272,15 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> = React.memo
               items={DURATION_UNIT_OPTIONS}
               selectedItem={selectedDurationUnit}
               size="sm"
-              itemToString={(item) => item ? t(item.display) : ''}
-              onChange={({ selectedItem }) => handleDurationUnitChange(selectedItem)}
-
+              itemToString={(item) => (item ? t(item.display) : '')}
+              onChange={({ selectedItem }) =>
+                handleDurationUnitChange(selectedItem)
+              }
             />
-          </div>
-        </div>
+          </Column>
 
-        {/* Row 3: Timing, Route, Date */}
-        <div className={styles.detailsRow}>
-          <div className={styles.timingControl}>
+          {/* Row 3: Timing, Route, Date */}
+          <Column span={5} className={styles.timingControl}>
             <Dropdown
               id={`timing-${id}`}
               titleText="Timing"
@@ -246,12 +289,12 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> = React.memo
               items={TIMING_OPTIONS}
               selectedItem={selectedTiming}
               size="sm"
-              itemToString={(item) => item ? t(item.display) : ''}
+              itemToString={(item) => (item ? t(item.display) : '')}
               onChange={({ selectedItem }) => handleTimingChange(selectedItem)}
             />
-          </div>
+          </Column>
 
-          <div className={styles.routeControl}>
+          <Column span={6} className={styles.routeControl}>
             <Dropdown
               id={`route-${id}`}
               titleText="Route"
@@ -260,14 +303,14 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> = React.memo
               items={ROUTE_OPTIONS}
               selectedItem={selectedRoute}
               size="sm"
-              itemToString={(item) => item ? t(item.display) : ''}
+              itemToString={(item) => (item ? t(item.display) : '')}
               onChange={({ selectedItem }) => handleRouteChange(selectedItem)}
               invalid={hasRouteError}
               invalidText={hasRouteError && t(errors.route!)}
             />
-          </div>
+          </Column>
 
-          <div className={styles.dateControl}>
+          <Column span={5} className={styles.dateControl}>
             <DatePicker
               datePickerType="single"
               value={startDate}
@@ -281,38 +324,37 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> = React.memo
                 size="sm"
               />
             </DatePicker>
-          </div>
-        </div>
+          </Column>
 
-        {/* Row 4: Add note and Total quantity */}
-        <div className={styles.bottomRow}>
-          <div className={styles.noteControl}>
+          {/* Row 4: Add note and Total quantity */}
+          <Column span={8} className={styles.noteControl}>
             <Button
-              kind="ghost"
               size="sm"
               onClick={() => setShowInstructions(!showInstructions)}
             >
               {t('MEDICATION_ADD_NOTE')}
             </Button>
-          </div>
+          </Column>
 
-          <div className={styles.quantityControl}>
-            <span className={styles.quantityLabel}>
-              {t('MEDICATION_TOTAL_QUANTITY')}: {totalQuantity} {t(selectedDosageUnit?.display || '')}
+          <Column span={4} className={styles.quantityLabel}>
+            <span>
+              {t('MEDICATION_TOTAL_QUANTITY')}: {totalQuantity}{' '}
+              {t(selectedDosageUnit?.display || '')}
             </span>
+          </Column>
+
+          <Column span={4} className={styles.editControl}>
             <Button
-              kind="ghost"
               size="sm"
               onClick={() => setIsEditingQuantity(!isEditingQuantity)}
             >
               {isEditingQuantity ? t('MEDICATION_DONE') : t('MEDICATION_EDIT')}
             </Button>
-          </div>
-        </div>
-      </div >
-    );
-  },
-);
+          </Column>
+        </Grid>
+      );
+    },
+  );
 
 SelectedMedicationItem.displayName = 'SelectedMedicationItem';
 
