@@ -168,27 +168,17 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> = React.memo
         <div className={styles.controlsRow}>
           <div className={styles.dosageControls}>
             <div className={styles.dosageInputGroup}>
-              <span className={styles.dosageValue}>{dosage}</span>
-              <div className={styles.dosageSeparator}></div>
-              <Button
-                kind="ghost"
-                size="sm"
-                hasIconOnly
-                iconDescription="Decrease dosage"
-                renderIcon={Subtract}
-                onClick={() => handleDosageChange(Math.max(1, dosage - 1))}
-                disabled={dosage <= 1}
-                className={styles.dosageButton}
-              />
-              <div className={styles.dosageSeparator}></div>
-              <Button
-                kind="ghost"
-                size="sm"
-                hasIconOnly
-                iconDescription="Increase dosage"
-                renderIcon={Add}
-                onClick={() => handleDosageChange(dosage + 1)}
-                className={styles.dosageButton}
+              <NumberInput
+                id="default-number-input"
+                invalidText="Invalid dosage"
+                invalid={hasDosageError}
+                max={100}
+                min={0}
+                onChange={() => handleDosageChange(Math.max(1, dosage - 1))}
+                size="md"
+                step={1}
+                value={dosage}
+                warnText="Warning: Dosage should be a positive number."
               />
               <div className={styles.dosageSeparator}></div>
               <Dropdown
@@ -223,29 +213,19 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> = React.memo
 
           <div className={styles.durationControls}>
             <div className={styles.durationInputGroup}>
-              <span className={styles.durationValue}>{duration}</span>
-              <div className={styles.durationSeparator}></div>
-              <Button
-                kind="ghost"
-                size="sm"
-                hasIconOnly
-                iconDescription="Decrease duration"
-                renderIcon={Subtract}
-                onClick={() => handleDurationChange(Math.max(0, duration - 1))}
-                disabled={duration <= 0}
-                className={styles.durationButton}
+              <NumberInput
+                id="default-number-input"
+                invalidText="Invalid duration"
+                invalid={hasDurationError}
+                max={30}
+                min={0}
+                onChange={() => handleDurationChange(Math.max(0, duration - 1))}
+                size="md"
+                step={1}
+                value={duration}
+                warnText="Warning: Duration should be a positive number."
               />
-              <div className={styles.durationSeparator}></div>
-              <Button
-                kind="ghost"
-                size="sm"
-                hasIconOnly
-                iconDescription="Increase duration"
-                renderIcon={Add}
-                onClick={() => handleDurationChange(duration + 1)}
-                className={styles.durationButton}
-              />
-              <div className={styles.durationSeparator}></div>
+
               <Dropdown
                 id={`duration-unit-${id}`}
                 titleText="Duration Unit"
@@ -273,6 +253,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> = React.memo
               selectedItem={selectedTiming}
               itemToString={(item) => item ? t(item.display) : ''}
               onChange={({ selectedItem }) => handleTimingChange(selectedItem)}
+              size='md'
             />
           </div>
 
@@ -288,6 +269,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> = React.memo
               onChange={({ selectedItem }) => handleRouteChange(selectedItem)}
               invalid={hasRouteError}
               invalidText={hasRouteError && t(errors.route!)}
+              size='md'
             />
           </div>
 
