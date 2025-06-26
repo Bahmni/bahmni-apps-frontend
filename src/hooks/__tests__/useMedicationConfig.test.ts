@@ -5,7 +5,7 @@ import { getMedicationConfig } from '@services/configService';
 import {
   MedicationOrdersMetadataResponse,
   MedicationJSONConfig,
-} from '../../types/medicationConfig';
+} from '@types/medicationConfig';
 
 jest.mock('@services/medicationService', () => ({
   fetchMedicationOrdersMetadata: jest.fn(),
@@ -65,17 +65,6 @@ describe('useMedicationConfig', () => {
     const mockMedicationJSONConfig: MedicationJSONConfig = {
       defaultDurationUnit: 'Day(s)',
       defaultInstructions: 'As directed',
-      durationUnitsFactors: [
-        { name: 'Day(s)', factor: 1 },
-        { name: 'Week(s)', factor: 7 },
-      ],
-      frequencyDefaultDurationUnitsMap: [
-        {
-          minFrequency: '1',
-          maxFrequency: 2,
-          defaultDurationUnit: 'Day(s)',
-        },
-      ],
       drugFormDefaults: {
         Tablet: {
           doseUnits: 'Tablet(s)',
@@ -113,7 +102,6 @@ describe('useMedicationConfig', () => {
     (fetchMedicationOrdersMetadata as jest.Mock).mockRejectedValue(mockError);
     (getMedicationConfig as jest.Mock).mockResolvedValue({
       defaultDurationUnit: 'Day(s)',
-      durationUnitsFactors: [],
     });
 
     const { result } = renderHook(() => useMedicationConfig());
@@ -172,7 +160,6 @@ describe('useMedicationConfig', () => {
   it('should handle error when fetchMedicationOrdersMetadata returns null', async () => {
     const mockMedicationJSONConfig: MedicationJSONConfig = {
       defaultDurationUnit: 'Day(s)',
-      durationUnitsFactors: [],
     };
 
     (fetchMedicationOrdersMetadata as jest.Mock).mockResolvedValue(null);

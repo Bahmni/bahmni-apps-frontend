@@ -195,33 +195,9 @@ jest.mock('@schemas/medicationConfig.schema.json', () => ({
   __esModule: true,
   default: {
     type: 'object',
-    required: ['durationUnitsFactors'],
     properties: {
       defaultDurationUnit: { type: 'string' },
       defaultInstructions: { type: 'string' },
-      durationUnitsFactors: {
-        type: 'array',
-        items: {
-          type: 'object',
-          required: ['name', 'factor'],
-          properties: {
-            name: { type: 'string' },
-            factor: { type: 'number' },
-          },
-        },
-      },
-      frequencyDefaultDurationUnitsMap: {
-        type: 'array',
-        items: {
-          type: 'object',
-          required: ['defaultDurationUnit'],
-          properties: {
-            minFrequency: { type: ['string', 'null'] },
-            maxFrequency: { type: ['string', 'number', 'null'] },
-            defaultDurationUnit: { type: 'string' },
-          },
-        },
-      },
       drugFormDefaults: {
         type: 'object',
         patternProperties: {
@@ -240,33 +216,9 @@ jest.mock('@schemas/medicationConfig.schema.json', () => ({
 
 const mockMedicationSchema = {
   type: 'object',
-  required: ['durationUnitsFactors'],
   properties: {
     defaultDurationUnit: { type: 'string' },
     defaultInstructions: { type: 'string' },
-    durationUnitsFactors: {
-      type: 'array',
-      items: {
-        type: 'object',
-        required: ['name', 'factor'],
-        properties: {
-          name: { type: 'string' },
-          factor: { type: 'number' },
-        },
-      },
-    },
-    frequencyDefaultDurationUnitsMap: {
-      type: 'array',
-      items: {
-        type: 'object',
-        required: ['defaultDurationUnit'],
-        properties: {
-          minFrequency: { type: ['string', 'null'] },
-          maxFrequency: { type: ['string', 'number', 'null'] },
-          defaultDurationUnit: { type: 'string' },
-        },
-      },
-    },
     drugFormDefaults: {
       type: 'object',
       patternProperties: {
@@ -722,28 +674,6 @@ describe('ConfigService', () => {
     const validMedicationConfig: MedicationJSONConfig = {
       defaultDurationUnit: 'Days',
       defaultInstructions: 'As directed',
-      durationUnitsFactors: [
-        { name: 'Days', factor: 1 },
-        { name: 'Weeks', factor: 7 },
-        { name: 'Months', factor: 30 },
-      ],
-      frequencyDefaultDurationUnitsMap: [
-        {
-          minFrequency: '1/7',
-          maxFrequency: 5,
-          defaultDurationUnit: 'Days',
-        },
-        {
-          minFrequency: '1/30',
-          maxFrequency: '1/7',
-          defaultDurationUnit: 'Weeks',
-        },
-        {
-          minFrequency: null,
-          maxFrequency: '1/30',
-          defaultDurationUnit: 'Months',
-        },
-      ],
       drugFormDefaults: {
         Tablet: {
           doseUnits: 'Tablet',
@@ -757,12 +687,12 @@ describe('ConfigService', () => {
     };
 
     const minimalMedicationConfig: MedicationJSONConfig = {
-      durationUnitsFactors: [{ name: 'Days', factor: 1 }],
+      defaultDurationUnit: 'Days',
     };
 
     const invalidMedicationConfig = {
-      // Missing required durationUnitsFactors
-      defaultDurationUnit: 'Days',
+      // Invalid property type
+      defaultDurationUnit: 123, // Should be string
       defaultInstructions: 'As directed',
     };
 

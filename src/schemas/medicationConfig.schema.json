@@ -2,7 +2,6 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Medication Configuration Schema",
   "type": "object",
-  "required": ["durationUnitsFactors"],
   "properties": {
     "defaultDurationUnit": {
       "type": "string",
@@ -11,46 +10,6 @@
     "defaultInstructions": {
       "type": "string",
       "description": "Default instructions for medication"
-    },
-    "durationUnitsFactors": {
-      "type": "array",
-      "description": "List of duration units with their conversion factors",
-      "items": {
-        "type": "object",
-        "required": ["name", "factor"],
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Name of the duration unit"
-          },
-          "factor": {
-            "type": "number",
-            "description": "Conversion factor relative to base unit"
-          }
-        }
-      }
-    },
-    "frequencyDefaultDurationUnitsMap": {
-      "type": "array",
-      "description": "Mapping of frequency ranges to default duration units",
-      "items": {
-        "type": "object",
-        "required": ["defaultDurationUnit"],
-        "properties": {
-          "minFrequency": {
-            "type": ["string", "null"],
-            "description": "Minimum frequency (can be fraction like '1/7')"
-          },
-          "maxFrequency": {
-            "type": ["string", "number", "null"],
-            "description": "Maximum frequency (can be number or fraction)"
-          },
-          "defaultDurationUnit": {
-            "type": "string",
-            "description": "Default duration unit for this frequency range"
-          }
-        }
-      }
     },
     "drugFormDefaults": {
       "type": "object",

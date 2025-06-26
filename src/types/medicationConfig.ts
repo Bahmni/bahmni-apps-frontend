@@ -3,16 +3,6 @@ import { Concept } from './encounterConcepts';
 export interface MedicationConfig
   extends MedicationOrdersMetadataResponse,
     MedicationJSONConfig {}
-export interface DurationUnitsFactor {
-  name: string;
-  factor: number;
-}
-
-export interface FrequencyDefaultDurationUnitMap {
-  minFrequency: string | null;
-  maxFrequency: string | number | null;
-  defaultDurationUnit: string;
-}
 
 export interface DrugFormDefault {
   doseUnits?: string;
@@ -22,8 +12,6 @@ export interface DrugFormDefault {
 export interface MedicationJSONConfig {
   defaultDurationUnit?: string;
   defaultInstructions?: string;
-  durationUnitsFactors: DurationUnitsFactor[];
-  frequencyDefaultDurationUnitsMap?: FrequencyDefaultDurationUnitMap[];
   drugFormDefaults?: Record<string, DrugFormDefault>;
 }
 
