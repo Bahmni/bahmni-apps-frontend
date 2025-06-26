@@ -72,12 +72,6 @@ describe('ExpandableDataTable', () => {
     }
   };
 
-  const renderExpandedContent = (row: TestRow) => (
-    <div className="expanded-content">
-      <p data-testid={`details-${row.id}`}>{row.details}</p>
-    </div>
-  );
-
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(console, 'error').mockImplementation();
@@ -92,7 +86,6 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={mockRows}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
       />,
     );
 
@@ -115,7 +108,6 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={mockRows}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
         loading={true}
       />,
     );
@@ -134,7 +126,6 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={mockRows}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
         error={testError}
       />,
     );
@@ -155,7 +146,6 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={[]}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
       />,
     );
 
@@ -174,7 +164,6 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={[]}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
         emptyStateMessage="No items available"
       />,
     );
@@ -190,33 +179,12 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={mockRows}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
         className="custom-table-class"
       />,
     );
 
     // Check if custom class is applied
     expect(container.firstChild).toHaveClass('custom-table-class');
-  });
-
-  it('should expand a row when clicked', () => {
-    render(
-      <ExpandableDataTable
-        tableTitle="Test Table"
-        headers={mockHeaders}
-        rows={mockRows}
-        renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
-      />,
-    );
-
-    // Find and click the expand button for the first row
-    const expandButtons = screen.getAllByLabelText('Expand current row');
-    fireEvent.click(expandButtons[0]);
-
-    // Check if expanded content is now visible
-    expect(screen.getByTestId('details-1')).toBeInTheDocument();
-    expect(screen.getByText('Details for Item 1')).toBeInTheDocument();
   });
 
   // Happy Path: Sorting Tests
@@ -227,12 +195,11 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={mockRows}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
       />,
     );
 
-    // Get all header cells (excluding the expand header)
-    const headerCells = screen.getAllByRole('columnheader').slice(1);
+    // Get all header cells
+    const headerCells = screen.getAllByRole('columnheader');
 
     // Verify that all headers have the aria-sort attribute (indicating they're sortable)
     headerCells.forEach((header) => {
@@ -259,13 +226,12 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={mockRows}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
         sortable={customSortable}
       />,
     );
 
-    // Get all header cells (excluding the expand header)
-    const headerCells = screen.getAllByRole('columnheader').slice(1);
+    // Get all header cells
+    const headerCells = screen.getAllByRole('columnheader');
 
     // First header should be sortable
     expect(headerCells[0]).toHaveAttribute('aria-sort', 'none');
@@ -283,7 +249,6 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={mockRows}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
       />,
     );
 
@@ -329,7 +294,6 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={unsortedRows}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
       />,
     );
 
@@ -350,7 +314,6 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={mockRows}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
       />,
     );
 
@@ -374,7 +337,6 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={mockRows}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
       />,
     );
 
@@ -401,13 +363,12 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={mockRows}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
         sortable={shortSortable}
       />,
     );
 
-    // Get all header cells (excluding the expand header)
-    const headerCells = screen.getAllByRole('columnheader').slice(1);
+    // Get all header cells
+    const headerCells = screen.getAllByRole('columnheader');
 
     // First header should be sortable
     expect(headerCells[0]).toHaveAttribute('aria-sort', 'none');
@@ -433,13 +394,12 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={mockRows}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
         sortable={longSortable}
       />,
     );
 
-    // Get all header cells (excluding the expand header)
-    const headerCells = screen.getAllByRole('columnheader').slice(1);
+    // Get all header cells
+    const headerCells = screen.getAllByRole('columnheader');
 
     // Should use only the values needed and ignore extras
     expect(headerCells[0]).toHaveAttribute('aria-sort', 'none'); // true
@@ -458,13 +418,12 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={mockRows}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
         sortable={[]}
       />,
     );
 
-    // Get all header cells (excluding the expand header)
-    const headerCells = screen.getAllByRole('columnheader').slice(1);
+    // Get all header cells
+    const headerCells = screen.getAllByRole('columnheader');
 
     // All headers should default to not sortable when empty array provided
     headerCells.forEach((header) => {
@@ -485,7 +444,6 @@ describe('ExpandableDataTable', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         rows={null as any}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
       />,
     );
 
@@ -509,7 +467,6 @@ describe('ExpandableDataTable', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         rows={undefined as any}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
       />,
     );
 
@@ -538,7 +495,6 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={incompleteRows}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
       />,
     );
 
@@ -562,7 +518,6 @@ describe('ExpandableDataTable', () => {
             return <span>{row.count?.toString() || ''}</span>;
           return <span>{row[cellId as keyof TestRow]?.toString() || ''}</span>;
         }}
-        renderExpandedContent={renderExpandedContent}
       />,
     );
 
@@ -587,7 +542,6 @@ describe('ExpandableDataTable', () => {
         headers={dateHeaders}
         rows={mockRows}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
       />,
     );
 
@@ -624,7 +578,6 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={rowsWithNulls}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
       />,
     );
 
@@ -653,7 +606,6 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={rowsWithoutIds}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
       />,
     );
 
@@ -668,7 +620,6 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={mockRows}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
         ariaLabel="Custom table label"
       />,
     );
@@ -685,7 +636,6 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={mockRows}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
       />,
     );
 
@@ -710,7 +660,6 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={largeDataset}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
       />,
     );
 
@@ -756,7 +705,6 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={threeRows}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
         rowClassNames={mockRowClassNames}
       />,
     );
@@ -784,7 +732,6 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={mockRows}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
         rowClassNames={{}}
       />,
     );
@@ -811,7 +758,6 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={mockRows}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
         rowClassNames={mockRowClassNames}
       />,
     );
@@ -825,80 +771,6 @@ describe('ExpandableDataTable', () => {
     expect(secondRowCell).not.toHaveClass('critical-row');
   });
 
-  // Tests for non-expandable rows
-  it('should render non-expandable rows when renderExpandedContent returns undefined', () => {
-    // Create a custom renderExpandedContent function that returns undefined for some rows
-    const conditionalRenderExpandedContent = (row: TestRow) => {
-      if (row.id === '1') {
-        return undefined; // No expanded content for row with id '1'
-      }
-      return (
-        <div className="expanded-content">
-          <p data-testid={`details-${row.id}`}>{row.details}</p>
-        </div>
-      );
-    };
-
-    render(
-      <ExpandableDataTable
-        tableTitle="Test Table"
-        headers={mockHeaders}
-        rows={mockRows}
-        renderCell={renderCell}
-        renderExpandedContent={conditionalRenderExpandedContent}
-      />,
-    );
-
-    // Find all expand buttons
-    const expandButtons = screen
-      .getAllByRole('button')
-      .filter(
-        (button) => button.getAttribute('aria-label') === 'Expand current row',
-      );
-
-    // There should be only one expand button (for the second row)
-    expect(expandButtons.length).toBe(1);
-
-    // The first row should be rendered as a non-expandable row
-    expect(screen.getByText('Item 1')).toBeInTheDocument();
-
-    // Click the expand button for the second row
-    fireEvent.click(expandButtons[0]);
-
-    // Check if expanded content is visible for the second row
-    expect(screen.getByTestId('details-2')).toBeInTheDocument();
-    expect(screen.getByText('Details for Item 2')).toBeInTheDocument();
-  });
-
-  it('should not render expand button for non-expandable rows', () => {
-    // Create a renderExpandedContent function that always returns undefined
-    const noExpandedContent = () => undefined;
-
-    render(
-      <ExpandableDataTable
-        tableTitle="Test Table"
-        headers={mockHeaders}
-        rows={mockRows}
-        renderCell={renderCell}
-        renderExpandedContent={noExpandedContent}
-      />,
-    );
-
-    // There should be no expand buttons
-    const expandButtons = screen
-      .queryAllByRole('button')
-      .filter(
-        (button) => button.getAttribute('aria-label') === 'Expand current row',
-      );
-    expect(expandButtons.length).toBe(0);
-
-    // The rows should still be rendered
-    expect(screen.getByText('Item 1')).toBeInTheDocument();
-    expect(screen.getByText('Item 2')).toBeInTheDocument();
-  });
-
-  //TODO: Add tests for A11y
-
   // Tests for isOpen prop functionality
   describe('isOpen prop functionality', () => {
     it('should render accordion initially open when isOpen is true', () => {
@@ -908,7 +780,6 @@ describe('ExpandableDataTable', () => {
           headers={mockHeaders}
           rows={mockRows}
           renderCell={renderCell}
-          renderExpandedContent={renderExpandedContent}
           isOpen={true}
         />,
       );
@@ -938,7 +809,6 @@ describe('ExpandableDataTable', () => {
           headers={mockHeaders}
           rows={mockRows}
           renderCell={renderCell}
-          renderExpandedContent={renderExpandedContent}
           isOpen={false}
         />,
       );
@@ -960,7 +830,6 @@ describe('ExpandableDataTable', () => {
           headers={mockHeaders}
           rows={mockRows}
           renderCell={renderCell}
-          renderExpandedContent={renderExpandedContent}
         />,
       );
 
@@ -981,7 +850,6 @@ describe('ExpandableDataTable', () => {
           headers={mockHeaders}
           rows={mockRows}
           renderCell={renderCell}
-          renderExpandedContent={renderExpandedContent}
           isOpen={false}
         />,
       );
@@ -999,7 +867,6 @@ describe('ExpandableDataTable', () => {
           headers={mockHeaders}
           rows={mockRows}
           renderCell={renderCell}
-          renderExpandedContent={renderExpandedContent}
           isOpen={true}
         />,
       );
@@ -1017,7 +884,6 @@ describe('ExpandableDataTable', () => {
           headers={mockHeaders}
           rows={mockRows}
           renderCell={renderCell}
-          renderExpandedContent={renderExpandedContent}
           isOpen={false}
         />,
       );
@@ -1038,7 +904,6 @@ describe('ExpandableDataTable', () => {
           headers={mockHeaders}
           rows={mockRows}
           renderCell={renderCell}
-          renderExpandedContent={renderExpandedContent}
           loading={true}
           isOpen={true}
         />,
@@ -1057,7 +922,6 @@ describe('ExpandableDataTable', () => {
           headers={mockHeaders}
           rows={mockRows}
           renderCell={renderCell}
-          renderExpandedContent={renderExpandedContent}
           error={testError}
           isOpen={true}
         />,
@@ -1075,7 +939,6 @@ describe('ExpandableDataTable', () => {
           headers={mockHeaders}
           rows={[]}
           renderCell={renderCell}
-          renderExpandedContent={renderExpandedContent}
           isOpen={true}
         />,
       );

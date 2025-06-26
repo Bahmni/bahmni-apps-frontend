@@ -164,100 +164,74 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> = React.memo
           </div>
         </div>
 
-        Row 2: Dosage, Frequency, Duration controls
+        {/*Row 2: Dosage, Frequency, Duration controls*/}
         <div className={styles.controlsRow}>
           <div className={styles.dosageControls}>
-            <div className={styles.dosageInputGroup}>
-              <span className={styles.dosageValue}>{dosage}</span>
-              <div className={styles.dosageSeparator}></div>
-              <Button
-                kind="ghost"
-                size="sm"
-                hasIconOnly
-                iconDescription="Decrease dosage"
-                renderIcon={Subtract}
-                onClick={() => handleDosageChange(Math.max(1, dosage - 1))}
-                disabled={dosage <= 1}
-                className={styles.dosageButton}
-              />
-              <div className={styles.dosageSeparator}></div>
-              <Button
-                kind="ghost"
-                size="sm"
-                hasIconOnly
-                iconDescription="Increase dosage"
-                renderIcon={Add}
-                onClick={() => handleDosageChange(dosage + 1)}
-                className={styles.dosageButton}
-              />
-              <div className={styles.dosageSeparator}></div>
-              <Dropdown
-                id={`dosage-unit-${id}`}
-                titleText="Unit"
-                label="Unit"
-                hideLabel
-                items={DOSAGE_UNIT_OPTIONS}
-                selectedItem={selectedDosageUnit}
-                itemToString={(item) => item ? t(item.display) : ''}
-                onChange={({ selectedItem }) => handleDosageUnitChange(selectedItem)}
-                size="sm"
-              />
-            </div>
+            <NumberInput
+              id={`dosage-unit-${id}`}
+              style={{ width: '107px' }}
+              invalidText="Number of tablets are invalid. Must be more than 0"
+              min={0}
+              onChange={() => { }}
+              size="sm"
+              step={1}
+              value={1}
+              warnText="Warning: Dosage should be a positive number."
+            />
+            <Dropdown
+              id={`dosage-unit-${id}`}
+              style={{ width: '120px' }}
+              titleText="Unit"
+              label="Unit"
+              hideLabel
+              items={DOSAGE_UNIT_OPTIONS}
+              selectedItem={selectedDosageUnit}
+              size="sm"
+              itemToString={(item) => item ? t(item.display) : ''}
+              onChange={({ selectedItem }) => handleDosageUnitChange(selectedItem)}
+
+            />
           </div>
-
-
-          <div className={styles.frequencyControl}>
+          <div>
             <Dropdown
               id={`frequency-${id}`}
+              style={{ width: '262px' }}
               titleText="Frequency"
               label="Frequency"
+
               hideLabel
               items={FREQUENCY_OPTIONS}
               selectedItem={selectedFrequency}
+              size="sm"
               itemToString={(item) => item ? t(item.display) : ''}
               onChange={({ selectedItem }) => handleFrequencyChange(selectedItem)}
               invalid={hasFrequencyError}
               invalidText={hasFrequencyError && t(errors.frequency!)}
             />
           </div>
-
           <div className={styles.durationControls}>
-            <div className={styles.durationInputGroup}>
-              <span className={styles.durationValue}>{duration}</span>
-              <div className={styles.durationSeparator}></div>
-              <Button
-                kind="ghost"
-                size="sm"
-                hasIconOnly
-                iconDescription="Decrease duration"
-                renderIcon={Subtract}
-                onClick={() => handleDurationChange(Math.max(0, duration - 1))}
-                disabled={duration <= 0}
-                className={styles.durationButton}
-              />
-              <div className={styles.durationSeparator}></div>
-              <Button
-                kind="ghost"
-                size="sm"
-                hasIconOnly
-                iconDescription="Increase duration"
-                renderIcon={Add}
-                onClick={() => handleDurationChange(duration + 1)}
-                className={styles.durationButton}
-              />
-              <div className={styles.durationSeparator}></div>
-              <Dropdown
-                id={`duration-unit-${id}`}
-                titleText="Duration Unit"
-                label="Duration Unit"
-                hideLabel
-                items={DURATION_UNIT_OPTIONS}
-                selectedItem={selectedDurationUnit}
-                itemToString={(item) => item ? t(item.display) : ''}
-                onChange={({ selectedItem }) => handleDurationUnitChange(selectedItem)}
-                size="sm"
-              />
-            </div>
+            <NumberInput
+              id={`dosage-unit-${id}`}
+              style={{ width: '107px' }}
+              min={0}
+              onChange={() => { }}
+              size="sm"
+              step={1}
+              value={0}
+              warnText="Warning: Duration should be a positive number."
+            />
+            <Dropdown
+              id={`duration-unit-${id}`}
+              titleText="Duration Unit"
+              label="Duration Unit"
+              hideLabel
+              items={DURATION_UNIT_OPTIONS}
+              selectedItem={selectedDurationUnit}
+              size="sm"
+              itemToString={(item) => item ? t(item.display) : ''}
+              onChange={({ selectedItem }) => handleDurationUnitChange(selectedItem)}
+
+            />
           </div>
         </div>
 
@@ -271,6 +245,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> = React.memo
               hideLabel
               items={TIMING_OPTIONS}
               selectedItem={selectedTiming}
+              size="sm"
               itemToString={(item) => item ? t(item.display) : ''}
               onChange={({ selectedItem }) => handleTimingChange(selectedItem)}
             />
@@ -284,6 +259,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> = React.memo
               hideLabel
               items={ROUTE_OPTIONS}
               selectedItem={selectedRoute}
+              size="sm"
               itemToString={(item) => item ? t(item.display) : ''}
               onChange={({ selectedItem }) => handleRouteChange(selectedItem)}
               invalid={hasRouteError}
@@ -318,16 +294,6 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> = React.memo
             >
               {t('MEDICATION_ADD_NOTE')}
             </Button>
-            {showInstructions && (
-              <TextArea
-                id={`instructions-${id}`}
-                labelText={t('MEDICATION_ADD_NOTE')}
-                placeholder={t('MEDICATION_ADD_NOTE')}
-                value={instructions || ''}
-                onChange={handleInstructionsChange}
-                rows={2}
-              />
-            )}
           </div>
 
           <div className={styles.quantityControl}>
@@ -341,16 +307,6 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> = React.memo
             >
               {isEditingQuantity ? t('MEDICATION_DONE') : t('MEDICATION_EDIT')}
             </Button>
-            {isEditingQuantity && (
-              <NumberInput
-                id={`total-quantity-${id}`}
-                value={totalQuantity}
-                min={1}
-                step={1}
-                hideSteppers
-                size="sm"
-              />
-            )}
           </div>
         </div>
       </div >

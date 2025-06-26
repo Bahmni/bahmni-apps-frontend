@@ -1,6 +1,7 @@
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
 
 .accordionTitle {
   display: flex;
@@ -58,4 +59,10 @@
 .yellow-tag {
   background-color: #f8d465 !important;
   color: #333 !important;
+}
+
+.labInvestigationTableBodyError {
+  padding: $spacing-07 $spacing-05;
+  text-align: center;
+  @include type-style("body-compact-01");
 }

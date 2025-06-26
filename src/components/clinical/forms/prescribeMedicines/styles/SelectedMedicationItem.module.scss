@@ -11,24 +11,24 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
-    
+
     .medicationTitle {
       font-weight: 600;
       font-size: 1rem;
       color: #161616;
       flex: 1;
     }
-    
+
     .medicationActions {
       display: flex;
       align-items: center;
       gap: 1rem;
-      
+
       // Checkbox styling
       :global(.cds--checkbox-wrapper) {
         margin-bottom: 0;
       }
-      
+
       :global(.cds--checkbox-label) {
         font-size: 0.875rem;
         color: #161616;
@@ -38,126 +38,17 @@
 
   // Row 2: Main controls (dosage, frequency, duration)
   .controlsRow {
+
     display: flex;
     align-items: center;
     gap: 2rem;
     margin-bottom: 1rem;
-    
-    .dosageControls {
-      .dosageInputGroup {
-        display: flex;
-        align-items: center;
-        gap: 0;
-        
-        .dosageValue {
-          padding: 0.5rem;
-          min-width: 2rem;
-          text-align: center;
-          font-weight: 500;
-          font-size: 1rem;
-          background-color: transparent;
-        }
-        
-        .dosageSeparator {
-          width: 1px;
-          height: 16px;
-          background: var(--border-border-subtle-01, #E0E0E0);
-        }
-        
-        .dosageButton {
-          width: 16px;
-          height: 16px;
-          background: #161616 !important;
-          border: none !important;
-          padding: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          
-          :global(svg) {
-            width: 10px;
-            height: 10px;
-            fill: white;
-          }
-          
-          &:hover {
-            background: #262626 !important;
-          }
-          
-          &:disabled {
-            background: #8d8d8d !important;
-            opacity: 0.5;
-          }
-        }
-        
-        :global(.cds--dropdown) {
-          min-width: 100px;
-          margin-left: 0.5rem;
-        }
-      }
-    }
-    
-    .frequencyControl {
-      flex: 1;
-      min-width: 200px;
-      
-      :global(.cds--dropdown) {
-        width: 100%;
-      }
-    }
-    
+
+    .dosageControls,
     .durationControls {
-      .durationInputGroup {
-        display: flex;
-        align-items: center;
-        gap: 0;
-        
-        .durationValue {
-          padding: 0.5rem;
-          min-width: 2rem;
-          text-align: center;
-          font-weight: 500;
-          font-size: 1rem;
-          background-color: transparent;
-        }
-        
-        .durationSeparator {
-          width: 1px;
-          height: 16px;
-          background: var(--border-border-subtle-01, #E0E0E0);
-        }
-        
-        .durationButton {
-          width: 16px;
-          height: 16px;
-          background: #161616 !important;
-          border: none !important;
-          padding: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          
-          :global(svg) {
-            width: 10px;
-            height: 10px;
-            fill: white;
-          }
-          
-          &:hover {
-            background: #262626 !important;
-          }
-          
-          &:disabled {
-            background: #8d8d8d !important;
-            opacity: 0.5;
-          }
-        }
-        
-        :global(.cds--dropdown) {
-          min-width: 80px;
-          margin-left: 0.5rem;
-        }
-      }
+      display: flex;
+      gap: 0rem;
+      align-items: flex-end;
     }
   }
 
@@ -167,20 +58,20 @@
     align-items: center;
     gap: 2rem;
     margin-bottom: 1rem;
-    
+
     .timingControl,
     .routeControl {
       flex: 1;
       min-width: 150px;
-      
+
       :global(.cds--dropdown) {
         width: 100%;
       }
     }
-    
+
     .dateControl {
       min-width: 150px;
-      
+
       :global(.cds--date-picker) {
         width: 100%;
       }
@@ -191,11 +82,11 @@
   .bottomRow {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    
+    align-items: center;
+
     .noteControl {
       flex: 1;
-      
+
       button {
         color: #0f62fe;
         text-decoration: none;
@@ -203,29 +94,29 @@
         background: none;
         border: none;
         font-size: 0.875rem;
-        
+
         &:hover {
           text-decoration: underline;
         }
       }
-      
+
       :global(.cds--text-area) {
         width: 100%;
         margin-top: 0.5rem;
       }
     }
-    
+
     .quantityControl {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 0.5rem;
-      
+
       .quantityLabel {
         font-size: 0.875rem;
         color: #525252;
         font-weight: 500;
       }
-      
+
       button {
         color: #0f62fe;
         text-decoration: none;
@@ -233,12 +124,12 @@
         background: none;
         border: none;
         font-size: 0.875rem;
-        
+
         &:hover {
           text-decoration: underline;
         }
       }
-      
+
       :global(.cds--number-input) {
         width: 80px;
         margin-left: 0.5rem;
@@ -252,7 +143,7 @@
       flex-direction: column;
       align-items: flex-start;
       gap: 0.5rem;
-      
+
       .medicationActions {
         align-self: flex-end;
       }
@@ -262,7 +153,7 @@
       flex-direction: column;
       align-items: stretch;
       gap: 1rem;
-      
+
       .dosageControls,
       .durationControls {
         justify-content: center;
@@ -278,7 +169,7 @@
     .bottomRow {
       flex-direction: column;
       gap: 1rem;
-      
+
       .quantityControl {
         align-self: flex-end;
       }

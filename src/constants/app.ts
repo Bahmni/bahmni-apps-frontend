@@ -42,6 +42,9 @@ export const PATIENT_RADIOLOGY_RESOURCE_URL = (patientUUID: string) =>
 export const ENCOUNTER_CONCEPTS_URL =
   OPENMRS_REST_V1 +
   '/bahmnicore/config/bahmniencounter?callerContext=REGISTRATION_CONCEPTS';
+export const PATIENT_MEDICATION_RESOURCE_URL = (patientUUID: string) =>
+  OPENMRS_FHIR_R4 +
+  `/MedicationRequest?patient=${patientUUID}&_count=100&_sort=-_lastUpdated`;
 export const USER_RESOURCE_URL = (username: string) =>
   OPENMRS_REST_V1 + `/user?username=${username}&v=custom:(username,uuid)`;
 export const PROVIDER_RESOURCE_URL = (userUUID: string) =>

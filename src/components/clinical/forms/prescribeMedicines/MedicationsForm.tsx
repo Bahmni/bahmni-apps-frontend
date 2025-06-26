@@ -129,11 +129,6 @@ const MedicationsForm: React.FC = React.memo(() => {
           className={styles.medicationsBox}
         >
           {selectedMedications.map((medication) => (
-            <SelectedItem
-              key={medication.id}
-              className={styles.selectedMedicationItem}
-              onClose={() => removeMedication(medication.id)}
-            >
               <SelectedMedicationItem
                 medication={medication}
                 updateDosage={updateDosage}
@@ -147,7 +142,6 @@ const MedicationsForm: React.FC = React.memo(() => {
                 calculateTotalQuantity={calculateTotalQuantity}
                 removeMedication={removeMedication}
               />
-            </SelectedItem>
           ))}
         </BoxWHeader>
       )}
