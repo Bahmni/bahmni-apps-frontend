@@ -22,7 +22,8 @@ export const mockMedicationRequest: MedicationRequest = {
   startDate: '2024-01-15T00:00:00.000Z',
   orderDate: '2024-01-15T10:30:00.000Z',
   orderedBy: 'Dr. Johnson',
-  notes: 'Take with food',
+  instructions: 'Take with food',
+  additionalInstructions: 'Monitor for side effects',
   asNeeded: false,
   isImmediate: false,
 };
@@ -38,7 +39,7 @@ export const mockMedicationWithPRN: MedicationRequest = {
   frequency: 'As needed',
   asNeeded: true,
   isImmediate: false,
-  notes: 'For pain relief',
+  instructions: 'For pain relief',
 };
 
 export const mockMedicationWithSTAT: MedicationRequest = {
@@ -53,7 +54,7 @@ export const mockMedicationWithSTAT: MedicationRequest = {
   asNeeded: false,
   isImmediate: true,
   priority: 'urgent',
-  notes: 'Emergency administration',
+  instructions: 'Emergency administration',
 };
 
 export const mockInactiveMedication: MedicationRequest = {
@@ -61,7 +62,7 @@ export const mockInactiveMedication: MedicationRequest = {
   id: 'test-medication-inactive',
   name: 'Old Medication',
   status: MedicationStatus.Stopped,
-  notes: 'Discontinued due to side effects',
+  instructions: 'Discontinued due to side effects',
 };
 
 export const mockCompletedMedication: MedicationRequest = {
@@ -73,7 +74,7 @@ export const mockCompletedMedication: MedicationRequest = {
     duration: 7,
     durationUnit: 'd',
   },
-  notes: 'Course completed successfully',
+  instructions: 'Course completed successfully',
 };
 
 export const mockOnHoldMedication: MedicationRequest = {
@@ -81,7 +82,7 @@ export const mockOnHoldMedication: MedicationRequest = {
   id: 'test-medication-onhold',
   name: 'Blood Pressure Medication',
   status: MedicationStatus.OnHold,
-  notes: 'On hold pending lab results',
+  instructions: 'On hold pending lab results',
 };
 
 export const mockCancelledMedication: MedicationRequest = {
@@ -89,7 +90,7 @@ export const mockCancelledMedication: MedicationRequest = {
   id: 'test-medication-cancelled',
   name: 'Cancelled Medication',
   status: MedicationStatus.Cancelled,
-  notes: 'Cancelled by physician',
+  instructions: 'Cancelled by physician',
 };
 
 // Create medications with different statuses for sorting tests
@@ -156,7 +157,7 @@ export const mockMedicationWithoutDose: MedicationRequest = {
   id: 'medication-no-dose',
   name: 'Medication Without Dose',
   dose: undefined,
-  notes: 'Dose to be determined',
+  instructions: 'Dose to be determined',
 };
 
 export const mockMedicationWithoutDuration: MedicationRequest = {
@@ -164,7 +165,7 @@ export const mockMedicationWithoutDuration: MedicationRequest = {
   id: 'medication-no-duration',
   name: 'Medication Without Duration',
   duration: undefined,
-  notes: 'Duration indefinite',
+  instructions: 'Duration indefinite',
 };
 
 export const mockMedicationWithMinimalData: MedicationRequest = {
@@ -179,6 +180,7 @@ export const mockMedicationWithMinimalData: MedicationRequest = {
   startDate: '2024-01-15T00:00:00.000Z',
   orderDate: '2024-01-15T10:30:00.000Z',
   orderedBy: 'Dr. Smith',
+  instructions: '',
   asNeeded: false,
   isImmediate: false,
 };

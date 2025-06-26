@@ -69,6 +69,10 @@ function createMockMedicationRequest(
       },
     ],
     dispenseRequest: {
+      quantity: {
+        value: 30,
+        unit: 'tablets',
+      },
       validityPeriod: {
         start: '2025-03-25T06:48:32+00:00',
         end: '2025-04-25T06:48:32+00:00',
@@ -144,7 +148,8 @@ describe('medicationRequestService', () => {
         expect(result[0].startDate).toBe('2025-03-25T06:48:32+00:00');
         expect(result[0].orderDate).toBe('2025-03-25T06:48:32+00:00');
         expect(result[0].orderedBy).toBe('Dr. Smith');
-        expect(result[0].notes).toBe('Take with food');
+        expect(result[0].instructions).toBe('As directed');
+        expect(result[0].additionalInstructions).toBe('Take with food');
         expect(result[0].asNeeded).toBe(false);
 
         // Second medication assertions
@@ -351,7 +356,71 @@ describe('medicationRequestService', () => {
 
         const result = await getPatientMedications(patientUUID);
 
-        expect(result[0].notes).toBe('Monitor liver function');
+        expect(result[0].instructions).toBe('As directed');
+        expect(result[0].additionalInstructions).toBe('Monitor liver function');
+      });
+
+      it('should extract quantity from dispenseRequest correctly', async () => {
+        const mockMedication = createMockMedicationRequest({
+          id: 'quantity-test',
+          dispenseRequest: {
+            quantity: {
+              value: 60,
+              unit: 'capsules',
+            },
+            validityPeriod: {
+              start: '2025-03-25T06:48:32+00:00',
+              end: '2025-04-25T06:48:32+00:00',
+            },
+          },
+        });
+        const mockBundle = createMockBundle([mockMedication]);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientMedications(patientUUID);
+
+        expect(result[0].quantity).toEqual({ value: 60, unit: 'capsules' });
+      });
+
+      it('should detect immediate timing correctly', async () => {
+        const mockMedication = createMockMedicationRequest({
+          id: 'immediate-test',
+          dosageInstruction: [
+            {
+              timing: {
+                code: {
+                  text: 'Immediately',
+                },
+              },
+            },
+          ],
+        });
+        const mockBundle = createMockBundle([mockMedication]);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientMedications(patientUUID);
+
+        expect(result[0].isImmediate).toBe(true);
+      });
+
+      it('should handle asNeeded boolean correctly', async () => {
+        const mockMedication = createMockMedicationRequest({
+          id: 'as-needed-test',
+          dosageInstruction: [
+            {
+              asNeededBoolean: true,
+            },
+          ],
+        });
+        const mockBundle = createMockBundle([mockMedication]);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientMedications(patientUUID);
+
+        expect(result[0].asNeeded).toBe(true);
       });
     });
 
@@ -390,7 +459,8 @@ describe('medicationRequestService', () => {
 
         const result = await getPatientMedications(patientUUID);
 
-        expect(result[0].notes).toBe('');
+        expect(result[0].instructions).toBe('Do not skip doses');
+        expect(result[0].additionalInstructions).toBe('');
       });
 
       it('should return empty string if dosageInstruction text is invalid JSON', async () => {
@@ -408,7 +478,7 @@ describe('medicationRequestService', () => {
 
         const result = await getPatientMedications(patientUUID);
 
-        expect(result[0].notes).toBe('');
+        expect(result[0].instructions).toBe('');
       });
 
       it('should return empty string if dosageInstruction text is missing or falsy', async () => {
@@ -426,7 +496,7 @@ describe('medicationRequestService', () => {
 
         const result = await getPatientMedications(patientUUID);
 
-        expect(result[0].notes).toBe('');
+        expect(result[0].instructions).toBe('');
       });
 
       it('should handle missing doseQuantity in doseAndRate', async () => {
@@ -551,6 +621,187 @@ describe('medicationRequestService', () => {
       const result = await getPatientMedications(patientUUID);
 
       expect(result[0].frequency).toBe('');
+    });
+
+    it('should handle missing dispenseRequest entirely', async () => {
+      const mockMedication = createMockMedicationRequest({
+        id: 'no-dispense-request',
+        dispenseRequest: undefined,
+      });
+      const mockBundle = createMockBundle([mockMedication]);
+
+      (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+      const result = await getPatientMedications(patientUUID);
+
+      expect(result[0].quantity).toEqual({ value: 0, unit: '' });
+    });
+
+    it('should handle missing quantity in dispenseRequest', async () => {
+      const mockMedication = createMockMedicationRequest({
+        id: 'no-quantity-in-dispense',
+        dispenseRequest: {
+          validityPeriod: {
+            start: '2025-03-25T06:48:32+00:00',
+            end: '2025-04-25T06:48:32+00:00',
+          },
+          // quantity is missing
+        },
+      });
+      const mockBundle = createMockBundle([mockMedication]);
+
+      (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+      const result = await getPatientMedications(patientUUID);
+
+      expect(result[0].quantity).toEqual({ value: 0, unit: '' });
+    });
+
+    it('should return empty route when route coding is missing', async () => {
+      const mockMedication = createMockMedicationRequest({
+        id: 'no-route-coding',
+        dosageInstruction: [
+          {
+            route: {
+              // coding array is missing
+            },
+          },
+        ],
+      });
+      const mockBundle = createMockBundle([mockMedication]);
+
+      (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+      const result = await getPatientMedications(patientUUID);
+
+      expect(result[0].route).toBe('');
+    });
+
+    it('should return empty route when route coding array is empty', async () => {
+      const mockMedication = createMockMedicationRequest({
+        id: 'empty-route-coding',
+        dosageInstruction: [
+          {
+            route: {
+              coding: [],
+            },
+          },
+        ],
+      });
+      const mockBundle = createMockBundle([mockMedication]);
+
+      (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+      const result = await getPatientMedications(patientUUID);
+
+      expect(result[0].route).toBe('');
+    });
+
+    it('should handle missing instructions field in JSON but present additionalInstructions', async () => {
+      const mockMedication = createMockMedicationRequest({
+        id: 'notes-no-instructions',
+        dosageInstruction: [
+          {
+            text: '{"additionalInstructions":"Take with meals"}',
+          },
+        ],
+      });
+      const mockBundle = createMockBundle([mockMedication]);
+
+      (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+      const result = await getPatientMedications(patientUUID);
+
+      expect(result[0].instructions).toBe('');
+      expect(result[0].additionalInstructions).toBe('Take with meals');
+    });
+
+    it('should handle both instructions and additionalInstructions present in JSON', async () => {
+      const mockMedication = createMockMedicationRequest({
+        id: 'both-instructions',
+        dosageInstruction: [
+          {
+            text: '{"instructions":"Take as prescribed","additionalInstructions":"Do not exceed recommended dose"}',
+          },
+        ],
+      });
+      const mockBundle = createMockBundle([mockMedication]);
+
+      (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+      const result = await getPatientMedications(patientUUID);
+
+      expect(result[0].instructions).toBe('Take as prescribed');
+      expect(result[0].additionalInstructions).toBe(
+        'Do not exceed recommended dose',
+      );
+    });
+
+    it('should handle JSON with extra unexpected fields', async () => {
+      const mockMedication = createMockMedicationRequest({
+        id: 'extra-json-fields',
+        dosageInstruction: [
+          {
+            text: '{"instructions":"Follow dosing schedule","additionalInstructions":"Monitor side effects","extraField":"ignored","anotherField":123}',
+          },
+        ],
+      });
+      const mockBundle = createMockBundle([mockMedication]);
+
+      (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+      const result = await getPatientMedications(patientUUID);
+
+      expect(result[0].instructions).toBe('Follow dosing schedule');
+      expect(result[0].additionalInstructions).toBe('Monitor side effects');
+    });
+
+    it('should handle missing asNeededBoolean defaulting to false', async () => {
+      const mockMedication = createMockMedicationRequest({
+        id: 'no-as-needed',
+        dosageInstruction: [
+          {
+            // asNeededBoolean is missing
+          },
+        ],
+      });
+      const mockBundle = createMockBundle([mockMedication]);
+
+      (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+      const result = await getPatientMedications(patientUUID);
+
+      expect(result[0].asNeeded).toBe(false);
+    });
+
+    it('should handle missing timing code text defaulting to false for isImmediate', async () => {
+      const mockMedication = createMockMedicationRequest({
+        id: 'no-timing-text',
+        dosageInstruction: [
+          {
+            timing: {
+              code: {
+                coding: [
+                  {
+                    system:
+                      'http://terminology.hl7.org/CodeSystem/timing-abbreviation',
+                    code: 'BID',
+                    display: 'Twice daily',
+                  },
+                ],
+                // text is missing
+              },
+            },
+          },
+        ],
+      });
+      const mockBundle = createMockBundle([mockMedication]);
+
+      (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+      const result = await getPatientMedications(patientUUID);
+
+      expect(result[0].isImmediate).toBe(false);
     });
   });
 

@@ -42,7 +42,7 @@ describe('formatMedicationRequest', () => {
       startDate: '2025-03-25T06:48:32+00:00',
       orderDate: '2025-03-25T06:48:32+00:00',
       orderedBy: 'Dr. Smith',
-      notes: 'Take with food',
+      instructions: 'Take with food',
       status: MedicationStatus.Active,
       quantity: { value: 10, unit: 'ml' },
       priority: 'stat',

@@ -521,7 +521,7 @@ exports[`MedicationsTable Snapshots matches snapshot for active medications tab 
                   </p>
                 </td>
                 <td>
-                  Oral | Take with food
+                  Oral | Take with food | Monitor for side effects
                 </td>
                 <td>
                   15/01/2024
@@ -582,7 +582,7 @@ exports[`MedicationsTable Snapshots matches snapshot for active medications tab 
                   </p>
                 </td>
                 <td>
-                  Oral | Take with food
+                  Oral | Take with food | Monitor for side effects
                 </td>
                 <td>
                   15/01/2024
@@ -1045,7 +1045,7 @@ exports[`MedicationsTable Snapshots matches snapshot for active medications tab 
                           </p>
                         </td>
                         <td>
-                          Oral | Take with food
+                          Oral | Take with food | Monitor for side effects
                         </td>
                         <td>
                           15/01/2024
@@ -1108,7 +1108,7 @@ exports[`MedicationsTable Snapshots matches snapshot for active medications tab 
                           </p>
                         </td>
                         <td>
-                          Oral | Take with food
+                          Oral | Take with food | Monitor for side effects
                         </td>
                         <td>
                           15/01/2024
