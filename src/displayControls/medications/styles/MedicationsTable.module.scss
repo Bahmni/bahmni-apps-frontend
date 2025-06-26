@@ -1,0 +1,173 @@
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/spacing" as *;
+
+.medicationTableEmpty {
+  @include type-style("label-02");
+  background-color: $background;
+  padding: $spacing-07 $spacing-05;
+  text-align: center;
+  border-top: 1px solid $border-subtle-02;
+}
+
+.medicationTabs {
+  padding: 0 !important;
+}
+.medicineName {
+  @include type-style("body-compact-01");
+  color: $text-primary;
+  font-weight: 700;
+}
+
+.dosage {
+  @include type-style("body-compact-01");
+  color: $text-primary;
+  font-weight: 700;
+}
+
+.medicineDetails {
+  @include type-style("body-compact-01");
+  color: $text-primary;
+  font-weight: 400;
+}
+
+.PRN {
+  background-color: $yellow-20 !important;
+  color: $yellow-50 !important;
+}
+
+.STAT {
+  background-color: $red-20 !important;
+  color: $red-50 !important;
+}
+
+.activeStatus {
+  :global(.cds--tag__custom-icon) {
+    color: $green-50;
+  }
+}
+.scheduledStatus {
+  :global(.cds--tag__custom-icon) {
+    color: $purple-50;
+  }
+}
+
+.cancelledStatus {
+  :global(.cds--tag__custom-icon) {
+    color: $yellow-50;
+  }
+}
+.completedStatus {
+  :global(.cds--tag__custom-icon) {
+    color: $green-50;
+  }
+}
+
+.stoppedStatus {
+  :global(.cds--tag__custom-icon) {
+    color: $red-50;
+  }
+}
+
+.unknownStatus {
+  :global(.cds--tag__custom-icon) {
+    color: $cool-gray-20;
+  }
+}
+
+.activeMedicationsTableBody {
+  :global(.cds--data-table td:nth-child(1)) {
+    @include type-style("body-short-01");
+    min-width: calc(100vw * 0.175);
+  }
+  :global(.cds--data-table td:nth-child(2)) {
+    @include type-style("body-short-01");
+    max-width: calc(100vw * 0.1);
+  }
+  :global(.cds--data-table td:nth-child(3)) {
+    @include type-style("body-short-01");
+    max-width: calc(100vw * 0.1);
+  }
+  :global(.cds--data-table td:nth-child(4)) {
+    @include type-style("body-short-01");
+    max-width: calc(100vw * 0.025);
+  }
+  :global(.cds--data-table td:nth-child(5)) {
+    @include type-style("body-short-01");
+    max-width: calc(100vw * 0.075);
+  }
+  :global(.cds--data-table td:nth-child(6)) {
+    @include type-style("body-short-01");
+    max-width: calc(100vw * 0.025);
+  }
+  :global(.cds--data-table td:nth-child(7)) {
+    @include type-style("body-short-01");
+    padding-inline: 0 !important;
+    max-width: calc(100vw * 0.025);
+    min-width: calc(100vw * 0.025);
+    justify-items: start;
+  }
+  :global(.cds--accordion__content) {
+    margin-inline: 0rem !important;
+    padding-inline: 0rem !important;
+  }
+  :global(.cds--accordion__wrapper) {
+    padding-block: 0rem !important;
+    padding-block-end: 0rem !important;
+  }
+}
+
+.allMedicationsTableBody {
+  :global(.cds--data-table td) {
+    @include type-style("body-short-01");
+    background-color: $background;
+    border-block-end: 0px !important;
+    &:focus-visible {
+      border: 0px !important;
+    }
+    min-height: $spacing-12;
+    align-content: start;
+    padding-block: $spacing-03;
+  }
+  :global(.cds--data-table td:nth-child(1)) {
+    @include type-style("body-short-01");
+    min-width: calc(100vw * 0.175);
+  }
+  :global(.cds--data-table td:nth-child(2)) {
+    @include type-style("body-short-01");
+    max-width: calc(100vw * 0.1);
+  }
+  :global(.cds--data-table td:nth-child(3)) {
+    @include type-style("body-short-01");
+    max-width: calc(100vw * 0.1) !important ;
+    width: calc(100vw * 0.1) !important;
+  }
+  :global(.cds--data-table td:nth-child(4)) {
+    @include type-style("body-short-01");
+    max-width: calc(100vw * 0.025);
+  }
+  :global(.cds--data-table td:nth-child(5)) {
+    @include type-style("body-short-01");
+    max-width: calc(100vw * 0.075);
+  }
+  :global(.cds--data-table td:nth-child(6)) {
+    @include type-style("body-short-01");
+    max-width: calc(100vw * 0.025);
+  }
+  :global(.cds--data-table td:nth-child(7)) {
+    @include type-style("body-short-01");
+    padding-inline: 0 !important;
+    max-width: calc(100vw * 0.025);
+    min-width: calc(100vw * 0.025);
+    justify-items: start;
+  }
+  :global(.cds--accordion__content) {
+    margin-inline: 0rem !important;
+    padding-inline: 0rem !important;
+  }
+  :global(.cds--accordion__wrapper) {
+    padding-block: 0rem !important;
+    padding-block-end: 0rem !important;
+  }
+}

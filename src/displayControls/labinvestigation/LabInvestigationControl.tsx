@@ -21,7 +21,9 @@ const LabInvestigationControl: React.FC = () => {
       <Accordion align="start" size="lg">
         {hasError && <div>{t('LAB_TEST_ERROR_LOADING')}</div>}
         {!isLoading && labTests.length === 0 && (
-          <div>{t('LAB_TEST_UNAVAILABLE')}</div>
+          <p className={styles.labInvestigationTableBodyError}>
+            {t('LAB_TEST_UNAVAILABLE')}
+          </p>
         )}
         {isLoading && labTests.length === 0 && (
           <>

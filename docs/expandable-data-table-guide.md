@@ -4,12 +4,12 @@ This guide provides comprehensive documentation for the ExpandableDataTable comp
 
 ## Introduction
 
-The ExpandableDataTable component is a reusable table component that displays data in a tabular format with expandable rows. It is built on top of Carbon Design System's DataTable component and provides additional features like:
+The ExpandableDataTable component is a reusable table component that displays data in a tabular format within an accordion container. It is built on top of Carbon Design System's DataTable component and provides additional features like:
 
 - Loading state with skeleton
 - Error state with formatted error message
 - Empty state with customizable message
-- Expandable rows with custom content
+- Accordion wrapper for collapsible container functionality
 - Sorting functionality
 - Accessibility support
 
@@ -53,7 +53,6 @@ The ExpandableDataTable component accepts a generic type parameter `T` which rep
 | headers               | DataTableHeader[]                             | Column definitions for the table                                                      | Yes      |
 | sortable              | { key: string; sortable: boolean }[]          | Array of objects specifying which columns are sortable by their key                   | No       |
 | renderCell            | (row: T, cellId: string) => React.ReactNode   | Function to render the content of each cell                                           | Yes      |
-| renderExpandedContent | (row: T) => React.ReactNode                   | Function to render the content of expanded rows                                       | Yes      |
 | loading               | boolean                                       | Whether the table is in a loading state                                               | No       |
 | error                 | unknown                                       | Error object to display in the error state                                            | No       |
 | ariaLabel             | string                                        | Accessibility label for the table                                                     | No       |
@@ -99,41 +98,6 @@ interface DataTableHeader {
 - `rowClassNames`: `{}`
 - `isOpen`: `false`
 
-## Row Expansion Behavior
-
-The ExpandableDataTable component allows you to control which rows are expandable based on your data. This is done through the `renderExpandedContent` function.
-
-### Expandable vs Non-Expandable Rows
-
-- **Expandable Rows**: When `renderExpandedContent` returns valid JSX content for a row, that row will be rendered as an expandable row with an expand/collapse button.
-- **Non-Expandable Rows**: When `renderExpandedContent` returns a falsy value (like `undefined`, `null`, or `false`) for a row, that row will be rendered as a regular row without an expand/collapse button.
-
-This allows you to mix expandable and non-expandable rows in the same table based on your data requirements.
-
-```tsx
-const renderExpandedContent = (row: Item) => {
-  // Only make rows with details expandable
-  if (!row.details || row.details.length === 0) {
-    return undefined; // This row will not be expandable
-  }
-
-  // Return content for expandable rows
-  return (
-    <div style={{ padding: '1rem' }}>
-      <p>{row.details}</p>
-    </div>
-  );
-};
-```
-
-### Implementation Details
-
-Under the hood, the component uses different Carbon components based on whether a row is expandable:
-
-- **Expandable Rows**: Uses `TableExpandRow` and `TableExpandedRow` from Carbon Design System
-- **Non-Expandable Rows**: Uses regular `TableRow` from Carbon Design System
-
-This approach ensures that non-expandable rows don't have unnecessary expand/collapse buttons, providing a cleaner user interface.
 
 ## Accordion State Management
 
