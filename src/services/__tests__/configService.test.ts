@@ -15,7 +15,7 @@ import {
   validDashboardConfig,
   invalidDashboardConfig,
 } from '@__mocks__/configMocks';
-import { CLINICAL_CONFIG_URL, DASHBOARD_CONFIG_URL } from '@constants/app';
+import { CLINICAL_CONFIG_URL, DASHBOARD_CONFIG_URL } from '@constants/config';
 
 // Mock the api module
 jest.mock('../api');

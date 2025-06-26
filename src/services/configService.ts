@@ -6,7 +6,7 @@ import { getFormattedError, generateId } from '@utils/common';
 import notificationService from './notificationService';
 import i18next from 'i18next';
 import { DashboardConfig } from '@types/dashboardConfig';
-import { CLINICAL_CONFIG_URL, DASHBOARD_CONFIG_URL } from '@constants/app';
+import { CLINICAL_CONFIG_URL, DASHBOARD_CONFIG_URL } from '@constants/config';
 import clinicalConfigSchema from '@schemas/clinicalConfig.schema.json';
 import dashboardConfigSchema from '@schemas/dashboardConfig.schema.json';
 

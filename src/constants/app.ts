@@ -16,8 +16,6 @@ export const BAHMNI_USER_LOCATION_COOKIE_NAME = 'bahmni.user.location';
 export const LAB_ORDER_TYPE_UUID = 'd3560b17-5e07-11ef-8f7c-0242ac120002';
 export const RADIOLOGY_ORDER_TYPE_UUID = 'd3561dc0-5e07-11ef-8f7c-0242ac120002';
 
-export const CONFIG_TRANSLATIONS_URL_TEMPLATE = (lang: string) =>
-  `/bahmni_config/openmrs/i18n/clinical/locale_${lang}.json`;
 export const BUNDLED_TRANSLATIONS_URL_TEMPLATE = (lang: string) =>
   BASE_PATH + `locales/locale_${lang}.json`;
 export const PATIENT_RESOURCE_URL = (patientUUID: string) =>
@@ -33,13 +31,10 @@ export const PATIENT_VISITS_URL = (patientUUID: string) =>
 export const PATIENT_LAB_INVESTIGATION_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 +
   `/ServiceRequest?category=${LAB_ORDER_TYPE_UUID}&patient=${patientUUID}&numberOfVisits=5&_count=100&_sort=-_lastUpdated`;
-export const DASHBOARD_CONFIG_URL = (dashboardURL: string) =>
-  `/bahmni_config/openmrs/apps/clinical/v2/dashboards/${dashboardURL}`;
+
 export const PATIENT_DIAGNOSIS_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 +
   `/Condition?category=${HL7_CONDITION_CATEGORY_DIAGNOSIS_CODE}&patient=${patientUUID}&_count=100&_sort=-_lastUpdated`;
-export const CLINICAL_CONFIG_URL =
-  '/bahmni_config/openmrs/apps/clinical/v2/app.json';
 export const LOCATION_RESOURCE_URL = OPENMRS_REST_V1 + '/location';
 export const PATIENT_RADIOLOGY_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 +
@@ -71,6 +66,7 @@ export const FHIR_VALUESET_FILTER_EXPAND_URL = (filter: string) =>
 export const ORDER_TYPE_URL =
   OPENMRS_REST_V1 +
   '/ordertype?v=custom:(uuid,display,conceptClasses:(uuid,name))';
+export const MEDICATION_ORDERS_METADATA_URL = OPENMRS_REST_V1 + '/bahmnicore/config/drugOrders';
 export const ALL_ORDERABLES_CONCEPT_NAME = 'All Orderables';
 export const LOGIN_PATH = '/bahmni/home/index.html#/login';
 export const DEFAULT_LOCALE = 'en';
