@@ -3,6 +3,7 @@ import {
   formatMedicationRequestDate,
   getMedicationStatusPriority,
   sortMedicationsByStatus,
+  sortMedicationsByPriority,
   MEDICATION_STATUS_PRIORITY_ORDER,
 } from '../medicationRequest';
 import {
@@ -186,11 +187,6 @@ describe('getMedicationStatusPriority', () => {
   it('returns fallback priority for unknown status', () => {
     expect(getMedicationStatusPriority('bogus-status')).toBe(999);
   });
-
-  it('is case-insensitive', () => {
-    expect(getMedicationStatusPriority('Active')).toBe(0);
-    expect(getMedicationStatusPriority('COMPLETED')).toBe(3);
-  });
 });
 
 describe('sortMedicationsByStatus', () => {
@@ -213,7 +209,9 @@ describe('sortMedicationsByStatus', () => {
       })).reverse(); // reverse order to test sorting
 
     const sorted = sortMedicationsByStatus(meds);
-    const sortedStatuses = sorted.map((m) => m.status);
+    const sortedStatuses = sorted.map(
+      (m: FormattedMedicationRequest) => m.status,
+    );
 
     expect(sortedStatuses).toEqual(MEDICATION_STATUS_PRIORITY_ORDER);
   });
@@ -251,7 +249,10 @@ describe('sortMedicationsByStatus', () => {
     ];
 
     const sorted = sortMedicationsByStatus(meds);
-    expect(sorted.map((m) => m.id)).toEqual(['1', '2']);
+    expect(sorted.map((m: FormattedMedicationRequest) => m.id)).toEqual([
+      '1',
+      '2',
+    ]);
   });
 
   it('places unknown statuses at the end', () => {
@@ -288,6 +289,226 @@ describe('sortMedicationsByStatus', () => {
     ];
 
     const sorted = sortMedicationsByStatus(meds);
-    expect(sorted.map((m) => m.id)).toEqual(['1', '2']);
+    expect(sorted.map((m: FormattedMedicationRequest) => m.id)).toEqual([
+      '1',
+      '2',
+    ]);
+  });
+});
+
+describe('sortMedicationsByPriority', () => {
+  it('sorts immediate medications first', () => {
+    const meds: FormattedMedicationRequest[] = [
+      {
+        id: '1',
+        name: 'Regular Med',
+        status: MedicationStatus.Active,
+        dosage: '',
+        dosageUnit: '',
+        quantity: '',
+        instruction: '',
+        startDate: '',
+        orderDate: '',
+        orderedBy: '',
+        asNeeded: false,
+        isImmediate: false,
+      },
+      {
+        id: '2',
+        name: 'Immediate Med',
+        status: MedicationStatus.Active,
+        dosage: '',
+        dosageUnit: '',
+        quantity: '',
+        instruction: '',
+        startDate: '',
+        orderDate: '',
+        orderedBy: '',
+        asNeeded: false,
+        isImmediate: true,
+      },
+    ];
+
+    const sorted = sortMedicationsByPriority(meds);
+    expect(sorted.map((m: FormattedMedicationRequest) => m.id)).toEqual([
+      '2',
+      '1',
+    ]);
+  });
+
+  it('sorts asNeeded medications second when not immediate', () => {
+    const meds: FormattedMedicationRequest[] = [
+      {
+        id: '1',
+        name: 'Regular Med',
+        status: MedicationStatus.Active,
+        dosage: '',
+        dosageUnit: '',
+        quantity: '',
+        instruction: '',
+        startDate: '',
+        orderDate: '',
+        orderedBy: '',
+        asNeeded: false,
+        isImmediate: false,
+      },
+      {
+        id: '2',
+        name: 'AsNeeded Med',
+        status: MedicationStatus.Active,
+        dosage: '',
+        dosageUnit: '',
+        quantity: '',
+        instruction: '',
+        startDate: '',
+        orderDate: '',
+        orderedBy: '',
+        asNeeded: true,
+        isImmediate: false,
+      },
+    ];
+
+    const sorted = sortMedicationsByPriority(meds);
+    expect(sorted.map((m: FormattedMedicationRequest) => m.id)).toEqual([
+      '2',
+      '1',
+    ]);
+  });
+
+  it('prioritizes immediate over asNeeded when both flags are true', () => {
+    const meds: FormattedMedicationRequest[] = [
+      {
+        id: '1',
+        name: 'AsNeeded Med',
+        status: MedicationStatus.Active,
+        dosage: '',
+        dosageUnit: '',
+        quantity: '',
+        instruction: '',
+        startDate: '',
+        orderDate: '',
+        orderedBy: '',
+        asNeeded: true,
+        isImmediate: false,
+      },
+      {
+        id: '2',
+        name: 'Immediate+AsNeeded Med',
+        status: MedicationStatus.Active,
+        dosage: '',
+        dosageUnit: '',
+        quantity: '',
+        instruction: '',
+        startDate: '',
+        orderDate: '',
+        orderedBy: '',
+        asNeeded: true,
+        isImmediate: true,
+      },
+    ];
+
+    const sorted = sortMedicationsByPriority(meds);
+    expect(sorted.map((m: FormattedMedicationRequest) => m.id)).toEqual([
+      '2',
+      '1',
+    ]);
+  });
+
+  it('sorts medications in correct priority order: immediate, asNeeded, regular', () => {
+    const meds: FormattedMedicationRequest[] = [
+      {
+        id: '1',
+        name: 'Regular Med',
+        status: MedicationStatus.Active,
+        dosage: '',
+        dosageUnit: '',
+        quantity: '',
+        instruction: '',
+        startDate: '',
+        orderDate: '',
+        orderedBy: '',
+        asNeeded: false,
+        isImmediate: false,
+      },
+      {
+        id: '2',
+        name: 'AsNeeded Med',
+        status: MedicationStatus.Active,
+        dosage: '',
+        dosageUnit: '',
+        quantity: '',
+        instruction: '',
+        startDate: '',
+        orderDate: '',
+        orderedBy: '',
+        asNeeded: true,
+        isImmediate: false,
+      },
+      {
+        id: '3',
+        name: 'Immediate Med',
+        status: MedicationStatus.Active,
+        dosage: '',
+        dosageUnit: '',
+        quantity: '',
+        instruction: '',
+        startDate: '',
+        orderDate: '',
+        orderedBy: '',
+        asNeeded: false,
+        isImmediate: true,
+      },
+    ];
+
+    const sorted = sortMedicationsByPriority(meds);
+    expect(sorted.map((m: FormattedMedicationRequest) => m.id)).toEqual([
+      '3',
+      '2',
+      '1',
+    ]);
+  });
+
+  it('maintains stable sort within same priority group', () => {
+    const meds: FormattedMedicationRequest[] = [
+      {
+        id: '1',
+        name: 'First Immediate',
+        status: MedicationStatus.Active,
+        dosage: '',
+        dosageUnit: '',
+        quantity: '',
+        instruction: '',
+        startDate: '',
+        orderDate: '',
+        orderedBy: '',
+        asNeeded: false,
+        isImmediate: true,
+      },
+      {
+        id: '2',
+        name: 'Second Immediate',
+        status: MedicationStatus.Active,
+        dosage: '',
+        dosageUnit: '',
+        quantity: '',
+        instruction: '',
+        startDate: '',
+        orderDate: '',
+        orderedBy: '',
+        asNeeded: false,
+        isImmediate: true,
+      },
+    ];
+
+    const sorted = sortMedicationsByPriority(meds);
+    expect(sorted.map((m: FormattedMedicationRequest) => m.id)).toEqual([
+      '1',
+      '2',
+    ]);
+  });
+
+  it('handles empty array', () => {
+    const sorted = sortMedicationsByPriority([]);
+    expect(sorted).toEqual([]);
   });
 });

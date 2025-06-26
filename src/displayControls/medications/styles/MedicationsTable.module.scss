@@ -103,7 +103,10 @@
   }
   :global(.cds--data-table td:nth-child(7)) {
     @include type-style("body-short-01");
+    padding-inline: 0 !important;
     max-width: calc(100vw * 0.025);
+    min-width: calc(100vw * 0.025);
+    justify-items: start;
   }
   :global(.cds--accordion__content) {
     margin-inline: 0rem !important;
@@ -137,7 +140,8 @@
   }
   :global(.cds--data-table td:nth-child(3)) {
     @include type-style("body-short-01");
-    max-width: calc(100vw * 0.1);
+    max-width: calc(100vw * 0.1) !important ;
+    width: calc(100vw * 0.1) !important;
   }
   :global(.cds--data-table td:nth-child(4)) {
     @include type-style("body-short-01");
@@ -153,7 +157,10 @@
   }
   :global(.cds--data-table td:nth-child(7)) {
     @include type-style("body-short-01");
+    padding-inline: 0 !important;
     max-width: calc(100vw * 0.025);
+    min-width: calc(100vw * 0.025);
+    justify-items: start;
   }
   :global(.cds--accordion__content) {
     margin-inline: 0rem !important;

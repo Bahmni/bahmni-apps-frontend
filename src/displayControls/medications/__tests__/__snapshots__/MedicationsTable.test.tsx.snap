@@ -512,8 +512,6 @@ exports[`MedicationsTable Snapshots matches snapshot for active medications tab 
                     On Hold Medication
                   </p>
                   <p>
-                    mg
-                     | 
                     30 tablets
                   </p>
                 </td>
@@ -575,8 +573,6 @@ exports[`MedicationsTable Snapshots matches snapshot for active medications tab 
                     On Hold Medication
                   </p>
                   <p>
-                    mg
-                     | 
                     30 tablets
                   </p>
                 </td>
@@ -1040,8 +1036,6 @@ exports[`MedicationsTable Snapshots matches snapshot for active medications tab 
                             Active Medication
                           </p>
                           <p>
-                            mg
-                             | 
                             30 tablets
                           </p>
                         </td>
@@ -1105,8 +1099,6 @@ exports[`MedicationsTable Snapshots matches snapshot for active medications tab 
                             Active Medication
                           </p>
                           <p>
-                            mg
-                             | 
                             30 tablets
                           </p>
                         </td>

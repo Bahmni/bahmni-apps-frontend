@@ -4,6 +4,7 @@ import { useMedicationRequest } from '@hooks/useMedicationRequest';
 import {
   formatMedicationRequest,
   sortMedicationsByStatus,
+  sortMedicationsByPriority,
 } from '@utils/medicationRequest';
 import {
   FormattedMedicationRequest,
@@ -87,9 +88,19 @@ const MedicationsTable: React.FC = () => {
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
     );
 
+    // Sort medications within each group by status
+    sortedGroups.forEach((group) => {
+      group.items = sortMedicationsByStatus(group.items);
+    });
+
+    // Sort medications within each group by priority
+    sortedGroups.forEach((group) => {
+      group.items = sortMedicationsByPriority(group.items);
+    });
+
     return sortedGroups.map((group) => ({
       date: group.date,
-      medications: sortMedicationsByStatus(group.items),
+      medications: group.items,
     }));
   };
 
@@ -134,9 +145,11 @@ const MedicationsTable: React.FC = () => {
 
   const activeAndScheduledMedications = useMemo(() => {
     if (!allMedications) return [];
-    return allMedications.filter(
-      (medication) =>
-        medication.status === 'active' || medication.status === 'on-hold',
+    return sortMedicationsByPriority(
+      allMedications.filter(
+        (medication) =>
+          medication.status === 'active' || medication.status === 'on-hold',
+      ),
     );
   }, [allMedications]);
 
@@ -151,11 +164,9 @@ const MedicationsTable: React.FC = () => {
         return (
           <>
             <p className={styles.medicineName}>{row.name}</p>
-            <p className={styles.medicineDetails}>
-              {row.dosageUnit} | {row.quantity}
-            </p>
-            {row.asNeeded && <Tag className={styles.PRN}>PRN</Tag>}
+            <p className={styles.medicineDetails}>{row.quantity}</p>
             {row.isImmediate && <Tag className={styles.STAT}>STAT</Tag>}
+            {row.asNeeded && <Tag className={styles.PRN}>PRN</Tag>}
           </>
         );
       case 'dosage':

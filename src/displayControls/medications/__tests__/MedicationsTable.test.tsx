@@ -109,7 +109,7 @@ describe('MedicationsTable', () => {
       render(<MedicationsTable />);
 
       expect(screen.getAllByText('Aspirin 100mg')[0]).toBeInTheDocument();
-      expect(screen.getAllByText('mg | 30 tablets')[0]).toBeInTheDocument();
+      expect(screen.getAllByText('30 tablets')[0]).toBeInTheDocument();
     });
 
     it('filters active and on-hold medications for Active & Scheduled tab', () => {

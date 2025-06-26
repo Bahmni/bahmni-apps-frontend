@@ -7,16 +7,16 @@ import { getPriorityByOrder } from './common';
 /**
  * Priority order for medication status levels (case insensitive)
  * Index 0 = highest priority, higher index = lower priority
- * Used for sorting medications by status: active → on-hold → cancelled → completed →
- * entered-in-error → stopped → draft → unknown
+ * Used for sorting medications by status: active → on-hold → stopped → cancelled → completed →
+ * entered-in-error → draft → unknown
  */
 export const MEDICATION_STATUS_PRIORITY_ORDER = [
   'active',
   'on-hold',
+  'stopped',
   'cancelled',
   'completed',
   'entered-in-error',
-  'stopped',
   'draft',
   'unknown',
 ];
@@ -48,6 +48,38 @@ export const sortMedicationsByStatus = (
       getMedicationStatusPriority(a.status) -
       getMedicationStatusPriority(b.status)
     );
+  });
+};
+
+/**
+ * Gets the priority value for medication based on isImmediate and asNeeded flags.
+ * Lower values indicate higher priority.
+ *
+ * @param medication - The FormattedMedicationRequest object to get priority for.
+ * @returns A numeric priority value (0 = highest priority, 2 = lowest priority).
+ */
+export const getMedicationPriority = (
+  medication: FormattedMedicationRequest,
+): number => {
+  if (medication.isImmediate) return 0; // Highest priority - STAT medications
+  if (medication.asNeeded) return 1; // Second priority - PRN medications
+  return 2; // Regular medications
+};
+
+/**
+ * Sorts an array of medication requests by priority based on isImmediate and asNeeded flags.
+ * Priority order: isImmediate → asNeeded → regular medications.
+ * If both isImmediate and asNeeded are true, isImmediate takes precedence.
+ * Stable sort ensures original order is preserved within the same priority group.
+ *
+ * @param medications - The array of FormattedMedicationRequest objects to be sorted.
+ * @returns A new sorted array of FormattedMedicationRequest objects.
+ */
+export const sortMedicationsByPriority = (
+  medications: FormattedMedicationRequest[],
+): FormattedMedicationRequest[] => {
+  return [...medications].sort((a, b) => {
+    return getMedicationPriority(a) - getMedicationPriority(b);
   });
 };
 
