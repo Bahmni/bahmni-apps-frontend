@@ -28,17 +28,22 @@ describe('useMedications hook', () => {
     {
       id: 'medication-uuid-123',
       name: 'Aspirin 100mg',
-      form: 'Tablet',
-      dose: '100 mg',
+      dose: {
+        value: 100,
+        unit: 'mg',
+      },
       frequency: '1 / 1day',
       route: 'Oral',
-      duration: '30 days',
+      duration: {
+        duration: 30,
+        durationUnit: 'd',
+      },
       status: MedicationStatus.Active,
       priority: '',
       startDate: '2023-12-01T10:30:00.000+0000',
       orderDate: '2023-12-01T09:30:00.000+0000',
       orderedBy: 'Dr. John Doe',
-      notes: 'Take with food',
+      instructions: 'Take with food',
       isActive: true,
       isScheduled: false,
     },
@@ -55,7 +60,7 @@ describe('useMedications hook', () => {
       startDate: '2023-11-01T10:30:00.000+0000',
       orderDate: '2023-11-01T09:30:00.000+0000',
       orderedBy: 'Dr. Jane Smith',
-      notes: 'Take after meals',
+      instructions: 'Take after meals',
       isActive: false,
       isScheduled: false,
     },
@@ -332,7 +337,7 @@ describe('useMedications hook', () => {
           startDate: '2023-12-03T12:30:00.000+0000',
           orderDate: '2023-12-03T11:30:00.000+0000',
           orderedBy: 'Dr. Bob Wilson',
-          notes: 'Monitor blood pressure',
+          instructions: 'Monitor blood pressure',
           isActive: true,
           isScheduled: false,
         },
@@ -457,7 +462,7 @@ describe('useMedications hook', () => {
           startDate: '2023-12-04T15:30:00.000+0000',
           orderDate: '2023-12-04T14:30:00.000+0000',
           orderedBy: 'Dr. Alice Brown',
-          notes: 'Monitor liver function',
+          instructions: 'Monitor liver function',
           isActive: true,
           isScheduled: false,
         },
@@ -550,7 +555,7 @@ describe('useMedications hook', () => {
           startDate: '',
           orderDate: '',
           orderedBy: '',
-          notes: '',
+          instructions: '',
           isActive: true,
           isScheduled: false,
         },
@@ -571,7 +576,7 @@ describe('useMedications hook', () => {
       expect(result.current.medications).toEqual(minimalMedications);
       expect(result.current.medications[0].name).toBe('Unknown Medication');
       expect(result.current.medications[0].dose).toBe('');
-      expect(result.current.medications[0].notes).toBe('');
+      expect(result.current.medications[0].instructions).toBe('');
     });
 
     it('should handle large number of medications', async () => {
