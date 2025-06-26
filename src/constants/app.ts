@@ -66,7 +66,8 @@ export const FHIR_VALUESET_FILTER_EXPAND_URL = (filter: string) =>
 export const ORDER_TYPE_URL =
   OPENMRS_REST_V1 +
   '/ordertype?v=custom:(uuid,display,conceptClasses:(uuid,name))';
-export const MEDICATION_ORDERS_METADATA_URL = OPENMRS_REST_V1 + '/bahmnicore/config/drugOrders';
+export const MEDICATION_ORDERS_METADATA_URL =
+  OPENMRS_REST_V1 + '/bahmnicore/config/drugOrders';
 export const ALL_ORDERABLES_CONCEPT_NAME = 'All Orderables';
 export const LOGIN_PATH = '/bahmni/home/index.html#/login';
 export const DEFAULT_LOCALE = 'en';
