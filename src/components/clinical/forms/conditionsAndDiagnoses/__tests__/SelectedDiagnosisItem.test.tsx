@@ -6,7 +6,7 @@ import i18n from '@/setupTests.i18n';
 import SelectedDiagnosisItem from '../SelectedDiagnosisItem';
 import { Coding } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { DiagnosisInputEntry } from '@/types/diagnosis';
+import { DiagnosisInputEntry } from '@types/diagnosis';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
 
 expect.extend(toHaveNoViolations);

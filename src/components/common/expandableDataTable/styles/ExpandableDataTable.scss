@@ -1,3 +1,6 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+
 .criticalCell {
   color: #da1e28 !important;
 }
@@ -12,6 +15,12 @@
 
 .alertCell {
   color: #ff832b !important;
+}
+
+.emptyState {
+  padding: $spacing-07 $spacing-05;
+  text-align: center;
+  @include type-style("body-compact-01");
 }
 
 // Add more custom styles as needed

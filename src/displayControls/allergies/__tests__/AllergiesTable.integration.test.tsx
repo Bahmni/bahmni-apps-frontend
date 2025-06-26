@@ -182,9 +182,7 @@ describe('AllergiesTable Integration', () => {
       expect(
         screen.getByTestId('expandable-data-table-empty'),
       ).toBeInTheDocument();
-      expect(
-        screen.getByText('No Allergies recorded for this patient.'),
-      ).toBeInTheDocument();
+      expect(screen.getByText('No allergies recorded')).toBeInTheDocument();
     });
   });
 

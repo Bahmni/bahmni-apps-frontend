@@ -1,0 +1,1846 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MedicationsTable Snapshots matches snapshot for active medications tab 1`] = `
+<div
+  data-testid="medications-table"
+>
+  <div
+    class="cds--tabs"
+  >
+    <button
+      aria-hidden="true"
+      aria-label="Scroll left"
+      class="cds--tab--overflow-nav-button cds--tab--overflow-nav-button--previous cds--tab--overflow-nav-button--hidden"
+      tabindex="-1"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        fill="currentColor"
+        focusable="false"
+        height="16"
+        preserveAspectRatio="xMidYMid meet"
+        viewBox="0 0 16 16"
+        width="16"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M5 8L10 3 10.7 3.7 6.4 8 10.7 12.3 10 13z"
+        />
+      </svg>
+    </button>
+    <div
+      aria-label="Medication view options"
+      class="cds--tab--list"
+      role="tablist"
+    >
+      <button
+        aria-controls="ccs-«rdg»-tabpanel-0"
+        aria-selected="true"
+        class="cds--tabs__nav-item cds--tabs__nav-link cds--tabs__nav-item--selected"
+        id="ccs-«rdg»-tab-0"
+        role="tab"
+        tabindex="0"
+        type="button"
+      >
+        <div
+          class="cds--tabs__nav-item-label-wrapper"
+        >
+          <span
+            class="cds--tabs__nav-item-label"
+            dir="auto"
+          >
+            Active & Scheduled
+          </span>
+        </div>
+      </button>
+      <div
+        class="cds--tabs__nav-item--close--hidden"
+      >
+        <button
+          aria-hidden="true"
+          class="cds--visually-hidden cds--tabs__nav-item--close-icon--selected"
+          tabindex="-1"
+          title="Remove Active & Scheduled tab"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            aria-label="Press delete to remove Active & Scheduled tab"
+            fill="currentColor"
+            focusable="false"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            viewBox="0 0 32 32"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+            />
+          </svg>
+        </button>
+      </div>
+      <button
+        aria-controls="ccs-«rdg»-tabpanel-1"
+        aria-selected="false"
+        class="cds--tabs__nav-item cds--tabs__nav-link"
+        id="ccs-«rdg»-tab-1"
+        role="tab"
+        tabindex="-1"
+        type="button"
+      >
+        <div
+          class="cds--tabs__nav-item-label-wrapper"
+        >
+          <span
+            class="cds--tabs__nav-item-label"
+            dir="auto"
+          >
+            All
+          </span>
+        </div>
+      </button>
+      <div
+        class="cds--tabs__nav-item--close--hidden"
+      >
+        <button
+          aria-hidden="true"
+          class="cds--visually-hidden"
+          tabindex="-1"
+          title="Remove All tab"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            aria-label="Press delete to remove All tab"
+            fill="currentColor"
+            focusable="false"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            viewBox="0 0 32 32"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+    <button
+      aria-hidden="true"
+      aria-label="Scroll right"
+      class="cds--tab--overflow-nav-button cds--tab--overflow-nav-button--next cds--tab--overflow-nav-button--hidden"
+      tabindex="-1"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        fill="currentColor"
+        focusable="false"
+        height="16"
+        preserveAspectRatio="xMidYMid meet"
+        viewBox="0 0 16 16"
+        width="16"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+        />
+      </svg>
+    </button>
+  </div>
+  <div
+    aria-labelledby="ccs-«rdg»-tab-0"
+    class="cds--tab-content cds--tab-content--interactive"
+    id="ccs-«rdg»-tabpanel-0"
+    role="tabpanel"
+    tabindex="-1"
+  >
+    <div
+      class="sortable-data-table"
+      data-testid="sortable-data-table"
+    >
+      <section
+        class="cds--data-table-container"
+      >
+        <div
+          class="cds--data-table-content"
+        >
+          <table
+            aria-label="Medications table"
+            class="cds--data-table cds--data-table--lg cds--data-table--sort cds--data-table--visible-overflow-menu"
+          >
+            <thead>
+              <tr>
+                <th
+                  aria-sort="none"
+                  class="cds--table-sort__header"
+                  scope="col"
+                >
+                  <div
+                    class="cds--table-sort__description"
+                    id="table-sort-«rdi»"
+                  >
+                    Click to sort rows by Medicine header in ascending order
+                  </div>
+                  <button
+                    aria-describedby="table-sort-«rdi»"
+                    class="cds--table-sort"
+                    type="button"
+                  >
+                    <span
+                      class="cds--table-sort__flex"
+                    >
+                      <div
+                        class="cds--table-header-label"
+                      >
+                        Medicine
+                      </div>
+                      <svg
+                        aria-hidden="true"
+                        class="cds--table-sort__icon"
+                        fill="currentColor"
+                        focusable="false"
+                        height="20"
+                        preserveAspectRatio="xMidYMid meet"
+                        viewBox="0 0 32 32"
+                        width="20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                        />
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="cds--table-sort__icon-unsorted"
+                        fill="currentColor"
+                        focusable="false"
+                        height="20"
+                        preserveAspectRatio="xMidYMid meet"
+                        viewBox="0 0 32 32"
+                        width="20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                        />
+                      </svg>
+                      <div
+                        class="cds--table-header-label--decorator-inner"
+                      />
+                    </span>
+                  </button>
+                </th>
+                <th
+                  scope="col"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Dosage
+                    <div
+                      class="cds--table-header-label--decorator-inner"
+                    />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Instructions
+                    <div
+                      class="cds--table-header-label--decorator-inner"
+                    />
+                  </div>
+                </th>
+                <th
+                  aria-sort="none"
+                  class="cds--table-sort__header"
+                  scope="col"
+                >
+                  <div
+                    class="cds--table-sort__description"
+                    id="table-sort-«rdl»"
+                  >
+                    Click to sort rows by Start Date header in ascending order
+                  </div>
+                  <button
+                    aria-describedby="table-sort-«rdl»"
+                    class="cds--table-sort"
+                    type="button"
+                  >
+                    <span
+                      class="cds--table-sort__flex"
+                    >
+                      <div
+                        class="cds--table-header-label"
+                      >
+                        Start Date
+                      </div>
+                      <svg
+                        aria-hidden="true"
+                        class="cds--table-sort__icon"
+                        fill="currentColor"
+                        focusable="false"
+                        height="20"
+                        preserveAspectRatio="xMidYMid meet"
+                        viewBox="0 0 32 32"
+                        width="20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                        />
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="cds--table-sort__icon-unsorted"
+                        fill="currentColor"
+                        focusable="false"
+                        height="20"
+                        preserveAspectRatio="xMidYMid meet"
+                        viewBox="0 0 32 32"
+                        width="20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                        />
+                      </svg>
+                      <div
+                        class="cds--table-header-label--decorator-inner"
+                      />
+                    </span>
+                  </button>
+                </th>
+                <th
+                  aria-sort="none"
+                  class="cds--table-sort__header"
+                  scope="col"
+                >
+                  <div
+                    class="cds--table-sort__description"
+                    id="table-sort-«rdm»"
+                  >
+                    Click to sort rows by Ordered By header in ascending order
+                  </div>
+                  <button
+                    aria-describedby="table-sort-«rdm»"
+                    class="cds--table-sort"
+                    type="button"
+                  >
+                    <span
+                      class="cds--table-sort__flex"
+                    >
+                      <div
+                        class="cds--table-header-label"
+                      >
+                        Ordered By
+                      </div>
+                      <svg
+                        aria-hidden="true"
+                        class="cds--table-sort__icon"
+                        fill="currentColor"
+                        focusable="false"
+                        height="20"
+                        preserveAspectRatio="xMidYMid meet"
+                        viewBox="0 0 32 32"
+                        width="20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                        />
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="cds--table-sort__icon-unsorted"
+                        fill="currentColor"
+                        focusable="false"
+                        height="20"
+                        preserveAspectRatio="xMidYMid meet"
+                        viewBox="0 0 32 32"
+                        width="20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                        />
+                      </svg>
+                      <div
+                        class="cds--table-header-label--decorator-inner"
+                      />
+                    </span>
+                  </button>
+                </th>
+                <th
+                  aria-sort="none"
+                  class="cds--table-sort__header"
+                  scope="col"
+                >
+                  <div
+                    class="cds--table-sort__description"
+                    id="table-sort-«rdn»"
+                  >
+                    Click to sort rows by Ordered On header in ascending order
+                  </div>
+                  <button
+                    aria-describedby="table-sort-«rdn»"
+                    class="cds--table-sort"
+                    type="button"
+                  >
+                    <span
+                      class="cds--table-sort__flex"
+                    >
+                      <div
+                        class="cds--table-header-label"
+                      >
+                        Ordered On
+                      </div>
+                      <svg
+                        aria-hidden="true"
+                        class="cds--table-sort__icon"
+                        fill="currentColor"
+                        focusable="false"
+                        height="20"
+                        preserveAspectRatio="xMidYMid meet"
+                        viewBox="0 0 32 32"
+                        width="20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                        />
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="cds--table-sort__icon-unsorted"
+                        fill="currentColor"
+                        focusable="false"
+                        height="20"
+                        preserveAspectRatio="xMidYMid meet"
+                        viewBox="0 0 32 32"
+                        width="20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                        />
+                      </svg>
+                      <div
+                        class="cds--table-header-label--decorator-inner"
+                      />
+                    </span>
+                  </button>
+                </th>
+                <th
+                  aria-sort="none"
+                  class="cds--table-sort__header"
+                  scope="col"
+                >
+                  <div
+                    class="cds--table-sort__description"
+                    id="table-sort-«rdo»"
+                  >
+                    Click to sort rows by Status header in ascending order
+                  </div>
+                  <button
+                    aria-describedby="table-sort-«rdo»"
+                    class="cds--table-sort"
+                    type="button"
+                  >
+                    <span
+                      class="cds--table-sort__flex"
+                    >
+                      <div
+                        class="cds--table-header-label"
+                      >
+                        Status
+                      </div>
+                      <svg
+                        aria-hidden="true"
+                        class="cds--table-sort__icon"
+                        fill="currentColor"
+                        focusable="false"
+                        height="20"
+                        preserveAspectRatio="xMidYMid meet"
+                        viewBox="0 0 32 32"
+                        width="20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                        />
+                      </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="cds--table-sort__icon-unsorted"
+                        fill="currentColor"
+                        focusable="false"
+                        height="20"
+                        preserveAspectRatio="xMidYMid meet"
+                        viewBox="0 0 32 32"
+                        width="20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                        />
+                      </svg>
+                      <div
+                        class="cds--table-header-label--decorator-inner"
+                      />
+                    </span>
+                  </button>
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              aria-live="polite"
+            >
+              <tr>
+                <td>
+                  <p>
+                    On Hold Medication
+                  </p>
+                  <p>
+                    30 tablets
+                  </p>
+                </td>
+                <td>
+                  <p>
+                    100 mg | Once daily | 30 days
+                  </p>
+                </td>
+                <td>
+                  Oral | Take with food
+                </td>
+                <td>
+                  15/01/2024
+                </td>
+                <td>
+                  Dr. Johnson
+                </td>
+                <td>
+                  15/01/2024
+                </td>
+                <td>
+                  <div
+                    class="cds--tag cds--tag--outline"
+                    id="tag-id-«rdp»"
+                  >
+                    <div
+                      class="cds--tag__custom-icon"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        fill="currentColor"
+                        focusable="false"
+                        height="16"
+                        preserveAspectRatio="xMidYMid meet"
+                        viewBox="0 0 32 32"
+                        width="16"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <circle
+                          cx="16"
+                          cy="16"
+                          r="8"
+                        />
+                      </svg>
+                    </div>
+                    <span
+                      class="cds--tag__label"
+                      dir="auto"
+                      title="Scheduled"
+                    >
+                      Scheduled
+                    </span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p>
+                    On Hold Medication
+                  </p>
+                  <p>
+                    30 tablets
+                  </p>
+                </td>
+                <td>
+                  <p>
+                    100 mg | Once daily | 30 days
+                  </p>
+                </td>
+                <td>
+                  Oral | Take with food
+                </td>
+                <td>
+                  15/01/2024
+                </td>
+                <td>
+                  Dr. Johnson
+                </td>
+                <td>
+                  15/01/2024
+                </td>
+                <td>
+                  <div
+                    class="cds--tag cds--tag--outline"
+                    id="tag-id-«rdq»"
+                  >
+                    <div
+                      class="cds--tag__custom-icon"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        fill="currentColor"
+                        focusable="false"
+                        height="16"
+                        preserveAspectRatio="xMidYMid meet"
+                        viewBox="0 0 32 32"
+                        width="16"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <circle
+                          cx="16"
+                          cy="16"
+                          r="8"
+                        />
+                      </svg>
+                    </div>
+                    <span
+                      class="cds--tag__label"
+                      dir="auto"
+                      title="Scheduled"
+                    >
+                      Scheduled
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+  <div
+    aria-labelledby="ccs-«rdg»-tab-1"
+    class="cds--tab-content cds--tab-content--interactive"
+    hidden=""
+    id="ccs-«rdg»-tabpanel-1"
+    role="tabpanel"
+    tabindex="-1"
+  >
+    <div
+      class="expandable-data-table-item"
+      data-testid="expandable-data-table"
+    >
+      <ul
+        class="cds--accordion cds--accordion--start"
+      >
+        <li
+          class="cds--accordion__item cds--accordion__item--active"
+        >
+          <button
+            aria-controls="accordion-item-«rdr»"
+            aria-expanded="true"
+            class="cds--accordion__heading"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="cds--accordion__arrow"
+              fill="currentColor"
+              focusable="false"
+              height="16"
+              preserveAspectRatio="xMidYMid meet"
+              viewBox="0 0 16 16"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+              />
+            </svg>
+            <div
+              class="cds--accordion__title"
+              dir="auto"
+            >
+              January 15, 2024
+            </div>
+          </button>
+          <div
+            class="cds--accordion__wrapper"
+          >
+            <div
+              class="cds--accordion__content"
+              id="accordion-item-«rdr»"
+            >
+              <section
+                class="cds--data-table-container"
+              >
+                <div
+                  class="cds--data-table-content"
+                >
+                  <table
+                    aria-label="January 15, 2024"
+                    class="cds--data-table cds--data-table--lg cds--data-table--visible-overflow-menu"
+                  >
+                    <thead>
+                      <tr>
+                        <th
+                          aria-sort="none"
+                          class="cds--table-sort__header"
+                          scope="col"
+                        >
+                          <div
+                            class="cds--table-sort__description"
+                            id="table-sort-«rdt»"
+                          >
+                            Click to sort rows by Medicine header in ascending order
+                          </div>
+                          <button
+                            aria-describedby="table-sort-«rdt»"
+                            class="cds--table-sort"
+                            type="button"
+                          >
+                            <span
+                              class="cds--table-sort__flex"
+                            >
+                              <div
+                                class="cds--table-header-label"
+                              >
+                                Medicine
+                              </div>
+                              <svg
+                                aria-hidden="true"
+                                class="cds--table-sort__icon"
+                                fill="currentColor"
+                                focusable="false"
+                                height="20"
+                                preserveAspectRatio="xMidYMid meet"
+                                viewBox="0 0 32 32"
+                                width="20"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                                />
+                              </svg>
+                              <svg
+                                aria-hidden="true"
+                                class="cds--table-sort__icon-unsorted"
+                                fill="currentColor"
+                                focusable="false"
+                                height="20"
+                                preserveAspectRatio="xMidYMid meet"
+                                viewBox="0 0 32 32"
+                                width="20"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                                />
+                              </svg>
+                              <div
+                                class="cds--table-header-label--decorator-inner"
+                              />
+                            </span>
+                          </button>
+                        </th>
+                        <th
+                          scope="col"
+                        >
+                          <div
+                            class="cds--table-header-label"
+                          >
+                            Dosage
+                            <div
+                              class="cds--table-header-label--decorator-inner"
+                            />
+                          </div>
+                        </th>
+                        <th
+                          scope="col"
+                        >
+                          <div
+                            class="cds--table-header-label"
+                          >
+                            Instructions
+                            <div
+                              class="cds--table-header-label--decorator-inner"
+                            />
+                          </div>
+                        </th>
+                        <th
+                          aria-sort="none"
+                          class="cds--table-sort__header"
+                          scope="col"
+                        >
+                          <div
+                            class="cds--table-sort__description"
+                            id="table-sort-«re0»"
+                          >
+                            Click to sort rows by Start Date header in ascending order
+                          </div>
+                          <button
+                            aria-describedby="table-sort-«re0»"
+                            class="cds--table-sort"
+                            type="button"
+                          >
+                            <span
+                              class="cds--table-sort__flex"
+                            >
+                              <div
+                                class="cds--table-header-label"
+                              >
+                                Start Date
+                              </div>
+                              <svg
+                                aria-hidden="true"
+                                class="cds--table-sort__icon"
+                                fill="currentColor"
+                                focusable="false"
+                                height="20"
+                                preserveAspectRatio="xMidYMid meet"
+                                viewBox="0 0 32 32"
+                                width="20"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                                />
+                              </svg>
+                              <svg
+                                aria-hidden="true"
+                                class="cds--table-sort__icon-unsorted"
+                                fill="currentColor"
+                                focusable="false"
+                                height="20"
+                                preserveAspectRatio="xMidYMid meet"
+                                viewBox="0 0 32 32"
+                                width="20"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                                />
+                              </svg>
+                              <div
+                                class="cds--table-header-label--decorator-inner"
+                              />
+                            </span>
+                          </button>
+                        </th>
+                        <th
+                          aria-sort="none"
+                          class="cds--table-sort__header"
+                          scope="col"
+                        >
+                          <div
+                            class="cds--table-sort__description"
+                            id="table-sort-«re1»"
+                          >
+                            Click to sort rows by Ordered By header in ascending order
+                          </div>
+                          <button
+                            aria-describedby="table-sort-«re1»"
+                            class="cds--table-sort"
+                            type="button"
+                          >
+                            <span
+                              class="cds--table-sort__flex"
+                            >
+                              <div
+                                class="cds--table-header-label"
+                              >
+                                Ordered By
+                              </div>
+                              <svg
+                                aria-hidden="true"
+                                class="cds--table-sort__icon"
+                                fill="currentColor"
+                                focusable="false"
+                                height="20"
+                                preserveAspectRatio="xMidYMid meet"
+                                viewBox="0 0 32 32"
+                                width="20"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                                />
+                              </svg>
+                              <svg
+                                aria-hidden="true"
+                                class="cds--table-sort__icon-unsorted"
+                                fill="currentColor"
+                                focusable="false"
+                                height="20"
+                                preserveAspectRatio="xMidYMid meet"
+                                viewBox="0 0 32 32"
+                                width="20"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                                />
+                              </svg>
+                              <div
+                                class="cds--table-header-label--decorator-inner"
+                              />
+                            </span>
+                          </button>
+                        </th>
+                        <th
+                          aria-sort="none"
+                          class="cds--table-sort__header"
+                          scope="col"
+                        >
+                          <div
+                            class="cds--table-sort__description"
+                            id="table-sort-«re2»"
+                          >
+                            Click to sort rows by Ordered On header in ascending order
+                          </div>
+                          <button
+                            aria-describedby="table-sort-«re2»"
+                            class="cds--table-sort"
+                            type="button"
+                          >
+                            <span
+                              class="cds--table-sort__flex"
+                            >
+                              <div
+                                class="cds--table-header-label"
+                              >
+                                Ordered On
+                              </div>
+                              <svg
+                                aria-hidden="true"
+                                class="cds--table-sort__icon"
+                                fill="currentColor"
+                                focusable="false"
+                                height="20"
+                                preserveAspectRatio="xMidYMid meet"
+                                viewBox="0 0 32 32"
+                                width="20"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                                />
+                              </svg>
+                              <svg
+                                aria-hidden="true"
+                                class="cds--table-sort__icon-unsorted"
+                                fill="currentColor"
+                                focusable="false"
+                                height="20"
+                                preserveAspectRatio="xMidYMid meet"
+                                viewBox="0 0 32 32"
+                                width="20"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                                />
+                              </svg>
+                              <div
+                                class="cds--table-header-label--decorator-inner"
+                              />
+                            </span>
+                          </button>
+                        </th>
+                        <th
+                          aria-sort="none"
+                          class="cds--table-sort__header"
+                          scope="col"
+                        >
+                          <div
+                            class="cds--table-sort__description"
+                            id="table-sort-«re3»"
+                          >
+                            Click to sort rows by Status header in ascending order
+                          </div>
+                          <button
+                            aria-describedby="table-sort-«re3»"
+                            class="cds--table-sort"
+                            type="button"
+                          >
+                            <span
+                              class="cds--table-sort__flex"
+                            >
+                              <div
+                                class="cds--table-header-label"
+                              >
+                                Status
+                              </div>
+                              <svg
+                                aria-hidden="true"
+                                class="cds--table-sort__icon"
+                                fill="currentColor"
+                                focusable="false"
+                                height="20"
+                                preserveAspectRatio="xMidYMid meet"
+                                viewBox="0 0 32 32"
+                                width="20"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                                />
+                              </svg>
+                              <svg
+                                aria-hidden="true"
+                                class="cds--table-sort__icon-unsorted"
+                                fill="currentColor"
+                                focusable="false"
+                                height="20"
+                                preserveAspectRatio="xMidYMid meet"
+                                viewBox="0 0 32 32"
+                                width="20"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                                />
+                              </svg>
+                              <div
+                                class="cds--table-header-label--decorator-inner"
+                              />
+                            </span>
+                          </button>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody
+                      aria-live="polite"
+                    >
+                      <tr
+                        style="width: 100%;"
+                      >
+                        <td>
+                          <p>
+                            Active Medication
+                          </p>
+                          <p>
+                            30 tablets
+                          </p>
+                        </td>
+                        <td>
+                          <p>
+                            100 mg | Once daily | 30 days
+                          </p>
+                        </td>
+                        <td>
+                          Oral | Take with food
+                        </td>
+                        <td>
+                          15/01/2024
+                        </td>
+                        <td>
+                          Dr. Johnson
+                        </td>
+                        <td>
+                          15/01/2024
+                        </td>
+                        <td>
+                          <div
+                            class="cds--tag cds--tag--outline"
+                            id="tag-id-«re4»"
+                          >
+                            <div
+                              class="cds--tag__custom-icon"
+                            >
+                              <svg
+                                aria-hidden="true"
+                                fill="currentColor"
+                                focusable="false"
+                                height="16"
+                                preserveAspectRatio="xMidYMid meet"
+                                viewBox="0 0 32 32"
+                                width="16"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <circle
+                                  cx="16"
+                                  cy="16"
+                                  r="8"
+                                />
+                              </svg>
+                            </div>
+                            <span
+                              class="cds--tag__label"
+                              dir="auto"
+                              title="Active"
+                            >
+                              Active
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr
+                        style="width: 100%;"
+                      >
+                        <td>
+                          <p>
+                            Active Medication
+                          </p>
+                          <p>
+                            30 tablets
+                          </p>
+                        </td>
+                        <td>
+                          <p>
+                            100 mg | Once daily | 30 days
+                          </p>
+                        </td>
+                        <td>
+                          Oral | Take with food
+                        </td>
+                        <td>
+                          15/01/2024
+                        </td>
+                        <td>
+                          Dr. Johnson
+                        </td>
+                        <td>
+                          15/01/2024
+                        </td>
+                        <td>
+                          <div
+                            class="cds--tag cds--tag--outline"
+                            id="tag-id-«re5»"
+                          >
+                            <div
+                              class="cds--tag__custom-icon"
+                            >
+                              <svg
+                                aria-hidden="true"
+                                fill="currentColor"
+                                focusable="false"
+                                height="16"
+                                preserveAspectRatio="xMidYMid meet"
+                                viewBox="0 0 32 32"
+                                width="16"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <circle
+                                  cx="16"
+                                  cy="16"
+                                  r="8"
+                                />
+                              </svg>
+                            </div>
+                            <span
+                              class="cds--tag__label"
+                              dir="auto"
+                              title="Active"
+                            >
+                              Active
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`MedicationsTable Snapshots matches snapshot for empty state 1`] = `
+<div
+  data-testid="medications-table"
+>
+  <div
+    class="cds--tabs"
+  >
+    <button
+      aria-hidden="true"
+      aria-label="Scroll left"
+      class="cds--tab--overflow-nav-button cds--tab--overflow-nav-button--previous cds--tab--overflow-nav-button--hidden"
+      tabindex="-1"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        fill="currentColor"
+        focusable="false"
+        height="16"
+        preserveAspectRatio="xMidYMid meet"
+        viewBox="0 0 16 16"
+        width="16"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M5 8L10 3 10.7 3.7 6.4 8 10.7 12.3 10 13z"
+        />
+      </svg>
+    </button>
+    <div
+      aria-label="Medication view options"
+      class="cds--tab--list"
+      role="tablist"
+    >
+      <button
+        aria-controls="ccs-«re7»-tabpanel-0"
+        aria-selected="true"
+        class="cds--tabs__nav-item cds--tabs__nav-link cds--tabs__nav-item--selected"
+        id="ccs-«re7»-tab-0"
+        role="tab"
+        tabindex="0"
+        type="button"
+      >
+        <div
+          class="cds--tabs__nav-item-label-wrapper"
+        >
+          <span
+            class="cds--tabs__nav-item-label"
+            dir="auto"
+          >
+            Active & Scheduled
+          </span>
+        </div>
+      </button>
+      <div
+        class="cds--tabs__nav-item--close--hidden"
+      >
+        <button
+          aria-hidden="true"
+          class="cds--visually-hidden cds--tabs__nav-item--close-icon--selected"
+          tabindex="-1"
+          title="Remove Active & Scheduled tab"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            aria-label="Press delete to remove Active & Scheduled tab"
+            fill="currentColor"
+            focusable="false"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            viewBox="0 0 32 32"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+            />
+          </svg>
+        </button>
+      </div>
+      <button
+        aria-controls="ccs-«re7»-tabpanel-1"
+        aria-selected="false"
+        class="cds--tabs__nav-item cds--tabs__nav-link"
+        id="ccs-«re7»-tab-1"
+        role="tab"
+        tabindex="-1"
+        type="button"
+      >
+        <div
+          class="cds--tabs__nav-item-label-wrapper"
+        >
+          <span
+            class="cds--tabs__nav-item-label"
+            dir="auto"
+          >
+            All
+          </span>
+        </div>
+      </button>
+      <div
+        class="cds--tabs__nav-item--close--hidden"
+      >
+        <button
+          aria-hidden="true"
+          class="cds--visually-hidden"
+          tabindex="-1"
+          title="Remove All tab"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            aria-label="Press delete to remove All tab"
+            fill="currentColor"
+            focusable="false"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            viewBox="0 0 32 32"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+    <button
+      aria-hidden="true"
+      aria-label="Scroll right"
+      class="cds--tab--overflow-nav-button cds--tab--overflow-nav-button--next cds--tab--overflow-nav-button--hidden"
+      tabindex="-1"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        fill="currentColor"
+        focusable="false"
+        height="16"
+        preserveAspectRatio="xMidYMid meet"
+        viewBox="0 0 16 16"
+        width="16"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+        />
+      </svg>
+    </button>
+  </div>
+  <div
+    aria-labelledby="ccs-«re7»-tab-0"
+    class="cds--tab-content cds--tab-content--interactive"
+    id="ccs-«re7»-tabpanel-0"
+    role="tabpanel"
+    tabindex="-1"
+  >
+    <p
+      data-testid="sortable-table-empty"
+    >
+      No active medications
+    </p>
+  </div>
+  <div
+    aria-labelledby="ccs-«re7»-tab-1"
+    class="cds--tab-content cds--tab-content--interactive"
+    hidden=""
+    id="ccs-«re7»-tabpanel-1"
+    role="tabpanel"
+    tabindex="-1"
+  >
+    <p
+      data-testid="sortable-table-empty"
+    >
+      No medication history
+    </p>
+  </div>
+</div>
+`;
+
+exports[`MedicationsTable Snapshots matches snapshot for error state 1`] = `
+<div
+  data-testid="medications-table-error"
+>
+  <p>
+    Error fetching medications
+  </p>
+</div>
+`;
+
+exports[`MedicationsTable Snapshots matches snapshot for loading state 1`] = `
+<div
+  data-testid="medications-table"
+>
+  <div
+    class="cds--tabs"
+  >
+    <button
+      aria-hidden="true"
+      aria-label="Scroll left"
+      class="cds--tab--overflow-nav-button cds--tab--overflow-nav-button--previous cds--tab--overflow-nav-button--hidden"
+      tabindex="-1"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        fill="currentColor"
+        focusable="false"
+        height="16"
+        preserveAspectRatio="xMidYMid meet"
+        viewBox="0 0 16 16"
+        width="16"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M5 8L10 3 10.7 3.7 6.4 8 10.7 12.3 10 13z"
+        />
+      </svg>
+    </button>
+    <div
+      aria-label="Medication view options"
+      class="cds--tab--list"
+      role="tablist"
+    >
+      <button
+        aria-controls="ccs-«re6»-tabpanel-0"
+        aria-selected="true"
+        class="cds--tabs__nav-item cds--tabs__nav-link cds--tabs__nav-item--selected"
+        id="ccs-«re6»-tab-0"
+        role="tab"
+        tabindex="0"
+        type="button"
+      >
+        <div
+          class="cds--tabs__nav-item-label-wrapper"
+        >
+          <span
+            class="cds--tabs__nav-item-label"
+            dir="auto"
+          >
+            Active & Scheduled
+          </span>
+        </div>
+      </button>
+      <div
+        class="cds--tabs__nav-item--close--hidden"
+      >
+        <button
+          aria-hidden="true"
+          class="cds--visually-hidden cds--tabs__nav-item--close-icon--selected"
+          tabindex="-1"
+          title="Remove Active & Scheduled tab"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            aria-label="Press delete to remove Active & Scheduled tab"
+            fill="currentColor"
+            focusable="false"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            viewBox="0 0 32 32"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+            />
+          </svg>
+        </button>
+      </div>
+      <button
+        aria-controls="ccs-«re6»-tabpanel-1"
+        aria-selected="false"
+        class="cds--tabs__nav-item cds--tabs__nav-link"
+        id="ccs-«re6»-tab-1"
+        role="tab"
+        tabindex="-1"
+        type="button"
+      >
+        <div
+          class="cds--tabs__nav-item-label-wrapper"
+        >
+          <span
+            class="cds--tabs__nav-item-label"
+            dir="auto"
+          >
+            All
+          </span>
+        </div>
+      </button>
+      <div
+        class="cds--tabs__nav-item--close--hidden"
+      >
+        <button
+          aria-hidden="true"
+          class="cds--visually-hidden"
+          tabindex="-1"
+          title="Remove All tab"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            aria-label="Press delete to remove All tab"
+            fill="currentColor"
+            focusable="false"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            viewBox="0 0 32 32"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+    <button
+      aria-hidden="true"
+      aria-label="Scroll right"
+      class="cds--tab--overflow-nav-button cds--tab--overflow-nav-button--next cds--tab--overflow-nav-button--hidden"
+      tabindex="-1"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        fill="currentColor"
+        focusable="false"
+        height="16"
+        preserveAspectRatio="xMidYMid meet"
+        viewBox="0 0 16 16"
+        width="16"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+        />
+      </svg>
+    </button>
+  </div>
+  <div
+    aria-labelledby="ccs-«re6»-tab-0"
+    class="cds--tab-content cds--tab-content--interactive"
+    id="ccs-«re6»-tabpanel-0"
+    role="tabpanel"
+    tabindex="-1"
+  >
+    <div
+      class="sortable-data-table"
+      data-testid="sortable-table-skeleton"
+    >
+      <div
+        class="cds--skeleton cds--data-table-container"
+      >
+        <table
+          class="cds--skeleton cds--data-table cds--data-table--compact"
+        >
+          <thead>
+            <tr>
+              <th>
+                <span />
+              </th>
+              <th>
+                <span />
+              </th>
+              <th>
+                <span />
+              </th>
+              <th>
+                <span />
+              </th>
+              <th>
+                <span />
+              </th>
+              <th>
+                <span />
+              </th>
+              <th>
+                <span />
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div
+    aria-labelledby="ccs-«re6»-tab-1"
+    class="cds--tab-content cds--tab-content--interactive"
+    hidden=""
+    id="ccs-«re6»-tabpanel-1"
+    role="tabpanel"
+    tabindex="-1"
+  >
+    <div
+      class="sortable-data-table"
+      data-testid="sortable-table-skeleton"
+    >
+      <div
+        class="cds--skeleton cds--data-table-container"
+      >
+        <table
+          class="cds--skeleton cds--data-table cds--data-table--compact"
+        >
+          <thead>
+            <tr>
+              <th>
+                <span />
+              </th>
+              <th>
+                <span />
+              </th>
+              <th>
+                <span />
+              </th>
+              <th>
+                <span />
+              </th>
+              <th>
+                <span />
+              </th>
+              <th>
+                <span />
+              </th>
+              <th>
+                <span />
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+`;

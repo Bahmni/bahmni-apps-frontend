@@ -1,0 +1,26 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.sortableDataTableBody {
+  :global(.cds--data-table td) {
+    @include type-style("body-short-01");
+    background-color: $background;
+    border-block-end: 0px !important;
+    &:focus-visible {
+      border: 0px !important;
+    }
+    min-height: $spacing-12;
+    align-content: start;
+    padding-block: $spacing-03;
+  }
+}
+
+.sortableDataTableBodyEmpty {
+  @include type-style("label-02");
+  background-color: $background;
+  padding: $spacing-07 $spacing-05;
+  text-align: center;
+  border-top: 1px solid $border-subtle-02;
+}

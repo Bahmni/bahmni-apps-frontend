@@ -48,22 +48,22 @@
     padding-block: 0 !important;
     padding-block-end: 0 !important;
   }
-  :global(.cds--data-table td:nth-child(2)) {
+  :global(.cds--data-table td:nth-child(1)) {
     @include type-style("body-short-01");
     color: $text-primary;
     min-width: calc(100vw * 0.3);
   }
-  :global(.cds--data-table td:nth-child(3)) {
+  :global(.cds--data-table td:nth-child(2)) {
     @include type-style("body-short-01");
     color: $text-primary;
     max-width: calc(100vw * 0.2);
   }
-  :global(.cds--data-table td:nth-child(4)) {
+  :global(.cds--data-table td:nth-child(3)) {
     @include type-style("body-short-01");
     color: $text-primary;
     max-width: calc(100vw * 0.075);
   }
-  :global(.cds--data-table td:nth-child(5)) {
+  :global(.cds--data-table td:nth-child(4)) {
     @include type-style("body-short-01");
     color: $text-primary;
     max-width: calc(100vw * 0.075);
