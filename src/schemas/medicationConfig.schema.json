@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Medication Configuration Schema",
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "defaultDurationUnit": {
       "type": "string",
@@ -17,6 +18,7 @@
       "patternProperties": {
         "^.*$": {
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "doseUnits": {
               "type": "string",
