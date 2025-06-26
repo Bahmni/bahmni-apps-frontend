@@ -71,18 +71,6 @@ const ConditionsTable: React.FC = () => {
     }
   };
 
-  // Function to render expanded content for a condition
-  const renderExpandedContent = (condition: FormattedCondition) => {
-    if (condition.note && condition.note.length > 0) {
-      return (
-        <p className={styles.conditionsNote} key={condition.id}>
-          {condition.note.join(', ')}
-        </p>
-      );
-    }
-    return undefined;
-  };
-
   return (
     <div data-testid="condition-table">
       <ExpandableDataTable
@@ -90,12 +78,12 @@ const ConditionsTable: React.FC = () => {
         rows={formattedConditions}
         headers={headers}
         renderCell={renderCell}
-        renderExpandedContent={renderExpandedContent}
         loading={loading}
         error={error}
         ariaLabel={t('CONDITION_LIST_DISPLAY_CONTROL_TITLE')}
         emptyStateMessage={t('CONDITION_LIST_NO_CONDITIONS')}
         className={styles.conditionsTableBody}
+        isOpen={true}
       />
     </div>
   );

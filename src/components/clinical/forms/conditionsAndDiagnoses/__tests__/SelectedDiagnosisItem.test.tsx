@@ -6,17 +6,10 @@ import i18n from '@/setupTests.i18n';
 import SelectedDiagnosisItem from '../SelectedDiagnosisItem';
 import { Coding } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { DiagnosisInputEntry } from '@types/diagnosis';
+import { DiagnosisInputEntry } from '@/types/diagnosis';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
 
 expect.extend(toHaveNoViolations);
-
-// Mock the CSS modules
-jest.mock('../styles/SelectedDiagnosisItem.module.scss', () => ({
-  selectedDiagnosisTitle: 'selectedDiagnosisTitle',
-  selectedDiagnosisCertainty: 'selectedDiagnosisCertainty',
-  addAsConditionLink: 'addAsConditionLink',
-}));
 
 const mockDiagnosis: DiagnosisInputEntry = {
   id: 'test-diagnosis-1',
@@ -46,8 +39,8 @@ describe('SelectedDiagnosisItem', () => {
     window.HTMLElement.prototype.scrollIntoView = jest.fn();
   });
 
-  // HAPPY PATH TESTS
-  describe('Happy Path Scenarios', () => {
+  // EXISTING CONDITION LOGIC TESTS
+  describe('Existing Condition Logic', () => {
     test('renders diagnosis title correctly', () => {
       renderWithI18n(<SelectedDiagnosisItem {...defaultProps} />);
       expect(screen.getByText('Diabetes Mellitus')).toBeInTheDocument();
@@ -267,36 +260,68 @@ describe('SelectedDiagnosisItem', () => {
       // The dropdown should render without a title text
       expect(dropdown).toBeInTheDocument();
     });
+  });
 
-    test('renders "Add to condition" link below diagnosis title', () => {
-      renderWithI18n(<SelectedDiagnosisItem {...defaultProps} />);
-      expect(
-        screen.getByRole('link', { name: 'Add to condition' }),
-      ).toBeInTheDocument();
+  // Add as Condition Link Tests
+  describe('Add as Condition Link', () => {
+    // Link State and Text
+    describe('Link State and Text', () => {
+      test('renders "Add as condition" link enabled when not an existing condition', () => {
+        renderWithI18n(<SelectedDiagnosisItem {...defaultProps} />);
+        const addLink = screen.getByRole('link', { name: 'Add as condition' });
+        expect(addLink).toBeInTheDocument();
+        expect(addLink).toHaveAttribute('aria-disabled', 'false');
+        expect(addLink).not.toHaveAttribute('disabled');
+      });
+
+      test('renders "Added as a condition" link disabled when doesConditionExist prop is true', () => {
+        const propsWithExistingCondition = {
+          ...defaultProps,
+          doesConditionExist: true,
+        };
+
+        renderWithI18n(
+          <SelectedDiagnosisItem {...propsWithExistingCondition} />,
+        );
+        const addLink = screen.getByRole('link', {
+          name: 'Added as a condition',
+        });
+        expect(addLink).toBeInTheDocument();
+        expect(addLink).toHaveAttribute('aria-disabled', 'true');
+      });
     });
 
-    test('calls onMarkAsCondition when "Add to condition" link is clicked', async () => {
-      const user = userEvent.setup();
-      renderWithI18n(<SelectedDiagnosisItem {...defaultProps} />);
+    // Interaction Tests
+    describe('Interaction Tests', () => {
+      test('calls onMarkAsCondition when "Add as condition" link is clicked and enabled', async () => {
+        const user = userEvent.setup();
+        renderWithI18n(<SelectedDiagnosisItem {...defaultProps} />);
 
-      const addLink = screen.getByRole('link', { name: 'Add to condition' });
-      await user.click(addLink);
+        const addLink = screen.getByRole('link', { name: 'Add as condition' });
+        await user.click(addLink);
 
-      expect(defaultProps.onMarkAsCondition).toHaveBeenCalledWith(
-        'test-diagnosis-1',
-      );
-    });
+        expect(defaultProps.onMarkAsCondition).toHaveBeenCalledWith(
+          'test-diagnosis-1',
+        );
+      });
 
-    test('shows disabled styling for "Add to condition" link when condition already exists', () => {
-      const propsWithExistingCondition = {
-        ...defaultProps,
-        doesConditionExist: true,
-      };
+      test('does NOT call onMarkAsCondition when "Add as condition" link is clicked and disabled by prop', async () => {
+        const user = userEvent.setup();
+        const propsWithExistingCondition = {
+          ...defaultProps,
+          doesConditionExist: true,
+        };
 
-      renderWithI18n(<SelectedDiagnosisItem {...propsWithExistingCondition} />);
+        renderWithI18n(
+          <SelectedDiagnosisItem {...propsWithExistingCondition} />,
+        );
+        const addLink = screen.getByRole('link', {
+          name: 'Added as a condition',
+        });
+        await user.click(addLink);
 
-      const addLink = screen.getByRole('link', { name: 'Add to condition' });
-      expect(addLink).toHaveAttribute('aria-disabled', 'true');
+        expect(defaultProps.onMarkAsCondition).not.toHaveBeenCalled();
+      });
     });
   });
 
@@ -354,6 +379,18 @@ describe('SelectedDiagnosisItem', () => {
           updateCertainty={defaultProps.updateCertainty}
           onMarkAsCondition={defaultProps.onMarkAsCondition}
         />,
+      );
+      expect(container).toMatchSnapshot();
+    });
+
+    test('disabled condition link matches snapshot', () => {
+      const propsWithExistingCondition = {
+        ...defaultProps,
+        doesConditionExist: true,
+      };
+
+      const { container } = renderWithI18n(
+        <SelectedDiagnosisItem {...propsWithExistingCondition} />,
       );
       expect(container).toMatchSnapshot();
     });

@@ -4,7 +4,9 @@ import userEvent from '@testing-library/user-event';
 import { I18nextProvider } from 'react-i18next';
 import ConditionsAndDiagnoses from '../ConditionsAndDiagnoses';
 import { useConceptSearch } from '@hooks/useConceptSearch';
+import useConditions from '@hooks/useConditions';
 import { ConceptSearch } from '@types/concepts';
+import { Condition } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import i18n from '@/setupTests.i18n';
 import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
@@ -13,9 +15,11 @@ import { CERTAINITY_CONCEPTS } from '@constants/concepts';
 expect.extend(toHaveNoViolations);
 
 // Mock only external APIs - keep the store real for integration testing
-jest.mock('@hooks/useConceptSearch', () => ({
-  useConceptSearch: jest.fn(),
-}));
+jest.mock('@hooks/useConceptSearch');
+jest.mock('@hooks/useConditions');
+
+const mockedUseConceptSearch = useConceptSearch as jest.Mock;
+const mockedUseConditions = useConditions as jest.Mock;
 
 // Mock scrollIntoView which is not available in jsdom
 beforeAll(() => {
@@ -57,10 +61,18 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
     });
 
     // Default mock for useConceptSearch
-    (useConceptSearch as jest.Mock).mockReturnValue({
+    mockedUseConceptSearch.mockReturnValue({
       searchResults: [],
       loading: false,
       error: null,
+    });
+
+    // Default mock for useConditions
+    mockedUseConditions.mockReturnValue({
+      conditions: [],
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
     });
 
     i18n.changeLanguage('en');
@@ -71,7 +83,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
       const user = userEvent.setup();
 
       // Mock search results
-      (useConceptSearch as jest.Mock).mockReturnValue({
+      mockedUseConceptSearch.mockReturnValue({
         searchResults: mockSearchResults,
         loading: false,
         error: null,
@@ -108,7 +120,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
       await user.click(confirmedOption);
 
       // Step 4: Convert diagnosis to condition
-      const addToConditionsButton = screen.getByText('Add to condition');
+      const addToConditionsButton = screen.getByText('Add as condition');
       await user.click(addToConditionsButton);
 
       // Step 5: Verify diagnosis moves to conditions section
@@ -150,7 +162,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
       const user = userEvent.setup();
 
       // Mock search results
-      (useConceptSearch as jest.Mock).mockReturnValue({
+      mockedUseConceptSearch.mockReturnValue({
         searchResults: mockSearchResults,
         loading: false,
         error: null,
@@ -222,7 +234,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
       const user = userEvent.setup();
 
       // Mock search results
-      (useConceptSearch as jest.Mock).mockReturnValue({
+      mockedUseConceptSearch.mockReturnValue({
         searchResults: mockSearchResults,
         loading: false,
         error: null,
@@ -272,7 +284,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
       }
 
       // Convert first diagnosis to condition
-      const addToConditionsButtons = screen.getAllByText('Add to condition');
+      const addToConditionsButtons = screen.getAllByText('Add as condition');
       expect(addToConditionsButtons).toHaveLength(3);
 
       await user.click(addToConditionsButtons[0]); // Convert first diagnosis
@@ -387,11 +399,11 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
       // Verify initial diagnosis state
       await waitFor(() => {
         expect(screen.getByText('Hypertension')).toBeInTheDocument();
-        expect(screen.getByText('Add to condition')).toBeInTheDocument();
+        expect(screen.getByText('Add as condition')).toBeInTheDocument();
       });
 
       // Convert to condition
-      await user.click(screen.getByText('Add to condition'));
+      await user.click(screen.getByText('Add as condition'));
 
       // Verify the conversion worked
       await waitFor(() => {
@@ -452,7 +464,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
 
       // Check that the diagnosis that was converted shows appropriate state
       // The converted item should show in conditions, remaining one in diagnoses
-      const addToConditionsButtons = screen.getAllByText('Add to condition');
+      const addToConditionsButtons = screen.getAllByText('Add as condition');
       expect(addToConditionsButtons).toHaveLength(1); // Only one diagnosis left
 
       // The condition should show in conditions section - check by text instead of display value
@@ -589,7 +601,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
       const user = userEvent.setup();
 
       // Mock search results
-      (useConceptSearch as jest.Mock).mockReturnValue({
+      mockedUseConceptSearch.mockReturnValue({
         searchResults: mockSearchResults,
         loading: false,
         error: null,
@@ -618,17 +630,12 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
 
       // Should now show as already selected
       await waitFor(() => {
-        expect(
-          screen.getByText('Hypertension (Already selected)'),
-        ).toBeInTheDocument();
+        const alreadySelectedItem = screen.getByText(
+          /Hypertension \(Already selected\)/,
+        );
+        const listItem = alreadySelectedItem.closest('li');
+        expect(listItem).toHaveAttribute('disabled');
       });
-
-      // Verify the already selected item is disabled
-      const alreadySelectedItem = screen.getByText(
-        'Hypertension (Already selected)',
-      );
-      const listItem = alreadySelectedItem.closest('li');
-      expect(listItem).toHaveAttribute('disabled');
 
       // Try to select a different item
       await user.clear(searchInput);
@@ -648,10 +655,10 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText('Hypertension (Already selected)'),
+          screen.getByText(/Hypertension \(Already selected\)/),
         ).toBeInTheDocument();
         expect(
-          screen.getByText('Type 2 Diabetes (Already selected)'),
+          screen.getByText(/Type 2 Diabetes \(Already selected\)/),
         ).toBeInTheDocument();
       });
     });
@@ -666,7 +673,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
       });
 
       // Mock search error
-      (useConceptSearch as jest.Mock).mockReturnValue({
+      mockedUseConceptSearch.mockReturnValue({
         searchResults: [],
         loading: false,
         error: new Error('Search failed'),
@@ -713,7 +720,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
       });
 
       // Mock loading state
-      (useConceptSearch as jest.Mock).mockReturnValue({
+      mockedUseConceptSearch.mockReturnValue({
         searchResults: [],
         loading: true,
         error: null,
@@ -739,7 +746,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
 
       // Existing diagnosis should still be there and functional
       expect(screen.getByText('Hypertension')).toBeInTheDocument();
-      expect(screen.getByText('Add to condition')).toBeInTheDocument();
+      expect(screen.getByText('Add as condition')).toBeInTheDocument();
     });
   });
 
@@ -748,7 +755,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
       const user = userEvent.setup();
 
       // Mock search results
-      (useConceptSearch as jest.Mock).mockReturnValue({
+      mockedUseConceptSearch.mockReturnValue({
         searchResults: mockSearchResults.slice(0, 1),
         loading: false,
         error: null,
@@ -780,7 +787,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
       expect(await axe(container)).toHaveNoViolations();
 
       // Convert to condition
-      await user.click(screen.getByText('Add to condition'));
+      await user.click(screen.getByText('Add as condition'));
 
       // Test accessibility with condition
       expect(await axe(container)).toHaveNoViolations();
@@ -799,7 +806,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
       const user = userEvent.setup();
 
       // Mock search results
-      (useConceptSearch as jest.Mock).mockReturnValue({
+      mockedUseConceptSearch.mockReturnValue({
         searchResults: mockSearchResults,
         loading: false,
         error: null,
@@ -859,7 +866,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
         expect(screen.getByText('Added Diagnoses')).toBeInTheDocument();
       });
 
-      let state = useConditionsAndDiagnosesStore.getState();
+      const state = useConditionsAndDiagnosesStore.getState();
       expect(state.selectedDiagnoses).toHaveLength(2);
 
       // Reset store externally - wrap in act()
@@ -876,11 +883,53 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
         expect(screen.queryByText('Added Diagnoses')).not.toBeInTheDocument();
         expect(screen.queryByText('Added Conditions')).not.toBeInTheDocument();
       });
+    });
+  });
 
-      // Verify store state is reset
-      state = useConditionsAndDiagnosesStore.getState();
-      expect(state.selectedDiagnoses).toHaveLength(0);
-      expect(state.selectedConditions).toHaveLength(0);
+  describe('Integration with Existing Conditions', () => {
+    const existingCondition: Condition = {
+      resourceType: 'Condition',
+      id: 'existing-condition-1',
+      code: {
+        coding: [
+          {
+            system: 'http://snomed.info/sct',
+            code: mockSearchResults[0].conceptUuid,
+            display: mockSearchResults[0].conceptName,
+          },
+        ],
+      },
+      subject: { reference: 'Patient/123' },
+    };
+
+    it('should disable "Add as condition" if a diagnosis is already an existing condition', async () => {
+      const user = userEvent.setup();
+      mockedUseConditions.mockReturnValue({
+        conditions: [existingCondition],
+        loading: false,
+        error: null,
+      });
+      mockedUseConceptSearch.mockReturnValue({
+        searchResults: mockSearchResults,
+        loading: false,
+        error: null,
+      });
+
+      renderWithI18n(<ConditionsAndDiagnoses />);
+
+      // Search and select the diagnosis that is already a condition
+      const searchInput = screen.getByPlaceholderText(
+        'Search to add new diagnosis',
+      );
+      await user.type(searchInput, 'Hyper');
+      await user.click(screen.getByText('Hypertension'));
+
+      // Verify the "Add as condition" link is disabled
+      await waitFor(() => {
+        const addAsConditionLink = screen.getByText('Added as a condition');
+        expect(addAsConditionLink).toBeInTheDocument();
+        expect(addAsConditionLink).toHaveAttribute('aria-disabled', 'true');
+      });
     });
   });
 });

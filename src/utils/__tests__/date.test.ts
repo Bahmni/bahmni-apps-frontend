@@ -786,7 +786,7 @@ describe('Date Utility Functions', () => {
       it('should handle leap year dates correctly', () => {
         const leapYearDate = '2024-02-29T07:02:38.000Z'; // Feb 29, 2024 (leap year)
         const result = formatDateDistance(leapYearDate);
-        expect(result.formattedResult).toBe('1 year'); // about 1 year ago
+        expect(result.formattedResult).toBe('1.5 years');
         expect(result.error).toBeUndefined();
       });
 
@@ -832,6 +832,80 @@ describe('Date Utility Functions', () => {
         const result = formatDateDistance(seasonalOnset);
         expect(result.formattedResult).toBe('6 months');
         expect(result.error).toBeUndefined();
+      });
+
+      it('should format 1 year and 6 months as "1.5 years"', () => {
+        const date = '2023-12-18T07:02:38.000Z'; // 1 year, 6 months ago from mockCurrentDate
+        const result = formatDateDistance(date);
+        expect(result.formattedResult).toBe('1.5 years');
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should format 2 years and 3 months as "2.5 years"', () => {
+        const date = '2023-03-18T07:02:38.000Z'; // 2 years, 3 months ago
+        const result = formatDateDistance(date);
+        expect(result.formattedResult).toBe('2.5 years');
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should format 4 years and 11 months as "5 years"', () => {
+        const date = '2020-07-18T07:02:38.000Z'; // 4 years, 11 months ago
+        const result = formatDateDistance(date);
+        expect(result.formattedResult).toBe('5 years');
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should round down 5 years and 5 months to "5 years"', () => {
+        const date = '2020-01-18T07:02:38.000Z'; // 5 years, 5 months ago
+        const result = formatDateDistance(date);
+        expect(result.formattedResult).toBe('5 years');
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should round up 5 years and 8 months to "6 years"', () => {
+        const date = '2019-10-18T07:02:38.000Z'; // 5 years, 8 months ago
+        const result = formatDateDistance(date);
+        expect(result.formattedResult).toBe('6 years');
+        expect(result.error).toBeUndefined();
+      });
+
+      it('should format exactly 5 years as "5 years"', () => {
+        const date = '2020-06-18T07:02:38.000Z'; // Exactly 5 years ago
+        const result = formatDateDistance(date);
+        expect(result.formattedResult).toBe('5 years');
+        expect(result.error).toBeUndefined();
+      });
+    });
+
+    describe('Rounding Logic', () => {
+      it('should round up to the next month if days are over 15', () => {
+        const date = '2025-04-28T07:02:38.000Z'; // 1 month and 21 days ago
+        const result = formatDateDistance(date);
+        expect(result.formattedResult).toBe('2 months');
+      });
+
+      it('should round down if days are 15 or less', () => {
+        const date = '2025-05-04T07:02:38.000Z'; // 1 month and 15 days ago
+        const result = formatDateDistance(date);
+        expect(result.formattedResult).toBe('1 month');
+      });
+
+      it('should format as "12 months" when rounding up from 11 months', () => {
+        const date = '2024-06-28T07:02:38.000Z'; // 11 months and 20 days ago
+        const result = formatDateDistance(date);
+        expect(result.formattedResult).toBe('1 year');
+      });
+
+      it('should round up to the next year if months are over 6 (less than 5 years)', () => {
+        const date = '2023-11-18T07:02:38.000Z'; // 1 year and 7 months ago
+        const result = formatDateDistance(date);
+        expect(result.formattedResult).toBe('2 years');
+      });
+
+      it('should round up to the next year if months are over 6 (more than 5 years)', () => {
+        const date = '2019-11-18T07:02:38.000Z'; // 5 years and 7 months ago
+        const result = formatDateDistance(date);
+        expect(result.formattedResult).toBe('6 years');
       });
     });
   });

@@ -269,18 +269,38 @@ export function formatDateDistance(date: string): FormatDateResult {
 
   let formattedResult: string;
 
-  if (diffInYears >= 1) {
-    // Use years for periods >= 1 year
+  if (diffInYears >= 5) {
+    const monthInFraction = diffInMonths % 12;
+    const yearValue = monthInFraction > 6 ? diffInYears + 1 : diffInYears;
     const yearUnit = i18next.t('CLINICAL_YEARS_TRANSLATION_KEY', {
-      count: diffInYears,
+      count: yearValue,
     });
-    formattedResult = `${diffInYears} ${yearUnit}`;
+    formattedResult = `${yearValue} ${yearUnit}`;
+  } else if (diffInYears >= 1) {
+    // Use years for periods >= 1 year
+    const monthInFraction = diffInMonths % 12;
+    const yearUnit = i18next.t('CLINICAL_YEARS_TRANSLATION_KEY', {
+      count: diffInYears + monthInFraction,
+    });
+    formattedResult =
+      monthInFraction === 0
+        ? `${diffInYears} ${yearUnit}`
+        : monthInFraction > 6
+          ? `${diffInYears + 1} ${yearUnit}`
+          : `${diffInYears}.5 ${yearUnit}`;
+  } else if (diffInMonths >= 11) {
+    const yearUnit = i18next.t('CLINICAL_YEARS_TRANSLATION_KEY', {
+      count: 1,
+    });
+    formattedResult = `1 ${yearUnit}`;
   } else if (diffInMonths >= 1) {
     // Use months for periods >= 1 month but < 1 year
+    const daysInFraction = diffInDays % 30;
+    const monthValue = daysInFraction > 15 ? diffInMonths + 1 : diffInMonths;
     const monthUnit = i18next.t('CLINICAL_MONTHS_TRANSLATION_KEY', {
-      count: diffInMonths,
+      count: monthValue,
     });
-    formattedResult = `${diffInMonths} ${monthUnit}`;
+    formattedResult = `${monthValue} ${monthUnit}`;
   } else {
     // Use days for everything else (including hours, minutes - round up to at least 1 day)
     const days = Math.max(1, diffInDays);

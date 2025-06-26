@@ -59,7 +59,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
     return (
       <div data-testid="expandable-table-error" className={className}>
         <Accordion align="start">
-          <AccordionItem title={tableTitle}>
+          <AccordionItem title={tableTitle} open={isOpen}>
             <p style={{ padding: '0.5rem' }}>
               {t('EXPANDABLE_TABLE_ERROR_MESSAGE', {
                 title: formattedError.title,
@@ -77,7 +77,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
     return (
       <div data-testid="expandable-table-skeleton" className={className}>
         <Accordion align="start">
-          <AccordionItem title={tableTitle}>
+          <AccordionItem title={tableTitle} open={isOpen}>
             <DataTableSkeleton
               columnCount={headers.length + 1}
               rowCount={5}
@@ -96,7 +96,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
     return (
       <div data-testid="expandable-data-table-empty" className={className}>
         <Accordion align="start">
-          <AccordionItem title={tableTitle}>
+          <AccordionItem title={tableTitle} open={isOpen}>
             <p style={{ padding: '0.5rem' }}>{emptyStateMessage}</p>
           </AccordionItem>
         </Accordion>
@@ -131,7 +131,11 @@ export const ExpandableDataTable = <T extends { id?: string }>({
                 >
                   <TableHead>
                     <TableRow>
-                      <TableExpandHeader />
+                      <TableExpandHeader>
+                        <span className="cds--visually-hidden">
+                          {t('TABLE_EXPAND_COLUMN_ARIA_LABEL')}
+                        </span>
+                      </TableExpandHeader>
                       {tableHeaders.map((header) => (
                         <TableHeader
                           {...getHeaderProps({

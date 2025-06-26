@@ -37,6 +37,19 @@
 
     &:hover {
       text-decoration: none;
+      color: $text-disabled;
+    }
+
+    &:focus {
+      text-decoration: none;
+      color: $text-disabled;
+      outline: none;
+    }
+
+    &:active {
+      text-decoration: none;
+      color: $text-disabled;
+      outline: none;
     }
   }
 }
