@@ -13,16 +13,11 @@ import { Close } from '@carbon/icons-react';
 import { useTranslation } from 'react-i18next';
 import * as styles from './styles/SelectedMedicationItem.module.scss';
 import { MedicationInputEntry } from '../../../../types/medication';
-import {
-  FREQUENCY_OPTIONS,
-  ROUTE_OPTIONS,
-  TIMING_OPTIONS,
-  DOSAGE_UNIT_OPTIONS,
-  DURATION_UNIT_OPTIONS,
-} from '../../../../constants/medications';
+
+import { MedicationOrdersMetadataResponse } from '@/types/medicationConfig';
 
 export interface SelectedMedicationItemProps {
-  medication: MedicationInputEntry;
+  medication: MedicationOrdersMetadataResponse;
   updateDosage: (medicationId: string, dosage: number, unit: string) => void;
   updateFrequency: (medicationId: string, frequency: string) => void;
   updateRoute: (medicationId: string, route: string) => void;
@@ -142,12 +137,12 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
         }
       };
 
-      const selectedFrequency = FREQUENCY_OPTIONS.find(
+      const selectedFrequency = medication.frequencies.find(
         (f) => f.code === frequency,
       );
-      const selectedRoute = ROUTE_OPTIONS.find((r) => r.code === route);
+      const selectedRoute = medication.routes.find((r) => r.code === route);
       const selectedTiming = TIMING_OPTIONS.find((t) => t.code === timing);
-      const selectedDosageUnit = DOSAGE_UNIT_OPTIONS.find(
+      const selectedDosageUnit = medication.doseUnits.find(
         (d) => d.code === dosageUnit,
       );
       const selectedDurationUnit = DURATION_UNIT_OPTIONS.find(
@@ -214,8 +209,8 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               titleText="Unit"
               label="Unit"
               hideLabel
-              items={DOSAGE_UNIT_OPTIONS}
-              selectedItem={selectedDosageUnit}
+              items={medication.doseUnits}
+             // selectedItem={selectedDosageUnit}
               size="sm"
               itemToString={(item) => (item ? t(item.display) : '')}
               onChange={({ selectedItem }) =>
@@ -230,7 +225,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               titleText="Frequency"
               label="Frequency"
               hideLabel
-              items={FREQUENCY_OPTIONS}
+              items={medication.frequencies}
               selectedItem={selectedFrequency}
               size="sm"
               itemToString={(item) => (item ? t(item.display) : '')}
@@ -269,7 +264,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               titleText="Duration Unit"
               label="Duration Unit"
               hideLabel
-              items={DURATION_UNIT_OPTIONS}
+              items={medication.durationUnits}
               selectedItem={selectedDurationUnit}
               size="sm"
               itemToString={(item) => (item ? t(item.display) : '')}
@@ -300,7 +295,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               titleText="Route"
               label="Route"
               hideLabel
-              items={ROUTE_OPTIONS}
+              items={medication.routes}
               selectedItem={selectedRoute}
               size="sm"
               itemToString={(item) => (item ? t(item.display) : '')}

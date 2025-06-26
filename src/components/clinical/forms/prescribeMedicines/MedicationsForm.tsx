@@ -7,6 +7,7 @@ import BoxWHeader from '@components/common/boxWHeader/BoxWHeader';
 import { MedicationConcept } from '../../../../types/medication';
 import SelectedMedicationItem from './SelectedMedicationItem';
 import { useMedicationStore } from '../../../../stores/medicationsStore';
+import useMedicationConfig from '@/hooks/useMedicationConfig';
 
 /**
  * MedicationsForm component
@@ -17,6 +18,7 @@ import { useMedicationStore } from '../../../../stores/medicationsStore';
 const MedicationsForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const [searchMedicationTerm, setSearchMedicationTerm] = useState('');
+  const { medicationConfig, loading, error } = useMedicationConfig();
 
   // Use Zustand store
   const {
@@ -128,9 +130,9 @@ const MedicationsForm: React.FC = React.memo(() => {
           title={t('MEDICATIONS_ADDED_MEDICATIONS')}
           className={styles.medicationsBox}
         >
-          {selectedMedications.map((medication) => (
+          {selectedMedications.map((medicationConfig) => (
               <SelectedMedicationItem
-                medication={medication}
+                medication={medicationConfig}
                 updateDosage={updateDosage}
                 updateFrequency={updateFrequency}
                 updateRoute={updateRoute}
