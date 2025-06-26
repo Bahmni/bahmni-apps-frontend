@@ -1,7 +1,9 @@
-import { fetchMedicationOrdersMetadata } from '../medicationService';
+import { fetchMedicationOrdersMetadata, searchMedications, getMedicationDisplay } from '../medicationService';
 import { get } from '../api';
-import { MEDICATION_ORDERS_METADATA_URL } from '@constants/app';
+import { MEDICATION_ORDERS_METADATA_URL, MEDICATIONS_SEARCH_URL } from '@constants/app';
 import { MedicationOrdersMetadataResponse } from '@types/medicationConfig';
+import { Bundle, Medication } from 'fhir/r4';
+import { FHIR_MEDICATION_EXTENSION_URL, FHIR_MEDICATION_NAME_EXTENSION_URL } from '@constants/fhir';
 
 jest.mock('../api', () => ({
   get: jest.fn(),
@@ -69,5 +71,210 @@ describe('MedicationService', () => {
       'Network error',
     );
     expect(get).toHaveBeenCalledWith(MEDICATION_ORDERS_METADATA_URL);
+  });
+
+  describe('searchMedications', () => {
+    it('should search medications with default count', async () => {
+      const searchTerm = 'Paracetamol';
+      const mockResponse: Bundle<Medication> = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        total: 2,
+        entry: [
+          {
+            resource: {
+              resourceType: 'Medication',
+              id: 'med-1',
+              code: {
+                coding: [{
+                  system: 'http://www.nlm.nih.gov/research/umls/rxnorm',
+                  code: '161',
+                  display: 'Paracetamol 500mg'
+                }]
+              }
+            }
+          },
+          {
+            resource: {
+              resourceType: 'Medication',
+              id: 'med-2',
+              code: {
+                coding: [{
+                  system: 'http://www.nlm.nih.gov/research/umls/rxnorm',
+                  code: '162',
+                  display: 'Paracetamol 650mg'
+                }]
+              }
+            }
+          }
+        ]
+      };
+      
+      (get as jest.Mock).mockResolvedValue(mockResponse);
+
+      const result = await searchMedications(searchTerm);
+
+      expect(get).toHaveBeenCalledWith(MEDICATIONS_SEARCH_URL(searchTerm, 20));
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('should search medications with custom count', async () => {
+      const searchTerm = 'Aspirin';
+      const count = 50;
+      const mockResponse: Bundle<Medication> = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        total: 1,
+        entry: [
+          {
+            resource: {
+              resourceType: 'Medication',
+              id: 'med-3',
+              code: {
+                coding: [{
+                  system: 'http://www.nlm.nih.gov/research/umls/rxnorm',
+                  code: '1191',
+                  display: 'Aspirin'
+                }]
+              }
+            }
+          }
+        ]
+      };
+      
+      (get as jest.Mock).mockResolvedValue(mockResponse);
+
+      const result = await searchMedications(searchTerm, count);
+
+      expect(get).toHaveBeenCalledWith(MEDICATIONS_SEARCH_URL(searchTerm, count));
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('should throw an error when searching medications fails', async () => {
+      const searchTerm = 'InvalidMed';
+      const mockError = new Error('Search failed');
+      (get as jest.Mock).mockRejectedValue(mockError);
+
+      await expect(searchMedications(searchTerm)).rejects.toThrow('Search failed');
+      expect(get).toHaveBeenCalledWith(MEDICATIONS_SEARCH_URL(searchTerm, 20));
+    });
+  });
+
+  describe('getMedicationDisplay', () => {
+    it('should return medication display name with form', () => {
+      const medication: Medication = {
+        resourceType: 'Medication',
+        id: 'med-1',
+        extension: [
+          {
+            url: FHIR_MEDICATION_EXTENSION_URL,
+            extension: [
+              {
+                url: FHIR_MEDICATION_NAME_EXTENSION_URL,
+                valueString: 'Paracetamol'
+              }
+            ]
+          }
+        ],
+        form: {
+          text: 'Tablet'
+        }
+      };
+
+      const result = getMedicationDisplay(medication);
+
+      expect(result).toBe('Paracetamol (Tablet)');
+    });
+
+    it('should return medication display name without form', () => {
+      const medication: Medication = {
+        resourceType: 'Medication',
+        id: 'med-2',
+        extension: [
+          {
+            url: FHIR_MEDICATION_EXTENSION_URL,
+            extension: [
+              {
+                url: FHIR_MEDICATION_NAME_EXTENSION_URL,
+                valueString: 'Aspirin'
+              }
+            ]
+          }
+        ]
+      };
+
+      const result = getMedicationDisplay(medication);
+
+      expect(result).toBe('Aspirin');
+    });
+
+    it('should return "Unknown Medication Name" when no drug name extension is found', () => {
+      const medication: Medication = {
+        resourceType: 'Medication',
+        id: 'med-3',
+        form: {
+          text: 'Syrup'
+        }
+      };
+
+      const result = getMedicationDisplay(medication);
+
+      expect(result).toBe('Unknown Medication Name');
+    });
+
+    it('should return "Unknown Medication Name" when extension is missing', () => {
+      const medication: Medication = {
+        resourceType: 'Medication',
+        id: 'med-4'
+      };
+
+      const result = getMedicationDisplay(medication);
+
+      expect(result).toBe('Unknown Medication Name');
+    });
+
+    it('should handle medication with wrong extension URL', () => {
+      const medication: Medication = {
+        resourceType: 'Medication',
+        id: 'med-5',
+        extension: [
+          {
+            url: 'http://wrong.url',
+            extension: [
+              {
+                url: FHIR_MEDICATION_NAME_EXTENSION_URL,
+                valueString: 'SomeMed'
+              }
+            ]
+          }
+        ]
+      };
+
+      const result = getMedicationDisplay(medication);
+
+      expect(result).toBe('Unknown Medication Name');
+    });
+
+    it('should handle medication with nested extension but wrong drug name URL', () => {
+      const medication: Medication = {
+        resourceType: 'Medication',
+        id: 'med-6',
+        extension: [
+          {
+            url: FHIR_MEDICATION_EXTENSION_URL,
+            extension: [
+              {
+                url: 'http://wrong.drug.name.url',
+                valueString: 'SomeMed'
+              }
+            ]
+          }
+        ]
+      };
+
+      const result = getMedicationDisplay(medication);
+
+      expect(result).toBe('Unknown Medication Name');
+    });
   });
 });

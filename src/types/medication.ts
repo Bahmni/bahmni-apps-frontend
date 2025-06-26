@@ -1,9 +1,9 @@
-export interface MedicationConcept {
-  uuid: string;
-  display: string;
-  strength?: string;
-  dosageForm?: string;
-  disabled?: boolean;
+import { Medication } from "fhir/r4";
+
+export interface MedicationFilterResult {
+  displayName: string;
+  medication?: Medication;
+  disabled: boolean;
 }
 
 export interface MedicationInputEntry {
