@@ -802,7 +802,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                         class="cds--date-picker__input cds--date-picker__input--sm flatpickr-input"
                         id="start-date-test-medication-1"
                         pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
-                        placeholder="mm/dd/yyyy"
+                        placeholder="d/m/Y"
                         type="text"
                       />
                       <svg

@@ -33,12 +33,7 @@ export const createMedicationRequestResource = (
     dosageInstruction: createDosageInstructions(medicationEntry),
     priority: medicationEntry.isSTAT ? 'stat' : 'routine',
   };
-
-  // Add dispense request
-  const dispenseRequest = createDispenseRequest(medicationEntry);
-  if (dispenseRequest) {
-    medicationRequest.dispenseRequest = dispenseRequest;
-  }
+  medicationRequest.dispenseRequest = createDispenseRequest(medicationEntry);
 
   return medicationRequest;
 };

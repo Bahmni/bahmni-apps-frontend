@@ -29,7 +29,6 @@ export interface MedicationState {
   reset: () => void;
   getState: () => MedicationState;
 }
-
 export const useMedicationStore = create<MedicationState>((set, get) => ({
   selectedMedications: [],
 
@@ -221,10 +220,17 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
       selectedMedications: state.selectedMedications.map((medication) => {
         if (medication.id !== medicationId) return medication;
 
-        return {
+        const updatedMedication = {
           ...medication,
-          isSTAT: isSTAT,
+          isSTAT,
         };
+        if (medication.hasBeenValidated && isSTAT) {
+          updatedMedication.errors = { ...medication.errors };
+          delete updatedMedication.errors.durationUnit;
+          delete updatedMedication.errors.duration;
+        }
+
+        return updatedMedication;
       }),
     }));
   },
@@ -288,6 +294,9 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
     set((state) => ({
       selectedMedications: state.selectedMedications.map((medication) => {
         const errors = { ...medication.errors };
+        const isDurationRequired =
+          (!medication.isSTAT && medication.isPRN) ||
+          (!medication.isPRN && !medication.isSTAT);
 
         if (!medication.dosage || medication.dosage <= 0) {
           errors.dosage = 'MEDICATION_DOSAGE_REQUIRED';
@@ -316,13 +325,16 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
           delete errors.route;
         }
 
-        if (!medication.duration || medication.duration <= 0) {
+        if (
+          isDurationRequired &&
+          (!medication.duration || medication.duration <= 0)
+        ) {
           errors.duration = 'MEDICATION_DURATION_REQUIRED';
           isValid = false;
         } else {
           delete errors.duration;
         }
-        if (!medication.durationUnit) {
+        if (isDurationRequired && !medication.durationUnit) {
           errors.durationUnit = 'DROPDOWN_VALUE_REQUIRED';
           isValid = false;
         } else {

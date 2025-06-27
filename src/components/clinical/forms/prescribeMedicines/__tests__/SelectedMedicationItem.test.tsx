@@ -29,6 +29,9 @@ jest.mock('@services/medicationsValueCalculator', () => ({
     .fn()
     .mockImplementation((frequency) => frequency.uuid === '0'),
 }));
+jest.mock('@utils/date', () => ({
+  getTodayDate: jest.fn().mockReturnValue(new Date('2025-01-01')),
+}));
 
 // Mock CSS modules
 jest.mock('../styles/SelectedMedicationItem.module.scss', () => ({
@@ -479,14 +482,14 @@ describe('SelectedMedicationItem', () => {
 
         // Act
         renderWithI18n(<SelectedMedicationItem {...props} />);
-        const dateInput = screen.getByPlaceholderText('mm/dd/yyyy');
+        const dateInput = screen.getByPlaceholderText('d/m/Y');
 
         // Click on the date input to open the calendar
         await user.click(dateInput);
 
         // Type a new date
         await user.clear(dateInput);
-        await user.type(dateInput, '02/15/2025');
+        await user.type(dateInput, '15/02/2025');
 
         // Press Enter to confirm the date selection
         await user.keyboard('{Enter}');
@@ -515,7 +518,7 @@ describe('SelectedMedicationItem', () => {
 
         // Act
         renderWithI18n(<SelectedMedicationItem {...props} />);
-        const dateInput = screen.getByPlaceholderText('mm/dd/yyyy');
+        const dateInput = screen.getByPlaceholderText('d/m/Y');
 
         // Assert
         expect(dateInput).toBeDisabled();
@@ -532,7 +535,7 @@ describe('SelectedMedicationItem', () => {
 
         // Act
         renderWithI18n(<SelectedMedicationItem {...props} />);
-        const dateInput = screen.getByPlaceholderText('mm/dd/yyyy');
+        const dateInput = screen.getByPlaceholderText('d/m/Y');
 
         // Assert
         expect(dateInput).not.toBeDisabled();
@@ -778,7 +781,7 @@ describe('SelectedMedicationItem', () => {
         expect(
           screen.getByRole('combobox', { name: /Duration Unit/i }),
         ).toBeDisabled();
-        expect(screen.getByPlaceholderText('mm/dd/yyyy')).toBeDisabled();
+        expect(screen.getByPlaceholderText('d/m/Y')).toBeDisabled();
       });
 
       test('clears frequency when PRN is selected', () => {
@@ -1010,6 +1013,66 @@ describe('SelectedMedicationItem', () => {
 
       // Assert
       expect(container).toMatchSnapshot();
+    });
+  });
+
+  describe('Date Picker Validation', () => {
+    test('prevents selection of past dates in date picker', async () => {
+      // Arrange
+      const updateStartDate = jest.fn();
+      const props = createDefaultProps({ updateStartDate });
+      const user = userEvent.setup();
+
+      // Act
+      renderWithI18n(<SelectedMedicationItem {...props} />);
+      const dateInput = screen.getByPlaceholderText('d/m/Y');
+
+      // Try to enter a past date
+      await user.click(dateInput);
+      await user.clear(dateInput);
+      await user.type(dateInput, '1/1/2020');
+      await user.keyboard('{Enter}');
+
+      // Assert - the updateStartDate should not be called with a past date
+      await waitFor(() => {
+        expect(updateStartDate).not.toHaveBeenCalled();
+      });
+    });
+
+    test('allows selection of today and future dates', async () => {
+      // Arrange
+      const updateStartDate = jest.fn();
+      const props = createDefaultProps({ updateStartDate });
+      const user = userEvent.setup();
+
+      // Get tomorrow's date in d/m/Y format
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const day = tomorrow.getDate();
+      const month = tomorrow.getMonth() + 1;
+      const year = tomorrow.getFullYear();
+      const tomorrowString = `${day}/${month}/${year}`;
+
+      // Act
+      renderWithI18n(<SelectedMedicationItem {...props} />);
+      const dateInput = screen.getByPlaceholderText('d/m/Y');
+
+      await user.click(dateInput);
+      await user.clear(dateInput);
+      await user.type(dateInput, tomorrowString);
+      await user.keyboard('{Enter}');
+
+      // Assert
+      await waitFor(() => {
+        expect(updateStartDate).toHaveBeenCalledWith(
+          'entry-1',
+          expect.any(Date),
+        );
+        const callDate = updateStartDate.mock.calls[0][1];
+        expect(callDate.getFullYear()).toBe(tomorrow.getFullYear());
+        expect(callDate.getMonth()).toBe(tomorrow.getMonth());
+        expect(callDate.getDate()).toBe(tomorrow.getDate());
+      });
     });
   });
 });

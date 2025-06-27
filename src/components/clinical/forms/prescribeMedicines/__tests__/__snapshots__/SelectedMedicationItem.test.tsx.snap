@@ -644,7 +644,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
                   class="cds--date-picker__input cds--date-picker__input--sm flatpickr-input"
                   id="start-date-entry-1"
                   pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
-                  placeholder="mm/dd/yyyy"
+                  placeholder="d/m/Y"
                   type="text"
                 />
                 <svg
@@ -1490,7 +1490,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
                   class="cds--date-picker__input cds--date-picker__input--sm flatpickr-input"
                   id="start-date-entry-1"
                   pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
-                  placeholder="mm/dd/yyyy"
+                  placeholder="d/m/Y"
                   type="text"
                 />
                 <svg

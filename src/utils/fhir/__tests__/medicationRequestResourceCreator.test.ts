@@ -105,6 +105,7 @@ describe('medicationRequestResourceCreator', () => {
         resourceType: 'MedicationRequest',
         status: 'active',
         intent: 'order',
+        priority: 'routine',
         medicationReference: {
           reference: 'Medication/med-123',
           type: 'Medication',
@@ -373,6 +374,7 @@ describe('medicationRequestResourceCreator', () => {
           ...mockMedicationEntry,
           id: 'med-789',
           display: 'Paracetamol 500mg',
+          isSTAT: true,
         },
       ];
 
@@ -400,6 +402,7 @@ describe('medicationRequestResourceCreator', () => {
         resourceType: 'MedicationRequest',
         status: 'active',
         intent: 'order',
+        priority: 'stat',
       });
 
       // Verify createMedicationReference was called for each entry

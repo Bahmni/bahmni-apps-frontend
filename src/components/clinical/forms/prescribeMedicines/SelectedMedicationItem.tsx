@@ -22,6 +22,8 @@ import {
   getDefaultRoute,
   isImmediateFrequency,
 } from '@services/medicationsValueCalculator';
+import { DATE_PICKER_INPUT_FORMAT } from '@/constants/date';
+import { getTodayDate } from '@utils/date';
 
 export interface SelectedMedicationItemProps {
   medicationInputEntry: MedicationInputEntry;
@@ -316,16 +318,18 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
           <Column span={5} className={styles.dateControl}>
             <DatePicker
               datePickerType="single"
+              dateFormat={DATE_PICKER_INPUT_FORMAT}
               value={startDate}
+              minDate={getTodayDate()}
               onChange={(date) => {
-                if (date && date[0]) {
+                if (date && date[0] && date[0] > getTodayDate()) {
                   updateStartDate(id, date[0]);
                 }
               }}
             >
               <DatePickerInput
                 id={`start-date-${id}`}
-                placeholder="mm/dd/yyyy"
+                placeholder={DATE_PICKER_INPUT_FORMAT}
                 labelText="Start Date"
                 hideLabel
                 size="sm"
