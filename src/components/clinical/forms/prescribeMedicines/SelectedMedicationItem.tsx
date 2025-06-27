@@ -64,7 +64,8 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
         display,
         isSTAT,
         isPRN,
-        startDate
+        startDate,
+        errors
       } = medicationInputEntry;
 
       return (
@@ -111,6 +112,8 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                   updateDosage(id, numericValue);
                 }
               }}
+              invalid={errors.dosage ? true : false}
+              invalidText={t(errors.dosage || '')}
             />
             <Dropdown
               id={`dosage-unit-${id}`}
@@ -127,6 +130,8 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                   updateDosageUnit(id, e.selectedItem);
                 }
               }}
+              invalid={errors.dosageUnit ? true : false}
+              invalidText={t(errors.dosageUnit || '')}
             />
           </Column>
           <Column span={6} className={styles.frequencyControl}>
@@ -145,6 +150,8 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                   updateFrequency(id, e.selectedItem);
                 }
               }}
+              invalid={errors.frequency ? true : false}
+              invalidText={t(errors.frequency || '')}
             />
           </Column>
           <Column span={5} className={styles.durationControls}>
@@ -161,6 +168,8 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                   updateDuration(id, numericValue);
                 }
               }}
+              invalid={errors.duration ? true : false}
+              invalidText={t(errors.duration || '')}
             />
             <Dropdown
               id={`duration-unit-${id}`}
@@ -176,6 +185,8 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                   updateDurationUnit(id, e.selectedItem);
                 }
               }}
+              invalid={errors.durationUnit ? true : false}
+              invalidText={t(errors.durationUnit || '')}
             />
           </Column>
 
@@ -213,6 +224,8 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                   updateRoute(id, e.selectedItem);
                 }
               }}
+              invalid={errors.route ? true : false}
+              invalidText={t(errors.route || '')}
             />
           </Column>
 

@@ -547,6 +547,21 @@ describe('ConsultationPad', () => {
         expect(mockOnClose).not.toHaveBeenCalled();
       });
 
+      it('should not submit when medications validation fails', async () => {
+        mockMedicationStore.validateAllMedications.mockReturnValue(false);
+
+        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+        const doneButton = screen.getByTestId('primary-button');
+        await userEvent.click(doneButton);
+
+        expect(mockMedicationStore.validateAllMedications).toHaveBeenCalled();
+        expect(
+          consultationBundleService.postConsultationBundle,
+        ).not.toHaveBeenCalled();
+        expect(mockOnClose).not.toHaveBeenCalled();
+      });
+
       it('should handle submission errors gracefully', async () => {
         const error = new Error('Network error');
         (
@@ -619,6 +634,7 @@ describe('ConsultationPad', () => {
       expect(mockAllergyStore.reset).toHaveBeenCalled();
       expect(mockDiagnosesStore.reset).toHaveBeenCalled();
       expect(mockServiceRequestStore.reset).toHaveBeenCalled();
+      expect(mockMedicationStore.reset).toHaveBeenCalled();
     });
 
     it('should track submission state correctly', async () => {
@@ -674,6 +690,7 @@ describe('ConsultationPad', () => {
         expect(mockAllergyStore.reset).toHaveBeenCalled();
         expect(mockEncounterDetailsStore.reset).toHaveBeenCalled();
         expect(mockServiceRequestStore.reset).toHaveBeenCalled();
+        expect(mockMedicationStore.reset).toHaveBeenCalled();
       });
     });
   });
@@ -687,6 +704,7 @@ describe('ConsultationPad', () => {
 
       expect(mockDiagnosesStore.validate).toHaveBeenCalled();
       expect(mockAllergyStore.validateAllAllergies).toHaveBeenCalled();
+      expect(mockMedicationStore.validateAllMedications).toHaveBeenCalled();
     });
 
     it('should disable Done button when patientUUID is missing', () => {

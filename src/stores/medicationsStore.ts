@@ -94,7 +94,7 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
 
         if (medication.hasBeenValidated && unit) {
           updatedMedication.errors = { ...medication.errors };
-          delete updatedMedication.errors.dosage;
+          delete updatedMedication.errors.dosageUnit;
         }
 
         return updatedMedication;
@@ -236,24 +236,6 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
     }));
   },
 
-
-  calculateTotalQuantity: (medicationId: string) => {
-    const state = get();
-    const medication = state.selectedMedications.find(m => m.id === medicationId);
-    
-    if (!medication) return 0;
-
-    const frequencyOption = FREQUENCY_OPTIONS.find(f => f.code === medication.frequency);
-    const durationOption = DURATION_UNIT_OPTIONS.find(d => d.code === medication.durationUnit);
-    
-    if (!frequencyOption || !durationOption) return 0;
-
-    const timesPerDay = frequencyOption.timesPerDay;
-    const totalDays = medication.duration * durationOption.daysMultiplier;
-    
-    return Math.ceil(medication.dosage * timesPerDay * totalDays);
-  },
-
   validateAllMedications: () => {
     let isValid = true;
 
@@ -267,16 +249,22 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
         } else {
           delete errors.dosage;
         }
+        if (!medication.dosageUnit) {
+          errors.dosageUnit = 'DROPDOWN_VALUE_REQUIRED';
+          isValid = false;
+        } else {
+          delete errors.dosageUnit;
+        }
 
         if (!medication.frequency) {
-          errors.frequency = 'MEDICATION_FREQUENCY_REQUIRED';
+          errors.frequency = 'DROPDOWN_VALUE_REQUIRED';
           isValid = false;
         } else {
           delete errors.frequency;
         }
 
         if (!medication.route) {
-          errors.route = 'MEDICATION_ROUTE_REQUIRED';
+          errors.route = 'DROPDOWN_VALUE_REQUIRED';
           isValid = false;
         } else {
           delete errors.route;
@@ -288,6 +276,13 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
         } else {
           delete errors.duration;
         }
+        if (!medication.durationUnit) {
+          errors.durationUnit = 'DROPDOWN_VALUE_REQUIRED';
+          isValid = false;
+        } else {
+          delete errors.durationUnit;
+        }
+
 
         return {
           ...medication,

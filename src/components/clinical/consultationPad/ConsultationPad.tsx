@@ -70,7 +70,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   const { selectedServiceRequests, reset: resetServiceRequests } =
     useServiceRequestStore();
 
-  const { reset: resetMedications } = useMedicationStore();
+  const { validateAllMedications, reset: resetMedications } = useMedicationStore();
 
   // Clean up on unmount
   useEffect(() => {
@@ -165,7 +165,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     if (!isSubmitting && canSubmitConsultation) {
       const isConditionsAndDiagnosesValid = validate();
       const isAllergiesValid = validateAllAllergies();
-      if (!isConditionsAndDiagnosesValid || !isAllergiesValid) {
+      const isMedicationsValid = validateAllMedications();
+      if (!isConditionsAndDiagnosesValid || !isAllergiesValid || !isMedicationsValid) {
         return;
       }
 
