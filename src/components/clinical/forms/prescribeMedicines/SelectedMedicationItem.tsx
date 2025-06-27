@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Column,
   Grid,
@@ -12,161 +12,79 @@ import {
 import { Close } from '@carbon/icons-react';
 import { useTranslation } from 'react-i18next';
 import * as styles from './styles/SelectedMedicationItem.module.scss';
-import { MedicationInputEntry } from '../../../../types/medication';
-
-import { MedicationOrdersMetadataResponse } from '@/types/medicationConfig';
+import { DurationUnitOption, MedicationInputEntry } from '@types/medication';
+import { Frequency, MedicationConfig } from '@types/medicationConfig';
+import { DURATION_UNIT_OPTIONS } from '@constants/medications';
+import { Concept } from '@types/encounterConcepts';
 
 export interface SelectedMedicationItemProps {
-  medication: MedicationOrdersMetadataResponse;
-  updateDosage: (medicationId: string, dosage: number, unit: string) => void;
-  updateFrequency: (medicationId: string, frequency: string) => void;
-  updateRoute: (medicationId: string, route: string) => void;
-  updateDuration: (
-    medicationId: string,
-    duration: number,
-    unit: string,
-  ) => void;
-  updateTiming: (medicationId: string, timing: string) => void;
-  updateFlags: (medicationId: string, isSTAT: boolean, isPRN: boolean) => void;
-  updateStartDate: (medicationId: string, date: string) => void;
-  updateInstructions: (medicationId: string, instructions: string) => void;
-  calculateTotalQuantity: (medicationId: string) => number;
+  medicationInputEntry: MedicationInputEntry;
+  medicationConfig: MedicationConfig;
   removeMedication: (medicationId: string) => void;
+  updateDosage: (medicationId: string, dosage: number) => void;
+  updateDosageUnit: (medicationId: string, unit: Concept) => void;
+  updateFrequency: (medicationId: string, frequency: Frequency) => void;
+  updateRoute: (medicationId: string, route: Concept) => void;
+  updateDuration: (medicationId: string, duration: number) => void;
+  updateDurationUnit: (medicationId: string, unit: DurationUnitOption) => void;
+  updateInstruction: (medicationId: string, instruction: Concept) => void;
+  updateisPRN: (medicationId: string, isPRN: boolean) => void;
+  updateisSTAT: (medicationId: string, isSTAT: boolean) => void;
+  updateStartDate: (medicationId: string, date: string) => void;
 }
 
 const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
   React.memo(
     ({
-      medication,
+      medicationInputEntry,
+      medicationConfig,
       updateDosage,
+      updateDosageUnit,
       updateFrequency,
       updateRoute,
       updateDuration,
-      updateTiming,
-      updateFlags,
+      updateDurationUnit,
+      updateInstruction,
+      updateisPRN,
+      updateisSTAT,
       updateStartDate,
-      calculateTotalQuantity,
       removeMedication,
     }) => {
       const { t } = useTranslation();
-      const [showInstructions, setShowInstructions] = useState(false);
-      const [isEditingQuantity, setIsEditingQuantity] = useState(false);
 
       const {
         id,
-        display,
         dosage,
         dosageUnit,
         frequency,
-        timing,
         route,
         duration,
         durationUnit,
+        instruction,
+        display,
         isSTAT,
         isPRN,
-        startDate,
-        errors,
-        hasBeenValidated,
-      } = medication;
-
-      const hasFrequencyError = !!(hasBeenValidated && errors.frequency);
-      const hasRouteError = !!(hasBeenValidated && errors.route);
-
-      const totalQuantity = calculateTotalQuantity(id);
-
-      const handleDosageChange = (newDosage: number) => {
-        updateDosage(id, newDosage, dosageUnit);
-      };
-
-      const handleDosageUnitChange = (
-        selectedItem: { code: string; display: string } | null,
-      ) => {
-        if (selectedItem) {
-          updateDosage(id, dosage, selectedItem.code);
-        }
-      };
-
-      const handleDurationChange = (newDuration: number) => {
-        updateDuration(id, newDuration, durationUnit);
-      };
-
-      const handleDurationUnitChange = (
-        selectedItem: { code: string; display: string } | null,
-      ) => {
-        if (selectedItem) {
-          updateDuration(id, duration, selectedItem.code);
-        }
-      };
-
-      const handleFrequencyChange = (
-        selectedItem: { code: string; display: string } | null,
-      ) => {
-        if (selectedItem) {
-          updateFrequency(id, selectedItem.code);
-        }
-      };
-
-      const handleRouteChange = (
-        selectedItem: { code: string; display: string } | null,
-      ) => {
-        if (selectedItem) {
-          updateRoute(id, selectedItem.code);
-        }
-      };
-
-      const handleTimingChange = (
-        selectedItem: { code: string; display: string } | null,
-      ) => {
-        if (selectedItem) {
-          updateTiming(id, selectedItem.code);
-        }
-      };
-
-      const handleSTATChange = (checked: boolean) => {
-        updateFlags(id, checked, isPRN);
-      };
-
-      const handlePRNChange = (checked: boolean) => {
-        updateFlags(id, isSTAT, checked);
-      };
-
-      const handleDateChange = (dates: Date[]) => {
-        if (dates.length > 0 && dates[0]) {
-          const dateString = dates[0].toISOString().split('T')[0];
-          updateStartDate(id, dateString);
-        }
-      };
-
-      const selectedFrequency = medication.frequencies.find(
-        (f) => f.code === frequency,
-      );
-      const selectedRoute = medication.routes.find((r) => r.code === route);
-      const selectedTiming = TIMING_OPTIONS.find((t) => t.code === timing);
-      const selectedDosageUnit = medication.doseUnits.find(
-        (d) => d.code === dosageUnit,
-      );
-      const selectedDurationUnit = DURATION_UNIT_OPTIONS.find(
-        (d) => d.code === durationUnit,
-      );
+        startDate
+      } = medicationInputEntry;
 
       return (
         <Grid className={styles.selectedMedicationItem}>
           {/* Row 1: Medication name with STAT/PRN checkboxes and remove button */}
           <Column span={12} className={styles.medicationTitle}>
-            {display} {medication.strength && `(${medication.strength})`}
+            {display}
           </Column>
           <Column span={4} className={styles.medicationActions}>
             <Checkbox
               id={`stat-${id}`}
               labelText={t('MEDICATION_STAT')}
               checked={isSTAT}
-              onChange={(_, { checked }) => handleSTATChange(checked)}
+              onChange={(e) => updateisSTAT(id, e.target.checked)}
             />
             <Checkbox
               id={`prn-${id}`}
               labelText={t('MEDICATION_PRN')}
               checked={isPRN}
-              onChange={(_, { checked }) => handlePRNChange(checked)}
+              onChange={(e) => updateisPRN(id, e.target.checked)}
             />
             <Button
               kind="ghost"
@@ -183,25 +101,16 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
             <NumberInput
               id={`dosage-unit-${id}`}
               style={{ width: '107px' }}
-              invalidText="Number of tablets are invalid. Must be more than 0"
-              min={1}
-              onChange={(event, { value }) => {
-                const newValue = Number(value);
-                if (newValue > dosage) {
-                  // User clicked + button
-                  handleDosageChange(dosage + 1);
-                } else if (newValue < dosage) {
-                  // User clicked - button
-                  handleDosageChange(Math.max(1, dosage - 1));
-                } else {
-                  // Direct input change
-                  handleDosageChange(Math.max(1, newValue));
-                }
-              }}
+              min={0}
               size="sm"
               step={1}
               value={dosage}
-              warnText="Warning: Dosage should be a positive number."
+              onChange={(_, {value}) => {
+                const numericValue = parseFloat(value.toString());
+                if (!isNaN(numericValue)) {
+                  updateDosage(id, numericValue);
+                }
+              }}
             />
             <Dropdown
               id={`dosage-unit-${id}`}
@@ -209,13 +118,15 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               titleText="Unit"
               label="Unit"
               hideLabel
-              items={medication.doseUnits}
-             // selectedItem={selectedDosageUnit}
               size="sm"
-              itemToString={(item) => (item ? t(item.display) : '')}
-              onChange={({ selectedItem }) =>
-                handleDosageUnitChange(selectedItem)
-              }
+              items={medicationConfig.doseUnits || []}
+              itemToString={(item) => item ? item.name : ''}
+              selectedItem={dosageUnit}
+              onChange={(e) => {
+                if (e.selectedItem) {
+                  updateDosageUnit(id, e.selectedItem);
+                }
+              }}
             />
           </Column>
           <Column span={6} className={styles.frequencyControl}>
@@ -225,15 +136,15 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               titleText="Frequency"
               label="Frequency"
               hideLabel
-              items={medication.frequencies}
-              selectedItem={selectedFrequency}
               size="sm"
-              itemToString={(item) => (item ? t(item.display) : '')}
-              onChange={({ selectedItem }) =>
-                handleFrequencyChange(selectedItem)
-              }
-              invalid={hasFrequencyError}
-              invalidText={hasFrequencyError && t(errors.frequency!)}
+              items={medicationConfig.frequencies.filter(item => item.uuid !== "0") || []}
+              itemToString={(item) => item ? item.name : ''}
+              selectedItem={frequency}
+              onChange={(e) => {
+                if (e.selectedItem) {
+                  updateFrequency(id, e.selectedItem);
+                }
+              }}
             />
           </Column>
           <Column span={5} className={styles.durationControls}>
@@ -241,51 +152,49 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               id={`duration-${id}`}
               style={{ width: '107px' }}
               min={0}
-              onChange={(event, { value }) => {
-                const newValue = Number(value);
-                if (newValue > duration) {
-                  // User clicked + button
-                  handleDurationChange(duration + 1);
-                } else if (newValue < duration) {
-                  // User clicked - button
-                  handleDurationChange(Math.max(0, duration - 1));
-                } else {
-                  // Direct input change
-                  handleDurationChange(Math.max(0, newValue));
-                }
-              }}
               size="sm"
               step={1}
               value={duration}
-              warnText="Warning: Duration should be a positive number."
+              onChange={(_, {value}) => {
+                const numericValue = parseFloat(value.toString());
+                if (!isNaN(numericValue)) {
+                  updateDuration(id, numericValue);
+                }
+              }}
             />
             <Dropdown
               id={`duration-unit-${id}`}
               titleText="Duration Unit"
               label="Duration Unit"
               hideLabel
-              items={medication.durationUnits}
-              selectedItem={selectedDurationUnit}
               size="sm"
-              itemToString={(item) => (item ? t(item.display) : '')}
-              onChange={({ selectedItem }) =>
-                handleDurationUnitChange(selectedItem)
-              }
+              items={DURATION_UNIT_OPTIONS}
+              itemToString={(item) => item ? t(item.display, { defaultValue: item.code }) : ''}
+              selectedItem={durationUnit}
+              onChange={(e) => {
+                if (e.selectedItem) {
+                  updateDurationUnit(id, e.selectedItem);
+                }
+              }}
             />
           </Column>
 
-          {/* Row 3: Timing, Route, Date */}
+          {/* Row 3: Instruction, Route, Date */}
           <Column span={5} className={styles.timingControl}>
             <Dropdown
-              id={`timing-${id}`}
-              titleText="Timing"
-              label="Timing"
+              id={`med-instructions-${id}`}
+              titleText="Instructions"
+              label="Instructions"
               hideLabel
-              items={TIMING_OPTIONS}
-              selectedItem={selectedTiming}
               size="sm"
-              itemToString={(item) => (item ? t(item.display) : '')}
-              onChange={({ selectedItem }) => handleTimingChange(selectedItem)}
+              items={medicationConfig.dosingInstructions || []}
+              itemToString={(item) => item ? item.name : ''}
+              selectedItem={instruction}
+              onChange={(e) => {
+                if (e.selectedItem) {
+                  updateInstruction(id, e.selectedItem);
+                }
+              }}
             />
           </Column>
 
@@ -295,13 +204,15 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               titleText="Route"
               label="Route"
               hideLabel
-              items={medication.routes}
-              selectedItem={selectedRoute}
               size="sm"
-              itemToString={(item) => (item ? t(item.display) : '')}
-              onChange={({ selectedItem }) => handleRouteChange(selectedItem)}
-              invalid={hasRouteError}
-              invalidText={hasRouteError && t(errors.route!)}
+              items={medicationConfig.routes || []}
+              itemToString={(item) => item ? item.name : ''}
+              selectedItem={route}
+              onChange={(e) => {
+                if (e.selectedItem) {
+                  updateRoute(id, e.selectedItem);
+                }
+              }}
             />
           </Column>
 
@@ -309,7 +220,6 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
             <DatePicker
               datePickerType="single"
               value={startDate}
-              onChange={handleDateChange}
             >
               <DatePickerInput
                 id={`start-date-${id}`}
@@ -317,34 +227,13 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                 labelText="Start Date"
                 hideLabel
                 size="sm"
+                onChange={(date) => {
+                  if (date) {
+                    updateStartDate(id, date);
+                  }
+                }}
               />
             </DatePicker>
-          </Column>
-
-          {/* Row 4: Add note and Total quantity */}
-          <Column span={8} className={styles.noteControl}>
-            <Button
-              size="sm"
-              onClick={() => setShowInstructions(!showInstructions)}
-            >
-              {t('MEDICATION_ADD_NOTE')}
-            </Button>
-          </Column>
-
-          <Column span={4} className={styles.quantityLabel}>
-            <span>
-              {t('MEDICATION_TOTAL_QUANTITY')}: {totalQuantity}{' '}
-              {t(selectedDosageUnit?.display || '')}
-            </span>
-          </Column>
-
-          <Column span={4} className={styles.editControl}>
-            <Button
-              size="sm"
-              onClick={() => setIsEditingQuantity(!isEditingQuantity)}
-            >
-              {isEditingQuantity ? t('MEDICATION_DONE') : t('MEDICATION_EDIT')}
-            </Button>
           </Column>
         </Grid>
       );

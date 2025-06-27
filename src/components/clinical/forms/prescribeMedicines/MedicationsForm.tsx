@@ -1,13 +1,14 @@
 import React, { useState, useMemo } from 'react';
-import { ComboBox, Tile } from '@carbon/react';
+import { ComboBox, DropdownSkeleton, Tile } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import * as styles from './styles/MedicationsForm.module.scss';
-import SelectedItem from '@components/common/selectedItem/SelectedItem';
 import BoxWHeader from '@components/common/boxWHeader/BoxWHeader';
-import { MedicationConcept } from '../../../../types/medication';
+import { MedicationFilterResult } from '@types/medication';
 import SelectedMedicationItem from './SelectedMedicationItem';
-import { useMedicationStore } from '../../../../stores/medicationsStore';
-import useMedicationConfig from '@/hooks/useMedicationConfig';
+import { useMedicationStore } from '@stores/medicationsStore';
+import useMedicationConfig from '@hooks/useMedicationConfig';
+import { useMedicationSearch } from '@hooks/useMedicationSearch';
+import { getMedicationDisplay } from '@services/medicationService';
 
 /**
  * MedicationsForm component
@@ -18,7 +19,8 @@ import useMedicationConfig from '@/hooks/useMedicationConfig';
 const MedicationsForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const [searchMedicationTerm, setSearchMedicationTerm] = useState('');
-  const { medicationConfig, loading, error } = useMedicationConfig();
+  const { medicationConfig, loading:medicationConfigLoading, error:medicationConfigError } = useMedicationConfig();
+  const { searchResults, loading, error } = useMedicationSearch(searchMedicationTerm)
 
   // Use Zustand store
   const {
@@ -26,70 +28,66 @@ const MedicationsForm: React.FC = React.memo(() => {
     addMedication,
     removeMedication,
     updateDosage,
+    updateDosageUnit,
     updateFrequency,
     updateRoute,
     updateDuration,
-    updateTiming,
-    updateFlags,
+    updateDurationUnit,
+    updateInstruction,
+    updateisPRN,
+    updateisSTAT,
     updateStartDate,
-    updateInstructions,
-    calculateTotalQuantity,
   } = useMedicationStore();
-
-  // Mock medication data - in real implementation, this would come from an API
-  const mockMedications: MedicationConcept[] = [
-    { uuid: '1', display: 'Penicillin G 10 lac units', strength: '10 lac units', dosageForm: 'Tablet' },
-    { uuid: '2', display: 'Paracetamol', strength: '500mg', dosageForm: 'Tablet' },
-    { uuid: '3', display: 'Ibuprofen', strength: '400mg', dosageForm: 'Tablet' },
-    { uuid: '4', display: 'Aspirin', strength: '75mg', dosageForm: 'Tablet' },
-    { uuid: '5', display: 'Naproxen', strength: '250mg', dosageForm: 'Tablet' },
-    { uuid: '6', display: 'Diclofenac', strength: '50mg', dosageForm: 'Tablet' },
-    { uuid: '7', display: 'Amoxicillin', strength: '500mg', dosageForm: 'Capsule' },
-    { uuid: '8', display: 'Ciprofloxacin', strength: '500mg', dosageForm: 'Tablet' },
-    { uuid: '9', display: 'Azithromycin', strength: '250mg', dosageForm: 'Tablet' },
-    { uuid: '10', display: 'Cephalexin', strength: '500mg', dosageForm: 'Capsule' },
-    { uuid: '11', display: 'Metronidazole', strength: '400mg', dosageForm: 'Tablet' },
-    { uuid: '12', display: 'Doxycycline', strength: '100mg', dosageForm: 'Capsule' },
-  ];
 
   const handleSearch = (searchTerm: string) => {
     setSearchMedicationTerm(searchTerm);
   };
 
-  const handleOnChange = (selectedItem: MedicationConcept) => {
-    if (!selectedItem || !selectedItem.uuid || !selectedItem.display) {
+  const handleOnChange = (selectedItem: MedicationFilterResult) => {
+    if (!selectedItem) {
       return;
     }
-
-    addMedication(selectedItem);
+    addMedication(selectedItem.medication!, selectedItem.displayName);
   };
 
-  const getFilteredSearchResults = () => {
-    if (searchMedicationTerm.length === 0) return [];
-
-    const filteredMedications = mockMedications.filter(medication =>
-      medication.display.toLowerCase().includes(searchMedicationTerm.toLowerCase())
-    );
-
-    if (filteredMedications.length === 0) {
+  const getFilteredSearchResults = (): MedicationFilterResult[] => {
+    if (!searchMedicationTerm || searchMedicationTerm.trim() === '') {
+      return [];
+    }
+    if (loading) {
       return [
         {
-          uuid: '',
-          display: t('NO_MATCHING_MEDICATIONS_FOUND'),
+          displayName: t('LOADING_MEDICATIONS'),
+          disabled: true,
+        },
+      ];
+    }
+    if (error) {
+      return [
+        {
+          displayName: t('ERROR_FETCHING_MEDICATIONS', { error: error.message }),
+          disabled: true,
+        },
+      ];
+    }
+    if (!searchResults || searchResults.length === 0) {
+      return [
+        {
+          displayName: t('NO_MATCHING_MEDICATIONS_FOUND'),
           disabled: true,
         },
       ];
     }
 
-    return filteredMedications.map((item) => {
+    return searchResults.map((item) => {
       const isAlreadySelected = selectedMedications.some(
-        (m) => m.id === item.uuid,
+        (m) => m.id === item.id,
       );
       return {
-        ...item,
-        display: isAlreadySelected
-          ? `${item.display} (${t('MEDICATION_ALREADY_SELECTED')})`
-          : item.display,
+        medication: item,
+        displayName: isAlreadySelected
+          ? `${getMedicationDisplay(item)} (${t('MEDICATION_ALREADY_SELECTED')})`
+          : getMedicationDisplay(item),
         disabled: isAlreadySelected,
       };
     });
@@ -99,8 +97,12 @@ const MedicationsForm: React.FC = React.memo(() => {
     return getFilteredSearchResults();
   }, [
     searchMedicationTerm,
+    loading,
+    error,
+    searchResults,
     selectedMedications,
     t,
+    getMedicationDisplay
   ]);
 
   return (
@@ -108,16 +110,21 @@ const MedicationsForm: React.FC = React.memo(() => {
       <div className={styles.medicationsFormTitle}>
         {t('MEDICATIONS_FORM_TITLE')}
       </div>
+      {medicationConfigLoading && (
+        <DropdownSkeleton/>
+      )}
+      {medicationConfigError && (
+        <div className={styles.error}>
+          {t('ERROR_FETCHING_MEDICATION_CONFIG', { error: medicationConfigError.message })}
+        </div>
+      )}
+
       <ComboBox
         id="medications-search"
         placeholder={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
         items={filteredSearchResults}
         itemToString={(item) =>
-          item?.strength
-            ? `${item.display} - ${item.strength} (${item.dosageForm})`
-            : item
-              ? `${item.display}`
-              : ''
+          item ? item.displayName : ''
         }
         onChange={(data) => handleOnChange(data.selectedItem!)}
         onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
@@ -125,25 +132,28 @@ const MedicationsForm: React.FC = React.memo(() => {
         autoAlign
         aria-label={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
       />
-      {selectedMedications && selectedMedications.length > 0 && (
+      {medicationConfig && selectedMedications && selectedMedications.length > 0 && (
         <BoxWHeader
           title={t('MEDICATIONS_ADDED_MEDICATIONS')}
           className={styles.medicationsBox}
         >
-          {selectedMedications.map((medicationConfig) => (
-              <SelectedMedicationItem
-                medication={medicationConfig}
-                updateDosage={updateDosage}
-                updateFrequency={updateFrequency}
-                updateRoute={updateRoute}
-                updateDuration={updateDuration}
-                updateTiming={updateTiming}
-                updateFlags={updateFlags}
-                updateStartDate={updateStartDate}
-                updateInstructions={updateInstructions}
-                calculateTotalQuantity={calculateTotalQuantity}
-                removeMedication={removeMedication}
-              />
+          {selectedMedications.map((medication) => (
+            <SelectedMedicationItem
+              key={medication.id}
+              medicationInputEntry={medication}
+              medicationConfig={medicationConfig!}
+              updateDosage={updateDosage}
+              updateDosageUnit={updateDosageUnit}
+              updateFrequency={updateFrequency}
+              updateRoute={updateRoute}
+              updateDuration={updateDuration}
+              updateDurationUnit={updateDurationUnit}
+              updateInstruction={updateInstruction}
+              updateisPRN={updateisPRN}
+              updateisSTAT={updateisSTAT}
+              updateStartDate={updateStartDate}
+              removeMedication={removeMedication}
+            />
           ))}
         </BoxWHeader>
       )}

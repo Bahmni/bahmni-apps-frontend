@@ -1,49 +1,52 @@
 import { create } from 'zustand';
-import { MedicationConcept, MedicationInputEntry } from '../types/medication';
-import { DEFAULT_MEDICATION_VALUES, FREQUENCY_OPTIONS, DURATION_UNIT_OPTIONS } from '../constants/medications';
+import { DurationUnitOption, MedicationInputEntry } from '../types/medication';
+import { Medication } from 'fhir/r4';
+import { Concept } from '@types/encounterConcepts';
+import { Frequency } from '@types/medicationConfig';
 
 export interface MedicationState {
   selectedMedications: MedicationInputEntry[];
 
-  addMedication: (medication: MedicationConcept) => void;
+  addMedication: (medication: Medication, displayName:string) => void;
   removeMedication: (medicationId: string) => void;
-  updateDosage: (medicationId: string, dosage: number, unit: string) => void;
-  updateFrequency: (medicationId: string, frequency: string) => void;
-  updateRoute: (medicationId: string, route: string) => void;
-  updateDuration: (medicationId: string, duration: number, unit: string) => void;
-  updateTiming: (medicationId: string, timing: string) => void;
-  updateFlags: (medicationId: string, isSTAT: boolean, isPRN: boolean) => void;
+  updateDosage: (medicationId: string, dosage: number) => void;
+  updateDosageUnit: (medicationId: string, unit: Concept) => void;
+  updateFrequency: (medicationId: string, frequency: Frequency) => void;
+  updateRoute: (medicationId: string, route: Concept) => void;
+  updateDuration: (medicationId: string, duration: number) => void;
+  updateDurationUnit: (medicationId: string, unit: DurationUnitOption) => void;
+  updateInstruction: (medicationId: string, instruction: Concept) => void;
+  updateisPRN: (medicationId: string, isPRN: boolean) => void;
+  updateisSTAT: (medicationId: string, isSTAT: boolean) => void;
   updateStartDate: (medicationId: string, date: string) => void;
-  updateInstructions: (medicationId: string, instructions: string) => void;
-  calculateTotalQuantity: (medicationId: string) => number;
   validateAllMedications: () => boolean;
-  reset: () => void;
 
+  reset: () => void;
   getState: () => MedicationState;
 }
 
 export const useMedicationStore = create<MedicationState>((set, get) => ({
   selectedMedications: [],
 
-  addMedication: (medication: MedicationConcept) => {
+  addMedication: (medication:Medication, displayName:string
+
+  ) => {
     const newMedication: MedicationInputEntry = {
-      id: medication.uuid,
-      display: medication.display,
-      strength: medication.strength,
-      dosageForm: medication.dosageForm,
-      dosage: DEFAULT_MEDICATION_VALUES.dosage,
-      dosageUnit: DEFAULT_MEDICATION_VALUES.dosageUnit,
-      frequency: DEFAULT_MEDICATION_VALUES.frequency,
-      timing: DEFAULT_MEDICATION_VALUES.timing,
-      route: DEFAULT_MEDICATION_VALUES.route,
-      duration: DEFAULT_MEDICATION_VALUES.duration,
-      durationUnit: DEFAULT_MEDICATION_VALUES.durationUnit,
-      isSTAT: DEFAULT_MEDICATION_VALUES.isSTAT,
-      isPRN: DEFAULT_MEDICATION_VALUES.isPRN,
-      startDate: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
-      instructions: '',
+      id: medication.id!,
+      display: displayName,
+      medication: medication,
+      dosage: 0,
+      dosageUnit: null,
+      frequency: null,
+      route: null,
+      duration: 0,
+      durationUnit: null,
+      isSTAT: false,
+      isPRN: false,
+      startDate: '',
+      instruction: null,
       errors: {},
-      hasBeenValidated: false,
+      hasBeenValidated: false
     };
 
     set((state) => ({
@@ -59,15 +62,14 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
     }));
   },
 
-  updateDosage: (medicationId: string, dosage: number, unit: string) => {
+  updateDosage: (medicationId: string, dosage: number) => {
     set((state) => ({
       selectedMedications: state.selectedMedications.map((medication) => {
         if (medication.id !== medicationId) return medication;
 
         const updatedMedication = {
           ...medication,
-          dosage,
-          dosageUnit: unit,
+          dosage:dosage,
         };
 
         if (medication.hasBeenValidated && dosage > 0) {
@@ -80,14 +82,34 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
     }));
   },
 
-  updateFrequency: (medicationId: string, frequency: string) => {
+  updateDosageUnit: (medicationId: string, unit: Concept) => {
     set((state) => ({
       selectedMedications: state.selectedMedications.map((medication) => {
         if (medication.id !== medicationId) return medication;
 
         const updatedMedication = {
           ...medication,
-          frequency,
+          dosageUnit: unit,
+        };
+
+        if (medication.hasBeenValidated && unit) {
+          updatedMedication.errors = { ...medication.errors };
+          delete updatedMedication.errors.dosage;
+        }
+
+        return updatedMedication;
+      }),
+    }));
+  },
+
+  updateFrequency: (medicationId: string, frequency: Frequency) => {
+    set((state) => ({
+      selectedMedications: state.selectedMedications.map((medication) => {
+        if (medication.id !== medicationId) return medication;
+
+        const updatedMedication = {
+          ...medication,
+          frequency:frequency,
         };
 
         if (medication.hasBeenValidated && frequency) {
@@ -100,14 +122,14 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
     }));
   },
 
-  updateRoute: (medicationId: string, route: string) => {
+  updateRoute: (medicationId: string, route: Concept) => {
     set((state) => ({
       selectedMedications: state.selectedMedications.map((medication) => {
         if (medication.id !== medicationId) return medication;
 
         const updatedMedication = {
           ...medication,
-          route,
+          route:route,
         };
 
         if (medication.hasBeenValidated && route) {
@@ -120,15 +142,14 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
     }));
   },
 
-  updateDuration: (medicationId: string, duration: number, unit: string) => {
+  updateDuration: (medicationId: string, duration: number) => {
     set((state) => ({
       selectedMedications: state.selectedMedications.map((medication) => {
         if (medication.id !== medicationId) return medication;
 
         const updatedMedication = {
           ...medication,
-          duration,
-          durationUnit: unit,
+          duration
         };
 
         if (medication.hasBeenValidated && duration > 0) {
@@ -141,32 +162,66 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
     }));
   },
 
-  updateTiming: (medicationId: string, timing: string) => {
+  updateDurationUnit: (medicationId: string, unit:DurationUnitOption) => {
+    set((state) => ({
+      selectedMedications: state.selectedMedications.map((medication) => {
+        if (medication.id !== medicationId) return medication;
+
+        const updatedMedication = {
+          ...medication,
+          durationUnit: unit
+        };
+
+        if (medication.hasBeenValidated) {
+          updatedMedication.errors = { ...medication.errors };
+          delete updatedMedication.errors.durationUnit;
+        }
+
+        return updatedMedication;
+      }),
+    }));
+  },
+
+  updateInstruction: (medicationId: string, instruction: Concept) => {
     set((state) => ({
       selectedMedications: state.selectedMedications.map((medication) => {
         if (medication.id !== medicationId) return medication;
 
         return {
           ...medication,
-          timing,
+          instruction: instruction,
         };
       }),
     }));
   },
 
-  updateFlags: (medicationId: string, isSTAT: boolean, isPRN: boolean) => {
+
+  updateisPRN: (medicationId: string, isPRN: boolean) => {
     set((state) => ({
       selectedMedications: state.selectedMedications.map((medication) => {
         if (medication.id !== medicationId) return medication;
 
         return {
           ...medication,
-          isSTAT,
-          isPRN,
+          isPRN:isPRN
         };
       }),
     }));
   },
+
+  updateisSTAT: (medicationId: string, isSTAT: boolean) => {
+    set((state) => ({
+      selectedMedications: state.selectedMedications.map((medication) => {
+        if (medication.id !== medicationId) return medication;
+
+        return {
+          ...medication,
+          isSTAT:isSTAT
+        };
+      }),
+    }));
+  },
+
 
   updateStartDate: (medicationId: string, date: string) => {
     set((state) => ({
@@ -181,18 +236,6 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
     }));
   },
 
-  updateInstructions: (medicationId: string, instructions: string) => {
-    set((state) => ({
-      selectedMedications: state.selectedMedications.map((medication) => {
-        if (medication.id !== medicationId) return medication;
-
-        return {
-          ...medication,
-          instructions,
-        };
-      }),
-    }));
-  },
 
   calculateTotalQuantity: (medicationId: string) => {
     const state = get();

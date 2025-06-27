@@ -27,6 +27,7 @@ import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 import * as styles from './styles/ConsultationPad.module.scss';
 import useServiceRequestStore from '@stores/serviceRequestStore';
 import MedicationsForm from '../forms/prescribeMedicines/MedicationsForm';
+import { useMedicationStore } from '@stores/medicationsStore';
 
 interface ConsultationPadProps {
   onClose: () => void;
@@ -69,6 +70,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   const { selectedServiceRequests, reset: resetServiceRequests } =
     useServiceRequestStore();
 
+  const { reset: resetMedications } = useMedicationStore();
+
   // Clean up on unmount
   useEffect(() => {
     return () => {
@@ -76,12 +79,14 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       resetAllergies();
       resetDiagnoses();
       resetServiceRequests();
+      resetMedications();
     };
   }, [
     resetEncounterDetails,
     resetAllergies,
     resetDiagnoses,
     resetServiceRequests,
+    resetMedications,
   ]);
 
   // Data validation check for consultation submission
@@ -172,6 +177,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         resetAllergies();
         resetEncounterDetails();
         resetServiceRequests();
+        resetMedications();
         addNotification({
           title: t('CONSULTATION_SUBMITTED_SUCCESS_TITLE'),
           message: t('CONSULTATION_SUBMITTED_SUCCESS_MESSAGE'),
@@ -198,6 +204,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     resetDiagnoses();
     resetAllergies();
     resetServiceRequests();
+    resetMedications();
     onClose();
   };
 

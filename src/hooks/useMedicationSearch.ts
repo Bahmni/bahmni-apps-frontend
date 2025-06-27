@@ -21,7 +21,7 @@ export const useMedicationSearch = (
   const debouncedSearchTerm = useDebounce(searchTerm, debounceDelay);
 
   const getMedicationsFromBundle = (bundle: Bundle<Medication>): Medication[] => {
-    let medications: Medication[] = [];
+    const medications: Medication[] = [];
     bundle.entry?.map(entry => {
       if (entry.resource) {
         medications.push(entry.resource);

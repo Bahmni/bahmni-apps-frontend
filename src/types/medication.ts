@@ -1,4 +1,6 @@
 import { Medication } from "fhir/r4";
+import { Concept } from "./encounterConcepts";
+import { Frequency } from "./medicationConfig";
 
 export interface MedicationFilterResult {
   displayName: string;
@@ -8,55 +10,41 @@ export interface MedicationFilterResult {
 
 export interface MedicationInputEntry {
   id: string;
+  medication: Medication;
   display: string;
-  strength?: string;
-  dosageForm?: string;
   
   // Dosage controls
   dosage: number;
-  dosageUnit: string;
+  dosageUnit: Concept | null;
   
   // Frequency and timing
-  frequency: string;
-  timing?: string; // Before meals, After meals, etc.
+  frequency: Frequency | null;
+  instruction: Concept | null;
   
   // Route and duration
-  route: string;
+  route: Concept | null;
   duration: number;
-  durationUnit: string;
+  durationUnit: DurationUnitOption | null;
   
   // Flags
   isSTAT: boolean;
   isPRN: boolean;
   
-  // Additional fields
   startDate?: string;
-  instructions?: string;
   
   // Validation
-  errors: Record<string, string>;
+  errors: {
+    dosage?: string;
+    dosageUnit?: string;
+    frequency?: string;
+    route?: string;
+    duration?: string;
+    durationUnit?: string;
+    timing?: string;
+    startDate?: string;
+    instructions?: string;
+  }
   hasBeenValidated: boolean;
-}
-
-export interface FrequencyOption {
-  code: string;
-  display: string;
-  timesPerDay: number;
-}
-
-export interface RouteOption {
-  code: string;
-  display: string;
-}
-
-export interface TimingOption {
-  code: string;
-  display: string;
-}
-
-export interface DosageUnitOption {
-  code: string;
-  display: string;
 }
 
 export interface DurationUnitOption {
