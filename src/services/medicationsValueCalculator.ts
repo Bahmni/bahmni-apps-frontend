@@ -39,7 +39,7 @@ export const calculateTotalQuantity = (
   dosage: number,
   frequency: Frequency | null,
   duration: number,
-  durationUnit: DurationUnitOption,
+  durationUnit: DurationUnitOption | null,
 ): number => {
   if (frequency && isImmediateFrequency(frequency)) {
     return dosage;

@@ -43,7 +43,6 @@ export interface MedicationInputEntry {
     route?: string;
     duration?: string;
     durationUnit?: string;
-    timing?: string;
     startDate?: string;
     dispenseQuantity?: string;
     dispenseUnit?: string;

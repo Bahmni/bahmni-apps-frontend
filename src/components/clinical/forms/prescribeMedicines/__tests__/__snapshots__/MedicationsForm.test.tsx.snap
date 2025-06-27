@@ -270,8 +270,15 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
               class="cds--form-item"
             >
               <div
-                class="cds--number cds--number--helpertext cds--number--sm"
+                class="cds--number cds--number--helpertext cds--number--nolabel cds--number--sm"
               >
+                <label
+                  class="cds--label cds--visually-hidden"
+                  dir="auto"
+                  for="dosage-unit-test-medication-1"
+                >
+                  Dosage
+                </label>
                 <div
                   class="cds--number__input-wrapper"
                 >
@@ -353,7 +360,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 for="downshift-«r40»-toggle-button"
                 id="downshift-«r40»-label"
               >
-                Unit
+                Dosage Unit
               </label>
               <div
                 class="cds--dropdown cds--dropdown--sm cds--list-box cds--list-box--sm"
@@ -369,13 +376,13 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                   id="downshift-«r40»-toggle-button"
                   role="combobox"
                   tabindex="0"
-                  title="Unit"
+                  title="Dosage Unit"
                   type="button"
                 >
                   <span
                     class="cds--list-box__label"
                   >
-                    Unit
+                    Dosage Unit
                   </span>
                   <div
                     class="cds--list-box__menu-icon"
@@ -486,8 +493,15 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
               class="cds--form-item"
             >
               <div
-                class="cds--number cds--number--helpertext cds--number--sm"
+                class="cds--number cds--number--helpertext cds--number--nolabel cds--number--sm"
               >
+                <label
+                  class="cds--label cds--visually-hidden"
+                  dir="auto"
+                  for="duration-test-medication-1"
+                >
+                  Duration
+                </label>
                 <div
                   class="cds--number__input-wrapper"
                 >
@@ -812,6 +826,15 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 </div>
               </div>
             </div>
+          </div>
+          <div
+            class="cds--col-span-12 cds--css-grid-column"
+          >
+            <span>
+              Total Quantity:
+              10
+               
+            </span>
           </div>
         </div>
       </div>
