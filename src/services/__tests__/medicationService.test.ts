@@ -1,9 +1,19 @@
-import { fetchMedicationOrdersMetadata, searchMedications, getMedicationDisplay } from '../medicationService';
+import {
+  fetchMedicationOrdersMetadata,
+  searchMedications,
+  getMedicationDisplay,
+} from '../medicationService';
 import { get } from '../api';
-import { MEDICATION_ORDERS_METADATA_URL, MEDICATIONS_SEARCH_URL } from '@constants/app';
+import {
+  MEDICATION_ORDERS_METADATA_URL,
+  MEDICATIONS_SEARCH_URL,
+} from '@constants/app';
 import { MedicationOrdersMetadataResponse } from '@types/medicationConfig';
 import { Bundle, Medication } from 'fhir/r4';
-import { FHIR_MEDICATION_EXTENSION_URL, FHIR_MEDICATION_NAME_EXTENSION_URL } from '@constants/fhir';
+import {
+  FHIR_MEDICATION_EXTENSION_URL,
+  FHIR_MEDICATION_NAME_EXTENSION_URL,
+} from '@constants/fhir';
 
 jest.mock('../api', () => ({
   get: jest.fn(),
@@ -86,30 +96,34 @@ describe('MedicationService', () => {
               resourceType: 'Medication',
               id: 'med-1',
               code: {
-                coding: [{
-                  system: 'http://www.nlm.nih.gov/research/umls/rxnorm',
-                  code: '161',
-                  display: 'Paracetamol 500mg'
-                }]
-              }
-            }
+                coding: [
+                  {
+                    system: 'http://www.nlm.nih.gov/research/umls/rxnorm',
+                    code: '161',
+                    display: 'Paracetamol 500mg',
+                  },
+                ],
+              },
+            },
           },
           {
             resource: {
               resourceType: 'Medication',
               id: 'med-2',
               code: {
-                coding: [{
-                  system: 'http://www.nlm.nih.gov/research/umls/rxnorm',
-                  code: '162',
-                  display: 'Paracetamol 650mg'
-                }]
-              }
-            }
-          }
-        ]
+                coding: [
+                  {
+                    system: 'http://www.nlm.nih.gov/research/umls/rxnorm',
+                    code: '162',
+                    display: 'Paracetamol 650mg',
+                  },
+                ],
+              },
+            },
+          },
+        ],
       };
-      
+
       (get as jest.Mock).mockResolvedValue(mockResponse);
 
       const result = await searchMedications(searchTerm);
@@ -131,22 +145,26 @@ describe('MedicationService', () => {
               resourceType: 'Medication',
               id: 'med-3',
               code: {
-                coding: [{
-                  system: 'http://www.nlm.nih.gov/research/umls/rxnorm',
-                  code: '1191',
-                  display: 'Aspirin'
-                }]
-              }
-            }
-          }
-        ]
+                coding: [
+                  {
+                    system: 'http://www.nlm.nih.gov/research/umls/rxnorm',
+                    code: '1191',
+                    display: 'Aspirin',
+                  },
+                ],
+              },
+            },
+          },
+        ],
       };
-      
+
       (get as jest.Mock).mockResolvedValue(mockResponse);
 
       const result = await searchMedications(searchTerm, count);
 
-      expect(get).toHaveBeenCalledWith(MEDICATIONS_SEARCH_URL(searchTerm, count));
+      expect(get).toHaveBeenCalledWith(
+        MEDICATIONS_SEARCH_URL(searchTerm, count),
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -155,7 +173,9 @@ describe('MedicationService', () => {
       const mockError = new Error('Search failed');
       (get as jest.Mock).mockRejectedValue(mockError);
 
-      await expect(searchMedications(searchTerm)).rejects.toThrow('Search failed');
+      await expect(searchMedications(searchTerm)).rejects.toThrow(
+        'Search failed',
+      );
       expect(get).toHaveBeenCalledWith(MEDICATIONS_SEARCH_URL(searchTerm, 20));
     });
   });
@@ -171,14 +191,14 @@ describe('MedicationService', () => {
             extension: [
               {
                 url: FHIR_MEDICATION_NAME_EXTENSION_URL,
-                valueString: 'Paracetamol'
-              }
-            ]
-          }
+                valueString: 'Paracetamol',
+              },
+            ],
+          },
         ],
         form: {
-          text: 'Tablet'
-        }
+          text: 'Tablet',
+        },
       };
 
       const result = getMedicationDisplay(medication);
@@ -196,11 +216,11 @@ describe('MedicationService', () => {
             extension: [
               {
                 url: FHIR_MEDICATION_NAME_EXTENSION_URL,
-                valueString: 'Aspirin'
-              }
-            ]
-          }
-        ]
+                valueString: 'Aspirin',
+              },
+            ],
+          },
+        ],
       };
 
       const result = getMedicationDisplay(medication);
@@ -213,8 +233,8 @@ describe('MedicationService', () => {
         resourceType: 'Medication',
         id: 'med-3',
         form: {
-          text: 'Syrup'
-        }
+          text: 'Syrup',
+        },
       };
 
       const result = getMedicationDisplay(medication);
@@ -225,7 +245,7 @@ describe('MedicationService', () => {
     it('should return "Unknown Medication Name" when extension is missing', () => {
       const medication: Medication = {
         resourceType: 'Medication',
-        id: 'med-4'
+        id: 'med-4',
       };
 
       const result = getMedicationDisplay(medication);
@@ -243,11 +263,11 @@ describe('MedicationService', () => {
             extension: [
               {
                 url: FHIR_MEDICATION_NAME_EXTENSION_URL,
-                valueString: 'SomeMed'
-              }
-            ]
-          }
-        ]
+                valueString: 'SomeMed',
+              },
+            ],
+          },
+        ],
       };
 
       const result = getMedicationDisplay(medication);
@@ -265,11 +285,11 @@ describe('MedicationService', () => {
             extension: [
               {
                 url: 'http://wrong.drug.name.url',
-                valueString: 'SomeMed'
-              }
-            ]
-          }
-        ]
+                valueString: 'SomeMed',
+              },
+            ],
+          },
+        ],
       };
 
       const result = getMedicationDisplay(medication);

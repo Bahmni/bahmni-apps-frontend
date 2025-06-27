@@ -1181,8 +1181,12 @@ describe('consultationBundleService', () => {
 
         const medicationRequest = result[0].resource as MedicationRequest;
         expect(medicationRequest.subject).toEqual(mockEncounterSubject);
-        expect(medicationRequest.encounter?.reference).toBe(mockEncounterReference);
-        expect(medicationRequest.requester?.reference).toBe(`Practitioner/${mockPractitionerUUID}`);
+        expect(medicationRequest.encounter?.reference).toBe(
+          mockEncounterReference,
+        );
+        expect(medicationRequest.requester?.reference).toBe(
+          `Practitioner/${mockPractitionerUUID}`,
+        );
       });
     });
 
@@ -1196,7 +1200,9 @@ describe('consultationBundleService', () => {
         // Mock different UUIDs for each call
         let callCount = 0;
         const uuids = ['uuid-1', 'uuid-2'];
-        (global.crypto.randomUUID as jest.Mock).mockImplementation(() => uuids[callCount++]);
+        (global.crypto.randomUUID as jest.Mock).mockImplementation(
+          () => uuids[callCount++],
+        );
 
         const result = createMedicationRequestEntries({
           selectedMedications: medications,

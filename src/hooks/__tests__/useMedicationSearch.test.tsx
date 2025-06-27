@@ -6,7 +6,9 @@ import { Bundle, Medication } from 'fhir/r4';
 // Mock the dependencies
 jest.mock('@/services/medicationService');
 
-const mockSearchMedications = searchMedications as jest.MockedFunction<typeof searchMedications>;
+const mockSearchMedications = searchMedications as jest.MockedFunction<
+  typeof searchMedications
+>;
 
 describe('useMedicationSearch', () => {
   beforeEach(() => {
@@ -15,7 +17,7 @@ describe('useMedicationSearch', () => {
     mockSearchMedications.mockResolvedValue({
       resourceType: 'Bundle',
       type: 'searchset',
-      entry: []
+      entry: [],
     });
   });
 
@@ -37,12 +39,14 @@ describe('useMedicationSearch', () => {
         resourceType: 'Medication',
         id: '1',
         code: {
-          coding: [{
-            system: 'http://example.com',
-            code: 'med1',
-            display: 'Medication 1'
-          }]
-        }
+          coding: [
+            {
+              system: 'http://example.com',
+              code: 'med1',
+              display: 'Medication 1',
+            },
+          ],
+        },
       };
 
       const mockBundle: Bundle<Medication> = {
@@ -50,9 +54,9 @@ describe('useMedicationSearch', () => {
         type: 'searchset',
         entry: [
           {
-            resource: mockMedication
-          }
-        ]
+            resource: mockMedication,
+          },
+        ],
       };
 
       mockSearchMedications.mockResolvedValue(mockBundle);
@@ -80,7 +84,7 @@ describe('useMedicationSearch', () => {
       const mockBundle: Bundle<Medication> = {
         resourceType: 'Bundle',
         type: 'searchset',
-        entry: []
+        entry: [],
       };
 
       mockSearchMedications.mockResolvedValue(mockBundle);
@@ -102,7 +106,7 @@ describe('useMedicationSearch', () => {
       const mockBundle: Bundle<Medication> = {
         resourceType: 'Bundle',
         type: 'searchset',
-        entry: []
+        entry: [],
       };
 
       mockSearchMedications.mockResolvedValue(mockBundle);
@@ -110,7 +114,7 @@ describe('useMedicationSearch', () => {
       // Start with empty search term to avoid initial fetch
       const { rerender } = renderHook(
         ({ searchTerm, delay }) => useMedicationSearch(searchTerm, 20, delay),
-        { initialProps: { searchTerm: '', delay: 1000 } }
+        { initialProps: { searchTerm: '', delay: 1000 } },
       );
 
       // Change to non-empty search term
@@ -139,24 +143,24 @@ describe('useMedicationSearch', () => {
         {
           resourceType: 'Medication',
           id: '1',
-          code: { text: 'Medication 1' }
+          code: { text: 'Medication 1' },
         },
         {
           resourceType: 'Medication',
           id: '2',
-          code: { text: 'Medication 2' }
+          code: { text: 'Medication 2' },
         },
         {
           resourceType: 'Medication',
           id: '3',
-          code: { text: 'Medication 3' }
-        }
+          code: { text: 'Medication 3' },
+        },
       ];
 
       const mockBundle: Bundle<Medication> = {
         resourceType: 'Bundle',
         type: 'searchset',
-        entry: mockMedications.map(med => ({ resource: med }))
+        entry: mockMedications.map((med) => ({ resource: med })),
       };
 
       mockSearchMedications.mockResolvedValue(mockBundle);
@@ -178,20 +182,22 @@ describe('useMedicationSearch', () => {
       const mockBundle: Bundle<Medication> = {
         resourceType: 'Bundle',
         type: 'searchset',
-        entry: [{
-          resource: {
-            resourceType: 'Medication',
-            id: '1',
-            code: { text: 'Medication 1' }
-          }
-        }]
+        entry: [
+          {
+            resource: {
+              resourceType: 'Medication',
+              id: '1',
+              code: { text: 'Medication 1' },
+            },
+          },
+        ],
       };
 
       mockSearchMedications.mockResolvedValue(mockBundle);
 
       const { result, rerender } = renderHook(
         ({ searchTerm }) => useMedicationSearch(searchTerm),
-        { initialProps: { searchTerm: 'aspirin' } }
+        { initialProps: { searchTerm: 'aspirin' } },
       );
 
       await act(async () => {
@@ -216,7 +222,7 @@ describe('useMedicationSearch', () => {
     it('should clear results when search term is only whitespace', async () => {
       const { result, rerender } = renderHook(
         ({ searchTerm }) => useMedicationSearch(searchTerm),
-        { initialProps: { searchTerm: 'aspirin' } }
+        { initialProps: { searchTerm: 'aspirin' } },
       );
 
       // Change to whitespace only
@@ -268,13 +274,15 @@ describe('useMedicationSearch', () => {
         expect(result.current.error).toBeInstanceOf(Error);
       });
 
-      expect(result.current.error?.message).toBe('Failed to fetch medications for search');
+      expect(result.current.error?.message).toBe(
+        'Failed to fetch medications for search',
+      );
     });
 
     it('should handle bundle with no entries', async () => {
       const mockBundle: Bundle<Medication> = {
         resourceType: 'Bundle',
-        type: 'searchset'
+        type: 'searchset',
         // No entry property
       };
 
@@ -304,11 +312,11 @@ describe('useMedicationSearch', () => {
             resource: {
               resourceType: 'Medication',
               id: '2',
-              code: { text: 'Valid Medication' }
-            }
+              code: { text: 'Valid Medication' },
+            },
           },
-          { fullUrl: 'http://example.com/3' } // No resource
-        ]
+          { fullUrl: 'http://example.com/3' }, // No resource
+        ],
       };
 
       mockSearchMedications.mockResolvedValue(mockBundle);
@@ -333,25 +341,29 @@ describe('useMedicationSearch', () => {
       const mockBundle1: Bundle<Medication> = {
         resourceType: 'Bundle',
         type: 'searchset',
-        entry: [{
-          resource: {
-            resourceType: 'Medication',
-            id: '1',
-            code: { text: 'Aspirin' }
-          }
-        }]
+        entry: [
+          {
+            resource: {
+              resourceType: 'Medication',
+              id: '1',
+              code: { text: 'Aspirin' },
+            },
+          },
+        ],
       };
 
       const mockBundle2: Bundle<Medication> = {
         resourceType: 'Bundle',
         type: 'searchset',
-        entry: [{
-          resource: {
-            resourceType: 'Medication',
-            id: '2',
-            code: { text: 'Ibuprofen' }
-          }
-        }]
+        entry: [
+          {
+            resource: {
+              resourceType: 'Medication',
+              id: '2',
+              code: { text: 'Ibuprofen' },
+            },
+          },
+        ],
       };
 
       mockSearchMedications
@@ -360,7 +372,7 @@ describe('useMedicationSearch', () => {
 
       const { result, rerender } = renderHook(
         ({ searchTerm }) => useMedicationSearch(searchTerm),
-        { initialProps: { searchTerm: 'aspirin' } }
+        { initialProps: { searchTerm: 'aspirin' } },
       );
 
       await act(async () => {
@@ -391,14 +403,14 @@ describe('useMedicationSearch', () => {
       const mockBundle: Bundle<Medication> = {
         resourceType: 'Bundle',
         type: 'searchset',
-        entry: []
+        entry: [],
       };
 
       mockSearchMedications.mockResolvedValue(mockBundle);
 
       const { rerender } = renderHook(
         ({ count }) => useMedicationSearch('aspirin', count),
-        { initialProps: { count: 20 } }
+        { initialProps: { count: 20 } },
       );
 
       await act(async () => {
@@ -424,7 +436,7 @@ describe('useMedicationSearch', () => {
     it('should debounce API calls when searchTerm changes rapidly', async () => {
       const { rerender } = renderHook(
         ({ searchTerm }) => useMedicationSearch(searchTerm),
-        { initialProps: { searchTerm: '' } }
+        { initialProps: { searchTerm: '' } },
       );
 
       // Change the searchTerm multiple times rapidly
@@ -472,7 +484,9 @@ describe('useMedicationSearch', () => {
       // Mock the API call to use our controlled promise
       mockSearchMedications.mockReturnValue(promise);
 
-      const { result, unmount } = renderHook(() => useMedicationSearch('aspirin'));
+      const { result, unmount } = renderHook(() =>
+        useMedicationSearch('aspirin'),
+      );
 
       // Advance timers to trigger the debounced fetch
       await act(async () => {
@@ -492,7 +506,7 @@ describe('useMedicationSearch', () => {
         resolvePromise!({
           resourceType: 'Bundle',
           type: 'searchset',
-          entry: []
+          entry: [],
         });
       });
 
@@ -505,12 +519,12 @@ describe('useMedicationSearch', () => {
         .mockResolvedValueOnce({
           resourceType: 'Bundle',
           type: 'searchset',
-          entry: []
+          entry: [],
         });
 
       const { result, rerender } = renderHook(
         ({ searchTerm }) => useMedicationSearch(searchTerm),
-        { initialProps: { searchTerm: 'error' } }
+        { initialProps: { searchTerm: 'error' } },
       );
 
       await act(async () => {

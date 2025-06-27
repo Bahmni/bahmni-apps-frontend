@@ -5,9 +5,8 @@ import { createMedicationReference } from './referenceCreator';
 import { createCodeableConcept, createCoding } from './codeableConceptCreator';
 
 interface OpenMRSDosingInstruction {
-    instructions?: string;
-    additionalInstructions?: string;
-
+  instructions?: string;
+  additionalInstructions?: string;
 }
 /**
  * Creates a FHIR MedicationRequest resource for an encounter
@@ -18,29 +17,30 @@ interface OpenMRSDosingInstruction {
  * @returns FHIR MedicationRequest resource
  */
 export const createMedicationRequestResource = (
-    medicationEntry: MedicationInputEntry,
-    subjectReference: Reference,
-    encounterReference: Reference,
-    requesterReference: Reference,
+  medicationEntry: MedicationInputEntry,
+  subjectReference: Reference,
+  encounterReference: Reference,
+  requesterReference: Reference,
 ): MedicationRequest => {
-    const medicationRequest: MedicationRequest = {
-        resourceType: 'MedicationRequest',
-        status: 'active',
-        intent: 'order',
-        medicationReference: createMedicationReference(medicationEntry.id),
-        subject: subjectReference,
-        encounter: encounterReference,
-        requester: requesterReference,
-        dosageInstruction: createDosageInstructions(medicationEntry),
-    };
+  const medicationRequest: MedicationRequest = {
+    resourceType: 'MedicationRequest',
+    status: 'active',
+    intent: 'order',
+    medicationReference: createMedicationReference(medicationEntry.id),
+    subject: subjectReference,
+    encounter: encounterReference,
+    requester: requesterReference,
+    dosageInstruction: createDosageInstructions(medicationEntry),
+    priority: medicationEntry.isSTAT ? 'stat' : 'routine',
+  };
 
-    // Add dispense request
-    const dispenseRequest = createDispenseRequest(medicationEntry);
-    if (dispenseRequest) {
-        medicationRequest.dispenseRequest = dispenseRequest;
-    }
+  // Add dispense request
+  const dispenseRequest = createDispenseRequest(medicationEntry);
+  if (dispenseRequest) {
+    medicationRequest.dispenseRequest = dispenseRequest;
+  }
 
-    return medicationRequest;
+  return medicationRequest;
 };
 
 /**
@@ -48,46 +48,51 @@ export const createMedicationRequestResource = (
  * @param medicationEntry - The medication input entry
  * @returns Array of Dosage instructions
  */
-const createDosageInstructions = (medicationEntry: MedicationInputEntry): Dosage[] => {
-    const dosage: Dosage = {};
+const createDosageInstructions = (
+  medicationEntry: MedicationInputEntry,
+): Dosage[] => {
+  const dosage: Dosage = {};
 
-    // Set text with instructions
-    const dosingInstruction: OpenMRSDosingInstruction = {};
-    if (medicationEntry.instruction) {
-        dosingInstruction.instructions = medicationEntry.instruction.name;
-    }
-    dosage.text = JSON.stringify(dosingInstruction);
+  // Set text with instructions
+  const dosingInstruction: OpenMRSDosingInstruction = {};
+  if (medicationEntry.instruction) {
+    dosingInstruction.instructions = medicationEntry.instruction.name;
+  }
+  dosage.text = JSON.stringify(dosingInstruction);
 
-    // Set timing
-    if (medicationEntry.frequency) {
-        dosage.timing = createTiming(
-            medicationEntry.frequency,
-            medicationEntry.startDate,
-            medicationEntry.duration,
-            medicationEntry.durationUnit
-        );
-    }
+  // Set timing
+  if (medicationEntry.frequency) {
+    dosage.timing = createTiming(
+      medicationEntry.frequency,
+      medicationEntry.startDate,
+      medicationEntry.duration,
+      medicationEntry.durationUnit,
+    );
+  }
 
-    // Set as needed (PRN)
-    dosage.asNeededBoolean = medicationEntry.isPRN || false;
+  // Set as needed (PRN)
+  dosage.asNeededBoolean = medicationEntry.isPRN || false;
 
-    // Set route
-    if (medicationEntry.route) {
-        
-        dosage.route = createCodeableConcept([createCoding(medicationEntry.route.uuid)])
-    }
+  // Set route
+  if (medicationEntry.route) {
+    dosage.route = createCodeableConcept([
+      createCoding(medicationEntry.route.uuid),
+    ]);
+  }
 
-    // Set dose and rate
-    if (medicationEntry.dosage && medicationEntry.dosageUnit) {
-        dosage.doseAndRate = [{
-            doseQuantity: {
-                value: medicationEntry.dosage,
-                code: medicationEntry.dosageUnit.uuid,
-            }
-        }];
-    }
+  // Set dose and rate
+  if (medicationEntry.dosage && medicationEntry.dosageUnit) {
+    dosage.doseAndRate = [
+      {
+        doseQuantity: {
+          value: medicationEntry.dosage,
+          code: medicationEntry.dosageUnit.uuid,
+        },
+      },
+    ];
+  }
 
-    return [dosage];
+  return [dosage];
 };
 
 /**
@@ -99,32 +104,32 @@ const createDosageInstructions = (medicationEntry: MedicationInputEntry): Dosage
  * @returns Timing object
  */
 const createTiming = (
-    frequency: Frequency,
-    startDate?: Date,
-    duration?: number,
-    durationUnit?: DurationUnitOption | null
+  frequency: Frequency,
+  startDate?: Date,
+  duration?: number,
+  durationUnit?: DurationUnitOption | null,
 ): Timing => {
-    const timing: Timing = {};
+  const timing: Timing = {};
 
-    // Add event (start date)
-    if (startDate) {
-        // Convert to ISO format with timezone
-        const date = new Date(startDate);
-        timing.event = [date.toISOString()];
-    }
+  // Add event (start date)
+  if (startDate) {
+    // Convert to ISO format with timezone
+    const date = new Date(startDate);
+    timing.event = [date.toISOString()];
+  }
 
-    // Add repeat information if duration is specified
-    if (duration && durationUnit) {
-        timing.repeat = {
-            duration: duration,
-            durationUnit: durationUnit.code,
-        };
-    }
+  // Add repeat information if duration is specified
+  if (duration && durationUnit) {
+    timing.repeat = {
+      duration: duration,
+      durationUnit: durationUnit.code,
+    };
+  }
 
-    // Add frequency code
-    timing.code = createCodeableConcept([createCoding(frequency.uuid)])
+  // Add frequency code
+  timing.code = createCodeableConcept([createCoding(frequency.uuid)]);
 
-    return timing;
+  return timing;
 };
 
 /**
@@ -133,13 +138,13 @@ const createTiming = (
  * @returns Dispense request object
  */
 const createDispenseRequest = (medicationEntry: MedicationInputEntry) => {
-    return {
-        numberOfRepeatsAllowed: 0,
-        quantity: {
-            value: medicationEntry.dispenseQuantity,
-            code: medicationEntry.dispenseUnit?.uuid,
-        }
-    };
+  return {
+    numberOfRepeatsAllowed: 0,
+    quantity: {
+      value: medicationEntry.dispenseQuantity,
+      code: medicationEntry.dispenseUnit?.uuid,
+    },
+  };
 };
 
 /**
@@ -151,12 +156,17 @@ const createDispenseRequest = (medicationEntry: MedicationInputEntry) => {
  * @returns Array of FHIR MedicationRequest resources
  */
 export const createMedicationRequestResources = (
-    medicationEntries: MedicationInputEntry[],
-    subjectReference: Reference,
-    encounterReference: Reference,
-    requesterReference: Reference,
+  medicationEntries: MedicationInputEntry[],
+  subjectReference: Reference,
+  encounterReference: Reference,
+  requesterReference: Reference,
 ): MedicationRequest[] => {
-    return medicationEntries.map(entry =>
-        createMedicationRequestResource(entry, subjectReference, encounterReference, requesterReference)
-    );
+  return medicationEntries.map((entry) =>
+    createMedicationRequestResource(
+      entry,
+      subjectReference,
+      encounterReference,
+      requesterReference,
+    ),
+  );
 };

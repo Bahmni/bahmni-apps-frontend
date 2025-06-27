@@ -285,10 +285,7 @@ describe('ConsultationPad', () => {
         'data-testid',
         'mock-investigations-form',
       );
-      expect(forms[8]).toHaveAttribute(
-        'data-testid',
-        'mock-medications-form',
-      );
+      expect(forms[8]).toHaveAttribute('data-testid', 'mock-medications-form');
     });
 
     it('should render dividers between forms', () => {
@@ -898,14 +895,12 @@ describe('ConsultationPad', () => {
 
       (
         consultationBundleService.createMedicationRequestEntries as jest.Mock
-      ).mockReturnValue(
-        [
-          {
-            resource: { resourceType: 'MedicationRequest', id: 'medication-1' },
-            request: { method: 'POST' },
-          },
-        ],
-      )
+      ).mockReturnValue([
+        {
+          resource: { resourceType: 'MedicationRequest', id: 'medication-1' },
+          request: { method: 'POST' },
+        },
+      ]);
 
       renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
 

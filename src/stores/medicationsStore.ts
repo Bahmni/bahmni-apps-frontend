@@ -7,20 +7,23 @@ import { Frequency } from '@types/medicationConfig';
 export interface MedicationState {
   selectedMedications: MedicationInputEntry[];
 
-  addMedication: (medication: Medication, displayName:string) => void;
+  addMedication: (medication: Medication, displayName: string) => void;
   removeMedication: (medicationId: string) => void;
   updateDosage: (medicationId: string, dosage: number) => void;
   updateDosageUnit: (medicationId: string, unit: Concept) => void;
-  updateFrequency: (medicationId: string, frequency: Frequency) => void;
+  updateFrequency: (medicationId: string, frequency: Frequency | null) => void;
   updateRoute: (medicationId: string, route: Concept) => void;
   updateDuration: (medicationId: string, duration: number) => void;
-  updateDurationUnit: (medicationId: string, unit: DurationUnitOption) => void;
+  updateDurationUnit: (
+    medicationId: string,
+    unit: DurationUnitOption | null,
+  ) => void;
   updateInstruction: (medicationId: string, instruction: Concept) => void;
   updateisPRN: (medicationId: string, isPRN: boolean) => void;
   updateisSTAT: (medicationId: string, isSTAT: boolean) => void;
   updateStartDate: (medicationId: string, date: Date) => void;
   updateDispenseQuantity: (medicationId: string, quantity: number) => void;
-  updateDispenseUnit: (medicationId: string, unit: Concept) => void
+  updateDispenseUnit: (medicationId: string, unit: Concept) => void;
   validateAllMedications: () => boolean;
 
   reset: () => void;
@@ -30,9 +33,7 @@ export interface MedicationState {
 export const useMedicationStore = create<MedicationState>((set, get) => ({
   selectedMedications: [],
 
-  addMedication: (medication:Medication, displayName:string
-
-  ) => {
+  addMedication: (medication: Medication, displayName: string) => {
     const newMedication: MedicationInputEntry = {
       id: medication.id!,
       display: displayName,
@@ -49,8 +50,8 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
       instruction: null,
       errors: {},
       hasBeenValidated: false,
-      dispenseQuantity:0,
-      dispenseUnit: null
+      dispenseQuantity: 0,
+      dispenseUnit: null,
     };
 
     set((state) => ({
@@ -73,7 +74,7 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
 
         const updatedMedication = {
           ...medication,
-          dosage:dosage,
+          dosage: dosage,
         };
 
         if (medication.hasBeenValidated && dosage > 0) {
@@ -106,14 +107,14 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
     }));
   },
 
-  updateFrequency: (medicationId: string, frequency: Frequency) => {
+  updateFrequency: (medicationId: string, frequency: Frequency | null) => {
     set((state) => ({
       selectedMedications: state.selectedMedications.map((medication) => {
         if (medication.id !== medicationId) return medication;
 
         const updatedMedication = {
           ...medication,
-          frequency:frequency,
+          frequency: frequency,
         };
 
         if (medication.hasBeenValidated && frequency) {
@@ -133,7 +134,7 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
 
         const updatedMedication = {
           ...medication,
-          route:route,
+          route: route,
         };
 
         if (medication.hasBeenValidated && route) {
@@ -153,7 +154,7 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
 
         const updatedMedication = {
           ...medication,
-          duration
+          duration,
         };
 
         if (medication.hasBeenValidated && duration > 0) {
@@ -166,14 +167,17 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
     }));
   },
 
-  updateDurationUnit: (medicationId: string, unit:DurationUnitOption) => {
+  updateDurationUnit: (
+    medicationId: string,
+    unit: DurationUnitOption | null,
+  ) => {
     set((state) => ({
       selectedMedications: state.selectedMedications.map((medication) => {
         if (medication.id !== medicationId) return medication;
 
         const updatedMedication = {
           ...medication,
-          durationUnit: unit
+          durationUnit: unit,
         };
 
         if (medication.hasBeenValidated) {
@@ -199,7 +203,6 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
     }));
   },
 
-
   updateisPRN: (medicationId: string, isPRN: boolean) => {
     set((state) => ({
       selectedMedications: state.selectedMedications.map((medication) => {
@@ -207,7 +210,7 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
 
         return {
           ...medication,
-          isPRN:isPRN
+          isPRN: isPRN,
         };
       }),
     }));
@@ -220,12 +223,11 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
 
         return {
           ...medication,
-          isSTAT:isSTAT
+          isSTAT: isSTAT,
         };
       }),
     }));
   },
-
 
   updateStartDate: (medicationId: string, date: Date) => {
     set((state) => ({
@@ -240,7 +242,7 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
     }));
   },
 
-  updateDispenseQuantity(medicationId:string, quantity:number) {
+  updateDispenseQuantity(medicationId: string, quantity: number) {
     set((state) => ({
       selectedMedications: state.selectedMedications.map((medication) => {
         if (medication.id !== medicationId) return medication;
@@ -260,7 +262,7 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
     }));
   },
 
-  updateDispenseUnit(medicationId:string, unit:Concept) {
+  updateDispenseUnit(medicationId: string, unit: Concept) {
     set((state) => ({
       selectedMedications: state.selectedMedications.map((medication) => {
         if (medication.id !== medicationId) return medication;
@@ -326,7 +328,6 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
         } else {
           delete errors.durationUnit;
         }
-
 
         return {
           ...medication,

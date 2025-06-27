@@ -15,4 +15,4 @@ export const FHIR_LAB_ORDER_CONCEPT_TYPE_EXTENSION_URL =
 export const FHIR_MEDICATION_EXTENSION_URL =
   'http://fhir.openmrs.org/ext/medicine';
 export const FHIR_MEDICATION_NAME_EXTENSION_URL =
-  'http://fhir.openmrs.org/ext/medicine#drugName'
+  'http://fhir.openmrs.org/ext/medicine#drugName';

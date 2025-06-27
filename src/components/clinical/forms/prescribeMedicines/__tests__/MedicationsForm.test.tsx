@@ -19,7 +19,10 @@ jest.mock('@stores/medicationsStore');
 jest.mock('@hooks/useMedicationConfig');
 jest.mock('@hooks/useMedicationSearch');
 jest.mock('@services/medicationService', () => ({
-  getMedicationDisplay: jest.fn((medication) => medication?.code?.text || medication?.code?.display || 'Test Medication'),
+  getMedicationDisplay: jest.fn(
+    (medication) =>
+      medication?.code?.text || medication?.code?.display || 'Test Medication',
+  ),
 }));
 
 // Mock CSS modules
@@ -68,7 +71,7 @@ const mockMedicationConfig: MedicationConfig = {
   ],
   dispensingUnits: [],
   dosingRules: [],
-  orderAttributes: []
+  orderAttributes: [],
 };
 
 const mockSelectedMedication: MedicationInputEntry = {
@@ -127,12 +130,16 @@ const mockMedicationSearchHook = {
 describe('MedicationsForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(console, 'error').mockImplementation(() => { });
+    jest.spyOn(console, 'error').mockImplementation(() => {});
     window.HTMLElement.prototype.scrollIntoView = jest.fn();
 
     (useMedicationStore as unknown as jest.Mock).mockReturnValue(mockStore);
-    (useMedicationConfig as jest.Mock).mockReturnValue(mockMedicationConfigHook);
-    (useMedicationSearch as jest.Mock).mockReturnValue(mockMedicationSearchHook);
+    (useMedicationConfig as jest.Mock).mockReturnValue(
+      mockMedicationConfigHook,
+    );
+    (useMedicationSearch as jest.Mock).mockReturnValue(
+      mockMedicationSearchHook,
+    );
 
     i18n.changeLanguage('en');
   });
@@ -196,7 +203,7 @@ describe('MedicationsForm', () => {
       await waitFor(() => {
         expect(mockStore.addMedication).toHaveBeenCalledWith(
           mockMedication,
-          'Paracetamol 500mg'
+          'Paracetamol 500mg',
         );
       });
     });
@@ -231,13 +238,17 @@ describe('MedicationsForm', () => {
       );
 
       // Find the close button by its aria-label
-      const closeButton = screen.getByRole('button', { name: /remove medication/i });
+      const closeButton = screen.getByRole('button', {
+        name: /remove medication/i,
+      });
       await waitFor(async () => {
         await user.click(closeButton);
       });
 
       await waitFor(() => {
-        expect(mockStore.removeMedication).toHaveBeenCalledWith(mockSelectedMedication.id);
+        expect(mockStore.removeMedication).toHaveBeenCalledWith(
+          mockSelectedMedication.id,
+        );
       });
     });
 
@@ -301,7 +312,9 @@ describe('MedicationsForm', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText(/error fetching medications/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/error fetching medications/i),
+        ).toBeInTheDocument();
       });
     });
 
@@ -327,7 +340,9 @@ describe('MedicationsForm', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText(/no matching medications found/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/no matching medications found/i),
+        ).toBeInTheDocument();
       });
     });
 
@@ -412,7 +427,9 @@ describe('MedicationsForm', () => {
         </I18nextProvider>,
       );
 
-      expect(screen.getByText('ERROR_FETCHING_MEDICATION_CONFIG')).toBeInTheDocument();
+      expect(
+        screen.getByText('ERROR_FETCHING_MEDICATION_CONFIG'),
+      ).toBeInTheDocument();
     });
   });
 

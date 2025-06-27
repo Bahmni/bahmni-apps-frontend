@@ -19,8 +19,13 @@ import { getMedicationDisplay } from '@services/medicationService';
 const MedicationsForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const [searchMedicationTerm, setSearchMedicationTerm] = useState('');
-  const { medicationConfig, loading:medicationConfigLoading, error:medicationConfigError } = useMedicationConfig();
-  const { searchResults, loading, error } = useMedicationSearch(searchMedicationTerm)
+  const {
+    medicationConfig,
+    loading: medicationConfigLoading,
+    error: medicationConfigError,
+  } = useMedicationConfig();
+  const { searchResults, loading, error } =
+    useMedicationSearch(searchMedicationTerm);
 
   // Use Zustand store
   const {
@@ -67,7 +72,9 @@ const MedicationsForm: React.FC = React.memo(() => {
     if (error) {
       return [
         {
-          displayName: t('ERROR_FETCHING_MEDICATIONS', { error: error.message }),
+          displayName: t('ERROR_FETCHING_MEDICATIONS', {
+            error: error.message,
+          }),
           disabled: true,
         },
       ];
@@ -104,7 +111,7 @@ const MedicationsForm: React.FC = React.memo(() => {
     searchResults,
     selectedMedications,
     t,
-    getMedicationDisplay
+    getMedicationDisplay,
   ]);
 
   return (
@@ -112,12 +119,12 @@ const MedicationsForm: React.FC = React.memo(() => {
       <div className={styles.medicationsFormTitle}>
         {t('MEDICATIONS_FORM_TITLE')}
       </div>
-      {medicationConfigLoading && (
-        <DropdownSkeleton/>
-      )}
+      {medicationConfigLoading && <DropdownSkeleton />}
       {medicationConfigError && (
         <div>
-          {t('ERROR_FETCHING_MEDICATION_CONFIG', { error: medicationConfigError.message })}
+          {t('ERROR_FETCHING_MEDICATION_CONFIG', {
+            error: medicationConfigError.message,
+          })}
         </div>
       )}
 
@@ -125,42 +132,42 @@ const MedicationsForm: React.FC = React.memo(() => {
         id="medications-search"
         placeholder={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
         items={filteredSearchResults}
-        itemToString={(item) =>
-          item ? item.displayName : ''
-        }
+        itemToString={(item) => (item ? item.displayName : '')}
         onChange={(data) => handleOnChange(data.selectedItem!)}
         onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
         size="lg"
         autoAlign
         aria-label={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
       />
-      {medicationConfig && selectedMedications && selectedMedications.length > 0 && (
-        <BoxWHeader
-          title={t('MEDICATIONS_ADDED_MEDICATIONS')}
-          className={styles.medicationsBox}
-        >
-          {selectedMedications.map((medication) => (
-            <SelectedMedicationItem
-              key={medication.id}
-              medicationInputEntry={medication}
-              medicationConfig={medicationConfig!}
-              updateDosage={updateDosage}
-              updateDosageUnit={updateDosageUnit}
-              updateFrequency={updateFrequency}
-              updateRoute={updateRoute}
-              updateDuration={updateDuration}
-              updateDurationUnit={updateDurationUnit}
-              updateInstruction={updateInstruction}
-              updateisPRN={updateisPRN}
-              updateisSTAT={updateisSTAT}
-              updateDispenseQuantity={updateDispenseQuantity}
-              updateDispenseUnit={updateDispenseUnit}
-              updateStartDate={updateStartDate}
-              removeMedication={removeMedication}
-            />
-          ))}
-        </BoxWHeader>
-      )}
+      {medicationConfig &&
+        selectedMedications &&
+        selectedMedications.length > 0 && (
+          <BoxWHeader
+            title={t('MEDICATIONS_ADDED_MEDICATIONS')}
+            className={styles.medicationsBox}
+          >
+            {selectedMedications.map((medication) => (
+              <SelectedMedicationItem
+                key={medication.id}
+                medicationInputEntry={medication}
+                medicationConfig={medicationConfig!}
+                updateDosage={updateDosage}
+                updateDosageUnit={updateDosageUnit}
+                updateFrequency={updateFrequency}
+                updateRoute={updateRoute}
+                updateDuration={updateDuration}
+                updateDurationUnit={updateDurationUnit}
+                updateInstruction={updateInstruction}
+                updateisPRN={updateisPRN}
+                updateisSTAT={updateisSTAT}
+                updateDispenseQuantity={updateDispenseQuantity}
+                updateDispenseUnit={updateDispenseUnit}
+                updateStartDate={updateStartDate}
+                removeMedication={removeMedication}
+              />
+            ))}
+          </BoxWHeader>
+        )}
     </Tile>
   );
 });

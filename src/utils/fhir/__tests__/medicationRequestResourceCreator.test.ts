@@ -70,20 +70,24 @@ describe('medicationRequestResourceCreator', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Setup default mocks
     (referenceCreator.createMedicationReference as jest.Mock).mockReturnValue({
       reference: 'Medication/med-123',
       type: 'Medication',
     });
 
-    (codeableConceptCreator.createCodeableConcept as jest.Mock).mockImplementation((coding) => ({
+    (
+      codeableConceptCreator.createCodeableConcept as jest.Mock
+    ).mockImplementation((coding) => ({
       coding,
     }));
 
-    (codeableConceptCreator.createCoding as jest.Mock).mockImplementation((code) => ({
-      code,
-    }));
+    (codeableConceptCreator.createCoding as jest.Mock).mockImplementation(
+      (code) => ({
+        code,
+      }),
+    );
   });
 
   describe('createMedicationRequestResource', () => {
@@ -93,7 +97,7 @@ describe('medicationRequestResourceCreator', () => {
         mockMedicationEntry,
         mockSubjectReference,
         mockEncounterReference,
-        mockRequesterReference
+        mockRequesterReference,
       );
 
       // Assert
@@ -113,11 +117,11 @@ describe('medicationRequestResourceCreator', () => {
       // Verify dosage instructions
       expect(result.dosageInstruction).toHaveLength(1);
       const dosage = result.dosageInstruction![0];
-      
+
       // Check dosing instruction text
       const dosingInstruction = JSON.parse(dosage.text!);
       expect(dosingInstruction.instructions).toBe('Test Concept');
-      
+
       // Check timing
       expect(dosage.timing).toBeDefined();
       expect(dosage.timing!.event).toEqual(['2024-01-01T10:00:00.000Z']);
@@ -125,16 +129,18 @@ describe('medicationRequestResourceCreator', () => {
         duration: 7,
         durationUnit: 'd',
       });
-      
+
       // Check other dosage fields
       expect(dosage.asNeededBoolean).toBe(false);
       expect(dosage.route).toBeDefined();
-      expect(dosage.doseAndRate).toEqual([{
-        doseQuantity: {
-          value: 100,
-          code: 'concept-uuid',
-        }
-      }]);
+      expect(dosage.doseAndRate).toEqual([
+        {
+          doseQuantity: {
+            value: 100,
+            code: 'concept-uuid',
+          },
+        },
+      ]);
 
       // Verify dispense request
       expect(result.dispenseRequest).toEqual({
@@ -142,13 +148,19 @@ describe('medicationRequestResourceCreator', () => {
         quantity: {
           value: 14,
           code: 'concept-uuid',
-        }
+        },
       });
 
       // Verify mocks were called correctly
-      expect(referenceCreator.createMedicationReference).toHaveBeenCalledWith('med-123');
-      expect(codeableConceptCreator.createCoding).toHaveBeenCalledWith('concept-uuid');
-      expect(codeableConceptCreator.createCoding).toHaveBeenCalledWith('frequency-uuid');
+      expect(referenceCreator.createMedicationReference).toHaveBeenCalledWith(
+        'med-123',
+      );
+      expect(codeableConceptCreator.createCoding).toHaveBeenCalledWith(
+        'concept-uuid',
+      );
+      expect(codeableConceptCreator.createCoding).toHaveBeenCalledWith(
+        'frequency-uuid',
+      );
     });
 
     it('should create MedicationRequest with PRN set to true', () => {
@@ -163,7 +175,7 @@ describe('medicationRequestResourceCreator', () => {
         prnEntry,
         mockSubjectReference,
         mockEncounterReference,
-        mockRequesterReference
+        mockRequesterReference,
       );
 
       // Assert
@@ -188,18 +200,18 @@ describe('medicationRequestResourceCreator', () => {
         minimalEntry,
         mockSubjectReference,
         mockEncounterReference,
-        mockRequesterReference
+        mockRequesterReference,
       );
 
       // Assert
       expect(result.dosageInstruction).toHaveLength(1);
       const dosage = result.dosageInstruction![0];
-      
+
       // Check that optional fields are not present
       expect(dosage.timing).toBeUndefined();
       expect(dosage.route).toBeUndefined();
       expect(dosage.doseAndRate).toBeUndefined();
-      
+
       // Dosing instruction should only have empty object
       const dosingInstruction = JSON.parse(dosage.text!);
       expect(dosingInstruction).toEqual({});
@@ -217,7 +229,7 @@ describe('medicationRequestResourceCreator', () => {
         entryWithoutInstruction,
         mockSubjectReference,
         mockEncounterReference,
-        mockRequesterReference
+        mockRequesterReference,
       );
 
       // Assert
@@ -237,7 +249,7 @@ describe('medicationRequestResourceCreator', () => {
         entryWithoutDosage,
         mockSubjectReference,
         mockEncounterReference,
-        mockRequesterReference
+        mockRequesterReference,
       );
 
       // Assert
@@ -256,7 +268,7 @@ describe('medicationRequestResourceCreator', () => {
         entryWithoutDuration,
         mockSubjectReference,
         mockEncounterReference,
-        mockRequesterReference
+        mockRequesterReference,
       );
 
       // Assert
@@ -279,7 +291,7 @@ describe('medicationRequestResourceCreator', () => {
         entryWithoutStartDate,
         mockSubjectReference,
         mockEncounterReference,
-        mockRequesterReference
+        mockRequesterReference,
       );
 
       // Assert
@@ -299,7 +311,7 @@ describe('medicationRequestResourceCreator', () => {
         display: 'weeks',
         daysMultiplier: 7,
       };
-      
+
       const entryWithWeeks = {
         ...mockMedicationEntry,
         duration: 2,
@@ -311,7 +323,7 @@ describe('medicationRequestResourceCreator', () => {
         entryWithWeeks,
         mockSubjectReference,
         mockEncounterReference,
-        mockRequesterReference
+        mockRequesterReference,
       );
 
       // Assert
@@ -333,7 +345,7 @@ describe('medicationRequestResourceCreator', () => {
         entryWithZeroDispense,
         mockSubjectReference,
         mockEncounterReference,
-        mockRequesterReference
+        mockRequesterReference,
       );
 
       // Assert
@@ -342,7 +354,7 @@ describe('medicationRequestResourceCreator', () => {
         quantity: {
           value: 0,
           code: 'concept-uuid',
-        }
+        },
       });
     });
   });
@@ -369,7 +381,7 @@ describe('medicationRequestResourceCreator', () => {
         medicationEntries,
         mockSubjectReference,
         mockEncounterReference,
-        mockRequesterReference
+        mockRequesterReference,
       );
 
       // Assert
@@ -391,10 +403,18 @@ describe('medicationRequestResourceCreator', () => {
       });
 
       // Verify createMedicationReference was called for each entry
-      expect(referenceCreator.createMedicationReference).toHaveBeenCalledTimes(3);
-      expect(referenceCreator.createMedicationReference).toHaveBeenCalledWith('med-123');
-      expect(referenceCreator.createMedicationReference).toHaveBeenCalledWith('med-456');
-      expect(referenceCreator.createMedicationReference).toHaveBeenCalledWith('med-789');
+      expect(referenceCreator.createMedicationReference).toHaveBeenCalledTimes(
+        3,
+      );
+      expect(referenceCreator.createMedicationReference).toHaveBeenCalledWith(
+        'med-123',
+      );
+      expect(referenceCreator.createMedicationReference).toHaveBeenCalledWith(
+        'med-456',
+      );
+      expect(referenceCreator.createMedicationReference).toHaveBeenCalledWith(
+        'med-789',
+      );
     });
 
     it('should handle empty array of medication entries', () => {
@@ -403,7 +423,7 @@ describe('medicationRequestResourceCreator', () => {
         [],
         mockSubjectReference,
         mockEncounterReference,
-        mockRequesterReference
+        mockRequesterReference,
       );
 
       // Assert
@@ -416,7 +436,7 @@ describe('medicationRequestResourceCreator', () => {
         [mockMedicationEntry],
         mockSubjectReference,
         mockEncounterReference,
-        mockRequesterReference
+        mockRequesterReference,
       );
 
       // Assert
@@ -463,7 +483,7 @@ describe('medicationRequestResourceCreator', () => {
         nullFieldsEntry,
         mockSubjectReference,
         mockEncounterReference,
-        mockRequesterReference
+        mockRequesterReference,
       );
 
       // Assert
@@ -490,7 +510,7 @@ describe('medicationRequestResourceCreator', () => {
         entryWithTimezone,
         mockSubjectReference,
         mockEncounterReference,
-        mockRequesterReference
+        mockRequesterReference,
       );
 
       // Assert

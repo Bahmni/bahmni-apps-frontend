@@ -344,8 +344,6 @@ export function createMedicationRequestEntries({
   }
   const medicationRequestEntries: BundleEntry[] = [];
   for (const medication of selectedMedications) {
-    
-
     const medicationResourceURL = `urn:uuid:${crypto.randomUUID()}`;
     const medicationResource = createMedicationRequestResource(
       medication,
@@ -363,7 +361,6 @@ export function createMedicationRequestEntries({
     medicationRequestEntries.push(medicationRequestEntry);
   }
   return medicationRequestEntries;
-
 }
 
 export async function postConsultationBundle<T>(

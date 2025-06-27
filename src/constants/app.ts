@@ -71,13 +71,10 @@ export const ORDER_TYPE_URL =
   '/ordertype?v=custom:(uuid,display,conceptClasses:(uuid,name))';
 export const MEDICATION_ORDERS_METADATA_URL =
   OPENMRS_REST_V1 + '/bahmnicore/config/drugOrders';
-export const MEDICATIONS_SEARCH_URL = (
-  searchTerm: string,
-  count: number,
-) =>
+export const MEDICATIONS_SEARCH_URL = (searchTerm: string, count: number) =>
   OPENMRS_FHIR_R4 +
   `/Medication?name=${encodeURIComponent(searchTerm)}&_count=${count}`;
-  
+
 export const ALL_ORDERABLES_CONCEPT_NAME = 'All Orderables';
 export const LOGIN_PATH = '/bahmni/home/index.html#/login';
 export const DEFAULT_LOCALE = 'en';

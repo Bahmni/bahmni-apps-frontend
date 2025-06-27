@@ -9,7 +9,6 @@ interface MedicationSearchResult {
   error: Error | null;
 }
 
-
 export const useMedicationSearch = (
   searchTerm: string,
   count = 20,
@@ -20,9 +19,11 @@ export const useMedicationSearch = (
   const [error, setError] = useState<Error | null>(null);
   const debouncedSearchTerm = useDebounce(searchTerm, debounceDelay);
 
-  const getMedicationsFromBundle = (bundle: Bundle<Medication>): Medication[] => {
+  const getMedicationsFromBundle = (
+    bundle: Bundle<Medication>,
+  ): Medication[] => {
     const medications: Medication[] = [];
-    bundle.entry?.map(entry => {
+    bundle.entry?.map((entry) => {
       if (entry.resource) {
         medications.push(entry.resource);
       }

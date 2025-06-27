@@ -71,7 +71,11 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   const { selectedServiceRequests, reset: resetServiceRequests } =
     useServiceRequestStore();
 
-  const { selectedMedications, validateAllMedications, reset: resetMedications } = useMedicationStore();
+  const {
+    selectedMedications,
+    validateAllMedications,
+    reset: resetMedications,
+  } = useMedicationStore();
 
   // Clean up on unmount
   useEffect(() => {
@@ -163,7 +167,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       ...allergyEntries,
       ...conditionEntries,
       ...serviceRequestEntries,
-      ...medicationEntries
+      ...medicationEntries,
     ]);
 
     return postConsultationBundle<ConsultationBundle>(consultationBundle);
@@ -174,7 +178,11 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       const isConditionsAndDiagnosesValid = validate();
       const isAllergiesValid = validateAllAllergies();
       const isMedicationsValid = validateAllMedications();
-      if (!isConditionsAndDiagnosesValid || !isAllergiesValid || !isMedicationsValid) {
+      if (
+        !isConditionsAndDiagnosesValid ||
+        !isAllergiesValid ||
+        !isMedicationsValid
+      ) {
         return;
       }
 
@@ -261,7 +269,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
             <MenuItemDivider />
             <InvestigationsForm />
             <MenuItemDivider />
-            <MedicationsForm/>
+            <MedicationsForm />
             <MenuItemDivider />
           </>
         )
