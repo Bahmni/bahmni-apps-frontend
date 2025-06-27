@@ -3,12 +3,14 @@ import {
   Condition,
   AllergyIntolerance,
   ServiceRequest,
+  MedicationRequest,
 } from 'fhir/r4';
 import {
   createDiagnosisBundleEntries,
   createAllergiesBundleEntries,
   createServiceRequestBundleEntries,
   createConditionsBundleEntries,
+  createMedicationRequestEntries,
   postConsultationBundle,
 } from '../consultationBundleService';
 import { CONSULTATION_ERROR_MESSAGES } from '@constants/errors';
@@ -18,6 +20,7 @@ import { DiagnosisInputEntry } from '@types/diagnosis';
 import { AllergyInputEntry } from '@types/allergy';
 import { ServiceRequestInputEntry } from '@types/serviceRequest';
 import { ConditionInputEntry } from '@types/condition';
+import { MedicationInputEntry } from '@types/medication';
 
 // Mock crypto.randomUUID
 const mockUUID = '1d87ab20-8b86-4b41-a30d-984b2208d945';
@@ -1018,6 +1021,195 @@ describe('consultationBundleService', () => {
 
         expect(result).toHaveLength(1);
         expect(result[0].resource?.resourceType).toBe('Condition');
+      });
+    });
+  });
+
+  describe('createMedicationRequestEntries', () => {
+    const mockMedicationEntry: MedicationInputEntry = {
+      id: 'med-123',
+      medication: {
+        resourceType: 'Medication',
+        id: 'med-123',
+      },
+      display: 'Aspirin 100mg',
+      dosage: 100,
+      dosageUnit: null,
+      frequency: null,
+      instruction: null,
+      route: null,
+      duration: 7,
+      durationUnit: null,
+      isSTAT: false,
+      isPRN: false,
+      dispenseQuantity: 14,
+      dispenseUnit: null,
+      errors: {},
+      hasBeenValidated: true,
+    };
+
+    describe('Bundle Entry Creation', () => {
+      it('should create bundle entries with correct structure', () => {
+        const result = createMedicationRequestEntries({
+          selectedMedications: [mockMedicationEntry],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(1);
+        expect(result[0].fullUrl).toBe(`urn:uuid:${mockUUID}`);
+        expect(result[0].resource?.resourceType).toBe('MedicationRequest');
+        expect(result[0].request).toEqual({
+          method: 'POST',
+          url: 'MedicationRequest',
+        });
+      });
+
+      it('should create multiple bundle entries for multiple medications', () => {
+        const medications = [
+          mockMedicationEntry,
+          { ...mockMedicationEntry, id: 'med-456' },
+          { ...mockMedicationEntry, id: 'med-789' },
+        ];
+
+        const result = createMedicationRequestEntries({
+          selectedMedications: medications,
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(3);
+        result.forEach((entry) => {
+          expect(entry.resource?.resourceType).toBe('MedicationRequest');
+          expect(entry.request?.method).toBe('POST');
+        });
+      });
+
+      it('should return empty array for empty medications list', () => {
+        const result = createMedicationRequestEntries({
+          selectedMedications: [],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toEqual([]);
+      });
+    });
+
+    describe('Parameter Validation', () => {
+      it('should throw error for null selectedMedications', () => {
+        expect(() =>
+          createMedicationRequestEntries({
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            selectedMedications: null as any,
+            encounterSubject: mockEncounterSubject,
+            encounterReference: mockEncounterReference,
+            practitionerUUID: mockPractitionerUUID,
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
+      });
+
+      it('should throw error for non-array selectedMedications', () => {
+        expect(() =>
+          createMedicationRequestEntries({
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            selectedMedications: 'not-an-array' as any,
+            encounterSubject: mockEncounterSubject,
+            encounterReference: mockEncounterReference,
+            practitionerUUID: mockPractitionerUUID,
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
+      });
+
+      it('should throw error for missing encounterSubject', () => {
+        expect(() =>
+          createMedicationRequestEntries({
+            selectedMedications: [mockMedicationEntry],
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            encounterSubject: null as any,
+            encounterReference: mockEncounterReference,
+            practitionerUUID: mockPractitionerUUID,
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_SUBJECT);
+      });
+
+      it('should throw error for encounterSubject without reference', () => {
+        expect(() =>
+          createMedicationRequestEntries({
+            selectedMedications: [mockMedicationEntry],
+            encounterSubject: {} as Reference,
+            encounterReference: mockEncounterReference,
+            practitionerUUID: mockPractitionerUUID,
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_SUBJECT);
+      });
+
+      it('should throw error for missing encounterReference', () => {
+        expect(() =>
+          createMedicationRequestEntries({
+            selectedMedications: [mockMedicationEntry],
+            encounterSubject: mockEncounterSubject,
+            encounterReference: '',
+            practitionerUUID: mockPractitionerUUID,
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_REFERENCE);
+      });
+
+      it('should throw error for missing practitionerUUID', () => {
+        expect(() =>
+          createMedicationRequestEntries({
+            selectedMedications: [mockMedicationEntry],
+            encounterSubject: mockEncounterSubject,
+            encounterReference: mockEncounterReference,
+            practitionerUUID: '',
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_PRACTITIONER);
+      });
+    });
+
+    describe('Reference Creation', () => {
+      it('should create proper references for encounter and practitioner', () => {
+        const result = createMedicationRequestEntries({
+          selectedMedications: [mockMedicationEntry],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        const medicationRequest = result[0].resource as MedicationRequest;
+        expect(medicationRequest.subject).toEqual(mockEncounterSubject);
+        expect(medicationRequest.encounter?.reference).toBe(mockEncounterReference);
+        expect(medicationRequest.requester?.reference).toBe(`Practitioner/${mockPractitionerUUID}`);
+      });
+    });
+
+    describe('UUID Generation', () => {
+      it('should generate unique UUIDs for each medication entry', () => {
+        const medications = [
+          mockMedicationEntry,
+          { ...mockMedicationEntry, id: 'med-456' },
+        ];
+
+        // Mock different UUIDs for each call
+        let callCount = 0;
+        const uuids = ['uuid-1', 'uuid-2'];
+        (global.crypto.randomUUID as jest.Mock).mockImplementation(() => uuids[callCount++]);
+
+        const result = createMedicationRequestEntries({
+          selectedMedications: medications,
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result[0].fullUrl).toBe('urn:uuid:uuid-1');
+        expect(result[1].fullUrl).toBe('urn:uuid:uuid-2');
+
+        // Reset mock
+        (global.crypto.randomUUID as jest.Mock).mockReturnValue(mockUUID);
       });
     });
   });

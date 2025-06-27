@@ -100,6 +100,7 @@ jest.mock('@services/consultationBundleService', () => ({
   createAllergiesBundleEntries: jest.fn(() => []),
   createConditionsBundleEntries: jest.fn(() => []),
   createServiceRequestBundleEntries: jest.fn(() => []),
+  createMedicationRequestEntries: jest.fn(() => []),
 }));
 
 // Mock hooks
@@ -168,18 +169,6 @@ const createMockServiceRequestStore = () => ({
 
 const createMockMedicationStore = () => ({
   selectedMedications: [],
-  addMedication: jest.fn(),
-  removeMedication: jest.fn(),
-  updateDosage: jest.fn(),
-  updateDosageUnit: jest.fn(),
-  updateFrequency: jest.fn(),
-  updateRoute: jest.fn(),
-  updateDuration: jest.fn(),
-  updateDurationUnit: jest.fn(),
-  updateInstruction: jest.fn(),
-  updateisPRN: jest.fn(),
-  updateisSTAT: jest.fn(),
-  updateStartDate: jest.fn(),
   validateAllMedications: jest.fn(() => true),
   reset: jest.fn(),
   getState: jest.fn(() => ({ selectedMedications: [] })),
@@ -907,6 +896,17 @@ describe('ConsultationPad', () => {
         },
       ]);
 
+      (
+        consultationBundleService.createMedicationRequestEntries as jest.Mock
+      ).mockReturnValue(
+        [
+          {
+            resource: { resourceType: 'MedicationRequest', id: 'medication-1' },
+            request: { method: 'POST' },
+          },
+        ],
+      )
+
       renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
@@ -948,13 +948,14 @@ describe('ConsultationPad', () => {
         expect(resourceTypes).toContain('Condition'); // From diagnoses and conditions
         expect(resourceTypes).toContain('AllergyIntolerance');
         expect(resourceTypes).toContain('ServiceRequest');
+        expect(resourceTypes).toContain('MedicationRequest');
 
         // Verify the encounter entry is first
         expect(bundleArg.entry[0].resource.resourceType).toBe('Encounter');
         expect(bundleArg.entry[0].fullUrl).toMatch(/^urn:uuid:/);
 
-        // Verify total number of entries (1 encounter + 4 from bundle creation functions)
-        expect(bundleArg.entry).toHaveLength(5);
+        // Verify total number of entries (1 encounter + 5 from bundle creation functions)
+        expect(bundleArg.entry).toHaveLength(6);
       });
     });
 

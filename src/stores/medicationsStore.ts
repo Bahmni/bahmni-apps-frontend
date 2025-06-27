@@ -18,7 +18,9 @@ export interface MedicationState {
   updateInstruction: (medicationId: string, instruction: Concept) => void;
   updateisPRN: (medicationId: string, isPRN: boolean) => void;
   updateisSTAT: (medicationId: string, isSTAT: boolean) => void;
-  updateStartDate: (medicationId: string, date: string) => void;
+  updateStartDate: (medicationId: string, date: Date) => void;
+  updateDispenseQuantity: (medicationId: string, quantity: number) => void;
+  updateDispenseUnit: (medicationId: string, unit: Concept) => void
   validateAllMedications: () => boolean;
 
   reset: () => void;
@@ -43,10 +45,12 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
       durationUnit: null,
       isSTAT: false,
       isPRN: false,
-      startDate: '',
+      startDate: new Date(),
       instruction: null,
       errors: {},
-      hasBeenValidated: false
+      hasBeenValidated: false,
+      dispenseQuantity:0,
+      dispenseUnit: null
     };
 
     set((state) => ({
@@ -223,7 +227,7 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
   },
 
 
-  updateStartDate: (medicationId: string, date: string) => {
+  updateStartDate: (medicationId: string, date: Date) => {
     set((state) => ({
       selectedMedications: state.selectedMedications.map((medication) => {
         if (medication.id !== medicationId) return medication;
@@ -232,6 +236,46 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
           ...medication,
           startDate: date,
         };
+      }),
+    }));
+  },
+
+  updateDispenseQuantity(medicationId:string, quantity:number) {
+    set((state) => ({
+      selectedMedications: state.selectedMedications.map((medication) => {
+        if (medication.id !== medicationId) return medication;
+
+        const updatedMedication = {
+          ...medication,
+          dispenseQuantity: quantity,
+        };
+
+        if (medication.hasBeenValidated && quantity >= 0) {
+          updatedMedication.errors = { ...medication.errors };
+          delete updatedMedication.errors.dispenseQuantity;
+        }
+
+        return updatedMedication;
+      }),
+    }));
+  },
+
+  updateDispenseUnit(medicationId:string, unit:Concept) {
+    set((state) => ({
+      selectedMedications: state.selectedMedications.map((medication) => {
+        if (medication.id !== medicationId) return medication;
+
+        const updatedMedication = {
+          ...medication,
+          dispenseUnit: unit,
+        };
+
+        if (medication.hasBeenValidated && unit) {
+          updatedMedication.errors = { ...medication.errors };
+          delete updatedMedication.errors.dispenseUnit;
+        }
+
+        return updatedMedication;
       }),
     }));
   },

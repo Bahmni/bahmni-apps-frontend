@@ -36,6 +36,8 @@ const MedicationsForm: React.FC = React.memo(() => {
     updateInstruction,
     updateisPRN,
     updateisSTAT,
+    updateDispenseQuantity,
+    updateDispenseUnit,
     updateStartDate,
   } = useMedicationStore();
 
@@ -114,7 +116,7 @@ const MedicationsForm: React.FC = React.memo(() => {
         <DropdownSkeleton/>
       )}
       {medicationConfigError && (
-        <div className={styles.error}>
+        <div>
           {t('ERROR_FETCHING_MEDICATION_CONFIG', { error: medicationConfigError.message })}
         </div>
       )}
@@ -151,6 +153,8 @@ const MedicationsForm: React.FC = React.memo(() => {
               updateInstruction={updateInstruction}
               updateisPRN={updateisPRN}
               updateisSTAT={updateisSTAT}
+              updateDispenseQuantity={updateDispenseQuantity}
+              updateDispenseUnit={updateDispenseUnit}
               updateStartDate={updateStartDate}
               removeMedication={removeMedication}
             />

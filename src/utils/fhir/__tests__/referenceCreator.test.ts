@@ -6,6 +6,7 @@ import {
   createEncounterLocationReference,
   createPractitionerReference,
   createEncounterParticipantReference,
+  createMedicationReference,
 } from '../referenceCreator';
 
 describe('referenceCreator utility functions', () => {
@@ -116,6 +117,50 @@ describe('referenceCreator utility functions', () => {
           reference: `Practitioner/${practitionerUUID}`,
           type: 'Practitioner',
         },
+      });
+    });
+  });
+
+  describe('createMedicationReference', () => {
+    it('should create a reference to a Medication resource with the provided ID and type', () => {
+      // Arrange
+      const medicationId = 'medication-id-123';
+
+      // Act
+      const result = createMedicationReference(medicationId);
+
+      // Assert
+      expect(result).toEqual({
+        reference: `Medication/${medicationId}`,
+        type: 'Medication',
+      });
+    });
+
+    it('should handle medication IDs with special characters', () => {
+      // Arrange
+      const medicationId = 'med-456-abc_def';
+
+      // Act
+      const result = createMedicationReference(medicationId);
+
+      // Assert
+      expect(result).toEqual({
+        reference: `Medication/${medicationId}`,
+        type: 'Medication',
+      });
+    });
+
+    it('should handle empty medication ID', () => {
+      // Arrange
+      const medicationId = '';
+
+      // Act
+      const result = createMedicationReference(medicationId);
+
+      // Assert
+      expect(result).toEqual({
+        reference: 'Medication/',
+        type: 'Medication',
       });
     });
   });

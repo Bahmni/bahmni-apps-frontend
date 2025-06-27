@@ -13,6 +13,7 @@ import {
   createAllergiesBundleEntries,
   createConditionsBundleEntries,
   createServiceRequestBundleEntries,
+  createMedicationRequestEntries,
 } from '@services/consultationBundleService';
 import useNotification from '@hooks/useNotification';
 import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
@@ -70,7 +71,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   const { selectedServiceRequests, reset: resetServiceRequests } =
     useServiceRequestStore();
 
-  const { validateAllMedications, reset: resetMedications } = useMedicationStore();
+  const { selectedMedications, validateAllMedications, reset: resetMedications } = useMedicationStore();
 
   // Clean up on unmount
   useEffect(() => {
@@ -150,12 +151,19 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       practitionerUUID: practitioner!.uuid,
     });
 
+    const medicationEntries = createMedicationRequestEntries({
+      selectedMedications,
+      encounterSubject: encounterResource.subject!,
+      encounterReference: enconterResourceURL,
+      practitionerUUID: practitioner!.uuid,
+    });
     const consultationBundle = createConsultationBundle([
       encounterBundleEntry,
       ...diagnosisEntries,
       ...allergyEntries,
       ...conditionEntries,
       ...serviceRequestEntries,
+      ...medicationEntries
     ]);
 
     return postConsultationBundle<ConsultationBundle>(consultationBundle);

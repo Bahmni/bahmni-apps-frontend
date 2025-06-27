@@ -30,7 +30,9 @@ export interface SelectedMedicationItemProps {
   updateInstruction: (medicationId: string, instruction: Concept) => void;
   updateisPRN: (medicationId: string, isPRN: boolean) => void;
   updateisSTAT: (medicationId: string, isSTAT: boolean) => void;
-  updateStartDate: (medicationId: string, date: string) => void;
+  updateStartDate: (medicationId: string, date: Date) => void;
+  updateDispenseQuantity: (medicationId: string, quantity: number) => void;
+  updateDispenseUnit: (medicationId: string, unit: Concept) => void
 }
 
 const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
@@ -48,6 +50,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
       updateisPRN,
       updateisSTAT,
       updateStartDate,
+      updateDispenseUnit,
       removeMedication,
     }) => {
       const { t } = useTranslation();
@@ -110,6 +113,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                 const numericValue = parseFloat(value.toString());
                 if (!isNaN(numericValue)) {
                   updateDosage(id, numericValue);
+
                 }
               }}
               invalid={errors.dosage ? true : false}
@@ -128,6 +132,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               onChange={(e) => {
                 if (e.selectedItem) {
                   updateDosageUnit(id, e.selectedItem);
+                  updateDispenseUnit(id, e.selectedItem);
                 }
               }}
               invalid={errors.dosageUnit ? true : false}
@@ -233,6 +238,11 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
             <DatePicker
               datePickerType="single"
               value={startDate}
+              onChange={(date) => {
+                if (date && date[0]) {
+                  updateStartDate(id, date[0]);
+                }
+              }}
             >
               <DatePickerInput
                 id={`start-date-${id}`}
@@ -240,11 +250,6 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                 labelText="Start Date"
                 hideLabel
                 size="sm"
-                onChange={(date) => {
-                  if (date) {
-                    updateStartDate(id, date);
-                  }
-                }}
               />
             </DatePicker>
           </Column>

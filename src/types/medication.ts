@@ -30,7 +30,10 @@ export interface MedicationInputEntry {
   isSTAT: boolean;
   isPRN: boolean;
   
-  startDate?: string;
+  startDate?: Date;
+
+  dispenseQuantity:number;
+  dispenseUnit: Concept | null;
   
   // Validation
   errors: {
@@ -42,13 +45,14 @@ export interface MedicationInputEntry {
     durationUnit?: string;
     timing?: string;
     startDate?: string;
-    instructions?: string;
+    dispenseQuantity?: string;
+    dispenseUnit?: string;
   }
   hasBeenValidated: boolean;
 }
 
 export interface DurationUnitOption {
-  code: string;
+  code: "a" | "s" | "min" | "d" | "mo" | "h" | "wk" | undefined;
   display: string;
   daysMultiplier: number;
 }
