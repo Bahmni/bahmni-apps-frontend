@@ -286,7 +286,7 @@ describe('MedicationsForm', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText('LOADING_MEDICATIONS')).toBeInTheDocument();
+        expect(screen.getByText('Loading medications...')).toBeInTheDocument();
       });
     });
 
@@ -313,7 +313,7 @@ describe('MedicationsForm', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/error fetching medications/i),
+          screen.getByText(/error searching medications/i),
         ).toBeInTheDocument();
       });
     });
@@ -365,6 +365,69 @@ describe('MedicationsForm', () => {
       // Should show the selected medication in the added medicines section
       expect(screen.getByText(/added medicines/i)).toBeInTheDocument();
       expect(screen.getByText(/Paracetamol 500mg/)).toBeInTheDocument();
+    });
+
+    test('shows already selected text for medications in the selected list', async () => {
+      const user = userEvent.setup();
+      const secondMedication: Medication = {
+        id: 'test-medication-2',
+        resourceType: 'Medication',
+        code: {
+          text: 'Ibuprofen 400mg',
+          coding: [
+            {
+              code: 'ibuprofen-400',
+              display: 'Ibuprofen 400mg',
+              system: 'http://snomed.info/sct',
+            },
+          ],
+        },
+      };
+
+      // Mock search results with both medications
+      (useMedicationSearch as jest.Mock).mockReturnValue({
+        ...mockMedicationSearchHook,
+        searchResults: [mockMedication, secondMedication],
+      });
+
+      // Mock store with one medication already selected
+      (useMedicationStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedMedications: [mockSelectedMedication],
+      });
+
+      render(
+        <I18nextProvider i18n={i18n}>
+          <MedicationsForm />
+        </I18nextProvider>,
+      );
+
+      const searchBox = screen.getByRole('combobox', {
+        name: /search to add medication/i,
+      });
+
+      // Type in search box to trigger search results
+      await waitFor(async () => {
+        await user.type(searchBox, 'med');
+      });
+
+      // Wait for search results to appear
+      await waitFor(() => {
+        // The already selected medication should show with "already selected" text
+        expect(
+          screen.getByText('Paracetamol 500mg (Already added)'),
+        ).toBeInTheDocument();
+
+        // The non-selected medication should show normally
+        expect(screen.getByText('Ibuprofen 400mg')).toBeInTheDocument();
+      });
+
+      // Verify that the already selected medication option is disabled
+      const options = screen.getAllByRole('option');
+      const paracetamolOption = options.find((option) =>
+        option.textContent?.includes('Paracetamol 500mg (Already added)'),
+      );
+      expect(paracetamolOption).toHaveAttribute('disabled');
     });
 
     test('does not add medication when selected item is invalid', async () => {

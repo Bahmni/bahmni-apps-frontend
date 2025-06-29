@@ -72,7 +72,7 @@ const MedicationsForm: React.FC = React.memo(() => {
     if (error) {
       return [
         {
-          displayName: t('ERROR_FETCHING_MEDICATIONS', {
+          displayName: t('ERROR_SEARCHING_MEDICATIONS', {
             error: error.message,
           }),
           disabled: true,
@@ -127,18 +127,19 @@ const MedicationsForm: React.FC = React.memo(() => {
           })}
         </div>
       )}
-
-      <ComboBox
-        id="medications-search"
-        placeholder={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
-        items={filteredSearchResults}
-        itemToString={(item) => (item ? item.displayName : '')}
-        onChange={(data) => handleOnChange(data.selectedItem!)}
-        onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
-        size="lg"
-        autoAlign
-        aria-label={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
-      />
+      {!medicationConfigLoading && !medicationConfigError && (
+        <ComboBox
+          id="medications-search"
+          placeholder={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
+          items={filteredSearchResults}
+          itemToString={(item) => (item ? item.displayName : '')}
+          onChange={(data) => handleOnChange(data.selectedItem!)}
+          onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
+          size="lg"
+          autoAlign
+          aria-label={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
+        />
+      )}
       {medicationConfig &&
         selectedMedications &&
         selectedMedications.length > 0 && (
