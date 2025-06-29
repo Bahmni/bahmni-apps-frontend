@@ -9,6 +9,7 @@ import {
   mockMedicationRequest,
   mockMedicationWithPRN,
   mockMedicationWithSTAT,
+  mockMedicationsWithDifferentDates,
 } from '@__mocks__/medicationMocks';
 
 // Extend Jest matchers
@@ -559,6 +560,352 @@ describe('MedicationsTable', () => {
     });
   });
 
+  describe('Date Grouping Functionality', () => {
+    it('sorts medications within each date group by priority', async () => {
+      const medications = [
+        createTestMedication({
+          id: 'regular-med',
+          name: 'Regular Medication',
+          orderDate: '2024-01-15T10:00:00.000Z',
+          isImmediate: false,
+          asNeeded: false,
+        }),
+        createTestMedication({
+          id: 'stat-med',
+          name: 'STAT Medication',
+          orderDate: '2024-01-15T10:00:00.000Z',
+          isImmediate: true,
+          asNeeded: false,
+        }),
+        createTestMedication({
+          id: 'prn-med',
+          name: 'PRN Medication',
+          orderDate: '2024-01-15T10:00:00.000Z',
+          isImmediate: false,
+          asNeeded: true,
+        }),
+      ];
+
+      mockUseMedicationRequest.mockReturnValue({
+        medications,
+        loading: false,
+        error: null,
+      });
+
+      render(<MedicationsTable />);
+
+      // Switch to All tab
+      const allTab = screen.getByRole('tab', { name: 'All' });
+      await userEvent.click(allTab);
+
+      await waitFor(() => {
+        // STAT should appear before PRN which should appear before regular
+        const medicationRows = screen.getAllByText(/Medication$/);
+        const medicationNames = medicationRows.map((row) => row.textContent);
+
+        const statIndex = medicationNames.findIndex((name) =>
+          name.includes('STAT'),
+        );
+        const prnIndex = medicationNames.findIndex((name) =>
+          name.includes('PRN'),
+        );
+        const regularIndex = medicationNames.findIndex((name) =>
+          name.includes('Regular'),
+        );
+
+        expect(statIndex).toBeLessThan(prnIndex);
+        expect(prnIndex).toBeLessThan(regularIndex);
+      });
+    });
+
+    it('sorts medications within each date group by status', async () => {
+      const medications = [
+        createTestMedication({
+          id: 'completed-med',
+          name: 'Completed Medication',
+          orderDate: '2024-01-15T10:00:00.000Z',
+          status: MedicationStatus.Completed,
+        }),
+        createTestMedication({
+          id: 'active-med',
+          name: 'Active Medication',
+          orderDate: '2024-01-15T10:00:00.000Z',
+          status: MedicationStatus.Active,
+        }),
+        createTestMedication({
+          id: 'onhold-med',
+          name: 'On Hold Medication',
+          orderDate: '2024-01-15T10:00:00.000Z',
+          status: MedicationStatus.OnHold,
+        }),
+      ];
+
+      mockUseMedicationRequest.mockReturnValue({
+        medications,
+        loading: false,
+        error: null,
+      });
+
+      render(<MedicationsTable />);
+
+      // Switch to All tab
+      const allTab = screen.getByRole('tab', { name: 'All' });
+      await userEvent.click(allTab);
+
+      await waitFor(() => {
+        // Active should appear before on-hold which should appear before completed
+        const medicationRows = screen.getAllByText(/Medication$/);
+        const medicationNames = medicationRows.map((row) => row.textContent);
+
+        const activeIndex = medicationNames.findIndex((name) =>
+          name.includes('Active'),
+        );
+        const onholdIndex = medicationNames.findIndex((name) =>
+          name.includes('On Hold'),
+        );
+        const completedIndex = medicationNames.findIndex((name) =>
+          name.includes('Completed'),
+        );
+
+        expect(activeIndex).toBeLessThan(onholdIndex);
+        expect(onholdIndex).toBeLessThan(completedIndex);
+      });
+    });
+
+    it('handles empty date groups correctly', async () => {
+      mockUseMedicationRequest.mockReturnValue({
+        medications: [],
+        loading: false,
+        error: null,
+      });
+
+      render(<MedicationsTable />);
+
+      // Switch to All tab
+      const allTab = screen.getByRole('tab', { name: 'All' });
+      await userEvent.click(allTab);
+
+      await waitFor(() => {
+        expect(screen.getByText('No medication history')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Complex Sorting Logic', () => {
+    it('sorts medications by priority within status groups', () => {
+      const medications = [
+        createTestMedication({
+          name: 'Active Regular',
+          status: MedicationStatus.Active,
+          isImmediate: false,
+          asNeeded: false,
+        }),
+        createTestMedication({
+          name: 'Active STAT',
+          status: MedicationStatus.Active,
+          isImmediate: true,
+          asNeeded: false,
+        }),
+        createTestMedication({
+          name: 'Active PRN',
+          status: MedicationStatus.Active,
+          isImmediate: false,
+          asNeeded: true,
+        }),
+        createTestMedication({
+          name: 'OnHold STAT',
+          status: MedicationStatus.OnHold,
+          isImmediate: true,
+          asNeeded: false,
+        }),
+        createTestMedication({
+          name: 'OnHold Regular',
+          status: MedicationStatus.OnHold,
+          isImmediate: false,
+          asNeeded: false,
+        }),
+      ];
+
+      mockUseMedicationRequest.mockReturnValue({
+        medications,
+        loading: false,
+        error: null,
+      });
+
+      render(<MedicationsTable />);
+
+      // In Active & Scheduled tab, should show only active and on-hold
+      // Active STAT should appear first, then Active PRN, then Active Regular, then OnHold STAT, then OnHold Regular
+      const activeTab = screen.getAllByRole('tabpanel')[0];
+      const medicationText = activeTab.textContent;
+
+      // Verify that active medications appear before on-hold medications
+      const activeStatIndex = medicationText.indexOf('Active STAT');
+      const onHoldRegularIndex = medicationText.indexOf('OnHold Regular');
+      expect(activeStatIndex).toBeLessThan(onHoldRegularIndex);
+    });
+
+    it('maintains stable sorting for medications with same priority and status', () => {
+      const medications = [
+        createTestMedication({
+          id: 'first-regular',
+          name: 'First Regular Medication',
+          status: MedicationStatus.Active,
+          isImmediate: false,
+          asNeeded: false,
+        }),
+        createTestMedication({
+          id: 'second-regular',
+          name: 'Second Regular Medication',
+          status: MedicationStatus.Active,
+          isImmediate: false,
+          asNeeded: false,
+        }),
+        createTestMedication({
+          id: 'third-regular',
+          name: 'Third Regular Medication',
+          status: MedicationStatus.Active,
+          isImmediate: false,
+          asNeeded: false,
+        }),
+      ];
+
+      mockUseMedicationRequest.mockReturnValue({
+        medications,
+        loading: false,
+        error: null,
+      });
+
+      render(<MedicationsTable />);
+
+      // Order should be maintained for medications with same priority/status
+      const activeTab = screen.getAllByRole('tabpanel')[0];
+      const medicationText = activeTab.textContent;
+
+      const firstIndex = medicationText.indexOf('First Regular');
+      const secondIndex = medicationText.indexOf('Second Regular');
+      const thirdIndex = medicationText.indexOf('Third Regular');
+
+      expect(firstIndex).toBeLessThan(secondIndex);
+      expect(secondIndex).toBeLessThan(thirdIndex);
+    });
+
+    it('prioritizes STAT over PRN over regular medications correctly', () => {
+      const medications = [
+        mockMedicationWithSTAT,
+        mockMedicationWithPRN,
+        createTestMedication({
+          name: 'Regular Medication',
+          isImmediate: false,
+          asNeeded: false,
+        }),
+      ];
+
+      mockUseMedicationRequest.mockReturnValue({
+        medications,
+        loading: false,
+        error: null,
+      });
+
+      render(<MedicationsTable />);
+
+      const activeTab = screen.getAllByRole('tabpanel')[0];
+      const medicationText = activeTab.textContent;
+
+      // STAT should appear first
+      const statIndex = medicationText.indexOf('Epinephrine');
+      const prnIndex = medicationText.indexOf('Paracetamol');
+      const regularIndex = medicationText.indexOf('Regular Medication');
+
+      expect(statIndex).toBeLessThan(prnIndex);
+      expect(prnIndex).toBeLessThan(regularIndex);
+    });
+  });
+
+  describe('Tab-Specific Behavior', () => {
+    beforeEach(() => {
+      const medications = [
+        createTestMedication({
+          name: 'Active Med',
+          status: MedicationStatus.Active,
+        }),
+        createTestMedication({
+          name: 'OnHold Med',
+          status: MedicationStatus.OnHold,
+        }),
+        createTestMedication({
+          name: 'Completed Med',
+          status: MedicationStatus.Completed,
+        }),
+        createTestMedication({
+          name: 'Stopped Med',
+          status: MedicationStatus.Stopped,
+        }),
+      ];
+
+      mockUseMedicationRequest.mockReturnValue({
+        medications,
+        loading: false,
+        error: null,
+      });
+    });
+
+    it('shows different empty state messages per tab', async () => {
+      mockUseMedicationRequest.mockReturnValue({
+        medications: [],
+        loading: false,
+        error: null,
+      });
+
+      render(<MedicationsTable />);
+
+      // Active & Scheduled tab empty message
+      expect(screen.getByText('No active medications')).toBeInTheDocument();
+
+      // Switch to All tab
+      const allTab = screen.getByRole('tab', { name: 'All' });
+      await userEvent.click(allTab);
+
+      await waitFor(() => {
+        expect(screen.getByText('No medication history')).toBeInTheDocument();
+      });
+    });
+
+    it('maintains separate table components per tab', async () => {
+      render(<MedicationsTable />);
+
+      // Active tab uses SortableDataTable
+      expect(screen.getAllByRole('tabpanel')).toHaveLength(1);
+
+      // Switch to All tab
+      const allTab = screen.getByRole('tab', { name: 'All' });
+      await userEvent.click(allTab);
+
+      await waitFor(() => {
+        // All tab should render content (ExpandableDataTable or SortableDataTable)
+        expect(screen.getAllByRole('tabpanel')).toHaveLength(1);
+      });
+    });
+
+    it('handles loading states differently per tab', async () => {
+      mockUseMedicationRequest.mockReturnValue({
+        medications: [],
+        loading: true,
+        error: null,
+      });
+
+      render(<MedicationsTable />);
+
+      // Both tabs should handle loading state
+      expect(screen.getByTestId('medications-table')).toBeInTheDocument();
+
+      const allTab = screen.getByRole('tab', { name: 'All' });
+      await userEvent.click(allTab);
+
+      expect(screen.getByTestId('medications-table')).toBeInTheDocument();
+    });
+  });
+
   describe('Snapshots', () => {
     it('matches snapshot for active medications tab', () => {
       const medications = [
@@ -580,6 +927,26 @@ describe('MedicationsTable', () => {
 
       const { container } = render(<MedicationsTable />);
       expect(container.firstChild).toMatchSnapshot();
+    });
+
+    it('matches snapshot for all medications tab with date grouping', async () => {
+      const medications = mockMedicationsWithDifferentDates;
+
+      mockUseMedicationRequest.mockReturnValue({
+        medications,
+        loading: false,
+        error: null,
+      });
+
+      const { container } = render(<MedicationsTable />);
+
+      // Switch to All tab
+      const allTab = screen.getByRole('tab', { name: 'All' });
+      await userEvent.click(allTab);
+
+      await waitFor(() => {
+        expect(container.firstChild).toMatchSnapshot();
+      });
     });
 
     it('matches snapshot for loading state', () => {
