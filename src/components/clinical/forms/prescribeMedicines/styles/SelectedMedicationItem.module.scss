@@ -1,6 +1,12 @@
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
+
 .selectedMedicationItem {
   padding: 1rem;
   background-color: #ffffff;
+  border-bottom: 1px solid $border-subtle-02;
 
   .medicationTitle {
     font-weight: 600;
@@ -101,5 +107,11 @@
         text-decoration: underline;
       }
     }
+  }
+
+  .totalQuantity {
+    margin: 0 1rem;
+    justify-self: end;
+    align-items: start !important;
   }
 }
