@@ -494,7 +494,7 @@ describe('SelectedMedicationItem', () => {
         });
       });
 
-      test('disables date picker when STAT is selected without PRN', async () => {
+      test('disables date picker when STAT is selected', async () => {
         // Arrange
         const props = createDefaultProps({
           medicationInputEntry: createMockMedicationInputEntry({
@@ -509,23 +509,6 @@ describe('SelectedMedicationItem', () => {
 
         // Assert
         expect(dateInput).toBeDisabled();
-      });
-
-      test('enables date picker when both STAT and PRN are selected', async () => {
-        // Arrange
-        const props = createDefaultProps({
-          medicationInputEntry: createMockMedicationInputEntry({
-            isSTAT: true,
-            isPRN: true,
-          }),
-        });
-
-        // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
-        const dateInput = screen.getByPlaceholderText('d/m/Y');
-
-        // Assert
-        expect(dateInput).not.toBeDisabled();
       });
     });
   });

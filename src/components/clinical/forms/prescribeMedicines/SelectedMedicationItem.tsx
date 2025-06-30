@@ -168,9 +168,11 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
           if (immediateFrequency) {
             updateFrequency(id, immediateFrequency);
           }
-          updateStartDate(id, new Date());
           updateDuration(id, 0);
           updateDurationUnit(id, null);
+        }
+        if (isSTAT) {
+          updateStartDate(id, getTodayDate());
         }
       }, [isSTAT, isPRN]);
 
@@ -373,7 +375,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                 aria-label="Start Date"
                 hideLabel
                 size="sm"
-                disabled={isSTAT && !isPRN}
+                disabled={isSTAT}
               />
             </DatePicker>
           </Column>
