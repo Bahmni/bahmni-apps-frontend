@@ -376,6 +376,112 @@ describe('consultationBundleService', () => {
 
         expect(result).toEqual([]);
       });
+
+      it('should include note in FHIR resource when note is provided', () => {
+        const allergyWithNote: AllergyInputEntry = {
+          ...mockValidAllergy,
+          note: 'Patient reports severe allergic reaction with swelling',
+        };
+
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [allergyWithNote],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(1);
+        const allergyResource = result[0].resource as AllergyIntolerance;
+        expect(allergyResource.note).toEqual([
+          {
+            text: 'Patient reports severe allergic reaction with swelling',
+          },
+        ]);
+      });
+
+      it('should not include note field when note is undefined', () => {
+        const allergyWithoutNote: AllergyInputEntry = {
+          ...mockValidAllergy,
+          note: undefined,
+        };
+
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [allergyWithoutNote],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        const allergyResource = result[0].resource as AllergyIntolerance;
+        expect(allergyResource).not.toHaveProperty('note');
+      });
+
+      it('should not include note field when note is empty string', () => {
+        const allergyWithEmptyNote: AllergyInputEntry = {
+          ...mockValidAllergy,
+          note: '',
+        };
+
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [allergyWithEmptyNote],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        const allergyResource = result[0].resource as AllergyIntolerance;
+        expect(allergyResource).not.toHaveProperty('note');
+      });
+
+      it('should handle multiple allergies with mixed note presence', () => {
+        const allergyWithNote: AllergyInputEntry = {
+          ...mockValidAllergy,
+          id: '162536AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+          note: 'First allergy note',
+        };
+
+        const allergyWithoutNote: AllergyInputEntry = {
+          ...mockValidAllergy,
+          id: '162537AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+          note: undefined,
+        };
+
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [allergyWithNote, allergyWithoutNote],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(2);
+
+        const firstResource = result[0].resource as AllergyIntolerance;
+        const secondResource = result[1].resource as AllergyIntolerance;
+
+        expect(firstResource.note).toEqual([{ text: 'First allergy note' }]);
+        expect(secondResource).not.toHaveProperty('note');
+      });
+
+      it('should handle special characters in note text', () => {
+        const allergyWithSpecialNote: AllergyInputEntry = {
+          ...mockValidAllergy,
+          note: 'Patient says: "I get rash & swelling when taking <medication>"',
+        };
+
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [allergyWithSpecialNote],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        const allergyResource = result[0].resource as AllergyIntolerance;
+        expect(allergyResource.note).toEqual([
+          {
+            text: 'Patient says: "I get rash & swelling when taking <medication>"',
+          },
+        ]);
+      });
     });
   });
 

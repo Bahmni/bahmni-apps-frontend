@@ -13,10 +13,19 @@ describe('allergyResourceCreator', () => {
   };
 
   it('should create a basic allergy resource with required fields', () => {
+    const reactions = [
+      {
+        manifestationUUIDs: [
+          '121677AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+          '117399AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+        ],
+        severity: 'moderate' as const,
+      },
+    ];
     const allergyResource = createEncounterAllergyResource(
       '162536AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
       ['medication'],
-      [],
+      reactions,
       mockPatientReference,
       mockEncounterReference,
       mockRecorderReference,
@@ -32,6 +41,27 @@ describe('allergyResourceCreator', () => {
           },
         ],
       },
+      reaction: [
+        {
+          manifestation: [
+            {
+              coding: [
+                {
+                  code: '121677AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+                },
+              ],
+            },
+            {
+              coding: [
+                {
+                  code: '117399AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+                },
+              ],
+            },
+          ],
+          severity: 'moderate',
+        },
+      ],
       patient: mockPatientReference,
       recorder: mockRecorderReference,
       encounter: mockEncounterReference,
@@ -45,7 +75,7 @@ describe('allergyResourceCreator', () => {
           '121677AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
           '117399AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
         ],
-        severity: 'moderate',
+        severity: 'moderate' as const,
       },
     ];
 
@@ -99,11 +129,11 @@ describe('allergyResourceCreator', () => {
     const reactions = [
       {
         manifestationUUIDs: ['121677AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'],
-        severity: 'mild',
+        severity: 'mild' as const,
       },
       {
         manifestationUUIDs: ['117399AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'],
-        severity: 'severe',
+        severity: 'severe' as const,
       },
     ];
 
@@ -201,5 +231,134 @@ describe('allergyResourceCreator', () => {
         },
       ],
     });
+  });
+
+  it('should include note in FHIR resource when note is provided', () => {
+    const reactions = [
+      {
+        manifestationUUIDs: ['121677AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'],
+      },
+    ];
+
+    const note = 'Patient reports mild reaction after eating peanuts';
+
+    const allergyResource = createEncounterAllergyResource(
+      '162536AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      ['food'],
+      reactions,
+      mockPatientReference,
+      mockEncounterReference,
+      mockRecorderReference,
+      note,
+    );
+
+    expect(allergyResource).toEqual({
+      resourceType: 'AllergyIntolerance',
+      category: ['food'],
+      code: {
+        coding: [
+          {
+            code: '162536AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+          },
+        ],
+      },
+      patient: mockPatientReference,
+      recorder: mockRecorderReference,
+      encounter: mockEncounterReference,
+      reaction: [
+        {
+          manifestation: [
+            {
+              coding: [
+                {
+                  code: '121677AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      note: [
+        {
+          text: note,
+        },
+      ],
+    });
+  });
+
+  it('should not include note field when note is empty string', () => {
+    const allergyResource = createEncounterAllergyResource(
+      '162536AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      ['food'],
+      [],
+      mockPatientReference,
+      mockEncounterReference,
+      mockRecorderReference,
+      '',
+    );
+
+    expect(allergyResource).not.toHaveProperty('note');
+  });
+
+  it('should include note along with reactions when both are provided', () => {
+    const note = 'Severe allergic reaction observed during hospitalization';
+    const reactions = [
+      {
+        manifestationUUIDs: ['121677AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'],
+        severity: 'severe' as const,
+      },
+    ];
+
+    const allergyResource = createEncounterAllergyResource(
+      '162536AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      ['medication'],
+      reactions,
+      mockPatientReference,
+      mockEncounterReference,
+      mockRecorderReference,
+      note,
+    );
+
+    expect(allergyResource.note).toEqual([
+      {
+        text: note,
+      },
+    ]);
+    expect(allergyResource.reaction).toBeDefined();
+  });
+
+  it('should handle special characters in note text', () => {
+    const note =
+      'Patient says: "I feel dizzy & nauseous after taking <medication>"';
+
+    const allergyResource = createEncounterAllergyResource(
+      '162536AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      ['medication'],
+      [],
+      mockPatientReference,
+      mockEncounterReference,
+      mockRecorderReference,
+      note,
+    );
+
+    expect(allergyResource.note).toEqual([
+      {
+        text: note,
+      },
+    ]);
+  });
+
+  it('should not include note field when note is only whitespace', () => {
+    const allergyResource = createEncounterAllergyResource(
+      '162536AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      ['food'],
+      [],
+      mockPatientReference,
+      mockEncounterReference,
+      mockRecorderReference,
+      '   \t\n  ',
+    );
+
+    expect(allergyResource).not.toHaveProperty('note');
   });
 });
