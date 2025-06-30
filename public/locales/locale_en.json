@@ -109,6 +109,7 @@
   "ERROR_FETCHING_ENCOUNTER_DETAILS": "Error fetching encounter details",
   "ERROR_FETCHING_LOCATIONS_DETAILS": "Error fetching locations details",
   "ERROR_FETCHING_MEDICATIONS": "Error fetching medications. Please try again later.",
+  "ERROR_FETCHING_MEDICATION_CONFIG": "Error fetching medication configuration",
   "ERROR_FETCHING_PRACTITIONERS_DETAILS": "Error fetching practitioners details",
   "ERROR_FETCHING_RADIOLOGY_INVESTIGATIONS": "Error fetching radiology investigations",
   "ERROR_FETCHING_USER_DETAILS": "Error fetching user details",

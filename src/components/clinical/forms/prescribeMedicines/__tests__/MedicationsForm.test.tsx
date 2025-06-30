@@ -491,7 +491,7 @@ describe('MedicationsForm', () => {
       );
 
       expect(
-        screen.getByText('ERROR_FETCHING_MEDICATION_CONFIG'),
+        screen.getByText(/Error fetching medication configuration/i),
       ).toBeInTheDocument();
     });
   });
