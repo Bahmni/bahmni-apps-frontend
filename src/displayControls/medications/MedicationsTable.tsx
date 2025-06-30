@@ -88,16 +88,15 @@ const MedicationsTable: React.FC = () => {
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
     );
 
-    // Sort medications within each group by status
-    sortedGroups.forEach((group) => {
-      group.items = sortMedicationsByStatus(group.items);
-    });
-
     // Sort medications within each group by priority
     sortedGroups.forEach((group) => {
       group.items = sortMedicationsByPriority(group.items);
     });
 
+    // Sort medications within each group by status
+    sortedGroups.forEach((group) => {
+      group.items = sortMedicationsByStatus(group.items);
+    });
     return sortedGroups.map((group) => ({
       date: group.date,
       medications: group.items,
@@ -144,13 +143,13 @@ const MedicationsTable: React.FC = () => {
   }, [formattedMedications]);
 
   const activeAndScheduledMedications = useMemo(() => {
-    if (!allMedications) return [];
-    return sortMedicationsByPriority(
-      allMedications.filter(
-        (medication) =>
-          medication.status === 'active' || medication.status === 'on-hold',
-      ),
+    const activeMedications = sortMedicationsByPriority(
+      allMedications.filter((medication) => medication.status === 'active'),
     );
+    const scheduledMedications = sortMedicationsByPriority(
+      allMedications.filter((medication) => medication.status === 'on-hold'),
+    );
+    return [...activeMedications, ...scheduledMedications];
   }, [allMedications]);
 
   // Process medications for date grouping (only for All medications tab)
