@@ -405,6 +405,34 @@ describe('medicationRequestService', () => {
         expect(result[0].isImmediate).toBe(true);
       });
 
+      it('should detect immediate timing correctly when priority is stat', async () => {
+        const mockMedication = createMockMedicationRequest({
+          id: 'immediate-test',
+          priority: 'stat',
+        });
+        const mockBundle = createMockBundle([mockMedication]);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientMedications(patientUUID);
+
+        expect(result[0].isImmediate).toBe(true);
+      });
+
+      it('should set authoredOn date as start date for immediate medication', async () => {
+        const mockMedication = createMockMedicationRequest({
+          id: 'immediate-test',
+          priority: 'stat',
+        });
+        const mockBundle = createMockBundle([mockMedication]);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientMedications(patientUUID);
+
+        expect(result[0].startDate).toBe('2025-03-25T06:48:32+00:00');
+      });
+
       it('should handle asNeeded boolean correctly', async () => {
         const mockMedication = createMockMedicationRequest({
           id: 'as-needed-test',
