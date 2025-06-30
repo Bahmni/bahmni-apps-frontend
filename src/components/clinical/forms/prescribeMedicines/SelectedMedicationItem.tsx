@@ -22,7 +22,7 @@ import {
   getDefaultRoute,
   isImmediateFrequency,
 } from '@services/medicationsValueCalculator';
-import { DATE_PICKER_INPUT_FORMAT } from '@/constants/date';
+import { DATE_PICKER_INPUT_FORMAT } from '@constants/date';
 import { getTodayDate } from '@utils/date';
 
 export interface SelectedMedicationItemProps {

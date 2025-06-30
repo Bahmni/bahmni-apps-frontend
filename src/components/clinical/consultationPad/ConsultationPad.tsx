@@ -27,7 +27,7 @@ import useAllergyStore from '@stores/allergyStore';
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 import * as styles from './styles/ConsultationPad.module.scss';
 import useServiceRequestStore from '@stores/serviceRequestStore';
-import MedicationsForm from '../forms/prescribeMedicines/MedicationsForm';
+import MedicationsForm from '@components/clinical/forms/prescribeMedicines/MedicationsForm';
 import { useMedicationStore } from '@stores/medicationsStore';
 
 interface ConsultationPadProps {
