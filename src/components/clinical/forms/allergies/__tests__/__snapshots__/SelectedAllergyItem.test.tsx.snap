@@ -12,6 +12,12 @@ exports[`SelectedAllergyItem Snapshot Tests default rendering matches snapshot 1
        [
       Food
       ]
+      <a
+        class="cds--link"
+        href="#"
+      >
+        ADD_ALLERGY_NOTE
+      </a>
     </div>
     <div
       class="selectedAllergySeverity cds--sm:col-span-4 cds--md:col-span-3 cds--lg:col-span-3 cds--xlg:col-span-3 cds--css-grid-column"
@@ -204,6 +210,12 @@ exports[`SelectedAllergyItem Snapshot Tests rendering with validation errors mat
        [
       Food
       ]
+      <a
+        class="cds--link"
+        href="#"
+      >
+        ADD_ALLERGY_NOTE
+      </a>
     </div>
     <div
       class="selectedAllergySeverity cds--sm:col-span-4 cds--md:col-span-3 cds--lg:col-span-3 cds--xlg:col-span-3 cds--css-grid-column"
