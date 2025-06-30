@@ -3,11 +3,6 @@
 @use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/theme" as *;
 
-.selectedMedicationItem {
-  padding: 1rem;
-  border-bottom: 1px solid $border-subtle-02;
-}
-
 .column {
   margin-bottom: $spacing-04;
 }
@@ -31,6 +26,7 @@
   align-items: end !important;
   margin-bottom: $spacing-04;
 }
+
 .dosageInput {
   width: 50%;
 }
@@ -53,6 +49,11 @@
 .durationUnit {
   width: 50%;
 }
+
 .totalQuantity {
   justify-self: end;
+}
+
+.statControl {
+  padding-inline: 0.625rem;
 }

@@ -16,3 +16,13 @@
 .medicationsBox {
   margin: $spacing-06;
 }
+
+.selectedMedicationItem {
+  border-top: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 1px solid $border-subtle-02;
+}
+.selectedMedicationItem:last-of-type {
+  border: 0 !important;
+}

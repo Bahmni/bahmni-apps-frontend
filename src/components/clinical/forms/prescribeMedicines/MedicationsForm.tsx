@@ -9,6 +9,7 @@ import { useMedicationStore } from '@stores/medicationsStore';
 import useMedicationConfig from '@hooks/useMedicationConfig';
 import { useMedicationSearch } from '@hooks/useMedicationSearch';
 import { getMedicationDisplay } from '@services/medicationService';
+import SelectedItem from '@/components/common/selectedItem/SelectedItem';
 
 /**
  * MedicationsForm component
@@ -135,7 +136,7 @@ const MedicationsForm: React.FC = React.memo(() => {
           itemToString={(item) => (item ? item.displayName : '')}
           onChange={(data) => handleOnChange(data.selectedItem!)}
           onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
-          size="lg"
+          size="md"
           autoAlign
           aria-label={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
         />
@@ -148,24 +149,28 @@ const MedicationsForm: React.FC = React.memo(() => {
             className={styles.medicationsBox}
           >
             {selectedMedications.map((medication) => (
-              <SelectedMedicationItem
+              <SelectedItem
+                onClose={() => removeMedication(medication.id)}
+                className={styles.selectedMedicationItem}
                 key={medication.id}
-                medicationInputEntry={medication}
-                medicationConfig={medicationConfig!}
-                updateDosage={updateDosage}
-                updateDosageUnit={updateDosageUnit}
-                updateFrequency={updateFrequency}
-                updateRoute={updateRoute}
-                updateDuration={updateDuration}
-                updateDurationUnit={updateDurationUnit}
-                updateInstruction={updateInstruction}
-                updateisPRN={updateisPRN}
-                updateisSTAT={updateisSTAT}
-                updateDispenseQuantity={updateDispenseQuantity}
-                updateDispenseUnit={updateDispenseUnit}
-                updateStartDate={updateStartDate}
-                removeMedication={removeMedication}
-              />
+              >
+                <SelectedMedicationItem
+                  medicationInputEntry={medication}
+                  medicationConfig={medicationConfig!}
+                  updateDosage={updateDosage}
+                  updateDosageUnit={updateDosageUnit}
+                  updateFrequency={updateFrequency}
+                  updateRoute={updateRoute}
+                  updateDuration={updateDuration}
+                  updateDurationUnit={updateDurationUnit}
+                  updateInstruction={updateInstruction}
+                  updateisPRN={updateisPRN}
+                  updateisSTAT={updateisSTAT}
+                  updateDispenseQuantity={updateDispenseQuantity}
+                  updateDispenseUnit={updateDispenseUnit}
+                  updateStartDate={updateStartDate}
+                />
+              </SelectedItem>
             ))}
           </BoxWHeader>
         )}

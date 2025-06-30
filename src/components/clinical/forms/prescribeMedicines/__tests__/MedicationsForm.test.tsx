@@ -237,9 +237,9 @@ describe('MedicationsForm', () => {
         </I18nextProvider>,
       );
 
-      // Find the close button by its aria-label
+      // Find the close button by its aria-label from SelectedItem component
       const closeButton = screen.getByRole('button', {
-        name: /remove medication/i,
+        name: /close/i,
       });
       await waitFor(async () => {
         await user.click(closeButton);

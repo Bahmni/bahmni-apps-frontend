@@ -121,7 +121,6 @@ const createMockMedicationConfig = (overrides = {}): MedicationConfig => ({
 const createDefaultProps = (overrides = {}): SelectedMedicationItemProps => ({
   medicationInputEntry: createMockMedicationInputEntry(),
   medicationConfig: createMockMedicationConfig(),
-  removeMedication: jest.fn(),
   updateDosage: jest.fn(),
   updateDosageUnit: jest.fn(),
   updateFrequency: jest.fn(),
@@ -199,18 +198,6 @@ describe('SelectedMedicationItem', () => {
       ).toBeInTheDocument();
       expect(
         screen.getByRole('checkbox', { name: /PRN/i }),
-      ).toBeInTheDocument();
-    });
-    test('renders remove medication button', () => {
-      // Arrange
-      const props = createDefaultProps();
-
-      // Act
-      renderWithI18n(<SelectedMedicationItem {...props} />);
-
-      // Assert
-      expect(
-        screen.getByRole('button', { name: /remove medication/i }),
       ).toBeInTheDocument();
     });
 
@@ -539,23 +526,6 @@ describe('SelectedMedicationItem', () => {
 
         // Assert
         expect(dateInput).not.toBeDisabled();
-      });
-
-      test('removes medication when close button clicked', async () => {
-        // Arrange
-        const removeMedication = jest.fn();
-        const props = createDefaultProps({ removeMedication });
-        const user = userEvent.setup();
-
-        // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
-        const removeButton = screen.getByRole('button', {
-          name: /remove medication/i,
-        });
-        await user.click(removeButton);
-
-        // Assert
-        expect(removeMedication).toHaveBeenCalledWith('entry-1');
       });
     });
   });
