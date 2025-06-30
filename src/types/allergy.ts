@@ -28,6 +28,7 @@ export interface AllergyInputEntry {
   type: string;
   selectedSeverity: Coding | null;
   selectedReactions: Coding[];
+  note?: string;
   errors: {
     severity?: string;
     reactions?: string;
