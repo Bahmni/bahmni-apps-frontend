@@ -142,7 +142,6 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
 
       return (
         <Grid className={styles.selectedMedicationItem}>
-          {/* Row 1: Medication name with STAT/PRN checkboxes and remove button */}
           <Column span={12} className={styles.medicationTitle}>
             {display}
           </Column>
@@ -150,12 +149,14 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
             <Checkbox
               id={`stat-${id}`}
               labelText={t('MEDICATION_STAT')}
+              aria-label="STAT"
               checked={isSTAT}
               onChange={(e) => updateisSTAT(id, e.target.checked)}
             />
             <Checkbox
               id={`prn-${id}`}
               labelText={t('MEDICATION_PRN')}
+              aria-label="PRN"
               checked={isPRN}
               onChange={(e) => updateisPRN(id, e.target.checked)}
             />
@@ -163,13 +164,13 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               kind="ghost"
               size="sm"
               hasIconOnly
-              iconDescription="Remove medication"
+              iconDescription={t('REMOVE_MEDICATION')}
+              aria-label="Remove medication"
               renderIcon={Close}
               onClick={() => removeMedication(id)}
             />
           </Column>
 
-          {/*Row 2: Dosage, Frequency, Duration controls*/}
           <Column span={5} className={styles.dosageControls}>
             <NumberInput
               id={`dosage-unit-${id}`}
@@ -178,7 +179,8 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               size="sm"
               step={1}
               value={dosage}
-              label="Dosage"
+              label={t('MEDICATION_DOSAGE_INPUT_LABEL')}
+              aria-label="Dosage"
               hideLabel
               onChange={(_, { value }) => {
                 const numericValue = parseFloat(value.toString());
@@ -192,8 +194,9 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
             <Dropdown
               id={`dosage-unit-${id}`}
               style={{ width: '120px' }}
-              titleText="Dosage Unit"
-              label="Dosage Unit"
+              titleText={t('MEDICATION_DOSAGE_UNIT_INPUT_LABEL')}
+              label={t('MEDICATION_DOSAGE_UNIT_INPUT_LABEL')}
+              aria-label="Dosage Unit"
               hideLabel
               size="sm"
               items={medicationConfig.doseUnits || []}
@@ -213,8 +216,9 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
             <Dropdown
               id={`frequency-${id}`}
               style={{ width: '100%' }}
-              titleText="Frequency"
-              label="Frequency"
+              titleText={t('MEDICATION_FREQUENCY_INPUT_LABEL')}
+              label={t('MEDICATION_FREQUENCY_INPUT_LABEL')}
+              aria-label="Frequency"
               hideLabel
               size="sm"
               items={
@@ -237,7 +241,8 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
           <Column span={5} className={styles.durationControls}>
             <NumberInput
               id={`duration-${id}`}
-              label="Duration"
+              label={t('MEDICATION_DURATION_INPUT_LABEL')}
+              aria-label="Duration"
               hideLabel
               style={{ width: '107px' }}
               min={0}
@@ -256,8 +261,9 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
             />
             <Dropdown
               id={`duration-unit-${id}`}
-              titleText="Duration Unit"
-              label="Duration Unit"
+              titleText={t('MEDICATION_DURATION_UNIT_INPUT_LABEL')}
+              label={t('MEDICATION_DURATION_UNIT_INPUT_LABEL')}
+              aria-label="Duration Unit"
               hideLabel
               size="sm"
               items={DURATION_UNIT_OPTIONS}
@@ -276,12 +282,12 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
             />
           </Column>
 
-          {/* Row 3: Instruction, Route, Date */}
           <Column span={5} className={styles.timingControl}>
             <Dropdown
               id={`med-instructions-${id}`}
-              titleText="Instructions"
-              label="Instructions"
+              titleText={t('MEDICATION_INSTRUCTIONS_INPUT_LABEL')}
+              label={t('MEDICATION_INSTRUCTIONS_INPUT_LABEL')}
+              aria-label="Medication Instructions"
               hideLabel
               size="sm"
               items={medicationConfig.dosingInstructions || []}
@@ -298,8 +304,9 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
           <Column span={6} className={styles.routeControl}>
             <Dropdown
               id={`route-${id}`}
-              titleText="Route"
-              label="Route"
+              titleText={t('MEDICATION_ROUTE_INPUT_LABEL')}
+              label={t('MEDICATION_ROUTE_INPUT_LABEL')}
+              aria-label="Route"
               hideLabel
               size="sm"
               items={medicationConfig.routes || []}
@@ -330,7 +337,8 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               <DatePickerInput
                 id={`start-date-${id}`}
                 placeholder={DATE_PICKER_INPUT_FORMAT}
-                labelText="Start Date"
+                labelText={t('MEDICATION_START_DATE_INPUT_LABEL')}
+                aria-label="Start Date"
                 hideLabel
                 size="sm"
                 disabled={isSTAT && !isPRN}
@@ -339,7 +347,8 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
           </Column>
           <Column span={12}>
             <span>
-              Total Quantity:{dispenseQuantity} {dispenseUnit?.name || ''}
+              {t('MEDICATION_TOTAL_QUANTITY')}:{dispenseQuantity}{' '}
+              {dispenseUnit?.name || ''}
             </span>
           </Column>
         </Grid>

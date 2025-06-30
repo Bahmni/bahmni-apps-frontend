@@ -227,7 +227,7 @@ describe('SelectedMedicationItem', () => {
       renderWithI18n(<SelectedMedicationItem {...props} />);
 
       // Assert
-      expect(screen.getByText(/Total Quantity:30 mg/)).toBeInTheDocument();
+      expect(screen.getByText(/Total Quantity:30 mg/i)).toBeInTheDocument();
     });
   });
   describe('User Interactions', () => {
@@ -815,6 +815,106 @@ describe('SelectedMedicationItem', () => {
 
         // Assert
         expect(updateFrequency).toHaveBeenCalledWith('entry-1', null);
+      });
+      test('sets immediate frequency, start date, and clears duration when STAT is true and PRN is false', () => {
+        // Arrange
+        const updateFrequency = jest.fn();
+        const updateStartDate = jest.fn();
+        const updateDuration = jest.fn();
+        const updateDurationUnit = jest.fn();
+
+        const immediateFrequency = {
+          uuid: '0',
+          name: 'Immediately',
+          frequencyPerDay: 1,
+        };
+        const mockConfig = createMockMedicationConfig({
+          frequencies: [
+            immediateFrequency,
+            { uuid: 'bd-uuid', name: 'BD', frequencyPerDay: 2 },
+            { uuid: 'tds-uuid', name: 'TDS', frequencyPerDay: 3 },
+          ],
+        });
+
+        const props = createDefaultProps({
+          updateFrequency,
+          updateStartDate,
+          updateDuration,
+          updateDurationUnit,
+          medicationConfig: mockConfig,
+          medicationInputEntry: createMockMedicationInputEntry({
+            isSTAT: true,
+            isPRN: false,
+            frequency: { uuid: 'bd-uuid', name: 'BD', frequencyPerDay: 2 },
+            duration: 7,
+            durationUnit: DURATION_UNIT_OPTIONS[2], // Days
+          }),
+        });
+
+        // Act
+        renderWithI18n(<SelectedMedicationItem {...props} />);
+
+        // Assert - validates lines 131-140
+        // Line 132-136: Should find and set immediate frequency
+        expect(updateFrequency).toHaveBeenCalledWith(
+          'entry-1',
+          immediateFrequency,
+        );
+
+        // Line 137: Should set start date to today (any Date instance)
+        expect(updateStartDate).toHaveBeenCalledWith(
+          'entry-1',
+          expect.any(Date),
+        );
+
+        // Line 138: Should set duration to 0
+        expect(updateDuration).toHaveBeenCalledWith('entry-1', 0);
+
+        // Line 139: Should set duration unit to null
+        expect(updateDurationUnit).toHaveBeenCalledWith('entry-1', null);
+      });
+
+      test('does not update frequency if immediate frequency is not found in config', () => {
+        // Arrange
+        const updateFrequency = jest.fn();
+        const updateStartDate = jest.fn();
+        const updateDuration = jest.fn();
+        const updateDurationUnit = jest.fn();
+
+        // Config without immediate frequency
+        const mockConfig = createMockMedicationConfig({
+          frequencies: [
+            { uuid: 'bd-uuid', name: 'BD', frequencyPerDay: 2 },
+            { uuid: 'tds-uuid', name: 'TDS', frequencyPerDay: 3 },
+          ],
+        });
+
+        const props = createDefaultProps({
+          updateFrequency,
+          updateStartDate,
+          updateDuration,
+          updateDurationUnit,
+          medicationConfig: mockConfig,
+          medicationInputEntry: createMockMedicationInputEntry({
+            isSTAT: true,
+            isPRN: false,
+          }),
+        });
+
+        // Act
+        renderWithI18n(<SelectedMedicationItem {...props} />);
+
+        // Assert
+        // Should not call updateFrequency since immediate frequency is not found
+        expect(updateFrequency).not.toHaveBeenCalled();
+
+        // But should still update other fields
+        expect(updateStartDate).toHaveBeenCalledWith(
+          'entry-1',
+          expect.any(Date),
+        );
+        expect(updateDuration).toHaveBeenCalledWith('entry-1', 0);
+        expect(updateDurationUnit).toHaveBeenCalledWith('entry-1', null);
       });
     });
 

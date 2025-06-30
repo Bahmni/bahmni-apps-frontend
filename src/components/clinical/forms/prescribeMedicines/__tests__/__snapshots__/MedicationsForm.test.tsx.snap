@@ -175,6 +175,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
               class="cds--form-item cds--checkbox-wrapper"
             >
               <input
+                aria-label="STAT"
                 class="cds--checkbox"
                 id="stat-test-medication-1"
                 type="checkbox"
@@ -199,6 +200,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
               class="cds--form-item cds--checkbox-wrapper"
             >
               <input
+                aria-label="PRN"
                 class="cds--checkbox"
                 id="prn-test-medication-1"
                 type="checkbox"
@@ -226,7 +228,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 class="cds--tooltip-trigger__wrapper"
               >
                 <button
-                  aria-labelledby="tooltip-«r4e»"
+                  aria-label="Remove medication"
                   class="cds--btn cds--btn--sm cds--layout--size-sm cds--btn--ghost cds--btn--icon-only"
                   type="button"
                 >
@@ -284,6 +286,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 >
                   <input
                     aria-invalid="false"
+                    aria-label="Dosage"
                     id="dosage-unit-test-medication-1"
                     min="0"
                     pattern="[0-9]*"
@@ -360,7 +363,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 for="downshift-«r4j»-toggle-button"
                 id="downshift-«r4j»-label"
               >
-                Dosage Unit
+                Dosage unit
               </label>
               <div
                 class="cds--dropdown cds--dropdown--sm cds--list-box cds--list-box--sm"
@@ -371,18 +374,18 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                   aria-controls="downshift-«r4j»-menu"
                   aria-expanded="false"
                   aria-haspopup="listbox"
-                  aria-labelledby="downshift-«r4j»-label"
+                  aria-label="Dosage Unit"
                   class="cds--list-box__field"
                   id="downshift-«r4j»-toggle-button"
                   role="combobox"
                   tabindex="0"
-                  title="Dosage Unit"
+                  title="Dosage unit"
                   type="button"
                 >
                   <span
                     class="cds--list-box__label"
                   >
-                    Dosage Unit
+                    Dosage unit
                   </span>
                   <div
                     class="cds--list-box__menu-icon"
@@ -440,7 +443,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                   aria-controls="downshift-«r4m»-menu"
                   aria-expanded="false"
                   aria-haspopup="listbox"
-                  aria-labelledby="downshift-«r4m»-label"
+                  aria-label="Frequency"
                   class="cds--list-box__field"
                   id="downshift-«r4m»-toggle-button"
                   role="combobox"
@@ -507,6 +510,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 >
                   <input
                     aria-invalid="false"
+                    aria-label="Duration"
                     id="duration-test-medication-1"
                     min="0"
                     pattern="[0-9]*"
@@ -582,7 +586,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 for="downshift-«r4p»-toggle-button"
                 id="downshift-«r4p»-label"
               >
-                Duration Unit
+                Duration unit
               </label>
               <div
                 class="cds--dropdown cds--dropdown--sm cds--list-box cds--list-box--sm"
@@ -593,18 +597,18 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                   aria-controls="downshift-«r4p»-menu"
                   aria-expanded="false"
                   aria-haspopup="listbox"
-                  aria-labelledby="downshift-«r4p»-label"
+                  aria-label="Duration Unit"
                   class="cds--list-box__field"
                   id="downshift-«r4p»-toggle-button"
                   role="combobox"
                   tabindex="0"
-                  title="Duration Unit"
+                  title="Duration unit"
                   type="button"
                 >
                   <span
                     class="cds--list-box__label"
                   >
-                    Duration Unit
+                    Duration unit
                   </span>
                   <div
                     class="cds--list-box__menu-icon"
@@ -661,7 +665,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                   aria-controls="downshift-«r4s»-menu"
                   aria-expanded="false"
                   aria-haspopup="listbox"
-                  aria-labelledby="downshift-«r4s»-label"
+                  aria-label="Medication Instructions"
                   class="cds--list-box__field"
                   id="downshift-«r4s»-toggle-button"
                   role="combobox"
@@ -729,7 +733,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                   aria-controls="downshift-«r4v»-menu"
                   aria-expanded="false"
                   aria-haspopup="listbox"
-                  aria-labelledby="downshift-«r4v»-label"
+                  aria-label="Route"
                   class="cds--list-box__field"
                   id="downshift-«r4v»-toggle-button"
                   role="combobox"
@@ -792,13 +796,14 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                     dir="auto"
                     for="start-date-test-medication-1"
                   >
-                    Start Date
+                    Start date
                   </label>
                   <div
                     class="cds--date-picker-input__wrapper"
                   >
                     <span>
                       <input
+                        aria-label="Start Date"
                         class="cds--date-picker__input cds--date-picker__input--sm flatpickr-input"
                         id="start-date-test-medication-1"
                         pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
@@ -831,7 +836,8 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
             class="cds--col-span-12 cds--css-grid-column"
           >
             <span>
-              Total Quantity:
+              Total quantity
+              :
               10
                
             </span>
