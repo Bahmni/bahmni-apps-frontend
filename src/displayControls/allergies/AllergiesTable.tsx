@@ -74,7 +74,11 @@ const AllergiesTable: React.FC = () => {
                 [{t(getCategoryDisplayName(allergy.category?.[0]))}]
               </div>
               {allergy.note && (
-                <Tooltip content={allergy.note} align="top">
+                <Tooltip
+                  autoAlign
+                  label={allergy.note}
+                  className={styles.allergyNote}
+                >
                   <Document
                     size={16}
                     aria-label={t('ALLERGY_NOTE_TOOLTIP_ARIA_LABEL')}

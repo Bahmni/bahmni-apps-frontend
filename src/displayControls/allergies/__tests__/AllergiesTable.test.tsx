@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import AllergiesTable from '../AllergiesTable';
 import { usePatientUUID } from '@hooks/usePatientUUID';
@@ -749,8 +749,15 @@ describe('AllergiesTable', () => {
       // Act
       const { container } = render(<AllergiesTable />);
 
+      // Wait for any async operations to complete before running axe
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
       // Assert
-      const results = await axe(container);
+      const results = await act(async () => {
+        return await axe(container);
+      });
       expect(results).toHaveNoViolations();
     });
 
@@ -774,11 +781,18 @@ describe('AllergiesTable', () => {
       ).toBeInTheDocument();
       expect(screen.getByText('Allergies')).toBeInTheDocument();
 
+      // Wait for any async operations to complete before running axe
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
       // Test accessibility but exclude table header violations for skeleton
-      const results = await axe(container, {
-        rules: {
-          'empty-table-header': { enabled: false }, // Skeleton tables may have empty headers temporarily
-        },
+      const results = await act(async () => {
+        return await axe(container, {
+          rules: {
+            'empty-table-header': { enabled: false }, // Skeleton tables may have empty headers temporarily
+          },
+        });
       });
       expect(results).toHaveNoViolations();
     });
