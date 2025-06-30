@@ -6,7 +6,7 @@
   "properties": {
     "defaultDurationUnit": {
       "type": "string",
-      "enum": ["Minutes", "Hours", "Days", "Weeks", "Months"],
+      "enum": ["min", "h", "d", "wk", "mo"],
       "description": "Default unit for medication duration"
     },
     "defaultInstructions": {

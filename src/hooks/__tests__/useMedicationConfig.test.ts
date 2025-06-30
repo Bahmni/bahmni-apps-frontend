@@ -63,7 +63,7 @@ describe('useMedicationConfig', () => {
     };
 
     const mockMedicationJSONConfig: MedicationJSONConfig = {
-      defaultDurationUnit: 'Days',
+      defaultDurationUnit: 'd',
       defaultInstructions: 'As directed',
       drugFormDefaults: {
         Tablet: {
@@ -101,7 +101,7 @@ describe('useMedicationConfig', () => {
     const mockError = new Error('Failed to fetch medication orders metadata');
     (fetchMedicationOrdersMetadata as jest.Mock).mockRejectedValue(mockError);
     (getMedicationConfig as jest.Mock).mockResolvedValue({
-      defaultDurationUnit: 'Days',
+      defaultDurationUnit: 'd',
       defaultInstructions: 'As directed',
     });
 
@@ -160,7 +160,7 @@ describe('useMedicationConfig', () => {
 
   it('should handle error when fetchMedicationOrdersMetadata returns null', async () => {
     const mockMedicationJSONConfig: MedicationJSONConfig = {
-      defaultDurationUnit: 'Days',
+      defaultDurationUnit: 'd',
       defaultInstructions: 'As directed',
     };
 

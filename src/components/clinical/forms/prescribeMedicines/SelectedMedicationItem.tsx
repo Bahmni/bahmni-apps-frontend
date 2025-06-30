@@ -116,7 +116,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
         }
         if (!durationUnit) {
           const defaultDurationUnit = DURATION_UNIT_OPTIONS.find(
-            (item) => t(item.display) === medicationConfig.defaultDurationUnit,
+            (item) => item.code === medicationConfig.defaultDurationUnit,
           );
           if (defaultDurationUnit) {
             updateDurationUnit(id, defaultDurationUnit);

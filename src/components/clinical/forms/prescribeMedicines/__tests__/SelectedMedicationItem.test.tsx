@@ -691,7 +691,7 @@ describe('SelectedMedicationItem', () => {
           // Arrange
           const updateDurationUnit = jest.fn();
           const medicationConfig = createMockMedicationConfig({
-            defaultDurationUnit: 'Days',
+            defaultDurationUnit: 'd',
             durationUnits: [
               { uuid: 'days-uuid', name: 'Days' },
               { uuid: 'weeks-uuid', name: 'Weeks' },
@@ -709,7 +709,6 @@ describe('SelectedMedicationItem', () => {
           renderWithI18n(<SelectedMedicationItem {...props} />);
 
           // Assert
-          // DURATION_UNIT_OPTIONS[2] is Days
           expect(updateDurationUnit).toHaveBeenCalledWith(
             'entry-1',
             DURATION_UNIT_OPTIONS[2],
@@ -720,7 +719,7 @@ describe('SelectedMedicationItem', () => {
           // Arrange
           const updateDurationUnit = jest.fn();
           const medicationConfig = createMockMedicationConfig({
-            defaultDurationUnit: 'Days',
+            defaultDurationUnit: 'd',
             durationUnits: [
               { uuid: 'days-uuid', name: 'Days' },
               { uuid: 'weeks-uuid', name: 'Weeks' },
@@ -767,7 +766,7 @@ describe('SelectedMedicationItem', () => {
           // Arrange
           const updateDurationUnit = jest.fn();
           const medicationConfig = createMockMedicationConfig({
-            defaultDurationUnit: 'Days',
+            defaultDurationUnit: 'd', // Using code instead of display
             durationUnits: [],
           });
           const props = createDefaultProps({
@@ -807,11 +806,11 @@ describe('SelectedMedicationItem', () => {
           expect(updateDurationUnit).not.toHaveBeenCalled();
         });
 
-        test('handles different duration unit translations correctly', () => {
+        test('handles different duration unit codes correctly', () => {
           // Arrange
           const updateDurationUnit = jest.fn();
           const medicationConfig = createMockMedicationConfig({
-            defaultDurationUnit: 'Weeks',
+            defaultDurationUnit: 'wk',
             durationUnits: [
               { uuid: 'days-uuid', name: 'Days' },
               { uuid: 'weeks-uuid', name: 'Weeks' },
@@ -829,7 +828,6 @@ describe('SelectedMedicationItem', () => {
           renderWithI18n(<SelectedMedicationItem {...props} />);
 
           // Assert
-          // DURATION_UNIT_OPTIONS[3] is Weeks
           expect(updateDurationUnit).toHaveBeenCalledWith(
             'entry-1',
             DURATION_UNIT_OPTIONS[3],
@@ -863,7 +861,7 @@ describe('SelectedMedicationItem', () => {
           // Update config with defaults
           const updatedConfig = createMockMedicationConfig({
             defaultInstructions: 'Before Food',
-            defaultDurationUnit: 'Days',
+            defaultDurationUnit: 'd',
             dosingInstructions: [{ uuid: 'before-food', name: 'Before Food' }],
             durationUnits: [{ uuid: 'days-uuid', name: 'Days' }],
           });
@@ -1222,23 +1220,18 @@ describe('SelectedMedicationItem', () => {
         // Act
         renderWithI18n(<SelectedMedicationItem {...props} />);
 
-        // Assert - validates lines 131-140
-        // Line 132-136: Should find and set immediate frequency
         expect(updateFrequency).toHaveBeenCalledWith(
           'entry-1',
           immediateFrequency,
         );
 
-        // Line 137: Should set start date to today (any Date instance)
         expect(updateStartDate).toHaveBeenCalledWith(
           'entry-1',
           expect.any(Date),
         );
 
-        // Line 138: Should set duration to 0
         expect(updateDuration).toHaveBeenCalledWith('entry-1', 0);
 
-        // Line 139: Should set duration unit to null
         expect(updateDurationUnit).toHaveBeenCalledWith('entry-1', null);
       });
 
