@@ -14,7 +14,7 @@ exports[`AllergiesForm Snapshot Tests matches snapshot with no allergies 1`] = `
       class="cds--list-box__wrapper"
     >
       <div
-        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--lg"
+        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--md"
       >
         <div
           class="cds--list-box__field"
@@ -89,7 +89,7 @@ exports[`AllergiesForm Snapshot Tests matches snapshot with selected allergies 1
       class="cds--list-box__wrapper"
     >
       <div
-        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--lg"
+        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--md"
       >
         <div
           class="cds--list-box__field"

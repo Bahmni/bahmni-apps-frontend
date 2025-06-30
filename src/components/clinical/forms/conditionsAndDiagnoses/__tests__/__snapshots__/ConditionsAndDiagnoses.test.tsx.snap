@@ -12,7 +12,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
       class="cds--list-box__wrapper"
     >
       <div
-        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--lg"
+        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--md"
       >
         <div
           class="cds--list-box__field"
@@ -238,7 +238,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests empty form matches snapshot 1`] =
       class="cds--list-box__wrapper"
     >
       <div
-        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--lg"
+        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--md"
       >
         <div
           class="cds--list-box__field"
@@ -311,7 +311,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
       class="cds--list-box__wrapper"
     >
       <div
-        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--lg"
+        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--md"
       >
         <div
           class="cds--list-box__field"
@@ -901,7 +901,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with search results matches 
       class="cds--list-box__wrapper"
     >
       <div
-        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--lg"
+        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--md"
       >
         <div
           class="cds--list-box__field"
@@ -974,7 +974,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
       class="cds--list-box__wrapper"
     >
       <div
-        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--lg"
+        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--md"
       >
         <div
           class="cds--list-box__field"
@@ -1411,7 +1411,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
       class="cds--list-box__wrapper"
     >
       <div
-        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--lg"
+        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--md"
       >
         <div
           class="cds--list-box__field"

@@ -17,8 +17,8 @@
 
 .close {
   margin-left: 0 !important;
-  align-self: center;
-  justify-self: center;
+  align-self: self-start;
+  justify-self: start;
 
   :global(.cds--btn--icon-only) {
     background-color: $background !important;
