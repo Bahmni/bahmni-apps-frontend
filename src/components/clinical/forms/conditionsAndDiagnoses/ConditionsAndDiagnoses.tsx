@@ -145,7 +145,7 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
         itemToString={(item) => (item?.conceptName ? item.conceptName : '')}
         onChange={(data) => handleOnChange(data.selectedItem!)}
         onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
-        size="lg"
+        size="md"
         autoAlign
         aria-label={t('DIAGNOSES_SEARCH_ARIA_LABEL')}
       />
