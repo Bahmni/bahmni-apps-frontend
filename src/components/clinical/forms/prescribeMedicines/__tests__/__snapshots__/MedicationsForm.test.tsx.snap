@@ -160,687 +160,685 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
       <div
         class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
       >
-        <div
-          class="cds--subgrid cds--subgrid--wide"
-        >
+        <div>
           <div
-            class="cds--col-span-12 cds--css-grid-column"
-          >
-            Paracetamol 500mg
-          </div>
-          <div
-            class="cds--col-span-4 cds--css-grid-column"
+            class="cds--subgrid cds--subgrid--wide"
           >
             <div
-              class="cds--form-item cds--checkbox-wrapper"
+              class="cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
             >
-              <input
-                aria-label="STAT"
-                class="cds--checkbox"
-                id="stat-test-medication-1"
-                type="checkbox"
-              />
-              <label
-                class="cds--checkbox-label"
-                for="stat-test-medication-1"
-                title=""
-              >
-                <span
-                  class="cds--checkbox-label-text"
-                  dir="auto"
-                >
-                  STAT
-                </span>
-              </label>
-              <div
-                class="cds--checkbox__validation-msg"
-              />
+              Paracetamol 500mg
             </div>
             <div
-              class="cds--form-item cds--checkbox-wrapper"
-            >
-              <input
-                aria-label="PRN"
-                class="cds--checkbox"
-                id="prn-test-medication-1"
-                type="checkbox"
-              />
-              <label
-                class="cds--checkbox-label"
-                for="prn-test-medication-1"
-                title=""
-              >
-                <span
-                  class="cds--checkbox-label-text"
-                  dir="auto"
-                >
-                  PRN
-                </span>
-              </label>
-              <div
-                class="cds--checkbox__validation-msg"
-              />
-            </div>
-            <span
-              class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
+              class="cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
             >
               <div
-                class="cds--tooltip-trigger__wrapper"
+                class="cds--form-item cds--checkbox-wrapper"
               >
-                <button
-                  aria-label="Remove medication"
-                  class="cds--btn cds--btn--sm cds--layout--size-sm cds--btn--ghost cds--btn--icon-only"
-                  type="button"
+                <input
+                  aria-label="STAT"
+                  class="cds--checkbox"
+                  id="stat-test-medication-1"
+                  type="checkbox"
+                />
+                <label
+                  class="cds--checkbox-label"
+                  for="stat-test-medication-1"
+                  title=""
                 >
-                  <svg
-                    aria-hidden="true"
-                    fill="currentColor"
-                    focusable="false"
-                    height="16"
-                    preserveAspectRatio="xMidYMid meet"
-                    viewBox="0 0 32 32"
-                    width="16"
-                    xmlns="http://www.w3.org/2000/svg"
+                  <span
+                    class="cds--checkbox-label-text"
+                    dir="auto"
                   >
-                    <path
-                      d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
-                    />
-                  </svg>
-                </button>
+                    STAT
+                  </span>
+                </label>
+                <div
+                  class="cds--checkbox__validation-msg"
+                />
+              </div>
+              <div
+                class="cds--form-item cds--checkbox-wrapper"
+              >
+                <input
+                  aria-label="PRN"
+                  class="cds--checkbox"
+                  id="prn-test-medication-1"
+                  type="checkbox"
+                />
+                <label
+                  class="cds--checkbox-label"
+                  for="prn-test-medication-1"
+                  title=""
+                >
+                  <span
+                    class="cds--checkbox-label-text"
+                    dir="auto"
+                  >
+                    PRN
+                  </span>
+                </label>
+                <div
+                  class="cds--checkbox__validation-msg"
+                />
               </div>
               <span
-                aria-hidden="true"
-                class="cds--popover"
-                id="tooltip-«r4e»"
-                role="tooltip"
+                class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
               >
-                <span
-                  class="cds--popover-content cds--tooltip-content"
+                <div
+                  class="cds--tooltip-trigger__wrapper"
                 >
-                  Remove medication
+                  <button
+                    aria-label="Remove medication"
+                    class="cds--btn cds--btn--sm cds--layout--size-sm cds--btn--ghost cds--btn--icon-only"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      fill="currentColor"
+                      focusable="false"
+                      height="16"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+                <span
+                  aria-hidden="true"
+                  class="cds--popover"
+                  id="tooltip-«r4e»"
+                  role="tooltip"
+                >
+                  <span
+                    class="cds--popover-content cds--tooltip-content"
+                  >
+                    Remove medication
+                  </span>
+                  <span
+                    class="cds--popover-caret"
+                  />
                 </span>
-                <span
-                  class="cds--popover-caret"
-                />
               </span>
-            </span>
-          </div>
-          <div
-            class="cds--col-span-5 cds--css-grid-column"
-          >
-            <div
-              class="cds--form-item"
-            >
-              <div
-                class="cds--number cds--number--helpertext cds--number--nolabel cds--number--sm"
-              >
-                <label
-                  class="cds--label cds--visually-hidden"
-                  dir="auto"
-                  for="dosage-unit-test-medication-1"
-                >
-                  Dosage
-                </label>
-                <div
-                  class="cds--number__input-wrapper"
-                >
-                  <input
-                    aria-invalid="false"
-                    aria-label="Dosage"
-                    id="dosage-unit-test-medication-1"
-                    min="0"
-                    pattern="[0-9]*"
-                    step="1"
-                    style="width: 107px;"
-                    type="number"
-                    value="1"
-                  />
-                  <div
-                    class="cds--number__controls"
-                  >
-                    <button
-                      aria-label="Decrement number"
-                      class="cds--number__control-btn down-icon"
-                      tabindex="-1"
-                      title="Decrement number"
-                      type="button"
-                    >
-                      <svg
-                        aria-hidden="true"
-                        class="down-icon"
-                        fill="currentColor"
-                        focusable="false"
-                        height="16"
-                        preserveAspectRatio="xMidYMid meet"
-                        viewBox="0 0 32 32"
-                        width="16"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M8 15H24V17H8z"
-                        />
-                      </svg>
-                    </button>
-                    <div
-                      class="cds--number__rule-divider"
-                    />
-                    <button
-                      aria-label="Increment number"
-                      class="cds--number__control-btn up-icon"
-                      tabindex="-1"
-                      title="Increment number"
-                      type="button"
-                    >
-                      <svg
-                        aria-hidden="true"
-                        class="up-icon"
-                        fill="currentColor"
-                        focusable="false"
-                        height="16"
-                        preserveAspectRatio="xMidYMid meet"
-                        viewBox="0 0 32 32"
-                        width="16"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M17 15L17 8 15 8 15 15 8 15 8 17 15 17 15 24 17 24 17 17 24 17 24 15z"
-                        />
-                      </svg>
-                    </button>
-                    <div
-                      class="cds--number__rule-divider"
-                    />
-                  </div>
-                </div>
-              </div>
             </div>
             <div
-              class="cds--dropdown__wrapper cds--list-box__wrapper"
-              style="width: 120px;"
-            >
-              <label
-                class="cds--label cds--visually-hidden"
-                for="downshift-«r4j»-toggle-button"
-                id="downshift-«r4j»-label"
-              >
-                Dosage unit
-              </label>
-              <div
-                class="cds--dropdown cds--dropdown--sm cds--list-box cds--list-box--sm"
-                id="dosage-unit-test-medication-1"
-              >
-                <button
-                  aria-activedescendant=""
-                  aria-controls="downshift-«r4j»-menu"
-                  aria-expanded="false"
-                  aria-haspopup="listbox"
-                  aria-label="Dosage Unit"
-                  class="cds--list-box__field"
-                  id="downshift-«r4j»-toggle-button"
-                  role="combobox"
-                  tabindex="0"
-                  title="Dosage unit"
-                  type="button"
-                >
-                  <span
-                    class="cds--list-box__label"
-                  >
-                    Dosage unit
-                  </span>
-                  <div
-                    class="cds--list-box__menu-icon"
-                  >
-                    <svg
-                      aria-label="Open menu"
-                      fill="currentColor"
-                      focusable="false"
-                      height="16"
-                      name="chevron--down"
-                      preserveAspectRatio="xMidYMid meet"
-                      role="img"
-                      viewBox="0 0 16 16"
-                      width="16"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
-                      />
-                      <title>
-                        Open menu
-                      </title>
-                    </svg>
-                  </div>
-                </button>
-                <ul
-                  aria-labelledby="downshift-«r4j»-label"
-                  class="cds--list-box__menu"
-                  id="downshift-«r4j»-menu"
-                  role="listbox"
-                />
-              </div>
-            </div>
-          </div>
-          <div
-            class="cds--col-span-6 cds--css-grid-column"
-          >
-            <div
-              class="cds--dropdown__wrapper cds--list-box__wrapper"
-              style="width: 100%;"
-            >
-              <label
-                class="cds--label cds--visually-hidden"
-                for="downshift-«r4m»-toggle-button"
-                id="downshift-«r4m»-label"
-              >
-                Frequency
-              </label>
-              <div
-                class="cds--dropdown cds--dropdown--sm cds--list-box cds--list-box--sm"
-                id="frequency-test-medication-1"
-              >
-                <button
-                  aria-activedescendant=""
-                  aria-controls="downshift-«r4m»-menu"
-                  aria-expanded="false"
-                  aria-haspopup="listbox"
-                  aria-label="Frequency"
-                  class="cds--list-box__field"
-                  id="downshift-«r4m»-toggle-button"
-                  role="combobox"
-                  tabindex="0"
-                  title="Frequency"
-                  type="button"
-                >
-                  <span
-                    class="cds--list-box__label"
-                  >
-                    Frequency
-                  </span>
-                  <div
-                    class="cds--list-box__menu-icon"
-                  >
-                    <svg
-                      aria-label="Open menu"
-                      fill="currentColor"
-                      focusable="false"
-                      height="16"
-                      name="chevron--down"
-                      preserveAspectRatio="xMidYMid meet"
-                      role="img"
-                      viewBox="0 0 16 16"
-                      width="16"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
-                      />
-                      <title>
-                        Open menu
-                      </title>
-                    </svg>
-                  </div>
-                </button>
-                <ul
-                  aria-labelledby="downshift-«r4m»-label"
-                  class="cds--list-box__menu"
-                  id="downshift-«r4m»-menu"
-                  role="listbox"
-                />
-              </div>
-            </div>
-          </div>
-          <div
-            class="cds--col-span-5 cds--css-grid-column"
-          >
-            <div
-              class="cds--form-item"
+              class="cds--sm:col-span-2 cds--md:col-span-3 cds--lg:col-span-6 cds--css-grid-column"
             >
               <div
-                class="cds--number cds--number--helpertext cds--number--nolabel cds--number--sm"
-              >
-                <label
-                  class="cds--label cds--visually-hidden"
-                  dir="auto"
-                  for="duration-test-medication-1"
-                >
-                  Duration
-                </label>
-                <div
-                  class="cds--number__input-wrapper"
-                >
-                  <input
-                    aria-invalid="false"
-                    aria-label="Duration"
-                    id="duration-test-medication-1"
-                    min="0"
-                    pattern="[0-9]*"
-                    step="1"
-                    style="width: 107px;"
-                    type="number"
-                    value="5"
-                  />
-                  <div
-                    class="cds--number__controls"
-                  >
-                    <button
-                      aria-label="Decrement number"
-                      class="cds--number__control-btn down-icon"
-                      tabindex="-1"
-                      title="Decrement number"
-                      type="button"
-                    >
-                      <svg
-                        aria-hidden="true"
-                        class="down-icon"
-                        fill="currentColor"
-                        focusable="false"
-                        height="16"
-                        preserveAspectRatio="xMidYMid meet"
-                        viewBox="0 0 32 32"
-                        width="16"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M8 15H24V17H8z"
-                        />
-                      </svg>
-                    </button>
-                    <div
-                      class="cds--number__rule-divider"
-                    />
-                    <button
-                      aria-label="Increment number"
-                      class="cds--number__control-btn up-icon"
-                      tabindex="-1"
-                      title="Increment number"
-                      type="button"
-                    >
-                      <svg
-                        aria-hidden="true"
-                        class="up-icon"
-                        fill="currentColor"
-                        focusable="false"
-                        height="16"
-                        preserveAspectRatio="xMidYMid meet"
-                        viewBox="0 0 32 32"
-                        width="16"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M17 15L17 8 15 8 15 15 8 15 8 17 15 17 15 24 17 24 17 17 24 17 24 15z"
-                        />
-                      </svg>
-                    </button>
-                    <div
-                      class="cds--number__rule-divider"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div
-              class="cds--dropdown__wrapper cds--list-box__wrapper"
-            >
-              <label
-                class="cds--label cds--visually-hidden"
-                for="downshift-«r4p»-toggle-button"
-                id="downshift-«r4p»-label"
-              >
-                Duration unit
-              </label>
-              <div
-                class="cds--dropdown cds--dropdown--sm cds--list-box cds--list-box--sm"
-                id="duration-unit-test-medication-1"
-              >
-                <button
-                  aria-activedescendant=""
-                  aria-controls="downshift-«r4p»-menu"
-                  aria-expanded="false"
-                  aria-haspopup="listbox"
-                  aria-label="Duration Unit"
-                  class="cds--list-box__field"
-                  id="downshift-«r4p»-toggle-button"
-                  role="combobox"
-                  tabindex="0"
-                  title="Duration unit"
-                  type="button"
-                >
-                  <span
-                    class="cds--list-box__label"
-                  >
-                    Duration unit
-                  </span>
-                  <div
-                    class="cds--list-box__menu-icon"
-                  >
-                    <svg
-                      aria-label="Open menu"
-                      fill="currentColor"
-                      focusable="false"
-                      height="16"
-                      name="chevron--down"
-                      preserveAspectRatio="xMidYMid meet"
-                      role="img"
-                      viewBox="0 0 16 16"
-                      width="16"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
-                      />
-                      <title>
-                        Open menu
-                      </title>
-                    </svg>
-                  </div>
-                </button>
-                <ul
-                  aria-labelledby="downshift-«r4p»-label"
-                  class="cds--list-box__menu"
-                  id="downshift-«r4p»-menu"
-                  role="listbox"
-                />
-              </div>
-            </div>
-          </div>
-          <div
-            class="cds--col-span-5 cds--css-grid-column"
-          >
-            <div
-              class="cds--dropdown__wrapper cds--list-box__wrapper"
-            >
-              <label
-                class="cds--label cds--visually-hidden"
-                for="downshift-«r4s»-toggle-button"
-                id="downshift-«r4s»-label"
-              >
-                Instructions
-              </label>
-              <div
-                class="cds--dropdown cds--dropdown--sm cds--list-box cds--list-box--sm"
-                id="med-instructions-test-medication-1"
-              >
-                <button
-                  aria-activedescendant=""
-                  aria-controls="downshift-«r4s»-menu"
-                  aria-expanded="false"
-                  aria-haspopup="listbox"
-                  aria-label="Medication Instructions"
-                  class="cds--list-box__field"
-                  id="downshift-«r4s»-toggle-button"
-                  role="combobox"
-                  tabindex="0"
-                  title="Instructions"
-                  type="button"
-                >
-                  <span
-                    class="cds--list-box__label"
-                  >
-                    Instructions
-                  </span>
-                  <div
-                    class="cds--list-box__menu-icon"
-                  >
-                    <svg
-                      aria-label="Open menu"
-                      fill="currentColor"
-                      focusable="false"
-                      height="16"
-                      name="chevron--down"
-                      preserveAspectRatio="xMidYMid meet"
-                      role="img"
-                      viewBox="0 0 16 16"
-                      width="16"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
-                      />
-                      <title>
-                        Open menu
-                      </title>
-                    </svg>
-                  </div>
-                </button>
-                <ul
-                  aria-labelledby="downshift-«r4s»-label"
-                  class="cds--list-box__menu"
-                  id="downshift-«r4s»-menu"
-                  role="listbox"
-                />
-              </div>
-            </div>
-          </div>
-          <div
-            class="cds--col-span-6 cds--css-grid-column"
-          >
-            <div
-              class="cds--dropdown__wrapper cds--list-box__wrapper"
-            >
-              <label
-                class="cds--label cds--visually-hidden"
-                for="downshift-«r4v»-toggle-button"
-                id="downshift-«r4v»-label"
-              >
-                Route
-              </label>
-              <div
-                class="cds--dropdown cds--dropdown--sm cds--list-box cds--list-box--sm"
-                id="route-test-medication-1"
-              >
-                <button
-                  aria-activedescendant=""
-                  aria-controls="downshift-«r4v»-menu"
-                  aria-expanded="false"
-                  aria-haspopup="listbox"
-                  aria-label="Route"
-                  class="cds--list-box__field"
-                  id="downshift-«r4v»-toggle-button"
-                  role="combobox"
-                  tabindex="0"
-                  title="Route"
-                  type="button"
-                >
-                  <span
-                    class="cds--list-box__label"
-                  >
-                    Route
-                  </span>
-                  <div
-                    class="cds--list-box__menu-icon"
-                  >
-                    <svg
-                      aria-label="Open menu"
-                      fill="currentColor"
-                      focusable="false"
-                      height="16"
-                      name="chevron--down"
-                      preserveAspectRatio="xMidYMid meet"
-                      role="img"
-                      viewBox="0 0 16 16"
-                      width="16"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
-                      />
-                      <title>
-                        Open menu
-                      </title>
-                    </svg>
-                  </div>
-                </button>
-                <ul
-                  aria-labelledby="downshift-«r4v»-label"
-                  class="cds--list-box__menu"
-                  id="downshift-«r4v»-menu"
-                  role="listbox"
-                />
-              </div>
-            </div>
-          </div>
-          <div
-            class="cds--col-span-5 cds--css-grid-column"
-          >
-            <div
-              class="cds--form-item"
-            >
-              <div
-                class="cds--date-picker cds--date-picker--single"
+                class="cds--form-item"
               >
                 <div
-                  class="cds--date-picker-container"
+                  class="cds--number cds--number--helpertext cds--number--nolabel cds--number--sm"
                 >
                   <label
                     class="cds--label cds--visually-hidden"
                     dir="auto"
-                    for="start-date-test-medication-1"
+                    for="dosage-unit-test-medication-1"
                   >
-                    Start date
+                    Dosage
                   </label>
                   <div
-                    class="cds--date-picker-input__wrapper"
+                    class="cds--number__input-wrapper"
                   >
-                    <span>
-                      <input
-                        aria-label="Start Date"
-                        class="cds--date-picker__input cds--date-picker__input--sm flatpickr-input"
-                        id="start-date-test-medication-1"
-                        pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
-                        placeholder="d/m/Y"
-                        type="text"
+                    <input
+                      aria-invalid="false"
+                      aria-label="Dosage"
+                      id="dosage-unit-test-medication-1"
+                      min="0"
+                      pattern="[0-9]*"
+                      step="1"
+                      type="number"
+                      value="1"
+                    />
+                    <div
+                      class="cds--number__controls"
+                    >
+                      <button
+                        aria-label="Decrement number"
+                        class="cds--number__control-btn down-icon"
+                        tabindex="-1"
+                        title="Decrement number"
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="down-icon"
+                          fill="currentColor"
+                          focusable="false"
+                          height="16"
+                          preserveAspectRatio="xMidYMid meet"
+                          viewBox="0 0 32 32"
+                          width="16"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M8 15H24V17H8z"
+                          />
+                        </svg>
+                      </button>
+                      <div
+                        class="cds--number__rule-divider"
                       />
+                      <button
+                        aria-label="Increment number"
+                        class="cds--number__control-btn up-icon"
+                        tabindex="-1"
+                        title="Increment number"
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="up-icon"
+                          fill="currentColor"
+                          focusable="false"
+                          height="16"
+                          preserveAspectRatio="xMidYMid meet"
+                          viewBox="0 0 32 32"
+                          width="16"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M17 15L17 8 15 8 15 15 8 15 8 17 15 17 15 24 17 24 17 17 24 17 24 15z"
+                          />
+                        </svg>
+                      </button>
+                      <div
+                        class="cds--number__rule-divider"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="cds--dropdown__wrapper cds--list-box__wrapper"
+              >
+                <label
+                  class="cds--label cds--visually-hidden"
+                  for="downshift-«r4j»-toggle-button"
+                  id="downshift-«r4j»-label"
+                >
+                  Dosage unit
+                </label>
+                <div
+                  class="cds--dropdown cds--dropdown--sm cds--list-box cds--list-box--sm"
+                  id="dosage-unit-test-medication-1"
+                >
+                  <button
+                    aria-activedescendant=""
+                    aria-controls="downshift-«r4j»-menu"
+                    aria-expanded="false"
+                    aria-haspopup="listbox"
+                    aria-label="Dosage Unit"
+                    class="cds--list-box__field"
+                    id="downshift-«r4j»-toggle-button"
+                    role="combobox"
+                    tabindex="0"
+                    title="Dosage unit"
+                    type="button"
+                  >
+                    <span
+                      class="cds--list-box__label"
+                    >
+                      Dosage unit
+                    </span>
+                    <div
+                      class="cds--list-box__menu-icon"
+                    >
                       <svg
-                        aria-hidden="true"
-                        class="cds--date-picker__icon"
+                        aria-label="Open menu"
                         fill="currentColor"
                         focusable="false"
                         height="16"
+                        name="chevron--down"
                         preserveAspectRatio="xMidYMid meet"
                         role="img"
-                        viewBox="0 0 32 32"
+                        viewBox="0 0 16 16"
                         width="16"
                         xmlns="http://www.w3.org/2000/svg"
                       >
                         <path
-                          d="M26,4h-4V2h-2v2h-8V2h-2v2H6C4.9,4,4,4.9,4,6v20c0,1.1,0.9,2,2,2h20c1.1,0,2-0.9,2-2V6C28,4.9,27.1,4,26,4z M26,26H6V12h20 V26z M26,10H6V6h4v2h2V6h8v2h2V6h4V10z"
+                          d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
                         />
+                        <title>
+                          Open menu
+                        </title>
                       </svg>
+                    </div>
+                  </button>
+                  <ul
+                    aria-labelledby="downshift-«r4j»-label"
+                    class="cds--list-box__menu"
+                    id="downshift-«r4j»-menu"
+                    role="listbox"
+                  />
+                </div>
+              </div>
+            </div>
+            <div
+              class="cds--sm:col-span-1 cds--md:col-span-2 cds--lg:col-span-4 cds--css-grid-column"
+            >
+              <div
+                class="cds--dropdown__wrapper cds--list-box__wrapper"
+              >
+                <label
+                  class="cds--label cds--visually-hidden"
+                  for="downshift-«r4m»-toggle-button"
+                  id="downshift-«r4m»-label"
+                >
+                  Frequency
+                </label>
+                <div
+                  class="cds--dropdown cds--dropdown--sm cds--list-box cds--list-box--sm"
+                  id="frequency-test-medication-1"
+                >
+                  <button
+                    aria-activedescendant=""
+                    aria-controls="downshift-«r4m»-menu"
+                    aria-expanded="false"
+                    aria-haspopup="listbox"
+                    aria-label="Frequency"
+                    class="cds--list-box__field"
+                    id="downshift-«r4m»-toggle-button"
+                    role="combobox"
+                    tabindex="0"
+                    title="Frequency"
+                    type="button"
+                  >
+                    <span
+                      class="cds--list-box__label"
+                    >
+                      Frequency
                     </span>
+                    <div
+                      class="cds--list-box__menu-icon"
+                    >
+                      <svg
+                        aria-label="Open menu"
+                        fill="currentColor"
+                        focusable="false"
+                        height="16"
+                        name="chevron--down"
+                        preserveAspectRatio="xMidYMid meet"
+                        role="img"
+                        viewBox="0 0 16 16"
+                        width="16"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                        />
+                        <title>
+                          Open menu
+                        </title>
+                      </svg>
+                    </div>
+                  </button>
+                  <ul
+                    aria-labelledby="downshift-«r4m»-label"
+                    class="cds--list-box__menu"
+                    id="downshift-«r4m»-menu"
+                    role="listbox"
+                  />
+                </div>
+              </div>
+            </div>
+            <div
+              class="cds--sm:col-span-2 cds--md:col-span-3 cds--lg:col-span-6 cds--css-grid-column"
+            >
+              <div
+                class="cds--form-item"
+              >
+                <div
+                  class="cds--number cds--number--helpertext cds--number--nolabel cds--number--sm"
+                >
+                  <label
+                    class="cds--label cds--visually-hidden"
+                    dir="auto"
+                    for="duration-test-medication-1"
+                  >
+                    Duration
+                  </label>
+                  <div
+                    class="cds--number__input-wrapper"
+                  >
+                    <input
+                      aria-invalid="false"
+                      aria-label="Duration"
+                      id="duration-test-medication-1"
+                      min="0"
+                      pattern="[0-9]*"
+                      step="1"
+                      type="number"
+                      value="5"
+                    />
+                    <div
+                      class="cds--number__controls"
+                    >
+                      <button
+                        aria-label="Decrement number"
+                        class="cds--number__control-btn down-icon"
+                        tabindex="-1"
+                        title="Decrement number"
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="down-icon"
+                          fill="currentColor"
+                          focusable="false"
+                          height="16"
+                          preserveAspectRatio="xMidYMid meet"
+                          viewBox="0 0 32 32"
+                          width="16"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M8 15H24V17H8z"
+                          />
+                        </svg>
+                      </button>
+                      <div
+                        class="cds--number__rule-divider"
+                      />
+                      <button
+                        aria-label="Increment number"
+                        class="cds--number__control-btn up-icon"
+                        tabindex="-1"
+                        title="Increment number"
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="up-icon"
+                          fill="currentColor"
+                          focusable="false"
+                          height="16"
+                          preserveAspectRatio="xMidYMid meet"
+                          viewBox="0 0 32 32"
+                          width="16"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M17 15L17 8 15 8 15 15 8 15 8 17 15 17 15 24 17 24 17 17 24 17 24 15z"
+                          />
+                        </svg>
+                      </button>
+                      <div
+                        class="cds--number__rule-divider"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="cds--dropdown__wrapper cds--list-box__wrapper"
+              >
+                <label
+                  class="cds--label cds--visually-hidden"
+                  for="downshift-«r4p»-toggle-button"
+                  id="downshift-«r4p»-label"
+                >
+                  Duration unit
+                </label>
+                <div
+                  class="cds--dropdown cds--dropdown--sm cds--list-box cds--list-box--sm"
+                  id="duration-unit-test-medication-1"
+                >
+                  <button
+                    aria-activedescendant=""
+                    aria-controls="downshift-«r4p»-menu"
+                    aria-expanded="false"
+                    aria-haspopup="listbox"
+                    aria-label="Duration Unit"
+                    class="cds--list-box__field"
+                    id="downshift-«r4p»-toggle-button"
+                    role="combobox"
+                    tabindex="0"
+                    title="Duration unit"
+                    type="button"
+                  >
+                    <span
+                      class="cds--list-box__label"
+                    >
+                      Duration unit
+                    </span>
+                    <div
+                      class="cds--list-box__menu-icon"
+                    >
+                      <svg
+                        aria-label="Open menu"
+                        fill="currentColor"
+                        focusable="false"
+                        height="16"
+                        name="chevron--down"
+                        preserveAspectRatio="xMidYMid meet"
+                        role="img"
+                        viewBox="0 0 16 16"
+                        width="16"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                        />
+                        <title>
+                          Open menu
+                        </title>
+                      </svg>
+                    </div>
+                  </button>
+                  <ul
+                    aria-labelledby="downshift-«r4p»-label"
+                    class="cds--list-box__menu"
+                    id="downshift-«r4p»-menu"
+                    role="listbox"
+                  />
+                </div>
+              </div>
+            </div>
+            <div
+              class="cds--sm:col-span-2 cds--md:col-span-3 cds--lg:col-span-6 cds--css-grid-column"
+            >
+              <div
+                class="cds--dropdown__wrapper cds--list-box__wrapper"
+              >
+                <label
+                  class="cds--label cds--visually-hidden"
+                  for="downshift-«r4s»-toggle-button"
+                  id="downshift-«r4s»-label"
+                >
+                  Instructions
+                </label>
+                <div
+                  class="cds--dropdown cds--dropdown--sm cds--list-box cds--list-box--sm"
+                  id="med-instructions-test-medication-1"
+                >
+                  <button
+                    aria-activedescendant=""
+                    aria-controls="downshift-«r4s»-menu"
+                    aria-expanded="false"
+                    aria-haspopup="listbox"
+                    aria-label="Medication Instructions"
+                    class="cds--list-box__field"
+                    id="downshift-«r4s»-toggle-button"
+                    role="combobox"
+                    tabindex="0"
+                    title="Instructions"
+                    type="button"
+                  >
+                    <span
+                      class="cds--list-box__label"
+                    >
+                      Instructions
+                    </span>
+                    <div
+                      class="cds--list-box__menu-icon"
+                    >
+                      <svg
+                        aria-label="Open menu"
+                        fill="currentColor"
+                        focusable="false"
+                        height="16"
+                        name="chevron--down"
+                        preserveAspectRatio="xMidYMid meet"
+                        role="img"
+                        viewBox="0 0 16 16"
+                        width="16"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                        />
+                        <title>
+                          Open menu
+                        </title>
+                      </svg>
+                    </div>
+                  </button>
+                  <ul
+                    aria-labelledby="downshift-«r4s»-label"
+                    class="cds--list-box__menu"
+                    id="downshift-«r4s»-menu"
+                    role="listbox"
+                  />
+                </div>
+              </div>
+            </div>
+            <div
+              class="cds--sm:col-span-1 cds--md:col-span-2 cds--lg:col-span-4 cds--css-grid-column"
+            >
+              <div
+                class="cds--dropdown__wrapper cds--list-box__wrapper"
+              >
+                <label
+                  class="cds--label cds--visually-hidden"
+                  for="downshift-«r4v»-toggle-button"
+                  id="downshift-«r4v»-label"
+                >
+                  Route
+                </label>
+                <div
+                  class="cds--dropdown cds--dropdown--sm cds--list-box cds--list-box--sm"
+                  id="route-test-medication-1"
+                >
+                  <button
+                    aria-activedescendant=""
+                    aria-controls="downshift-«r4v»-menu"
+                    aria-expanded="false"
+                    aria-haspopup="listbox"
+                    aria-label="Route"
+                    class="cds--list-box__field"
+                    id="downshift-«r4v»-toggle-button"
+                    role="combobox"
+                    tabindex="0"
+                    title="Route"
+                    type="button"
+                  >
+                    <span
+                      class="cds--list-box__label"
+                    >
+                      Route
+                    </span>
+                    <div
+                      class="cds--list-box__menu-icon"
+                    >
+                      <svg
+                        aria-label="Open menu"
+                        fill="currentColor"
+                        focusable="false"
+                        height="16"
+                        name="chevron--down"
+                        preserveAspectRatio="xMidYMid meet"
+                        role="img"
+                        viewBox="0 0 16 16"
+                        width="16"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                        />
+                        <title>
+                          Open menu
+                        </title>
+                      </svg>
+                    </div>
+                  </button>
+                  <ul
+                    aria-labelledby="downshift-«r4v»-label"
+                    class="cds--list-box__menu"
+                    id="downshift-«r4v»-menu"
+                    role="listbox"
+                  />
+                </div>
+              </div>
+            </div>
+            <div
+              class="cds--sm:col-span-2 cds--md:col-span-3 cds--lg:col-span-6 cds--css-grid-column"
+            >
+              <div
+                class="cds--form-item"
+              >
+                <div
+                  class="cds--date-picker cds--date-picker--single"
+                >
+                  <div
+                    class="cds--date-picker-container"
+                  >
+                    <label
+                      class="cds--label cds--visually-hidden"
+                      dir="auto"
+                      for="start-date-test-medication-1"
+                    >
+                      Start date
+                    </label>
+                    <div
+                      class="cds--date-picker-input__wrapper"
+                    >
+                      <span>
+                        <input
+                          aria-label="Start Date"
+                          class="cds--date-picker__input cds--date-picker__input--sm flatpickr-input"
+                          id="start-date-test-medication-1"
+                          pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
+                          placeholder="d/m/Y"
+                          type="text"
+                        />
+                        <svg
+                          aria-hidden="true"
+                          class="cds--date-picker__icon"
+                          fill="currentColor"
+                          focusable="false"
+                          height="16"
+                          preserveAspectRatio="xMidYMid meet"
+                          role="img"
+                          viewBox="0 0 32 32"
+                          width="16"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M26,4h-4V2h-2v2h-8V2h-2v2H6C4.9,4,4,4.9,4,6v20c0,1.1,0.9,2,2,2h20c1.1,0,2-0.9,2-2V6C28,4.9,27.1,4,26,4z M26,26H6V12h20 V26z M26,10H6V6h4v2h2V6h8v2h2V6h4V10z"
+                          />
+                        </svg>
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div
-            class="cds--col-span-12 cds--css-grid-column"
-          >
-            <span>
-              Total quantity
-              :
-              10
-               
-            </span>
+            <div
+              class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
+            >
+              <span>
+                Total quantity
+                 : 
+                10
+                 
+              </span>
+            </div>
           </div>
         </div>
       </div>

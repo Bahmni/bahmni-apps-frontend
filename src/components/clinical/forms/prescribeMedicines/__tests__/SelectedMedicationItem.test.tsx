@@ -227,7 +227,7 @@ describe('SelectedMedicationItem', () => {
       renderWithI18n(<SelectedMedicationItem {...props} />);
 
       // Assert
-      expect(screen.getByText(/Total Quantity:30 mg/i)).toBeInTheDocument();
+      expect(screen.getByText(/Total Quantity : 30 mg/i)).toBeInTheDocument();
     });
   });
   describe('User Interactions', () => {

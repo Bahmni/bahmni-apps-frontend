@@ -5,113 +5,54 @@
 
 .selectedMedicationItem {
   padding: 1rem;
-  background-color: #ffffff;
   border-bottom: 1px solid $border-subtle-02;
+}
 
-  .medicationTitle {
-    font-weight: 600;
-    font-size: 1rem;
-    color: #161616;
-    margin-bottom: 1rem;
-  }
+.column {
+  margin-bottom: $spacing-04;
+}
 
-  .medicationActions {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
+.medicationTitle {
+  @include type-style("heading-compact-02");
+  margin-bottom: $spacing-04;
+}
 
-  .dosageControls {
-    display: flex;
-    gap: 0rem;
-    align-items: flex-end;
-    margin-bottom: 1rem;
-  }
+.medicationActions {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: start !important;
+  justify-self: end;
+  margin-bottom: $spacing-04;
+}
 
-  .frequencyControl {
-    margin-bottom: 1rem;
+.dosageControls {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: end !important;
+  margin-bottom: $spacing-04;
+}
+.dosageInput {
+  width: 50%;
+}
 
-    :global(.cds--dropdown) {
-      width: 100%;
-    }
-  }
+.dosageUnit {
+  width: 50%;
+}
 
-  .durationControls {
-    display: flex;
-    gap: 0.5rem;
-    align-items: flex-end;
-    margin-bottom: 1rem;
-  }
+.durationControls {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: end !important;
+  margin-bottom: $spacing-04;
+}
 
-  .timingControl {
-    margin-bottom: 1rem;
+.durationInput {
+  width: 50%;
+}
 
-    :global(.cds--dropdown) {
-      width: 100%;
-    }
-  }
-
-  .routeControl {
-    margin-bottom: 1rem;
-
-    :global(.cds--dropdown) {
-      width: 100%;
-    }
-  }
-
-  .dateControl {
-    margin-bottom: 1rem;
-
-    :global(.cds--date-picker) {
-      width: 100%;
-    }
-  }
-
-  .noteControl {
-    margin-bottom: 1rem;
-
-    button {
-      color: #0f62fe;
-      text-decoration: none;
-      padding: 0;
-      background: none;
-      border: none;
-      font-size: 0.875rem;
-
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-  }
-
-  .quantityLabel {
-    span {
-      font-size: 0.875rem;
-      color: #525252;
-      font-weight: 500;
-    }
-  }
-
-  .editControl {
-    button {
-      color: #007d79;
-      text-decoration: none;
-      padding: 0;
-      background: none;
-      border: none;
-      font-size: 0.875rem;
-
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-  }
-
-  .totalQuantity {
-    margin: 0 1rem;
-    justify-self: end;
-    align-items: start !important;
-  }
+.durationUnit {
+  width: 50%;
+}
+.totalQuantity {
+  justify-self: end;
 }
