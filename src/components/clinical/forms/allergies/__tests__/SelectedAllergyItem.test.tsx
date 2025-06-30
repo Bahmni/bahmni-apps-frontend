@@ -7,7 +7,7 @@ import SelectedAllergyItem from '../SelectedAllergyItem';
 import { Coding } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { ALLERGY_SEVERITY_CONCEPTS } from '@constants/concepts';
-import { AllergenType } from '@/types/concepts';
+import { AllergenType } from '@types/concepts';
 
 expect.extend(toHaveNoViolations);
 

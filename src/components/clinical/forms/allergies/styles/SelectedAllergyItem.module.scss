@@ -7,7 +7,7 @@
   @include type-style("heading-compact-01");
   margin: 0;
   justify-self: start;
-  align-self: center;
+  align-self: start;
   display: flex !important;
   flex-direction: column !important;
 }
@@ -50,13 +50,13 @@
 .selectedAllergySeverity {
   width: -webkit-fill-available !important;
   justify-self: end;
-  align-self: center;
+  align-self: start;
   margin-inline-end: 0 !important;
 }
 
 .selectedAllergyReactions {
   width: -webkit-fill-available !important;
   justify-self: end;
-  align-self: center;
+  align-self: start;
   margin-inline-end: 0 !important;
 }
