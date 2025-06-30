@@ -1,4 +1,5 @@
 {
+  "ADD_ALLERGY_NOTE": "Agregar Nota",
   "ALLERGEN": "Alérgeno",
   "ALLERGIES_ADDED_ALLERGIES": "Alergias Agregadas",
   "ALLERGIES_DISPLAY_CONTROL_HEADING": "Alergias",
@@ -130,7 +131,7 @@
   "INVESTIGATIONS_ADDED": "{{investigationType}} agregadas",
   "INVESTIGATIONS_FORM_TITLE": "Solicitar investigaciones/procedimientos",
   "INVESTIGATIONS_SEARCH_ARIA_LABEL": "Buscar investigaciones/procedimientos",
-  "INVESTIGATIONS_SEARCH_PLACEHOLDER" :"Busque para agregar investigaciones/procedimientos",
+  "INVESTIGATIONS_SEARCH_PLACEHOLDER": "Busque para agregar investigaciones/procedimientos",
   "LAB_INVESTIGATIONS_CATEGORY": "Investigaciones de Laboratorio",
   "LAB_TEST_ACTIONS": "Acciones",
   "LAB_TEST_ERROR_LOADING": "Error al cargar pruebas de laboratorio",

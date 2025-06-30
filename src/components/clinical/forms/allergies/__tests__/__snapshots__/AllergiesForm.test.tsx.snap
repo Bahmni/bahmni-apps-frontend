@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`AllergiesForm Snapshot Tests matches snapshot with no allergies 1`] = `
+exports[`AllergiesForm Snapshots should match snapshot with no allergies 1`] = `
 <div>
   <div
     class="cds--tile allergiesFormTile"
@@ -22,7 +22,7 @@ exports[`AllergiesForm Snapshot Tests matches snapshot with no allergies 1`] = `
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-«r1u»-menu"
+            aria-controls="downshift-«r4i»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Search for allergies"
@@ -37,11 +37,11 @@ exports[`AllergiesForm Snapshot Tests matches snapshot with no allergies 1`] = `
             value=""
           />
           <button
-            aria-controls="downshift-«r1u»-menu"
+            aria-controls="downshift-«r4i»-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-«r1u»-toggle-button"
+            id="downshift-«r4i»-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -63,9 +63,9 @@ exports[`AllergiesForm Snapshot Tests matches snapshot with no allergies 1`] = `
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-«r1u»-label"
+          aria-labelledby="downshift-«r4i»-label"
           class="cds--list-box__menu"
-          id="downshift-«r1u»-menu"
+          id="downshift-«r4i»-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -75,7 +75,7 @@ exports[`AllergiesForm Snapshot Tests matches snapshot with no allergies 1`] = `
 </div>
 `;
 
-exports[`AllergiesForm Snapshot Tests matches snapshot with selected allergies 1`] = `
+exports[`AllergiesForm Snapshots should match snapshot with selected allergies 1`] = `
 <div>
   <div
     class="cds--tile allergiesFormTile"
@@ -97,7 +97,7 @@ exports[`AllergiesForm Snapshot Tests matches snapshot with selected allergies 1
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-«r21»-menu"
+            aria-controls="downshift-«r4l»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Search for allergies"
@@ -112,11 +112,11 @@ exports[`AllergiesForm Snapshot Tests matches snapshot with selected allergies 1
             value=""
           />
           <button
-            aria-controls="downshift-«r21»-menu"
+            aria-controls="downshift-«r4l»-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-«r21»-toggle-button"
+            id="downshift-«r4l»-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -138,9 +138,9 @@ exports[`AllergiesForm Snapshot Tests matches snapshot with selected allergies 1
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-«r21»-label"
+          aria-labelledby="downshift-«r4l»-label"
           class="cds--list-box__menu"
-          id="downshift-«r21»-menu"
+          id="downshift-«r4l»-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -177,6 +177,12 @@ exports[`AllergiesForm Snapshot Tests matches snapshot with selected allergies 1
                  [
                 undefined
                 ]
+                <a
+                  class="cds--link"
+                  href="#"
+                >
+                  Add Note
+                </a>
               </div>
               <div
                 class="cds--sm:col-span-4 cds--md:col-span-3 cds--lg:col-span-3 cds--xlg:col-span-3 cds--css-grid-column"
@@ -187,8 +193,8 @@ exports[`AllergiesForm Snapshot Tests matches snapshot with selected allergies 1
                 >
                   <label
                     class="cds--label cds--visually-hidden"
-                    for="downshift-«r24»-toggle-button"
-                    id="downshift-«r24»-label"
+                    for="downshift-«r4o»-toggle-button"
+                    id="downshift-«r4o»-label"
                   >
                     Select Severity
                   </label>
@@ -198,12 +204,12 @@ exports[`AllergiesForm Snapshot Tests matches snapshot with selected allergies 1
                   >
                     <button
                       aria-activedescendant=""
-                      aria-controls="downshift-«r24»-menu"
+                      aria-controls="downshift-«r4o»-menu"
                       aria-expanded="false"
                       aria-haspopup="listbox"
                       aria-label="Select severity for this allergy"
                       class="cds--list-box__field"
-                      id="downshift-«r24»-toggle-button"
+                      id="downshift-«r4o»-toggle-button"
                       role="combobox"
                       tabindex="0"
                       title="Select Severity"
@@ -239,9 +245,9 @@ exports[`AllergiesForm Snapshot Tests matches snapshot with selected allergies 1
                       </div>
                     </button>
                     <ul
-                      aria-labelledby="downshift-«r24»-label"
+                      aria-labelledby="downshift-«r4o»-label"
                       class="cds--list-box__menu"
-                      id="downshift-«r24»-menu"
+                      id="downshift-«r4o»-menu"
                       role="listbox"
                       style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
                     />
@@ -390,7 +396,7 @@ exports[`AllergiesForm Snapshot Tests matches snapshot with selected allergies 1
               <span
                 aria-hidden="true"
                 class="cds--popover"
-                id="tooltip-«r29»"
+                id="tooltip-«r4t»"
                 role="tooltip"
               >
                 <span

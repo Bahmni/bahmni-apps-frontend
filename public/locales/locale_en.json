@@ -1,4 +1,5 @@
 {
+  "ADD_ALLERGY_NOTE": "Add Note",
   "ALLERGEN": "Allergen",
   "ALLERGIES_ADDED_ALLERGIES": "Added Allergies",
   "ALLERGIES_DISPLAY_CONTROL_HEADING": "Allergies",
@@ -130,7 +131,7 @@
   "INVESTIGATIONS_ADDED": "Added {{investigationType}}",
   "INVESTIGATIONS_FORM_TITLE": "Order Investigations/Procedures",
   "INVESTIGATIONS_SEARCH_ARIA_LABEL": "Search for investigations/prcedures",
-  "INVESTIGATIONS_SEARCH_PLACEHOLDER" :"Search to add investigations/procedures",
+  "INVESTIGATIONS_SEARCH_PLACEHOLDER": "Search to add investigations/procedures",
   "LAB_INVESTIGATIONS_CATEGORY": "Lab Investigations",
   "LAB_TEST_ACTIONS": "Actions",
   "LAB_TEST_ERROR_LOADING": "Error loading lab tests",
