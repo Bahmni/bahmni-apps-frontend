@@ -86,6 +86,44 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
         errors,
       } = medicationInputEntry;
 
+      const setDefaultInstruction = () => {
+        if (
+          !medicationConfig ||
+          !medicationConfig.dosingInstructions ||
+          medicationConfig.dosingInstructions.length === 0 ||
+          !medicationConfig.defaultInstructions
+        ) {
+          return;
+        }
+        if (!instruction) {
+          const defaultInstruction = medicationConfig.dosingInstructions.find(
+            (item) => item.name === medicationConfig.defaultInstructions,
+          );
+          if (defaultInstruction) {
+            updateInstruction(id, defaultInstruction);
+          }
+        }
+      };
+
+      const setDefaultDurationUnit = () => {
+        if (
+          !medicationConfig ||
+          !medicationConfig.durationUnits ||
+          medicationConfig.durationUnits.length === 0 ||
+          !medicationConfig.defaultDurationUnit
+        ) {
+          return;
+        }
+        if (!durationUnit) {
+          const defaultDurationUnit = DURATION_UNIT_OPTIONS.find(
+            (item) => t(item.display) === medicationConfig.defaultDurationUnit,
+          );
+          if (defaultDurationUnit) {
+            updateDurationUnit(id, defaultDurationUnit);
+          }
+        }
+      };
+
       useEffect(() => {
         if (
           !medicationConfig ||
@@ -139,6 +177,11 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
           updateDurationUnit(id, null);
         }
       }, [isSTAT, isPRN]);
+
+      useEffect(() => {
+        setDefaultInstruction();
+        setDefaultDurationUnit();
+      }, [medicationConfig]);
 
       return (
         <Grid className={styles.selectedMedicationItem}>

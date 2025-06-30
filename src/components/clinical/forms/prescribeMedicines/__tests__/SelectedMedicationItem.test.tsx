@@ -562,6 +562,374 @@ describe('SelectedMedicationItem', () => {
 
   describe('Business Logic & Effects', () => {
     describe('Default Values', () => {
+      describe('Default Instruction', () => {
+        test('sets default instruction from config when instruction is not set', () => {
+          // Arrange
+          const updateInstruction = jest.fn();
+          const medicationConfig = createMockMedicationConfig({
+            defaultInstructions: 'Before Food',
+            dosingInstructions: [
+              { uuid: 'before-food', name: 'Before Food' },
+              { uuid: 'after-food', name: 'After Food' },
+            ],
+          });
+          const props = createDefaultProps({
+            updateInstruction,
+            medicationConfig,
+            medicationInputEntry: createMockMedicationInputEntry({
+              instruction: null,
+            }),
+          });
+
+          // Act
+          renderWithI18n(<SelectedMedicationItem {...props} />);
+
+          // Assert
+          expect(updateInstruction).toHaveBeenCalledWith('entry-1', {
+            uuid: 'before-food',
+            name: 'Before Food',
+          });
+        });
+
+        test('does not set default instruction when instruction already exists', () => {
+          // Arrange
+          const updateInstruction = jest.fn();
+          const medicationConfig = createMockMedicationConfig({
+            defaultInstructions: 'Before Food',
+            dosingInstructions: [
+              { uuid: 'before-food', name: 'Before Food' },
+              { uuid: 'after-food', name: 'After Food' },
+            ],
+          });
+          const props = createDefaultProps({
+            updateInstruction,
+            medicationConfig,
+            medicationInputEntry: createMockMedicationInputEntry({
+              instruction: { uuid: 'after-food', name: 'After Food' },
+            }),
+          });
+
+          // Act
+          renderWithI18n(<SelectedMedicationItem {...props} />);
+
+          // Assert
+          expect(updateInstruction).not.toHaveBeenCalled();
+        });
+
+        test('does not set default instruction when config is missing', () => {
+          // Arrange
+          const updateInstruction = jest.fn();
+          const medicationConfig = createMockMedicationConfig({
+            defaultInstructions: undefined,
+            dosingInstructions: [{ uuid: 'before-food', name: 'Before Food' }],
+          });
+          const props = createDefaultProps({
+            updateInstruction,
+            medicationConfig,
+            medicationInputEntry: createMockMedicationInputEntry({
+              instruction: null,
+            }),
+          });
+
+          // Act
+          renderWithI18n(<SelectedMedicationItem {...props} />);
+
+          // Assert
+          expect(updateInstruction).not.toHaveBeenCalled();
+        });
+
+        test('does not set default instruction when dosingInstructions is empty', () => {
+          // Arrange
+          const updateInstruction = jest.fn();
+          const medicationConfig = createMockMedicationConfig({
+            defaultInstructions: 'Before Food',
+            dosingInstructions: [],
+          });
+          const props = createDefaultProps({
+            updateInstruction,
+            medicationConfig,
+            medicationInputEntry: createMockMedicationInputEntry({
+              instruction: null,
+            }),
+          });
+
+          // Act
+          renderWithI18n(<SelectedMedicationItem {...props} />);
+
+          // Assert
+          expect(updateInstruction).not.toHaveBeenCalled();
+        });
+
+        test('does not set default instruction when default instruction not found in list', () => {
+          // Arrange
+          const updateInstruction = jest.fn();
+          const medicationConfig = createMockMedicationConfig({
+            defaultInstructions: 'Non-existent Instruction',
+            dosingInstructions: [
+              { uuid: 'before-food', name: 'Before Food' },
+              { uuid: 'after-food', name: 'After Food' },
+            ],
+          });
+          const props = createDefaultProps({
+            updateInstruction,
+            medicationConfig,
+            medicationInputEntry: createMockMedicationInputEntry({
+              instruction: null,
+            }),
+          });
+
+          // Act
+          renderWithI18n(<SelectedMedicationItem {...props} />);
+
+          // Assert
+          expect(updateInstruction).not.toHaveBeenCalled();
+        });
+      });
+
+      describe('Default Duration Unit', () => {
+        test('sets default duration unit from config when duration unit is not set', () => {
+          // Arrange
+          const updateDurationUnit = jest.fn();
+          const medicationConfig = createMockMedicationConfig({
+            defaultDurationUnit: 'Days',
+            durationUnits: [
+              { uuid: 'days-uuid', name: 'Days' },
+              { uuid: 'weeks-uuid', name: 'Weeks' },
+            ],
+          });
+          const props = createDefaultProps({
+            updateDurationUnit,
+            medicationConfig,
+            medicationInputEntry: createMockMedicationInputEntry({
+              durationUnit: null,
+            }),
+          });
+
+          // Act
+          renderWithI18n(<SelectedMedicationItem {...props} />);
+
+          // Assert
+          // DURATION_UNIT_OPTIONS[2] is Days
+          expect(updateDurationUnit).toHaveBeenCalledWith(
+            'entry-1',
+            DURATION_UNIT_OPTIONS[2],
+          );
+        });
+
+        test('does not set default duration unit when duration unit already exists', () => {
+          // Arrange
+          const updateDurationUnit = jest.fn();
+          const medicationConfig = createMockMedicationConfig({
+            defaultDurationUnit: 'Days',
+            durationUnits: [
+              { uuid: 'days-uuid', name: 'Days' },
+              { uuid: 'weeks-uuid', name: 'Weeks' },
+            ],
+          });
+          const props = createDefaultProps({
+            updateDurationUnit,
+            medicationConfig,
+            medicationInputEntry: createMockMedicationInputEntry({
+              durationUnit: DURATION_UNIT_OPTIONS[3], // Weeks
+            }),
+          });
+
+          // Act
+          renderWithI18n(<SelectedMedicationItem {...props} />);
+
+          // Assert
+          expect(updateDurationUnit).not.toHaveBeenCalled();
+        });
+
+        test('does not set default duration unit when config is missing', () => {
+          // Arrange
+          const updateDurationUnit = jest.fn();
+          const medicationConfig = createMockMedicationConfig({
+            defaultDurationUnit: undefined,
+            durationUnits: [{ uuid: 'days-uuid', name: 'Days' }],
+          });
+          const props = createDefaultProps({
+            updateDurationUnit,
+            medicationConfig,
+            medicationInputEntry: createMockMedicationInputEntry({
+              durationUnit: null,
+            }),
+          });
+
+          // Act
+          renderWithI18n(<SelectedMedicationItem {...props} />);
+
+          // Assert
+          expect(updateDurationUnit).not.toHaveBeenCalled();
+        });
+
+        test('does not set default duration unit when durationUnits is empty', () => {
+          // Arrange
+          const updateDurationUnit = jest.fn();
+          const medicationConfig = createMockMedicationConfig({
+            defaultDurationUnit: 'Days',
+            durationUnits: [],
+          });
+          const props = createDefaultProps({
+            updateDurationUnit,
+            medicationConfig,
+            medicationInputEntry: createMockMedicationInputEntry({
+              durationUnit: null,
+            }),
+          });
+
+          // Act
+          renderWithI18n(<SelectedMedicationItem {...props} />);
+
+          // Assert
+          expect(updateDurationUnit).not.toHaveBeenCalled();
+        });
+
+        test('does not set default duration unit when default unit not found in DURATION_UNIT_OPTIONS', () => {
+          // Arrange
+          const updateDurationUnit = jest.fn();
+          const medicationConfig = createMockMedicationConfig({
+            defaultDurationUnit: 'Non-existent Unit',
+            durationUnits: [{ uuid: 'days-uuid', name: 'Days' }],
+          });
+          const props = createDefaultProps({
+            updateDurationUnit,
+            medicationConfig,
+            medicationInputEntry: createMockMedicationInputEntry({
+              durationUnit: null,
+            }),
+          });
+
+          // Act
+          renderWithI18n(<SelectedMedicationItem {...props} />);
+
+          // Assert
+          expect(updateDurationUnit).not.toHaveBeenCalled();
+        });
+
+        test('handles different duration unit translations correctly', () => {
+          // Arrange
+          const updateDurationUnit = jest.fn();
+          const medicationConfig = createMockMedicationConfig({
+            defaultDurationUnit: 'Weeks',
+            durationUnits: [
+              { uuid: 'days-uuid', name: 'Days' },
+              { uuid: 'weeks-uuid', name: 'Weeks' },
+            ],
+          });
+          const props = createDefaultProps({
+            updateDurationUnit,
+            medicationConfig,
+            medicationInputEntry: createMockMedicationInputEntry({
+              durationUnit: null,
+            }),
+          });
+
+          // Act
+          renderWithI18n(<SelectedMedicationItem {...props} />);
+
+          // Assert
+          // DURATION_UNIT_OPTIONS[3] is Weeks
+          expect(updateDurationUnit).toHaveBeenCalledWith(
+            'entry-1',
+            DURATION_UNIT_OPTIONS[3],
+          );
+        });
+      });
+
+      describe('Default Values on Config Change', () => {
+        test('sets both default instruction and duration unit when config changes', () => {
+          // Arrange
+          const updateInstruction = jest.fn();
+          const updateDurationUnit = jest.fn();
+          const initialConfig = createMockMedicationConfig({
+            defaultInstructions: undefined,
+            defaultDurationUnit: undefined,
+          });
+          const props = createDefaultProps({
+            updateInstruction,
+            updateDurationUnit,
+            medicationConfig: initialConfig,
+            medicationInputEntry: createMockMedicationInputEntry({
+              instruction: null,
+              durationUnit: null,
+            }),
+          });
+
+          const { rerender } = renderWithI18n(
+            <SelectedMedicationItem {...props} />,
+          );
+
+          // Update config with defaults
+          const updatedConfig = createMockMedicationConfig({
+            defaultInstructions: 'Before Food',
+            defaultDurationUnit: 'Days',
+            dosingInstructions: [{ uuid: 'before-food', name: 'Before Food' }],
+            durationUnits: [{ uuid: 'days-uuid', name: 'Days' }],
+          });
+
+          // Act
+          rerender(
+            <I18nextProvider i18n={i18n}>
+              <SelectedMedicationItem
+                {...props}
+                medicationConfig={updatedConfig}
+              />
+            </I18nextProvider>,
+          );
+
+          // Assert
+          expect(updateInstruction).toHaveBeenCalledWith('entry-1', {
+            uuid: 'before-food',
+            name: 'Before Food',
+          });
+          expect(updateDurationUnit).toHaveBeenCalledWith(
+            'entry-1',
+            DURATION_UNIT_OPTIONS[2], // Days
+          );
+        });
+
+        test('does not override existing values when config changes', () => {
+          // Arrange
+          const updateInstruction = jest.fn();
+          const updateDurationUnit = jest.fn();
+          const initialConfig = createMockMedicationConfig();
+          const props = createDefaultProps({
+            updateInstruction,
+            updateDurationUnit,
+            medicationConfig: initialConfig,
+            medicationInputEntry: createMockMedicationInputEntry({
+              instruction: { uuid: 'existing', name: 'Existing Instruction' },
+              durationUnit: DURATION_UNIT_OPTIONS[1], // Hours
+            }),
+          });
+
+          const { rerender } = renderWithI18n(
+            <SelectedMedicationItem {...props} />,
+          );
+
+          // Update config with defaults
+          const updatedConfig = createMockMedicationConfig({
+            defaultInstructions: 'Before Food',
+            defaultDurationUnit: 'Days',
+          });
+
+          // Act
+          rerender(
+            <I18nextProvider i18n={i18n}>
+              <SelectedMedicationItem
+                {...props}
+                medicationConfig={updatedConfig}
+              />
+            </I18nextProvider>,
+          );
+
+          // Assert
+          expect(updateInstruction).not.toHaveBeenCalled();
+          expect(updateDurationUnit).not.toHaveBeenCalled();
+        });
+      });
+
       test('sets default route based on medication form', () => {
         // Arrange
         const updateRoute = jest.fn();
