@@ -23,7 +23,7 @@
 .dosageControls {
   display: flex !important;
   flex-direction: row !important;
-  align-items: end !important;
+  align-items: start !important;
   margin-bottom: $spacing-04;
 }
 
@@ -38,7 +38,7 @@
 .durationControls {
   display: flex !important;
   flex-direction: row !important;
-  align-items: end !important;
+  align-items: start !important;
   margin-bottom: $spacing-04;
 }
 
