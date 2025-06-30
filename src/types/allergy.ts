@@ -16,7 +16,7 @@ export interface FormattedAllergy {
     readonly severity?: string;
   }>;
   readonly severity?: string;
-  readonly note?: string[];
+  readonly note?: string;
 }
 
 /**

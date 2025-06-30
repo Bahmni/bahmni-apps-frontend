@@ -12,6 +12,7 @@
   "ALLERGY_LIST_RECORDED_BY": "Recorded By",
   "ALLERGY_LIST_RECORDED_DATE": "Recorded Date",
   "ALLERGY_LIST_STATUS": "Status",
+  "ALLERGY_NOTE_TOOLTIP_ARIA_LABEL": "View allergy note",
   "ALLERGY_REACTIONS_ARIA_LABEL": "Select reactions for this allergy",
   "ALLERGY_SELECT_REACTIONS": "Select Reactions",
   "ALLERGY_SELECT_SEVERITY": "Select Severity",

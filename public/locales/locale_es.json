@@ -12,6 +12,7 @@
   "ALLERGY_LIST_RECORDED_BY": "Grabado por",
   "ALLERGY_LIST_RECORDED_DATE": "Fecha de grabación",
   "ALLERGY_LIST_STATUS": "Estado",
+  "ALLERGY_NOTE_TOOLTIP_ARIA_LABEL": "Ver nota de alergia",
   "ALLERGY_REACTIONS_ARIA_LABEL": "Seleccionar reacciones para esta alergia",
   "ALLERGY_SELECT_REACTIONS": "Seleccionar Reacciones",
   "ALLERGY_SELECT_SEVERITY": "Seleccionar Gravedad",

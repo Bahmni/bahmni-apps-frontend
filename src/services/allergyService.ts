@@ -155,9 +155,10 @@ export function formatAllergies(
     return allergies.map((allergy) => {
       const status = allergy.clinicalStatus?.coding?.[0]?.display || 'Unknown';
       const allergySeverity = allergy.reaction?.[0]?.severity || 'Unknown';
+
       return {
         id: allergy.id,
-        display: allergy.code?.text,
+        display: allergy.code?.text || '',
         category: allergy.category,
         criticality: allergy.criticality,
         status,
@@ -170,7 +171,7 @@ export function formatAllergies(
           severity: reaction.severity,
         })),
         severity: allergySeverity,
-        note: allergy.note?.map((note) => note.text).filter(Boolean),
+        note: allergy.note?.map((note) => note.text),
       };
     });
   } catch (error) {

@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react';
-import { Tag } from '@carbon/react';
+import { Tag, Tooltip } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import { useAllergies } from '@hooks/useAllergies';
 import { formatAllergies } from '@services/allergyService';
 import { FormattedAllergy } from '@types/allergy';
-import { DotMark } from '@carbon/icons-react';
+import { DotMark, Document } from '@carbon/icons-react';
 import {
   getCategoryDisplayName,
   getSeverityDisplayName,
@@ -67,16 +67,25 @@ const AllergiesTable: React.FC = () => {
     switch (cellId) {
       case 'display':
         return (
-          <>
-            {`${allergy.display} `}
-            <div className={styles.allergyCategory}>
-              [{t(getCategoryDisplayName(allergy.category?.[0]))}] &nbsp;
+          <div className={styles.allergyDisplay}>
+            <div className={styles.allergyName}>
+              {allergy.display}
+              <div className={styles.allergyCategory}>
+                [{t(getCategoryDisplayName(allergy.category?.[0]))}]
+              </div>
+              {allergy.note && (
+                <Tooltip content={allergy.note} align="top">
+                  <Document
+                    size={16}
+                    aria-label={t('ALLERGY_NOTE_TOOLTIP_ARIA_LABEL')}
+                  />
+                </Tooltip>
+              )}
             </div>
-            {}
             <Tag className={getSeverityClassName(allergy.severity!)}>
               {t(getSeverityDisplayName(allergy.severity!))}
             </Tag>
-          </>
+          </div>
         );
       case 'manifestation':
         return allergy.reactions
