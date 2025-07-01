@@ -316,7 +316,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
             />
           </Column>
 
-          <Column sm={2} md={3} lg={6} className={styles.column}>
+          <Column sm={1} md={2} lg={4} className={styles.column}>
             <Dropdown
               id={`med-instructions-${id}`}
               titleText={t('MEDICATION_INSTRUCTIONS_INPUT_LABEL')}
@@ -356,7 +356,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
             />
           </Column>
 
-          <Column sm={2} md={3} lg={6} className={styles.column}>
+          <Column sm={2} md={4} lg={8} className={styles.column}>
             <DatePicker
               datePickerType="single"
               dateFormat={DATE_PICKER_INPUT_FORMAT}

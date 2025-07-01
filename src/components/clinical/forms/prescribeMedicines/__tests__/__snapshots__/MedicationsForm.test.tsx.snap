@@ -604,7 +604,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 </div>
               </div>
               <div
-                class="cds--sm:col-span-2 cds--md:col-span-3 cds--lg:col-span-6 cds--css-grid-column"
+                class="cds--sm:col-span-1 cds--md:col-span-2 cds--lg:col-span-4 cds--css-grid-column"
               >
                 <div
                   class="cds--dropdown__wrapper cds--list-box__wrapper"
@@ -740,7 +740,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 </div>
               </div>
               <div
-                class="cds--sm:col-span-2 cds--md:col-span-3 cds--lg:col-span-6 cds--css-grid-column"
+                class="cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
               >
                 <div
                   class="cds--form-item"
