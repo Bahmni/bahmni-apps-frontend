@@ -5,6 +5,7 @@ import {
   formatMedicationRequest,
   sortMedicationsByStatus,
   sortMedicationsByPriority,
+  sortMedicationsByDateDistance,
 } from '@utils/medicationRequest';
 import {
   FormattedMedicationRequest,
@@ -143,8 +144,11 @@ const MedicationsTable: React.FC = () => {
   }, [formattedMedications]);
 
   const activeAndScheduledMedications = useMemo(() => {
-    const activeMedications = sortMedicationsByPriority(
+    const activeMedicationsByDate = sortMedicationsByDateDistance(
       allMedications.filter((medication) => medication.status === 'active'),
+    );
+    const activeMedications = sortMedicationsByPriority(
+      activeMedicationsByDate,
     );
     const scheduledMedications = sortMedicationsByPriority(
       allMedications.filter((medication) => medication.status === 'on-hold'),

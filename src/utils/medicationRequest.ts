@@ -3,6 +3,7 @@ import {
   FormattedMedicationRequest,
 } from '@types/medicationRequest';
 import { getPriorityByOrder } from './common';
+import { differenceInDays, parseISO } from 'date-fns';
 
 /**
  * Priority order for medication status levels (case insensitive)
@@ -52,24 +53,22 @@ export const sortMedicationsByStatus = (
 };
 
 /**
- * Gets the priority value for medication based on isImmediate and asNeeded flags.
+ * Gets the priority value for medication based only on isImmediate flag.
  * Lower values indicate higher priority.
  *
  * @param medication - The FormattedMedicationRequest object to get priority for.
- * @returns A numeric priority value (0 = highest priority, 2 = lowest priority).
+ * @returns A numeric priority value (0 = immediate medications, 1 = all other medications).
  */
 export const getMedicationPriority = (
   medication: FormattedMedicationRequest,
 ): number => {
-  if (medication.isImmediate) return 0; // Highest priority - STAT medications
-  if (medication.asNeeded) return 1; // Second priority - PRN medications
-  return 2; // Regular medications
+  if (medication.isImmediate) return 0; // Immediate medications (STAT)
+  return 1; // All other medications (asNeeded, regular, etc.)
 };
 
 /**
- * Sorts an array of medication requests by priority based on isImmediate and asNeeded flags.
- * Priority order: isImmediate → asNeeded → regular medications.
- * If both isImmediate and asNeeded are true, isImmediate takes precedence.
+ * Sorts an array of medication requests by priority based only on isImmediate flag.
+ * Priority order: immediate medications → all other medications (asNeeded, regular, etc.).
  * Stable sort ensures original order is preserved within the same priority group.
  *
  * @param medications - The array of FormattedMedicationRequest objects to be sorted.
@@ -179,3 +178,34 @@ export function formatMedicationRequest(
     isImmediate,
   };
 }
+
+/**
+ * Sorts an array of medication requests by date distance from today using startDate.
+ * Orders medications with today's date first, yesterday second, day before third, etc.
+ * Invalid dates are placed at the end. Maintains stable sort for medications with the same date.
+ *
+ * @param medications - The array of FormattedMedicationRequest objects to be sorted.
+ * @returns A new sorted array of FormattedMedicationRequest objects.
+ */
+export const sortMedicationsByDateDistance = (
+  medications: FormattedMedicationRequest[],
+): FormattedMedicationRequest[] => {
+  if (!medications || medications.length === 0) {
+    return [];
+  }
+
+  const today = new Date();
+
+  return [...medications].sort((a, b) => {
+    // Helper function to calculate date distance
+    const getDateDistance = (startDate: string): number => {
+      const medicationDate = parseISO(startDate);
+      return differenceInDays(today, medicationDate);
+    };
+
+    const distanceA = getDateDistance(a.startDate);
+    const distanceB = getDateDistance(b.startDate);
+
+    return distanceA - distanceB;
+  });
+};
