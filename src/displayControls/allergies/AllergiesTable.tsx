@@ -1,18 +1,25 @@
 import React, { useMemo } from 'react';
-import { Tag, Tooltip } from '@carbon/react';
+import {
+  Tag,
+  Toggletip,
+  ToggletipButton,
+  ToggletipContent,
+} from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import { useAllergies } from '@hooks/useAllergies';
 import { formatAllergies } from '@services/allergyService';
 import { FormattedAllergy } from '@types/allergy';
-import { DotMark, Document } from '@carbon/icons-react';
+import { DotMark } from '@carbon/icons-react';
 import {
   getCategoryDisplayName,
   getSeverityDisplayName,
   sortAllergiesBySeverity,
 } from '@utils/allergy';
 import * as styles from './styles/AllergiesTable.module.scss';
+import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
+import { ICON_PADDING, ICON_SIZE } from '@constants/icon';
 
 // Helper function to get severity CSS class
 const getSeverityClassName = (severity: string): string | undefined => {
@@ -74,16 +81,17 @@ const AllergiesTable: React.FC = () => {
                 [{t(getCategoryDisplayName(allergy.category?.[0]))}]
               </div>
               {allergy.note && (
-                <Tooltip
-                  autoAlign
-                  label={allergy.note}
-                  className={styles.allergyNote}
-                >
-                  <Document
-                    size={16}
-                    aria-label={t('ALLERGY_NOTE_TOOLTIP_ARIA_LABEL')}
-                  />
-                </Tooltip>
+                <Toggletip autoAlign className={styles.allergyNote}>
+                  <ToggletipButton>
+                    <BahmniIcon
+                      id="fa-file-lines"
+                      name="fa-file-lines"
+                      size={ICON_SIZE.LG}
+                      padding={ICON_PADDING.NONE}
+                    />
+                  </ToggletipButton>
+                  <ToggletipContent>{allergy.note}</ToggletipContent>
+                </Toggletip>
               )}
             </div>
             <Tag className={getSeverityClassName(allergy.severity!)}>

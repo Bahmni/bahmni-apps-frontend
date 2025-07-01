@@ -28,6 +28,7 @@
   font-weight: 700;
   display: flex;
   gap: $spacing-02;
+  height: 16px;
 }
 
 .allergyCategory {
@@ -38,6 +39,20 @@
 
 .allergyNote {
   padding: auto;
+
+  :global {
+    .cds--toggletip-button {
+      color: $icon-secondary !important;
+    }
+    .cds--popover-content {
+      z-index: 9999;
+      max-inline-size: 30rem !important;
+      position: absolute !important;
+    }
+    .cds--toggletip-content {
+      max-inline-size: 30rem !important;
+    }
+  }
 }
 
 .allergiesNote {

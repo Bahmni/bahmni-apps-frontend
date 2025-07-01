@@ -20,6 +20,11 @@ expect.extend(toHaveNoViolations);
 // Mock only the hooks, keep real utility functions for integration testing
 jest.mock('@hooks/usePatientUUID');
 jest.mock('@hooks/useAllergies');
+jest.mock('@components/common/bahmniIcon/BahmniIcon', () => {
+  return function MockBahmniIcon({ id, name }: { id: string; name: string }) {
+    return <div data-testid={id} data-icon-name={name} />;
+  };
+});
 
 const mockedUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
