@@ -599,22 +599,27 @@ describe('MedicationsTable', () => {
       await userEvent.click(allTab);
 
       await waitFor(() => {
-        // STAT should appear before PRN which should appear before regular
+        // STAT should appear before non-immediate medications (PRN and regular have same priority)
         const medicationRows = screen.getAllByText(/Medication$/);
         const medicationNames = medicationRows.map((row) => row.textContent);
 
         const statIndex = medicationNames.findIndex((name) =>
-          name.includes('STAT'),
+          name?.includes('STAT'),
         );
         const prnIndex = medicationNames.findIndex((name) =>
-          name.includes('PRN'),
+          name?.includes('PRN'),
         );
         const regularIndex = medicationNames.findIndex((name) =>
-          name.includes('Regular'),
+          name?.includes('Regular'),
         );
 
+        // STAT medications should appear first
         expect(statIndex).toBeLessThan(prnIndex);
-        expect(prnIndex).toBeLessThan(regularIndex);
+        expect(statIndex).toBeLessThan(regularIndex);
+
+        // PRN and regular medications have same priority, so their relative order is preserved (stable sort)
+        // Since regular-med appears first in the input array, it should appear before prn-med
+        expect(regularIndex).toBeLessThan(prnIndex);
       });
     });
 
@@ -658,13 +663,13 @@ describe('MedicationsTable', () => {
         const medicationNames = medicationRows.map((row) => row.textContent);
 
         const activeIndex = medicationNames.findIndex((name) =>
-          name.includes('Active'),
+          name?.includes('Active'),
         );
         const onholdIndex = medicationNames.findIndex((name) =>
-          name.includes('On Hold'),
+          name?.includes('On Hold'),
         );
         const completedIndex = medicationNames.findIndex((name) =>
-          name.includes('Completed'),
+          name?.includes('Completed'),
         );
 
         expect(activeIndex).toBeLessThan(onholdIndex);
@@ -740,8 +745,9 @@ describe('MedicationsTable', () => {
       const medicationText = activeTab.textContent;
 
       // Verify that active medications appear before on-hold medications
-      const activeStatIndex = medicationText.indexOf('Active STAT');
-      const onHoldRegularIndex = medicationText.indexOf('OnHold Regular');
+      const activeStatIndex = medicationText?.indexOf('Active STAT') ?? -1;
+      const onHoldRegularIndex =
+        medicationText?.indexOf('OnHold Regular') ?? -1;
       expect(activeStatIndex).toBeLessThan(onHoldRegularIndex);
     });
 
@@ -782,9 +788,9 @@ describe('MedicationsTable', () => {
       const activeTab = screen.getAllByRole('tabpanel')[0];
       const medicationText = activeTab.textContent;
 
-      const firstIndex = medicationText.indexOf('First Regular');
-      const secondIndex = medicationText.indexOf('Second Regular');
-      const thirdIndex = medicationText.indexOf('Third Regular');
+      const firstIndex = medicationText?.indexOf('First Regular') ?? -1;
+      const secondIndex = medicationText?.indexOf('Second Regular') ?? -1;
+      const thirdIndex = medicationText?.indexOf('Third Regular') ?? -1;
 
       expect(firstIndex).toBeLessThan(secondIndex);
       expect(secondIndex).toBeLessThan(thirdIndex);
@@ -813,9 +819,9 @@ describe('MedicationsTable', () => {
       const medicationText = activeTab.textContent;
 
       // STAT should appear first
-      const statIndex = medicationText.indexOf('Epinephrine');
-      const prnIndex = medicationText.indexOf('Paracetamol');
-      const regularIndex = medicationText.indexOf('Regular Medication');
+      const statIndex = medicationText?.indexOf('Epinephrine') ?? -1;
+      const prnIndex = medicationText?.indexOf('Paracetamol') ?? -1;
+      const regularIndex = medicationText?.indexOf('Regular Medication') ?? -1;
 
       expect(statIndex).toBeLessThan(prnIndex);
       expect(prnIndex).toBeLessThan(regularIndex);

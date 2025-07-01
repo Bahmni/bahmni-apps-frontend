@@ -2,21 +2,35 @@ import {
   formatMedicationRequest,
   formatMedicationRequestDate,
   getMedicationStatusPriority,
+  getMedicationPriority,
   sortMedicationsByStatus,
   sortMedicationsByPriority,
+  sortMedicationsByDateDistance,
   MEDICATION_STATUS_PRIORITY_ORDER,
 } from '../medicationRequest';
 import {
   MedicationRequest,
   MedicationStatus,
   FormattedMedicationRequest,
-} from '@types/medicationRequest';
+} from '@/types/medicationRequest';
+import { differenceInDays, parseISO } from 'date-fns';
 
 jest.mock('@utils/date', () => ({
   formatDate: (date: string | undefined) => ({
     formattedResult: date ? `Formatted(${date})` : '',
   }),
 }));
+
+// Mock date-fns functions for consistent testing
+jest.mock('date-fns', () => ({
+  differenceInDays: jest.fn(),
+  parseISO: jest.fn(),
+}));
+
+const mockedDifferenceInDays = differenceInDays as jest.MockedFunction<
+  typeof differenceInDays
+>;
+const mockedParseISO = parseISO as jest.MockedFunction<typeof parseISO>;
 
 describe('formatMedicationRequestDate', () => {
   it('returns correct long form of duration units', () => {
@@ -78,6 +92,7 @@ describe('formatMedicationRequest', () => {
       startDate: '',
       orderDate: '',
       orderedBy: '',
+      instructions: '',
       asNeeded: false,
       isImmediate: false,
     };
@@ -110,6 +125,7 @@ describe('formatMedicationRequest', () => {
       startDate: '',
       orderDate: '',
       orderedBy: '',
+      instructions: '',
       asNeeded: true,
       isImmediate: false,
     };
@@ -142,6 +158,7 @@ describe('formatMedicationRequest', () => {
       quantity: { value: 10, unit: 'ml' },
       priority: '',
       orderedBy: '',
+      instructions: '',
       asNeeded: false,
       isImmediate: false,
     };
@@ -166,6 +183,7 @@ describe('formatMedicationRequest', () => {
       quantity: { value: 5, unit: 'tablets' },
       priority: '',
       orderedBy: '',
+      instructions: '',
       asNeeded: false,
       isImmediate: false,
     };
@@ -174,6 +192,30 @@ describe('formatMedicationRequest', () => {
 
     expect(result.startDate).toBe('');
     expect(result.orderDate).toBe('');
+  });
+
+  it('includes additionalInstructions in instruction when provided', () => {
+    const input: MedicationRequest = {
+      id: '999',
+      name: 'Metformin',
+      status: MedicationStatus.Active,
+      quantity: { value: 30, unit: 'tablets' },
+      priority: '',
+      startDate: '2025-01-01T00:00:00+00:00',
+      orderDate: '2025-01-01T00:00:00+00:00',
+      orderedBy: 'Dr. Johnson',
+      instructions: 'Take with meals',
+      additionalInstructions: 'Monitor blood sugar levels',
+      route: 'oral',
+      asNeeded: false,
+      isImmediate: false,
+    };
+
+    const result = formatMedicationRequest(input);
+
+    expect(result.instruction).toBe(
+      'oral | Take with meals | Monitor blood sugar levels',
+    );
   });
 });
 
@@ -204,6 +246,7 @@ describe('sortMedicationsByStatus', () => {
         startDate: '',
         orderDate: '',
         orderedBy: '',
+        instructions: '',
         asNeeded: false,
         isImmediate: false,
       })).reverse(); // reverse order to test sorting
@@ -296,6 +339,81 @@ describe('sortMedicationsByStatus', () => {
   });
 });
 
+describe('getMedicationPriority', () => {
+  it('returns 0 only for immediate medications', () => {
+    const immediateMed: FormattedMedicationRequest = {
+      id: '1',
+      name: 'Immediate Med',
+      status: MedicationStatus.Active,
+      dosage: '',
+      dosageUnit: '',
+      quantity: '',
+      instruction: '',
+      startDate: '',
+      orderDate: '',
+      orderedBy: '',
+      asNeeded: false,
+      isImmediate: true,
+    };
+
+    expect(getMedicationPriority(immediateMed)).toBe(0);
+  });
+
+  it('returns 1 for all non-immediate medications (asNeeded and regular)', () => {
+    const asNeededMed: FormattedMedicationRequest = {
+      id: '1',
+      name: 'AsNeeded Med',
+      status: MedicationStatus.Active,
+      dosage: '',
+      dosageUnit: '',
+      quantity: '',
+      instruction: '',
+      startDate: '',
+      orderDate: '',
+      orderedBy: '',
+      asNeeded: true,
+      isImmediate: false,
+    };
+
+    const regularMed: FormattedMedicationRequest = {
+      id: '2',
+      name: 'Regular Med',
+      status: MedicationStatus.Active,
+      dosage: '',
+      dosageUnit: '',
+      quantity: '',
+      instruction: '',
+      startDate: '',
+      orderDate: '',
+      orderedBy: '',
+      asNeeded: false,
+      isImmediate: false,
+    };
+
+    expect(getMedicationPriority(asNeededMed)).toBe(1);
+    expect(getMedicationPriority(regularMed)).toBe(1);
+  });
+
+  it('returns 0 for immediate medications regardless of asNeeded flag', () => {
+    const immediateAsNeededMed: FormattedMedicationRequest = {
+      id: '1',
+      name: 'Immediate AsNeeded Med',
+      status: MedicationStatus.Active,
+      dosage: '',
+      dosageUnit: '',
+      quantity: '',
+      instruction: '',
+      startDate: '',
+      orderDate: '',
+      orderedBy: '',
+      asNeeded: true,
+      isImmediate: true,
+    };
+
+    expect(getMedicationPriority(immediateAsNeededMed)).toBe(0);
+  });
+});
+
 describe('sortMedicationsByPriority', () => {
   it('sorts immediate medications first', () => {
     const meds: FormattedMedicationRequest[] = [
@@ -336,85 +454,7 @@ describe('sortMedicationsByPriority', () => {
     ]);
   });
 
-  it('sorts asNeeded medications second when not immediate', () => {
-    const meds: FormattedMedicationRequest[] = [
-      {
-        id: '1',
-        name: 'Regular Med',
-        status: MedicationStatus.Active,
-        dosage: '',
-        dosageUnit: '',
-        quantity: '',
-        instruction: '',
-        startDate: '',
-        orderDate: '',
-        orderedBy: '',
-        asNeeded: false,
-        isImmediate: false,
-      },
-      {
-        id: '2',
-        name: 'AsNeeded Med',
-        status: MedicationStatus.Active,
-        dosage: '',
-        dosageUnit: '',
-        quantity: '',
-        instruction: '',
-        startDate: '',
-        orderDate: '',
-        orderedBy: '',
-        asNeeded: true,
-        isImmediate: false,
-      },
-    ];
-
-    const sorted = sortMedicationsByPriority(meds);
-    expect(sorted.map((m: FormattedMedicationRequest) => m.id)).toEqual([
-      '2',
-      '1',
-    ]);
-  });
-
-  it('prioritizes immediate over asNeeded when both flags are true', () => {
-    const meds: FormattedMedicationRequest[] = [
-      {
-        id: '1',
-        name: 'AsNeeded Med',
-        status: MedicationStatus.Active,
-        dosage: '',
-        dosageUnit: '',
-        quantity: '',
-        instruction: '',
-        startDate: '',
-        orderDate: '',
-        orderedBy: '',
-        asNeeded: true,
-        isImmediate: false,
-      },
-      {
-        id: '2',
-        name: 'Immediate+AsNeeded Med',
-        status: MedicationStatus.Active,
-        dosage: '',
-        dosageUnit: '',
-        quantity: '',
-        instruction: '',
-        startDate: '',
-        orderDate: '',
-        orderedBy: '',
-        asNeeded: true,
-        isImmediate: true,
-      },
-    ];
-
-    const sorted = sortMedicationsByPriority(meds);
-    expect(sorted.map((m: FormattedMedicationRequest) => m.id)).toEqual([
-      '2',
-      '1',
-    ]);
-  });
-
-  it('sorts medications in correct priority order: immediate, asNeeded, regular', () => {
+  it('sorts medications in correct priority order: immediate vs non-immediate only', () => {
     const meds: FormattedMedicationRequest[] = [
       {
         id: '1',
@@ -461,8 +501,48 @@ describe('sortMedicationsByPriority', () => {
     ];
 
     const sorted = sortMedicationsByPriority(meds);
+    // Immediate first, then non-immediate in original order (stable sort)
     expect(sorted.map((m: FormattedMedicationRequest) => m.id)).toEqual([
       '3',
+      '1',
+      '2',
+    ]);
+  });
+
+  it('prioritizes immediate medications regardless of asNeeded flag', () => {
+    const meds: FormattedMedicationRequest[] = [
+      {
+        id: '1',
+        name: 'AsNeeded Med',
+        status: MedicationStatus.Active,
+        dosage: '',
+        dosageUnit: '',
+        quantity: '',
+        instruction: '',
+        startDate: '',
+        orderDate: '',
+        orderedBy: '',
+        asNeeded: true,
+        isImmediate: false,
+      },
+      {
+        id: '2',
+        name: 'Immediate+AsNeeded Med',
+        status: MedicationStatus.Active,
+        dosage: '',
+        dosageUnit: '',
+        quantity: '',
+        instruction: '',
+        startDate: '',
+        orderDate: '',
+        orderedBy: '',
+        asNeeded: true,
+        isImmediate: true,
+      },
+    ];
+
+    const sorted = sortMedicationsByPriority(meds);
+    expect(sorted.map((m: FormattedMedicationRequest) => m.id)).toEqual([
       '2',
       '1',
     ]);
@@ -510,5 +590,339 @@ describe('sortMedicationsByPriority', () => {
   it('handles empty array', () => {
     const sorted = sortMedicationsByPriority([]);
     expect(sorted).toEqual([]);
+  });
+});
+
+describe('sortMedicationsByDateDistance', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // Mock the current date to be consistent
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2025-01-07T00:00:00.000Z')); // Set to January 7, 2025
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  const createMockMedication = (
+    id: string,
+    name: string,
+    startDate: string,
+  ): FormattedMedicationRequest => ({
+    id,
+    name,
+    startDate,
+    status: MedicationStatus.Active,
+    dosage: '',
+    dosageUnit: '',
+    quantity: '',
+    instruction: '',
+    orderDate: '',
+    orderedBy: '',
+    asNeeded: false,
+    isImmediate: false,
+  });
+
+  it("should sort medications with today's date first", () => {
+    const todayDate = '2025-01-07T00:00:00.000Z';
+    const yesterdayDate = '2025-01-06T00:00:00.000Z';
+
+    // Mock date functions
+    mockedParseISO.mockImplementation(
+      (dateString: string) => new Date(dateString),
+    );
+    mockedDifferenceInDays.mockImplementation(
+      (date1: Date | string | number, date2: Date | string | number) => {
+        const d1 = new Date(date1);
+        const d2 = new Date(date2);
+        const diff = Math.floor(
+          (d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24),
+        );
+        return diff;
+      },
+    );
+
+    const meds: FormattedMedicationRequest[] = [
+      createMockMedication('2', 'Yesterday Med', yesterdayDate),
+      createMockMedication('1', 'Today Med', todayDate),
+    ];
+
+    const sorted = sortMedicationsByDateDistance(meds);
+    expect(sorted.map((m) => m.id)).toEqual(['1', '2']);
+  });
+
+  it("should sort yesterday's medications second", () => {
+    const todayDate = '2025-01-07T00:00:00.000Z';
+    const yesterdayDate = '2025-01-06T00:00:00.000Z';
+    const dayBeforeDate = '2025-01-05T00:00:00.000Z';
+
+    mockedParseISO.mockImplementation(
+      (dateString: string) => new Date(dateString),
+    );
+    mockedDifferenceInDays.mockImplementation(
+      (date1: Date | string | number, date2: Date | string | number) => {
+        const d1 = new Date(date1);
+        const d2 = new Date(date2);
+        const diff = Math.floor(
+          (d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24),
+        );
+        return diff;
+      },
+    );
+
+    const meds: FormattedMedicationRequest[] = [
+      createMockMedication('3', 'Day Before Med', dayBeforeDate),
+      createMockMedication('1', 'Today Med', todayDate),
+      createMockMedication('2', 'Yesterday Med', yesterdayDate),
+    ];
+
+    const sorted = sortMedicationsByDateDistance(meds);
+    expect(sorted.map((m) => m.id)).toEqual(['1', '2', '3']);
+  });
+
+  it('should sort day before yesterday third', () => {
+    const todayDate = '2025-01-07T00:00:00.000Z';
+    const yesterdayDate = '2025-01-06T00:00:00.000Z';
+    const dayBeforeDate = '2025-01-05T00:00:00.000Z';
+
+    mockedParseISO.mockImplementation(
+      (dateString: string) => new Date(dateString),
+    );
+    mockedDifferenceInDays.mockImplementation(
+      (date1: Date | string | number, date2: Date | string | number) => {
+        const d1 = new Date(date1);
+        const d2 = new Date(date2);
+        const diff = Math.floor(
+          (d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24),
+        );
+        return diff;
+      },
+    );
+
+    const meds: FormattedMedicationRequest[] = [
+      createMockMedication('3', 'Day Before Med', dayBeforeDate),
+      createMockMedication('2', 'Yesterday Med', yesterdayDate),
+      createMockMedication('1', 'Today Med', todayDate),
+    ];
+
+    const sorted = sortMedicationsByDateDistance(meds);
+    expect(sorted.map((m) => m.id)).toEqual(['1', '2', '3']);
+  });
+
+  it('should handle medications from multiple different past dates', () => {
+    const todayDate = '2025-01-07T00:00:00.000Z';
+    const yesterdayDate = '2025-01-06T00:00:00.000Z';
+    const threeDaysAgoDate = '2025-01-04T00:00:00.000Z';
+    const weekAgoDate = '2025-01-01T00:00:00.000Z';
+
+    mockedParseISO.mockImplementation(
+      (dateString: string) => new Date(dateString),
+    );
+    mockedDifferenceInDays.mockImplementation(
+      (date1: Date | string | number, date2: Date | string | number) => {
+        const d1 = new Date(date1);
+        const d2 = new Date(date2);
+        const diff = Math.floor(
+          (d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24),
+        );
+        return diff;
+      },
+    );
+
+    const meds: FormattedMedicationRequest[] = [
+      createMockMedication('4', 'Week Ago Med', weekAgoDate),
+      createMockMedication('2', 'Yesterday Med', yesterdayDate),
+      createMockMedication('1', 'Today Med', todayDate),
+      createMockMedication('3', 'Three Days Ago Med', threeDaysAgoDate),
+    ];
+
+    const sorted = sortMedicationsByDateDistance(meds);
+    expect(sorted.map((m) => m.id)).toEqual(['1', '2', '3', '4']);
+  });
+
+  it('should handle empty array', () => {
+    const sorted = sortMedicationsByDateDistance([]);
+    expect(sorted).toEqual([]);
+  });
+
+  it('should handle array with single medication', () => {
+    const todayDate = '2025-01-07T00:00:00.000Z';
+
+    mockedParseISO.mockImplementation(
+      (dateString: string) => new Date(dateString),
+    );
+    mockedDifferenceInDays.mockImplementation(() => 0);
+
+    const meds: FormattedMedicationRequest[] = [
+      createMockMedication('1', 'Single Med', todayDate),
+    ];
+
+    const sorted = sortMedicationsByDateDistance(meds);
+    expect(sorted).toEqual(meds);
+  });
+
+  it('should handle invalid/null startDate values', () => {
+    const todayDate = '2025-01-07T00:00:00.000Z';
+
+    mockedParseISO.mockImplementation((dateString: string) => {
+      if (dateString === todayDate) {
+        return new Date(dateString);
+      }
+      return new Date('Invalid Date');
+    });
+    mockedDifferenceInDays.mockImplementation(
+      (date1: Date | string | number, date2: Date | string | number) => {
+        const d1 = new Date(date1);
+        const d2 = new Date(date2);
+        if (isNaN(d1.getTime()) || isNaN(d2.getTime())) {
+          return Number.MAX_SAFE_INTEGER;
+        }
+        return Math.floor(
+          (d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24),
+        );
+      },
+    );
+
+    const meds: FormattedMedicationRequest[] = [
+      createMockMedication('2', 'Invalid Date Med', 'invalid-date'),
+      createMockMedication('3', 'Empty Date Med', ''),
+      createMockMedication('1', 'Valid Date Med', todayDate),
+    ];
+
+    const sorted = sortMedicationsByDateDistance(meds);
+    expect(sorted[0].id).toBe('1'); // Valid date should come first
+    expect(sorted[1].id).toBe('2'); // Invalid dates should come after
+    expect(sorted[2].id).toBe('3');
+  });
+
+  it('should maintain original order for same-date medications (stable sort)', () => {
+    const todayDate = '2025-01-07T00:00:00.000Z';
+
+    mockedParseISO.mockImplementation(
+      (dateString: string) => new Date(dateString),
+    );
+    mockedDifferenceInDays.mockImplementation(() => 0); // All same day
+
+    const meds: FormattedMedicationRequest[] = [
+      createMockMedication('1', 'First Med', todayDate),
+      createMockMedication('2', 'Second Med', todayDate),
+      createMockMedication('3', 'Third Med', todayDate),
+    ];
+
+    const sorted = sortMedicationsByDateDistance(meds);
+    expect(sorted.map((m) => m.id)).toEqual(['1', '2', '3']);
+  });
+
+  it('should handle mixed dates (today, yesterday, last week)', () => {
+    const todayDate = '2025-01-07T00:00:00.000Z';
+    const yesterdayDate = '2025-01-06T00:00:00.000Z';
+    const lastWeekDate = '2024-12-31T00:00:00.000Z';
+
+    mockedParseISO.mockImplementation(
+      (dateString: string) => new Date(dateString),
+    );
+    mockedDifferenceInDays.mockImplementation(
+      (date1: Date | string | number, date2: Date | string | number) => {
+        const d1 = new Date(date1);
+        const d2 = new Date(date2);
+        const diff = Math.floor(
+          (d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24),
+        );
+        return diff;
+      },
+    );
+
+    const meds: FormattedMedicationRequest[] = [
+      createMockMedication('3', 'Last Week Med', lastWeekDate),
+      createMockMedication('1', 'Today Med', todayDate),
+      createMockMedication('2', 'Yesterday Med', yesterdayDate),
+    ];
+
+    const sorted = sortMedicationsByDateDistance(meds);
+    expect(sorted.map((m) => m.id)).toEqual(['1', '2', '3']);
+  });
+
+  it('should work with actual FormattedMedicationRequest objects', () => {
+    const todayDate = '2025-01-07T00:00:00.000Z';
+    const yesterdayDate = '2025-01-06T00:00:00.000Z';
+
+    mockedParseISO.mockImplementation(
+      (dateString: string) => new Date(dateString),
+    );
+    mockedDifferenceInDays.mockImplementation(
+      (date1: Date | string | number, date2: Date | string | number) => {
+        const d1 = new Date(date1);
+        const d2 = new Date(date2);
+        const diff = Math.floor(
+          (d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24),
+        );
+        return diff;
+      },
+    );
+
+    const meds: FormattedMedicationRequest[] = [
+      {
+        id: '2',
+        name: 'Ibuprofen',
+        startDate: yesterdayDate,
+        status: MedicationStatus.Active,
+        dosage: '400mg',
+        dosageUnit: 'mg',
+        quantity: '20 tablets',
+        instruction: 'Take with food',
+        orderDate: yesterdayDate,
+        orderedBy: 'Dr. Smith',
+        asNeeded: false,
+        isImmediate: false,
+      },
+      {
+        id: '1',
+        name: 'Paracetamol',
+        startDate: todayDate,
+        status: MedicationStatus.Active,
+        dosage: '500mg',
+        dosageUnit: 'mg',
+        quantity: '10 tablets',
+        instruction: 'Take as needed',
+        orderDate: todayDate,
+        orderedBy: 'Dr. Jones',
+        asNeeded: true,
+        isImmediate: false,
+      },
+    ];
+
+    const sorted = sortMedicationsByDateDistance(meds);
+    expect(sorted[0].name).toBe('Paracetamol'); // Today's medication first
+    expect(sorted[1].name).toBe('Ibuprofen'); // Yesterday's medication second
+    expect(sorted[0].dosage).toBe('500mg'); // Preserve all properties
+    expect(sorted[1].instruction).toBe('Take with food');
+  });
+
+  it('should preserve all other medication properties', () => {
+    const todayDate = '2025-01-07T00:00:00.000Z';
+
+    mockedParseISO.mockImplementation(
+      (dateString: string) => new Date(dateString),
+    );
+    mockedDifferenceInDays.mockImplementation(() => 0);
+
+    const originalMed: FormattedMedicationRequest = {
+      id: '1',
+      name: 'Test Medicine',
+      startDate: todayDate,
+      status: MedicationStatus.Active,
+      dosage: '250mg',
+      dosageUnit: 'mg',
+      quantity: '30 tablets',
+      instruction: 'Take twice daily',
+      orderDate: todayDate,
+      orderedBy: 'Dr. Test',
+      asNeeded: true,
+      isImmediate: true,
+    };
+
+    const sorted = sortMedicationsByDateDistance([originalMed]);
+    expect(sorted[0]).toEqual(originalMed);
   });
 });
