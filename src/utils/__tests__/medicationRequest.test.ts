@@ -12,7 +12,7 @@ import {
   MedicationRequest,
   MedicationStatus,
   FormattedMedicationRequest,
-} from '@/types/medicationRequest';
+} from '@types/medicationRequest';
 import { differenceInDays, parseISO } from 'date-fns';
 
 jest.mock('@utils/date', () => ({
