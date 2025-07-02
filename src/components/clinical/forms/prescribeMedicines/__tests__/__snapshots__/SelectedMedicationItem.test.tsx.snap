@@ -163,7 +163,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
           Dosage unit
         </label>
         <div
-          class="cds--dropdown cds--dropdown--sm cds--list-box cds--list-box--sm"
+          class="cds--dropdown cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm"
           id="dosage-unit-entry-1"
         >
           <button
@@ -213,6 +213,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
             class="cds--list-box__menu"
             id="downshift-«rr4»-menu"
             role="listbox"
+            style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
         </div>
       </div>
@@ -231,7 +232,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
           Frequency
         </label>
         <div
-          class="cds--dropdown cds--dropdown--sm cds--list-box cds--list-box--sm"
+          class="cds--dropdown cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm"
           id="frequency-entry-1"
         >
           <button
@@ -281,6 +282,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
             class="cds--list-box__menu"
             id="downshift-«rr7»-menu"
             role="listbox"
+            style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
         </div>
       </div>
@@ -384,7 +386,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
           Duration unit
         </label>
         <div
-          class="cds--dropdown cds--dropdown--sm cds--list-box cds--list-box--sm"
+          class="cds--dropdown cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm"
           id="duration-unit-entry-1"
         >
           <button
@@ -434,6 +436,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
             class="cds--list-box__menu"
             id="downshift-«rra»-menu"
             role="listbox"
+            style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
         </div>
       </div>
@@ -452,7 +455,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
           Instructions
         </label>
         <div
-          class="cds--dropdown cds--dropdown--sm cds--list-box cds--list-box--sm"
+          class="cds--dropdown cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm"
           id="med-instructions-entry-1"
         >
           <button
@@ -502,6 +505,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
             class="cds--list-box__menu"
             id="downshift-«rrd»-menu"
             role="listbox"
+            style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
         </div>
       </div>
@@ -520,7 +524,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
           Route
         </label>
         <div
-          class="cds--dropdown cds--dropdown--sm cds--list-box cds--list-box--sm"
+          class="cds--dropdown cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm"
           id="route-entry-1"
         >
           <button
@@ -570,6 +574,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
             class="cds--list-box__menu"
             id="downshift-«rrg»-menu"
             role="listbox"
+            style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
         </div>
       </div>
@@ -834,7 +839,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
           Dosage unit
         </label>
         <div
-          class="cds--dropdown cds--dropdown--invalid cds--dropdown--sm cds--list-box cds--list-box--sm cds--list-box--invalid"
+          class="cds--dropdown cds--dropdown--invalid cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm cds--list-box--invalid"
           data-invalid="true"
           id="dosage-unit-entry-1"
         >
@@ -905,6 +910,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
             class="cds--list-box__menu"
             id="downshift-«rrm»-menu"
             role="listbox"
+            style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
         </div>
         <div
@@ -928,7 +934,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
           Frequency
         </label>
         <div
-          class="cds--dropdown cds--dropdown--invalid cds--dropdown--sm cds--list-box cds--list-box--sm cds--list-box--invalid"
+          class="cds--dropdown cds--dropdown--invalid cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm cds--list-box--invalid"
           data-invalid="true"
           id="frequency-entry-1"
         >
@@ -999,6 +1005,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
             class="cds--list-box__menu"
             id="downshift-«rrp»-menu"
             role="listbox"
+            style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
         </div>
         <div
@@ -1137,7 +1144,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
           Duration unit
         </label>
         <div
-          class="cds--dropdown cds--dropdown--invalid cds--dropdown--sm cds--list-box cds--list-box--sm cds--list-box--invalid"
+          class="cds--dropdown cds--dropdown--invalid cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm cds--list-box--invalid"
           data-invalid="true"
           id="duration-unit-entry-1"
         >
@@ -1208,6 +1215,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
             class="cds--list-box__menu"
             id="downshift-«rrs»-menu"
             role="listbox"
+            style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
         </div>
         <div
@@ -1231,7 +1239,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
           Instructions
         </label>
         <div
-          class="cds--dropdown cds--dropdown--sm cds--list-box cds--list-box--sm"
+          class="cds--dropdown cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm"
           id="med-instructions-entry-1"
         >
           <button
@@ -1281,6 +1289,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
             class="cds--list-box__menu"
             id="downshift-«rrv»-menu"
             role="listbox"
+            style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
         </div>
       </div>
@@ -1299,7 +1308,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
           Route
         </label>
         <div
-          class="cds--dropdown cds--dropdown--invalid cds--dropdown--sm cds--list-box cds--list-box--sm cds--list-box--invalid"
+          class="cds--dropdown cds--dropdown--invalid cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm cds--list-box--invalid"
           data-invalid="true"
           id="route-entry-1"
         >
@@ -1370,6 +1379,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
             class="cds--list-box__menu"
             id="downshift-«rs2»-menu"
             role="listbox"
+            style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
         </div>
         <div

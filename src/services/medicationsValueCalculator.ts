@@ -1,4 +1,4 @@
-import { Concept } from '@/types/encounterConcepts';
+import { Concept } from '@types/encounterConcepts';
 import { DurationUnitOption } from '@types/medication';
 import { DrugFormDefault, Frequency } from '@types/medicationConfig';
 import { Medication } from 'fhir/r4';

@@ -242,6 +242,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                   updateDispenseUnit(id, e.selectedItem);
                 }
               }}
+              autoAlign
               invalid={errors.dosageUnit ? true : false}
               invalidText={t(errors.dosageUnit || '')}
             />
@@ -266,6 +267,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                   updateFrequency(id, e.selectedItem);
                 }
               }}
+              autoAlign
               invalid={errors.frequency ? true : false}
               invalidText={t(errors.frequency || '')}
               disabled={isSTAT && !isPRN}
@@ -310,6 +312,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                   updateDurationUnit(id, e.selectedItem);
                 }
               }}
+              autoAlign
               invalid={errors.durationUnit ? true : false}
               invalidText={t(errors.durationUnit || '')}
               disabled={isSTAT && !isPRN}
@@ -332,6 +335,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                   updateInstruction(id, e.selectedItem);
                 }
               }}
+              autoAlign
             />
           </Column>
 
@@ -351,6 +355,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                   updateRoute(id, e.selectedItem);
                 }
               }}
+              autoAlign
               invalid={errors.route ? true : false}
               invalidText={t(errors.route || '')}
             />

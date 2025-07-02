@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { I18nextProvider } from 'react-i18next';
@@ -8,8 +8,8 @@ import SelectedMedicationItem, {
   SelectedMedicationItemProps,
 } from '../SelectedMedicationItem';
 import { Medication } from 'fhir/r4';
-import { MedicationInputEntry } from '@/types/medication';
-import { MedicationConfig } from '@/types/medicationConfig';
+import { MedicationInputEntry } from '@types/medication';
+import { MedicationConfig } from '@types/medicationConfig';
 import { DURATION_UNIT_OPTIONS } from '@constants/medications';
 import {
   calculateTotalQuantity,
@@ -150,6 +150,7 @@ describe('SelectedMedicationItem', () => {
 
   afterEach(() => {
     jest.restoreAllMocks();
+    jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   describe('Component Rendering', () => {
@@ -364,21 +365,34 @@ describe('SelectedMedicationItem', () => {
         // Act
         renderWithI18n(<SelectedMedicationItem {...props} />);
 
-        // Click on the duration unit dropdown
-        const durationUnitDropdown = screen.getByRole('combobox', {
-          name: /Duration Unit/i,
+        // Wait for component to mount and useEffect hooks to complete
+        await waitFor(() => {
+          expect(
+            screen.getByRole('combobox', { name: /Duration Unit/i }),
+          ).toBeInTheDocument();
         });
-        await user.click(durationUnitDropdown);
 
-        // Find and click the days option (it will show the translated text)
-        const daysOption = await screen.findByRole('option', { name: 'Days' });
-        await user.click(daysOption);
+        // Click on the duration unit dropdown and select option
+        await act(async () => {
+          const durationUnitDropdown = screen.getByRole('combobox', {
+            name: /Duration Unit/i,
+          });
+          await user.click(durationUnitDropdown);
+
+          // Find and click the days option (it will show the translated text)
+          const daysOption = await screen.findByRole('option', {
+            name: 'Days',
+          });
+          await user.click(daysOption);
+        });
 
         // Assert - DURATION_UNIT_OPTIONS[2] is the days option
-        expect(updateDurationUnit).toHaveBeenCalledWith(
-          'entry-1',
-          DURATION_UNIT_OPTIONS[2],
-        );
+        await waitFor(() => {
+          expect(updateDurationUnit).toHaveBeenCalledWith(
+            'entry-1',
+            DURATION_UNIT_OPTIONS[2],
+          );
+        });
       });
 
       test('updates instruction when instruction dropdown changes', async () => {
@@ -390,22 +404,33 @@ describe('SelectedMedicationItem', () => {
         // Act
         renderWithI18n(<SelectedMedicationItem {...props} />);
 
-        // Click on the instruction dropdown
-        const instructionDropdown = screen.getByRole('combobox', {
-          name: /Instruction/i,
+        // Wait for component to mount and useEffect hooks to complete
+        await waitFor(() => {
+          expect(
+            screen.getByRole('combobox', { name: /Instruction/i }),
+          ).toBeInTheDocument();
         });
-        await user.click(instructionDropdown);
 
-        // Find and click the 'Before Food' option
-        const beforeFoodOption = await screen.findByRole('option', {
-          name: 'Before Food',
+        // Click on the instruction dropdown and select option
+        await act(async () => {
+          const instructionDropdown = screen.getByRole('combobox', {
+            name: /Instruction/i,
+          });
+          await user.click(instructionDropdown);
+
+          // Find and click the 'Before Food' option
+          const beforeFoodOption = await screen.findByRole('option', {
+            name: 'Before Food',
+          });
+          await user.click(beforeFoodOption);
         });
-        await user.click(beforeFoodOption);
 
         // Assert
-        expect(updateInstruction).toHaveBeenCalledWith('entry-1', {
-          uuid: 'before-food',
-          name: 'Before Food',
+        await waitFor(() => {
+          expect(updateInstruction).toHaveBeenCalledWith('entry-1', {
+            uuid: 'before-food',
+            name: 'Before Food',
+          });
         });
       });
     });
@@ -789,7 +814,7 @@ describe('SelectedMedicationItem', () => {
       });
 
       describe('Default Values on Config Change', () => {
-        test('sets both default instruction and duration unit when config changes', () => {
+        test('sets both default instruction and duration unit when config changes', async () => {
           // Arrange
           const updateInstruction = jest.fn();
           const updateDurationUnit = jest.fn();
@@ -820,27 +845,31 @@ describe('SelectedMedicationItem', () => {
           });
 
           // Act
-          rerender(
-            <I18nextProvider i18n={i18n}>
-              <SelectedMedicationItem
-                {...props}
-                medicationConfig={updatedConfig}
-              />
-            </I18nextProvider>,
-          );
+          await act(async () => {
+            rerender(
+              <I18nextProvider i18n={i18n}>
+                <SelectedMedicationItem
+                  {...props}
+                  medicationConfig={updatedConfig}
+                />
+              </I18nextProvider>,
+            );
+          });
 
           // Assert
-          expect(updateInstruction).toHaveBeenCalledWith('entry-1', {
-            uuid: 'before-food',
-            name: 'Before Food',
+          await waitFor(() => {
+            expect(updateInstruction).toHaveBeenCalledWith('entry-1', {
+              uuid: 'before-food',
+              name: 'Before Food',
+            });
+            expect(updateDurationUnit).toHaveBeenCalledWith(
+              'entry-1',
+              DURATION_UNIT_OPTIONS[2], // Days
+            );
           });
-          expect(updateDurationUnit).toHaveBeenCalledWith(
-            'entry-1',
-            DURATION_UNIT_OPTIONS[2], // Days
-          );
         });
 
-        test('does not override existing values when config changes', () => {
+        test('does not override existing values when config changes', async () => {
           // Arrange
           const updateInstruction = jest.fn();
           const updateDurationUnit = jest.fn();
@@ -866,18 +895,22 @@ describe('SelectedMedicationItem', () => {
           });
 
           // Act
-          rerender(
-            <I18nextProvider i18n={i18n}>
-              <SelectedMedicationItem
-                {...props}
-                medicationConfig={updatedConfig}
-              />
-            </I18nextProvider>,
-          );
+          await act(async () => {
+            rerender(
+              <I18nextProvider i18n={i18n}>
+                <SelectedMedicationItem
+                  {...props}
+                  medicationConfig={updatedConfig}
+                />
+              </I18nextProvider>,
+            );
+          });
 
           // Assert
-          expect(updateInstruction).not.toHaveBeenCalled();
-          expect(updateDurationUnit).not.toHaveBeenCalled();
+          await waitFor(() => {
+            expect(updateInstruction).not.toHaveBeenCalled();
+            expect(updateDurationUnit).not.toHaveBeenCalled();
+          });
         });
       });
 
