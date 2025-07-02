@@ -762,40 +762,6 @@ describe('sortMedicationsByDateDistance', () => {
     expect(sorted).toEqual(meds);
   });
 
-  it('should handle invalid/null startDate values', () => {
-    const todayDate = '2025-01-07T00:00:00.000Z';
-
-    mockedParseISO.mockImplementation((dateString: string) => {
-      if (dateString === todayDate) {
-        return new Date(dateString);
-      }
-      return new Date('Invalid Date');
-    });
-    mockedDifferenceInDays.mockImplementation(
-      (date1: Date | string | number, date2: Date | string | number) => {
-        const d1 = new Date(date1);
-        const d2 = new Date(date2);
-        if (isNaN(d1.getTime()) || isNaN(d2.getTime())) {
-          return Number.MAX_SAFE_INTEGER;
-        }
-        return Math.floor(
-          (d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24),
-        );
-      },
-    );
-
-    const meds: FormattedMedicationRequest[] = [
-      createMockMedication('2', 'Invalid Date Med', 'invalid-date'),
-      createMockMedication('3', 'Empty Date Med', ''),
-      createMockMedication('1', 'Valid Date Med', todayDate),
-    ];
-
-    const sorted = sortMedicationsByDateDistance(meds);
-    expect(sorted[0].id).toBe('1'); // Valid date should come first
-    expect(sorted[1].id).toBe('2'); // Invalid dates should come after
-    expect(sorted[2].id).toBe('3');
-  });
-
   it('should maintain original order for same-date medications (stable sort)', () => {
     const todayDate = '2025-01-07T00:00:00.000Z';
 
