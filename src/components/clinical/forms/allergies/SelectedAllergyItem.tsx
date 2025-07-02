@@ -140,7 +140,7 @@ const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
             id={`allergy-note-${id}`}
             data-testid={`allergy-note-${id}`}
             labelText={t('ADD_ALLERGY_NOTE')}
-            placeholder={t('ADD_ALLERGY_NOTE')}
+            placeholder={t('ADD_ALLERGY_NOTE_PLACEHOLDER')}
             value={note || ''}
             onChange={(event) => updateNote(id, event.target.value)}
             onClose={() => {
