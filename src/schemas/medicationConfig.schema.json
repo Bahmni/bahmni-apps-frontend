@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Medication Configuration Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "defaultDurationUnit": {
+      "type": "string",
+      "enum": ["min", "h", "d", "wk", "mo"],
+      "description": "Default unit for medication duration"
+    },
+    "defaultInstructions": {
+      "type": "string",
+      "description": "Default instructions for medication"
+    },
+    "drugFormDefaults": {
+      "type": "object",
+      "description": "Default dose units and routes for different drug forms",
+      "patternProperties": {
+        "^.*$": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "doseUnits": {
+              "type": "string",
+              "description": "Default dose units for this drug form"
+            },
+            "route": {
+              "type": "string",
+              "description": "Default route of administration for this drug form"
+            }
+          }
+        }
+      }
+    }
+  }
+}

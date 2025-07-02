@@ -4,13 +4,13 @@ import {
   getTranslationFile,
 } from '../translationService';
 import {
-  CONFIG_TRANSLATIONS_URL_TEMPLATE,
   BUNDLED_TRANSLATIONS_URL_TEMPLATE,
   LOCALE_STORAGE_KEY,
   DEFAULT_LOCALE,
 } from '@constants/app';
 import notificationService from '../notificationService';
 import axios from 'axios';
+import { CONFIG_TRANSLATIONS_URL_TEMPLATE } from '@constants/config';
 
 // Mock dependencies
 jest.mock('../notificationService');
