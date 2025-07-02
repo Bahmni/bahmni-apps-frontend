@@ -78,6 +78,16 @@ jest.mock(
   }),
 );
 
+jest.mock(
+  '@components/clinical/forms/prescribeMedicines/MedicationsForm',
+  () => ({
+    __esModule: true,
+    default: () => (
+      <div data-testid="mock-medications-form">Medications Form</div>
+    ),
+  }),
+);
+
 jest.mock('@carbon/react', () => ({
   ...jest.requireActual('@carbon/react'),
   MenuItemDivider: () => <hr data-testid="mock-divider" />,
@@ -90,6 +100,7 @@ jest.mock('@services/consultationBundleService', () => ({
   createAllergiesBundleEntries: jest.fn(() => []),
   createConditionsBundleEntries: jest.fn(() => []),
   createServiceRequestBundleEntries: jest.fn(() => []),
+  createMedicationRequestEntries: jest.fn(() => []),
 }));
 
 // Mock hooks
@@ -156,11 +167,19 @@ const createMockServiceRequestStore = () => ({
   reset: jest.fn(),
 });
 
+const createMockMedicationStore = () => ({
+  selectedMedications: [],
+  validateAllMedications: jest.fn(() => true),
+  reset: jest.fn(),
+  getState: jest.fn(() => ({ selectedMedications: [] })),
+});
+
 // Initialize stores
 let mockEncounterDetailsStore = createMockEncounterDetailsStore();
 let mockDiagnosesStore = createMockDiagnosesStore();
 let mockAllergyStore = createMockAllergyStore();
 let mockServiceRequestStore = createMockServiceRequestStore();
+let mockMedicationStore = createMockMedicationStore();
 
 jest.mock('@stores/encounterDetailsStore', () => ({
   useEncounterDetailsStore: jest.fn(() => mockEncounterDetailsStore),
@@ -181,6 +200,12 @@ jest.mock('@stores/serviceRequestStore', () => ({
   default: jest.fn(() => mockServiceRequestStore),
 }));
 
+jest.mock('@stores/medicationsStore', () => ({
+  __esModule: true,
+  useMedicationStore: jest.fn(() => mockMedicationStore),
+  default: jest.fn(() => mockMedicationStore),
+}));
+
 // Mock crypto.randomUUID
 Object.defineProperty(global, 'crypto', {
   value: {
@@ -194,6 +219,7 @@ import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
 import useAllergyStore from '@stores/allergyStore';
 import useServiceRequestStore from '@stores/serviceRequestStore';
+import { useMedicationStore } from '@stores/medicationsStore';
 import { BundleEntry } from 'fhir/r4';
 
 // Test wrapper
@@ -212,6 +238,7 @@ describe('ConsultationPad', () => {
     mockDiagnosesStore = createMockDiagnosesStore();
     mockAllergyStore = createMockAllergyStore();
     mockServiceRequestStore = createMockServiceRequestStore();
+    mockMedicationStore = createMockMedicationStore();
 
     // Update the mocked return values
     (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue(
@@ -223,6 +250,9 @@ describe('ConsultationPad', () => {
     (useAllergyStore as unknown as jest.Mock).mockReturnValue(mockAllergyStore);
     (useServiceRequestStore as unknown as jest.Mock).mockReturnValue(
       mockServiceRequestStore,
+    );
+    (useMedicationStore as unknown as jest.Mock).mockReturnValue(
+      mockMedicationStore,
     );
   });
 
@@ -255,12 +285,13 @@ describe('ConsultationPad', () => {
         'data-testid',
         'mock-investigations-form',
       );
+      expect(forms[8]).toHaveAttribute('data-testid', 'mock-medications-form');
     });
 
     it('should render dividers between forms', () => {
       renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
       const dividers = screen.getAllByTestId('mock-divider');
-      expect(dividers).toHaveLength(4);
+      expect(dividers).toHaveLength(5);
     });
 
     it('should render forms and dividers in the correct sequence', () => {
@@ -270,7 +301,7 @@ describe('ConsultationPad', () => {
       const children = Array.from(content.children);
 
       // Verify the exact sequence of forms and dividers
-      expect(children).toHaveLength(8); // 4 forms + 4 dividers
+      expect(children).toHaveLength(10); // 5 forms + 5 dividers
 
       // Check each element in order
       expect(children[0]).toHaveAttribute(
@@ -290,6 +321,11 @@ describe('ConsultationPad', () => {
         'mock-investigations-form',
       );
       expect(children[7]).toHaveAttribute('data-testid', 'mock-divider');
+      expect(children[8]).toHaveAttribute(
+        'data-testid',
+        'mock-medications-form',
+      );
+      expect(children[9]).toHaveAttribute('data-testid', 'mock-divider');
     });
 
     it('should render action buttons with correct text', () => {
@@ -422,6 +458,7 @@ describe('ConsultationPad', () => {
         expect(mockDiagnosesStore.reset).toHaveBeenCalled();
         expect(mockAllergyStore.reset).toHaveBeenCalled();
         expect(mockServiceRequestStore.reset).toHaveBeenCalled();
+        expect(mockMedicationStore.reset).toHaveBeenCalled();
       });
 
       it('should not submit data when clicked', async () => {
@@ -490,6 +527,21 @@ describe('ConsultationPad', () => {
         await userEvent.click(doneButton);
 
         expect(mockAllergyStore.validateAllAllergies).toHaveBeenCalled();
+        expect(
+          consultationBundleService.postConsultationBundle,
+        ).not.toHaveBeenCalled();
+        expect(mockOnClose).not.toHaveBeenCalled();
+      });
+
+      it('should not submit when medications validation fails', async () => {
+        mockMedicationStore.validateAllMedications.mockReturnValue(false);
+
+        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+        const doneButton = screen.getByTestId('primary-button');
+        await userEvent.click(doneButton);
+
+        expect(mockMedicationStore.validateAllMedications).toHaveBeenCalled();
         expect(
           consultationBundleService.postConsultationBundle,
         ).not.toHaveBeenCalled();
@@ -568,6 +620,7 @@ describe('ConsultationPad', () => {
       expect(mockAllergyStore.reset).toHaveBeenCalled();
       expect(mockDiagnosesStore.reset).toHaveBeenCalled();
       expect(mockServiceRequestStore.reset).toHaveBeenCalled();
+      expect(mockMedicationStore.reset).toHaveBeenCalled();
     });
 
     it('should track submission state correctly', async () => {
@@ -623,6 +676,7 @@ describe('ConsultationPad', () => {
         expect(mockAllergyStore.reset).toHaveBeenCalled();
         expect(mockEncounterDetailsStore.reset).toHaveBeenCalled();
         expect(mockServiceRequestStore.reset).toHaveBeenCalled();
+        expect(mockMedicationStore.reset).toHaveBeenCalled();
       });
     });
   });
@@ -636,6 +690,7 @@ describe('ConsultationPad', () => {
 
       expect(mockDiagnosesStore.validate).toHaveBeenCalled();
       expect(mockAllergyStore.validateAllAllergies).toHaveBeenCalled();
+      expect(mockMedicationStore.validateAllMedications).toHaveBeenCalled();
     });
 
     it('should disable Done button when patientUUID is missing', () => {
@@ -838,6 +893,15 @@ describe('ConsultationPad', () => {
         },
       ]);
 
+      (
+        consultationBundleService.createMedicationRequestEntries as jest.Mock
+      ).mockReturnValue([
+        {
+          resource: { resourceType: 'MedicationRequest', id: 'medication-1' },
+          request: { method: 'POST' },
+        },
+      ]);
+
       renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
@@ -879,13 +943,14 @@ describe('ConsultationPad', () => {
         expect(resourceTypes).toContain('Condition'); // From diagnoses and conditions
         expect(resourceTypes).toContain('AllergyIntolerance');
         expect(resourceTypes).toContain('ServiceRequest');
+        expect(resourceTypes).toContain('MedicationRequest');
 
         // Verify the encounter entry is first
         expect(bundleArg.entry[0].resource.resourceType).toBe('Encounter');
         expect(bundleArg.entry[0].fullUrl).toMatch(/^urn:uuid:/);
 
-        // Verify total number of entries (1 encounter + 4 from bundle creation functions)
-        expect(bundleArg.entry).toHaveLength(5);
+        // Verify total number of entries (1 encounter + 5 from bundle creation functions)
+        expect(bundleArg.entry).toHaveLength(6);
       });
     });
 

@@ -19,6 +19,8 @@ import { AllergyInputEntry } from '@types/allergy';
 import { ServiceRequestInputEntry } from '@types/serviceRequest';
 import { createServiceRequestResource } from '@utils/fhir/serviceRequestResourceCreator';
 import { ConditionInputEntry } from '@types/condition';
+import { MedicationInputEntry } from '@types/medication';
+import { createMedicationRequestResource } from '@utils/fhir/medicationRequestResourceCreator';
 
 interface CreateAllergiesBundleEntriesParams {
   selectedAllergies: AllergyInputEntry[];
@@ -48,6 +50,13 @@ interface CreateConditionsBundleEntriesParams {
   encounterReference: string;
   practitionerUUID: string;
   consultationDate: Date;
+}
+
+interface CreateMedicationRequestBundleEntriesParams {
+  selectedMedications: MedicationInputEntry[];
+  encounterSubject: Reference;
+  encounterReference: string;
+  practitionerUUID: string;
 }
 
 /**
@@ -311,6 +320,48 @@ export function createConditionsBundleEntries({
   }
 
   return conditionEntries;
+}
+
+export function createMedicationRequestEntries({
+  selectedMedications,
+  encounterSubject,
+  encounterReference,
+  practitionerUUID,
+}: CreateMedicationRequestBundleEntriesParams): BundleEntry[] {
+  if (!selectedMedications || !Array.isArray(selectedMedications)) {
+    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
+  }
+
+  if (!encounterSubject || !encounterSubject.reference) {
+    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_SUBJECT);
+  }
+
+  if (!encounterReference) {
+    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_REFERENCE);
+  }
+
+  if (!practitionerUUID) {
+    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_PRACTITIONER);
+  }
+  const medicationRequestEntries: BundleEntry[] = [];
+  for (const medication of selectedMedications) {
+    const medicationResourceURL = `urn:uuid:${crypto.randomUUID()}`;
+    const medicationResource = createMedicationRequestResource(
+      medication,
+      encounterSubject,
+      getPlaceholderReference(encounterReference),
+      createPractitionerReference(practitionerUUID),
+    );
+
+    const medicationRequestEntry = createBundleEntry(
+      medicationResourceURL,
+      medicationResource,
+      'POST',
+    );
+
+    medicationRequestEntries.push(medicationRequestEntry);
+  }
+  return medicationRequestEntries;
 }
 
 export async function postConsultationBundle<T>(
