@@ -55,3 +55,12 @@ export const createEncounterParticipantReference = (
   };
   return encounterParticipant;
 };
+
+export const createMedicationReference = (medicationId: string): Reference => {
+  const medicationReference: Reference = createReference(
+    'Medication',
+    medicationId,
+  );
+  medicationReference.type = 'Medication';
+  return medicationReference;
+};

@@ -13,6 +13,7 @@ import {
   createAllergiesBundleEntries,
   createConditionsBundleEntries,
   createServiceRequestBundleEntries,
+  createMedicationRequestEntries,
 } from '@services/consultationBundleService';
 import useNotification from '@hooks/useNotification';
 import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
@@ -26,6 +27,8 @@ import useAllergyStore from '@stores/allergyStore';
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 import * as styles from './styles/ConsultationPad.module.scss';
 import useServiceRequestStore from '@stores/serviceRequestStore';
+import MedicationsForm from '@components/clinical/forms/prescribeMedicines/MedicationsForm';
+import { useMedicationStore } from '@stores/medicationsStore';
 
 interface ConsultationPadProps {
   onClose: () => void;
@@ -68,6 +71,12 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   const { selectedServiceRequests, reset: resetServiceRequests } =
     useServiceRequestStore();
 
+  const {
+    selectedMedications,
+    validateAllMedications,
+    reset: resetMedications,
+  } = useMedicationStore();
+
   // Clean up on unmount
   useEffect(() => {
     return () => {
@@ -75,12 +84,14 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       resetAllergies();
       resetDiagnoses();
       resetServiceRequests();
+      resetMedications();
     };
   }, [
     resetEncounterDetails,
     resetAllergies,
     resetDiagnoses,
     resetServiceRequests,
+    resetMedications,
   ]);
 
   // Data validation check for consultation submission
@@ -144,12 +155,19 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       practitionerUUID: practitioner!.uuid,
     });
 
+    const medicationEntries = createMedicationRequestEntries({
+      selectedMedications,
+      encounterSubject: encounterResource.subject!,
+      encounterReference: enconterResourceURL,
+      practitionerUUID: practitioner!.uuid,
+    });
     const consultationBundle = createConsultationBundle([
       encounterBundleEntry,
       ...diagnosisEntries,
       ...allergyEntries,
       ...conditionEntries,
       ...serviceRequestEntries,
+      ...medicationEntries,
     ]);
 
     return postConsultationBundle<ConsultationBundle>(consultationBundle);
@@ -159,7 +177,12 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     if (!isSubmitting && canSubmitConsultation) {
       const isConditionsAndDiagnosesValid = validate();
       const isAllergiesValid = validateAllAllergies();
-      if (!isConditionsAndDiagnosesValid || !isAllergiesValid) {
+      const isMedicationsValid = validateAllMedications();
+      if (
+        !isConditionsAndDiagnosesValid ||
+        !isAllergiesValid ||
+        !isMedicationsValid
+      ) {
         return;
       }
 
@@ -171,6 +194,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         resetAllergies();
         resetEncounterDetails();
         resetServiceRequests();
+        resetMedications();
         addNotification({
           title: t('CONSULTATION_SUBMITTED_SUCCESS_TITLE'),
           message: t('CONSULTATION_SUBMITTED_SUCCESS_MESSAGE'),
@@ -197,6 +221,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     resetDiagnoses();
     resetAllergies();
     resetServiceRequests();
+    resetMedications();
     onClose();
   };
 
@@ -243,6 +268,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
             <AllergiesForm />
             <MenuItemDivider />
             <InvestigationsForm />
+            <MenuItemDivider />
+            <MedicationsForm />
             <MenuItemDivider />
           </>
         )

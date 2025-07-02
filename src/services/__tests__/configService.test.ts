@@ -1,4 +1,8 @@
-import { getClinicalConfig, getDashboardConfig } from '../configService';
+import {
+  getClinicalConfig,
+  getDashboardConfig,
+  getMedicationConfig,
+} from '../configService';
 import * as api from '../api';
 import Ajv from 'ajv';
 import * as commonUtils from '@utils/common';
@@ -15,7 +19,12 @@ import {
   validDashboardConfig,
   invalidDashboardConfig,
 } from '@__mocks__/configMocks';
-import { CLINICAL_CONFIG_URL, DASHBOARD_CONFIG_URL } from '@constants/app';
+import {
+  CLINICAL_CONFIG_URL,
+  DASHBOARD_CONFIG_URL,
+  MEDICATIONS_CONFIG_URL,
+} from '@constants/config';
+import { MedicationJSONConfig } from '@types/medicationConfig';
 
 // Mock the api module
 jest.mock('../api');
@@ -176,6 +185,49 @@ const mockDashboardSchema = {
           translationKey: { type: 'string' },
           icon: { type: 'string' },
           controls: { type: 'array' },
+        },
+      },
+    },
+  },
+};
+
+jest.mock('@schemas/medicationConfig.schema.json', () => ({
+  __esModule: true,
+  default: {
+    type: 'object',
+    properties: {
+      defaultDurationUnit: { type: 'string' },
+      defaultInstructions: { type: 'string' },
+      drugFormDefaults: {
+        type: 'object',
+        patternProperties: {
+          '^.*$': {
+            type: 'object',
+            properties: {
+              doseUnits: { type: 'string' },
+              route: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+  },
+}));
+
+const mockMedicationSchema = {
+  type: 'object',
+  properties: {
+    defaultDurationUnit: { type: 'string' },
+    defaultInstructions: { type: 'string' },
+    drugFormDefaults: {
+      type: 'object',
+      patternProperties: {
+        '^.*$': {
+          type: 'object',
+          properties: {
+            doseUnits: { type: 'string' },
+            route: { type: 'string' },
+          },
         },
       },
     },
@@ -615,6 +667,174 @@ describe('ConfigService', () => {
         i18n.t(ERROR_TITLES.VALIDATION_ERROR),
         i18n.t(CONFIG_ERROR_MESSAGES.VALIDATION_FAILED),
       );
+    });
+  });
+
+  describe('getMedicationConfig', () => {
+    const validMedicationConfig: MedicationJSONConfig = {
+      defaultDurationUnit: 'Days',
+      defaultInstructions: 'As directed',
+      drugFormDefaults: {
+        Tablet: {
+          doseUnits: 'Tablet',
+          route: 'Oral',
+        },
+        Injection: {
+          doseUnits: 'mg',
+          route: 'Intravenous',
+        },
+      },
+    };
+
+    const minimalMedicationConfig: MedicationJSONConfig = {
+      defaultDurationUnit: 'Days',
+    };
+
+    const invalidMedicationConfig = {
+      // Invalid property type
+      defaultDurationUnit: 123, // Should be string
+      defaultInstructions: 'As directed',
+    };
+
+    describe('Success cases', () => {
+      test('should fetch and validate a fully valid medication config', async () => {
+        // Arrange
+        mockGet.mockResolvedValueOnce(validMedicationConfig);
+
+        // Act
+        const result = await getMedicationConfig();
+
+        // Assert
+        expect(mockGet).toHaveBeenCalledWith(MEDICATIONS_CONFIG_URL);
+        expect(result).toEqual(validMedicationConfig);
+      });
+
+      test('should fetch and validate config with only required fields', async () => {
+        // Arrange
+        mockGet.mockResolvedValueOnce(minimalMedicationConfig);
+
+        // Act
+        const result = await getMedicationConfig();
+
+        // Assert
+        expect(mockGet).toHaveBeenCalledWith(MEDICATIONS_CONFIG_URL);
+        expect(result).toEqual(minimalMedicationConfig);
+      });
+
+      test('should validate config against medication schema', async () => {
+        // Arrange
+        mockGet.mockResolvedValueOnce(validMedicationConfig);
+        const mockValidate = jest.fn().mockReturnValue(true);
+        const mockCompile = jest.fn().mockReturnValue(mockValidate);
+        mockAjv.mockImplementation(
+          () =>
+            ({
+              compile: mockCompile,
+            }) as unknown as Ajv,
+        );
+
+        // Act
+        const result = await getMedicationConfig();
+
+        // Assert
+        expect(mockCompile).toHaveBeenCalledWith(mockMedicationSchema);
+        expect(mockValidate).toHaveBeenCalledWith(validMedicationConfig);
+        expect(result).toEqual(validMedicationConfig);
+      });
+    });
+
+    describe('Error cases', () => {
+      test('should return null and show error when API request fails', async () => {
+        // Arrange
+        const networkError = new Error('Network error');
+        mockGet.mockRejectedValueOnce(networkError);
+        mockGetFormattedError.mockReturnValueOnce({
+          title: 'Error',
+          message: 'Network error',
+        });
+
+        // Act
+        const result = await getMedicationConfig();
+
+        // Assert
+        expect(result).toBeNull();
+        expect(mockGet).toHaveBeenCalledWith(MEDICATIONS_CONFIG_URL);
+        expect(mockGetFormattedError).toHaveBeenCalledWith(expect.any(Error));
+        expect(mockShowError).toHaveBeenCalledWith('Error', 'Network error');
+      });
+
+      test('should return null and show error when API returns empty response', async () => {
+        // Arrange
+        mockGet.mockResolvedValueOnce(null);
+
+        // Act
+        const result = await getMedicationConfig();
+
+        // Assert
+        expect(result).toBeNull();
+        expect(mockGet).toHaveBeenCalledWith(MEDICATIONS_CONFIG_URL);
+        expect(mockShowError).toHaveBeenCalledWith(
+          i18n.t(ERROR_TITLES.CONFIG_ERROR),
+          i18n.t(CONFIG_ERROR_MESSAGES.CONFIG_NOT_FOUND),
+        );
+      });
+
+      test('should return null and show error when config fails schema validation', async () => {
+        // Arrange
+        mockGet.mockResolvedValueOnce(invalidMedicationConfig);
+
+        // Setup Ajv to fail validation
+        const mockValidate = jest.fn().mockReturnValue(false);
+        const mockCompile = jest.fn().mockReturnValue(mockValidate);
+        mockAjv.mockImplementation(
+          () =>
+            ({
+              compile: mockCompile,
+            }) as unknown as Ajv,
+        );
+
+        // Act
+        const result = await getMedicationConfig();
+
+        // Assert
+        expect(result).toBeNull();
+        expect(mockGet).toHaveBeenCalledWith(MEDICATIONS_CONFIG_URL);
+        expect(mockValidate).toHaveBeenCalledWith(invalidMedicationConfig);
+        expect(mockShowError).toHaveBeenCalledWith(
+          i18n.t(ERROR_TITLES.VALIDATION_ERROR),
+          i18n.t(CONFIG_ERROR_MESSAGES.VALIDATION_FAILED),
+        );
+      });
+
+      test('should return null and show error when schema validation throws', async () => {
+        // Arrange
+        mockGet.mockResolvedValueOnce(validMedicationConfig);
+
+        // Setup Ajv to throw during compilation
+        const schemaError = new Error('Invalid schema');
+        const mockCompile = jest.fn().mockImplementation(() => {
+          throw schemaError;
+        });
+        mockAjv.mockImplementation(
+          () =>
+            ({
+              compile: mockCompile,
+            }) as unknown as Ajv,
+        );
+        mockGetFormattedError.mockReturnValueOnce({
+          title: 'Error',
+          message: 'Invalid schema',
+        });
+
+        // Act
+        const result = await getMedicationConfig();
+
+        // Assert
+        expect(result).toBeNull();
+        expect(mockGet).toHaveBeenCalledWith(MEDICATIONS_CONFIG_URL);
+        expect(mockCompile).toHaveBeenCalled();
+        expect(mockShowError).toHaveBeenCalledWith('Error', 'Invalid schema');
+      });
     });
   });
 });

@@ -168,11 +168,11 @@ function formatMedications(bundle: Bundle): MedicationRequest[] {
       duration: getDuration(medication.dosageInstruction),
       status,
       priority: medication.priority ?? '',
-      isImmediate:
-        medication.dosageInstruction?.[0]?.timing?.code?.text ===
-          'Immediately' || false,
+      isImmediate: isImmediateMedication(medication),
       quantity: getQuantity(medication.dispenseRequest!),
-      startDate: medication.dosageInstruction?.[0]?.timing?.event?.[0],
+      startDate: isImmediateMedication(medication)
+        ? medication.authoredOn!
+        : medication.dosageInstruction?.[0]?.timing?.event?.[0],
       orderDate: medication.authoredOn!,
       orderedBy: medicationRequester.display!,
       instructions: getInstructions(medication.dosageInstruction),
@@ -182,6 +182,14 @@ function formatMedications(bundle: Bundle): MedicationRequest[] {
     };
   });
 }
+
+const isImmediateMedication = (medication: FhirMedicationRequest): boolean => {
+  return (
+    medication.priority === 'stat' ||
+    medication.dosageInstruction?.[0]?.timing?.code?.text === 'Immediately' ||
+    false
+  );
+};
 
 /**
  * Fetches and formats medications for a given patient UUID

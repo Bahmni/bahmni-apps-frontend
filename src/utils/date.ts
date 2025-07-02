@@ -312,3 +312,9 @@ export function formatDateDistance(date: string): FormatDateResult {
 
   return { formattedResult };
 }
+
+export const getTodayDate = (): Date => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return today;
+};

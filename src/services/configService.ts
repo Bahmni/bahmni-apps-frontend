@@ -6,9 +6,15 @@ import { getFormattedError, generateId } from '@utils/common';
 import notificationService from './notificationService';
 import i18next from 'i18next';
 import { DashboardConfig } from '@types/dashboardConfig';
-import { CLINICAL_CONFIG_URL, DASHBOARD_CONFIG_URL } from '@constants/app';
+import { MedicationJSONConfig } from '@types/medicationConfig';
+import {
+  CLINICAL_CONFIG_URL,
+  DASHBOARD_CONFIG_URL,
+  MEDICATIONS_CONFIG_URL,
+} from '@constants/config';
 import clinicalConfigSchema from '@schemas/clinicalConfig.schema.json';
 import dashboardConfigSchema from '@schemas/dashboardConfig.schema.json';
+import medicationConfigSchema from '@schemas/medicationConfig.schema.json';
 
 /**
  * Fetches and validates clinical app configuration from the server
@@ -53,6 +59,20 @@ export const getDashboardConfig = async <T extends DashboardConfig>(
 };
 
 /**
+ * Fetches and validates medication configuration from the server
+ *
+ * @returns Validated medication configuration object or null if invalid/error
+ * @throws Error if fetch fails or validation fails
+ */
+export const getMedicationConfig =
+  async (): Promise<MedicationJSONConfig | null> => {
+    return getConfig<MedicationJSONConfig>(
+      MEDICATIONS_CONFIG_URL,
+      medicationConfigSchema,
+    );
+  };
+
+/**
  * Fetches and validates configuration from the server
  *
  * @param configPath - URL path to fetch the configuration
@@ -60,7 +80,9 @@ export const getDashboardConfig = async <T extends DashboardConfig>(
  * @returns Validated configuration object or null if invalid/error
  * @throws Error if fetch fails or validation fails
  */
-const getConfig = async <T extends ClinicalConfig | DashboardConfig>(
+const getConfig = async <
+  T extends ClinicalConfig | DashboardConfig | MedicationJSONConfig,
+>(
   configPath: string,
   configSchema: Record<string, unknown>,
 ): Promise<T | null> => {
