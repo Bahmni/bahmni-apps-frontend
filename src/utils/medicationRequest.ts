@@ -3,7 +3,7 @@ import {
   FormattedMedicationRequest,
 } from '@types/medicationRequest';
 import { getPriorityByOrder } from './common';
-import { differenceInDays, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
 
 /**
  * Priority order for medication status levels (case insensitive)
@@ -194,18 +194,9 @@ export const sortMedicationsByDateDistance = (
     return [];
   }
 
-  const today = new Date();
-
   return [...medications].sort((a, b) => {
-    // Helper function to calculate date distance
-    const getDateDistance = (startDate: string): number => {
-      const medicationDate = parseISO(startDate);
-      return differenceInDays(today, medicationDate);
-    };
-
-    const distanceA = getDateDistance(a.startDate);
-    const distanceB = getDateDistance(b.startDate);
-
-    return distanceA - distanceB;
+    const aDate = parseISO(a.startDate);
+    const bDate = parseISO(b.startDate);
+    return bDate.getTime() - aDate.getTime();
   });
 };
