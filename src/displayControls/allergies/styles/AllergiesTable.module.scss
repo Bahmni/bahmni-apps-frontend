@@ -1,6 +1,11 @@
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/spacing" as *;
+
+.allergyDisplay {
+  padding-block: $spacing-03;
+}
 
 .mildSeverity {
   background-color: $blue-20 !important;
@@ -17,11 +22,37 @@
   color: $red-70 !important;
 }
 
+.allergyName {
+  @include type-style("body-compact-01");
+  color: $text-primary;
+  font-weight: 700;
+  display: flex;
+  gap: $spacing-02;
+  height: 16px;
+}
+
 .allergyCategory {
   @include type-style("body-compact-01");
   color: $text-secondary;
   text-transform: uppercase;
-  display: inline-block;
+}
+
+.allergyNote {
+  padding: auto;
+
+  :global {
+    .cds--toggletip-button {
+      color: $icon-secondary !important;
+    }
+    .cds--popover-content {
+      z-index: 9999;
+      max-inline-size: 30rem !important;
+      position: absolute !important;
+    }
+    .cds--toggletip-content {
+      max-inline-size: 30rem !important;
+    }
+  }
 }
 
 .allergiesNote {

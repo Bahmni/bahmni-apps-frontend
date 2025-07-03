@@ -10,6 +10,7 @@ export interface AllergyState {
   removeAllergy: (allergyId: string) => void;
   updateSeverity: (allergyId: string, severity: Coding | null) => void;
   updateReactions: (allergyId: string, reactions: Coding[]) => void;
+  updateNote: (allergyId: string, note: string) => void;
   validateAllAllergies: () => boolean;
   reset: () => void;
 
@@ -78,6 +79,19 @@ export const useAllergyStore = create<AllergyState>((set, get) => ({
           delete updatedAllergy.errors.reactions;
         }
 
+        return updatedAllergy;
+      }),
+    }));
+  },
+
+  updateNote: (allergyId: string, note: string) => {
+    set((state) => ({
+      selectedAllergies: state.selectedAllergies.map((allergy) => {
+        if (allergy.id !== allergyId) return allergy;
+        const updatedAllergy = {
+          ...allergy,
+          note,
+        };
         return updatedAllergy;
       }),
     }));

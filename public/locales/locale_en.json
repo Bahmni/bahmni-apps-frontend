@@ -1,4 +1,6 @@
 {
+  "ADD_ALLERGY_NOTE": "Add Note",
+  "ADD_ALLERGY_NOTE_PLACEHOLDER": "Add notes for the allergy",
   "ALLERGEN": "Allergen",
   "ALLERGIES_ADDED_ALLERGIES": "Added Allergies",
   "ALLERGIES_DISPLAY_CONTROL_HEADING": "Allergies",
@@ -11,6 +13,7 @@
   "ALLERGY_LIST_RECORDED_BY": "Recorded By",
   "ALLERGY_LIST_RECORDED_DATE": "Recorded Date",
   "ALLERGY_LIST_STATUS": "Status",
+  "ALLERGY_NOTE_TOOLTIP_ARIA_LABEL": "View allergy note",
   "ALLERGY_REACTIONS_ARIA_LABEL": "Select reactions for this allergy",
   "ALLERGY_SELECT_REACTIONS": "Select Reactions",
   "ALLERGY_SELECT_SEVERITY": "Select Severity",
@@ -138,7 +141,7 @@
   "INVESTIGATIONS_ADDED": "Added {{investigationType}}",
   "INVESTIGATIONS_FORM_TITLE": "Order Investigations/Procedures",
   "INVESTIGATIONS_SEARCH_ARIA_LABEL": "Search for investigations/prcedures",
-  "INVESTIGATIONS_SEARCH_PLACEHOLDER" :"Search to add investigations/procedures",
+  "INVESTIGATIONS_SEARCH_PLACEHOLDER": "Search to add investigations/procedures",
   "LAB_INVESTIGATIONS_CATEGORY": "Lab Investigations",
   "LAB_TEST_ACTIONS": "Actions",
   "LAB_TEST_ERROR_LOADING": "Error loading lab tests",

@@ -1,4 +1,6 @@
 {
+  "ADD_ALLERGY_NOTE": "Agregar Nota",
+  "ADD_ALLERGY_NOTE_PLACEHOLDER": "Agregar notas para la alergia",
   "ALLERGEN": "Alérgeno",
   "ALLERGIES_ADDED_ALLERGIES": "Alergias Agregadas",
   "ALLERGIES_DISPLAY_CONTROL_HEADING": "Alergias",
@@ -11,6 +13,7 @@
   "ALLERGY_LIST_RECORDED_BY": "Grabado por",
   "ALLERGY_LIST_RECORDED_DATE": "Fecha de grabación",
   "ALLERGY_LIST_STATUS": "Estado",
+  "ALLERGY_NOTE_TOOLTIP_ARIA_LABEL": "Ver nota de alergia",
   "ALLERGY_REACTIONS_ARIA_LABEL": "Seleccionar reacciones para esta alergia",
   "ALLERGY_SELECT_REACTIONS": "Seleccionar Reacciones",
   "ALLERGY_SELECT_SEVERITY": "Seleccionar Gravedad",
@@ -138,7 +141,7 @@
   "INVESTIGATIONS_ADDED": "{{investigationType}} agregadas",
   "INVESTIGATIONS_FORM_TITLE": "Solicitar investigaciones/procedimientos",
   "INVESTIGATIONS_SEARCH_ARIA_LABEL": "Buscar investigaciones/procedimientos",
-  "INVESTIGATIONS_SEARCH_PLACEHOLDER" :"Busque para agregar investigaciones/procedimientos",
+  "INVESTIGATIONS_SEARCH_PLACEHOLDER": "Busque para agregar investigaciones/procedimientos",
   "LAB_INVESTIGATIONS_CATEGORY": "Investigaciones de Laboratorio",
   "LAB_TEST_ACTIONS": "Acciones",
   "LAB_TEST_ERROR_LOADING": "Error al cargar pruebas de laboratorio",

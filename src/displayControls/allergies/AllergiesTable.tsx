@@ -1,5 +1,10 @@
 import React, { useMemo } from 'react';
-import { Tag } from '@carbon/react';
+import {
+  Tag,
+  Toggletip,
+  ToggletipButton,
+  ToggletipContent,
+} from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
 import { usePatientUUID } from '@hooks/usePatientUUID';
@@ -13,6 +18,8 @@ import {
   sortAllergiesBySeverity,
 } from '@utils/allergy';
 import * as styles from './styles/AllergiesTable.module.scss';
+import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
+import { ICON_PADDING, ICON_SIZE } from '@constants/icon';
 
 // Helper function to get severity CSS class
 const getSeverityClassName = (severity: string): string | undefined => {
@@ -67,16 +74,30 @@ const AllergiesTable: React.FC = () => {
     switch (cellId) {
       case 'display':
         return (
-          <>
-            {`${allergy.display} `}
-            <div className={styles.allergyCategory}>
-              [{t(getCategoryDisplayName(allergy.category?.[0]))}] &nbsp;
+          <div className={styles.allergyDisplay}>
+            <div className={styles.allergyName}>
+              {allergy.display}
+              <div className={styles.allergyCategory}>
+                [{t(getCategoryDisplayName(allergy.category?.[0]))}]
+              </div>
+              {allergy.note && (
+                <Toggletip autoAlign className={styles.allergyNote}>
+                  <ToggletipButton>
+                    <BahmniIcon
+                      id="fa-file-lines"
+                      name="fa-file-lines"
+                      size={ICON_SIZE.LG}
+                      padding={ICON_PADDING.NONE}
+                    />
+                  </ToggletipButton>
+                  <ToggletipContent>{allergy.note}</ToggletipContent>
+                </Toggletip>
+              )}
             </div>
-            {}
             <Tag className={getSeverityClassName(allergy.severity!)}>
               {t(getSeverityDisplayName(allergy.severity!))}
             </Tag>
-          </>
+          </div>
         );
       case 'manifestation':
         return allergy.reactions

@@ -7,19 +7,56 @@
   @include type-style("heading-compact-01");
   margin: 0;
   justify-self: start;
-  align-self: center;
+  align-self: start;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.addAllergyNote {
+  @include type-style("body-compact-01");
+  display: block;
+  margin-top: $spacing-02;
+  color: $link-primary;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &[aria-disabled="true"] {
+    color: $text-disabled;
+    cursor: not-allowed;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: none;
+      color: $text-disabled;
+    }
+
+    &:focus {
+      text-decoration: none;
+      color: $text-disabled;
+      outline: none;
+    }
+
+    &:active {
+      text-decoration: none;
+      color: $text-disabled;
+      outline: none;
+    }
+  }
 }
 
 .selectedAllergySeverity {
   width: -webkit-fill-available !important;
   justify-self: end;
-  align-self: center;
+  align-self: start;
   margin-inline-end: 0 !important;
 }
 
 .selectedAllergyReactions {
   width: -webkit-fill-available !important;
   justify-self: end;
-  align-self: center;
+  align-self: start;
   margin-inline-end: 0 !important;
 }

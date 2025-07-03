@@ -27,6 +27,7 @@ const AllergiesForm: React.FC = React.memo(() => {
     removeAllergy,
     updateSeverity,
     updateReactions,
+    updateNote,
   } = useAllergyStore();
 
   // Use allergen search hook
@@ -149,6 +150,7 @@ const AllergiesForm: React.FC = React.memo(() => {
                 reactionConcepts={reactionConcepts}
                 updateSeverity={updateSeverity}
                 updateReactions={updateReactions}
+                updateNote={updateNote}
               />
             </SelectedItem>
           ))}

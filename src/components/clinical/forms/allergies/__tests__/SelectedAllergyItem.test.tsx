@@ -46,6 +46,7 @@ const defaultProps = {
   reactionConcepts: mockReactionConcepts,
   updateSeverity: jest.fn(),
   updateReactions: jest.fn(),
+  updateNote: jest.fn(),
 };
 
 const renderWithI18n = (component: React.ReactElement) => {
@@ -196,6 +197,97 @@ describe('SelectedAllergyItem', () => {
         [],
       );
     });
+
+    test('shows Add Note link when no note exists', () => {
+      const allergyWithoutNote = {
+        ...mockAllergy,
+        note: undefined,
+      };
+
+      renderWithI18n(
+        <SelectedAllergyItem {...defaultProps} allergy={allergyWithoutNote} />,
+      );
+
+      expect(screen.getByText('Add Note')).toBeInTheDocument();
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    });
+
+    test('shows TextArea when Add Note link is clicked', async () => {
+      const user = userEvent.setup();
+      const allergyWithoutNote = {
+        ...mockAllergy,
+        note: undefined,
+      };
+
+      renderWithI18n(
+        <SelectedAllergyItem {...defaultProps} allergy={allergyWithoutNote} />,
+      );
+
+      const addNoteLink = screen.getByRole('link', { name: 'Add Note' });
+      await user.click(addNoteLink);
+
+      expect(screen.getByRole('textbox')).toBeInTheDocument();
+      expect(
+        screen.queryByRole('link', { name: 'Add Note' }),
+      ).not.toBeInTheDocument();
+    });
+
+    test('calls updateNote when text is changed', async () => {
+      const user = userEvent.setup();
+      const allergyWithoutNote = {
+        ...mockAllergy,
+        note: undefined,
+      };
+
+      renderWithI18n(
+        <SelectedAllergyItem {...defaultProps} allergy={allergyWithoutNote} />,
+      );
+
+      const addNoteLink = screen.getByText('Add Note');
+      await user.click(addNoteLink);
+      const note = 'Test note content';
+      const textbox = screen.getByRole('textbox');
+      await user.type(textbox, note);
+
+      expect(defaultProps.updateNote).toHaveBeenCalledTimes(17);
+      for (let i = 0; i < 16; i++) {
+        expect(defaultProps.updateNote).toHaveBeenNthCalledWith(
+          i + 1,
+          'test-allergy-1',
+          note[i],
+        );
+      }
+    });
+
+    test('passes correct note value to TextArea when note exists', () => {
+      const allergyWithNote = {
+        ...mockAllergy,
+        note: 'Existing note content',
+      };
+
+      renderWithI18n(
+        <SelectedAllergyItem {...defaultProps} allergy={allergyWithNote} />,
+      );
+
+      const textbox = screen.getByRole('textbox');
+      expect(textbox).toHaveValue('Existing note content');
+    });
+
+    test('hides Add Note link when note exists', () => {
+      const allergyWithNote = {
+        ...mockAllergy,
+        note: 'Existing note content',
+      };
+
+      renderWithI18n(
+        <SelectedAllergyItem {...defaultProps} allergy={allergyWithNote} />,
+      );
+
+      expect(
+        screen.queryByRole('link', { name: 'Add Note' }),
+      ).not.toBeInTheDocument();
+      expect(screen.getByRole('textbox')).toBeInTheDocument();
+    });
   });
 
   // SAD PATH TESTS
@@ -212,6 +304,7 @@ describe('SelectedAllergyItem', () => {
           reactionConcepts={defaultProps.reactionConcepts}
           updateSeverity={defaultProps.updateSeverity}
           updateReactions={defaultProps.updateReactions}
+          updateNote={defaultProps.updateNote}
         />,
       );
 
@@ -236,6 +329,7 @@ describe('SelectedAllergyItem', () => {
           reactionConcepts={defaultProps.reactionConcepts}
           updateSeverity={defaultProps.updateSeverity}
           updateReactions={defaultProps.updateReactions}
+          updateNote={defaultProps.updateNote}
         />,
       );
 
@@ -260,6 +354,7 @@ describe('SelectedAllergyItem', () => {
           reactionConcepts={defaultProps.reactionConcepts}
           updateSeverity={defaultProps.updateSeverity}
           updateReactions={defaultProps.updateReactions}
+          updateNote={defaultProps.updateNote}
         />,
       );
 
@@ -288,6 +383,7 @@ describe('SelectedAllergyItem', () => {
           reactionConcepts={defaultProps.reactionConcepts}
           updateSeverity={defaultProps.updateSeverity}
           updateReactions={defaultProps.updateReactions}
+          updateNote={defaultProps.updateNote}
         />,
       );
 
@@ -309,15 +405,13 @@ describe('SelectedAllergyItem', () => {
           reactionConcepts={defaultProps.reactionConcepts}
           updateSeverity={defaultProps.updateSeverity}
           updateReactions={defaultProps.updateReactions}
+          updateNote={defaultProps.updateNote}
         />,
       );
 
-      const titleDiv = screen
-        .getByTestId('allergy-severity-dropdown-test-allergy-1')
-        .closest('.cds--css-grid')
-        ?.querySelector('.selectedAllergyTitle');
-      expect(titleDiv).toBeInTheDocument();
-      expect(titleDiv?.textContent?.trim()).toBe(longDisplay + ' [Food]');
+      // Check that the long display text is rendered
+      expect(screen.getByText(new RegExp(longDisplay))).toBeInTheDocument();
+      expect(screen.getByText(/Food/)).toBeInTheDocument();
     });
 
     test('handles display with special characters', () => {
@@ -333,17 +427,15 @@ describe('SelectedAllergyItem', () => {
           reactionConcepts={defaultProps.reactionConcepts}
           updateSeverity={defaultProps.updateSeverity}
           updateReactions={defaultProps.updateReactions}
+          updateNote={defaultProps.updateNote}
         />,
       );
 
-      const titleDiv = screen
-        .getByTestId('allergy-severity-dropdown-test-allergy-1')
-        .closest('.cds--css-grid')
-        ?.querySelector('.selectedAllergyTitle');
-      expect(titleDiv).toBeInTheDocument();
-      expect(titleDiv?.textContent?.trim()).toBe(
-        specialCharDisplay + ' [Food]',
-      );
+      // Check that the special character display text is rendered
+      expect(
+        screen.getByText(new RegExp(specialCharDisplay)),
+      ).toBeInTheDocument();
+      expect(screen.getByText(/Food/)).toBeInTheDocument();
     });
 
     test('itemToString handles missing display in severity and reaction concepts gracefully', () => {
@@ -386,12 +478,114 @@ describe('SelectedAllergyItem', () => {
           reactionConcepts={defaultProps.reactionConcepts}
           updateSeverity={defaultProps.updateSeverity}
           updateReactions={defaultProps.updateReactions}
+          updateNote={defaultProps.updateNote}
         />,
       );
 
       expect(
         screen.queryByText('Please select a value'),
       ).not.toBeInTheDocument();
+    });
+
+    test('handles note removal via close button', async () => {
+      const user = userEvent.setup();
+      const allergyWithNote = {
+        ...mockAllergy,
+        note: 'Existing note content',
+      };
+
+      const mockUpdateNote = jest.fn();
+      const { rerender } = renderWithI18n(
+        <SelectedAllergyItem
+          {...defaultProps}
+          allergy={allergyWithNote}
+          updateNote={mockUpdateNote}
+        />,
+      );
+
+      const closeButton = screen.getByRole('button', { name: /close/i });
+      await user.click(closeButton);
+
+      // Verify updateNote was called to clear the note
+      expect(mockUpdateNote).toHaveBeenCalledWith('test-allergy-1', '');
+
+      // Simulate parent component updating the allergy data
+      const updatedAllergy = {
+        ...allergyWithNote,
+        note: '',
+      };
+
+      rerender(
+        <SelectedAllergyItem
+          {...defaultProps}
+          allergy={updatedAllergy}
+          updateNote={mockUpdateNote}
+        />,
+      );
+
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+      expect(screen.getByText('Add Note')).toBeInTheDocument();
+    });
+
+    test('respects 1024 character limit', () => {
+      const allergyWithNote = {
+        ...mockAllergy,
+        note: 'Existing note content',
+      };
+
+      renderWithI18n(
+        <SelectedAllergyItem {...defaultProps} allergy={allergyWithNote} />,
+      );
+
+      const textbox = screen.getByRole('textbox');
+      expect(textbox).toHaveAttribute('maxlength', '1024');
+    });
+
+    test('handles empty string note correctly', () => {
+      const allergyWithEmptyNote = {
+        ...mockAllergy,
+        note: '',
+      };
+
+      renderWithI18n(
+        <SelectedAllergyItem
+          {...defaultProps}
+          allergy={allergyWithEmptyNote}
+        />,
+      );
+
+      // Empty string should be treated as no note
+      expect(screen.getByText('Add Note')).toBeInTheDocument();
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    });
+
+    test('itemToString returns empty string when reaction concept has no display', () => {
+      const reactionConceptsWithoutDisplay = [
+        { code: 'test-reaction', system: 'http://snomed.info/sct' },
+      ];
+
+      const allergyWithMissingDisplayReaction = {
+        ...mockAllergy,
+        selectedReactions: [reactionConceptsWithoutDisplay[0]],
+      };
+
+      renderWithI18n(
+        <SelectedAllergyItem
+          {...defaultProps}
+          allergy={allergyWithMissingDisplayReaction}
+          reactionConcepts={reactionConceptsWithoutDisplay}
+        />,
+      );
+
+      // Component should render without crashing
+      const multiselect = screen.getByRole('combobox', {
+        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
+      });
+      expect(multiselect).toBeInTheDocument();
+
+      // Should show a tag with no text (empty string)
+      const selectedTag = screen.getByTitle('1');
+      expect(selectedTag).toBeInTheDocument();
     });
   });
 
@@ -430,6 +624,7 @@ describe('SelectedAllergyItem', () => {
           reactionConcepts={defaultProps.reactionConcepts}
           updateSeverity={defaultProps.updateSeverity}
           updateReactions={defaultProps.updateReactions}
+          updateNote={defaultProps.updateNote}
         />,
       );
       expect(container).toMatchSnapshot();

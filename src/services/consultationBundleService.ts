@@ -190,6 +190,7 @@ export function createAllergiesBundleEntries({
       encounterSubject,
       getPlaceholderReference(encounterReference),
       createPractitionerReference(practitionerUUID),
+      allergy.note,
     );
 
     const allergyBundleEntry = createBundleEntry(

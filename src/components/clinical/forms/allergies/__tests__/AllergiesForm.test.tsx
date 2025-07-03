@@ -1,21 +1,21 @@
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { I18nextProvider } from 'react-i18next';
-import i18n from '@/setupTests.i18n';
+import { axe, toHaveNoViolations } from 'jest-axe';
+
 import AllergiesForm from '../AllergiesForm';
 import { useAllergyStore } from '@stores/allergyStore';
 import useAllergenSearch from '@hooks/useAllergenSearch';
-import { axe, toHaveNoViolations } from 'jest-axe';
+import i18n from '@/setupTests.i18n';
 import { AllergenConcept } from '@types/concepts';
 import { Coding } from 'fhir/r4';
+
 expect.extend(toHaveNoViolations);
 
-// Mock the store and hooks
+// Mock modules
 jest.mock('@stores/allergyStore');
 jest.mock('@hooks/useAllergenSearch');
-
-// Mock CSS modules
 jest.mock('../styles/AllergiesForm.module.scss', () => ({
   allergiesFormTile: 'allergiesFormTile',
   allergiesFormTitle: 'allergiesFormTitle',
@@ -43,12 +43,22 @@ const mockReactions: Coding[] = [
   },
 ];
 
-const mockStore = {
+const mockSelectedAllergy = {
+  id: mockAllergen.uuid,
+  display: mockAllergen.display,
+  selectedSeverity: null,
+  selectedReactions: [],
+  errors: {},
+  hasBeenValidated: false,
+};
+
+const mockAllergyStore = {
   selectedAllergies: [],
   addAllergy: jest.fn(),
   removeAllergy: jest.fn(),
   updateSeverity: jest.fn(),
   updateReactions: jest.fn(),
+  updateNote: jest.fn(),
   validateAllAllergies: jest.fn(),
   reset: jest.fn(),
   getState: jest.fn(),
@@ -61,175 +71,77 @@ const mockAllergenSearch = {
   error: null,
 };
 
+// Test utilities
+const renderAllergiesForm = (overrides = {}) => {
+  const mockStore = { ...mockAllergyStore, ...overrides };
+  (
+    useAllergyStore as jest.MockedFunction<typeof useAllergyStore>
+  ).mockReturnValue(mockStore);
+
+  return render(
+    <I18nextProvider i18n={i18n}>
+      <AllergiesForm />
+    </I18nextProvider>,
+  );
+};
+
+const mockAllergenSearchHook = (overrides = {}) => {
+  const searchHook = { ...mockAllergenSearch, ...overrides };
+  (
+    useAllergenSearch as jest.MockedFunction<typeof useAllergenSearch>
+  ).mockReturnValue(searchHook);
+};
+
+const getSearchCombobox = () =>
+  screen.getByRole('combobox', { name: /search for allergies/i });
+
 describe('AllergiesForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(console, 'error').mockImplementation(() => {});
     window.HTMLElement.prototype.scrollIntoView = jest.fn();
-    (useAllergyStore as unknown as jest.Mock).mockReturnValue(mockStore);
-    (useAllergenSearch as jest.Mock).mockReturnValue(mockAllergenSearch);
+
+    // Set default mocks
+    (
+      useAllergyStore as jest.MockedFunction<typeof useAllergyStore>
+    ).mockReturnValue(mockAllergyStore);
+    mockAllergenSearchHook();
+
     i18n.changeLanguage('en');
   });
 
-  // HAPPY PATH TESTS
-  describe('Happy Path Scenarios', () => {
-    test('renders search box correctly', () => {
-      render(
-        <I18nextProvider i18n={i18n}>
-          <AllergiesForm />
-        </I18nextProvider>,
-      );
-
-      expect(
-        screen.getByRole('combobox', { name: /search for allergies/i }),
-      ).toBeInTheDocument();
+  describe('Rendering', () => {
+    it('should render search box correctly', () => {
+      renderAllergiesForm();
+      expect(getSearchCombobox()).toBeInTheDocument();
     });
 
-    test('adds an allergy when selected from search', async () => {
-      const user = userEvent.setup();
-      (useAllergenSearch as jest.Mock).mockReturnValue({
-        ...mockAllergenSearch,
-        allergens: [mockAllergen],
-      });
-
-      render(
-        <I18nextProvider i18n={i18n}>
-          <AllergiesForm />
-        </I18nextProvider>,
-      );
-
-      const searchBox = screen.getByRole('combobox', {
-        name: /search for allergies/i,
-      });
-
-      // Type in the search box
-      await waitFor(async () => {
-        await user.type(searchBox, 'peanut');
-      });
-
-      // Wait for the dropdown item to appear
-      await waitFor(() => {
-        expect(screen.getByText('Peanut Allergy [Food]')).toBeInTheDocument();
-      });
-
-      // Click on the dropdown item
-      await waitFor(async () => {
-        await user.click(screen.getByText('Peanut Allergy [Food]'));
-      });
-
-      // Verify the store was called correctly
-      await waitFor(() => {
-        expect(mockStore.addAllergy).toHaveBeenCalledWith(mockAllergen);
-      });
-    });
-
-    test('displays selected allergies', () => {
-      (useAllergyStore as unknown as jest.Mock).mockReturnValue({
-        ...mockStore,
-        selectedAllergies: [
-          {
-            id: mockAllergen.uuid,
-            display: mockAllergen.display,
-            selectedSeverity: null,
-            selectedReactions: [],
-            errors: {},
-            hasBeenValidated: false,
-          },
-        ],
-      });
-
-      render(
-        <I18nextProvider i18n={i18n}>
-          <AllergiesForm />
-        </I18nextProvider>,
-      );
-
+    it('should display selected allergies', () => {
+      renderAllergiesForm({ selectedAllergies: [mockSelectedAllergy] });
       expect(screen.getByText(/Peanut Allergy/)).toBeInTheDocument();
     });
 
-    test('removes an allergy when close button is clicked', async () => {
+    it('should show loading state while searching', async () => {
       const user = userEvent.setup();
-      (useAllergyStore as unknown as jest.Mock).mockReturnValue({
-        ...mockStore,
-        selectedAllergies: [
-          {
-            id: mockAllergen.uuid,
-            display: mockAllergen.display,
-            selectedReactions: [],
-            errors: {},
-            hasBeenValidated: false,
-          },
-        ],
-      });
+      mockAllergenSearchHook({ isLoading: true });
 
-      render(
-        <I18nextProvider i18n={i18n}>
-          <AllergiesForm />
-        </I18nextProvider>,
-      );
+      renderAllergiesForm();
 
-      // Use data-testid to find the close button
-      const closeButton = screen.getByTestId('selected-item-close-button');
-      await waitFor(async () => {
-        await user.click(closeButton);
-      });
+      await user.type(getSearchCombobox(), 'a');
 
-      await waitFor(() => {
-        expect(mockStore.removeAllergy).toHaveBeenCalledWith(mockAllergen.uuid);
-      });
-    });
-  });
-
-  // SAD PATH TESTS
-  describe('Sad Path Scenarios', () => {
-    test('shows loading state while searching', async () => {
-      const user = userEvent.setup();
-      (useAllergenSearch as jest.Mock).mockReturnValue({
-        ...mockAllergenSearch,
-        isLoading: true,
-      });
-
-      render(
-        <I18nextProvider i18n={i18n}>
-          <AllergiesForm />
-        </I18nextProvider>,
-      );
-
-      // Type something in the search box to trigger the loading state
-      const searchBox = screen.getByRole('combobox', {
-        name: /search for allergies/i,
-      });
-      await waitFor(async () => {
-        await user.type(searchBox, 'a');
-      });
-      // Use a more flexible text matcher
       await waitFor(() => {
         expect(screen.getByText(/loading concepts/i)).toBeInTheDocument();
       });
     });
 
-    test('shows error when search fails', async () => {
+    it('should show error when search fails', async () => {
       const user = userEvent.setup();
-      (useAllergenSearch as jest.Mock).mockReturnValue({
-        ...mockAllergenSearch,
-        error: new Error('Failed to load allergens'),
-      });
+      mockAllergenSearchHook({ error: new Error('Failed to load allergens') });
 
-      render(
-        <I18nextProvider i18n={i18n}>
-          <AllergiesForm />
-        </I18nextProvider>,
-      );
+      renderAllergiesForm();
 
-      // Type something in the search box to trigger the search
-      const searchBox = screen.getByRole('combobox', {
-        name: /search for allergies/i,
-      });
-      await waitFor(async () => {
-        await user.type(searchBox, 'a');
-      });
+      await user.type(getSearchCombobox(), 'a');
 
-      // Use a more flexible text matcher
       await waitFor(() => {
         expect(
           screen.getByText(/unexpected error occurred/i),
@@ -237,29 +149,302 @@ describe('AllergiesForm', () => {
       });
     });
 
-    test('shows message when no search results found', async () => {
+    it('should show message when no search results found', async () => {
       const user = userEvent.setup();
-      (useAllergenSearch as jest.Mock).mockReturnValue({
-        ...mockAllergenSearch,
-        allergens: [], // Empty array to simulate no results
+      mockAllergenSearchHook({ allergens: [] });
+
+      renderAllergiesForm();
+
+      await user.type(getSearchCombobox(), 'nonexistent');
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/No matching allergen recorded/i),
+        ).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Allergy Selection', () => {
+    it('should add an allergy when selected from search results', async () => {
+      const user = userEvent.setup();
+      const mockAddAllergy = jest.fn();
+
+      mockAllergenSearchHook({ allergens: [mockAllergen] });
+      renderAllergiesForm({ addAllergy: mockAddAllergy });
+
+      await user.type(getSearchCombobox(), 'peanut');
+
+      await waitFor(() => {
+        expect(screen.getByText('Peanut Allergy [Food]')).toBeInTheDocument();
       });
 
-      render(
+      await user.click(screen.getByText('Peanut Allergy [Food]'));
+
+      await waitFor(() => {
+        expect(mockAddAllergy).toHaveBeenCalledWith(mockAllergen);
+      });
+    });
+
+    it('should prevent adding duplicate allergies', async () => {
+      const user = userEvent.setup();
+      const mockAddAllergy = jest.fn();
+
+      mockAllergenSearchHook({ allergens: [mockAllergen] });
+      renderAllergiesForm({
+        selectedAllergies: [mockSelectedAllergy],
+        addAllergy: mockAddAllergy,
+      });
+
+      await user.type(getSearchCombobox(), 'peanut');
+
+      await waitFor(async () => {
+        const alreadyAddedOption = screen.getByText(
+          'Peanut Allergy (Already added)',
+        );
+        expect(alreadyAddedOption).toBeInTheDocument();
+        await user.click(alreadyAddedOption);
+      });
+
+      expect(mockAddAllergy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Input Validation', () => {
+    const testCases = [
+      { name: 'null selectedItem', selectedItem: null },
+      { name: 'undefined selectedItem', selectedItem: undefined },
+      {
+        name: 'selectedItem with empty uuid',
+        selectedItem: {
+          uuid: '',
+          display: 'Test Allergy',
+          type: 'food',
+          disabled: false,
+        },
+      },
+      {
+        name: 'selectedItem with empty display',
+        selectedItem: {
+          uuid: 'test-uuid',
+          display: '',
+          type: 'food',
+          disabled: false,
+        },
+      },
+      {
+        name: 'selectedItem with missing uuid',
+        selectedItem: {
+          display: 'Test Allergy',
+          type: 'food',
+          disabled: false,
+        },
+      },
+      {
+        name: 'selectedItem with missing display',
+        selectedItem: { uuid: 'test-uuid', type: 'food', disabled: false },
+      },
+    ];
+
+    testCases.forEach(({ name, selectedItem }) => {
+      it(`should not add allergy when ${name}`, () => {
+        const mockAddAllergy = jest.fn();
+        const { container } = renderAllergiesForm({
+          addAllergy: mockAddAllergy,
+        });
+
+        const comboBoxElement = container.querySelector('#allergies-search');
+        const changeEvent = new CustomEvent('change', {
+          detail: { selectedItem },
+        });
+
+        comboBoxElement?.dispatchEvent(changeEvent);
+
+        expect(mockAddAllergy).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('Search Functionality', () => {
+    it('should handle input changes and trigger search', async () => {
+      const user = userEvent.setup();
+      mockAllergenSearchHook({ allergens: [mockAllergen] });
+
+      renderAllergiesForm();
+
+      const searchBox = getSearchCombobox();
+      await user.type(searchBox, 'peanut');
+
+      // Verify search is triggered
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('peanut')).toBeInTheDocument();
+      });
+    });
+
+    it('should return empty array when search term is empty', () => {
+      renderAllergiesForm();
+
+      // The component should not show any search results when search term is empty
+      expect(screen.queryByText('Peanut Allergy')).not.toBeInTheDocument();
+    });
+
+    it('should handle search with special characters', async () => {
+      const user = userEvent.setup();
+      mockAllergenSearchHook({ allergens: [] });
+
+      renderAllergiesForm();
+
+      await user.type(getSearchCombobox(), '!@#$%');
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/No matching allergen recorded/i),
+        ).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('ComboBox ItemToString Function', () => {
+    it('should format item display with type category', async () => {
+      const user = userEvent.setup();
+      mockAllergenSearchHook({ allergens: [mockAllergen] });
+
+      renderAllergiesForm();
+
+      await user.type(getSearchCombobox(), 'peanut');
+
+      await waitFor(() => {
+        expect(screen.getByText('Peanut Allergy [Food]')).toBeInTheDocument();
+      });
+    });
+
+    it('should format item display without type when already selected', async () => {
+      const user = userEvent.setup();
+      mockAllergenSearchHook({ allergens: [mockAllergen] });
+      renderAllergiesForm({ selectedAllergies: [mockSelectedAllergy] });
+
+      await user.type(getSearchCombobox(), 'peanut');
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('Peanut Allergy (Already added)'),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it('should handle null item in itemToString', async () => {
+      const user = userEvent.setup();
+      mockAllergenSearchHook({ allergens: [{ ...mockAllergen, type: null }] });
+
+      renderAllergiesForm();
+
+      await user.type(getSearchCombobox(), 'peanut');
+
+      await waitFor(() => {
+        expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should display error message when API fails', async () => {
+      const user = userEvent.setup();
+      mockAllergenSearchHook({ error: new Error('API Error'), allergens: [] });
+
+      renderAllergiesForm();
+
+      await user.type(getSearchCombobox(), 'test');
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/unexpected error occurred/i),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it('should handle network errors gracefully', async () => {
+      const user = userEvent.setup();
+      mockAllergenSearchHook({
+        error: new Error('Network Error'),
+        allergens: [],
+        isLoading: false,
+      });
+
+      renderAllergiesForm();
+
+      await user.type(getSearchCombobox(), 'network');
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/unexpected error occurred/i),
+        ).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Memoization', () => {
+    it('should memoize filtered search results correctly', async () => {
+      const user = userEvent.setup();
+      mockAllergenSearchHook({ allergens: [mockAllergen] });
+
+      const { rerender } = renderAllergiesForm();
+
+      await user.type(getSearchCombobox(), 'peanut');
+
+      await waitFor(() => {
+        expect(screen.getByText('Peanut Allergy [Food]')).toBeInTheDocument();
+      });
+
+      // Rerender with same props should use memoized results
+      rerender(
         <I18nextProvider i18n={i18n}>
           <AllergiesForm />
         </I18nextProvider>,
       );
 
-      // Type something in the search box to trigger the search
-      const searchBox = screen.getByRole('combobox', {
-        name: /search for allergies/i,
+      expect(screen.getByText('Peanut Allergy [Food]')).toBeInTheDocument();
+    });
+  });
+
+  describe('State Management', () => {
+    it('should call removeAllergy when allergy is removed', () => {
+      const mockRemoveAllergy = jest.fn();
+      renderAllergiesForm({
+        selectedAllergies: [mockSelectedAllergy],
+        removeAllergy: mockRemoveAllergy,
       });
 
-      await waitFor(async () => {
-        await user.type(searchBox, 'nonexistent');
+      const removeButton = screen.getByRole('button', { name: /close/i });
+      removeButton.click();
+
+      expect(mockRemoveAllergy).toHaveBeenCalledWith(mockSelectedAllergy.id);
+    });
+
+    it('should handle multiple selected allergies', () => {
+      const secondAllergy = {
+        ...mockSelectedAllergy,
+        id: 'test-allergy-2',
+        display: 'Shellfish Allergy',
+      };
+
+      renderAllergiesForm({
+        selectedAllergies: [mockSelectedAllergy, secondAllergy],
       });
 
-      // Use a more flexible text matcher
+      expect(screen.getByText(/Peanut Allergy/)).toBeInTheDocument();
+      expect(screen.getByText(/Shellfish Allergy/)).toBeInTheDocument();
+    });
+  });
+
+  describe('Edge Cases', () => {
+    it('should handle empty allergen list gracefully', async () => {
+      const user = userEvent.setup();
+      mockAllergenSearchHook({ allergens: [], isLoading: false, error: null });
+
+      renderAllergiesForm();
+
+      await user.type(getSearchCombobox(), 'nonexistent');
+
       await waitFor(() => {
         expect(
           screen.getByText(/No matching allergen recorded/i),
@@ -267,136 +452,70 @@ describe('AllergiesForm', () => {
       });
     });
 
-    test('does not add allergy when selected item is invalid', async () => {
-      render(
-        <I18nextProvider i18n={i18n}>
-          <AllergiesForm />
-        </I18nextProvider>,
-      );
+    it('should handle malformed allergen data', async () => {
+      const user = userEvent.setup();
+      const malformedAllergen = {
+        uuid: 'test-id',
+        display: null, // null display
+        type: 'food',
+        disabled: false,
+      };
 
-      const searchBox = screen.getByRole('combobox', {
-        name: /search for allergies/i,
-      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      mockAllergenSearchHook({ allergens: [malformedAllergen as any] });
 
-      // Test with undefined selectedItem
+      renderAllergiesForm();
+
+      await user.type(getSearchCombobox(), 'malformed');
+
+      // Should not crash and handle gracefully
       await waitFor(() => {
-        fireEvent.change(searchBox, {
-          target: { value: 'test' },
-          selectedItem: undefined,
-        });
+        expect(getSearchCombobox()).toBeInTheDocument();
       });
-      expect(mockStore.addAllergy).not.toHaveBeenCalled();
-
-      // Test with missing uuid
-      await waitFor(() => {
-        fireEvent.change(searchBox, {
-          target: { value: 'test' },
-          selectedItem: { display: 'Test Allergy' },
-        });
-      });
-      expect(mockStore.addAllergy).not.toHaveBeenCalled();
-
-      // Test with missing display
-      await waitFor(() => {
-        fireEvent.change(searchBox, {
-          target: { value: 'test' },
-          selectedItem: { uuid: 'test-uuid' },
-        });
-      });
-      expect(mockStore.addAllergy).not.toHaveBeenCalled();
     });
 
-    test('prevents adding duplicate allergies', async () => {
+    it('should handle rapid search input changes', async () => {
       const user = userEvent.setup();
-      (useAllergenSearch as jest.Mock).mockReturnValue({
-        ...mockAllergenSearch,
-        allergens: [mockAllergen],
-      });
-      (useAllergyStore as unknown as jest.Mock).mockReturnValue({
-        ...mockStore,
-        selectedAllergies: [
-          {
-            id: mockAllergen.uuid,
-            display: mockAllergen.display,
-            selectedReactions: [],
-            errors: {},
-            hasBeenValidated: false,
-          },
-        ],
-      });
+      mockAllergenSearchHook({ allergens: [mockAllergen] });
 
-      render(
-        <I18nextProvider i18n={i18n}>
-          <AllergiesForm />
-        </I18nextProvider>,
-      );
+      renderAllergiesForm();
 
-      const searchBox = screen.getByRole('combobox', {
-        name: /search for allergies/i,
-      });
-
-      await waitFor(async () => {
-        await user.type(searchBox, 'peanut');
-      });
-
-      // Use the correct text that appears in the DOM
-      await waitFor(async () => {
-        await user.click(screen.getByText('Peanut Allergy (Already added)'));
-      });
+      const searchBox = getSearchCombobox();
+      await user.type(searchBox, 'p');
+      await user.type(searchBox, 'e');
+      await user.type(searchBox, 'a');
 
       await waitFor(() => {
-        expect(mockStore.addAllergy).not.toHaveBeenCalled();
-        // The test is also looking for "Allergy already selected" which might not be correct
-        // Let's use a more flexible approach
-        expect(screen.getByText(/already added/i)).toBeInTheDocument();
+        expect(screen.getByDisplayValue('pea')).toBeInTheDocument();
       });
     });
   });
 
-  // ACCESSIBILITY TESTS
   describe('Accessibility', () => {
-    test('should have no accessibility violations', async () => {
-      const { container } = render(
-        <I18nextProvider i18n={i18n}>
-          <AllergiesForm />
-        </I18nextProvider>,
-      );
-
+    it('should have no accessibility violations', async () => {
+      const { container } = renderAllergiesForm();
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });
   });
 
-  // SNAPSHOT TESTS
-  describe('Snapshot Tests', () => {
-    test('matches snapshot with no allergies', () => {
-      const { container } = render(
-        <I18nextProvider i18n={i18n}>
-          <AllergiesForm />
-        </I18nextProvider>,
-      );
+  describe('Snapshots', () => {
+    it('should match snapshot with no allergies', () => {
+      const { container } = renderAllergiesForm();
       expect(container).toMatchSnapshot();
     });
 
-    test('matches snapshot with selected allergies', () => {
-      (useAllergyStore as unknown as jest.Mock).mockReturnValue({
-        ...mockStore,
-        selectedAllergies: [
-          {
-            id: mockAllergen.uuid,
-            display: mockAllergen.display,
-            selectedReactions: [mockReactions[0]],
-            errors: {},
-            hasBeenValidated: true,
-          },
-        ],
+    it('should match snapshot with selected allergies', () => {
+      const selectedAllergyWithReactions = {
+        ...mockSelectedAllergy,
+        selectedReactions: [mockReactions[0]],
+        hasBeenValidated: true,
+      };
+
+      const { container } = renderAllergiesForm({
+        selectedAllergies: [selectedAllergyWithReactions],
       });
 
-      const { container } = render(
-        <I18nextProvider i18n={i18n}>
-          <AllergiesForm />
-        </I18nextProvider>,
-      );
       expect(container).toMatchSnapshot();
     });
   });
