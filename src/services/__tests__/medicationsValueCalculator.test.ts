@@ -372,6 +372,102 @@ describe('medicationsValueCalculator', () => {
 
       expect(result).toBe(15); // Math.ceil(2.5 * 2 * 3 * 1) = 15
     });
+
+    it('should return 0 when durationUnit is null', () => {
+      const result = calculateTotalQuantity(10, mockFrequency, 5, null);
+
+      expect(result).toBe(0);
+    });
+
+    it('should return at least the dosage when calculated result is less than dosage', () => {
+      // Test case where frequency * duration * daysMultiplier < 1
+      const lowFrequency: Frequency = {
+        name: 'Once every 3 days',
+        uuid: 'low-freq',
+        frequencyPerDay: 0.33, // Once every 3 days
+      };
+
+      const result = calculateTotalQuantity(
+        10,
+        lowFrequency,
+        1,
+        mockDurationUnit,
+      );
+
+      // 10 * 0.33 * 1 * 1 = 3.3, rounded up to 4
+      // Since 4 < 10 (dosage), should return 10
+      expect(result).toBe(10);
+    });
+
+    it('should return calculated result when it equals or exceeds dosage', () => {
+      // Test case where calculated result >= dosage
+      const result = calculateTotalQuantity(
+        5,
+        mockFrequency,
+        3,
+        mockDurationUnit,
+      );
+
+      // 5 * 2 * 3 * 1 = 30, which is >= 5
+      expect(result).toBe(30);
+    });
+
+    it('should return 0 when calculated result is 0 even if less than dosage', () => {
+      // This tests that the minimum dosage logic only applies to non-zero results
+      const zeroFrequency: Frequency = {
+        name: 'Zero frequency',
+        uuid: 'zero-freq',
+        frequencyPerDay: 0,
+      };
+
+      const result = calculateTotalQuantity(
+        10,
+        zeroFrequency,
+        5,
+        mockDurationUnit,
+      );
+
+      // Should return 0, not 10, because the result is 0
+      expect(result).toBe(0);
+    });
+
+    it('should handle edge case with very small frequency resulting in 1 after ceiling', () => {
+      const veryLowFrequency: Frequency = {
+        name: 'Very low frequency',
+        uuid: 'very-low-freq',
+        frequencyPerDay: 0.01, // Very small frequency
+      };
+
+      const result = calculateTotalQuantity(
+        100,
+        veryLowFrequency,
+        1,
+        mockDurationUnit,
+      );
+
+      // 100 * 0.01 * 1 * 1 = 1
+      // Since 1 < 100 (dosage), should return 100
+      expect(result).toBe(100);
+    });
+
+    it('should handle fractional calculation that rounds up to exactly dosage', () => {
+      const customFrequency: Frequency = {
+        name: 'Custom frequency',
+        uuid: 'custom-freq',
+        frequencyPerDay: 0.4,
+      };
+
+      const result = calculateTotalQuantity(
+        5,
+        customFrequency,
+        2,
+        mockDurationUnit,
+      );
+
+      // 5 * 0.4 * 2 * 1 = 4, which is < 5
+      // Should return 5 (the dosage)
+      expect(result).toBe(5);
+    });
   });
 
   describe('isImmediateFrequency', () => {
