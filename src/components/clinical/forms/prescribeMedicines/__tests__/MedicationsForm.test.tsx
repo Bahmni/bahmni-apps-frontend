@@ -208,6 +208,74 @@ describe('MedicationsForm', () => {
       });
     });
 
+    test('prevents unnecessary API call when selecting medication item', async () => {
+      const user = userEvent.setup();
+      const mockSearchHook = jest.fn();
+
+      // Mock the search hook to track calls
+      (useMedicationSearch as jest.Mock).mockImplementation((searchTerm) => {
+        mockSearchHook(searchTerm);
+        return {
+          ...mockMedicationSearchHook,
+          searchResults: searchTerm ? [mockMedication] : [],
+        };
+      });
+
+      render(
+        <I18nextProvider i18n={i18n}>
+          <MedicationsForm />
+        </I18nextProvider>,
+      );
+
+      const searchBox = screen.getByRole('combobox', {
+        name: /search to add medication/i,
+      });
+
+      // Clear any initial calls
+      mockSearchHook.mockClear();
+
+      // Type to trigger search
+      await waitFor(async () => {
+        await user.type(searchBox, 'paracetamol');
+      });
+
+      // Verify search was called with the typed term
+      expect(mockSearchHook).toHaveBeenCalledWith('paracetamol');
+
+      // Wait for search results to appear
+      await waitFor(() => {
+        expect(screen.getByText('Paracetamol 500mg')).toBeInTheDocument();
+      });
+
+      // Clear the mock to track calls during selection
+      mockSearchHook.mockClear();
+
+      // Select the medication
+      await waitFor(async () => {
+        await user.click(screen.getByText('Paracetamol 500mg'));
+      });
+
+      // Verify the medication was added
+      await waitFor(() => {
+        expect(mockStore.addMedication).toHaveBeenCalledWith(
+          mockMedication,
+          'Paracetamol 500mg',
+        );
+      });
+
+      // Wait a bit to ensure any potential delayed calls would have happened
+      await waitFor(() => {}, { timeout: 200 });
+
+      // Verify that no additional search calls were made during selection
+      // The search should only be called with empty string when clearing the search term
+      const searchCallsAfterSelection = mockSearchHook.mock.calls;
+      const nonEmptySearchCalls = searchCallsAfterSelection.filter(
+        (call) => call[0] && call[0].trim() !== '',
+      );
+
+      expect(nonEmptySearchCalls).toHaveLength(0);
+    });
+
     test('displays selected medications with medication config', () => {
       (useMedicationStore as unknown as jest.Mock).mockReturnValue({
         ...mockStore,
