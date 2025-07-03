@@ -55,7 +55,8 @@ export const calculateTotalQuantity = (
   }
   const frequencyMultiplier = frequency.frequencyPerDay;
   const durationMultiplier = duration * durationUnit.daysMultiplier;
-  return Math.ceil(dosage * frequencyMultiplier * durationMultiplier);
+  const result = Math.ceil(dosage * frequencyMultiplier * durationMultiplier);
+  return result !== 0 && result < dosage ? dosage : result;
 };
 
 const getDrugFormName = (medication: Medication): string | undefined => {
