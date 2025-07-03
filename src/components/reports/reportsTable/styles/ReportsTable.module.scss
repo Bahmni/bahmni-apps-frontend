@@ -1,0 +1,39 @@
+.reportsTableContainer {
+  overflow: auto;
+  height: 90vh;
+  width: 90%;
+  max-width: 1400px;
+  margin-inline: auto;
+}
+
+.container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.dateRangeSelect {
+  width: 12rem;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.asterisck {
+  color: red;
+}
+
+.startDate {
+  width: 170px;
+}
+
+.endDate {
+  width: 170px;
+}
+
+.actionsContainer {
+  display: flex;
+  gap: 1rem;
+  width: 200px;
+}
