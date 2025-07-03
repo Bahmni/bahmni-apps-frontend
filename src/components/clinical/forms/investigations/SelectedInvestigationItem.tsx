@@ -43,7 +43,7 @@ const SelectedInvestigationItem: React.FC<SelectedInvestigationItemProps> =
             id={`investigation-priority-checkbox-${id}`}
             labelText={t('INVESTIGATION_PRIORITY_URGENT')}
             onChange={(_, { checked }) => handleUrgentChange(checked)}
-          ></Checkbox>
+          />
         </Column>
       </Grid>
     );

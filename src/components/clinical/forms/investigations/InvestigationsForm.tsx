@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { ComboBox, Tile } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import * as styles from './styles/InvestigationsForm.module.scss';
@@ -21,41 +21,45 @@ const InvestigationsForm: React.FC = React.memo(() => {
     removeServiceRequest,
   } = useServiceRequestStore();
 
-  const translateOrderType = (category: string): string => {
-    return t(`ORDER_TYPE_${category.toUpperCase().replace(/\s/g, '_')}`, {
-      defaultValue: category,
-    });
-  };
-
-  const arrangeFilteredInvestigationsByCategory = (
-    investigations: FlattenedInvestigations[],
-  ): FlattenedInvestigations[] => {
-    let currentCategory: string | null = null;
-    const investigationsByCategory: Map<string, FlattenedInvestigations[]> =
-      new Map();
-    for (const investigation of investigations) {
-      currentCategory = investigation.category.toUpperCase();
-      if (!investigationsByCategory.has(currentCategory)) {
-        investigationsByCategory.set(currentCategory, []);
-      }
-      investigationsByCategory.get(currentCategory)?.push(investigation);
-    }
-    const result: FlattenedInvestigations[] = [];
-    Array.from(investigationsByCategory.keys()).forEach((category) => {
-      const categoryItems = investigationsByCategory.get(category) || [];
-      result.push({
-        code: '',
-        display: translateOrderType(category),
-        category,
-        categoryCode: category,
-        disabled: true,
+  const translateOrderType = useCallback(
+    (category: string): string => {
+      return t(`ORDER_TYPE_${category.toUpperCase().replace(/\s/g, '_')}`, {
+        defaultValue: category,
       });
-      result.push(...categoryItems);
-    });
-    return result;
-  };
+    },
+    [t],
+  );
 
-  const getFilteredInvestigations = (): FlattenedInvestigations[] => {
+  const arrangeFilteredInvestigationsByCategory = useCallback(
+    (investigations: FlattenedInvestigations[]): FlattenedInvestigations[] => {
+      let currentCategory: string | null = null;
+      const investigationsByCategory: Map<string, FlattenedInvestigations[]> =
+        new Map();
+      for (const investigation of investigations) {
+        currentCategory = investigation.category.toUpperCase();
+        if (!investigationsByCategory.has(currentCategory)) {
+          investigationsByCategory.set(currentCategory, []);
+        }
+        investigationsByCategory.get(currentCategory)?.push(investigation);
+      }
+      const result: FlattenedInvestigations[] = [];
+      Array.from(investigationsByCategory.keys()).forEach((category) => {
+        const categoryItems = investigationsByCategory.get(category) || [];
+        result.push({
+          code: '',
+          display: translateOrderType(category),
+          category,
+          categoryCode: category,
+          disabled: true,
+        });
+        result.push(...categoryItems);
+      });
+      return result;
+    },
+    [translateOrderType],
+  );
+
+  const filteredInvestigations: FlattenedInvestigations[] = useMemo(() => {
     if (searchTerm.length === 0) return [];
     if (isLoading) {
       return [
@@ -113,11 +117,15 @@ const InvestigationsForm: React.FC = React.memo(() => {
     });
 
     return arrangeFilteredInvestigationsByCategory(mappedItems);
-  };
-  const filteredInvestigations: FlattenedInvestigations[] = useMemo(
-    () => getFilteredInvestigations(),
-    [investigations, searchTerm, isLoading, error],
-  );
+  }, [
+    investigations,
+    searchTerm,
+    isLoading,
+    error,
+    selectedServiceRequests,
+    t,
+    arrangeFilteredInvestigationsByCategory,
+  ]);
 
   const handleChange = (
     selectedItem: FlattenedInvestigations | null | undefined,
@@ -172,7 +180,7 @@ const InvestigationsForm: React.FC = React.memo(() => {
                   onPriorityChange={(priority) =>
                     updatePriority(category, serviceRequest.id, priority)
                   }
-                ></SelectedInvestigationItem>
+                />
               </SelectedItem>
             ))}
           </BoxWHeader>

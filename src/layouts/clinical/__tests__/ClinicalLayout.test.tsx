@@ -72,10 +72,10 @@ describe('ClinicalLayout Component', () => {
   describe('Sad Path', () => {
     test('renders with empty content in sections', () => {
       const emptyProps = {
-        headerWSideNav: <div data-testid="empty-header"></div>,
-        patientHeader: <div data-testid="empty-patient-header"></div>,
-        mainDisplay: <div data-testid="empty-main-display"></div>,
-        actionArea: <div data-testid="empty-action-area"></div>,
+        headerWSideNav: <div data-testid="empty-header" />,
+        patientHeader: <div data-testid="empty-patient-header" />,
+        mainDisplay: <div data-testid="empty-main-display" />,
+        actionArea: <div data-testid="empty-action-area" />,
         isActionAreaVisible: false,
       };
 

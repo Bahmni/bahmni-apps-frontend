@@ -49,7 +49,7 @@ export const useActivePractitioner = (): useActivePractitionerResult => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchActivePractitioner();

@@ -70,7 +70,7 @@ const MedicationsForm: React.FC = React.memo(() => {
     }, 100);
   };
 
-  const getFilteredSearchResults = (): MedicationFilterResult[] => {
+  const filteredSearchResults = useMemo(() => {
     if (!searchMedicationTerm || searchMedicationTerm.trim() === '') {
       return [];
     }
@@ -113,10 +113,6 @@ const MedicationsForm: React.FC = React.memo(() => {
         disabled: isAlreadySelected,
       };
     });
-  };
-
-  const filteredSearchResults = useMemo(() => {
-    return getFilteredSearchResults();
   }, [
     searchMedicationTerm,
     loading,
@@ -124,7 +120,6 @@ const MedicationsForm: React.FC = React.memo(() => {
     searchResults,
     selectedMedications,
     t,
-    getMedicationDisplay,
   ]);
 
   return (

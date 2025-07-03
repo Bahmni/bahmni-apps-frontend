@@ -38,7 +38,7 @@ export const useLocations = (): UseLocationsResult => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchLocations();

@@ -40,7 +40,7 @@ export const useConditions = (): UseConditionsResult => {
     } finally {
       setLoading(false);
     }
-  }, [patientUUID]);
+  }, [patientUUID, t]);
 
   useEffect(() => {
     fetchConditions();

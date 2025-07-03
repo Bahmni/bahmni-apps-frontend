@@ -351,9 +351,7 @@ describe('HeaderWSideNav', () => {
 
     it('does not expand SideNav when isSideNavExpanded=true and isRail=true', () => {
       mockIsSideNavExpanded = true;
-      const { container } = render(
-        <HeaderWSideNav {...defaultProps} isRail={true} />,
-      );
+      const { container } = render(<HeaderWSideNav {...defaultProps} isRail />);
 
       const sideNav = screen.getByTestId('side-nav');
       expect(sideNav).toHaveAttribute('data-expanded', 'false');
@@ -377,9 +375,7 @@ describe('HeaderWSideNav', () => {
 
     it('does not expand SideNav when isSideNavExpanded=false and isRail=true', () => {
       mockIsSideNavExpanded = false;
-      const { container } = render(
-        <HeaderWSideNav {...defaultProps} isRail={true} />,
-      );
+      const { container } = render(<HeaderWSideNav {...defaultProps} isRail />);
 
       const sideNav = screen.getByTestId('side-nav');
       expect(sideNav).toHaveAttribute('data-expanded', 'false');

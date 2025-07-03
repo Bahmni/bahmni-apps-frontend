@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMedicationRequest } from '@hooks/useMedicationRequest';
 import {
@@ -75,34 +75,36 @@ const MedicationsTable: React.FC = () => {
   };
 
   // Helper function to process medications into date-grouped structure
-  const processGroupedMedications = (
-    medications: FormattedMedicationRequest[],
-  ) => {
-    if (!medications || medications.length === 0) return [];
+  const processGroupedMedications = useCallback(
+    (medications: FormattedMedicationRequest[]) => {
+      if (!medications || medications.length === 0) return [];
 
-    const grouped = groupByDate(medications, (medication) => {
-      return formatDate(medication.orderDate, ISO_DATE_FORMAT).formattedResult;
-    });
+      const grouped = groupByDate(medications, (medication) => {
+        return formatDate(medication.orderDate, ISO_DATE_FORMAT)
+          .formattedResult;
+      });
 
-    // Sort by date descending (most recent first)
-    const sortedGroups = grouped.sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-    );
+      // Sort by date descending (most recent first)
+      const sortedGroups = grouped.sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+      );
 
-    // Sort medications within each group by priority
-    sortedGroups.forEach((group) => {
-      group.items = sortMedicationsByPriority(group.items);
-    });
+      // Sort medications within each group by priority
+      sortedGroups.forEach((group) => {
+        group.items = sortMedicationsByPriority(group.items);
+      });
 
-    // Sort medications within each group by status
-    sortedGroups.forEach((group) => {
-      group.items = sortMedicationsByStatus(group.items);
-    });
-    return sortedGroups.map((group) => ({
-      date: group.date,
-      medications: group.items,
-    }));
-  };
+      // Sort medications within each group by status
+      sortedGroups.forEach((group) => {
+        group.items = sortMedicationsByStatus(group.items);
+      });
+      return sortedGroups.map((group) => ({
+        date: group.date,
+        medications: group.items,
+      }));
+    },
+    [],
+  );
 
   const headers = useMemo(
     () => [
@@ -141,7 +143,7 @@ const MedicationsTable: React.FC = () => {
     if (!medications) return [];
     const formatted = formattedMedications;
     return sortMedicationsByStatus(formatted);
-  }, [formattedMedications]);
+  }, [medications, formattedMedications]);
 
   const activeAndScheduledMedications = useMemo(() => {
     const activeMedicationsByDate = sortMedicationsByDateDistance(

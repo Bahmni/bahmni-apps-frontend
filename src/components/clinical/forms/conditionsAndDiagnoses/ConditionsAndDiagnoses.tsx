@@ -72,7 +72,7 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
     return isExistingCondition || isSelectedConditions;
   };
 
-  const getFilteredSearchResults = () => {
+  const filteredSearchResults: ConceptSearch[] = useMemo(() => {
     if (searchDiagnosesTerm.length === 0) return [];
     if (isSearchLoading || existingConditionsLoading) {
       return [
@@ -120,15 +120,13 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
         disabled: isAlreadySelected,
       };
     });
-  };
-
-  const filteredSearchResults: ConceptSearch[] = useMemo(() => {
-    return getFilteredSearchResults();
   }, [
     isSearchLoading,
+    existingConditionsLoading,
     searchResults,
     searchDiagnosesTerm,
     searchError,
+    existingConditionsError,
     selectedDiagnoses,
     t,
   ]);

@@ -90,14 +90,14 @@ describe('ActionArea', () => {
 
   describe('Button Disabled States', () => {
     it('disables primary button when isPrimaryButtonDisabled is true', () => {
-      render(<ActionArea {...defaultProps} isPrimaryButtonDisabled={true} />);
+      render(<ActionArea {...defaultProps} isPrimaryButtonDisabled />);
 
       const primaryButton = screen.getByText('Done');
       expect(primaryButton).toBeDisabled();
     });
 
     it('disables secondary button when isSecondaryButtonDisabled is true', () => {
-      render(<ActionArea {...defaultProps} isSecondaryButtonDisabled={true} />);
+      render(<ActionArea {...defaultProps} isSecondaryButtonDisabled />);
 
       const secondaryButton = screen.getByText('Cancel');
       expect(secondaryButton).toBeDisabled();
@@ -107,8 +107,8 @@ describe('ActionArea', () => {
       render(
         <ActionArea
           {...defaultProps}
-          isPrimaryButtonDisabled={true}
-          isSecondaryButtonDisabled={true}
+          isPrimaryButtonDisabled
+          isSecondaryButtonDisabled
         />,
       );
 
@@ -125,7 +125,7 @@ describe('ActionArea', () => {
         <ActionArea
           {...defaultProps}
           onPrimaryButtonClick={onPrimaryButtonClick}
-          isPrimaryButtonDisabled={true}
+          isPrimaryButtonDisabled
         />,
       );
 
@@ -141,7 +141,7 @@ describe('ActionArea', () => {
         <ActionArea
           {...defaultProps}
           onSecondaryButtonClick={onSecondaryButtonClick}
-          isSecondaryButtonDisabled={true}
+          isSecondaryButtonDisabled
         />,
       );
 
@@ -157,7 +157,7 @@ describe('ActionArea', () => {
           {...defaultProps}
           tertiaryButtonText="Discard"
           onTertiaryButtonClick={jest.fn()}
-          isTertiaryButtonDisabled={true}
+          isTertiaryButtonDisabled
         />,
       );
 
@@ -171,9 +171,9 @@ describe('ActionArea', () => {
           {...defaultProps}
           tertiaryButtonText="Discard"
           onTertiaryButtonClick={jest.fn()}
-          isPrimaryButtonDisabled={true}
-          isSecondaryButtonDisabled={true}
-          isTertiaryButtonDisabled={true}
+          isPrimaryButtonDisabled
+          isSecondaryButtonDisabled
+          isTertiaryButtonDisabled
         />,
       );
 
@@ -193,7 +193,7 @@ describe('ActionArea', () => {
           {...defaultProps}
           tertiaryButtonText="Discard"
           onTertiaryButtonClick={onTertiaryButtonClick}
-          isTertiaryButtonDisabled={true}
+          isTertiaryButtonDisabled
         />,
       );
 
@@ -210,8 +210,8 @@ describe('ActionArea', () => {
           {...defaultProps}
           tertiaryButtonText="Discard"
           onTertiaryButtonClick={onTertiaryButtonClick}
-          isPrimaryButtonDisabled={true}
-          isSecondaryButtonDisabled={true}
+          isPrimaryButtonDisabled
+          isSecondaryButtonDisabled
         />,
       );
 
@@ -226,8 +226,8 @@ describe('ActionArea', () => {
       render(
         <ActionArea
           {...defaultProps}
-          isPrimaryButtonDisabled={true}
-          isSecondaryButtonDisabled={true}
+          isPrimaryButtonDisabled
+          isSecondaryButtonDisabled
         />,
       );
 
@@ -252,8 +252,8 @@ describe('ActionArea', () => {
       const { container } = render(
         <ActionArea
           {...defaultProps}
-          isPrimaryButtonDisabled={true}
-          isSecondaryButtonDisabled={true}
+          isPrimaryButtonDisabled
+          isSecondaryButtonDisabled
         />,
       );
       const results = await axe(container);

@@ -40,7 +40,7 @@ export const useMedicationRequest = (): MedicationRequestResult => {
     } finally {
       setLoading(false);
     }
-  }, [patientUUID]);
+  }, [patientUUID, t]);
 
   useEffect(() => {
     fetchMedications();

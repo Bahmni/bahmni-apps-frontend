@@ -94,7 +94,11 @@ jest.mock('@carbon/react', () => {
             )}
             {items.map((item, i) => (
               <option
-                key={i}
+                key={
+                  typeof item === 'object' && item?.uuid
+                    ? item.uuid
+                    : `item-${i}`
+                }
                 value={typeof item === 'object' && item?.uuid ? item.uuid : i}
               >
                 {safeItemToString(item)}

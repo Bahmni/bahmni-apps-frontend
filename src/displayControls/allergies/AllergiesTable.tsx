@@ -139,7 +139,7 @@ const AllergiesTable: React.FC = () => {
         ariaLabel={t('ALLERGIES_DISPLAY_CONTROL_HEADING')}
         emptyStateMessage={t('NO_ALLERGIES')}
         className={styles.allergiesTableBody}
-        isOpen={true}
+        isOpen
       />
     </div>
   );

@@ -83,7 +83,7 @@ const ConditionsTable: React.FC = () => {
         ariaLabel={t('CONDITION_LIST_DISPLAY_CONTROL_TITLE')}
         emptyStateMessage={t('CONDITION_LIST_NO_CONDITIONS')}
         className={styles.conditionsTableBody}
-        isOpen={true}
+        isOpen
       />
     </div>
   );

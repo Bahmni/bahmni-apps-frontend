@@ -83,7 +83,7 @@ const RadiologyInvestigationTable: React.FC = () => {
           return investigation.orderedBy;
       }
     },
-    [],
+    [t],
   );
 
   return (

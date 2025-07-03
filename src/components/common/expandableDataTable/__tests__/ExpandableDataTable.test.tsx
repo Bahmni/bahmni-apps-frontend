@@ -108,7 +108,7 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={mockRows}
         renderCell={renderCell}
-        loading={true}
+        loading
       />,
     );
 
@@ -780,7 +780,7 @@ describe('ExpandableDataTable', () => {
           headers={mockHeaders}
           rows={mockRows}
           renderCell={renderCell}
-          isOpen={true}
+          isOpen
         />,
       );
 
@@ -867,7 +867,7 @@ describe('ExpandableDataTable', () => {
           headers={mockHeaders}
           rows={mockRows}
           renderCell={renderCell}
-          isOpen={true}
+          isOpen
         />,
       );
 
@@ -904,8 +904,8 @@ describe('ExpandableDataTable', () => {
           headers={mockHeaders}
           rows={mockRows}
           renderCell={renderCell}
-          loading={true}
-          isOpen={true}
+          loading
+          isOpen
         />,
       );
 
@@ -923,7 +923,7 @@ describe('ExpandableDataTable', () => {
           rows={mockRows}
           renderCell={renderCell}
           error={testError}
-          isOpen={true}
+          isOpen
         />,
       );
 
@@ -939,7 +939,7 @@ describe('ExpandableDataTable', () => {
           headers={mockHeaders}
           rows={[]}
           renderCell={renderCell}
-          isOpen={true}
+          isOpen
         />,
       );
 

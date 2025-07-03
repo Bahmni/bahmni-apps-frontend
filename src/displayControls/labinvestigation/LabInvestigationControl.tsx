@@ -45,9 +45,9 @@ const LabInvestigationControl: React.FC = () => {
             {/* Render 'urgent' tests first */}
             {group.tests
               ?.filter((test) => test.priority === 'Urgent')
-              .map((test, index) => (
+              .map((test) => (
                 <LabInvestigationItem
-                  key={`urgent-${group.date}-${test.testName}-${index}`}
+                  key={`urgent-${group.date}-${test.testName}-${test.id || test.testName}`}
                   test={test}
                 />
               ))}
@@ -55,9 +55,9 @@ const LabInvestigationControl: React.FC = () => {
             {/* Then render non-urgent tests */}
             {group.tests
               ?.filter((test) => test.priority !== 'Urgent')
-              .map((test, index) => (
+              .map((test) => (
                 <LabInvestigationItem
-                  key={`nonurgent-${group.date}-${test.testName}-${index}`}
+                  key={`nonurgent-${group.date}-${test.testName}-${test.id || test.testName}`}
                   test={test}
                 />
               ))}

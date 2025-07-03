@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import {
   Column,
   Grid,
@@ -82,7 +82,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
         errors,
       } = medicationInputEntry;
 
-      const setDefaultInstruction = () => {
+      const setDefaultInstruction = useCallback(() => {
         if (
           !medicationConfig ||
           !medicationConfig.dosingInstructions ||
@@ -99,9 +99,9 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
             updateInstruction(id, defaultInstruction);
           }
         }
-      };
+      }, [medicationConfig, instruction, updateInstruction, id]);
 
-      const setDefaultDurationUnit = () => {
+      const setDefaultDurationUnit = useCallback(() => {
         if (
           !medicationConfig ||
           !medicationConfig.durationUnits ||
@@ -118,7 +118,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
             updateDurationUnit(id, defaultDurationUnit);
           }
         }
-      };
+      }, [medicationConfig, durationUnit, updateDurationUnit, id]);
 
       useEffect(() => {
         if (
@@ -146,7 +146,16 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
           updateDosageUnit(id, defaultDosingUnit);
           updateDispenseUnit(id, defaultDosingUnit);
         }
-      }, [medication]);
+      }, [
+        medication,
+        medicationConfig,
+        route,
+        dosageUnit,
+        id,
+        updateRoute,
+        updateDosageUnit,
+        updateDispenseUnit,
+      ]);
 
       useEffect(() => {
         const totalQuantity = calculateTotalQuantity(
@@ -156,7 +165,14 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
           durationUnit,
         );
         updateDispenseQuantity(id, totalQuantity);
-      }, [dosage, frequency, duration, durationUnit]);
+      }, [
+        dosage,
+        frequency,
+        duration,
+        durationUnit,
+        id,
+        updateDispenseQuantity,
+      ]);
 
       useEffect(() => {
         if (isPRN || !isSTAT) {
@@ -174,12 +190,21 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
         if (isSTAT) {
           updateStartDate(id, getTodayDate());
         }
-      }, [isSTAT, isPRN]);
+      }, [
+        isSTAT,
+        isPRN,
+        id,
+        medicationConfig.frequencies,
+        updateFrequency,
+        updateDuration,
+        updateDurationUnit,
+        updateStartDate,
+      ]);
 
       useEffect(() => {
         setDefaultInstruction();
         setDefaultDurationUnit();
-      }, [medicationConfig]);
+      }, [setDefaultInstruction, setDefaultDurationUnit]);
 
       return (
         <Grid condensed={false} narrow={false}>

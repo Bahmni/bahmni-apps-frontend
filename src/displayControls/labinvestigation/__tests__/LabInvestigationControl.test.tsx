@@ -57,11 +57,12 @@ jest.mock('@carbon/react', () => ({
     width: string;
   }) => (
     <div data-testid="skeleton-text" style={{ width }}>
-      {Array(lineCount)
-        .fill(0)
-        .map((_, i) => (
-          <div key={i} className="skeleton-line"></div>
-        ))}
+      {Array.from({ length: lineCount }, (_, i) => (
+        <div
+          key={`skeleton-line-${Date.now()}-${i}`}
+          className="skeleton-line"
+        />
+      ))}
     </div>
   ),
 }));

@@ -84,7 +84,7 @@ jest.mock('@components/common/expandableDataTable/ExpandableDataTable', () => ({
       <div data-testid="table-is-open">{isOpen?.toString()}</div>
       {// eslint-disable-next-line @typescript-eslint/no-explicit-any
       rows?.map((row: any, index: number) => (
-        <div key={index} data-testid={`table-row-${index}`}>
+        <div key={row.id || `row-${index}`} data-testid={`table-row-${index}`}>
           {// eslint-disable-next-line @typescript-eslint/no-explicit-any
           headers?.map((header: any) => (
             <div key={header.key} data-testid={`cell-${header.key}-${index}`}>

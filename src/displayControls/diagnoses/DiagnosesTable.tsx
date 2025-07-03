@@ -47,29 +47,32 @@ const DiagnosesTable: React.FC = () => {
     }));
   }, [diagnoses]);
 
-  const renderCell = useCallback((diagnosis: Diagnosis, cellId: string) => {
-    switch (cellId) {
-      case 'display':
-        return (
-          <>
-            {diagnosis.display + ' '}
-            <Tag
-              className={
-                diagnosis.certainty.code === 'confirmed'
-                  ? styles.confirmedCell
-                  : styles.provisionalCell
-              }
-            >
-              {diagnosis.certainty.code === 'confirmed'
-                ? t('CERTAINITY_CONFIRMED')
-                : t('CERTAINITY_PROVISIONAL')}
-            </Tag>
-          </>
-        );
-      case 'recorder':
-        return diagnosis.recorder || t('DIAGNOSIS_TABLE_NOT_AVAILABLE');
-    }
-  }, []);
+  const renderCell = useCallback(
+    (diagnosis: Diagnosis, cellId: string) => {
+      switch (cellId) {
+        case 'display':
+          return (
+            <>
+              {diagnosis.display + ' '}
+              <Tag
+                className={
+                  diagnosis.certainty.code === 'confirmed'
+                    ? styles.confirmedCell
+                    : styles.provisionalCell
+                }
+              >
+                {diagnosis.certainty.code === 'confirmed'
+                  ? t('CERTAINITY_CONFIRMED')
+                  : t('CERTAINITY_PROVISIONAL')}
+              </Tag>
+            </>
+          );
+        case 'recorder':
+          return diagnosis.recorder || t('DIAGNOSIS_TABLE_NOT_AVAILABLE');
+      }
+    },
+    [t],
+  );
 
   return (
     <Tile

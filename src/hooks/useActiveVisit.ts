@@ -47,7 +47,7 @@ export const useActiveVisit = (
     } finally {
       setLoading(false);
     }
-  }, [patientUUID]);
+  }, [patientUUID, t]);
 
   useEffect(() => {
     fetchActiveVisit();
