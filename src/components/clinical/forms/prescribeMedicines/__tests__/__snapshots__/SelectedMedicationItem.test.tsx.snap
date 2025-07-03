@@ -824,7 +824,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
             dir="auto"
             id="dosage-unit-entry-1-error-msg"
           >
-            Dosage is required
+            Please enter a value
           </div>
         </div>
       </div>
@@ -1129,7 +1129,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
             dir="auto"
             id="duration-entry-1-error-msg"
           >
-            Duration is required
+            Please enter a value
           </div>
         </div>
       </div>
@@ -1385,7 +1385,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
         <div
           class="cds--form-requirement"
         >
-          Route is required
+          Please select a value
         </div>
       </div>
     </div>

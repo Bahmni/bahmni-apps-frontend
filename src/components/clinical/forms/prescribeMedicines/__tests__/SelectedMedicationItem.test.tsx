@@ -1294,11 +1294,11 @@ describe('SelectedMedicationItem', () => {
       const props = createDefaultProps({
         medicationInputEntry: createMockMedicationInputEntry({
           errors: {
-            dosage: 'MEDICATION_DOSAGE_REQUIRED',
+            dosage: 'INPUT_VALUE_REQUIRED',
             dosageUnit: 'DROPDOWN_VALUE_REQUIRED',
             frequency: 'DROPDOWN_VALUE_REQUIRED',
-            route: 'MEDICATION_ROUTE_REQUIRED',
-            duration: 'MEDICATION_DURATION_REQUIRED',
+            route: 'DROPDOWN_VALUE_REQUIRED',
+            duration: 'INPUT_VALUE_REQUIRED',
             durationUnit: 'DROPDOWN_VALUE_REQUIRED',
           },
         }),
@@ -1309,9 +1309,8 @@ describe('SelectedMedicationItem', () => {
 
       // Assert
       // Check that error messages are displayed
-      expect(screen.getByText('Dosage is required')).toBeInTheDocument();
-      expect(screen.getByText('Duration')).toBeInTheDocument();
-      expect(screen.getAllByText('Please select a value')).toHaveLength(3); // For dosage unit, duration unit, and frequency
+      expect(screen.getAllByText('Please enter a value')).toHaveLength(2);
+      expect(screen.getAllByText('Please select a value')).toHaveLength(4); // For dosage unit, duration unit, and frequency
       expect(
         screen
           .getByRole('combobox', { name: /Route/i })
@@ -1443,11 +1442,11 @@ describe('SelectedMedicationItem', () => {
       const props = createDefaultProps({
         medicationInputEntry: createMockMedicationInputEntry({
           errors: {
-            dosage: 'MEDICATION_DOSAGE_REQUIRED',
+            dosage: 'INPUT_VALUE_REQUIRED',
             dosageUnit: 'DROPDOWN_VALUE_REQUIRED',
             frequency: 'DROPDOWN_VALUE_REQUIRED',
-            route: 'MEDICATION_ROUTE_REQUIRED',
-            duration: 'MEDICATION_DURATION_REQUIRED',
+            route: 'DROPDOWN_VALUE_REQUIRED',
+            duration: 'INPUT_VALUE_REQUIRED',
             durationUnit: 'DROPDOWN_VALUE_REQUIRED',
           },
         }),
