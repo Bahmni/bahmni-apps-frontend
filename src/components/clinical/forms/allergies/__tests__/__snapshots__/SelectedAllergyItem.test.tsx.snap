@@ -12,6 +12,12 @@ exports[`SelectedAllergyItem Snapshot Tests default rendering matches snapshot 1
        [
       Food
       ]
+      <a
+        class="cds--link"
+        href="#"
+      >
+        Add Note
+      </a>
     </div>
     <div
       class="selectedAllergySeverity cds--sm:col-span-4 cds--md:col-span-3 cds--lg:col-span-3 cds--xlg:col-span-3 cds--css-grid-column"
@@ -22,8 +28,8 @@ exports[`SelectedAllergyItem Snapshot Tests default rendering matches snapshot 1
       >
         <label
           class="cds--label cds--visually-hidden"
-          for="downshift-«r3k»-toggle-button"
-          id="downshift-«r3k»-label"
+          for="downshift-«r6e»-toggle-button"
+          id="downshift-«r6e»-label"
         >
           Select Severity
         </label>
@@ -33,12 +39,12 @@ exports[`SelectedAllergyItem Snapshot Tests default rendering matches snapshot 1
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-«r3k»-menu"
+            aria-controls="downshift-«r6e»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Select severity for this allergy"
             class="cds--list-box__field"
-            id="downshift-«r3k»-toggle-button"
+            id="downshift-«r6e»-toggle-button"
             role="combobox"
             tabindex="0"
             title="Mild"
@@ -74,9 +80,9 @@ exports[`SelectedAllergyItem Snapshot Tests default rendering matches snapshot 1
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-«r3k»-label"
+            aria-labelledby="downshift-«r6e»-label"
             class="cds--list-box__menu"
-            id="downshift-«r3k»-menu"
+            id="downshift-«r6e»-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
@@ -204,6 +210,12 @@ exports[`SelectedAllergyItem Snapshot Tests rendering with validation errors mat
        [
       Food
       ]
+      <a
+        class="cds--link"
+        href="#"
+      >
+        Add Note
+      </a>
     </div>
     <div
       class="selectedAllergySeverity cds--sm:col-span-4 cds--md:col-span-3 cds--lg:col-span-3 cds--xlg:col-span-3 cds--css-grid-column"
@@ -214,8 +226,8 @@ exports[`SelectedAllergyItem Snapshot Tests rendering with validation errors mat
       >
         <label
           class="cds--label cds--visually-hidden"
-          for="downshift-«r3q»-toggle-button"
-          id="downshift-«r3q»-label"
+          for="downshift-«r6k»-toggle-button"
+          id="downshift-«r6k»-label"
         >
           Select Severity
         </label>
@@ -246,12 +258,12 @@ exports[`SelectedAllergyItem Snapshot Tests rendering with validation errors mat
           </svg>
           <button
             aria-activedescendant=""
-            aria-controls="downshift-«r3q»-menu"
+            aria-controls="downshift-«r6k»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Select severity for this allergy"
             class="cds--list-box__field"
-            id="downshift-«r3q»-toggle-button"
+            id="downshift-«r6k»-toggle-button"
             role="combobox"
             tabindex="0"
             title="Select Severity"
@@ -287,9 +299,9 @@ exports[`SelectedAllergyItem Snapshot Tests rendering with validation errors mat
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-«r3q»-label"
+            aria-labelledby="downshift-«r6k»-label"
             class="cds--list-box__menu"
-            id="downshift-«r3q»-menu"
+            id="downshift-«r6k»-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />

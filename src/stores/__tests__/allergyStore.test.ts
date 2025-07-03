@@ -343,6 +343,95 @@ describe('useAllergyStore', () => {
     });
   });
 
+  // UPDATE NOTE TESTS
+  describe('updateNote', () => {
+    test('should update note for an allergy', () => {
+      const { result } = renderHook(() => useAllergyStore());
+      const testNote = 'Patient experiences mild symptoms after exposure';
+
+      act(() => {
+        result.current.addAllergy(mockAllergen);
+      });
+
+      act(() => {
+        result.current.updateNote(mockAllergen.uuid, testNote);
+      });
+
+      expect(result.current.selectedAllergies[0].note).toBe(testNote);
+    });
+
+    test('should handle updateNote with non-existent allergy ID gracefully', () => {
+      const { result } = renderHook(() => useAllergyStore());
+
+      act(() => {
+        result.current.addAllergy(mockAllergen);
+      });
+
+      const originalState = [...result.current.selectedAllergies];
+
+      act(() => {
+        result.current.updateNote('non-existent-id', 'Test note');
+      });
+
+      // State should remain unchanged
+      expect(result.current.selectedAllergies).toEqual(originalState);
+    });
+  });
+
+  // OPERATIONS WITH NON-EXISTENT IDS
+  describe('Operations with Non-existent IDs', () => {
+    test('should handle updateSeverity with non-existent allergy ID gracefully', () => {
+      const { result } = renderHook(() => useAllergyStore());
+
+      act(() => {
+        result.current.addAllergy(mockAllergen);
+      });
+
+      const originalState = [...result.current.selectedAllergies];
+
+      act(() => {
+        result.current.updateSeverity(
+          'non-existent-id',
+          ALLERGY_SEVERITY_CONCEPTS[0],
+        );
+      });
+
+      expect(result.current.selectedAllergies).toEqual(originalState);
+    });
+
+    test('should handle updateReactions with non-existent allergy ID gracefully', () => {
+      const { result } = renderHook(() => useAllergyStore());
+
+      act(() => {
+        result.current.addAllergy(mockAllergen);
+      });
+
+      const originalState = [...result.current.selectedAllergies];
+
+      act(() => {
+        result.current.updateReactions('non-existent-id', [mockReactions[0]]);
+      });
+
+      expect(result.current.selectedAllergies).toEqual(originalState);
+    });
+
+    test('should handle removeAllergy with non-existent ID gracefully', () => {
+      const { result } = renderHook(() => useAllergyStore());
+
+      act(() => {
+        result.current.addAllergy(mockAllergen);
+      });
+
+      const originalState = [...result.current.selectedAllergies];
+
+      act(() => {
+        result.current.removeAllergy('non-existent-id');
+      });
+
+      expect(result.current.selectedAllergies).toEqual(originalState);
+    });
+  });
+
   // GET STATE TESTS
   describe('getState', () => {
     test('should return current state', () => {

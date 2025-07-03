@@ -16,7 +16,7 @@ export interface FormattedAllergy {
     readonly severity?: string;
   }>;
   readonly severity?: string;
-  readonly note?: string[];
+  readonly note?: string;
 }
 
 /**
@@ -28,6 +28,7 @@ export interface AllergyInputEntry {
   type: string;
   selectedSeverity: Coding | null;
   selectedReactions: Coding[];
+  note?: string;
   errors: {
     severity?: string;
     reactions?: string;

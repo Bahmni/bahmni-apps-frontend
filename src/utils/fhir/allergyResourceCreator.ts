@@ -14,6 +14,7 @@ interface AllergyReaction {
  * @param patientReference - Reference to the patient
  * @param encounterReference - Reference to the encounter
  * @param recorderReference - Reference to the practitioner recording the allergy
+ * @param note - Optional note about the allergy
  * @returns FHIR AllergyIntolerance resource
  */
 export const createEncounterAllergyResource = (
@@ -23,6 +24,7 @@ export const createEncounterAllergyResource = (
   patientReference: Reference,
   encounterReference: Reference,
   recorderReference: Reference,
+  note?: string,
 ): AllergyIntolerance => {
   const resource: AllergyIntolerance = {
     resourceType: 'AllergyIntolerance',
@@ -33,13 +35,19 @@ export const createEncounterAllergyResource = (
     encounter: encounterReference,
   };
 
-  if (reactions.length > 0) {
-    resource.reaction = reactions.map((reaction) => ({
-      manifestation: reaction.manifestationUUIDs.map((uuid) => ({
-        coding: [createCoding(uuid)],
-      })),
-      ...(reaction.severity && { severity: reaction.severity }),
-    }));
+  resource.reaction = reactions.map((reaction) => ({
+    manifestation: reaction.manifestationUUIDs.map((uuid) => ({
+      coding: [createCoding(uuid)],
+    })),
+    ...(reaction.severity && { severity: reaction.severity }),
+  }));
+
+  if (note && note.trim() !== '') {
+    resource.note = [
+      {
+        text: note.trim(),
+      },
+    ];
   }
 
   return resource;
