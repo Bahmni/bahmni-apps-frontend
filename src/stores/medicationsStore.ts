@@ -299,7 +299,7 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
           (!medication.isPRN && !medication.isSTAT);
 
         if (!medication.dosage || medication.dosage <= 0) {
-          errors.dosage = 'MEDICATION_DOSAGE_REQUIRED';
+          errors.dosage = 'INPUT_VALUE_REQUIRED';
           isValid = false;
         } else {
           delete errors.dosage;
@@ -329,7 +329,7 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
           isDurationRequired &&
           (!medication.duration || medication.duration <= 0)
         ) {
-          errors.duration = 'MEDICATION_DURATION_REQUIRED';
+          errors.duration = 'INPUT_VALUE_REQUIRED';
           isValid = false;
         } else {
           delete errors.duration;

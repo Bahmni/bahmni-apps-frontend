@@ -165,7 +165,7 @@ describe('useMedicationStore', () => {
       });
 
       expect(result.current.selectedMedications[0].errors.dosage).toBe(
-        'MEDICATION_DOSAGE_REQUIRED',
+        'INPUT_VALUE_REQUIRED',
       );
     });
 
@@ -314,7 +314,7 @@ describe('useMedicationStore', () => {
       });
 
       expect(result.current.selectedMedications[0].errors.duration).toBe(
-        'MEDICATION_DURATION_REQUIRED',
+        'INPUT_VALUE_REQUIRED',
       );
     });
   });
@@ -439,7 +439,7 @@ describe('useMedicationStore', () => {
       });
 
       expect(result.current.selectedMedications[0].errors.duration).toBe(
-        'MEDICATION_DURATION_REQUIRED',
+        'INPUT_VALUE_REQUIRED',
       );
     });
   });
@@ -554,11 +554,11 @@ describe('useMedicationStore', () => {
 
       expect(isValid!).toBe(false);
       const errors = result.current.selectedMedications[0].errors;
-      expect(errors.dosage).toBe('MEDICATION_DOSAGE_REQUIRED');
+      expect(errors.dosage).toBe('INPUT_VALUE_REQUIRED');
       expect(errors.dosageUnit).toBe('DROPDOWN_VALUE_REQUIRED');
       expect(errors.frequency).toBe('DROPDOWN_VALUE_REQUIRED');
       expect(errors.route).toBe('DROPDOWN_VALUE_REQUIRED');
-      expect(errors.duration).toBe('MEDICATION_DURATION_REQUIRED');
+      expect(errors.duration).toBe('INPUT_VALUE_REQUIRED');
       expect(errors.durationUnit).toBe('DROPDOWN_VALUE_REQUIRED');
       expect(result.current.selectedMedications[0].hasBeenValidated).toBe(true);
     });
@@ -628,7 +628,7 @@ describe('useMedicationStore', () => {
 
       expect(isValid!).toBe(false);
       const errors = result.current.selectedMedications[0].errors;
-      expect(errors.duration).toBe('MEDICATION_DURATION_REQUIRED');
+      expect(errors.duration).toBe('INPUT_VALUE_REQUIRED');
       expect(errors.durationUnit).toBe('DROPDOWN_VALUE_REQUIRED');
     });
 
@@ -722,7 +722,7 @@ describe('useMedicationStore', () => {
 
       expect(isValid!).toBe(false);
       expect(result.current.selectedMedications[0].errors.dosage).toBe(
-        'MEDICATION_DOSAGE_REQUIRED',
+        'INPUT_VALUE_REQUIRED',
       );
     });
 
@@ -741,7 +741,7 @@ describe('useMedicationStore', () => {
 
       expect(isValid!).toBe(false);
       expect(result.current.selectedMedications[0].errors.duration).toBe(
-        'MEDICATION_DURATION_REQUIRED',
+        'INPUT_VALUE_REQUIRED',
       );
     });
   });
