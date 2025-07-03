@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { ComboBox, DropdownSkeleton, Tile } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import * as styles from './styles/MedicationsForm.module.scss';
@@ -20,6 +20,7 @@ import SelectedItem from '@/components/common/selectedItem/SelectedItem';
 const MedicationsForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const [searchMedicationTerm, setSearchMedicationTerm] = useState('');
+  const isSelectingRef = useRef(false);
   const {
     medicationConfig,
     loading: medicationConfigLoading,
@@ -48,14 +49,25 @@ const MedicationsForm: React.FC = React.memo(() => {
   } = useMedicationStore();
 
   const handleSearch = (searchTerm: string) => {
-    setSearchMedicationTerm(searchTerm);
+    // Only update search term if we're not in the process of selecting an item
+    if (!isSelectingRef.current) {
+      setSearchMedicationTerm(searchTerm);
+    }
   };
 
   const handleOnChange = (selectedItem: MedicationFilterResult) => {
     if (!selectedItem) {
       return;
     }
+    // Set flag to prevent search when ComboBox updates its input
+    isSelectingRef.current = true;
     addMedication(selectedItem.medication!, selectedItem.displayName);
+    // Clear the search term after selection
+    setSearchMedicationTerm('');
+    // Reset the flag after a short delay to allow ComboBox to update
+    setTimeout(() => {
+      isSelectingRef.current = false;
+    }, 100);
   };
 
   const getFilteredSearchResults = (): MedicationFilterResult[] => {
