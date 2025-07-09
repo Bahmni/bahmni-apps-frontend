@@ -17,22 +17,25 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'yarn'
-      
+
       - name: Install dependencies
         run: yarn install --frozen-lockfile
-      
-      - name: Lint
+
+      - name: Lint TypeScript/TypeScript
         run: yarn lint
-      
+
+      - name: Lint styles
+        run: yarn lint:styles
+
       - name: Run tests
         run: yarn test
-        
+
       - name: Scan for package vulnerabilities
         uses: aquasecurity/trivy-action@0.30.0
         with:
@@ -51,39 +54,39 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'yarn'
-      
+
       - name: Install dependencies
         run: yarn install --frozen-lockfile
-      
+
       - name: Extract version
         id: package-version
         run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
-      
+
       - name: Build
         run: yarn build
-        
+
       - name: Cache build artifacts
         uses: actions/cache@v3
         with:
           path: dist
           key: ${{ runner.os }}-build-${{ github.sha }}
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
+
       # Build and push to a temporary tag for scanning
       - name: Build and push multi-arch image (temp)
         uses: docker/build-push-action@v5
@@ -96,7 +99,7 @@ jobs:
             ${{ env.IMAGE_NAME }}:scan-${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      
+
       # Scan the pushed image
       - name: Scan Docker image for vulnerabilities
         uses: aquasecurity/trivy-action@0.30.0
@@ -105,7 +108,7 @@ jobs:
           format: 'table'
           exit-code: '1'
           severity: 'CRITICAL'
-      
+
       # If scan passes, tag the image with final tags
       - name: Tag image with final tags
         if: success()
@@ -115,7 +118,7 @@ jobs:
             --tag ${{ env.IMAGE_NAME }}:latest \
             --tag ${{ env.IMAGE_NAME }}:v${{ steps.package-version.outputs.version }}-${{github.run_number}} \
             ${{ env.IMAGE_NAME }}:scan-${{ github.sha }}
-      
+
       # This step dispatches an event to the utils repo to trigger downstream deployments
       - name: Repository Dispatch
         if: success()
@@ -126,7 +129,7 @@ jobs:
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/bahnew/utils/dispatches \
             -d '{"event_type":"clinical-frontend-publish","client_payload":{"version":"v${{ steps.package-version.outputs.version }}","sha":"${{ github.sha }}"}}'
-      
+
       # Cleanup the older Docker images from GitHub Container Registry
       - name: Cleanup temporary Docker tags
         if: always()  # This ensures the step runs even if previous steps fail
