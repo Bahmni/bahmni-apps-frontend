@@ -1,5 +1,5 @@
-import { ConsultationBundle } from '@types/consultationBundle';
 import { BundleEntry, FhirResource } from 'fhir/r4';
+import { ConsultationBundle } from '@types/consultationBundle';
 
 export const createConsultationBundle = (
   entries: Array<BundleEntry<FhirResource>>,

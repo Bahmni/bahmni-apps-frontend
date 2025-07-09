@@ -1,13 +1,13 @@
-import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
+import i18n from '@/setupTests.i18n';
+import { DURATION_UNITS } from '@constants/conditions';
+import { ConditionInputEntry } from '@types/condition';
 import SelectedConditionItem, {
   SelectedConditionItemProps,
 } from '../SelectedConditionItem';
-import { ConditionInputEntry } from '@types/condition';
-import { DURATION_UNITS } from '@constants/conditions';
-import i18n from '@/setupTests.i18n';
 
 expect.extend(toHaveNoViolations);
 

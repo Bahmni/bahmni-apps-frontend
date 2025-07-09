@@ -1,10 +1,10 @@
 import { renderHook } from '@testing-library/react';
-import { act } from 'react';
-import { useConditionsAndDiagnosesStore } from '../conditionsAndDiagnosesStore';
-import { ConceptSearch } from '@types/concepts';
-import { DiagnosisInputEntry } from '@types/diagnosis';
-import { ConditionInputEntry } from '@types/condition';
 import { Coding } from 'fhir/r4';
+import { act } from 'react';
+import { ConceptSearch } from '@types/concepts';
+import { ConditionInputEntry } from '@types/condition';
+import { DiagnosisInputEntry } from '@types/diagnosis';
+import { useConditionsAndDiagnosesStore } from '../conditionsAndDiagnosesStore';
 
 const mockConcept: ConceptSearch = {
   conceptUuid: 'test-concept-1',
@@ -254,7 +254,7 @@ describe('useConditionsAndDiagnosesStore', () => {
         result.current.updateCertainty(mockConcept.conceptUuid, null);
       });
 
-      expect(result.current.selectedDiagnoses[0].selectedCertainty).toBe(null);
+      expect(result.current.selectedDiagnoses[0].selectedCertainty).toBeNull();
     });
 
     test('should not update certainty with invalid diagnosis ID', () => {
@@ -827,8 +827,8 @@ describe('useConditionsAndDiagnosesStore', () => {
         );
       });
 
-      expect(result.current.selectedConditions[0].durationValue).toBe(null);
-      expect(result.current.selectedConditions[0].durationUnit).toBe(null);
+      expect(result.current.selectedConditions[0].durationValue).toBeNull();
+      expect(result.current.selectedConditions[0].durationUnit).toBeNull();
     });
 
     test('should clear validation errors when valid duration is set', () => {

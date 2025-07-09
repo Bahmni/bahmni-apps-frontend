@@ -1,5 +1,5 @@
-import axios, { AxiosError } from 'axios';
 import { breakpoints, baseFontSize } from '@carbon/layout';
+import axios, { AxiosError } from 'axios';
 import i18next from 'i18next';
 
 /**

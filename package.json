@@ -6,10 +6,9 @@
     "start": "webpack serve --mode development --open",
     "build": "webpack --mode production --env PUBLIC_PATH='/bahmni-new/'",
     "preview": "webpack serve --mode production --open",
-    "lint": "eslint --ext .ts,.tsx src/ && stylelint 'src/**/*.{css,scss}' --config stylelint.config.ts",
-    "lint:fix": "eslint --ext .ts,.tsx src/ --fix && stylelint 'src/**/*.{css,scss}' --config stylelint.config.ts --fix",
-    "lint:styles": "stylelint 'src/**/*.{css,scss}' --config stylelint.config.ts",
-    "lint:styles:fix": "stylelint 'src/**/*.{css,scss}' --config stylelint.config.ts --fix",
+    "lint": "eslint --ext .ts,.tsx src/",
+    "lint:fix": "eslint --ext .ts,.tsx src/ --fix",
+    "lint:styles": "stylelint 'src/**/*.{css,scss}' --config stylelint.config.js",
     "prettier:check": "prettier --check src/",
     "prettier:fix": "prettier --write src/",
     "test": "jest --coverage --collectCoverageFrom='src/**/*.{js,jsx,ts,tsx}'",
@@ -131,6 +130,10 @@
   "lint-staged": {
     "*.{ts,tsx}": [
       "yarn lint:fix",
+      "yarn prettier:fix"
+    ],
+    "*.scss": [
+      "yarn lint:styles",
       "yarn prettier:fix"
     ]
   },

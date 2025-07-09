@@ -1,14 +1,14 @@
-import React, { useState, useMemo } from 'react';
 import { ComboBox, Tile } from '@carbon/react';
+import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import * as styles from './styles/AllergiesForm.module.scss';
-import SelectedItem from '@components/common/selectedItem/SelectedItem';
 import BoxWHeader from '@components/common/boxWHeader/BoxWHeader';
-import { AllergenConcept } from '@types/concepts';
-import SelectedAllergyItem from './SelectedAllergyItem';
+import SelectedItem from '@components/common/selectedItem/SelectedItem';
 import useAllergenSearch from '@hooks/useAllergenSearch';
 import { useAllergyStore } from '@stores/allergyStore';
+import { AllergenConcept } from '@types/concepts';
 import { getCategoryDisplayName } from '@utils/allergy';
+import SelectedAllergyItem from './SelectedAllergyItem';
+import * as styles from './styles/AllergiesForm.module.scss';
 
 /**
  * AllergiesForm component

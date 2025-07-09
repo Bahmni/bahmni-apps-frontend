@@ -4,7 +4,15 @@ import {
   AllergyIntolerance,
   ServiceRequest,
   MedicationRequest,
+  Coding,
 } from 'fhir/r4';
+import { CONSULTATION_ERROR_MESSAGES } from '@constants/errors';
+import { AllergyInputEntry } from '@types/allergy';
+import { ConditionInputEntry } from '@types/condition';
+import { DiagnosisInputEntry } from '@types/diagnosis';
+import { MedicationInputEntry } from '@types/medication';
+import { ServiceRequestInputEntry } from '@types/serviceRequest';
+import { post } from '../api';
 import {
   createDiagnosisBundleEntries,
   createAllergiesBundleEntries,
@@ -13,14 +21,6 @@ import {
   createMedicationRequestEntries,
   postConsultationBundle,
 } from '../consultationBundleService';
-import { CONSULTATION_ERROR_MESSAGES } from '@constants/errors';
-import { Coding } from 'fhir/r4';
-import { post } from '../api';
-import { DiagnosisInputEntry } from '@types/diagnosis';
-import { AllergyInputEntry } from '@types/allergy';
-import { ServiceRequestInputEntry } from '@types/serviceRequest';
-import { ConditionInputEntry } from '@types/condition';
-import { MedicationInputEntry } from '@types/medication';
 
 // Mock crypto.randomUUID
 const mockUUID = '1d87ab20-8b86-4b41-a30d-984b2208d945';
@@ -69,7 +69,7 @@ describe('consultationBundleService', () => {
       expect(condition.recordedDate).toBe('2025-01-01T10:00:00.000Z');
 
       expect(result).toBeInstanceOf(Array);
-      expect(result.length).toBe(1);
+      expect(result).toHaveLength(1);
       expect(result[0].request?.method).toBe('POST');
       expect(result[0].resource?.resourceType).toBe('Condition');
     });
@@ -84,7 +84,7 @@ describe('consultationBundleService', () => {
       });
 
       expect(result).toBeInstanceOf(Array);
-      expect(result.length).toBe(0);
+      expect(result).toHaveLength(0);
     });
 
     it('should throw error when selectedDiagnoses is null', () => {
@@ -184,7 +184,7 @@ describe('consultationBundleService', () => {
       });
 
       expect(result).toBeInstanceOf(Array);
-      expect(result.length).toBe(1);
+      expect(result).toHaveLength(1);
       const condition = result[0].resource as Condition;
       expect(condition.verificationStatus?.coding?.[0]?.code).toBe(
         'provisional',
@@ -852,7 +852,7 @@ describe('consultationBundleService', () => {
         });
 
         expect(result).toBeInstanceOf(Array);
-        expect(result.length).toBe(1);
+        expect(result).toHaveLength(1);
         expect(result[0].request?.method).toBe('POST');
         expect(result[0].resource?.resourceType).toBe('Condition');
 

@@ -1,8 +1,8 @@
-import React from 'react';
 import { render, screen, act, waitFor } from '@testing-library/react';
+import React from 'react';
 import '@testing-library/jest-dom';
-import { NotificationProvider } from '../NotificationProvider';
 import { useNotification } from '@hooks/useNotification';
+import { NotificationProvider } from '../NotificationProvider';
 
 // Mock the generateId function to return predictable IDs for testing
 jest.mock('@utils/common', () => ({

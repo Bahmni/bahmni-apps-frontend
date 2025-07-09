@@ -1,7 +1,7 @@
-import { get } from './api';
+import { Bundle, MedicationRequest as FhirMedicationRequest } from 'fhir/r4';
 import { PATIENT_MEDICATION_RESOURCE_URL } from '@constants/app';
 import { MedicationRequest, MedicationStatus } from '@types/medicationRequest';
-import { Bundle, MedicationRequest as FhirMedicationRequest } from 'fhir/r4';
+import { get } from './api';
 
 /**
  * Maps FHIR medication request statuses to canonical MedicationStatus values

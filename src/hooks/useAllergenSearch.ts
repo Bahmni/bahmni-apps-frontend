@@ -1,14 +1,14 @@
+import { Coding } from 'fhir/r4';
 import { useEffect, useState, useMemo } from 'react';
-import useDebounce from './useDebounce';
+import { useTranslation } from 'react-i18next';
 import {
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
 } from '@services/allergyService';
 import { AllergenConcept } from '@types/concepts';
 import { getFormattedError } from '@utils/common';
-import { Coding } from 'fhir/r4';
 import { useClinicalConfig } from './useClinicalConfig';
-import { useTranslation } from 'react-i18next';
+import useDebounce from './useDebounce';
 
 interface UseAllergenSearchResult {
   allergens: AllergenConcept[];

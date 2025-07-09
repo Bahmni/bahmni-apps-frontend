@@ -1,15 +1,15 @@
-import React, { useState, useMemo, useRef } from 'react';
 import { ComboBox, DropdownSkeleton, Tile } from '@carbon/react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import * as styles from './styles/MedicationsForm.module.scss';
 import BoxWHeader from '@components/common/boxWHeader/BoxWHeader';
-import { MedicationFilterResult } from '@types/medication';
-import SelectedMedicationItem from './SelectedMedicationItem';
-import { useMedicationStore } from '@stores/medicationsStore';
+import SelectedItem from '@components/common/selectedItem/SelectedItem';
 import useMedicationConfig from '@hooks/useMedicationConfig';
 import { useMedicationSearch } from '@hooks/useMedicationSearch';
 import { getMedicationDisplay } from '@services/medicationService';
-import SelectedItem from '@/components/common/selectedItem/SelectedItem';
+import { useMedicationStore } from '@stores/medicationsStore';
+import { MedicationFilterResult } from '@types/medication';
+import SelectedMedicationItem from './SelectedMedicationItem';
+import * as styles from './styles/MedicationsForm.module.scss';
 
 /**
  * MedicationsForm component

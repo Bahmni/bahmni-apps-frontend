@@ -1,7 +1,7 @@
-import { PATIENT_RADIOLOGY_RESOURCE_URL } from '@constants/app';
-import { get } from './api';
 import { Bundle, ServiceRequest } from 'fhir/r4';
+import { PATIENT_RADIOLOGY_RESOURCE_URL } from '@constants/app';
 import { RadiologyInvestigation } from '@types/radiologyInvestigation';
+import { get } from './api';
 
 /**
  * Fetches radiology investigations for a given patient UUID from the FHIR R4 endpoint

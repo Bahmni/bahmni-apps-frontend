@@ -1,4 +1,3 @@
-import React, { useEffect, useCallback } from 'react';
 import {
   Column,
   Grid,
@@ -8,20 +7,21 @@ import {
   DatePicker,
   DatePickerInput,
 } from '@carbon/react';
+import React, { useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import * as styles from './styles/SelectedMedicationItem.module.scss';
-import { DurationUnitOption, MedicationInputEntry } from '@types/medication';
-import { Frequency, MedicationConfig } from '@types/medicationConfig';
+import { DATE_PICKER_INPUT_FORMAT } from '@constants/date';
 import { DURATION_UNIT_OPTIONS } from '@constants/medications';
-import { Concept } from '@types/encounterConcepts';
 import {
   calculateTotalQuantity,
   getDefaultDosingUnit,
   getDefaultRoute,
   isImmediateFrequency,
 } from '@services/medicationsValueCalculator';
-import { DATE_PICKER_INPUT_FORMAT } from '@constants/date';
+import { Concept } from '@types/encounterConcepts';
+import { DurationUnitOption, MedicationInputEntry } from '@types/medication';
+import { Frequency, MedicationConfig } from '@types/medicationConfig';
 import { getTodayDate } from '@utils/date';
+import * as styles from './styles/SelectedMedicationItem.module.scss';
 
 export interface SelectedMedicationItemProps {
   medicationInputEntry: MedicationInputEntry;

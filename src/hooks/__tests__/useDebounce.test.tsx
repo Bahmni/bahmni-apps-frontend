@@ -156,7 +156,7 @@ describe('useDebounce', () => {
         { initialProps: { value: null as string | null } },
       );
 
-      expect(result.current).toBe(null);
+      expect(result.current).toBeNull();
 
       rerender({ value: 'not null' });
       act(() => {
@@ -171,7 +171,7 @@ describe('useDebounce', () => {
         { initialProps: { value: undefined as string | undefined } },
       );
 
-      expect(result.current).toBe(undefined);
+      expect(result.current).toBeUndefined();
 
       rerender({ value: 'defined' });
       act(() => {

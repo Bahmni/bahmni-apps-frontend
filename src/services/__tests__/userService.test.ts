@@ -1,8 +1,8 @@
-import { getCurrentUser } from '@services/userService';
-import { get } from '@services/api';
-import { USER_RESOURCE_URL, BAHMNI_USER_COOKIE_NAME } from '@constants/app';
-import * as commonUtils from '@utils/common';
 import i18n from '@/setupTests.i18n';
+import { USER_RESOURCE_URL, BAHMNI_USER_COOKIE_NAME } from '@constants/app';
+import { get } from '@services/api';
+import { getCurrentUser } from '@services/userService';
+import * as commonUtils from '@utils/common';
 
 // Mock dependencies
 jest.mock('@services/api');

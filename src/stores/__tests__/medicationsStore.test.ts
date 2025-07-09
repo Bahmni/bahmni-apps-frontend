@@ -1,9 +1,9 @@
 import { act, renderHook } from '@testing-library/react';
-import { useMedicationStore } from '../medicationsStore';
 import { Medication } from 'fhir/r4';
 import { Concept } from '@types/encounterConcepts';
-import { Frequency } from '@types/medicationConfig';
 import { DurationUnitOption } from '@types/medication';
+import { Frequency } from '@types/medicationConfig';
+import { useMedicationStore } from '../medicationsStore';
 
 describe('useMedicationStore', () => {
   const mockMedication: Medication = {

@@ -1,5 +1,3 @@
-import React from 'react';
-import { useHeaderSideNav } from '@hooks/useHeaderSideNav';
 import {
   HeaderContainer,
   Header,
@@ -11,12 +9,14 @@ import {
   Breadcrumb,
   BreadcrumbItem,
 } from '@carbon/react';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
 import { ICON_SIZE } from '@constants/icon';
-import * as styles from './styles/HeaderWSideNav.module.scss';
-import { useTranslation } from 'react-i18next';
+import { useHeaderSideNav } from '@hooks/useHeaderSideNav';
 import { HeaderWSideNavProps } from '@types/headerSideNav';
 import { isMobile } from '@utils/common';
+import * as styles from './styles/HeaderWSideNav.module.scss';
 
 /**
  * HeaderWSideNav component combines a header with side navigation, breadcrumbs, and global actions.

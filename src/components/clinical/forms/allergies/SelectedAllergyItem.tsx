@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import {
   Column,
   Grid,
@@ -6,13 +5,14 @@ import {
   FilterableMultiSelect,
   Link,
 } from '@carbon/react';
-import { useTranslation } from 'react-i18next';
-import * as styles from './styles/SelectedAllergyItem.module.scss';
 import { Coding } from 'fhir/r4';
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import TextAreaWClose from '@components/common/textAreaWClose/TextAreaWClose';
 import { ALLERGY_SEVERITY_CONCEPTS } from '@constants/concepts';
 import { AllergyInputEntry } from '@types/allergy';
 import { getCategoryDisplayName } from '@utils/allergy';
-import TextAreaWClose from '@components/common/textAreaWClose/TextAreaWClose';
+import * as styles from './styles/SelectedAllergyItem.module.scss';
 
 /**
  * Properties for a selected allergy item

@@ -1,12 +1,12 @@
-import { createEncounterResource } from '../encounterResourceCreator';
+import { FHIR_ENCOUNTER_TYPE_CODE_SYSTEM } from '@constants/fhir';
 import { createCodeableConcept, createCoding } from '../codeableConceptCreator';
+import { createEncounterResource } from '../encounterResourceCreator';
 import {
   createEncounterLocationReference,
   createEncounterParticipantReference,
   createEncounterReference,
   createPatientReference,
 } from '../referenceCreator';
-import { FHIR_ENCOUNTER_TYPE_CODE_SYSTEM } from '@constants/fhir';
 
 // Mock the imported functions
 jest.mock('../codeableConceptCreator', () => ({

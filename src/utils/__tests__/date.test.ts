@@ -1,4 +1,8 @@
 import { format, parseISO } from 'date-fns';
+import i18n from '@/setupTests.i18n';
+import { DATE_TIME_FORMAT } from '@constants/date';
+import { DATE_ERROR_MESSAGES } from '@constants/errors';
+import { getUserPreferredLocale } from '@services/translationService';
 import {
   calculateAge,
   formatDate,
@@ -6,10 +10,6 @@ import {
   calculateOnsetDate,
   formatDateDistance,
 } from '../date';
-import { DATE_TIME_FORMAT } from '@constants/date';
-import { DATE_ERROR_MESSAGES } from '@constants/errors';
-import i18n from '@/setupTests.i18n';
-import { getUserPreferredLocale } from '@services/translationService';
 
 jest.mock('@utils/common', () => ({
   generateId: jest.fn().mockReturnValue('generated-id'),
@@ -452,6 +452,7 @@ describe('Date Utility Functions', () => {
     it('should handle null input', () => {
       /* eslint-disable  @typescript-eslint/no-explicit-any */
       const formatted = formatDate(null as any);
+      /* eslint-enable @typescript-eslint/no-explicit-any */
       expect(formatted.formattedResult).toBe('');
       expect(formatted.error).toBeDefined();
     });
@@ -522,6 +523,7 @@ describe('Date Utility Functions', () => {
     it('should handle null input', () => {
       /* eslint-disable  @typescript-eslint/no-explicit-any */
       const formatted = formatDateTime(null as any);
+      /* eslint-enable @typescript-eslint/no-explicit-any */
       expect(formatted.formattedResult).toBe('');
       expect(formatted.error).toBeDefined();
     });
@@ -536,6 +538,7 @@ describe('Date Utility Functions', () => {
     it('should handle invalid input', () => {
       /* eslint-disable  @typescript-eslint/no-explicit-any */
       const formatted = formatDateTime({} as any);
+      /* eslint-enable @typescript-eslint/no-explicit-any */
       expect(formatted.formattedResult).toBe('');
       expect(formatted.error).toBeDefined();
     });
@@ -732,6 +735,7 @@ describe('Date Utility Functions', () => {
       it('should return error for null input', () => {
         /* eslint-disable  @typescript-eslint/no-explicit-any */
         const result = formatDateDistance(null as any);
+        /* eslint-enable @typescript-eslint/no-explicit-any */
         expect(result.formattedResult).toBe('');
         expect(result.error).toBeDefined();
         expect(result.error?.title).toBe(
@@ -745,6 +749,7 @@ describe('Date Utility Functions', () => {
       it('should return error for undefined input', () => {
         /* eslint-disable  @typescript-eslint/no-explicit-any */
         const result = formatDateDistance(undefined as any);
+        /* eslint-enable @typescript-eslint/no-explicit-any */
         expect(result.formattedResult).toBe('');
         expect(result.error).toBeDefined();
         expect(result.error?.title).toBe(
@@ -770,6 +775,7 @@ describe('Date Utility Functions', () => {
       it('should handle non-string input', () => {
         /* eslint-disable  @typescript-eslint/no-explicit-any */
         const result = formatDateDistance(123 as any);
+        /* eslint-enable @typescript-eslint/no-explicit-any */
         expect(result.formattedResult).toBe('');
         expect(result.error).toBeDefined();
       });

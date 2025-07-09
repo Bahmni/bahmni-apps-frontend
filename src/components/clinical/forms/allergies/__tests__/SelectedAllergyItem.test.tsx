@@ -1,13 +1,13 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { I18nextProvider } from 'react-i18next';
-import i18n from '@/setupTests.i18n';
-import SelectedAllergyItem from '../SelectedAllergyItem';
 import { Coding } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
+import { I18nextProvider } from 'react-i18next';
+import i18n from '@/setupTests.i18n';
 import { ALLERGY_SEVERITY_CONCEPTS } from '@constants/concepts';
 import { AllergenType } from '@types/concepts';
+import SelectedAllergyItem from '../SelectedAllergyItem';
 
 expect.extend(toHaveNoViolations);
 

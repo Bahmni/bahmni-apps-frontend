@@ -1,3 +1,6 @@
+import { PATIENT_RESOURCE_URL } from '@constants/app';
+import { FhirPatient } from '@types/patient';
+import { get } from '../api';
 import {
   getPatientById,
   formatPatientName,
@@ -5,9 +8,6 @@ import {
   formatPatientContact,
   formatPatientData,
 } from '../patientService';
-import { get } from '../api';
-import { PATIENT_RESOURCE_URL } from '@constants/app';
-import { FhirPatient } from '@types/patient';
 
 // Mock the api module
 jest.mock('../api');
@@ -189,7 +189,7 @@ describe('Patient Service', () => {
       const result = formatPatientAddress(address);
 
       // Assert
-      expect(result).toEqual('123 Main St, Boston');
+      expect(result).toBe('123 Main St, Boston');
     });
 
     it('should handle only city and state', () => {
@@ -203,7 +203,7 @@ describe('Patient Service', () => {
       const result = formatPatientAddress(address);
 
       // Assert
-      expect(result).toEqual('Boston, MA');
+      expect(result).toBe('Boston, MA');
     });
 
     it('should handle only line and postalCode', () => {
@@ -217,7 +217,7 @@ describe('Patient Service', () => {
       const result = formatPatientAddress(address);
 
       // Assert
-      expect(result).toEqual('123 Main St, 02115');
+      expect(result).toBe('123 Main St, 02115');
     });
 
     it('should handle empty strings for all fields', () => {
@@ -249,7 +249,7 @@ describe('Patient Service', () => {
       const result = formatPatientAddress(address);
 
       // Assert
-      expect(result).toEqual('123 Main St, MA');
+      expect(result).toBe('123 Main St, MA');
     });
 
     it('should return null for undefined address', () => {

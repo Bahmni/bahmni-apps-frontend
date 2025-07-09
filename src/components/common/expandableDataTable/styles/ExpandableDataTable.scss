@@ -20,6 +20,7 @@
 .emptyState {
   padding: $spacing-07 $spacing-05;
   text-align: center;
+
   @include type-style("body-compact-01");
 }
 

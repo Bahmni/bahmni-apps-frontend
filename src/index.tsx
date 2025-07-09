@@ -1,9 +1,9 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import App from './App';
 import { NotificationProvider } from '@providers/NotificationProvider';
 import { NotificationServiceComponent } from '@services/NotificationServiceComponent';
+import App from './App';
 import { initFontAwesome } from './fontawesome';
 import '@styles/index.scss';
 import '@/i18n';

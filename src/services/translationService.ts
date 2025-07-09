@@ -1,10 +1,10 @@
-import { CONFIG_TRANSLATIONS_URL_TEMPLATE } from '@constants/config';
+import axios from 'axios';
 import {
   BUNDLED_TRANSLATIONS_URL_TEMPLATE,
   LOCALE_STORAGE_KEY,
   DEFAULT_LOCALE,
 } from '@constants/app';
-import axios from 'axios';
+import { CONFIG_TRANSLATIONS_URL_TEMPLATE } from '@constants/config';
 
 /**
  * Fetches user's preferred locale from the local storage.

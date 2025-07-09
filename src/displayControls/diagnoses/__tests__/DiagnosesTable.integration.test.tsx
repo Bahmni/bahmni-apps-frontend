@@ -1,10 +1,10 @@
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
+import React from 'react';
 import i18n from '@/setupTests.i18n';
-import DiagnosesTable from '../DiagnosesTable';
+import { CERTAINITY_CONCEPTS } from '@constants/concepts';
 import { getPatientDiagnoses } from '@services/diagnosesService';
 import { Diagnosis } from '@types/diagnosis';
-import { CERTAINITY_CONCEPTS } from '@constants/concepts';
+import DiagnosesTable from '../DiagnosesTable';
 
 // Mock only the service layer
 jest.mock('@services/diagnosesService');

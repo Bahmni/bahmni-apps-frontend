@@ -1,5 +1,7 @@
 /** @type {import('stylelint').Config} */
 const config = {
+  files: ['src/**/*.{scss}'],
+  ignoreFiles: ['src/**/*.ts', 'src/**/*.tsx'],
   extends: ['stylelint-config-standard-scss'],
   plugins: ['stylelint-scss'],
   rules: {
@@ -32,6 +34,18 @@ const config = {
     'length-zero-no-unit': null,
     'color-hex-length': null,
     'declaration-block-no-redundant-longhand-properties': null,
+    'declaration-property-unit-allowed-list': {
+      '/^border|^border-radius|^border-bottom|^border-left|^border-right|^border-top|^box-shadow|^font-size/':
+        ['px', 'rem'],
+      '/^margin|^padding|^block|^inline|^width|^height/': [
+        'rem',
+        '%',
+        'em',
+        'vh',
+        'vw',
+      ],
+    },
+    // 'unit-allowed-list': ['%', 'deg', 'rem', 'vh', 'vw'],
   },
   ignoreFiles: [
     'node_modules/**/*',

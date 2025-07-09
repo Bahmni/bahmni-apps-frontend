@@ -1,12 +1,12 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
-import PatientDetails from '../PatientDetails';
+import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
+import i18n from '@/setupTests.i18n';
 import { usePatient } from '@hooks/usePatient';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import * as patientService from '@services/patientService';
 import { FormattedPatientData, Age } from '@types/patient';
-import i18n from '@/setupTests.i18n';
-import { axe, toHaveNoViolations } from 'jest-axe';
+import PatientDetails from '../PatientDetails';
 
 expect.extend(toHaveNoViolations);
 

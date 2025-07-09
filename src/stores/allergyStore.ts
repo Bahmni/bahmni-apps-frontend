@@ -1,7 +1,7 @@
-import { create } from 'zustand';
 import { Coding } from 'fhir/r4';
-import { AllergenConcept } from '@types/concepts';
+import { create } from 'zustand';
 import { AllergyInputEntry } from '@types/allergy';
+import { AllergenConcept } from '@types/concepts';
 
 export interface AllergyState {
   selectedAllergies: AllergyInputEntry[];

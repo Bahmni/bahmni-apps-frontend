@@ -1,22 +1,22 @@
-import React, { Suspense, useMemo, useState } from 'react';
 import { Loading } from '@carbon/react';
-import ClinicalLayout from '@layouts/clinical/ClinicalLayout';
+import React, { Suspense, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import ConsultationPad from '@components/clinical/consultationPad/ConsultationPad';
 import DashboardContainer from '@components/clinical/dashboardContainer/DashboardContainer';
-import { useClinicalConfig } from '@hooks/useClinicalConfig';
+import PatientHeader from '@components/clinical/patientHeader/PatientHeader';
+import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
 import HeaderWSideNav from '@components/common/headerWSideNav/HeaderWSideNav';
+import { BAHMNI_CLINICAL_PATH, BAHMNI_HOME_PATH } from '@constants/app';
+import { ICON_SIZE } from '@constants/icon';
+import { useClinicalConfig } from '@hooks/useClinicalConfig';
 import { useDashboardConfig } from '@hooks/useDashboardConfig';
 import useNotification from '@hooks/useNotification';
-import { useTranslation } from 'react-i18next';
 import { useSidebarNavigation } from '@hooks/useSidebarNavigation';
+import ClinicalLayout from '@layouts/clinical/ClinicalLayout';
 import {
   getDefaultDashboard,
   getSidebarItems,
 } from '@services/consultationPageService';
-import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
-import { ICON_SIZE } from '@constants/icon';
-import { BAHMNI_CLINICAL_PATH, BAHMNI_HOME_PATH } from '@constants/app';
-import ConsultationPad from '@components/clinical/consultationPad/ConsultationPad';
-import PatientHeader from '@components/clinical/patientHeader/PatientHeader';
 
 const breadcrumbItems = [
   { id: 'home', label: 'Home', href: BAHMNI_HOME_PATH },

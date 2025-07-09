@@ -1,13 +1,13 @@
-import React, { useMemo, useCallback } from 'react';
 import { ComboBox, Tile } from '@carbon/react';
+import React, { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import * as styles from './styles/InvestigationsForm.module.scss';
-import useInvestigationsSearch from '@hooks/useInvestigationsSearch';
-import type { FlattenedInvestigations } from '@types/investigations';
-import useServiceRequestStore from '@stores/serviceRequestStore';
 import BoxWHeader from '@components/common/boxWHeader/BoxWHeader';
-import SelectedInvestigationItem from './SelectedInvestigationItem';
 import SelectedItem from '@components/common/selectedItem/SelectedItem';
+import useInvestigationsSearch from '@hooks/useInvestigationsSearch';
+import useServiceRequestStore from '@stores/serviceRequestStore';
+import type { FlattenedInvestigations } from '@types/investigations';
+import SelectedInvestigationItem from './SelectedInvestigationItem';
+import * as styles from './styles/InvestigationsForm.module.scss';
 
 const InvestigationsForm: React.FC = React.memo(() => {
   const { t } = useTranslation();

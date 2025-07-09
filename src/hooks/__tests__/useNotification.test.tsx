@@ -1,5 +1,5 @@
-import React from 'react';
 import { renderHook, act } from '@testing-library/react';
+import React from 'react';
 import { NotificationProvider } from '@providers/NotificationProvider';
 import { useNotification } from '../useNotification';
 

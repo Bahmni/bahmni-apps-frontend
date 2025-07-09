@@ -1,8 +1,8 @@
-import { PATIENT_DIAGNOSIS_RESOURCE_URL } from '@constants/app';
-import { get } from './api';
 import { Coding, Condition as Diagnoses, Bundle } from 'fhir/r4';
-import { Diagnosis } from '@types/diagnosis';
+import { PATIENT_DIAGNOSIS_RESOURCE_URL } from '@constants/app';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
+import { Diagnosis } from '@types/diagnosis';
+import { get } from './api';
 
 // Constants for better maintainability
 const CONFIRMED_STATUS = 'confirmed';

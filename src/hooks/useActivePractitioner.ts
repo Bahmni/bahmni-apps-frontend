@@ -1,10 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getCurrentProvider } from '@services/providerService';
-import { getFormattedError } from '@utils/common';
+import { getCurrentUser } from '@services/userService';
 import { Provider } from '@types/provider';
 import { User } from '@types/user';
-import { getCurrentUser } from '@services/userService';
-import { useTranslation } from 'react-i18next';
+import { getFormattedError } from '@utils/common';
 
 interface useActivePractitionerResult {
   practitioner: Provider | null;

@@ -1,16 +1,16 @@
-import React, { ReactNode } from 'react';
 import { render, screen } from '@testing-library/react';
-import ConsultationPage from '../ConsultationPage';
-import { useClinicalConfig } from '@hooks/useClinicalConfig';
-import { useDashboardConfig } from '@hooks/useDashboardConfig';
-import useNotification from '@hooks/useNotification';
-import { useSidebarNavigation } from '@hooks/useSidebarNavigation';
+import { axe, toHaveNoViolations } from 'jest-axe';
+import React, { ReactNode } from 'react';
 import i18n from '@/setupTests.i18n';
 import {
   validFullClinicalConfig,
   validDashboardConfig,
 } from '@__mocks__/configMocks';
-import { axe, toHaveNoViolations } from 'jest-axe';
+import { useClinicalConfig } from '@hooks/useClinicalConfig';
+import { useDashboardConfig } from '@hooks/useDashboardConfig';
+import useNotification from '@hooks/useNotification';
+import { useSidebarNavigation } from '@hooks/useSidebarNavigation';
+import ConsultationPage from '../ConsultationPage';
 
 expect.extend(toHaveNoViolations);
 
@@ -60,12 +60,16 @@ jest.mock('@carbon/react', () => ({
     </div>
   )),
   Button: jest.fn(({ children, onClick, style }) => (
-    <button data-testid="carbon-button" onClick={onClick} style={style}>
+    <button
+      data-testid="carbon-button"
+      onClick={onClick}
+      data-style={JSON.stringify(style)}
+    >
       {children}
     </button>
   )),
   Tile: jest.fn(({ children, style }) => (
-    <div data-testid="carbon-tile" style={style}>
+    <div data-testid="carbon-tile" data-style={JSON.stringify(style)}>
       {children}
     </div>
   )),

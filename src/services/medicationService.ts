@@ -1,14 +1,14 @@
+import { Bundle, Medication } from 'fhir/r4';
 import {
   MEDICATION_ORDERS_METADATA_URL,
   MEDICATIONS_SEARCH_URL,
 } from '@constants/app';
-import { get } from './api';
-import { MedicationOrdersMetadataResponse } from '@types/medicationConfig';
-import { Bundle, Medication } from 'fhir/r4';
 import {
   FHIR_MEDICATION_EXTENSION_URL,
   FHIR_MEDICATION_NAME_EXTENSION_URL,
 } from '@constants/fhir';
+import { MedicationOrdersMetadataResponse } from '@types/medicationConfig';
+import { get } from './api';
 
 export async function fetchMedicationOrdersMetadata(): Promise<MedicationOrdersMetadataResponse> {
   return await get<MedicationOrdersMetadataResponse>(

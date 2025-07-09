@@ -1,6 +1,6 @@
-import React, { ReactNode } from 'react';
 import { Column, Grid } from '@carbon/react';
 import classNames from 'classnames';
+import React, { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as styles from './styles/BoxWHeader.module.scss';
 

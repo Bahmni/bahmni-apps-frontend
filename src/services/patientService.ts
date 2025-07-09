@@ -1,12 +1,12 @@
+import { PATIENT_RESOURCE_URL } from '@constants/app';
 import {
   FhirPatient,
   FhirAddress,
   FhirTelecom,
   FormattedPatientData,
 } from '@types/patient';
-import { PATIENT_RESOURCE_URL } from '@constants/app';
-import { get } from './api';
 import { calculateAge } from '@utils/date';
+import { get } from './api';
 
 export const getPatientById = async (
   patientUUID: string,

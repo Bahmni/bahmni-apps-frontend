@@ -1,9 +1,9 @@
-import React from 'react';
 import { Column, Grid, Dropdown, TextInput } from '@carbon/react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
-import * as styles from './styles/SelectedConditionItem.module.scss';
-import { ConditionInputEntry } from '@types/condition';
 import { DURATION_UNITS } from '@constants/conditions';
+import { ConditionInputEntry } from '@types/condition';
+import * as styles from './styles/SelectedConditionItem.module.scss';
 
 export interface SelectedConditionItemProps {
   condition: ConditionInputEntry;

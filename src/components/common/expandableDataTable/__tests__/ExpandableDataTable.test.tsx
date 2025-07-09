@@ -1,9 +1,9 @@
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ExpandableDataTable } from '../ExpandableDataTable';
 import { DataTableHeader, Tag } from '@carbon/react';
-import { getFormattedError } from '@utils/common';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import React from 'react';
 import i18n from '@/setupTests.i18n';
+import { getFormattedError } from '@utils/common';
+import { ExpandableDataTable } from '../ExpandableDataTable';
 
 // Mock the common utils
 jest.mock('@utils/common', () => ({

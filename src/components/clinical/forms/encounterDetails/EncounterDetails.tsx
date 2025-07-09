@@ -1,4 +1,3 @@
-import React, { useEffect, useMemo } from 'react';
 import {
   Dropdown,
   DatePicker,
@@ -7,18 +6,19 @@ import {
   Column,
   SkeletonPlaceholder,
 } from '@carbon/react';
+import React, { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocations } from '@hooks/useLocations';
-import { useEncounterConcepts } from '@hooks/useEncounterConcepts';
+import { DATE_FORMAT } from '@constants/date';
 import { useActivePractitioner } from '@hooks/useActivePractitioner';
 import { useActiveVisit } from '@hooks/useActiveVisit';
+import { useEncounterConcepts } from '@hooks/useEncounterConcepts';
+import { useLocations } from '@hooks/useLocations';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
-import { formatDate } from '@utils/date';
-import { OpenMRSLocation } from '@types/location';
 import { Concept } from '@types/encounterConcepts';
+import { OpenMRSLocation } from '@types/location';
 import { Provider } from '@types/provider';
-import { DATE_FORMAT } from '@constants/date';
+import { formatDate } from '@utils/date';
 import * as styles from './styles/EncounterDetails.module.scss';
 
 // Constants

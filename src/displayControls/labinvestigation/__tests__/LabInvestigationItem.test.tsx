@@ -1,8 +1,8 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
-import LabInvestigationItem from '../LabInvestigationItem';
-import { FormattedLabTest, LabTestPriority } from '@types/labInvestigation';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { FormattedLabTest, LabTestPriority } from '@types/labInvestigation';
+import LabInvestigationItem from '../LabInvestigationItem';
 
 // Mock the BahmniIcon component
 jest.mock('@components/common/bahmniIcon/BahmniIcon', () => ({

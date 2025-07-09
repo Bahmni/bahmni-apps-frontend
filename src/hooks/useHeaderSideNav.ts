@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect } from 'react';
 import { breakpoints, baseFontSize } from '@carbon/layout';
+import { useState, useCallback, useEffect } from 'react';
 
 /**
  * Custom hook to manage header side navigation state and interactions

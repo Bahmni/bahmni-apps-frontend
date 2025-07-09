@@ -1,13 +1,13 @@
-import React, { useMemo } from 'react';
-import { Tag } from '@carbon/react';
-import { useTranslation } from 'react-i18next';
 import { DotMark } from '@carbon/icons-react';
+import { Tag } from '@carbon/react';
+import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
 import { useConditions } from '@hooks/useConditions';
 import { formatConditions } from '@services/conditionService';
 import { ConditionStatus, FormattedCondition } from '@types/condition';
-import { formatDateDistance } from '@utils/date';
 import { FormatDateResult } from '@types/date';
+import { formatDateDistance } from '@utils/date';
 import * as styles from './styles/ConditionsTable.module.scss';
 
 /**

@@ -1,7 +1,7 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import ActionArea from '../ActionArea';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
+import ActionArea from '../ActionArea';
 
 expect.extend(toHaveNoViolations);
 describe('ActionArea', () => {

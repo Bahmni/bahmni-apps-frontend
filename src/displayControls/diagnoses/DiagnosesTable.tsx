@@ -1,13 +1,13 @@
-import React, { useMemo, useCallback } from 'react';
 import { Tag, Tile, DataTableSkeleton } from '@carbon/react';
+import React, { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
+import { FULL_MONTH_DATE_FORMAT, ISO_DATE_FORMAT } from '@constants/date';
 import { useDiagnoses } from '@hooks/useDiagnoses';
 import { Diagnosis } from '@types/diagnosis';
-import { formatDate } from '@utils/date';
-import { FULL_MONTH_DATE_FORMAT, ISO_DATE_FORMAT } from '@constants/date';
-import { sortDiagnosesByCertainty } from '@utils/diagnosis';
 import { groupByDate } from '@utils/common';
+import { formatDate } from '@utils/date';
+import { sortDiagnosesByCertainty } from '@utils/diagnosis';
 import * as styles from './styles/DiagnosesTable.module.scss';
 
 /**

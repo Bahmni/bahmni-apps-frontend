@@ -1,11 +1,11 @@
 import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
-import { LOCALE_STORAGE_KEY, CLINICAL_NAMESPACE } from './constants/app';
+import { initReactI18next } from 'react-i18next';
 import {
   getTranslations,
   getUserPreferredLocale,
 } from '@services/translationService';
+import { LOCALE_STORAGE_KEY, CLINICAL_NAMESPACE } from './constants/app';
 
 /**
  * Initialize i18n with pre-loaded translations

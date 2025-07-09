@@ -1,5 +1,3 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   DataTable,
   DataTableSkeleton,
@@ -14,6 +12,8 @@ import {
   Accordion,
   AccordionItem,
 } from '@carbon/react';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { generateId, getFormattedError } from '@utils/common';
 import './styles/ExpandableDataTable.scss';
 

@@ -1,7 +1,7 @@
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import DashboardContainer from '../DashboardContainer';
+import React from 'react';
 import { DashboardSectionConfig as DashboardSectionType } from '@types/dashboardConfig';
+import DashboardContainer from '../DashboardContainer';
 
 // Mock scrollIntoView
 const mockScrollIntoView = jest.fn();
@@ -101,7 +101,7 @@ describe('DashboardContainer Component', () => {
     // Check if Carbon components are rendered
     expect(screen.getByTestId('carbon-section')).toBeInTheDocument();
     expect(screen.getByTestId('carbon-grid')).toBeInTheDocument();
-    expect(screen.getAllByTestId('carbon-column').length).toBe(2); // One column per section
+    expect(screen.getAllByTestId('carbon-column')).toHaveLength(2); // One column per section
   });
 
   it('scrolls to the active section when activeItemId matches section id', async () => {

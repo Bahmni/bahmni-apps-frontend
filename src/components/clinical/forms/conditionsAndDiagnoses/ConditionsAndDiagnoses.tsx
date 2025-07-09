@@ -1,15 +1,15 @@
-import React, { useState, useMemo } from 'react';
 import { ComboBox, Tile } from '@carbon/react';
+import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import * as styles from './styles/ConditionsAndDiagnoses.module.scss';
-import SelectedItem from '@components/common/selectedItem/SelectedItem';
 import BoxWHeader from '@components/common/boxWHeader/BoxWHeader';
-import { ConceptSearch } from '@types/concepts';
-import SelectedDiagnosisItem from './SelectedDiagnosisItem';
-import SelectedConditionItem from './SelectedConditionItem';
+import SelectedItem from '@components/common/selectedItem/SelectedItem';
 import { useConceptSearch } from '@hooks/useConceptSearch';
-import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
 import useConditions from '@hooks/useConditions';
+import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
+import { ConceptSearch } from '@types/concepts';
+import SelectedConditionItem from './SelectedConditionItem';
+import SelectedDiagnosisItem from './SelectedDiagnosisItem';
+import * as styles from './styles/ConditionsAndDiagnoses.module.scss';
 
 /**
  * ConditionsAndDiagnoses component

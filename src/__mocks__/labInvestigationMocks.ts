@@ -1,9 +1,9 @@
+import { Bundle, ServiceRequest } from 'fhir/r4';
 import {
   FormattedLabTest,
   LabTestPriority,
   LabTestsByDate,
 } from '@types/labInvestigation';
-import { Bundle, ServiceRequest } from 'fhir/r4';
 
 // Mock patient UUID
 export const mockPatientUUID = 'test-patient-uuid';

@@ -1,8 +1,8 @@
-import { create } from 'zustand';
 import { Coding } from 'fhir/r4';
+import { create } from 'zustand';
 import { ConceptSearch } from '@types/concepts';
-import { DiagnosisInputEntry } from '@types/diagnosis';
 import { ConditionInputEntry } from '@types/condition';
+import { DiagnosisInputEntry } from '@types/diagnosis';
 
 /**
  * Interface defining the state and actions for managing conditions and diagnoses

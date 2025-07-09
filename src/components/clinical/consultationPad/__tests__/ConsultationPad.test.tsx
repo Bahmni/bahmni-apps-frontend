@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   render,
   screen,
@@ -7,9 +6,18 @@ import {
   act,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { BundleEntry } from 'fhir/r4';
+import React from 'react';
 import { I18nextProvider } from 'react-i18next';
-import ConsultationPad from '../ConsultationPad';
 import i18n from '@/setupTests.i18n';
+import * as consultationBundleService from '@services/consultationBundleService';
+// Import mocked services
+import useAllergyStore from '@stores/allergyStore';
+import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
+import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
+import { useMedicationStore } from '@stores/medicationsStore';
+import useServiceRequestStore from '@stores/serviceRequestStore';
+import ConsultationPad from '../ConsultationPad';
 
 // Mock all child components
 jest.mock('@components/common/actionArea/ActionArea', () => ({
@@ -212,15 +220,6 @@ Object.defineProperty(global, 'crypto', {
     randomUUID: jest.fn(() => 'mock-uuid-1234-5678-9abc-def012345678'),
   },
 });
-
-// Import mocked services
-import * as consultationBundleService from '@services/consultationBundleService';
-import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
-import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
-import useAllergyStore from '@stores/allergyStore';
-import useServiceRequestStore from '@stores/serviceRequestStore';
-import { useMedicationStore } from '@stores/medicationsStore';
-import { BundleEntry } from 'fhir/r4';
 
 // Test wrapper
 const renderWithProviders = (ui: React.ReactElement) => {

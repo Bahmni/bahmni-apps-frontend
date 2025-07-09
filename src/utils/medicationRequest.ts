@@ -1,9 +1,9 @@
+import { parseISO } from 'date-fns';
 import {
   MedicationRequest,
   FormattedMedicationRequest,
 } from '@types/medicationRequest';
 import { getPriorityByOrder } from './common';
-import { parseISO } from 'date-fns';
 
 /**
  * Priority order for medication status levels (case insensitive)

@@ -1,8 +1,8 @@
-import { get } from './api';
+import i18next from 'i18next';
 import { USER_RESOURCE_URL, BAHMNI_USER_COOKIE_NAME } from '@constants/app';
 import { UserResponse, User } from '@types/user';
 import { getCookieByName } from '@utils/common';
-import i18next from 'i18next';
+import { get } from './api';
 
 export async function getCurrentUser(): Promise<User | null> {
   // Get username from cookie

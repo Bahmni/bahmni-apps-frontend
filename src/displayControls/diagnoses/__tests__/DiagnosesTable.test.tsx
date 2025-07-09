@@ -1,15 +1,15 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import DiagnosesTable from '../DiagnosesTable';
-import { useDiagnoses } from '@hooks/useDiagnoses';
-import { Diagnosis } from '@types/diagnosis';
+import React from 'react';
+import i18n from '@/setupTests.i18n';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
 import { FULL_MONTH_DATE_FORMAT, ISO_DATE_FORMAT } from '@constants/date';
-import { formatDate } from '@utils/date';
+import { useDiagnoses } from '@hooks/useDiagnoses';
+import { Diagnosis } from '@types/diagnosis';
 import { groupByDate } from '@utils/common';
+import { formatDate } from '@utils/date';
 import { sortDiagnosesByCertainty } from '@utils/diagnosis';
-import i18n from '@/setupTests.i18n';
+import DiagnosesTable from '../DiagnosesTable';
 
 expect.extend(toHaveNoViolations);
 

@@ -1,9 +1,9 @@
-import React from 'react';
 import { renderHook, act } from '@testing-library/react';
-import { useActiveVisit } from '@hooks/useActiveVisit';
-import { getActiveVisit } from '@services/encounterService';
+import React from 'react';
 import { mockActiveVisit } from '@__mocks__/encounterMocks';
+import { useActiveVisit } from '@hooks/useActiveVisit';
 import { NotificationProvider } from '@providers/NotificationProvider';
+import { getActiveVisit } from '@services/encounterService';
 import notificationService from '@services/notificationService';
 
 jest.mock('@services/encounterService');

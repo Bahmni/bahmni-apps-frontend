@@ -1,9 +1,7 @@
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { axe, toHaveNoViolations } from 'jest-axe';
 import userEvent from '@testing-library/user-event';
-import MedicationsTable from '../MedicationsTable';
-import { MedicationStatus } from '../../../types/medicationRequest';
+import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
 import i18n from '@/setupTests.i18n';
 import {
   mockMedicationRequest,
@@ -11,6 +9,8 @@ import {
   mockMedicationWithSTAT,
   mockMedicationsWithDifferentDates,
 } from '@__mocks__/medicationMocks';
+import { MedicationStatus } from '../../../types/medicationRequest';
+import MedicationsTable from '../MedicationsTable';
 
 // Extend Jest matchers
 expect.extend(toHaveNoViolations);
@@ -146,10 +146,10 @@ describe('MedicationsTable', () => {
       render(<MedicationsTable />);
 
       // Should show only Active and On-Hold medications in first tab
-      expect(screen.getAllByText('Active Medication').length).toBe(2);
-      expect(screen.getAllByText('On Hold Medication').length).toBe(2);
-      expect(screen.getAllByText('Completed Medication').length).toBe(1);
-      expect(screen.getAllByText('Stopped Medication').length).toBe(1);
+      expect(screen.getAllByText('Active Medication')).toHaveLength(2);
+      expect(screen.getAllByText('On Hold Medication')).toHaveLength(2);
+      expect(screen.getAllByText('Completed Medication')).toHaveLength(1);
+      expect(screen.getAllByText('Stopped Medication')).toHaveLength(1);
     });
 
     it('groups medications by date for All tab', async () => {

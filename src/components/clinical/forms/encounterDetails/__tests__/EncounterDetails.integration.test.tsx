@@ -1,16 +1,16 @@
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
+import React from 'react';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/setupTests.i18n';
-import BasicForm from '../EncounterDetails';
-import * as api from '@services/api';
-import * as commonUtils from '@utils/common';
 import {
   ENCOUNTER_CONCEPTS_URL,
   PROVIDER_RESOURCE_URL,
   USER_RESOURCE_URL,
 } from '@constants/app';
+import * as api from '@services/api';
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
+import * as commonUtils from '@utils/common';
+import BasicForm from '../EncounterDetails';
 
 // Mock services
 jest.mock('@services/api');

@@ -1,8 +1,8 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import BoxWHeader from '../BoxWHeader';
+import React from 'react';
 import i18n from '@/setupTests.i18n';
+import BoxWHeader from '../BoxWHeader';
 
 expect.extend(toHaveNoViolations);
 // Mock the styles to prevent issues with CSS modules in tests

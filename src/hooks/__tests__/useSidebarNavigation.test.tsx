@@ -1,5 +1,5 @@
-import React from 'react';
 import { render, screen, act } from '@testing-library/react';
+import React from 'react';
 import { useSidebarNavigation, SidebarItem } from '@hooks/useSidebarNavigation';
 
 // Test component to expose hook values

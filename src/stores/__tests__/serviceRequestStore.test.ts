@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { act } from 'react';
-import { useServiceRequestStore } from '../serviceRequestStore';
 import { SupportedServiceRequestPriority } from '@types/serviceRequest';
+import { useServiceRequestStore } from '../serviceRequestStore';
 
 describe('useServiceRequestStore', () => {
   beforeEach(() => {
@@ -577,7 +577,7 @@ describe('useServiceRequestStore', () => {
       const categoryRequests =
         result.current.selectedServiceRequests.get(category);
       expect(categoryRequests![0].display).toBe(longDisplayName);
-      expect(categoryRequests![0].display.length).toBe(500);
+      expect(categoryRequests![0].display).toHaveLength(500);
     });
 
     test('should handle unicode characters in display name', () => {

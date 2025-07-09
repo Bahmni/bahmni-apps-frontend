@@ -1,6 +1,6 @@
-import React from 'react';
-import { Column, Grid, TextArea, Button } from '@carbon/react';
 import { Close } from '@carbon/icons-react';
+import { Column, Grid, TextArea, Button } from '@carbon/react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import * as styles from './styles/TextAreaWClose.module.scss';
 

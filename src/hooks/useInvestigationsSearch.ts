@@ -1,9 +1,9 @@
-import { useEffect, useState, useMemo } from 'react';
-import useDebounce from './useDebounce';
-import { FlattenedInvestigations } from '@types/investigations';
-import { getFlattenedInvestigations } from '@services/investigationService';
-import { getFormattedError } from '@utils/common';
 import i18next from 'i18next';
+import { useEffect, useState, useMemo } from 'react';
+import { getFlattenedInvestigations } from '@services/investigationService';
+import { FlattenedInvestigations } from '@types/investigations';
+import { getFormattedError } from '@utils/common';
+import useDebounce from './useDebounce';
 
 interface UseInvestigationsSearchResult {
   investigations: FlattenedInvestigations[];

@@ -1,25 +1,25 @@
-import React, { useMemo } from 'react';
+import { DotMark } from '@carbon/icons-react';
 import {
   Tag,
   Toggletip,
   ToggletipButton,
   ToggletipContent,
 } from '@carbon/react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
 import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
-import { usePatientUUID } from '@hooks/usePatientUUID';
+import { ICON_PADDING, ICON_SIZE } from '@constants/icon';
 import { useAllergies } from '@hooks/useAllergies';
+import { usePatientUUID } from '@hooks/usePatientUUID';
 import { formatAllergies } from '@services/allergyService';
 import { FormattedAllergy } from '@types/allergy';
-import { DotMark } from '@carbon/icons-react';
 import {
   getCategoryDisplayName,
   getSeverityDisplayName,
   sortAllergiesBySeverity,
 } from '@utils/allergy';
 import * as styles from './styles/AllergiesTable.module.scss';
-import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
-import { ICON_PADDING, ICON_SIZE } from '@constants/icon';
 
 // Helper function to get severity CSS class
 const getSeverityClassName = (severity: string): string | undefined => {

@@ -1,6 +1,6 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useConceptSearch } from '../useConceptSearch';
 import * as conceptService from '@services/conceptService';
+import { useConceptSearch } from '../useConceptSearch';
 
 jest.mock('@services/conceptService');
 

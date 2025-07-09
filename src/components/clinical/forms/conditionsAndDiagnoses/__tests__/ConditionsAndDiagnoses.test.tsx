@@ -1,18 +1,18 @@
-import React from 'react';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { Condition } from 'fhir/r4';
+import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
 import { I18nextProvider } from 'react-i18next';
-import ConditionsAndDiagnoses from '../ConditionsAndDiagnoses';
+import i18n from '@/setupTests.i18n';
+import { CERTAINITY_CONCEPTS } from '@constants/concepts';
 import { useConceptSearch } from '@hooks/useConceptSearch';
 import useConditions from '@hooks/useConditions';
-import { Condition } from 'fhir/r4';
-import { ConceptSearch } from '@types/concepts';
-import { axe, toHaveNoViolations } from 'jest-axe';
-import i18n from '@/setupTests.i18n';
 import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
-import { DiagnosisInputEntry } from '@types/diagnosis';
-import { CERTAINITY_CONCEPTS } from '@constants/concepts';
+import { ConceptSearch } from '@types/concepts';
 import { ConditionInputEntry } from '@types/condition';
+import { DiagnosisInputEntry } from '@types/diagnosis';
+import ConditionsAndDiagnoses from '../ConditionsAndDiagnoses';
 
 expect.extend(toHaveNoViolations);
 

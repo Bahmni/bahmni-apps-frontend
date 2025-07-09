@@ -1,7 +1,7 @@
-import { usePatient } from '../usePatient';
-import { FhirPatient } from '@types/patient';
-import { getPatientById } from '@services/patientService';
 import { useNotification } from '@hooks/useNotification';
+import { getPatientById } from '@services/patientService';
+import { FhirPatient } from '@types/patient';
+import { usePatient } from '../usePatient';
 
 // Mock the patientService
 jest.mock('@services/patientService');
@@ -99,7 +99,7 @@ describe('usePatient hook', () => {
 
     // Verify dependencies include patientUUID and fetchPatient
     expect(deps).toContain('test-uuid');
-    expect(deps.length).toBe(2); // patientUUID and fetchPatient
+    expect(deps).toHaveLength(2); // patientUUID and fetchPatient
 
     // Call the effect function to simulate useEffect execution
     effectFn();

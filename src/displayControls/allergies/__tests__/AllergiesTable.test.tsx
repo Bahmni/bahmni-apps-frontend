@@ -1,9 +1,8 @@
-import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
+import { AllergyIntolerance } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import AllergiesTable from '../AllergiesTable';
-import { usePatientUUID } from '@hooks/usePatientUUID';
-import { useAllergies } from '@hooks/useAllergies';
+import React from 'react';
+import i18n from '@/setupTests.i18n';
 import {
   mockAllergyIntolerance,
   mockAllergyWithMultipleCategories,
@@ -12,8 +11,9 @@ import {
   mockInactiveAllergy,
   mockAllergyWithMultipleSeverities,
 } from '@__mocks__/allergyMocks';
-import { AllergyIntolerance } from 'fhir/r4';
-import i18n from '@/setupTests.i18n';
+import { useAllergies } from '@hooks/useAllergies';
+import { usePatientUUID } from '@hooks/usePatientUUID';
+import AllergiesTable from '../AllergiesTable';
 
 expect.extend(toHaveNoViolations);
 

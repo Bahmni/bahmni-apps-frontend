@@ -1,28 +1,28 @@
+import { DotMark } from '@carbon/icons-react';
+import { Tab, TabList, TabPanel, TabPanels, Tabs, Tag } from '@carbon/react';
 import React, { useMemo, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
+import { SortableDataTable } from '@components/common/sortableDataTable/SortableDataTable';
+import {
+  DATE_FORMAT,
+  FULL_MONTH_DATE_FORMAT,
+  ISO_DATE_FORMAT,
+} from '@constants/date';
 import { useMedicationRequest } from '@hooks/useMedicationRequest';
+import {
+  FormattedMedicationRequest,
+  MedicationRequest,
+} from '@types/medicationRequest';
+import { groupByDate } from '@utils/common';
+import { formatDate } from '@utils/date';
 import {
   formatMedicationRequest,
   sortMedicationsByStatus,
   sortMedicationsByPriority,
   sortMedicationsByDateDistance,
 } from '@utils/medicationRequest';
-import {
-  FormattedMedicationRequest,
-  MedicationRequest,
-} from '@types/medicationRequest';
-import { DotMark } from '@carbon/icons-react';
-import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
-import { SortableDataTable } from '@components/common/sortableDataTable/SortableDataTable';
-import { Tab, TabList, TabPanel, TabPanels, Tabs, Tag } from '@carbon/react';
 import * as styles from './styles/MedicationsTable.module.scss';
-import { groupByDate } from '@utils/common';
-import { formatDate } from '@utils/date';
-import {
-  DATE_FORMAT,
-  FULL_MONTH_DATE_FORMAT,
-  ISO_DATE_FORMAT,
-} from '@constants/date';
 
 // Helper function to get severity CSS class
 const getMedicationStatusClassName = (status: string): string => {

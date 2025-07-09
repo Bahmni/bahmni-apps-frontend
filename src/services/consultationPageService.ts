@@ -1,6 +1,6 @@
+import { SidebarItemProps } from '@components/common/sidebar/Sidebar';
 import { Dashboard } from '@types/config';
 import { DashboardConfig } from '@types/dashboardConfig';
-import { SidebarItemProps } from '@components/common/sidebar/Sidebar';
 
 /**
  * Gets the default dashboard from an array of dashboards
