@@ -35,15 +35,7 @@ module.exports = (env, argv) => {
       hot: true,
       historyApiFallback: true,
       compress: true,
-      proxy: [
-        {
-          context: ['/openmrs'],
-          target: 'https://localhost/',
-          changeOrigin: true,
-          secure: false,
-          logLevel: 'debug',
-        },
-      ],
+      proxy: [],
     },
     resolve: {
       extensions: ['.tsx', '.ts', '.js', '.jsx', '.json'],
