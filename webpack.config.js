@@ -37,7 +37,7 @@ module.exports = (env, argv) => {
       compress: true,
       proxy: [
         {
-          context: ['/openmrs'],
+          context: ['/bahmni_config', '/openmrs'],
           target: 'https://localhost/',
           changeOrigin: true,
           secure: false,
