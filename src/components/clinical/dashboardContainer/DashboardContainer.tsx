@@ -1,8 +1,12 @@
 import { Section } from '@carbon/react';
 import React, { useEffect, useRef } from 'react';
-import { DashboardSectionConfig } from '@types/dashboardConfig';
+import { DashboardSectionConfig } from '../../../types/dashboardConfig';
 import DashboardSection from '../dashboardSection/DashboardSection';
+import { usePatientUUID } from '@hooks/usePatientUUID';
+import { logDashboardView } from '@services/auditLogService';
 import * as styles from './styles/DashboardContainer.module.scss';
+import { useTranslation } from 'react-i18next';
+import { AUDIT_LOGS_ERROR_MESSAGES, AUDIT_LOG_ERROR_MESSAGES, AUDIT_LOG_MESSAGES } from '@/constants/errors';
 
 // TODO: The name is confusing for someone without project context, consider renaming
 export interface DashboardContainerProps {
@@ -20,10 +24,32 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
   sections,
   activeItemId,
 }) => {
+  const { t } = useTranslation();
+  const patientUuid = usePatientUUID();
   // Create a ref map for each section - fix the type definition here
   const sectionRefs = useRef<{
-    [key: string]: React.RefObject<HTMLDivElement>;
+    [key: string]: React.RefObject<HTMLDivElement | null>;
   }>({});
+
+  // Log dashboard view event when component mounts
+  useEffect(() => {
+    const logDashboardViewEvent = async () => {
+      if (patientUuid) {
+        try {
+          const result = await logDashboardView(patientUuid);
+          if (!result.logged) {
+            // eslint-disable-next-line no-console
+            console.warn(t(AUDIT_LOG_ERROR_MESSAGES.DASHBOARD_VIEW_NOT_LOGGED), result.error);
+          }
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(t(AUDIT_LOGS_ERROR_MESSAGES.DASHBOARD_AUDIT_VIEW_FAILURE), error);
+        }
+      }
+    };
+
+    logDashboardViewEvent();
+  }, [patientUuid, t]);
 
   // Initialize refs for each section
   useEffect(() => {
@@ -44,7 +70,7 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
 
       if (activeSection && sectionRefs.current[activeSection.id]?.current) {
         // Added optional chaining and null check to prevent errors
-        sectionRefs.current[activeSection.id].current.scrollIntoView({
+        sectionRefs.current[activeSection.id].current?.scrollIntoView({
           behavior: 'smooth',
         });
       }
@@ -53,7 +79,7 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
 
   // If no sections, show a message
   if (!sections.length) {
-    return <div>No dashboard sections configured</div>;
+    return <div>{t(AUDIT_LOG_MESSAGES.NO_DASHBOARD_SECTIONS)}</div>;
   }
 
   return (

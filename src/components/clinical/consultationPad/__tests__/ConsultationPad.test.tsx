@@ -120,6 +120,11 @@ jest.mock('@hooks/useNotification', () => ({
   })),
 }));
 
+// Mock audit log service
+jest.mock('@services/auditLogService', () => ({
+  logEncounterEdit: jest.fn(),
+}));
+
 // Mock utilities
 jest.mock('@utils/fhir/encounterResourceCreator', () => ({
   createEncounterResource: jest.fn(() => ({
@@ -221,6 +226,17 @@ Object.defineProperty(global, 'crypto', {
   },
 });
 
+// Import mocked services
+import * as consultationBundleService from '@services/consultationBundleService';
+import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
+import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
+import useAllergyStore from '@stores/allergyStore';
+import useServiceRequestStore from '@stores/serviceRequestStore';
+import { useMedicationStore } from '@stores/medicationsStore';
+import { BundleEntry } from 'fhir/r4';
+import { logEncounterEdit } from '@services/auditLogService';
+
+const mockLogEncounterEdit = logEncounterEdit as jest.MockedFunction<typeof logEncounterEdit>;
 // Test wrapper
 const renderWithProviders = (ui: React.ReactElement) => {
   return render(<I18nextProvider i18n={i18n}>{ui}</I18nextProvider>);
@@ -253,6 +269,9 @@ describe('ConsultationPad', () => {
     (useMedicationStore as unknown as jest.Mock).mockReturnValue(
       mockMedicationStore,
     );
+    
+    // Reset audit logging mocks
+    mockLogEncounterEdit.mockClear();
   });
 
   describe('Rendering', () => {
@@ -1145,6 +1164,183 @@ describe('ConsultationPad', () => {
         expect(
           consultationBundleService.postConsultationBundle,
         ).toHaveBeenCalledTimes(1);
+      });
+    });
+  });
+
+  describe('Audit Logging', () => {
+    it('should log encounter edit after successful consultation submission', async () => {
+      const encounterUuid = 'encounter-123';
+      const encounterType = 'Consultation';
+      
+      // Mock crypto.randomUUID to return predictable value
+      (global.crypto.randomUUID as jest.Mock).mockReturnValue(encounterUuid);
+      
+      mockLogEncounterEdit.mockResolvedValue({ logged: true });
+      
+      (
+        consultationBundleService.postConsultationBundle as jest.Mock
+      ).mockResolvedValue({
+        id: 'bundle-123',
+        type: 'transaction-response',
+      });
+
+      // Update mock store to have encounter type
+      mockEncounterDetailsStore.selectedEncounterType = {
+        uuid: 'encounter-type-123',
+        name: encounterType,
+      };
+
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      const doneButton = screen.getByTestId('primary-button');
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        expect(mockLogEncounterEdit).toHaveBeenCalledWith(
+          'patient-123',
+          encounterUuid,
+          encounterType
+        );
+      });
+    });
+
+    it('should handle audit logging failure gracefully', async () => {
+      const encounterUuid = 'encounter-123';
+      const auditError = new Error('Audit service unavailable');
+      
+      // Mock crypto.randomUUID to return predictable value
+      (global.crypto.randomUUID as jest.Mock).mockReturnValue(encounterUuid);
+      
+      mockLogEncounterEdit.mockRejectedValue(auditError);
+      
+      (
+        consultationBundleService.postConsultationBundle as jest.Mock
+      ).mockResolvedValue({
+        id: 'bundle-123',
+        type: 'transaction-response',
+      });
+
+      // Mock console.warn to verify it's called
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      const doneButton = screen.getByTestId('primary-button');
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        expect(mockLogEncounterEdit).toHaveBeenCalled();
+        expect(consoleSpy).toHaveBeenCalledWith(
+          'Failed to log audit event for encounter edit',
+          auditError
+        );
+        // Consultation should still succeed
+        expect(mockOnClose).toHaveBeenCalled();
+      });
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should not log encounter edit if consultation submission fails', async () => {
+      const submissionError = new Error('Network error');
+      
+      (
+        consultationBundleService.postConsultationBundle as jest.Mock
+      ).mockRejectedValue(submissionError);
+
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      const doneButton = screen.getByTestId('primary-button');
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        expect(
+          consultationBundleService.postConsultationBundle,
+        ).toHaveBeenCalled();
+        // Audit logging should not be called if submission fails
+        expect(mockLogEncounterEdit).not.toHaveBeenCalled();
+        expect(mockOnClose).not.toHaveBeenCalled();
+      });
+    });
+
+    it('should log encounter edit with correct patient UUID and encounter type', async () => {
+      const patientUuid = 'patient-456';
+      const encounterUuid = 'encounter-789';
+      const encounterType = 'Follow-up';
+      
+      // Mock crypto.randomUUID to return predictable value
+      (global.crypto.randomUUID as jest.Mock).mockReturnValue(encounterUuid);
+      
+      mockLogEncounterEdit.mockResolvedValue({ logged: true });
+      
+      (
+        consultationBundleService.postConsultationBundle as jest.Mock
+      ).mockResolvedValue({
+        id: 'bundle-456',
+        type: 'transaction-response',
+      });
+
+      // Update mock store with different values
+      mockEncounterDetailsStore.patientUUID = patientUuid;
+      mockEncounterDetailsStore.selectedEncounterType = {
+        uuid: 'encounter-type-456',
+        name: encounterType,
+      };
+
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      const doneButton = screen.getByTestId('primary-button');
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        expect(mockLogEncounterEdit).toHaveBeenCalledWith(
+          patientUuid,
+          encounterUuid,
+          encounterType
+        );
+      });
+    });
+
+    it('should complete consultation successfully when audit logging returns disabled status', async () => {
+      const encounterUuid = 'encounter-123';
+      
+      // Mock crypto.randomUUID to return predictable value
+      (global.crypto.randomUUID as jest.Mock).mockReturnValue(encounterUuid);
+      
+      // Mock audit service to return disabled status
+      mockLogEncounterEdit.mockResolvedValue({
+        logged: false,
+        error: 'Audit logging is disabled'
+      });
+      
+      (
+        consultationBundleService.postConsultationBundle as jest.Mock
+      ).mockResolvedValue({
+        id: 'bundle-123',
+        type: 'transaction-response',
+      });
+
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      const doneButton = screen.getByTestId('primary-button');
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        // Verify audit logging was attempted
+        expect(mockLogEncounterEdit).toHaveBeenCalledWith(
+          'patient-123',
+          encounterUuid,
+          'Consultation'
+        );
+        // Consultation should still succeed even when audit service returns disabled status
+        expect(mockOnClose).toHaveBeenCalled();
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'Success',
+          message: 'Consultation saved successfully',
+          type: 'success',
+          timeout: 5000,
+        });
       });
     });
   });

@@ -27,8 +27,16 @@ import {
   createBundleEntry,
   createConsultationBundle,
 } from '@utils/fhir/consultationBundleCreator';
+import { ERROR_TITLES, AUDIT_LOG_ERROR_MESSAGES } from '@constants/errors';
 import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
+import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
+import useAllergyStore from '@stores/allergyStore';
+import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 import * as styles from './styles/ConsultationPad.module.scss';
+import useServiceRequestStore from '@stores/serviceRequestStore';
+import MedicationsForm from '@components/clinical/forms/prescribeMedicines/MedicationsForm';
+import { useMedicationStore } from '@stores/medicationsStore';
+import { logEncounterEdit } from '@services/auditLogService';
 
 interface ConsultationPadProps {
   onClose: () => void;
@@ -189,6 +197,20 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         setIsSubmitting(true);
         await submitConsultation();
         setIsSubmitting(false);
+        
+        // Log audit event for successful encounter edit/creation
+        try {
+          await logEncounterEdit(
+            patientUUID!,
+            crypto.randomUUID(), // Generate encounter UUID for new encounters
+            selectedEncounterType!.name
+          );
+        } catch (auditError) {
+          // Don't fail the consultation if audit logging fails
+          // eslint-disable-next-line no-console
+          console.warn(t(AUDIT_LOG_ERROR_MESSAGES.ENCOUNTER_EDIT_FAILED), auditError);
+        }
+        
         resetDiagnoses();
         resetAllergies();
         resetEncounterDetails();
