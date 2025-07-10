@@ -1,0 +1,369 @@
+/**
+ * Patient Form Wizard Styles
+ * Responsive, accessible multi-step form wizard
+ */
+
+.patient-form-wizard {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--cds-ui-background);
+  font-family: 'IBM Plex Sans', sans-serif;
+
+  &__header {
+    background-color: var(--cds-ui-01);
+    border-bottom: 1px solid var(--cds-ui-03);
+    padding: var(--cds-spacing-05) var(--cds-spacing-06);
+    min-height: 160px;
+  }
+
+  &__title {
+    margin: 0 0 var(--cds-spacing-05);
+    font-size: var(--cds-productive-heading-04-font-size);
+    font-weight: var(--cds-productive-heading-04-font-weight);
+    line-height: var(--cds-productive-heading-04-line-height);
+    color: var(--cds-text-01);
+  }
+
+  &__progress {
+    margin-bottom: var(--cds-spacing-05);
+  }
+
+  &__progress-bar {
+    width: 100%;
+    height: 4px;
+    background-color: var(--cds-ui-03);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: var(--cds-spacing-02);
+  }
+
+  &__progress-fill {
+    height: 100%;
+    background-color: var(--cds-interactive-01);
+    transition: width 0.3s ease;
+  }
+
+  &__progress-text {
+    font-size: var(--cds-caption-01-font-size);
+    color: var(--cds-text-02);
+  }
+
+  &__nav {
+    margin-top: var(--cds-spacing-03);
+  }
+
+  &__steps {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: var(--cds-spacing-03);
+    flex-wrap: wrap;
+  }
+
+  &__step {
+    flex: 1;
+    min-width: 120px;
+
+    &.active .patient-form-wizard__step-button {
+      background-color: var(--cds-interactive-01);
+      color: var(--cds-text-04);
+      border-color: var(--cds-interactive-01);
+    }
+
+    &.completed .patient-form-wizard__step-button {
+      background-color: var(--cds-support-02);
+      color: var(--cds-text-04);
+      border-color: var(--cds-support-02);
+
+      .patient-form-wizard__step-number::after {
+        content: '✓';
+        font-size: 12px;
+      }
+    }
+  }
+
+  &__step-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding: var(--cds-spacing-03);
+    border: 1px solid var(--cds-ui-04);
+    background-color: var(--cds-ui-01);
+    color: var(--cds-text-02);
+    font-size: var(--cds-caption-01-font-size);
+    border-radius: var(--cds-border-radius);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      background-color: var(--cds-hover-ui);
+      border-color: var(--cds-hover-ui);
+    }
+
+    &:focus {
+      outline: 2px solid var(--cds-focus);
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  &__step-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: var(--cds-ui-04);
+    color: var(--cds-text-01);
+    font-weight: 600;
+    margin-bottom: var(--cds-spacing-02);
+    font-size: 12px;
+  }
+
+  &__step-label {
+    text-align: center;
+    font-weight: 400;
+  }
+
+  &__content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--cds-spacing-06);
+    background-color: var(--cds-ui-background);
+  }
+
+  &__step-content {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  &__step-title {
+    margin: 0 0 var(--cds-spacing-06);
+    font-size: var(--cds-productive-heading-03-font-size);
+    font-weight: var(--cds-productive-heading-03-font-weight);
+    line-height: var(--cds-productive-heading-03-line-height);
+    color: var(--cds-text-01);
+  }
+
+  &__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    font-size: var(--cds-body-01-font-size);
+    color: var(--cds-text-02);
+  }
+
+  &__footer {
+    background-color: var(--cds-ui-01);
+    border-top: 1px solid var(--cds-ui-03);
+    padding: var(--cds-spacing-05) var(--cds-spacing-06);
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  &__nav-buttons {
+    display: flex;
+    gap: var(--cds-spacing-03);
+  }
+
+  &__button {
+    padding: var(--cds-spacing-03) var(--cds-spacing-05);
+    border: 1px solid transparent;
+    border-radius: var(--cds-border-radius);
+    font-size: var(--cds-body-01-font-size);
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 80px;
+
+    &:focus {
+      outline: 2px solid var(--cds-focus);
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    &--primary {
+      background-color: var(--cds-interactive-01);
+      color: var(--cds-text-04);
+
+      &:hover:not(:disabled) {
+        background-color: var(--cds-hover-primary);
+      }
+    }
+
+    &--secondary {
+      background-color: transparent;
+      color: var(--cds-interactive-01);
+      border-color: var(--cds-interactive-01);
+
+      &:hover:not(:disabled) {
+        background-color: var(--cds-hover-ui);
+      }
+    }
+
+    &--danger {
+      background-color: var(--cds-support-01);
+      color: var(--cds-text-04);
+
+      &:hover:not(:disabled) {
+        background-color: var(--cds-hover-danger);
+      }
+    }
+  }
+
+  // Modal styles
+  &__modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+
+  &__modal {
+    background-color: var(--cds-ui-01);
+    border-radius: var(--cds-border-radius);
+    box-shadow: var(--cds-shadow);
+    max-width: 480px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  &__modal-header {
+    padding: var(--cds-spacing-05);
+    border-bottom: 1px solid var(--cds-ui-03);
+
+    h3 {
+      margin: 0;
+      font-size: var(--cds-productive-heading-02-font-size);
+      font-weight: var(--cds-productive-heading-02-font-weight);
+      color: var(--cds-text-01);
+    }
+  }
+
+  &__modal-body {
+    padding: var(--cds-spacing-05);
+
+    p {
+      margin: 0;
+      font-size: var(--cds-body-01-font-size);
+      color: var(--cds-text-01);
+      line-height: var(--cds-body-01-line-height);
+    }
+  }
+
+  &__modal-actions {
+    padding: var(--cds-spacing-05);
+    border-top: 1px solid var(--cds-ui-03);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--cds-spacing-03);
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .patient-form-wizard {
+    &__header {
+      padding: var(--cds-spacing-04);
+      min-height: auto;
+    }
+
+    &__steps {
+      gap: var(--cds-spacing-02);
+    }
+
+    &__step {
+      min-width: 100px;
+    }
+
+    &__step-button {
+      padding: var(--cds-spacing-02);
+    }
+
+    &__step-number {
+      width: 20px;
+      height: 20px;
+      font-size: 10px;
+    }
+
+    &__step-label {
+      font-size: var(--cds-caption-01-font-size);
+    }
+
+    &__content {
+      padding: var(--cds-spacing-04);
+    }
+
+    &__footer {
+      padding: var(--cds-spacing-04);
+    }
+
+    &__actions {
+      flex-direction: column;
+      gap: var(--cds-spacing-03);
+    }
+
+    &__nav-buttons {
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    &__button {
+      flex: 1;
+      min-width: auto;
+    }
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .patient-form-wizard {
+    &__step-button {
+      border-width: 2px;
+    }
+
+    &__button {
+      border-width: 2px;
+    }
+  }
+}
+
+// Print styles
+@media print {
+  .patient-form-wizard {
+    &__header,
+    &__footer {
+      display: none;
+    }
+
+    &__content {
+      padding: 0;
+    }
+  }
+}

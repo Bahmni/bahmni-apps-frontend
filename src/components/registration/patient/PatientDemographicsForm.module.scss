@@ -1,0 +1,404 @@
+/**
+ * Patient Demographics Form Styles
+ * Responsive form styling with accessibility features
+ */
+
+.patient-demographics-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cds-spacing-06);
+  font-family: 'IBM Plex Sans', sans-serif;
+
+  &__section {
+    background-color: var(--cds-ui-01);
+    border: 1px solid var(--cds-ui-03);
+    border-radius: var(--cds-border-radius);
+    padding: var(--cds-spacing-05);
+  }
+
+  &__section-title {
+    margin: 0 0 var(--cds-spacing-05);
+    font-size: var(--cds-productive-heading-02-font-size);
+    font-weight: var(--cds-productive-heading-02-font-weight);
+    line-height: var(--cds-productive-heading-02-line-height);
+    color: var(--cds-text-01);
+    border-bottom: 1px solid var(--cds-ui-03);
+    padding-bottom: var(--cds-spacing-03);
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--cds-spacing-05);
+    margin-bottom: var(--cds-spacing-05);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-02);
+  }
+
+  &__label {
+    font-size: var(--cds-label-01-font-size);
+    font-weight: var(--cds-label-01-font-weight);
+    line-height: var(--cds-label-01-line-height);
+    color: var(--cds-text-02);
+    display: flex;
+    align-items: center;
+    gap: var(--cds-spacing-02);
+  }
+
+  &__required {
+    color: var(--cds-support-01);
+    font-weight: bold;
+  }
+
+  &__input {
+    padding: var(--cds-spacing-03);
+    border: 1px solid var(--cds-ui-04);
+    border-radius: var(--cds-border-radius);
+    font-size: var(--cds-body-01-font-size);
+    line-height: var(--cds-body-01-line-height);
+    color: var(--cds-text-01);
+    background-color: var(--cds-field-01);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: var(--cds-focus);
+      box-shadow: 0 0 0 2px var(--cds-focus);
+    }
+
+    &:hover:not(:disabled) {
+      border-color: var(--cds-hover-ui);
+    }
+
+    &:disabled {
+      background-color: var(--cds-ui-03);
+      color: var(--cds-text-03);
+      cursor: not-allowed;
+    }
+
+    &.error {
+      border-color: var(--cds-support-01);
+    }
+
+    &::placeholder {
+      color: var(--cds-text-03);
+    }
+  }
+
+  &__error {
+    font-size: var(--cds-caption-01-font-size);
+    color: var(--cds-support-01);
+    display: flex;
+    align-items: center;
+    gap: var(--cds-spacing-02);
+
+    &::before {
+      content: '⚠';
+      font-size: 12px;
+    }
+  }
+
+  &__help {
+    font-size: var(--cds-caption-01-font-size);
+    color: var(--cds-text-02);
+    line-height: 1.4;
+  }
+
+  // Radio button styling
+  &__fieldset {
+    border: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  &__legend {
+    font-size: var(--cds-label-01-font-size);
+    font-weight: var(--cds-label-01-font-weight);
+    color: var(--cds-text-02);
+    margin-bottom: var(--cds-spacing-03);
+    display: flex;
+    align-items: center;
+    gap: var(--cds-spacing-02);
+  }
+
+  &__radio-group {
+    display: flex;
+    gap: var(--cds-spacing-04);
+    flex-wrap: wrap;
+  }
+
+  &__radio-item {
+    display: flex;
+    align-items: center;
+    gap: var(--cds-spacing-02);
+  }
+
+  &__radio {
+    width: 16px;
+    height: 16px;
+    border: 1px solid var(--cds-ui-04);
+    border-radius: 50%;
+    background-color: var(--cds-field-01);
+    cursor: pointer;
+    position: relative;
+
+    &:focus {
+      outline: 2px solid var(--cds-focus);
+      outline-offset: 2px;
+    }
+
+    &:checked {
+      border-color: var(--cds-interactive-01);
+      background-color: var(--cds-interactive-01);
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: var(--cds-text-04);
+      }
+    }
+
+    &:hover:not(:disabled) {
+      border-color: var(--cds-hover-ui);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  &__radio-label {
+    font-size: var(--cds-body-01-font-size);
+    color: var(--cds-text-01);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  // Checkbox styling
+  &__checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: var(--cds-spacing-02);
+  }
+
+  &__checkbox {
+    width: 16px;
+    height: 16px;
+    border: 1px solid var(--cds-ui-04);
+    border-radius: var(--cds-border-radius);
+    background-color: var(--cds-field-01);
+    cursor: pointer;
+    position: relative;
+
+    &:focus {
+      outline: 2px solid var(--cds-focus);
+      outline-offset: 2px;
+    }
+
+    &:checked {
+      border-color: var(--cds-interactive-01);
+      background-color: var(--cds-interactive-01);
+
+      &::after {
+        content: '✓';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: var(--cds-text-04);
+        font-size: 10px;
+        font-weight: bold;
+      }
+    }
+
+    &:hover:not(:disabled) {
+      border-color: var(--cds-hover-ui);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  &__checkbox-label {
+    font-size: var(--cds-body-01-font-size);
+    color: var(--cds-text-01);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  // Validation summary
+  &__validation-summary {
+    background-color: var(--cds-notification-background-error);
+    border: 1px solid var(--cds-support-01);
+    border-radius: var(--cds-border-radius);
+    padding: var(--cds-spacing-04);
+    margin-top: var(--cds-spacing-05);
+  }
+
+  &__validation-title {
+    margin: 0 0 var(--cds-spacing-03);
+    font-size: var(--cds-label-01-font-size);
+    font-weight: var(--cds-label-01-font-weight);
+    color: var(--cds-support-01);
+  }
+
+  &__validation-list {
+    margin: 0;
+    padding-left: var(--cds-spacing-05);
+    color: var(--cds-support-01);
+  }
+
+  &__validation-item {
+    font-size: var(--cds-caption-01-font-size);
+    line-height: 1.4;
+    margin-bottom: var(--cds-spacing-02);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .patient-demographics-form {
+    &__row {
+      grid-template-columns: 1fr;
+      gap: var(--cds-spacing-04);
+    }
+
+    &__radio-group {
+      flex-direction: column;
+      gap: var(--cds-spacing-03);
+    }
+
+    &__section {
+      padding: var(--cds-spacing-04);
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .patient-demographics-form {
+    gap: var(--cds-spacing-04);
+
+    &__section {
+      padding: var(--cds-spacing-03);
+    }
+
+    &__section-title {
+      font-size: var(--cds-productive-heading-01-font-size);
+    }
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .patient-demographics-form {
+    &__input,
+    &__radio,
+    &__checkbox {
+      border-width: 2px;
+    }
+
+    &__input.error {
+      border-width: 3px;
+    }
+  }
+}
+
+// Print styles
+@media print {
+  .patient-demographics-form {
+    &__validation-summary {
+      display: none;
+    }
+
+    &__input,
+    &__radio,
+    &__checkbox {
+      border: 1px solid #000;
+      background: white;
+    }
+
+    &__error {
+      display: none;
+    }
+  }
+}
+
+// Dark mode adjustments
+@media (prefers-color-scheme: dark) {
+  .patient-demographics-form {
+    &__input::placeholder {
+      color: var(--cds-text-03);
+    }
+  }
+}
+
+// Focus improvements for keyboard navigation
+.patient-demographics-form__input:focus-visible,
+.patient-demographics-form__radio:focus-visible,
+.patient-demographics-form__checkbox:focus-visible {
+  outline: 2px solid var(--cds-focus);
+  outline-offset: 2px;
+}
+
+// Animation for validation errors
+.patient-demographics-form__error {
+  animation: fadeInError 0.3s ease-in-out;
+}
+
+@keyframes fadeInError {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Loading state styles (for future use)
+.patient-demographics-form__field--loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.patient-demographics-form__input--loading {
+  background-image: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
