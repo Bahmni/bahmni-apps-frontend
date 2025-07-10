@@ -1,10 +1,29 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
-import { DashboardSectionConfig as DashboardSectionType } from '@types/dashboardConfig';
 import DashboardContainer from '../DashboardContainer';
+import { DashboardSectionConfig as DashboardSectionType } from '@/types/dashboardConfig';
+import { logDashboardView } from '@services/auditLogService';
+import { usePatientUUID } from '@hooks/usePatientUUID';
 
 // Mock scrollIntoView
 const mockScrollIntoView = jest.fn();
+
+// Mock the audit log service
+jest.mock('@services/auditLogService', () => ({
+  logDashboardView: jest.fn(),
+}));
+
+// Mock the usePatientUUID hook
+jest.mock('@hooks/usePatientUUID', () => ({
+  usePatientUUID: jest.fn(),
+}));
+ 
+// Mock i18n hook
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key, // Return the key as translation for testing
+  }),
+}));
 
 // Mock the Carbon components
 jest.mock('@carbon/react', () => ({
@@ -43,11 +62,21 @@ jest.mock('@carbon/react', () => ({
   )),
 }));
 
+const mockLogDashboardView = logDashboardView as jest.MockedFunction<typeof logDashboardView>;
+const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<typeof usePatientUUID>;
+
 describe('DashboardContainer Component', () => {
   // Set up and reset mocks before each test
   beforeEach(() => {
     // Reset the scrollIntoView mock
     mockScrollIntoView.mockClear();
+    
+    // Reset audit logging mocks
+    jest.clearAllMocks();
+    
+    // Mock console methods to avoid noise in tests
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => {});
 
     // Set up the scrollIntoView mock on HTMLElement prototype
     Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
@@ -57,10 +86,8 @@ describe('DashboardContainer Component', () => {
   });
 
   afterEach(() => {
-    // Clean up the mock after each test
-    if (HTMLElement.prototype.scrollIntoView === mockScrollIntoView) {
-      delete HTMLElement.prototype.scrollIntoView;
-    }
+    // Restore console mocks
+    jest.restoreAllMocks();
   });
 
   const mockSections: DashboardSectionType[] = [
@@ -91,7 +118,7 @@ describe('DashboardContainer Component', () => {
 
     // Check if the no sections message is rendered
     expect(
-      screen.getByText('No dashboard sections configured'),
+      screen.getByText('AUDIT_LOG_MESSAGE_NO_DASHBOARD_SECTIONS'),
     ).toBeInTheDocument();
   });
 
@@ -226,5 +253,115 @@ describe('DashboardContainer Component', () => {
 
     // No scrolling should happen as the section doesn't exist
     expect(mockScrollIntoView).not.toHaveBeenCalled();
+  });
+
+  describe('Audit Logging', () => {
+    it('should log dashboard view when component mounts with patient UUID', async () => {
+      const patientUuid = 'patient-123';
+      mockUsePatientUUID.mockReturnValue(patientUuid);
+      mockLogDashboardView.mockResolvedValue({ logged: true });
+
+      render(<DashboardContainer sections={mockSections} />);
+
+      await waitFor(() => {
+        expect(mockLogDashboardView).toHaveBeenCalledWith(patientUuid);
+      });
+    });
+
+    it('should not log dashboard view when patient UUID is null', async () => {
+      mockUsePatientUUID.mockReturnValue(null);
+
+      render(<DashboardContainer sections={mockSections} />);
+
+      // Wait for any effects to complete
+      await waitFor(() => {
+        expect(screen.getByTestId('mocked-section-Section 1')).toBeInTheDocument();
+      });
+
+      expect(mockLogDashboardView).not.toHaveBeenCalled();
+    });
+
+    it('should handle audit logging when logging is disabled', async () => {
+      const patientUuid = 'patient-123';
+      mockUsePatientUUID.mockReturnValue(patientUuid);
+      mockLogDashboardView.mockResolvedValue({
+        logged: false,
+        error: 'Audit logging is disabled'
+      });
+
+      render(<DashboardContainer sections={mockSections} />);
+
+      await waitFor(() => {
+        expect(mockLogDashboardView).toHaveBeenCalledWith(patientUuid);
+      });
+
+      // Verify console warning was called
+      // eslint-disable-next-line no-console
+      expect(console.warn).toHaveBeenCalledWith(
+        'AUDIT_LOG_ERROR_DASHBOARD_VIEW_NOT_LOGGED',
+        'Audit logging is disabled'
+      );
+    });
+
+    it('should handle audit logging service errors gracefully', async () => {
+      const patientUuid = 'patient-123';
+      const error = new Error('Network error');
+      mockUsePatientUUID.mockReturnValue(patientUuid);
+      mockLogDashboardView.mockRejectedValue(error);
+
+      render(<DashboardContainer sections={mockSections} />);
+
+      await waitFor(() => {
+        expect(mockLogDashboardView).toHaveBeenCalledWith(patientUuid);
+      });
+
+      // Verify console error was called
+      // eslint-disable-next-line no-console
+      expect(console.error).toHaveBeenCalledWith(
+        'DASHBOARD_AUDIT_VIEW_FAILURE',
+        error
+      );
+    });
+
+    it('should log dashboard view again when patient UUID changes', async () => {
+      const firstPatientUuid = 'patient-123';
+      const secondPatientUuid = 'patient-456';
+      
+      mockUsePatientUUID.mockReturnValue(firstPatientUuid);
+      mockLogDashboardView.mockResolvedValue({ logged: true });
+
+      const { rerender } = render(<DashboardContainer sections={mockSections} />);
+
+      await waitFor(() => {
+        expect(mockLogDashboardView).toHaveBeenCalledWith(firstPatientUuid);
+        expect(mockLogDashboardView).toHaveBeenCalledTimes(1);
+      });
+
+      // Change patient UUID
+      mockUsePatientUUID.mockReturnValue(secondPatientUuid);
+
+      rerender(<DashboardContainer sections={mockSections} />);
+
+      await waitFor(() => {
+        expect(mockLogDashboardView).toHaveBeenCalledWith(secondPatientUuid);
+        expect(mockLogDashboardView).toHaveBeenCalledTimes(2);
+      });
+    });
+
+    it('should continue normal operation even when audit logging fails', async () => {
+      const patientUuid = 'patient-123';
+      mockUsePatientUUID.mockReturnValue(patientUuid);
+      mockLogDashboardView.mockRejectedValue(new Error('Audit service unavailable'));
+
+      render(<DashboardContainer sections={mockSections} />);
+
+      // Component should still render normally
+      await waitFor(() => {
+        expect(screen.getByTestId('mocked-section-Section 1')).toBeInTheDocument();
+        expect(screen.getByTestId('mocked-section-Section 2')).toBeInTheDocument();
+      });
+
+      expect(mockLogDashboardView).toHaveBeenCalledWith(patientUuid);
+    });
   });
 });
