@@ -244,5 +244,20 @@
   "SIDE_NAVIGATION": "Side navigation",
   "TABLE_EXPAND_COLUMN_ARIA_LABEL": "Expand or collapse row",
   "UNEXPECTED_ERROR": "An unexpected error occurred",
-  "VISIT_TYPE": "Visit Type"
+  "VISIT_TYPE": "Visit Type",
+  "pagination.navigation": "Pagination navigation",
+  "pagination.pageInfo": "Page {{currentPage}} of {{totalPages}}",
+  "pagination.itemsInfo": "{{totalItems}} items total",
+  "pagination.previous": "Previous",
+  "pagination.next": "Next",
+  "pagination.itemsPerPage": "Items per page",
+  "pagination.goToPage": "Go to page",
+  "patient.gender.male": "Male",
+  "patient.gender.female": "Female",
+  "patient.gender.other": "Other",
+  "patient.age.years": "{{age}} years",
+  "patient.birthdate.born": "Born {{year}}",
+  "patient.card.ariaLabel": "Patient {{name}}, ID {{identifier}}, {{demographics}}",
+  "patient.identifier.label": "ID:",
+  "patient.avatar.placeholder": "Patient photo placeholder"
 }
