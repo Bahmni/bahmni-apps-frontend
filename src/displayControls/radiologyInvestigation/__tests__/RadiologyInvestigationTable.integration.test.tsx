@@ -282,7 +282,9 @@ describe('RadiologyInvestigationTable Integration Tests', () => {
       ).toBeInTheDocument();
 
       // Assert - Component title should still be present
-      expect(screen.getByText('Radiology Investigations')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('radiology-investigations-table'),
+      ).toHaveAttribute('title', 'Radiology Investigations');
     });
   });
 
@@ -336,10 +338,10 @@ describe('RadiologyInvestigationTable Integration Tests', () => {
       });
 
       // Assert - Basic component structure should be present
+
       expect(
         screen.getByTestId('radiology-investigations-table'),
-      ).toBeInTheDocument();
-      expect(screen.getByText('Radiology Investigations')).toBeInTheDocument();
+      ).toHaveAttribute('title', 'Radiology Investigations');
       expect(
         screen.getByText('No radiology investigations recorded'),
       ).toBeInTheDocument();

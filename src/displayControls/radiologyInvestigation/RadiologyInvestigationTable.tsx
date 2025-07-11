@@ -92,9 +92,6 @@ const RadiologyInvestigationTable: React.FC = () => {
       data-testid="radiology-investigations-table"
       className={styles.radiologyInvestigationTable}
     >
-      <div className={styles.radiologyInvestigationTableTitle}>
-        {t('RADIOLOGY_INVESTIGATION_HEADING')}
-      </div>
       {loading && (
         <DataTableSkeleton
           columnCount={3}
