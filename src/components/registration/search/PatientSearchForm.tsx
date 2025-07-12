@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { PatientSearchCriteria } from '../../../types/registration';
 import { REGISTRATION_CONFIG } from '../../../constants/registration';
 import useDebounce from '../../../hooks/useDebounce';
-import styles from './PatientSearchForm.module.scss';
+import * as styles from './PatientSearchForm.module.scss';
 
 /**
  * Props for the PatientSearchForm component
@@ -53,21 +53,27 @@ export const PatientSearchForm: React.FC<PatientSearchFormProps> = ({
   const [basicSearch, setBasicSearch] = useState(initialCriteria?.name || '');
 
   // Advanced search state
-  const [advancedCriteria, setAdvancedCriteria] = useState<PatientSearchCriteria>({
-    givenName: initialCriteria?.givenName || '',
-    middleName: initialCriteria?.middleName || '',
-    familyName: initialCriteria?.familyName || '',
-    gender: initialCriteria?.gender || undefined,
-    identifier: initialCriteria?.identifier || '',
-    birthdate: initialCriteria?.birthdate || '',
-    age: initialCriteria?.age || undefined,
-  });
+  const [advancedCriteria, setAdvancedCriteria] =
+    useState<PatientSearchCriteria>({
+      givenName: initialCriteria?.givenName || '',
+      middleName: initialCriteria?.middleName || '',
+      familyName: initialCriteria?.familyName || '',
+      gender: initialCriteria?.gender || undefined,
+      identifier: initialCriteria?.identifier || '',
+      birthdate: initialCriteria?.birthdate || '',
+      age: initialCriteria?.age || undefined,
+    });
 
   // Form validation errors
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
 
   // Debounced search for auto-search
-  const debouncedBasicSearch = useDebounce(basicSearch, REGISTRATION_CONFIG.SEARCH_DEBOUNCE_MS);
+  const debouncedBasicSearch = useDebounce(
+    basicSearch,
+    REGISTRATION_CONFIG.SEARCH_DEBOUNCE_MS,
+  );
 
   // Auto-search effect
   useEffect(() => {
@@ -81,10 +87,16 @@ export const PatientSearchForm: React.FC<PatientSearchFormProps> = ({
     const errors: Record<string, string> = {};
 
     // Age validation
-    if (advancedCriteria.age !== undefined && !isNaN(Number(advancedCriteria.age))) {
+    if (
+      advancedCriteria.age !== undefined &&
+      !isNaN(Number(advancedCriteria.age))
+    ) {
       const age = Number(advancedCriteria.age);
       if (age < 0 || age > 150) {
-        errors.age = t('search.validation.ageRange', 'Age must be between 0 and 150');
+        errors.age = t(
+          'search.validation.ageRange',
+          'Age must be between 0 and 150',
+        );
       }
     }
 
@@ -92,20 +104,27 @@ export const PatientSearchForm: React.FC<PatientSearchFormProps> = ({
     if (advancedCriteria.birthdate) {
       const birthDate = new Date(advancedCriteria.birthdate);
       if (isNaN(birthDate.getTime())) {
-        errors.birthdate = t('search.validation.invalidDate', 'Invalid date format');
+        errors.birthdate = t(
+          'search.validation.invalidDate',
+          'Invalid date format',
+        );
       } else if (birthDate > new Date()) {
-        errors.birthdate = t('search.validation.futureBirthdate', 'Birth date cannot be in the future');
+        errors.birthdate = t(
+          'search.validation.futureBirthdate',
+          'Birth date cannot be in the future',
+        );
       }
     }
 
     // Age and birthdate mutual exclusion
     if (
-      (advancedCriteria.age !== undefined && !isNaN(Number(advancedCriteria.age))) &&
+      advancedCriteria.age !== undefined &&
+      !isNaN(Number(advancedCriteria.age)) &&
       advancedCriteria.birthdate
     ) {
       errors.ageBirthdate = t(
         'search.validation.ageOrBirthdate',
-        'Please enter either age or birth date, not both'
+        'Please enter either age or birth date, not both',
       );
     }
 
@@ -119,7 +138,7 @@ export const PatientSearchForm: React.FC<PatientSearchFormProps> = ({
       setBasicSearch(event.target.value);
       setShowRecentSearches(false);
     },
-    []
+    [],
   );
 
   // Handle advanced field changes
@@ -129,10 +148,15 @@ export const PatientSearchForm: React.FC<PatientSearchFormProps> = ({
         const value = event.target.value;
         setAdvancedCriteria((prev) => ({
           ...prev,
-          [field]: field === 'age' ? (value ? Number(value) : undefined) : value || undefined,
+          [field]:
+            field === 'age'
+              ? value
+                ? Number(value)
+                : undefined
+              : value || undefined,
         }));
       },
-    []
+    [],
   );
 
   // Build search criteria
@@ -157,7 +181,7 @@ export const PatientSearchForm: React.FC<PatientSearchFormProps> = ({
 
     // Check if we have any search criteria
     const hasAnyCriteria = Object.values(criteria).some(
-      (value) => value !== undefined && value !== ''
+      (value) => value !== undefined && value !== '',
     );
 
     if (!hasAnyCriteria) {
@@ -178,7 +202,7 @@ export const PatientSearchForm: React.FC<PatientSearchFormProps> = ({
       event.preventDefault();
       handleSearch();
     },
-    [handleSearch]
+    [handleSearch],
   );
 
   // Handle Enter key in form fields
@@ -189,7 +213,7 @@ export const PatientSearchForm: React.FC<PatientSearchFormProps> = ({
         handleSearch();
       }
     },
-    [handleSearch]
+    [handleSearch],
   );
 
   // Handle clear functionality
@@ -221,13 +245,16 @@ export const PatientSearchForm: React.FC<PatientSearchFormProps> = ({
   }, []);
 
   // Handle recent search selection
-  const handleRecentSearchSelect = useCallback((searchTerm: string) => {
-    setBasicSearch(searchTerm);
-    setShowRecentSearches(false);
-    if (!enableAutoSearch) {
-      onSearch({ name: searchTerm });
-    }
-  }, [enableAutoSearch, onSearch]);
+  const handleRecentSearchSelect = useCallback(
+    (searchTerm: string) => {
+      setBasicSearch(searchTerm);
+      setShowRecentSearches(false);
+      if (!enableAutoSearch) {
+        onSearch({ name: searchTerm });
+      }
+    },
+    [enableAutoSearch, onSearch],
+  );
 
   // Handle input focus for recent searches
   const handleInputFocus = useCallback(() => {
@@ -244,7 +271,11 @@ export const PatientSearchForm: React.FC<PatientSearchFormProps> = ({
 
   return (
     <div className={`${styles.searchForm} ${className}`}>
-      <form onSubmit={handleSubmit} role="search" aria-label={t('search.form.label', 'Patient Search')}>
+      <form
+        onSubmit={handleSubmit}
+        role="search"
+        aria-label={t('search.form.label', 'Patient Search')}
+      >
         {/* Error Display */}
         {error && (
           <div className={styles.errorMessage} role="alert">
@@ -255,7 +286,10 @@ export const PatientSearchForm: React.FC<PatientSearchFormProps> = ({
         {/* Basic Search */}
         <div className={styles.basicSearch}>
           <div className={styles.searchInputContainer}>
-            <label htmlFor="patient-search-input" className={styles.searchLabel}>
+            <label
+              htmlFor="patient-search-input"
+              className={styles.searchLabel}
+            >
               {t('search.input.label', 'Search patients')}
             </label>
             <div className={styles.inputWrapper}>
@@ -271,19 +305,25 @@ export const PatientSearchForm: React.FC<PatientSearchFormProps> = ({
                 disabled={isLoading || showAdvanced}
                 placeholder={t(
                   'search.input.placeholder',
-                  'Enter name, ID, or phone number'
+                  'Enter name, ID, or phone number',
                 )}
                 className={styles.searchInput}
                 aria-describedby="search-help"
               />
               {isLoading && (
-                <div className={styles.loadingIndicator} data-testid="search-loading">
+                <div
+                  className={styles.loadingIndicator}
+                  data-testid="search-loading"
+                >
                   <div className={styles.spinner} />
                 </div>
               )}
             </div>
             <div id="search-help" className={styles.searchHelp}>
-              {t('search.input.help', 'Search by name, identifier, or phone number')}
+              {t(
+                'search.input.help',
+                'Search by name, identifier, or phone number',
+              )}
             </div>
 
             {/* Recent Searches Dropdown */}
@@ -340,7 +380,10 @@ export const PatientSearchForm: React.FC<PatientSearchFormProps> = ({
 
         {/* Advanced Search */}
         {showAdvanced && (
-          <div className={styles.advancedSearch} aria-label={t('search.advanced.label', 'Advanced Search Options')}>
+          <div
+            className={styles.advancedSearch}
+            aria-label={t('search.advanced.label', 'Advanced Search Options')}
+          >
             <div className={styles.advancedFields}>
               {/* Name Fields */}
               <div className={styles.fieldGroup}>
@@ -410,16 +453,22 @@ export const PatientSearchForm: React.FC<PatientSearchFormProps> = ({
                       disabled={isLoading}
                       className={styles.fieldSelect}
                     >
-                      <option value="">{t('search.field.gender.select', 'Select Gender')}</option>
-                      <option value="M">{t('patient.gender.male', 'Male')}</option>
-                      <option value="F">{t('patient.gender.female', 'Female')}</option>
-                      <option value="O">{t('patient.gender.other', 'Other')}</option>
+                      <option value="">
+                        {t('search.field.gender.select', 'Select Gender')}
+                      </option>
+                      <option value="M">
+                        {t('patient.gender.male', 'Male')}
+                      </option>
+                      <option value="F">
+                        {t('patient.gender.female', 'Female')}
+                      </option>
+                      <option value="O">
+                        {t('patient.gender.other', 'Other')}
+                      </option>
                     </select>
                   </div>
                   <div className={styles.field}>
-                    <label htmlFor="age">
-                      {t('search.field.age', 'Age')}
-                    </label>
+                    <label htmlFor="age">{t('search.field.age', 'Age')}</label>
                     <input
                       id="age"
                       type="number"
@@ -432,7 +481,9 @@ export const PatientSearchForm: React.FC<PatientSearchFormProps> = ({
                       className={`${styles.fieldInput} ${validationErrors.age ? styles.error : ''}`}
                     />
                     {validationErrors.age && (
-                      <div className={styles.fieldError}>{validationErrors.age}</div>
+                      <div className={styles.fieldError}>
+                        {validationErrors.age}
+                      </div>
                     )}
                   </div>
                   <div className={styles.field}>
@@ -449,12 +500,16 @@ export const PatientSearchForm: React.FC<PatientSearchFormProps> = ({
                       className={`${styles.fieldInput} ${validationErrors.birthdate ? styles.error : ''}`}
                     />
                     {validationErrors.birthdate && (
-                      <div className={styles.fieldError}>{validationErrors.birthdate}</div>
+                      <div className={styles.fieldError}>
+                        {validationErrors.birthdate}
+                      </div>
                     )}
                   </div>
                 </div>
                 {validationErrors.ageBirthdate && (
-                  <div className={styles.groupError}>{validationErrors.ageBirthdate}</div>
+                  <div className={styles.groupError}>
+                    {validationErrors.ageBirthdate}
+                  </div>
                 )}
               </div>
 
@@ -476,7 +531,10 @@ export const PatientSearchForm: React.FC<PatientSearchFormProps> = ({
                       onKeyDown={handleKeyDown}
                       disabled={isLoading}
                       className={styles.fieldInput}
-                      placeholder={t('search.field.identifier.placeholder', 'Enter patient ID')}
+                      placeholder={t(
+                        'search.field.identifier.placeholder',
+                        'Enter patient ID',
+                      )}
                     />
                   </div>
                 </div>
