@@ -4,8 +4,12 @@
  */
 import React, { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Grid, Column, InlineNotification } from '@carbon/react';
 import { PatientFormData } from '../../../types/registration';
 import { WizardContextValue } from './PatientFormWizardContext';
+import { DataField } from './components/DataField';
+import { FormSection } from './components/FormSection';
+import { ValidationSummary } from './components/ValidationSummary';
 
 interface FormSummaryProps {
   formData: PatientFormData;
@@ -33,7 +37,11 @@ export const FormSummary: React.FC<FormSummaryProps> = ({
     for (const stepId of requiredSteps) {
       const stepValidation = wizard.state.stepValidations[stepId];
       if (!stepValidation.isValid) {
-        stepErrors.push(t('registration.patient.summary.validation.stepIncomplete', { step: t(`registration.patient.form.steps.${stepId}`) }));
+        stepErrors.push(
+          t('registration.patient.summary.validation.stepIncomplete', {
+            step: t(`registration.patient.form.steps.${stepId}`),
+          }),
+        );
         isValid = false;
         isComplete = false;
       }
@@ -49,153 +57,190 @@ export const FormSummary: React.FC<FormSummaryProps> = ({
 
   const formatGender = (gender: 'M' | 'F' | 'O') => {
     switch (gender) {
-      case 'M': return t('registration.patient.demographics.genderMale');
-      case 'F': return t('registration.patient.demographics.genderFemale');
-      case 'O': return t('registration.patient.demographics.genderOther');
-      default: return '';
+      case 'M':
+        return t('registration.patient.demographics.genderMale');
+      case 'F':
+        return t('registration.patient.demographics.genderFemale');
+      case 'O':
+        return t('registration.patient.demographics.genderOther');
+      default:
+        return '';
     }
   };
 
   return (
-    <div className="form-summary">
-      <div className="form-summary__section">
-        <h3 className="form-summary__section-title">
-          {t('registration.patient.summary.title')}
-        </h3>
-        <p className="form-summary__description">
-          {t('registration.patient.summary.description')}
-        </p>
+    <Grid>
+      <Column sm={4} md={8} lg={12}>
+        <FormSection
+          title={t('registration.patient.summary.title')}
+          headingLevel="h2"
+        >
+          <p
+            style={{
+              marginBottom: '2rem',
+              fontSize: '1rem',
+              color: '#525252',
+            }}
+          >
+            {t('registration.patient.summary.description')}
+          </p>
 
-        {/* Demographics Summary */}
-        <div className="form-summary__group">
-          <h4 className="form-summary__group-title">
-            {t('registration.patient.demographics.personalInfo')}
-          </h4>
-          <div className="form-summary__items">
-            <div className="form-summary__item">
-              <span className="form-summary__label">{t('registration.patient.demographics.givenName')}:</span>
-              <span className="form-summary__value">{formData.givenName || t('common.notProvided')}</span>
+          {/* Demographics Summary */}
+          <FormSection
+            title={t('registration.patient.demographics.personalInfo')}
+            headingLevel="h3"
+          >
+            <div
+              style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem' }}
+            >
+              <DataField
+                label={t('registration.patient.demographics.givenName')}
+                value={formData.givenName || t('common.notProvided')}
+                required
+              />
+
+              {formData.middleName && (
+                <DataField
+                  label={t('registration.patient.demographics.middleName')}
+                  value={formData.middleName}
+                />
+              )}
+
+              <DataField
+                label={t('registration.patient.demographics.familyName')}
+                value={formData.familyName || t('common.notProvided')}
+                required
+              />
+
+              <DataField
+                label={t('registration.patient.demographics.gender')}
+                value={formatGender(formData.gender)}
+                required
+              />
+
+              {formData.birthdate && (
+                <DataField
+                  label={t('registration.patient.demographics.birthdate')}
+                  value={
+                    <>
+                      {new Date(formData.birthdate).toLocaleDateString()}
+                      {formData.birthdateEstimated && (
+                        <span style={{ fontStyle: 'italic', color: '#525252' }}>
+                          {' '}
+                          ({t('registration.patient.demographics.estimated')})
+                        </span>
+                      )}
+                    </>
+                  }
+                />
+              )}
+
+              {formData.age && (
+                <DataField
+                  label={t('registration.patient.demographics.age')}
+                  value={`${formData.age} ${t('registration.patient.demographics.years')}`}
+                />
+              )}
             </div>
-            {formData.middleName && (
-              <div className="form-summary__item">
-                <span className="form-summary__label">{t('registration.patient.demographics.middleName')}:</span>
-                <span className="form-summary__value">{formData.middleName}</span>
+          </FormSection>
+
+          {/* Identifiers Summary */}
+          {formData.identifiers && formData.identifiers.length > 0 && (
+            <FormSection
+              title={t('registration.patient.identifiers.title')}
+              headingLevel="h3"
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.5rem',
+                }}
+              >
+                {formData.identifiers.map((identifier, index) => (
+                  <DataField
+                    key={index}
+                    label={`${identifier.identifierType}${identifier.preferred ? ` (${t('registration.patient.identifiers.preferred')})` : ''}`}
+                    value={identifier.identifier}
+                  />
+                ))}
               </div>
+            </FormSection>
+          )}
+
+          {/* Address Summary */}
+          {formData.address &&
+            (formData.address.address1 || formData.address.cityVillage) && (
+              <FormSection
+                title={t('registration.patient.address.title')}
+                headingLevel="h3"
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.5rem',
+                  }}
+                >
+                  {formData.address.address1 && (
+                    <DataField
+                      label={t('registration.patient.address.address1')}
+                      value={formData.address.address1}
+                    />
+                  )}
+
+                  {formData.address.cityVillage && (
+                    <DataField
+                      label={t('registration.patient.address.city')}
+                      value={formData.address.cityVillage}
+                    />
+                  )}
+
+                  {formData.address.stateProvince && (
+                    <DataField
+                      label={t('registration.patient.address.state')}
+                      value={formData.address.stateProvince}
+                    />
+                  )}
+
+                  {formData.address.country && (
+                    <DataField
+                      label={t('registration.patient.address.country')}
+                      value={formData.address.country}
+                    />
+                  )}
+
+                  {formData.address.postalCode && (
+                    <DataField
+                      label={t('registration.patient.address.postalCode')}
+                      value={formData.address.postalCode}
+                    />
+                  )}
+                </div>
+              </FormSection>
             )}
-            <div className="form-summary__item">
-              <span className="form-summary__label">{t('registration.patient.demographics.familyName')}:</span>
-              <span className="form-summary__value">{formData.familyName || t('common.notProvided')}</span>
-            </div>
-            <div className="form-summary__item">
-              <span className="form-summary__label">{t('registration.patient.demographics.gender')}:</span>
-              <span className="form-summary__value">{formatGender(formData.gender)}</span>
-            </div>
-            {formData.birthdate && (
-              <div className="form-summary__item">
-                <span className="form-summary__label">{t('registration.patient.demographics.birthdate')}:</span>
-                <span className="form-summary__value">
-                  {new Date(formData.birthdate).toLocaleDateString()}
-                  {formData.birthdateEstimated && ` (${t('registration.patient.demographics.estimated')})`}
-                </span>
-              </div>
-            )}
-            {formData.age && (
-              <div className="form-summary__item">
-                <span className="form-summary__label">{t('registration.patient.demographics.age')}:</span>
-                <span className="form-summary__value">{formData.age} {t('registration.patient.demographics.years')}</span>
-              </div>
-            )}
-          </div>
-        </div>
 
-        {/* Identifiers Summary */}
-        {formData.identifiers && formData.identifiers.length > 0 && (
-          <div className="form-summary__group">
-            <h4 className="form-summary__group-title">
-              {t('registration.patient.identifiers.title')}
-            </h4>
-            <div className="form-summary__items">
-              {formData.identifiers.map((identifier, index) => (
-                <div key={index} className="form-summary__item">
-                  <span className="form-summary__label">
-                    {identifier.identifierType}
-                    {identifier.preferred && ` (${t('registration.patient.identifiers.preferred')})`}:
-                  </span>
-                  <span className="form-summary__value">{identifier.identifier}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+          {/* Validation Errors */}
+          {stepValidation.errors.length > 0 && (
+            <ValidationSummary
+              errors={stepValidation.errors}
+              type="error"
+              title={t('registration.patient.summary.validationErrors')}
+            />
+          )}
 
-        {/* Address Summary */}
-        {formData.address && (formData.address.address1 || formData.address.cityVillage) && (
-          <div className="form-summary__group">
-            <h4 className="form-summary__group-title">
-              {t('registration.patient.address.title')}
-            </h4>
-            <div className="form-summary__items">
-              {formData.address.address1 && (
-                <div className="form-summary__item">
-                  <span className="form-summary__label">{t('registration.patient.address.address1')}:</span>
-                  <span className="form-summary__value">{formData.address.address1}</span>
-                </div>
-              )}
-              {formData.address.cityVillage && (
-                <div className="form-summary__item">
-                  <span className="form-summary__label">{t('registration.patient.address.city')}:</span>
-                  <span className="form-summary__value">{formData.address.cityVillage}</span>
-                </div>
-              )}
-              {formData.address.stateProvince && (
-                <div className="form-summary__item">
-                  <span className="form-summary__label">{t('registration.patient.address.state')}:</span>
-                  <span className="form-summary__value">{formData.address.stateProvince}</span>
-                </div>
-              )}
-              {formData.address.country && (
-                <div className="form-summary__item">
-                  <span className="form-summary__label">{t('registration.patient.address.country')}:</span>
-                  <span className="form-summary__value">{formData.address.country}</span>
-                </div>
-              )}
-              {formData.address.postalCode && (
-                <div className="form-summary__item">
-                  <span className="form-summary__label">{t('registration.patient.address.postalCode')}:</span>
-                  <span className="form-summary__value">{formData.address.postalCode}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Validation Errors */}
-        {stepValidation.errors.length > 0 && (
-          <div className="form-summary__validation-summary" role="alert">
-            <h4 className="form-summary__validation-title">
-              {t('registration.patient.summary.validationErrors')}
-            </h4>
-            <ul className="form-summary__validation-list">
-              {stepValidation.errors.map((error, index) => (
-                <li key={index} className="form-summary__validation-item">
-                  {error}
-                </li>
-              ))}
-            </ul>
-            <p className="form-summary__validation-note">
-              {t('registration.patient.summary.validationNote')}
-            </p>
-          </div>
-        )}
-
-        {/* Success Message */}
-        {stepValidation.isValid && (
-          <div className="form-summary__success-message">
-            <p>{t('registration.patient.summary.readyToSubmit')}</p>
-          </div>
-        )}
-      </div>
-    </div>
+          {/* Success Message */}
+          {stepValidation.isValid && (
+            <InlineNotification
+              kind="success"
+              title={t('registration.patient.summary.readyToSubmit')}
+              hideCloseButton
+              style={{ marginTop: '2rem' }}
+            />
+          )}
+        </FormSection>
+      </Column>
+    </Grid>
   );
 };
 
