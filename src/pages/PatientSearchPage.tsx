@@ -1,37 +1,35 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import {
-  Grid,
-  Column,
-  Breadcrumb,
-  BreadcrumbItem,
-  Button,
-  InlineLoading,
-  Layer
-} from '@carbon/react';
+import { Content, Grid, Column, Button, Layer, Loading } from '@carbon/react';
 import { Add } from '@carbon/react/icons';
+import HeaderComponent from '../components/common/header/Header.tsx';
 import PatientSearchForm from '../components/registration/search/PatientSearchForm';
 import PatientSearchResults from '../components/registration/search/PatientSearchResults';
 import usePatientSearch from '../hooks/usePatientSearch';
 import useNotification from '../hooks/useNotification';
-import { PatientSearchCriteria, PatientSearchResult } from '../types/registration';
+import {
+  PatientSearchCriteria,
+  PatientSearchResult,
+} from '../types/registration';
+import BahmniIcon from '../components/common/bahmniIcon/BahmniIcon';
+import { ICON_SIZE } from '../constants/icon';
 import './PatientSearchPage.scss';
 
 /**
  * PatientSearchPage
  *
  * Main page component for patient search functionality in the registration module.
- * Provides comprehensive search interface with URL parameter handling, browser history
- * integration, and performance optimization.
+ * Rebuilt to align with Carbon Design System and ConsultationPage pattern.
  *
  * Features:
+ * - Integration with new Header component (without sidebar)
+ * - Carbon Design System compliant layout
  * - Integration with PatientSearchForm and PatientSearchResults components
  * - URL parameter handling for deep linking and bookmarking
  * - Browser history integration for back/forward navigation
  * - Search result caching for improved performance
  * - Responsive layout with mobile-first design
- * - Breadcrumb navigation and page title management
  * - Error handling and loading states
  * - Accessibility compliance with WCAG 2.1 AA standards
  *
@@ -59,7 +57,8 @@ const PatientSearchPage: React.FC = React.memo(() => {
   }, [searchParams]);
 
   // Search state management
-  const [searchCriteria, setSearchCriteria] = useState<PatientSearchCriteria>(initialCriteria);
+  const [searchCriteria, setSearchCriteria] =
+    useState<PatientSearchCriteria>(initialCriteria);
   const [hasSearched, setHasSearched] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
@@ -138,7 +137,6 @@ const PatientSearchPage: React.FC = React.memo(() => {
 
         // Reset to first page on new search
         setCurrentPage(1);
-
       } catch (searchError) {
         addNotification({
           title: t('common.error'),
@@ -197,7 +195,9 @@ const PatientSearchPage: React.FC = React.memo(() => {
       setCurrentPage(page);
 
       // Scroll to top of results
-      const resultsSection = document.querySelector('.patient-search-page__results');
+      const resultsSection = document.querySelector(
+        '.patient-search-page__results',
+      );
       if (resultsSection) {
         resultsSection.scrollIntoView({ behavior: 'smooth' });
       }
@@ -216,57 +216,46 @@ const PatientSearchPage: React.FC = React.memo(() => {
     [setPageSize, setCurrentPage],
   );
 
+  // Header configuration
+  const breadcrumbItems = useMemo(
+    () => [
+      { id: 'home', label: 'Home', href: '/bahmni/home/#/dashboard' },
+      { id: 'patient-search', label: 'Patient Search', isCurrentPage: true },
+    ],
+    [],
+  );
+
+  const globalActions = useMemo(
+    () => [
+      {
+        id: 'new-patient',
+        label: 'Create New Patient',
+        renderIcon: (
+          <BahmniIcon id="plus-icon" name="fa-plus" size={ICON_SIZE.LG} />
+        ),
+        onClick: () => handleCreateNewPatient(),
+      },
+    ],
+    [t],
+  );
+
   // Determine if we should show results
   const shouldShowResults = hasSearched || results.length > 0;
-  const shouldShowEmptyState = hasSearched && results.length === 0 && !isLoading;
+  const shouldShowEmptyState =
+    hasSearched && results.length === 0 && !isLoading;
 
   return (
     <div className="patient-search-page">
-      {/* Breadcrumb Navigation */}
-      <nav
-        className="patient-search-page__breadcrumbs"
-        aria-label={t('common.breadcrumbNavigation')}
-      >
-        <Breadcrumb>
-          <BreadcrumbItem>
-            <a href="/registration/search">{t('registration.title')}</a>
-          </BreadcrumbItem>
-          <BreadcrumbItem isCurrentPage>
-            {t('search.form.label')}
-          </BreadcrumbItem>
-        </Breadcrumb>
-      </nav>
+      {/* Header with breadcrumbs and global actions */}
+      <HeaderComponent
+        breadcrumbItems={breadcrumbItems}
+        globalActions={globalActions}
+        ariaLabel={t('search.form.label')}
+      />
 
-      {/* Main Content Grid */}
-      <div className="patient-search-page__content">
+      {/* Main Content */}
+      <Content className="patient-search-page__content">
         <Grid className="patient-search-page__grid">
-          {/* Header Section */}
-          <Column span={16} className="patient-search-page__header">
-            <Layer>
-              <div className="patient-search-page__header-content">
-                <div className="patient-search-page__title-section">
-                  <h1 className="patient-search-page__title">
-                    {t('search.form.label')}
-                  </h1>
-                  <p className="patient-search-page__description">
-                    {t('search.form.description', 'Search for existing patients or create new patient records')}
-                  </p>
-                </div>
-
-                <div className="patient-search-page__actions">
-                  <Button
-                    kind="primary"
-                    renderIcon={Add}
-                    onClick={handleCreateNewPatient}
-                    size="md"
-                  >
-                    {t('search.results.createNew')}
-                  </Button>
-                </div>
-              </div>
-            </Layer>
-          </Column>
-
           {/* Search Form Section */}
           <Column span={16} className="patient-search-page__search-section">
             <Layer>
@@ -280,7 +269,6 @@ const PatientSearchPage: React.FC = React.memo(() => {
               </div>
             </Layer>
           </Column>
-
           {/* Results Section */}
           {shouldShowResults && (
             <Column span={16} className="patient-search-page__results">
@@ -289,9 +277,9 @@ const PatientSearchPage: React.FC = React.memo(() => {
                   {/* Loading State */}
                   {isLoading && (
                     <div className="patient-search-page__loading">
-                      <InlineLoading
-                        status="active"
+                      <Loading
                         description={t('search.results.searching')}
+                        withOverlay={false}
                       />
                     </div>
                   )}
@@ -341,10 +329,7 @@ const PatientSearchPage: React.FC = React.memo(() => {
                           >
                             {t('search.results.createNew')}
                           </Button>
-                          <Button
-                            kind="secondary"
-                            onClick={handleClearSearch}
-                          >
+                          <Button kind="secondary" onClick={handleClearSearch}>
                             {t('search.button.clear')}
                           </Button>
                         </div>
@@ -356,7 +341,7 @@ const PatientSearchPage: React.FC = React.memo(() => {
             </Column>
           )}
         </Grid>
-      </div>
+      </Content>
     </div>
   );
 });
