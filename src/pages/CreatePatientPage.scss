@@ -1,55 +1,56 @@
 .create-patient-page {
   min-height: 100vh;
   background-color: var(--cds-layer-01);
-  padding: var(--cds-spacing-06);
 
-  @media (max-width: 768px) {
-    padding: var(--cds-spacing-04);
-  }
+  // Header component is handled by HeaderComponent
+  // Content area styling
+  &__content {
+    padding: var(--cds-spacing-06);
+    max-width: 1440px;
+    margin: 0 auto;
 
-  &__breadcrumbs {
-    margin-bottom: var(--cds-spacing-05);
-
-    .cds--breadcrumb {
-      background-color: transparent;
-
-      .cds--breadcrumb-item {
-        color: var(--cds-text-02);
-
-        &:hover {
-          color: var(--cds-text-01);
-        }
-
-        &[aria-current="page"] {
-          color: var(--cds-text-01);
-          font-weight: 600;
-        }
-      }
+    @media (max-width: 768px) {
+      padding: var(--cds-spacing-04);
     }
   }
 
-  &__content {
-    max-width: 1200px;
-    margin: 0 auto;
-    background-color: var(--cds-layer-02);
-    border-radius: var(--cds-border-radius);
-    box-shadow: var(--cds-shadow);
-    overflow: hidden;
+  &__grid {
+    gap: var(--cds-spacing-05);
 
     @media (max-width: 768px) {
-      margin: 0 -#{var(--cds-spacing-04)};
-      border-radius: 0;
+      gap: var(--cds-spacing-04);
     }
   }
 
   &__header {
-    background-color: var(--cds-layer-01);
-    border-bottom: 1px solid var(--cds-border-subtle);
-    padding: var(--cds-spacing-06) var(--cds-spacing-06) var(--cds-spacing-05);
+    .cds--layer {
+      background-color: var(--cds-layer-02);
+      border-radius: var(--cds-border-radius);
+      box-shadow: var(--cds-shadow);
+      padding: var(--cds-spacing-06);
+
+      @media (max-width: 768px) {
+        padding: var(--cds-spacing-05);
+        border-radius: 0;
+      }
+    }
+  }
+
+  &__header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--cds-spacing-06);
 
     @media (max-width: 768px) {
-      padding: var(--cds-spacing-05) var(--cds-spacing-05) var(--cds-spacing-04);
+      flex-direction: column;
+      gap: var(--cds-spacing-05);
+      align-items: stretch;
     }
+  }
+
+  &__title-section {
+    flex: 1;
   }
 
   &__title {
@@ -79,29 +80,32 @@
   }
 
   &__wizard {
-    padding: var(--cds-spacing-06);
+    .cds--layer {
+      background-color: var(--cds-layer-02);
+      border-radius: var(--cds-border-radius);
+      box-shadow: var(--cds-shadow);
+      padding: var(--cds-spacing-06);
 
-    @media (max-width: 768px) {
-      padding: var(--cds-spacing-05);
+      @media (max-width: 768px) {
+        padding: var(--cds-spacing-05);
+        border-radius: 0;
+      }
     }
+  }
 
-    // Ensure the wizard content doesn't overflow
-    .patient-form-wizard {
-      width: 100%;
-      max-width: 100%;
-    }
+  &__wizard-content {
+    width: 100%;
+    min-height: 400px;
   }
 }
 
 // High contrast mode support
 @media (prefers-contrast: high) {
   .create-patient-page {
-    &__content {
+    &__content .cds--layer,
+    &__header .cds--layer,
+    &__wizard .cds--layer {
       border: 2px solid var(--cds-border-strong);
-    }
-
-    &__header {
-      border-bottom: 2px solid var(--cds-border-strong);
     }
   }
 }
@@ -111,13 +115,16 @@
   .create-patient-page {
     background-color: white;
 
-    &__breadcrumbs {
-      display: none;
+    &__content {
+      padding: 0;
     }
 
-    &__content {
+    &__content .cds--layer,
+    &__header .cds--layer,
+    &__wizard .cds--layer {
       box-shadow: none;
       border: 1px solid #000;
+      background-color: white;
     }
 
     &__title {
@@ -144,42 +151,134 @@
 // Focus management
 .create-patient-page {
   &:focus-within {
+    outline: none;
+  }
+
+  // Skip to content link for screen readers
+  &__skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 1000;
+    padding: var(--cds-spacing-03);
+    background-color: var(--cds-layer-03);
+    color: var(--cds-text-01);
+    text-decoration: none;
+    border-radius: var(--cds-border-radius);
+
+    &:focus {
+      left: var(--cds-spacing-05);
+      top: var(--cds-spacing-05);
+    }
+  }
+}
+
+// Dark mode optimizations
+@media (prefers-color-scheme: dark) {
+  .create-patient-page {
+    &__content .cds--layer,
+    &__header .cds--layer,
+    &__wizard .cds--layer {
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+  }
+}
+
+// Responsive grid adjustments
+@media (max-width: 1056px) {
+  .create-patient-page {
+    &__header-content {
+      gap: var(--cds-spacing-05);
+    }
+  }
+}
+
+@media (max-width: 672px) {
+  .create-patient-page {
+    &__grid {
+      gap: var(--cds-spacing-03);
+    }
+
+    &__header-content {
+      gap: var(--cds-spacing-04);
+    }
+  }
+}
+
+// Accessibility enhancements
+.create-patient-page {
+  // Ensure sufficient color contrast
+  &__title,
+  &__description {
+    // Colors are handled by CSS custom properties
+  }
+
+  // Focus indicators
+  .cds--btn:focus,
+  .cds--link:focus {
     outline: 2px solid var(--cds-focus);
     outline-offset: 2px;
   }
-}
 
-// Error states
-.create-patient-page {
-  &__error {
-    background-color: var(--cds-support-01);
-    color: var(--cds-text-on-color);
-    padding: var(--cds-spacing-05);
-    border-radius: var(--cds-border-radius);
-    margin-bottom: var(--cds-spacing-05);
-
-    h2 {
-      color: var(--cds-text-on-color);
-      margin: 0 0 var(--cds-spacing-03) 0;
-    }
-
-    p {
-      margin: 0;
-    }
+  // Screen reader only content
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 }
 
-// Loading states
-.create-patient-page {
-  &__loading {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 400px;
-    color: var(--cds-text-02);
+// Carbon Content component integration
+.cds--content {
+  // Ensure proper spacing and layout for Content wrapper
+  &.create-patient-page__content {
+    padding: var(--cds-spacing-06);
+    background-color: var(--cds-layer-01);
+  }
+}
 
-    .cds--loading {
-      margin-right: var(--cds-spacing-03);
+// Header integration styling
+.create-patient-page {
+  // Ensure proper spacing after header
+  .cds--header ~ .cds--content {
+    padding-top: var(--cds-spacing-06);
+  }
+}
+
+// Wizard specific styling
+.create-patient-page__wizard {
+  // Ensure PatientFormWizard integrates well with the new layout
+  .patient-form-wizard {
+    border: none;
+    box-shadow: none;
+    background: transparent;
+    padding: 0;
+  }
+
+  // Ensure proper spacing for wizard steps
+  .patient-form-wizard__step {
+    margin-bottom: var(--cds-spacing-05);
+  }
+
+  // Ensure proper spacing for wizard buttons
+  .patient-form-wizard__buttons {
+    margin-top: var(--cds-spacing-06);
+    padding-top: var(--cds-spacing-05);
+    border-top: 1px solid var(--cds-border-subtle);
+  }
+}
+
+// Mobile specific adjustments
+@media (max-width: 768px) {
+  .create-patient-page {
+    &__wizard-content {
+      min-height: 300px;
     }
   }
 }
