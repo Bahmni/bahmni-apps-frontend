@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { PatientSearchResult } from '../../../types/registration';
 import { PatientCard } from './PatientCard';
 import { Pagination } from '../common/Pagination';
-import styles from './PatientSearchResults.module.scss';
+import * as styles from './PatientSearchResults.module.scss';
 
 /**
  * Sort options for patient search results
@@ -108,7 +108,9 @@ export const PatientSearchResults: React.FC<PatientSearchResultsProps> = ({
   const { t } = useTranslation();
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedPatients, setSelectedPatients] = useState<Set<string>>(new Set());
+  const [selectedPatients, setSelectedPatients] = useState<Set<string>>(
+    new Set(),
+  );
 
   // Handle view mode change
   const handleViewModeChange = useCallback((mode: ViewMode) => {
@@ -121,7 +123,7 @@ export const PatientSearchResults: React.FC<PatientSearchResultsProps> = ({
       const newSortBy = event.target.value as SortOption;
       onSort?.(newSortBy);
     },
-    [onSort]
+    [onSort],
   );
 
   // Handle filter change
@@ -129,19 +131,19 @@ export const PatientSearchResults: React.FC<PatientSearchResultsProps> = ({
     (filterKey: keyof ResultFilter, value: any) => {
       const newFilters = { ...filters, [filterKey]: value || undefined };
       // Remove undefined values
-      Object.keys(newFilters).forEach(key => {
+      Object.keys(newFilters).forEach((key) => {
         if (newFilters[key as keyof ResultFilter] === undefined) {
           delete newFilters[key as keyof ResultFilter];
         }
       });
       onFilter?.(newFilters);
     },
-    [filters, onFilter]
+    [filters, onFilter],
   );
 
   // Handle individual patient selection for bulk operations
   const handlePatientToggle = useCallback((patientUuid: string) => {
-    setSelectedPatients(prev => {
+    setSelectedPatients((prev) => {
       const newSelected = new Set(prev);
       if (newSelected.has(patientUuid)) {
         newSelected.delete(patientUuid);
@@ -157,7 +159,7 @@ export const PatientSearchResults: React.FC<PatientSearchResultsProps> = ({
     if (selectedPatients.size === patients.length) {
       setSelectedPatients(new Set());
     } else {
-      setSelectedPatients(new Set(patients.map(p => p.uuid)));
+      setSelectedPatients(new Set(patients.map((p) => p.uuid)));
     }
   }, [patients, selectedPatients.size]);
 
@@ -167,7 +169,7 @@ export const PatientSearchResults: React.FC<PatientSearchResultsProps> = ({
       onBulkAction?.(action, Array.from(selectedPatients));
       setSelectedPatients(new Set()); // Clear selection after action
     },
-    [onBulkAction, selectedPatients]
+    [onBulkAction, selectedPatients],
   );
 
   // Memoized results count text
@@ -178,13 +180,19 @@ export const PatientSearchResults: React.FC<PatientSearchResultsProps> = ({
     if (totalResults === 0) {
       return t('search.results.none', 'No patients found');
     }
-    return t('search.results.count', '{{count}} patients found', { count: totalResults });
+    return t('search.results.count', '{{count}} patients found', {
+      count: totalResults,
+    });
   }, [isLoading, totalResults, t]);
 
   // Loading skeleton
   if (isLoading) {
     return (
-      <div className={`${styles.searchResults} ${className}`} role="region" aria-label={t('search.results.label', 'Search Results')}>
+      <div
+        className={`${styles.searchResults} ${className}`}
+        role="region"
+        aria-label={t('search.results.label', 'Search Results')}
+      >
         <div className={styles.resultsHeader}>
           <div className={styles.resultsCount} role="status">
             {resultsCountText}
@@ -202,7 +210,11 @@ export const PatientSearchResults: React.FC<PatientSearchResultsProps> = ({
   // Error state
   if (error) {
     return (
-      <div className={`${styles.searchResults} ${className}`} role="region" aria-label={t('search.results.label', 'Search Results')}>
+      <div
+        className={`${styles.searchResults} ${className}`}
+        role="region"
+        aria-label={t('search.results.label', 'Search Results')}
+      >
         <div className={styles.errorState}>
           <div className={styles.errorMessage} role="alert">
             {error}
@@ -225,11 +237,20 @@ export const PatientSearchResults: React.FC<PatientSearchResultsProps> = ({
   // Empty state
   if (patients.length === 0) {
     return (
-      <div className={`${styles.searchResults} ${className}`} role="region" aria-label={t('search.results.label', 'Search Results')}>
+      <div
+        className={`${styles.searchResults} ${className}`}
+        role="region"
+        aria-label={t('search.results.label', 'Search Results')}
+      >
         <div className={styles.emptyState}>
           <div className={styles.emptyMessage}>
             <h3>{t('search.results.empty.title', 'No patients found')}</h3>
-            <p>{t('search.results.empty.suggestion', 'Try different search terms or check your spelling')}</p>
+            <p>
+              {t(
+                'search.results.empty.suggestion',
+                'Try different search terms or check your spelling',
+              )}
+            </p>
           </div>
           {onCreateNew && (
             <button
@@ -247,7 +268,11 @@ export const PatientSearchResults: React.FC<PatientSearchResultsProps> = ({
   }
 
   return (
-    <div className={`${styles.searchResults} ${className}`} role="region" aria-label={t('search.results.label', 'Search Results')}>
+    <div
+      className={`${styles.searchResults} ${className}`}
+      role="region"
+      aria-label={t('search.results.label', 'Search Results')}
+    >
       {/* Results Header */}
       <div className={styles.resultsHeader}>
         <div className={styles.resultsCount} role="status">
@@ -268,10 +293,18 @@ export const PatientSearchResults: React.FC<PatientSearchResultsProps> = ({
                 className={styles.sortSelect}
                 aria-label={t('search.results.sortBy', 'Sort by')}
               >
-                <option value="name-asc">{t('search.results.sort.nameAsc', 'Name (A-Z)')}</option>
-                <option value="name-desc">{t('search.results.sort.nameDesc', 'Name (Z-A)')}</option>
-                <option value="age-asc">{t('search.results.sort.ageAsc', 'Age (Youngest)')}</option>
-                <option value="age-desc">{t('search.results.sort.ageDesc', 'Age (Oldest)')}</option>
+                <option value="name-asc">
+                  {t('search.results.sort.nameAsc', 'Name (A-Z)')}
+                </option>
+                <option value="name-desc">
+                  {t('search.results.sort.nameDesc', 'Name (Z-A)')}
+                </option>
+                <option value="age-asc">
+                  {t('search.results.sort.ageAsc', 'Age (Youngest)')}
+                </option>
+                <option value="age-desc">
+                  {t('search.results.sort.ageDesc', 'Age (Oldest)')}
+                </option>
               </select>
             </div>
           )}
@@ -346,7 +379,12 @@ export const PatientSearchResults: React.FC<PatientSearchResultsProps> = ({
               min="0"
               max="150"
               value={filters.minAge || ''}
-              onChange={(e) => handleFilterChange('minAge', e.target.value ? Number(e.target.value) : undefined)}
+              onChange={(e) =>
+                handleFilterChange(
+                  'minAge',
+                  e.target.value ? Number(e.target.value) : undefined,
+                )
+              }
               className={styles.filterInput}
               aria-label={t('search.results.filter.minAge', 'Min Age')}
             />
@@ -362,7 +400,12 @@ export const PatientSearchResults: React.FC<PatientSearchResultsProps> = ({
               min="0"
               max="150"
               value={filters.maxAge || ''}
-              onChange={(e) => handleFilterChange('maxAge', e.target.value ? Number(e.target.value) : undefined)}
+              onChange={(e) =>
+                handleFilterChange(
+                  'maxAge',
+                  e.target.value ? Number(e.target.value) : undefined,
+                )
+              }
               className={styles.filterInput}
               aria-label={t('search.results.filter.maxAge', 'Max Age')}
             />
@@ -377,9 +420,15 @@ export const PatientSearchResults: React.FC<PatientSearchResultsProps> = ({
             <label className={styles.checkboxLabel}>
               <input
                 type="checkbox"
-                checked={selectedPatients.size === patients.length && patients.length > 0}
+                checked={
+                  selectedPatients.size === patients.length &&
+                  patients.length > 0
+                }
                 onChange={handleSelectAll}
-                aria-label={t('search.results.selectAll', 'Select all patients')}
+                aria-label={t(
+                  'search.results.selectAll',
+                  'Select all patients',
+                )}
               />
               {t('search.results.selectAll', 'Select all')}
             </label>
@@ -388,13 +437,20 @@ export const PatientSearchResults: React.FC<PatientSearchResultsProps> = ({
           {selectedPatients.size > 0 && (
             <div className={styles.bulkActions}>
               <span className={styles.selectedCount}>
-                {t('search.results.selectedCount', '{{count}} patients selected', { count: selectedPatients.size })}
+                {t(
+                  'search.results.selectedCount',
+                  '{{count}} patients selected',
+                  { count: selectedPatients.size },
+                )}
               </span>
               <button
                 type="button"
                 onClick={() => handleBulkAction('export')}
                 className={styles.bulkActionButton}
-                aria-label={t('search.results.exportSelected', 'Export selected patients')}
+                aria-label={t(
+                  'search.results.exportSelected',
+                  'Export selected patients',
+                )}
               >
                 {t('search.results.exportSelected', 'Export Selected')}
               </button>
@@ -416,7 +472,11 @@ export const PatientSearchResults: React.FC<PatientSearchResultsProps> = ({
                   type="checkbox"
                   checked={selectedPatients.has(patient.uuid)}
                   onChange={() => handlePatientToggle(patient.uuid)}
-                  aria-label={t('search.results.selectPatient', 'Select {{name}}', { name: patient.display })}
+                  aria-label={t(
+                    'search.results.selectPatient',
+                    'Select {{name}}',
+                    { name: patient.display },
+                  )}
                 />
               </div>
             )}
