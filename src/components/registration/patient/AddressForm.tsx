@@ -4,6 +4,18 @@
  */
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  Stack,
+  Grid,
+  Column,
+  TextInput,
+  Select,
+  SelectItem,
+  Toggle,
+  Heading,
+  InlineNotification,
+  Layer,
+} from '@carbon/react';
 import { PatientFormData, AddressLevel } from '../../../types/registration';
 import { WizardContextValue } from './PatientFormWizardContext';
 
@@ -175,7 +187,8 @@ export const AddressForm: React.FC<AddressFormProps> = ({
     updateField('address', { ...currentAddress, [field]: value });
   }, [formData.address, updateField]);
 
-  const handleCountryChange = useCallback((countryUuid: string) => {
+  const handleCountryChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
+    const countryUuid = event.target.value;
     setSelectedCountry(countryUuid);
     setSelectedState('');
     setSelectedCity('');
@@ -192,7 +205,8 @@ export const AddressForm: React.FC<AddressFormProps> = ({
     }
   }, [addressHierarchy, updateAddress]);
 
-  const handleStateChange = useCallback((stateUuid: string) => {
+  const handleStateChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
+    const stateUuid = event.target.value;
     setSelectedState(stateUuid);
     setSelectedCity('');
 
@@ -206,7 +220,8 @@ export const AddressForm: React.FC<AddressFormProps> = ({
     }
   }, [availableStates, updateAddress]);
 
-  const handleCityChange = useCallback((cityUuid: string) => {
+  const handleCityChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
+    const cityUuid = event.target.value;
     setSelectedCity(cityUuid);
 
     if (cityUuid) {
@@ -248,264 +263,190 @@ export const AddressForm: React.FC<AddressFormProps> = ({
   }
 
   return (
-    <div className="address-form">
-      <div className="address-form__section">
-        <h3 className="address-form__section-title">
-          {t('registration.patient.address.title')}
-        </h3>
-        <p className="address-form__description">
-          {t('registration.patient.address.description')}
-        </p>
-
-        {/* Mode Toggle */}
-        <div className="address-form__mode-toggle">
-          <label className="address-form__toggle-label">
-            <input
-              type="checkbox"
-              className="address-form__toggle-checkbox"
-              checked={hierarchyMode}
-              onChange={toggleHierarchyMode}
-            />
-            <span className="address-form__toggle-text">
-              {t('registration.patient.address.useHierarchy')}
-            </span>
-          </label>
-          <p className="address-form__toggle-help">
-            {hierarchyMode
-              ? t('registration.patient.address.hierarchyModeHelp')
-              : t('registration.patient.address.manualModeHelp')
-            }
+    <Stack gap={6}>
+      <Layer>
+        <Stack gap={5}>
+          <Heading>
+            {t('registration.patient.address.title')}
+          </Heading>
+          <p style={{ marginBottom: '1rem', color: '#525252' }}>
+            {t('registration.patient.address.description')}
           </p>
-        </div>
 
-        {/* Address Lines */}
-        <div className="address-form__group">
-          <h4 className="address-form__group-title">
-            {t('registration.patient.address.addressLines')}
-          </h4>
+          {/* Mode Toggle */}
+          <Toggle
+            id="hierarchy-mode-toggle"
+            toggled={hierarchyMode}
+            onToggle={toggleHierarchyMode}
+            labelA={t('registration.patient.address.manualModeHelp')}
+            labelB={t('registration.patient.address.hierarchyModeHelp')}
+            labelText={t('registration.patient.address.useHierarchy')}
+          />
+        </Stack>
+      </Layer>
 
-          <div className="address-form__row">
-            <div className="address-form__field">
-              <label htmlFor="address1" className="address-form__label">
-                {t('registration.patient.address.address1')}
-              </label>
-              <input
-                type="text"
+      <Layer>
+        <Stack gap={5}>
+          <h3>{t('registration.patient.address.addressLines')}</h3>
+          <Grid>
+            <Column md={4} lg={8}>
+              <TextInput
                 id="address1"
-                className="address-form__input"
+                labelText={t('registration.patient.address.address1')}
                 value={formData.address.address1 || ''}
                 onChange={(e) => updateAddress('address1', e.target.value)}
                 placeholder={t('registration.patient.address.address1Placeholder')}
               />
-            </div>
-          </div>
-
-          <div className="address-form__row">
-            <div className="address-form__field">
-              <label htmlFor="address2" className="address-form__label">
-                {t('registration.patient.address.address2')}
-              </label>
-              <input
-                type="text"
+            </Column>
+            <Column md={4} lg={8}>
+              <TextInput
                 id="address2"
-                className="address-form__input"
+                labelText={t('registration.patient.address.address2')}
                 value={formData.address.address2 || ''}
                 onChange={(e) => updateAddress('address2', e.target.value)}
                 placeholder={t('registration.patient.address.address2Placeholder')}
               />
-            </div>
-          </div>
-        </div>
+            </Column>
+          </Grid>
+        </Stack>
+      </Layer>
 
-        {/* Geographic Information */}
-        <div className="address-form__group">
-          <h4 className="address-form__group-title">
-            {t('registration.patient.address.geographic')}
-          </h4>
-
-          {hierarchyMode ? (
-            // Hierarchical Selection Mode
-            <>
-              <div className="address-form__row">
-                <div className="address-form__field">
-                  <label htmlFor="country-select" className="address-form__label">
-                    {t('registration.patient.address.country')}
-                  </label>
-                  <select
+      <Layer>
+        <Stack gap={5}>
+          <h3>{t('registration.patient.address.geographic')}</h3>
+          <Grid>
+            {hierarchyMode ? (
+              // Hierarchical Selection Mode
+              <>
+                <Column md={4} lg={8}>
+                  <Select
                     id="country-select"
-                    className="address-form__select"
+                    labelText={t('registration.patient.address.country')}
                     value={selectedCountry}
-                    onChange={(e) => handleCountryChange(e.target.value)}
+                    onChange={handleCountryChange}
                   >
-                    <option value="">{t('registration.patient.address.selectCountry')}</option>
+                    <SelectItem value="" text={t('registration.patient.address.selectCountry')} />
                     {addressHierarchy.map((country) => (
-                      <option key={country.uuid} value={country.uuid}>
-                        {country.name}
-                      </option>
+                      <SelectItem key={country.uuid} value={country.uuid} text={country.name} />
                     ))}
-                  </select>
-                </div>
-              </div>
+                  </Select>
+                </Column>
 
-              {availableStates.length > 0 && (
-                <div className="address-form__row">
-                  <div className="address-form__field">
-                    <label htmlFor="state-select" className="address-form__label">
-                      {t('registration.patient.address.state')}
-                    </label>
-                    <select
+                {availableStates.length > 0 && (
+                  <Column md={4} lg={8}>
+                    <Select
                       id="state-select"
-                      className={`address-form__select ${fieldErrors['stateProvince'] ? 'address-form__select--error' : ''}`}
+                      labelText={t('registration.patient.address.state')}
                       value={selectedState}
-                      onChange={(e) => handleStateChange(e.target.value)}
+                      onChange={handleStateChange}
                       disabled={!selectedCountry}
+                      invalid={!!fieldErrors['stateProvince']}
+                      invalidText={fieldErrors['stateProvince']}
                     >
-                      <option value="">{t('registration.patient.address.selectState')}</option>
+                      <SelectItem value="" text={t('registration.patient.address.selectState')} />
                       {availableStates.map((state) => (
-                        <option key={state.uuid} value={state.uuid}>
-                          {state.name}
-                        </option>
+                        <SelectItem key={state.uuid} value={state.uuid} text={state.name} />
                       ))}
-                    </select>
-                    {fieldErrors['stateProvince'] && (
-                      <div className="address-form__field-error" role="alert">
-                        {fieldErrors['stateProvince']}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+                    </Select>
+                  </Column>
+                )}
 
-              {availableCities.length > 0 && (
-                <div className="address-form__row">
-                  <div className="address-form__field">
-                    <label htmlFor="city-select" className="address-form__label">
-                      {t('registration.patient.address.city')}
-                    </label>
-                    <select
+                {availableCities.length > 0 && (
+                  <Column md={4} lg={8}>
+                    <Select
                       id="city-select"
-                      className={`address-form__select ${fieldErrors['cityVillage'] ? 'address-form__select--error' : ''}`}
+                      labelText={t('registration.patient.address.city')}
                       value={selectedCity}
-                      onChange={(e) => handleCityChange(e.target.value)}
+                      onChange={handleCityChange}
                       disabled={!selectedState}
+                      invalid={!!fieldErrors['cityVillage']}
+                      invalidText={fieldErrors['cityVillage']}
                     >
-                      <option value="">{t('registration.patient.address.selectCity')}</option>
+                      <SelectItem value="" text={t('registration.patient.address.selectCity')} />
                       {availableCities.map((city) => (
-                        <option key={city.uuid} value={city.uuid}>
-                          {city.name}
-                        </option>
+                        <SelectItem key={city.uuid} value={city.uuid} text={city.name} />
                       ))}
-                    </select>
-                    {fieldErrors['cityVillage'] && (
-                      <div className="address-form__field-error" role="alert">
-                        {fieldErrors['cityVillage']}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </>
-          ) : (
-            // Manual Entry Mode
-            <>
-              <div className="address-form__row">
-                <div className="address-form__field">
-                  <label htmlFor="country-manual" className="address-form__label">
-                    {t('registration.patient.address.country')}
-                  </label>
-                  <input
-                    type="text"
+                    </Select>
+                  </Column>
+                )}
+              </>
+            ) : (
+              // Manual Entry Mode
+              <>
+                <Column md={4} lg={8}>
+                  <TextInput
                     id="country-manual"
-                    className="address-form__input"
+                    labelText={t('registration.patient.address.country')}
                     value={formData.address.country || ''}
                     onChange={(e) => updateAddress('country', e.target.value)}
                     placeholder={t('registration.patient.address.countryPlaceholder')}
                   />
-                </div>
-              </div>
-
-              <div className="address-form__row">
-                <div className="address-form__field">
-                  <label htmlFor="state-manual" className="address-form__label">
-                    {t('registration.patient.address.state')}
-                  </label>
-                  <input
-                    type="text"
+                </Column>
+                <Column md={4} lg={4}>
+                  <TextInput
                     id="state-manual"
-                    className="address-form__input"
+                    labelText={t('registration.patient.address.state')}
                     value={formData.address.stateProvince || ''}
                     onChange={(e) => updateAddress('stateProvince', e.target.value)}
                     placeholder={t('registration.patient.address.statePlaceholder')}
                   />
-                </div>
-                <div className="address-form__field">
-                  <label htmlFor="city-manual" className="address-form__label">
-                    {t('registration.patient.address.city')}
-                  </label>
-                  <input
-                    type="text"
+                </Column>
+                <Column md={4} lg={4}>
+                  <TextInput
                     id="city-manual"
-                    className="address-form__input"
+                    labelText={t('registration.patient.address.city')}
                     value={formData.address.cityVillage || ''}
                     onChange={(e) => updateAddress('cityVillage', e.target.value)}
                     placeholder={t('registration.patient.address.cityPlaceholder')}
                   />
-                </div>
-              </div>
-            </>
-          )}
+                </Column>
+              </>
+            )}
 
-          <div className="address-form__row">
-            <div className="address-form__field">
-              <label htmlFor="postalCode" className="address-form__label">
-                {t('registration.patient.address.postalCode')}
-              </label>
-              <input
-                type="text"
+            <Column md={4} lg={8}>
+              <TextInput
                 id="postalCode"
-                className={`address-form__input ${fieldErrors['postalCode'] ? 'address-form__input--error' : ''}`}
+                labelText={t('registration.patient.address.postalCode')}
                 value={formData.address.postalCode || ''}
                 onChange={(e) => updateAddress('postalCode', e.target.value)}
                 placeholder={t('registration.patient.address.postalCodePlaceholder')}
+                invalid={!!fieldErrors['postalCode']}
+                invalidText={fieldErrors['postalCode']}
               />
-              {fieldErrors['postalCode'] && (
-                <div className="address-form__field-error" role="alert">
-                  {fieldErrors['postalCode']}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+            </Column>
+          </Grid>
+        </Stack>
+      </Layer>
 
-        {/* Address Preview */}
-        {getAddressPreview && (
-          <div className="address-form__preview">
-            <h4 className="address-form__preview-title">
-              {t('registration.patient.address.preview')}
-            </h4>
-            <div className="address-form__preview-content">
+      {/* Address Preview */}
+      {getAddressPreview && (
+        <Layer>
+          <Stack gap={5}>
+            <h3>{t('registration.patient.address.preview')}</h3>
+            <div style={{ padding: '1rem', backgroundColor: '#f4f4f4', borderRadius: '4px' }}>
               {getAddressPreview}
             </div>
-          </div>
-        )}
+          </Stack>
+        </Layer>
+      )}
 
-        {/* Validation Errors */}
-        {stepValidation.errors.length > 0 && (
-          <div className="address-form__validation-summary" role="alert">
-            <h4 className="address-form__validation-title">
-              {t('registration.patient.address.validationErrors')}
-            </h4>
-            <ul className="address-form__validation-list">
-              {stepValidation.errors.map((error, index) => (
-                <li key={index} className="address-form__validation-item">
-                  {error}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
-    </div>
+      {/* Validation Errors */}
+      {stepValidation.errors.length > 0 && (
+        <InlineNotification
+          kind="error"
+          title={t('registration.patient.address.validationErrors')}
+          subtitle=""
+          hideCloseButton
+          lowContrast
+        >
+          <ul style={{ margin: 0, paddingLeft: '1rem' }}>
+            {stepValidation.errors.map((error, index) => (
+              <li key={index}>{error}</li>
+            ))}
+          </ul>
+        </InlineNotification>
+      )}
+    </Stack>
   );
 };
 
