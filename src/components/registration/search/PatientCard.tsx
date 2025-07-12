@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PatientSearchResult } from '../../../types/registration';
-import styles from './PatientCard.module.scss';
+import * as styles from './PatientCard.module.scss';
 
 /**
  * Props for the PatientCard component
@@ -50,7 +50,9 @@ export const PatientCard: React.FC<PatientCardProps> = ({
         return name.display;
       }
 
-      const parts = [name.givenName, name.middleName, name.familyName].filter(Boolean);
+      const parts = [name.givenName, name.middleName, name.familyName].filter(
+        Boolean,
+      );
       return parts.join(' ') || patient.display;
     }
     return patient.display;
@@ -82,7 +84,9 @@ export const PatientCard: React.FC<PatientCardProps> = ({
   // Get age or birthdate display
   const getAgeDisplay = useCallback((): string => {
     if (patient.person.age !== undefined) {
-      return t('patient.age.years', '{{age}} years', { age: patient.person.age });
+      return t('patient.age.years', '{{age}} years', {
+        age: patient.person.age,
+      });
     }
 
     if (patient.person.birthdate) {
@@ -97,7 +101,9 @@ export const PatientCard: React.FC<PatientCardProps> = ({
   const getAddressDisplay = useCallback((): string | null => {
     if (patient.person.addresses.length === 0) return null;
 
-    const preferredAddress = patient.person.addresses.find((addr) => addr.preferred);
+    const preferredAddress = patient.person.addresses.find(
+      (addr) => addr.preferred,
+    );
     const address = preferredAddress || patient.person.addresses[0];
 
     if (address.display) {
@@ -150,7 +156,9 @@ export const PatientCard: React.FC<PatientCardProps> = ({
   const addressDisplay = getAddressDisplay();
 
   // Build demographics display
-  const demographicsDisplay = [genderDisplay, ageDisplay].filter(Boolean).join(', ');
+  const demographicsDisplay = [genderDisplay, ageDisplay]
+    .filter(Boolean)
+    .join(', ');
 
   // Build ARIA label
   const ariaLabel = t(
@@ -191,7 +199,10 @@ export const PatientCard: React.FC<PatientCardProps> = ({
             <div
               className={styles.patientAvatar}
               data-testid="patient-avatar"
-              aria-label={t('patient.avatar.placeholder', 'Patient photo placeholder')}
+              aria-label={t(
+                'patient.avatar.placeholder',
+                'Patient photo placeholder',
+              )}
             >
               {patientName.charAt(0).toUpperCase()}
             </div>
@@ -205,22 +216,32 @@ export const PatientCard: React.FC<PatientCardProps> = ({
 
           {/* Primary Identifier */}
           {primaryIdentifier && (
-            <div className={styles.patientIdentifier} data-testid="patient-identifier">
+            <div
+              className={styles.patientIdentifier}
+              data-testid="patient-identifier"
+            >
               <span className={styles.identifierLabel}>
                 {t('patient.identifier.label', 'ID:')}
               </span>
-              <span className={styles.identifierValue}>{primaryIdentifier}</span>
+              <span className={styles.identifierValue}>
+                {primaryIdentifier}
+              </span>
             </div>
           )}
 
           {/* Demographics */}
           {demographicsDisplay && (
-            <div className={styles.patientDemographics}>{demographicsDisplay}</div>
+            <div className={styles.patientDemographics}>
+              {demographicsDisplay}
+            </div>
           )}
 
           {/* Address */}
           {addressDisplay && (
-            <div className={styles.patientAddress} data-testid="patient-address">
+            <div
+              className={styles.patientAddress}
+              data-testid="patient-address"
+            >
               {addressDisplay}
             </div>
           )}

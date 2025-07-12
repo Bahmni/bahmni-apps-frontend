@@ -1,39 +1,16 @@
 .patient-search-page {
   min-height: 100vh;
   background-color: var(--cds-layer-01);
-  padding: var(--cds-spacing-06);
 
-  @media (max-width: 768px) {
-    padding: var(--cds-spacing-04);
-  }
-
-  &__breadcrumbs {
-    margin-bottom: var(--cds-spacing-05);
-
-    .cds--breadcrumb {
-      background-color: transparent;
-
-      .cds--breadcrumb-item {
-        color: var(--cds-text-02);
-
-        &:hover {
-          color: var(--cds-text-01);
-        }
-
-        &[aria-current="page"] {
-          color: var(--cds-text-01);
-          font-weight: 600;
-        }
-      }
-    }
-  }
-
+  // Header component is handled by HeaderComponent
+  // Content area styling
   &__content {
+    padding: var(--cds-spacing-06);
     max-width: 1440px;
     margin: 0 auto;
 
     @media (max-width: 768px) {
-      margin: 0 -#{var(--cds-spacing-04)};
+      padding: var(--cds-spacing-04);
     }
   }
 
@@ -64,6 +41,7 @@
     justify-content: space-between;
     align-items: flex-start;
     gap: var(--cds-spacing-06);
+    padding-left: var(--cds-spacing-01);
 
     @media (max-width: 768px) {
       flex-direction: column;
@@ -159,7 +137,7 @@
     flex-direction: column;
     gap: var(--cds-spacing-03);
 
-    .cds--inline-loading {
+    .cds--loading {
       justify-content: center;
     }
   }
@@ -242,10 +220,9 @@
 @media print {
   .patient-search-page {
     background-color: white;
-    padding: 0;
 
-    &__breadcrumbs {
-      display: none;
+    &__content {
+      padding: 0;
     }
 
     &__actions {
@@ -338,7 +315,7 @@
 }
 
 .patient-search-page__loading {
-  .cds--inline-loading__animation {
+  .cds--loading__svg {
     animation: pulse 1.5s ease-in-out infinite;
   }
 }
@@ -390,5 +367,22 @@
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
+  }
+}
+
+// Carbon Content component integration
+.cds--content {
+  // Ensure proper spacing and layout for Content wrapper
+  &.patient-search-page__content {
+    padding: var(--cds-spacing-06);
+    background-color: var(--cds-layer-01);
+  }
+}
+
+// Header integration styling
+.patient-search-page {
+  // Ensure proper spacing after header
+  .cds--header ~ .cds--content {
+    padding-top: var(--cds-spacing-06);
   }
 }

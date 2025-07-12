@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import styles from './Pagination.module.scss';
+import * as styles from './Pagination.module.scss';
 
 /**
  * Props for the Pagination component
@@ -75,11 +75,7 @@ export const Pagination: React.FC<PaginationProps> = ({
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       if (event.key === 'Enter') {
         const pageNumber = parseInt(jumpToPage, 10);
-        if (
-          !isNaN(pageNumber) &&
-          pageNumber >= 1 &&
-          pageNumber <= totalPages
-        ) {
+        if (!isNaN(pageNumber) && pageNumber >= 1 && pageNumber <= totalPages) {
           onPageChange(pageNumber);
         }
       }
