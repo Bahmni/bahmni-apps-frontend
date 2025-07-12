@@ -279,8 +279,14 @@ export interface PatientFormData {
 
   // Photo
   readonly photo?: {
-    readonly contentType: string;
-    readonly data: string; // base64 encoded
+    readonly base64: string;
+    readonly filename: string;
+    readonly size: number;
+    readonly type: string;
+    readonly dimensions?: {
+      readonly width: number;
+      readonly height: number;
+    };
   };
 }
 
