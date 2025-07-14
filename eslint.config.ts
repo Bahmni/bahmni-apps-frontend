@@ -12,13 +12,18 @@ import tseslint from 'typescript-eslint';
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
 const config = [
-  // Ignore Storybook files
+  // Performance optimization: Comprehensive ignore patterns
   {
     ignores: [
       '**/*.stories.{js,jsx,ts,tsx}',
       'build/**',
       'dist/**',
       'node_modules/**',
+      'coverage/**',
+      '*.config.{js,ts}',
+      'declarations.d.ts',
+      'public/**',
+      'package/**',
     ],
   },
 
@@ -45,19 +50,27 @@ const config = [
         typescript: {
           alwaysTryTypes: true,
           project: './tsconfig.json',
+          extensions: ['.ts', '.tsx', '.js', '.jsx'],
         },
         node: {
           extensions: ['.js', '.jsx', '.ts', '.tsx'],
           moduleDirectory: ['node_modules', 'src'],
         },
       },
+      'import/parsers': {
+        '@typescript-eslint/parser': ['.ts', '.tsx'],
+      },
     },
     languageOptions: {
       globals: globals.browser,
+      parser: tseslint.parser,
       parserOptions: {
+        projectService: true,
         ecmaFeatures: {
           jsx: true,
         },
+        ecmaVersion: 'latest',
+        sourceType: 'module',
       },
     },
     rules: {
