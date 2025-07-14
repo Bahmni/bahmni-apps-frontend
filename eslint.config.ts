@@ -1,14 +1,14 @@
-import globals from 'globals';
 import pluginJs from '@eslint/js';
-import tseslint from 'typescript-eslint';
+import prettierConfig from 'eslint-config-prettier';
+import pluginEslintComments from 'eslint-plugin-eslint-comments';
+import pluginImport from 'eslint-plugin-import';
+import pluginJest from 'eslint-plugin-jest';
+import pluginJsxA11y from 'eslint-plugin-jsx-a11y';
+import pluginPrettier from 'eslint-plugin-prettier';
 import pluginReact from 'eslint-plugin-react';
 import pluginReactHooks from 'eslint-plugin-react-hooks';
-import pluginJsxA11y from 'eslint-plugin-jsx-a11y';
-import pluginImport from 'eslint-plugin-import';
-import pluginPrettier from 'eslint-plugin-prettier';
-import pluginJest from 'eslint-plugin-jest';
-import pluginEslintComments from 'eslint-plugin-eslint-comments';
-import prettierConfig from 'eslint-config-prettier';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
 const config = [
@@ -20,17 +20,6 @@ const config = [
       'dist/**',
       'node_modules/**',
     ],
-  },
-  {
-    files: ['**/*.js'],
-    languageOptions: {
-      sourceType: 'commonjs',
-    },
-  },
-  {
-    languageOptions: {
-      globals: globals.browser,
-    },
   },
 
   pluginJs.configs.recommended,
