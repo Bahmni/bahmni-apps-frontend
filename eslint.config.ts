@@ -111,9 +111,7 @@ const config = [
       'jsx-a11y/no-access-key': 'error',
       'jsx-a11y/anchor-is-valid': 'error',
 
-      // Console usage - environment aware
       'no-console': 'error',
-      // 'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'warn',
 
       // Prettier integration
       'prettier/prettier': 'error',
