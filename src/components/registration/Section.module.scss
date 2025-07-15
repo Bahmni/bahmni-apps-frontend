@@ -1,0 +1,14 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+
+.section {
+  margin-bottom: $spacing-07;
+}
+
+.sectionTitle {
+  @include type-style("heading-03");
+  margin-bottom: $spacing-05;
+  padding-bottom: $spacing-03;
+  border-bottom: 1px solid $border-subtle-01;
+}

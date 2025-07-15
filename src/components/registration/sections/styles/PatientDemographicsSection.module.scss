@@ -1,0 +1,46 @@
+@use "@carbon/react/scss/spacing" as *;
+
+.genderSection {
+  margin-bottom: $spacing-05;
+}
+
+.ageSection {
+  margin-top: $spacing-05;
+}
+
+.ageGrid {
+  padding: 0;
+}
+
+.sectionTitle {
+  margin-bottom: $spacing-03;
+  font-size: 0.875rem;
+}
+
+.required {
+  color: red;
+  margin-left: $spacing-01;
+}
+
+.ageFields {
+  display: flex;
+  gap: $spacing-05;
+}
+
+.ageField {
+  flex-grow: 1;
+}
+
+.birthdateField {
+  display: flex;
+  align-items: center;
+  gap: $spacing-05;
+}
+
+.estimatedCheckbox {
+  padding-top: $spacing-06;
+}
+
+.birthTimeSection {
+  margin-top: $spacing-05;
+}

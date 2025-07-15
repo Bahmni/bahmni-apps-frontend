@@ -1,0 +1,363 @@
+/**
+ * Registration Module Styles
+ * 
+ * Main SCSS file for registration components using Carbon design tokens
+ * while maintaining visual consistency with clinical pages and ensuring responsive design.
+ */
+
+@import '@carbon/react/scss/spacing';
+@import '@carbon/react/scss/theme';
+@import '@carbon/react/scss/colors';
+@import '@carbon/react/scss/type';
+@import '@carbon/react/scss/motion';
+@import '@carbon/react/scss/breakpoint';
+
+// Registration-specific variables
+$registration-max-width: 1200px;
+$registration-section-spacing: $spacing-06;
+$registration-field-spacing: $spacing-04;
+$registration-border-radius: 4px;
+
+// Common registration section styles
+%registration-section {
+  padding: $spacing-05;
+  background-color: $layer-01;
+  border-radius: $registration-border-radius;
+  border: 1px solid $border-subtle-01;
+  margin-bottom: $registration-section-spacing;
+  transition: border-color $duration-fast-02 motion(standard, productive);
+
+  &:hover {
+    border-color: $border-interactive;
+  }
+
+  &:focus-within {
+    border-color: $focus;
+    box-shadow: 0 0 0 2px rgba($focus, 0.2);
+  }
+
+  @media (max-width: 768px) {
+    padding: $spacing-04;
+    margin-bottom: $spacing-04;
+  }
+}
+
+// Form field styles
+%registration-field {
+  margin-bottom: $registration-field-spacing;
+
+  .cds--label {
+    @include type-style('label-01');
+    color: $text-secondary;
+    margin-bottom: $spacing-02;
+  }
+
+  .cds--text-input,
+  .cds--select-input,
+  .cds--date-picker-input {
+    background-color: $field-01;
+    border: 1px solid $border-subtle-01;
+    transition: all $duration-fast-02 motion(standard, productive);
+
+    &:focus {
+      border-color: $focus;
+      box-shadow: 0 0 0 2px rgba($focus, 0.2);
+    }
+
+    &:invalid,
+    &.cds--text-input--invalid {
+      border-color: $support-error;
+      box-shadow: 0 0 0 2px rgba($support-error, 0.2);
+    }
+  }
+
+  .cds--form-requirement {
+    @include type-style('caption-01');
+    color: $support-error;
+    margin-top: $spacing-02;
+  }
+}
+
+// Grid and layout styles
+.registration-container {
+  max-width: $registration-max-width;
+  margin: 0 auto;
+  padding: $spacing-05;
+
+  @media (max-width: 768px) {
+    padding: $spacing-04;
+  }
+
+  @media (max-width: 480px) {
+    padding: $spacing-03;
+  }
+}
+
+.registration-grid {
+  margin: 0;
+
+  .cds--col {
+    padding-left: $spacing-03;
+    padding-right: $spacing-03;
+
+    &:first-child {
+      padding-left: 0;
+    }
+
+    &:last-child {
+      padding-right: 0;
+    }
+
+    @media (max-width: 768px) {
+      padding-left: 0;
+      padding-right: 0;
+      width: 100%;
+      max-width: 100%;
+    }
+  }
+}
+
+// Section-specific styles
+.registration-photo-section {
+  @extend %registration-section;
+  text-align: center;
+  
+  .photo-container {
+    display: inline-block;
+    position: relative;
+  }
+}
+
+.registration-identifier-section {
+  @extend %registration-section;
+  
+  .identifier-input-group {
+    display: flex;
+    align-items: flex-end;
+    gap: $spacing-03;
+  }
+}
+
+.registration-name-section {
+  @extend %registration-section;
+  
+  .name-fields-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: $spacing-04;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+.registration-demographics-section {
+  @extend %registration-section;
+  
+  .demographics-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: $spacing-05;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+      gap: $spacing-04;
+    }
+  }
+
+  .age-fields {
+    display: flex;
+    gap: $spacing-03;
+
+    @media (max-width: 480px) {
+      flex-direction: column;
+    }
+  }
+}
+
+.registration-address-section {
+  @extend %registration-section;
+  
+  .address-fields-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: $spacing-04;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+// Preview styles
+.registration-preview {
+  padding: $spacing-04;
+  background-color: $layer-02;
+  border-radius: $registration-border-radius;
+  border: 1px solid $border-subtle-01;
+  margin-top: $spacing-04;
+
+  .preview-label {
+    @include type-style('label-01');
+    color: $text-secondary;
+    margin-bottom: $spacing-02;
+    display: block;
+  }
+
+  .preview-value {
+    @include type-style('body-01');
+    color: $text-primary;
+    font-weight: 400;
+    min-height: 20px;
+    line-height: 1.5;
+
+    &:empty::before {
+      content: attr(data-placeholder);
+      color: $text-placeholder;
+      font-style: italic;
+    }
+  }
+}
+
+// Button styles
+.registration-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-04;
+  padding: $spacing-04 0;
+  border-top: 1px solid $border-subtle-01;
+  margin-top: $spacing-06;
+
+  @media (max-width: 768px) {
+    flex-direction: column-reverse;
+    gap: $spacing-03;
+
+    .cds--btn {
+      width: 100%;
+    }
+  }
+}
+
+// Error states
+.registration-section--error {
+  border-color: $support-error;
+  background-color: rgba($support-error, 0.05);
+
+  .registration-preview {
+    border-color: $support-error;
+    background-color: rgba($support-error, 0.1);
+  }
+}
+
+// Loading states
+.registration-section--loading {
+  opacity: 0.6;
+  pointer-events: none;
+
+  .registration-preview {
+    opacity: 0.8;
+  }
+}
+
+// Success states
+.registration-section--success {
+  border-color: $support-success;
+  
+  .registration-preview {
+    border-color: $support-success;
+    background-color: rgba($support-success, 0.05);
+  }
+}
+
+// Accessibility improvements
+.registration-section:focus-within {
+  outline: none;
+  
+  .section-title {
+    color: $focus;
+  }
+}
+
+// High contrast mode
+@media (prefers-contrast: high) {
+  %registration-section {
+    border-width: 2px;
+  }
+
+  .registration-preview {
+    border-width: 2px;
+  }
+
+  .preview-label {
+    font-weight: 700;
+  }
+}
+
+// Reduced motion
+@media (prefers-reduced-motion: reduce) {
+  %registration-section,
+  .cds--text-input,
+  .cds--select-input,
+  .cds--date-picker-input {
+    transition: none;
+  }
+}
+
+// Print styles
+@media print {
+  .registration-container {
+    max-width: 100%;
+    padding: 0;
+  }
+
+  %registration-section {
+    border: 1px solid #000;
+    background-color: #fff;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: $spacing-04;
+  }
+
+  .registration-preview {
+    background-color: #f4f4f4;
+    border: 1px solid #000;
+  }
+
+  .registration-actions {
+    display: none;
+  }
+
+  .preview-label,
+  .preview-value {
+    color: #000;
+  }
+}
+
+// Animation keyframes
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Section animation
+.registration-section {
+  animation: fadeInUp 0.3s ease-out;
+  animation-fill-mode: both;
+
+  &:nth-child(1) { animation-delay: 0.1s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.3s; }
+  &:nth-child(4) { animation-delay: 0.4s; }
+  &:nth-child(5) { animation-delay: 0.5s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}

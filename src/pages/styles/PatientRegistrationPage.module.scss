@@ -1,0 +1,59 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.registrationPage {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.breadcrumbContainer {
+  margin-bottom: $spacing-05;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-07;
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  gap: $spacing-03;
+}
+
+.pageTitle {
+  margin-bottom: 0;
+}
+
+.backButton {
+  // Add styles for the back button if needed
+}
+
+.formContainer {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: $spacing-05;
+}
+
+.formGrid {
+  padding: 0;
+}
+
+.formActions {
+  background-color: $layer-01;
+  padding: $spacing-05;
+  border-top: 1px solid $border-subtle-01;
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-05;
+}

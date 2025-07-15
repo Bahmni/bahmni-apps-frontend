@@ -1,0 +1,36 @@
+@use "@carbon/react/scss/spacing" as *;
+
+.localNameSection {
+  margin-bottom: $spacing-05;
+}
+
+.sectionTitle {
+  margin-bottom: $spacing-03;
+}
+
+.nameGrid {
+  padding: 0;
+}
+
+.required {
+  color: red;
+  margin-left: $spacing-01;
+}
+
+.namePreview {
+  margin-top: $spacing-05;
+}
+
+.previewLabel {
+  display: block;
+  margin-bottom: $spacing-03;
+}
+
+.previewValue {
+  font-weight: bold;
+}
+
+.previewValueLocal {
+  font-style: italic;
+  margin-top: $spacing-02;
+}

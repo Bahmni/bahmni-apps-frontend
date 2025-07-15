@@ -1,0 +1,52 @@
+@use "@carbon/react/scss/spacing" as *;
+
+.identifierRow {
+  display: flex;
+  align-items: flex-end;
+  gap: $spacing-05;
+}
+
+.identifierPrefix {
+  flex-shrink: 0;
+}
+
+.identifierInputWrapper {
+  flex-grow: 1;
+  position: relative;
+}
+
+.validationIcon {
+  position: absolute;
+  top: 50%;
+  right: $spacing-05;
+  transform: translateY(-50%);
+}
+
+.validIcon {
+  fill: green;
+}
+
+.invalidIcon {
+  fill: red;
+}
+
+.enterIdCheckbox {
+  padding-bottom: $spacing-05;
+}
+
+.generatedIdentifier {
+  margin-top: $spacing-05;
+}
+
+.generatedLabel {
+  display: block;
+  margin-bottom: $spacing-03;
+}
+
+.generatedValue {
+  font-weight: bold;
+}
+
+.prefix {
+  margin-right: $spacing-02;
+}
