@@ -4,22 +4,37 @@
 // Import Carbon styles
 @use "@carbon/react";
 
+// Import module-specific styles
+@import "registration";
+
 // Global styles
+html,
 body {
   margin: 0;
+  padding: 0;
+  height: 100%;
   font-family: "IBM Plex Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow: hidden !important;
+}
+
+#root {
+  height: 100%;
 }
 
 code {
   font-family: "IBM Plex Mono", monospace;
 }
 
-// Layout styles
-main {
+// Layout styles for clinical pages (not registration)
+main:not(.registration-page) {
   padding-top: 3rem;
   padding-left: 0 !important;
   padding-right: 0 !important;
+}
+
+// Registration page specific styles
+.registration-page {
+  height: 100vh;
+  overflow: hidden;
 }
