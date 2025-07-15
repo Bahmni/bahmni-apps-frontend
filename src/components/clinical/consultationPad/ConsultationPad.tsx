@@ -237,28 +237,26 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       onSecondaryButtonClick={handleOnSecondaryButtonClick}
       content={
         hasError ? (
-          <>
-            <Grid className={styles.emptyState}>
-              <Column
-                sm={4}
-                md={8}
-                lg={16}
-                xlg={16}
-                className={styles.emptyStateTitle}
-              >
-                {t('CONSULTATION_PAD_ERROR_TITLE')}
-              </Column>
-              <Column
-                sm={4}
-                md={8}
-                lg={16}
-                xlg={16}
-                className={styles.emptyStateBody}
-              >
-                {t('CONSULTATION_PAD_ERROR_BODY')}
-              </Column>
-            </Grid>
-          </>
+          <Grid className={styles.emptyState}>
+            <Column
+              sm={4}
+              md={8}
+              lg={16}
+              xlg={16}
+              className={styles.emptyStateTitle}
+            >
+              {t('CONSULTATION_PAD_ERROR_TITLE')}
+            </Column>
+            <Column
+              sm={4}
+              md={8}
+              lg={16}
+              xlg={16}
+              className={styles.emptyStateBody}
+            >
+              {t('CONSULTATION_PAD_ERROR_BODY')}
+            </Column>
+          </Grid>
         ) : (
           <>
             <BasicForm />

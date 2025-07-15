@@ -119,13 +119,11 @@ const HeaderWSideNav: React.FC<HeaderWSideNavProps> = ({
   return (
     <HeaderContainer
       render={() => (
-        <>
-          <Header aria-label={ariaLabel} data-testid="header">
-            {renderBreadcrumbs()}
-            {renderGlobalActions()}
-            {renderSideNav()}
-          </Header>
-        </>
+        <Header aria-label={ariaLabel} data-testid="header">
+          {renderBreadcrumbs()}
+          {renderGlobalActions()}
+          {renderSideNav()}
+        </Header>
       )}
     />
   );

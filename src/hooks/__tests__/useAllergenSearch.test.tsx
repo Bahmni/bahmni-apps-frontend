@@ -40,9 +40,7 @@ const mockClinicalConfig = {
 };
 
 // Mock the clinical config context
-const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <>{children}</>
-);
+const wrapper = ({ children }: { children: React.ReactNode }) => children;
 
 // Mock the api.get function
 const mockApiGet = api.get as jest.MockedFunction<typeof api.get>;

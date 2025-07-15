@@ -87,6 +87,7 @@ describe('SelectedAllergyItem', () => {
         expect(
           screen.getByText(`Peanut Allergy [${i18n.t(i18nKey)}]`),
         ).toBeInTheDocument();
+        // eslint-disable-next-line react/jsx-no-useless-fragment
         rerender(<></>);
       });
     });

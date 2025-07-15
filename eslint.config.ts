@@ -33,7 +33,7 @@ const config = [
   prettierConfig,
 
   {
-    files: ['**/*.{js,mjs,cjs,ts,jsx,tsx}'],
+    files: ['**/*.{js,ts,jsx,tsx}'],
     plugins: {
       react: pluginReact,
       'react-hooks': pluginReactHooks,
@@ -83,21 +83,34 @@ const config = [
         },
       ],
 
+      // React rules optimized for performance
       'react/jsx-filename-extension': ['error', { extensions: ['.tsx'] }],
       'react/jsx-pascal-case': 'error',
       'react/jsx-closing-bracket-location': 'error',
       'react/jsx-curly-spacing': ['error', 'never'],
       'react/jsx-boolean-value': ['error', 'never'],
+      'react/jsx-no-useless-fragment': 'error',
+      'react/jsx-key': 'error',
       'react/no-array-index-key': 'error',
       'react/self-closing-comp': 'error',
+      'react/no-unused-prop-types': 'error',
+      'react/prop-types': ['error', { skipUndeclared: true }],
+      // 'react/prop-types': 'off', // TypeScript handles prop validation
+
+      // React Hooks
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
+
+      // Accessibility (essential rules only for performance)
       'jsx-a11y/alt-text': 'error',
       'jsx-a11y/img-redundant-alt': 'error',
       'jsx-a11y/aria-role': 'error',
       'jsx-a11y/no-access-key': 'error',
+      'jsx-a11y/anchor-is-valid': 'error',
+
+      // Console usage - environment aware
       'no-console': 'error',
-      'react/prop-types': ['error', { skipUndeclared: true }],
+      // 'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'warn',
 
       // Prettier integration
       'prettier/prettier': 'error',

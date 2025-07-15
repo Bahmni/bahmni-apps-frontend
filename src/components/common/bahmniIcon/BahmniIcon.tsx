@@ -55,7 +55,7 @@ const BahmniIcon: React.FC<BahmniIconProps> = ({
   padding = ICON_PADDING.XXSMALL,
 }) => {
   if (!name || !/^fas?-[a-zA-Z0-9_-]+$/.test(name)) {
-    return <></>;
+    return;
   }
 
   const getPaddingClass = (padding: ICON_PADDING): string => {

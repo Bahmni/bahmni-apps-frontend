@@ -393,7 +393,7 @@ describe('ConsultationPage', () => {
       const fallback = (global as any).suspenseFallback;
 
       // Render the fallback to check its structure
-      const { container } = render(<>{fallback}</>);
+      const { container } = render(fallback);
       const loadingElement = container.querySelector(
         '[data-testid="carbon-loading"]',
       );

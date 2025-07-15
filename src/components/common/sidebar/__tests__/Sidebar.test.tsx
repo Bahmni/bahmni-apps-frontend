@@ -80,7 +80,6 @@ jest.mock('@components/common/bahmniIcon/BahmniIcon', () => {
     id: string;
     name: string;
     color: string;
-    size: string;
   }) {
     return (
       <div
