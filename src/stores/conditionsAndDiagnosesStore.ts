@@ -82,8 +82,7 @@ const validateDiagnosisId = (id: string): boolean => {
 
 const validateConcept = (concept: ConceptSearch): boolean => {
   return !!(
-    concept &&
-    concept.conceptUuid &&
+    concept?.conceptUuid &&
     concept.conceptName &&
     concept.conceptUuid.trim().length > 0 &&
     concept.conceptName.trim().length > 0

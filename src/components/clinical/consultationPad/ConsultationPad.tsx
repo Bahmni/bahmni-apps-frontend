@@ -97,8 +97,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   // Data validation check for consultation submission
   const canSubmitConsultation = !!(
     patientUUID &&
-    practitioner &&
-    practitioner.uuid &&
+    practitioner?.uuid &&
     activeVisit &&
     selectedLocation &&
     selectedEncounterType &&

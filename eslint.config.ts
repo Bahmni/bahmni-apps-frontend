@@ -83,6 +83,9 @@ const config = [
         },
       ],
 
+      '@typescript-eslint/prefer-nullish-coalescing': 'off', //Can be updated to error by resolving all errors
+      '@typescript-eslint/prefer-optional-chain': 'error',
+
       // React rules optimized for performance
       'react/jsx-filename-extension': ['error', { extensions: ['.tsx'] }],
       'react/jsx-pascal-case': 'error',

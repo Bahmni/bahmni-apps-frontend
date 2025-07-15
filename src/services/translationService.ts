@@ -28,7 +28,7 @@ export const getTranslationFile = async (
 ): Promise<Record<string, string>> => {
   try {
     const response = await axios.get(url);
-    if (!response || !response.data) {
+    if (!response?.data) {
       // eslint-disable-next-line no-console
       console.error(`Invalid response from ${url}`);
       return {};

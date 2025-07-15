@@ -72,12 +72,7 @@ function getRoute(
   dosageInstruction: FhirMedicationRequest['dosageInstruction'],
 ): string {
   const route = dosageInstruction?.[0]?.route;
-  if (
-    route &&
-    Array.isArray(route.coding) &&
-    route.coding[0] &&
-    route.coding[0].display
-  ) {
+  if (route && Array.isArray(route.coding) && route.coding[0]?.display) {
     return route.coding[0].display;
   }
   return '';

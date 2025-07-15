@@ -47,8 +47,7 @@ export const calculateTotalQuantity = (
     dosage <= 0 ||
     duration <= 0 ||
     !durationUnit ||
-    !frequency ||
-    !frequency.frequencyPerDay ||
+    !frequency?.frequencyPerDay ||
     frequency.frequencyPerDay === 0
   ) {
     return 0;
@@ -61,7 +60,7 @@ export const calculateTotalQuantity = (
 
 const getDrugFormName = (medication: Medication): string | undefined => {
   const medicationForm = medication?.form;
-  if (!medicationForm || !medicationForm.text) {
+  if (!medicationForm?.text) {
     return undefined;
   }
   return medicationForm.text;

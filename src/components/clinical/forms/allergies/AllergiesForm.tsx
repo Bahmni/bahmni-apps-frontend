@@ -48,12 +48,7 @@ const AllergiesForm: React.FC = React.memo(() => {
       | { uuid: string; display: string; type: null; disabled: boolean }
       | null,
   ) => {
-    if (
-      !selectedItem ||
-      !selectedItem.uuid ||
-      !selectedItem.display ||
-      !selectedItem.type
-    ) {
+    if (!selectedItem?.uuid || !selectedItem.display || !selectedItem.type) {
       return;
     }
 

@@ -42,7 +42,7 @@ const PatientDetails: React.FC = () => {
     : null;
 
   const formattedAge =
-    formattedPatient.age && formattedPatient.age.years !== undefined
+    formattedPatient.age?.years !== undefined
       ? `${formattedPatient.age.years} ${t('CLINICAL_YEARS_TRANSLATION_KEY', { count: formattedPatient.age.years })}, ${formattedPatient.age.months} ${t('CLINICAL_MONTHS_TRANSLATION_KEY', { count: formattedPatient.age.months })}, ${formattedPatient.age.days} ${t('CLINICAL_DAYS_TRANSLATION_KEY', { count: formattedPatient.age.days })}`
       : null;
 

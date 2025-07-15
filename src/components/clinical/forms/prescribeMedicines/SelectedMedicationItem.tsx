@@ -84,8 +84,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
 
       const setDefaultInstruction = useCallback(() => {
         if (
-          !medicationConfig ||
-          !medicationConfig.dosingInstructions ||
+          !medicationConfig?.dosingInstructions ||
           medicationConfig.dosingInstructions.length === 0 ||
           !medicationConfig.defaultInstructions
         ) {
@@ -103,8 +102,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
 
       const setDefaultDurationUnit = useCallback(() => {
         if (
-          !medicationConfig ||
-          !medicationConfig.durationUnits ||
+          !medicationConfig?.durationUnits ||
           medicationConfig.durationUnits.length === 0 ||
           !medicationConfig.defaultDurationUnit
         ) {
@@ -122,8 +120,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
 
       useEffect(() => {
         if (
-          !medicationConfig ||
-          !medicationConfig.drugFormDefaults ||
+          !medicationConfig?.drugFormDefaults ||
           !medicationConfig.routes ||
           !medicationConfig.doseUnits
         ) {
@@ -393,7 +390,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               value={startDate}
               minDate={getTodayDate()}
               onChange={(date) => {
-                if (date && date[0] && date[0] > getTodayDate()) {
+                if (date?.[0] && date[0] > getTodayDate()) {
                   updateStartDate(id, date[0]);
                 }
               }}

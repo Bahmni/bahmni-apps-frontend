@@ -51,11 +51,7 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
   };
 
   const handleOnChange = (selectedItem: ConceptSearch) => {
-    if (
-      !selectedItem ||
-      !selectedItem.conceptUuid ||
-      !selectedItem.conceptName
-    ) {
+    if (!selectedItem?.conceptUuid || !selectedItem.conceptName) {
       return;
     }
 

@@ -76,7 +76,7 @@ export function createDiagnosisBundleEntries({
     throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_DIAGNOSIS_PARAMS);
   }
 
-  if (!encounterSubject || !encounterSubject.reference) {
+  if (!encounterSubject?.reference) {
     throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_SUBJECT);
   }
 
@@ -91,11 +91,7 @@ export function createDiagnosisBundleEntries({
   const diagnosisEntries: BundleEntry[] = [];
 
   for (const diagnosis of selectedDiagnoses) {
-    if (
-      !diagnosis ||
-      !diagnosis.selectedCertainty ||
-      !diagnosis.selectedCertainty.code
-    ) {
+    if (!diagnosis?.selectedCertainty?.code) {
       throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_DIAGNOSIS_PARAMS);
     }
     const diagnosisResourceURL = `urn:uuid:${crypto.randomUUID()}`;
@@ -142,7 +138,7 @@ export function createAllergiesBundleEntries({
     throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ALLERGY_PARAMS);
   }
 
-  if (!encounterSubject || !encounterSubject.reference) {
+  if (!encounterSubject?.reference) {
     throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_SUBJECT);
   }
 
@@ -158,9 +154,7 @@ export function createAllergiesBundleEntries({
 
   for (const allergy of selectedAllergies) {
     if (
-      !allergy ||
-      !allergy.selectedSeverity ||
-      !allergy.selectedSeverity.code ||
+      !allergy?.selectedSeverity?.code ||
       !allergy.selectedReactions ||
       allergy.selectedReactions.length === 0
     ) {
@@ -212,7 +206,7 @@ export function createServiceRequestBundleEntries({
   practitionerUUID,
 }: CreateServiceRequestBundleEntriesParams): BundleEntry[] {
   const serviceRequestEntries: BundleEntry[] = [];
-  if (!encounterSubject || !encounterSubject.reference) {
+  if (!encounterSubject?.reference) {
     throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_SUBJECT);
   }
 
@@ -264,7 +258,7 @@ export function createConditionsBundleEntries({
     throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
   }
 
-  if (!encounterSubject || !encounterSubject.reference) {
+  if (!encounterSubject?.reference) {
     throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_SUBJECT);
   }
 
@@ -332,7 +326,7 @@ export function createMedicationRequestEntries({
     throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
   }
 
-  if (!encounterSubject || !encounterSubject.reference) {
+  if (!encounterSubject?.reference) {
     throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_SUBJECT);
   }
 
