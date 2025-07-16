@@ -83,7 +83,7 @@ const config = [
         },
       ],
 
-      '@typescript-eslint/prefer-nullish-coalescing': 'off', //Can be updated to error by resolving all errors
+      '@typescript-eslint/prefer-nullish-coalescing': 'error',
       '@typescript-eslint/prefer-optional-chain': 'error',
 
       // React rules optimized for performance
