@@ -110,7 +110,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
     <div className={className} data-testid="expandable-data-table">
       <Accordion align="start">
         <AccordionItem title={tableTitle} open={isOpen}>
-          <DataTable rows={dataTableRows} headers={headers} size="sm">
+          <DataTable rows={dataTableRows} headers={headers} size="md">
             {({
               rows: tableRows,
               headers: tableHeaders,
@@ -124,7 +124,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
                   {...getTableProps()}
                   key={generateId()}
                   aria-label={ariaLabel}
-                  size="sm"
+                  size="md"
                 >
                   <TableHead className={'displayControlHeaders'}>
                     <TableRow>

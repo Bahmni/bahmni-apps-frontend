@@ -173,7 +173,7 @@ exports[`MedicationsTable Snapshots matches snapshot for active medications tab 
         >
           <table
             aria-label="Medications table"
-            class="cds--data-table cds--data-table--lg cds--data-table--sort cds--data-table--visible-overflow-menu"
+            class="cds--data-table cds--data-table--md cds--data-table--sort cds--data-table--visible-overflow-menu"
           >
             <thead>
               <tr>
@@ -695,7 +695,7 @@ exports[`MedicationsTable Snapshots matches snapshot for active medications tab 
                 >
                   <table
                     aria-label="January 15, 2024"
-                    class="cds--data-table cds--data-table--sm cds--data-table--visible-overflow-menu"
+                    class="cds--data-table cds--data-table--md cds--data-table--visible-overflow-menu"
                   >
                     <thead
                       class="displayControlHeaders"
@@ -1343,7 +1343,7 @@ exports[`MedicationsTable Snapshots matches snapshot for all medications tab wit
         >
           <table
             aria-label="Medications table"
-            class="cds--data-table cds--data-table--lg cds--data-table--sort cds--data-table--visible-overflow-menu"
+            class="cds--data-table cds--data-table--md cds--data-table--sort cds--data-table--visible-overflow-menu"
           >
             <thead>
               <tr>
@@ -1803,7 +1803,7 @@ exports[`MedicationsTable Snapshots matches snapshot for all medications tab wit
                 >
                   <table
                     aria-label="January 15, 2024"
-                    class="cds--data-table cds--data-table--sm cds--data-table--visible-overflow-menu"
+                    class="cds--data-table cds--data-table--md cds--data-table--visible-overflow-menu"
                   >
                     <thead
                       class="displayControlHeaders"
@@ -2263,7 +2263,7 @@ exports[`MedicationsTable Snapshots matches snapshot for all medications tab wit
                 >
                   <table
                     aria-label="January 14, 2024"
-                    class="cds--data-table cds--data-table--sm cds--data-table--visible-overflow-menu"
+                    class="cds--data-table cds--data-table--md cds--data-table--visible-overflow-menu"
                   >
                     <thead
                       class="displayControlHeaders"
@@ -2723,7 +2723,7 @@ exports[`MedicationsTable Snapshots matches snapshot for all medications tab wit
                 >
                   <table
                     aria-label="January 08, 2024"
-                    class="cds--data-table cds--data-table--sm cds--data-table--visible-overflow-menu"
+                    class="cds--data-table cds--data-table--md cds--data-table--visible-overflow-menu"
                   >
                     <thead
                       class="displayControlHeaders"
