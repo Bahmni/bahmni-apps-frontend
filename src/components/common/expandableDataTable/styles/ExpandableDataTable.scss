@@ -1,5 +1,17 @@
 @use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
+
+.displayControlHeaders {
+  border-top: 1px solid $cool-gray-10;
+  background-color: $white !important;
+
+  * {
+    font-weight: normal !important;
+    background-color: $white !important;
+    color: $gray-50;
+  }
+}
 
 .criticalCell {
   color: #da1e28 !important;
