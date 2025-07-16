@@ -4,17 +4,8 @@ import React from 'react';
 import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import i18n from '@/setupTests.i18n';
-import ConsultationPad from '../ConsultationPad';
-import { NotificationProvider } from '@providers/NotificationProvider';
-import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
-import * as consultationBundleService from '@services/consultationBundleService';
-import { getLocations } from '@services/locationService';
-import { getEncounterConcepts } from '@services/encounterConceptsService';
-import { getCurrentProvider } from '@services/providerService';
-import { getCurrentUser } from '@services/userService';
-import { getActiveVisit } from '@services/encounterService';
-import { User } from '@/types/user';
 import { FhirEncounter, FhirEncounterType } from '@/types/encounter';
+import { User } from '@/types/user';
 import {
   mockLocations,
   mockEncounterConcepts,
@@ -23,6 +14,7 @@ import {
 } from '@__mocks__/consultationPadMocks';
 import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
 import { NotificationProvider } from '@providers/NotificationProvider';
+import { logEncounterEdit } from '@services/auditLogService';
 import * as consultationBundleService from '@services/consultationBundleService';
 import { getEncounterConcepts } from '@services/encounterConceptsService';
 import { getActiveVisit } from '@services/encounterService';
@@ -35,7 +27,6 @@ import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesSt
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 import useServiceRequestStore from '@stores/serviceRequestStore';
 import ConsultationPad from '../ConsultationPad';
-import { logEncounterEdit } from '@services/auditLogService';
 
 const mockLogEncounterEdit = logEncounterEdit as jest.MockedFunction<
   typeof logEncounterEdit

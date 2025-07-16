@@ -1,14 +1,14 @@
-import client from './api';
-import { isAuditLogEnabled } from './globalPropertyService';
+import i18next from 'i18next';
 import { AUDIT_LOG_URL } from '@constants/app';
 import { AUDIT_LOG_EVENT_DETAILS, MODULE_LABELS } from '@constants/auditLog';
 import { AUDIT_LOG_ERROR_MESSAGES } from '@constants/errors';
-import i18next from 'i18next';
 import {
   AuditLogEntry,
   AuditLogResponse,
   AuditEventType,
 } from '../types/auditLog';
+import client from './api';
+import { isAuditLogEnabled } from './globalPropertyService';
 
 /**
  * Log an audit event

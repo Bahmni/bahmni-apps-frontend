@@ -1,15 +1,15 @@
 import { Section } from '@carbon/react';
 import React, { useEffect, useRef } from 'react';
-import { DashboardSectionConfig } from '../../../types/dashboardConfig';
-import DashboardSection from '../dashboardSection/DashboardSection';
-import { usePatientUUID } from '@hooks/usePatientUUID';
-import { logDashboardView } from '@services/auditLogService';
-import * as styles from './styles/DashboardContainer.module.scss';
 import { useTranslation } from 'react-i18next';
 import {
   AUDIT_LOG_ERROR_MESSAGES,
   AUDIT_LOG_MESSAGES,
 } from '@/constants/errors';
+import { usePatientUUID } from '@hooks/usePatientUUID';
+import { logDashboardView } from '@services/auditLogService';
+import { DashboardSectionConfig } from '../../../types/dashboardConfig';
+import DashboardSection from '../dashboardSection/DashboardSection';
+import * as styles from './styles/DashboardContainer.module.scss';
 
 // TODO: The name is confusing for someone without project context, consider renaming
 export interface DashboardContainerProps {

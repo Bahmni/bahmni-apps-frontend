@@ -1,8 +1,8 @@
-import { get } from './api';
+import i18next from 'i18next';
 import { GLOBAL_PROPERTY_URL } from '@constants/app';
 import { AUDIT_LOG_GLOBAL_PROPERTY } from '@constants/auditLog';
 import { AUDIT_LOG_ERROR_MESSAGES } from '@constants/errors';
-import i18next from 'i18next';
+import { get } from './api';
 
 // The API returns the raw value directly, not wrapped in an object
 type GlobalPropertyResponse = string | boolean | number;
@@ -24,7 +24,7 @@ export const getGlobalProperty = async (
 ): Promise<string | null> => {
   try {
     if (globalPropertyCache.has(property)) {
-      return globalPropertyCache.get(property) || null;
+      return globalPropertyCache.get(property) ?? null;
     }
     const response = await get<GlobalPropertyResponse>(
       `${GLOBAL_PROPERTY_URL}?property=${property}`,
