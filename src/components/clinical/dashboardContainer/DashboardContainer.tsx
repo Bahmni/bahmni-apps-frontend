@@ -58,7 +58,7 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
 
   return (
     <Section>
-      <Grid>
+      <Grid className={styles.sectionContainer}>
         {sections.map((section) => (
           <Column
             lg={16}
