@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import ConsultationPad from '@components/clinical/consultationPad/ConsultationPad';
 import DashboardContainer from '@components/clinical/dashboardContainer/DashboardContainer';
 import PatientHeader from '@components/clinical/patientHeader/PatientHeader';
+import ConsultationActionButton from '@components/clinical/consultationAction/ConsultationActionButton';
 import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
 import HeaderWSideNav from '@components/common/headerWSideNav/HeaderWSideNav';
 import { BAHMNI_CLINICAL_PATH, BAHMNI_HOME_PATH } from '@constants/app';
@@ -116,26 +117,29 @@ const ConsultationPage: React.FC = () => {
           isRail={isActionAreaVisible}
         />
       }
-      patientHeader={
-        <PatientHeader
-          isActionAreaVisible={isActionAreaVisible}
-          setIsActionAreaVisible={setIsActionAreaVisible}
-        />
-      }
+      patientHeader={<PatientHeader />}
       mainDisplay={
-        <Suspense
-          fallback={
-            <Loading
-              description={t('LOADING_DASHBOARD_CONTENT')}
-              role="status"
+        
+          <div style={{ padding: '1rem', borderBottom: '1px solid #e0e0e0' }}>
+            <ConsultationActionButton
+              isActionAreaVisible={isActionAreaVisible}
+              setIsActionAreaVisible={setIsActionAreaVisible}
             />
-          }
-        >
-          <DashboardContainer
-            sections={dashboardConfig.sections}
-            activeItemId={activeItemId}
-          />
-        </Suspense>
+          
+          <Suspense
+            fallback={
+              <Loading
+                description={t('LOADING_DASHBOARD_CONTENT')}
+                role="status"
+              />
+            }
+          >
+            <DashboardContainer
+              sections={dashboardConfig.sections}
+              activeItemId={activeItemId}
+            />
+          </Suspense>
+        </div>
       }
       isActionAreaVisible={isActionAreaVisible}
       actionArea={
