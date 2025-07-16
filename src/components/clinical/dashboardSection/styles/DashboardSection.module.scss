@@ -17,3 +17,8 @@
   box-shadow: 0px 1px 1px 1px $border-subtle-02 !important;
   min-block-size: fit-content !important;
 }
+
+.divider {
+  height: $spacing-07;
+  background-color: $layer-01;
+}
