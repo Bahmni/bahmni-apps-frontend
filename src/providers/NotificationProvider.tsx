@@ -5,8 +5,8 @@ import React, {
   useMemo,
   ReactNode,
 } from 'react';
-import { NotificationContext } from '@contexts/NotificationContext';
 import { NotificationContainer } from '@components/common/notification/NotificationContainer';
+import { NotificationContext } from '@contexts/NotificationContext';
 import { Notification } from '@types/notification';
 import { generateId } from '@utils/common';
 
@@ -57,7 +57,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> =
           timeoutsRef.delete(id);
         }
       },
-      [notifications],
+      [notifications, timeoutsRef],
     );
 
     const clearAllNotifications = useCallback((): void => {
@@ -67,7 +67,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> =
       timeoutsRef.clear();
 
       setNotifications([]);
-    }, [notifications]);
+    }, [notifications, timeoutsRef]);
 
     useEffect(() => {
       notifications.forEach(({ id, timeout }) => {
@@ -81,7 +81,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> =
         timeoutsRef.forEach((timeout) => clearTimeout(timeout));
         timeoutsRef.clear();
       };
-    }, [notifications, removeNotification]);
+    }, [notifications, removeNotification, timeoutsRef]);
 
     return (
       <NotificationContext.Provider

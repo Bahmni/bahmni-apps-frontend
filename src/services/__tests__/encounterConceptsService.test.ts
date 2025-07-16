@@ -1,12 +1,12 @@
-import { get } from '../api';
-import { getEncounterConcepts } from '../encounterConceptsService';
+import i18n from '@/setupTests.i18n';
 import { ENCOUNTER_CONCEPTS_URL } from '@constants/app';
 import { COMMON_ERROR_MESSAGES } from '@constants/errors';
 import {
   EncounterConceptsResponse,
   EncounterConcepts,
 } from '@types/encounterConcepts';
-import i18n from '@/setupTests.i18n';
+import { get } from '../api';
+import { getEncounterConcepts } from '../encounterConceptsService';
 
 // Mock dependencies
 jest.mock('../api');

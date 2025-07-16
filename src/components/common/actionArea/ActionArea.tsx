@@ -1,8 +1,8 @@
-import React, { ReactNode } from 'react';
 import { Button, ButtonSet } from '@carbon/react';
-import * as styles from './styles/ActionArea.module.scss';
 import classNames from 'classnames';
+import React, { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import * as styles from './styles/ActionArea.module.scss';
 
 /**
  * ActionArea component props
@@ -53,7 +53,7 @@ const ActionArea: React.FC<ActionAreaProps> = ({
       : styles.twoButtons;
 
   // Determine accessible label for the component
-  const accessibleLabel = ariaLabel || 'Action Area';
+  const accessibleLabel = ariaLabel ?? 'Action Area';
 
   return (
     <div

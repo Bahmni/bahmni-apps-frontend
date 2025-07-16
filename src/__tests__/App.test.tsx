@@ -1,9 +1,9 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
+import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
-import App from '../App';
 import ConsultationPage from '@pages/ConsultationPage';
 import NotFoundPage from '@pages/NotFoundPage';
+import App from '../App';
 
 jest.mock('@pages/ConsultationPage', () => {
   return jest.fn(() => <div data-testid="mock-home-page">Home Page</div>);

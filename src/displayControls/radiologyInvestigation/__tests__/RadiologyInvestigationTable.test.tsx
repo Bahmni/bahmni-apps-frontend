@@ -1,11 +1,11 @@
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import RadiologyInvestigationTable from '../RadiologyInvestigationTable';
+import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
+import i18n from '@/setupTests.i18n';
+import { createMockRadiologyInvestigation } from '@__mocks__/radiologyInvestigationMocks';
 import { useRadiologyInvestigation } from '@hooks/useRadiologyInvestigation';
 import { RadiologyInvestigation } from '@types/radiologyInvestigation';
-import i18n from '@/setupTests.i18n';
-import { axe, toHaveNoViolations } from 'jest-axe';
-import { createMockRadiologyInvestigation } from '@__mocks__/radiologyInvestigationMocks';
+import RadiologyInvestigationTable from '../RadiologyInvestigationTable';
 
 expect.extend(toHaveNoViolations);
 

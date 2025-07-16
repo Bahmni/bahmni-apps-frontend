@@ -1,9 +1,9 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Diagnosis } from '@types/diagnosis';
-import { getPatientDiagnoses } from '@services/diagnosesService';
-import { usePatientUUID } from './usePatientUUID';
-import { getFormattedError } from '@utils/common';
 import { useTranslation } from 'react-i18next';
+import { getPatientDiagnoses } from '@services/diagnosesService';
+import { Diagnosis } from '@types/diagnosis';
+import { getFormattedError } from '@utils/common';
+import { usePatientUUID } from './usePatientUUID';
 
 interface UseDiagnosesResult {
   diagnoses: Diagnosis[];

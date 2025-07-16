@@ -1,14 +1,14 @@
-import React, { useState, useMemo } from 'react';
 import { ComboBox, Tile } from '@carbon/react';
+import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import * as styles from './styles/AllergiesForm.module.scss';
-import SelectedItem from '@components/common/selectedItem/SelectedItem';
 import BoxWHeader from '@components/common/boxWHeader/BoxWHeader';
-import { AllergenConcept } from '@types/concepts';
-import SelectedAllergyItem from './SelectedAllergyItem';
+import SelectedItem from '@components/common/selectedItem/SelectedItem';
 import useAllergenSearch from '@hooks/useAllergenSearch';
 import { useAllergyStore } from '@stores/allergyStore';
+import { AllergenConcept } from '@types/concepts';
 import { getCategoryDisplayName } from '@utils/allergy';
+import SelectedAllergyItem from './SelectedAllergyItem';
+import * as styles from './styles/AllergiesForm.module.scss';
 
 /**
  * AllergiesForm component
@@ -42,15 +42,20 @@ const AllergiesForm: React.FC = React.memo(() => {
     setSearchAllergenTerm(searchTerm);
   };
 
-  const handleOnChange = (selectedItem: AllergenConcept) => {
-    if (!selectedItem || !selectedItem.uuid || !selectedItem.display) {
+  const handleOnChange = (
+    selectedItem:
+      | AllergenConcept
+      | { uuid: string; display: string; type: null; disabled: boolean }
+      | null,
+  ) => {
+    if (!selectedItem?.uuid || !selectedItem.display || !selectedItem.type) {
       return;
     }
 
-    addAllergy(selectedItem);
+    addAllergy(selectedItem as AllergenConcept);
   };
 
-  const getFilteredSearchResults = () => {
+  const filteredSearchResults = useMemo(() => {
     if (searchAllergenTerm.length === 0) return [];
     if (isLoading) {
       return [
@@ -99,10 +104,6 @@ const AllergiesForm: React.FC = React.memo(() => {
         disabled: isAlreadySelected,
       };
     });
-  };
-
-  const filteredSearchResults = useMemo(() => {
-    return getFilteredSearchResults();
   }, [
     isLoading,
     searchResults,

@@ -1,5 +1,6 @@
-import { get } from './api';
+import { Bundle, ServiceRequest } from 'fhir/r4';
 import { PATIENT_LAB_INVESTIGATION_RESOURCE_URL } from '@constants/app';
+import { FHIR_LAB_ORDER_CONCEPT_TYPE_EXTENSION_URL } from '@constants/fhir';
 import {
   FormattedLabTest,
   LabTestPriority,
@@ -7,9 +8,8 @@ import {
 } from '@types/labInvestigation';
 import { getFormattedError } from '@utils/common';
 import { formatDate } from '@utils/date';
+import { get } from './api';
 import notificationService from './notificationService';
-import { Bundle, ServiceRequest } from 'fhir/r4';
-import { FHIR_LAB_ORDER_CONCEPT_TYPE_EXTENSION_URL } from '@constants/fhir';
 
 /**
  * Maps a FHIR priority code to LabTestPriority enum
@@ -33,7 +33,7 @@ function filterLabTestEntries(labTestBundle: Bundle<ServiceRequest>) {
   //Collect all IDs that are being replaced
   const replacedIds = new Set(
     labTestBundle.entry
-      .flatMap((entry) => entry.resource?.replaces || [])
+      .flatMap((entry) => entry.resource?.replaces ?? [])
       .map((ref) => ref.reference?.split('/').pop()) // extract ID from reference like "ServiceRequest/xyz"
       .filter(Boolean), // remove undefined/null
   );
@@ -80,7 +80,7 @@ export async function getLabTests(
     return (
       fhirLabTestBundle.entry
         ?.map((entry) => entry.resource)
-        .filter((r): r is ServiceRequest => r !== undefined) || []
+        .filter((r): r is ServiceRequest => r !== undefined) ?? []
     );
   } catch (error) {
     const { title, message } = getFormattedError(error);

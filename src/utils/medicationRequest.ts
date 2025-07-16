@@ -1,9 +1,9 @@
+import { parseISO } from 'date-fns';
 import {
   MedicationRequest,
   FormattedMedicationRequest,
 } from '@types/medicationRequest';
 import { getPriorityByOrder } from './common';
-import { parseISO } from 'date-fns';
 
 /**
  * Priority order for medication status levels (case insensitive)
@@ -144,7 +144,7 @@ export function formatMedicationRequest(
   if (frequency) {
     dosageParts.push(frequency);
   }
-  if (duration && duration.durationUnit) {
+  if (duration?.durationUnit) {
     dosageParts.push(
       `${duration.duration} ${formatMedicationRequestDate(duration.durationUnit as 's' | 'min' | 'h' | 'd' | 'wk' | 'mo' | 'a')}`,
     );

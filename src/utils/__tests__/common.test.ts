@@ -1,3 +1,5 @@
+import axios, { AxiosError } from 'axios';
+import i18n from '@/setupTests.i18n';
 import {
   capitalize,
   generateId,
@@ -8,8 +10,6 @@ import {
   groupByDate,
   filterReplacementEntries,
 } from '../common';
-import axios, { AxiosError } from 'axios';
-import i18n from '@/setupTests.i18n';
 
 jest.mock('axios', () => ({
   isAxiosError: jest.fn(),

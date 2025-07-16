@@ -1,10 +1,10 @@
+import { Reference } from 'fhir/r4';
+import { HL7_CONDITION_VERIFICATION_STATUS_CODE_SYSTEM } from '@constants/fhir';
+import { createCodeableConcept, createCoding } from '../codeableConceptCreator';
 import {
   createEncounterDiagnosisResource,
   createEncounterConditionResource,
 } from '../conditionResourceCreator';
-import { createCodeableConcept, createCoding } from '../codeableConceptCreator';
-import { HL7_CONDITION_VERIFICATION_STATUS_CODE_SYSTEM } from '@constants/fhir';
-import { Reference } from 'fhir/r4';
 
 // Mock the dependencies
 jest.mock('../codeableConceptCreator');

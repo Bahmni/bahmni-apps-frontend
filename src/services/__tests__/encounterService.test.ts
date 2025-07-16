@@ -1,11 +1,11 @@
+import { mockVisitBundle, mockActiveVisit } from '@__mocks__/encounterMocks';
+import { PATIENT_VISITS_URL } from '@constants/app';
 import { get } from '@services/api';
 import {
   getPatientVisits,
   getVisits,
   getActiveVisit,
 } from '@services/encounterService';
-import { PATIENT_VISITS_URL } from '@constants/app';
-import { mockVisitBundle, mockActiveVisit } from '@__mocks__/encounterMocks';
 
 jest.mock('@services/api');
 const mockedGet = get as jest.MockedFunction<typeof get>;
@@ -73,7 +73,7 @@ describe('encounterService', () => {
             ...entry.resource,
             period: {
               ...entry.resource.period,
-              end: entry.resource.period.end || '2025-04-09T10:14:51+00:00',
+              end: entry.resource.period.end ?? '2025-04-09T10:14:51+00:00',
             },
           },
         })),

@@ -1,15 +1,15 @@
 import { ValueSet, ValueSetExpansionContains } from 'fhir/r4';
-import { FlattenedInvestigations } from '@types/investigations';
-import { searchFHIRConceptsByName } from './conceptService';
+import i18next from 'i18next';
 import {
   ALL_ORDERABLES_CONCEPT_NAME,
   ORDER_TYPE_URL,
   PANEL_CONCEPT_CLASS_NAME,
 } from '@constants/app';
-import i18next from 'i18next';
-import { get } from './api';
-import { OrderType, OrderTypeResponse } from '@types/orderType';
 import { FHIR_CONCEPT_CLASS_EXTENSION_URL } from '@constants/fhir';
+import { FlattenedInvestigations } from '@types/investigations';
+import { OrderType, OrderTypeResponse } from '@types/orderType';
+import { get } from './api';
+import { searchFHIRConceptsByName } from './conceptService';
 
 const fetchInvestigations = async (): Promise<ValueSet> => {
   return await searchFHIRConceptsByName(ALL_ORDERABLES_CONCEPT_NAME);
@@ -22,7 +22,7 @@ const getOrderTypes = async (): Promise<OrderTypeResponse> => {
 const getInvestigationDisplay = (
   investigation: ValueSetExpansionContains,
 ): string => {
-  let investigationDisplay = investigation.display || 'Unknown investigation';
+  let investigationDisplay = investigation.display ?? 'Unknown investigation';
   if (getConceptClassName(investigation) === PANEL_CONCEPT_CLASS_NAME) {
     investigationDisplay += ` (${i18next.t('INVESTIGATION_PANEL')})`;
   }
@@ -47,7 +47,7 @@ const getConceptClassName = (
   const extension = investigation.extension?.find(
     (ext) => ext.url === FHIR_CONCEPT_CLASS_EXTENSION_URL,
   );
-  return extension ? extension.valueString || '' : '';
+  return extension ? (extension.valueString ?? '') : '';
 };
 
 const flattenInvestigations = (
@@ -84,7 +84,7 @@ const flattenInvestigations = (
 
         if (!isAlreadyAdded) {
           results.push({
-            code: investigation.code || '',
+            code: investigation.code ?? '',
             display: getInvestigationDisplay(investigation),
             category: orderType.display,
             categoryCode: orderType.uuid,

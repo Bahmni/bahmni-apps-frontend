@@ -1,9 +1,9 @@
-import React from 'react';
 import { SideNav, SideNavItems, SideNavLink } from '@carbon/react';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
 import { ICON_SIZE } from '@constants/icon';
 import * as styles from './styles/Sidebar.module.scss';
-import { useTranslation } from 'react-i18next';
 
 /**
  * Interface defining the properties for sidebar items.

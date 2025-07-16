@@ -1,6 +1,6 @@
-import { get } from './api';
 import { PATIENT_VISITS_URL } from '@constants/app';
 import { FhirEncounter, FhirEncounterBundle } from '@types/encounter';
+import { get } from './api';
 
 /**
  * Fetches visits for a given patient UUID from the FHIR R4 endpoint
@@ -32,5 +32,5 @@ export async function getActiveVisit(
   patientUUID: string,
 ): Promise<FhirEncounter | null> {
   const encounters = await getVisits(patientUUID);
-  return encounters.find((encounter) => !encounter.period.end) || null;
+  return encounters.find((encounter) => !encounter.period.end) ?? null;
 }

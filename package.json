@@ -8,6 +8,7 @@
     "preview": "webpack serve --mode production --open",
     "lint": "eslint --ext .ts,.tsx src/",
     "lint:fix": "eslint --ext .ts,.tsx src/ --fix",
+    "lint:styles": "stylelint 'src/**/*.{css,scss}' --config stylelint.config.js",
     "prettier:check": "prettier --check src/",
     "prettier:fix": "prettier --write src/",
     "test": "jest --coverage --collectCoverageFrom='src/**/*.{js,jsx,ts,tsx}'",
@@ -62,6 +63,7 @@
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/carbon__layout": "^0.0.3",
+    "@types/eslint-plugin-jsx-a11y": "^6.10.0",
     "@types/jest": "^29.5.12",
     "@types/jest-axe": "^3.5.9",
     "@types/node": "^22.13.10",
@@ -74,6 +76,12 @@
     "css-loader": "^7.1.2",
     "eslint": "^9.22.0",
     "eslint-config-prettier": "^10.1.1",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-eslint-comments": "^3.2.0",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jest": "^29.0.1",
+    "eslint-plugin-jsx-a11y": "^6.8.0",
+    "eslint-plugin-prettier": "^5.5.1",
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-storybook": "^0.11.6",
@@ -91,6 +99,9 @@
     "sass-loader": "16.0.0",
     "storybook": "^8.6.8",
     "style-loader": "^4.0.0",
+    "stylelint": "^16.21.1",
+    "stylelint-config-standard-scss": "^15.0.1",
+    "stylelint-scss": "^6.12.1",
     "terser-webpack-plugin": "^5.3.9",
     "ts-node": "^10.9.2",
     "typescript": "^5.2.2",
@@ -119,6 +130,10 @@
   "lint-staged": {
     "*.{ts,tsx}": [
       "yarn lint:fix",
+      "yarn prettier:fix"
+    ],
+    "*.scss": [
+      "yarn lint:styles",
       "yarn prettier:fix"
     ]
   },

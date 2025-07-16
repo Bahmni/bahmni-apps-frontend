@@ -1,12 +1,14 @@
+import { Column, Grid, MenuItemDivider } from '@carbon/react';
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import ActionArea from '@components/common/actionArea/ActionArea';
-import { Column, Grid, MenuItemDivider } from '@carbon/react';
-import BasicForm from '@components/clinical/forms/encounterDetails/EncounterDetails';
-import DiagnosesForm from '@components/clinical/forms/conditionsAndDiagnoses/ConditionsAndDiagnoses';
 import AllergiesForm from '@components/clinical/forms/allergies/AllergiesForm';
+import DiagnosesForm from '@components/clinical/forms/conditionsAndDiagnoses/ConditionsAndDiagnoses';
+import BasicForm from '@components/clinical/forms/encounterDetails/EncounterDetails';
 import InvestigationsForm from '@components/clinical/forms/investigations/InvestigationsForm';
-import { ConsultationBundle } from '@types/consultationBundle';
+import MedicationsForm from '@components/clinical/forms/prescribeMedicines/MedicationsForm';
+import ActionArea from '@components/common/actionArea/ActionArea';
+import { ERROR_TITLES } from '@constants/errors';
+import useNotification from '@hooks/useNotification';
 import {
   postConsultationBundle,
   createDiagnosisBundleEntries,
@@ -15,20 +17,18 @@ import {
   createServiceRequestBundleEntries,
   createMedicationRequestEntries,
 } from '@services/consultationBundleService';
-import useNotification from '@hooks/useNotification';
-import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
+import useAllergyStore from '@stores/allergyStore';
+import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
+import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
+import { useMedicationStore } from '@stores/medicationsStore';
+import useServiceRequestStore from '@stores/serviceRequestStore';
+import { ConsultationBundle } from '@types/consultationBundle';
 import {
   createBundleEntry,
   createConsultationBundle,
 } from '@utils/fhir/consultationBundleCreator';
-import { ERROR_TITLES } from '@constants/errors';
-import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
-import useAllergyStore from '@stores/allergyStore';
-import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
+import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
 import * as styles from './styles/ConsultationPad.module.scss';
-import useServiceRequestStore from '@stores/serviceRequestStore';
-import MedicationsForm from '@components/clinical/forms/prescribeMedicines/MedicationsForm';
-import { useMedicationStore } from '@stores/medicationsStore';
 
 interface ConsultationPadProps {
   onClose: () => void;
@@ -97,8 +97,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   // Data validation check for consultation submission
   const canSubmitConsultation = !!(
     patientUUID &&
-    practitioner &&
-    practitioner.uuid &&
+    practitioner?.uuid &&
     activeVisit &&
     selectedLocation &&
     selectedEncounterType &&
@@ -237,28 +236,26 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       onSecondaryButtonClick={handleOnSecondaryButtonClick}
       content={
         hasError ? (
-          <>
-            <Grid className={styles.emptyState}>
-              <Column
-                sm={4}
-                md={8}
-                lg={16}
-                xlg={16}
-                className={styles.emptyStateTitle}
-              >
-                {t('CONSULTATION_PAD_ERROR_TITLE')}
-              </Column>
-              <Column
-                sm={4}
-                md={8}
-                lg={16}
-                xlg={16}
-                className={styles.emptyStateBody}
-              >
-                {t('CONSULTATION_PAD_ERROR_BODY')}
-              </Column>
-            </Grid>
-          </>
+          <Grid className={styles.emptyState}>
+            <Column
+              sm={4}
+              md={8}
+              lg={16}
+              xlg={16}
+              className={styles.emptyStateTitle}
+            >
+              {t('CONSULTATION_PAD_ERROR_TITLE')}
+            </Column>
+            <Column
+              sm={4}
+              md={8}
+              lg={16}
+              xlg={16}
+              className={styles.emptyStateBody}
+            >
+              {t('CONSULTATION_PAD_ERROR_BODY')}
+            </Column>
+          </Grid>
         ) : (
           <>
             <BasicForm />

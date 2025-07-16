@@ -1,9 +1,9 @@
-import { useState, useCallback, useEffect } from 'react';
 import { Condition } from 'fhir/r4';
-import { getConditions } from '@services/conditionService';
-import { usePatientUUID } from './usePatientUUID';
-import { getFormattedError } from '@utils/common';
+import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { getConditions } from '@services/conditionService';
+import { getFormattedError } from '@utils/common';
+import { usePatientUUID } from './usePatientUUID';
 
 interface UseConditionsResult {
   conditions: Condition[];
@@ -40,7 +40,7 @@ export const useConditions = (): UseConditionsResult => {
     } finally {
       setLoading(false);
     }
-  }, [patientUUID]);
+  }, [patientUUID, t]);
 
   useEffect(() => {
     fetchConditions();

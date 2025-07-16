@@ -1,9 +1,9 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import HeaderWSideNav from '../HeaderWSideNav';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
+import HeaderWSideNav from '../HeaderWSideNav';
 
 // Mock react-i18next
 jest.mock('react-i18next', () => ({
@@ -115,7 +115,7 @@ jest.mock('@carbon/react', () => {
         aria-label={ariaLabel}
         data-expanded={expanded}
         data-is-rail={isRail}
-        data-testid={dataTestId || 'side-nav'}
+        data-testid={dataTestId ?? 'side-nav'}
       >
         {children}
       </nav>
@@ -147,7 +147,7 @@ jest.mock('@carbon/react', () => {
       );
     },
     Breadcrumb: ({ children, noTrailingSlash, 'data-testid': dataTestId }) => (
-      <nav aria-label="Breadcrumb" data-testid={dataTestId || 'breadcrumb'}>
+      <nav aria-label="Breadcrumb" data-testid={dataTestId ?? 'breadcrumb'}>
         <ol data-no-trailing={noTrailingSlash}>{children}</ol>
       </nav>
     ),
@@ -351,9 +351,7 @@ describe('HeaderWSideNav', () => {
 
     it('does not expand SideNav when isSideNavExpanded=true and isRail=true', () => {
       mockIsSideNavExpanded = true;
-      const { container } = render(
-        <HeaderWSideNav {...defaultProps} isRail={true} />,
-      );
+      const { container } = render(<HeaderWSideNav {...defaultProps} isRail />);
 
       const sideNav = screen.getByTestId('side-nav');
       expect(sideNav).toHaveAttribute('data-expanded', 'false');
@@ -377,9 +375,7 @@ describe('HeaderWSideNav', () => {
 
     it('does not expand SideNav when isSideNavExpanded=false and isRail=true', () => {
       mockIsSideNavExpanded = false;
-      const { container } = render(
-        <HeaderWSideNav {...defaultProps} isRail={true} />,
-      );
+      const { container } = render(<HeaderWSideNav {...defaultProps} isRail />);
 
       const sideNav = screen.getByTestId('side-nav');
       expect(sideNav).toHaveAttribute('data-expanded', 'false');

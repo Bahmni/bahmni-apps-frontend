@@ -1,7 +1,7 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import NotificationContainer from '../NotificationContainer';
+import React from 'react';
 import { Notification } from '@types/notification';
+import NotificationContainer from '../NotificationContainer';
 
 describe('NotificationContainer', () => {
   const mockOnClose = jest.fn();
@@ -76,7 +76,7 @@ describe('NotificationContainer', () => {
     const closeButtons = screen.getAllByRole('button', {
       name: /close notification/i,
     });
-    expect(closeButtons.length).toBe(2);
+    expect(closeButtons).toHaveLength(2);
 
     // Click the first close button
     fireEvent.click(closeButtons[0]);

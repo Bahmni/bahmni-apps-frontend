@@ -1,10 +1,10 @@
-import { CONFIG_TRANSLATIONS_URL_TEMPLATE } from '@constants/config';
+import axios from 'axios';
 import {
   BUNDLED_TRANSLATIONS_URL_TEMPLATE,
   LOCALE_STORAGE_KEY,
   DEFAULT_LOCALE,
 } from '@constants/app';
-import axios from 'axios';
+import { CONFIG_TRANSLATIONS_URL_TEMPLATE } from '@constants/config';
 
 /**
  * Fetches user's preferred locale from the local storage.
@@ -12,7 +12,7 @@ import axios from 'axios';
  */
 export const getUserPreferredLocale = (): string => {
   const localeStorageKey = localStorage.getItem(LOCALE_STORAGE_KEY);
-  const userLocale = localeStorageKey || DEFAULT_LOCALE;
+  const userLocale = localeStorageKey ?? DEFAULT_LOCALE;
   return userLocale;
 };
 
@@ -28,7 +28,7 @@ export const getTranslationFile = async (
 ): Promise<Record<string, string>> => {
   try {
     const response = await axios.get(url);
-    if (!response || !response.data) {
+    if (!response?.data) {
       // eslint-disable-next-line no-console
       console.error(`Invalid response from ${url}`);
       return {};

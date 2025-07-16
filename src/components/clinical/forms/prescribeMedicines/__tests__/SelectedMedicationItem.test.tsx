@@ -1,21 +1,21 @@
-import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { Medication } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/setupTests.i18n';
-import SelectedMedicationItem, {
-  SelectedMedicationItemProps,
-} from '../SelectedMedicationItem';
-import { Medication } from 'fhir/r4';
-import { MedicationInputEntry } from '@types/medication';
-import { MedicationConfig } from '@types/medicationConfig';
 import { DURATION_UNIT_OPTIONS } from '@constants/medications';
 import {
   calculateTotalQuantity,
   getDefaultDosingUnit,
   getDefaultRoute,
 } from '@services/medicationsValueCalculator';
+import { MedicationInputEntry } from '@types/medication';
+import { MedicationConfig } from '@types/medicationConfig';
+import SelectedMedicationItem, {
+  SelectedMedicationItemProps,
+} from '../SelectedMedicationItem';
 
 // Extend Jest matchers
 expect.extend(toHaveNoViolations);

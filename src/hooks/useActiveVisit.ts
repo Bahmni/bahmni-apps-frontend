@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
-import { FhirEncounter } from '@types/encounter';
-import { getActiveVisit } from '@services/encounterService';
-import { getFormattedError } from '@utils/common';
 import { useTranslation } from 'react-i18next';
+import { getActiveVisit } from '@services/encounterService';
+import { FhirEncounter } from '@types/encounter';
+import { getFormattedError } from '@utils/common';
 
 interface UseActiveVisitResult {
   activeVisit: FhirEncounter | null;
@@ -47,7 +47,7 @@ export const useActiveVisit = (
     } finally {
       setLoading(false);
     }
-  }, [patientUUID]);
+  }, [patientUUID, t]);
 
   useEffect(() => {
     fetchActiveVisit();

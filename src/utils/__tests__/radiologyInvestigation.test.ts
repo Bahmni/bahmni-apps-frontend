@@ -1,3 +1,8 @@
+import {
+  createMockRadiologyInvestigation,
+  mockRadiologyInvestigationsForFiltering,
+  mockRadiologyChainReplacement,
+} from '@__mocks__/radiologyInvestigationMocks';
 import { RadiologyInvestigation } from '@types/radiologyInvestigation';
 import {
   PRIORITY_ORDER,
@@ -5,11 +10,6 @@ import {
   sortRadiologyInvestigationsByPriority,
   filterRadiologyInvestionsReplacementEntries,
 } from '../radiologyInvestigation';
-import {
-  createMockRadiologyInvestigation,
-  mockRadiologyInvestigationsForFiltering,
-  mockRadiologyChainReplacement,
-} from '@__mocks__/radiologyInvestigationMocks';
 
 describe('radiologyInvestigation utilities', () => {
   describe('PRIORITY_ORDER', () => {

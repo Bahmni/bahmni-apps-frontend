@@ -1,6 +1,6 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
-import LabInvestigationControl from '../LabInvestigationControl';
+import React from 'react';
+import i18n from '@/setupTests.i18n';
 import useLabInvestigations from '@hooks/useLabInvestigations';
 import { groupLabTestsByDate } from '@services/labInvestigationService';
 import {
@@ -8,7 +8,7 @@ import {
   LabTestPriority,
   FormattedLabTest,
 } from '@types/labInvestigation';
-import i18n from '@/setupTests.i18n';
+import LabInvestigationControl from '../LabInvestigationControl';
 
 // Mock the useLabInvestigations hook
 jest.mock('@hooks/useLabInvestigations');
@@ -56,12 +56,13 @@ jest.mock('@carbon/react', () => ({
     lineCount: number;
     width: string;
   }) => (
-    <div data-testid="skeleton-text" style={{ width }}>
-      {Array(lineCount)
-        .fill(0)
-        .map((_, i) => (
-          <div key={i} className="skeleton-line"></div>
-        ))}
+    <div data-testid="skeleton-text" data-width={width}>
+      {Array.from({ length: lineCount }, (_, i) => (
+        <div
+          key={`skeleton-line-${Date.now()}-${i}`}
+          className="skeleton-line"
+        />
+      ))}
     </div>
   ),
 }));

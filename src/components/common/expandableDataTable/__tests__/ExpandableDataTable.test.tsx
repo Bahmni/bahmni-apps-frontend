@@ -1,9 +1,9 @@
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ExpandableDataTable } from '../ExpandableDataTable';
 import { DataTableHeader, Tag } from '@carbon/react';
-import { getFormattedError } from '@utils/common';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import React from 'react';
 import i18n from '@/setupTests.i18n';
+import { getFormattedError } from '@utils/common';
+import { ExpandableDataTable } from '../ExpandableDataTable';
 
 // Mock the common utils
 jest.mock('@utils/common', () => ({
@@ -108,7 +108,7 @@ describe('ExpandableDataTable', () => {
         headers={mockHeaders}
         rows={mockRows}
         renderCell={renderCell}
-        loading={true}
+        loading
       />,
     );
 
@@ -515,8 +515,8 @@ describe('ExpandableDataTable', () => {
         rows={mockRows}
         renderCell={(row, cellId) => {
           if (cellId === 'count')
-            return <span>{row.count?.toString() || ''}</span>;
-          return <span>{row[cellId as keyof TestRow]?.toString() || ''}</span>;
+            return <span>{row.count?.toString() ?? ''}</span>;
+          return <span>{row[cellId as keyof TestRow]?.toString() ?? ''}</span>;
         }}
       />,
     );
@@ -780,7 +780,7 @@ describe('ExpandableDataTable', () => {
           headers={mockHeaders}
           rows={mockRows}
           renderCell={renderCell}
-          isOpen={true}
+          isOpen
         />,
       );
 
@@ -867,7 +867,7 @@ describe('ExpandableDataTable', () => {
           headers={mockHeaders}
           rows={mockRows}
           renderCell={renderCell}
-          isOpen={true}
+          isOpen
         />,
       );
 
@@ -904,8 +904,8 @@ describe('ExpandableDataTable', () => {
           headers={mockHeaders}
           rows={mockRows}
           renderCell={renderCell}
-          loading={true}
-          isOpen={true}
+          loading
+          isOpen
         />,
       );
 
@@ -923,7 +923,7 @@ describe('ExpandableDataTable', () => {
           rows={mockRows}
           renderCell={renderCell}
           error={testError}
-          isOpen={true}
+          isOpen
         />,
       );
 
@@ -939,7 +939,7 @@ describe('ExpandableDataTable', () => {
           headers={mockHeaders}
           rows={[]}
           renderCell={renderCell}
-          isOpen={true}
+          isOpen
         />,
       );
 

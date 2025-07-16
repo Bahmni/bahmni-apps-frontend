@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import useDebounce from './useDebounce';
 import { Bundle, Medication } from 'fhir/r4';
-import { searchMedications } from '@/services/medicationService';
+import { useState, useEffect } from 'react';
+import { searchMedications } from '@services/medicationService';
+import useDebounce from './useDebounce';
 
 interface MedicationSearchResult {
   searchResults: Medication[];

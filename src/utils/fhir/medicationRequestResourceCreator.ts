@@ -1,8 +1,8 @@
 import { MedicationRequest, Reference, Dosage, Timing } from 'fhir/r4';
 import { DurationUnitOption, MedicationInputEntry } from '@types/medication';
 import { Frequency } from '@types/medicationConfig';
-import { createMedicationReference } from './referenceCreator';
 import { createCodeableConcept, createCoding } from './codeableConceptCreator';
+import { createMedicationReference } from './referenceCreator';
 
 interface OpenMRSDosingInstruction {
   instructions?: string;

@@ -1,10 +1,6 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
+import React from 'react';
 import i18n from '@/setupTests.i18n';
-import AllergiesTable from '../AllergiesTable';
-import { usePatientUUID } from '@hooks/usePatientUUID';
-import { useAllergies } from '@hooks/useAllergies';
-import { formatAllergies } from '@services/allergyService';
 import {
   mockAllergyIntolerance,
   mockAllergyWithMultipleCategories,
@@ -15,8 +11,12 @@ import {
   mockInactiveAllergy,
   mockAllergyWithMultipleSeverities,
 } from '@__mocks__/allergyMocks';
+import { useAllergies } from '@hooks/useAllergies';
+import { usePatientUUID } from '@hooks/usePatientUUID';
+import { formatAllergies } from '@services/allergyService';
 import { FhirAllergyIntolerance, FormattedAllergy } from '@types/allergy';
 import * as common from '@utils/common';
+import AllergiesTable from '../AllergiesTable';
 
 // Mock the hooks
 jest.mock('@hooks/usePatientUUID');
@@ -205,7 +205,7 @@ describe('AllergiesTable Integration', () => {
       expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
       expect(screen.getByText('Shellfish Allergy')).toBeInTheDocument();
       expect(screen.getByText('Dust Allergy')).toBeInTheDocument();
-      expect(screen.getAllByText('[Food]').length).toBe(2); // Two food allergies
+      expect(screen.getAllByText('[Food]')).toHaveLength(2); // Two food allergies
       expect(screen.getByText('[Environment]')).toBeInTheDocument();
 
       // Verify severity tags are displayed correctly
@@ -214,7 +214,7 @@ describe('AllergiesTable Integration', () => {
       expect(screen.getByText('Mild')).toBeInTheDocument(); // Dust allergy
 
       // Verify different statuses are displayed correctly
-      expect(screen.getAllByText('Active').length).toBe(2);
+      expect(screen.getAllByText('Active')).toHaveLength(2);
       expect(screen.getByText('Inactive')).toBeInTheDocument();
     });
 
@@ -386,8 +386,8 @@ describe('AllergiesTable Integration', () => {
       // Verify both allergies are displayed correctly
       expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
       expect(screen.getByText('Low Criticality Allergy')).toBeInTheDocument();
-      expect(screen.getAllByText('[Food]').length).toBe(2);
-      expect(screen.getAllByText('Active').length).toBe(2);
+      expect(screen.getAllByText('[Food]')).toHaveLength(2);
+      expect(screen.getAllByText('Active')).toHaveLength(2);
     });
 
     it('should handle multiple reactions with different severities correctly', () => {

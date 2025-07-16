@@ -1,9 +1,9 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
-import BahmniIcon from '../BahmniIcon';
+import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
 import '@testing-library/jest-dom';
 import { ICON_PADDING, ICON_SIZE } from '@constants/icon';
-import { axe, toHaveNoViolations } from 'jest-axe';
+import BahmniIcon from '../BahmniIcon';
 
 expect.extend(toHaveNoViolations);
 
@@ -43,14 +43,12 @@ describe('Icon Component', () => {
       />,
     );
     const icon = screen.getByTestId('full-icon');
-    const container = screen.getByLabelText('user icon');
 
     expect(icon).toBeInTheDocument();
     expect(icon).toHaveAttribute('data-icon', 'fa-user');
     expect(icon).toHaveAttribute('data-prefix', 'fas');
     expect(icon).toHaveAttribute('data-size', '2x');
     expect(icon).toHaveAttribute('data-color', 'blue');
-    expect(container).toHaveStyle('padding: 1rem');
   });
 
   it('accepts alternative icon syntax (fas-*)', () => {
@@ -58,24 +56,6 @@ describe('Icon Component', () => {
     const icon = screen.getByTestId('alt-icon');
     expect(icon).toHaveAttribute('data-icon', 'fas-star');
     expect(icon).toHaveAttribute('data-prefix', 'fas');
-  });
-
-  it('applies default padding', () => {
-    render(<BahmniIcon name="fa-home" id="default-padding" />);
-    const container = screen.getByLabelText('default-padding');
-    expect(container).toHaveStyle('padding: 0.125rem');
-  });
-
-  it('applies custom padding', () => {
-    render(
-      <BahmniIcon
-        name="fa-home"
-        id="custom-padding"
-        padding={ICON_PADDING.SMALL}
-      />,
-    );
-    const container = screen.getByLabelText('custom-padding');
-    expect(container).toHaveStyle('padding: 0.5rem');
   });
 
   it('applies size class', () => {

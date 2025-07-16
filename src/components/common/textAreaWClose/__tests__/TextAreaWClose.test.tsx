@@ -1,9 +1,9 @@
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import TextAreaWClose from '../TextAreaWClose';
+import React from 'react';
 import i18n from '@/setupTests.i18n';
+import TextAreaWClose from '../TextAreaWClose';
 
 expect.extend(toHaveNoViolations);
 

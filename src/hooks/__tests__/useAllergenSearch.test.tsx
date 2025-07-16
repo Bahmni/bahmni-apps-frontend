@@ -1,14 +1,14 @@
-import React from 'react';
 import { renderHook, waitFor, act } from '@testing-library/react';
-import useAllergenSearch from '../useAllergenSearch';
+import React from 'react';
+import i18n from '@/setupTests.i18n';
+import { ALLERGEN_TYPES } from '@constants/concepts';
 import { useClinicalConfig } from '@hooks/useClinicalConfig';
 import {
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
 } from '@services/allergyService';
-import { ALLERGEN_TYPES } from '@constants/concepts';
 import * as api from '@services/api';
-import i18n from '@/setupTests.i18n';
+import useAllergenSearch from '../useAllergenSearch';
 
 // Mock hooks
 jest.mock('@hooks/useClinicalConfig');
@@ -40,9 +40,7 @@ const mockClinicalConfig = {
 };
 
 // Mock the clinical config context
-const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <>{children}</>
-);
+const wrapper = ({ children }: { children: React.ReactNode }) => children;
 
 // Mock the api.get function
 const mockApiGet = api.get as jest.MockedFunction<typeof api.get>;
@@ -58,6 +56,7 @@ const mockFetchReactionConcepts = fetchReactionConcepts as jest.MockedFunction<
 describe('useAllergenSearch', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useFakeTimers();
     // Setup default mock implementation for useClinicalConfig
     mockUseClinicalConfig.mockReturnValue({
       clinicalConfig: mockClinicalConfig,
@@ -68,6 +67,11 @@ describe('useAllergenSearch', () => {
       setError: jest.fn(),
     });
     i18n.changeLanguage('en');
+
+    // Mock API responses
+    mockApiGet.mockResolvedValue(mockApiResponse);
+    mockFetchAndFormatAllergenConcepts.mockResolvedValue(mockAllergens);
+    mockFetchReactionConcepts.mockResolvedValue(mockReactions);
   });
 
   const mockReactions = [
@@ -125,15 +129,6 @@ describe('useAllergenSearch', () => {
       type: ALLERGEN_TYPES.ENVIRONMENT.display,
     },
   ];
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-    jest.useFakeTimers();
-    // Mock API responses
-    mockApiGet.mockResolvedValue(mockApiResponse);
-    mockFetchAndFormatAllergenConcepts.mockResolvedValue(mockAllergens);
-    mockFetchReactionConcepts.mockResolvedValue(mockReactions);
-  });
 
   afterEach(() => {
     jest.useRealTimers();

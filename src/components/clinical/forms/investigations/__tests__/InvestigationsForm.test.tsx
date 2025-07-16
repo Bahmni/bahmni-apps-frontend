@@ -1,11 +1,13 @@
-import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/setupTests.i18n';
-import InvestigationsForm from '../InvestigationsForm';
-import { axe, toHaveNoViolations } from 'jest-axe';
+import useInvestigationsSearch from '@hooks/useInvestigationsSearch';
+import useServiceRequestStore from '@stores/serviceRequestStore';
 import type { FlattenedInvestigations } from '@types/investigations';
+import InvestigationsForm from '../InvestigationsForm';
 
 expect.extend(toHaveNoViolations);
 
@@ -58,9 +60,6 @@ jest.mock('../SelectedInvestigationItem', () => ({
     </div>
   ),
 }));
-
-import useInvestigationsSearch from '@hooks/useInvestigationsSearch';
-import useServiceRequestStore from '@stores/serviceRequestStore';
 
 const mockInvestigations: FlattenedInvestigations[] = [
   {

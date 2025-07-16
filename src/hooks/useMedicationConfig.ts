@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { MedicationConfig } from '@types/medicationConfig';
-import { fetchMedicationOrdersMetadata } from '@services/medicationService';
 import { getMedicationConfig } from '@services/configService';
+import { fetchMedicationOrdersMetadata } from '@services/medicationService';
+import { MedicationConfig } from '@types/medicationConfig';
 
 interface UseMedicationConfigResult {
   medicationConfig: MedicationConfig | null;

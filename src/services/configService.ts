@@ -1,20 +1,20 @@
-import { get } from './api';
 import Ajv from 'ajv';
-import { CONFIG_ERROR_MESSAGES, ERROR_TITLES } from '@constants/errors';
-import { ClinicalConfig } from '@types/config';
-import { getFormattedError, generateId } from '@utils/common';
-import notificationService from './notificationService';
 import i18next from 'i18next';
-import { DashboardConfig } from '@types/dashboardConfig';
-import { MedicationJSONConfig } from '@types/medicationConfig';
 import {
   CLINICAL_CONFIG_URL,
   DASHBOARD_CONFIG_URL,
   MEDICATIONS_CONFIG_URL,
 } from '@constants/config';
+import { CONFIG_ERROR_MESSAGES, ERROR_TITLES } from '@constants/errors';
 import clinicalConfigSchema from '@schemas/clinicalConfig.schema.json';
 import dashboardConfigSchema from '@schemas/dashboardConfig.schema.json';
 import medicationConfigSchema from '@schemas/medicationConfig.schema.json';
+import { ClinicalConfig } from '@types/config';
+import { DashboardConfig } from '@types/dashboardConfig';
+import { MedicationJSONConfig } from '@types/medicationConfig';
+import { getFormattedError, generateId } from '@utils/common';
+import { get } from './api';
+import notificationService from './notificationService';
 
 /**
  * Fetches and validates clinical app configuration from the server

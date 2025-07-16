@@ -1,11 +1,4 @@
 import {
-  formatConditions,
-  getConditions,
-  getPatientConditionsBundle,
-} from '../conditionService';
-import { get } from '../api';
-import { ConditionStatus } from '@types/condition';
-import {
   mockCondition,
   mockConditionBundle,
   mockEmptyConditionBundle,
@@ -13,6 +6,13 @@ import {
   mockConditionWithoutOptionalFields,
   mockApiErrors,
 } from '@__mocks__/conditionMocks';
+import { ConditionStatus } from '@types/condition';
+import { get } from '../api';
+import {
+  formatConditions,
+  getConditions,
+  getPatientConditionsBundle,
+} from '../conditionService';
 
 jest.mock('../api');
 
@@ -235,6 +235,7 @@ describe('conditionService', () => {
           // Missing required code property
           /* eslint-disable  @typescript-eslint/no-explicit-any */
         } as any;
+        /* eslint-enable @typescript-eslint/no-explicit-any */
 
         expect(() => formatConditions([malformedCondition])).toThrow(
           'Incomplete condition data',

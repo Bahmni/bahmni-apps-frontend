@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios';
-import client, { get, post, put, del } from '../api';
 import { getFormattedError } from '@utils/common';
 import * as common from '@utils/common';
+import client, { get, post, put, del } from '../api';
 import { notificationService } from '../notificationService';
 
 jest.mock('@constants/app', () => ({

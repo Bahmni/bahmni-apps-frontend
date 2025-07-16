@@ -245,66 +245,69 @@ export const WithAllButtonsDisabled: Story = {
 };
 
 // Interactive story with toggle visibility and dynamic disable states
-export const Interactive: Story = {
-  render: (args) => {
-    const [isVisible, setIsVisible] = useState(true);
-    const [isPrimaryDisabled, setIsPrimaryDisabled] = useState(false);
-    const [isSecondaryDisabled, setIsSecondaryDisabled] = useState(false);
-    const [isTertiaryDisabled, setIsTertiaryDisabled] = useState(false);
+const InteractiveActionArea = (args: any) => {
+  const [isVisible, setIsVisible] = useState(true);
+  const [isPrimaryDisabled, setIsPrimaryDisabled] = useState(false);
+  const [isSecondaryDisabled, setIsSecondaryDisabled] = useState(false);
+  const [isTertiaryDisabled, setIsTertiaryDisabled] = useState(false);
 
-    const handlePrimaryClick = () => {
-      action('Done clicked')();
-      setIsVisible(false);
-      setTimeout(() => setIsVisible(true), 1000); // Re-open after 1 second for demo purposes
-    };
+  const handlePrimaryClick = () => {
+    action('Done clicked')();
+    setIsVisible(false);
+    setTimeout(() => setIsVisible(true), 1000); // Re-open after 1 second for demo purposes
+  };
 
-    return (
-      <>
-        <div
-          style={{
-            marginBottom: '20px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '10px',
-          }}
+  return (
+    <>
+      <div
+        style={{
+          marginBottom: '20px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px',
+        }}
+      >
+        <Button onClick={() => setIsVisible(!isVisible)}>
+          {isVisible ? 'Hide Action Area' : 'Show Action Area'}
+        </Button>
+        <Button
+          kind="secondary"
+          onClick={() => setIsPrimaryDisabled(!isPrimaryDisabled)}
         >
-          <Button onClick={() => setIsVisible(!isVisible)}>
-            {isVisible ? 'Hide Action Area' : 'Show Action Area'}
-          </Button>
-          <Button
-            kind="secondary"
-            onClick={() => setIsPrimaryDisabled(!isPrimaryDisabled)}
-          >
-            {isPrimaryDisabled ? 'Enable Primary' : 'Disable Primary'}
-          </Button>
-          <Button
-            kind="secondary"
-            onClick={() => setIsSecondaryDisabled(!isSecondaryDisabled)}
-          >
-            {isSecondaryDisabled ? 'Enable Secondary' : 'Disable Secondary'}
-          </Button>
-          <Button
-            kind="secondary"
-            onClick={() => setIsTertiaryDisabled(!isTertiaryDisabled)}
-          >
-            {isTertiaryDisabled ? 'Enable Tertiary' : 'Disable Tertiary'}
-          </Button>
-        </div>
+          {isPrimaryDisabled ? 'Enable Primary' : 'Disable Primary'}
+        </Button>
+        <Button
+          kind="secondary"
+          onClick={() => setIsSecondaryDisabled(!isSecondaryDisabled)}
+        >
+          {isSecondaryDisabled ? 'Enable Secondary' : 'Disable Secondary'}
+        </Button>
+        <Button
+          kind="secondary"
+          onClick={() => setIsTertiaryDisabled(!isTertiaryDisabled)}
+        >
+          {isTertiaryDisabled ? 'Enable Tertiary' : 'Disable Tertiary'}
+        </Button>
+      </div>
 
-        {isVisible && (
-          <div style={{ top: '0', height: '100vh', position: 'fixed' }}>
-            <ActionArea
-              {...args}
-              onPrimaryButtonClick={handlePrimaryClick}
-              isPrimaryButtonDisabled={isPrimaryDisabled}
-              isSecondaryButtonDisabled={isSecondaryDisabled}
-              isTertiaryButtonDisabled={isTertiaryDisabled}
-            />
-          </div>
-        )}
-      </>
-    );
-  },
+      {isVisible && (
+        <div style={{ top: '0', height: '100vh', position: 'fixed' }}>
+          <ActionArea
+            {...args}
+            onPrimaryButtonClick={handlePrimaryClick}
+            isPrimaryButtonDisabled={isPrimaryDisabled}
+            isSecondaryButtonDisabled={isSecondaryDisabled}
+            isTertiaryButtonDisabled={isTertiaryDisabled}
+          />
+        </div>
+      )}
+    </>
+  );
+};
+
+// Interactive story with toggle visibility and dynamic disable states
+export const Interactive: Story = {
+  render: (args) => <InteractiveActionArea {...args} />,
   args: {
     ...WithFormContent.args,
   },

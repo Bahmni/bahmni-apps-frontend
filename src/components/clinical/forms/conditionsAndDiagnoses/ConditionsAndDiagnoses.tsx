@@ -1,15 +1,15 @@
-import React, { useState, useMemo } from 'react';
 import { ComboBox, Tile } from '@carbon/react';
+import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import * as styles from './styles/ConditionsAndDiagnoses.module.scss';
-import SelectedItem from '@components/common/selectedItem/SelectedItem';
 import BoxWHeader from '@components/common/boxWHeader/BoxWHeader';
-import { ConceptSearch } from '@types/concepts';
-import SelectedDiagnosisItem from './SelectedDiagnosisItem';
-import SelectedConditionItem from './SelectedConditionItem';
+import SelectedItem from '@components/common/selectedItem/SelectedItem';
 import { useConceptSearch } from '@hooks/useConceptSearch';
-import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
 import useConditions from '@hooks/useConditions';
+import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
+import { ConceptSearch } from '@types/concepts';
+import SelectedConditionItem from './SelectedConditionItem';
+import SelectedDiagnosisItem from './SelectedDiagnosisItem';
+import * as styles from './styles/ConditionsAndDiagnoses.module.scss';
 
 /**
  * ConditionsAndDiagnoses component
@@ -51,11 +51,7 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
   };
 
   const handleOnChange = (selectedItem: ConceptSearch) => {
-    if (
-      !selectedItem ||
-      !selectedItem.conceptUuid ||
-      !selectedItem.conceptName
-    ) {
+    if (!selectedItem?.conceptUuid || !selectedItem.conceptName) {
       return;
     }
 
@@ -72,7 +68,7 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
     return isExistingCondition || isSelectedConditions;
   };
 
-  const getFilteredSearchResults = () => {
+  const filteredSearchResults: ConceptSearch[] = useMemo(() => {
     if (searchDiagnosesTerm.length === 0) return [];
     if (isSearchLoading || existingConditionsLoading) {
       return [
@@ -120,15 +116,13 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
         disabled: isAlreadySelected,
       };
     });
-  };
-
-  const filteredSearchResults: ConceptSearch[] = useMemo(() => {
-    return getFilteredSearchResults();
   }, [
     isSearchLoading,
+    existingConditionsLoading,
     searchResults,
     searchDiagnosesTerm,
     searchError,
+    existingConditionsError,
     selectedDiagnoses,
     t,
   ]);
@@ -142,7 +136,7 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
         id="diagnoses-search"
         placeholder={t('DIAGNOSES_SEARCH_PLACEHOLDER')}
         items={filteredSearchResults}
-        itemToString={(item) => (item?.conceptName ? item.conceptName : '')}
+        itemToString={(item) => item?.conceptName ?? ''}
         onChange={(data) => handleOnChange(data.selectedItem!)}
         onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
         size="md"

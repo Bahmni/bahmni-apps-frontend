@@ -1,5 +1,5 @@
-import axios, { AxiosError } from 'axios';
 import { breakpoints, baseFontSize } from '@carbon/layout';
+import axios, { AxiosError } from 'axios';
 import i18next from 'i18next';
 
 /**
@@ -54,8 +54,8 @@ export const getFormattedError = (
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const responseData = axiosError.response.data as Record<string, any>;
           message =
-            responseData?.message ||
-            axiosError.message ||
+            responseData?.message ??
+            axiosError.message ??
             i18next.t('ERROR_UNKNOWN_MESSAGE');
         }
       }

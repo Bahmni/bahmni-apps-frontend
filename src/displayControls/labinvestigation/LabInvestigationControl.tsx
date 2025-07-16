@@ -1,11 +1,11 @@
-import React, { useMemo } from 'react';
-import * as styles from './styles/LabInvestigation.module.scss';
-import { useTranslation } from 'react-i18next';
 import { Accordion, AccordionItem, SkeletonText } from '@carbon/react';
-import LabInvestigationItem from './LabInvestigationItem';
+import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import useLabInvestigations from '@hooks/useLabInvestigations';
 import { groupLabTestsByDate } from '@services/labInvestigationService';
 import { LabTestsByDate } from '@types/labInvestigation';
+import LabInvestigationItem from './LabInvestigationItem';
+import * as styles from './styles/LabInvestigation.module.scss';
 
 const LabInvestigationControl: React.FC = () => {
   const { t } = useTranslation();
@@ -45,9 +45,9 @@ const LabInvestigationControl: React.FC = () => {
             {/* Render 'urgent' tests first */}
             {group.tests
               ?.filter((test) => test.priority === 'Urgent')
-              .map((test, index) => (
+              .map((test) => (
                 <LabInvestigationItem
-                  key={`urgent-${group.date}-${test.testName}-${index}`}
+                  key={`urgent-${group.date}-${test.testName}-${test.id || test.testName}`}
                   test={test}
                 />
               ))}
@@ -55,9 +55,9 @@ const LabInvestigationControl: React.FC = () => {
             {/* Then render non-urgent tests */}
             {group.tests
               ?.filter((test) => test.priority !== 'Urgent')
-              .map((test, index) => (
+              .map((test) => (
                 <LabInvestigationItem
-                  key={`nonurgent-${group.date}-${test.testName}-${index}`}
+                  key={`nonurgent-${group.date}-${test.testName}-${test.id || test.testName}`}
                   test={test}
                 />
               ))}
