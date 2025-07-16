@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Lint TypeScript/TypeScript
+      - name: Lint code
         run: yarn lint
 
       - name: Lint styles
