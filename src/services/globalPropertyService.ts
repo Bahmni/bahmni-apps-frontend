@@ -19,24 +19,29 @@ export const clearGlobalPropertyCache = () => {
  * @param property - The global property name
  * @returns Promise<string | null>
  */
-export const getGlobalProperty = async (property: string): Promise<string | null> => {
+export const getGlobalProperty = async (
+  property: string,
+): Promise<string | null> => {
   try {
-  
     if (globalPropertyCache.has(property)) {
       return globalPropertyCache.get(property) || null;
     }
     const response = await get<GlobalPropertyResponse>(
-      `${GLOBAL_PROPERTY_URL}?property=${property}`
+      `${GLOBAL_PROPERTY_URL}?property=${property}`,
     );
-  
-    
+
     // The API returns the raw value directly, not wrapped in an object
     const value = response ? String(response) : null;
     globalPropertyCache.set(property, value);
     return value;
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error(i18next.t(AUDIT_LOG_ERROR_MESSAGES.GLOBAL_PROPERTY_FETCH_FAILED, { property }), error);
+    console.error(
+      i18next.t(AUDIT_LOG_ERROR_MESSAGES.GLOBAL_PROPERTY_FETCH_FAILED, {
+        property,
+      }),
+      error,
+    );
     return null;
   }
 };
@@ -51,7 +56,10 @@ export const isAuditLogEnabled = async (): Promise<boolean> => {
     return value === 'true';
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error(i18next.t(AUDIT_LOG_ERROR_MESSAGES.STATUS_CHECK_FAILED), error);
+    console.error(
+      i18next.t(AUDIT_LOG_ERROR_MESSAGES.STATUS_CHECK_FAILED),
+      error,
+    );
     return false;
   }
 };

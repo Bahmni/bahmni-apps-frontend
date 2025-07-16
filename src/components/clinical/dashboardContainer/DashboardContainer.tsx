@@ -6,7 +6,10 @@ import { usePatientUUID } from '@hooks/usePatientUUID';
 import { logDashboardView } from '@services/auditLogService';
 import * as styles from './styles/DashboardContainer.module.scss';
 import { useTranslation } from 'react-i18next';
-import { AUDIT_LOGS_ERROR_MESSAGES, AUDIT_LOG_ERROR_MESSAGES, AUDIT_LOG_MESSAGES } from '@/constants/errors';
+import {
+  AUDIT_LOG_ERROR_MESSAGES,
+  AUDIT_LOG_MESSAGES,
+} from '@/constants/errors';
 
 // TODO: The name is confusing for someone without project context, consider renaming
 export interface DashboardContainerProps {
@@ -35,15 +38,13 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
   useEffect(() => {
     const logDashboardViewEvent = async () => {
       if (patientUuid) {
-        try {
-          const result = await logDashboardView(patientUuid);
-          if (!result.logged) {
-            // eslint-disable-next-line no-console
-            console.warn(t(AUDIT_LOG_ERROR_MESSAGES.DASHBOARD_VIEW_NOT_LOGGED), result.error);
-          }
-        } catch (error) {
+        const result = await logDashboardView(patientUuid);
+        if (!result.logged) {
           // eslint-disable-next-line no-console
-          console.error(t(AUDIT_LOGS_ERROR_MESSAGES.DASHBOARD_AUDIT_VIEW_FAILURE), error);
+          console.warn(
+            t(AUDIT_LOG_ERROR_MESSAGES.DASHBOARD_VIEW_NOT_LOGGED),
+            result.error,
+          );
         }
       }
     };

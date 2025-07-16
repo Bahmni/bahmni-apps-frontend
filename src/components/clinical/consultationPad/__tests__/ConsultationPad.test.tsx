@@ -19,6 +19,35 @@ import { useMedicationStore } from '@stores/medicationsStore';
 import useServiceRequestStore from '@stores/serviceRequestStore';
 import ConsultationPad from '../ConsultationPad';
 
+
+
+// Mock i18next translation function
+jest.mock('react-i18next', () => ({
+  ...jest.requireActual('react-i18next'),
+  useTranslation: () => ({
+    t: (key: string) => {
+      // Return specific translations for common keys
+      const translations: Record<string, string> = {
+        AUDIT_LOG_ERROR_ENCOUNTER_EDIT_FAILED:
+          'Failed to log audit event for encounter edit',
+        CONSULTATION_PAD_TITLE: 'New Consultation',
+        CONSULTATION_PAD_DONE_BUTTON: 'Done',
+        CONSULTATION_PAD_CANCEL_BUTTON: 'Cancel',
+        CONSULTATION_SUBMITTED_SUCCESS_TITLE: 'Success',
+        CONSULTATION_SUBMITTED_SUCCESS_MESSAGE:
+          'Consultation saved successfully',
+        ERROR_CONSULTATION_TITLE: 'Consultation Error',
+        CONSULTATION_ERROR_GENERIC: 'Error creating consultation bundle',
+        CONSULTATION_PAD_ERROR_TITLE: 'Something went wrong',
+        CONSULTATION_PAD_ERROR_BODY:
+          'An error occurred while loading the consultation pad. Please try again later.',
+      };
+
+      return translations[key] || key;
+    },
+  }),
+}));
+
 // Mock all child components
 jest.mock('@components/common/actionArea/ActionArea', () => ({
   __esModule: true,
@@ -236,7 +265,10 @@ import { useMedicationStore } from '@stores/medicationsStore';
 import { BundleEntry } from 'fhir/r4';
 import { logEncounterEdit } from '@services/auditLogService';
 
-const mockLogEncounterEdit = logEncounterEdit as jest.MockedFunction<typeof logEncounterEdit>;
+const mockLogEncounterEdit = logEncounterEdit as jest.MockedFunction<
+  typeof logEncounterEdit
+>;
+
 // Test wrapper
 const renderWithProviders = (ui: React.ReactElement) => {
   return render(<I18nextProvider i18n={i18n}>{ui}</I18nextProvider>);
@@ -269,9 +301,10 @@ describe('ConsultationPad', () => {
     (useMedicationStore as unknown as jest.Mock).mockReturnValue(
       mockMedicationStore,
     );
-    
+
     // Reset audit logging mocks
     mockLogEncounterEdit.mockClear();
+    mockLogEncounterEdit.mockResolvedValue({ logged: true });
   });
 
   describe('Rendering', () => {
@@ -1172,12 +1205,12 @@ describe('ConsultationPad', () => {
     it('should log encounter edit after successful consultation submission', async () => {
       const encounterUuid = 'encounter-123';
       const encounterType = 'Consultation';
-      
+
       // Mock crypto.randomUUID to return predictable value
       (global.crypto.randomUUID as jest.Mock).mockReturnValue(encounterUuid);
-      
+
       mockLogEncounterEdit.mockResolvedValue({ logged: true });
-      
+
       (
         consultationBundleService.postConsultationBundle as jest.Mock
       ).mockResolvedValue({
@@ -1200,20 +1233,23 @@ describe('ConsultationPad', () => {
         expect(mockLogEncounterEdit).toHaveBeenCalledWith(
           'patient-123',
           encounterUuid,
-          encounterType
+          encounterType,
         );
       });
     });
 
     it('should handle audit logging failure gracefully', async () => {
       const encounterUuid = 'encounter-123';
-      const auditError = new Error('Audit service unavailable');
-      
+
       // Mock crypto.randomUUID to return predictable value
       (global.crypto.randomUUID as jest.Mock).mockReturnValue(encounterUuid);
-      
-      mockLogEncounterEdit.mockRejectedValue(auditError);
-      
+
+      // Mock audit service to return failure status (not rejected promise)
+      mockLogEncounterEdit.mockResolvedValue({
+        logged: false,
+        error: 'Audit service unavailable',
+      });
+
       (
         consultationBundleService.postConsultationBundle as jest.Mock
       ).mockResolvedValue({
@@ -1222,7 +1258,9 @@ describe('ConsultationPad', () => {
       });
 
       // Mock console.warn to verify it's called
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleSpy = jest
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {});
 
       renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
 
@@ -1233,7 +1271,7 @@ describe('ConsultationPad', () => {
         expect(mockLogEncounterEdit).toHaveBeenCalled();
         expect(consoleSpy).toHaveBeenCalledWith(
           'Failed to log audit event for encounter edit',
-          auditError
+          'Audit service unavailable',
         );
         // Consultation should still succeed
         expect(mockOnClose).toHaveBeenCalled();
@@ -1244,7 +1282,7 @@ describe('ConsultationPad', () => {
 
     it('should not log encounter edit if consultation submission fails', async () => {
       const submissionError = new Error('Network error');
-      
+
       (
         consultationBundleService.postConsultationBundle as jest.Mock
       ).mockRejectedValue(submissionError);
@@ -1268,12 +1306,12 @@ describe('ConsultationPad', () => {
       const patientUuid = 'patient-456';
       const encounterUuid = 'encounter-789';
       const encounterType = 'Follow-up';
-      
+
       // Mock crypto.randomUUID to return predictable value
       (global.crypto.randomUUID as jest.Mock).mockReturnValue(encounterUuid);
-      
+
       mockLogEncounterEdit.mockResolvedValue({ logged: true });
-      
+
       (
         consultationBundleService.postConsultationBundle as jest.Mock
       ).mockResolvedValue({
@@ -1297,23 +1335,23 @@ describe('ConsultationPad', () => {
         expect(mockLogEncounterEdit).toHaveBeenCalledWith(
           patientUuid,
           encounterUuid,
-          encounterType
+          encounterType,
         );
       });
     });
 
     it('should complete consultation successfully when audit logging returns disabled status', async () => {
       const encounterUuid = 'encounter-123';
-      
+
       // Mock crypto.randomUUID to return predictable value
       (global.crypto.randomUUID as jest.Mock).mockReturnValue(encounterUuid);
-      
+
       // Mock audit service to return disabled status
       mockLogEncounterEdit.mockResolvedValue({
         logged: false,
-        error: 'Audit logging is disabled'
+        error: 'Audit logging is disabled',
       });
-      
+
       (
         consultationBundleService.postConsultationBundle as jest.Mock
       ).mockResolvedValue({
@@ -1331,7 +1369,7 @@ describe('ConsultationPad', () => {
         expect(mockLogEncounterEdit).toHaveBeenCalledWith(
           'patient-123',
           encounterUuid,
-          'Consultation'
+          'Consultation',
         );
         // Consultation should still succeed even when audit service returns disabled status
         expect(mockOnClose).toHaveBeenCalled();

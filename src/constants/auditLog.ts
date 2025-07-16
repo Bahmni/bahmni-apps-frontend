@@ -1,4 +1,4 @@
-// Audit log event details mapping 
+// Audit log event details mapping
 export const AUDIT_LOG_EVENT_DETAILS = {
   VIEWED_CLINICAL_DASHBOARD: {
     eventType: 'VIEWED_CLINICAL_DASHBOARD',
