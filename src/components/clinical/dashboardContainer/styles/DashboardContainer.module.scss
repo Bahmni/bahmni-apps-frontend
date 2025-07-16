@@ -2,14 +2,14 @@
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
 
+.sectionContainer {
+  padding: 0 !important;
+}
+
 .sectionColumn {
-  margin-bottom: $spacing-04; // Add margin to all sections
+  margin: 0 0 $spacing-07 0 !important; // Add margin to all sections
 
   &:last-child {
-    margin-bottom: $spacing-05; // Add margin to the last section
-  }
-
-  &:first-child {
-    margin-top: $spacing-07; // Add margin to the first section
+    margin-bottom: 0 !important; // Add margin to the last section
   }
 }

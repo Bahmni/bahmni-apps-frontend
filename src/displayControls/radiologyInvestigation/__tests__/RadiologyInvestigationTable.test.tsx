@@ -104,7 +104,9 @@ describe('RadiologyInvestigationTable', () => {
     render(<RadiologyInvestigationTable />);
 
     // Assert
-    expect(screen.getByText('Radiology Investigations')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('radiology-investigations-table'),
+    ).toHaveAttribute('title', 'Radiology Investigations');
   });
 
   it('should display loading skeleton when loading', () => {
