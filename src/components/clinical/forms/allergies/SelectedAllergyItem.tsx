@@ -125,7 +125,7 @@ const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
               placeholder={t('ALLERGY_SELECT_REACTIONS')}
               items={reactionConcepts}
               selectedItems={selectedReactions}
-              itemToString={(item) => (item?.display ? item.display : '')}
+              itemToString={(item) => item?.display ?? ''}
               onChange={(data) => {
                 updateReactions(id, data.selectedItems!);
               }}
@@ -141,7 +141,7 @@ const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
             data-testid={`allergy-note-${id}`}
             labelText={t('ADD_ALLERGY_NOTE')}
             placeholder={t('ADD_ALLERGY_NOTE_PLACEHOLDER')}
-            value={note || ''}
+            value={note ?? ''}
             onChange={(event) => updateNote(id, event.target.value)}
             onClose={() => {
               setHasNote(false);

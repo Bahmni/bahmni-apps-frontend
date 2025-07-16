@@ -39,5 +39,5 @@ export function getMedicationDisplay(medication: Medication): string {
   if (displayName && medicationForm) {
     displayName += ` (${medicationForm})`;
   }
-  return displayName || 'Unknown Medication Name';
+  return displayName ?? 'Unknown Medication Name';
 }

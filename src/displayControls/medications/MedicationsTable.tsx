@@ -232,7 +232,7 @@ const MedicationsTable: React.FC = () => {
             />
           </TabPanel>
           <TabPanel className={styles.medicationTabs}>
-            {(loading || error || processedAllMedications.length === 0) && (
+            {(loading || !!error || processedAllMedications.length === 0) && (
               <SortableDataTable
                 headers={headers}
                 ariaLabel={t('MEDICATIONS_TABLE_ARIA_LABEL')}

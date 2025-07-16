@@ -12,7 +12,7 @@ import { CONFIG_TRANSLATIONS_URL_TEMPLATE } from '@constants/config';
  */
 export const getUserPreferredLocale = (): string => {
   const localeStorageKey = localStorage.getItem(LOCALE_STORAGE_KEY);
-  const userLocale = localeStorageKey || DEFAULT_LOCALE;
+  const userLocale = localeStorageKey ?? DEFAULT_LOCALE;
   return userLocale;
 };
 

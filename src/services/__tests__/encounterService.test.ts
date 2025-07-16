@@ -73,7 +73,7 @@ describe('encounterService', () => {
             ...entry.resource,
             period: {
               ...entry.resource.period,
-              end: entry.resource.period.end || '2025-04-09T10:14:51+00:00',
+              end: entry.resource.period.end ?? '2025-04-09T10:14:51+00:00',
             },
           },
         })),

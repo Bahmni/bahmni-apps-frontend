@@ -44,7 +44,7 @@ const InvestigationsForm: React.FC = React.memo(() => {
       }
       const result: FlattenedInvestigations[] = [];
       Array.from(investigationsByCategory.keys()).forEach((category) => {
-        const categoryItems = investigationsByCategory.get(category) || [];
+        const categoryItems = investigationsByCategory.get(category) ?? [];
         result.push({
           code: '',
           display: translateOrderType(category),
@@ -148,7 +148,7 @@ const InvestigationsForm: React.FC = React.memo(() => {
         id="investigations-procedures-search"
         placeholder={t('INVESTIGATIONS_SEARCH_PLACEHOLDER')}
         items={filteredInvestigations}
-        itemToString={(item) => item?.display || ''}
+        itemToString={(item) => item?.display ?? ''}
         onChange={({ selectedItem }) => handleChange(selectedItem)}
         onInputChange={(input) => setSearchTerm(input)}
         autoAlign

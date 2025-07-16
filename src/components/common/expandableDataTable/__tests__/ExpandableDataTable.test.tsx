@@ -515,8 +515,8 @@ describe('ExpandableDataTable', () => {
         rows={mockRows}
         renderCell={(row, cellId) => {
           if (cellId === 'count')
-            return <span>{row.count?.toString() || ''}</span>;
-          return <span>{row[cellId as keyof TestRow]?.toString() || ''}</span>;
+            return <span>{row.count?.toString() ?? ''}</span>;
+          return <span>{row[cellId as keyof TestRow]?.toString() ?? ''}</span>;
         }}
       />,
     );

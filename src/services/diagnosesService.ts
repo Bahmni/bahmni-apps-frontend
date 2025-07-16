@@ -55,7 +55,7 @@ function formatDiagnoses(bundle: Bundle): Diagnosis[] {
   const diagnoses =
     bundle.entry
       ?.filter((entry) => entry.resource?.resourceType === 'Condition')
-      .map((entry) => entry.resource as Diagnoses) || [];
+      .map((entry) => entry.resource as Diagnoses) ?? [];
 
   return diagnoses.map((diagnosis) => {
     if (!isValidDiagnosis(diagnosis)) {
@@ -67,10 +67,10 @@ function formatDiagnoses(bundle: Bundle): Diagnosis[] {
 
     return {
       id: diagnosis.id as string,
-      display: diagnosis.code?.text || '',
+      display: diagnosis.code?.text ?? '',
       certainty,
       recordedDate,
-      recorder: diagnosis.recorder?.display || '',
+      recorder: diagnosis.recorder?.display ?? '',
     };
   });
 }

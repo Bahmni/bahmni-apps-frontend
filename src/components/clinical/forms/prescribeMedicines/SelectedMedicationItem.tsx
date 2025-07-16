@@ -244,7 +244,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                 }
               }}
               invalid={errors.dosage ? true : false}
-              invalidText={t(errors.dosage || '')}
+              invalidText={t(errors.dosage ?? '')}
             />
 
             <Dropdown
@@ -255,7 +255,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               className={styles.dosageUnit}
               hideLabel
               size="sm"
-              items={medicationConfig.doseUnits || []}
+              items={medicationConfig.doseUnits ?? []}
               itemToString={(item) => (item ? item.name : '')}
               selectedItem={dosageUnit}
               onChange={(e) => {
@@ -266,7 +266,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               }}
               autoAlign
               invalid={errors.dosageUnit ? true : false}
-              invalidText={t(errors.dosageUnit || '')}
+              invalidText={t(errors.dosageUnit ?? '')}
             />
           </Column>
           <Column sm={1} md={2} lg={4} className={styles.column}>
@@ -280,7 +280,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               items={
                 medicationConfig.frequencies.filter(
                   (item) => !isImmediateFrequency(item),
-                ) || []
+                ) ?? []
               }
               itemToString={(item) => (item ? item.name : '')}
               selectedItem={frequency}
@@ -291,7 +291,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               }}
               autoAlign
               invalid={errors.frequency ? true : false}
-              invalidText={t(errors.frequency || '')}
+              invalidText={t(errors.frequency ?? '')}
               disabled={isSTAT && !isPRN}
             />
           </Column>
@@ -313,7 +313,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                 }
               }}
               invalid={errors.duration ? true : false}
-              invalidText={t(errors.duration || '')}
+              invalidText={t(errors.duration ?? '')}
               disabled={isSTAT && !isPRN}
             />
             <Dropdown
@@ -336,7 +336,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               }}
               autoAlign
               invalid={errors.durationUnit ? true : false}
-              invalidText={t(errors.durationUnit || '')}
+              invalidText={t(errors.durationUnit ?? '')}
               disabled={isSTAT && !isPRN}
             />
           </Column>
@@ -349,7 +349,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               aria-label="Medication Instructions"
               hideLabel
               size="sm"
-              items={medicationConfig.dosingInstructions || []}
+              items={medicationConfig.dosingInstructions ?? []}
               itemToString={(item) => (item ? item.name : '')}
               selectedItem={instruction}
               onChange={(e) => {
@@ -369,7 +369,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               aria-label="Route"
               hideLabel
               size="sm"
-              items={medicationConfig.routes || []}
+              items={medicationConfig.routes ?? []}
               itemToString={(item) => (item ? item.name : '')}
               selectedItem={route}
               onChange={(e) => {
@@ -379,7 +379,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               }}
               autoAlign
               invalid={errors.route ? true : false}
-              invalidText={t(errors.route || '')}
+              invalidText={t(errors.route ?? '')}
             />
           </Column>
 
@@ -409,7 +409,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
           <Column sm={4} md={8} lg={16} className={styles.totalQuantity}>
             <span>
               {t('MEDICATION_TOTAL_QUANTITY')} : {dispenseQuantity}{' '}
-              {dispenseUnit?.name || ''}
+              {dispenseUnit?.name ?? ''}
             </span>
           </Column>
         </Grid>

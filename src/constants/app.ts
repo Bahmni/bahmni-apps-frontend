@@ -4,7 +4,7 @@ import {
   HL7_CONDITION_CATEGORY_DIAGNOSIS_CODE,
 } from './fhir';
 
-const BASE_PATH = process.env.PUBLIC_URL || '/';
+const BASE_PATH = process.env.PUBLIC_URL ?? '/';
 const OPENMRS_FHIR_R4 = '/openmrs/ws/fhir2/R4';
 const OPENMRS_REST_V1 = '/openmrs/ws/rest/v1';
 

@@ -75,7 +75,7 @@ const ConsultationPage: React.FC = () => {
     return getDefaultDashboard(clinicalConfig.dashboards || []);
   }, [clinicalConfig]);
 
-  const dashboardUrl = currentDashboard?.url || null;
+  const dashboardUrl = currentDashboard?.url ?? null;
   const { dashboardConfig } = useDashboardConfig(dashboardUrl);
 
   const sidebarItems = useMemo(() => {

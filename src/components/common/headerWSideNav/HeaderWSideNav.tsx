@@ -102,7 +102,7 @@ const HeaderWSideNav: React.FC<HeaderWSideNavProps> = ({
                   size={ICON_SIZE.LG}
                 />
               )}
-              href={item.href || '#'}
+              href={item.href ?? '#'}
               onClick={(e) => handleSideNavItemClick(e, item.id)}
               isActive={item.id === activeSideNavItemId}
               data-testid={`sidenav-item-${item.id}`}

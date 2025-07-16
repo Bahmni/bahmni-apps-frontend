@@ -88,7 +88,7 @@ const TextAreaWClose: React.FC<TextAreaWCloseProps> = ({
           data-testid={dataTestId}
           type="default"
           labelText={labelText}
-          placeholder={placeholder || labelText}
+          placeholder={placeholder ?? labelText}
           hideLabel
           value={value}
           onChange={onChange}
@@ -102,7 +102,7 @@ const TextAreaWClose: React.FC<TextAreaWCloseProps> = ({
         <Column sm={1} md={1} lg={1} xlg={1} className={styles.closeButton}>
           <Button
             id={`${id}-close-button`}
-            data-testid={closeButtonTestId || `${id}-close-button`}
+            data-testid={closeButtonTestId ?? `${id}-close-button`}
             size="lg"
             hasIconOnly
             renderIcon={Close}

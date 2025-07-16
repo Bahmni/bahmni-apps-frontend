@@ -57,7 +57,7 @@ export async function getConditions(patientUUID: string): Promise<Condition[]> {
   const conditions =
     bundle.entry
       ?.filter((entry) => entry.resource?.resourceType === 'Condition')
-      .map((entry) => entry.resource as Condition) || [];
+      .map((entry) => entry.resource as Condition) ?? [];
 
   return conditions;
 }
@@ -84,13 +84,13 @@ export function formatConditions(
 
     return {
       id: condition.id!,
-      display: condition.code?.text || coding.display || '',
+      display: condition.code?.text ?? coding.display ?? '',
       status,
       onsetDate: condition.onsetDateTime,
       recordedDate: condition.recordedDate,
       recorder: condition.recorder?.display,
-      code: coding.code || '',
-      codeDisplay: coding.display || '',
+      code: coding.code ?? '',
+      codeDisplay: coding.display ?? '',
       note: condition.note?.map((note) => note.text).filter(Boolean),
     };
   });

@@ -17,7 +17,7 @@ const root = createRoot(container);
 
 root.render(
   <React.StrictMode>
-    <BrowserRouter basename={process.env.PUBLIC_URL || '/'}>
+    <BrowserRouter basename={process.env.PUBLIC_URL ?? '/'}>
       <NotificationProvider>
         <NotificationServiceComponent />
         <App />

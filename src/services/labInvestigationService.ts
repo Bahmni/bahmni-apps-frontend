@@ -33,7 +33,7 @@ function filterLabTestEntries(labTestBundle: Bundle<ServiceRequest>) {
   //Collect all IDs that are being replaced
   const replacedIds = new Set(
     labTestBundle.entry
-      .flatMap((entry) => entry.resource?.replaces || [])
+      .flatMap((entry) => entry.resource?.replaces ?? [])
       .map((ref) => ref.reference?.split('/').pop()) // extract ID from reference like "ServiceRequest/xyz"
       .filter(Boolean), // remove undefined/null
   );
@@ -80,7 +80,7 @@ export async function getLabTests(
     return (
       fhirLabTestBundle.entry
         ?.map((entry) => entry.resource)
-        .filter((r): r is ServiceRequest => r !== undefined) || []
+        .filter((r): r is ServiceRequest => r !== undefined) ?? []
     );
   } catch (error) {
     const { title, message } = getFormattedError(error);

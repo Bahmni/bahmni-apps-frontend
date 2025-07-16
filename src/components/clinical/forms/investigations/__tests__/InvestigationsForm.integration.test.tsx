@@ -282,7 +282,7 @@ describe('InvestigationsForm Integration Tests', () => {
         }),
         removeServiceRequest: jest.fn((category, code) => {
           const requests =
-            mockStore.selectedServiceRequests.get(category) || [];
+            mockStore.selectedServiceRequests.get(category) ?? [];
           mockStore.selectedServiceRequests.set(
             category,
             requests.filter((req) => req.id !== code),

@@ -145,7 +145,7 @@ function getQuantity(
 function formatMedications(bundle: Bundle): MedicationRequest[] {
   // Extract medication requests from bundle entries
   const medications =
-    bundle.entry?.map((entry) => entry.resource as FhirMedicationRequest) || [];
+    bundle.entry?.map((entry) => entry.resource as FhirMedicationRequest) ?? [];
 
   return medications.map((medication) => {
     const medicationReference = medication.medicationReference!;

@@ -22,7 +22,7 @@ const getOrderTypes = async (): Promise<OrderTypeResponse> => {
 const getInvestigationDisplay = (
   investigation: ValueSetExpansionContains,
 ): string => {
-  let investigationDisplay = investigation.display || 'Unknown investigation';
+  let investigationDisplay = investigation.display ?? 'Unknown investigation';
   if (getConceptClassName(investigation) === PANEL_CONCEPT_CLASS_NAME) {
     investigationDisplay += ` (${i18next.t('INVESTIGATION_PANEL')})`;
   }
@@ -47,7 +47,7 @@ const getConceptClassName = (
   const extension = investigation.extension?.find(
     (ext) => ext.url === FHIR_CONCEPT_CLASS_EXTENSION_URL,
   );
-  return extension ? extension.valueString || '' : '';
+  return extension ? (extension.valueString ?? '') : '';
 };
 
 const flattenInvestigations = (
@@ -84,7 +84,7 @@ const flattenInvestigations = (
 
         if (!isAlreadyAdded) {
           results.push({
-            code: investigation.code || '',
+            code: investigation.code ?? '',
             display: getInvestigationDisplay(investigation),
             category: orderType.display,
             categoryCode: orderType.uuid,

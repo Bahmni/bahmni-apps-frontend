@@ -57,7 +57,7 @@ const ConditionsTable: React.FC = () => {
         );
       case 'onsetDate': {
         const onsetDate: FormatDateResult = formatDateDistance(
-          condition.onsetDate || '',
+          condition.onsetDate ?? '',
         );
         if (onsetDate.error) {
           return t('CONDITION_TABLE_NOT_AVAILABLE');

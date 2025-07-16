@@ -21,7 +21,7 @@ jest.mock('@hooks/useMedicationSearch');
 jest.mock('@services/medicationService', () => ({
   getMedicationDisplay: jest.fn(
     (medication) =>
-      medication?.code?.text || medication?.code?.display || 'Test Medication',
+      medication?.code?.text ?? medication?.code?.display ?? 'Test Medication',
   ),
 }));
 

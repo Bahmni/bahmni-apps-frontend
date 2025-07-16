@@ -115,7 +115,7 @@ jest.mock('@carbon/react', () => {
         aria-label={ariaLabel}
         data-expanded={expanded}
         data-is-rail={isRail}
-        data-testid={dataTestId || 'side-nav'}
+        data-testid={dataTestId ?? 'side-nav'}
       >
         {children}
       </nav>
@@ -147,7 +147,7 @@ jest.mock('@carbon/react', () => {
       );
     },
     Breadcrumb: ({ children, noTrailingSlash, 'data-testid': dataTestId }) => (
-      <nav aria-label="Breadcrumb" data-testid={dataTestId || 'breadcrumb'}>
+      <nav aria-label="Breadcrumb" data-testid={dataTestId ?? 'breadcrumb'}>
         <ol data-no-trailing={noTrailingSlash}>{children}</ol>
       </nav>
     ),

@@ -8,5 +8,8 @@ import { useParams } from 'react-router-dom';
  */
 export const usePatientUUID = (): string | null => {
   const params = useParams();
-  return params.patientUuid || null;
+  if (!params.patientUuid || params.patientUuid === '') {
+    return null;
+  }
+  return params.patientUuid;
 };

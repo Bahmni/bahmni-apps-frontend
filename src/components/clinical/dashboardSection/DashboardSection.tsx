@@ -51,7 +51,7 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
   return (
     <Tile id={`section-${section.id}`} ref={ref} className={styles.sectionTile}>
       <p className={styles.sectionTitle}>
-        {t(section.translationKey || section.name)}
+        {t(section.translationKey ?? section.name)}
       </p>
       {renderSectionContent(section)}
     </Tile>

@@ -51,7 +51,7 @@ const SelectedConditionItem: React.FC<SelectedConditionItemProps> = React.memo(
             id={`condition-duration-value-${id}`}
             labelText={t('CONDITIONS_DURATION_VALUE_LABEL')}
             placeholder={t('CONDITIONS_DURATION_VALUE_PLACEHOLDER')}
-            value={durationValue?.toString() || ''}
+            value={durationValue?.toString() ?? ''}
             onChange={(event) => {
               const value = event.target.value.trim();
               if (value === '') {
@@ -78,7 +78,7 @@ const SelectedConditionItem: React.FC<SelectedConditionItemProps> = React.memo(
             hideLabel
             items={DURATION_UNITS}
             selectedItem={
-              DURATION_UNITS.find((unit) => unit.id === durationUnit) || null
+              DURATION_UNITS.find((unit) => unit.id === durationUnit) ?? null
             }
             itemToString={(item) => t(item.display!)}
             onChange={(event) => {

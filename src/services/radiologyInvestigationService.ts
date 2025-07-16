@@ -24,15 +24,15 @@ function formatRadiologyInvestigations(
   bundle: Bundle,
 ): RadiologyInvestigation[] {
   const orders =
-    bundle.entry?.map((entry) => entry.resource as ServiceRequest) || [];
+    bundle.entry?.map((entry) => entry.resource as ServiceRequest) ?? [];
 
   return orders.map((order) => {
     const orderedDate = order.occurrencePeriod?.start as string;
 
     const replaces = order.replaces
       ?.map((replace) => {
-        const reference = replace.reference || '';
-        return reference.split('/').pop() || '';
+        const reference = replace.reference ?? '';
+        return reference.split('/').pop() ?? '';
       })
       .filter((id) => id.length > 0);
 

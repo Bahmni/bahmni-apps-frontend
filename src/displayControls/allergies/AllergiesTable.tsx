@@ -106,7 +106,7 @@ const AllergiesTable: React.FC = () => {
               .join(', ')
           : t('ALLERGY_TABLE_NOT_AVAILABLE');
       case 'recorder':
-        return allergy.recorder || t('ALLERGY_TABLE_NOT_AVAILABLE');
+        return allergy.recorder ?? t('ALLERGY_TABLE_NOT_AVAILABLE');
       case 'status':
         return (
           <Tag

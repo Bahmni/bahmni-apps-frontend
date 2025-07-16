@@ -32,5 +32,5 @@ export async function getActiveVisit(
   patientUUID: string,
 ): Promise<FhirEncounter | null> {
   const encounters = await getVisits(patientUUID);
-  return encounters.find((encounter) => !encounter.period.end) || null;
+  return encounters.find((encounter) => !encounter.period.end) ?? null;
 }

@@ -117,7 +117,7 @@ jest.mock('@components/common/headerWSideNav/HeaderWSideNav', () => {
         ),
       )}
       <div data-testid="active-sidenav-item">
-        {activeSideNavItemId || 'none'}
+        {activeSideNavItemId ?? 'none'}
       </div>
     </div>
   ));
@@ -133,7 +133,7 @@ jest.mock('@components/clinical/dashboardContainer/DashboardContainer', () => {
   return jest.fn(({ sections, activeItemId }) => (
     <div data-testid="mocked-dashboard-container">
       <div data-testid="dashboard-sections-count">{sections.length}</div>
-      <div data-testid="dashboard-active-item">{activeItemId || 'none'}</div>
+      <div data-testid="dashboard-active-item">{activeItemId ?? 'none'}</div>
     </div>
   ));
 });

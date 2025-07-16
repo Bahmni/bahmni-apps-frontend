@@ -154,8 +154,8 @@ const EncounterDetails: React.FC = () => {
 
   // Update store with activeVisit and error
   useEffect(() => {
-    setActiveVisit(activeVisit || null);
-    setActiveVisitError(activeVisitError || null);
+    setActiveVisit(activeVisit ?? null);
+    setActiveVisitError(activeVisitError ?? null);
   }, [activeVisit, activeVisitError, setActiveVisit, setActiveVisitError]);
 
   /**
@@ -268,8 +268,8 @@ const EncounterDetails: React.FC = () => {
             id="encounter-type-dropdown"
             titleText={t('ENCOUNTER_TYPE')}
             label={t('SELECT_ENCOUNTER_TYPE')}
-            items={encounterConcepts?.encounterTypes || []}
-            itemToString={(item: Concept) => item?.name || ''}
+            items={encounterConcepts?.encounterTypes ?? []}
+            itemToString={(item: Concept) => item?.name ?? ''}
             initialSelectedItem={selectedEncounterType}
             disabled
             size="md"
@@ -286,8 +286,8 @@ const EncounterDetails: React.FC = () => {
             id="visit-type-dropdown"
             titleText={t('VISIT_TYPE')}
             label={t('SELECT_VISIT_TYPE')}
-            items={encounterConcepts?.visitTypes || []}
-            itemToString={(item: Concept) => item?.name || ''}
+            items={encounterConcepts?.visitTypes ?? []}
+            itemToString={(item: Concept) => item?.name ?? ''}
             initialSelectedItem={selectedVisitType}
             disabled
             size="md"
@@ -306,7 +306,7 @@ const EncounterDetails: React.FC = () => {
             label={t('SELECT_PRACTITIONER')}
             items={availablePractitioners}
             itemToString={(item: Provider) =>
-              item?.person?.preferredName?.display || ''
+              item?.person?.preferredName?.display ?? ''
             }
             initialSelectedItem={practitioner}
             disabled

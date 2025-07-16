@@ -53,7 +53,7 @@ const ActionArea: React.FC<ActionAreaProps> = ({
       : styles.twoButtons;
 
   // Determine accessible label for the component
-  const accessibleLabel = ariaLabel || 'Action Area';
+  const accessibleLabel = ariaLabel ?? 'Action Area';
 
   return (
     <div

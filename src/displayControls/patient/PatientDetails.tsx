@@ -31,8 +31,7 @@ const PatientDetails: React.FC = () => {
     );
   }
 
-  const formatField = (value?: string | number | null) =>
-    value ? value : null;
+  const formatField = (value?: string | number | null) => value ?? null;
 
   const formattedIdentifiers = formattedPatient.identifiers.size
     ? Array.from(formattedPatient.identifiers.entries())

@@ -78,7 +78,7 @@ jest.mock('@carbon/react', () => ({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }: any) => (
     <div className={className}>
-      {!hideLabel && <label htmlFor={id}>{titleText || label}</label>}
+      {!hideLabel && <label htmlFor={id}>{titleText ?? label}</label>}
       <select
         id={id}
         data-testid={`dropdown-${id}`}
@@ -90,10 +90,10 @@ jest.mock('@carbon/react', () => ({
           );
           onChange({ selectedItem: selectedOption });
         }}
-        value={selectedItem?.id || ''}
+        value={selectedItem?.id ?? ''}
         data-invalid={invalid}
         aria-invalid={invalid}
-        aria-label={hideLabel ? titleText || label : undefined}
+        aria-label={hideLabel ? (titleText ?? label) : undefined}
         {...props}
       >
         <option value="">Select...</option>

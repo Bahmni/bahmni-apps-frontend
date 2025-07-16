@@ -61,7 +61,7 @@ const BoxWHeader: React.FC<BoxWHeaderProps> = ({
       fullWidth
       className={classNames(styles.box, className)}
       data-testid={dataTestId}
-      aria-label={ariaLabel || translatedTitle}
+      aria-label={ariaLabel ?? translatedTitle}
       role="region"
     >
       <Column sm={4} md={8} lg={16} xlg={16} className={styles.header}>

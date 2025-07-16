@@ -12,7 +12,7 @@ const TestComponent: React.FC<TestComponentProps> = ({ items }) => {
 
   return (
     <div>
-      <div data-testid="active-item-id">{activeItemId || 'none'}</div>
+      <div data-testid="active-item-id">{activeItemId ?? 'none'}</div>
       <button data-testid="set-item1" onClick={() => handleItemClick('item1')}>
         Set Item 1
       </button>
