@@ -37,7 +37,9 @@ import useServiceRequestStore from '@stores/serviceRequestStore';
 import ConsultationPad from '../ConsultationPad';
 import { logEncounterEdit } from '@services/auditLogService';
 
-const mockLogEncounterEdit = logEncounterEdit as jest.MockedFunction<typeof logEncounterEdit>;
+const mockLogEncounterEdit = logEncounterEdit as jest.MockedFunction<
+  typeof logEncounterEdit
+>;
 // Mock axios to prevent actual HTTP requests and SSL certificate errors
 jest.mock('axios', () => ({
   create: jest.fn(() => ({
@@ -155,7 +157,7 @@ describe('ConsultationPad Integration', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Reset audit logging mocks
     mockLogEncounterEdit.mockResolvedValue({ logged: true });
 

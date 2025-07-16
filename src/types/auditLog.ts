@@ -13,6 +13,4 @@ export interface AuditLogResponse {
 }
 
 // Only the two events required for BN-91
-export type AuditEventType =
-  | 'VIEWED_CLINICAL_DASHBOARD'
-  | 'EDIT_ENCOUNTER';
+export type AuditEventType = 'VIEWED_CLINICAL_DASHBOARD' | 'EDIT_ENCOUNTER';

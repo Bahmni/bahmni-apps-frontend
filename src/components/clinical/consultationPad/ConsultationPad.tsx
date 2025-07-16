@@ -197,20 +197,22 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         setIsSubmitting(true);
         await submitConsultation();
         setIsSubmitting(false);
-        
+
         // Log audit event for successful encounter edit/creation
-        try {
-          await logEncounterEdit(
-            patientUUID!,
-            crypto.randomUUID(), // Generate encounter UUID for new encounters
-            selectedEncounterType!.name
-          );
-        } catch (auditError) {
-          // Don't fail the consultation if audit logging fails
+        const editEncounterLog = await logEncounterEdit(
+          patientUUID!,
+          crypto.randomUUID(), // Generate encounter UUID for new encounters
+          selectedEncounterType!.name,
+        );
+
+        if (!editEncounterLog.logged) {
           // eslint-disable-next-line no-console
-          console.warn(t(AUDIT_LOG_ERROR_MESSAGES.ENCOUNTER_EDIT_FAILED), auditError);
+          console.warn(
+            t(AUDIT_LOG_ERROR_MESSAGES.ENCOUNTER_EDIT_FAILED),
+            editEncounterLog.error,
+          );
         }
-        
+
         resetDiagnoses();
         resetAllergies();
         resetEncounterDetails();

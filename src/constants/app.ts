@@ -86,4 +86,5 @@ export const PANEL_CONCEPT_CLASS_NAME = 'LabSet';
 
 // Audit logging URLs
 export const AUDIT_LOG_URL = OPENMRS_REST_V1 + '/auditlog';
-export const GLOBAL_PROPERTY_URL = OPENMRS_REST_V1 + '/bahmnicore/sql/globalproperty';
+export const GLOBAL_PROPERTY_URL =
+  OPENMRS_REST_V1 + '/bahmnicore/sql/globalproperty';

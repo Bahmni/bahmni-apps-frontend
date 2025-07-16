@@ -17,7 +17,7 @@ jest.mock('@services/auditLogService', () => ({
 jest.mock('@hooks/usePatientUUID', () => ({
   usePatientUUID: jest.fn(),
 }));
- 
+
 // Mock i18n hook
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -62,18 +62,22 @@ jest.mock('@carbon/react', () => ({
   )),
 }));
 
-const mockLogDashboardView = logDashboardView as jest.MockedFunction<typeof logDashboardView>;
-const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<typeof usePatientUUID>;
+const mockLogDashboardView = logDashboardView as jest.MockedFunction<
+  typeof logDashboardView
+>;
+const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
+  typeof usePatientUUID
+>;
 
 describe('DashboardContainer Component', () => {
   // Set up and reset mocks before each test
   beforeEach(() => {
     // Reset the scrollIntoView mock
     mockScrollIntoView.mockClear();
-    
+
     // Reset audit logging mocks
     jest.clearAllMocks();
-    
+
     // Mock console methods to avoid noise in tests
     jest.spyOn(console, 'warn').mockImplementation(() => {});
     jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -275,7 +279,9 @@ describe('DashboardContainer Component', () => {
 
       // Wait for any effects to complete
       await waitFor(() => {
-        expect(screen.getByTestId('mocked-section-Section 1')).toBeInTheDocument();
+        expect(
+          screen.getByTestId('mocked-section-Section 1'),
+        ).toBeInTheDocument();
       });
 
       expect(mockLogDashboardView).not.toHaveBeenCalled();
@@ -286,7 +292,7 @@ describe('DashboardContainer Component', () => {
       mockUsePatientUUID.mockReturnValue(patientUuid);
       mockLogDashboardView.mockResolvedValue({
         logged: false,
-        error: 'Audit logging is disabled'
+        error: 'Audit logging is disabled',
       });
 
       render(<DashboardContainer sections={mockSections} />);
@@ -299,38 +305,20 @@ describe('DashboardContainer Component', () => {
       // eslint-disable-next-line no-console
       expect(console.warn).toHaveBeenCalledWith(
         'AUDIT_LOG_ERROR_DASHBOARD_VIEW_NOT_LOGGED',
-        'Audit logging is disabled'
-      );
-    });
-
-    it('should handle audit logging service errors gracefully', async () => {
-      const patientUuid = 'patient-123';
-      const error = new Error('Network error');
-      mockUsePatientUUID.mockReturnValue(patientUuid);
-      mockLogDashboardView.mockRejectedValue(error);
-
-      render(<DashboardContainer sections={mockSections} />);
-
-      await waitFor(() => {
-        expect(mockLogDashboardView).toHaveBeenCalledWith(patientUuid);
-      });
-
-      // Verify console error was called
-      // eslint-disable-next-line no-console
-      expect(console.error).toHaveBeenCalledWith(
-        'DASHBOARD_AUDIT_VIEW_FAILURE',
-        error
+        'Audit logging is disabled',
       );
     });
 
     it('should log dashboard view again when patient UUID changes', async () => {
       const firstPatientUuid = 'patient-123';
       const secondPatientUuid = 'patient-456';
-      
+
       mockUsePatientUUID.mockReturnValue(firstPatientUuid);
       mockLogDashboardView.mockResolvedValue({ logged: true });
 
-      const { rerender } = render(<DashboardContainer sections={mockSections} />);
+      const { rerender } = render(
+        <DashboardContainer sections={mockSections} />,
+      );
 
       await waitFor(() => {
         expect(mockLogDashboardView).toHaveBeenCalledWith(firstPatientUuid);
@@ -351,14 +339,21 @@ describe('DashboardContainer Component', () => {
     it('should continue normal operation even when audit logging fails', async () => {
       const patientUuid = 'patient-123';
       mockUsePatientUUID.mockReturnValue(patientUuid);
-      mockLogDashboardView.mockRejectedValue(new Error('Audit service unavailable'));
+      mockLogDashboardView.mockResolvedValue({
+        logged: false,
+        error: 'Audit service unavailable',
+      });
 
       render(<DashboardContainer sections={mockSections} />);
 
       // Component should still render normally
       await waitFor(() => {
-        expect(screen.getByTestId('mocked-section-Section 1')).toBeInTheDocument();
-        expect(screen.getByTestId('mocked-section-Section 2')).toBeInTheDocument();
+        expect(
+          screen.getByTestId('mocked-section-Section 1'),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByTestId('mocked-section-Section 2'),
+        ).toBeInTheDocument();
       });
 
       expect(mockLogDashboardView).toHaveBeenCalledWith(patientUuid);
