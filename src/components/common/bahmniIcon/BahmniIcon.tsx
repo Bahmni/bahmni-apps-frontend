@@ -1,7 +1,8 @@
-import React from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IconName } from '@fortawesome/fontawesome-svg-core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React from 'react';
 import { ICON_SIZE, ICON_PADDING } from '@constants/icon';
+import * as styles from './styles/BahmniIcon.module.scss';
 
 interface BahmniIconProps {
   name: string; // Format: "fa-home"
@@ -54,10 +55,32 @@ const BahmniIcon: React.FC<BahmniIconProps> = ({
   padding = ICON_PADDING.XXSMALL,
 }) => {
   if (!name || !/^fas?-[a-zA-Z0-9_-]+$/.test(name)) {
-    return <></>;
+    return;
   }
+
+  const getPaddingClass = (padding: ICON_PADDING): string => {
+    switch (padding) {
+      case ICON_PADDING.NONE:
+        return styles.paddingNone;
+      case ICON_PADDING.XXSMALL:
+        return styles.paddingXxsmall;
+      case ICON_PADDING.XSMALL:
+        return styles.paddingXsmall;
+      case ICON_PADDING.SMALL:
+        return styles.paddingSmall;
+      case ICON_PADDING.MEDIUM:
+        return styles.paddingMedium;
+      case ICON_PADDING.LARGE:
+        return styles.paddingLarge;
+    }
+  };
+
   return (
-    <div style={{ padding: padding }} id={id} aria-label={ariaLabel}>
+    <div
+      className={`${styles.bahmniIcon} ${getPaddingClass(padding)}`}
+      id={id}
+      aria-label={ariaLabel}
+    >
       <FontAwesomeIcon
         icon={['fas', name as IconName]}
         size={size}

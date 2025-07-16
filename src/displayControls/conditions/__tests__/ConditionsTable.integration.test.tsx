@@ -1,16 +1,16 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
-import ConditionsTable from '../ConditionsTable';
-import { usePatientUUID } from '@hooks/usePatientUUID';
-import { useConditions } from '@hooks/useConditions';
-import { formatConditions } from '@services/conditionService';
+import React from 'react';
 import i18n from '@/setupTests.i18n';
 import {
   mockPatientUUID,
   mockConditions,
   mockFormattedConditionsWithoutNotes,
 } from '@__mocks__/conditionMocks';
+import { useConditions } from '@hooks/useConditions';
+import { usePatientUUID } from '@hooks/usePatientUUID';
+import { formatConditions } from '@services/conditionService';
 import { FormattedCondition, ConditionStatus } from '@types/condition';
+import ConditionsTable from '../ConditionsTable';
 
 // Mock the hooks
 jest.mock('@hooks/usePatientUUID');

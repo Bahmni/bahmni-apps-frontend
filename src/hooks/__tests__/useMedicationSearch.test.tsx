@@ -1,7 +1,7 @@
 import { renderHook, waitFor, act } from '@testing-library/react';
-import { useMedicationSearch } from '../useMedicationSearch';
-import { searchMedications } from '@/services/medicationService';
 import { Bundle, Medication } from 'fhir/r4';
+import { searchMedications } from '@/services/medicationService';
+import { useMedicationSearch } from '../useMedicationSearch';
 
 // Mock the dependencies
 jest.mock('@/services/medicationService');
@@ -31,7 +31,7 @@ describe('useMedicationSearch', () => {
 
       expect(result.current.searchResults).toEqual([]);
       expect(result.current.loading).toBe(false);
-      expect(result.current.error).toBe(null);
+      expect(result.current.error).toBeNull();
     });
 
     it('should fetch medications when search term is provided', async () => {
@@ -76,7 +76,7 @@ describe('useMedicationSearch', () => {
         expect(result.current.searchResults).toEqual([mockMedication]);
       });
 
-      expect(result.current.error).toBe(null);
+      expect(result.current.error).toBeNull();
       expect(mockSearchMedications).toHaveBeenCalledWith('aspirin', 20);
     });
 
@@ -216,7 +216,7 @@ describe('useMedicationSearch', () => {
       });
 
       expect(result.current.searchResults).toEqual([]);
-      expect(result.current.error).toBe(null);
+      expect(result.current.error).toBeNull();
     });
 
     it('should clear results when search term is only whitespace', async () => {
@@ -232,7 +232,7 @@ describe('useMedicationSearch', () => {
       });
 
       expect(result.current.searchResults).toEqual([]);
-      expect(result.current.error).toBe(null);
+      expect(result.current.error).toBeNull();
     });
   });
 
@@ -299,7 +299,7 @@ describe('useMedicationSearch', () => {
       });
 
       expect(result.current.searchResults).toEqual([]);
-      expect(result.current.error).toBe(null);
+      expect(result.current.error).toBeNull();
     });
 
     it('should handle bundle entries without resources', async () => {
@@ -471,7 +471,7 @@ describe('useMedicationSearch', () => {
       expect(mockSearchMedications).not.toHaveBeenCalled();
       expect(result.current.searchResults).toEqual([]);
       expect(result.current.loading).toBe(false);
-      expect(result.current.error).toBe(null);
+      expect(result.current.error).toBeNull();
     });
 
     it('should handle component unmounting during fetch', async () => {
@@ -543,7 +543,7 @@ describe('useMedicationSearch', () => {
       });
 
       await waitFor(() => {
-        expect(result.current.error).toBe(null);
+        expect(result.current.error).toBeNull();
       });
     });
   });

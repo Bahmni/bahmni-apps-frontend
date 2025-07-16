@@ -1,7 +1,7 @@
-import { PATIENT_RADIOLOGY_RESOURCE_URL } from '@constants/app';
-import { get } from './api';
 import { Bundle, ServiceRequest } from 'fhir/r4';
+import { PATIENT_RADIOLOGY_RESOURCE_URL } from '@constants/app';
 import { RadiologyInvestigation } from '@types/radiologyInvestigation';
+import { get } from './api';
 
 /**
  * Fetches radiology investigations for a given patient UUID from the FHIR R4 endpoint
@@ -24,15 +24,15 @@ function formatRadiologyInvestigations(
   bundle: Bundle,
 ): RadiologyInvestigation[] {
   const orders =
-    bundle.entry?.map((entry) => entry.resource as ServiceRequest) || [];
+    bundle.entry?.map((entry) => entry.resource as ServiceRequest) ?? [];
 
   return orders.map((order) => {
     const orderedDate = order.occurrencePeriod?.start as string;
 
     const replaces = order.replaces
       ?.map((replace) => {
-        const reference = replace.reference || '';
-        return reference.split('/').pop() || '';
+        const reference = replace.reference ?? '';
+        return reference.split('/').pop() ?? '';
       })
       .filter((id) => id.length > 0);
 

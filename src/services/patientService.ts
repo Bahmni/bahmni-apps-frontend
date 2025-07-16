@@ -1,12 +1,12 @@
+import { PATIENT_RESOURCE_URL } from '@constants/app';
 import {
   FhirPatient,
   FhirAddress,
   FhirTelecom,
   FormattedPatientData,
 } from '@types/patient';
-import { PATIENT_RESOURCE_URL } from '@constants/app';
-import { get } from './api';
 import { calculateAge } from '@utils/date';
+import { get } from './api';
 
 export const getPatientById = async (
   patientUUID: string,
@@ -45,8 +45,8 @@ export const formatPatientName = (patient: FhirPatient): string | null => {
   }
 
   const name = patient.name[0];
-  const given = name.given?.join(' ') || '';
-  const family = name.family || '';
+  const given = name.given?.join(' ') ?? '';
+  const family = name.family ?? '';
 
   if (!given && !family) {
     return null;
@@ -65,12 +65,12 @@ export const formatPatientAddress = (address?: FhirAddress): string | null => {
   if (!address) return null;
 
   const addressLines = [
-    ...(address.line || []), // Standard address lines
+    ...(address.line ?? []), // Standard address lines
     ...extractAddressExtensions(address), // Extracted address extensions
   ];
-  const city = address.city || '';
-  const state = address.state || '';
-  const postalCode = address.postalCode || '';
+  const city = address.city ?? '';
+  const state = address.state ?? '';
+  const postalCode = address.postalCode ?? '';
 
   const parts = addressLines.filter(Boolean);
   if (city) parts.push(city);
@@ -88,7 +88,7 @@ export const formatPatientAddress = (address?: FhirAddress): string | null => {
  * @returns null if no telecom is provided
  */
 export const formatPatientContact = (telecom?: FhirTelecom): string | null => {
-  if (!telecom || !telecom.system || !telecom.value) {
+  if (!telecom?.system || !telecom.value) {
     return null;
   }
 
@@ -113,12 +113,12 @@ export const formatPatientData = (
       ? formatPatientContact(patient.telecom[0])
       : null;
 
-  const identifiers = patient.identifier || [];
+  const identifiers = patient.identifier ?? [];
 
   const identifierMap = new Map<string, string>();
   if (identifiers.length > 0) {
     identifiers.forEach((identifier) => {
-      if (!identifier.type || !identifier.type.text || !identifier.value) {
+      if (!identifier.type?.text || !identifier.value) {
         return;
       }
       identifierMap.set(identifier.type.text, identifier.value);
@@ -128,10 +128,10 @@ export const formatPatientData = (
   const age = patient.birthDate ? calculateAge(patient.birthDate) : null;
 
   return {
-    id: patient.id || '',
+    id: patient.id ?? '',
     fullName: formatPatientName(patient),
-    gender: patient.gender || null,
-    birthDate: patient.birthDate || null,
+    gender: patient.gender ?? null,
+    birthDate: patient.birthDate ?? null,
     formattedAddress: address,
     formattedContact: contact,
     identifiers: identifierMap,

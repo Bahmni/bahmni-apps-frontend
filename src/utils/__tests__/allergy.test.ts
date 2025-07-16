@@ -1,11 +1,11 @@
+import { FormattedAllergy } from '@types/allergy';
+import { AllergenType } from '@types/concepts';
 import {
   getCategoryDisplayName,
   getSeverityDisplayName,
   getSeverityPriority,
   sortAllergiesBySeverity,
 } from '../allergy';
-import { AllergenType } from '@types/concepts';
-import { FormattedAllergy } from '@types/allergy';
 
 describe('allergy utils', () => {
   describe('getCategoryDisplayName', () => {

@@ -1,10 +1,10 @@
-import React from 'react';
 import { Tag } from '@carbon/react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
 import { ICON_SIZE } from '@constants/icon';
-import * as styles from './styles/LabInvestigation.module.scss';
 import { FormattedLabTest, LabTestPriority } from '@types/labInvestigation';
+import * as styles from './styles/LabInvestigation.module.scss';
 
 interface LabInvestigationItemProps {
   test: FormattedLabTest;

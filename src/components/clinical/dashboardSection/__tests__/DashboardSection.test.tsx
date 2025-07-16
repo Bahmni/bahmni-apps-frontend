@@ -1,7 +1,7 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
-import DashboardSection from '../DashboardSection';
+import React from 'react';
 import { DashboardSectionConfig } from '@types/dashboardConfig';
+import DashboardSection from '../DashboardSection';
 
 // Mock dependencies
 jest.mock('@carbon/react', () => ({
@@ -196,7 +196,7 @@ describe('DashboardSection Component', () => {
       // Check that only section title is present, no other content
       expect(screen.getByText('Unknown Section')).toBeInTheDocument();
       const tile = screen.getByTestId('carbon-tile');
-      expect(tile.children.length).toBe(1); // Only the title paragraph, no additional content
+      expect(tile.children).toHaveLength(1); // Only the title paragraph, no additional content
     });
   });
 });

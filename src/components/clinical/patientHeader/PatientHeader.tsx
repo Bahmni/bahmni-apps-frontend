@@ -1,9 +1,9 @@
-import React from 'react';
-import { Tile, Button, Grid, Column } from '@carbon/react';
-import PatientDetails from '@displayControls/patient/PatientDetails';
-import { useTranslation } from 'react-i18next';
-import * as styles from './styles/PatientHeader.module.scss';
 import { Add } from '@carbon/icons-react';
+import { Tile, Button, Grid, Column } from '@carbon/react';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import PatientDetails from '@displayControls/patient/PatientDetails';
+import * as styles from './styles/PatientHeader.module.scss';
 
 interface PatientHeaderProps {
   setIsActionAreaVisible: React.Dispatch<React.SetStateAction<boolean>>;

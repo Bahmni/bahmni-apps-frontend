@@ -1,9 +1,9 @@
 import React, { ReactNode, useState, useMemo, useEffect } from 'react';
 import { ClinicalConfigContext } from '@contexts/ClinicalConfigContext';
 import { getClinicalConfig } from '@services/configService';
-import { getFormattedError } from '@utils/common';
 import notificationService from '@services/notificationService';
 import { ClinicalConfig } from '@types/config';
+import { getFormattedError } from '@utils/common';
 
 interface ClinicalConfigProviderProps {
   children: ReactNode;

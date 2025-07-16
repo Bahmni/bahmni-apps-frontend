@@ -1,15 +1,17 @@
-import React from 'react';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { ValueSet } from 'fhir/r4';
+import React from 'react';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/setupTests.i18n';
-import InvestigationsForm from '../InvestigationsForm';
+import { ORDER_TYPE_URL, ALL_ORDERABLES_CONCEPT_NAME } from '@constants/app';
+import { FHIR_CONCEPT_CLASS_EXTENSION_URL } from '@constants/fhir';
 import { NotificationProvider } from '@providers/NotificationProvider';
-import { ValueSet } from 'fhir/r4';
+import { get } from '@services/api';
 import useServiceRequestStore from '@stores/serviceRequestStore';
 import { OrderTypeResponse } from '@types/orderType';
-import { FHIR_CONCEPT_CLASS_EXTENSION_URL } from '@constants/fhir';
-import { ORDER_TYPE_URL, ALL_ORDERABLES_CONCEPT_NAME } from '@constants/app';
+import { ServiceRequestInputEntry } from '@types/serviceRequest';
+import InvestigationsForm from '../InvestigationsForm';
 
 // Mock only the API layer
 jest.mock('@services/api', () => ({
@@ -18,9 +20,6 @@ jest.mock('@services/api', () => ({
 
 jest.mock('@stores/serviceRequestStore');
 Element.prototype.scrollIntoView = jest.fn();
-
-import { get } from '@services/api';
-import { ServiceRequestInputEntry } from '@types/serviceRequest';
 
 // Mock data for the OrderType response
 const mockOrderTypeResponse: OrderTypeResponse = {
@@ -283,7 +282,7 @@ describe('InvestigationsForm Integration Tests', () => {
         }),
         removeServiceRequest: jest.fn((category, code) => {
           const requests =
-            mockStore.selectedServiceRequests.get(category) || [];
+            mockStore.selectedServiceRequests.get(category) ?? [];
           mockStore.selectedServiceRequests.set(
             category,
             requests.filter((req) => req.id !== code),

@@ -18,10 +18,10 @@ export enum ICON_SIZE {
 }
 
 export enum ICON_PADDING {
-  NONE = '0',
-  XXSMALL = '0.125rem',
-  XSMALL = '0.25rem',
-  SMALL = '0.5rem',
-  MEDIUM = '1rem',
-  LARGE = '1.5rem',
+  NONE,
+  XXSMALL,
+  XSMALL,
+  SMALL,
+  MEDIUM,
+  LARGE,
 }

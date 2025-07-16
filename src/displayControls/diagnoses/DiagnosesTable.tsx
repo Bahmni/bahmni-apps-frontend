@@ -1,13 +1,13 @@
-import React, { useMemo, useCallback } from 'react';
 import { Tag, Tile, DataTableSkeleton } from '@carbon/react';
+import React, { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
+import { FULL_MONTH_DATE_FORMAT, ISO_DATE_FORMAT } from '@constants/date';
 import { useDiagnoses } from '@hooks/useDiagnoses';
 import { Diagnosis } from '@types/diagnosis';
-import { formatDate } from '@utils/date';
-import { FULL_MONTH_DATE_FORMAT, ISO_DATE_FORMAT } from '@constants/date';
-import { sortDiagnosesByCertainty } from '@utils/diagnosis';
 import { groupByDate } from '@utils/common';
+import { formatDate } from '@utils/date';
+import { sortDiagnosesByCertainty } from '@utils/diagnosis';
 import * as styles from './styles/DiagnosesTable.module.scss';
 
 /**
@@ -47,29 +47,32 @@ const DiagnosesTable: React.FC = () => {
     }));
   }, [diagnoses]);
 
-  const renderCell = useCallback((diagnosis: Diagnosis, cellId: string) => {
-    switch (cellId) {
-      case 'display':
-        return (
-          <>
-            {diagnosis.display + ' '}
-            <Tag
-              className={
-                diagnosis.certainty.code === 'confirmed'
-                  ? styles.confirmedCell
-                  : styles.provisionalCell
-              }
-            >
-              {diagnosis.certainty.code === 'confirmed'
-                ? t('CERTAINITY_CONFIRMED')
-                : t('CERTAINITY_PROVISIONAL')}
-            </Tag>
-          </>
-        );
-      case 'recorder':
-        return diagnosis.recorder || t('DIAGNOSIS_TABLE_NOT_AVAILABLE');
-    }
-  }, []);
+  const renderCell = useCallback(
+    (diagnosis: Diagnosis, cellId: string) => {
+      switch (cellId) {
+        case 'display':
+          return (
+            <>
+              {diagnosis.display + ' '}
+              <Tag
+                className={
+                  diagnosis.certainty.code === 'confirmed'
+                    ? styles.confirmedCell
+                    : styles.provisionalCell
+                }
+              >
+                {diagnosis.certainty.code === 'confirmed'
+                  ? t('CERTAINITY_CONFIRMED')
+                  : t('CERTAINITY_PROVISIONAL')}
+              </Tag>
+            </>
+          );
+        case 'recorder':
+          return diagnosis.recorder || t('DIAGNOSIS_TABLE_NOT_AVAILABLE');
+      }
+    },
+    [t],
+  );
 
   return (
     <Tile

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FhirPatient } from '@types/patient';
 import { useNotification } from '@hooks/useNotification';
 import { getPatientById } from '@services/patientService';
+import { FhirPatient } from '@types/patient';
 import { getFormattedError } from '@utils/common';
 
 interface UsePatientResult {

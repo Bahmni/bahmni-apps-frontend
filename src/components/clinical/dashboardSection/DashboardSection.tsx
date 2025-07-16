@@ -1,14 +1,14 @@
-import React from 'react';
 import { Tile } from '@carbon/react';
-import { DashboardSectionConfig } from '@types/dashboardConfig';
-import * as styles from './styles/DashboardSection.module.scss';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import AllergiesTable from '@displayControls/allergies/AllergiesTable';
 import ConditionsTable from '@displayControls/conditions/ConditionsTable';
-import LabInvestigation from '@displayControls/labinvestigation/LabInvestigationControl';
 import DiagnosesTable from '@displayControls/diagnoses/DiagnosesTable';
-import RadiologyOrdersTable from '@displayControls/radiologyInvestigation/RadiologyInvestigationTable';
-import { useTranslation } from 'react-i18next';
+import LabInvestigation from '@displayControls/labinvestigation/LabInvestigationControl';
 import MedicationsTable from '@displayControls/medications/MedicationsTable';
+import RadiologyOrdersTable from '@displayControls/radiologyInvestigation/RadiologyInvestigationTable';
+import { DashboardSectionConfig } from '@types/dashboardConfig';
+import * as styles from './styles/DashboardSection.module.scss';
 
 export interface DashboardSectionProps {
   section: DashboardSectionConfig;
@@ -51,7 +51,7 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
   return (
     <Tile id={`section-${section.id}`} ref={ref} className={styles.sectionTile}>
       <p className={styles.sectionTitle}>
-        {t(section.translationKey || section.name)}
+        {t(section.translationKey ?? section.name)}
       </p>
       {renderSectionContent(section)}
     </Tile>

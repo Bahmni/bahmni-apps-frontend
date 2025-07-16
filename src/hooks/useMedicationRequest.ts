@@ -1,9 +1,9 @@
 import { useState, useCallback, useEffect } from 'react';
-import { MedicationRequest } from '@types/medicationRequest';
-import { getPatientMedications } from '@services/medicationRequestService';
-import { usePatientUUID } from './usePatientUUID';
-import { getFormattedError } from '@utils/common';
 import { useTranslation } from 'react-i18next';
+import { getPatientMedications } from '@services/medicationRequestService';
+import { MedicationRequest } from '@types/medicationRequest';
+import { getFormattedError } from '@utils/common';
+import { usePatientUUID } from './usePatientUUID';
 
 interface MedicationRequestResult {
   medications: MedicationRequest[];
@@ -40,7 +40,7 @@ export const useMedicationRequest = (): MedicationRequestResult => {
     } finally {
       setLoading(false);
     }
-  }, [patientUUID]);
+  }, [patientUUID, t]);
 
   useEffect(() => {
     fetchMedications();

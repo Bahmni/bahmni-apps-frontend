@@ -1,7 +1,7 @@
 import { renderHook, act } from '@testing-library/react';
-import { useDashboardConfig } from '../useDashboardConfig';
-import { getDashboardConfig } from '@services/configService';
 import { validDashboardConfig } from '@__mocks__/configMocks';
+import { getDashboardConfig } from '@services/configService';
+import { useDashboardConfig } from '../useDashboardConfig';
 
 // Mock notification service
 jest.mock('@services/notificationService', () => ({

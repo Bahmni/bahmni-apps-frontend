@@ -1,3 +1,9 @@
+import { differenceInDays, parseISO } from 'date-fns';
+import {
+  MedicationRequest,
+  MedicationStatus,
+  FormattedMedicationRequest,
+} from '@types/medicationRequest';
 import {
   formatMedicationRequest,
   formatMedicationRequestDate,
@@ -8,12 +14,6 @@ import {
   sortMedicationsByDateDistance,
   MEDICATION_STATUS_PRIORITY_ORDER,
 } from '../medicationRequest';
-import {
-  MedicationRequest,
-  MedicationStatus,
-  FormattedMedicationRequest,
-} from '@types/medicationRequest';
-import { differenceInDays, parseISO } from 'date-fns';
 
 jest.mock('@utils/date', () => ({
   formatDate: (date: string | undefined) => ({

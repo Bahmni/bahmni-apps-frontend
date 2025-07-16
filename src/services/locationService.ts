@@ -1,7 +1,7 @@
+import { BAHMNI_USER_LOCATION_COOKIE_NAME } from '@constants/app';
 import { COMMON_ERROR_MESSAGES } from '@constants/errors';
 import { OpenMRSLocation } from '@types/location';
 import { getCookieByName } from '@utils/common';
-import { BAHMNI_USER_LOCATION_COOKIE_NAME } from '@constants/app';
 
 /**
  * Fetches just the current location from bahmni.user.location cookie

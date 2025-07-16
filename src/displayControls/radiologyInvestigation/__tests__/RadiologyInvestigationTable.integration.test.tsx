@@ -1,10 +1,10 @@
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
+import React from 'react';
 import { I18nextProvider } from 'react-i18next';
-import RadiologyInvestigationTable from '../RadiologyInvestigationTable';
+import i18n from '@/setupTests.i18n';
 import { getPatientRadiologyInvestigations } from '@services/radiologyInvestigationService';
 import { RadiologyInvestigation } from '@types/radiologyInvestigation';
-import i18n from '@/setupTests.i18n';
+import RadiologyInvestigationTable from '../RadiologyInvestigationTable';
 
 // Mock the service layer only (integration test pattern)
 jest.mock('@services/radiologyInvestigationService');

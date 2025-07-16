@@ -1,17 +1,17 @@
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import ConditionsTable from '../ConditionsTable';
-import { useConditions } from '@hooks/useConditions';
-import { formatConditions } from '@services/conditionService';
-import { formatDateDistance } from '@utils/date';
-import { generateId, getFormattedError } from '@utils/common';
+import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
 import i18n from '@/setupTests.i18n';
 import {
   mockConditions,
   mockFormattedConditionsWithoutNotes,
 } from '@__mocks__/conditionMocks';
+import { useConditions } from '@hooks/useConditions';
+import { formatConditions } from '@services/conditionService';
 import { ConditionStatus, FormattedCondition } from '@types/condition';
-import { axe, toHaveNoViolations } from 'jest-axe';
+import { generateId, getFormattedError } from '@utils/common';
+import { formatDateDistance } from '@utils/date';
+import ConditionsTable from '../ConditionsTable';
 
 expect.extend(toHaveNoViolations);
 

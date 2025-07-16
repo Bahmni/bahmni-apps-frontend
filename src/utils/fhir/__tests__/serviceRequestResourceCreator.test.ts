@@ -1,6 +1,6 @@
-import { createServiceRequestResource } from '../serviceRequestResourceCreator';
-import { createCodeableConcept, createCoding } from '../codeableConceptCreator';
 import { Reference } from 'fhir/r4';
+import { createCodeableConcept, createCoding } from '../codeableConceptCreator';
+import { createServiceRequestResource } from '../serviceRequestResourceCreator';
 
 // Mock the dependencies
 jest.mock('../codeableConceptCreator');

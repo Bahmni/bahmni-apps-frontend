@@ -1,10 +1,10 @@
-import React from 'react';
 import { Column, Grid, Checkbox } from '@carbon/react';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ServiceRequestInputEntry,
   SupportedServiceRequestPriority,
 } from '@types/serviceRequest';
-import { useTranslation } from 'react-i18next';
 import * as styles from './styles/SelectedInvestigationItem.module.scss';
 
 export interface SelectedInvestigationItemProps {
@@ -43,7 +43,7 @@ const SelectedInvestigationItem: React.FC<SelectedInvestigationItemProps> =
             id={`investigation-priority-checkbox-${id}`}
             labelText={t('INVESTIGATION_PRIORITY_URGENT')}
             onChange={(_, { checked }) => handleUrgentChange(checked)}
-          ></Checkbox>
+          />
         </Column>
       </Grid>
     );

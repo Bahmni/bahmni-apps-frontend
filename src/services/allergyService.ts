@@ -1,12 +1,12 @@
-import { get } from './api';
-import { PATIENT_ALLERGY_RESOURCE_URL } from '@constants/app';
-import { FormattedAllergy } from '@types/allergy';
 import type { AllergyIntolerance, Bundle, Coding, ValueSet } from 'fhir/r4';
-import { getFormattedError } from '@utils/common';
-import notificationService from './notificationService';
-import { searchFHIRConcepts } from './conceptService';
+import { PATIENT_ALLERGY_RESOURCE_URL } from '@constants/app';
 import { ALLERGEN_TYPES, ALLERGY_REACTION } from '@constants/concepts';
+import { FormattedAllergy } from '@types/allergy';
 import { AllergenConcept, AllergenType } from '@types/concepts';
+import { getFormattedError } from '@utils/common';
+import { get } from './api';
+import { searchFHIRConcepts } from './conceptService';
+import notificationService from './notificationService';
 
 /**
  * Extended Coding interface to include inactive property
@@ -36,8 +36,8 @@ const mapToAllergenConcept = (
   concept: ExtendedCoding,
   type: AllergenType,
 ): AllergenConcept => ({
-  uuid: concept.code || '',
-  display: concept.display || '',
+  uuid: concept.code ?? '',
+  display: concept.display ?? '',
   type,
 });
 
@@ -51,7 +51,7 @@ const extractAllergenConceptsFromValueSet = (
   valueSet: ValueSet,
   type: AllergenType,
 ): AllergenConcept[] => {
-  const concepts = (valueSet.expansion?.contains || []) as ExtendedCoding[];
+  const concepts = (valueSet.expansion?.contains ?? []) as ExtendedCoding[];
   const filteredConcepts = filterInactiveConcepts(concepts);
   return filteredConcepts.map((concept) => mapToAllergenConcept(concept, type));
 };
@@ -69,9 +69,9 @@ export const fetchAndFormatAllergenConcepts = async (
   environmentUuid?: string,
 ): Promise<AllergenConcept[]> => {
   // Use provided UUIDs or fallback to constants
-  const medicationCode = medicationUuid || ALLERGEN_TYPES.MEDICATION.code;
-  const foodCode = foodUuid || ALLERGEN_TYPES.FOOD.code;
-  const environmentCode = environmentUuid || ALLERGEN_TYPES.ENVIRONMENT.code;
+  const medicationCode = medicationUuid ?? ALLERGEN_TYPES.MEDICATION.code;
+  const foodCode = foodUuid ?? ALLERGEN_TYPES.FOOD.code;
+  const environmentCode = environmentUuid ?? ALLERGEN_TYPES.ENVIRONMENT.code;
 
   // Get ValueSets for each allergen type
   const [medicationValueSet, foodValueSet, environmentValueSet] =
@@ -106,9 +106,9 @@ export const fetchAndFormatAllergenConcepts = async (
 export const fetchReactionConcepts = async (
   reactionUuid?: string,
 ): Promise<Coding[]> => {
-  const reactionCode = reactionUuid || ALLERGY_REACTION.code;
+  const reactionCode = reactionUuid ?? ALLERGY_REACTION.code;
   const reactionValueSet = await searchFHIRConcepts(reactionCode);
-  return reactionValueSet.compose?.include[0]?.concept || [];
+  return reactionValueSet.compose?.include[0]?.concept ?? [];
 };
 /**
  * Fetches allergies for a given patient UUID from the FHIR R4 endpoint
@@ -134,7 +134,7 @@ export async function getAllergies(
     return (
       fhirAllergyBundle.entry?.map(
         (entry) => entry.resource as AllergyIntolerance,
-      ) || []
+      ) ?? []
     );
   } catch (error) {
     const { title, message } = getFormattedError(error);
@@ -153,12 +153,12 @@ export function formatAllergies(
 ): FormattedAllergy[] {
   try {
     return allergies.map((allergy) => {
-      const status = allergy.clinicalStatus?.coding?.[0]?.display || 'Unknown';
-      const allergySeverity = allergy.reaction?.[0]?.severity || 'Unknown';
+      const status = allergy.clinicalStatus?.coding?.[0]?.display ?? 'Unknown';
+      const allergySeverity = allergy.reaction?.[0]?.severity ?? 'Unknown';
 
       return {
         id: allergy.id,
-        display: allergy.code?.text || '',
+        display: allergy.code?.text ?? '',
         category: allergy.category,
         criticality: allergy.criticality,
         status,

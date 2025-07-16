@@ -1,13 +1,13 @@
-import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
+import i18n from '@/setupTests.i18n';
+import { DURATION_UNITS } from '@constants/conditions';
+import { ConditionInputEntry } from '@types/condition';
 import SelectedConditionItem, {
   SelectedConditionItemProps,
 } from '../SelectedConditionItem';
-import { ConditionInputEntry } from '@types/condition';
-import { DURATION_UNITS } from '@constants/conditions';
-import i18n from '@/setupTests.i18n';
 
 expect.extend(toHaveNoViolations);
 
@@ -78,7 +78,7 @@ jest.mock('@carbon/react', () => ({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }: any) => (
     <div className={className}>
-      {!hideLabel && <label htmlFor={id}>{titleText || label}</label>}
+      {!hideLabel && <label htmlFor={id}>{titleText ?? label}</label>}
       <select
         id={id}
         data-testid={`dropdown-${id}`}
@@ -90,10 +90,10 @@ jest.mock('@carbon/react', () => ({
           );
           onChange({ selectedItem: selectedOption });
         }}
-        value={selectedItem?.id || ''}
+        value={selectedItem?.id ?? ''}
         data-invalid={invalid}
         aria-invalid={invalid}
-        aria-label={hideLabel ? titleText || label : undefined}
+        aria-label={hideLabel ? (titleText ?? label) : undefined}
         {...props}
       >
         <option value="">Select...</option>

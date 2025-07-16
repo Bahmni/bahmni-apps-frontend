@@ -1,16 +1,16 @@
-import {
-  getTranslations,
-  getUserPreferredLocale,
-  getTranslationFile,
-} from '../translationService';
+import axios from 'axios';
 import {
   BUNDLED_TRANSLATIONS_URL_TEMPLATE,
   LOCALE_STORAGE_KEY,
   DEFAULT_LOCALE,
 } from '@constants/app';
-import notificationService from '../notificationService';
-import axios from 'axios';
 import { CONFIG_TRANSLATIONS_URL_TEMPLATE } from '@constants/config';
+import notificationService from '../notificationService';
+import {
+  getTranslations,
+  getUserPreferredLocale,
+  getTranslationFile,
+} from '../translationService';
 
 // Mock dependencies
 jest.mock('../notificationService');

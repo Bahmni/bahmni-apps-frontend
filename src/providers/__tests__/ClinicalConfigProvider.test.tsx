@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   render,
   screen,
@@ -6,13 +5,14 @@ import {
   waitFor,
   fireEvent,
 } from '@testing-library/react';
+import React from 'react';
 import '@testing-library/jest-dom';
-import { ClinicalConfigProvider } from '../ClinicalConfigProvider';
+import * as configMocks from '@__mocks__/configMocks';
 import { useClinicalConfig } from '@hooks/useClinicalConfig';
 import { getClinicalConfig } from '@services/configService';
 import notificationService from '@services/notificationService';
 import { ClinicalConfig } from '@types/config';
-import * as configMocks from '@__mocks__/configMocks';
+import { ClinicalConfigProvider } from '../ClinicalConfigProvider';
 
 // Mock the configService
 jest.mock('@services/configService');

@@ -1,12 +1,4 @@
-import { get } from '../api';
-import {
-  getPatientAllergiesBundle,
-  getAllergies,
-  formatAllergies,
-  fetchAndFormatAllergenConcepts,
-  fetchReactionConcepts,
-} from '../allergyService';
-import { AllergyIntolerance } from 'fhir/r4';
+import { AllergyIntolerance, ValueSet } from 'fhir/r4';
 import {
   mockAllergyIntolerance,
   mockAllergyIntoleranceBundle,
@@ -27,11 +19,18 @@ import {
   mockBundleWithInvalidEntry,
   mockAllergyWithInvalidCoding,
 } from '@__mocks__/allergyMocks';
-import notificationService from '../notificationService';
-import { getFormattedError } from '@utils/common';
-import { searchFHIRConcepts } from '../conceptService';
 import { ALLERGEN_TYPES, ALLERGY_REACTION } from '@constants/concepts';
-import { ValueSet } from 'fhir/r4';
+import { getFormattedError } from '@utils/common';
+import {
+  getPatientAllergiesBundle,
+  getAllergies,
+  formatAllergies,
+  fetchAndFormatAllergenConcepts,
+  fetchReactionConcepts,
+} from '../allergyService';
+import { get } from '../api';
+import { searchFHIRConcepts } from '../conceptService';
+import notificationService from '../notificationService';
 
 // Mock the api module
 jest.mock('../api');
@@ -199,6 +198,7 @@ describe('allergyService', () => {
         ...mockAllergyIntolerance,
         /* eslint-disable @typescript-eslint/no-explicit-any */
         note: [{ invalid: 'data' }] as any,
+        /* eslint-enable @typescript-eslint/no-explicit-any */
       };
 
       const result = formatAllergies([allergyWithMalformedNotes]);
@@ -220,6 +220,7 @@ describe('allergyService', () => {
       // Mock an error by passing null instead of an array to trigger a real error
       /* eslint-disable @typescript-eslint/no-explicit-any */
       const mockInvalidData = null as any;
+      /* eslint-enable @typescript-eslint/no-explicit-any */
 
       const result = formatAllergies(mockInvalidData);
 

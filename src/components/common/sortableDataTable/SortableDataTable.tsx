@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   DataTable,
   Table,
@@ -12,6 +11,7 @@ import {
   DataTableSkeleton,
 } from '@carbon/react';
 import classnames from 'classnames';
+import React from 'react';
 import * as styles from './styles/SortableDataTable.module.scss';
 
 interface SortableDataTableProps<T> {

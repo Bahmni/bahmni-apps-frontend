@@ -1,15 +1,15 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import DiagnosesTable from '../DiagnosesTable';
-import { useDiagnoses } from '@hooks/useDiagnoses';
-import { Diagnosis } from '@types/diagnosis';
+import React from 'react';
+import i18n from '@/setupTests.i18n';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
 import { FULL_MONTH_DATE_FORMAT, ISO_DATE_FORMAT } from '@constants/date';
-import { formatDate } from '@utils/date';
+import { useDiagnoses } from '@hooks/useDiagnoses';
+import { Diagnosis } from '@types/diagnosis';
 import { groupByDate } from '@utils/common';
+import { formatDate } from '@utils/date';
 import { sortDiagnosesByCertainty } from '@utils/diagnosis';
-import i18n from '@/setupTests.i18n';
+import DiagnosesTable from '../DiagnosesTable';
 
 expect.extend(toHaveNoViolations);
 
@@ -75,7 +75,7 @@ jest.mock('@components/common/expandableDataTable/ExpandableDataTable', () => ({
     <div data-testid="expandable-data-table" className={className}>
       <div data-testid="table-title">{tableTitle}</div>
       <div data-testid="table-loading">{loading?.toString()}</div>
-      <div data-testid="table-error">{error?.message || 'null'}</div>
+      <div data-testid="table-error">{error?.message ?? 'null'}</div>
       <div data-testid="table-empty-message">{emptyStateMessage}</div>
       <div data-testid="table-aria-label">{ariaLabel}</div>
       <div data-testid="table-rows">{JSON.stringify(rows)}</div>
@@ -84,7 +84,7 @@ jest.mock('@components/common/expandableDataTable/ExpandableDataTable', () => ({
       <div data-testid="table-is-open">{isOpen?.toString()}</div>
       {// eslint-disable-next-line @typescript-eslint/no-explicit-any
       rows?.map((row: any, index: number) => (
-        <div key={index} data-testid={`table-row-${index}`}>
+        <div key={row.id ?? `row-${index}`} data-testid={`table-row-${index}`}>
           {// eslint-disable-next-line @typescript-eslint/no-explicit-any
           headers?.map((header: any) => (
             <div key={header.key} data-testid={`cell-${header.key}-${index}`}>
@@ -403,7 +403,7 @@ describe('DiagnosesTable Component', () => {
       const headerElements = screen.getAllByTestId('table-headers');
 
       headerElements.forEach((headerElement) => {
-        const headers = JSON.parse(headerElement.textContent || '[]');
+        const headers = JSON.parse(headerElement.textContent ?? '[]');
         expect(headers).toEqual([
           { key: 'display', header: 'Diagnosis' },
           { key: 'recorder', header: 'Recorded By' },
@@ -417,7 +417,7 @@ describe('DiagnosesTable Component', () => {
       const sortableElements = screen.getAllByTestId('table-sortable');
 
       sortableElements.forEach((sortableElement) => {
-        const sortable = JSON.parse(sortableElement.textContent || '[]');
+        const sortable = JSON.parse(sortableElement.textContent ?? '[]');
         expect(sortable).toEqual([
           { key: 'display', sortable: true },
           { key: 'recorder', sortable: true },

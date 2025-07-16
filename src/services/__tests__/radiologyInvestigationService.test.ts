@@ -1,11 +1,11 @@
 import { Bundle, ServiceRequest } from 'fhir/r4';
-import { getPatientRadiologyInvestigations } from '../radiologyInvestigationService';
-import { get } from '../api';
 import {
   mockRadiologyTestBasic,
   mockRadiologyTestWithMultipleReplaces,
   mockRadiologyTestWithEmptyReplaces,
 } from '@__mocks__/radiologyInvestigationMocks';
+import { get } from '../api';
+import { getPatientRadiologyInvestigations } from '../radiologyInvestigationService';
 
 // Mock the API module
 jest.mock('../api');

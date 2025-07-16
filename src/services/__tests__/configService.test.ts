@@ -1,13 +1,4 @@
-import {
-  getClinicalConfig,
-  getDashboardConfig,
-  getMedicationConfig,
-} from '../configService';
-import * as api from '../api';
 import Ajv from 'ajv';
-import * as commonUtils from '@utils/common';
-import { CONFIG_ERROR_MESSAGES, ERROR_TITLES } from '@constants/errors';
-import notificationService from '../notificationService';
 import i18n from '@/setupTests.i18n';
 import {
   validFullClinicalConfig,
@@ -24,7 +15,16 @@ import {
   DASHBOARD_CONFIG_URL,
   MEDICATIONS_CONFIG_URL,
 } from '@constants/config';
+import { CONFIG_ERROR_MESSAGES, ERROR_TITLES } from '@constants/errors';
 import { MedicationJSONConfig } from '@types/medicationConfig';
+import * as commonUtils from '@utils/common';
+import * as api from '../api';
+import {
+  getClinicalConfig,
+  getDashboardConfig,
+  getMedicationConfig,
+} from '../configService';
+import notificationService from '../notificationService';
 
 // Mock the api module
 jest.mock('../api');
@@ -317,13 +317,11 @@ describe('ConfigService', () => {
         // Verify the comprehensive dashboard has all optional fields
         const dashboard = result?.dashboards[0];
         expect(dashboard).toBeDefined();
-        if (dashboard) {
-          expect(dashboard.name).toBe('Comprehensive Dashboard');
-          expect(dashboard.requiredPrivileges).toContain(
-            'View Comprehensive Dashboard',
-          );
-          expect(dashboard.default).toBe(true);
-        }
+        expect(dashboard?.name).toBe('Comprehensive Dashboard');
+        expect(dashboard?.requiredPrivileges).toContain(
+          'View Comprehensive Dashboard',
+        );
+        expect(dashboard?.default).toBe(true);
 
         // Verify patient information has custom sections
         const customSections = result?.patientInformation.customSections as

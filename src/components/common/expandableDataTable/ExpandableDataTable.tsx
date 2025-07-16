@@ -1,5 +1,3 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   DataTable,
   DataTableSkeleton,
@@ -14,6 +12,8 @@ import {
   Accordion,
   AccordionItem,
 } from '@carbon/react';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { generateId, getFormattedError } from '@utils/common';
 import './styles/ExpandableDataTable.scss';
 
@@ -48,7 +48,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
 }: ExpandableDataTableProps<T>) => {
   const { t } = useTranslation();
   emptyStateMessage =
-    emptyStateMessage || t('EXPANDABLE_TABLE_EMPTY_STATE_MESSAGE');
+    emptyStateMessage ?? t('EXPANDABLE_TABLE_EMPTY_STATE_MESSAGE');
   if (error) {
     const formattedError = getFormattedError(error);
     return (

@@ -1,7 +1,7 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import PatientHeader from '../PatientHeader';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
+import PatientHeader from '../PatientHeader';
 import '@testing-library/jest-dom';
 
 expect.extend(toHaveNoViolations);

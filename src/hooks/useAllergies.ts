@@ -1,8 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
 import { AllergyIntolerance } from 'fhir/r4';
-import { useNotification } from './useNotification';
+import { useState, useCallback, useEffect } from 'react';
 import { getAllergies } from '@services/allergyService';
 import { getFormattedError } from '@utils/common';
+import { useNotification } from './useNotification';
 
 interface UseAllergiesResult {
   allergies: AllergyIntolerance[];

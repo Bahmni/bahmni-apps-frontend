@@ -1,28 +1,28 @@
-import React, { useMemo, useState } from 'react';
+import { DotMark } from '@carbon/icons-react';
+import { Tab, TabList, TabPanel, TabPanels, Tabs, Tag } from '@carbon/react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
+import { SortableDataTable } from '@components/common/sortableDataTable/SortableDataTable';
+import {
+  DATE_FORMAT,
+  FULL_MONTH_DATE_FORMAT,
+  ISO_DATE_FORMAT,
+} from '@constants/date';
 import { useMedicationRequest } from '@hooks/useMedicationRequest';
+import {
+  FormattedMedicationRequest,
+  MedicationRequest,
+} from '@types/medicationRequest';
+import { groupByDate } from '@utils/common';
+import { formatDate } from '@utils/date';
 import {
   formatMedicationRequest,
   sortMedicationsByStatus,
   sortMedicationsByPriority,
   sortMedicationsByDateDistance,
 } from '@utils/medicationRequest';
-import {
-  FormattedMedicationRequest,
-  MedicationRequest,
-} from '@types/medicationRequest';
-import { DotMark } from '@carbon/icons-react';
-import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
-import { SortableDataTable } from '@components/common/sortableDataTable/SortableDataTable';
-import { Tab, TabList, TabPanel, TabPanels, Tabs, Tag } from '@carbon/react';
 import * as styles from './styles/MedicationsTable.module.scss';
-import { groupByDate } from '@utils/common';
-import { formatDate } from '@utils/date';
-import {
-  DATE_FORMAT,
-  FULL_MONTH_DATE_FORMAT,
-  ISO_DATE_FORMAT,
-} from '@constants/date';
 
 // Helper function to get severity CSS class
 const getMedicationStatusClassName = (status: string): string => {
@@ -75,34 +75,36 @@ const MedicationsTable: React.FC = () => {
   };
 
   // Helper function to process medications into date-grouped structure
-  const processGroupedMedications = (
-    medications: FormattedMedicationRequest[],
-  ) => {
-    if (!medications || medications.length === 0) return [];
+  const processGroupedMedications = useCallback(
+    (medications: FormattedMedicationRequest[]) => {
+      if (!medications || medications.length === 0) return [];
 
-    const grouped = groupByDate(medications, (medication) => {
-      return formatDate(medication.orderDate, ISO_DATE_FORMAT).formattedResult;
-    });
+      const grouped = groupByDate(medications, (medication) => {
+        return formatDate(medication.orderDate, ISO_DATE_FORMAT)
+          .formattedResult;
+      });
 
-    // Sort by date descending (most recent first)
-    const sortedGroups = grouped.sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-    );
+      // Sort by date descending (most recent first)
+      const sortedGroups = grouped.sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+      );
 
-    // Sort medications within each group by priority
-    sortedGroups.forEach((group) => {
-      group.items = sortMedicationsByPriority(group.items);
-    });
+      // Sort medications within each group by priority
+      sortedGroups.forEach((group) => {
+        group.items = sortMedicationsByPriority(group.items);
+      });
 
-    // Sort medications within each group by status
-    sortedGroups.forEach((group) => {
-      group.items = sortMedicationsByStatus(group.items);
-    });
-    return sortedGroups.map((group) => ({
-      date: group.date,
-      medications: group.items,
-    }));
-  };
+      // Sort medications within each group by status
+      sortedGroups.forEach((group) => {
+        group.items = sortMedicationsByStatus(group.items);
+      });
+      return sortedGroups.map((group) => ({
+        date: group.date,
+        medications: group.items,
+      }));
+    },
+    [],
+  );
 
   const headers = useMemo(
     () => [
@@ -141,7 +143,7 @@ const MedicationsTable: React.FC = () => {
     if (!medications) return [];
     const formatted = formattedMedications;
     return sortMedicationsByStatus(formatted);
-  }, [formattedMedications]);
+  }, [medications, formattedMedications]);
 
   const activeAndScheduledMedications = useMemo(() => {
     const activeMedicationsByDate = sortMedicationsByDateDistance(
@@ -230,7 +232,7 @@ const MedicationsTable: React.FC = () => {
             />
           </TabPanel>
           <TabPanel className={styles.medicationTabs}>
-            {(loading || error || processedAllMedications.length === 0) && (
+            {(loading || !!error || processedAllMedications.length === 0) && (
               <SortableDataTable
                 headers={headers}
                 ariaLabel={t('MEDICATIONS_TABLE_ARIA_LABEL')}

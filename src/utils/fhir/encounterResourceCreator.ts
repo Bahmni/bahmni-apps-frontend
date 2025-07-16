@@ -1,6 +1,6 @@
 import { Encounter } from 'fhir/r4';
-import { createCodeableConcept, createCoding } from './codeableConceptCreator';
 import { FHIR_ENCOUNTER_TYPE_CODE_SYSTEM } from '@constants/fhir';
+import { createCodeableConcept, createCoding } from './codeableConceptCreator';
 import {
   createEncounterLocationReference,
   createEncounterParticipantReference,

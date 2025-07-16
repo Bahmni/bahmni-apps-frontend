@@ -1,12 +1,12 @@
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 import axios from 'axios';
-import PatientDetails from '../PatientDetails';
+import React from 'react';
+import { MemoryRouter } from 'react-router-dom';
+import i18n from '@/setupTests.i18n';
+import { NotificationProvider } from '@providers/NotificationProvider';
 import * as patientService from '@services/patientService';
 import { FormattedPatientData, Age } from '@types/patient';
-import { NotificationProvider } from '@providers/NotificationProvider';
-import i18n from '@/setupTests.i18n';
+import PatientDetails from '../PatientDetails';
 
 // Mock axios and patientService
 jest.mock('axios', () => ({

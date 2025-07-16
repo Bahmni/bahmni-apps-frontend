@@ -1,11 +1,11 @@
 import { renderHook, waitFor } from '@testing-library/react';
-import { useMedicationConfig } from '../useMedicationConfig';
-import { fetchMedicationOrdersMetadata } from '@services/medicationService';
 import { getMedicationConfig } from '@services/configService';
+import { fetchMedicationOrdersMetadata } from '@services/medicationService';
 import {
   MedicationOrdersMetadataResponse,
   MedicationJSONConfig,
 } from '@types/medicationConfig';
+import { useMedicationConfig } from '../useMedicationConfig';
 
 jest.mock('@services/medicationService', () => ({
   fetchMedicationOrdersMetadata: jest.fn(),

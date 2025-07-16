@@ -1,11 +1,11 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/setupTests.i18n';
-import SelectedInvestigationItem from '../SelectedInvestigationItem';
 import { ServiceRequestInputEntry } from '@types/serviceRequest';
-import { axe, toHaveNoViolations } from 'jest-axe';
+import SelectedInvestigationItem from '../SelectedInvestigationItem';
 
 expect.extend(toHaveNoViolations);
 

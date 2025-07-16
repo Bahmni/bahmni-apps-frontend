@@ -1,31 +1,31 @@
-import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import React from 'react';
 import { I18nextProvider } from 'react-i18next';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import i18n from '@/setupTests.i18n';
-import ConsultationPad from '../ConsultationPad';
-import { NotificationProvider } from '@providers/NotificationProvider';
-import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
-import * as consultationBundleService from '@services/consultationBundleService';
-import { getLocations } from '@services/locationService';
-import { getEncounterConcepts } from '@services/encounterConceptsService';
-import { getCurrentProvider } from '@services/providerService';
-import { getCurrentUser } from '@services/userService';
-import { getActiveVisit } from '@services/encounterService';
-import { User } from '@types/user';
-import { FhirEncounter, FhirEncounterType } from '@types/encounter';
 import {
   mockLocations,
   mockEncounterConcepts,
   mockPractitioner,
   mockActiveVisit,
 } from '@__mocks__/consultationPadMocks';
-import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
-import useAllergyStore from '@stores/allergyStore';
-import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
+import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
+import { NotificationProvider } from '@providers/NotificationProvider';
+import * as consultationBundleService from '@services/consultationBundleService';
+import { getEncounterConcepts } from '@services/encounterConceptsService';
+import { getActiveVisit } from '@services/encounterService';
+import { getLocations } from '@services/locationService';
 import notificationService from '@services/notificationService';
+import { getCurrentProvider } from '@services/providerService';
+import { getCurrentUser } from '@services/userService';
+import useAllergyStore from '@stores/allergyStore';
+import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
+import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 import useServiceRequestStore from '@stores/serviceRequestStore';
+import { FhirEncounter, FhirEncounterType } from '@types/encounter';
+import { User } from '@types/user';
+import ConsultationPad from '../ConsultationPad';
 
 // Mock axios to prevent actual HTTP requests and SSL certificate errors
 jest.mock('axios', () => ({
@@ -622,6 +622,7 @@ describe('ConsultationPad Integration', () => {
   });
 
   // TODO:Fix this test
+  // eslint-disable-next-line jest/no-commented-out-tests
   // it('should create complete consultation bundle with all entry types', async () => {
   //   // Mock successful bundle creation
   //   (

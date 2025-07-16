@@ -1,6 +1,6 @@
-import React, { ReactNode } from 'react';
 import { Column, Grid } from '@carbon/react';
 import classNames from 'classnames';
+import React, { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as styles from './styles/BoxWHeader.module.scss';
 
@@ -61,7 +61,7 @@ const BoxWHeader: React.FC<BoxWHeaderProps> = ({
       fullWidth
       className={classNames(styles.box, className)}
       data-testid={dataTestId}
-      aria-label={ariaLabel || translatedTitle}
+      aria-label={ariaLabel ?? translatedTitle}
       role="region"
     >
       <Column sm={4} md={8} lg={16} xlg={16} className={styles.header}>

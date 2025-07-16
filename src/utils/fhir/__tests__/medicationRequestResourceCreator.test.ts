@@ -1,13 +1,13 @@
 import { Reference } from 'fhir/r4';
+import { Concept } from '@types/encounterConcepts';
+import { MedicationInputEntry, DurationUnitOption } from '@types/medication';
+import { Frequency } from '@types/medicationConfig';
+import * as codeableConceptCreator from '../codeableConceptCreator';
 import {
   createMedicationRequestResource,
   createMedicationRequestResources,
 } from '../medicationRequestResourceCreator';
-import { MedicationInputEntry, DurationUnitOption } from '@types/medication';
-import { Frequency } from '@types/medicationConfig';
-import { Concept } from '@types/encounterConcepts';
 import * as referenceCreator from '../referenceCreator';
-import * as codeableConceptCreator from '../codeableConceptCreator';
 
 // Mock the dependencies
 jest.mock('../referenceCreator');

@@ -1,8 +1,8 @@
-import React, { ReactNode } from 'react';
-import { Button, Column, Grid } from '@carbon/react';
 import { Close } from '@carbon/icons-react';
-import { useTranslation } from 'react-i18next';
+import { Button, Column, Grid } from '@carbon/react';
 import classNames from 'classnames';
+import React, { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import * as styles from './styles/SelectedItem.module.scss';
 
 /**

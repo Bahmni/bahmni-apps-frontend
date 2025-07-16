@@ -1,10 +1,10 @@
 import { renderHook, act } from '@testing-library/react';
-import { useEncounterDetailsStore } from '../encounterDetailsStore';
-import { OpenMRSLocation } from '@types/location';
-import { Concept } from '@types/encounterConcepts';
-import { Provider } from '@types/provider';
 import { FhirEncounter } from '@types/encounter';
+import { Concept } from '@types/encounterConcepts';
+import { OpenMRSLocation } from '@types/location';
+import { Provider } from '@types/provider';
 import { User } from '@types/user';
+import { useEncounterDetailsStore } from '../encounterDetailsStore';
 
 // Mock practitioner and user data
 const mockPractitioner: Provider = {

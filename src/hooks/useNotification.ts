@@ -1,6 +1,6 @@
 import { useContext } from 'react';
-import { NotificationContextType } from '@types/notification';
 import { NotificationContext } from '@contexts/NotificationContext';
+import { NotificationContextType } from '@types/notification';
 
 /**
  * Custom hook to use the notification service

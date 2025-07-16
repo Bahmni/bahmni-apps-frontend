@@ -1,8 +1,8 @@
-import React from 'react';
 import { renderHook } from '@testing-library/react';
-import { useClinicalConfig } from '../useClinicalConfig';
-import { ClinicalConfigContextType } from '@types/config';
+import React from 'react';
 import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
+import { ClinicalConfigContextType } from '@types/config';
+import { useClinicalConfig } from '../useClinicalConfig';
 
 // Mock notification service
 jest.mock('@services/notificationService', () => ({

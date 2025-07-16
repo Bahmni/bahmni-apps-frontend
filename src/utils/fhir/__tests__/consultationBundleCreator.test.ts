@@ -1,8 +1,8 @@
+import { BundleEntry, FhirResource } from 'fhir/r4';
 import {
   createConsultationBundle,
   createBundleEntry,
 } from '../consultationBundleCreator';
-import { BundleEntry, FhirResource } from 'fhir/r4';
 
 // Mock crypto.randomUUID
 const mockUUID = '1d87ab20-8b86-4b41-a30d-984b2208d945';

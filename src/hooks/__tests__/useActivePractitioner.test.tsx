@@ -1,11 +1,11 @@
 import { renderHook, act } from '@testing-library/react';
-import { useActivePractitioner } from '../useActivePractitioner';
-import { Provider, Person } from '@types/provider';
-import { User } from '@types/user';
+import i18n from '@/setupTests.i18n';
 import { getCurrentProvider } from '@services/providerService';
 import { getCurrentUser } from '@services/userService';
+import { Provider, Person } from '@types/provider';
+import { User } from '@types/user';
 import { getFormattedError } from '@utils/common';
-import i18n from '@/setupTests.i18n';
+import { useActivePractitioner } from '../useActivePractitioner';
 
 // Mock dependencies
 jest.mock('@services/providerService');

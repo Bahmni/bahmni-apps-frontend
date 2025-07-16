@@ -1,15 +1,15 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
-import LabInvestigationControl from '../LabInvestigationControl';
-import { usePatientUUID } from '@hooks/usePatientUUID';
-import useLabInvestigations from '@hooks/useLabInvestigations';
-import { groupLabTestsByDate } from '@services/labInvestigationService';
+import React from 'react';
 import i18n from '@/setupTests.i18n';
 import {
   mockPatientUUID,
   mockLabTestsByDate,
   mockLabTestsByDateWithIncomplete,
 } from '@__mocks__/labInvestigationMocks';
+import useLabInvestigations from '@hooks/useLabInvestigations';
+import { usePatientUUID } from '@hooks/usePatientUUID';
+import { groupLabTestsByDate } from '@services/labInvestigationService';
+import LabInvestigationControl from '../LabInvestigationControl';
 
 // Mock the hooks and services
 jest.mock('@hooks/usePatientUUID');
@@ -122,9 +122,9 @@ describe('LabInvestigationControl Integration', () => {
     // Use a regex to match the translated text followed by a colon
     const orderedByRegex = new RegExp(`${i18n.t('LAB_TEST_ORDERED_BY')}:`, 'i');
     const orderedByTexts = screen.getAllByText(orderedByRegex);
-    expect(orderedByTexts.length).toBe(3); // Three tests with ordered by info
+    expect(orderedByTexts).toHaveLength(3); // Three tests with ordered by info
 
-    expect(screen.getAllByText(/Dr. John Doe/).length).toBe(2); // Two tests ordered by Dr. John Doe
+    expect(screen.getAllByText(/Dr. John Doe/)).toHaveLength(2); // Two tests ordered by Dr. John Doe
     expect(screen.getByText(/Dr. Jane Smith/)).toBeInTheDocument(); // One test ordered by Dr. Jane Smith
   });
 
@@ -233,7 +233,7 @@ describe('LabInvestigationControl Integration', () => {
     const pendingTexts = screen.getAllByText(
       i18n.t('LAB_TEST_RESULTS_PENDING'),
     );
-    expect(pendingTexts.length).toBe(3); // Three tests with pending results
+    expect(pendingTexts).toHaveLength(3); // Three tests with pending results
   });
 
   it('should display error message when hasError is true', () => {

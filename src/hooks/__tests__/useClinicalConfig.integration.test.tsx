@@ -1,10 +1,10 @@
-import React from 'react';
 import { render, waitFor } from '@testing-library/react';
+import React from 'react';
 import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
-import { useClinicalConfig } from '../useClinicalConfig';
 import { getClinicalConfig } from '@services/configService';
-import { ClinicalConfig } from '@types/config';
 import notificationService from '@services/notificationService';
+import { ClinicalConfig } from '@types/config';
+import { useClinicalConfig } from '../useClinicalConfig';
 
 // Mock the configService and notificationService
 jest.mock('@services/configService');

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { DashboardConfig } from '@types/dashboardConfig';
 import { getDashboardConfig } from '@services/configService';
-import { getFormattedError } from '@utils/common';
 import notificationService from '@services/notificationService';
+import { DashboardConfig } from '@types/dashboardConfig';
+import { getFormattedError } from '@utils/common';
 
 interface UseDashboardConfigResult {
   dashboardConfig: DashboardConfig | null;

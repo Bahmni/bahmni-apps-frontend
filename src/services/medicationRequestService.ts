@@ -1,7 +1,7 @@
-import { get } from './api';
+import { Bundle, MedicationRequest as FhirMedicationRequest } from 'fhir/r4';
 import { PATIENT_MEDICATION_RESOURCE_URL } from '@constants/app';
 import { MedicationRequest, MedicationStatus } from '@types/medicationRequest';
-import { Bundle, MedicationRequest as FhirMedicationRequest } from 'fhir/r4';
+import { get } from './api';
 
 /**
  * Maps FHIR medication request statuses to canonical MedicationStatus values
@@ -72,12 +72,7 @@ function getRoute(
   dosageInstruction: FhirMedicationRequest['dosageInstruction'],
 ): string {
   const route = dosageInstruction?.[0]?.route;
-  if (
-    route &&
-    Array.isArray(route.coding) &&
-    route.coding[0] &&
-    route.coding[0].display
-  ) {
+  if (route && Array.isArray(route.coding) && route.coding[0]?.display) {
     return route.coding[0].display;
   }
   return '';
@@ -150,7 +145,7 @@ function getQuantity(
 function formatMedications(bundle: Bundle): MedicationRequest[] {
   // Extract medication requests from bundle entries
   const medications =
-    bundle.entry?.map((entry) => entry.resource as FhirMedicationRequest) || [];
+    bundle.entry?.map((entry) => entry.resource as FhirMedicationRequest) ?? [];
 
   return medications.map((medication) => {
     const medicationReference = medication.medicationReference!;

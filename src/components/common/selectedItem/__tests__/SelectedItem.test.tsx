@@ -1,7 +1,7 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import SelectedItem from '../SelectedItem';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
+import SelectedItem from '../SelectedItem';
 
 expect.extend(toHaveNoViolations);
 

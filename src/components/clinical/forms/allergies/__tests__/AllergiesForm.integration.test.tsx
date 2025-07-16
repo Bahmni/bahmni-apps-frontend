@@ -1,16 +1,16 @@
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { Coding } from 'fhir/r4';
+import React from 'react';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/setupTests.i18n';
+import { ALLERGEN_TYPES } from '@constants/concepts';
+import { useClinicalConfig } from '@hooks/useClinicalConfig';
 import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
 import { NotificationProvider } from '@providers/NotificationProvider';
-import { useClinicalConfig } from '@hooks/useClinicalConfig';
-import AllergiesForm from '../AllergiesForm';
-import { useAllergyStore } from '@stores/allergyStore';
 import * as api from '@services/api';
-import { ALLERGEN_TYPES } from '@constants/concepts';
-import { Coding } from 'fhir/r4';
+import { useAllergyStore } from '@stores/allergyStore';
+import AllergiesForm from '../AllergiesForm';
 
 // Mock hooks and services
 jest.mock('@services/api');

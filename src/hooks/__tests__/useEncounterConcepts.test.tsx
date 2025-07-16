@@ -1,8 +1,8 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useEncounterConcepts } from '../useEncounterConcepts';
 import { getEncounterConcepts } from '@services/encounterConceptsService';
-import { getFormattedError } from '@utils/common';
 import { EncounterConcepts } from '@types/encounterConcepts';
+import { getFormattedError } from '@utils/common';
+import { useEncounterConcepts } from '../useEncounterConcepts';
 
 // Mock dependencies
 jest.mock('@services/encounterConceptsService');

@@ -1,5 +1,5 @@
-import { AllergenType } from '@types/concepts';
 import { FormattedAllergy } from '@types/allergy';
+import { AllergenType } from '@types/concepts';
 import { getPriorityByOrder } from './common';
 
 /**

@@ -1,5 +1,5 @@
-import { createCodeableConcept, createCoding } from '../codeableConceptCreator';
 import { Coding } from 'fhir/r4';
+import { createCodeableConcept, createCoding } from '../codeableConceptCreator';
 
 describe('codeableConceptCreator utility functions', () => {
   describe('createCoding', () => {

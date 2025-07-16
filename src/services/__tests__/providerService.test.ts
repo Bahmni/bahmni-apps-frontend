@@ -1,6 +1,6 @@
-import { getCurrentProvider } from '@services/providerService';
-import { get } from '@services/api';
 import { PROVIDER_RESOURCE_URL } from '@constants/app';
+import { get } from '@services/api';
+import { getCurrentProvider } from '@services/providerService';
 
 // Mock dependencies
 jest.mock('@services/api');

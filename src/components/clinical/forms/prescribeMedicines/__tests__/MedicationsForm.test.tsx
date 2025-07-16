@@ -1,16 +1,16 @@
-import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { Medication } from 'fhir/r4';
+import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/setupTests.i18n';
-import MedicationsForm from '../MedicationsForm';
-import { useMedicationStore } from '@stores/medicationsStore';
 import useMedicationConfig from '@hooks/useMedicationConfig';
 import { useMedicationSearch } from '@hooks/useMedicationSearch';
-import { axe, toHaveNoViolations } from 'jest-axe';
-import { Medication } from 'fhir/r4';
-import { MedicationConfig } from '@types/medicationConfig';
+import { useMedicationStore } from '@stores/medicationsStore';
 import { MedicationInputEntry } from '@types/medication';
+import { MedicationConfig } from '@types/medicationConfig';
+import MedicationsForm from '../MedicationsForm';
 
 expect.extend(toHaveNoViolations);
 
@@ -21,7 +21,7 @@ jest.mock('@hooks/useMedicationSearch');
 jest.mock('@services/medicationService', () => ({
   getMedicationDisplay: jest.fn(
     (medication) =>
-      medication?.code?.text || medication?.code?.display || 'Test Medication',
+      medication?.code?.text ?? medication?.code?.display ?? 'Test Medication',
   ),
 }));
 

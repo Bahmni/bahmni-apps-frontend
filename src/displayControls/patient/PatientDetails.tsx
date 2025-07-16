@@ -1,10 +1,10 @@
-import React, { useMemo } from 'react';
-import { usePatient } from '@hooks/usePatient';
 import { SkeletonText, Tile, Column, Grid } from '@carbon/react';
-import { formatPatientData } from '@services/patientService';
-import { usePatientUUID } from '@hooks/usePatientUUID';
 import { Text } from '@carbon/react/lib/components/Text';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { usePatient } from '@hooks/usePatient';
+import { usePatientUUID } from '@hooks/usePatientUUID';
+import { formatPatientData } from '@services/patientService';
 
 // TODO: Extract this as a PatientDetails Display Control Component
 const PatientDetails: React.FC = () => {
@@ -31,8 +31,7 @@ const PatientDetails: React.FC = () => {
     );
   }
 
-  const formatField = (value?: string | number | null) =>
-    value ? value : null;
+  const formatField = (value?: string | number | null) => value ?? null;
 
   const formattedIdentifiers = formattedPatient.identifiers.size
     ? Array.from(formattedPatient.identifiers.entries())
@@ -42,7 +41,7 @@ const PatientDetails: React.FC = () => {
     : null;
 
   const formattedAge =
-    formattedPatient.age && formattedPatient.age.years !== undefined
+    formattedPatient.age?.years !== undefined
       ? `${formattedPatient.age.years} ${t('CLINICAL_YEARS_TRANSLATION_KEY', { count: formattedPatient.age.years })}, ${formattedPatient.age.months} ${t('CLINICAL_MONTHS_TRANSLATION_KEY', { count: formattedPatient.age.months })}, ${formattedPatient.age.days} ${t('CLINICAL_DAYS_TRANSLATION_KEY', { count: formattedPatient.age.days })}`
       : null;
 

@@ -1,8 +1,8 @@
 import { create } from 'zustand';
-import { OpenMRSLocation } from '@types/location';
-import { Concept } from '@types/encounterConcepts';
-import { Provider } from '@types/provider';
 import { FhirEncounter } from '@types/encounter';
+import { Concept } from '@types/encounterConcepts';
+import { OpenMRSLocation } from '@types/location';
+import { Provider } from '@types/provider';
 import { User } from '@types/user';
 
 export interface EncounterDetailsState {

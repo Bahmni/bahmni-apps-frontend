@@ -1,12 +1,12 @@
+import { ServiceRequest } from 'fhir/r4';
 import { LabTestPriority } from '@types/labInvestigation';
 import { getFormattedError } from '@utils/common';
-import notificationService from '../notificationService';
+import * as api from '../api';
 import {
   mapLabTestPriority,
   getPatientLabTestsByDate,
 } from '../labInvestigationService';
-import * as api from '../api';
-import { ServiceRequest } from 'fhir/r4';
+import notificationService from '../notificationService';
 
 // Mock dependencies
 jest.mock('@utils/common');

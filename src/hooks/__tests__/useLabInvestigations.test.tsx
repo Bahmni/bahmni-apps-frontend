@@ -1,9 +1,9 @@
-import React from 'react';
 import { renderHook, waitFor } from '@testing-library/react';
-import useLabInvestigations from '../useLabInvestigations';
-import { getLabTests, formatLabTests } from '@services/labInvestigationService';
+import React from 'react';
 import { usePatientUUID } from '@hooks/usePatientUUID';
+import { getLabTests, formatLabTests } from '@services/labInvestigationService';
 import { FormattedLabTest, LabTestPriority } from '@types/labInvestigation';
+import useLabInvestigations from '../useLabInvestigations';
 
 // Mock dependencies
 jest.mock('@services/labInvestigationService');

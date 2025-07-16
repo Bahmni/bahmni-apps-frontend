@@ -1,15 +1,14 @@
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { I18nextProvider } from 'react-i18next';
-import { axe, toHaveNoViolations } from 'jest-axe';
-
-import AllergiesForm from '../AllergiesForm';
-import { useAllergyStore } from '@stores/allergyStore';
-import useAllergenSearch from '@hooks/useAllergenSearch';
-import i18n from '@/setupTests.i18n';
-import { AllergenConcept } from '@types/concepts';
 import { Coding } from 'fhir/r4';
+import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
+import { I18nextProvider } from 'react-i18next';
+import i18n from '@/setupTests.i18n';
+import useAllergenSearch from '@hooks/useAllergenSearch';
+import { useAllergyStore } from '@stores/allergyStore';
+import { AllergenConcept } from '@types/concepts';
+import AllergiesForm from '../AllergiesForm';
 
 expect.extend(toHaveNoViolations);
 

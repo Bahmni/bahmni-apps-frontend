@@ -1,15 +1,15 @@
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import BasicForm from '../EncounterDetails';
-import { useLocations } from '@hooks/useLocations';
-import { useEncounterConcepts } from '@hooks/useEncounterConcepts';
+import React from 'react';
+import i18n from '@/setupTests.i18n';
 import { useActivePractitioner } from '@hooks/useActivePractitioner';
 import { useActiveVisit } from '@hooks/useActiveVisit';
+import { useEncounterConcepts } from '@hooks/useEncounterConcepts';
+import { useLocations } from '@hooks/useLocations';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 import { FhirEncounter } from '@types/encounter';
-import i18n from '@/setupTests.i18n';
+import BasicForm from '../EncounterDetails';
 
 jest.mock('@hooks/useLocations');
 jest.mock('@hooks/useEncounterConcepts');
@@ -82,7 +82,11 @@ jest.mock('@carbon/react', () => {
             )}
             {items.map((item, i) => (
               <option
-                key={i}
+                key={
+                  typeof item === 'object' && item?.uuid
+                    ? item.uuid
+                    : `item-${i}`
+                }
                 value={typeof item === 'object' && item?.uuid ? item.uuid : i}
               >
                 {safeItemToString(item)}

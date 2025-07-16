@@ -1,6 +1,6 @@
-import { get } from './api';
 import { PROVIDER_RESOURCE_URL } from '@constants/app';
 import { Provider, ProviderResponse } from '@types/provider';
+import { get } from './api';
 
 /**
  * Fetches the current user's username from cookies and provider uuid fromREST endpoint

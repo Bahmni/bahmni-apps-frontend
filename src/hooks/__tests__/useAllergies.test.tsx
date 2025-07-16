@@ -1,11 +1,11 @@
-import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useAllergies } from '../useAllergies';
-import { getAllergies } from '@services/allergyService';
-import { useNotification } from '@hooks/useNotification';
+import React from 'react';
 import { mockAllergyIntolerance } from '@__mocks__/allergyMocks';
+import { useNotification } from '@hooks/useNotification';
+import { getAllergies } from '@services/allergyService';
 import { FhirAllergyIntolerance } from '@types/allergy';
 import { getFormattedError } from '@utils/common';
+import { useAllergies } from '../useAllergies';
 
 // Mock dependencies
 jest.mock('@services/allergyService');
@@ -88,8 +88,7 @@ describe('useAllergies', () => {
         ); // error state
 
       // Act
-      /* eslint-disable  @typescript-eslint/no-unused-vars */
-      const { result } = renderHook(() => useAllergies(patientUUID));
+      renderHook(() => useAllergies(patientUUID));
 
       // Wait for async operations
       await waitFor(() => {
@@ -218,8 +217,7 @@ describe('useAllergies', () => {
     it('should handle empty allergies array from API', async () => {
       mockedGetAllergies.mockResolvedValueOnce([]);
 
-      /* eslint-disable  @typescript-eslint/no-unused-vars */
-      const { result } = renderHook(() => useAllergies('valid-uuid'));
+      renderHook(() => useAllergies('valid-uuid'));
 
       await waitFor(() => {
         expect(mockSetAllergies).toHaveBeenCalledWith([]);
@@ -230,8 +228,7 @@ describe('useAllergies', () => {
     it('should handle malformed allergy data gracefully', async () => {
       mockedGetAllergies.mockResolvedValueOnce([{} as FhirAllergyIntolerance]);
 
-      /* eslint-disable  @typescript-eslint/no-unused-vars */
-      const { result } = renderHook(() => useAllergies('valid-uuid'));
+      renderHook(() => useAllergies('valid-uuid'));
 
       await waitFor(() => {
         expect(mockSetAllergies).toHaveBeenCalledWith([{}]);

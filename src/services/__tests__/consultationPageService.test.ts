@@ -1,13 +1,13 @@
 import {
-  getDefaultDashboard,
-  getSidebarItems,
-} from '../consultationPageService';
-import {
   validFullClinicalConfig,
   validDashboardConfig,
 } from '@__mocks__/configMocks';
 import { Dashboard } from '@types/config';
 import { DashboardConfig } from '@types/dashboardConfig';
+import {
+  getDefaultDashboard,
+  getSidebarItems,
+} from '../consultationPageService';
 
 describe('ConsultationPageService', () => {
   describe('getDefaultDashboard', () => {

@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
-import { getFormattedError } from '@utils/common';
 import { getEncounterConcepts } from '@services/encounterConceptsService';
 import { EncounterConcepts } from '@types/encounterConcepts';
+import { getFormattedError } from '@utils/common';
 
 interface UseEncounterConceptsResult {
   encounterConcepts: EncounterConcepts | null;

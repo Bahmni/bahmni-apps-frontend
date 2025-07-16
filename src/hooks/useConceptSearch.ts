@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ConceptSearch } from '@types/concepts';
 import { searchConcepts } from '@services/conceptService';
+import { ConceptSearch } from '@types/concepts';
 import useDebounce from './useDebounce';
 
 /**

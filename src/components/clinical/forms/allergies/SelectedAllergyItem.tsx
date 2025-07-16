@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import {
   Column,
   Grid,
@@ -6,13 +5,14 @@ import {
   FilterableMultiSelect,
   Link,
 } from '@carbon/react';
-import { useTranslation } from 'react-i18next';
-import * as styles from './styles/SelectedAllergyItem.module.scss';
 import { Coding } from 'fhir/r4';
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import TextAreaWClose from '@components/common/textAreaWClose/TextAreaWClose';
 import { ALLERGY_SEVERITY_CONCEPTS } from '@constants/concepts';
 import { AllergyInputEntry } from '@types/allergy';
 import { getCategoryDisplayName } from '@utils/allergy';
-import TextAreaWClose from '@components/common/textAreaWClose/TextAreaWClose';
+import * as styles from './styles/SelectedAllergyItem.module.scss';
 
 /**
  * Properties for a selected allergy item
@@ -125,7 +125,7 @@ const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
               placeholder={t('ALLERGY_SELECT_REACTIONS')}
               items={reactionConcepts}
               selectedItems={selectedReactions}
-              itemToString={(item) => (item?.display ? item.display : '')}
+              itemToString={(item) => item?.display ?? ''}
               onChange={(data) => {
                 updateReactions(id, data.selectedItems!);
               }}
@@ -141,7 +141,7 @@ const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
             data-testid={`allergy-note-${id}`}
             labelText={t('ADD_ALLERGY_NOTE')}
             placeholder={t('ADD_ALLERGY_NOTE_PLACEHOLDER')}
-            value={note || ''}
+            value={note ?? ''}
             onChange={(event) => updateNote(id, event.target.value)}
             onClose={() => {
               setHasNote(false);

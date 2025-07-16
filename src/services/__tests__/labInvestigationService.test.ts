@@ -1,3 +1,7 @@
+import { ServiceRequest } from 'fhir/r4';
+import { LabTestPriority, FormattedLabTest } from '@types/labInvestigation';
+import '@utils/date';
+import { getFormattedError } from '@utils/common';
 import { get } from '../api';
 import {
   getLabTests,
@@ -6,11 +10,7 @@ import {
   getPatientLabTestsByDate,
   getPatientLabTestsBundle,
 } from '../labInvestigationService';
-import { LabTestPriority, FormattedLabTest } from '@types/labInvestigation';
-import '@utils/date';
-import { getFormattedError } from '@utils/common';
 import notificationService from '../notificationService';
-import { ServiceRequest } from 'fhir/r4';
 
 // Mock dependencies
 jest.mock('../api');
@@ -418,7 +418,7 @@ describe('labInvestigationService', () => {
 
       // The result should still be an array with the malformed test
       expect(Array.isArray(result)).toBe(true);
-      expect(result.length).toBe(1);
+      expect(result).toHaveLength(1);
       expect(result[0].testName).toBe('Malformed Test');
       expect(result[0].orderedBy).toBe('Unknown Doctor');
     });
@@ -467,7 +467,7 @@ describe('labInvestigationService', () => {
 
       // The result should be an empty array since we can't group by date
       expect(Array.isArray(result)).toBe(true);
-      expect(result.length).toBe(0);
+      expect(result).toHaveLength(0);
     });
 
     it('should sort dates correctly with newest first', () => {
@@ -493,7 +493,7 @@ describe('labInvestigationService', () => {
       const result = groupLabTestsByDate([oldTest, middleTest, newTest]);
 
       // Verify sorting order (newest first)
-      expect(result.length).toBe(3);
+      expect(result).toHaveLength(3);
       expect(result[0].date).toBe('Dec 31, 2025');
       expect(result[1].date).toBe('Jun 15, 2024');
       expect(result[2].date).toBe('Jan 1, 2024');

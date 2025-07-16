@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getLocations } from '@services/locationService';
 import { OpenMRSLocation } from '@types/location';
-import { useTranslation } from 'react-i18next';
 
 interface UseLocationsResult {
   locations: OpenMRSLocation[];
@@ -38,7 +38,7 @@ export const useLocations = (): UseLocationsResult => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchLocations();

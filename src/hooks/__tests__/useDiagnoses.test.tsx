@@ -1,11 +1,11 @@
 import { renderHook, act } from '@testing-library/react';
-import { useDiagnoses } from '../useDiagnoses';
-import { Diagnosis } from '@types/diagnosis';
-import { getPatientDiagnoses } from '@services/diagnosesService';
-import { usePatientUUID } from '../usePatientUUID';
-import { getFormattedError } from '@utils/common';
 import { Coding } from 'fhir/r4';
 import i18n from '@/setupTests.i18n';
+import { getPatientDiagnoses } from '@services/diagnosesService';
+import { Diagnosis } from '@types/diagnosis';
+import { getFormattedError } from '@utils/common';
+import { useDiagnoses } from '../useDiagnoses';
+import { usePatientUUID } from '../usePatientUUID';
 
 // Mock dependencies
 jest.mock('@services/diagnosesService');

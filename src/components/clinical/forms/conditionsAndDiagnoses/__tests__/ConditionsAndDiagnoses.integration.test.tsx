@@ -1,16 +1,16 @@
-import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { I18nextProvider } from 'react-i18next';
-import ConditionsAndDiagnoses from '../ConditionsAndDiagnoses';
-import { useConceptSearch } from '@hooks/useConceptSearch';
-import useConditions from '@hooks/useConditions';
-import { ConceptSearch } from '@types/concepts';
 import { Condition } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
+import { I18nextProvider } from 'react-i18next';
 import i18n from '@/setupTests.i18n';
-import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
+import { useConceptSearch } from '@hooks/useConceptSearch';
+import useConditions from '@hooks/useConditions';
+import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
+import { ConceptSearch } from '@types/concepts';
+import ConditionsAndDiagnoses from '../ConditionsAndDiagnoses';
 
 expect.extend(toHaveNoViolations);
 
@@ -298,12 +298,15 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
       });
 
       const finalState = useConditionsAndDiagnosesStore.getState();
+      const totalFinalItems =
+        finalState.selectedConditions.length +
+        finalState.selectedDiagnoses.length;
 
-      if (finalState.selectedConditions.length > 0) {
-        expect(finalState.selectedConditions.length).toBeGreaterThan(0);
-      } else {
-        expect(finalState.selectedDiagnoses.length).toBe(3);
-      }
+      expect(totalFinalItems).toBe(3);
+      expect(
+        finalState.selectedConditions.length +
+          finalState.selectedDiagnoses.length,
+      ).toBeGreaterThan(0);
     });
 
     it('should maintain state consistency during removal operations', async () => {

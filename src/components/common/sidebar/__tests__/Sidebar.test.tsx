@@ -1,7 +1,7 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import Sidebar from '../Sidebar';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
+import Sidebar from '../Sidebar';
 
 // Mock react-i18next
 jest.mock('react-i18next', () => ({
@@ -80,7 +80,6 @@ jest.mock('@components/common/bahmniIcon/BahmniIcon', () => {
     id: string;
     name: string;
     color: string;
-    size: string;
   }) {
     return (
       <div

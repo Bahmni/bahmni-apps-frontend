@@ -204,24 +204,27 @@ export const ManyItems: Story = {
 };
 
 // Interactive sidebar with state management
+const InteractiveSidebarComponent = () => {
+  // Using React hooks for state management in the story
+  const [activeItemId, setActiveItemId] = React.useState('notes');
+
+  const handleItemClick = (itemId: string) => {
+    console.log(`${itemId} clicked`);
+    setActiveItemId(itemId);
+  };
+
+  return (
+    <Sidebar
+      items={defaultItems}
+      activeItemId={activeItemId}
+      onItemClick={handleItemClick}
+    />
+  );
+};
+
+// Interactive sidebar with state management
 export const InteractiveSidebar: Story = {
-  render: () => {
-    // Using React hooks for state management in the story
-    const [activeItemId, setActiveItemId] = React.useState('notes');
-
-    const handleItemClick = (itemId: string) => {
-      console.log(`${itemId} clicked`);
-      setActiveItemId(itemId);
-    };
-
-    return (
-      <Sidebar
-        items={defaultItems}
-        activeItemId={activeItemId}
-        onItemClick={handleItemClick}
-      />
-    );
-  },
+  render: () => <InteractiveSidebarComponent />,
   parameters: {
     docs: {
       description: {

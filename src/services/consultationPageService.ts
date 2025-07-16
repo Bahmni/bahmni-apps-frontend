@@ -1,6 +1,6 @@
+import { SidebarItemProps } from '@components/common/sidebar/Sidebar';
 import { Dashboard } from '@types/config';
 import { DashboardConfig } from '@types/dashboardConfig';
-import { SidebarItemProps } from '@components/common/sidebar/Sidebar';
 
 /**
  * Gets the default dashboard from an array of dashboards
@@ -40,7 +40,7 @@ export const getSidebarItems = (
   return dashboardConfig.sections.map((section) => ({
     id: section.id,
     icon: section.icon,
-    label: section.translationKey || section.name,
+    label: section.translationKey ?? section.name,
     active: false,
     action: () => {},
   }));

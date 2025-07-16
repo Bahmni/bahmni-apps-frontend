@@ -1,10 +1,10 @@
-import React from 'react';
 import { Column, Grid, Dropdown, Link } from '@carbon/react';
-import { useTranslation } from 'react-i18next';
-import * as styles from './styles/SelectedDiagnosisItem.module.scss';
 import { Coding } from 'fhir/r4';
-import { DiagnosisInputEntry } from '@types/diagnosis';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
+import { DiagnosisInputEntry } from '@types/diagnosis';
+import * as styles from './styles/SelectedDiagnosisItem.module.scss';
 
 export interface SelectedDiagnosisItemProps {
   diagnosis: DiagnosisInputEntry;

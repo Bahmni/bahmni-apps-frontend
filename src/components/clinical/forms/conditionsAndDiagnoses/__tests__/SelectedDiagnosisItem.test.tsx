@@ -1,13 +1,13 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { I18nextProvider } from 'react-i18next';
-import i18n from '@/setupTests.i18n';
-import SelectedDiagnosisItem from '../SelectedDiagnosisItem';
 import { Coding } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { DiagnosisInputEntry } from '@types/diagnosis';
+import React from 'react';
+import { I18nextProvider } from 'react-i18next';
+import i18n from '@/setupTests.i18n';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
+import { DiagnosisInputEntry } from '@types/diagnosis';
+import SelectedDiagnosisItem from '../SelectedDiagnosisItem';
 
 expect.extend(toHaveNoViolations);
 

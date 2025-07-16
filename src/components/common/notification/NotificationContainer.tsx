@@ -1,5 +1,5 @@
-import React from 'react';
 import { ToastNotification } from '@carbon/react';
+import React from 'react';
 import { Notification } from '@types/notification';
 import * as styles from './styles/NotificationContainer.module.scss';
 

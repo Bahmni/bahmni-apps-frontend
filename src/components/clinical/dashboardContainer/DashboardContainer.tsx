@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
 import { Grid, Column, Section } from '@carbon/react';
+import React, { useEffect, useRef } from 'react';
 import { DashboardSectionConfig } from '@types/dashboardConfig';
 import DashboardSection from '../dashboardSection/DashboardSection';
 import * as styles from './styles/DashboardContainer.module.scss';

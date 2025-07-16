@@ -1,19 +1,19 @@
+import { Bundle, Medication } from 'fhir/r4';
+import {
+  MEDICATION_ORDERS_METADATA_URL,
+  MEDICATIONS_SEARCH_URL,
+} from '@constants/app';
+import {
+  FHIR_MEDICATION_EXTENSION_URL,
+  FHIR_MEDICATION_NAME_EXTENSION_URL,
+} from '@constants/fhir';
+import { MedicationOrdersMetadataResponse } from '@types/medicationConfig';
+import { get } from '../api';
 import {
   fetchMedicationOrdersMetadata,
   searchMedications,
   getMedicationDisplay,
 } from '../medicationService';
-import { get } from '../api';
-import {
-  MEDICATION_ORDERS_METADATA_URL,
-  MEDICATIONS_SEARCH_URL,
-} from '@constants/app';
-import { MedicationOrdersMetadataResponse } from '@types/medicationConfig';
-import { Bundle, Medication } from 'fhir/r4';
-import {
-  FHIR_MEDICATION_EXTENSION_URL,
-  FHIR_MEDICATION_NAME_EXTENSION_URL,
-} from '@constants/fhir';
 
 jest.mock('../api', () => ({
   get: jest.fn(),

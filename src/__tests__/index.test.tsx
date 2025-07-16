@@ -50,7 +50,7 @@ describe('Index', () => {
 
   afterEach(() => {
     // Clean up the DOM
-    if (mockRoot && mockRoot.parentNode) {
+    if (mockRoot?.parentNode) {
       mockRoot.parentNode.removeChild(mockRoot);
     }
 
@@ -76,7 +76,7 @@ describe('Index', () => {
 
   it('should throw an error when root element is not found', () => {
     // Remove the root element
-    if (mockRoot && mockRoot.parentNode) {
+    if (mockRoot?.parentNode) {
       mockRoot.parentNode.removeChild(mockRoot);
     }
 

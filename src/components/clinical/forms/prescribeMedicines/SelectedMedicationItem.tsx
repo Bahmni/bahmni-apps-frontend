@@ -1,4 +1,3 @@
-import React, { useEffect } from 'react';
 import {
   Column,
   Grid,
@@ -8,20 +7,21 @@ import {
   DatePicker,
   DatePickerInput,
 } from '@carbon/react';
+import React, { useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import * as styles from './styles/SelectedMedicationItem.module.scss';
-import { DurationUnitOption, MedicationInputEntry } from '@types/medication';
-import { Frequency, MedicationConfig } from '@types/medicationConfig';
+import { DATE_PICKER_INPUT_FORMAT } from '@constants/date';
 import { DURATION_UNIT_OPTIONS } from '@constants/medications';
-import { Concept } from '@types/encounterConcepts';
 import {
   calculateTotalQuantity,
   getDefaultDosingUnit,
   getDefaultRoute,
   isImmediateFrequency,
 } from '@services/medicationsValueCalculator';
-import { DATE_PICKER_INPUT_FORMAT } from '@constants/date';
+import { Concept } from '@types/encounterConcepts';
+import { DurationUnitOption, MedicationInputEntry } from '@types/medication';
+import { Frequency, MedicationConfig } from '@types/medicationConfig';
 import { getTodayDate } from '@utils/date';
+import * as styles from './styles/SelectedMedicationItem.module.scss';
 
 export interface SelectedMedicationItemProps {
   medicationInputEntry: MedicationInputEntry;
@@ -82,10 +82,9 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
         errors,
       } = medicationInputEntry;
 
-      const setDefaultInstruction = () => {
+      const setDefaultInstruction = useCallback(() => {
         if (
-          !medicationConfig ||
-          !medicationConfig.dosingInstructions ||
+          !medicationConfig?.dosingInstructions ||
           medicationConfig.dosingInstructions.length === 0 ||
           !medicationConfig.defaultInstructions
         ) {
@@ -99,12 +98,11 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
             updateInstruction(id, defaultInstruction);
           }
         }
-      };
+      }, [medicationConfig, instruction, updateInstruction, id]);
 
-      const setDefaultDurationUnit = () => {
+      const setDefaultDurationUnit = useCallback(() => {
         if (
-          !medicationConfig ||
-          !medicationConfig.durationUnits ||
+          !medicationConfig?.durationUnits ||
           medicationConfig.durationUnits.length === 0 ||
           !medicationConfig.defaultDurationUnit
         ) {
@@ -118,12 +116,11 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
             updateDurationUnit(id, defaultDurationUnit);
           }
         }
-      };
+      }, [medicationConfig, durationUnit, updateDurationUnit, id]);
 
       useEffect(() => {
         if (
-          !medicationConfig ||
-          !medicationConfig.drugFormDefaults ||
+          !medicationConfig?.drugFormDefaults ||
           !medicationConfig.routes ||
           !medicationConfig.doseUnits
         ) {
@@ -146,7 +143,16 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
           updateDosageUnit(id, defaultDosingUnit);
           updateDispenseUnit(id, defaultDosingUnit);
         }
-      }, [medication]);
+      }, [
+        medication,
+        medicationConfig,
+        route,
+        dosageUnit,
+        id,
+        updateRoute,
+        updateDosageUnit,
+        updateDispenseUnit,
+      ]);
 
       useEffect(() => {
         const totalQuantity = calculateTotalQuantity(
@@ -156,7 +162,14 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
           durationUnit,
         );
         updateDispenseQuantity(id, totalQuantity);
-      }, [dosage, frequency, duration, durationUnit]);
+      }, [
+        dosage,
+        frequency,
+        duration,
+        durationUnit,
+        id,
+        updateDispenseQuantity,
+      ]);
 
       useEffect(() => {
         if (isPRN || !isSTAT) {
@@ -174,12 +187,21 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
         if (isSTAT) {
           updateStartDate(id, getTodayDate());
         }
-      }, [isSTAT, isPRN]);
+      }, [
+        isSTAT,
+        isPRN,
+        id,
+        medicationConfig.frequencies,
+        updateFrequency,
+        updateDuration,
+        updateDurationUnit,
+        updateStartDate,
+      ]);
 
       useEffect(() => {
         setDefaultInstruction();
         setDefaultDurationUnit();
-      }, [medicationConfig]);
+      }, [setDefaultInstruction, setDefaultDurationUnit]);
 
       return (
         <Grid condensed={false} narrow={false}>
@@ -222,7 +244,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                 }
               }}
               invalid={errors.dosage ? true : false}
-              invalidText={t(errors.dosage || '')}
+              invalidText={t(errors.dosage ?? '')}
             />
 
             <Dropdown
@@ -233,7 +255,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               className={styles.dosageUnit}
               hideLabel
               size="sm"
-              items={medicationConfig.doseUnits || []}
+              items={medicationConfig.doseUnits ?? []}
               itemToString={(item) => (item ? item.name : '')}
               selectedItem={dosageUnit}
               onChange={(e) => {
@@ -244,7 +266,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               }}
               autoAlign
               invalid={errors.dosageUnit ? true : false}
-              invalidText={t(errors.dosageUnit || '')}
+              invalidText={t(errors.dosageUnit ?? '')}
             />
           </Column>
           <Column sm={1} md={2} lg={4} className={styles.column}>
@@ -258,7 +280,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               items={
                 medicationConfig.frequencies.filter(
                   (item) => !isImmediateFrequency(item),
-                ) || []
+                ) ?? []
               }
               itemToString={(item) => (item ? item.name : '')}
               selectedItem={frequency}
@@ -269,7 +291,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               }}
               autoAlign
               invalid={errors.frequency ? true : false}
-              invalidText={t(errors.frequency || '')}
+              invalidText={t(errors.frequency ?? '')}
               disabled={isSTAT && !isPRN}
             />
           </Column>
@@ -291,7 +313,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                 }
               }}
               invalid={errors.duration ? true : false}
-              invalidText={t(errors.duration || '')}
+              invalidText={t(errors.duration ?? '')}
               disabled={isSTAT && !isPRN}
             />
             <Dropdown
@@ -314,7 +336,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               }}
               autoAlign
               invalid={errors.durationUnit ? true : false}
-              invalidText={t(errors.durationUnit || '')}
+              invalidText={t(errors.durationUnit ?? '')}
               disabled={isSTAT && !isPRN}
             />
           </Column>
@@ -327,7 +349,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               aria-label="Medication Instructions"
               hideLabel
               size="sm"
-              items={medicationConfig.dosingInstructions || []}
+              items={medicationConfig.dosingInstructions ?? []}
               itemToString={(item) => (item ? item.name : '')}
               selectedItem={instruction}
               onChange={(e) => {
@@ -347,7 +369,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               aria-label="Route"
               hideLabel
               size="sm"
-              items={medicationConfig.routes || []}
+              items={medicationConfig.routes ?? []}
               itemToString={(item) => (item ? item.name : '')}
               selectedItem={route}
               onChange={(e) => {
@@ -357,7 +379,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               }}
               autoAlign
               invalid={errors.route ? true : false}
-              invalidText={t(errors.route || '')}
+              invalidText={t(errors.route ?? '')}
             />
           </Column>
 
@@ -368,7 +390,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               value={startDate}
               minDate={getTodayDate()}
               onChange={(date) => {
-                if (date && date[0] && date[0] > getTodayDate()) {
+                if (date?.[0] && date[0] > getTodayDate()) {
                   updateStartDate(id, date[0]);
                 }
               }}
@@ -387,7 +409,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
           <Column sm={4} md={8} lg={16} className={styles.totalQuantity}>
             <span>
               {t('MEDICATION_TOTAL_QUANTITY')} : {dispenseQuantity}{' '}
-              {dispenseUnit?.name || ''}
+              {dispenseUnit?.name ?? ''}
             </span>
           </Column>
         </Grid>

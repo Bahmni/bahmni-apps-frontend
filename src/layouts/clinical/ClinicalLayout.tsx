@@ -1,5 +1,5 @@
-import React, { ReactNode } from 'react';
 import classNames from 'classnames';
+import React, { ReactNode } from 'react';
 import * as styles from './styles/ClinicalLayout.module.scss';
 
 interface ClinicalLayoutProps {
