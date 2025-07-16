@@ -1,13 +1,13 @@
+import i18next from 'i18next';
+import { GLOBAL_PROPERTY_URL } from '@constants/app';
+import { AUDIT_LOG_GLOBAL_PROPERTY } from '@constants/auditLog';
+import { AUDIT_LOG_ERROR_MESSAGES } from '@constants/errors';
+import { get } from '../api';
 import {
   clearGlobalPropertyCache,
   getGlobalProperty,
   isAuditLogEnabled,
 } from '../globalPropertyService';
-import { GLOBAL_PROPERTY_URL } from '@constants/app';
-import { AUDIT_LOG_GLOBAL_PROPERTY } from '@constants/auditLog';
-import { AUDIT_LOG_ERROR_MESSAGES } from '@constants/errors';
-import i18next from 'i18next';
-import { get } from '../api';
 
 // Mock dependencies
 jest.mock('../api');
@@ -66,7 +66,7 @@ describe('globalPropertyService', () => {
       expect(mockGet).toHaveBeenCalledWith(
         `${GLOBAL_PROPERTY_URL}?property=test.null.property`,
       );
-      expect(result).toBe(null);
+      expect(result).toBeNull();
     });
 
     it('should return null when API returns undefined', async () => {
@@ -77,7 +77,7 @@ describe('globalPropertyService', () => {
       expect(mockGet).toHaveBeenCalledWith(
         `${GLOBAL_PROPERTY_URL}?property=test.undefined.property`,
       );
-      expect(result).toBe(null);
+      expect(result).toBeNull();
     });
 
     it('should return null when API returns empty string due to cache logic', async () => {
@@ -92,7 +92,7 @@ describe('globalPropertyService', () => {
       );
       // Due to the cache logic `return globalPropertyCache.get(property) || null;`
       // empty strings are converted to null
-      expect(result).toBe(null);
+      expect(result).toBeNull();
     });
 
     it('should handle API errors and return null', async () => {
@@ -109,7 +109,7 @@ describe('globalPropertyService', () => {
       expect(mockGet).toHaveBeenCalledWith(
         `${GLOBAL_PROPERTY_URL}?property=test.error.property`,
       );
-      expect(result).toBe(null);
+      expect(result).toBeNull();
       expect(mockI18next.t).toHaveBeenCalledWith(
         AUDIT_LOG_ERROR_MESSAGES.GLOBAL_PROPERTY_FETCH_FAILED,
         { property: 'test.error.property' },
@@ -147,12 +147,12 @@ describe('globalPropertyService', () => {
       // First call should hit the API
       const result1 = await getGlobalProperty('test.null.cache.property');
       expect(mockFreshGet).toHaveBeenCalledTimes(1);
-      expect(result1).toBe(null);
+      expect(result1).toBeNull();
 
       // Second call should return from cache
       const result2 = await getGlobalProperty('test.null.cache.property');
       expect(mockFreshGet).toHaveBeenCalledTimes(1); // Still only called once
-      expect(result2).toBe(null);
+      expect(result2).toBeNull();
     });
 
     it('should handle different property names correctly', async () => {

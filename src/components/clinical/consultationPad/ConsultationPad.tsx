@@ -7,8 +7,9 @@ import BasicForm from '@components/clinical/forms/encounterDetails/EncounterDeta
 import InvestigationsForm from '@components/clinical/forms/investigations/InvestigationsForm';
 import MedicationsForm from '@components/clinical/forms/prescribeMedicines/MedicationsForm';
 import ActionArea from '@components/common/actionArea/ActionArea';
-import { ERROR_TITLES } from '@constants/errors';
+import { ERROR_TITLES, AUDIT_LOG_ERROR_MESSAGES } from '@constants/errors';
 import useNotification from '@hooks/useNotification';
+import { logEncounterEdit } from '@services/auditLogService';
 import {
   postConsultationBundle,
   createDiagnosisBundleEntries,
@@ -27,16 +28,8 @@ import {
   createBundleEntry,
   createConsultationBundle,
 } from '@utils/fhir/consultationBundleCreator';
-import { ERROR_TITLES, AUDIT_LOG_ERROR_MESSAGES } from '@constants/errors';
 import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
-import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
-import useAllergyStore from '@stores/allergyStore';
-import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 import * as styles from './styles/ConsultationPad.module.scss';
-import useServiceRequestStore from '@stores/serviceRequestStore';
-import MedicationsForm from '@components/clinical/forms/prescribeMedicines/MedicationsForm';
-import { useMedicationStore } from '@stores/medicationsStore';
-import { logEncounterEdit } from '@services/auditLogService';
 
 interface ConsultationPadProps {
   onClose: () => void;

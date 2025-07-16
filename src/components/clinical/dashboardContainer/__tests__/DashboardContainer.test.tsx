@@ -1,9 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
-import DashboardContainer from '../DashboardContainer';
 import { DashboardSectionConfig as DashboardSectionType } from '@/types/dashboardConfig';
-import { logDashboardView } from '@services/auditLogService';
 import { usePatientUUID } from '@hooks/usePatientUUID';
+import { logDashboardView } from '@services/auditLogService';
+import DashboardContainer from '../DashboardContainer';
 
 // Mock scrollIntoView
 const mockScrollIntoView = jest.fn();

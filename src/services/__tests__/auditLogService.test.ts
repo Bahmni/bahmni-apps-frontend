@@ -1,13 +1,13 @@
+import { AuditEventType } from '@/types/auditLog';
+import { AUDIT_LOG_URL } from '@constants/app';
+import { MODULE_LABELS } from '@constants/auditLog';
+import client from '../api';
 import {
   logAuditEvent,
   logDashboardView,
   logEncounterEdit,
 } from '../auditLogService';
 import { isAuditLogEnabled } from '../globalPropertyService';
-import client from '../api';
-import { AUDIT_LOG_URL } from '@constants/app';
-import { MODULE_LABELS } from '@constants/auditLog';
-import { AuditEventType } from '@/types/auditLog';
 
 // Mock dependencies
 jest.mock('../globalPropertyService');
