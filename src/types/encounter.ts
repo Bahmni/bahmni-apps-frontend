@@ -21,6 +21,17 @@ export interface FhirEncounterLocation {
   };
 }
 
+export interface FhirEncounterParticipant {
+  individual?: {
+    reference: string;
+    type: string;
+    identifier?: {
+      value: string;
+    };
+    display: string;
+  };
+}
+
 export interface FhirEncounter {
   resourceType: string;
   id: string;
@@ -44,6 +55,7 @@ export interface FhirEncounter {
     type: string;
     display: string;
   };
+  participant?: FhirEncounterParticipant[];
   period: FhirEncounterPeriod;
   location: FhirEncounterLocation[];
 }

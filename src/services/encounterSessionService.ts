@@ -81,13 +81,15 @@ export async function filterByActiveVisit(
 }
 
 /**
- * Finds an active encounter within the session duration for a patient
+ * Finds an active encounter within the session duration for a patient and practitioner
  * @param patientUUID - Patient UUID
+ * @param practitionerUUID - Practitioner UUID (optional, for practitioner-specific sessions)
  * @param sessionDurationMinutes - Session duration in minutes (optional, will fetch from config if not provided)
  * @returns Promise resolving to active encounter or null
  */
 export async function findActiveEncounterInSession(
   patientUUID: string,
+  practitionerUUID?: string,
   sessionDurationMinutes?: number
 ): Promise<FhirEncounter | null> {
   try {
@@ -113,8 +115,51 @@ export async function findActiveEncounterInSession(
         return null;
       }
       
+      // Filter by practitioner if provided
+      let filteredEncounters = encounters;
+      if (practitionerUUID) {
+        try {
+          filteredEncounters = encounters.filter(encounter => {
+            if (!encounter.participant) {
+              return false;
+            }
+            
+            return encounter.participant.some(participant => {
+              const individual = participant.individual;
+              if (!individual?.reference) {
+                return false;
+              }
+              
+              const practitionerRef = individual.reference;
+              
+              // Check multiple possible formats
+              const refMatch = (
+                practitionerRef === `Practitioner/${practitionerUUID}` ||
+                practitionerRef === practitionerUUID ||
+                practitionerRef.endsWith(`/${practitionerUUID}`) ||
+                practitionerRef.split('/').pop() === practitionerUUID
+              );
+              
+              // Check identifier if available
+              const identifierMatch = individual.identifier?.value === practitionerUUID;
+              
+              return refMatch || identifierMatch;
+            });
+          });
+          
+          // If no encounters found for this practitioner, return null (New Consultation)
+          if (filteredEncounters.length === 0) {
+            return null;
+          }
+        } catch (filterError) {
+          console.warn('Error filtering encounters by practitioner, using all encounters:', filterError);
+          // If filtering fails, fall back to using all encounters
+          filteredEncounters = encounters;
+        }
+      }
+      
       // Filter by active visit and return the most recent one
-      const result = await filterByActiveVisit(encounters, patientUUID);
+      const result = await filterByActiveVisit(filteredEncounters, patientUUID);
       
       return result;
     } catch (apiError) {
@@ -130,11 +175,12 @@ export async function findActiveEncounterInSession(
 }
 
 /**
- * Checks if there is an active encounter session for a patient
+ * Checks if there is an active encounter session for a patient and practitioner
  * @param patientUUID - Patient UUID
+ * @param practitionerUUID - Practitioner UUID (optional, for practitioner-specific sessions)
  * @returns Promise resolving to boolean indicating if session is active
  */
-export async function hasActiveEncounterSession(patientUUID: string): Promise<boolean> {
-  const activeEncounter = await findActiveEncounterInSession(patientUUID);
+export async function hasActiveEncounterSession(patientUUID: string, practitionerUUID?: string): Promise<boolean> {
+  const activeEncounter = await findActiveEncounterInSession(patientUUID, practitionerUUID);
   return activeEncounter !== null;
 }

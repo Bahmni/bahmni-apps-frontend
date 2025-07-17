@@ -379,7 +379,11 @@ export function createEncounterBundleEntry(
     ? { ...encounterResource, id: activeEncounter.id }
     : encounterResource;
 
-  return createBundleEntry(encounterUrl, resource, method, encounterUrl);
+  const resourceUrl = activeEncounter 
+    ? `Encounter/${activeEncounter.id}`
+    : 'Encounter';
+
+  return createBundleEntry(encounterUrl, resource, method, resourceUrl);
 }
 
 /**
