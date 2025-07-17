@@ -83,3 +83,8 @@ export const CLINICAL_NAMESPACE = 'clinical';
 export const BAHMNI_HOME_PATH = '/bahmni/home/index.html';
 export const BAHMNI_CLINICAL_PATH = '/bahmni/clinical/index.html';
 export const PANEL_CONCEPT_CLASS_NAME = 'LabSet';
+
+// Patient Search URLs
+export const PATIENT_SEARCH_URL = OPENMRS_REST_V1 + '/patient';
+export const PATIENT_FIND_URL = OPENMRS_REST_V1 + '/bahmni/search/patient/lucene';
+export const PATIENT_SEARCH_BY_NAME_URL = OPENMRS_REST_V1 + '/bahmni/search/patient';
