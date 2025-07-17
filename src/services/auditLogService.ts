@@ -6,9 +6,9 @@ import {
   AuditLogEntry,
   AuditLogResponse,
   AuditEventType,
-} from '../types/auditLog';
-import client from './api';
-import { isAuditLogEnabled } from './globalPropertyService';
+} from '@types/auditLog';
+import { post } from './api';
+import { isAuditLogEnabled } from './globalPropertyConfigService';
 
 /**
  * Log an audit event
@@ -24,58 +24,50 @@ export const logAuditEvent = async (
   messageParams?: Record<string, unknown>,
   module: string = MODULE_LABELS.CLINICAL,
 ): Promise<AuditLogResponse> => {
-  try {
-    // Check if audit logging is enabled - matching openmrs-bahmni-apps implementation
-    const isEnabled = await isAuditLogEnabled();
+  // try {
+  // Check if audit logging is enabled - matching openmrs-bahmni-apps implementation
+  const isEnabled = await isAuditLogEnabled();
 
-    if (!isEnabled) {
-      // Audit logging is disabled, return without logging
-      return { logged: false };
-    }
+  if (!isEnabled) {
+    // Audit logging is disabled, return without logging
+    return { logged: false };
+  }
 
-    // Get event details from mapping
-    const eventDetail = AUDIT_LOG_EVENT_DETAILS[eventType];
-    if (!eventDetail) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        i18next.t(AUDIT_LOG_ERROR_MESSAGES.UNKNOWN_EVENT_TYPE, { eventType }),
-      );
-      return {
-        logged: false,
-        error: i18next.t(AUDIT_LOG_ERROR_MESSAGES.UNKNOWN_EVENT_TYPE, {
-          eventType,
-        }),
-      };
-    }
-
-    // Prepare audit log entry
-    const auditEntry: AuditLogEntry = {
-      patientUuid,
-      eventType: eventDetail.eventType,
-      message: messageParams
-        ? `${eventDetail.message}~${JSON.stringify(messageParams)}`
-        : eventDetail.message,
-      module,
-    };
-    // Send audit log using direct axios call to match legacy exactly
-    await client.post(AUDIT_LOG_URL, auditEntry, {
-      withCredentials: true,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    return { logged: true };
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error(i18next.t(AUDIT_LOG_ERROR_MESSAGES.LOG_FAILED), error);
+  // Get event details from mapping
+  const eventDetail = AUDIT_LOG_EVENT_DETAILS[eventType];
+  if (!eventDetail) {
     return {
       logged: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : i18next.t(AUDIT_LOG_ERROR_MESSAGES.UNKNOWN_ERROR),
+      error: i18next.t(AUDIT_LOG_ERROR_MESSAGES.UNKNOWN_EVENT_TYPE, {
+        eventType,
+      }),
     };
   }
+
+  // Prepare audit log entry
+  const auditEntry: AuditLogEntry = {
+    patientUuid,
+    eventType: eventDetail.eventType,
+    message: messageParams
+      ? `${eventDetail.message}~${JSON.stringify(messageParams)}`
+      : eventDetail.message,
+    module,
+  };
+
+  await post(AUDIT_LOG_URL, auditEntry);
+  return { logged: true };
+  // TODO: handle specific error cases when audit log fails
+  // } catch (error) {
+  //   // eslint-disable-next-line no-console
+  //   console.error(i18next.t(AUDIT_LOG_ERROR_MESSAGES.LOG_FAILED), error);
+  //   return {
+  //     logged: false,
+  //     error:
+  //       error instanceof Error
+  //         ? error.message
+  //         : i18next.t(AUDIT_LOG_ERROR_MESSAGES.UNKNOWN_ERROR),
+  //   };
+  // }
 };
 
 /**

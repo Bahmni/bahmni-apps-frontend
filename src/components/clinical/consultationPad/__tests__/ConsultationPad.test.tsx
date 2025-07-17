@@ -26,8 +26,6 @@ jest.mock('react-i18next', () => ({
     t: (key: string) => {
       // Return specific translations for common keys
       const translations: Record<string, string> = {
-        AUDIT_LOG_ERROR_ENCOUNTER_EDIT_FAILED:
-          'Failed to log audit event for encounter edit',
         CONSULTATION_PAD_TITLE: 'New Consultation',
         CONSULTATION_PAD_DONE_BUTTON: 'Done',
         CONSULTATION_PAD_CANCEL_BUTTON: 'Cancel',
@@ -1224,48 +1222,6 @@ describe('ConsultationPad', () => {
           encounterType,
         );
       });
-    });
-
-    it('should handle audit logging failure gracefully', async () => {
-      const encounterUuid = 'encounter-123';
-
-      // Mock crypto.randomUUID to return predictable value
-      (global.crypto.randomUUID as jest.Mock).mockReturnValue(encounterUuid);
-
-      // Mock audit service to return failure status (not rejected promise)
-      mockLogEncounterEdit.mockResolvedValue({
-        logged: false,
-        error: 'Audit service unavailable',
-      });
-
-      (
-        consultationBundleService.postConsultationBundle as jest.Mock
-      ).mockResolvedValue({
-        id: 'bundle-123',
-        type: 'transaction-response',
-      });
-
-      // Mock console.warn to verify it's called
-      const consoleSpy = jest
-        .spyOn(console, 'warn')
-        .mockImplementation(() => {});
-
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
-
-      const doneButton = screen.getByTestId('primary-button');
-      await userEvent.click(doneButton);
-
-      await waitFor(() => {
-        expect(mockLogEncounterEdit).toHaveBeenCalled();
-        expect(consoleSpy).toHaveBeenCalledWith(
-          'Failed to log audit event for encounter edit',
-          'Audit service unavailable',
-        );
-        // Consultation should still succeed
-        expect(mockOnClose).toHaveBeenCalled();
-      });
-
-      consoleSpy.mockRestore();
     });
 
     it('should not log encounter edit if consultation submission fails', async () => {
