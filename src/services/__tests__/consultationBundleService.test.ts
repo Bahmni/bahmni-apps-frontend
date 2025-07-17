@@ -20,7 +20,10 @@ import {
   createConditionsBundleEntries,
   createMedicationRequestEntries,
   postConsultationBundle,
+  createEncounterBundleEntry,
+  getEncounterReference,
 } from '../consultationBundleService';
+import { FhirEncounter } from '@types/encounter';
 
 // Mock crypto.randomUUID
 const mockUUID = '1d87ab20-8b86-4b41-a30d-984b2208d945';
@@ -484,9 +487,138 @@ describe('consultationBundleService', () => {
             text: 'Patient says: "I get rash & swelling when taking <medication>"',
           },
         ]);
+    });
+  });
+
+  describe('createEncounterBundleEntry', () => {
+    const mockEncounterResource = {
+      resourceType: 'Encounter',
+      status: 'in-progress',
+      subject: { reference: 'Patient/123' },
+    };
+
+    describe('Happy Path', () => {
+      it('should create POST bundle entry for new encounter when no active encounter exists', () => {
+        const result = createEncounterBundleEntry(null, mockEncounterResource);
+
+        expect(result.fullUrl).toMatch(/^urn:uuid:/);
+        expect(result.resource).toBe(mockEncounterResource);
+        expect(result.request?.method).toBe('POST');
+        expect(result.request?.url).toBe(result.fullUrl);
+      });
+
+      it('should create PUT bundle entry for existing encounter when active encounter exists', () => {
+        const activeEncounter: FhirEncounter = {
+          resourceType: 'Encounter',
+          id: 'encounter-123',
+          status: 'in-progress',
+          subject: { reference: 'Patient/123' },
+        };
+
+        const result = createEncounterBundleEntry(activeEncounter, mockEncounterResource);
+
+        expect(result.fullUrl).toBe('/openmrs/ws/fhir2/R4/Encounter/encounter-123');
+        expect(result.resource).toEqual({ ...mockEncounterResource, id: 'encounter-123' });
+        expect(result.request?.method).toBe('PUT');
+        expect(result.request?.url).toBe('/openmrs/ws/fhir2/R4/Encounter/encounter-123');
+      });
+    });
+
+    describe('Edge Cases', () => {
+      it('should handle active encounter without id gracefully', () => {
+        const activeEncounterWithoutId = {
+          resourceType: 'Encounter' as const,
+          status: 'in-progress' as const,
+          subject: { reference: 'Patient/123' },
+        };
+
+        const result = createEncounterBundleEntry(activeEncounterWithoutId, mockEncounterResource);
+
+        expect(result.fullUrl).toBe('/openmrs/ws/fhir2/R4/Encounter/undefined');
+        expect(result.resource).toEqual({ ...mockEncounterResource, id: undefined });
+        expect(result.request?.method).toBe('PUT');
+        expect(result.request?.url).toBe('/openmrs/ws/fhir2/R4/Encounter/undefined');
+      });
+
+      it('should handle empty encounter resource', () => {
+        const emptyResource = {};
+        const result = createEncounterBundleEntry(null, emptyResource);
+
+        expect(result.fullUrl).toMatch(/^urn:uuid:/);
+        expect(result.resource).toBe(emptyResource);
+        expect(result.request?.method).toBe('POST');
+        expect(result.request?.url).toBe(result.fullUrl);
       });
     });
   });
+
+  describe('getEncounterReference', () => {
+    describe('Happy Path', () => {
+      it('should return encounter reference for active encounter', () => {
+        const activeEncounter: FhirEncounter = {
+          resourceType: 'Encounter',
+          id: 'encounter-123',
+          status: 'in-progress',
+          subject: {
+            reference: 'Patient/123',
+            type: '',
+            display: ''
+          },
+          meta: {
+            versionId: '',
+            lastUpdated: '',
+            tag: []
+          },
+          class: {
+            system: '',
+            code: ''
+          },
+          type: [],
+          period: undefined,
+          location: []
+        };
+
+        const result = getEncounterReference(activeEncounter, 'placeholder-ref');
+
+        expect(result).toBe('/openmrs/ws/fhir2/R4/Encounter/encounter-123');
+      });
+
+      it('should return placeholder reference when no active encounter', () => {
+        const placeholderRef = 'urn:uuid:placeholder-123';
+
+        const result = getEncounterReference(null, placeholderRef);
+
+        expect(result).toBe(placeholderRef);
+      });
+    });
+
+    describe('Edge Cases', () => {
+      it('should handle active encounter without id', () => {
+        const activeEncounterWithoutId = {
+          resourceType: 'Encounter' as const,
+          status: 'in-progress' as const,
+          subject: { reference: 'Patient/123' },
+        };
+
+        const result = getEncounterReference(activeEncounterWithoutId, 'placeholder-ref');
+
+        expect(result).toBe('/openmrs/ws/fhir2/R4/Encounter/undefined');
+      });
+
+      it('should handle empty placeholder reference', () => {
+        const result = getEncounterReference(null, '');
+
+        expect(result).toBe('');
+      });
+
+      it('should handle null active encounter', () => {
+        const result = getEncounterReference(null, 'urn:uuid:test-123');
+
+        expect(result).toBe('urn:uuid:test-123');
+      });
+    });
+  });
+});
 
   describe('createServiceRequestBundleEntries', () => {
     const mockServiceRequest: ServiceRequestInputEntry = {

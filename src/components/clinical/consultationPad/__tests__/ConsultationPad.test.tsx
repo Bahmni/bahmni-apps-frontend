@@ -142,6 +142,12 @@ jest.mock('@utils/fhir/consultationBundleCreator', () => ({
   })),
 }));
 
+// Mock encounter session hook
+const mockUseEncounterSession = jest.fn();
+jest.mock('@hooks/useEncounterSession', () => ({
+  useEncounterSession: () => mockUseEncounterSession(),
+}));
+
 // Create mock store factories
 const createMockEncounterDetailsStore = () => ({
   activeVisit: { id: 'visit-123' },

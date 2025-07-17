@@ -1,5 +1,5 @@
 import { BundleEntry, Reference } from 'fhir/r4';
-import { CONSULTATION_BUNDLE_URL } from '@constants/app';
+import { CONSULTATION_BUNDLE_URL, ENCOUNTER_SEARCH_URL } from '@constants/app';
 import { CONSULTATION_ERROR_MESSAGES } from '@constants/errors';
 import { AllergyInputEntry } from '@types/allergy';
 import { ConditionInputEntry } from '@types/condition';
@@ -18,9 +18,11 @@ import { createMedicationRequestResource } from '@utils/fhir/medicationRequestRe
 import {
   createPractitionerReference,
   getPlaceholderReference,
+  createEncounterReferenceFromString,
 } from '@utils/fhir/referenceCreator';
 import { createServiceRequestResource } from '@utils/fhir/serviceRequestResourceCreator';
 import { post } from './api';
+import { FhirEncounter } from '@types/encounter';
 
 interface CreateAllergiesBundleEntriesParams {
   selectedAllergies: AllergyInputEntry[];
@@ -101,7 +103,7 @@ export function createDiagnosisBundleEntries({
         ? 'confirmed'
         : 'provisional',
       encounterSubject,
-      getPlaceholderReference(encounterReference),
+      createEncounterReferenceFromString(encounterReference),
       createPractitionerReference(practitionerUUID),
       consultationDate,
     );
@@ -182,7 +184,7 @@ export function createAllergiesBundleEntries({
         },
       ],
       encounterSubject,
-      getPlaceholderReference(encounterReference),
+      createEncounterReferenceFromString(encounterReference),
       createPractitionerReference(practitionerUUID),
       allergy.note,
     );
@@ -226,7 +228,7 @@ export function createServiceRequestBundleEntries({
       const resource = createServiceRequestResource(
         serviceRequest.id,
         encounterSubject,
-        getPlaceholderReference(encounterReference),
+        createEncounterReferenceFromString(encounterReference),
         createPractitionerReference(practitionerUUID),
         serviceRequest.selectedPriority,
       );
@@ -297,7 +299,7 @@ export function createConditionsBundleEntries({
     const conditionResource = createEncounterConditionResource(
       condition.id,
       encounterSubject,
-      getPlaceholderReference(encounterReference),
+      createEncounterReferenceFromString(encounterReference),
       createPractitionerReference(practitionerUUID),
       consultationDate,
       onsetDate!,
@@ -343,7 +345,7 @@ export function createMedicationRequestEntries({
     const medicationResource = createMedicationRequestResource(
       medication,
       encounterSubject,
-      getPlaceholderReference(encounterReference),
+      createEncounterReferenceFromString(encounterReference),
       createPractitionerReference(practitionerUUID),
     );
 
@@ -356,6 +358,41 @@ export function createMedicationRequestEntries({
     medicationRequestEntries.push(medicationRequestEntry);
   }
   return medicationRequestEntries;
+}
+
+/**
+ * Creates an encounter bundle entry that can handle both new (POST) and existing (PUT) encounters
+ * @param activeEncounter - Existing encounter if editing, null if creating new
+ * @param encounterResource - The encounter resource to include in bundle
+ * @returns BundleEntry for the encounter
+ */
+export function createEncounterBundleEntry(
+  activeEncounter: FhirEncounter | null,
+  encounterResource: any,
+): BundleEntry {
+  const encounterUrl = activeEncounter 
+    ? `${ENCOUNTER_SEARCH_URL}/${activeEncounter.id}`
+    : `urn:uuid:${crypto.randomUUID()}`;
+
+  const method = activeEncounter ? 'PUT' : 'POST';
+  const resource = activeEncounter 
+    ? { ...encounterResource, id: activeEncounter.id }
+    : encounterResource;
+
+  return createBundleEntry(encounterUrl, resource, method, encounterUrl);
+}
+
+/**
+ * Gets the appropriate encounter reference for other resources
+ * @param activeEncounter - Existing encounter if editing, null if creating new
+ * @param placeholderReference - Placeholder reference for new encounters
+ * @returns Reference string to use in other resources
+ */
+export function getEncounterReference(
+  activeEncounter: FhirEncounter | null,
+  placeholderReference: string,
+): string {
+  return activeEncounter ? `${ENCOUNTER_SEARCH_URL}/${activeEncounter.id}` : placeholderReference;
 }
 
 export async function postConsultationBundle<T>(

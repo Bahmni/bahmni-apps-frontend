@@ -64,3 +64,14 @@ export const createMedicationReference = (medicationId: string): Reference => {
   medicationReference.type = 'Medication';
   return medicationReference;
 };
+
+/**
+ * Creates a reference that can be either a placeholder or actual encounter reference
+ * @param encounterReference - Either placeholder UUID or actual encounter ID
+ * @returns Reference object
+ */
+export const createEncounterReferenceFromString = (encounterReference: string): Reference => {
+  return {
+    reference: encounterReference,
+  };
+};
