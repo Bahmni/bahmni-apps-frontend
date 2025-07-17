@@ -52,17 +52,11 @@ export const ExpandableDataTable = <T extends { id?: string }>({
   if (error) {
     const formattedError = getFormattedError(error);
     return (
-      <div data-testid="expandable-table-error" className={className}>
-        <Accordion align="start">
-          <AccordionItem title={tableTitle} open={isOpen}>
-            <p className={'emptyState'}>
-              {t('EXPANDABLE_TABLE_ERROR_MESSAGE', {
-                title: formattedError.title,
-                message: formattedError.message,
-              })}
-            </p>
-          </AccordionItem>
-        </Accordion>
+      <div data-testid="expandable-table-error" className={'emptyState'}>
+        {t('EXPANDABLE_TABLE_ERROR_MESSAGE', {
+          title: formattedError.title,
+          message: formattedError.message,
+        })}
       </div>
     );
   }
