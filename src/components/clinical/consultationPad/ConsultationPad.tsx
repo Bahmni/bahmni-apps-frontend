@@ -16,17 +16,17 @@ import {
   createConditionsBundleEntries,
   createServiceRequestBundleEntries,
   createMedicationRequestEntries,
+  createEncounterBundleEntry,
+  getEncounterReference,
 } from '@services/consultationBundleService';
+import { useEncounterSession } from '@hooks/useEncounterSession';
 import useAllergyStore from '@stores/allergyStore';
 import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 import { useMedicationStore } from '@stores/medicationsStore';
 import useServiceRequestStore from '@stores/serviceRequestStore';
 import { ConsultationBundle } from '@types/consultationBundle';
-import {
-  createBundleEntry,
-  createConsultationBundle,
-} from '@utils/fhir/consultationBundleCreator';
+import { createConsultationBundle } from '@utils/fhir/consultationBundleCreator';
 import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
 import * as styles from './styles/ConsultationPad.module.scss';
 
@@ -77,6 +77,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     reset: resetMedications,
   } = useMedicationStore();
 
+  // Get encounter session state
+  const { hasActiveSession, activeEncounter } = useEncounterSession();
+
   // Clean up on unmount
   useEffect(() => {
     return () => {
@@ -109,7 +112,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   // 2. Extract validation logic into a custom hook
   // 3. Create utility functions for bundle creation
   const submitConsultation = () => {
-    const enconterResourceURL = `urn:uuid:${crypto.randomUUID()}`;
+    // Create encounter resource
     const encounterResource = createEncounterResource(
       selectedEncounterType!.uuid,
       selectedEncounterType!.name,
@@ -119,15 +122,26 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       selectedLocation!.uuid,
       consultationDate,
     );
-    const encounterBundleEntry = createBundleEntry(
-      enconterResourceURL,
+
+    // Create encounter bundle entry (POST for new, PUT for existing)
+    const encounterBundleEntry = createEncounterBundleEntry(
+      hasActiveSession ? activeEncounter : null,
       encounterResource,
-      'POST',
     );
+
+    // Get the appropriate encounter reference for other resources
+    let encounterReference: string;
+    if (hasActiveSession && activeEncounter) {
+      encounterReference = `Encounter/${activeEncounter.id}`;
+    } else {
+      // For new encounters, we need to use the same placeholder as the encounter entry
+      encounterReference = encounterBundleEntry.fullUrl || `urn:uuid:${crypto.randomUUID()}`;
+    }
+
     const diagnosisEntries = createDiagnosisBundleEntries({
       selectedDiagnoses,
       encounterSubject: encounterResource.subject!,
-      encounterReference: enconterResourceURL,
+      encounterReference,
       practitionerUUID: user!.uuid,
       consultationDate,
     });
@@ -135,14 +149,14 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     const allergyEntries = createAllergiesBundleEntries({
       selectedAllergies,
       encounterSubject: encounterResource.subject!,
-      encounterReference: enconterResourceURL,
+      encounterReference,
       practitionerUUID: user!.uuid,
     });
 
     const conditionEntries = createConditionsBundleEntries({
       selectedConditions,
       encounterSubject: encounterResource.subject!,
-      encounterReference: enconterResourceURL,
+      encounterReference,
       practitionerUUID: user!.uuid,
       consultationDate,
     });
@@ -150,16 +164,17 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     const serviceRequestEntries = createServiceRequestBundleEntries({
       selectedServiceRequests,
       encounterSubject: encounterResource.subject!,
-      encounterReference: enconterResourceURL,
+      encounterReference,
       practitionerUUID: practitioner!.uuid,
     });
 
     const medicationEntries = createMedicationRequestEntries({
       selectedMedications,
       encounterSubject: encounterResource.subject!,
-      encounterReference: enconterResourceURL,
+      encounterReference,
       practitionerUUID: practitioner!.uuid,
     });
+
     const consultationBundle = createConsultationBundle([
       encounterBundleEntry,
       ...diagnosisEntries,
