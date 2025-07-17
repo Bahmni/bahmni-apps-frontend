@@ -1,20 +1,12 @@
-import i18next from 'i18next';
 import { GLOBAL_PROPERTY_URL } from '@constants/app';
-import { AUDIT_LOG_GLOBAL_PROPERTY } from '@constants/auditLog';
-import { AUDIT_LOG_ERROR_MESSAGES } from '@constants/errors';
 import { get } from '../api';
-import {
-  clearGlobalPropertyCache,
-  getGlobalProperty,
-  isAuditLogEnabled,
-} from '../globalPropertyService';
+import { getGlobalProperty } from '../globalPropertyService';
 
 // Mock dependencies
 jest.mock('../api');
 jest.mock('i18next');
 
 const mockGet = get as jest.MockedFunction<typeof get>;
-const mockI18next = i18next as jest.Mocked<typeof i18next>;
 
 describe('globalPropertyService', () => {
   afterEach(() => {
@@ -29,7 +21,7 @@ describe('globalPropertyService', () => {
       const result = await getGlobalProperty('test.property');
 
       expect(mockGet).toHaveBeenCalledWith(
-        `${GLOBAL_PROPERTY_URL}?property=test.property`,
+        GLOBAL_PROPERTY_URL('test.property'),
       );
       expect(result).toBe(mockValue);
     });
@@ -41,7 +33,7 @@ describe('globalPropertyService', () => {
       const result = await getGlobalProperty('test.boolean.property');
 
       expect(mockGet).toHaveBeenCalledWith(
-        `${GLOBAL_PROPERTY_URL}?property=test.boolean.property`,
+        GLOBAL_PROPERTY_URL('test.boolean.property'),
       );
       expect(result).toBe('true');
     });
@@ -53,7 +45,7 @@ describe('globalPropertyService', () => {
       const result = await getGlobalProperty('test.number.property');
 
       expect(mockGet).toHaveBeenCalledWith(
-        `${GLOBAL_PROPERTY_URL}?property=test.number.property`,
+        GLOBAL_PROPERTY_URL('test.number.property'),
       );
       expect(result).toBe('123');
     });
@@ -64,7 +56,7 @@ describe('globalPropertyService', () => {
       const result = await getGlobalProperty('test.null.property');
 
       expect(mockGet).toHaveBeenCalledWith(
-        `${GLOBAL_PROPERTY_URL}?property=test.null.property`,
+        GLOBAL_PROPERTY_URL('test.null.property'),
       );
       expect(result).toBeNull();
     });
@@ -75,7 +67,7 @@ describe('globalPropertyService', () => {
       const result = await getGlobalProperty('test.undefined.property');
 
       expect(mockGet).toHaveBeenCalledWith(
-        `${GLOBAL_PROPERTY_URL}?property=test.undefined.property`,
+        GLOBAL_PROPERTY_URL('test.undefined.property'),
       );
       expect(result).toBeNull();
     });
@@ -88,38 +80,11 @@ describe('globalPropertyService', () => {
       const result = await getGlobalProperty('test.empty.property');
 
       expect(mockFreshGet).toHaveBeenCalledWith(
-        `${GLOBAL_PROPERTY_URL}?property=test.empty.property`,
+        GLOBAL_PROPERTY_URL('test.empty.property'),
       );
       // Due to the cache logic `return globalPropertyCache.get(property) || null;`
       // empty strings are converted to null
       expect(result).toBeNull();
-    });
-
-    it('should handle API errors and return null', async () => {
-      const mockError = new Error('API Error');
-      mockGet.mockRejectedValue(mockError);
-      mockI18next.t.mockReturnValue(
-        'Global property fetch failed for property: test.error.property',
-      );
-
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-
-      const result = await getGlobalProperty('test.error.property');
-
-      expect(mockGet).toHaveBeenCalledWith(
-        `${GLOBAL_PROPERTY_URL}?property=test.error.property`,
-      );
-      expect(result).toBeNull();
-      expect(mockI18next.t).toHaveBeenCalledWith(
-        AUDIT_LOG_ERROR_MESSAGES.GLOBAL_PROPERTY_FETCH_FAILED,
-        { property: 'test.error.property' },
-      );
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Global property fetch failed for property: test.error.property',
-        mockError,
-      );
-
-      consoleSpy.mockRestore();
     });
 
     it('should cache global property values and return from cache on subsequent calls', async () => {
@@ -170,127 +135,11 @@ describe('globalPropertyService', () => {
 
         const result = await getGlobalProperty(propertyName);
 
-        expect(mockGet).toHaveBeenCalledWith(
-          `${GLOBAL_PROPERTY_URL}?property=${propertyName}`,
-        );
+        expect(mockGet).toHaveBeenCalledWith(GLOBAL_PROPERTY_URL(propertyName));
         expect(result).toBe(`value-for-${propertyName}`);
 
         mockGet.mockClear();
       }
-    });
-  });
-
-  describe('isAuditLogEnabled', () => {
-    afterEach(() => {
-      clearGlobalPropertyCache();
-    });
-
-    it('should return true when audit log property is "true"', async () => {
-      const mockFreshGet = get as jest.MockedFunction<typeof get>;
-
-      mockFreshGet.mockResolvedValue('true');
-
-      const result = await isAuditLogEnabled();
-
-      expect(mockFreshGet).toHaveBeenCalledWith(
-        `${GLOBAL_PROPERTY_URL}?property=${AUDIT_LOG_GLOBAL_PROPERTY}`,
-      );
-      expect(result).toBe(true);
-    });
-
-    it('should return false when audit log property is "false"', async () => {
-      const mockFreshGet = get as jest.MockedFunction<typeof get>;
-
-      mockFreshGet.mockResolvedValue('false');
-
-      const result = await isAuditLogEnabled();
-
-      expect(mockFreshGet).toHaveBeenCalledWith(
-        `${GLOBAL_PROPERTY_URL}?property=${AUDIT_LOG_GLOBAL_PROPERTY}`,
-      );
-      expect(result).toBe(false);
-    });
-
-    it('should return false when audit log property is null', async () => {
-      const mockFreshGet = get as jest.MockedFunction<typeof get>;
-
-      mockFreshGet.mockResolvedValue(null);
-
-      const result = await isAuditLogEnabled();
-
-      expect(result).toBe(false);
-    });
-
-    it('should return false when audit log property is any other string', async () => {
-      const mockFreshGet = get as jest.MockedFunction<typeof get>;
-
-      const testValues = [
-        'True',
-        'TRUE',
-        'yes',
-        'enabled',
-        '1',
-        'random-value',
-      ];
-
-      for (const value of testValues) {
-        mockFreshGet.mockResolvedValue(value);
-
-        const result = await isAuditLogEnabled();
-
-        expect(result).toBe(false);
-        mockFreshGet.mockClear();
-      }
-    });
-
-    it('should handle errors and return false', async () => {
-      const mockFreshGet = get as jest.MockedFunction<typeof get>;
-
-      const mockError = new Error('API Error');
-      mockFreshGet.mockRejectedValue(mockError);
-
-      const result = await isAuditLogEnabled();
-
-      expect(result).toBe(false);
-      // isAuditLogEnabled doesn't have its own error handling - it relies on getGlobalProperty
-      // which handles errors internally and returns null, causing isAuditLogEnabled to return false
-    });
-
-    it('should use cached value from getGlobalProperty', async () => {
-      const mockFreshGet = get as jest.MockedFunction<typeof get>;
-
-      mockFreshGet.mockResolvedValue('true');
-
-      // First call getGlobalProperty to cache the value
-      await getGlobalProperty(AUDIT_LOG_GLOBAL_PROPERTY);
-      expect(mockFreshGet).toHaveBeenCalledTimes(1);
-
-      // Then call isAuditLogEnabled, which should use the cached value
-      const result = await isAuditLogEnabled();
-      expect(mockFreshGet).toHaveBeenCalledTimes(1); // Still only called once
-      expect(result).toBe(true);
-    });
-  });
-
-  describe('clearGlobalPropertyCache', () => {
-    it('should clear the global property cache', async () => {
-      const mockFreshGet = get as jest.MockedFunction<typeof get>;
-
-      mockFreshGet.mockResolvedValue('true');
-
-      // First call getGlobalProperty to cache the value
-      await getGlobalProperty(AUDIT_LOG_GLOBAL_PROPERTY);
-      expect(mockFreshGet).toHaveBeenCalledTimes(1);
-
-      const result = await isAuditLogEnabled();
-      expect(mockFreshGet).toHaveBeenCalledTimes(1);
-      expect(result).toBe(true);
-
-      clearGlobalPropertyCache();
-
-      const anotherResult = await isAuditLogEnabled();
-      expect(mockFreshGet).toHaveBeenCalledTimes(2); // Should call API again after cache clear
-      expect(anotherResult).toBe(true);
     });
   });
 });

@@ -4,9 +4,7 @@ import { LOGIN_PATH } from '@constants/app';
 import { getFormattedError } from '@utils/common';
 import { notificationService } from './notificationService';
 
-const client: AxiosInstance = axios.create({
-  withCredentials: true,
-});
+const client: AxiosInstance = axios.create();
 client.defaults.headers.common['Content-Type'] = 'application/json';
 
 /**

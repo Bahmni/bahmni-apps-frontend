@@ -7,7 +7,7 @@ import BasicForm from '@components/clinical/forms/encounterDetails/EncounterDeta
 import InvestigationsForm from '@components/clinical/forms/investigations/InvestigationsForm';
 import MedicationsForm from '@components/clinical/forms/prescribeMedicines/MedicationsForm';
 import ActionArea from '@components/common/actionArea/ActionArea';
-import { ERROR_TITLES, AUDIT_LOG_ERROR_MESSAGES } from '@constants/errors';
+import { ERROR_TITLES } from '@constants/errors';
 import useNotification from '@hooks/useNotification';
 import { logEncounterEdit } from '@services/auditLogService';
 import {
@@ -192,20 +192,11 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         setIsSubmitting(false);
 
         // Log audit event for successful encounter edit/creation
-        const editEncounterLog = await logEncounterEdit(
+        await logEncounterEdit(
           patientUUID!,
           crypto.randomUUID(), // Generate encounter UUID for new encounters
           selectedEncounterType!.name,
         );
-
-        if (!editEncounterLog.logged) {
-          // eslint-disable-next-line no-console
-          console.warn(
-            t(AUDIT_LOG_ERROR_MESSAGES.ENCOUNTER_EDIT_FAILED),
-            editEncounterLog.error,
-          );
-        }
-
         resetDiagnoses();
         resetAllergies();
         resetEncounterDetails();

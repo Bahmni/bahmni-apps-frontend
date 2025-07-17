@@ -121,9 +121,7 @@ describe('DashboardContainer Component', () => {
     render(<DashboardContainer sections={[]} />);
 
     // Check if the no sections message is rendered
-    expect(
-      screen.getByText('AUDIT_LOG_MESSAGE_NO_DASHBOARD_SECTIONS'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('NO_DASHBOARD_SECTIONS')).toBeInTheDocument();
   });
 
   it('scrolls to the active section when activeItemId matches section id', async () => {
@@ -300,13 +298,6 @@ describe('DashboardContainer Component', () => {
       await waitFor(() => {
         expect(mockLogDashboardView).toHaveBeenCalledWith(patientUuid);
       });
-
-      // Verify console warning was called
-      // eslint-disable-next-line no-console
-      expect(console.warn).toHaveBeenCalledWith(
-        'AUDIT_LOG_ERROR_DASHBOARD_VIEW_NOT_LOGGED',
-        'Audit logging is disabled',
-      );
     });
 
     it('should log dashboard view again when patient UUID changes', async () => {
