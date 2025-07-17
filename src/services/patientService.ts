@@ -1,17 +1,11 @@
+import { Patient } from 'fhir/r4';
 import { PATIENT_RESOURCE_URL } from '@constants/app';
-import {
-  FhirPatient,
-  FhirAddress,
-  FhirTelecom,
-  FormattedPatientData,
-} from '@types/patient';
+import { FormattedPatientData } from '@types/patient';
 import { calculateAge } from '@utils/date';
 import { get } from './api';
 
-export const getPatientById = async (
-  patientUUID: string,
-): Promise<FhirPatient> => {
-  return get<FhirPatient>(PATIENT_RESOURCE_URL(patientUUID));
+export const getPatientById = async (patientUUID: string): Promise<Patient> => {
+  return get<Patient>(PATIENT_RESOURCE_URL(patientUUID));
 };
 
 /**
@@ -20,7 +14,9 @@ export const getPatientById = async (
  * @returns An array of address extensions
  * @returns An empty array if no extensions are found
  */
-const extractAddressExtensions = (address: FhirAddress): string[] => {
+const extractAddressExtensions = (
+  address: NonNullable<Patient['address']>[0],
+): string[] => {
   if (!address.extension || !Array.isArray(address.extension)) return [];
 
   return address.extension.flatMap((ext) => {
@@ -39,7 +35,7 @@ const extractAddressExtensions = (address: FhirAddress): string[] => {
  * @returns A formatted name string
  * @returns null if no name is provided
  */
-export const formatPatientName = (patient: FhirPatient): string | null => {
+export const formatPatientName = (patient: Patient): string | null => {
   if (!patient.name || patient.name.length === 0) {
     return null;
   }
@@ -61,7 +57,9 @@ export const formatPatientName = (patient: FhirPatient): string | null => {
  * @returns A formatted address string
  * @returns null if no address is provided
  */
-export const formatPatientAddress = (address?: FhirAddress): string | null => {
+export const formatPatientAddress = (
+  address?: NonNullable<Patient['address']>[0],
+): string | null => {
   if (!address) return null;
 
   const addressLines = [
@@ -87,7 +85,9 @@ export const formatPatientAddress = (address?: FhirAddress): string | null => {
  * @returns A formatted contact string
  * @returns null if no telecom is provided
  */
-export const formatPatientContact = (telecom?: FhirTelecom): string | null => {
+export const formatPatientContact = (
+  telecom?: NonNullable<Patient['telecom']>[0],
+): string | null => {
   if (!telecom?.system || !telecom.value) {
     return null;
   }
@@ -100,9 +100,7 @@ export const formatPatientContact = (telecom?: FhirTelecom): string | null => {
  * @param patient - The FHIR patient to format
  * @returns A formatted patient data object
  */
-export const formatPatientData = (
-  patient: FhirPatient,
-): FormattedPatientData => {
+export const formatPatientData = (patient: Patient): FormattedPatientData => {
   const address =
     patient.address && patient.address.length > 0
       ? formatPatientAddress(patient.address[0])
