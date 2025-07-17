@@ -78,7 +78,10 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   } = useMedicationStore();
 
   // Get encounter session state
-  const { hasActiveSession, activeEncounter } = useEncounterSession();
+  const { hasActiveSession, activeEncounter, isPractitionerMatch, refetch } = useEncounterSession();
+
+  // Only use active encounter if it belongs to current practitioner
+  const shouldUseActiveEncounter = hasActiveSession && isPractitionerMatch;
 
   // Clean up on unmount
   useEffect(() => {
@@ -123,20 +126,20 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       consultationDate,
     );
 
+    // Generate a single placeholder reference for consistency
+    const placeholderReference = `urn:uuid:${crypto.randomUUID()}`;
+    
     // Create encounter bundle entry (POST for new, PUT for existing)
     const encounterBundleEntry = createEncounterBundleEntry(
-      hasActiveSession ? activeEncounter : null,
+      shouldUseActiveEncounter ? activeEncounter : null,
       encounterResource,
     );
 
     // Get the appropriate encounter reference for other resources
-    let encounterReference: string;
-    if (hasActiveSession && activeEncounter) {
-      encounterReference = `Encounter/${activeEncounter.id}`;
-    } else {
-      // For new encounters, we need to use the same placeholder as the encounter entry
-      encounterReference = encounterBundleEntry.fullUrl || `urn:uuid:${crypto.randomUUID()}`;
-    }
+    const encounterReference = getEncounterReference(
+      shouldUseActiveEncounter ? activeEncounter : null,
+      encounterBundleEntry.fullUrl || placeholderReference,
+    );
 
     const diagnosisEntries = createDiagnosisBundleEntries({
       selectedDiagnoses,
@@ -203,6 +206,15 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       try {
         setIsSubmitting(true);
         await submitConsultation();
+        
+        // If this was a new consultation (POST), refetch encounter session to update button
+        if (!shouldUseActiveEncounter) {
+          // Add a small delay to allow server to process the encounter
+          setTimeout(async () => {
+            await refetch();
+          }, 1000); // 1 second delay
+        }
+        
         setIsSubmitting(false);
         resetDiagnoses();
         resetAllergies();
