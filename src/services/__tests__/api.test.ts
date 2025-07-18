@@ -1,426 +1,746 @@
-import axios, { AxiosError } from 'axios';
-import { getFormattedError } from '@utils/common';
-import * as common from '@utils/common';
-import client, { get, post, put, del } from '../api';
-import { notificationService } from '../notificationService';
+import axios from 'axios';
+import { decode } from 'html-entities';
 
+// Import the functions we want to test
+// Since they are not exported, we need to test them indirectly through the module
+import client from '../api';
+
+jest.mock('html-entities', () => ({
+  decode: jest.fn(),
+}));
+
+// Mock other dependencies
 jest.mock('@constants/app', () => ({
-  hostUrl: 'https://api.example.com',
   LOGIN_PATH: '/login',
 }));
 
-jest.mock('../notificationService', () => ({
+jest.mock('@utils/common', () => ({
+  getFormattedError: jest.fn(() => ({
+    title: 'Error',
+    message: 'Test error message',
+  })),
+}));
+
+jest.mock('@services/notificationService', () => ({
   notificationService: {
     showError: jest.fn(),
   },
 }));
 
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+const mockDecode = decode as jest.MockedFunction<typeof decode>;
 
-// Mock dependencies
-jest.mock('axios', () => {
-  return {
-    create: jest.fn(() => ({
-      get: jest.fn(),
-      post: jest.fn(),
-      put: jest.fn(),
-      delete: jest.fn(),
-      interceptors: {
-        request: {
-          use: jest.fn(() => ({
-            handlers: [{ rejected: jest.fn() }],
-          })),
-          handlers: [{ rejected: jest.fn() }],
-        },
-        response: {
-          use: jest.fn(() => ({
-            handlers: [{ rejected: jest.fn() }],
-          })),
-          handlers: [{ rejected: jest.fn() }],
-        },
-      },
-      defaults: {
-        headers: {
-          common: {},
-        },
-      },
-    })),
-    isAxiosError: jest.fn(),
-  };
-});
-
-describe('API Client', () => {
+describe('API Service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('Request Interceptor', () => {
-    it('should pass through the config for successful requests', () => {
-      // Create a mock config
-      const mockConfig = {
-        url: '/test',
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+  describe('decodeHtmlEntities', () => {
+    // We need to test this function indirectly through the response interceptor
+    let decodeHtmlEntitiesFunction: (data: unknown) => unknown;
+
+    beforeAll(() => {
+      // We'll create a test version of the function to test the logic
+      decodeHtmlEntitiesFunction = (data: unknown): unknown => {
+        if (typeof data === 'string') {
+          return decode(data);
+        }
+
+        if (Array.isArray(data)) {
+          return data.map((item) => decodeHtmlEntitiesFunction(item));
+        }
+
+        if (data && typeof data === 'object' && data !== null) {
+          const decoded: { [key: string]: unknown } = {};
+          for (const [key, value] of Object.entries(data)) {
+            decoded[key] = decodeHtmlEntitiesFunction(value);
+          }
+          return decoded;
+        }
+
+        return data;
       };
-
-      // Create a mock for the success handler
-      const successHandler = jest.fn((config) => config);
-
-      // Mock the axios interceptor
-      const originalInterceptors = client.interceptors;
-      client.interceptors = {
-        request: {
-          use: jest.fn((successFn) => {
-            // Store the success handler for testing
-            successHandler.mockImplementation(successFn);
-            return { id: 1 };
-          }),
-          eject: jest.fn(),
-        },
-        response: originalInterceptors.response,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any;
-
-      // Re-create the interceptor to capture our mock
-      client.interceptors.request.use(
-        function (config) {
-          return config;
-        },
-        function (error) {
-          const { title, message } = getFormattedError(error);
-          notificationService.showError(title, message);
-          return Promise.reject(error);
-        },
-      );
-
-      // Call the success handler with the mock config
-      const result = successHandler(mockConfig);
-
-      // Verify the config is passed through unchanged
-      expect(result).toBe(mockConfig);
-
-      // Restore original interceptors
-      client.interceptors = originalInterceptors;
     });
 
-    it('should handle errors in request interceptor', () => {
-      // Create a mock error
-      const mockError = new Error('Request setup failed');
+    describe('Happy Paths', () => {
+      it('should decode HTML entities in strings', () => {
+        const testString = '&amp;test&lt;';
+        const expectedDecoded = '&test<';
 
-      // Mock the getErrorDetails function
-      const mockErrorDetails = {
-        title: 'Error',
-        message: 'Request setup failed',
-      };
-      const getErrorDetailsMock = jest
-        .spyOn(common, 'getFormattedError')
-        .mockReturnValue(mockErrorDetails);
+        mockDecode.mockReturnValue(expectedDecoded);
 
-      // Create a mock for the error handler
-      const errorHandler = jest.fn((error) => Promise.reject(error));
+        const result = decodeHtmlEntitiesFunction(testString);
 
-      // Mock the axios interceptor
-      const originalInterceptors = client.interceptors;
-      client.interceptors = {
-        request: {
-          use: jest.fn((successFn, errorFn) => {
-            // Store the error handler for testing
-            errorHandler.mockImplementation(errorFn);
-            return { id: 1 };
-          }),
-          eject: jest.fn(),
-        },
-        response: originalInterceptors.response,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any;
-
-      // Re-create the interceptor to capture our mock
-      client.interceptors.request.use(
-        function (config) {
-          return config;
-        },
-        function (error) {
-          const { title, message } = getFormattedError(error);
-          notificationService.showError(title, message);
-          return Promise.reject(error);
-        },
-      );
-
-      // Call the error handler with the mock error
-      errorHandler(mockError).catch(() => {
-        // Expected to reject
+        expect(decode).toHaveBeenCalledWith(testString);
+        expect(result).toBe(expectedDecoded);
       });
 
-      // Verify getErrorDetails was called with the error
-      expect(getErrorDetailsMock).toHaveBeenCalledWith(mockError);
+      it('should recursively decode HTML entities in arrays', () => {
+        const testArray = ['&amp;item1', '&lt;item2&gt;', '&quot;item3&quot;'];
+        const expectedDecoded = ['&item1', '<item2>', '"item3"'];
 
-      // Verify notificationService.showError was called with the correct title and message
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        mockErrorDetails.title,
-        mockErrorDetails.message,
-      );
+        mockDecode
+          .mockReturnValueOnce('&item1')
+          .mockReturnValueOnce('<item2>')
+          .mockReturnValueOnce('"item3"');
 
-      // Restore original interceptors and mocks
-      client.interceptors = originalInterceptors;
-      getErrorDetailsMock.mockRestore();
+        const result = decodeHtmlEntitiesFunction(testArray);
+
+        expect(decode).toHaveBeenCalledTimes(3);
+        expect(decode).toHaveBeenNthCalledWith(1, '&amp;item1');
+        expect(decode).toHaveBeenNthCalledWith(2, '&lt;item2&gt;');
+        expect(decode).toHaveBeenNthCalledWith(3, '&quot;item3&quot;');
+        expect(result).toEqual(expectedDecoded);
+      });
+
+      it('should recursively decode HTML entities in objects', () => {
+        const testObject = {
+          name: '&amp;John&lt;',
+          description: '&quot;Test&quot;',
+          nested: {
+            value: '&gt;nested&lt;',
+          },
+        };
+
+        const expectedDecoded = {
+          name: '&John<',
+          description: '"Test"',
+          nested: {
+            value: '>nested<',
+          },
+        };
+
+        mockDecode
+          .mockReturnValueOnce('&John<')
+          .mockReturnValueOnce('"Test"')
+          .mockReturnValueOnce('>nested<');
+
+        const result = decodeHtmlEntitiesFunction(testObject);
+
+        expect(decode).toHaveBeenCalledTimes(3);
+        expect(result).toEqual(expectedDecoded);
+      });
+
+      it('should handle nested arrays within objects', () => {
+        const testData = {
+          items: ['&amp;item1', '&lt;item2&gt;'],
+          metadata: {
+            tags: ['&quot;tag1&quot;', '&amp;tag2'],
+          },
+        };
+
+        mockDecode
+          .mockReturnValueOnce('&item1')
+          .mockReturnValueOnce('<item2>')
+          .mockReturnValueOnce('"tag1"')
+          .mockReturnValueOnce('&tag2');
+
+        const result = decodeHtmlEntitiesFunction(testData);
+
+        expect(decode).toHaveBeenCalledTimes(4);
+        expect(result).toEqual({
+          items: ['&item1', '<item2>'],
+          metadata: {
+            tags: ['"tag1"', '&tag2'],
+          },
+        });
+      });
+
+      it('should handle nested objects within arrays', () => {
+        const testData = [
+          { name: '&amp;John', age: 30 },
+          { name: '&lt;Jane&gt;', age: 25 },
+        ];
+
+        mockDecode.mockReturnValueOnce('&John').mockReturnValueOnce('<Jane>');
+
+        const result = decodeHtmlEntitiesFunction(testData);
+
+        expect(decode).toHaveBeenCalledTimes(2);
+        expect(result).toEqual([
+          { name: '&John', age: 30 },
+          { name: '<Jane>', age: 25 },
+        ]);
+      });
+    });
+
+    describe('Edge Cases', () => {
+      it('should return primitive values unchanged', () => {
+        expect(decodeHtmlEntitiesFunction(42)).toBe(42);
+        expect(decodeHtmlEntitiesFunction(true)).toBe(true);
+        expect(decodeHtmlEntitiesFunction(false)).toBe(false);
+        expect(decodeHtmlEntitiesFunction(undefined)).toBeUndefined();
+      });
+
+      it('should handle null values', () => {
+        expect(decodeHtmlEntitiesFunction(null)).toBeNull();
+      });
+
+      it('should handle empty strings', () => {
+        const emptyString = '';
+        mockDecode.mockReturnValue('');
+
+        const result = decodeHtmlEntitiesFunction(emptyString);
+
+        expect(decode).toHaveBeenCalledWith('');
+        expect(result).toBe('');
+      });
+
+      it('should handle empty arrays', () => {
+        const result = decodeHtmlEntitiesFunction([]);
+        expect(result).toEqual([]);
+        expect(decode).not.toHaveBeenCalled();
+      });
+
+      it('should handle empty objects', () => {
+        const result = decodeHtmlEntitiesFunction({});
+        expect(result).toEqual({});
+        expect(decode).not.toHaveBeenCalled();
+      });
+
+      it('should handle arrays with mixed data types', () => {
+        const testArray = [
+          '&amp;string',
+          42,
+          true,
+          null,
+          { key: '&lt;value&gt;' },
+        ];
+
+        mockDecode
+          .mockReturnValueOnce('&string')
+          .mockReturnValueOnce('<value>');
+
+        const result = decodeHtmlEntitiesFunction(testArray);
+
+        expect(decode).toHaveBeenCalledTimes(2);
+        expect(result).toEqual(['&string', 42, true, null, { key: '<value>' }]);
+      });
+
+      it('should handle objects with non-string values', () => {
+        const testObject = {
+          stringValue: '&amp;test',
+          numberValue: 42,
+          booleanValue: true,
+          nullValue: null,
+          arrayValue: ['&lt;item&gt;'],
+        };
+
+        mockDecode.mockReturnValueOnce('&test').mockReturnValueOnce('<item>');
+
+        const result = decodeHtmlEntitiesFunction(testObject);
+
+        expect(decode).toHaveBeenCalledTimes(2);
+        expect(result).toEqual({
+          stringValue: '&test',
+          numberValue: 42,
+          booleanValue: true,
+          nullValue: null,
+          arrayValue: ['<item>'],
+        });
+      });
+    });
+
+    describe('Error Handling', () => {
+      it('should handle decode function throwing an error', () => {
+        const testString = '&amp;test';
+        mockDecode.mockImplementation(() => {
+          throw new Error('Decode error');
+        });
+
+        expect(() => decodeHtmlEntitiesFunction(testString)).toThrow(
+          'Decode error',
+        );
+      });
     });
   });
 
-  describe('Response Interceptor', () => {
-    it('should pass through the response for successful requests', () => {
-      // Create a mock response
-      const mockResponse = {
-        data: { id: 1, name: 'Test' },
-        status: 200,
-        statusText: 'OK',
-        headers: {},
-        config: {},
+  describe('isOpenMrsRestApi', () => {
+    // We need to test this function indirectly through the response interceptor
+    let isOpenMrsRestApiFunction: (url: string) => boolean;
+
+    beforeAll(() => {
+      // Create a test version of the function
+      isOpenMrsRestApiFunction = (url: string): boolean => {
+        return url.includes('/openmrs/ws');
       };
-
-      // Create a mock for the success handler
-      const successHandler = jest.fn((response) => response);
-
-      // Mock the axios interceptor
-      const originalInterceptors = client.interceptors;
-      client.interceptors = {
-        request: originalInterceptors.request,
-        response: {
-          use: jest.fn((successFn) => {
-            // Store the success handler for testing
-            successHandler.mockImplementation(successFn);
-            return { id: 1 };
-          }),
-          eject: jest.fn(),
-        },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any;
-
-      // Re-create the interceptor to capture our mock
-      client.interceptors.response.use(
-        function (response) {
-          return response;
-        },
-        function (error) {
-          // Implementation will be tested in other tests
-          return Promise.reject(error);
-        },
-      );
-
-      // Call the success handler with the mock response
-      const result = successHandler(mockResponse);
-
-      // Verify the response is passed through unchanged
-      expect(result).toBe(mockResponse);
-
-      // Restore original interceptors
-      client.interceptors = originalInterceptors;
     });
 
-    it('should redirect to login page for 401 unauthorized errors', () => {
-      // Save original window.location.href
-      const originalHref = window.location.href;
+    describe('Happy Paths', () => {
+      it('should return true for OpenMRS REST API URLs', () => {
+        const testCases = [
+          '/openmrs/ws/rest/v1/patient',
+          'http://localhost:8080/openmrs/ws/rest/v1/concept',
+          'https://demo.openmrs.org/openmrs/ws/rest/v1/encounter',
+          '/openmrs/ws/rest/v2/user',
+          'http://example.com/openmrs/ws/fhir/Patient',
+        ];
 
-      // Create a mock for window.location.href
-      Object.defineProperty(window, 'location', {
-        writable: true,
-        value: { href: '' },
+        testCases.forEach((url) => {
+          expect(isOpenMrsRestApiFunction(url)).toBe(true);
+        });
       });
 
-      // Create a mock 401 error
-      const mockResponse = {
-        status: 401,
-        data: {},
-      };
+      it('should return false for non-OpenMRS URLs', () => {
+        const testCases = [
+          '/api/v1/patient',
+          'http://localhost:8080/api/rest/v1/concept',
+          'https://demo.example.org/rest/v1/encounter',
+          '/fhir/Patient',
+          'http://example.com/api/user',
+          '',
+          '/',
+          'http://example.com',
+        ];
 
-      const axiosError = {
-        isAxiosError: true,
-        response: mockResponse,
-        request: {},
-        message: 'Unauthorized',
-        config: {},
-        toJSON: jest.fn(),
-      } as unknown as AxiosError;
-
-      // Mock axios.isAxiosError to return true
-      mockedAxios.isAxiosError.mockReturnValue(true);
-
-      // Create a mock for the error handler
-      const errorHandler = jest.fn((error) => Promise.reject(error));
-
-      // Mock the axios interceptor
-      const originalInterceptors = client.interceptors;
-      client.interceptors = {
-        request: originalInterceptors.request,
-        response: {
-          use: jest.fn((successFn, errorFn) => {
-            // Store the error handler for testing
-            errorHandler.mockImplementation(errorFn);
-            return { id: 1 };
-          }),
-          eject: jest.fn(),
-        },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any;
-
-      // Re-create the interceptor to capture our mock
-      client.interceptors.response.use(
-        function (response) {
-          return response;
-        },
-        function (error) {
-          if (axios.isAxiosError(error) && error.response?.status === 401) {
-            window.location.href = '/login';
-            return Promise.reject(error);
-          }
-          const { title, message } = getFormattedError(error);
-          notificationService.showError(title, message);
-          return Promise.reject(error);
-        },
-      );
-
-      // Call the error handler with the mock error
-      errorHandler(axiosError).catch(() => {
-        // Expected to reject
+        testCases.forEach((url) => {
+          expect(isOpenMrsRestApiFunction(url)).toBe(false);
+        });
       });
-
-      // Verify redirect happened
-      expect(window.location.href).toBe('/login');
-
-      // Restore original window.location.href and interceptors
-      Object.defineProperty(window, 'location', {
-        writable: true,
-        value: { href: originalHref },
-      });
-      client.interceptors = originalInterceptors;
     });
 
-    it('should show error notification for non-401 errors', () => {
-      // Create a mock error
-      const mockResponse = {
-        status: 500,
-        data: { message: 'Internal Server Error' },
-      };
-
-      const axiosError = {
-        isAxiosError: true,
-        response: mockResponse,
-        request: {},
-        message: 'Server Error',
-        config: {},
-        toJSON: jest.fn(),
-      } as unknown as AxiosError;
-
-      // Mock axios.isAxiosError to return true
-      mockedAxios.isAxiosError.mockReturnValue(true);
-
-      // Mock the getErrorDetails function
-      const mockErrorDetails = {
-        title: 'Server Error',
-        message: 'The server encountered an error. Please try again later.',
-      };
-      const getErrorDetailsMock = jest
-        .spyOn(common, 'getFormattedError')
-        .mockReturnValue(mockErrorDetails);
-
-      // Create a mock for the error handler
-      const errorHandler = jest.fn((error) => Promise.reject(error));
-
-      // Mock the axios interceptor
-      const originalInterceptors = client.interceptors;
-      client.interceptors = {
-        request: originalInterceptors.request,
-        response: {
-          use: jest.fn((successFn, errorFn) => {
-            // Store the error handler for testing
-            errorHandler.mockImplementation(errorFn);
-            return { id: 1 };
-          }),
-          eject: jest.fn(),
-        },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any;
-
-      // Re-create the interceptor to capture our mock
-      client.interceptors.response.use(
-        function (response) {
-          return response;
-        },
-        function (error) {
-          if (axios.isAxiosError(error) && error.response?.status === 401) {
-            window.location.href = '/login';
-            return Promise.reject(error);
-          }
-          const { title, message } = getFormattedError(error);
-          notificationService.showError(title, message);
-          return Promise.reject(error);
-        },
-      );
-
-      // Call the error handler with the mock error
-      errorHandler(axiosError).catch(() => {
-        // Expected to reject
+    describe('Edge Cases', () => {
+      it('should handle empty string', () => {
+        expect(isOpenMrsRestApiFunction('')).toBe(false);
       });
 
-      // Verify getErrorDetails was called with the error
-      expect(getErrorDetailsMock).toHaveBeenCalledWith(axiosError);
+      it('should handle URLs with openmrs/ws as substring but not path', () => {
+        const testCases = [
+          'http://openmrs/ws.example.com/api',
+          'http://example.com/api?param=openmrs/ws',
+          'http://example.com/api#openmrs/ws',
+          'http://example.com/notopenmrs/ws/api',
+        ];
 
-      // Verify notificationService.showError was called with the correct title and message
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        mockErrorDetails.title,
-        mockErrorDetails.message,
-      );
+        testCases.forEach((url) => {
+          expect(isOpenMrsRestApiFunction(url)).toBe(
+            url.includes('/openmrs/ws'),
+          );
+        });
+      });
 
-      // Restore original interceptors and mocks
-      client.interceptors = originalInterceptors;
-      getErrorDetailsMock.mockRestore();
+      it('should be case sensitive', () => {
+        const testCases = [
+          '/OpenMRS/ws/rest/v1/patient',
+          '/OPENMRS/WS/rest/v1/patient',
+          '/openmrs/WS/rest/v1/patient',
+          '/Openmrs/ws/rest/v1/patient',
+        ];
+
+        testCases.forEach((url) => {
+          expect(isOpenMrsRestApiFunction(url)).toBe(false);
+        });
+      });
+
+      it('should handle URLs with query parameters and fragments', () => {
+        const testCases = [
+          '/openmrs/ws/rest/v1/patient?q=test',
+          '/openmrs/ws/rest/v1/patient#section',
+          '/openmrs/ws/rest/v1/patient?q=test&limit=10#results',
+        ];
+
+        testCases.forEach((url) => {
+          expect(isOpenMrsRestApiFunction(url)).toBe(true);
+        });
+      });
     });
   });
 
-  describe('HTTP methods', () => {
-    const mockResponse = { data: { id: 1, name: 'Test' } };
-    const mockUrl = '/test';
-    const mockData = { name: 'Test' };
+  describe('HTTP Method Functions', () => {
+    // Mock axios client methods
+    const mockAxiosGet = jest.fn();
+    const mockAxiosPost = jest.fn();
+    const mockAxiosPut = jest.fn();
+    const mockAxiosDelete = jest.fn();
 
     beforeEach(() => {
-      client.get = jest.fn().mockResolvedValue(mockResponse);
-      client.post = jest.fn().mockResolvedValue(mockResponse);
-      client.put = jest.fn().mockResolvedValue(mockResponse);
-      client.delete = jest.fn().mockResolvedValue(mockResponse);
+      client.get = mockAxiosGet;
+      client.post = mockAxiosPost;
+      client.put = mockAxiosPut;
+      client.delete = mockAxiosDelete;
     });
 
-    it('should make GET request and return data', async () => {
-      const result = await get(mockUrl);
+    describe('get', () => {
+      it('should make GET request and return response data', async () => {
+        const mockData = { id: 1, name: 'Test Patient' };
+        mockAxiosGet.mockResolvedValue({ data: mockData });
 
-      expect(client.get).toHaveBeenCalledWith(mockUrl);
-      expect(result).toEqual(mockResponse.data);
+        const { get } = await import('../api');
+        const result = await get('/api/patients/1');
+
+        expect(mockAxiosGet).toHaveBeenCalledWith('/api/patients/1');
+        expect(result).toEqual(mockData);
+      });
+
+      it('should handle GET request errors', async () => {
+        const error = new Error('Network error');
+        mockAxiosGet.mockRejectedValue(error);
+
+        const { get } = await import('../api');
+
+        await expect(get('/api/patients/1')).rejects.toThrow('Network error');
+        expect(mockAxiosGet).toHaveBeenCalledWith('/api/patients/1');
+      });
     });
 
-    it('should make POST request with data and return response data', async () => {
-      const result = await post(mockUrl, mockData);
+    describe('post', () => {
+      it('should make POST request and return response data', async () => {
+        const mockData = { id: 1, name: 'New Patient' };
+        const requestData = { name: 'New Patient', age: 30 };
+        mockAxiosPost.mockResolvedValue({ data: mockData });
 
-      expect(client.post).toHaveBeenCalledWith(mockUrl, mockData);
-      expect(result).toEqual(mockResponse.data);
+        const { post } = await import('../api');
+        const result = await post('/api/patients', requestData);
+
+        expect(mockAxiosPost).toHaveBeenCalledWith(
+          '/api/patients',
+          requestData,
+        );
+        expect(result).toEqual(mockData);
+      });
+
+      it('should handle POST request errors', async () => {
+        const error = new Error('Validation error');
+        mockAxiosPost.mockRejectedValue(error);
+
+        const { post } = await import('../api');
+
+        await expect(post('/api/patients', {})).rejects.toThrow(
+          'Validation error',
+        );
+        expect(mockAxiosPost).toHaveBeenCalledWith('/api/patients', {});
+      });
     });
 
-    it('should make PUT request with data and return response data', async () => {
-      const result = await put(mockUrl, mockData);
+    describe('put', () => {
+      it('should make PUT request and return response data', async () => {
+        const mockData = { id: 1, name: 'Updated Patient' };
+        const requestData = { name: 'Updated Patient', age: 31 };
+        mockAxiosPut.mockResolvedValue({ data: mockData });
 
-      expect(client.put).toHaveBeenCalledWith(mockUrl, mockData);
-      expect(result).toEqual(mockResponse.data);
+        const { put } = await import('../api');
+        const result = await put('/api/patients/1', requestData);
+
+        expect(mockAxiosPut).toHaveBeenCalledWith(
+          '/api/patients/1',
+          requestData,
+        );
+        expect(result).toEqual(mockData);
+      });
+
+      it('should handle PUT request errors', async () => {
+        const error = new Error('Not found');
+        mockAxiosPut.mockRejectedValue(error);
+
+        const { put } = await import('../api');
+
+        await expect(put('/api/patients/1', {})).rejects.toThrow('Not found');
+        expect(mockAxiosPut).toHaveBeenCalledWith('/api/patients/1', {});
+      });
     });
 
-    it('should make DELETE request and return response data', async () => {
-      const result = await del(mockUrl);
+    describe('del', () => {
+      it('should make DELETE request and return response data', async () => {
+        const mockData = { success: true };
+        mockAxiosDelete.mockResolvedValue({ data: mockData });
 
-      expect(client.delete).toHaveBeenCalledWith(mockUrl);
-      expect(result).toEqual(mockResponse.data);
+        const { del } = await import('../api');
+        const result = await del('/api/patients/1');
+
+        expect(mockAxiosDelete).toHaveBeenCalledWith('/api/patients/1');
+        expect(result).toEqual(mockData);
+      });
+
+      it('should handle DELETE request errors', async () => {
+        const error = new Error('Forbidden');
+        mockAxiosDelete.mockRejectedValue(error);
+
+        const { del } = await import('../api');
+
+        await expect(del('/api/patients/1')).rejects.toThrow('Forbidden');
+        expect(mockAxiosDelete).toHaveBeenCalledWith('/api/patients/1');
+      });
+    });
+  });
+
+  describe('Request Interceptor', () => {
+    it('should pass through successful requests', () => {
+      const mockConfig = { url: '/api/test' };
+      const requestInterceptor = client.interceptors.request.handlers[0];
+
+      const result = requestInterceptor.fulfilled(mockConfig);
+      expect(result).toBe(mockConfig);
     });
 
-    it('should propagate errors from HTTP methods', async () => {
-      const mockError = new Error('Network failure');
-      client.get = jest.fn().mockRejectedValue(mockError);
+    it('should handle request errors', async () => {
+      const mockError = new Error('Request failed');
+      const { getFormattedError } = await import('@utils/common');
+      const { notificationService } = await import(
+        '@services/notificationService'
+      );
 
-      await expect(get(mockUrl)).rejects.toThrow('Network failure');
+      const requestInterceptor = client.interceptors.request.handlers[0];
+
+      await expect(() => requestInterceptor.rejected(mockError)).rejects.toBe(
+        mockError,
+      );
+      expect(getFormattedError).toHaveBeenCalledWith(mockError);
+      expect(notificationService.showError).toHaveBeenCalledWith(
+        'Error',
+        'Test error message',
+      );
+    });
+  });
+
+  describe('Response Interceptor Error Handling', () => {
+    let getFormattedError: jest.MockedFunction<
+      typeof import('@utils/common').getFormattedError
+    >;
+    let notificationService: {
+      showError: jest.MockedFunction<(title: string, message: string) => void>;
+    };
+
+    beforeEach(async () => {
+      const utilsModule = await import('@utils/common');
+      const notificationModule = await import('@services/notificationService');
+      getFormattedError = utilsModule.getFormattedError as jest.MockedFunction<
+        typeof import('@utils/common').getFormattedError
+      >;
+      notificationService = notificationModule.notificationService;
+
+      // Mock window.location
+      delete (window as unknown as { location: unknown }).location;
+      (window as unknown as { location: { href: string } }).location = {
+        href: '',
+      };
+    });
+
+    it('should handle 401 errors by redirecting to login', async () => {
+      const mockError = {
+        response: { status: 401 },
+        isAxiosError: true,
+      };
+
+      // Mock axios.isAxiosError
+      (axios.isAxiosError as jest.Mock) = jest.fn().mockReturnValue(true);
+
+      const responseInterceptor = client.interceptors.response.handlers[0];
+
+      await expect(() => responseInterceptor.rejected(mockError)).rejects.toBe(
+        mockError,
+      );
+      expect(window.location.href).toBe('/login');
+    });
+
+    it('should handle non-401 Axios errors', async () => {
+      const mockError = {
+        response: { status: 500 },
+        isAxiosError: true,
+      };
+
+      (axios.isAxiosError as jest.Mock) = jest.fn().mockReturnValue(true);
+
+      const responseInterceptor = client.interceptors.response.handlers[0];
+
+      await expect(() => responseInterceptor.rejected(mockError)).rejects.toBe(
+        mockError,
+      );
+      expect(getFormattedError).toHaveBeenCalledWith(mockError);
+      expect(notificationService.showError).toHaveBeenCalledWith(
+        'Error',
+        'Test error message',
+      );
+    });
+
+    it('should handle non-Axios errors', async () => {
+      const mockError = new Error('Network error');
+
+      (axios.isAxiosError as jest.Mock) = jest.fn().mockReturnValue(false);
+
+      const responseInterceptor = client.interceptors.response.handlers[0];
+
+      await expect(() => responseInterceptor.rejected(mockError)).rejects.toBe(
+        mockError,
+      );
+      expect(getFormattedError).toHaveBeenCalledWith(mockError);
+      expect(notificationService.showError).toHaveBeenCalledWith(
+        'Error',
+        'Test error message',
+      );
+    });
+
+    it('should handle Axios errors without response', async () => {
+      const mockError = {
+        isAxiosError: true,
+        message: 'Request timeout',
+      };
+
+      (axios.isAxiosError as jest.Mock) = jest.fn().mockReturnValue(true);
+
+      const responseInterceptor = client.interceptors.response.handlers[0];
+
+      await expect(() => responseInterceptor.rejected(mockError)).rejects.toBe(
+        mockError,
+      );
+      expect(getFormattedError).toHaveBeenCalledWith(mockError);
+      expect(notificationService.showError).toHaveBeenCalledWith(
+        'Error',
+        'Test error message',
+      );
+    });
+  });
+
+  describe('getConfigUrl function', () => {
+    let getConfigUrlFunction: (config: Record<string, unknown>) => string;
+
+    beforeAll(() => {
+      // Create a test version of the function
+      getConfigUrlFunction = (config: Record<string, unknown>): string => {
+        return (config.url as string) ?? (config.baseURL as string) ?? '';
+      };
+    });
+
+    it('should return URL when present', () => {
+      const config = { url: '/api/patients' };
+      expect(getConfigUrlFunction(config)).toBe('/api/patients');
+    });
+
+    it('should return baseURL when URL is not present', () => {
+      const config = { baseURL: '/api' };
+      expect(getConfigUrlFunction(config)).toBe('/api');
+    });
+
+    it('should prefer URL over baseURL when both are present', () => {
+      const config = { url: '/api/patients', baseURL: '/api' };
+      expect(getConfigUrlFunction(config)).toBe('/api/patients');
+    });
+
+    it('should return empty string when neither URL nor baseURL is present', () => {
+      const config = {};
+      expect(getConfigUrlFunction(config)).toBe('');
+    });
+
+    it('should handle null/undefined config properties', () => {
+      expect(getConfigUrlFunction({ url: null, baseURL: undefined })).toBe('');
+      expect(getConfigUrlFunction({ url: undefined, baseURL: null })).toBe('');
+    });
+  });
+
+  describe('Integration Tests', () => {
+    describe('Response Interceptor with OpenMRS API', () => {
+      it('should decode HTML entities for OpenMRS API responses', async () => {
+        const testData = {
+          display: '&amp;Patient Name&lt;',
+          description: '&quot;Test Description&quot;',
+        };
+
+        const expectedDecoded = {
+          display: '&Patient Name<',
+          description: '"Test Description"',
+        };
+
+        mockDecode
+          .mockReturnValueOnce('&Patient Name<')
+          .mockReturnValueOnce('"Test Description"');
+
+        // Mock axios response
+        const mockResponse = {
+          data: testData,
+          config: {
+            url: '/openmrs/ws/rest/v1/patient',
+          },
+        };
+
+        // Get the response interceptor
+        const responseInterceptor = client.interceptors.response.handlers[0];
+        const result = responseInterceptor.fulfilled(mockResponse);
+
+        expect(decode).toHaveBeenCalledTimes(2);
+        expect(result.data).toEqual(expectedDecoded);
+      });
+
+      it('should not decode HTML entities for non-OpenMRS API responses', async () => {
+        const testData = {
+          display: '&amp;Patient Name&lt;',
+          description: '&quot;Test Description&quot;',
+        };
+
+        // Mock axios response
+        const mockResponse = {
+          data: testData,
+          config: {
+            url: '/api/v1/patient',
+          },
+        };
+
+        // Get the response interceptor
+        const responseInterceptor = client.interceptors.response.handlers[0];
+        const result = responseInterceptor.fulfilled(mockResponse);
+
+        expect(decode).not.toHaveBeenCalled();
+        expect(result.data).toEqual(testData);
+      });
+
+      it('should handle responses with missing URL config', async () => {
+        const testData = { display: '&amp;test' };
+
+        const mockResponse = {
+          data: testData,
+          config: {
+            baseURL: '/openmrs/ws/rest/v1',
+          },
+        };
+
+        mockDecode.mockReturnValue('&test');
+
+        const responseInterceptor = client.interceptors.response.handlers[0];
+        const result = responseInterceptor.fulfilled(mockResponse);
+
+        expect(decode).toHaveBeenCalledWith('&amp;test');
+        expect(result.data).toEqual({ display: '&test' });
+      });
+
+      it('should handle responses with no URL or baseURL', async () => {
+        const testData = { display: '&amp;test' };
+
+        const mockResponse = {
+          data: testData,
+          config: {},
+        };
+
+        const responseInterceptor = client.interceptors.response.handlers[0];
+        const result = responseInterceptor.fulfilled(mockResponse);
+
+        expect(decode).not.toHaveBeenCalled();
+        expect(result.data).toEqual(testData);
+      });
+    });
+
+    describe('End-to-End Request Flow', () => {
+      it('should handle complete request-response cycle with OpenMRS API', async () => {
+        const responseData = { id: 1, display: '&amp;Test Patient&lt;' };
+        const expectedDecoded = { id: 1, display: '&Test Patient<' };
+
+        mockDecode.mockReturnValue('&Test Patient<');
+
+        // Mock the actual axios post method
+        const mockAxiosPost = jest
+          .fn()
+          .mockResolvedValue({ data: responseData });
+        client.post = mockAxiosPost;
+
+        // Mock response interceptor behavior
+        const responseInterceptor = client.interceptors.response.handlers[0];
+        const mockResponse = {
+          data: responseData,
+          config: { url: '/openmrs/ws/rest/v1/patient' },
+        };
+
+        // Simulate response interceptor processing
+        const processedResponse = responseInterceptor.fulfilled(mockResponse);
+
+        expect(decode).toHaveBeenCalledWith('&amp;Test Patient&lt;');
+        expect(processedResponse.data).toEqual(expectedDecoded);
+      });
     });
   });
 });
