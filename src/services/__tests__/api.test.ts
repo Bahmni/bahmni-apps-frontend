@@ -254,13 +254,13 @@ describe('API Service', () => {
     });
   });
 
-  describe('isOpenMrsRestApi', () => {
+  describe('isOpenMRSWebServiceApi', () => {
     // We need to test this function indirectly through the response interceptor
-    let isOpenMrsRestApiFunction: (url: string) => boolean;
+    let isOpenMRSWebServiceApiFunction: (url: string) => boolean;
 
     beforeAll(() => {
       // Create a test version of the function
-      isOpenMrsRestApiFunction = (url: string): boolean => {
+      isOpenMRSWebServiceApiFunction = (url: string): boolean => {
         return url.includes('/openmrs/ws');
       };
     });
@@ -276,7 +276,7 @@ describe('API Service', () => {
         ];
 
         testCases.forEach((url) => {
-          expect(isOpenMrsRestApiFunction(url)).toBe(true);
+          expect(isOpenMRSWebServiceApiFunction(url)).toBe(true);
         });
       });
 
@@ -293,14 +293,14 @@ describe('API Service', () => {
         ];
 
         testCases.forEach((url) => {
-          expect(isOpenMrsRestApiFunction(url)).toBe(false);
+          expect(isOpenMRSWebServiceApiFunction(url)).toBe(false);
         });
       });
     });
 
     describe('Edge Cases', () => {
       it('should handle empty string', () => {
-        expect(isOpenMrsRestApiFunction('')).toBe(false);
+        expect(isOpenMRSWebServiceApiFunction('')).toBe(false);
       });
 
       it('should handle URLs with openmrs/ws as substring but not path', () => {
@@ -312,7 +312,7 @@ describe('API Service', () => {
         ];
 
         testCases.forEach((url) => {
-          expect(isOpenMrsRestApiFunction(url)).toBe(
+          expect(isOpenMRSWebServiceApiFunction(url)).toBe(
             url.includes('/openmrs/ws'),
           );
         });
@@ -327,7 +327,7 @@ describe('API Service', () => {
         ];
 
         testCases.forEach((url) => {
-          expect(isOpenMrsRestApiFunction(url)).toBe(false);
+          expect(isOpenMRSWebServiceApiFunction(url)).toBe(false);
         });
       });
 
@@ -339,7 +339,7 @@ describe('API Service', () => {
         ];
 
         testCases.forEach((url) => {
-          expect(isOpenMrsRestApiFunction(url)).toBe(true);
+          expect(isOpenMRSWebServiceApiFunction(url)).toBe(true);
         });
       });
     });

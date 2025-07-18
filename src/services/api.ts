@@ -33,11 +33,11 @@ const decodeHtmlEntities = (data: unknown): unknown => {
 };
 
 /**
- * Checks if URL matches OpenMRS REST API pattern
+ * Checks if URL matches OpenMRS Web Service REST API pattern
  * @param url - The URL to check
- * @returns True if URL is OpenMRS REST API
+ * @returns True if URL is OpenMRS Web Service REST API
  */
-const isOpenMrsRestApi = (url: string): boolean => {
+const isOpenMRSWebServiceApi = (url: string): boolean => {
   return url.includes('/openmrs/ws');
 };
 
@@ -66,7 +66,7 @@ client.interceptors.request.use(
 client.interceptors.response.use(
   function (response) {
     const url = getConfigUrl(response.config);
-    if (isOpenMrsRestApi(url)) {
+    if (isOpenMRSWebServiceApi(url)) {
       response.data = decodeHtmlEntities(response.data);
     }
     return response;
