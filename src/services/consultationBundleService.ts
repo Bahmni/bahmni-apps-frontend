@@ -370,20 +370,23 @@ export function createEncounterBundleEntry(
   activeEncounter: FhirEncounter | null,
   encounterResource: any,
 ): BundleEntry {
-  const encounterUrl = activeEncounter 
+  // For existing encounters (PUT), use the encounter URL as fullUrl
+  // For new encounters (POST), use a placeholder UUID
+  const fullUrl = activeEncounter 
     ? `${ENCOUNTER_SEARCH_URL}/${activeEncounter.id}`
     : `urn:uuid:${crypto.randomUUID()}`;
 
   const method = activeEncounter ? 'PUT' : 'POST';
-  const resource = activeEncounter 
+  const resource = activeEncounter
     ? { ...encounterResource, id: activeEncounter.id }
     : encounterResource;
 
-  const resourceUrl = activeEncounter 
+  const resourceUrl = activeEncounter
     ? `Encounter/${activeEncounter.id}`
     : 'Encounter';
 
-  return createBundleEntry(encounterUrl, resource, method, resourceUrl);
+
+  return createBundleEntry(fullUrl, resource, method, resourceUrl);
 }
 
 /**
