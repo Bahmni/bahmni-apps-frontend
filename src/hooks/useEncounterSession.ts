@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { usePatientUUID } from '@hooks/usePatientUUID';
-import { hasActiveEncounterSession, findActiveEncounterInSession } from '@services/encounterSessionService';
-import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
+import { useActivePractitioner } from '@hooks/useActivePractitioner';
+import { findActiveEncounterInSession } from '@services/encounterSessionService';
 import { FhirEncounter } from '../types/encounter';
 
 interface UseEncounterSessionReturn {
@@ -18,96 +18,87 @@ interface UseEncounterSessionReturn {
  * Determines if there's an active encounter session for the current patient
  * @returns Object containing session state and utilities
  */
-/**
- * Checks if an encounter belongs to the specified practitioner
- * @param encounter - The encounter to check
- * @param practitionerUUID - The practitioner UUID to match against
- * @returns boolean indicating if the encounter belongs to the practitioner
- */
-function doesEncounterBelongToPractitioner(
-  encounter: FhirEncounter | null,
-  practitionerUUID: string | undefined
-): boolean {
-  if (!encounter || !practitionerUUID) {
-    return false;
-  }
-
-  return encounter.participant?.some(participant => {
-    const individual = participant.individual;
-    if (!individual?.reference) {
-      return false;
-    }
-
-    const practitionerRef = individual.reference;
-
-    // Check multiple possible formats
-    const refMatch = (
-      practitionerRef === `Practitioner/${practitionerUUID}` ||
-      practitionerRef === practitionerUUID ||
-      practitionerRef.endsWith(`/${practitionerUUID}`) ||
-      practitionerRef.split('/').pop() === practitionerUUID
-    );
-
-    // Check identifier if available
-    const identifierMatch = individual.identifier?.value === practitionerUUID;
-
-    return refMatch || identifierMatch;
-  }) || false;
-}
 
 export function useEncounterSession(): UseEncounterSessionReturn {
   const [hasActiveSession, setHasActiveSession] = useState<boolean>(false);
   const [activeEncounter, setActiveEncounter] = useState<FhirEncounter | null>(null);
   const [isPractitionerMatch, setIsPractitionerMatch] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false); // Start with false to not block UI
   const [error, setError] = useState<string | null>(null);
-  
+
   const patientUUID = usePatientUUID();
-  const { practitioner } = useEncounterDetailsStore();
+  const { practitioner } = useActivePractitioner();
+  
 
   const fetchSessionState = async () => {
     if (!patientUUID) {
       setHasActiveSession(false);
       setActiveEncounter(null);
+      setIsPractitionerMatch(false);
       setIsLoading(false);
       return;
     }
 
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      // Get practitioner UUID for session filtering
-      const practitionerUUID = practitioner?.uuid;
-      
-      // First, check for any active session without practitioner filtering
-      const [anySessionExists, anyEncounter] = await Promise.all([
-        hasActiveEncounterSession(patientUUID),
-        findActiveEncounterInSession(patientUUID)
-      ]);
-      
-      // Check if the encounter belongs to the current practitioner
-      const practitionerMatches = doesEncounterBelongToPractitioner(anyEncounter, practitionerUUID);
-      
-      // Set session state - hasActiveSession is true if ANY encounter exists within duration
-      setHasActiveSession(anySessionExists);
-      setActiveEncounter(anyEncounter);
-      setIsPractitionerMatch(practitionerMatches);
-    } catch (err) {
-      console.error('Error fetching encounter session state:', err);
-      setError(err instanceof Error ? err.message : 'Unknown error occurred');
-      // Default to "New Consultation" (safer) on error
-      setHasActiveSession(false);
-      setActiveEncounter(null);
-      setIsPractitionerMatch(false);
-    } finally {
-      setIsLoading(false);
-    }
+    setIsLoading(true);
+    setError(null);
+
+    // Use setTimeout to make this async and not block the UI
+    setTimeout(async () => {
+      try {
+        // Get practitioner UUID for session filtering
+        const practitionerUUID = practitioner?.uuid;
+
+        // Try to find active encounter, but with timeout
+        const timeoutPromise = new Promise<null>((_, reject) => {
+          setTimeout(() => reject(new Error('Session check timeout')), 5000); // 5 second timeout
+        });
+
+        // Find active encounter for current patient and practitioner (server-side filtering)
+        const encounterPromise = findActiveEncounterInSession(patientUUID, practitionerUUID);
+        
+        try {
+          const encounter = await Promise.race([encounterPromise, timeoutPromise]);
+          const sessionExists = encounter !== null;
+
+          // Since server filters by practitioner, if we get an encounter, it belongs to current practitioner
+          const practitionerMatches = sessionExists;
+
+          // Set session state
+          setHasActiveSession(sessionExists);
+          setActiveEncounter(encounter);
+          setIsPractitionerMatch(practitionerMatches);
+
+        } catch (sessionError) {
+          console.warn('Encounter session check failed, defaulting to new consultation:', sessionError);
+          // Default to "New Consultation" if session check fails
+          setHasActiveSession(false);
+          setActiveEncounter(null);
+          setIsPractitionerMatch(false);
+        }
+      } catch (err) {
+        console.error('Error fetching encounter session state:', err);
+        setError(err instanceof Error ? err.message : 'Unknown error occurred');
+        // Default to "New Consultation" (safer) on error
+        setHasActiveSession(false);
+        setActiveEncounter(null);
+        setIsPractitionerMatch(false);
+      } finally {
+        setIsLoading(false);
+      }
+    }, 0); // Execute immediately but asynchronously
   };
 
   useEffect(() => {
+    // Reset state when practitioner changes to prevent stale data
+    if (practitioner?.uuid) {
+      setHasActiveSession(false);
+      setActiveEncounter(null);
+      setIsPractitionerMatch(false);
+      setError(null);
+    }
+    
     fetchSessionState();
-  }, [patientUUID, practitioner?.uuid]);
+  }, [patientUUID, practitioner?.uuid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     hasActiveSession,

@@ -83,6 +83,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   // Only use active encounter if it belongs to current practitioner
   const shouldUseActiveEncounter = hasActiveSession && isPractitionerMatch;
 
+
   // Clean up on unmount
   useEffect(() => {
     return () => {
@@ -141,11 +142,14 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       encounterBundleEntry.fullUrl || placeholderReference,
     );
 
+    // Use consistent practitioner UUID for all resources
+    const consistentPractitionerUUID = practitioner!.uuid;
+
     const diagnosisEntries = createDiagnosisBundleEntries({
       selectedDiagnoses,
       encounterSubject: encounterResource.subject!,
       encounterReference,
-      practitionerUUID: user!.uuid,
+      practitionerUUID: consistentPractitionerUUID,
       consultationDate,
     });
 
@@ -153,14 +157,14 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       selectedAllergies,
       encounterSubject: encounterResource.subject!,
       encounterReference,
-      practitionerUUID: user!.uuid,
+      practitionerUUID: consistentPractitionerUUID,
     });
 
     const conditionEntries = createConditionsBundleEntries({
       selectedConditions,
       encounterSubject: encounterResource.subject!,
       encounterReference,
-      practitionerUUID: user!.uuid,
+      practitionerUUID: consistentPractitionerUUID,
       consultationDate,
     });
 
@@ -168,14 +172,14 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       selectedServiceRequests,
       encounterSubject: encounterResource.subject!,
       encounterReference,
-      practitionerUUID: practitioner!.uuid,
+      practitionerUUID: consistentPractitionerUUID,
     });
 
     const medicationEntries = createMedicationRequestEntries({
       selectedMedications,
       encounterSubject: encounterResource.subject!,
       encounterReference,
-      practitionerUUID: practitioner!.uuid,
+      practitionerUUID: consistentPractitionerUUID,
     });
 
     const consultationBundle = createConsultationBundle([
