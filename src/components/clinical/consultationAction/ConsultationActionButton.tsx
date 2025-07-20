@@ -21,18 +21,21 @@ const ConsultationActionButton: React.FC<ConsultationActionButtonProps> = ({
   setIsActionAreaVisible,
 }) => {
   const { t } = useTranslation();
-  const { hasActiveSession, isLoading } = useEncounterSession();
+  const { hasActiveSession, isPractitionerMatch, isLoading } = useEncounterSession();
+
+  // Only show edit button if there's an active session AND it belongs to current practitioner
+  const shouldShowEditButton = hasActiveSession && isPractitionerMatch;
 
   return (
     <Button
       size="lg"
       disabled={isActionAreaVisible || isLoading}
       onClick={() => setIsActionAreaVisible(!isActionAreaVisible)}
-      renderIcon={hasActiveSession ? Edit : Add}
+      renderIcon={shouldShowEditButton ? Edit : Add}
     >
       {isActionAreaVisible
         ? t('CONSULTATION_ACTION_IN_PROGRESS')
-        : hasActiveSession
+        : shouldShowEditButton
         ? t('CONSULTATION_ACTION_EDIT')
         : t('CONSULTATION_ACTION_NEW')}
     </Button>
