@@ -109,6 +109,12 @@ jest.mock('@services/consultationBundleService', () => ({
   createConditionsBundleEntries: jest.fn(() => []),
   createServiceRequestBundleEntries: jest.fn(() => []),
   createMedicationRequestEntries: jest.fn(() => []),
+  createEncounterBundleEntry: jest.fn(() => ({
+    fullUrl: 'urn:uuid:mock-encounter-uuid',
+    resource: { resourceType: 'Encounter', id: 'mock-encounter-id' },
+    request: { method: 'POST', url: 'Encounter' },
+  })),
+  getEncounterReference: jest.fn(() => 'urn:uuid:mock-encounter-uuid'),
 }));
 
 // Mock hooks
@@ -145,6 +151,7 @@ jest.mock('@utils/fhir/consultationBundleCreator', () => ({
 // Mock encounter session hook
 const mockUseEncounterSession = jest.fn();
 jest.mock('@hooks/useEncounterSession', () => ({
+  __esModule: true,
   useEncounterSession: () => mockUseEncounterSession(),
 }));
 
@@ -244,6 +251,14 @@ describe('ConsultationPad', () => {
     mockAllergyStore = createMockAllergyStore();
     mockServiceRequestStore = createMockServiceRequestStore();
     mockMedicationStore = createMockMedicationStore();
+
+    // Mock useEncounterSession hook
+    mockUseEncounterSession.mockReturnValue({
+      hasActiveSession: false,
+      activeEncounter: null,
+      isPractitionerMatch: false,
+      refetch: jest.fn(),
+    });
 
     // Update the mocked return values
     (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue(

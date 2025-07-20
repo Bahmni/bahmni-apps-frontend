@@ -504,7 +504,7 @@ describe('consultationBundleService', () => {
         expect(result.fullUrl).toMatch(/^urn:uuid:/);
         expect(result.resource).toBe(mockEncounterResource);
         expect(result.request?.method).toBe('POST');
-        expect(result.request?.url).toBe(result.fullUrl);
+        expect(result.request?.url).toBe('Encounter');
       });
 
       it('should create PUT bundle entry for existing encounter when active encounter exists', () => {
@@ -520,7 +520,7 @@ describe('consultationBundleService', () => {
         expect(result.fullUrl).toBe('/openmrs/ws/fhir2/R4/Encounter/encounter-123');
         expect(result.resource).toEqual({ ...mockEncounterResource, id: 'encounter-123' });
         expect(result.request?.method).toBe('PUT');
-        expect(result.request?.url).toBe('/openmrs/ws/fhir2/R4/Encounter/encounter-123');
+        expect(result.request?.url).toBe('Encounter/encounter-123');
       });
     });
 
@@ -537,7 +537,7 @@ describe('consultationBundleService', () => {
         expect(result.fullUrl).toBe('/openmrs/ws/fhir2/R4/Encounter/undefined');
         expect(result.resource).toEqual({ ...mockEncounterResource, id: undefined });
         expect(result.request?.method).toBe('PUT');
-        expect(result.request?.url).toBe('/openmrs/ws/fhir2/R4/Encounter/undefined');
+        expect(result.request?.url).toBe('Encounter/undefined');
       });
 
       it('should handle empty encounter resource', () => {
@@ -547,7 +547,7 @@ describe('consultationBundleService', () => {
         expect(result.fullUrl).toMatch(/^urn:uuid:/);
         expect(result.resource).toBe(emptyResource);
         expect(result.request?.method).toBe('POST');
-        expect(result.request?.url).toBe(result.fullUrl);
+        expect(result.request?.url).toBe('Encounter');
       });
     });
   });
