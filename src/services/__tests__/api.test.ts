@@ -298,6 +298,65 @@ describe('API Service', () => {
       });
     });
 
+    describe('Response Interceptor Error Handling (Extended)', () => {
+      let responseInterceptor: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        fulfilled: (response: any) => any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        rejected: (error: any) => Promise<never>;
+      };
+      let notificationService: {
+        showError: jest.MockedFunction<
+          (title: string, message: string) => void
+        >;
+      };
+      beforeEach(async () => {
+        const notificationModule = await import(
+          '@services/notificationService'
+        );
+        notificationService = notificationModule.notificationService;
+
+        responseInterceptor = client.interceptors.response.handlers[0];
+      });
+
+      it('should handle error during HTML entity decoding', async () => {
+        const testData = { display: '&amp;Error' };
+
+        const mockResponse = {
+          data: testData,
+          config: { url: '/openmrs/ws/rest/v1/patient' },
+        };
+
+        jest
+          .spyOn(await import('html-entities'), 'decode')
+          .mockImplementation(() => {
+            throw new Error('Decoding failed');
+          });
+
+        await expect(() =>
+          responseInterceptor.fulfilled(mockResponse),
+        ).rejects.toThrow('Decoding failed');
+
+        expect(notificationService.showError).toHaveBeenCalledWith(
+          'Error',
+          'Test error message',
+        );
+      });
+
+      it('should handle general unexpected errors in response interceptor', async () => {
+        const mockResponse = null; // forceful unexpected shape
+
+        await expect(() =>
+          responseInterceptor.fulfilled(mockResponse),
+        ).rejects.toThrow();
+
+        expect(notificationService.showError).toHaveBeenCalledWith(
+          'Error',
+          'Test error message',
+        );
+      });
+    });
+
     describe('Edge Cases', () => {
       it('should handle empty string', () => {
         expect(isOpenMRSWebServiceApiFunction('')).toBe(false);
@@ -589,39 +648,43 @@ describe('API Service', () => {
     });
   });
 
-  describe('getConfigUrl function', () => {
-    let getConfigUrlFunction: (config: Record<string, unknown>) => string;
+  describe('getResponseUrl function', () => {
+    let getResponseUrlFunction: (config: Record<string, unknown>) => string;
 
     beforeAll(() => {
       // Create a test version of the function
-      getConfigUrlFunction = (config: Record<string, unknown>): string => {
+      getResponseUrlFunction = (config: Record<string, unknown>): string => {
         return (config.url as string) ?? (config.baseURL as string) ?? '';
       };
     });
 
     it('should return URL when present', () => {
       const config = { url: '/api/patients' };
-      expect(getConfigUrlFunction(config)).toBe('/api/patients');
+      expect(getResponseUrlFunction(config)).toBe('/api/patients');
     });
 
     it('should return baseURL when URL is not present', () => {
       const config = { baseURL: '/api' };
-      expect(getConfigUrlFunction(config)).toBe('/api');
+      expect(getResponseUrlFunction(config)).toBe('/api');
     });
 
     it('should prefer URL over baseURL when both are present', () => {
       const config = { url: '/api/patients', baseURL: '/api' };
-      expect(getConfigUrlFunction(config)).toBe('/api/patients');
+      expect(getResponseUrlFunction(config)).toBe('/api/patients');
     });
 
     it('should return empty string when neither URL nor baseURL is present', () => {
       const config = {};
-      expect(getConfigUrlFunction(config)).toBe('');
+      expect(getResponseUrlFunction(config)).toBe('');
     });
 
     it('should handle null/undefined config properties', () => {
-      expect(getConfigUrlFunction({ url: null, baseURL: undefined })).toBe('');
-      expect(getConfigUrlFunction({ url: undefined, baseURL: null })).toBe('');
+      expect(getResponseUrlFunction({ url: null, baseURL: undefined })).toBe(
+        '',
+      );
+      expect(getResponseUrlFunction({ url: undefined, baseURL: null })).toBe(
+        '',
+      );
     });
   });
 
@@ -712,6 +775,32 @@ describe('API Service', () => {
 
         expect(decode).not.toHaveBeenCalled();
         expect(result.data).toEqual(testData);
+      });
+
+      it('should decode HTML entities in array responses for OpenMRS API', async () => {
+        const testArray = ['&amp;item1', '&lt;item2&gt;', '&quot;item3&quot;'];
+        const expectedDecoded = ['&item1', '<item2>', '"item3"'];
+
+        mockDecode
+          .mockReturnValueOnce('&item1')
+          .mockReturnValueOnce('<item2>')
+          .mockReturnValueOnce('"item3"');
+
+        const mockResponse = {
+          data: testArray,
+          config: {
+            url: '/openmrs/ws/rest/v1/concepts',
+          },
+        };
+
+        const responseInterceptor = client.interceptors.response.handlers[0];
+        const result = responseInterceptor.fulfilled(mockResponse);
+
+        expect(decode).toHaveBeenCalledTimes(3);
+        expect(decode).toHaveBeenNthCalledWith(1, '&amp;item1');
+        expect(decode).toHaveBeenNthCalledWith(2, '&lt;item2&gt;');
+        expect(decode).toHaveBeenNthCalledWith(3, '&quot;item3&quot;');
+        expect(result.data).toEqual(expectedDecoded);
       });
     });
 

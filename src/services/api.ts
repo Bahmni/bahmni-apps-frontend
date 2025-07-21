@@ -28,7 +28,6 @@ const decodeHtmlEntities = (data: unknown): unknown => {
     }
     return decoded;
   }
-
   return data;
 };
 
@@ -46,7 +45,7 @@ const isOpenMRSWebServiceApi = (url: string): boolean => {
  * @param config - Axios request config
  * @returns The URL or empty string if not found
  */
-const getConfigUrl = (config: AxiosRequestConfig): string => {
+const getResponseUrl = (config: AxiosRequestConfig): string => {
   return config.url ?? config.baseURL ?? '';
 };
 
@@ -65,11 +64,17 @@ client.interceptors.request.use(
 // Response interceptor
 client.interceptors.response.use(
   function (response) {
-    const url = getConfigUrl(response.config);
-    if (isOpenMRSWebServiceApi(url)) {
-      response.data = decodeHtmlEntities(response.data);
+    try {
+      const url = getResponseUrl(response.config);
+      if (isOpenMRSWebServiceApi(url)) {
+        response.data = decodeHtmlEntities(response.data);
+      }
+      return response;
+    } catch (error) {
+      const { title, message } = getFormattedError(error);
+      notificationService.showError(title, message);
+      return Promise.reject(error);
     }
-    return response;
   },
   function (error) {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
