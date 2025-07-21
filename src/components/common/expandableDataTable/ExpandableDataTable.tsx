@@ -52,17 +52,11 @@ export const ExpandableDataTable = <T extends { id?: string }>({
   if (error) {
     const formattedError = getFormattedError(error);
     return (
-      <div data-testid="expandable-table-error" className={className}>
-        <Accordion align="start">
-          <AccordionItem title={tableTitle} open={isOpen}>
-            <p className={'emptyState'}>
-              {t('EXPANDABLE_TABLE_ERROR_MESSAGE', {
-                title: formattedError.title,
-                message: formattedError.message,
-              })}
-            </p>
-          </AccordionItem>
-        </Accordion>
+      <div data-testid="expandable-table-error" className={'emptyState'}>
+        {t('EXPANDABLE_TABLE_ERROR_MESSAGE', {
+          title: formattedError.title,
+          message: formattedError.message,
+        })}
       </div>
     );
   }
@@ -79,6 +73,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
               showHeader={false}
               showToolbar={false}
               compact
+              className={'displayControlHeaders'}
             />
           </AccordionItem>
         </Accordion>
@@ -109,7 +104,7 @@ export const ExpandableDataTable = <T extends { id?: string }>({
     <div className={className} data-testid="expandable-data-table">
       <Accordion align="start">
         <AccordionItem title={tableTitle} open={isOpen}>
-          <DataTable rows={dataTableRows} headers={headers}>
+          <DataTable rows={dataTableRows} headers={headers} size="md">
             {({
               rows: tableRows,
               headers: tableHeaders,
@@ -123,8 +118,9 @@ export const ExpandableDataTable = <T extends { id?: string }>({
                   {...getTableProps()}
                   key={generateId()}
                   aria-label={ariaLabel}
+                  size="md"
                 >
-                  <TableHead>
+                  <TableHead className={'displayControlHeaders'}>
                     <TableRow>
                       {tableHeaders.map((header) => (
                         <TableHeader

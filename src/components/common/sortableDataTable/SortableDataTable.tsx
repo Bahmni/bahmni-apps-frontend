@@ -58,6 +58,7 @@ export const SortableDataTable = <T extends { id: string }>({
           showHeader={false}
           showToolbar={false}
           compact
+          className={styles.displayControlHeaders}
         />
       </div>
     );
@@ -81,7 +82,7 @@ export const SortableDataTable = <T extends { id: string }>({
       className={classnames(className, styles.sortableDataTableBody)}
       data-testid="sortable-data-table"
     >
-      <DataTable rows={rows} headers={headers} isSortable>
+      <DataTable rows={rows} headers={headers} isSortable size="md">
         {({
           rows: tableRows,
           headers: tableHeaders,
@@ -90,8 +91,8 @@ export const SortableDataTable = <T extends { id: string }>({
           getTableProps,
         }) => (
           <TableContainer>
-            <Table {...getTableProps()} aria-label={ariaLabel}>
-              <TableHead>
+            <Table {...getTableProps()} aria-label={ariaLabel} size="md">
+              <TableHead className={styles.displayControlHeaders}>
                 <TableRow>
                   {tableHeaders.map((header) => {
                     const headerProps = getHeaderProps({

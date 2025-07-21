@@ -3,6 +3,10 @@
 @use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/type" as *;
 
+.accordianHeader {
+  background-color: $layer-01;
+}
+
 .accordionTitle {
   display: flex;
   align-items: center;
@@ -12,10 +16,14 @@
 
 /* Lab test item styles */
 .labBox {
-  border: 1px solid $border-subtle;
   padding: $spacing-05;
-  margin-top: $spacing-03;
   background-color: $layer-02;
+}
+
+.labHeaderWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .labHeader {
@@ -30,15 +38,6 @@
   color: $text-secondary;
   font-size: 0.875rem;
   font-weight: normal;
-  margin-left: 0.5rem;
-}
-
-.orderedBy {
-  display: flex;
-  align-items: center;
-  margin-left: auto;
-  gap: $spacing-02;
-  color: $text-primary;
 }
 
 /* Result display styles */
@@ -51,18 +50,17 @@
 }
 
 .accordionItem {
-  :global(.cds--accordion__content) {
-    padding-inline-end: 0%;
+  :global(.cds--accordion__content),
+  :global(.cds--accordion__wrapper) {
+    padding-block: 0% !important;
+    padding-inline: 0% !important;
+    margin-block: 0% !important;
+    margin-inline: 0% !important;
   }
 }
 
-.yellow-tag {
-  background-color: #f8d465 !important;
-  color: #333 !important;
-}
-
 .labInvestigationTableBodyError {
-  padding: $spacing-07 $spacing-05;
+  padding: $spacing-06 $spacing-05;
   text-align: center;
 
   @include type-style("body-compact-01");

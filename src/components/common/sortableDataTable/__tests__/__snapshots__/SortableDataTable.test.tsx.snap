@@ -202,7 +202,7 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
       >
         <table
           aria-label="Snapshot Test Full"
-          class="cds--data-table cds--data-table--lg cds--data-table--sort cds--data-table--visible-overflow-menu"
+          class="cds--data-table cds--data-table--md cds--data-table--sort cds--data-table--visible-overflow-menu"
         >
           <thead>
             <tr>
