@@ -14,17 +14,12 @@
 }
 
 .body {
-  display: grid;
-  grid-template-areas:
-    "header patient-details"
-    "header main-display";
-  grid-template-columns: 16rem 1fr;
-  left: 16rem;
-  grid-template-rows: auto 1fr;
-  flex: 1; // Take all remaining space
-  width: calc(100vw - 16rem);
-  height: calc(100vh - 3rem);
   margin-top: 1rem;
+}
+
+.expand {
+  width: calc(100vw - 16rem);
+  left: 16rem;
 }
 
 .collapse {
@@ -33,23 +28,31 @@
 }
 
 .patientHeader {
-  grid-area: patient-details;
-  border-bottom: 1px solid $border-subtle-01; // Carbon border token
+  padding: $spacing-05 $spacing-06;
   position: fixed;
   width: inherit;
   left: inherit;
   z-index: 2;
+  box-shadow: 0 2px 6px $shadow;
+  height: 5rem;
+}
+
+.collapsedPatientHeader {
+  height: 10rem;
 }
 
 .mainDisplay {
-  grid-area: main-display;
   overflow-y: auto;
   position: fixed;
   bottom: 0;
   left: inherit;
-  height: calc(100vh - 10rem);
   width: inherit;
   padding: 1.5rem;
+  top: 8rem;
+}
+
+.collapsedMainDisplay {
+  top: 13rem;
 }
 
 .actionArea {
@@ -63,22 +66,19 @@
 // Responsive adjustments using Carbon breakpoints
 @include breakpoint-down(lg) {
   .body {
-    grid-template-areas:
-      "header patient-details"
-      "header main-display";
-    grid-template-columns: 3rem 1fr;
     left: 3rem;
-    grid-template-rows: auto auto 1fr;
   }
 
   .patientHeader {
     left: 3rem;
-    width: fit-content;
+    width: calc(100vw - 3rem);
+    height: 10rem;
   }
 
   .mainDisplay {
     width: calc(100vw - 3rem);
     left: 3rem;
+    top: 13rem;
   }
 
   .actionArea {
