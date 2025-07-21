@@ -91,113 +91,10 @@ describe('PatientDetails Component', () => {
     // Assert
     expect(screen.getByText('John Doe')).toBeInTheDocument();
     expect(screen.getByText('ID: test-uuid')).toBeInTheDocument();
+    expect(screen.getByText('male')).toBeInTheDocument();
     expect(
-      screen.getByText('male | 35 years, 2 months, 15 days | 1990-01-01'),
+      screen.getByText('35 years, 2 months, 15 days | 1990-01-01'),
     ).toBeInTheDocument();
-  });
-
-  it('should render patient with address information', () => {
-    // Arrange
-    const mockPatient = {
-      resourceType: 'Patient' as const,
-      id: 'test-uuid',
-      name: [{ given: ['John'], family: 'Doe' }],
-      gender: 'male' as const,
-      birthDate: '1990-01-01',
-      address: [
-        {
-          line: ['123 Main St'],
-          city: 'Boston',
-          state: 'MA',
-          postalCode: '02115',
-        },
-      ],
-    };
-
-    const mockAge: Age = {
-      years: 35,
-      months: 2,
-      days: 15,
-    };
-
-    const mockFormattedPatient: FormattedPatientData = {
-      id: 'test-uuid',
-      fullName: 'John Doe',
-      gender: 'male',
-      birthDate: '1990-01-01',
-      formattedAddress: '123 Main St, Boston, MA 02115',
-      formattedContact: null,
-      identifiers: new Map([['ID', 'test-uuid']]),
-      age: mockAge,
-    };
-
-    mockedUsePatient.mockReturnValue({
-      patient: mockPatient,
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
-
-    mockedFormatPatientData.mockReturnValue(mockFormattedPatient);
-
-    // Act
-    render(<PatientDetails />);
-
-    // Assert
-    expect(screen.getByText('John Doe')).toBeInTheDocument();
-    expect(
-      screen.getByText('123 Main St, Boston, MA 02115'),
-    ).toBeInTheDocument();
-  });
-
-  it('should render patient with contact information', () => {
-    // Arrange
-    const mockPatient = {
-      resourceType: 'Patient' as const,
-      id: 'test-uuid',
-      name: [{ given: ['John'], family: 'Doe' }],
-      gender: 'male' as const,
-      birthDate: '1990-01-01',
-      telecom: [
-        {
-          system: 'phone' as const,
-          value: '555-123-4567',
-        },
-      ],
-    };
-
-    const mockAge: Age = {
-      years: 35,
-      months: 2,
-      days: 15,
-    };
-
-    const mockFormattedPatient: FormattedPatientData = {
-      id: 'test-uuid',
-      fullName: 'John Doe',
-      gender: 'male',
-      birthDate: '1990-01-01',
-      formattedAddress: null,
-      formattedContact: 'phone: 555-123-4567',
-      identifiers: new Map([['ID', 'test-uuid']]),
-      age: mockAge,
-    };
-
-    mockedUsePatient.mockReturnValue({
-      patient: mockPatient,
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
-
-    mockedFormatPatientData.mockReturnValue(mockFormattedPatient);
-
-    // Act
-    render(<PatientDetails />);
-
-    // Assert
-    expect(screen.getByText('John Doe')).toBeInTheDocument();
-    expect(screen.getByText('phone: 555-123-4567')).toBeInTheDocument();
   });
 
   it('should handle patient with multiple names', () => {
@@ -380,11 +277,12 @@ describe('PatientDetails Component', () => {
     // Assert
     // Should still render other information
     expect(screen.getByText('ID: test-uuid')).toBeInTheDocument();
+    expect(screen.getByText('male')).toBeInTheDocument();
     expect(
-      screen.getByText('male | 35 years, 2 months, 15 days | 1990-01-01'),
+      screen.getByText('35 years, 2 months, 15 days | 1990-01-01'),
     ).toBeInTheDocument();
     // Name should not be present
-    expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('patient-name')).not.toBeInTheDocument();
   });
 
   it('should handle patient with empty address array', () => {
@@ -614,68 +512,7 @@ describe('PatientDetails Component', () => {
     expect(screen.getByText('John Doe')).toBeInTheDocument();
     // Age should not be formatted since years is undefined
     expect(screen.queryByText(/Years/)).not.toBeInTheDocument();
-    expect(screen.getByText('male | 1990-01-01')).toBeInTheDocument();
-  });
-
-  it('should handle both address and contact info present', () => {
-    // Arrange
-    const mockPatient = {
-      resourceType: 'Patient' as const,
-      id: 'test-uuid',
-      name: [{ given: ['John'], family: 'Doe' }],
-      gender: 'male' as const,
-      birthDate: '1990-01-01',
-      address: [
-        {
-          line: ['123 Main St'],
-          city: 'Boston',
-          state: 'MA',
-          postalCode: '02115',
-        },
-      ],
-      telecom: [
-        {
-          system: 'phone' as const,
-          value: '555-123-4567',
-        },
-      ],
-    };
-
-    const mockAge: Age = {
-      years: 35,
-      months: 2,
-      days: 15,
-    };
-
-    const mockFormattedPatient: FormattedPatientData = {
-      id: 'test-uuid',
-      fullName: 'John Doe',
-      gender: 'male',
-      birthDate: '1990-01-01',
-      formattedAddress: '123 Main St, Boston, MA 02115',
-      formattedContact: 'phone: 555-123-4567',
-      identifiers: new Map([['ID', 'test-uuid']]),
-      age: mockAge,
-    };
-
-    mockedUsePatient.mockReturnValue({
-      patient: mockPatient,
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
-
-    mockedFormatPatientData.mockReturnValue(mockFormattedPatient);
-
-    // Act
-    render(<PatientDetails />);
-
-    // Assert
-    expect(screen.getByText('John Doe')).toBeInTheDocument();
-    // Both address and contact should be rendered together
-    expect(
-      screen.getByText('123 Main St, Boston, MA 02115 | phone: 555-123-4567'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('1990-01-01')).toBeInTheDocument();
   });
 
   it('should handle null patient UUID', () => {
