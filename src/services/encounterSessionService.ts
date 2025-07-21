@@ -1,9 +1,12 @@
-import { get } from './api';
-import { FhirEncounter, FhirEncounterBundle } from '../types/encounter';
-import { getActiveVisit } from './encounterService';
-import { ENCOUNTER_SESSION_DURATION_GP_URL } from '@constants/app';
-import { ENCOUNTER_SEARCH_URL } from '@constants/app';
+import {
+  ENCOUNTER_SESSION_DURATION_GP_URL,
+  ENCOUNTER_SEARCH_URL,
+} from '@constants/app';
+
 import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
+import { FhirEncounter, FhirEncounterBundle } from '../types/encounter';
+import { get } from './api';
+import { getActiveVisit } from './encounterService';
 
 interface EncounterSearchParams {
   patient: string;
@@ -17,7 +20,9 @@ interface EncounterSearchParams {
  * @param params - Search parameters for encounter query
  * @returns Promise resolving to array of FhirEncounter
  */
-export async function searchEncounters(params: EncounterSearchParams): Promise<FhirEncounter[]> {
+export async function searchEncounters(
+  params: EncounterSearchParams,
+): Promise<FhirEncounter[]> {
   const queryParams = new URLSearchParams();
 
   Object.entries(params).forEach(([key, value]) => {
@@ -27,9 +32,13 @@ export async function searchEncounters(params: EncounterSearchParams): Promise<F
   });
 
   const url = `${ENCOUNTER_SEARCH_URL}?${queryParams.toString()}`;
+
   const bundle = await get<FhirEncounterBundle>(url);
 
-  return bundle.entry?.map((entry: { resource: FhirEncounter }) => entry.resource) || [];
+  return (
+    bundle.entry?.map((entry: { resource: FhirEncounter }) => entry.resource) ||
+    []
+  );
 }
 
 /**
@@ -38,11 +47,16 @@ export async function searchEncounters(params: EncounterSearchParams): Promise<F
  */
 export async function getEncounterSessionDuration(): Promise<number> {
   try {
-    const response = await get<{ value: string }>(ENCOUNTER_SESSION_DURATION_GP_URL);
+    const response = await get<{ value: string }>(
+      ENCOUNTER_SESSION_DURATION_GP_URL,
+    );
     const duration = Number(response.value);
     return !isNaN(duration) && duration > 0 ? duration : 60; // Default to 60 minutes if invalid
   } catch (error) {
-    console.warn('Failed to fetch encounter session duration, using default:', error);
+    console.warn(
+      'Failed to fetch encounter session duration, using default:',
+      error,
+    );
     return 30;
   }
 }
@@ -55,7 +69,7 @@ export async function getEncounterSessionDuration(): Promise<number> {
  */
 export async function filterByActiveVisit(
   encounters: FhirEncounter[],
-  patientUUID: string
+  patientUUID: string,
 ): Promise<FhirEncounter | null> {
   if (!encounters.length) return null;
 
@@ -64,13 +78,16 @@ export async function filterByActiveVisit(
     if (!activeVisit) return null;
 
     // Filter encounters that belong to the active visit
-    const sessionEncounter = encounters.find(encounter => {
+    const sessionEncounter = encounters.find((encounter) => {
       // Check if encounter matches the active visit or overlaps with visit period
-      return encounter.id === activeVisit.id ||
+      return (
+        encounter.id === activeVisit.id ||
         // Check if encounter period overlaps with visit period
-        (encounter.period && activeVisit.period &&
+        (encounter.period &&
+          activeVisit.period &&
           !activeVisit.period.end && // Active visit has no end date
-          encounter.period.start);
+          encounter.period.start)
+      );
     });
 
     return sessionEncounter || null;
@@ -91,12 +108,13 @@ export async function filterByActiveVisit(
 export async function findActiveEncounterInSession(
   patientUUID: string,
   practitionerUUID?: string,
-  sessionDurationMinutes?: number
+  sessionDurationMinutes?: number,
 ): Promise<FhirEncounter | null> {
   try {
     if (!patientUUID) return null;
 
-    const duration = sessionDurationMinutes || await getEncounterSessionDuration();
+    const duration =
+      sessionDurationMinutes || (await getEncounterSessionDuration());
     const sessionStartTime = new Date(Date.now() - duration * 60 * 1000);
     const lastUpdatedParam = `ge${sessionStartTime.toISOString()}`;
 
@@ -105,15 +123,16 @@ export async function findActiveEncounterInSession(
       _tag: 'encounter',
       _lastUpdated: lastUpdatedParam,
     };
-    
+
     // Add participant filter if practitioner UUID is provided
     if (practitionerUUID) {
       searchParams.participant = practitionerUUID;
     }
+    
     // Search for encounters within session duration
     // Server-side filtering by patient, duration, and practitioner (if provided)
     const encounters = await searchEncounters(searchParams);
-    
+
     if (encounters.length === 0) return null;
 
     // Filter by active visit and return the most recent one
@@ -131,7 +150,13 @@ export async function findActiveEncounterInSession(
  * @param practitionerUUID - Practitioner UUID (optional, for practitioner-specific sessions)
  * @returns Promise resolving to boolean indicating if session is active
  */
-export async function hasActiveEncounterSession(patientUUID: string, practitionerUUID?: string): Promise<boolean> {
-  const activeEncounter = await findActiveEncounterInSession(patientUUID, practitionerUUID);
+export async function hasActiveEncounterSession(
+  patientUUID: string,
+  practitionerUUID?: string,
+): Promise<boolean> {
+  const activeEncounter = await findActiveEncounterInSession(
+    patientUUID,
+    practitionerUUID,
+  );
   return activeEncounter !== null;
 }

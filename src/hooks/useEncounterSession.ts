@@ -39,15 +39,24 @@ export function useEncounterSession(): UseEncounterSessionReturn {
       return;
     }
 
+    // Get practitioner UUID for session filtering
+    const practitionerUUID = practitioner?.uuid;
+    
+    // Only proceed if we have a practitioner UUID
+    if (!practitionerUUID) {
+      setHasActiveSession(false);
+      setActiveEncounter(null);
+      setIsPractitionerMatch(false);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
     // Use setTimeout to make this async and not block the UI
     setTimeout(async () => {
       try {
-        // Get practitioner UUID for session filtering
-        const practitionerUUID = practitioner?.uuid;
-
         // Try to find active encounter, but with timeout
         const timeoutPromise = new Promise<null>((_, reject) => {
           setTimeout(() => reject(new Error('Session check timeout')), 5000); // 5 second timeout
@@ -69,14 +78,12 @@ export function useEncounterSession(): UseEncounterSessionReturn {
           setIsPractitionerMatch(practitionerMatches);
 
         } catch (sessionError) {
-          console.warn('Encounter session check failed, defaulting to new consultation:', sessionError);
           // Default to "New Consultation" if session check fails
           setHasActiveSession(false);
           setActiveEncounter(null);
           setIsPractitionerMatch(false);
         }
       } catch (err) {
-        console.error('Error fetching encounter session state:', err);
         setError(err instanceof Error ? err.message : 'Unknown error occurred');
         // Default to "New Consultation" (safer) on error
         setHasActiveSession(false);

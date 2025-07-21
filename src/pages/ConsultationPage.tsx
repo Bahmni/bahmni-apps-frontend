@@ -117,7 +117,7 @@ const ConsultationPage: React.FC = () => {
         />
       }
       patientHeader={
-        <PatientHeader 
+        <PatientHeader
           isActionAreaVisible={isActionAreaVisible}
           setIsActionAreaVisible={setIsActionAreaVisible}
         />

@@ -1,5 +1,5 @@
 import { Column, Grid, MenuItemDivider } from '@carbon/react';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import AllergiesForm from '@components/clinical/forms/allergies/AllergiesForm';
 import DiagnosesForm from '@components/clinical/forms/conditionsAndDiagnoses/ConditionsAndDiagnoses';
@@ -8,6 +8,7 @@ import InvestigationsForm from '@components/clinical/forms/investigations/Invest
 import MedicationsForm from '@components/clinical/forms/prescribeMedicines/MedicationsForm';
 import ActionArea from '@components/common/actionArea/ActionArea';
 import { ERROR_TITLES } from '@constants/errors';
+import { useEncounterSession } from '@hooks/useEncounterSession';
 import useNotification from '@hooks/useNotification';
 import {
   postConsultationBundle,
@@ -19,7 +20,6 @@ import {
   createEncounterBundleEntry,
   getEncounterReference,
 } from '@services/consultationBundleService';
-import { useEncounterSession } from '@hooks/useEncounterSession';
 import useAllergyStore from '@stores/allergyStore';
 import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
@@ -36,6 +36,7 @@ interface ConsultationPadProps {
 
 const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const previousPractitionerUUID = useRef<string | null>(null);
 
   const { t } = useTranslation();
   const { addNotification } = useNotification();
@@ -78,11 +79,37 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   } = useMedicationStore();
 
   // Get encounter session state
-  const { hasActiveSession, activeEncounter, isPractitionerMatch, refetch } = useEncounterSession();
+  const { hasActiveSession, activeEncounter, isPractitionerMatch, refetch } =
+    useEncounterSession();
 
   // Only use active encounter if it belongs to current practitioner
   const shouldUseActiveEncounter = hasActiveSession && isPractitionerMatch;
 
+  // Reset consultation pad state when practitioner actually changes (not just re-renders)
+  useEffect(() => {
+    const currentPractitionerUUID = practitioner?.uuid || null;
+    
+    // Only reset if the practitioner UUID has actually changed
+    if (previousPractitionerUUID.current !== currentPractitionerUUID) {
+      // Only reset if we had a previous practitioner (don't reset on initial load)
+      if (previousPractitionerUUID.current !== null) {
+        resetAllergies();
+        resetDiagnoses();
+        resetServiceRequests();
+        resetMedications();
+        // Note: We don't reset encounter details here to avoid disabling the form
+      }
+      
+      // Update the ref with the current practitioner UUID
+      previousPractitionerUUID.current = currentPractitionerUUID;
+    }
+  }, [
+    practitioner?.uuid,
+    resetAllergies,
+    resetDiagnoses,
+    resetServiceRequests,
+    resetMedications,
+  ]);
 
   // Clean up on unmount
   useEffect(() => {
@@ -129,7 +156,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
 
     // Generate a single placeholder reference for consistency
     const placeholderReference = `urn:uuid:${crypto.randomUUID()}`;
-    
+
     // Create encounter bundle entry (POST for new, PUT for existing)
     const encounterBundleEntry = createEncounterBundleEntry(
       shouldUseActiveEncounter ? activeEncounter : null,
@@ -210,7 +237,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       try {
         setIsSubmitting(true);
         await submitConsultation();
-        
+
         // If this was a new consultation (POST), refetch encounter session to update button
         if (!shouldUseActiveEncounter) {
           // Add a small delay to allow server to process the encounter
@@ -218,7 +245,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
             await refetch();
           }, 1000); // 1 second delay
         }
-        
+
         setIsSubmitting(false);
         resetDiagnoses();
         resetAllergies();
