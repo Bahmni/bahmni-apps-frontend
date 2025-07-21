@@ -5,6 +5,7 @@ import { AllergyInputEntry } from '@types/allergy';
 import { ConditionInputEntry } from '@types/condition';
 import { ConsultationBundle } from '@types/consultationBundle';
 import { DiagnosisInputEntry } from '@types/diagnosis';
+import { FhirEncounter } from '@types/encounter';
 import { MedicationInputEntry } from '@types/medication';
 import { ServiceRequestInputEntry } from '@types/serviceRequest';
 import { calculateOnsetDate } from '@utils/date';
@@ -22,7 +23,6 @@ import {
 } from '@utils/fhir/referenceCreator';
 import { createServiceRequestResource } from '@utils/fhir/serviceRequestResourceCreator';
 import { post } from './api';
-import { FhirEncounter } from '@types/encounter';
 
 interface CreateAllergiesBundleEntriesParams {
   selectedAllergies: AllergyInputEntry[];
@@ -372,7 +372,7 @@ export function createEncounterBundleEntry(
 ): BundleEntry {
   // For existing encounters (PUT), use the encounter URL as fullUrl
   // For new encounters (POST), use a placeholder UUID
-  const fullUrl = activeEncounter 
+  const fullUrl = activeEncounter
     ? `${ENCOUNTER_SEARCH_URL}/${activeEncounter.id}`
     : `urn:uuid:${crypto.randomUUID()}`;
 
@@ -384,7 +384,6 @@ export function createEncounterBundleEntry(
   const resourceUrl = activeEncounter
     ? `Encounter/${activeEncounter.id}`
     : 'Encounter';
-
 
   return createBundleEntry(fullUrl, resource, method, resourceUrl);
 }
@@ -399,7 +398,9 @@ export function getEncounterReference(
   activeEncounter: FhirEncounter | null,
   placeholderReference: string,
 ): string {
-  return activeEncounter ? `${ENCOUNTER_SEARCH_URL}/${activeEncounter.id}` : placeholderReference;
+  return activeEncounter
+    ? `${ENCOUNTER_SEARCH_URL}/${activeEncounter.id}`
+    : placeholderReference;
 }
 
 export async function postConsultationBundle<T>(
