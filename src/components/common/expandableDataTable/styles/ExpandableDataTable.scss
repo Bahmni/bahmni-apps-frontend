@@ -1,5 +1,18 @@
 @use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.displayControlHeaders {
+  border-top: 1px solid $cool-gray-10;
+  background-color: $white !important;
+
+  * {
+    font-weight: normal !important;
+    background-color: $white !important;
+    color: $gray-50;
+  }
+}
 
 .criticalCell {
   color: #da1e28 !important;
@@ -18,8 +31,9 @@
 }
 
 .emptyState {
-  padding: $spacing-07 $spacing-05;
+  padding: $spacing-06 $spacing-05;
   text-align: center;
+  background-color: $background;
 
   @include type-style("body-compact-01");
 }

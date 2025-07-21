@@ -1,11 +1,11 @@
+import { Patient } from 'fhir/r4';
 import { useState, useEffect, useCallback } from 'react';
 import { useNotification } from '@hooks/useNotification';
 import { getPatientById } from '@services/patientService';
-import { FhirPatient } from '@types/patient';
 import { getFormattedError } from '@utils/common';
 
 interface UsePatientResult {
-  patient: FhirPatient | null;
+  patient: Patient | null;
   loading: boolean;
   error: Error | null;
   refetch: () => void;
@@ -17,7 +17,7 @@ interface UsePatientResult {
  * @returns Object containing patient, loading state, error state, and refetch function
  */
 export const usePatient = (patientUUID: string | null): UsePatientResult => {
-  const [patient, setPatient] = useState<FhirPatient | null>(null);
+  const [patient, setPatient] = useState<Patient | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
   const { addNotification } = useNotification();

@@ -16,21 +16,34 @@ const LabInvestigationControl: React.FC = () => {
     return groupLabTestsByDate(labTests);
   }, [labTests]);
 
+  if (hasError) {
+    return (
+      <div className={styles.labInvestigationTableBodyError}>
+        {t('LAB_TEST_ERROR_LOADING')}
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <>
+        <SkeletonText lineCount={3} width="100%" />
+        <div>{t('LAB_TEST_LOADING')}</div>
+      </>
+    );
+  }
+
+  if (!isLoading && labTests.length === 0) {
+    return (
+      <div className={styles.labInvestigationTableBodyError}>
+        {t('LAB_TEST_UNAVAILABLE')}
+      </div>
+    );
+  }
+
   return (
     <section>
-      <Accordion align="start" size="lg">
-        {hasError && <div>{t('LAB_TEST_ERROR_LOADING')}</div>}
-        {!isLoading && labTests.length === 0 && (
-          <p className={styles.labInvestigationTableBodyError}>
-            {t('LAB_TEST_UNAVAILABLE')}
-          </p>
-        )}
-        {isLoading && labTests.length === 0 && (
-          <>
-            <SkeletonText lineCount={3} width="100%" />
-            <div>{t('LAB_TEST_LOADING')}</div>
-          </>
-        )}
+      <Accordion align="start" size="lg" className={styles.accordianHeader}>
         {labTestsByDate.map((group: LabTestsByDate, index) => (
           <AccordionItem
             key={group.date}

@@ -3,6 +3,17 @@
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
 
+.displayControlHeaders {
+  border-top: 1px solid $cool-gray-10;
+  background-color: $white !important;
+
+  * {
+    font-weight: normal !important;
+    background-color: $white !important;
+    color: $gray-50;
+  }
+}
+
 .sortableDataTableBody {
   :global(.cds--data-table td) {
     @include type-style("body-short-01");

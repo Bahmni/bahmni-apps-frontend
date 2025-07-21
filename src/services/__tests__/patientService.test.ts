@@ -1,5 +1,5 @@
+import { Patient } from 'fhir/r4';
 import { PATIENT_RESOURCE_URL } from '@constants/app';
-import { FhirPatient } from '@types/patient';
 import { get } from '../api';
 import {
   getPatientById,
@@ -468,7 +468,7 @@ describe('Patient Service', () => {
     });
     it('should format complete patient data correctly', () => {
       // Arrange
-      const patient: FhirPatient = {
+      const patient: Patient = {
         resourceType: 'Patient',
         id: 'test-uuid',
         name: [{ given: ['John'], family: 'Doe' }],
@@ -522,7 +522,7 @@ describe('Patient Service', () => {
 
     it('should handle patient with minimal data', () => {
       // Arrange
-      const patient: FhirPatient = {
+      const patient: Patient = {
         resourceType: 'Patient',
         id: 'test-uuid',
       };
@@ -545,7 +545,7 @@ describe('Patient Service', () => {
 
     it('should handle patient with undefined id', () => {
       // Arrange
-      const patient: FhirPatient = {
+      const patient: Patient = {
         resourceType: 'Patient',
       };
 
@@ -558,7 +558,7 @@ describe('Patient Service', () => {
 
     it('should handle invalid identifier', () => {
       // Arrange
-      const patient: FhirPatient = {
+      const patient: Patient = {
         resourceType: 'Patient',
         id: 'test-uuid',
         name: [{ given: ['John'], family: 'Doe' }],
@@ -607,7 +607,7 @@ describe('Patient Service', () => {
 
     it('should handle patient with empty address array', () => {
       // Arrange
-      const patient: FhirPatient = {
+      const patient: Patient = {
         resourceType: 'Patient',
         id: 'test-uuid',
         address: [],
@@ -622,7 +622,7 @@ describe('Patient Service', () => {
 
     it('should handle patient with empty telecom array', () => {
       // Arrange
-      const patient: FhirPatient = {
+      const patient: Patient = {
         resourceType: 'Patient',
         id: 'test-uuid',
         telecom: [],
@@ -637,7 +637,7 @@ describe('Patient Service', () => {
 
     it('should use the first address when multiple are provided', () => {
       // Arrange
-      const patient: FhirPatient = {
+      const patient: Patient = {
         resourceType: 'Patient',
         id: 'test-uuid',
         address: [
@@ -665,7 +665,7 @@ describe('Patient Service', () => {
 
     it('should use the first telecom when multiple are provided', () => {
       // Arrange
-      const patient: FhirPatient = {
+      const patient: Patient = {
         resourceType: 'Patient',
         id: 'test-uuid',
         telecom: [
@@ -689,7 +689,7 @@ describe('Patient Service', () => {
 
     it('should handle malformed address data', () => {
       // Arrange
-      const patient: FhirPatient = {
+      const patient: Patient = {
         resourceType: 'Patient',
         id: 'test-uuid',
         address: [{}], // Empty address object
@@ -704,7 +704,7 @@ describe('Patient Service', () => {
 
     it('should handle malformed telecom data', () => {
       // Arrange
-      const patient: FhirPatient = {
+      const patient: Patient = {
         resourceType: 'Patient',
         id: 'test-uuid',
         telecom: [{}], // Empty telecom object
@@ -719,7 +719,7 @@ describe('Patient Service', () => {
 
     it('should handle patient with address extensions', () => {
       // Arrange
-      const patient: FhirPatient = {
+      const patient: Patient = {
         resourceType: 'Patient',
         id: 'test-uuid',
         address: [
@@ -750,7 +750,7 @@ describe('Patient Service', () => {
 
     it('should handle patient with multiple identifiers', () => {
       // Arrange
-      const patient: FhirPatient = {
+      const patient: Patient = {
         resourceType: 'Patient',
         id: 'test-uuid',
         identifier: [
@@ -787,7 +787,7 @@ describe('Patient Service', () => {
 
     it('should handle patient with empty identifier array', () => {
       // Arrange
-      const patient: FhirPatient = {
+      const patient: Patient = {
         resourceType: 'Patient',
         id: 'test-uuid',
         identifier: [],
@@ -803,7 +803,7 @@ describe('Patient Service', () => {
 
     it('should handle patient with invalid birthDate format', () => {
       // Arrange
-      const patient: FhirPatient = {
+      const patient: Patient = {
         resourceType: 'Patient',
         id: 'test-uuid',
         birthDate: 'invalid-date', // Invalid date format
@@ -818,7 +818,7 @@ describe('Patient Service', () => {
 
     it('should handle patient with future birthDate', () => {
       // Arrange
-      const patient: FhirPatient = {
+      const patient: Patient = {
         resourceType: 'Patient',
         id: 'test-uuid',
         birthDate: '2030-01-01', // Future date
@@ -833,7 +833,7 @@ describe('Patient Service', () => {
 
     it('should handle patient with identifier that has no value', () => {
       // Arrange
-      const patient: FhirPatient = {
+      const patient: Patient = {
         resourceType: 'Patient',
         id: 'test-uuid',
         identifier: [
@@ -856,7 +856,7 @@ describe('Patient Service', () => {
 
     it('should handle patient with identifier that has empty type text', () => {
       // Arrange
-      const patient: FhirPatient = {
+      const patient: Patient = {
         resourceType: 'Patient',
         id: 'test-uuid',
         identifier: [

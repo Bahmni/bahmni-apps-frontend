@@ -24,6 +24,7 @@ const renderSectionContent = (section: DashboardSectionConfig) => {
       return (
         <>
           <ConditionsTable />
+          <div className={styles.divider} />
           <DiagnosesTable />
         </>
       );

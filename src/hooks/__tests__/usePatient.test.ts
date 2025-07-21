@@ -1,6 +1,6 @@
+import { Patient } from 'fhir/r4';
 import { useNotification } from '@hooks/useNotification';
 import { getPatientById } from '@services/patientService';
-import { FhirPatient } from '@types/patient';
 import { usePatient } from '../usePatient';
 
 // Mock the patientService
@@ -48,7 +48,7 @@ describe('usePatient hook', () => {
     const useStateMock = jest.requireMock('react').useState;
 
     // First call is for patient state
-    useStateMock.mockImplementationOnce((initialValue: FhirPatient | null) => [
+    useStateMock.mockImplementationOnce((initialValue: Patient | null) => [
       initialValue,
       mockSetPatient,
     ]);
