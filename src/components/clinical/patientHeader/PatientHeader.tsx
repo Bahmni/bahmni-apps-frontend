@@ -1,4 +1,3 @@
-import { Add } from '@carbon/icons-react';
 import { Button } from '@carbon/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -26,10 +25,10 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
     <div aria-label={t('PATIENT_HEADER_LABEL')} className={styles.header}>
       <PatientDetails />
       <Button
-        size="lg"
+        className={styles.newConsultationButton}
+        size="md"
         disabled={isActionAreaVisible}
         onClick={() => setIsActionAreaVisible(!isActionAreaVisible)}
-        renderIcon={Add}
       >
         {t(
           isActionAreaVisible
