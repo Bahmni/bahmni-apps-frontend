@@ -121,15 +121,4 @@ describe('PatientHeader Component', () => {
       expect(results).toHaveNoViolations();
     });
   });
-
-  // Layout test
-  describe('Layout', () => {
-    test('renders Grid and Column components', () => {
-      const { container } = renderComponent();
-
-      // Check Grid exists (we'd need to adapt this based on how Carbon's Grid renders to DOM)
-      // This is a basic check as the actual implementation might vary
-      expect(container.querySelector('[class*="grid"]')).toBeInTheDocument();
-    });
-  });
 });

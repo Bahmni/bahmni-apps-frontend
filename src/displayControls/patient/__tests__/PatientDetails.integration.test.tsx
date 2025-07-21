@@ -116,8 +116,9 @@ describe('PatientDetails Integration', () => {
 
     // Assert - Data displayed correctly
     expect(screen.getByText('ID: test-uuid')).toBeInTheDocument();
+    expect(screen.getByText('male')).toBeInTheDocument();
     expect(
-      screen.getByText('male | 35 years, 2 months, 15 days | 1990-01-01'),
+      screen.getByText('35 years, 2 months, 15 days | 1990-01-01'),
     ).toBeInTheDocument();
   });
 

@@ -37,11 +37,25 @@ const ClinicalLayout: React.FC<ClinicalLayoutProps> = ({
       <div
         className={classNames(
           styles.body,
-          isActionAreaVisible ? styles.collapse : undefined,
+          isActionAreaVisible ? styles.collapse : styles.expand,
         )}
       >
-        <section className={styles.patientHeader}>{patientHeader}</section>
-        <div className={styles.mainDisplay}>{mainDisplay}</div>
+        <div
+          className={classNames(
+            styles.patientHeader,
+            isActionAreaVisible && styles.collapsedPatientHeader,
+          )}
+        >
+          {patientHeader}
+        </div>
+        <div
+          className={classNames(
+            styles.mainDisplay,
+            isActionAreaVisible && styles.collapsedMainDisplay,
+          )}
+        >
+          {mainDisplay}
+        </div>
       </div>
       {isActionAreaVisible && (
         <div className={styles.actionArea}>{actionArea}</div>
