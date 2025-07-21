@@ -1,10 +1,10 @@
-import { SkeletonText, Tile, Column, Grid } from '@carbon/react';
-import { Text } from '@carbon/react/lib/components/Text';
+import { SkeletonText, Tile } from '@carbon/react';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePatient } from '@hooks/usePatient';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import { formatPatientData } from '@services/patientService';
+import * as styles from './__styles__/PatientDetails.module.scss';
 
 // TODO: Extract this as a PatientDetails Display Control Component
 const PatientDetails: React.FC = () => {
@@ -40,56 +40,32 @@ const PatientDetails: React.FC = () => {
         .join(' | ')
     : null;
 
+  const formattedGender = formatField(formattedPatient.gender);
+
   const formattedAge =
     formattedPatient.age?.years !== undefined
       ? `${formattedPatient.age.years} ${t('CLINICAL_YEARS_TRANSLATION_KEY', { count: formattedPatient.age.years })}, ${formattedPatient.age.months} ${t('CLINICAL_MONTHS_TRANSLATION_KEY', { count: formattedPatient.age.months })}, ${formattedPatient.age.days} ${t('CLINICAL_DAYS_TRANSLATION_KEY', { count: formattedPatient.age.days })}`
       : null;
 
-  const details = [
-    formatField(formattedPatient.gender),
-    formattedAge,
-    formatField(formattedPatient.birthDate),
-  ]
-    .filter(Boolean)
-    .join(' | ');
-
-  const contactInfo = [
-    formatField(formattedPatient.formattedAddress),
-    formatField(formattedPatient.formattedContact),
-  ]
+  const details = [formattedAge, formatField(formattedPatient.birthDate)]
     .filter(Boolean)
     .join(' | ');
 
   return (
-    <Tile>
-      <Grid fullWidth>
-        {/* Full Name as H2 */}
-        <Column sm={4} md={8} lg={16}>
-          {formattedPatient.fullName && <h2>{formattedPatient.fullName}</h2>}
-        </Column>
-
-        {/* Identifiers in single-line format */}
-        {formattedIdentifiers && (
-          <Column sm={4} md={8} lg={16}>
-            <Text>{formattedIdentifiers}</Text>
-          </Column>
-        )}
-
-        {/* Gender, Age, Birth Date in one line */}
-        {details && (
-          <Column sm={4} md={8} lg={16}>
-            <Text style={{ textTransform: 'capitalize' }}>{details}</Text>
-          </Column>
-        )}
-
-        {/* Address and Contact in one line */}
-        {contactInfo && (
-          <Column sm={4} md={8} lg={16}>
-            <Text>{contactInfo}</Text>
-          </Column>
-        )}
-      </Grid>
-    </Tile>
+    <div className={styles.header}>
+      {formattedPatient.fullName && (
+        <p data-testid="patient-name" className={styles.patientName}>
+          {formattedPatient.fullName}
+        </p>
+      )}
+      <div className={styles.patientDetails}>
+        <div>
+          {formattedIdentifiers && <span>{formattedIdentifiers}</span>}
+          {formattedGender && <span>{formattedGender}</span>}
+        </div>
+        {details && <span>{details}</span>}
+      </div>
+    </div>
   );
 };
 

@@ -1,0 +1,35 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/breakpoint" as *;
+
+.header {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: $spacing-03;
+  align-self: stretch;
+
+  .patientName {
+    @include type-style("heading-compact-02");
+  }
+}
+
+.patientDetails {
+  display: flex;
+  flex-wrap: wrap;
+  p,
+  span {
+    @include type-style("body-compact-01");
+    text-transform: capitalize;
+    margin-right: $spacing-05;
+    display: inline-block;
+  }
+}
+
+@include breakpoint-down(lg) {
+  .patientDetails {
+    display: flex;
+    flex-direction: column;
+  }
+}

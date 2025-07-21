@@ -1,8 +1,12 @@
 @use "@carbon/react/scss/breakpoint" as *;
 @use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
 
 .header {
-  padding: 0 !important;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: $spacing-04;
 }
 
 .controls {
@@ -12,6 +16,6 @@
 
 @include breakpoint-down(lg) {
   .header {
-    padding: 1rem !important;
+    flex-direction: column;
   }
 }
