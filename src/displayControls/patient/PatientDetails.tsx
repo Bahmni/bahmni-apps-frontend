@@ -1,4 +1,4 @@
-import { SkeletonText, Tile } from '@carbon/react';
+import { SkeletonText } from '@carbon/react';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePatient } from '@hooks/usePatient';
@@ -20,14 +20,19 @@ const PatientDetails: React.FC = () => {
 
   if (loading || error || !patient || !formattedPatient) {
     return (
-      <Tile>
+      <div className={styles.skeletonContainer}>
         <SkeletonText
           heading
-          width="100%"
-          lineCount={5}
+          width="20%"
+          lineCount={2}
           data-testid="skeleton-loader"
         />
-      </Tile>
+        <SkeletonText
+          width="50%"
+          lineCount={3}
+          data-testid="skeleton-loade-subheader"
+        />
+      </div>
     );
   }
 
