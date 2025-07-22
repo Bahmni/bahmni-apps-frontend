@@ -95,6 +95,10 @@ describe('PatientDetails Component', () => {
     expect(
       screen.getByText('35 years, 2 months, 15 days | 1990-01-01'),
     ).toBeInTheDocument();
+    expect(screen.getByTestId('icon-id-card')).toBeInTheDocument();
+    expect(screen.getByTestId('icon-gender')).toBeInTheDocument();
+
+    expect(screen.getByTestId('icon-age')).toBeInTheDocument();
   });
 
   it('should handle patient with multiple names', () => {
