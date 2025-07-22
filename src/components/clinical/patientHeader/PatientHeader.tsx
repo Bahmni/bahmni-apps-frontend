@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 import { Button } from '@carbon/react';
+=======
+>>>>>>> e44c85839265ee3f596d66722f95f6bf104f847e
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import ConsultationActionButton from '@/components/clinical/patientHeader/ConsultationActionButton';
