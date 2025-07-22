@@ -58,6 +58,10 @@ export interface FhirEncounter {
   participant?: FhirEncounterParticipant[];
   period: FhirEncounterPeriod;
   location: FhirEncounterLocation[];
+  partOf?: {
+    reference: string;
+    type: string;
+  };
 }
 
 export interface FhirEncounterBundle {
