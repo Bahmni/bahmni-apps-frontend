@@ -1,6 +1,8 @@
 import { SkeletonText } from '@carbon/react';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import BahmniIcon from '@/components/common/bahmniIcon/BahmniIcon';
+import { ICON_SIZE } from '@/constants/icon';
 import { usePatient } from '@hooks/usePatient';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import { formatPatientData } from '@services/patientService';
@@ -64,11 +66,30 @@ const PatientDetails: React.FC = () => {
         </p>
       )}
       <div className={styles.patientDetails}>
-        <div>
-          {formattedIdentifiers && <span>{formattedIdentifiers}</span>}
-          {formattedGender && <span>{formattedGender}</span>}
+        <div className={styles.identifierAndGenderWrapper}>
+          {formattedIdentifiers && (
+            <span className={styles.detailsWithIcon}>
+              <BahmniIcon id="id-card" name="fa-id-card" size={ICON_SIZE.SM} />
+              <span>{formattedIdentifiers}</span>
+            </span>
+          )}
+          {formattedGender && (
+            <span className={styles.detailsWithIcon}>
+              <BahmniIcon
+                id="gender"
+                name="fa-mars-stroke-up"
+                size={ICON_SIZE.SM}
+              />
+              <span>{formattedGender}</span>
+            </span>
+          )}
         </div>
-        {details && <span>{details}</span>}
+        {details && (
+          <span className={styles.detailsWithIcon}>
+            <BahmniIcon id="age" name="fa-cake-candles" size={ICON_SIZE.SM} />
+            <span>{details}</span>
+          </span>
+        )}
       </div>
     </div>
   );
