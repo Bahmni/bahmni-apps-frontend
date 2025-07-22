@@ -5,12 +5,12 @@
 
 .displayControlHeaders {
   border-top: 1px solid $cool-gray-10;
-  background-color: $white !important;
+  background-color: $layer-02 !important;
 
   * {
     font-weight: normal !important;
-    background-color: $white !important;
-    color: $gray-50;
+    background-color: $layer-02 !important;
+    color: $text-secondary;
   }
 }
 
