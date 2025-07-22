@@ -999,8 +999,8 @@ describe('ConsultationPad', () => {
         ).toHaveBeenCalledWith({
           selectedDiagnoses: [],
           encounterSubject: { reference: 'Patient/patient-123' },
-          encounterReference: 'urn:uuid:mock-uuid-1234-5678-9abc-def012345678',
-          practitionerUUID: 'user-123',
+          encounterReference: 'urn:uuid:mock-encounter-uuid',
+          practitionerUUID: 'practitioner-123',
           consultationDate: mockEncounterDetailsStore.consultationDate,
         });
 
@@ -1009,8 +1009,8 @@ describe('ConsultationPad', () => {
         ).toHaveBeenCalledWith({
           selectedAllergies: [],
           encounterSubject: { reference: 'Patient/patient-123' },
-          encounterReference: 'urn:uuid:mock-uuid-1234-5678-9abc-def012345678',
-          practitionerUUID: 'user-123',
+          encounterReference: 'urn:uuid:mock-encounter-uuid',
+          practitionerUUID: 'practitioner-123',
         });
 
         expect(
@@ -1018,8 +1018,8 @@ describe('ConsultationPad', () => {
         ).toHaveBeenCalledWith({
           selectedConditions: [],
           encounterSubject: { reference: 'Patient/patient-123' },
-          encounterReference: 'urn:uuid:mock-uuid-1234-5678-9abc-def012345678',
-          practitionerUUID: 'user-123',
+          encounterReference: 'urn:uuid:mock-encounter-uuid',
+          practitionerUUID: 'practitioner-123',
           consultationDate: mockEncounterDetailsStore.consultationDate,
         });
 
@@ -1028,7 +1028,7 @@ describe('ConsultationPad', () => {
         ).toHaveBeenCalledWith({
           selectedServiceRequests: new Map(),
           encounterSubject: { reference: 'Patient/patient-123' },
-          encounterReference: 'urn:uuid:mock-uuid-1234-5678-9abc-def012345678',
+          encounterReference: 'urn:uuid:mock-encounter-uuid',
           practitionerUUID: 'practitioner-123',
         });
       });
@@ -1040,6 +1040,11 @@ describe('ConsultationPad', () => {
       (global.crypto.randomUUID as jest.Mock).mockImplementation(
         () => mockUUIDs[uuidIndex++],
       );
+
+      // Mock getEncounterReference to return the expected UUID format
+      (
+        consultationBundleService.getEncounterReference as jest.Mock
+      ).mockReturnValue('urn:uuid:uuid-1-2-3-4-5');
 
       (
         consultationBundleService.postConsultationBundle as jest.Mock
