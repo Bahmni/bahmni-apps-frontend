@@ -76,9 +76,10 @@ const BahmniIcon: React.FC<BahmniIconProps> = ({
   };
 
   return (
-    <div
+    <span
       className={`${styles.bahmniIcon} ${getPaddingClass(padding)}`}
       id={id}
+      data-testid={`icon-${id}`}
       aria-label={ariaLabel}
     >
       <FontAwesomeIcon
@@ -87,7 +88,7 @@ const BahmniIcon: React.FC<BahmniIconProps> = ({
         color={color}
         data-testid={id}
       />
-    </div>
+    </span>
   );
 };
 
