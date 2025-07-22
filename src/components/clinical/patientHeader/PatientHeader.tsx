@@ -1,7 +1,6 @@
-import { Tile, Grid, Column } from '@carbon/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import ConsultationActionButton from '@components/clinical/consultationAction/ConsultationActionButton';
+import ConsultationActionButton from '@/components/clinical/patientHeader/ConsultationActionButton';
 import PatientDetails from '@displayControls/patient/PatientDetails';
 import * as styles from './styles/PatientHeader.module.scss';
 
@@ -25,30 +24,14 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
   const { t } = useTranslation();
 
   return (
-    <Tile aria-label={t('PATIENT_HEADER_LABEL')} className={styles.header}>
-      <Grid>
-        <Column
-          sm={4}
-          md={8}
-          lg={isActionAreaVisible ? 16 : 13}
-          xl={isActionAreaVisible ? 16 : 13}
-        >
-          <PatientDetails />
-        </Column>
-        <Column
-          sm={4}
-          md={8}
-          lg={isActionAreaVisible ? 16 : 3}
-          xl={isActionAreaVisible ? 16 : 3}
-          className={styles.controls}
-        >
-          <ConsultationActionButton
-            isActionAreaVisible={isActionAreaVisible}
-            setIsActionAreaVisible={setIsActionAreaVisible}
-          />
-        </Column>
-      </Grid>
-    </Tile>
+    <div aria-label={t('PATIENT_HEADER_LABEL')} className={styles.header}>
+      <PatientDetails />
+      <ConsultationActionButton
+        isActionAreaVisible={isActionAreaVisible}
+        setIsActionAreaVisible={setIsActionAreaVisible}
+      />
+    </div>
   );
 };
+
 export default PatientHeader;

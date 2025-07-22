@@ -7,6 +7,7 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: $spacing-04;
+  align-items: center;
 }
 
 .controls {
@@ -14,8 +15,14 @@
   padding-block: $spacing-04 !important;
 }
 
+.newConsultationButton {
+  border-radius: 2px !important;
+  padding-right: $spacing-05 !important;
+}
+
 @include breakpoint-down(lg) {
   .header {
     flex-direction: column;
+    align-items: flex-start;
   }
 }
