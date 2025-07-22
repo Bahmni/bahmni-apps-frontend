@@ -3,10 +3,9 @@ import {
   ENCOUNTER_SEARCH_URL,
 } from '@constants/app';
 
-import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
 import { FhirEncounter, FhirEncounterBundle } from '../types/encounter';
 import { get } from './api';
-import { getActiveVisit } from './encounterService';
+import { getVisits } from './encounterService';
 
 interface EncounterSearchParams {
   patient: string;
@@ -74,27 +73,26 @@ export async function filterByActiveVisit(
   if (!encounters.length) return null;
 
   try {
-    const activeVisit = await getActiveVisit(patientUUID);
-    if (!activeVisit) return null;
+    const allVisits = await getVisits(patientUUID);
+    if (!allVisits.length) return null;
+    for (const encounter of encounters) {
+      const visitUUID = encounter.partOf?.reference?.split('/')[1];
+      if (!visitUUID) continue;
+      const visit = allVisits.find((visit: FhirEncounter) => visit.id === visitUUID);
+      if (!visit) continue;
 
-    // Filter encounters that belong to the active visit
-    const sessionEncounter = encounters.find((encounter) => {
-      // Check if encounter matches the active visit or overlaps with visit period
-      return (
-        encounter.id === activeVisit.id ||
-        // Check if encounter period overlaps with visit period
-        (encounter.period &&
-          activeVisit.period &&
-          !activeVisit.period.end && // Active visit has no end date
-          encounter.period.start)
-      );
-    });
-
-    return sessionEncounter || null;
+      const isVisitActive = !visit.period?.end;
+      
+      if (isVisitActive) {
+        return encounter;
+      }
+    }
+    // No encounters belong to active visits
+    return null;
   } catch (error) {
     console.warn('Error filtering encounters by active visit:', error);
-    // If we can't get active visit info, return the most recent encounter
-    return encounters.length > 0 ? encounters[0] : null;
+    // If we can't get visit info, default to "New Consultation" 
+    return null;
   }
 }
 
