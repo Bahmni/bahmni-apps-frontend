@@ -36,6 +36,7 @@ jest.mock('@hooks/useClinicalConfig');
 jest.mock('@hooks/useDashboardConfig');
 jest.mock('@hooks/useNotification');
 jest.mock('@hooks/usePatientUUID');
+jest.mock('@hooks/useEncounterSession');
 jest.mock('react-i18next', () => ({
   useTranslation: jest.fn(() => ({
     t: jest.fn((key) => `translated_${key}`),
@@ -163,6 +164,15 @@ describe('ConsultationPage', () => {
       activeItemId: 'Vitals',
       handleItemClick: jest.fn(),
     });
+
+    // Mock useEncounterSession hook
+    jest.requireMock('@hooks/useEncounterSession').useEncounterSession = jest.fn(
+      () => ({
+        hasActiveSession: false,
+        isPractitionerMatch: false,
+        isLoading: false,
+      }),
+    );
 
     // Mock usePatientUUID hook
     jest.requireMock('@hooks/usePatientUUID').usePatientUUID = jest.fn(
