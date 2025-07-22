@@ -54,45 +54,32 @@ export function useEncounterSession(): UseEncounterSessionReturn {
     setIsLoading(true);
     setError(null);
 
-    // Use setTimeout to make this async and not block the UI
-    setTimeout(async () => {
-      try {
-        // Try to find active encounter, but with timeout
-        const timeoutPromise = new Promise<null>((_, reject) => {
-          setTimeout(() => reject(new Error('Session check timeout')), 5000); // 5 second timeout
-        });
+    try {
+      // Find active encounter for current patient and practitioner
+      const activeEncounter = await findActiveEncounterInSession(patientUUID, practitionerUUID);
+      const sessionExists = activeEncounter !== null;
 
-        // Find active encounter for current patient and practitioner (server-side filtering)
-        const encounterPromise = findActiveEncounterInSession(patientUUID, practitionerUUID);
-        
-        try {
-          const encounter = await Promise.race([encounterPromise, timeoutPromise]);
-          const sessionExists = encounter !== null;
+      // Since server filters by practitioner, if we get an encounter, it belongs to current practitioner
+      const practitionerMatches = sessionExists;
 
-          // Since server filters by practitioner, if we get an encounter, it belongs to current practitioner
-          const practitionerMatches = sessionExists;
+      // Set session state
+      setHasActiveSession(sessionExists);
+      setActiveEncounter(activeEncounter);
+      setIsPractitionerMatch(practitionerMatches);
 
-          // Set session state
-          setHasActiveSession(sessionExists);
-          setActiveEncounter(encounter);
-          setIsPractitionerMatch(practitionerMatches);
-
-        } catch (sessionError) {
-          // Default to "New Consultation" if session check fails
-          setHasActiveSession(false);
-          setActiveEncounter(null);
-          setIsPractitionerMatch(false);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error occurred');
-        // Default to "New Consultation" (safer) on error
-        setHasActiveSession(false);
-        setActiveEncounter(null);
-        setIsPractitionerMatch(false);
-      } finally {
-        setIsLoading(false);
-      }
-    }, 0); // Execute immediately but asynchronously
+    } catch (err) {
+      // Log error but don't let it block the UI
+      console.warn('Encounter session check failed, defaulting to New Consultation:', err);
+      // Don't set error state as it might block the consultation pad
+      setError(null);
+      
+      // Default to "New Consultation" (safer) on any error
+      setHasActiveSession(false);
+      setActiveEncounter(null);
+      setIsPractitionerMatch(false);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
