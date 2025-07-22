@@ -1,8 +1,8 @@
-import { Add, Edit } from '@carbon/icons-react';
 import { Button } from '@carbon/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useEncounterSession } from '@hooks/useEncounterSession';
+import * as styles from './styles/PatientHeader.module.scss';
 
 interface ConsultationActionButtonProps {
   isActionAreaVisible: boolean;
@@ -29,15 +29,15 @@ const ConsultationActionButton: React.FC<ConsultationActionButtonProps> = ({
 
   return (
     <Button
+      className={styles.newConsultationButton}
       size="lg"
       disabled={isActionAreaVisible || isLoading}
       onClick={() => setIsActionAreaVisible(!isActionAreaVisible)}
-      renderIcon={shouldShowEditButton ? Edit : Add}
     >
       {isActionAreaVisible
         ? t('CONSULTATION_ACTION_IN_PROGRESS')
         : shouldShowEditButton
-          ? t('CONSULTATION_ACTION_EDIT')
+          ? t('CONSULTATION_ACTION_CONTINUE')
           : t('CONSULTATION_ACTION_NEW')}
     </Button>
   );
