@@ -114,7 +114,8 @@
     "workbox-webpack-plugin": "^7.0.0"
   },
   "resolutions": {
-    "react-is": "^19.0.0"
+    "react-is": "^19.0.0",
+    "form-data": "^4.0.4"
   },
   "browserslist": {
     "production": [

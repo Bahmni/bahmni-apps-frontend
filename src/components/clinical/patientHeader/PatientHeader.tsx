@@ -1,3 +1,4 @@
+import { Button } from '@carbon/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import ConsultationActionButton from '@/components/clinical/patientHeader/ConsultationActionButton';
