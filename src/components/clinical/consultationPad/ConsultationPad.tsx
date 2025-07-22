@@ -63,7 +63,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     consultationDate,
     isEncounterDetailsFormReady,
     practitioner,
-    user,
     patientUUID,
     hasError,
     reset: resetEncounterDetails,
@@ -87,8 +86,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
 
   // Reset consultation pad state when practitioner actually changes (not just re-renders)
   useEffect(() => {
-    const currentPractitionerUUID = practitioner?.uuid || null;
-    
+    const currentPractitionerUUID = practitioner?.uuid ?? null;
+
     // Only reset if the practitioner UUID has actually changed
     if (previousPractitionerUUID.current !== currentPractitionerUUID) {
       // Only reset if we had a previous practitioner (don't reset on initial load)
@@ -99,7 +98,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         resetMedications();
         // Note: We don't reset encounter details here to avoid disabling the form
       }
-      
+
       // Update the ref with the current practitioner UUID
       previousPractitionerUUID.current = currentPractitionerUUID;
     }
@@ -166,7 +165,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     // Get the appropriate encounter reference for other resources
     const encounterReference = getEncounterReference(
       shouldUseActiveEncounter ? activeEncounter : null,
-      encounterBundleEntry.fullUrl || placeholderReference,
+      encounterBundleEntry.fullUrl ?? placeholderReference,
     );
 
     // Use consistent practitioner UUID for all resources

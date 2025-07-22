@@ -18,7 +18,6 @@ import { createBundleEntry } from '@utils/fhir/consultationBundleCreator';
 import { createMedicationRequestResource } from '@utils/fhir/medicationRequestResourceCreator';
 import {
   createPractitionerReference,
-  getPlaceholderReference,
   createEncounterReferenceFromString,
 } from '@utils/fhir/referenceCreator';
 import { createServiceRequestResource } from '@utils/fhir/serviceRequestResourceCreator';
@@ -368,7 +367,7 @@ export function createMedicationRequestEntries({
  */
 export function createEncounterBundleEntry(
   activeEncounter: FhirEncounter | null,
-  encounterResource: any,
+  encounterResource: unknown,
 ): BundleEntry {
   // For existing encounters (PUT), use the encounter URL as fullUrl
   // For new encounters (POST), use a placeholder UUID
@@ -378,7 +377,10 @@ export function createEncounterBundleEntry(
 
   const method = activeEncounter ? 'PUT' : 'POST';
   const resource = activeEncounter
-    ? { ...encounterResource, id: activeEncounter.id }
+    ? {
+        ...(encounterResource as Record<string, unknown>),
+        id: activeEncounter.id,
+      }
     : encounterResource;
 
   const resourceUrl = activeEncounter
