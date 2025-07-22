@@ -22,12 +22,27 @@
 .patientDetails {
   display: flex;
   flex-wrap: wrap;
+  gap: $spacing-05;
   p,
   span {
     @include type-style("body-compact-01");
     text-transform: capitalize;
-    margin-right: $spacing-05;
-    display: inline-block;
+    line-height: revert;
+  }
+}
+
+.identifierAndGenderWrapper {
+  display: flex;
+  gap: $spacing-05;
+}
+
+.detailsWithIcon {
+  display: flex;
+  align-items: center;
+  gap: $spacing-01;
+  svg {
+    height: $spacing-05;
+    width: $spacing-05;
   }
 }
 
@@ -35,5 +50,6 @@
   .patientDetails {
     display: flex;
     flex-direction: column;
+    gap: $spacing-03;
   }
 }
