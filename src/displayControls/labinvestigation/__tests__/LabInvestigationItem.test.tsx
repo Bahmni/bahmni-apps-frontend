@@ -77,6 +77,9 @@ describe('LabInvestigationItem', () => {
     render(<LabInvestigationItem test={urgentTest} />);
 
     expect(screen.getByText('Urgent')).toBeInTheDocument();
+    expect(
+      screen.getByTestId(`lab-test-priority-${LabTestPriority.stat}`),
+    ).toBeInTheDocument();
   });
 
   it('displays test type correctly', () => {
