@@ -70,7 +70,8 @@ describe('conditionResourceCreator', () => {
           coding: [
             {
               code: 'active',
-              system: 'http://terminology.hl7.org/CodeSystem/condition-clinical',
+              system:
+                'http://terminology.hl7.org/CodeSystem/condition-clinical',
             },
           ],
         })
@@ -106,7 +107,8 @@ describe('conditionResourceCreator', () => {
           coding: [
             {
               code: 'active',
-              system: 'http://terminology.hl7.org/CodeSystem/condition-clinical',
+              system:
+                'http://terminology.hl7.org/CodeSystem/condition-clinical',
             },
           ],
         },

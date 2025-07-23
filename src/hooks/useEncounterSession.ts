@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { usePatientUUID } from '@hooks/usePatientUUID';
 import { useActivePractitioner } from '@hooks/useActivePractitioner';
+import { usePatientUUID } from '@hooks/usePatientUUID';
 import { findActiveEncounterInSession } from '@services/encounterSessionService';
 import { FhirEncounter } from '../types/encounter';
 
@@ -21,14 +21,16 @@ interface UseEncounterSessionReturn {
 
 export function useEncounterSession(): UseEncounterSessionReturn {
   const [hasActiveSession, setHasActiveSession] = useState<boolean>(false);
-  const [activeEncounter, setActiveEncounter] = useState<FhirEncounter | null>(null);
-  const [isPractitionerMatch, setIsPractitionerMatch] = useState<boolean>(false);
+  const [activeEncounter, setActiveEncounter] = useState<FhirEncounter | null>(
+    null,
+  );
+  const [isPractitionerMatch, setIsPractitionerMatch] =
+    useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false); // Start with false to not block UI
   const [error, setError] = useState<string | null>(null);
 
   const patientUUID = usePatientUUID();
   const { practitioner } = useActivePractitioner();
-  
 
   const fetchSessionState = async () => {
     if (!patientUUID) {
@@ -41,7 +43,7 @@ export function useEncounterSession(): UseEncounterSessionReturn {
 
     // Get practitioner UUID for session filtering
     const practitionerUUID = practitioner?.uuid;
-    
+
     // Only proceed if we have a practitioner UUID
     if (!practitionerUUID) {
       setHasActiveSession(false);
@@ -56,7 +58,10 @@ export function useEncounterSession(): UseEncounterSessionReturn {
 
     try {
       // Find active encounter for current patient and practitioner
-      const activeEncounter = await findActiveEncounterInSession(patientUUID, practitionerUUID);
+      const activeEncounter = await findActiveEncounterInSession(
+        patientUUID,
+        practitionerUUID,
+      );
       const sessionExists = activeEncounter !== null;
 
       // Since server filters by practitioner, if we get an encounter, it belongs to current practitioner
@@ -66,13 +71,10 @@ export function useEncounterSession(): UseEncounterSessionReturn {
       setHasActiveSession(sessionExists);
       setActiveEncounter(activeEncounter);
       setIsPractitionerMatch(practitionerMatches);
-
-    } catch (err) {
-      // Log error but don't let it block the UI
-      console.warn('Encounter session check failed, defaulting to New Consultation:', err);
+    } catch {
       // Don't set error state as it might block the consultation pad
       setError(null);
-      
+
       // Default to "New Consultation" (safer) on any error
       setHasActiveSession(false);
       setActiveEncounter(null);
@@ -90,7 +92,7 @@ export function useEncounterSession(): UseEncounterSessionReturn {
       setIsPractitionerMatch(false);
       setError(null);
     }
-    
+
     fetchSessionState();
   }, [patientUUID, practitioner?.uuid]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -100,6 +102,6 @@ export function useEncounterSession(): UseEncounterSessionReturn {
     isPractitionerMatch,
     isLoading,
     error,
-    refetch: fetchSessionState
+    refetch: fetchSessionState,
   };
 }

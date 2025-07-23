@@ -24,7 +24,7 @@ export const createBundleEntry = (
     resource: resource,
     request: {
       method: requestMethod,
-      url: resourceUrl || resource.resourceType,
+      url: resourceUrl ?? resource.resourceType,
     },
   };
 };
