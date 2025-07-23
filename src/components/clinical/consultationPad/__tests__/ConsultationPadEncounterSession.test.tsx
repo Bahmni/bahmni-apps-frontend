@@ -1,10 +1,8 @@
+import { render, screen } from '@testing-library/react';
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/setupTests.i18n';
 import ConsultationPad from '../ConsultationPad';
-import { useEncounterSession } from '@hooks/useEncounterSession';
 
 // Mock the useEncounterSession hook
 const mockUseEncounterSession = jest.fn();
@@ -15,7 +13,23 @@ jest.mock('@hooks/useEncounterSession', () => ({
 // Mock all other dependencies
 jest.mock('@components/common/actionArea/ActionArea', () => ({
   __esModule: true,
-  default: ({ title, primaryButtonText, onPrimaryButtonClick, isPrimaryButtonDisabled, secondaryButtonText, onSecondaryButtonClick, content }: any) => (
+  default: ({
+    title,
+    primaryButtonText,
+    onPrimaryButtonClick,
+    isPrimaryButtonDisabled,
+    secondaryButtonText,
+    onSecondaryButtonClick,
+    content,
+  }: {
+    title: string;
+    primaryButtonText: string;
+    onPrimaryButtonClick: () => void;
+    isPrimaryButtonDisabled: boolean;
+    secondaryButtonText: string;
+    onSecondaryButtonClick: () => void;
+    content: React.ReactNode;
+  }) => (
     <div data-testid="mock-action-area">
       <div data-testid="action-area-title">{title}</div>
       <div data-testid="action-area-content">{content}</div>
@@ -33,30 +47,52 @@ jest.mock('@components/common/actionArea/ActionArea', () => ({
   ),
 }));
 
-jest.mock('@components/clinical/forms/encounterDetails/EncounterDetails', () => ({
-  __esModule: true,
-  default: () => <div data-testid="mock-encounter-details">Encounter Details Form</div>,
-}));
+jest.mock(
+  '@components/clinical/forms/encounterDetails/EncounterDetails',
+  () => ({
+    __esModule: true,
+    default: () => (
+      <div data-testid="mock-encounter-details">Encounter Details Form</div>
+    ),
+  }),
+);
 
-jest.mock('@components/clinical/forms/conditionsAndDiagnoses/ConditionsAndDiagnoses', () => ({
-  __esModule: true,
-  default: () => <div data-testid="mock-conditions-diagnoses">Conditions and Diagnoses Form</div>,
-}));
+jest.mock(
+  '@components/clinical/forms/conditionsAndDiagnoses/ConditionsAndDiagnoses',
+  () => ({
+    __esModule: true,
+    default: () => (
+      <div data-testid="mock-conditions-diagnoses">
+        Conditions and Diagnoses Form
+      </div>
+    ),
+  }),
+);
 
 jest.mock('@components/clinical/forms/allergies/AllergiesForm', () => ({
   __esModule: true,
   default: () => <div data-testid="mock-allergies-form">Allergies Form</div>,
 }));
 
-jest.mock('@components/clinical/forms/investigations/InvestigationsForm', () => ({
-  __esModule: true,
-  default: () => <div data-testid="mock-investigations-form">Investigations Form</div>,
-}));
+jest.mock(
+  '@components/clinical/forms/investigations/InvestigationsForm',
+  () => ({
+    __esModule: true,
+    default: () => (
+      <div data-testid="mock-investigations-form">Investigations Form</div>
+    ),
+  }),
+);
 
-jest.mock('@components/clinical/forms/prescribeMedicines/MedicationsForm', () => ({
-  __esModule: true,
-  default: () => <div data-testid="mock-medications-form">Medications Form</div>,
-}));
+jest.mock(
+  '@components/clinical/forms/prescribeMedicines/MedicationsForm',
+  () => ({
+    __esModule: true,
+    default: () => (
+      <div data-testid="mock-medications-form">Medications Form</div>
+    ),
+  }),
+);
 
 jest.mock('@carbon/react', () => ({
   ...jest.requireActual('@carbon/react'),
@@ -187,7 +223,7 @@ describe('ConsultationPad - Encounter Session Integration', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Reset stores to initial state
     mockEncounterDetailsStore = createMockEncounterDetailsStore();
     mockDiagnosesStore = createMockDiagnosesStore();
@@ -208,9 +244,11 @@ describe('ConsultationPad - Encounter Session Integration', () => {
       });
 
       renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
-      
+
       expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
-      expect(screen.getByTestId('action-area-title')).toHaveTextContent('New Consultation');
+      expect(screen.getByTestId('action-area-title')).toHaveTextContent(
+        'New Consultation',
+      );
     });
 
     it('should handle loading state from encounter session', () => {
@@ -224,7 +262,7 @@ describe('ConsultationPad - Encounter Session Integration', () => {
       });
 
       renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
-      
+
       expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
     });
 
@@ -239,7 +277,7 @@ describe('ConsultationPad - Encounter Session Integration', () => {
       });
 
       renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
-      
+
       expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
     });
 
@@ -249,12 +287,14 @@ describe('ConsultationPad - Encounter Session Integration', () => {
         resourceType: 'Encounter' as const,
         status: 'in-progress' as const,
         subject: { reference: 'Patient/patient-123' },
-        participant: [{
-          individual: {
-            reference: 'Practitioner/practitioner-123',
-            identifier: { value: 'practitioner-123' }
-          }
-        }]
+        participant: [
+          {
+            individual: {
+              reference: 'Practitioner/practitioner-123',
+              identifier: { value: 'practitioner-123' },
+            },
+          },
+        ],
       };
 
       mockUseEncounterSession.mockReturnValue({
@@ -267,7 +307,7 @@ describe('ConsultationPad - Encounter Session Integration', () => {
       });
 
       renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
-      
+
       expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
     });
 
@@ -277,12 +317,14 @@ describe('ConsultationPad - Encounter Session Integration', () => {
         resourceType: 'Encounter' as const,
         status: 'in-progress' as const,
         subject: { reference: 'Patient/patient-123' },
-        participant: [{
-          individual: {
-            reference: 'Practitioner/different-practitioner',
-            identifier: { value: 'different-practitioner' }
-          }
-        }]
+        participant: [
+          {
+            individual: {
+              reference: 'Practitioner/different-practitioner',
+              identifier: { value: 'different-practitioner' },
+            },
+          },
+        ],
       };
 
       mockUseEncounterSession.mockReturnValue({
@@ -295,13 +337,13 @@ describe('ConsultationPad - Encounter Session Integration', () => {
       });
 
       renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
-      
+
       expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
     });
 
     it('should call refetch when needed', async () => {
       const mockRefetch = jest.fn();
-      
+
       mockUseEncounterSession.mockReturnValue({
         hasActiveSession: false,
         activeEncounter: null,
@@ -312,7 +354,7 @@ describe('ConsultationPad - Encounter Session Integration', () => {
       });
 
       renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
-      
+
       // The refetch function should be available but not automatically called
       expect(mockRefetch).not.toHaveBeenCalled();
     });
@@ -330,9 +372,13 @@ describe('ConsultationPad - Encounter Session Integration', () => {
         refetch: jest.fn(),
       });
 
-      const { rerender } = renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
-      
-      expect(screen.getByTestId('action-area-title')).toHaveTextContent('New Consultation');
+      const { rerender } = renderWithProviders(
+        <ConsultationPad onClose={mockOnClose} />,
+      );
+
+      expect(screen.getByTestId('action-area-title')).toHaveTextContent(
+        'New Consultation',
+      );
 
       // Simulate session becoming active
       const mockEncounter = {
@@ -340,12 +386,14 @@ describe('ConsultationPad - Encounter Session Integration', () => {
         resourceType: 'Encounter' as const,
         status: 'in-progress' as const,
         subject: { reference: 'Patient/patient-123' },
-        participant: [{
-          individual: {
-            reference: 'Practitioner/practitioner-123',
-            identifier: { value: 'practitioner-123' }
-          }
-        }]
+        participant: [
+          {
+            individual: {
+              reference: 'Practitioner/practitioner-123',
+              identifier: { value: 'practitioner-123' },
+            },
+          },
+        ],
       };
 
       mockUseEncounterSession.mockReturnValue({
@@ -357,10 +405,16 @@ describe('ConsultationPad - Encounter Session Integration', () => {
         refetch: jest.fn(),
       });
 
-      rerender(<I18nextProvider i18n={i18n}><ConsultationPad onClose={mockOnClose} /></I18nextProvider>);
-      
+      rerender(
+        <I18nextProvider i18n={i18n}>
+          <ConsultationPad onClose={mockOnClose} />
+        </I18nextProvider>,
+      );
+
       // Title should still be "New Consultation" as ConsultationPad doesn't directly use encounter session for title
-      expect(screen.getByTestId('action-area-title')).toHaveTextContent('New Consultation');
+      expect(screen.getByTestId('action-area-title')).toHaveTextContent(
+        'New Consultation',
+      );
     });
 
     it('should handle loading to loaded state transition', () => {
@@ -374,8 +428,10 @@ describe('ConsultationPad - Encounter Session Integration', () => {
         refetch: jest.fn(),
       });
 
-      const { rerender } = renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
-      
+      const { rerender } = renderWithProviders(
+        <ConsultationPad onClose={mockOnClose} />,
+      );
+
       // Simulate loading complete
       mockUseEncounterSession.mockReturnValue({
         hasActiveSession: false,
@@ -386,8 +442,12 @@ describe('ConsultationPad - Encounter Session Integration', () => {
         refetch: jest.fn(),
       });
 
-      rerender(<I18nextProvider i18n={i18n}><ConsultationPad onClose={mockOnClose} /></I18nextProvider>);
-      
+      rerender(
+        <I18nextProvider i18n={i18n}>
+          <ConsultationPad onClose={mockOnClose} />
+        </I18nextProvider>,
+      );
+
       expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
     });
 
@@ -402,8 +462,10 @@ describe('ConsultationPad - Encounter Session Integration', () => {
         refetch: jest.fn(),
       });
 
-      const { rerender } = renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
-      
+      const { rerender } = renderWithProviders(
+        <ConsultationPad onClose={mockOnClose} />,
+      );
+
       // Simulate error resolved
       mockUseEncounterSession.mockReturnValue({
         hasActiveSession: false,
@@ -414,8 +476,12 @@ describe('ConsultationPad - Encounter Session Integration', () => {
         refetch: jest.fn(),
       });
 
-      rerender(<I18nextProvider i18n={i18n}><ConsultationPad onClose={mockOnClose} /></I18nextProvider>);
-      
+      rerender(
+        <I18nextProvider i18n={i18n}>
+          <ConsultationPad onClose={mockOnClose} />
+        </I18nextProvider>,
+      );
+
       expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
     });
   });
@@ -427,44 +493,63 @@ describe('ConsultationPad - Encounter Session Integration', () => {
           hasActiveSession: false,
           activeEncounter: null,
           isPractitionerMatch: false,
-          description: 'No session, no encounter, no match'
+          description: 'No session, no encounter, no match',
         },
         {
           hasActiveSession: true,
-          activeEncounter: { id: 'enc-1', resourceType: 'Encounter' as const, status: 'in-progress' as const },
+          activeEncounter: {
+            id: 'enc-1',
+            resourceType: 'Encounter' as const,
+            status: 'in-progress' as const,
+          },
           isPractitionerMatch: true,
-          description: 'Active session, encounter present, practitioner matches'
+          description:
+            'Active session, encounter present, practitioner matches',
         },
         {
           hasActiveSession: true,
-          activeEncounter: { id: 'enc-1', resourceType: 'Encounter' as const, status: 'in-progress' as const },
+          activeEncounter: {
+            id: 'enc-1',
+            resourceType: 'Encounter' as const,
+            status: 'in-progress' as const,
+          },
           isPractitionerMatch: false,
-          description: 'Active session, encounter present, practitioner does not match'
+          description:
+            'Active session, encounter present, practitioner does not match',
         },
         {
           hasActiveSession: false,
-          activeEncounter: { id: 'enc-1', resourceType: 'Encounter' as const, status: 'finished' as const },
+          activeEncounter: {
+            id: 'enc-1',
+            resourceType: 'Encounter' as const,
+            status: 'finished' as const,
+          },
           isPractitionerMatch: false,
-          description: 'No active session, encounter present (expired), no match'
-        }
+          description:
+            'No active session, encounter present (expired), no match',
+        },
       ];
 
-      testCases.forEach(({ hasActiveSession, activeEncounter, isPractitionerMatch, description }) => {
-        mockUseEncounterSession.mockReturnValue({
-          hasActiveSession,
-          activeEncounter,
-          isPractitionerMatch,
-          isLoading: false,
-          error: null,
-          refetch: jest.fn(),
-        });
+      testCases.forEach(
+        ({ hasActiveSession, activeEncounter, isPractitionerMatch }) => {
+          mockUseEncounterSession.mockReturnValue({
+            hasActiveSession,
+            activeEncounter,
+            isPractitionerMatch,
+            isLoading: false,
+            error: null,
+            refetch: jest.fn(),
+          });
 
-        const { unmount } = renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
-        
-        expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
-        
-        unmount();
-      });
+          const { unmount } = renderWithProviders(
+            <ConsultationPad onClose={mockOnClose} />,
+          );
+
+          expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
+
+          unmount();
+        },
+      );
     });
 
     it('should handle encounter with complex participant structure', () => {
@@ -478,19 +563,19 @@ describe('ConsultationPad - Encounter Session Integration', () => {
             individual: {
               reference: 'Practitioner/practitioner-123',
               identifier: { value: 'practitioner-123' },
-              display: 'Dr. John Doe'
+              display: 'Dr. John Doe',
             },
-            type: [{ coding: [{ code: 'ATND', display: 'attender' }] }]
+            type: [{ coding: [{ code: 'ATND', display: 'attender' }] }],
           },
           {
             individual: {
               reference: 'Practitioner/practitioner-456',
               identifier: { value: 'practitioner-456' },
-              display: 'Dr. Jane Smith'
+              display: 'Dr. Jane Smith',
             },
-            type: [{ coding: [{ code: 'CON', display: 'consultant' }] }]
-          }
-        ]
+            type: [{ coding: [{ code: 'CON', display: 'consultant' }] }],
+          },
+        ],
       };
 
       mockUseEncounterSession.mockReturnValue({
@@ -503,7 +588,7 @@ describe('ConsultationPad - Encounter Session Integration', () => {
       });
 
       renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
-      
+
       expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
     });
   });
