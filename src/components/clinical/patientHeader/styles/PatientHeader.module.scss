@@ -6,8 +6,9 @@
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: $spacing-03;
+  row-gap: $spacing-04;
   align-items: center;
+  height: 100%;
 }
 
 .controls {
