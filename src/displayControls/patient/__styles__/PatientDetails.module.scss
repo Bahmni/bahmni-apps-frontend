@@ -1,6 +1,7 @@
 @use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/breakpoint" as *;
+@use "@carbon/react/scss/theme" as *;
 
 .skeletonContainer {
   width: 70%;
@@ -22,12 +23,12 @@
 .patientDetails {
   display: flex;
   flex-wrap: wrap;
-  gap: $spacing-05;
-  p,
-  span {
+  column-gap: $spacing-05;
+  row-gap: $spacing-03;
+
+  p {
     @include type-style("body-compact-01");
     text-transform: capitalize;
-    line-height: revert;
   }
 }
 
@@ -40,9 +41,11 @@
   display: flex;
   align-items: center;
   gap: $spacing-01;
+  height: $spacing-05 + $spacing-01;
   svg {
     height: $spacing-05;
     width: $spacing-05;
+    color: $icon-secondary;
   }
 }
 
