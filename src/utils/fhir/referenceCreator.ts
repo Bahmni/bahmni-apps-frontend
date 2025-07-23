@@ -70,7 +70,9 @@ export const createMedicationReference = (medicationId: string): Reference => {
  * @param encounterReference - Either placeholder UUID or actual encounter ID
  * @returns Reference object
  */
-export const createEncounterReferenceFromString = (encounterReference: string): Reference => {
+export const createEncounterReferenceFromString = (
+  encounterReference: string,
+): Reference => {
   return {
     reference: encounterReference,
   };

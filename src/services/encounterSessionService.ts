@@ -51,11 +51,7 @@ export async function getEncounterSessionDuration(): Promise<number> {
     );
     const duration = Number(response.value);
     return !isNaN(duration) && duration > 0 ? duration : 60; // Default to 60 minutes if invalid
-  } catch (error) {
-    console.warn(
-      'Failed to fetch encounter session duration, using default:',
-      error,
-    );
+  } catch {
     return 30;
   }
 }
@@ -78,20 +74,21 @@ export async function filterByActiveVisit(
     for (const encounter of encounters) {
       const visitUUID = encounter.partOf?.reference?.split('/')[1];
       if (!visitUUID) continue;
-      const visit = allVisits.find((visit: FhirEncounter) => visit.id === visitUUID);
+      const visit = allVisits.find(
+        (visit: FhirEncounter) => visit.id === visitUUID,
+      );
       if (!visit) continue;
 
       const isVisitActive = !visit.period?.end;
-      
+
       if (isVisitActive) {
         return encounter;
       }
     }
     // No encounters belong to active visits
     return null;
-  } catch (error) {
-    console.warn('Error filtering encounters by active visit:', error);
-    // If we can't get visit info, default to "New Consultation" 
+  } catch {
+    // If we can't get visit info, default to "New Consultation"
     return null;
   }
 }
@@ -112,7 +109,7 @@ export async function findActiveEncounterInSession(
     if (!patientUUID) return null;
 
     const duration =
-      sessionDurationMinutes || (await getEncounterSessionDuration());
+      sessionDurationMinutes ?? (await getEncounterSessionDuration());
     const sessionStartTime = new Date(Date.now() - duration * 60 * 1000);
     const lastUpdatedParam = `ge${sessionStartTime.toISOString()}`;
 
@@ -126,7 +123,7 @@ export async function findActiveEncounterInSession(
     if (practitionerUUID) {
       searchParams.participant = practitionerUUID;
     }
-    
+
     // Search for encounters within session duration
     // Server-side filtering by patient, duration, and practitioner (if provided)
     const encounters = await searchEncounters(searchParams);
@@ -136,8 +133,7 @@ export async function findActiveEncounterInSession(
     // Filter by active visit and return the most recent one
     const result = await filterByActiveVisit(encounters, patientUUID);
     return result;
-  } catch (error) {
-    console.error('Error finding active encounter in session:', error);
+  } catch {
     return null;
   }
 }

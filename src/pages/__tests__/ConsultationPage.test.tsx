@@ -166,13 +166,12 @@ describe('ConsultationPage', () => {
     });
 
     // Mock useEncounterSession hook
-    jest.requireMock('@hooks/useEncounterSession').useEncounterSession = jest.fn(
-      () => ({
+    jest.requireMock('@hooks/useEncounterSession').useEncounterSession =
+      jest.fn(() => ({
         hasActiveSession: false,
         isPractitionerMatch: false,
         isLoading: false,
-      }),
-    );
+      }));
 
     // Mock usePatientUUID hook
     jest.requireMock('@hooks/usePatientUUID').usePatientUUID = jest.fn(
