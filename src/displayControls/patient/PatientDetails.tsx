@@ -42,7 +42,8 @@ const PatientDetails: React.FC = () => {
 
   const formattedIdentifiers = formattedPatient.identifiers.size
     ? Array.from(formattedPatient.identifiers.entries())
-        .map(([key, value]) => `${key}: ${value}`)
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        .map(([key, value]) => `${value}`)
         .filter(Boolean)
         .join(' | ')
     : null;
