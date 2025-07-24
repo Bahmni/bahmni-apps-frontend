@@ -1,16 +1,17 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { DashboardSectionConfig as DashboardSectionType } from '@/types/dashboardConfig';
+import { AUDIT_LOG_EVENT_DETAILS } from '@constants/auditLog';
 import { usePatientUUID } from '@hooks/usePatientUUID';
-import { logDashboardView } from '@services/auditLogService';
+import { dispatchAuditEvent } from '@utils/auditEventDispatcher';
 import DashboardContainer from '../DashboardContainer';
 
 // Mock scrollIntoView
 const mockScrollIntoView = jest.fn();
 
-// Mock the audit log service
-jest.mock('@services/auditLogService', () => ({
-  logDashboardView: jest.fn(),
+// Mock the audit event dispatcher
+jest.mock('@utils/auditEventDispatcher', () => ({
+  dispatchAuditEvent: jest.fn(),
 }));
 
 // Mock the usePatientUUID hook
@@ -62,8 +63,8 @@ jest.mock('@carbon/react', () => ({
   )),
 }));
 
-const mockLogDashboardView = logDashboardView as jest.MockedFunction<
-  typeof logDashboardView
+const mockDispatchAuditEvent = dispatchAuditEvent as jest.MockedFunction<
+  typeof dispatchAuditEvent
 >;
 const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
@@ -257,20 +258,37 @@ describe('DashboardContainer Component', () => {
     expect(mockScrollIntoView).not.toHaveBeenCalled();
   });
 
-  describe('Audit Logging', () => {
-    it('should log dashboard view when component mounts with patient UUID', async () => {
+  describe('Audit Event Dispatching', () => {
+    it('should dispatch audit event with correct event type when component mounts with patient UUID', async () => {
       const patientUuid = 'patient-123';
       mockUsePatientUUID.mockReturnValue(patientUuid);
-      mockLogDashboardView.mockResolvedValue({ logged: true });
 
       render(<DashboardContainer sections={mockSections} />);
 
       await waitFor(() => {
-        expect(mockLogDashboardView).toHaveBeenCalledWith(patientUuid);
+        expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
+          eventType:
+            AUDIT_LOG_EVENT_DETAILS.VIEWED_CLINICAL_DASHBOARD.eventType,
+          patientUuid,
+        });
       });
     });
 
-    it('should not log dashboard view when patient UUID is null', async () => {
+    it('should use the correct audit log constant for event type', async () => {
+      const patientUuid = 'patient-123';
+      mockUsePatientUUID.mockReturnValue(patientUuid);
+
+      render(<DashboardContainer sections={mockSections} />);
+
+      await waitFor(() => {
+        expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
+          eventType: 'VIEWED_CLINICAL_DASHBOARD', // This should match the constant value
+          patientUuid,
+        });
+      });
+    });
+
+    it('should not dispatch audit event when patient UUID is null', async () => {
       mockUsePatientUUID.mockReturnValue(null);
 
       render(<DashboardContainer sections={mockSections} />);
@@ -282,38 +300,26 @@ describe('DashboardContainer Component', () => {
         ).toBeInTheDocument();
       });
 
-      expect(mockLogDashboardView).not.toHaveBeenCalled();
+      expect(mockDispatchAuditEvent).not.toHaveBeenCalled();
     });
 
-    it('should handle audit logging when logging is disabled', async () => {
-      const patientUuid = 'patient-123';
-      mockUsePatientUUID.mockReturnValue(patientUuid);
-      mockLogDashboardView.mockResolvedValue({
-        logged: false,
-        error: 'Audit logging is disabled',
-      });
-
-      render(<DashboardContainer sections={mockSections} />);
-
-      await waitFor(() => {
-        expect(mockLogDashboardView).toHaveBeenCalledWith(patientUuid);
-      });
-    });
-
-    it('should log dashboard view again when patient UUID changes', async () => {
+    it('should dispatch audit event again when patient UUID changes', async () => {
       const firstPatientUuid = 'patient-123';
       const secondPatientUuid = 'patient-456';
 
       mockUsePatientUUID.mockReturnValue(firstPatientUuid);
-      mockLogDashboardView.mockResolvedValue({ logged: true });
 
       const { rerender } = render(
         <DashboardContainer sections={mockSections} />,
       );
 
       await waitFor(() => {
-        expect(mockLogDashboardView).toHaveBeenCalledWith(firstPatientUuid);
-        expect(mockLogDashboardView).toHaveBeenCalledTimes(1);
+        expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
+          eventType:
+            AUDIT_LOG_EVENT_DETAILS.VIEWED_CLINICAL_DASHBOARD.eventType,
+          patientUuid: firstPatientUuid,
+        });
+        expect(mockDispatchAuditEvent).toHaveBeenCalledTimes(1);
       });
 
       // Change patient UUID
@@ -322,18 +328,18 @@ describe('DashboardContainer Component', () => {
       rerender(<DashboardContainer sections={mockSections} />);
 
       await waitFor(() => {
-        expect(mockLogDashboardView).toHaveBeenCalledWith(secondPatientUuid);
-        expect(mockLogDashboardView).toHaveBeenCalledTimes(2);
+        expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
+          eventType:
+            AUDIT_LOG_EVENT_DETAILS.VIEWED_CLINICAL_DASHBOARD.eventType,
+          patientUuid: secondPatientUuid,
+        });
+        expect(mockDispatchAuditEvent).toHaveBeenCalledTimes(2);
       });
     });
 
-    it('should continue normal operation even when audit logging fails', async () => {
+    it('should continue normal operation regardless of audit event dispatch result', async () => {
       const patientUuid = 'patient-123';
       mockUsePatientUUID.mockReturnValue(patientUuid);
-      mockLogDashboardView.mockResolvedValue({
-        logged: false,
-        error: 'Audit service unavailable',
-      });
 
       render(<DashboardContainer sections={mockSections} />);
 
@@ -347,7 +353,26 @@ describe('DashboardContainer Component', () => {
         ).toBeInTheDocument();
       });
 
-      expect(mockLogDashboardView).toHaveBeenCalledWith(patientUuid);
+      expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
+        eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_CLINICAL_DASHBOARD.eventType,
+        patientUuid,
+      });
+    });
+
+    it('should verify the audit event type constant is not hardcoded', async () => {
+      const patientUuid = 'patient-123';
+      mockUsePatientUUID.mockReturnValue(patientUuid);
+
+      render(<DashboardContainer sections={mockSections} />);
+
+      await waitFor(() => {
+        const callArgs = mockDispatchAuditEvent.mock.calls[0][0];
+        // Verify that the eventType is using the constant, not a hardcoded string
+        expect(callArgs.eventType).toBe(
+          AUDIT_LOG_EVENT_DETAILS.VIEWED_CLINICAL_DASHBOARD.eventType,
+        );
+        expect(callArgs.eventType).toBe('VIEWED_CLINICAL_DASHBOARD');
+      });
     });
   });
 });
