@@ -1,4 +1,4 @@
-import axios, { AxiosResponse, AxiosInstance } from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import { LOGIN_PATH } from './constants';
 import {
   getFormattedError,
@@ -44,30 +44,5 @@ client.interceptors.response.use(
     return Promise.reject(`${title}: ${message}`);
   },
 );
-
-export const get = async <T>(url: string): Promise<T> => {
-  const response: AxiosResponse<T> = await client.get(url);
-  return response.data;
-};
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const post = async <T>(url: string, data: any): Promise<T> => {
-  const response: AxiosResponse<T> = await client.post(url, data);
-  return response.data;
-};
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const put = async <T>(url: string, data: any): Promise<T> => {
-  const response: AxiosResponse<T> = await client.put(url, data);
-  return response.data;
-};
-
-export const del = async <T>(url: string): Promise<T> => {
-  const response: AxiosResponse<T> = await client.delete(url);
-  return response.data;
-};
-
-// Export internal functions for testing
-export { decodeHtmlEntities, isOpenMRSWebServiceApi, getResponseUrl };
 
 export default client;
