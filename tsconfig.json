@@ -38,8 +38,7 @@
     "src/**/*",
     "declarations.d.ts",
     "vite.config.ts",
-    "vite-env.d.ts",
-    "bahmni-frontend/packages/bahmni-services/src/i18n/translationService.ts"
+    "vite-env.d.ts"
   ],
   "exclude": ["node_modules", "build", "dist"]
 }

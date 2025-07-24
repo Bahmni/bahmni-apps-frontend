@@ -20,7 +20,9 @@
     "axios": "^1.6.0",
     "html-entities": "^2.4.0",
     "i18next": "^24.2.3",
-    "i18next-browser-languagedetector": "^8.0.4"
+    "i18next-browser-languagedetector": "^8.0.4",
+    "@fortawesome/fontawesome-svg-core": "^6.7.2",
+    "@fortawesome/free-solid-svg-icons": "^6.7.2"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
