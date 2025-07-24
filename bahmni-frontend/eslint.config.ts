@@ -20,6 +20,8 @@ const config = [
       'dist/**',
       'node_modules/**',
       'coverage/**',
+      '**/coverage/**',
+      '**/test-output/**',
       '*.config.{js,ts}',
       'declarations.d.ts',
       'public/**',

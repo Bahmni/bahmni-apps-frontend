@@ -10,21 +10,15 @@ jest.mock('html-entities', () => ({
 }));
 
 // Mock other dependencies
-jest.mock('@constants/app', () => ({
+jest.mock('../constants', () => ({
   LOGIN_PATH: '/login',
 }));
 
-jest.mock('@utils/common', () => ({
+jest.mock('../utils', () => ({
   getFormattedError: jest.fn(() => ({
     title: 'Error',
     message: 'Test error message',
   })),
-}));
-
-jest.mock('@services/notificationService', () => ({
-  notificationService: {
-    showError: jest.fn(),
-  },
 }));
 
 const mockDecode = decode as jest.MockedFunction<typeof decode>;
@@ -305,18 +299,10 @@ describe('API Service', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         rejected: (error: any) => Promise<never>;
       };
-      let notificationService: {
-        showError: jest.MockedFunction<
-          (title: string, message: string) => void
-        >;
-      };
-      beforeEach(async () => {
-        const notificationModule = await import(
-          '@services/notificationService'
-        );
-        notificationService = notificationModule.notificationService;
 
-        responseInterceptor = client.interceptors.response.handlers[0];
+      beforeEach(async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        responseInterceptor = (client.interceptors.response as any).handlers[0];
       });
 
       it('should handle error during HTML entity decoding', async () => {
@@ -327,20 +313,14 @@ describe('API Service', () => {
           config: { url: '/openmrs/ws/rest/v1/patient' },
         };
 
-        jest
-          .spyOn(await import('html-entities'), 'decode')
-          .mockImplementation(() => {
-            throw new Error('Decoding failed');
-          });
+        // Use the existing mock and make it throw an error
+        mockDecode.mockImplementation(() => {
+          throw new Error('Decoding failed');
+        });
 
         await expect(() =>
           responseInterceptor.fulfilled(mockResponse),
-        ).rejects.toThrow('Decoding failed');
-
-        expect(notificationService.showError).toHaveBeenCalledWith(
-          'Error',
-          'Test error message',
-        );
+        ).rejects.toBe('Error: Test error message');
       });
 
       it('should handle general unexpected errors in response interceptor', async () => {
@@ -348,12 +328,7 @@ describe('API Service', () => {
 
         await expect(() =>
           responseInterceptor.fulfilled(mockResponse),
-        ).rejects.toThrow();
-
-        expect(notificationService.showError).toHaveBeenCalledWith(
-          'Error',
-          'Test error message',
-        );
+        ).rejects.toBe('Error: Test error message');
       });
     });
 
@@ -524,7 +499,9 @@ describe('API Service', () => {
   describe('Request Interceptor', () => {
     it('should pass through successful requests', () => {
       const mockConfig = { url: '/api/test' };
-      const requestInterceptor = client.interceptors.request.handlers[0];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const requestInterceptor = (client.interceptors.request as any)
+        .handlers[0];
 
       const result = requestInterceptor.fulfilled(mockConfig);
       expect(result).toBe(mockConfig);
@@ -532,39 +509,27 @@ describe('API Service', () => {
 
     it('should handle request errors', async () => {
       const mockError = new Error('Request failed');
-      const { getFormattedError } = await import('@utils/common');
-      const { notificationService } = await import(
-        '@services/notificationService'
-      );
-
-      const requestInterceptor = client.interceptors.request.handlers[0];
-
+      const { getFormattedError } = await import('../utils');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const requestInterceptor = (client.interceptors.request as any)
+        .handlers[0];
       await expect(() => requestInterceptor.rejected(mockError)).rejects.toBe(
-        mockError,
+        'Error: Test error message',
       );
       expect(getFormattedError).toHaveBeenCalledWith(mockError);
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        'Error',
-        'Test error message',
-      );
     });
   });
 
   describe('Response Interceptor Error Handling', () => {
     let getFormattedError: jest.MockedFunction<
-      typeof import('@utils/common').getFormattedError
+      typeof import('../utils').getFormattedError
     >;
-    let notificationService: {
-      showError: jest.MockedFunction<(title: string, message: string) => void>;
-    };
 
     beforeEach(async () => {
-      const utilsModule = await import('@utils/common');
-      const notificationModule = await import('@services/notificationService');
+      const utilsModule = await import('../utils');
       getFormattedError = utilsModule.getFormattedError as jest.MockedFunction<
-        typeof import('@utils/common').getFormattedError
+        typeof import('../utils').getFormattedError
       >;
-      notificationService = notificationModule.notificationService;
 
       // Mock window.location
       delete (window as unknown as { location: unknown }).location;
@@ -580,9 +545,13 @@ describe('API Service', () => {
       };
 
       // Mock axios.isAxiosError
-      (axios.isAxiosError as jest.Mock) = jest.fn().mockReturnValue(true);
+      (axios.isAxiosError as unknown as jest.Mock) = jest
+        .fn()
+        .mockReturnValue(true);
 
-      const responseInterceptor = client.interceptors.response.handlers[0];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const responseInterceptor = (client.interceptors.response as any)
+        .handlers[0];
 
       await expect(() => responseInterceptor.rejected(mockError)).rejects.toBe(
         mockError,
@@ -596,35 +565,35 @@ describe('API Service', () => {
         isAxiosError: true,
       };
 
-      (axios.isAxiosError as jest.Mock) = jest.fn().mockReturnValue(true);
+      (axios.isAxiosError as unknown as jest.Mock) = jest
+        .fn()
+        .mockReturnValue(true);
 
-      const responseInterceptor = client.interceptors.response.handlers[0];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const responseInterceptor = (client.interceptors.response as any)
+        .handlers[0];
 
       await expect(() => responseInterceptor.rejected(mockError)).rejects.toBe(
-        mockError,
+        'Error: Test error message',
       );
       expect(getFormattedError).toHaveBeenCalledWith(mockError);
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        'Error',
-        'Test error message',
-      );
     });
 
     it('should handle non-Axios errors', async () => {
       const mockError = new Error('Network error');
 
-      (axios.isAxiosError as jest.Mock) = jest.fn().mockReturnValue(false);
+      (axios.isAxiosError as unknown as jest.Mock) = jest
+        .fn()
+        .mockReturnValue(false);
 
-      const responseInterceptor = client.interceptors.response.handlers[0];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const responseInterceptor = (client.interceptors.response as any)
+        .handlers[0];
 
       await expect(() => responseInterceptor.rejected(mockError)).rejects.toBe(
-        mockError,
+        'Error: Test error message',
       );
       expect(getFormattedError).toHaveBeenCalledWith(mockError);
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        'Error',
-        'Test error message',
-      );
     });
 
     it('should handle Axios errors without response', async () => {
@@ -633,18 +602,18 @@ describe('API Service', () => {
         message: 'Request timeout',
       };
 
-      (axios.isAxiosError as jest.Mock) = jest.fn().mockReturnValue(true);
+      (axios.isAxiosError as unknown as jest.Mock) = jest
+        .fn()
+        .mockReturnValue(true);
 
-      const responseInterceptor = client.interceptors.response.handlers[0];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const responseInterceptor = (client.interceptors.response as any)
+        .handlers[0];
 
       await expect(() => responseInterceptor.rejected(mockError)).rejects.toBe(
-        mockError,
+        'Error: Test error message',
       );
       expect(getFormattedError).toHaveBeenCalledWith(mockError);
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        'Error',
-        'Test error message',
-      );
     });
   });
 
@@ -714,7 +683,9 @@ describe('API Service', () => {
         };
 
         // Get the response interceptor
-        const responseInterceptor = client.interceptors.response.handlers[0];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const responseInterceptor = (client.interceptors.response as any)
+          .handlers[0];
         const result = responseInterceptor.fulfilled(mockResponse);
 
         expect(decode).toHaveBeenCalledTimes(2);
@@ -736,7 +707,9 @@ describe('API Service', () => {
         };
 
         // Get the response interceptor
-        const responseInterceptor = client.interceptors.response.handlers[0];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const responseInterceptor = (client.interceptors.response as any)
+          .handlers[0];
         const result = responseInterceptor.fulfilled(mockResponse);
 
         expect(decode).not.toHaveBeenCalled();
@@ -755,7 +728,9 @@ describe('API Service', () => {
 
         mockDecode.mockReturnValue('&test');
 
-        const responseInterceptor = client.interceptors.response.handlers[0];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const responseInterceptor = (client.interceptors.response as any)
+          .handlers[0];
         const result = responseInterceptor.fulfilled(mockResponse);
 
         expect(decode).toHaveBeenCalledWith('&amp;test');
@@ -770,7 +745,9 @@ describe('API Service', () => {
           config: {},
         };
 
-        const responseInterceptor = client.interceptors.response.handlers[0];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const responseInterceptor = (client.interceptors.response as any)
+          .handlers[0];
         const result = responseInterceptor.fulfilled(mockResponse);
 
         expect(decode).not.toHaveBeenCalled();
@@ -793,7 +770,9 @@ describe('API Service', () => {
           },
         };
 
-        const responseInterceptor = client.interceptors.response.handlers[0];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const responseInterceptor = (client.interceptors.response as any)
+          .handlers[0];
         const result = responseInterceptor.fulfilled(mockResponse);
 
         expect(decode).toHaveBeenCalledTimes(3);
@@ -818,7 +797,9 @@ describe('API Service', () => {
         client.post = mockAxiosPost;
 
         // Mock response interceptor behavior
-        const responseInterceptor = client.interceptors.response.handlers[0];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const responseInterceptor = (client.interceptors.response as any)
+          .handlers[0];
         const mockResponse = {
           data: responseData,
           config: { url: '/openmrs/ws/rest/v1/patient' },

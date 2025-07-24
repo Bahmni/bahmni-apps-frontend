@@ -1,8 +1,7 @@
 import axios, { AxiosResponse, AxiosInstance, AxiosRequestConfig } from 'axios';
 import { decode } from 'html-entities';
-import { LOGIN_PATH } from '@constants/app';
-import { getFormattedError } from '@utils/common';
-import { notificationService } from './notificationService';
+import { LOGIN_PATH } from './constants';
+import { getFormattedError } from './utils';
 
 const client: AxiosInstance = axios.create();
 client.defaults.headers.common['Content-Type'] = 'application/json';
@@ -56,8 +55,7 @@ client.interceptors.request.use(
   },
   function (error) {
     const { title, message } = getFormattedError(error);
-    notificationService.showError(title, message);
-    return Promise.reject(error);
+    return Promise.reject(`${title}: ${message}`);
   },
 );
 
@@ -72,8 +70,7 @@ client.interceptors.response.use(
       return response;
     } catch (error) {
       const { title, message } = getFormattedError(error);
-      notificationService.showError(title, message);
-      return Promise.reject(error);
+      return Promise.reject(`${title}: ${message}`);
     }
   },
   function (error) {
@@ -82,8 +79,7 @@ client.interceptors.response.use(
       return Promise.reject(error);
     }
     const { title, message } = getFormattedError(error);
-    notificationService.showError(title, message);
-    return Promise.reject(error);
+    return Promise.reject(`${title}: ${message}`);
   },
 );
 
@@ -108,5 +104,8 @@ export const del = async <T>(url: string): Promise<T> => {
   const response: AxiosResponse<T> = await client.delete(url);
   return response.data;
 };
+
+// Export internal functions for testing
+export { decodeHtmlEntities, isOpenMRSWebServiceApi, getResponseUrl };
 
 export default client;
