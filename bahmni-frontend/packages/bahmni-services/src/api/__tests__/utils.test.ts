@@ -258,9 +258,7 @@ describe('Utils', () => {
         ];
 
         testCases.forEach((url) => {
-          expect(isOpenMRSWebServiceApi(url)).toBe(
-            url.includes('/openmrs/ws'),
-          );
+          expect(isOpenMRSWebServiceApi(url)).toBe(url.includes('/openmrs/ws'));
         });
       });
 

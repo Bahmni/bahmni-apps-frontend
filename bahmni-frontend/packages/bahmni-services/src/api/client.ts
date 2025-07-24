@@ -4,7 +4,7 @@ import {
   getFormattedError,
   decodeHtmlEntities,
   isOpenMRSWebServiceApi,
-  getResponseUrl
+  getResponseUrl,
 } from './utils';
 
 const client: AxiosInstance = axios.create();

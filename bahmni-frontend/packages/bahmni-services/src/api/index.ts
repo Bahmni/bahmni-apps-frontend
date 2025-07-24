@@ -19,7 +19,7 @@ export const get = async <T = unknown>(url: string): Promise<T> => {
  */
 export const post = async <T = unknown, D = unknown>(
   url: string,
-  data: D
+  data: D,
 ): Promise<T> => {
   const response: AxiosResponse<T> = await client.post(url, data);
   return response.data;
@@ -33,7 +33,7 @@ export const post = async <T = unknown, D = unknown>(
  */
 export const put = async <T = unknown, D = unknown>(
   url: string,
-  data: D
+  data: D,
 ): Promise<T> => {
   const response: AxiosResponse<T> = await client.put(url, data);
   return response.data;
