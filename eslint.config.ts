@@ -24,6 +24,7 @@ const config = [
       'declarations.d.ts',
       'public/**',
       'package/**',
+      'bahmni-frontend/**',
     ],
   },
 
