@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import { AllergyIntolerance } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React from 'react';
@@ -119,7 +119,7 @@ describe('AllergiesTable', () => {
 
       // Assert
       expect(useAllergies).toHaveBeenCalledWith(null);
-      expect(screen.getByTestId('expandable-table-error')).toBeInTheDocument();
+      expect(screen.getByTestId('allergies-table-error')).toBeInTheDocument();
     });
   });
 
@@ -138,10 +138,7 @@ describe('AllergiesTable', () => {
       render(<AllergiesTable />);
 
       // Assert
-      expect(
-        screen.getByTestId('expandable-table-skeleton'),
-      ).toBeInTheDocument();
-      expect(screen.getByText('Allergies')).toBeInTheDocument();
+      expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
     });
 
     it('should display error message when there is an error', () => {
@@ -159,7 +156,7 @@ describe('AllergiesTable', () => {
       render(<AllergiesTable />);
 
       // Assert
-      expect(screen.getByTestId('expandable-table-error')).toBeInTheDocument();
+      expect(screen.getByTestId('allergies-table-error')).toBeInTheDocument();
       expect(screen.getByText(/Failed to fetch allergies/)).toBeInTheDocument();
     });
 
@@ -177,9 +174,7 @@ describe('AllergiesTable', () => {
       render(<AllergiesTable />);
 
       // Assert
-      expect(
-        screen.getByTestId('expandable-data-table-empty'),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
       expect(screen.getByText('No allergies recorded')).toBeInTheDocument();
     });
 
@@ -198,9 +193,7 @@ describe('AllergiesTable', () => {
       render(<AllergiesTable />);
 
       // Assert
-      expect(
-        screen.getByTestId('expandable-data-table-empty'),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
     });
   });
 
@@ -220,40 +213,15 @@ describe('AllergiesTable', () => {
 
       // Assert
       expect(screen.getByTestId('allergy-table')).toBeInTheDocument();
-      expect(screen.getByTestId('expandable-data-table')).toBeInTheDocument();
-      expect(screen.getByText('Allergies')).toBeInTheDocument();
+      expect(screen.getByTestId('sortable-data-table')).toBeInTheDocument();
+
+      // Check table headers
 
       // Check table headers
       expect(screen.getByText('Allergen')).toBeInTheDocument();
       expect(screen.getByText('Reaction(s)')).toBeInTheDocument();
       expect(screen.getByText('Recorded By')).toBeInTheDocument();
       expect(screen.getByText('Status')).toBeInTheDocument();
-    });
-
-    it('should render accordion that can be expanded', async () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyIntolerance],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      // Act
-      render(<AllergiesTable />);
-
-      // Initially, accordion content should be visible (tables are open by default in this component)
-      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
-
-      // Find and click the accordion button to test interaction
-      const accordionButton = screen.getByRole('button', {
-        name: /allergies/i,
-      });
-      fireEvent.click(accordionButton);
-
-      // Assert that accordion interaction works
-      expect(accordionButton).toBeInTheDocument();
     });
 
     it('should render with proper ARIA attributes', () => {
@@ -346,7 +314,7 @@ describe('AllergiesTable', () => {
       render(<AllergiesTable />);
 
       // Assert - should render without crashing
-      expect(screen.getByTestId('expandable-data-table')).toBeInTheDocument();
+      expect(screen.getByTestId('sortable-data-table')).toBeInTheDocument();
     });
   });
 
@@ -513,7 +481,7 @@ describe('AllergiesTable', () => {
       render(<AllergiesTable />);
 
       // Assert
-      expect(screen.getByTestId('expandable-data-table')).toBeInTheDocument();
+      expect(screen.getByTestId('sortable-data-table')).toBeInTheDocument();
       expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
     });
 
@@ -531,7 +499,7 @@ describe('AllergiesTable', () => {
       render(<AllergiesTable />);
 
       // Assert
-      expect(screen.getByTestId('expandable-data-table')).toBeInTheDocument();
+      expect(screen.getByTestId('sortable-data-table')).toBeInTheDocument();
       expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
     });
   });
@@ -551,7 +519,6 @@ describe('AllergiesTable', () => {
       render(<AllergiesTable />);
 
       // Assert
-      expect(screen.getByText('Allergies')).toBeInTheDocument();
       expect(screen.getByText('Allergen')).toBeInTheDocument();
       expect(screen.getByText('Reaction(s)')).toBeInTheDocument();
       expect(screen.getByText('Recorded By')).toBeInTheDocument();
@@ -626,7 +593,7 @@ describe('AllergiesTable', () => {
       render(<AllergiesTable />);
 
       // Assert
-      expect(screen.getByTestId('expandable-table-error')).toBeInTheDocument();
+      expect(screen.getByTestId('allergies-table-error')).toBeInTheDocument();
       expect(screen.getByText(/Request timeout/)).toBeInTheDocument();
     });
 
@@ -645,7 +612,7 @@ describe('AllergiesTable', () => {
       render(<AllergiesTable />);
 
       // Assert
-      expect(screen.getByTestId('expandable-table-error')).toBeInTheDocument();
+      expect(screen.getByTestId('allergies-table-error')).toBeInTheDocument();
       expect(screen.getByText(/500 Internal Server Error/)).toBeInTheDocument();
     });
 
@@ -664,7 +631,7 @@ describe('AllergiesTable', () => {
 
       // Assert
       expect(useAllergies).toHaveBeenCalledWith('');
-      expect(screen.getByTestId('expandable-table-error')).toBeInTheDocument();
+      expect(screen.getByTestId('allergies-table-error')).toBeInTheDocument();
     });
 
     it('should handle allergies with missing required fields gracefully', () => {
@@ -687,36 +654,11 @@ describe('AllergiesTable', () => {
       render(<AllergiesTable />);
 
       // Assert - should not crash and should render the table
-      expect(screen.getByTestId('expandable-data-table')).toBeInTheDocument();
+      expect(screen.getByTestId('sortable-data-table')).toBeInTheDocument();
     });
   });
 
   describe('User Interactions', () => {
-    it('should allow accordion expansion and collapse', async () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyIntolerance],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      // Act
-      render(<AllergiesTable />);
-
-      const accordionButton = screen.getByRole('button', {
-        name: /allergies/i,
-      });
-
-      // Test click interaction
-      fireEvent.click(accordionButton);
-
-      // Assert
-      expect(accordionButton).toBeInTheDocument();
-      // The accordion should respond to clicks (exact behavior depends on Carbon implementation)
-    });
-
     it('should maintain table accessibility during interactions', () => {
       // Arrange
       mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
@@ -781,10 +723,7 @@ describe('AllergiesTable', () => {
 
       // Assert - loading skeletons may have temporary accessibility issues
       // We test for the presence of the skeleton and basic structure
-      expect(
-        screen.getByTestId('expandable-table-skeleton'),
-      ).toBeInTheDocument();
-      expect(screen.getByText('Allergies')).toBeInTheDocument();
+      expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
 
       // Wait for any async operations to complete before running axe
       await act(async () => {
