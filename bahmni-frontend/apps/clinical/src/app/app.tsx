@@ -1,11 +1,10 @@
 // Uncomment this line to use CSS modules
 // import styles from './app.module.scss';
-import NxWelcome from './nx-welcome';
 
 export function App() {
   return (
     <div>
-      <NxWelcome title="@bahmni-frontend/clinical" />
+      <h1>Welcome to @bahmni-frontend/clinical</h1>
     </div>
   );
 }
