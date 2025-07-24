@@ -18,11 +18,14 @@
   },
   "dependencies": {
     "axios": "^1.6.0",
-    "html-entities": "^2.4.0"
+    "html-entities": "^2.4.0",
+    "i18next": "^24.2.3",
+    "i18next-browser-languagedetector": "^8.0.4"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
+    "react-i18next": ">=13.0.0",
     "axios": ">=1.6.0 || < 2.0.0"
   }
 }

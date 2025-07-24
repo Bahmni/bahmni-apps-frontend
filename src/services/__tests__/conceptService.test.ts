@@ -9,7 +9,7 @@ import {
   searchFHIRConcepts,
   searchFHIRConceptsByName,
 } from '../conceptService';
-import * as translationService from '../translationService';
+import * as translationService from '../../../bahmni-frontend/packages/bahmni-services/src/i18n/translationService';
 
 jest.mock('../api');
 jest.mock('../translationService');

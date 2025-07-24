@@ -14,7 +14,7 @@ import { enUS, enGB, es, fr, de } from 'date-fns/locale';
 import i18next from 'i18next';
 import { DATE_FORMAT, DATE_TIME_FORMAT } from '@constants/date';
 import { DATE_ERROR_MESSAGES } from '@constants/errors';
-import { getUserPreferredLocale } from '@services/translationService';
+import { getUserPreferredLocale } from '../../bahmni-frontend/packages/bahmni-services/src/i18n/translationService';
 import { FormatDateResult } from '@types/date';
 import { Age } from '@types/patient';
 

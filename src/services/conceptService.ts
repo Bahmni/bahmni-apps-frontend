@@ -6,7 +6,7 @@ import {
 } from '@constants/app';
 import { ConceptSearch } from '@types/concepts';
 import { get } from './api';
-import { getUserPreferredLocale } from './translationService';
+import { getUserPreferredLocale } from '../../bahmni-frontend/packages/bahmni-services/src/i18n/translationService';
 
 /**
  * Search for concepts matching the provided term

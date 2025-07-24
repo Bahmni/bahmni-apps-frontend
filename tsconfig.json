@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -21,62 +17,29 @@
     "jsx": "react-jsx",
     "baseUrl": "src",
     "paths": {
-      "@/*": [
-        "*"
-      ],
-      "@__mocks__/*": [
-        "__mocks__/*"
-      ],
-      "@components/*": [
-        "components/*"
-      ],
-      "@constants/*": [
-        "constants/*"
-      ],
-      "@contexts/*": [
-        "contexts/*"
-      ],
-      "@displayControls/*": [
-        "displayControls/*"
-      ],
-      "@hooks/*": [
-        "hooks/*"
-      ],
-      "@layouts/*": [
-        "layouts/*"
-      ],
-      "@pages/*": [
-        "pages/*"
-      ],
-      "@providers/*": [
-        "providers/*"
-      ],
-      "@schemas/*": [
-        "schemas/*"
-      ],
-      "@services/*": [
-        "services/*"
-      ],
-      "@stores/*": [
-        "stores/*"
-      ],
-      "@types/*": [
-        "types/*"
-      ],
-      "@utils/*": [
-        "utils/*"
-      ]
+      "@/*": ["*"],
+      "@__mocks__/*": ["__mocks__/*"],
+      "@components/*": ["components/*"],
+      "@constants/*": ["constants/*"],
+      "@contexts/*": ["contexts/*"],
+      "@displayControls/*": ["displayControls/*"],
+      "@hooks/*": ["hooks/*"],
+      "@layouts/*": ["layouts/*"],
+      "@pages/*": ["pages/*"],
+      "@providers/*": ["providers/*"],
+      "@schemas/*": ["schemas/*"],
+      "@services/*": ["services/*"],
+      "@stores/*": ["stores/*"],
+      "@types/*": ["types/*"],
+      "@utils/*": ["utils/*"]
     }
   },
   "include": [
     "src/**/*",
     "declarations.d.ts",
     "vite.config.ts",
-    "vite-env.d.ts"
+    "vite-env.d.ts",
+    "bahmni-frontend/packages/bahmni-services/src/i18n/translationService.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "build",
-    "dist"
-  ]
+  "exclude": ["node_modules", "build", "dist"]
 }
