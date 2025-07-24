@@ -2,6 +2,7 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import React from 'react';
 import { mockAllergyIntolerance } from '@__mocks__/allergyMocks';
 import { useNotification } from '@hooks/useNotification';
+import { usePatientUUID } from '@hooks/usePatientUUID';
 import { getAllergies } from '@services/allergyService';
 import { FhirAllergyIntolerance } from '@types/allergy';
 import { getFormattedError } from '@utils/common';
@@ -10,6 +11,7 @@ import { useAllergies } from '../useAllergies';
 // Mock dependencies
 jest.mock('@services/allergyService');
 jest.mock('@hooks/useNotification');
+jest.mock('@hooks/usePatientUUID');
 jest.mock('@utils/common');
 
 // Type the mocked functions
@@ -27,6 +29,8 @@ describe('useAllergies', () => {
   let mockSetError: jest.Mock;
   let mockAddNotification: jest.Mock;
 
+  const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
+
   beforeEach(() => {
     jest.clearAllMocks();
 
@@ -35,6 +39,8 @@ describe('useAllergies', () => {
     mockSetLoading = jest.fn();
     mockSetError = jest.fn();
     mockAddNotification = jest.fn();
+
+    (usePatientUUID as jest.Mock).mockReturnValue(patientUUID);
 
     // Mock useNotification hook
     (useNotification as jest.Mock).mockReturnValue({
@@ -68,9 +74,9 @@ describe('useAllergies', () => {
 
   // Happy Path Tests
   describe('Happy Paths', () => {
-    it('should fetch allergies when a valid patientUUID is provided', async () => {
+    it('should fetch allergies', async () => {
       // Arrange
-      const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
+
       const mockAllergies = [mockAllergyIntolerance];
       mockedGetAllergies.mockResolvedValueOnce(mockAllergies);
 
@@ -88,7 +94,7 @@ describe('useAllergies', () => {
         ); // error state
 
       // Act
-      renderHook(() => useAllergies(patientUUID));
+      renderHook(() => useAllergies());
 
       // Wait for async operations
       await waitFor(() => {
@@ -99,8 +105,6 @@ describe('useAllergies', () => {
     });
 
     it('should refetch allergies when refetch function is called', async () => {
-      // Arrange
-      const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
       const initialAllergies = [mockAllergyIntolerance];
       const updatedAllergies = [
         mockAllergyIntolerance,
@@ -120,7 +124,7 @@ describe('useAllergies', () => {
         .mockImplementationOnce(() => [null, mockSetError]);
 
       // Act - Initial render
-      const { result } = renderHook(() => useAllergies(patientUUID));
+      const { result } = renderHook(() => useAllergies());
 
       // Clear mocks for refetch test
       mockSetAllergies.mockClear();
@@ -151,8 +155,10 @@ describe('useAllergies', () => {
   // Sad Path Tests
   describe('Sad Paths', () => {
     it('should handle null patientUUID', () => {
+      (usePatientUUID as jest.Mock).mockReturnValue(null);
+
       // Act
-      renderHook(() => useAllergies(null));
+      renderHook(() => useAllergies());
 
       // Assert
       expect(mockSetError).toHaveBeenCalledWith(
@@ -170,7 +176,6 @@ describe('useAllergies', () => {
 
     it('should handle API call failure', async () => {
       // Arrange
-      const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
       const error = new Error('Network error');
       mockedGetAllergies.mockRejectedValueOnce(error);
       mockedGetFormattedError.mockReturnValueOnce({
@@ -179,7 +184,7 @@ describe('useAllergies', () => {
       });
 
       // Act
-      renderHook(() => useAllergies(patientUUID));
+      renderHook(() => useAllergies());
 
       // Wait for async operations
       await waitFor(() => {
@@ -197,13 +202,12 @@ describe('useAllergies', () => {
 
     it('should handle invalid data from getAllergies', async () => {
       // Arrange
-      const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
       mockedGetAllergies.mockResolvedValueOnce(
         null as unknown as FhirAllergyIntolerance[],
       );
 
       // Act
-      renderHook(() => useAllergies(patientUUID));
+      renderHook(() => useAllergies());
 
       // Wait for async operations
       await waitFor(() => {
@@ -217,7 +221,7 @@ describe('useAllergies', () => {
     it('should handle empty allergies array from API', async () => {
       mockedGetAllergies.mockResolvedValueOnce([]);
 
-      renderHook(() => useAllergies('valid-uuid'));
+      renderHook(() => useAllergies());
 
       await waitFor(() => {
         expect(mockSetAllergies).toHaveBeenCalledWith([]);
@@ -228,7 +232,7 @@ describe('useAllergies', () => {
     it('should handle malformed allergy data gracefully', async () => {
       mockedGetAllergies.mockResolvedValueOnce([{} as FhirAllergyIntolerance]);
 
-      renderHook(() => useAllergies('valid-uuid'));
+      renderHook(() => useAllergies());
 
       await waitFor(() => {
         expect(mockSetAllergies).toHaveBeenCalledWith([{}]);
@@ -247,7 +251,7 @@ describe('useAllergies', () => {
         message: 'Invalid JSON',
       });
 
-      renderHook(() => useAllergies('valid-uuid'));
+      renderHook(() => useAllergies());
 
       await waitFor(() => {
         expect(mockSetError).toHaveBeenCalled();
@@ -260,20 +264,21 @@ describe('useAllergies', () => {
     });
 
     it('should cleanup properly on unmount', () => {
-      const { unmount } = renderHook(() => useAllergies('valid-uuid'));
+      const { unmount } = renderHook(() => useAllergies());
       expect(() => unmount()).not.toThrow();
     });
 
     it('should refetch allergies when patientUUID changes', async () => {
-      const { rerender } = renderHook(({ uuid }) => useAllergies(uuid), {
-        initialProps: { uuid: 'uuid-1' },
-      });
+      (usePatientUUID as jest.Mock).mockReturnValueOnce(patientUUID);
+      const { rerender } = renderHook(() => useAllergies());
 
       mockedGetAllergies.mockResolvedValueOnce([mockAllergyIntolerance]);
-      rerender({ uuid: 'uuid-2' });
+      (usePatientUUID as jest.Mock).mockReturnValueOnce('uuid-2');
+      rerender();
 
       await waitFor(() => {
-        expect(mockedGetAllergies).toHaveBeenCalledWith('uuid-2');
+        expect(mockedGetAllergies).toHaveBeenNthCalledWith(1, patientUUID);
+        expect(mockedGetAllergies).toHaveBeenNthCalledWith(2, 'uuid-2');
       });
     });
   });
