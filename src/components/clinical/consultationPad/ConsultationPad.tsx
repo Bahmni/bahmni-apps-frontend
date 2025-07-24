@@ -7,9 +7,9 @@ import BasicForm from '@components/clinical/forms/encounterDetails/EncounterDeta
 import InvestigationsForm from '@components/clinical/forms/investigations/InvestigationsForm';
 import MedicationsForm from '@components/clinical/forms/prescribeMedicines/MedicationsForm';
 import ActionArea from '@components/common/actionArea/ActionArea';
+import { AUDIT_LOG_EVENT_DETAILS } from '@constants/auditLog';
 import { ERROR_TITLES } from '@constants/errors';
 import useNotification from '@hooks/useNotification';
-import { logEncounterEdit } from '@services/auditLogService';
 import {
   postConsultationBundle,
   createDiagnosisBundleEntries,
@@ -23,7 +23,9 @@ import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesSt
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 import { useMedicationStore } from '@stores/medicationsStore';
 import useServiceRequestStore from '@stores/serviceRequestStore';
+import { AuditEventType } from '@types/auditLog';
 import { ConsultationBundle } from '@types/consultationBundle';
+import { dispatchAuditEvent } from '@utils/auditEventDispatcher';
 import {
   createBundleEntry,
   createConsultationBundle,
@@ -191,12 +193,17 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         await submitConsultation();
         setIsSubmitting(false);
 
-        // Log audit event for successful encounter edit/creation
-        await logEncounterEdit(
-          patientUUID!,
-          crypto.randomUUID(), // Generate encounter UUID for new encounters
-          selectedEncounterType!.name,
-        );
+        // Dispatch audit event for successful encounter edit/creation
+        const encounterUUID = crypto.randomUUID(); // Generate encounter UUID for new encounters
+        dispatchAuditEvent({
+          eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER
+            .eventType as AuditEventType,
+          patientUuid: patientUUID!,
+          messageParams: {
+            encounterUuid: encounterUUID,
+            encounterType: selectedEncounterType!.name,
+          },
+        });
         resetDiagnoses();
         resetAllergies();
         resetEncounterDetails();

@@ -1,9 +1,11 @@
 import { Section } from '@carbon/react';
 import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { AUDIT_LOG_EVENT_DETAILS } from '@constants/auditLog';
 import { usePatientUUID } from '@hooks/usePatientUUID';
-import { logDashboardView } from '@services/auditLogService';
+import { AuditEventType } from '@types/auditLog';
 import { DashboardSectionConfig } from '@types/dashboardConfig';
+import { dispatchAuditEvent } from '@utils/auditEventDispatcher';
 import DashboardSection from '../dashboardSection/DashboardSection';
 import * as styles from './styles/DashboardContainer.module.scss';
 
@@ -30,16 +32,16 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
     [key: string]: React.RefObject<HTMLDivElement | null>;
   }>({});
 
-  // Log dashboard view event when component mounts
+  // Dispatch dashboard view event when component mounts
   useEffect(() => {
-    const logDashboardViewEvent = async () => {
-      if (patientUuid) {
-        await logDashboardView(patientUuid);
-      }
-    };
-
-    logDashboardViewEvent();
-  }, [patientUuid, t]);
+    if (patientUuid) {
+      dispatchAuditEvent({
+        eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_CLINICAL_DASHBOARD
+          .eventType as AuditEventType,
+        patientUuid,
+      });
+    }
+  }, [patientUuid]);
 
   // Initialize refs for each section
   useEffect(() => {
