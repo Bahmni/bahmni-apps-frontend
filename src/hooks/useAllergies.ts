@@ -3,6 +3,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { getAllergies } from '@services/allergyService';
 import { getFormattedError } from '@utils/common';
 import { useNotification } from './useNotification';
+import { usePatientUUID } from './usePatientUUID';
 
 interface UseAllergiesResult {
   allergies: AllergyIntolerance[];
@@ -13,16 +14,14 @@ interface UseAllergiesResult {
 
 /**
  * Custom hook to fetch and manage patient allergies
- * @param patientUUID - The UUID of the patient
  * @returns Object containing allergies, loading state, error state, and refetch function
  */
-export const useAllergies = (
-  patientUUID: string | null,
-): UseAllergiesResult => {
+export const useAllergies = (): UseAllergiesResult => {
   const [allergies, setAllergies] = useState<AllergyIntolerance[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
   const { addNotification } = useNotification();
+  const patientUUID = usePatientUUID();
 
   const fetchAllergies = useCallback(async () => {
     if (!patientUUID) {
