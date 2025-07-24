@@ -23,6 +23,11 @@
     "isolatedModules": true,
     "noEmit": false,
     "jsx": "react-jsx",
-    "baseUrl": "src"
+    "baseUrl": "src",
+    "paths": {
+      "@bahmni-frontend/bahmni-services": [
+        "packages/bahmni-services/src/index.ts"
+      ]
+    }
   }
 }

@@ -1,0 +1,9 @@
+{
+  "name": "bahmni-services",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/bahmni-services/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project bahmni-services --web",
+  "targets": {}
+}

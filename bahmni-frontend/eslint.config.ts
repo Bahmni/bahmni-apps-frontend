@@ -90,6 +90,7 @@ const config = [
       // React rules optimized for performance
       'react/jsx-filename-extension': ['error', { extensions: ['.tsx'] }],
       'react/jsx-pascal-case': 'error',
+      'react/react-in-jsx-scope': 'off',
       'react/jsx-closing-bracket-location': 'error',
       'react/jsx-curly-spacing': ['error', 'never'],
       'react/jsx-boolean-value': ['error', 'never'],

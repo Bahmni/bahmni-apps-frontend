@@ -108,3 +108,6 @@ stats.html
 # Cline
 docs/memory-bank/*
 .clinerules
+
+vite.config.*.timestamp*
+vitest.config.*.timestamp*
