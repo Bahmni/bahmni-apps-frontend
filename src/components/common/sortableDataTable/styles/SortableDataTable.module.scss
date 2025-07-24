@@ -4,13 +4,12 @@
 @use "@carbon/react/scss/theme" as *;
 
 .displayControlHeaders {
-  border-top: 1px solid $cool-gray-10;
-  background-color: $white !important;
+  background-color: $background !important;
 
   * {
     font-weight: normal !important;
-    background-color: $white !important;
-    color: $gray-50;
+    background-color: $background !important;
+    color: $text-secondary;
   }
 }
 
@@ -31,7 +30,7 @@
 .sortableDataTableBodyEmpty {
   @include type-style("label-02");
   background-color: $background;
-  padding: $spacing-07 $spacing-05;
+  padding: $spacing-06 $spacing-05;
   text-align: center;
   border-top: 1px solid $border-subtle-02;
 }
