@@ -7,8 +7,8 @@ import {
 } from '@carbon/react';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SortableDataTable } from '@/components/common/sortableDataTable/SortableDataTable';
 import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
-import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
 import { ICON_PADDING, ICON_SIZE } from '@constants/icon';
 import { useAllergies } from '@hooks/useAllergies';
 import { usePatientUUID } from '@hooks/usePatientUUID';
@@ -126,20 +126,26 @@ const AllergiesTable: React.FC = () => {
     }
   };
 
+  if (error) {
+    return (
+      <div data-testid="allergies-table-error">
+        <p className={styles.allergiesTableError}>{error.message}</p>
+      </div>
+    );
+  }
+
   return (
     <div data-testid="allergy-table">
-      <ExpandableDataTable
-        tableTitle={t('ALLERGIES_DISPLAY_CONTROL_HEADING')}
-        rows={displayAllergies}
+      <SortableDataTable
         headers={headers}
-        sortable={sortable}
-        renderCell={renderCell}
-        loading={loading}
-        error={error}
         ariaLabel={t('ALLERGIES_DISPLAY_CONTROL_HEADING')}
+        rows={displayAllergies}
+        loading={loading}
+        errorStateMessage={error}
+        sortable={sortable}
         emptyStateMessage={t('NO_ALLERGIES')}
+        renderCell={renderCell}
         className={styles.allergiesTableBody}
-        isOpen
       />
     </div>
   );

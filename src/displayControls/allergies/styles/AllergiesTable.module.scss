@@ -3,6 +3,13 @@
 @use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/spacing" as *;
 
+.allergiesTableError {
+  @include type-style("body-compact-01");
+  background-color: $background;
+  padding: $spacing-06 $spacing-05;
+  text-align: center;
+}
+
 .allergyDisplay {
   padding-block: $spacing-03;
 }

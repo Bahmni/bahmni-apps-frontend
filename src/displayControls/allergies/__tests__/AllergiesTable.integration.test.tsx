@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react';
+import { AllergyIntolerance } from 'fhir/r4';
 import React from 'react';
 import i18n from '@/setupTests.i18n';
+import { FormattedAllergy } from '@/types/allergy';
 import {
   mockAllergyIntolerance,
   mockAllergyWithMultipleCategories,
@@ -14,7 +16,6 @@ import {
 import { useAllergies } from '@hooks/useAllergies';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import { formatAllergies } from '@services/allergyService';
-import { FhirAllergyIntolerance, FormattedAllergy } from '@types/allergy';
 import * as common from '@utils/common';
 import AllergiesTable from '../AllergiesTable';
 
@@ -38,7 +39,7 @@ const mockedFormatAllergies = formatAllergies as jest.MockedFunction<
 // Mock data for integration tests
 const mockPatientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
 
-const mockAllergies: FhirAllergyIntolerance[] = [mockAllergyIntolerance];
+const mockAllergies: AllergyIntolerance[] = [mockAllergyIntolerance];
 
 const mockFormattedAllergies: FormattedAllergy[] = [
   {
@@ -160,9 +161,7 @@ describe('AllergiesTable Integration', () => {
       render(<AllergiesTable />);
 
       // Verify loading state is shown
-      expect(
-        screen.getByTestId('expandable-table-skeleton'),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
     });
 
     it('should display "No allergies found" when the patient has no recorded allergies', () => {
@@ -179,9 +178,7 @@ describe('AllergiesTable Integration', () => {
       render(<AllergiesTable />);
 
       // Verify empty state is shown
-      expect(
-        screen.getByTestId('expandable-data-table-empty'),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
       expect(screen.getByText('No allergies recorded')).toBeInTheDocument();
     });
   });
