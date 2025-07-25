@@ -12,13 +12,11 @@ import {
   mockAllergyWithMultipleSeverities,
 } from '@__mocks__/allergyMocks';
 import { useAllergies } from '@hooks/useAllergies';
-import { usePatientUUID } from '@hooks/usePatientUUID';
 import AllergiesTable from '../AllergiesTable';
 
 expect.extend(toHaveNoViolations);
 
 // Mock only the hooks, keep real utility functions for integration testing
-jest.mock('@hooks/usePatientUUID');
 jest.mock('@hooks/useAllergies');
 jest.mock('@components/common/bahmniIcon/BahmniIcon', () => {
   return function MockBahmniIcon({ id, name }: { id: string; name: string }) {
@@ -26,14 +24,9 @@ jest.mock('@components/common/bahmniIcon/BahmniIcon', () => {
   };
 });
 
-const mockedUsePatientUUID = usePatientUUID as jest.MockedFunction<
-  typeof usePatientUUID
->;
 const mockedUseAllergies = useAllergies as jest.MockedFunction<
   typeof useAllergies
 >;
-
-const mockPatientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
 
 // Create realistic allergies with different severities for sorting tests
 const createAllergyWithSeverity = (
@@ -69,64 +62,24 @@ describe('AllergiesTable', () => {
   });
 
   describe('Hook Integration', () => {
-    it('should call usePatientUUID to get patient identifier', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+    it('should call useAllergies', () => {
       mockedUseAllergies.mockReturnValue({
         allergies: [],
         loading: false,
         error: null,
         refetch: jest.fn(),
       });
-
       // Act
       render(<AllergiesTable />);
 
       // Assert
-      expect(usePatientUUID).toHaveBeenCalledTimes(1);
-    });
-
-    it('should call useAllergies with the patient UUID', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseAllergies.mockReturnValue({
-        allergies: [],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      // Act
-      render(<AllergiesTable />);
-
-      // Assert
-      expect(useAllergies).toHaveBeenCalledWith(mockPatientUUID);
       expect(useAllergies).toHaveBeenCalledTimes(1);
-    });
-
-    it('should handle null patient UUID gracefully', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(null);
-      mockedUseAllergies.mockReturnValue({
-        allergies: [],
-        loading: false,
-        error: new Error('Patient UUID is required'),
-        refetch: jest.fn(),
-      });
-
-      // Act
-      render(<AllergiesTable />);
-
-      // Assert
-      expect(useAllergies).toHaveBeenCalledWith(null);
-      expect(screen.getByTestId('allergies-table-error')).toBeInTheDocument();
     });
   });
 
   describe('Loading and Error States', () => {
     it('should display loading skeleton when data is loading', () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [],
         loading: true,
@@ -144,7 +97,6 @@ describe('AllergiesTable', () => {
     it('should display error message when there is an error', () => {
       // Arrange
       const mockError = new Error('Failed to fetch allergies');
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [],
         loading: false,
@@ -162,7 +114,6 @@ describe('AllergiesTable', () => {
 
     it('should display empty state when no allergies exist', () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [],
         loading: false,
@@ -180,7 +131,6 @@ describe('AllergiesTable', () => {
 
     it('should handle undefined allergies array', () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         allergies: undefined as any,
@@ -200,7 +150,6 @@ describe('AllergiesTable', () => {
   describe('Data Rendering', () => {
     it('should render table with correct structure and headers', () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [mockAllergyIntolerance],
         loading: false,
@@ -212,6 +161,11 @@ describe('AllergiesTable', () => {
       render(<AllergiesTable />);
 
       // Assert
+      expect(screen.getByRole('table')).toHaveAttribute(
+        'aria-label',
+        'Allergies',
+      );
+
       expect(screen.getByTestId('allergy-table')).toBeInTheDocument();
       expect(screen.getByTestId('sortable-data-table')).toBeInTheDocument();
 
@@ -223,30 +177,11 @@ describe('AllergiesTable', () => {
       expect(screen.getByText('Recorded By')).toBeInTheDocument();
       expect(screen.getByText('Status')).toBeInTheDocument();
     });
-
-    it('should render with proper ARIA attributes', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyIntolerance],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      // Act
-      render(<AllergiesTable />);
-
-      // Assert
-      const table = screen.getByRole('table');
-      expect(table).toHaveAttribute('aria-label', 'Allergies');
-    });
   });
 
   describe('Severity-Based Sorting', () => {
     it('should sort allergies by severity: severe → moderate → mild', () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: mockAllergiesForSorting, // mild, severe, moderate order
         loading: false,
@@ -274,7 +209,6 @@ describe('AllergiesTable', () => {
         createAllergyWithSeverity('mild-allergy', 'Mild Allergy', 'mild'),
       ];
 
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: multipleSevereAllergies,
         loading: false,
@@ -302,7 +236,6 @@ describe('AllergiesTable', () => {
         reaction: undefined,
       };
 
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [allergyWithoutSeverity],
         loading: false,
@@ -321,7 +254,6 @@ describe('AllergiesTable', () => {
   describe('Cell Content Rendering', () => {
     it('should render allergen cell with display name, category, and severity', () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [mockAllergyIntolerance],
         loading: false,
@@ -340,7 +272,6 @@ describe('AllergiesTable', () => {
 
     it('should render reaction manifestations correctly', () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [mockAllergyIntolerance],
         loading: false,
@@ -357,7 +288,6 @@ describe('AllergiesTable', () => {
 
     it('should render multiple reaction manifestations joined with commas', () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [mockAllergyWithMultipleSeverities],
         loading: false,
@@ -376,7 +306,6 @@ describe('AllergiesTable', () => {
 
     it('should render recorder name when available', () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [mockAllergyIntolerance],
         loading: false,
@@ -393,7 +322,6 @@ describe('AllergiesTable', () => {
 
     it('should render active status with appropriate styling', () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [mockAllergyIntolerance],
         loading: false,
@@ -412,7 +340,6 @@ describe('AllergiesTable', () => {
 
     it('should render inactive status with appropriate styling', () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [mockInactiveAllergy],
         loading: false,
@@ -431,7 +358,6 @@ describe('AllergiesTable', () => {
 
     it('should render severity tags with appropriate CSS classes', () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [mockAllergyIntolerance],
         loading: false,
@@ -452,7 +378,6 @@ describe('AllergiesTable', () => {
   describe('Multiple Categories and Complex Data', () => {
     it('should handle multiple categories correctly', () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [mockAllergyWithMultipleCategories],
         loading: false,
@@ -469,7 +394,6 @@ describe('AllergiesTable', () => {
 
     it('should handle high criticality allergies', () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [mockAllergyWithHighCriticality],
         loading: false,
@@ -487,7 +411,6 @@ describe('AllergiesTable', () => {
 
     it('should handle low criticality allergies', () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [mockAllergyWithLowCriticality],
         loading: false,
@@ -507,7 +430,6 @@ describe('AllergiesTable', () => {
   describe('Internationalization', () => {
     it('should display translated text for English locale', () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [mockAllergyIntolerance],
         loading: false,
@@ -527,7 +449,6 @@ describe('AllergiesTable', () => {
 
     it('should display correct category translations', () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [mockAllergyIntolerance],
         loading: false,
@@ -544,7 +465,6 @@ describe('AllergiesTable', () => {
 
     it('should display correct severity translations', () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [mockAllergyIntolerance],
         loading: false,
@@ -561,7 +481,6 @@ describe('AllergiesTable', () => {
 
     it('should display correct status translations', () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [mockAllergyIntolerance],
         loading: false,
@@ -577,11 +496,10 @@ describe('AllergiesTable', () => {
     });
   });
 
-  describe('Edge Cases', () => {
+  describe('Edge Cases and error scenarios', () => {
     it('should handle network timeout errors', () => {
       // Arrange
       const timeoutError = new Error('Request timeout');
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [],
         loading: false,
@@ -600,7 +518,6 @@ describe('AllergiesTable', () => {
     it('should handle server errors gracefully', () => {
       // Arrange
       const serverError = new Error('500 Internal Server Error');
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [],
         loading: false,
@@ -618,7 +535,6 @@ describe('AllergiesTable', () => {
 
     it('should handle empty patient UUID string', () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue('');
       mockedUseAllergies.mockReturnValue({
         allergies: [],
         loading: false,
@@ -630,8 +546,8 @@ describe('AllergiesTable', () => {
       render(<AllergiesTable />);
 
       // Assert
-      expect(useAllergies).toHaveBeenCalledWith('');
       expect(screen.getByTestId('allergies-table-error')).toBeInTheDocument();
+      expect(screen.getByText(`Invalid patient UUID`)).toBeInTheDocument();
     });
 
     it('should handle allergies with missing required fields gracefully', () => {
@@ -642,7 +558,6 @@ describe('AllergiesTable', () => {
         // Missing many required fields
       } as AllergyIntolerance;
 
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [incompleteAllergy],
         loading: false,
@@ -661,7 +576,6 @@ describe('AllergiesTable', () => {
   describe('User Interactions', () => {
     it('should maintain table accessibility during interactions', () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [mockAllergyIntolerance],
         loading: false,
@@ -685,7 +599,6 @@ describe('AllergiesTable', () => {
   describe('Accessibility', () => {
     it('should pass accessibility tests', async () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [mockAllergyIntolerance],
         loading: false,
@@ -710,7 +623,6 @@ describe('AllergiesTable', () => {
 
     it('should render loading state without critical accessibility violations', async () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [],
         loading: true,
@@ -743,7 +655,6 @@ describe('AllergiesTable', () => {
 
     it('should pass accessibility tests in error state', async () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [],
         loading: false,
@@ -761,7 +672,6 @@ describe('AllergiesTable', () => {
 
     it('should pass accessibility tests in empty state', async () => {
       // Arrange
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [],
         loading: false,

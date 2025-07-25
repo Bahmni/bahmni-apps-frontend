@@ -14,19 +14,13 @@ import {
   mockAllergyWithMultipleSeverities,
 } from '@__mocks__/allergyMocks';
 import { useAllergies } from '@hooks/useAllergies';
-import { usePatientUUID } from '@hooks/usePatientUUID';
 import { formatAllergies } from '@services/allergyService';
 import * as common from '@utils/common';
 import AllergiesTable from '../AllergiesTable';
 
 // Mock the hooks
-jest.mock('@hooks/usePatientUUID');
 jest.mock('@hooks/useAllergies');
 jest.mock('@services/allergyService');
-
-const mockedUsePatientUUID = usePatientUUID as jest.MockedFunction<
-  typeof usePatientUUID
->;
 
 const mockedUseAllergies = useAllergies as jest.MockedFunction<
   typeof useAllergies
@@ -37,8 +31,6 @@ const mockedFormatAllergies = formatAllergies as jest.MockedFunction<
 >;
 
 // Mock data for integration tests
-const mockPatientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
-
 const mockAllergies: AllergyIntolerance[] = [mockAllergyIntolerance];
 
 const mockFormattedAllergies: FormattedAllergy[] = [
@@ -123,7 +115,6 @@ describe('AllergiesTable Integration', () => {
   describe('Data Fetching and Display', () => {
     it('should fetch allergy data and display it correctly', () => {
       // Mock the hooks
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: mockAllergies,
         loading: false,
@@ -135,8 +126,7 @@ describe('AllergiesTable Integration', () => {
       render(<AllergiesTable />);
 
       // Verify the data fetching flow
-      expect(usePatientUUID).toHaveBeenCalled();
-      expect(useAllergies).toHaveBeenCalledWith(mockPatientUUID);
+      expect(useAllergies).toHaveBeenCalledWith();
       expect(formatAllergies).toHaveBeenCalledWith(mockAllergies);
 
       // Verify the formatted allergies are displayed
@@ -150,7 +140,6 @@ describe('AllergiesTable Integration', () => {
 
     it('should render the loading state when data is being fetched', () => {
       // Mock the hooks with loading state
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [],
         loading: true,
@@ -166,7 +155,6 @@ describe('AllergiesTable Integration', () => {
 
     it('should display "No allergies found" when the patient has no recorded allergies', () => {
       // Mock the hooks with empty allergies
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [],
         loading: false,
@@ -187,7 +175,6 @@ describe('AllergiesTable Integration', () => {
   describe('Row Interactions', () => {
     it('should handle multiple allergies and render them properly in the table', () => {
       // Mock the hooks with multiple allergies
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: mockAllergies,
         loading: false,
@@ -217,7 +204,6 @@ describe('AllergiesTable Integration', () => {
 
     it('should correctly map reactions to their respective manifestation and severity levels', () => {
       // Mock the hooks with multiple allergies
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: mockAllergies,
         loading: false,
@@ -241,7 +227,6 @@ describe('AllergiesTable Integration', () => {
   describe('Accessibility and Styling', () => {
     it('should apply proper styling and accessibility attributes', () => {
       // Mock the hooks
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: mockAllergies,
         loading: false,
@@ -273,7 +258,6 @@ describe('AllergiesTable Integration', () => {
   describe('New Field Tests', () => {
     it('should handle allergy type field correctly', () => {
       // Mock the hooks
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [mockAllergyWithType],
         loading: false,
@@ -298,7 +282,6 @@ describe('AllergiesTable Integration', () => {
 
     it('should handle intolerance type field correctly', () => {
       // Mock the hooks
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [mockIntoleranceWithType],
         loading: false,
@@ -323,7 +306,6 @@ describe('AllergiesTable Integration', () => {
 
     it('should handle multiple categories correctly', () => {
       // Mock the hooks
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [mockAllergyWithMultipleCategories],
         loading: false,
@@ -351,7 +333,6 @@ describe('AllergiesTable Integration', () => {
 
     it('should handle criticality levels correctly', () => {
       // Mock the hooks
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [
           mockAllergyWithHighCriticality,
@@ -389,7 +370,6 @@ describe('AllergiesTable Integration', () => {
 
     it('should handle multiple reactions with different severities correctly', () => {
       // Mock the hooks
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [mockAllergyWithMultipleSeverities],
         loading: false,
@@ -435,7 +415,6 @@ describe('AllergiesTable Integration', () => {
   describe('Edge Cases', () => {
     it('should handle inactive status correctly', () => {
       // Mock the hooks
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: [mockInactiveAllergy],
         loading: false,
@@ -461,7 +440,6 @@ describe('AllergiesTable Integration', () => {
 
     it('should handle missing fields gracefully', () => {
       // Mock the hooks
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: mockAllergies,
         loading: false,
@@ -488,7 +466,6 @@ describe('AllergiesTable Integration', () => {
 
     it('should handle malformed data without crashing', () => {
       // Mock the hooks
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
       mockedUseAllergies.mockReturnValue({
         allergies: mockAllergies,
         loading: false,
@@ -511,31 +488,6 @@ describe('AllergiesTable Integration', () => {
       // Verify the component rendered without crashing
       expect(screen.getByText('Malformed Allergy')).toBeInTheDocument();
       expect(screen.getByText('[undefined]')).toBeInTheDocument();
-    });
-
-    it('should refetch allergies when patient UUID changes', () => {
-      const refetchMock = jest.fn();
-
-      // First render with initial UUID
-      mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-      mockedUseAllergies.mockReturnValue({
-        allergies: mockAllergies,
-        loading: false,
-        error: null,
-        refetch: refetchMock,
-      });
-      mockedFormatAllergies.mockReturnValue(mockFormattedAllergies);
-
-      const { rerender } = render(<AllergiesTable />);
-
-      // Change the UUID and rerender
-      const newUUID = 'new-patient-uuid';
-      (usePatientUUID as jest.Mock).mockReturnValue(newUUID);
-
-      rerender(<AllergiesTable />);
-
-      // Verify useAllergies was called with the new UUID
-      expect(useAllergies).toHaveBeenCalledWith(newUUID);
     });
   });
 });

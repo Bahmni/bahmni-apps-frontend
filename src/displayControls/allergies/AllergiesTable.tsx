@@ -11,7 +11,6 @@ import { SortableDataTable } from '@/components/common/sortableDataTable/Sortabl
 import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
 import { ICON_PADDING, ICON_SIZE } from '@constants/icon';
 import { useAllergies } from '@hooks/useAllergies';
-import { usePatientUUID } from '@hooks/usePatientUUID';
 import { formatAllergies } from '@services/allergyService';
 import { FormattedAllergy } from '@types/allergy';
 import {
@@ -38,8 +37,7 @@ const getSeverityClassName = (severity: string): string | undefined => {
  */
 const AllergiesTable: React.FC = () => {
   const { t } = useTranslation();
-  const patientUUID = usePatientUUID();
-  const { allergies, loading, error } = useAllergies(patientUUID);
+  const { allergies, loading, error } = useAllergies();
 
   // Define table headers
   const headers = useMemo(
@@ -74,12 +72,12 @@ const AllergiesTable: React.FC = () => {
     switch (cellId) {
       case 'display':
         return (
-          <div className={styles.allergyDisplay}>
+          <div>
             <div className={styles.allergyName}>
-              {allergy.display}
-              <div className={styles.allergyCategory}>
+              <span>{allergy.display}</span>
+              <span className={styles.allergyCategory}>
                 [{t(getCategoryDisplayName(allergy.category?.[0]))}]
-              </div>
+              </span>
               {allergy.note && (
                 <Toggletip autoAlign className={styles.allergyNote}>
                   <ToggletipButton>
