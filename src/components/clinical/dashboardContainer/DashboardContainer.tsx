@@ -1,4 +1,4 @@
-import { Grid, Column, Section } from '@carbon/react';
+import { Section } from '@carbon/react';
 import React, { useEffect, useRef } from 'react';
 import { DashboardSectionConfig } from '@types/dashboardConfig';
 import DashboardSection from '../dashboardSection/DashboardSection';
@@ -57,24 +57,19 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
   }
 
   return (
-    <Section>
-      <Grid className={styles.sectionContainer}>
-        {sections.map((section) => (
-          <Column
-            lg={16}
-            md={8}
-            sm={4}
-            key={section.id}
-            className={styles.sectionColumn}
+    <Section className={styles.sectionContainer}>
+      {sections.map((section) => (
+        <article
+          key={section.id}
+          className={styles.displayControlSection}
+          ref={sectionRefs.current[section.id]}
+        >
+          <DashboardSection
+            section={section}
             ref={sectionRefs.current[section.id]}
-          >
-            <DashboardSection
-              section={section}
-              ref={sectionRefs.current[section.id]}
-            />
-          </Column>
-        ))}
-      </Grid>
+          />
+        </article>
+      ))}
     </Section>
   );
 };
