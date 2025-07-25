@@ -10,10 +10,6 @@
   text-align: center;
 }
 
-.allergyDisplay {
-  padding-block: $spacing-03;
-}
-
 .mildSeverity {
   background-color: $blue-20 !important;
   color: $blue-70 !important;
@@ -35,7 +31,6 @@
   font-weight: 700;
   display: flex;
   gap: $spacing-02;
-  height: $spacing-05;
 }
 
 .allergyCategory {
@@ -45,20 +40,8 @@
 }
 
 .allergyNote {
-  padding: auto;
-
-  :global {
-    .cds--toggletip-button {
-      color: $icon-secondary !important;
-    }
-    .cds--popover-content {
-      z-index: 9999;
-      max-inline-size: 30rem !important;
-      position: absolute !important;
-    }
-    .cds--toggletip-content {
-      max-inline-size: 30rem !important;
-    }
+  svg {
+    color: $icon-secondary !important;
   }
 }
 
