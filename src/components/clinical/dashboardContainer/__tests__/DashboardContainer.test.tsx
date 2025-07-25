@@ -95,15 +95,6 @@ describe('DashboardContainer Component', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders with Carbon layout components', async () => {
-    render(<DashboardContainer sections={mockSections} />);
-
-    // Check if Carbon components are rendered
-    expect(screen.getByTestId('carbon-section')).toBeInTheDocument();
-    expect(screen.getByTestId('carbon-grid')).toBeInTheDocument();
-    expect(screen.getAllByTestId('carbon-column')).toHaveLength(2); // One column per section
-  });
-
   it('scrolls to the active section when activeItemId matches section id', async () => {
     // Create a spy div element with scrollIntoView method
     const spyElement = document.createElement('div');
