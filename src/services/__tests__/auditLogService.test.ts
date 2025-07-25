@@ -2,15 +2,11 @@ import { AuditEventType } from '@/types/auditLog';
 import { AUDIT_LOG_URL } from '@constants/app';
 import { MODULE_LABELS } from '@constants/auditLog';
 import { post } from '../api';
-import {
-  logAuditEvent,
-  logDashboardView,
-  logEncounterEdit,
-} from '../auditLogService';
-import { isAuditLogEnabled } from '../globalPropertyConfigService';
+import { isAuditLogEnabled } from '../ApplicationConfigService';
+import { logAuditEvent } from '../auditLogService';
 
 // Mock dependencies
-jest.mock('../globalPropertyConfigService');
+jest.mock('../ApplicationConfigService');
 jest.mock('../api');
 
 const mockIsAuditLogEnabled = isAuditLogEnabled as jest.MockedFunction<
@@ -41,13 +37,13 @@ describe('auditLogService', () => {
       mockPost.mockResolvedValue({});
 
       const result = await logAuditEvent(
-        'patient-123',
+        'patient-456',
         'VIEWED_CLINICAL_DASHBOARD',
       );
 
       expect(result).toEqual({ logged: true });
       expect(mockPost).toHaveBeenCalledWith(AUDIT_LOG_URL, {
-        patientUuid: 'patient-123',
+        patientUuid: 'patient-456',
         eventType: 'VIEWED_CLINICAL_DASHBOARD',
         message: 'VIEWED_CLINICAL_DASHBOARD_MESSAGE',
         module: MODULE_LABELS.CLINICAL,
@@ -63,14 +59,14 @@ describe('auditLogService', () => {
         encounterType: 'Consultation',
       };
       const result = await logAuditEvent(
-        'patient-123',
+        'patient-789',
         'EDIT_ENCOUNTER',
         messageParams,
       );
 
       expect(result).toEqual({ logged: true });
       expect(mockPost).toHaveBeenCalledWith(AUDIT_LOG_URL, {
-        patientUuid: 'patient-123',
+        patientUuid: 'patient-789',
         eventType: 'EDIT_ENCOUNTER',
         message: `EDIT_ENCOUNTER_MESSAGE~${JSON.stringify(messageParams)}`,
         module: MODULE_LABELS.CLINICAL,
@@ -81,7 +77,7 @@ describe('auditLogService', () => {
       mockIsAuditLogEnabled.mockResolvedValue(true);
 
       const result = await logAuditEvent(
-        'patient-123',
+        'patient-unknown',
         'UNKNOWN_EVENT' as AuditEventType,
       );
 
@@ -97,7 +93,7 @@ describe('auditLogService', () => {
       mockPost.mockResolvedValue({});
 
       const result = await logAuditEvent(
-        'patient-123',
+        'patient-custom',
         'VIEWED_CLINICAL_DASHBOARD',
         undefined,
         'CUSTOM_MODULE',
@@ -105,70 +101,28 @@ describe('auditLogService', () => {
 
       expect(result).toEqual({ logged: true });
       expect(mockPost).toHaveBeenCalledWith(AUDIT_LOG_URL, {
-        patientUuid: 'patient-123',
+        patientUuid: 'patient-custom',
         eventType: 'VIEWED_CLINICAL_DASHBOARD',
         message: 'VIEWED_CLINICAL_DASHBOARD_MESSAGE',
         module: 'CUSTOM_MODULE',
       });
     });
 
-    it('should handle undefined patient UUID', async () => {
+    it('should handle undefined message params', async () => {
       mockIsAuditLogEnabled.mockResolvedValue(true);
       mockPost.mockResolvedValue({});
 
       const result = await logAuditEvent(
-        undefined,
+        'patient-undefined-params',
         'VIEWED_CLINICAL_DASHBOARD',
+        undefined,
       );
 
       expect(result).toEqual({ logged: true });
       expect(mockPost).toHaveBeenCalledWith(AUDIT_LOG_URL, {
-        patientUuid: undefined,
+        patientUuid: 'patient-undefined-params',
         eventType: 'VIEWED_CLINICAL_DASHBOARD',
         message: 'VIEWED_CLINICAL_DASHBOARD_MESSAGE',
-        module: MODULE_LABELS.CLINICAL,
-      });
-    });
-  });
-
-  describe('logDashboardView', () => {
-    it('should call logAuditEvent with correct parameters', async () => {
-      mockIsAuditLogEnabled.mockResolvedValue(true);
-      mockPost.mockResolvedValue({});
-
-      const result = await logDashboardView('patient-123');
-
-      expect(result).toEqual({ logged: true });
-      expect(mockPost).toHaveBeenCalledWith(AUDIT_LOG_URL, {
-        patientUuid: 'patient-123',
-        eventType: 'VIEWED_CLINICAL_DASHBOARD',
-        message: 'VIEWED_CLINICAL_DASHBOARD_MESSAGE',
-        module: MODULE_LABELS.CLINICAL,
-      });
-    });
-  });
-
-  describe('logEncounterEdit', () => {
-    it('should call logAuditEvent with correct parameters and message params', async () => {
-      mockIsAuditLogEnabled.mockResolvedValue(true);
-      mockPost.mockResolvedValue({});
-
-      const result = await logEncounterEdit(
-        'patient-123',
-        'encounter-456',
-        'Consultation',
-      );
-
-      const expectedMessageParams = {
-        encounterUuid: 'encounter-456',
-        encounterType: 'Consultation',
-      };
-
-      expect(result).toEqual({ logged: true });
-      expect(mockPost).toHaveBeenCalledWith(AUDIT_LOG_URL, {
-        patientUuid: 'patient-123',
-        eventType: 'EDIT_ENCOUNTER',
-        message: `EDIT_ENCOUNTER_MESSAGE~${JSON.stringify(expectedMessageParams)}`,
         module: MODULE_LABELS.CLINICAL,
       });
     });

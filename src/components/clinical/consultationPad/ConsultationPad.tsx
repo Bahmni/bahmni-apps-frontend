@@ -194,13 +194,11 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         setIsSubmitting(false);
 
         // Dispatch audit event for successful encounter edit/creation
-        const encounterUUID = crypto.randomUUID(); // Generate encounter UUID for new encounters
         dispatchAuditEvent({
           eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER
             .eventType as AuditEventType,
           patientUuid: patientUUID!,
           messageParams: {
-            encounterUuid: encounterUUID,
             encounterType: selectedEncounterType!.name,
           },
         });

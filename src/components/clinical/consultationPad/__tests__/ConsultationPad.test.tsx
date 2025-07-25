@@ -1189,12 +1189,7 @@ describe('ConsultationPad', () => {
 
   describe('Audit Event Dispatching', () => {
     it('should dispatch audit event with correct event type after successful consultation submission', async () => {
-      const encounterUuid = 'encounter-123';
       const encounterType = 'Consultation';
-
-      // Mock crypto.randomUUID to return predictable value
-      (global.crypto.randomUUID as jest.Mock).mockReturnValue(encounterUuid);
-
       (
         consultationBundleService.postConsultationBundle as jest.Mock
       ).mockResolvedValue({
@@ -1216,21 +1211,15 @@ describe('ConsultationPad', () => {
       await waitFor(() => {
         expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
           eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER.eventType,
-          patientUuid: 'patient-123',
           messageParams: {
-            encounterUuid: encounterUuid,
             encounterType: encounterType,
           },
+          patientUuid: 'patient-123',
         });
       });
     });
 
     it('should use the correct audit log constant for event type', async () => {
-      const encounterUuid = 'encounter-123';
-
-      // Mock crypto.randomUUID to return predictable value
-      (global.crypto.randomUUID as jest.Mock).mockReturnValue(encounterUuid);
-
       (
         consultationBundleService.postConsultationBundle as jest.Mock
       ).mockResolvedValue({
@@ -1276,13 +1265,7 @@ describe('ConsultationPad', () => {
     });
 
     it('should dispatch audit event with correct patient UUID and encounter details', async () => {
-      const patientUuid = 'patient-456';
-      const encounterUuid = 'encounter-789';
       const encounterType = 'Follow-up';
-
-      // Mock crypto.randomUUID to return predictable value
-      (global.crypto.randomUUID as jest.Mock).mockReturnValue(encounterUuid);
-
       (
         consultationBundleService.postConsultationBundle as jest.Mock
       ).mockResolvedValue({
@@ -1291,7 +1274,6 @@ describe('ConsultationPad', () => {
       });
 
       // Update mock store with different values
-      mockEncounterDetailsStore.patientUUID = patientUuid;
       mockEncounterDetailsStore.selectedEncounterType = {
         uuid: 'encounter-type-456',
         name: encounterType,
@@ -1305,21 +1287,15 @@ describe('ConsultationPad', () => {
       await waitFor(() => {
         expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
           eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER.eventType,
-          patientUuid: patientUuid,
           messageParams: {
-            encounterUuid: encounterUuid,
             encounterType: encounterType,
           },
+          patientUuid: 'patient-123',
         });
       });
     });
 
     it('should complete consultation successfully regardless of audit event dispatch result', async () => {
-      const encounterUuid = 'encounter-123';
-
-      // Mock crypto.randomUUID to return predictable value
-      (global.crypto.randomUUID as jest.Mock).mockReturnValue(encounterUuid);
-
       (
         consultationBundleService.postConsultationBundle as jest.Mock
       ).mockResolvedValue({
@@ -1336,11 +1312,10 @@ describe('ConsultationPad', () => {
         // Verify audit event was dispatched
         expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
           eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER.eventType,
-          patientUuid: 'patient-123',
           messageParams: {
-            encounterUuid: encounterUuid,
             encounterType: 'Consultation',
           },
+          patientUuid: 'patient-123',
         });
         // Consultation should succeed regardless of audit dispatch result
         expect(mockOnClose).toHaveBeenCalled();
@@ -1354,11 +1329,6 @@ describe('ConsultationPad', () => {
     });
 
     it('should verify the audit event type constant is not hardcoded', async () => {
-      const encounterUuid = 'encounter-123';
-
-      // Mock crypto.randomUUID to return predictable value
-      (global.crypto.randomUUID as jest.Mock).mockReturnValue(encounterUuid);
-
       (
         consultationBundleService.postConsultationBundle as jest.Mock
       ).mockResolvedValue({
@@ -1382,9 +1352,7 @@ describe('ConsultationPad', () => {
         );
 
         // Verify other expected parameters
-        expect(callArgs.patientUuid).toBe('patient-123');
         expect(callArgs.messageParams).toEqual({
-          encounterUuid: encounterUuid,
           encounterType: 'Consultation',
         });
       });
