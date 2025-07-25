@@ -85,6 +85,7 @@ describe('globalAuditListener', () => {
 
       const payload: AuditEventPayload = {
         eventType: 'EDIT_ENCOUNTER',
+        patientUuid: 'patient-456',
       };
 
       initializeAuditListener();
@@ -93,7 +94,7 @@ describe('globalAuditListener', () => {
 
       expect(mockLogAuditEvent).toHaveBeenCalledTimes(1);
       expect(mockLogAuditEvent).toHaveBeenCalledWith(
-        undefined,
+        'patient-456',
         'EDIT_ENCOUNTER',
         undefined,
         undefined,
@@ -107,7 +108,7 @@ describe('globalAuditListener', () => {
 
       const payload: AuditEventPayload = {
         eventType: 'VIEWED_CLINICAL_DASHBOARD',
-        patientUuid: undefined,
+        patientUuid: 'patient-undefined',
         messageParams: undefined,
         module: undefined,
       };
@@ -117,7 +118,7 @@ describe('globalAuditListener', () => {
       await passedHandler(payload);
 
       expect(mockLogAuditEvent).toHaveBeenCalledWith(
-        undefined,
+        'patient-undefined',
         'VIEWED_CLINICAL_DASHBOARD',
         undefined,
         undefined,
@@ -131,7 +132,7 @@ describe('globalAuditListener', () => {
 
       const payload: AuditEventPayload = {
         eventType: 'EDIT_ENCOUNTER',
-        patientUuid: 'patient-456',
+        patientUuid: 'patient-only-uuid',
       };
 
       initializeAuditListener();
@@ -139,7 +140,7 @@ describe('globalAuditListener', () => {
       await passedHandler(payload);
 
       expect(mockLogAuditEvent).toHaveBeenCalledWith(
-        'patient-456',
+        'patient-only-uuid',
         'EDIT_ENCOUNTER',
         undefined,
         undefined,
@@ -190,7 +191,7 @@ describe('globalAuditListener', () => {
 
       const payload: AuditEventPayload = {
         eventType: 'VIEWED_CLINICAL_DASHBOARD',
-        patientUuid: 'patient-123',
+        patientUuid: 'patient-unsuccessful',
       };
 
       initializeAuditListener();
@@ -198,7 +199,7 @@ describe('globalAuditListener', () => {
 
       await expect(passedHandler(payload)).resolves.toBeUndefined();
       expect(mockLogAuditEvent).toHaveBeenCalledWith(
-        'patient-123',
+        'patient-unsuccessful',
         'VIEWED_CLINICAL_DASHBOARD',
         undefined,
         undefined,
@@ -301,7 +302,7 @@ describe('globalAuditListener', () => {
 
       const payload: AuditEventPayload = {
         eventType: 'VIEWED_CLINICAL_DASHBOARD',
-        patientUuid: '',
+        patientUuid: 'patient-empty',
         messageParams: {},
         module: '',
       };
@@ -311,7 +312,7 @@ describe('globalAuditListener', () => {
       await passedHandler(payload);
 
       expect(mockLogAuditEvent).toHaveBeenCalledWith(
-        '',
+        'patient-empty',
         'VIEWED_CLINICAL_DASHBOARD',
         {},
         '',

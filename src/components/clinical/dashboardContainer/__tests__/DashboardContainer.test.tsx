@@ -269,7 +269,7 @@ describe('DashboardContainer Component', () => {
         expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
           eventType:
             AUDIT_LOG_EVENT_DETAILS.VIEWED_CLINICAL_DASHBOARD.eventType,
-          patientUuid,
+          patientUuid: patientUuid,
         });
       });
     });
@@ -283,7 +283,7 @@ describe('DashboardContainer Component', () => {
       await waitFor(() => {
         expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
           eventType: 'VIEWED_CLINICAL_DASHBOARD', // This should match the constant value
-          patientUuid,
+          patientUuid: patientUuid,
         });
       });
     });
@@ -355,7 +355,7 @@ describe('DashboardContainer Component', () => {
 
       expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
         eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_CLINICAL_DASHBOARD.eventType,
-        patientUuid,
+        patientUuid: patientUuid,
       });
     });
 

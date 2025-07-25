@@ -8,7 +8,7 @@ import {
   AuditEventType,
 } from '@types/auditLog';
 import { post } from './api';
-import { isAuditLogEnabled } from './globalPropertyConfigService';
+import { isAuditLogEnabled } from './ApplicationConfigService';
 
 /**
  * Log an audit event
@@ -68,35 +68,4 @@ export const logAuditEvent = async (
   //         : i18next.t(AUDIT_LOG_ERROR_MESSAGES.UNKNOWN_ERROR),
   //   };
   // }
-};
-
-/**
- * Log dashboard view event
- * @param patientUuid - Patient UUID
- * @returns Promise<AuditLogResponse>
- */
-export const logDashboardView = async (
-  patientUuid: string,
-): Promise<AuditLogResponse> => {
-  return logAuditEvent(patientUuid, 'VIEWED_CLINICAL_DASHBOARD');
-};
-
-/**
- * Log encounter edit event
- * @param patientUuid - Patient UUID
- * @param encounterUuid - Encounter UUID
- * @param encounterType - Encounter type
- * @returns Promise<AuditLogResponse>
- */
-export const logEncounterEdit = async (
-  patientUuid: string,
-  encounterUuid: string,
-  encounterType: string,
-): Promise<AuditLogResponse> => {
-  const messageParams = {
-    encounterUuid,
-    encounterType,
-  };
-
-  return logAuditEvent(patientUuid, 'EDIT_ENCOUNTER', messageParams);
 };

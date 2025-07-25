@@ -14,7 +14,7 @@ import {
 } from '@__mocks__/consultationPadMocks';
 import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
 import { NotificationProvider } from '@providers/NotificationProvider';
-import { logEncounterEdit } from '@services/auditLogService';
+import { logAuditEvent } from '@services/auditLogService';
 import * as consultationBundleService from '@services/consultationBundleService';
 import { getEncounterConcepts } from '@services/encounterConceptsService';
 import { getActiveVisit } from '@services/encounterService';
@@ -28,8 +28,8 @@ import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 import useServiceRequestStore from '@stores/serviceRequestStore';
 import ConsultationPad from '../ConsultationPad';
 
-const mockLogEncounterEdit = logEncounterEdit as jest.MockedFunction<
-  typeof logEncounterEdit
+const mockLogAuditEvent = logAuditEvent as jest.MockedFunction<
+  typeof logAuditEvent
 >;
 // Mock axios to prevent actual HTTP requests and SSL certificate errors
 jest.mock('axios', () => ({
@@ -150,7 +150,7 @@ describe('ConsultationPad Integration', () => {
     jest.clearAllMocks();
 
     // Reset audit logging mocks
-    mockLogEncounterEdit.mockResolvedValue({ logged: true });
+    mockLogAuditEvent.mockResolvedValue({ logged: true });
 
     // Mock implementation for each service
     (getLocations as jest.Mock).mockResolvedValue(mockLocations);

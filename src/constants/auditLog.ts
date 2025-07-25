@@ -16,4 +16,4 @@ export const MODULE_LABELS = {
 } as const;
 
 // Global property key for enabling audit logging
-export const AUDIT_LOG_GLOBAL_PROPERTY = 'bahmni.enableAuditLog';
+export const AUDIT_LOG_APP_PROPERTY = 'bahmni.enableAuditLog';
