@@ -8,9 +8,7 @@
       "node",
       "@nx/react/typings/cssmodule.d.ts",
       "@nx/react/typings/image.d.ts"
-    ],
-    "module": "esnext",
-    "moduleResolution": "bundler"
+    ]
   },
   "include": [
     "jest.config.ts",

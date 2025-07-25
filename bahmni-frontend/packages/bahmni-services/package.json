@@ -1,12 +1,17 @@
 {
   "name": "@bahmni-frontend/bahmni-services",
   "version": "0.0.1",
-  "main": "./index.js",
-  "types": "./index.d.ts",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
+    "./package.json": "./package.json",
     ".": {
-      "import": "./index.mjs",
-      "require": "./index.js"
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     }
   },
   "author": "Bahmni Team",
@@ -17,8 +22,8 @@
     "directory": "bahmni-frontend/packages/bahmni-services"
   },
   "dependencies": {
-    "axios": "^1.6.0",
-    "html-entities": "^2.4.0",
+    "axios": "^1.8.4",
+    "html-entities": "^2.6.0",
     "i18next": "^24.2.3",
     "i18next-browser-languagedetector": "^8.0.4",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
@@ -26,8 +31,6 @@
   },
   "peerDependencies": {
     "react": ">=18.0.0",
-    "react-dom": ">=18.0.0",
-    "react-i18next": ">=13.0.0",
-    "axios": ">=1.6.0 || < 2.0.0"
+    "react-dom": ">=18.0.0"
   }
 }

@@ -9,13 +9,10 @@
   "dependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-router-dom": "^7.5.3",
-    "axios": "^1.8.4",
-    "html-entities": "^2.6.0"
+    "react-router-dom": "^7.5.3"
   },
   "devDependencies": {
     "@babel/core": "^7.22.15",
-    "@babel/preset-env": "^7.22.15",
     "@babel/preset-react": "^7.22.15",
     "@babel/preset-typescript": "^7.22.15",
     "@eslint/js": "^9.22.0",
@@ -33,6 +30,7 @@
     "@swc-node/register": "~1.9.1",
     "@swc/cli": "~0.6.0",
     "@swc/core": "~1.5.7",
+    "@swc/types": "^0.1.23",
     "@swc/helpers": "~0.5.11",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
@@ -43,6 +41,7 @@
     "@types/node": "^22.13.10",
     "@types/react": "^19.0.11",
     "@types/react-dom": "^19.0.4",
+    "@typescript-eslint/parser": "^8.29.0",
     "@vitejs/plugin-react": "^4.2.0",
     "@vitest/ui": "^3.0.0",
     "ajv": "^8.0.0",

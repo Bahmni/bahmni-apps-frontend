@@ -1,10 +1,10 @@
 export default {
-  displayName: 'bahmni-services',
+  displayName: '@bahmni-frontend/bahmni-services',
   preset: '../../jest.preset.js',
   transform: {
     '^(?!.*\\.(js|jsx|ts|tsx|css|json)$)': '@nx/react/plugins/jest',
     '^.+\\.[tj]sx?$': ['babel-jest', { presets: ['@nx/react/babel'] }],
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-  coverageDirectory: '../../coverage/packages/bahmni-services',
+  coverageDirectory: 'test-output/jest/coverage',
 };

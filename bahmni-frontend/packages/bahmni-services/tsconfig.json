@@ -1,14 +1,6 @@
 {
-  "compilerOptions": {
-    "jsx": "react-jsx",
-    "allowJs": false,
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "types": ["vite/client"]
-  },
   "files": [],
-  "include": ["eslint.config.ts", "vite.config.ts", "jest.config.ts"],
+  "include": [],
   "references": [
     {
       "path": "./tsconfig.lib.json"
