@@ -61,14 +61,6 @@
 }
 
 .allergiesTableBody {
-  :global(.cds--data-table td) {
-    @include type-style("body-short-01");
-    background-color: $background;
-  }
-  :global(.cds--child-row-inner-container) {
-    padding-block: 0 !important;
-    padding-block-end: 0 !important;
-  }
   :global(.cds--data-table td:nth-child(1)) {
     @include type-style("body-short-01");
     color: $text-primary;
@@ -88,13 +80,5 @@
     @include type-style("body-short-01");
     color: $text-primary;
     max-width: calc(100vw * 0.075);
-  }
-  :global(.cds--accordion__content) {
-    margin-inline: 0rem !important;
-    padding-inline: 0rem !important;
-  }
-  :global(.cds--accordion__wrapper) {
-    padding-block: 0rem !important;
-    padding-block-end: 0rem !important;
   }
 }

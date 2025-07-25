@@ -15,7 +15,7 @@
 
 .sortableDataTableBody {
   :global(.cds--data-table td) {
-    @include type-style("body-short-01");
+    @include type-style("body-compact-01");
     background-color: $background;
     border-block-end: 0 !important;
     &:focus-visible {
@@ -23,12 +23,11 @@
     }
     min-height: $spacing-12;
     align-content: start;
-    padding-block: $spacing-03;
   }
 }
 
 .sortableDataTableBodyEmpty {
-  @include type-style("label-02");
+  @include type-style("body-compact-01");
   background-color: $background;
   padding: $spacing-06 $spacing-05;
   text-align: center;
