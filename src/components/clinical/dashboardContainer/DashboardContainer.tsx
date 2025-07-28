@@ -1,6 +1,11 @@
-import { Grid, Column, Section } from '@carbon/react';
+import { Section } from '@carbon/react';
 import React, { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { AUDIT_LOG_EVENT_DETAILS } from '@constants/auditLog';
+import { usePatientUUID } from '@hooks/usePatientUUID';
+import { AuditEventType } from '@types/auditLog';
 import { DashboardSectionConfig } from '@types/dashboardConfig';
+import { dispatchAuditEvent } from '@utils/auditEventDispatcher';
 import DashboardSection from '../dashboardSection/DashboardSection';
 import * as styles from './styles/DashboardContainer.module.scss';
 
@@ -20,10 +25,23 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
   sections,
   activeItemId,
 }) => {
+  const { t } = useTranslation();
+  const patientUuid = usePatientUUID();
   // Create a ref map for each section - fix the type definition here
   const sectionRefs = useRef<{
-    [key: string]: React.RefObject<HTMLDivElement>;
+    [key: string]: React.RefObject<HTMLDivElement | null>;
   }>({});
+
+  // Dispatch dashboard view event when component mounts
+  useEffect(() => {
+    if (patientUuid) {
+      dispatchAuditEvent({
+        eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_CLINICAL_DASHBOARD
+          .eventType as AuditEventType,
+        patientUuid,
+      });
+    }
+  }, [patientUuid]);
 
   // Initialize refs for each section
   useEffect(() => {
@@ -44,7 +62,7 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
 
       if (activeSection && sectionRefs.current[activeSection.id]?.current) {
         // Added optional chaining and null check to prevent errors
-        sectionRefs.current[activeSection.id].current.scrollIntoView({
+        sectionRefs.current[activeSection.id].current?.scrollIntoView({
           behavior: 'smooth',
         });
       }
@@ -53,28 +71,23 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
 
   // If no sections, show a message
   if (!sections.length) {
-    return <div>No dashboard sections configured</div>;
+    return <div>{t('NO_DASHBOARD_SECTIONS')}</div>;
   }
 
   return (
-    <Section>
-      <Grid className={styles.sectionContainer}>
-        {sections.map((section) => (
-          <Column
-            lg={16}
-            md={8}
-            sm={4}
-            key={section.id}
-            className={styles.sectionColumn}
+    <Section className={styles.sectionContainer}>
+      {sections.map((section) => (
+        <article
+          key={section.id}
+          className={styles.displayControlSection}
+          ref={sectionRefs.current[section.id]}
+        >
+          <DashboardSection
+            section={section}
             ref={sectionRefs.current[section.id]}
-          >
-            <DashboardSection
-              section={section}
-              ref={sectionRefs.current[section.id]}
-            />
-          </Column>
-        ))}
-      </Grid>
+          />
+        </article>
+      ))}
     </Section>
   );
 };

@@ -23,10 +23,7 @@ const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({
             </span>
           )}
           {test.priority === LabTestPriority.stat && (
-            <Tag
-              type="magenta"
-              data-testid={`lab-test-priority-${test.priority}`}
-            >
+            <Tag type="red" data-testid={`lab-test-priority-${test.priority}`}>
               {t(`LAB_TEST_${test.priority.toUpperCase()}`)}
             </Tag>
           )}

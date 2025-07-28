@@ -115,7 +115,7 @@ describe('PatientDetails Integration', () => {
     });
 
     // Assert - Data displayed correctly
-    expect(screen.getByText('ID: test-uuid')).toBeInTheDocument();
+    expect(screen.getByText('test-uuid')).toBeInTheDocument();
     expect(screen.getByText('male')).toBeInTheDocument();
     expect(
       screen.getByText('35 years, 2 months, 15 days | 1990-01-01'),
@@ -155,7 +155,7 @@ describe('PatientDetails Integration', () => {
 
     // Wait for data to load
     await waitFor(() => {
-      expect(screen.getByText('ID: test-uuid')).toBeInTheDocument();
+      expect(screen.getByText('test-uuid')).toBeInTheDocument();
     });
 
     // Assert - Only ID should be displayed

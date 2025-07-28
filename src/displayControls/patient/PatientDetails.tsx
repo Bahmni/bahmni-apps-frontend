@@ -42,7 +42,8 @@ const PatientDetails: React.FC = () => {
 
   const formattedIdentifiers = formattedPatient.identifiers.size
     ? Array.from(formattedPatient.identifiers.entries())
-        .map(([key, value]) => `${key}: ${value}`)
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        .map(([key, value]) => `${value}`)
         .filter(Boolean)
         .join(' | ')
     : null;
@@ -68,27 +69,27 @@ const PatientDetails: React.FC = () => {
       <div className={styles.patientDetails}>
         <div className={styles.identifierAndGenderWrapper}>
           {formattedIdentifiers && (
-            <span className={styles.detailsWithIcon}>
+            <p className={styles.detailsWithIcon}>
               <BahmniIcon id="id-card" name="fa-id-card" size={ICON_SIZE.SM} />
-              <span>{formattedIdentifiers}</span>
-            </span>
+              <p>{formattedIdentifiers}</p>
+            </p>
           )}
           {formattedGender && (
-            <span className={styles.detailsWithIcon}>
+            <p className={styles.detailsWithIcon}>
               <BahmniIcon
                 id="gender"
                 name="fa-mars-stroke-up"
                 size={ICON_SIZE.SM}
               />
-              <span>{formattedGender}</span>
-            </span>
+              <p>{formattedGender}</p>
+            </p>
           )}
         </div>
         {details && (
-          <span className={styles.detailsWithIcon}>
+          <p className={styles.detailsWithIcon}>
             <BahmniIcon id="age" name="fa-cake-candles" size={ICON_SIZE.SM} />
-            <span>{details}</span>
-          </span>
+            <p>{details}</p>
+          </p>
         )}
       </div>
     </div>

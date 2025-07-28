@@ -247,5 +247,7 @@
   "SIDE_NAVIGATION": "Navegación lateral",
   "TABLE_EXPAND_COLUMN_ARIA_LABEL": "Expandir o contraer fila",
   "UNEXPECTED_ERROR": "Se produjo un error inesperado",
-  "VISIT_TYPE": "Tipo de visita"
+  "VISIT_TYPE": "Tipo de visita",
+  "AUDIT_LOG_ERROR_UNKNOWN_EVENT_TYPE": "Tipo de evento de auditoría desconocido: {{eventType}}",
+  "NO_DASHBOARD_SECTIONS": "No hay secciones del panel configuradas"
 }

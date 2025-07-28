@@ -3,19 +3,16 @@
 @use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/type" as *;
 
-// TODO Use Variable
-.sectionTitle {
-  font-weight: 600;
-  padding: $spacing-05;
-  background-color: $layer-01 !important;
+.sectionWrapper {
+  box-shadow: 0px 2px 6px 0px $shadow;
 }
 
-.sectionTile {
-  @include type-style("heading-compact-02");
-  padding: 0 !important;
-  background-color: $background !important;
-  box-shadow: 0px 1px 1px 1px $border-subtle-02 !important;
+.sectionName {
   min-block-size: fit-content !important;
+  p {
+    @include type-style("heading-compact-02");
+    color: $text-primary;
+  }
 }
 
 .divider {
