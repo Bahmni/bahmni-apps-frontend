@@ -1,4 +1,4 @@
-import { BundleEntry, Reference } from 'fhir/r4';
+import { BundleEntry, Reference, FhirResource } from 'fhir/r4';
 import { CONSULTATION_BUNDLE_URL, ENCOUNTER_SEARCH_URL } from '@constants/app';
 import { CONSULTATION_ERROR_MESSAGES } from '@constants/errors';
 import { AllergyInputEntry } from '@types/allergy';
@@ -367,9 +367,9 @@ export function createMedicationRequestEntries({
  */
 export function createEncounterBundleEntry(
   activeEncounter: FhirEncounter | null,
-  encounterResource: unknown,
+  encounterResource: any,
 ): BundleEntry {
-  // For existing encounters (PUT), use the encounter URL as fullUrl
+  // For existing encounters (PUT), use the full encounter URL as fullUrl
   // For new encounters (POST), use a placeholder UUID
   const fullUrl = activeEncounter
     ? `${ENCOUNTER_SEARCH_URL}/${activeEncounter.id}`
@@ -378,7 +378,7 @@ export function createEncounterBundleEntry(
   const method = activeEncounter ? 'PUT' : 'POST';
   const resource = activeEncounter
     ? {
-        ...(encounterResource as Record<string, unknown>),
+        ...encounterResource,
         id: activeEncounter.id,
       }
     : encounterResource;
