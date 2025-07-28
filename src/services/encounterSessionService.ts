@@ -75,10 +75,12 @@ export async function filterByActiveVisit(
     if (!activeVisit) return null;
 
     // Find encounter that belongs to the active visit
-    return encounters.find(encounter => {
-      const visitUUID = encounter.partOf?.reference?.split('/')[1];
-      return activeVisit.id === visitUUID;
-    }) || null;
+    return (
+      encounters.find((encounter) => {
+        const visitUUID = encounter.partOf?.reference?.split('/')[1];
+        return activeVisit.id === visitUUID;
+      }) ?? null
+    );
   } catch {
     // If we can't get visit info, default to "New Consultation"
     return null;

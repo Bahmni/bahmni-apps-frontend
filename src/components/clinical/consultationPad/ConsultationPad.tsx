@@ -80,8 +80,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   } = useMedicationStore();
 
   // Get encounter session state
-  const { editActiveEncounter, activeEncounter, refetch } =
-    useEncounterSession();
+  const { activeEncounter, refetch } = useEncounterSession();
 
   // Clean up on unmount
   useEffect(() => {
