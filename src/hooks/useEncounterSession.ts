@@ -8,6 +8,7 @@ interface UseEncounterSessionReturn {
   hasActiveSession: boolean;
   activeEncounter: FhirEncounter | null;
   isPractitionerMatch: boolean;
+  editActiveEncounter: boolean;
   isLoading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
@@ -96,10 +97,14 @@ export function useEncounterSession(): UseEncounterSessionReturn {
     fetchSessionState();
   }, [patientUUID, practitioner?.uuid]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Computed property for encounter ownership - determines if user can edit the active encounter
+  const editActiveEncounter = hasActiveSession && isPractitionerMatch;
+
   return {
     hasActiveSession,
     activeEncounter,
     isPractitionerMatch,
+    editActiveEncounter,
     isLoading,
     error,
     refetch: fetchSessionState,

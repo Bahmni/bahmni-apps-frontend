@@ -78,11 +78,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   } = useMedicationStore();
 
   // Get encounter session state
-  const { hasActiveSession, activeEncounter, isPractitionerMatch, refetch } =
+  const { editActiveEncounter, activeEncounter, refetch } =
     useEncounterSession();
-
-  // Only use active encounter if it belongs to current practitioner
-  const shouldUseActiveEncounter = hasActiveSession && isPractitionerMatch;
 
   // Reset consultation pad state when practitioner actually changes (not just re-renders)
   useEffect(() => {
@@ -158,24 +155,24 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
 
     // Create encounter bundle entry (POST for new, PUT for existing)
     const encounterBundleEntry = createEncounterBundleEntry(
-      shouldUseActiveEncounter ? activeEncounter : null,
+      editActiveEncounter ? activeEncounter : null,
       encounterResource,
     );
 
     // Get the appropriate encounter reference for other resources
     const encounterReference = getEncounterReference(
-      shouldUseActiveEncounter ? activeEncounter : null,
+      editActiveEncounter ? activeEncounter : null,
       encounterBundleEntry.fullUrl ?? placeholderReference,
     );
 
     // Use consistent practitioner UUID for all resources
-    const consistentPractitionerUUID = practitioner!.uuid;
+    const practitionerUUID = practitioner!.uuid;
 
     const diagnosisEntries = createDiagnosisBundleEntries({
       selectedDiagnoses,
       encounterSubject: encounterResource.subject!,
       encounterReference,
-      practitionerUUID: consistentPractitionerUUID,
+      practitionerUUID: practitionerUUID,
       consultationDate,
     });
 
@@ -183,14 +180,14 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       selectedAllergies,
       encounterSubject: encounterResource.subject!,
       encounterReference,
-      practitionerUUID: consistentPractitionerUUID,
+      practitionerUUID: practitionerUUID,
     });
 
     const conditionEntries = createConditionsBundleEntries({
       selectedConditions,
       encounterSubject: encounterResource.subject!,
       encounterReference,
-      practitionerUUID: consistentPractitionerUUID,
+      practitionerUUID: practitionerUUID,
       consultationDate,
     });
 
@@ -198,14 +195,14 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       selectedServiceRequests,
       encounterSubject: encounterResource.subject!,
       encounterReference,
-      practitionerUUID: consistentPractitionerUUID,
+      practitionerUUID: practitionerUUID,
     });
 
     const medicationEntries = createMedicationRequestEntries({
       selectedMedications,
       encounterSubject: encounterResource.subject!,
       encounterReference,
-      practitionerUUID: consistentPractitionerUUID,
+      practitionerUUID: practitionerUUID,
     });
 
     const consultationBundle = createConsultationBundle([
@@ -238,7 +235,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         await submitConsultation();
 
         // If this was a new consultation (POST), refetch encounter session to update button
-        if (!shouldUseActiveEncounter) {
+        if (!editActiveEncounter) {
           // Add a small delay to allow server to process the encounter
           setTimeout(async () => {
             await refetch();
@@ -283,7 +280,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
 
   return (
     <ActionArea
-      title={hasError ? '' : t('CONSULTATION_PAD_TITLE')}
+      title={hasError ? '' : t('CONSULTATION_ACTION_NEW')}
       primaryButtonText={t('CONSULTATION_PAD_DONE_BUTTON')}
       onPrimaryButtonClick={handleOnPrimaryButtonClick}
       isPrimaryButtonDisabled={
