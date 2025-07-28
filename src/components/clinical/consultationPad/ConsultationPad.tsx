@@ -1,5 +1,5 @@
 import { Column, Grid, MenuItemDivider } from '@carbon/react';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import AllergiesForm from '@components/clinical/forms/allergies/AllergiesForm';
 import DiagnosesForm from '@components/clinical/forms/conditionsAndDiagnoses/ConditionsAndDiagnoses';
@@ -36,7 +36,6 @@ interface ConsultationPadProps {
 
 const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const previousPractitionerUUID = useRef<string | null>(null);
 
   const { t } = useTranslation();
   const { addNotification } = useNotification();
@@ -80,32 +79,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   // Get encounter session state
   const { editActiveEncounter, activeEncounter, refetch } =
     useEncounterSession();
-
-  // Reset consultation pad state when practitioner actually changes (not just re-renders)
-  useEffect(() => {
-    const currentPractitionerUUID = practitioner?.uuid ?? null;
-
-    // Only reset if the practitioner UUID has actually changed
-    if (previousPractitionerUUID.current !== currentPractitionerUUID) {
-      // Only reset if we had a previous practitioner (don't reset on initial load)
-      if (previousPractitionerUUID.current !== null) {
-        resetAllergies();
-        resetDiagnoses();
-        resetServiceRequests();
-        resetMedications();
-        // Note: We don't reset encounter details here to avoid disabling the form
-      }
-
-      // Update the ref with the current practitioner UUID
-      previousPractitionerUUID.current = currentPractitionerUUID;
-    }
-  }, [
-    practitioner?.uuid,
-    resetAllergies,
-    resetDiagnoses,
-    resetServiceRequests,
-    resetMedications,
-  ]);
 
   // Clean up on unmount
   useEffect(() => {
@@ -155,13 +128,13 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
 
     // Create encounter bundle entry (POST for new, PUT for existing)
     const encounterBundleEntry = createEncounterBundleEntry(
-      editActiveEncounter ? activeEncounter : null,
+      activeEncounter,
       encounterResource,
     );
 
     // Get the appropriate encounter reference for other resources
     const encounterReference = getEncounterReference(
-      editActiveEncounter ? activeEncounter : null,
+      activeEncounter,
       encounterBundleEntry.fullUrl ?? placeholderReference,
     );
 
@@ -235,7 +208,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         await submitConsultation();
 
         // If this was a new consultation (POST), refetch encounter session to update button
-        if (!editActiveEncounter) {
+        if (!activeEncounter) {
           // Add a small delay to allow server to process the encounter
           setTimeout(async () => {
             await refetch();

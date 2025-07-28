@@ -1,17 +1,19 @@
 import {
   ENCOUNTER_SESSION_DURATION_GP_URL,
   ENCOUNTER_SEARCH_URL,
+  CONSULTATION_ENCOUNTER_TYPE_UUID,
 } from '@constants/app';
 
 import { FhirEncounter, FhirEncounterBundle } from '../types/encounter';
 import { get } from './api';
-import { getVisits } from './encounterService';
+import { getActiveVisit } from './encounterService';
 
 interface EncounterSearchParams {
   patient: string;
   _tag?: string;
   _lastUpdated?: string;
   participant?: string;
+  type?: string;
 }
 
 /**
@@ -69,24 +71,14 @@ export async function filterByActiveVisit(
   if (!encounters.length) return null;
 
   try {
-    const allVisits = await getVisits(patientUUID);
-    if (!allVisits.length) return null;
-    for (const encounter of encounters) {
+    const activeVisit = await getActiveVisit(patientUUID);
+    if (!activeVisit) return null;
+
+    // Find encounter that belongs to the active visit
+    return encounters.find(encounter => {
       const visitUUID = encounter.partOf?.reference?.split('/')[1];
-      if (!visitUUID) continue;
-      const visit = allVisits.find(
-        (visit: FhirEncounter) => visit.id === visitUUID,
-      );
-      if (!visit) continue;
-
-      const isVisitActive = !visit.period?.end;
-
-      if (isVisitActive) {
-        return encounter;
-      }
-    }
-    // No encounters belong to active visits
-    return null;
+      return activeVisit.id === visitUUID;
+    }) || null;
   } catch {
     // If we can't get visit info, default to "New Consultation"
     return null;
@@ -117,6 +109,7 @@ export async function findActiveEncounterInSession(
       patient: patientUUID,
       _tag: 'encounter',
       _lastUpdated: lastUpdatedParam,
+      type: CONSULTATION_ENCOUNTER_TYPE_UUID,
     };
 
     // Add participant filter if practitioner UUID is provided
