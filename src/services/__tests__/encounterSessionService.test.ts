@@ -4,9 +4,10 @@ import { filterByActiveVisit } from '../encounterSessionService';
 
 // Mock the encounterService
 jest.mock('../encounterService');
-const mockGetVisits = encounterService.getVisits as jest.MockedFunction<
-  typeof encounterService.getVisits
->;
+const mockGetActiveVisit =
+  encounterService.getActiveVisit as jest.MockedFunction<
+    typeof encounterService.getActiveVisit
+  >;
 
 describe('encounterSessionService', () => {
   describe('filterByActiveVisit', () => {
@@ -126,7 +127,7 @@ describe('encounterSessionService', () => {
     });
 
     it('should return null when no visits found', async () => {
-      mockGetVisits.mockResolvedValue([]);
+      mockGetActiveVisit.mockResolvedValue(null);
       const encounters = [createMockEncounter('encounter-1', 'visit-1')];
 
       const result = await filterByActiveVisit(encounters, mockPatientUUID);
@@ -140,7 +141,7 @@ describe('encounterSessionService', () => {
       const activeVisit = createMockVisit(visitUUID, false); // No end date = active
       const encounter = createMockEncounter(encounterUUID, visitUUID);
 
-      mockGetVisits.mockResolvedValue([activeVisit]);
+      mockGetActiveVisit.mockResolvedValue(activeVisit);
 
       const result = await filterByActiveVisit([encounter], mockPatientUUID);
       expect(result).toEqual(encounter);
@@ -150,10 +151,9 @@ describe('encounterSessionService', () => {
       const visitUUID = 'visit-1';
       const encounterUUID = 'encounter-1';
 
-      const closedVisit = createMockVisit(visitUUID, true); // Has end date = closed
       const encounter = createMockEncounter(encounterUUID, visitUUID);
 
-      mockGetVisits.mockResolvedValue([closedVisit]);
+      mockGetActiveVisit.mockResolvedValue(null); // No active visit
 
       const result = await filterByActiveVisit([encounter], mockPatientUUID);
       expect(result).toBeNull();
@@ -164,7 +164,6 @@ describe('encounterSessionService', () => {
       const closedVisitUUID = 'closed-visit';
 
       const activeVisit = createMockVisit(activeVisitUUID, false);
-      const closedVisit = createMockVisit(closedVisitUUID, true);
 
       const encounterWithClosedVisit = createMockEncounter(
         'encounter-1',
@@ -175,7 +174,7 @@ describe('encounterSessionService', () => {
         activeVisitUUID,
       );
 
-      mockGetVisits.mockResolvedValue([activeVisit, closedVisit]);
+      mockGetActiveVisit.mockResolvedValue(activeVisit);
 
       const result = await filterByActiveVisit(
         [encounterWithClosedVisit, encounterWithActiveVisit],
@@ -189,7 +188,7 @@ describe('encounterSessionService', () => {
       const encounter = createMockEncounter('encounter-1', 'visit-1');
       delete encounter.partOf; // Remove partOf reference
 
-      mockGetVisits.mockResolvedValue([visit]);
+      mockGetActiveVisit.mockResolvedValue(visit);
 
       const result = await filterByActiveVisit([encounter], mockPatientUUID);
       expect(result).toBeNull();
@@ -200,14 +199,14 @@ describe('encounterSessionService', () => {
       const encounter = createMockEncounter('encounter-1', 'visit-1');
       encounter.partOf = { reference: 'InvalidReference', type: 'Encounter' }; // Invalid reference format
 
-      mockGetVisits.mockResolvedValue([visit]);
+      mockGetActiveVisit.mockResolvedValue(visit);
 
       const result = await filterByActiveVisit([encounter], mockPatientUUID);
       expect(result).toBeNull();
     });
 
     it('should handle API errors gracefully and return null', async () => {
-      mockGetVisits.mockRejectedValue(new Error('API Error'));
+      mockGetActiveVisit.mockRejectedValue(new Error('API Error'));
       const encounters = [createMockEncounter('encounter-1', 'visit-1')];
 
       const result = await filterByActiveVisit(encounters, mockPatientUUID);
