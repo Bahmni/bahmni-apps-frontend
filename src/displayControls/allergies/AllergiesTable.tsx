@@ -12,7 +12,11 @@ import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
 import { ICON_PADDING, ICON_SIZE } from '@constants/icon';
 import { useAllergies } from '@hooks/useAllergies';
 import { formatAllergies } from '@services/allergyService';
-import { FormattedAllergy } from '@types/allergy';
+import {
+  AllergySeverity,
+  AllergyStatus,
+  FormattedAllergy,
+} from '@types/allergy';
 import {
   getCategoryDisplayName,
   getSeverityDisplayName,
@@ -23,11 +27,11 @@ import * as styles from './styles/AllergiesTable.module.scss';
 // Helper function to get severity CSS class
 const getSeverityClassName = (severity: string): string | undefined => {
   switch (severity?.toLowerCase()) {
-    case 'mild':
+    case AllergySeverity.mild:
       return styles.mildSeverity;
-    case 'moderate':
+    case AllergySeverity.moderate:
       return styles.moderateSeverity;
-    case 'severe':
+    case AllergySeverity.severe:
       return styles.severeSeverity;
   }
 };
@@ -109,14 +113,17 @@ const AllergiesTable: React.FC = () => {
         return (
           <Tag
             type="outline"
-            renderIcon={DotMark}
-            className={
-              allergy.status === 'Active'
-                ? styles.activeStatus
-                : styles.inactiveStatus
-            }
+            renderIcon={() => (
+              <DotMark
+                className={
+                  allergy.status === AllergyStatus.Active
+                    ? styles.activeStatus
+                    : styles.inactiveStatus
+                }
+              />
+            )}
           >
-            {allergy.status === 'Active'
+            {allergy.status === AllergyStatus.Active
               ? t('ALLERGY_LIST_ACTIVE')
               : t('ALLERGY_LIST_INACTIVE')}
           </Tag>
