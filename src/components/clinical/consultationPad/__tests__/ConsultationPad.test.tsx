@@ -323,7 +323,7 @@ describe('ConsultationPad', () => {
     it('should display correct title when no error', () => {
       renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
       expect(screen.getByTestId('action-area-title')).toHaveTextContent(
-        'New Consultation',
+        'CONSULTATION_ACTION_NEW',
       );
     });
 
