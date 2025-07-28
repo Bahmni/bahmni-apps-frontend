@@ -2,7 +2,7 @@ import { DotMark } from '@carbon/icons-react';
 import { Tag } from '@carbon/react';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
+import { SortableDataTable } from '@/components/common/sortableDataTable/SortableDataTable';
 import { useConditions } from '@hooks/useConditions';
 import { formatConditions } from '@services/conditionService';
 import { ConditionStatus, FormattedCondition } from '@types/condition';
@@ -38,17 +38,22 @@ const ConditionsTable: React.FC = () => {
   const renderCell = (condition: FormattedCondition, cellId: string) => {
     switch (cellId) {
       case 'display':
-        return condition.display;
+        return (
+          <span className={styles.conditionName}>{condition.display}</span>
+        );
       case 'status':
         return (
           <Tag
             type="outline"
-            renderIcon={DotMark}
-            className={
-              condition.status === ConditionStatus.Active
-                ? styles.activeStatus
-                : styles.inactiveStatus
-            }
+            renderIcon={() => (
+              <DotMark
+                className={
+                  condition.status === ConditionStatus.Active
+                    ? styles.activeStatus
+                    : styles.inactiveStatus
+                }
+              />
+            )}
           >
             {condition.status === ConditionStatus.Active
               ? t('CONDITION_LIST_ACTIVE')
@@ -73,17 +78,15 @@ const ConditionsTable: React.FC = () => {
 
   return (
     <div data-testid="condition-table">
-      <ExpandableDataTable
-        tableTitle={t('CONDITION_LIST_DISPLAY_CONTROL_TITLE')}
-        rows={formattedConditions}
+      <SortableDataTable
         headers={headers}
-        renderCell={renderCell}
-        loading={loading}
-        error={error}
         ariaLabel={t('CONDITION_LIST_DISPLAY_CONTROL_TITLE')}
+        rows={formattedConditions}
+        loading={loading}
+        errorStateMessage={error?.message}
         emptyStateMessage={t('CONDITION_LIST_NO_CONDITIONS')}
+        renderCell={renderCell}
         className={styles.conditionsTableBody}
-        isOpen
       />
     </div>
   );

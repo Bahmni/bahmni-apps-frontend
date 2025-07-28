@@ -3,56 +3,29 @@
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
 
+.conditionName {
+  @include type-style("heading-compact-01");
+}
+
 .conditionsTableBody {
-  :global(.cds--data-table td) {
-    @include type-style("body-short-01");
-    background-color: $background;
-  }
-  :global(.cds--child-row-inner-container) {
-    padding-block: 0 !important;
-    padding-block-end: 0 !important;
-  }
   :global(.cds--data-table td:nth-child(1)) {
-    @include type-style("body-short-01");
-    color: $text-primary;
     min-width: calc(100vw * 0.3);
   }
   :global(.cds--data-table td:nth-child(2)) {
-    @include type-style("body-short-01");
-    color: $text-primary;
     max-width: calc(100vw * 0.2);
   }
   :global(.cds--data-table td:nth-child(3)) {
-    @include type-style("body-short-01");
-    color: $text-primary;
     max-width: calc(100vw * 0.075);
   }
   :global(.cds--data-table td:nth-child(4)) {
-    @include type-style("body-short-01");
-    color: $text-primary;
     max-width: calc(100vw * 0.075);
   }
-  :global(.cds--accordion__content) {
-    margin-inline: 0rem !important;
-    padding-inline: 0rem !important;
-  }
-  :global(.cds--accordion__wrapper) {
-    padding-block: 0rem !important;
-    padding-block-end: 0rem !important;
-  }
-}
-
-.conditionsNote {
-  @include type-style("label-02");
 }
 
 .activeStatus {
-  :global(.cds--tag__custom-icon) {
-    color: $green-50;
-  }
+  color: $green-50;
 }
+
 .inactiveStatus {
-  :global(.cds--tag__custom-icon) {
-    color: $cool-gray-20;
-  }
+  color: $cool-gray-20;
 }

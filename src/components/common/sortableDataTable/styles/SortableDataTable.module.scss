@@ -17,6 +17,7 @@
   :global(.cds--data-table td) {
     @include type-style("body-compact-01");
     background-color: $background;
+    color: $text-primary;
     border-block-end: 0 !important;
     &:focus-visible {
       border: 0 !important;
