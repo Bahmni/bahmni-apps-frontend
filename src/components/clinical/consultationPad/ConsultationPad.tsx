@@ -7,6 +7,7 @@ import BasicForm from '@components/clinical/forms/encounterDetails/EncounterDeta
 import InvestigationsForm from '@components/clinical/forms/investigations/InvestigationsForm';
 import MedicationsForm from '@components/clinical/forms/prescribeMedicines/MedicationsForm';
 import ActionArea from '@components/common/actionArea/ActionArea';
+import { AUDIT_LOG_EVENT_DETAILS } from '@constants/auditLog';
 import { ERROR_TITLES } from '@constants/errors';
 import { useEncounterSession } from '@hooks/useEncounterSession';
 import useNotification from '@hooks/useNotification';
@@ -25,7 +26,9 @@ import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesSt
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 import { useMedicationStore } from '@stores/medicationsStore';
 import useServiceRequestStore from '@stores/serviceRequestStore';
+import { AuditEventType } from '@types/auditLog';
 import { ConsultationBundle } from '@types/consultationBundle';
+import { dispatchAuditEvent } from '@utils/auditEventDispatcher';
 import { createConsultationBundle } from '@utils/fhir/consultationBundleCreator';
 import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
 import * as styles from './styles/ConsultationPad.module.scss';
@@ -216,6 +219,16 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         }
 
         setIsSubmitting(false);
+
+        // Dispatch audit event for successful encounter edit/creation
+        dispatchAuditEvent({
+          eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER
+            .eventType as AuditEventType,
+          patientUuid: patientUUID!,
+          messageParams: {
+            encounterType: selectedEncounterType!.name,
+          },
+        });
         resetDiagnoses();
         resetAllergies();
         resetEncounterDetails();

@@ -4,34 +4,33 @@
 @use "@carbon/react/scss/theme" as *;
 
 .displayControlHeaders {
-  border-top: 1px solid $cool-gray-10;
-  background-color: $white !important;
+  background-color: $background !important;
 
   * {
     font-weight: normal !important;
-    background-color: $white !important;
-    color: $gray-50;
+    background-color: $background !important;
+    color: $text-secondary;
   }
 }
 
 .sortableDataTableBody {
   :global(.cds--data-table td) {
-    @include type-style("body-short-01");
+    @include type-style("body-compact-01");
     background-color: $background;
+    color: $text-primary;
     border-block-end: 0 !important;
     &:focus-visible {
       border: 0 !important;
     }
     min-height: $spacing-12;
     align-content: start;
-    padding-block: $spacing-03;
   }
 }
 
 .sortableDataTableBodyEmpty {
-  @include type-style("label-02");
+  @include type-style("body-compact-01");
   background-color: $background;
-  padding: $spacing-07 $spacing-05;
+  padding: $spacing-06 $spacing-05;
   text-align: center;
   border-top: 1px solid $border-subtle-02;
 }

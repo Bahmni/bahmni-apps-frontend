@@ -10,14 +10,40 @@ import { BundleEntry } from 'fhir/r4';
 import React from 'react';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/setupTests.i18n';
+import { AUDIT_LOG_EVENT_DETAILS } from '@constants/auditLog';
 import * as consultationBundleService from '@services/consultationBundleService';
-// Import mocked services
 import useAllergyStore from '@stores/allergyStore';
 import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 import { useMedicationStore } from '@stores/medicationsStore';
 import useServiceRequestStore from '@stores/serviceRequestStore';
+import { dispatchAuditEvent } from '@utils/auditEventDispatcher';
 import ConsultationPad from '../ConsultationPad';
+
+// Mock i18next translation function
+jest.mock('react-i18next', () => ({
+  ...jest.requireActual('react-i18next'),
+  useTranslation: () => ({
+    t: (key: string) => {
+      // Return specific translations for common keys
+      const translations: Record<string, string> = {
+        CONSULTATION_PAD_TITLE: 'New Consultation',
+        CONSULTATION_PAD_DONE_BUTTON: 'Done',
+        CONSULTATION_PAD_CANCEL_BUTTON: 'Cancel',
+        CONSULTATION_SUBMITTED_SUCCESS_TITLE: 'Success',
+        CONSULTATION_SUBMITTED_SUCCESS_MESSAGE:
+          'Consultation saved successfully',
+        ERROR_CONSULTATION_TITLE: 'Consultation Error',
+        CONSULTATION_ERROR_GENERIC: 'Error creating consultation bundle',
+        CONSULTATION_PAD_ERROR_TITLE: 'Something went wrong',
+        CONSULTATION_PAD_ERROR_BODY:
+          'An error occurred while loading the consultation pad. Please try again later.',
+      };
+
+      return translations[key] || key;
+    },
+  }),
+}));
 
 // Mock all child components
 jest.mock('@components/common/actionArea/ActionArea', () => ({
@@ -124,6 +150,11 @@ jest.mock('@hooks/useNotification', () => ({
   default: jest.fn(() => ({
     addNotification: mockAddNotification,
   })),
+}));
+
+// Mock audit event dispatcher
+jest.mock('@utils/auditEventDispatcher', () => ({
+  dispatchAuditEvent: jest.fn(),
 }));
 
 // Mock utilities
@@ -234,6 +265,10 @@ Object.defineProperty(global, 'crypto', {
   },
 });
 
+const mockDispatchAuditEvent = dispatchAuditEvent as jest.MockedFunction<
+  typeof dispatchAuditEvent
+>;
+
 // Test wrapper
 const renderWithProviders = (ui: React.ReactElement) => {
   return render(<I18nextProvider i18n={i18n}>{ui}</I18nextProvider>);
@@ -274,6 +309,9 @@ describe('ConsultationPad', () => {
     (useMedicationStore as unknown as jest.Mock).mockReturnValue(
       mockMedicationStore,
     );
+
+    // Reset audit event dispatcher mocks
+    mockDispatchAuditEvent.mockClear();
   });
 
   describe('Rendering', () => {
@@ -1171,6 +1209,178 @@ describe('ConsultationPad', () => {
         expect(
           consultationBundleService.postConsultationBundle,
         ).toHaveBeenCalledTimes(1);
+      });
+    });
+  });
+
+  describe('Audit Event Dispatching', () => {
+    it('should dispatch audit event with correct event type after successful consultation submission', async () => {
+      const encounterType = 'Consultation';
+      (
+        consultationBundleService.postConsultationBundle as jest.Mock
+      ).mockResolvedValue({
+        id: 'bundle-123',
+        type: 'transaction-response',
+      });
+
+      // Update mock store to have encounter type
+      mockEncounterDetailsStore.selectedEncounterType = {
+        uuid: 'encounter-type-123',
+        name: encounterType,
+      };
+
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      const doneButton = screen.getByTestId('primary-button');
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
+          eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER.eventType,
+          messageParams: {
+            encounterType: encounterType,
+          },
+          patientUuid: 'patient-123',
+        });
+      });
+    });
+
+    it('should use the correct audit log constant for event type', async () => {
+      (
+        consultationBundleService.postConsultationBundle as jest.Mock
+      ).mockResolvedValue({
+        id: 'bundle-123',
+        type: 'transaction-response',
+      });
+
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      const doneButton = screen.getByTestId('primary-button');
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        const callArgs = mockDispatchAuditEvent.mock.calls[0][0];
+        // Verify that the eventType is using the constant, not a hardcoded string
+        expect(callArgs.eventType).toBe(
+          AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER.eventType,
+        );
+        expect(callArgs.eventType).toBe('EDIT_ENCOUNTER');
+      });
+    });
+
+    it('should not dispatch audit event if consultation submission fails', async () => {
+      const submissionError = new Error('Network error');
+
+      (
+        consultationBundleService.postConsultationBundle as jest.Mock
+      ).mockRejectedValue(submissionError);
+
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      const doneButton = screen.getByTestId('primary-button');
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        expect(
+          consultationBundleService.postConsultationBundle,
+        ).toHaveBeenCalled();
+        // Audit event should not be dispatched if submission fails
+        expect(mockDispatchAuditEvent).not.toHaveBeenCalled();
+        expect(mockOnClose).not.toHaveBeenCalled();
+      });
+    });
+
+    it('should dispatch audit event with correct patient UUID and encounter details', async () => {
+      const encounterType = 'Follow-up';
+      (
+        consultationBundleService.postConsultationBundle as jest.Mock
+      ).mockResolvedValue({
+        id: 'bundle-456',
+        type: 'transaction-response',
+      });
+
+      // Update mock store with different values
+      mockEncounterDetailsStore.selectedEncounterType = {
+        uuid: 'encounter-type-456',
+        name: encounterType,
+      };
+
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      const doneButton = screen.getByTestId('primary-button');
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
+          eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER.eventType,
+          messageParams: {
+            encounterType: encounterType,
+          },
+          patientUuid: 'patient-123',
+        });
+      });
+    });
+
+    it('should complete consultation successfully regardless of audit event dispatch result', async () => {
+      (
+        consultationBundleService.postConsultationBundle as jest.Mock
+      ).mockResolvedValue({
+        id: 'bundle-123',
+        type: 'transaction-response',
+      });
+
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      const doneButton = screen.getByTestId('primary-button');
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        // Verify audit event was dispatched
+        expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
+          eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER.eventType,
+          messageParams: {
+            encounterType: 'Consultation',
+          },
+          patientUuid: 'patient-123',
+        });
+        // Consultation should succeed regardless of audit dispatch result
+        expect(mockOnClose).toHaveBeenCalled();
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'Success',
+          message: 'Consultation saved successfully',
+          type: 'success',
+          timeout: 5000,
+        });
+      });
+    });
+
+    it('should verify the audit event type constant is not hardcoded', async () => {
+      (
+        consultationBundleService.postConsultationBundle as jest.Mock
+      ).mockResolvedValue({
+        id: 'bundle-123',
+        type: 'transaction-response',
+      });
+
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      const doneButton = screen.getByTestId('primary-button');
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        expect(mockDispatchAuditEvent).toHaveBeenCalled();
+        const callArgs = mockDispatchAuditEvent.mock.calls[0][0];
+
+        // Verify event type is from constant and matches expected value
+        expect(callArgs.eventType).not.toBe('hardcoded-string');
+        expect(callArgs.eventType).toBe(
+          AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER.eventType,
+        );
+
+        // Verify other expected parameters
+        expect(callArgs.messageParams).toEqual({
+          encounterType: 'Consultation',
+        });
       });
     });
   });

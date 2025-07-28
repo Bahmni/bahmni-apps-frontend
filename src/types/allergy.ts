@@ -1,5 +1,16 @@
 import type { Coding } from 'fhir/r4';
 
+export enum AllergyStatus {
+  Active = 'Active',
+  Inactive = 'Inactive',
+}
+
+export enum AllergySeverity {
+  mild = 'mild',
+  moderate = 'moderate',
+  severe = 'severe',
+}
+
 /**
  * Interface representing a formatted allergy for easier consumption by components
  */
@@ -8,14 +19,14 @@ export interface FormattedAllergy {
   readonly display: string;
   readonly category?: ReadonlyArray<string>;
   readonly criticality?: string;
-  readonly status: string;
+  readonly status: AllergyStatus;
   readonly recordedDate: string;
   readonly recorder?: string;
   readonly reactions?: ReadonlyArray<{
     readonly manifestation: string[];
-    readonly severity?: string;
+    readonly severity?: AllergySeverity;
   }>;
-  readonly severity?: string;
+  readonly severity?: AllergySeverity;
   readonly note?: string;
 }
 

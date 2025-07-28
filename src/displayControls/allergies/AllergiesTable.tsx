@@ -7,13 +7,16 @@ import {
 } from '@carbon/react';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SortableDataTable } from '@/components/common/sortableDataTable/SortableDataTable';
 import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
-import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
 import { ICON_PADDING, ICON_SIZE } from '@constants/icon';
 import { useAllergies } from '@hooks/useAllergies';
-import { usePatientUUID } from '@hooks/usePatientUUID';
 import { formatAllergies } from '@services/allergyService';
-import { FormattedAllergy } from '@types/allergy';
+import {
+  AllergySeverity,
+  AllergyStatus,
+  FormattedAllergy,
+} from '@types/allergy';
 import {
   getCategoryDisplayName,
   getSeverityDisplayName,
@@ -24,11 +27,11 @@ import * as styles from './styles/AllergiesTable.module.scss';
 // Helper function to get severity CSS class
 const getSeverityClassName = (severity: string): string | undefined => {
   switch (severity?.toLowerCase()) {
-    case 'mild':
+    case AllergySeverity.mild:
       return styles.mildSeverity;
-    case 'moderate':
+    case AllergySeverity.moderate:
       return styles.moderateSeverity;
-    case 'severe':
+    case AllergySeverity.severe:
       return styles.severeSeverity;
   }
 };
@@ -38,8 +41,7 @@ const getSeverityClassName = (severity: string): string | undefined => {
  */
 const AllergiesTable: React.FC = () => {
   const { t } = useTranslation();
-  const patientUUID = usePatientUUID();
-  const { allergies, loading, error } = useAllergies(patientUUID);
+  const { allergies, loading, error } = useAllergies();
 
   // Define table headers
   const headers = useMemo(
@@ -74,12 +76,12 @@ const AllergiesTable: React.FC = () => {
     switch (cellId) {
       case 'display':
         return (
-          <div className={styles.allergyDisplay}>
+          <div>
             <div className={styles.allergyName}>
-              {allergy.display}
-              <div className={styles.allergyCategory}>
+              <span>{allergy.display}</span>
+              <span className={styles.allergyCategory}>
                 [{t(getCategoryDisplayName(allergy.category?.[0]))}]
-              </div>
+              </span>
               {allergy.note && (
                 <Toggletip autoAlign className={styles.allergyNote}>
                   <ToggletipButton>
@@ -111,14 +113,17 @@ const AllergiesTable: React.FC = () => {
         return (
           <Tag
             type="outline"
-            renderIcon={DotMark}
-            className={
-              allergy.status === 'Active'
-                ? styles.activeStatus
-                : styles.inactiveStatus
-            }
+            renderIcon={() => (
+              <DotMark
+                className={
+                  allergy.status === AllergyStatus.Active
+                    ? styles.activeStatus
+                    : styles.inactiveStatus
+                }
+              />
+            )}
           >
-            {allergy.status === 'Active'
+            {allergy.status === AllergyStatus.Active
               ? t('ALLERGY_LIST_ACTIVE')
               : t('ALLERGY_LIST_INACTIVE')}
           </Tag>
@@ -126,20 +131,26 @@ const AllergiesTable: React.FC = () => {
     }
   };
 
+  if (error) {
+    return (
+      <div data-testid="allergies-table-error">
+        <p className={styles.allergiesTableError}>{error.message}</p>
+      </div>
+    );
+  }
+
   return (
     <div data-testid="allergy-table">
-      <ExpandableDataTable
-        tableTitle={t('ALLERGIES_DISPLAY_CONTROL_HEADING')}
-        rows={displayAllergies}
+      <SortableDataTable
         headers={headers}
-        sortable={sortable}
-        renderCell={renderCell}
-        loading={loading}
-        error={error}
         ariaLabel={t('ALLERGIES_DISPLAY_CONTROL_HEADING')}
+        rows={displayAllergies}
+        loading={loading}
+        errorStateMessage={error}
+        sortable={sortable}
         emptyStateMessage={t('NO_ALLERGIES')}
+        renderCell={renderCell}
         className={styles.allergiesTableBody}
-        isOpen
       />
     </div>
   );

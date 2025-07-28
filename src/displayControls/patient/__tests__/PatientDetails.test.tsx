@@ -90,7 +90,7 @@ describe('PatientDetails Component', () => {
 
     // Assert
     expect(screen.getByText('John Doe')).toBeInTheDocument();
-    expect(screen.getByText('ID: test-uuid')).toBeInTheDocument();
+    expect(screen.getByText('test-uuid')).toBeInTheDocument();
     expect(screen.getByText('male')).toBeInTheDocument();
     expect(
       screen.getByText('35 years, 2 months, 15 days | 1990-01-01'),
@@ -181,7 +181,7 @@ describe('PatientDetails Component', () => {
 
     // Assert
     expect(screen.getByText('John Doe')).toBeInTheDocument();
-    expect(screen.getByText('ID: test-uuid')).toBeInTheDocument();
+    expect(screen.getByText('test-uuid')).toBeInTheDocument();
     // Gender and birthDate should not be present in the details section
     expect(screen.queryByText(/male/)).not.toBeInTheDocument();
     expect(screen.queryByText(/1990-01-01/)).not.toBeInTheDocument();
@@ -280,7 +280,7 @@ describe('PatientDetails Component', () => {
 
     // Assert
     // Should still render other information
-    expect(screen.getByText('ID: test-uuid')).toBeInTheDocument();
+    expect(screen.getByText('test-uuid')).toBeInTheDocument();
     expect(screen.getByText('male')).toBeInTheDocument();
     expect(
       screen.getByText('35 years, 2 months, 15 days | 1990-01-01'),

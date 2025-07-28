@@ -104,7 +104,7 @@ describe('ConditionsTable Integration', () => {
     render(<ConditionsTable />);
 
     // Verify Error Message is shown for error state
-    expect(screen.getByTestId('expandable-table-error')).toBeInTheDocument();
+    expect(screen.getByTestId('sortable-table-error')).toBeInTheDocument();
     expect(
       screen.getByText('Invalid patient UUID', { exact: false }),
     ).toBeInTheDocument();
@@ -124,7 +124,7 @@ describe('ConditionsTable Integration', () => {
     render(<ConditionsTable />);
 
     // Verify Error Message is shown for error state
-    expect(screen.getByTestId('expandable-table-error')).toBeInTheDocument();
+    expect(screen.getByTestId('sortable-table-error')).toBeInTheDocument();
     expect(
       screen.getByText('Invalid patient UUID', { exact: false }),
     ).toBeInTheDocument();
@@ -144,7 +144,7 @@ describe('ConditionsTable Integration', () => {
     render(<ConditionsTable />);
 
     // Verify Error Message is shown for error state
-    expect(screen.getByTestId('expandable-table-error')).toBeInTheDocument();
+    expect(screen.getByTestId('sortable-table-error')).toBeInTheDocument();
     expect(
       screen.getByText('Network error', { exact: false }),
     ).toBeInTheDocument();
