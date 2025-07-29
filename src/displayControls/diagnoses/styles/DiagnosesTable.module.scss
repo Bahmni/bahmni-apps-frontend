@@ -3,17 +3,24 @@
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
 
-.diagnosesTable {
-  padding: 0 !important;
-}
-
 .diagnosesTableTitle {
-  @include type-style("heading-compact-02");
-  padding: $spacing-05;
-  background-color: $background;
+  background: $background !important;
+  min-block-size: fit-content !important;
+  border-bottom: 1px solid $border-subtle-02;
+  p {
+    @include type-style("heading-compact-02");
+    color: $text-primary;
+  }
 }
 
-.diagnosesTableBodyError {
+.diagnosisName {
+  @include type-style("heading-compact-01");
+  display: flex;
+  align-items: center;
+  gap: $spacing-02;
+}
+
+.diagnosesTableBodyEmpty {
   @include type-style("body-compact-01");
   background-color: $background;
   border-top: 1px solid $border-subtle-02;
@@ -22,22 +29,8 @@
 }
 
 .diagnosesTableBody {
-  :global(.cds--data-table td) {
-    @include type-style("body-short-01");
-    background-color: $background;
-  }
-
   :global(.cds--data-table td:nth-child(1)) {
-    @include type-style("body-short-01");
     min-width: calc(100vw * 0.3);
-  }
-  :global(.cds--accordion__content) {
-    margin-inline: 0rem !important;
-    padding-inline: 0rem !important;
-  }
-  :global(.cds--accordion__wrapper) {
-    padding-block: 0rem !important;
-    padding-block-end: 0rem !important;
   }
 }
 

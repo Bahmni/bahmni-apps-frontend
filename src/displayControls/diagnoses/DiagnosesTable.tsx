@@ -1,13 +1,11 @@
-import { Tag, Tile, DataTableSkeleton } from '@carbon/react';
+import { Tag, Tile } from '@carbon/react';
 import React, { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
-import { FULL_MONTH_DATE_FORMAT, ISO_DATE_FORMAT } from '@constants/date';
+import { SortableDataTable } from '@/components/common/sortableDataTable/SortableDataTable';
+import { DATE_FORMAT } from '@constants/date';
 import { useDiagnoses } from '@hooks/useDiagnoses';
 import { Diagnosis } from '@types/diagnosis';
-import { groupByDate } from '@utils/common';
-import { formatDate } from '@utils/date';
-import { sortDiagnosesByCertainty } from '@utils/diagnosis';
+import { formatDate, sortByDate } from '@utils/date';
 import * as styles from './styles/DiagnosesTable.module.scss';
 
 /**
@@ -22,29 +20,14 @@ const DiagnosesTable: React.FC = () => {
   const headers = useMemo(
     () => [
       { key: 'display', header: t('DIAGNOSIS_LIST_DIAGNOSIS') },
+      { key: 'recordedDate', header: t('DIAGNOSIS_RECORDED_DATE') },
       { key: 'recorder', header: t('DIAGNOSIS_LIST_RECORDED_BY') },
     ],
     [t],
   );
 
-  const sortable = useMemo(
-    () => [
-      { key: 'display', sortable: true },
-      { key: 'recorder', sortable: true },
-    ],
-    [],
-  );
-
   const processedDiagnoses = useMemo(() => {
-    const grouped = groupByDate(diagnoses, (diagnosis) => {
-      const result = formatDate(diagnosis.recordedDate, ISO_DATE_FORMAT);
-      return result.formattedResult;
-    });
-
-    return grouped.map((group) => ({
-      date: group.date,
-      diagnoses: sortDiagnosesByCertainty(group.items),
-    }));
+    return sortByDate(diagnoses, 'recordedDate');
   }, [diagnoses]);
 
   const renderCell = useCallback(
@@ -52,9 +35,10 @@ const DiagnosesTable: React.FC = () => {
       switch (cellId) {
         case 'display':
           return (
-            <>
-              {diagnosis.display + ' '}
+            <div className={styles.diagnosisName}>
+              <span>{diagnosis.display}</span>
               <Tag
+                data-testid={'certainity-tag'}
                 className={
                   diagnosis.certainty.code === 'confirmed'
                     ? styles.confirmedCell
@@ -65,8 +49,11 @@ const DiagnosesTable: React.FC = () => {
                   ? t('CERTAINITY_CONFIRMED')
                   : t('CERTAINITY_PROVISIONAL')}
               </Tag>
-            </>
+            </div>
           );
+        case 'recordedDate':
+          return formatDate(diagnosis.recordedDate, DATE_FORMAT)
+            .formattedResult;
         case 'recorder':
           return diagnosis.recorder || t('DIAGNOSIS_TABLE_NOT_AVAILABLE');
       }
@@ -75,56 +62,27 @@ const DiagnosesTable: React.FC = () => {
   );
 
   return (
-    <Tile
-      title={t('DIAGNOSES_DISPLAY_CONTROL_HEADING')}
-      data-testid="diagnoses-accordion-item"
-      className={styles.diagnosesTable}
-    >
-      <div className={styles.diagnosesTableTitle}>
-        {t('DIAGNOSES_DISPLAY_CONTROL_HEADING')}
-      </div>
-      {loading && (
-        <DataTableSkeleton
-          columnCount={2}
-          rowCount={1}
-          showHeader={false}
-          showToolbar={false}
-          compact
+    <>
+      <Tile
+        title={t('DIAGNOSES_DISPLAY_CONTROL_HEADING')}
+        data-testid="diagnoses-title"
+        className={styles.diagnosesTableTitle}
+      >
+        <p>{t('DIAGNOSES_DISPLAY_CONTROL_HEADING')}</p>
+      </Tile>
+      <div data-testid="diagnoses-table">
+        <SortableDataTable
+          headers={headers}
+          ariaLabel={t('DIAGNOSES_DISPLAY_CONTROL_HEADING')}
+          rows={processedDiagnoses}
+          loading={loading}
+          errorStateMessage={error?.message}
+          emptyStateMessage={t('NO_DIAGNOSES')}
+          renderCell={renderCell}
+          className={styles.diagnosesTableBody}
         />
-      )}
-      {error && (
-        <p className={styles.diagnosesTableBodyError}>
-          {t('ERROR_FETCHING_DIAGNOSES')}
-        </p>
-      )}
-      {!loading && !error && diagnoses.length === 0 && (
-        <p className={styles.diagnosesTableBodyError}>{t('NO_DIAGNOSES')}</p>
-      )}
-      {processedDiagnoses.map((diagnosisByDate, index) => {
-        const { date, diagnoses: diagnosisList } = diagnosisByDate;
-
-        // Format the date for display
-        const formattedDate =
-          formatDate(date, FULL_MONTH_DATE_FORMAT).formattedResult || date;
-
-        return (
-          <ExpandableDataTable
-            key={date}
-            tableTitle={formattedDate}
-            rows={diagnosisList}
-            headers={headers}
-            sortable={sortable}
-            renderCell={renderCell}
-            loading={false}
-            error={null}
-            ariaLabel={`${t('DIAGNOSES_DISPLAY_CONTROL_HEADING')} - ${formattedDate}`}
-            emptyStateMessage={t('NO_DIAGNOSES')}
-            className={styles.diagnosesTableBody}
-            isOpen={index === 0} // Open the first item by default
-          />
-        );
-      })}
-    </Tile>
+      </div>
+    </>
   );
 };
 
