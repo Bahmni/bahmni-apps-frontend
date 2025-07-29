@@ -3,9 +3,8 @@ import {
   BUNDLED_TRANSLATIONS_URL_TEMPLATE,
   LOCALE_STORAGE_KEY,
   DEFAULT_LOCALE,
-} from '@constants/app';
-import { CONFIG_TRANSLATIONS_URL_TEMPLATE } from '@constants/config';
-import notificationService from '../notificationService';
+  CONFIG_TRANSLATIONS_URL_TEMPLATE,
+} from '../constants';
 import {
   getTranslations,
   getUserPreferredLocale,
@@ -13,8 +12,6 @@ import {
 } from '../translationService';
 
 // Mock dependencies
-jest.mock('../notificationService');
-jest.mock('@utils/common');
 jest.mock('axios');
 
 describe('Translation Service', () => {
@@ -59,7 +56,6 @@ describe('Translation Service', () => {
       // Assert
       expect(localStorage.getItem).toHaveBeenCalledWith(LOCALE_STORAGE_KEY);
       expect(result).toBe(DEFAULT_LOCALE);
-      expect(notificationService.showError).not.toHaveBeenCalled();
     });
   });
 

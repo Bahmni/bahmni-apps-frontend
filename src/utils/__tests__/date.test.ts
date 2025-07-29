@@ -2,7 +2,7 @@ import { format, parseISO } from 'date-fns';
 import i18n from '@/setupTests.i18n';
 import { DATE_TIME_FORMAT } from '@constants/date';
 import { DATE_ERROR_MESSAGES } from '@constants/errors';
-import { getUserPreferredLocale } from '@services/translationService';
+import { getUserPreferredLocale } from '../../../bahmni-frontend/packages/bahmni-services/src/i18n/translationService';
 import {
   calculateAge,
   formatDate,

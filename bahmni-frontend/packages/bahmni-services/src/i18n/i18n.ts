@@ -1,11 +1,8 @@
 import i18n from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
-import {
-  getTranslations,
-  getUserPreferredLocale,
-} from '@services/translationService';
-import { LOCALE_STORAGE_KEY, CLINICAL_NAMESPACE } from './constants/app';
+import { LOCALE_STORAGE_KEY, CLINICAL_NAMESPACE } from './constants';
+import { getTranslations, getUserPreferredLocale } from './translationService';
 
 /**
  * Initialize i18n with pre-loaded translations
@@ -44,5 +41,5 @@ export const initI18n = async () => {
 // Export the i18n instance for direct access
 export const i18nInstance = i18n;
 
-// Export the initialization promise as default
-export default await initI18n();
+// Export the initialization function as default to be called by consuming code
+export default initI18n;

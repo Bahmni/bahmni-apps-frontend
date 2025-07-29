@@ -10,9 +10,7 @@
       "@nx/react/typings/cssmodule.d.ts",
       "@nx/react/typings/image.d.ts"
     ],
-    "rootDir": "src",
-    "module": "esnext",
-    "moduleResolution": "bundler"
+    "rootDir": "src"
   },
   "exclude": [
     "out-tsc",
@@ -28,7 +26,12 @@
     "jest.config.ts",
     "eslint.config.js",
     "eslint.config.cjs",
-    "eslint.config.ts"
+    "eslint.config.mjs"
   ],
-  "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"]
+  "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
+  "references": [
+    {
+      "path": "../../packages/bahmni-services/tsconfig.lib.json"
+    }
+  ]
 }
