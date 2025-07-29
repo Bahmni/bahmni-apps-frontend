@@ -4,6 +4,8 @@ import React from 'react';
 import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import i18n from '@/setupTests.i18n';
+import { FhirEncounter, FhirEncounterType } from '@/types/encounter';
+import { User } from '@/types/user';
 import {
   mockLocations,
   mockEncounterConcepts,
@@ -12,6 +14,7 @@ import {
 } from '@__mocks__/consultationPadMocks';
 import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
 import { NotificationProvider } from '@providers/NotificationProvider';
+import { logAuditEvent } from '@services/auditLogService';
 import * as consultationBundleService from '@services/consultationBundleService';
 import { getEncounterConcepts } from '@services/encounterConceptsService';
 import { getActiveVisit } from '@services/encounterService';
@@ -23,10 +26,11 @@ import useAllergyStore from '@stores/allergyStore';
 import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
 import useServiceRequestStore from '@stores/serviceRequestStore';
-import { FhirEncounter, FhirEncounterType } from '@types/encounter';
-import { User } from '@types/user';
 import ConsultationPad from '../ConsultationPad';
 
+const mockLogAuditEvent = logAuditEvent as jest.MockedFunction<
+  typeof logAuditEvent
+>;
 // Mock axios to prevent actual HTTP requests and SSL certificate errors
 jest.mock('axios', () => ({
   create: jest.fn(() => ({
@@ -59,6 +63,7 @@ jest.mock('@services/providerService');
 jest.mock('@services/userService');
 jest.mock('@services/encounterService');
 jest.mock('@services/notificationService');
+jest.mock('@services/auditLogService');
 
 // Create mock user
 const mockUser: User = {
@@ -143,6 +148,9 @@ describe('ConsultationPad Integration', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Reset audit logging mocks
+    mockLogAuditEvent.mockResolvedValue({ logged: true });
 
     // Mock implementation for each service
     (getLocations as jest.Mock).mockResolvedValue(mockLocations);

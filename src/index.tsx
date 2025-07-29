@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { NotificationProvider } from '@providers/NotificationProvider';
 import { NotificationServiceComponent } from '@services/NotificationServiceComponent';
+import { initializeAuditListener } from '@utils/globalAuditListener';
 import App from './App';
 import { initFontAwesome } from './fontawesome';
 import '@styles/index.scss';
@@ -10,6 +11,9 @@ import '@/i18n';
 
 // Initialize FontAwesome
 initFontAwesome();
+
+// Initialize global audit event listener
+initializeAuditListener();
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Failed to find the root element');

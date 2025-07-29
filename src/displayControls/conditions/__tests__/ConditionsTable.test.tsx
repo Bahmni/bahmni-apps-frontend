@@ -35,10 +35,10 @@ const mockedFormatConditions = formatConditions as jest.MockedFunction<
 const mockedFormatDateDistance = formatDateDistance as jest.MockedFunction<
   typeof formatDateDistance
 >;
-const mockedGenerateId = generateId as jest.MockedFunction<typeof generateId>;
 const mockedGetFormattedError = getFormattedError as jest.MockedFunction<
   typeof getFormattedError
 >;
+const mockedGenerateId = generateId as jest.MockedFunction<typeof generateId>;
 
 // Default mock setup for consistent behavior
 const defaultConditionsHookReturn = {
@@ -132,7 +132,7 @@ describe('ConditionsTable Unit Tests', () => {
   });
 
   // 2. Rendering Tests
-  describe('Rendering Tests', () => {
+  describe('Rendering', () => {
     it('should render loading state when loading is true', () => {
       // Arrange
       mockedUseConditions.mockReturnValue({
@@ -144,9 +144,7 @@ describe('ConditionsTable Unit Tests', () => {
       render(<ConditionsTable />);
 
       // Assert
-      expect(
-        screen.getByTestId('expandable-table-skeleton'),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
     });
 
     it('should render error state when there is an error', () => {
@@ -161,18 +159,8 @@ describe('ConditionsTable Unit Tests', () => {
       render(<ConditionsTable />);
 
       // Assert
-      expect(screen.getByTestId('expandable-table-error')).toBeInTheDocument();
+      expect(screen.getByTestId('sortable-table-error')).toBeInTheDocument();
       expect(screen.getByText(/Test error message/)).toBeInTheDocument();
-    });
-
-    it('should render accordion with correct title', async () => {
-      // Act
-      render(<ConditionsTable />);
-
-      // Assert
-      await waitFor(() => {
-        expect(screen.getByText('Conditions')).toBeInTheDocument();
-      });
     });
 
     it('should render empty state when conditions array is empty', () => {
@@ -180,9 +168,7 @@ describe('ConditionsTable Unit Tests', () => {
       render(<ConditionsTable />);
 
       // Assert
-      expect(
-        screen.getByTestId('expandable-data-table-empty'),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
       expect(screen.getByText('No conditions recorded')).toBeInTheDocument();
     });
 
@@ -198,7 +184,7 @@ describe('ConditionsTable Unit Tests', () => {
 
       // Assert
       await waitFor(() => {
-        expect(screen.getByTestId('expandable-data-table')).toBeInTheDocument();
+        expect(screen.getByTestId('sortable-data-table')).toBeInTheDocument();
       });
     });
 
@@ -357,7 +343,7 @@ describe('ConditionsTable Unit Tests', () => {
 
       // Assert - Should render empty string without errors
       await waitFor(() => {
-        expect(screen.getByTestId('expandable-data-table')).toBeInTheDocument();
+        expect(screen.getByTestId('sortable-data-table')).toBeInTheDocument();
       });
     });
   });
@@ -429,7 +415,7 @@ describe('ConditionsTable Unit Tests', () => {
       render(<ConditionsTable />);
 
       // Assert
-      expect(screen.getByTestId('expandable-table-error')).toBeInTheDocument();
+      expect(screen.getByTestId('sortable-table-error')).toBeInTheDocument();
       expect(screen.getByText(/Network error/)).toBeInTheDocument();
     });
 
@@ -444,7 +430,7 @@ describe('ConditionsTable Unit Tests', () => {
       render(<ConditionsTable />);
 
       // Assert
-      expect(screen.getByTestId('expandable-table-error')).toBeInTheDocument();
+      expect(screen.getByTestId('sortable-table-error')).toBeInTheDocument();
       expect(
         screen.getByText(/Server error: 500 Internal Server Error/),
       ).toBeInTheDocument();
@@ -461,7 +447,7 @@ describe('ConditionsTable Unit Tests', () => {
       render(<ConditionsTable />);
 
       // Assert
-      expect(screen.getByTestId('expandable-table-error')).toBeInTheDocument();
+      expect(screen.getByTestId('sortable-table-error')).toBeInTheDocument();
       expect(
         screen.getByText(/Authorization error: 401 Unauthorized/),
       ).toBeInTheDocument();
@@ -476,9 +462,7 @@ describe('ConditionsTable Unit Tests', () => {
 
       // Act & Assert - Component should render without errors when no conditions
       expect(() => render(<ConditionsTable />)).not.toThrow();
-      expect(
-        screen.getByTestId('expandable-data-table-empty'),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
     });
 
     it('should handle malformed condition data gracefully', () => {
@@ -528,16 +512,6 @@ describe('ConditionsTable Unit Tests', () => {
       // Assert
       expect(screen.getByText('No conditions recorded')).toBeInTheDocument();
     });
-
-    it('should use correct translation for table title', async () => {
-      // Act
-      render(<ConditionsTable />);
-
-      // Assert
-      await waitFor(() => {
-        expect(screen.getByText('Conditions')).toBeInTheDocument();
-      });
-    });
   });
 
   // 7. Data Formatting and Service Integration Tests
@@ -554,12 +528,10 @@ describe('ConditionsTable Unit Tests', () => {
       render(<ConditionsTable />);
 
       // Assert
-      expect(
-        screen.getByTestId('expandable-data-table-empty'),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
     });
 
-    it('should pass correct props to ExpandableDataTable', () => {
+    it('should pass correct props to SortableDataTable', () => {
       // Arrange
       mockedUseConditions.mockReturnValue({
         ...defaultConditionsHookReturn,
@@ -571,7 +543,7 @@ describe('ConditionsTable Unit Tests', () => {
 
       // Assert - Check that the component renders with correct structure
       expect(screen.getByTestId('condition-table')).toBeInTheDocument();
-      expect(screen.getByTestId('expandable-data-table')).toBeInTheDocument();
+      expect(screen.getByTestId('sortable-data-table')).toBeInTheDocument();
     });
   });
 
