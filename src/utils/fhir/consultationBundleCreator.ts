@@ -16,14 +16,15 @@ export const createConsultationBundle = (
 export const createBundleEntry = (
   fullURL: string,
   resource: FhirResource,
-  requestMethod: 'POST',
+  requestMethod: 'POST' | 'PUT',
+  resourceUrl?: string,
 ): BundleEntry<FhirResource> => {
   return {
     fullUrl: fullURL,
     resource: resource,
     request: {
       method: requestMethod,
-      url: resource.resourceType,
+      url: resourceUrl ?? resource.resourceType,
     },
   };
 };
