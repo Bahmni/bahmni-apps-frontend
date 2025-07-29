@@ -66,6 +66,15 @@ describe('conditionResourceCreator', () => {
 
       mockCreateCodeableConcept
         .mockReturnValueOnce(mockDiagnosisCodeableConcept)
+        .mockReturnValueOnce({
+          coding: [
+            {
+              code: 'active',
+              system:
+                'http://terminology.hl7.org/CodeSystem/condition-clinical',
+            },
+          ],
+        })
         .mockReturnValueOnce(mockVerificationStatusCodeableConcept);
 
       // Act
@@ -94,6 +103,15 @@ describe('conditionResourceCreator', () => {
           },
         ],
         code: mockDiagnosisCodeableConcept,
+        clinicalStatus: {
+          coding: [
+            {
+              code: 'active',
+              system:
+                'http://terminology.hl7.org/CodeSystem/condition-clinical',
+            },
+          ],
+        },
         verificationStatus: mockVerificationStatusCodeableConcept,
         encounter: encounterReference,
         recorder: recorderReference,
@@ -101,20 +119,28 @@ describe('conditionResourceCreator', () => {
       });
 
       // Verify mock calls
-      expect(mockCreateCoding).toHaveBeenCalledTimes(2);
+      expect(mockCreateCoding).toHaveBeenCalledTimes(3);
       expect(mockCreateCoding).toHaveBeenNthCalledWith(1, diagnosisConceptUUID);
       expect(mockCreateCoding).toHaveBeenNthCalledWith(
         2,
+        'active',
+        'http://terminology.hl7.org/CodeSystem/condition-clinical',
+      );
+      expect(mockCreateCoding).toHaveBeenNthCalledWith(
+        3,
         'provisional',
         HL7_CONDITION_VERIFICATION_STATUS_CODE_SYSTEM,
       );
 
-      expect(mockCreateCodeableConcept).toHaveBeenCalledTimes(2);
+      expect(mockCreateCodeableConcept).toHaveBeenCalledTimes(3);
       expect(mockCreateCodeableConcept).toHaveBeenNthCalledWith(1, [
         mockCreateCoding.mock.results[0].value,
       ]);
       expect(mockCreateCodeableConcept).toHaveBeenNthCalledWith(2, [
         mockCreateCoding.mock.results[1].value,
+      ]);
+      expect(mockCreateCodeableConcept).toHaveBeenNthCalledWith(3, [
+        mockCreateCoding.mock.results[2].value,
       ]);
     });
 
@@ -153,6 +179,11 @@ describe('conditionResourceCreator', () => {
       );
       expect(mockCreateCoding).toHaveBeenNthCalledWith(
         2,
+        'active',
+        'http://terminology.hl7.org/CodeSystem/condition-clinical',
+      );
+      expect(mockCreateCoding).toHaveBeenNthCalledWith(
+        3,
         'confirmed',
         HL7_CONDITION_VERIFICATION_STATUS_CODE_SYSTEM,
       );
@@ -322,6 +353,7 @@ describe('conditionResourceCreator', () => {
         'subject',
         'category',
         'code',
+        'clinicalStatus',
         'verificationStatus',
         'encounter',
         'recorder',

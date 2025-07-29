@@ -1,18 +1,20 @@
-import { Button } from '@carbon/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import ConsultationActionButton from '@/components/clinical/patientHeader/ConsultationActionButton';
 import PatientDetails from '@displayControls/patient/PatientDetails';
 import * as styles from './styles/PatientHeader.module.scss';
 
 interface PatientHeaderProps {
-  setIsActionAreaVisible: React.Dispatch<React.SetStateAction<boolean>>;
   isActionAreaVisible: boolean;
+  setIsActionAreaVisible: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 /**
  * Header component for the Bahmni Clinical application
- * Provides navigation and branding elements
+ * Displays patient details with consultation action button
  *
+ * @param {boolean} isActionAreaVisible - Whether the action area is currently visible
+ * @param {function} setIsActionAreaVisible - Function to toggle action area visibility
  * @returns {React.ReactElement} The Header component
  */
 const PatientHeader: React.FC<PatientHeaderProps> = ({
@@ -24,19 +26,12 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
   return (
     <div aria-label={t('PATIENT_HEADER_LABEL')} className={styles.header}>
       <PatientDetails />
-      <Button
-        className={styles.newConsultationButton}
-        size="md"
-        disabled={isActionAreaVisible}
-        onClick={() => setIsActionAreaVisible(!isActionAreaVisible)}
-      >
-        {t(
-          isActionAreaVisible
-            ? 'PATIENT_HEADER_ACTION_AREA_IN_PROGRESS'
-            : 'PATIENT_HEADER_SHOW_ACTION_AREA',
-        )}
-      </Button>
+      <ConsultationActionButton
+        isActionAreaVisible={isActionAreaVisible}
+        setIsActionAreaVisible={setIsActionAreaVisible}
+      />
     </div>
   );
 };
+
 export default PatientHeader;

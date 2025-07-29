@@ -9,6 +9,7 @@ import MedicationsForm from '@components/clinical/forms/prescribeMedicines/Medic
 import ActionArea from '@components/common/actionArea/ActionArea';
 import { AUDIT_LOG_EVENT_DETAILS } from '@constants/auditLog';
 import { ERROR_TITLES } from '@constants/errors';
+import { useEncounterSession } from '@hooks/useEncounterSession';
 import useNotification from '@hooks/useNotification';
 import {
   postConsultationBundle,
@@ -17,6 +18,8 @@ import {
   createConditionsBundleEntries,
   createServiceRequestBundleEntries,
   createMedicationRequestEntries,
+  createEncounterBundleEntry,
+  getEncounterReference,
 } from '@services/consultationBundleService';
 import useAllergyStore from '@stores/allergyStore';
 import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
@@ -26,10 +29,7 @@ import useServiceRequestStore from '@stores/serviceRequestStore';
 import { AuditEventType } from '@types/auditLog';
 import { ConsultationBundle } from '@types/consultationBundle';
 import { dispatchAuditEvent } from '@utils/auditEventDispatcher';
-import {
-  createBundleEntry,
-  createConsultationBundle,
-} from '@utils/fhir/consultationBundleCreator';
+import { createConsultationBundle } from '@utils/fhir/consultationBundleCreator';
 import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
 import * as styles from './styles/ConsultationPad.module.scss';
 
@@ -65,7 +65,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     consultationDate,
     isEncounterDetailsFormReady,
     practitioner,
-    user,
     patientUUID,
     hasError,
     reset: resetEncounterDetails,
@@ -79,6 +78,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     validateAllMedications,
     reset: resetMedications,
   } = useMedicationStore();
+
+  // Get encounter session state
+  const { activeEncounter } = useEncounterSession();
 
   // Clean up on unmount
   useEffect(() => {
@@ -112,7 +114,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   // 2. Extract validation logic into a custom hook
   // 3. Create utility functions for bundle creation
   const submitConsultation = () => {
-    const enconterResourceURL = `urn:uuid:${crypto.randomUUID()}`;
+    // Create encounter resource
     const encounterResource = createEncounterResource(
       selectedEncounterType!.uuid,
       selectedEncounterType!.name,
@@ -122,47 +124,62 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       selectedLocation!.uuid,
       consultationDate,
     );
-    const encounterBundleEntry = createBundleEntry(
-      enconterResourceURL,
+
+    // Generate a single placeholder reference for consistency
+    const placeholderReference = `urn:uuid:${crypto.randomUUID()}`;
+
+    // Create encounter bundle entry (POST for new, PUT for existing)
+    const encounterBundleEntry = createEncounterBundleEntry(
+      activeEncounter,
       encounterResource,
-      'POST',
     );
+
+    // Get the appropriate encounter reference for other resources
+    const encounterReference = getEncounterReference(
+      activeEncounter,
+      encounterBundleEntry.fullUrl ?? placeholderReference,
+    );
+
+    // Use consistent practitioner UUID for all resources
+    const practitionerUUID = practitioner!.uuid;
+
     const diagnosisEntries = createDiagnosisBundleEntries({
       selectedDiagnoses,
       encounterSubject: encounterResource.subject!,
-      encounterReference: enconterResourceURL,
-      practitionerUUID: user!.uuid,
+      encounterReference,
+      practitionerUUID: practitionerUUID,
       consultationDate,
     });
 
     const allergyEntries = createAllergiesBundleEntries({
       selectedAllergies,
       encounterSubject: encounterResource.subject!,
-      encounterReference: enconterResourceURL,
-      practitionerUUID: user!.uuid,
+      encounterReference,
+      practitionerUUID: practitionerUUID,
     });
 
     const conditionEntries = createConditionsBundleEntries({
       selectedConditions,
       encounterSubject: encounterResource.subject!,
-      encounterReference: enconterResourceURL,
-      practitionerUUID: user!.uuid,
+      encounterReference,
+      practitionerUUID: practitionerUUID,
       consultationDate,
     });
 
     const serviceRequestEntries = createServiceRequestBundleEntries({
       selectedServiceRequests,
       encounterSubject: encounterResource.subject!,
-      encounterReference: enconterResourceURL,
-      practitionerUUID: practitioner!.uuid,
+      encounterReference,
+      practitionerUUID: practitionerUUID,
     });
 
     const medicationEntries = createMedicationRequestEntries({
       selectedMedications,
       encounterSubject: encounterResource.subject!,
-      encounterReference: enconterResourceURL,
-      practitionerUUID: practitioner!.uuid,
+      encounterReference,
+      practitionerUUID: practitionerUUID,
     });
+
     const consultationBundle = createConsultationBundle([
       encounterBundleEntry,
       ...diagnosisEntries,
@@ -191,6 +208,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       try {
         setIsSubmitting(true);
         await submitConsultation();
+
         setIsSubmitting(false);
 
         // Dispatch audit event for successful encounter edit/creation
@@ -239,7 +257,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
 
   return (
     <ActionArea
-      title={hasError ? '' : t('CONSULTATION_PAD_TITLE')}
+      title={hasError ? '' : t('CONSULTATION_ACTION_NEW')}
       primaryButtonText={t('CONSULTATION_PAD_DONE_BUTTON')}
       onPrimaryButtonClick={handleOnPrimaryButtonClick}
       isPrimaryButtonDisabled={

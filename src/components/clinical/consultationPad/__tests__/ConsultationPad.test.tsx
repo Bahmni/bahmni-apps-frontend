@@ -135,6 +135,12 @@ jest.mock('@services/consultationBundleService', () => ({
   createConditionsBundleEntries: jest.fn(() => []),
   createServiceRequestBundleEntries: jest.fn(() => []),
   createMedicationRequestEntries: jest.fn(() => []),
+  createEncounterBundleEntry: jest.fn(() => ({
+    fullUrl: 'urn:uuid:mock-encounter-uuid',
+    resource: { resourceType: 'Encounter', id: 'mock-encounter-id' },
+    request: { method: 'POST', url: 'Encounter' },
+  })),
+  getEncounterReference: jest.fn(() => 'urn:uuid:mock-encounter-uuid'),
 }));
 
 // Mock hooks
@@ -171,6 +177,13 @@ jest.mock('@utils/fhir/consultationBundleCreator', () => ({
     type: 'transaction',
     entry: entries,
   })),
+}));
+
+// Mock encounter session hook
+const mockUseEncounterSession = jest.fn();
+jest.mock('@hooks/useEncounterSession', () => ({
+  __esModule: true,
+  useEncounterSession: () => mockUseEncounterSession(),
 }));
 
 // Create mock store factories
@@ -274,6 +287,14 @@ describe('ConsultationPad', () => {
     mockServiceRequestStore = createMockServiceRequestStore();
     mockMedicationStore = createMockMedicationStore();
 
+    // Mock useEncounterSession hook
+    mockUseEncounterSession.mockReturnValue({
+      hasActiveSession: false,
+      activeEncounter: null,
+      isPractitionerMatch: false,
+      refetch: jest.fn(),
+    });
+
     // Update the mocked return values
     (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue(
       mockEncounterDetailsStore,
@@ -302,7 +323,7 @@ describe('ConsultationPad', () => {
     it('should display correct title when no error', () => {
       renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
       expect(screen.getByTestId('action-area-title')).toHaveTextContent(
-        'New Consultation',
+        'CONSULTATION_ACTION_NEW',
       );
     });
 
@@ -1016,8 +1037,8 @@ describe('ConsultationPad', () => {
         ).toHaveBeenCalledWith({
           selectedDiagnoses: [],
           encounterSubject: { reference: 'Patient/patient-123' },
-          encounterReference: 'urn:uuid:mock-uuid-1234-5678-9abc-def012345678',
-          practitionerUUID: 'user-123',
+          encounterReference: 'urn:uuid:mock-encounter-uuid',
+          practitionerUUID: 'practitioner-123',
           consultationDate: mockEncounterDetailsStore.consultationDate,
         });
 
@@ -1026,8 +1047,8 @@ describe('ConsultationPad', () => {
         ).toHaveBeenCalledWith({
           selectedAllergies: [],
           encounterSubject: { reference: 'Patient/patient-123' },
-          encounterReference: 'urn:uuid:mock-uuid-1234-5678-9abc-def012345678',
-          practitionerUUID: 'user-123',
+          encounterReference: 'urn:uuid:mock-encounter-uuid',
+          practitionerUUID: 'practitioner-123',
         });
 
         expect(
@@ -1035,8 +1056,8 @@ describe('ConsultationPad', () => {
         ).toHaveBeenCalledWith({
           selectedConditions: [],
           encounterSubject: { reference: 'Patient/patient-123' },
-          encounterReference: 'urn:uuid:mock-uuid-1234-5678-9abc-def012345678',
-          practitionerUUID: 'user-123',
+          encounterReference: 'urn:uuid:mock-encounter-uuid',
+          practitionerUUID: 'practitioner-123',
           consultationDate: mockEncounterDetailsStore.consultationDate,
         });
 
@@ -1045,7 +1066,7 @@ describe('ConsultationPad', () => {
         ).toHaveBeenCalledWith({
           selectedServiceRequests: new Map(),
           encounterSubject: { reference: 'Patient/patient-123' },
-          encounterReference: 'urn:uuid:mock-uuid-1234-5678-9abc-def012345678',
+          encounterReference: 'urn:uuid:mock-encounter-uuid',
           practitionerUUID: 'practitioner-123',
         });
       });
@@ -1057,6 +1078,11 @@ describe('ConsultationPad', () => {
       (global.crypto.randomUUID as jest.Mock).mockImplementation(
         () => mockUUIDs[uuidIndex++],
       );
+
+      // Mock getEncounterReference to return the expected UUID format
+      (
+        consultationBundleService.getEncounterReference as jest.Mock
+      ).mockReturnValue('urn:uuid:uuid-1-2-3-4-5');
 
       (
         consultationBundleService.postConsultationBundle as jest.Mock

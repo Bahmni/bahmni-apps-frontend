@@ -30,6 +30,9 @@ export const createEncounterDiagnosisResource = (
       },
     ],
     code: createCodeableConcept([createCoding(diagnosisConceptUUID)]),
+    clinicalStatus: createCodeableConcept([
+      createCoding('active', HL7_CONDITION_CLINICAL_STATUS_CODE_SYSTEM),
+    ]),
     verificationStatus: createCodeableConcept([
       createCoding(
         diagnosisCertainty,
