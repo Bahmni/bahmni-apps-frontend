@@ -15,6 +15,8 @@ export const BAHMNI_USER_LOCATION_COOKIE_NAME = 'bahmni.user.location';
 //TODO: When we work on taking values dynamically, we need to remove the hardcoded value of LAB_ORDER_TYPE_UUID */
 export const LAB_ORDER_TYPE_UUID = 'd3560b17-5e07-11ef-8f7c-0242ac120002';
 export const RADIOLOGY_ORDER_TYPE_UUID = 'd3561dc0-5e07-11ef-8f7c-0242ac120002';
+export const CONSULTATION_ENCOUNTER_TYPE_UUID =
+  'd34fe3ab-5e07-11ef-8f7c-0242ac120002';
 
 export const BUNDLED_TRANSLATIONS_URL_TEMPLATE = (lang: string) =>
   BASE_PATH + `locales/locale_${lang}.json`;
