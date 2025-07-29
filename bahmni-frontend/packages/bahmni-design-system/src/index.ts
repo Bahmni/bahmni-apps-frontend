@@ -1,3 +1,1 @@
-import { Tile } from '@carbon/react';
-
-export { Tile };
+export { Button } from './button';

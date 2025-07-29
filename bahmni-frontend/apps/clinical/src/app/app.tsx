@@ -3,6 +3,7 @@
 import { ApiTest } from '../components/ApiTest';
 import { I18nTest } from '../components/I18nTest';
 import { IconTest } from '../components/IconTest';
+import { TestButton } from '../components/TestButton';
 import { useTranslation } from '@bahmni-frontend/bahmni-services';
 
 export function App() {
@@ -13,6 +14,7 @@ export function App() {
       <ApiTest />
       <I18nTest />
       <IconTest />
+      <TestButton />
     </div>
   );
 }
