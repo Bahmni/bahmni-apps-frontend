@@ -80,7 +80,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   } = useMedicationStore();
 
   // Get encounter session state
-  const { activeEncounter, refetch } = useEncounterSession();
+  const { activeEncounter } = useEncounterSession();
 
   // Clean up on unmount
   useEffect(() => {
@@ -208,14 +208,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       try {
         setIsSubmitting(true);
         await submitConsultation();
-
-        // If this was a new consultation (POST), refetch encounter session to update button
-        if (!activeEncounter) {
-          // Add a small delay to allow server to process the encounter
-          setTimeout(async () => {
-            await refetch();
-          }, 1000); // 1 second delay
-        }
 
         setIsSubmitting(false);
 

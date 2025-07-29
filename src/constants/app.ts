@@ -64,8 +64,8 @@ export const CONCEPT_SEARCH_URL = (
 export const CONCEPT_DETAIL_URL = (uuid: string, locale: string): string =>
   OPENMRS_REST_V1 +
   `/concept/${uuid}?v=custom:(uuid,setMembers:(uuid,display,retired))&locale=${locale}`;
-//TODO: chnage URL to use bahmni config api
 export const ENCOUNTER_SEARCH_URL = OPENMRS_FHIR_R4 + '/Encounter';
+//TODO: chnage URL to use bahmni config api
 export const ENCOUNTER_SESSION_DURATION_GP_URL =
   OPENMRS_REST_V1 + '/systemsetting/bahmni.encountersession.duration';
 export const FHIR_VALUESET_URL = (uuid: string) =>
