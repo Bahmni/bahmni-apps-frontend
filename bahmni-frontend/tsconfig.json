@@ -8,6 +8,9 @@
     },
     {
       "path": "./packages/bahmni-services"
+    },
+    {
+      "path": "./packages/bahmni-design-system"
     }
   ]
 }
