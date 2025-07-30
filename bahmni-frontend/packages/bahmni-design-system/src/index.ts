@@ -25,3 +25,11 @@ export {
   type SelectableTagProps,
   type TagSkeletonProps
 } from './tag';
+export {
+  Accordion,
+  AccordionItem,
+  AccordionSkeleton,
+  type AccordionProps,
+  type AccordionItemProps,
+  type AccordionSkeletonProps
+} from './accordion';
