@@ -1,7 +1,7 @@
 import { IconName } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
-import { ICON_SIZE, ICON_PADDING } from '@constants/icon';
+import { ICON_SIZE, ICON_PADDING } from './constants';
 import * as styles from './styles/BahmniIcon.module.scss';
 
 interface BahmniIconProps {

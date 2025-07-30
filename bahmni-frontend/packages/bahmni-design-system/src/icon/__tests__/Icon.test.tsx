@@ -1,8 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import React from 'react';
 import '@testing-library/jest-dom';
-import { ICON_PADDING, ICON_SIZE } from '@constants/icon';
+import { ICON_PADDING, ICON_SIZE } from '../constants';
 import BahmniIcon from '../Icon';
 
 expect.extend(toHaveNoViolations);
