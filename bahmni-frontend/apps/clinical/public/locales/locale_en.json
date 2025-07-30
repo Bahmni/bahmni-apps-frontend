@@ -1,0 +1,11 @@
+{
+  "I18N_TEST_TITLE": "i18n Service Test",
+  "I18N_TEST_DESCRIPTION": "This component demonstrates internationalization functionality",
+  "I18N_TEST_CURRENT_LANGUAGE": "Current Language: {{language}}",
+  "I18N_TEST_SWITCH_TO_ENGLISH": "Switch to English",
+  "I18N_TEST_SWITCH_TO_SPANISH": "Switch to Spanish",
+  "I18N_TEST_SIMPLE_MESSAGE": "Simple translated message",
+  "I18N_TEST_WELCOME_USER": "Welcome, {{username}}!",
+  "I18N_TEST_ITEM_COUNT_one": "You have {{count}} item",
+  "I18N_TEST_ITEM_COUNT_other": "You have {{count}} items"
+}

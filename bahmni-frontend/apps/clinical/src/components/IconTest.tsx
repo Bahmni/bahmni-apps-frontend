@@ -15,7 +15,7 @@ import {
   faBrain,
   faVirus,
 } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { FontAwesomeIcon } from '@bahmni-frontend/bahmni-services';
 import React from 'react';
 
 interface IconItemProps {

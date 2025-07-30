@@ -1,10 +1,12 @@
 const { NxAppWebpackPlugin } = require('@nx/webpack/app-plugin');
 const { NxReactWebpackPlugin } = require('@nx/react/webpack-plugin');
-const { join } = require('path');
+const CopyPlugin = require('copy-webpack-plugin');
+const path = require('path');
 
 module.exports = {
   output: {
-    path: join(__dirname, 'dist'),
+    path: path.join(__dirname, 'dist'),
+    publicPath: '/ ',
   },
   devServer: {
     port: 4200,
@@ -25,6 +27,14 @@ module.exports = {
       styles: ['./src/styles.scss'],
       outputHashing: process.env['NODE_ENV'] === 'production' ? 'all' : 'none',
       optimization: process.env['NODE_ENV'] === 'production',
+    }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'public'),
+          to: 'public',
+        },
+      ],
     }),
     new NxReactWebpackPlugin({
       // Uncomment this line if you don't want to use SVGR

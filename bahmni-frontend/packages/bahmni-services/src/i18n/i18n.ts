@@ -38,8 +38,5 @@ export const initI18n = async () => {
   return i18n;
 };
 
-// Export the i18n instance for direct access
-export const i18nInstance = i18n;
-
 // Export the initialization function as default to be called by consuming code
 export default initI18n;
