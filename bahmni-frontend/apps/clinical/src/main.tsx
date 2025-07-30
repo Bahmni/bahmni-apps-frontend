@@ -7,11 +7,15 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement,
 );
 
-initAppI18n();
-initFontAwesome();
+const initializeApp = async () => {
+  await initAppI18n();
+  initFontAwesome();
 
-root.render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+  root.render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  );
+};
+
+initializeApp();
