@@ -7,7 +7,7 @@
   td {
     @include type-style("body-compact-01");
     background-color: $background;
-    color: $text-primary;
+    color: $text-primary !important;
     height: $spacing-10;
     align-content: start;
   }

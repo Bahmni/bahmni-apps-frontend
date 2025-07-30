@@ -168,14 +168,14 @@ const MedicationsTable: React.FC = () => {
       case 'name':
         return (
           <>
-            <p className={styles.medicineName}>{row.name}</p>
+            <p className={styles.columnDataBold}>{row.name}</p>
             <p className={styles.medicineDetails}>{row.quantity}</p>
             {row.isImmediate && <Tag className={styles.STAT}>STAT</Tag>}
             {row.asNeeded && <Tag className={styles.PRN}>PRN</Tag>}
           </>
         );
       case 'dosage':
-        return <p className={styles.dosage}>{row.dosage}</p>;
+        return <p className={styles.columnDataBold}>{row.dosage}</p>;
       case 'instruction':
         return row.instruction;
       case 'startDate':
@@ -188,8 +188,9 @@ const MedicationsTable: React.FC = () => {
         return (
           <Tag
             type="outline"
-            renderIcon={DotMark}
-            className={getMedicationStatusClassName(row.status)}
+            renderIcon={() => (
+              <DotMark className={getMedicationStatusClassName(row.status)} />
+            )}
           >
             {t(getMedicationStatusKey(row.status))}
           </Tag>
@@ -213,7 +214,10 @@ const MedicationsTable: React.FC = () => {
         selectedIndex={selectedIndex}
         onChange={(state) => handleTabChange(state.selectedIndex)}
       >
-        <TabList aria-label={t('MEDICATIONS_TAB_LIST_ARIA_LABEL')}>
+        <TabList
+          aria-label={t('MEDICATIONS_TAB_LIST_ARIA_LABEL')}
+          className={styles.medicationTabList}
+        >
           <Tab tabIndex={0}>{t('MEDICATIONS_TAB_ACTIVE_SCHEDULED')}</Tab>
           <Tab tabIndex={1}>{t('MEDICATIONS_TAB_ALL')}</Tab>
         </TabList>
