@@ -26,9 +26,8 @@
 }
 
 .allergyName {
-  @include type-style("body-compact-01");
+  @include type-style("heading-compact-01");
   color: $text-primary;
-  font-weight: 700;
   display: flex;
   gap: $spacing-02;
 }

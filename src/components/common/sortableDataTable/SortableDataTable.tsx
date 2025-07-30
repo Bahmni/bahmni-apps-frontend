@@ -6,7 +6,6 @@ import {
   TableHeader,
   TableBody,
   TableCell,
-  TableContainer,
   DataTableHeader,
   DataTableSkeleton,
 } from '@carbon/react';
@@ -58,7 +57,7 @@ export const SortableDataTable = <T extends { id: string }>({
           showHeader={false}
           showToolbar={false}
           compact
-          className={styles.displayControlHeaders}
+          className={styles.sortableDataTableSkeleton}
         />
       </div>
     );
@@ -90,41 +89,39 @@ export const SortableDataTable = <T extends { id: string }>({
           getRowProps,
           getTableProps,
         }) => (
-          <TableContainer>
-            <Table {...getTableProps()} aria-label={ariaLabel} size="md">
-              <TableHead className={styles.displayControlHeaders}>
-                <TableRow>
-                  {tableHeaders.map((header) => {
-                    const headerProps = getHeaderProps({
-                      header,
-                      isSortable:
-                        sortable.find((s) => s.key === header.key)?.sortable ??
-                        false,
-                    });
-                    return (
-                      <TableHeader {...headerProps} key={header.key}>
-                        {header.header}
-                      </TableHeader>
-                    );
-                  })}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {tableRows.map((row) => {
-                  const originalRow = rowMap.get(row.id)!;
+          <Table {...getTableProps()} aria-label={ariaLabel} size="md">
+            <TableHead>
+              <TableRow>
+                {tableHeaders.map((header) => {
+                  const headerProps = getHeaderProps({
+                    header,
+                    isSortable:
+                      sortable.find((s) => s.key === header.key)?.sortable ??
+                      false,
+                  });
                   return (
-                    <TableRow {...getRowProps({ row })} key={row.id}>
-                      {row.cells.map((cell) => (
-                        <TableCell key={cell.id}>
-                          {renderCell(originalRow, cell.info.header)}
-                        </TableCell>
-                      ))}
-                    </TableRow>
+                    <TableHeader {...headerProps} key={header.key}>
+                      {header.header}
+                    </TableHeader>
                   );
                 })}
-              </TableBody>
-            </Table>
-          </TableContainer>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {tableRows.map((row) => {
+                const originalRow = rowMap.get(row.id)!;
+                return (
+                  <TableRow {...getRowProps({ row })} key={row.id}>
+                    {row.cells.map((cell) => (
+                      <TableCell key={cell.id}>
+                        {renderCell(originalRow, cell.info.header)}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
         )}
       </DataTable>
     </div>
