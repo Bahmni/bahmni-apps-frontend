@@ -1,7 +1,7 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { initFontAwesome } from '@/fontawesome';
-import BahmniIcon from '../BahmniIcon';
+import BahmniIcon from '../Icon';
 import { ICON_SIZE, ICON_PADDING } from '@constants/icon';
 
 // Initialize FontAwesome
