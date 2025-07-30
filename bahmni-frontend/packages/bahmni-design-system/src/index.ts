@@ -66,3 +66,13 @@ export {
   type TabPanelsProps,
   type TabPanelProps,
 } from './tabs';
+export {
+  NumberInput,
+  NumberInputSkeleton,
+  FluidNumberInput,
+  FluidNumberInputSkeleton,
+  type NumberInputProps,
+  type NumberInputSkeletonProps,
+  type FluidNumberInputProps,
+  type FluidNumberInputSkeletonProps,
+} from './numberInput';
