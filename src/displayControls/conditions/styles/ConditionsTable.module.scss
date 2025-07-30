@@ -3,6 +3,16 @@
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
 
+.conditionsTableTitle {
+  background: $background !important;
+  min-block-size: fit-content !important;
+  border-bottom: 1px solid $border-subtle-02;
+  p {
+    @include type-style("heading-compact-02");
+    color: $text-primary;
+  }
+}
+
 .conditionName {
   @include type-style("heading-compact-01");
 }
