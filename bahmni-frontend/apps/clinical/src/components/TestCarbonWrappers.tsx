@@ -1,8 +1,23 @@
 import React from 'react';
-import { Button, Tile, ExpandableTile, TagSkeleton, DismissibleTag, Accordion, AccordionItem, DataTableSkeleton } from '@bahmni-frontend/bahmni-design-system';
+import {
+  Button,
+  Tile,
+  ExpandableTile,
+  TagSkeleton,
+  DismissibleTag,
+  Accordion,
+  AccordionItem,
+  DataTableSkeleton,
+  Tabs,
+  TabList,
+  Tab,
+  TabPanels,
+  TabPanel
+} from '@bahmni-frontend/bahmni-design-system';
+import { Layer, Checkbox, TextInput } from '@carbon/react';
 
 
-export const TestButton: React.FC = () => {
+export const TestCarbonWrappers: React.FC = () => {
   return (
     <div>
       <h2>Testing Bahmni Design System Button</h2>
@@ -64,6 +79,38 @@ export const TestButton: React.FC = () => {
       <Button kind="tertiary" testId="test-tertiary" disabled>
         Disabled Button
       </Button>
+      <Tabs>
+      <TabList contained>
+        <Tab>Dashboard</Tab>
+        <Tab>Monitoring</Tab>
+        <Tab>Activity</Tab>
+        <Tab>Analyze</Tab>
+        <Tab disabled>Settings</Tab>
+      </TabList>
+      <TabPanels>
+        <TabPanel>Tab Panel 1</TabPanel>
+        <TabPanel>
+          <Layer>
+            <form style={{
+            margin: '2em'
+          }}>
+              <legend className={`cds--label`}>Validation example</legend>
+              <Checkbox id="cb" labelText="Accept privacy policy" />
+              <Button style={{
+              marginTop: '1rem',
+              marginBottom: '1rem'
+            }} type="submit">
+                Submit
+              </Button>
+              <TextInput id="text-input-1" type="text" labelText="Text input label" helperText="Optional help text" />
+            </form>
+          </Layer>
+        </TabPanel>
+        <TabPanel>Tab Panel 3</TabPanel>
+        <TabPanel>Tab Panel 4</TabPanel>
+        <TabPanel>Tab Panel 5</TabPanel>
+      </TabPanels>
+    </Tabs>
     </div>
   );
 };

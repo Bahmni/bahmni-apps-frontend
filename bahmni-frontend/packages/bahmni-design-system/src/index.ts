@@ -54,3 +54,15 @@ export {
   type TableContainerProps,
   type DataTableHeader,
 } from './dataTable';
+export {
+  Tabs,
+  TabList,
+  Tab,
+  TabPanels,
+  TabPanel,
+  type TabsProps,
+  type TabListProps,
+  type TabProps,
+  type TabPanelsProps,
+  type TabPanelProps,
+} from './tabs';
