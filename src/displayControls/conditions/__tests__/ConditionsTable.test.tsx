@@ -133,6 +133,18 @@ describe('ConditionsTable Unit Tests', () => {
 
   // 2. Rendering Tests
   describe('Rendering', () => {
+    it('should render Tile container diagnoses title', () => {
+      mockedUseConditions.mockReturnValue({
+        ...defaultConditionsHookReturn,
+        loading: false,
+      });
+
+      render(<ConditionsTable />);
+
+      const tile = screen.getByTestId('conditions-title');
+      expect(tile).toHaveTextContent('Conditions');
+    });
+
     it('should render loading state when loading is true', () => {
       // Arrange
       mockedUseConditions.mockReturnValue({
