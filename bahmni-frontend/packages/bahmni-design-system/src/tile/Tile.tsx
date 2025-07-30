@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Tile as CarbonTile,
   TileProps as CarbonTileProps,
@@ -13,6 +12,7 @@ import {
   TileBelowTheFoldContent,
   TileBelowTheFoldContentProps,
 } from '@carbon/react';
+import React from 'react';
 
 // Base Tile wrapper
 export type TileProps = CarbonTileProps & {
@@ -83,9 +83,9 @@ export const ExpandableTileWrapper: React.FC<ExpandableTileWrapperProps> = ({
 };
 
 // Re-export Carbon tile content components as-is (they don't need testId)
-export { 
-  TileAboveTheFoldContent, 
+export {
+  TileAboveTheFoldContent,
   TileBelowTheFoldContent,
   type TileAboveTheFoldContentProps,
-  type TileBelowTheFoldContentProps
+  type TileBelowTheFoldContentProps,
 };

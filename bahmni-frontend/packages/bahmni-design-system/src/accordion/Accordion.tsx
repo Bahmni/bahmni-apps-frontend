@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Accordion as CarbonAccordion,
   AccordionProps as CarbonAccordionProps,
@@ -7,6 +6,7 @@ import {
   AccordionSkeleton,
   AccordionSkeletonProps,
 } from '@carbon/react';
+import React from 'react';
 
 // Base Accordion wrapper
 export type AccordionProps = CarbonAccordionProps & {
@@ -48,11 +48,8 @@ export type AccordionSkeletonWrapperProps = AccordionSkeletonProps & {
   testId?: string;
 };
 
-export const AccordionSkeletonWrapper: React.FC<AccordionSkeletonWrapperProps> = ({
-  testId,
-  ...carbonProps
-}) => {
-  return (
-    <AccordionSkeleton {...carbonProps} data-testid={testId} />
-  );
+export const AccordionSkeletonWrapper: React.FC<
+  AccordionSkeletonWrapperProps
+> = ({ testId, ...carbonProps }) => {
+  return <AccordionSkeleton {...carbonProps} data-testid={testId} />;
 };

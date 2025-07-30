@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Tile, ExpandableTile, TagSkeleton, DismissibleTag, Accordion, AccordionItem } from '@bahmni-frontend/bahmni-design-system';
+import { Button, Tile, ExpandableTile, TagSkeleton, DismissibleTag, Accordion, AccordionItem, DataTableSkeleton } from '@bahmni-frontend/bahmni-design-system';
 
 
 export const TestButton: React.FC = () => {
@@ -12,6 +12,37 @@ export const TestButton: React.FC = () => {
             <p>This is a tile component from Bahmni Design System.</p>
           </Tile>
         </AccordionItem>
+        <DataTableSkeleton
+          aria-label="data table skeleton"
+          headers={[
+            {
+              header: 'Name',
+              key: 'name'
+            },
+            {
+              header: 'Protocol',
+              key: 'protocol'
+            },
+            {
+              header: 'Port',
+              key: 'port'
+            },
+            {
+              header: 'Rule',
+              key: 'rule'
+            },
+            {
+              header: 'Attached groups',
+              key: 'attached_groups'
+            },
+            {
+              header: 'Status',
+              key: 'status'
+            }
+          ]}
+          showHeader
+          showToolbar
+        />
       </Accordion>
       <ExpandableTile id="expandable-tile-1" tileCollapsedIconText="Interact to Expand tile" tileExpandedIconText="Interact to Collapse tile">
         <p>I am an Expandable Tile. Click to expand or collapse.</p>

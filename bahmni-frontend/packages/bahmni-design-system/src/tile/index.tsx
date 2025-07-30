@@ -1,4 +1,4 @@
-export { 
+export {
   Tile,
   ClickableTileWrapper as ClickableTile,
   SelectableTileWrapper as SelectableTile,
@@ -10,5 +10,5 @@ export {
   type SelectableTileWrapperProps as SelectableTileProps,
   type ExpandableTileWrapperProps as ExpandableTileProps,
   type TileAboveTheFoldContentProps,
-  type TileBelowTheFoldContentProps
+  type TileBelowTheFoldContentProps,
 } from './Tile';

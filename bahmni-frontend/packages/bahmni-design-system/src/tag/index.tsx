@@ -1,4 +1,4 @@
-export { 
+export {
   Tag,
   DismissibleTagWrapper as DismissibleTag,
   OperationalTagWrapper as OperationalTag,
@@ -8,5 +8,5 @@ export {
   type DismissibleTagWrapperProps as DismissibleTagProps,
   type OperationalTagWrapperProps as OperationalTagProps,
   type SelectableTagWrapperProps as SelectableTagProps,
-  type TagSkeletonWrapperProps as TagSkeletonProps
+  type TagSkeletonWrapperProps as TagSkeletonProps,
 } from './Tag';

@@ -11,7 +11,7 @@ export {
   type SelectableTileProps,
   type ExpandableTileProps,
   type TileAboveTheFoldContentProps,
-  type TileBelowTheFoldContentProps
+  type TileBelowTheFoldContentProps,
 } from './tile';
 export {
   Tag,
@@ -23,7 +23,7 @@ export {
   type DismissibleTagProps,
   type OperationalTagProps,
   type SelectableTagProps,
-  type TagSkeletonProps
+  type TagSkeletonProps,
 } from './tag';
 export {
   Accordion,
@@ -31,5 +31,26 @@ export {
   AccordionSkeleton,
   type AccordionProps,
   type AccordionItemProps,
-  type AccordionSkeletonProps
+  type AccordionSkeletonProps,
 } from './accordion';
+export {
+  DataTable,
+  DataTableSkeleton,
+  Table,
+  TableHead,
+  TableRow,
+  TableHeader,
+  TableBody,
+  TableCell,
+  TableContainer,
+  type DataTableProps,
+  type DataTableSkeletonProps,
+  type TableProps,
+  type TableHeadProps,
+  type TableRowProps,
+  type TableHeaderProps,
+  type TableBodyProps,
+  type TableCellProps,
+  type TableContainerProps,
+  type DataTableHeader,
+} from './dataTable';

@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Tag as CarbonTag,
   TagProps as CarbonTagProps,
@@ -11,6 +10,7 @@ import {
   TagSkeleton,
   TagSkeletonProps,
 } from '@carbon/react';
+import React from 'react';
 
 // Base Tag wrapper
 export type TagProps = CarbonTagProps<'div'> & {
@@ -89,7 +89,5 @@ export const TagSkeletonWrapper: React.FC<TagSkeletonWrapperProps> = ({
   testId,
   ...carbonProps
 }) => {
-  return (
-    <TagSkeleton {...carbonProps} data-testid={testId} />
-  );
+  return <TagSkeleton {...carbonProps} data-testid={testId} />;
 };

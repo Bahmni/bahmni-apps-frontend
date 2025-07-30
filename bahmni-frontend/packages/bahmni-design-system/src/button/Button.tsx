@@ -1,8 +1,8 @@
-import React from 'react';
 import {
   Button as CarbonButton,
   ButtonProps as CarbonButtonProps,
 } from '@carbon/react';
+import React from 'react';
 
 export type ButtonProps = CarbonButtonProps<'button'> & {
   testId?: string;
