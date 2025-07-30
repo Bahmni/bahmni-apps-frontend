@@ -9,6 +9,7 @@ import {
   formatDateTime,
   calculateOnsetDate,
   formatDateDistance,
+  sortByDate,
 } from '../date';
 
 jest.mock('@utils/common', () => ({
@@ -903,6 +904,181 @@ describe('Date Utility Functions', () => {
         expect(result.formattedResult).toBe('5 years');
         expect(result.error).toBeUndefined();
       });
+    });
+  });
+});
+
+describe('sortByDate', () => {
+  describe('Happy Path Tests', () => {
+    it('should sort array by date field in descending order (newest first) by default', () => {
+      const testData = [
+        { id: 1, createdDate: '2025-01-15T10:00:00Z', name: 'Item 1' },
+        { id: 2, createdDate: '2025-01-10T10:00:00Z', name: 'Item 2' },
+        { id: 3, createdDate: '2025-01-20T10:00:00Z', name: 'Item 3' },
+      ];
+
+      const result = sortByDate(testData, 'createdDate');
+
+      expect(result).toHaveLength(3);
+      expect(result[0].id).toBe(3); // Newest first (2025-01-20)
+      expect(result[1].id).toBe(1); // Middle (2025-01-15)
+      expect(result[2].id).toBe(2); // Oldest last (2025-01-10)
+    });
+
+    it('should sort array by date field in ascending order (oldest first) when specified', () => {
+      const testData = [
+        { id: 1, createdDate: '2025-01-15T10:00:00Z', name: 'Item 1' },
+        { id: 2, createdDate: '2025-01-10T10:00:00Z', name: 'Item 2' },
+        { id: 3, createdDate: '2025-01-20T10:00:00Z', name: 'Item 3' },
+      ];
+
+      const result = sortByDate(testData, 'createdDate', true);
+
+      expect(result).toHaveLength(3);
+      expect(result[0].id).toBe(2); // Oldest first (2025-01-10)
+      expect(result[1].id).toBe(1); // Middle (2025-01-15)
+      expect(result[2].id).toBe(3); // Newest last (2025-01-20)
+    });
+
+    it('should handle different date formats correctly', () => {
+      const testData = [
+        { id: 1, date: '2025-01-15' }, // ISO date
+        { id: 2, date: '2025-01-10T10:00:00Z' }, // ISO datetime with Z
+        { id: 3, date: '2025-01-20T15:30:00.000Z' }, // ISO datetime with milliseconds
+        { id: 4, date: new Date('2025-01-05').toISOString() }, // Date object converted to ISO
+      ];
+
+      const result = sortByDate(testData, 'date', true);
+
+      expect(result[0].id).toBe(4); // 2025-01-05
+      expect(result[1].id).toBe(2); // 2025-01-10
+      expect(result[2].id).toBe(1); // 2025-01-15
+      expect(result[3].id).toBe(3); // 2025-01-20
+    });
+
+    it('should maintain stable sort for equal dates', () => {
+      const testData = [
+        { id: 1, date: '2025-01-15T10:00:00Z', name: 'First' },
+        { id: 2, date: '2025-01-15T10:00:00Z', name: 'Second' },
+        { id: 3, date: '2025-01-15T10:00:00Z', name: 'Third' },
+      ];
+
+      const result = sortByDate(testData, 'date');
+
+      // All dates are equal, so original order should be maintained
+      expect(result[0].id).toBe(1);
+      expect(result[1].id).toBe(2);
+      expect(result[2].id).toBe(3);
+    });
+
+    it('should handle single item array', () => {
+      const testData = [{ id: 1, date: '2025-01-15T10:00:00Z' }];
+
+      const result = sortByDate(testData, 'date');
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe(1);
+    });
+
+    it('should handle empty array', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const testData: any[] = [];
+
+      const result = sortByDate(testData, 'date');
+
+      expect(result).toHaveLength(0);
+      expect(Array.isArray(result)).toBe(true);
+    });
+  });
+
+  describe('Edge Cases and Error Handling', () => {
+    it('should return empty array for null input', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = sortByDate(null as any, 'date');
+
+      expect(result).toEqual([]);
+    });
+
+    it('should return empty array for non-array input', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = sortByDate('not-an-array' as any, 'date');
+
+      expect(result).toEqual([]);
+    });
+
+    it('should handle objects with missing date field', () => {
+      const testData = [
+        { id: 1, date: '2025-01-15T10:00:00Z' },
+        { id: 2, name: 'No date field' }, // Missing date field
+        { id: 3, date: '2025-01-10T10:00:00Z' },
+      ];
+
+      const result = sortByDate(testData, 'date');
+
+      // Items with invalid dates should be sorted to the end
+      expect(result).toHaveLength(3);
+      expect(result[0].id).toBe(1); // Valid date (newest)
+      expect(result[1].id).toBe(3); // Valid date (oldest)
+      expect(result[2].id).toBe(2); // Invalid date (missing field)
+    });
+
+    it('should handle mix of valid and invalid dates', () => {
+      const testData = [
+        { id: 1, date: '2025-01-15T10:00:00Z' },
+        { id: 2, date: 'invalid' },
+        { id: 3, date: null },
+        { id: 4, date: '2025-01-20T10:00:00Z' },
+        { id: 5, date: undefined },
+        { id: 6, date: '2025-01-10T10:00:00Z' },
+      ];
+
+      const result = sortByDate(testData, 'date');
+
+      expect(result).toHaveLength(6);
+      // Valid dates should be sorted first
+      expect(result[0].id).toBe(4); // 2025-01-20 (newest)
+      expect(result[1].id).toBe(1); // 2025-01-15
+      expect(result[2].id).toBe(6); // 2025-01-10 (oldest)
+      // Invalid dates should be at the end
+      expect([2, 3, 5]).toContain(result[3].id);
+      expect([2, 3, 5]).toContain(result[4].id);
+      expect([2, 3, 5]).toContain(result[5].id);
+    });
+  });
+
+  describe('Performance and Type Safety', () => {
+    it('should handle large arrays efficiently', () => {
+      const largeArray = Array.from({ length: 1000 }, (_, index) => ({
+        id: index,
+        date: new Date(2025, 0, 1 + (index % 30)).toISOString(), // Spread across 30 days
+        data: `item-${index}`,
+      }));
+
+      const startTime = performance.now();
+      const result = sortByDate(largeArray, 'date');
+      const endTime = performance.now();
+
+      expect(result).toHaveLength(1000);
+      expect(endTime - startTime).toBeLessThan(100); // Should complete within 100ms
+
+      // Verify sorting is correct for first few items
+      const firstDate = new Date(result[0].date);
+      const secondDate = new Date(result[1].date);
+      expect(firstDate.getTime()).toBeGreaterThanOrEqual(secondDate.getTime());
+    });
+
+    it('should handle numeric field names', () => {
+      const testData = [
+        { 0: '2025-01-15T10:00:00Z', id: 1 },
+        { 0: '2025-01-10T10:00:00Z', id: 2 },
+        { 0: '2025-01-20T10:00:00Z', id: 3 },
+      ];
+
+      const result = sortByDate(testData, '0');
+
+      expect(result[0].id).toBe(3); // Newest first
+      expect(result[1].id).toBe(1);
+      expect(result[2].id).toBe(2); // Oldest last
     });
   });
 });

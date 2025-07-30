@@ -318,3 +318,33 @@ export const getTodayDate = (): Date => {
   today.setHours(0, 0, 0, 0);
   return today;
 };
+
+/**
+ * Sorts an array of objects by a date field
+ * @param array - Array of objects to sort
+ * @param dateField - The field name containing the date value
+ * @param ascending - Sort order: true for ascending (oldest first), false for descending (newest first)
+ * @returns sorted array
+ */
+export function sortByDate(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  array: any[],
+  dateField: string,
+  ascending: boolean = false,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): any[] {
+  if (!array || !Array.isArray(array)) return [];
+
+  return array.sort((a, b) => {
+    const dateA = new Date(a[dateField]);
+    const dateB = new Date(b[dateField]);
+
+    // Handle invalid dates
+    if (isNaN(dateA.getTime()) && isNaN(dateB.getTime())) return 0;
+    if (isNaN(dateA.getTime())) return 1;
+    if (isNaN(dateB.getTime())) return -1;
+
+    const diff = dateA.getTime() - dateB.getTime();
+    return ascending ? diff : -diff;
+  });
+}
