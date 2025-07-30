@@ -35,8 +35,8 @@ const DiagnosesTable: React.FC = () => {
       switch (cellId) {
         case 'display':
           return (
-            <div className={styles.diagnosisName}>
-              <span>{diagnosis.display}</span>
+            <div>
+              <div className={styles.diagnosisName}>{diagnosis.display}</div>
               <Tag
                 data-testid={'certainity-tag'}
                 className={
