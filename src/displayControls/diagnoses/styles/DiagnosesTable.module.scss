@@ -6,7 +6,7 @@
 .diagnosesTableTitle {
   background: $background !important;
   min-block-size: fit-content !important;
-  border-bottom: 1px solid $border-subtle-02;
+  border-top: 1px solid $border-subtle;
   p {
     @include type-style("heading-compact-02");
     color: $text-primary;
@@ -29,8 +29,11 @@
 }
 
 .diagnosesTableBody {
-  :global(.cds--data-table td:nth-child(1)) {
-    min-width: calc(100vw * 0.3);
+  td {
+    width: 25%;
+  }
+  td:nth-child(1) {
+    width: 50%;
   }
 }
 
