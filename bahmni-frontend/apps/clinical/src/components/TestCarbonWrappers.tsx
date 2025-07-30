@@ -13,7 +13,8 @@ import {
   Tab,
   TabPanels,
   TabPanel,
-  NumberInput
+  NumberInput,
+  ComboBox
 } from '@bahmni-frontend/bahmni-design-system';
 import { Layer, Checkbox, TextInput } from '@carbon/react';
 
@@ -70,6 +71,23 @@ export const TestCarbonWrappers: React.FC = () => {
         <span>Dismissible Tag</span>
       </DismissibleTag>
       <div>
+        <ComboBox
+          allowCustomValue
+          helperText="Combobox helper text"
+          id="carbon-combobox"
+          items={[
+            'Apple',
+            'Apricot',
+            'Avocado',
+            'Banana',
+            'Blackberry',
+            'Blueberry',
+            'Cantaloupe'
+          ]}
+          onChange={() => { }}
+          titleText="ComboBox title"
+          typeahead
+        />
       </div>
       <Button kind="primary" testId="test-primary">
         Primary Button

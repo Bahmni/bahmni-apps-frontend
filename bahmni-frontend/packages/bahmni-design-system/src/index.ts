@@ -76,3 +76,11 @@ export {
   type FluidNumberInputProps,
   type FluidNumberInputSkeletonProps,
 } from './numberInput';
+export {
+  ComboBox,
+  FluidComboBox,
+  FluidComboBoxSkeleton,
+  type ComboBoxProps,
+  type FluidComboBoxProps,
+  type FluidComboBoxSkeletonProps,
+} from './comboBox';
