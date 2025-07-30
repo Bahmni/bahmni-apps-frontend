@@ -6,7 +6,7 @@
 .conditionsTableTitle {
   background: $background !important;
   min-block-size: fit-content !important;
-  border-bottom: 1px solid $border-subtle-02;
+  border-top: 1px solid $border-subtle;
   p {
     @include type-style("heading-compact-02");
     color: $text-primary;
@@ -18,17 +18,11 @@
 }
 
 .conditionsTableBody {
-  :global(.cds--data-table td:nth-child(1)) {
-    min-width: calc(100vw * 0.3);
+  td {
+    width: 25%;
   }
-  :global(.cds--data-table td:nth-child(2)) {
-    max-width: calc(100vw * 0.2);
-  }
-  :global(.cds--data-table td:nth-child(3)) {
-    max-width: calc(100vw * 0.075);
-  }
-  :global(.cds--data-table td:nth-child(4)) {
-    max-width: calc(100vw * 0.075);
+  td:nth-child(4) {
+    padding-inline: 0 !important;
   }
 }
 

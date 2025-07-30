@@ -8,8 +8,6 @@
     @include type-style("body-compact-01");
     background-color: $background;
     color: $text-primary;
-    border-block-start: 1px solid $layer-accent-01 !important;
-    border-block-end: 0 !important;
     height: $spacing-10;
     align-content: start;
   }
@@ -18,6 +16,9 @@
     background-color: $background !important;
     font-weight: normal;
     color: $text-secondary;
+  }
+  th {
+    border-block: 1px solid $border-subtle !important;
   }
 }
 
