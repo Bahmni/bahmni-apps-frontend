@@ -1,5 +1,5 @@
 import { DotMark } from '@carbon/icons-react';
-import { Tag } from '@carbon/react';
+import { Tag, Tile } from '@carbon/react';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SortableDataTable } from '@/components/common/sortableDataTable/SortableDataTable';
@@ -77,18 +77,28 @@ const ConditionsTable: React.FC = () => {
   };
 
   return (
-    <div data-testid="condition-table">
-      <SortableDataTable
-        headers={headers}
-        ariaLabel={t('CONDITION_LIST_DISPLAY_CONTROL_TITLE')}
-        rows={formattedConditions}
-        loading={loading}
-        errorStateMessage={error?.message}
-        emptyStateMessage={t('CONDITION_LIST_NO_CONDITIONS')}
-        renderCell={renderCell}
-        className={styles.conditionsTableBody}
-      />
-    </div>
+    <>
+      {/* Recent and all Tabs will come inplace of Tile */}
+      <Tile
+        title={t('CONDITION_LIST_DISPLAY_CONTROL_TITLE')}
+        data-testid="conditions-title"
+        className={styles.conditionsTableTitle}
+      >
+        <p>{t('CONDITION_LIST_DISPLAY_CONTROL_TITLE')}</p>
+      </Tile>
+      <div data-testid="condition-table">
+        <SortableDataTable
+          headers={headers}
+          ariaLabel={t('CONDITION_LIST_DISPLAY_CONTROL_TITLE')}
+          rows={formattedConditions}
+          loading={loading}
+          errorStateMessage={error?.message}
+          emptyStateMessage={t('CONDITION_LIST_NO_CONDITIONS')}
+          renderCell={renderCell}
+          className={styles.conditionsTableBody}
+        />
+      </div>
+    </>
   );
 };
 

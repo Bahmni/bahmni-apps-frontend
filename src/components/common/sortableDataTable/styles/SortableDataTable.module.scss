@@ -3,27 +3,29 @@
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
 
-.displayControlHeaders {
-  background-color: $background !important;
-
-  * {
-    font-weight: normal !important;
+.sortableDataTableBody {
+  td {
+    @include type-style("body-compact-01");
+    background-color: $background;
+    color: $text-primary !important;
+    height: $spacing-10;
+    align-content: start;
+  }
+  th,
+  th > button {
     background-color: $background !important;
+    font-weight: normal;
     color: $text-secondary;
+  }
+  th {
+    border-block: 1px solid $border-subtle !important;
   }
 }
 
-.sortableDataTableBody {
-  :global(.cds--data-table td) {
-    @include type-style("body-compact-01");
-    background-color: $background;
-    color: $text-primary;
-    border-block-end: 0 !important;
-    &:focus-visible {
-      border: 0 !important;
-    }
-    min-height: $spacing-12;
-    align-content: start;
+.sortableDataTableSkeleton {
+  td,
+  th {
+    background-color: $background !important;
   }
 }
 
