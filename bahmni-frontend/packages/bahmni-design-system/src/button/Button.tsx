@@ -1,7 +1,7 @@
 import {
   Button as CarbonButton,
   ButtonProps as CarbonButtonProps,
-  ButtonSet,
+  ButtonSet as CarbonButtonSet,
 } from '@carbon/react';
 import React from 'react';
 
@@ -21,20 +21,19 @@ export const Button: React.FC<ButtonProps> = ({
   );
 };
 
-// ButtonSet wrapper
-export type ButtonSetWrapperProps = React.ComponentProps<typeof ButtonSet> & {
+export type ButtonSetProps = React.ComponentProps<typeof CarbonButtonSet> & {
   testId?: string;
   children?: React.ReactNode;
 };
 
-export const ButtonSetWrapper: React.FC<ButtonSetWrapperProps> = ({
+export const ButtonSet: React.FC<ButtonSetProps> = ({
   testId,
   children,
   ...carbonProps
 }) => {
   return (
-    <ButtonSet {...carbonProps} data-testid={testId}>
+    <CarbonButtonSet {...carbonProps} data-testid={testId}>
       {children}
-    </ButtonSet>
+    </CarbonButtonSet>
   );
 };

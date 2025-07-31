@@ -1,4 +1,4 @@
-export { Button, ButtonSet } from './button';
+export { Button, ButtonSet, type ButtonProps } from './button';
 export { Tile, type TileProps } from './tile';
 export { Tag, type TagProps } from './tag';
 export { Icon, type IconProps, ICON_SIZE, ICON_PADDING } from './icon';

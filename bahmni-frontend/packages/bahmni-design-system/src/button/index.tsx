@@ -1,1 +1,1 @@
-export { Button, type ButtonProps, ButtonSetWrapper as ButtonSet } from './Button';
+export { Button, type ButtonProps, ButtonSet } from './Button';
