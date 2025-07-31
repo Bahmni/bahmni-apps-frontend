@@ -1,4 +1,4 @@
-export { Button } from './button';
+export { Button, ButtonSet } from './button';
 export { Tile, type TileProps } from './tile';
 export { Tag, type TagProps } from './tag';
 export {
@@ -42,3 +42,6 @@ export {
 } from './tabs';
 export { NumberInput, type NumberInputProps } from './numberInput';
 export { ComboBox, type ComboBoxProps } from './comboBox';
+export { TextInput } from './textInput';
+export { TextArea } from './textArea';
+export { FormGroup } from './formGroup';

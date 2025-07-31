@@ -12,11 +12,12 @@ import {
   TabPanel,
   NumberInput,
   ComboBox,
-  Tag
+  Tag,
+  ButtonSet,
+  TextInput,
+  TextArea,
+  FormGroup,
 } from '@bahmni-frontend/bahmni-design-system';
-import { Layer, Checkbox, TextInput } from '@carbon/react';
-
-
 export const TestCarbonWrappers: React.FC = () => {
   return (
     <div>
@@ -78,15 +79,40 @@ export const TestCarbonWrappers: React.FC = () => {
           typeahead
         />
       </div>
-      <Button kind="primary" testId="test-primary">
-        Primary Button
-      </Button>
-      <Button kind="secondary" testId="test-secondary">
-        Secondary Button
-      </Button>
-      <Button kind="tertiary" testId="test-tertiary" disabled>
-        Disabled Button
-      </Button>
+      <ButtonSet>
+        <Button kind="secondary">
+          Secondary button
+        </Button>
+        <Button kind="primary">
+          Primary button
+        </Button>
+      </ButtonSet>
+      <TextArea
+        enableCounter
+        helperText="TextArea helper text"
+        id="text-area-1"
+        invalidText="Error message that is really long can wrap to more lines but should not be excessively long."
+        labelText="TextArea label"
+        maxCount={500}
+        placeholder=""
+        rows={4}
+        warnText="This is a warning message."
+      />
+      <FormGroup
+        legendId="form-group-1"
+        legendText="FormGroup Legend"
+        style={{
+          maxWidth: '400px'
+        }}>
+        <TextInput
+          id="one"
+          labelText="First Name"
+        />
+        <TextInput
+          id="two"
+          labelText="Last Name"
+        />
+      </FormGroup>
       <Tabs>
         <TabList contained>
           <Tab>Dashboard</Tab>
@@ -98,21 +124,11 @@ export const TestCarbonWrappers: React.FC = () => {
         <TabPanels>
           <TabPanel>Tab Panel 1</TabPanel>
           <TabPanel>
-            <Layer>
-              <form style={{
-                margin: '2em'
-              }}>
-                <legend className={`cds--label`}>Validation example</legend>
-                <Checkbox id="cb" labelText="Accept privacy policy" />
-                <Button style={{
-                  marginTop: '1rem',
-                  marginBottom: '1rem'
-                }} type="submit">
-                  Submit
-                </Button>
-                <TextInput id="text-input-1" type="text" labelText="Text input label" helperText="Optional help text" />
-              </form>
-            </Layer>
+            <form style={{
+              margin: '2em'
+            }}>
+              <legend className={`cds--label`}>Validation example</legend>
+            </form>
           </TabPanel>
           <TabPanel>Tab Panel 3</TabPanel>
           <TabPanel>Tab Panel 4</TabPanel>

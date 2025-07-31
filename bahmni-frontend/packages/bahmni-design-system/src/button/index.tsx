@@ -1,1 +1,1 @@
-export { Button } from './Button';
+export { Button, ButtonSetWrapper as ButtonSet } from './Button';
