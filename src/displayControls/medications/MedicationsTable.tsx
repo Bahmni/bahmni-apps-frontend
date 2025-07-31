@@ -1,8 +1,16 @@
 import { DotMark } from '@carbon/icons-react';
-import { Tab, TabList, TabPanel, TabPanels, Tabs, Tag } from '@carbon/react';
+import {
+  Accordion,
+  AccordionItem,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+  Tag,
+} from '@carbon/react';
 import React, { useMemo, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
 import { SortableDataTable } from '@components/common/sortableDataTable/SortableDataTable';
 import {
   DATE_FORMAT,
@@ -232,11 +240,11 @@ const MedicationsTable: React.FC = () => {
               sortable={sortable}
               emptyStateMessage={t('NO_ACTIVE_MEDICATIONS')}
               renderCell={renderCell}
-              className={styles.activeMedicationsTableBody}
+              className={styles.medicationsTableBody}
             />
           </TabPanel>
           <TabPanel className={styles.medicationTabs}>
-            {(loading || !!error || processedAllMedications.length === 0) && (
+            {loading || !!error || processedAllMedications.length === 0 ? (
               <SortableDataTable
                 headers={headers}
                 ariaLabel={t('MEDICATIONS_TABLE_ARIA_LABEL')}
@@ -246,32 +254,39 @@ const MedicationsTable: React.FC = () => {
                 sortable={sortable}
                 emptyStateMessage={t('NO_MEDICATION_HISTORY')}
                 renderCell={renderCell}
-                className={styles.activeMedicationsTableBody}
+                className={styles.medicationsTableBody}
               />
-            )}
-            {processedAllMedications.map((medicationsByDate, index) => {
-              const { date, medications } = medicationsByDate;
-              const formattedDate = formatDate(
-                date,
-                FULL_MONTH_DATE_FORMAT,
-              ).formattedResult;
+            ) : (
+              <Accordion align="start">
+                {processedAllMedications.map((medicationsByDate) => {
+                  const { date, medications } = medicationsByDate;
+                  const formattedDate = formatDate(
+                    date,
+                    FULL_MONTH_DATE_FORMAT,
+                  ).formattedResult;
 
-              return (
-                <ExpandableDataTable
-                  key={date}
-                  tableTitle={formattedDate}
-                  rows={medications}
-                  headers={headers}
-                  sortable={sortable}
-                  renderCell={renderCell}
-                  loading={loading}
-                  error={error}
-                  emptyStateMessage={t('NO_MEDICATION_HISTORY')}
-                  className={styles.allMedicationsTableBody}
-                  isOpen={index === 0}
-                />
-              );
-            })}
+                  return (
+                    <AccordionItem
+                      title={formattedDate}
+                      key={date}
+                      className={styles.customiAccordianItem}
+                    >
+                      <SortableDataTable
+                        headers={headers}
+                        ariaLabel={t('ALLERGIES_DISPLAY_CONTROL_HEADING')}
+                        rows={medications}
+                        loading={loading}
+                        errorStateMessage={error}
+                        sortable={sortable}
+                        emptyStateMessage={t('NO_ALLERGIES')}
+                        renderCell={renderCell}
+                        className={styles.medicationsTableBody}
+                      />
+                    </AccordionItem>
+                  );
+                })}
+              </Accordion>
+            )}
           </TabPanel>
         </TabPanels>
       </Tabs>
