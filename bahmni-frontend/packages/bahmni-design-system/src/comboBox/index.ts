@@ -1,8 +1,1 @@
-export {
-  ComboBox,
-  FluidComboBox,
-  FluidComboBoxSkeleton,
-  type ComboBoxProps,
-  type FluidComboBoxProps,
-  type FluidComboBoxSkeletonProps,
-} from './ComboBox';
+export { ComboBox, type ComboBoxProps } from './ComboBox';

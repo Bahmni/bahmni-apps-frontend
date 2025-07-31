@@ -1,37 +1,11 @@
 export { Button } from './button';
-export {
-  Tile,
-  ClickableTile,
-  SelectableTile,
-  ExpandableTile,
-  TileAboveTheFoldContent,
-  TileBelowTheFoldContent,
-  type TileProps,
-  type ClickableTileProps,
-  type SelectableTileProps,
-  type ExpandableTileProps,
-  type TileAboveTheFoldContentProps,
-  type TileBelowTheFoldContentProps,
-} from './tile';
-export {
-  Tag,
-  DismissibleTag,
-  OperationalTag,
-  SelectableTag,
-  TagSkeleton,
-  type TagProps,
-  type DismissibleTagProps,
-  type OperationalTagProps,
-  type SelectableTagProps,
-  type TagSkeletonProps,
-} from './tag';
+export { Tile, type TileProps } from './tile';
+export { Tag, type TagProps } from './tag';
 export {
   Accordion,
   AccordionItem,
-  AccordionSkeleton,
   type AccordionProps,
   type AccordionItemProps,
-  type AccordionSkeletonProps,
 } from './accordion';
 export {
   DataTable,
@@ -66,21 +40,5 @@ export {
   type TabPanelsProps,
   type TabPanelProps,
 } from './tabs';
-export {
-  NumberInput,
-  NumberInputSkeleton,
-  FluidNumberInput,
-  FluidNumberInputSkeleton,
-  type NumberInputProps,
-  type NumberInputSkeletonProps,
-  type FluidNumberInputProps,
-  type FluidNumberInputSkeletonProps,
-} from './numberInput';
-export {
-  ComboBox,
-  FluidComboBox,
-  FluidComboBoxSkeleton,
-  type ComboBoxProps,
-  type FluidComboBoxProps,
-  type FluidComboBoxSkeletonProps,
-} from './comboBox';
+export { NumberInput, type NumberInputProps } from './numberInput';
+export { ComboBox, type ComboBoxProps } from './comboBox';

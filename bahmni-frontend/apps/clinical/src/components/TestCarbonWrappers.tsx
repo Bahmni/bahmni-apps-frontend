@@ -2,9 +2,6 @@ import React from 'react';
 import {
   Button,
   Tile,
-  ExpandableTile,
-  TagSkeleton,
-  DismissibleTag,
   Accordion,
   AccordionItem,
   DataTableSkeleton,
@@ -14,7 +11,8 @@ import {
   TabPanels,
   TabPanel,
   NumberInput,
-  ComboBox
+  ComboBox,
+  Tag
 } from '@bahmni-frontend/bahmni-design-system';
 import { Layer, Checkbox, TextInput } from '@carbon/react';
 
@@ -61,15 +59,6 @@ export const TestCarbonWrappers: React.FC = () => {
           showToolbar
         />
       </Accordion>
-      <ExpandableTile id="expandable-tile-1" tileCollapsedIconText="Interact to Expand tile" tileExpandedIconText="Interact to Collapse tile">
-        <p>I am an Expandable Tile. Click to expand or collapse.</p>
-      </ExpandableTile>
-      <TagSkeleton >
-        <span>Tag content</span>
-      </TagSkeleton>
-      <DismissibleTag size="md" text="Tag content 1" title="Dismiss" type="magenta">
-        <span>Dismissible Tag</span>
-      </DismissibleTag>
       <div>
         <ComboBox
           allowCustomValue
@@ -130,6 +119,7 @@ export const TestCarbonWrappers: React.FC = () => {
           <TabPanel>Tab Panel 5</TabPanel>
         </TabPanels>
       </Tabs>
+      <Tag type="magenta">Tag example</Tag>
       <NumberInput
         helperText="Optional helper text."
         id="default-number-input"

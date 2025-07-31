@@ -3,8 +3,6 @@ import {
   AccordionProps as CarbonAccordionProps,
   AccordionItem,
   AccordionItemProps,
-  AccordionSkeleton,
-  AccordionSkeletonProps,
 } from '@carbon/react';
 import React from 'react';
 
@@ -41,15 +39,4 @@ export const AccordionItemWrapper: React.FC<AccordionItemWrapperProps> = ({
       {children}
     </AccordionItem>
   );
-};
-
-// AccordionSkeleton wrapper
-export type AccordionSkeletonWrapperProps = AccordionSkeletonProps & {
-  testId?: string;
-};
-
-export const AccordionSkeletonWrapper: React.FC<
-  AccordionSkeletonWrapperProps
-> = ({ testId, ...carbonProps }) => {
-  return <AccordionSkeleton {...carbonProps} data-testid={testId} />;
 };
