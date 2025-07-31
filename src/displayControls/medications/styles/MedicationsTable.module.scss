@@ -62,7 +62,7 @@
   color: $cool-gray-20;
 }
 
-.activeMedicationsTableBody {
+.medicationsTableBody {
   td {
     width: 15%;
   }
@@ -71,52 +71,10 @@
   }
 }
 
-.allMedicationsTableBody {
-  :global(.cds--data-table td) {
-    @include type-style("body-short-01");
-    background-color: $background;
-    border-block-end: 0 !important;
-    &:focus-visible {
-      border: 0 !important;
-    }
-    min-height: $spacing-12;
-    align-content: start;
-    padding-block: $spacing-03;
-  }
-  :global(.cds--data-table td:nth-child(1)) {
-    @include type-style("body-short-01");
-    min-width: calc(100vw * 0.175);
-  }
-  :global(.cds--data-table td:nth-child(2)) {
-    @include type-style("body-short-01");
-    max-width: calc(100vw * 0.1);
-  }
-  :global(.cds--data-table td:nth-child(3)) {
-    @include type-style("body-short-01");
-    max-width: calc(100vw * 0.1) !important ;
-    width: calc(100vw * 0.1) !important;
-  }
-  :global(.cds--data-table td:nth-child(4)) {
-    @include type-style("body-short-01");
-    max-width: calc(100vw * 0.025);
-  }
-  :global(.cds--data-table td:nth-child(5)) {
-    @include type-style("body-short-01");
-    max-width: calc(100vw * 0.075);
-  }
-  :global(.cds--data-table td:nth-child(6)) {
-    @include type-style("body-short-01");
-    max-width: calc(100vw * 0.025);
-  }
-  :global(.cds--data-table td:nth-child(7)) {
-    @include type-style("body-short-01");
-    padding-inline: 0 !important;
-    max-width: calc(100vw * 0.025);
-    min-width: calc(100vw * 0.025);
-    justify-items: start;
-  }
+.customiAccordianItem {
+  background-color: $layer-01;
   :global(.cds--accordion__content) {
-    margin-inline: 0rem !important;
+    margin-inline-start: 0rem !important;
     padding-inline: 0rem !important;
   }
   :global(.cds--accordion__wrapper) {
