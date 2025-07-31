@@ -56,7 +56,7 @@ export const ApiTest: React.FC = () => {
         borderRadius: '8px',
       }}
     >
-      <h2>API Service Test - RAHUL</h2>
+      <h2>API Service Test</h2>
       <div style={{ marginBottom: '10px' }}>
         <button
           onClick={() => handleApiCall('GET')}

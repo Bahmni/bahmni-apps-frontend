@@ -1097,7 +1097,7 @@
     "@ibm/telemetry-js" "^1.5.0"
     prop-types "^15.8.1"
 
-"@carbon/layout@^11.34.0", "@carbon/layout@^11.37.0":
+"@carbon/layout@^11.37.0":
   version "11.37.0"
   resolved "https://registry.yarnpkg.com/@carbon/layout/-/layout-11.37.0.tgz#31bfa3e192980bd086561921e1adc4590044ebf0"
   integrity sha512-7quU4RzMu+AKMKLNkrdOVoissk5SS0XSg3S1PNLZ951njptTMddWF+uMvImLNvwtPKFL/gYi1hJ5Z+ThDmP3aw==
@@ -3966,11 +3966,6 @@
   integrity sha512-z9fJ5Im06zvUL548KvYNecEVlA7cVDkGUi6kZusb04mpyEFKCIZJvloCcmpmLaIahDpOQGHaHmG6imtPMmPXGQ==
   dependencies:
     "@types/node" "*"
-
-"@types/carbon__layout@^0.0.3":
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/@types/carbon__layout/-/carbon__layout-0.0.3.tgz#7e7b0385c65ec0bb4391f7dbec6933589d22818d"
-  integrity sha512-ZAAgNTBecBtxuqm/yQCWkXN2Nlz0TorTORhGKWuy1pO3jF0TRNut/0W8me14396Q6a0BugH/xMa7Jv8miQP3kg==
 
 "@types/chai@^5.2.2":
   version "5.2.2"

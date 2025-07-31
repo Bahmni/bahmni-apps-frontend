@@ -1,42 +1,23 @@
 import { IconName } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
-import { ICON_SIZE, ICON_PADDING } from '@constants/icon';
-import * as styles from './styles/BahmniIcon.module.scss';
+import { ICON_SIZE, ICON_PADDING } from './constants';
+import styles from './styles/Icon.module.scss';
 
-interface BahmniIconProps {
+export interface IconProps {
   name: string; // Format: "fa-home"
   size?: ICON_SIZE;
   color?: string;
   id: string;
   ariaLabel?: string;
   padding?: ICON_PADDING;
+  testId?: string;
 }
 
 /**
  * Icon component that renders FontAwesome icons with customizable size, color, and padding.
  *
  * @component
- * @example
- * // Basic usage with solid icon (default)
- * <Icon name="fa-home" id="home-icon" />
- *
- * // Regular icon (option 1)
- * <Icon name="fa-regular-user" id="user-icon" />
- *
- * // Regular icon (option 2)
- * <Icon name="far-user" id="user-icon-alt" />
- *
- * // With custom size, color and padding
- * <Icon
- *   name="fa-cog"
- *   id="settings-icon"
- *   size={ICON_SIZE.X2}
- *   color="#0f62fe"
- *   padding={ICON_PADDING.MEDIUM}
- *   ariaLabel="Settings"
- * />
- *
  * @param {Object} props - Component props
  * @param {string} props.name - Icon name in the format "fa-home", "fa-regular-user", or "far-user"
  * @param {ICON_SIZE} [props.size] - Icon size from ICON_SIZE enum (XXS, XS, SM, LG, XL, XXL, X1-X10)
@@ -44,15 +25,17 @@ interface BahmniIconProps {
  * @param {string} props.id - Unique identifier for the icon (used for testing and accessibility)
  * @param {string} [props.ariaLabel] - Accessibility label (defaults to id if not provided)
  * @param {ICON_PADDING} [props.padding=ICON_PADDING.XXSMALL] - Padding around the icon from ICON_PADDING enum
+ * @param {string} [props.testId] - Test identifier for testing purposes
  * @returns {React.ReactElement} React component
  */
-const BahmniIcon: React.FC<BahmniIconProps> = ({
+export const Icon: React.FC<IconProps> = ({
   name,
   size = ICON_SIZE.XS,
   color,
   id,
   ariaLabel = id,
   padding = ICON_PADDING.XXSMALL,
+  testId,
 }) => {
   if (!name || !/^fas?-[a-zA-Z0-9_-]+$/.test(name)) {
     return;
@@ -79,7 +62,7 @@ const BahmniIcon: React.FC<BahmniIconProps> = ({
     <span
       className={`${styles.bahmniIcon} ${getPaddingClass(padding)}`}
       id={id}
-      data-testid={`icon-${id}`}
+      data-testid={testId}
       aria-label={ariaLabel}
     >
       <FontAwesomeIcon
@@ -92,4 +75,4 @@ const BahmniIcon: React.FC<BahmniIconProps> = ({
   );
 };
 
-export default BahmniIcon;
+export default Icon;
