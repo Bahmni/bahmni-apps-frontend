@@ -1,6 +1,6 @@
 export {
   Accordion,
-  AccordionItemWrapper as AccordionItem,
+  AccordionItem,
   type AccordionProps,
-  type AccordionItemWrapperProps as AccordionItemProps,
+  type AccordionItemProps,
 } from './Accordion';

@@ -1,8 +1,8 @@
 import {
   Accordion as CarbonAccordion,
   AccordionProps as CarbonAccordionProps,
-  AccordionItem,
-  AccordionItemProps,
+  AccordionItem as CarbonAccordionItem,
+  AccordionItemProps as CarbonAccordionItemProps,
 } from '@carbon/react';
 import React from 'react';
 
@@ -23,20 +23,19 @@ export const Accordion: React.FC<AccordionProps> = ({
   );
 };
 
-// AccordionItem wrapper
-export type AccordionItemWrapperProps = AccordionItemProps & {
+export type AccordionItemProps = CarbonAccordionItemProps & {
   testId?: string;
   children?: React.ReactNode;
 };
 
-export const AccordionItemWrapper: React.FC<AccordionItemWrapperProps> = ({
+export const AccordionItem: React.FC<AccordionItemProps> = ({
   testId,
   children,
   ...carbonProps
 }) => {
   return (
-    <AccordionItem {...carbonProps} data-testid={testId}>
+    <CarbonAccordionItem {...carbonProps} data-testid={testId}>
       {children}
-    </AccordionItem>
+    </CarbonAccordionItem>
   );
 };
