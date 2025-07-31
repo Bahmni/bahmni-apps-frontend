@@ -1,29 +1,17 @@
 import {
-  faUser,
-  faHospital,
-  faPills,
-  faStethoscope,
-  faHeartbeat,
-  faUserMd,
-  faFileMedical,
-  faFileMedicalAlt,
-  faAmbulance,
-  faProcedures,
-  faNotesMedical,
-  faLungs,
-  faTemperatureHigh,
-  faBrain,
-  faVirus,
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@bahmni-frontend/bahmni-design-system';
+  Icon,
+  ICON_PADDING,
+  ICON_SIZE,
+} from '@bahmni-frontend/bahmni-design-system';
 import React from 'react';
 
 interface IconItemProps {
-  icon: any;
-  name: string;
+  iconName: string;
+  displayName: string;
+  id: string;
 }
 
-const IconItem: React.FC<IconItemProps> = ({ icon, name }) => {
+const IconItem: React.FC<IconItemProps> = ({ iconName, displayName, id }) => {
   return (
     <div
       style={{
@@ -50,29 +38,40 @@ const IconItem: React.FC<IconItemProps> = ({ icon, name }) => {
         e.currentTarget.style.transform = 'scale(1)';
       }}
     >
-      <FontAwesomeIcon icon={icon} size="2x" style={{ marginBottom: '10px' }} />
-      <span style={{ fontSize: '12px', textAlign: 'center' }}>{name}</span>
+      <div style={{ marginBottom: '10px' }}>
+        <Icon
+          id={id}
+          name={iconName}
+          size={ICON_SIZE.X2}
+          padding={ICON_PADDING.SMALL}
+          ariaLabel={displayName}
+          testId={`icon-test-${id}`}
+        />
+      </div>
+      <span style={{ fontSize: '12px', textAlign: 'center' }}>
+        {displayName}
+      </span>
     </div>
   );
 };
 
 export const IconTest: React.FC = () => {
   const medicalIcons = [
-    { icon: faUser, name: 'User' },
-    { icon: faHospital, name: 'Hospital' },
-    { icon: faPills, name: 'Pills' },
-    { icon: faStethoscope, name: 'Stethoscope' },
-    { icon: faHeartbeat, name: 'Heartbeat' },
-    { icon: faUserMd, name: 'Doctor' },
-    { icon: faFileMedical, name: 'Medical File' },
-    { icon: faFileMedicalAlt, name: 'Medical Record' },
-    { icon: faAmbulance, name: 'Ambulance' },
-    { icon: faProcedures, name: 'Procedures' },
-    { icon: faNotesMedical, name: 'Medical Notes' },
-    { icon: faLungs, name: 'Lungs' },
-    { icon: faTemperatureHigh, name: 'Temperature' },
-    { icon: faBrain, name: 'Brain' },
-    { icon: faVirus, name: 'Virus' },
+    { iconName: 'fa-user', displayName: 'User' },
+    { iconName: 'fa-hospital', displayName: 'Hospital' },
+    { iconName: 'fa-pills', displayName: 'Pills' },
+    { iconName: 'fa-stethoscope', displayName: 'Stethoscope' },
+    { iconName: 'fa-heartbeat', displayName: 'Heartbeat' },
+    { iconName: 'fa-user-md', displayName: 'Doctor' },
+    { iconName: 'fa-file-medical', displayName: 'Medical File' },
+    { iconName: 'fa-file-medical-alt', displayName: 'Medical Record' },
+    { iconName: 'fa-ambulance', displayName: 'Ambulance' },
+    { iconName: 'fa-procedures', displayName: 'Procedures' },
+    { iconName: 'fa-notes-medical', displayName: 'Medical Notes' },
+    { iconName: 'fa-lungs', displayName: 'Lungs' },
+    { iconName: 'fa-thermometer-half', displayName: 'Temperature' },
+    { iconName: 'fa-brain', displayName: 'Brain' },
+    { iconName: 'fa-virus', displayName: 'Virus' },
   ];
 
   return (
@@ -84,7 +83,7 @@ export const IconTest: React.FC = () => {
         borderRadius: '8px',
       }}
     >
-      <h2>FontAwesome Icons Test</h2>
+      <h2>Bahmni Design System Icons Test</h2>
       <p>Hover over icons to see animation effect</p>
 
       <div
@@ -96,7 +95,12 @@ export const IconTest: React.FC = () => {
         }}
       >
         {medicalIcons.map((item, index) => (
-          <IconItem key={index} icon={item.icon} name={item.name} />
+          <IconItem
+            key={`icon-${index}`}
+            iconName={item.iconName}
+            displayName={item.displayName}
+            id={`icon-${index}`}
+          />
         ))}
       </div>
     </div>

@@ -8,5 +8,3 @@ import { fas } from '@fortawesome/free-solid-svg-icons';
 export const initFontAwesome = () => {
   library.add(fas);
 };
-
-export { FontAwesomeIcon } from '@fortawesome/react-fontawesome';

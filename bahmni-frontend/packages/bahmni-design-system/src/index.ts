@@ -1,7 +1,8 @@
 export { Button, ButtonSet } from './button';
 export { Tile, type TileProps } from './tile';
 export { Tag, type TagProps } from './tag';
-export { initFontAwesome, FontAwesomeIcon } from './fontawesome';
+export { Icon, type IconProps, ICON_SIZE, ICON_PADDING } from './icon';
+export { initFontAwesome } from './fontawesome';
 export {
   Accordion,
   AccordionItem,
