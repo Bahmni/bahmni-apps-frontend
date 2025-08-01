@@ -10,7 +10,7 @@ import {
   calculateOnsetDate,
   formatDateDistance,
   sortByDate,
-} from '../date';
+} from '../../../bahmni-frontend/packages/bahmni-services/src/date/date';
 
 jest.mock('@utils/common', () => ({
   generateId: jest.fn().mockReturnValue('generated-id'),
