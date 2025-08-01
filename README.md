@@ -37,7 +37,7 @@ For a comprehensive setup guide including development environments, Docker confi
 - [Frontend Architecture](docs/architecture.md) - A comprehensive overview of the Bahmni Clinical Frontend architecture
 - [Project Structure](docs/project-structure.md) - A high-level overview of the project structure
 - [i18n Guide](docs/i18n-guide.md) - Internationalization implementation details
-- [Expandable Data Table Guide](docs/expandable-data-table-guide.md) - Usage of the expandable data table component
+- [Sortable Data Table Guide](docs/sortable-data-table-guide.md) - Usage of the sortable data table component
 - [Global Notification Guide](docs/global-notification-guide.md) - Using the notification system
 
 ### Development
@@ -73,7 +73,7 @@ yarn lint:fix
 ```text
 bahmni-clinical-frontend/
 ├── docs/                    # Project documentation
-│   ├── expandable-data-table-guide.md
+│   ├── sortable-data-table-guide.md
 │   ├── global-notification-guide.md
 │   ├── i18n-guide.md
 │   └── setup-guide.md
@@ -90,7 +90,7 @@ bahmni-clinical-frontend/
 ├── src/
 │   ├── components/          # Reusable UI components
 │   │   └── common/          # Shared components
-│   │       ├── expandableDataTable/  # Expandable data table component
+│   │       ├── sortableDataTable/  # Composite data table component
 │   │       └── notification/         # Notification components
 │   ├── constants/           # Application constants
 │   ├── contexts/            # React contexts
