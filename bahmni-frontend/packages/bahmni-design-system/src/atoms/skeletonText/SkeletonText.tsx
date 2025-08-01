@@ -4,9 +4,9 @@ import {
   SkeletonTextProps as CarbonSkeletonTextProps,
 } from '@carbon/react';
 
-export interface SkeletonTextProps extends CarbonSkeletonTextProps {
+export type SkeletonTextProps = CarbonSkeletonTextProps & {
   testId?: string;
-}
+};
 
 export const SkeletonText: React.FC<SkeletonTextProps> = ({
   testId,

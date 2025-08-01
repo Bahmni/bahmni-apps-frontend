@@ -1,35 +1,19 @@
-export { Button, ButtonSet, type ButtonProps } from './button';
-export { Tile, type TileProps } from './tile';
-export { Tag, type TagProps } from './tag';
-export { Icon, type IconProps, ICON_SIZE, ICON_PADDING } from './icon';
+export { Button, ButtonSet, type ButtonProps } from './atoms/button';
+export { Tile, type TileProps } from './atoms/tile';
+export { Tag, type TagProps } from './atoms/tag';
+export {
+  Icon,
+  type IconProps,
+  ICON_SIZE,
+  ICON_PADDING,
+} from './molecules/icon';
 export { initFontAwesome } from './fontawesome';
 export {
   Accordion,
   AccordionItem,
   type AccordionProps,
   type AccordionItemProps,
-} from './accordion';
-export {
-  DataTable,
-  DataTableSkeleton,
-  Table,
-  TableHead,
-  TableRow,
-  TableHeader,
-  TableBody,
-  TableCell,
-  TableContainer,
-  type DataTableProps,
-  type DataTableSkeletonProps,
-  type TableProps,
-  type TableHeadProps,
-  type TableRowProps,
-  type TableHeaderProps,
-  type TableBodyProps,
-  type TableCellProps,
-  type TableContainerProps,
-  type DataTableHeader,
-} from './dataTable';
+} from './atoms/accordion';
 export {
   Tabs,
   TabList,
@@ -41,9 +25,7 @@ export {
   type TabProps,
   type TabPanelsProps,
   type TabPanelProps,
-} from './tabs';
-export { NumberInput, type NumberInputProps } from './numberInput';
-export { ComboBox, type ComboBoxProps } from './comboBox';
-export { TextInput } from './textInput';
-export { TextArea } from './textArea';
-export { FormGroup } from './formGroup';
+} from './atoms/tabs';
+export { NumberInput, type NumberInputProps } from './atoms/numberInput';
+export { ComboBox, type ComboBoxProps } from './atoms/comboBox';
+export { TextInput, type TextInputProps } from './atoms/textInput';

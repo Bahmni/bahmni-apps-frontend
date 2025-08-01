@@ -4,9 +4,9 @@ import {
 } from '@carbon/react';
 import React from 'react';
 
-export interface ComboBoxProps extends CarbonComboBoxProps {
+export type ComboBoxProps = CarbonComboBoxProps<any> & {
   testId?: string;
-}
+};
 
 export const ComboBox: React.FC<ComboBoxProps> = ({
   testId,
