@@ -1,6 +1,6 @@
 import { Patient } from 'fhir/r4';
-import { PATIENT_RESOURCE_URL } from '@constants/app';
-import { get } from '../api';
+import { PATIENT_RESOURCE_URL } from '../constants';
+import { get } from '../../api';
 import {
   getPatientById,
   formatPatientName,
@@ -10,7 +10,7 @@ import {
 } from '../patientService';
 
 // Mock the api module
-jest.mock('../api');
+jest.mock('../../api');
 const mockedGet = get as jest.MockedFunction<typeof get>;
 
 describe('Patient Service', () => {

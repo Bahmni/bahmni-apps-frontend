@@ -1,8 +1,8 @@
 import { Patient } from 'fhir/r4';
-import { PATIENT_RESOURCE_URL } from '@constants/app';
-import { FormattedPatientData } from '@types/patient';
+import { PATIENT_RESOURCE_URL } from './constants';
+import { FormattedPatientData } from './models';
 import { calculateAge } from '@utils/date';
-import { get } from './api';
+import { get } from '../api';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
   return get<Patient>(PATIENT_RESOURCE_URL(patientUUID));
