@@ -15,7 +15,7 @@ import * as styles from './styles/RadiologyInvestigationTable.module.scss';
 
 /**
  * Component to display patient radiology investigations grouped by date in accordion format
- * Each accordion item contains an ExpandableDataTable with radiology investigations for that date
+ * Each accordion item contains an SortableDataTable with radiology investigations for that date
  */
 const RadiologyInvestigationTable: React.FC = () => {
   const { t } = useTranslation();

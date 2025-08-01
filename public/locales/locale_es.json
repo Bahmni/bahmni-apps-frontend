@@ -136,8 +136,6 @@
   "ERROR_UNAUTHORIZED_TITLE": "No autorizado",
   "ERROR_UNKNOWN_MESSAGE": "Se produjo un error desconocido",
   "ERROR_VALIDATION_TITLE": "Error de validación",
-  "EXPANDABLE_TABLE_EMPTY_STATE_MESSAGE": "No hay datos disponibles",
-  "EXPANDABLE_TABLE_ERROR_MESSAGE": "{{title}}: {{message}}",
   "INPUT_VALUE_REQUIRED": "Por favor, ingrese un valor",
   "INVALID_RESPONSE": "Se recibió una respuesta no válida del servidor",
   "INVESTIGATION_ALREADY_SELECTED": "(Ya seleccionado)",

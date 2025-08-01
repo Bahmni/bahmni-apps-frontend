@@ -37,7 +37,7 @@ const getSeverityClassName = (severity: string): string | undefined => {
 };
 
 /**
- * Component to display patient allergies in a DataTable with expandable rows
+ * Component to display patient allergies using SortableDataTable
  */
 const AllergiesTable: React.FC = () => {
   const { t } = useTranslation();

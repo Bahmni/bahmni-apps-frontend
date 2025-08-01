@@ -9,8 +9,7 @@ import { formatDate, sortByDate } from '@utils/date';
 import * as styles from './styles/DiagnosesTable.module.scss';
 
 /**
- * Component to display patient diagnoses grouped by date in accordion format
- * Each accordion item contains an ExpandableDataTable with diagnoses for that date
+ * Component to display patient diagnoses using SortableDataTable
  */
 const DiagnosesTable: React.FC = () => {
   const { t } = useTranslation();
