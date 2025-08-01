@@ -1,7 +1,7 @@
 import { Patient } from 'fhir/r4';
 import { PATIENT_RESOURCE_URL } from './constants';
 import { FormattedPatientData } from './models';
-import { calculateAge } from '@utils/date';
+import { calculateAge } from '../date';
 import { get } from '../api';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
@@ -135,4 +135,16 @@ export const formatPatientData = (patient: Patient): FormattedPatientData => {
     identifiers: identifierMap,
     age,
   };
+};
+
+/**
+ * Get formatted patient data by UUID
+ * @param patientUUID - The UUID of the patient to retrieve
+ * @returns A formatted patient data object
+ */
+export const getFormattedPatientById = async (
+  patientUUID: string,
+): Promise<FormattedPatientData> => {
+  const patient = await getPatientById(patientUUID);
+  return formatPatientData(patient);
 };
