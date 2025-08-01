@@ -4,7 +4,6 @@ import {
   Tile,
   Accordion,
   AccordionItem,
-  DataTableSkeleton,
   Tabs,
   TabList,
   Tab,
@@ -14,9 +13,6 @@ import {
   ComboBox,
   Tag,
   ButtonSet,
-  TextInput,
-  TextArea,
-  FormGroup,
 } from '@bahmni-frontend/bahmni-design-system';
 export const TestCarbonWrappers: React.FC = () => {
   return (
@@ -28,37 +24,6 @@ export const TestCarbonWrappers: React.FC = () => {
             <p>This is a tile component from Bahmni Design System.</p>
           </Tile>
         </AccordionItem>
-        <DataTableSkeleton
-          aria-label="data table skeleton"
-          headers={[
-            {
-              header: 'Name',
-              key: 'name'
-            },
-            {
-              header: 'Protocol',
-              key: 'protocol'
-            },
-            {
-              header: 'Port',
-              key: 'port'
-            },
-            {
-              header: 'Rule',
-              key: 'rule'
-            },
-            {
-              header: 'Attached groups',
-              key: 'attached_groups'
-            },
-            {
-              header: 'Status',
-              key: 'status'
-            }
-          ]}
-          showHeader
-          showToolbar
-        />
       </Accordion>
       <div>
         <ComboBox
@@ -72,47 +37,17 @@ export const TestCarbonWrappers: React.FC = () => {
             'Banana',
             'Blackberry',
             'Blueberry',
-            'Cantaloupe'
+            'Cantaloupe',
           ]}
-          onChange={() => { }}
+          onChange={() => {}}
           titleText="ComboBox title"
           typeahead
         />
       </div>
       <ButtonSet>
-        <Button kind="secondary">
-          Secondary button
-        </Button>
-        <Button kind="primary">
-          Primary button
-        </Button>
+        <Button kind="secondary">Secondary button</Button>
+        <Button kind="primary">Primary button</Button>
       </ButtonSet>
-      <TextArea
-        enableCounter
-        helperText="TextArea helper text"
-        id="text-area-1"
-        invalidText="Error message that is really long can wrap to more lines but should not be excessively long."
-        labelText="TextArea label"
-        maxCount={500}
-        placeholder=""
-        rows={4}
-        warnText="This is a warning message."
-      />
-      <FormGroup
-        legendId="form-group-1"
-        legendText="FormGroup Legend"
-        style={{
-          maxWidth: '400px'
-        }}>
-        <TextInput
-          id="one"
-          labelText="First Name"
-        />
-        <TextInput
-          id="two"
-          labelText="Last Name"
-        />
-      </FormGroup>
       <Tabs>
         <TabList contained>
           <Tab>Dashboard</Tab>
@@ -124,9 +59,11 @@ export const TestCarbonWrappers: React.FC = () => {
         <TabPanels>
           <TabPanel>Tab Panel 1</TabPanel>
           <TabPanel>
-            <form style={{
-              margin: '2em'
-            }}>
+            <form
+              style={{
+                margin: '2em',
+              }}
+            >
               <legend className={`cds--label`}>Validation example</legend>
             </form>
           </TabPanel>
@@ -143,7 +80,7 @@ export const TestCarbonWrappers: React.FC = () => {
         label="NumberInput label"
         max={100}
         min={-100}
-        onChange={() => { }}
+        onChange={() => {}}
         size="md"
         step={1}
         value={50}

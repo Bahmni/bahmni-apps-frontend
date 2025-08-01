@@ -9,12 +9,25 @@ module.exports = {
     publicPath: '/ ',
   },
   devServer: {
-    port: 4200,
+    static: {
+      directory: path.join(__dirname, 'public'),
+    },
+    port: 3000,
     historyApiFallback: {
       index: '/index.html',
       disableDotRule: true,
       htmlAcceptHeaders: ['text/html', 'application/xhtml+xml'],
     },
+    compress: true,
+    proxy: [
+      {
+        context: ['/bahmni_config', '/openmrs'],
+        target: 'https://localhost/',
+        changeOrigin: true,
+        secure: false,
+        logLevel: 'debug',
+      },
+    ],
   },
   plugins: [
     new NxAppWebpackPlugin({
