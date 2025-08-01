@@ -3,45 +3,34 @@
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
 
-.radiologyInvestigationTable {
-  padding: 0 !important;
-}
-
-.radiologyInvestigationTableTitle {
-  @include type-style("heading-compact-02");
-  padding: $spacing-05;
-  background-color: $background;
-}
-
-.radiologyInvestigationTableBodyError {
-  @include type-style("label-02");
-  background-color: $background;
-  padding: $spacing-06 $spacing-05;
-  text-align: center;
-  border-top: 1px solid $border-subtle-02;
+.investigationName {
+  @include type-style("heading-compact-01");
+  color: $text-primary;
 }
 
 .radiologyInvestigationTableBody {
-  :global(.cds--data-table td) {
-    @include type-style("body-short-01");
-    background-color: $background;
+  td {
+    width: 25%;
+    border-block-end: 0 !important;
   }
-
-  :global(.cds--data-table td:nth-child(1)) {
-    @include type-style("body-short-01");
-    max-width: calc(100vw * 0.1);
-  }
-  :global(.cds--accordion__content) {
-    margin-inline: 0rem !important;
-    padding-inline: 0rem !important;
-  }
-  :global(.cds--accordion__wrapper) {
-    padding-block: 0rem !important;
-    padding-block-end: 0rem !important;
+  td:first-child {
+    width: 50%;
   }
 }
 
 .urgentCell {
   background-color: $yellow-20 !important;
   color: $yellow-70 !important;
+}
+
+.customAccordianItem {
+  background-color: $layer-01;
+  :global(.cds--accordion__content) {
+    margin-inline-start: 0rem !important;
+    padding-inline: 0rem !important;
+  }
+  :global(.cds--accordion__wrapper) {
+    padding-block: 0rem !important;
+    padding-block-end: 0rem !important;
+  }
 }
