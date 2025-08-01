@@ -1,5 +1,5 @@
 import client from '../client';
-import { get, post, put, del } from '../index';
+import { get, post, put, del } from '../api';
 
 // Mock dependencies
 jest.mock('../constants', () => ({
