@@ -1,12 +1,12 @@
 import {
-  Tab,
-  TabProps,
-  TabList,
-  TabListProps,
-  TabPanel,
-  TabPanelProps,
-  TabPanels,
-  TabPanelsProps,
+  Tab as CarbonTab,
+  TabProps as CarbonTabProps,
+  TabList as CarbonTabList,
+  TabListProps as CarbonTabListProps,
+  TabPanel as CarbonTabPanel,
+  TabPanelProps as CarbonTabPanelProps,
+  TabPanels as CarbonTabPanels,
+  TabPanelsProps as CarbonTabPanelsProps,
   Tabs as CarbonTabs,
   TabsProps as CarbonTabsProps,
 } from '@carbon/react';
@@ -28,82 +28,66 @@ export const Tabs: React.FC<TabsProps> = ({
   );
 };
 
-export type TabListWrapperProps = TabListProps & {
+export type TabListProps = CarbonTabListProps & {
   testId?: string;
-  children?: React.ReactNode;
 };
 
-export const TabListWrapper: React.FC<TabListWrapperProps> = ({
+export const TabList: React.FC<TabListProps> = ({
   testId,
   children,
   ...carbonProps
 }) => {
   return (
-    <TabList {...carbonProps} data-testid={testId}>
+    <CarbonTabList {...carbonProps} data-testid={testId}>
       {children}
-    </TabList>
+    </CarbonTabList>
   );
 };
 
-export type TabWrapperProps = TabProps & {
+export type TabProps = CarbonTabProps & {
   testId?: string;
-  children?: React.ReactNode;
 };
 
-export const TabWrapper: React.FC<TabWrapperProps> = ({
+export const Tab: React.FC<TabProps> = ({
   testId,
   children,
   ...carbonProps
 }) => {
   return (
-    <Tab {...carbonProps} data-testid={testId}>
+    <CarbonTab {...carbonProps} data-testid={testId}>
       {children}
-    </Tab>
+    </CarbonTab>
   );
 };
 
-export type TabPanelsWrapperProps = TabPanelsProps & {
+export type TabPanelsProps = CarbonTabPanelsProps & {
   testId?: string;
-  children?: React.ReactNode;
 };
 
-export const TabPanelsWrapper: React.FC<TabPanelsWrapperProps> = ({
+export const TabPanels: React.FC<TabPanelsProps> = ({
   testId,
   children,
   ...carbonProps
 }) => {
   return (
-    <TabPanels {...carbonProps} data-testid={testId}>
+    <CarbonTabPanels {...carbonProps} data-testid={testId}>
       {children}
-    </TabPanels>
+    </CarbonTabPanels>
   );
 };
 
-export type TabPanelWrapperProps = TabPanelProps & {
+export type TabPanelProps = CarbonTabPanelProps & {
   testId?: string;
-  children?: React.ReactNode;
 };
 
-export const TabPanelWrapper: React.FC<TabPanelWrapperProps> = ({
+export const TabPanel: React.FC<TabPanelProps> = ({
   testId,
   children,
   ...carbonProps
 }) => {
   return (
-    <TabPanel {...carbonProps} data-testid={testId}>
+    <CarbonTabPanel {...carbonProps} data-testid={testId}>
       {children}
-    </TabPanel>
+    </CarbonTabPanel>
   );
-};
-
-// Export with aliases for cleaner API
-export {
-  TabListWrapper as TabList,
-  TabWrapper as Tab,
-  TabPanelsWrapper as TabPanels,
-  TabPanelWrapper as TabPanel,
-  type TabListWrapperProps as TabListProps,
-  type TabWrapperProps as TabProps,
-  type TabPanelsWrapperProps as TabPanelsProps,
-  type TabPanelWrapperProps as TabPanelProps,
 };

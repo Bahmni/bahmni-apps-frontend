@@ -3,6 +3,7 @@ import {
   ButtonProps as CarbonButtonProps,
   ButtonSet as CarbonButtonSet,
 } from '@carbon/react';
+import { ButtonSetProps as CarbonButtonSetProps } from '@carbon/react/lib/components/ButtonSet/ButtonSet';
 import React from 'react';
 
 export type ButtonProps = CarbonButtonProps<'button'> & {
@@ -21,9 +22,8 @@ export const Button: React.FC<ButtonProps> = ({
   );
 };
 
-export type ButtonSetProps = React.ComponentProps<typeof CarbonButtonSet> & {
+export type ButtonSetProps = CarbonButtonSetProps & {
   testId?: string;
-  children?: React.ReactNode;
 };
 
 export const ButtonSet: React.FC<ButtonSetProps> = ({

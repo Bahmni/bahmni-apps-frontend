@@ -13,6 +13,7 @@ import {
   ComboBox,
   Tag,
   ButtonSet,
+  SkeletonText
 } from '@bahmni-frontend/bahmni-design-system';
 export const TestCarbonWrappers: React.FC = () => {
   return (
@@ -72,6 +73,7 @@ export const TestCarbonWrappers: React.FC = () => {
           <TabPanel>Tab Panel 5</TabPanel>
         </TabPanels>
       </Tabs>
+      <SkeletonText lineCount={3} width="100%" />
       <Tag type="magenta">Tag example</Tag>
       <NumberInput
         helperText="Optional helper text."

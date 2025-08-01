@@ -29,3 +29,4 @@ export {
 export { NumberInput, type NumberInputProps } from './atoms/numberInput';
 export { ComboBox, type ComboBoxProps } from './atoms/comboBox';
 export { TextInput, type TextInputProps } from './atoms/textInput';
+export { SkeletonText, type SkeletonTextProps } from './atoms/skeletonText';
