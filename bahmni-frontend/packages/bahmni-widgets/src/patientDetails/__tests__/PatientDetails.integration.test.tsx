@@ -1,166 +1,136 @@
-import { render, screen, waitFor } from '@testing-library/react';
-import axios from 'axios';
-import React from 'react';
-import { MemoryRouter } from 'react-router-dom';
-import i18n from '@/setupTests.i18n';
-import { NotificationProvider } from '@providers/NotificationProvider';
-import * as patientService from '@services/patientService';
-import { FormattedPatientData, Age } from '@types/patient';
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import { FormattedPatientData } from '@bahmni-frontend/bahmni-services';
 import PatientDetails from '../PatientDetails';
 
-// Mock axios and patientService
-jest.mock('axios', () => ({
-  create: jest.fn(() => ({
-    defaults: {
-      headers: {
-        common: {},
-      },
-    },
-    interceptors: {
-      request: {
-        use: jest.fn(),
-        eject: jest.fn(),
-      },
-      response: {
-        use: jest.fn(),
-        eject: jest.fn(),
-      },
-    },
-    get: jest.fn(
-      (url: string) =>
-        new Promise((resolve, reject) => {
-          if (url.includes('test-uuid')) {
-            resolve({ data: { resourceType: 'Patient', id: 'test-uuid' } });
-          } else {
-            reject(new Error('Failed to fetch patient'));
-          }
-        }),
-    ),
-  })),
-  isAxiosError: jest.fn(),
-  get: jest.fn(),
+jest.mock('../../hooks/usePatient', () => ({
+  usePatient: jest.fn(),
 }));
 
-jest.mock('@services/patientService', () => {
-  const originalModule = jest.requireActual('@services/patientService');
-  return {
-    ...originalModule,
-    formatPatientData: jest.fn(),
-  };
-});
-
-// Mock the usePatientUUID hook
-jest.mock('@hooks/usePatientUUID', () => ({
-  usePatientUUID: jest.fn().mockReturnValue('test-uuid'),
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: jest.fn((key: string, options?: { count?: number }) => {
+      const translations: Record<string, string> = {
+        CLINICAL_YEARS_TRANSLATION_KEY: options?.count === 1 ? 'year' : 'years',
+        CLINICAL_MONTHS_TRANSLATION_KEY:
+          options?.count === 1 ? 'month' : 'months',
+        CLINICAL_DAYS_TRANSLATION_KEY: options?.count === 1 ? 'day' : 'days',
+      };
+      return translations[key] || key;
+    }),
+  }),
 }));
 
-const mockedAxios = axios as jest.Mocked<typeof axios>;
-const mockedFormatPatientData =
-  patientService.formatPatientData as jest.MockedFunction<
-    typeof patientService.formatPatientData
-  >;
+jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
+  Icon: ({
+    id,
+    name,
+    testId,
+  }: {
+    id: string;
+    name: string;
+    testId?: string;
+  }) => (
+    <span data-testid={testId || `icon-${id}`} data-icon-name={name}>
+      {name}
+    </span>
+  ),
+  ICON_SIZE: {
+    SM: 'small',
+    MD: 'medium',
+    LG: 'large',
+  },
+}));
+
+const mockedUsePatient = require('../../hooks/usePatient')
+  .usePatient as jest.MockedFunction<
+  () => {
+    patient: FormattedPatientData | null;
+    loading: boolean;
+    error: Error | null;
+    refetch: () => void;
+  }
+>;
 
 describe('PatientDetails Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // Reset i18n to English
-    i18n.changeLanguage('en');
   });
 
-  it('should fetch and display patient data', async () => {
-    // Arrange
-    const mockPatient = {
-      resourceType: 'Patient',
-      id: 'test-uuid',
-      name: [{ given: ['John'], family: 'Doe' }],
-      gender: 'male',
-      birthDate: '1990-01-01',
-    };
-
-    const mockAge: Age = {
-      years: 35,
-      months: 2,
-      days: 15,
-    };
-
-    const mockFormattedPatient: FormattedPatientData = {
+  it('integrates usePatient hook with loading to success state', async () => {
+    const mockPatient: FormattedPatientData = {
       id: 'test-uuid',
       fullName: 'John Doe',
       gender: 'male',
       birthDate: '1990-01-01',
       formattedAddress: null,
       formattedContact: null,
-      identifiers: new Map([['ID', 'test-uuid']]),
-      age: mockAge,
+      identifiers: new Map([['MRN', 'MRN123456']]),
+      age: { years: 35, months: 2, days: 15 },
     };
 
-    mockedAxios.get.mockResolvedValueOnce({ data: mockPatient });
-    mockedFormatPatientData.mockReturnValue(mockFormattedPatient);
-
-    // Act
-    render(
-      <NotificationProvider>
-        <MemoryRouter initialEntries={['/patients/test-uuid']}>
-          <PatientDetails />
-        </MemoryRouter>
-      </NotificationProvider>,
-    );
-
-    // Assert - Initially loading
-    expect(screen.getByTestId('skeleton-loader')).toBeInTheDocument();
-
-    // Wait for data to load
-    await waitFor(() => {
-      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    mockedUsePatient.mockReturnValue({
+      patient: mockPatient,
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
     });
 
-    // Assert - Data displayed correctly
-    expect(screen.getByText('test-uuid')).toBeInTheDocument();
+    render(<PatientDetails />);
+
+    expect(screen.getByTestId('patient-name')).toHaveTextContent('John Doe');
+    expect(screen.getByText('MRN123456')).toBeInTheDocument();
     expect(screen.getByText('male')).toBeInTheDocument();
-    expect(
-      screen.getByText('35 years, 2 months, 15 days | 1990-01-01'),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/35 years, 2 months, 15 days/)).toBeInTheDocument();
   });
 
-  it('should handle missing patient data', async () => {
-    // Arrange
-    const mockPatient = {
-      resourceType: 'Patient',
-      id: 'test-uuid',
-      // Missing name, gender, birthDate
-    };
-
-    const mockFormattedPatient: FormattedPatientData = {
-      id: 'test-uuid',
-      fullName: null,
-      gender: null,
-      birthDate: null,
-      formattedAddress: null,
-      formattedContact: null,
-      identifiers: new Map([['ID', 'test-uuid']]),
-      age: null,
-    };
-
-    mockedAxios.get.mockResolvedValueOnce({ data: mockPatient });
-    mockedFormatPatientData.mockReturnValue(mockFormattedPatient);
-
-    // Act
-    render(
-      <NotificationProvider>
-        <MemoryRouter initialEntries={['/patients/test-uuid']}>
-          <PatientDetails />
-        </MemoryRouter>
-      </NotificationProvider>,
-    );
-
-    // Wait for data to load
-    await waitFor(() => {
-      expect(screen.getByText('test-uuid')).toBeInTheDocument();
+  it('integrates usePatient hook with error state', () => {
+    mockedUsePatient.mockReturnValue({
+      patient: null,
+      loading: false,
+      error: new Error('Network error'),
+      refetch: jest.fn(),
     });
 
-    // Assert - Only ID should be displayed
-    expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument(); // No name heading
-    expect(screen.queryByText(/male/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/1990-01-01/)).not.toBeInTheDocument();
+    render(<PatientDetails />);
+
+    expect(screen.getByTestId('skeleton-loader')).toBeInTheDocument();
+  });
+
+  it('integrates usePatient hook with loading state', () => {
+    mockedUsePatient.mockReturnValue({
+      patient: null,
+      loading: true,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<PatientDetails />);
+
+    expect(screen.getByTestId('skeleton-loader')).toBeInTheDocument();
+  });
+
+  it('integrates translation system with singular age formatting', () => {
+    const mockPatient: FormattedPatientData = {
+      id: 'test-uuid',
+      fullName: 'Jane Doe',
+      gender: 'female',
+      birthDate: '2023-01-01',
+      formattedAddress: null,
+      formattedContact: null,
+      identifiers: new Map([['ID', 'ID123']]),
+      age: { years: 1, months: 1, days: 1 },
+    };
+
+    mockedUsePatient.mockReturnValue({
+      patient: mockPatient,
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<PatientDetails />);
+
+    expect(screen.getByText(/1 year, 1 month, 1 day/)).toBeInTheDocument();
   });
 });

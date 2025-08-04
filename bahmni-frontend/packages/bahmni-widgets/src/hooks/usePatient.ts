@@ -4,6 +4,7 @@ import {
   getFormattedPatientById,
 } from '@bahmni-frontend/bahmni-services';
 import { usePatientUUID } from './usePatientUUID';
+import { getFormattedError } from '@bahmni-frontend/bahmni-services';
 
 interface UsePatientResult {
   patient: FormattedPatientData | null;
@@ -34,13 +35,8 @@ export const usePatient = (): UsePatientResult => {
       const data = await getFormattedPatientById(patientUUID);
       setPatient(data);
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err
-          : new Error(
-              'An unexpected error occurred while fetching patient data',
-            ),
-      );
+      const { message } = getFormattedError(err);
+      setError(err instanceof Error ? err : new Error(message));
     } finally {
       setLoading(false);
     }

@@ -2,6 +2,7 @@ import { renderHook, waitFor, act } from '@testing-library/react';
 import {
   FormattedPatientData,
   getFormattedPatientById,
+  getFormattedError,
 } from '@bahmni-frontend/bahmni-services';
 import { usePatient } from '../usePatient';
 import { usePatientUUID } from '../usePatientUUID';
@@ -11,6 +12,9 @@ const mockedGetFormattedPatientById =
   getFormattedPatientById as jest.MockedFunction<
     typeof getFormattedPatientById
   >;
+const mockedGetFormattedError = getFormattedError as jest.MockedFunction<
+  typeof getFormattedError
+>;
 
 jest.mock('react-router-dom', () => ({
   useParams: jest.fn(),
@@ -42,6 +46,22 @@ describe('usePatient hook', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  it('shows loading state during fetch', async () => {
+    mockedUsePatientUUID.mockReturnValue('test-uuid');
+    mockedGetFormattedPatientById.mockImplementation(() => new Promise(resolve => setTimeout(() => resolve(mockPatientData), 100)));
+
+    const { result } = renderHook(() => usePatient());
+
+    expect(result.current.loading).toBe(true);
+    expect(result.current.patient).toBeNull();
+    expect(result.current.error).toBeNull();
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+      expect(result.current.patient).toEqual(mockPatientData);
+    });
   });
 
   it('fetches patient data successfully', async () => {
@@ -77,6 +97,10 @@ describe('usePatient hook', () => {
     const mockError = new Error('Failed to fetch patient');
     mockedUsePatientUUID.mockReturnValue('test-uuid');
     mockedGetFormattedPatientById.mockRejectedValueOnce(mockError);
+    mockedGetFormattedError.mockReturnValue({
+      title: 'Error',
+      message: 'Failed to fetch patient'
+    });
 
     const { result } = renderHook(() => usePatient());
 
@@ -87,18 +111,25 @@ describe('usePatient hook', () => {
     });
   });
 
-  it('handles non-Error rejections with default message', async () => {
+  it('handles non-Error rejections using getFormattedError', async () => {
     const nonErrorObject = { message: 'API error' };
+    const formattedErrorMessage = 'Formatted API error';
     mockedUsePatientUUID.mockReturnValue('test-uuid');
     mockedGetFormattedPatientById.mockRejectedValueOnce(nonErrorObject);
+    mockedGetFormattedError.mockReturnValue({
+      title: 'Error',
+      message: formattedErrorMessage
+    });
 
     const { result } = renderHook(() => usePatient());
 
     await waitFor(() => {
-      expect(result.current.error).toEqual(
-        new Error('An unexpected error occurred while fetching patient data'),
-      );
+      expect(result.current.error).toEqual(new Error(formattedErrorMessage));
+      expect(result.current.patient).toBeNull();
+      expect(result.current.loading).toBe(false);
     });
+
+    expect(mockedGetFormattedError).toHaveBeenCalledWith(nonErrorObject);
   });
 
   it('refetches data when refetch is called', async () => {
@@ -151,6 +182,10 @@ describe('usePatient hook', () => {
     const mockError = new Error('Network error');
     mockedUsePatientUUID.mockReturnValue('test-uuid');
     mockedGetFormattedPatientById.mockRejectedValueOnce(mockError);
+    mockedGetFormattedError.mockReturnValue({
+      title: 'Error',
+      message: 'Network error'
+    });
 
     const { result } = renderHook(() => usePatient());
 
