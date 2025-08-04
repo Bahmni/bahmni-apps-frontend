@@ -73,9 +73,7 @@ const RadiologyInvestigationTable: React.FC = () => {
                 {investigation.testName}
               </p>
               {investigation.priority === 'stat' && (
-                <Tag className={styles.urgentCell}>
-                  {t('RADIOLOGY_PRIORITY_URGENT')}
-                </Tag>
+                <Tag type="red">{t('RADIOLOGY_PRIORITY_URGENT')}</Tag>
               )}
             </>
           );
