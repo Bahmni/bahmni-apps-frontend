@@ -11,7 +11,7 @@ import { formatDateDistance } from '@utils/date';
 import * as styles from './styles/ConditionsTable.module.scss';
 
 /**
- * Component to display patient conditions in a DataTable with expandable rows
+ * Component to display patient conditions using SortableDataTable
  */
 const ConditionsTable: React.FC = () => {
   const { t } = useTranslation();

@@ -687,7 +687,7 @@ exports[`MedicationsTable Snapshots matches snapshot for active medications tab 
                 class="cds--data-table-content"
               >
                 <table
-                  aria-label="Allergies"
+                  aria-label="Medications"
                   class="cds--data-table cds--data-table--md cds--data-table--sort cds--data-table--visible-overflow-menu"
                 >
                   <thead>
@@ -1781,7 +1781,7 @@ exports[`MedicationsTable Snapshots matches snapshot for all medications tab wit
                 class="cds--data-table-content"
               >
                 <table
-                  aria-label="Allergies"
+                  aria-label="Medications"
                   class="cds--data-table cds--data-table--md cds--data-table--sort cds--data-table--visible-overflow-menu"
                 >
                   <thead>
@@ -2229,7 +2229,7 @@ exports[`MedicationsTable Snapshots matches snapshot for all medications tab wit
                 class="cds--data-table-content"
               >
                 <table
-                  aria-label="Allergies"
+                  aria-label="Medications"
                   class="cds--data-table cds--data-table--md cds--data-table--sort cds--data-table--visible-overflow-menu"
                 >
                   <thead>
@@ -2677,7 +2677,7 @@ exports[`MedicationsTable Snapshots matches snapshot for all medications tab wit
                 class="cds--data-table-content"
               >
                 <table
-                  aria-label="Allergies"
+                  aria-label="Medications"
                   class="cds--data-table cds--data-table--md cds--data-table--sort cds--data-table--visible-overflow-menu"
                 >
                   <thead>

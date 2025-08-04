@@ -269,16 +269,16 @@ const MedicationsTable: React.FC = () => {
                     <AccordionItem
                       title={formattedDate}
                       key={date}
-                      className={styles.customiAccordianItem}
+                      className={styles.customAccordianItem}
                     >
                       <SortableDataTable
                         headers={headers}
-                        ariaLabel={t('ALLERGIES_DISPLAY_CONTROL_HEADING')}
+                        ariaLabel={t('MEDICATIONS_DISPLAY_CONTROL_HEADING')}
                         rows={medications}
                         loading={loading}
                         errorStateMessage={error}
                         sortable={sortable}
-                        emptyStateMessage={t('NO_ALLERGIES')}
+                        emptyStateMessage={t('NO_MEDICATION_HISTORY')}
                         renderCell={renderCell}
                         className={styles.medicationsTableBody}
                       />
