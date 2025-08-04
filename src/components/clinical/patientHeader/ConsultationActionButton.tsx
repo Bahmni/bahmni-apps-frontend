@@ -26,7 +26,7 @@ const ConsultationActionButton: React.FC<ConsultationActionButtonProps> = ({
   return (
     <Button
       className={styles.newConsultationButton}
-      size="lg"
+      size="md"
       disabled={isActionAreaVisible || isLoading}
       onClick={() => setIsActionAreaVisible(!isActionAreaVisible)}
     >
