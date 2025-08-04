@@ -1,7 +1,7 @@
-import { Tag, Tile, DataTableSkeleton } from '@carbon/react';
+import { Tag, Accordion, AccordionItem } from '@carbon/react';
 import React, { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ExpandableDataTable } from '@components/common/expandableDataTable/ExpandableDataTable';
+import { SortableDataTable } from '@/components/common/sortableDataTable/SortableDataTable';
 import { FULL_MONTH_DATE_FORMAT, ISO_DATE_FORMAT } from '@constants/date';
 import { useRadiologyInvestigation } from '@hooks/useRadiologyInvestigation';
 import { RadiologyInvestigation } from '@types/radiologyInvestigation';
@@ -15,7 +15,7 @@ import * as styles from './styles/RadiologyInvestigationTable.module.scss';
 
 /**
  * Component to display patient radiology investigations grouped by date in accordion format
- * Each accordion item contains an ExpandableDataTable with radiology investigations for that date
+ * Each accordion item contains an SortableDataTable with radiology investigations for that date
  */
 const RadiologyInvestigationTable: React.FC = () => {
   const { t } = useTranslation();
@@ -69,7 +69,9 @@ const RadiologyInvestigationTable: React.FC = () => {
         case 'testName':
           return (
             <>
-              {investigation.testName + ' '}
+              <p className={styles.investigationName}>
+                {investigation.testName}
+              </p>
               {investigation.priority === 'stat' && (
                 <Tag className={styles.urgentCell}>
                   {t('RADIOLOGY_PRIORITY_URGENT')}
@@ -87,56 +89,52 @@ const RadiologyInvestigationTable: React.FC = () => {
   );
 
   return (
-    <Tile
-      title={t('RADIOLOGY_INVESTIGATION_HEADING')}
-      data-testid="radiology-investigations-table"
-      className={styles.radiologyInvestigationTable}
-    >
-      {loading && (
-        <DataTableSkeleton
-          columnCount={3}
-          rowCount={1}
-          showHeader={false}
-          showToolbar={false}
-          compact
-          data-testid="data-table-skeleton"
+    <div data-testid="radiology-investigations-table">
+      {loading || !!error || processedInvestigations.length === 0 ? (
+        <SortableDataTable
+          headers={headers}
+          ariaLabel={t('RADIOLOGY_INVESTIGATION_HEADING')}
+          rows={[]}
+          loading={loading}
+          errorStateMessage={error?.message}
+          emptyStateMessage={t('NO_RADIOLOGY_INVESTIGATIONS')}
+          renderCell={renderCell}
+          className={styles.radiologyInvestigationTableBody}
         />
-      )}
-      {error && (
-        <p className={styles.radiologyInvestigationTableBodyError}>
-          {t('ERROR_FETCHING_RADIOLOGY_INVESTIGATIONS')}
-        </p>
-      )}
-      {!loading && !error && radiologyInvestigations.length === 0 && (
-        <p className={styles.radiologyInvestigationTableBodyError}>
-          {t('NO_RADIOLOGY_INVESTIGATIONS')}
-        </p>
-      )}
-      {processedInvestigations.map((investigationsByDate, index) => {
-        const { date, investigations } = investigationsByDate;
+      ) : (
+        <Accordion align="start">
+          {processedInvestigations.map((investigationsByDate, index) => {
+            const { date, investigations } = investigationsByDate;
+            const formattedDate = formatDate(
+              date,
+              FULL_MONTH_DATE_FORMAT,
+            ).formattedResult;
 
-        const formattedDate = formatDate(
-          date,
-          FULL_MONTH_DATE_FORMAT,
-        ).formattedResult;
-
-        return (
-          <ExpandableDataTable
-            key={date}
-            tableTitle={formattedDate}
-            rows={investigations}
-            headers={headers}
-            sortable={sortable}
-            renderCell={renderCell}
-            loading={false}
-            error={null}
-            emptyStateMessage={t('NO_RADIOLOGY_INVESTIGATIONS')}
-            className={styles.radiologyInvestigationTableBody}
-            isOpen={index === 0}
-          />
-        );
-      })}
-    </Tile>
+            return (
+              <AccordionItem
+                title={formattedDate}
+                key={date}
+                className={styles.customAccordianItem}
+                data-testid={'accordian-table-title'}
+                open={index === 0}
+              >
+                <SortableDataTable
+                  headers={headers}
+                  ariaLabel={t('RADIOLOGY_INVESTIGATION_HEADING')}
+                  rows={investigations}
+                  loading={loading}
+                  errorStateMessage={''}
+                  sortable={sortable}
+                  emptyStateMessage={t('NO_RADIOLOGY_INVESTIGATIONS')}
+                  renderCell={renderCell}
+                  className={styles.radiologyInvestigationTableBody}
+                />
+              </AccordionItem>
+            );
+          })}
+        </Accordion>
+      )}
+    </div>
   );
 };
 
