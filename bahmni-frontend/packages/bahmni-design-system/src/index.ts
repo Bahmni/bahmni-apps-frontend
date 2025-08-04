@@ -30,3 +30,13 @@ export { NumberInput, type NumberInputProps } from './atoms/numberInput';
 export { ComboBox, type ComboBoxProps } from './atoms/comboBox';
 export { TextInput, type TextInputProps } from './atoms/textInput';
 export { SkeletonText, type SkeletonTextProps } from './atoms/skeletonText';
+export { Dropdown, type DropdownProps } from './atoms/dropdown';
+export { Checkbox, type CheckboxProps } from './atoms/checkbox';
+export {
+  Grid,
+  Row,
+  Column,
+  type GridProps,
+  type RowProps,
+  type ColumnProps,
+} from './atoms/grid';

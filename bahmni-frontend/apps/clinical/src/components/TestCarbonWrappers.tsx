@@ -13,9 +13,13 @@ import {
   ComboBox,
   Tag,
   ButtonSet,
-  SkeletonText
+  SkeletonText,
+  Dropdown,
+  Grid,
+  Checkbox,
+  Column
 } from '@bahmni-frontend/bahmni-design-system';
-import { Dropdown } from '@carbon/react';
+
 export const TestCarbonWrappers: React.FC = () => {
   return (
     <div>
@@ -113,6 +117,20 @@ export const TestCarbonWrappers: React.FC = () => {
     label="Option 1"
     titleText="Drop Down Example"
     type="inline"
+  />
+  <Grid>
+      <Column lg={4}>Span 4 of 16</Column>
+      <Column lg={4}>Span 4 of 16</Column>
+      <Column lg={4}>Span 4 of 16</Column>
+      <Column lg={4}>Span 4 of 16</Column>
+    </Grid>
+  <Checkbox
+    id="checkbox-label-1"
+    labelText="Checkbox label"
+  />
+  <Checkbox
+    id="checkbox-label-2"
+    labelText="Checkbox label"
   />
     </div>
   );
