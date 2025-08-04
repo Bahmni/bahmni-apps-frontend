@@ -6,11 +6,14 @@ jest.mock('../constants', () => ({
   LOGIN_PATH: '/login',
 }));
 
-jest.mock('../utils', () => ({
+jest.mock('../../errorHandling', () => ({
   getFormattedError: jest.fn(() => ({
     title: 'Error',
     message: 'Test error message',
   })),
+}));
+
+jest.mock('../utils', () => ({
   decodeHtmlEntities: jest.fn((data) => data),
   isOpenMRSWebServiceApi: jest.fn(() => true),
   getResponseUrl: jest.fn(() => '/openmrs/ws/rest/v1/patient'),
