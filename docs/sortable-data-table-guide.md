@@ -257,5 +257,4 @@ Follows [Carbon Design System](https://carbondesignsystem.com/) guidelines for:
 
 ## Related Components
 
-- [`ExpandableDataTable`](./expandable-data-table-guide.md) – For rows that expand to show additional data.
 - [`DataTableHeader`](https://carbondesignsystem.com/components/data-table/usage/) – Carbon header definitions.

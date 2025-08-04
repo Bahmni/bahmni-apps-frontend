@@ -135,8 +135,6 @@
   "ERROR_UNAUTHORIZED_TITLE": "Unauthorized",
   "ERROR_UNKNOWN_MESSAGE": "An unknown error occurred",
   "ERROR_VALIDATION_TITLE": "Validation Error",
-  "EXPANDABLE_TABLE_EMPTY_STATE_MESSAGE": "No data available",
-  "EXPANDABLE_TABLE_ERROR_MESSAGE": "{{title}}: {{message}}",
   "INPUT_VALUE_REQUIRED": "Please enter a value",
   "INVALID_RESPONSE": "Invalid response received from the server",
   "INVESTIGATION_ALREADY_SELECTED": "(Already selected)",
