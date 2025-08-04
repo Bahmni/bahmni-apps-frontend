@@ -1,4 +1,4 @@
-import { Notification } from '@types/notification';
+import { Notification } from './notification';
 
 /**
  * Interface for the notification service

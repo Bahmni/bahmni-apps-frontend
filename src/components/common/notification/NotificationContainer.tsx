@@ -1,6 +1,6 @@
 import { ToastNotification } from '@carbon/react';
 import React from 'react';
-import { Notification } from '@types/notification';
+import { Notification } from '../../../../bahmni-frontend/packages/bahmni-services/src/notification/notification';
 import * as styles from './styles/NotificationContainer.module.scss';
 
 interface NotificationContainerProps {

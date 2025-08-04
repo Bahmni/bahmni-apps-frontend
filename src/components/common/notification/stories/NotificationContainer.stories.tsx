@@ -1,7 +1,7 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { NotificationContainer } from '../NotificationContainer';
-import { Notification } from '@types/notification';
+import { Notification } from '../../../../../bahmni-frontend/packages/bahmni-services/src/notification/notification';
 
 // Create a decorator to provide a better layout for the fixed-position component
 const NotificationDecorator = (Story: React.ComponentType) => (

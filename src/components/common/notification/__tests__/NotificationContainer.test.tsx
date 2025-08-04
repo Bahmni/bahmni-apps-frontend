@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
-import { Notification } from '@types/notification';
+import { Notification } from '../../../../../bahmni-frontend/packages/bahmni-services/src/notification/notification';
 import NotificationContainer from '../NotificationContainer';
 
 describe('NotificationContainer', () => {

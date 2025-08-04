@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { NotificationContext } from '@contexts/NotificationContext';
-import { NotificationContextType } from '@types/notification';
+import { NotificationContextType } from '../../bahmni-frontend/packages/bahmni-services/src/notification/notification';
 
 /**
  * Custom hook to use the notification service

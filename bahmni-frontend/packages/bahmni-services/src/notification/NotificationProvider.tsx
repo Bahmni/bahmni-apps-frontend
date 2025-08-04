@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import { NotificationContainer } from '@components/common/notification/NotificationContainer';
 import { NotificationContext } from '@contexts/NotificationContext';
-import { Notification } from '@types/notification';
+import { Notification } from './notification';
 import { generateId } from '@utils/common';
 
 interface NotificationProviderProps {
