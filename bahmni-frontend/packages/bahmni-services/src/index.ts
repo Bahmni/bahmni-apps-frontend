@@ -6,3 +6,4 @@ export {
   type FormattedPatientData,
 } from './patientService';
 export { getFormattedError } from './errorHandling';
+export { type Notification } from './notification';

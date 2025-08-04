@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import React from 'react';
-import { Notification } from '../../../../../bahmni-frontend/packages/bahmni-services/src/notification/notification';
+import { Notification } from '@bahmni-frontend/bahmni-services';
 import NotificationContainer from '../NotificationContainer';
+import '@testing-library/jest-dom';
 
 describe('NotificationContainer', () => {
   const mockOnClose = jest.fn();
