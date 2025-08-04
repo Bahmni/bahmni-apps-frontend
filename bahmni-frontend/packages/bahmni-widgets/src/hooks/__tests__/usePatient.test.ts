@@ -1,275 +1,172 @@
-import { Patient } from 'fhir/r4';
-import { useNotification } from '@hooks/useNotification';
-import { getPatientById } from '@services/patientService';
+import { renderHook, waitFor, act } from '@testing-library/react';
+import {
+  FormattedPatientData,
+  getFormattedPatientById,
+} from '@bahmni-frontend/bahmni-services';
 import { usePatient } from '../usePatient';
+import { usePatientUUID } from '../usePatientUUID';
 
-// Mock the patientService
-jest.mock('@services/patientService');
-const mockedGetPatientById = getPatientById as jest.MockedFunction<
-  typeof getPatientById
+jest.mock('@bahmni-frontend/bahmni-services');
+const mockedGetFormattedPatientById =
+  getFormattedPatientById as jest.MockedFunction<
+    typeof getFormattedPatientById
+  >;
+
+jest.mock('react-router-dom', () => ({
+  useParams: jest.fn(),
+}));
+
+jest.mock('../usePatientUUID');
+const mockedUsePatientUUID = usePatientUUID as jest.MockedFunction<
+  typeof usePatientUUID
 >;
 
-// Mock the useNotification hook
-jest.mock('@hooks/useNotification');
-const mockAddNotification = jest.fn();
-(useNotification as jest.Mock).mockReturnValue({
-  addNotification: mockAddNotification,
-});
-
-// Mock React hooks
-jest.mock('react', () => {
-  const originalReact = jest.requireActual('react');
-  return {
-    ...originalReact,
-    useState: jest.fn(),
-    useEffect: jest.fn((effect) => {
-      effect();
-    }),
-    useCallback: jest.fn((fn) => fn),
-    useRef: jest.fn().mockImplementation(() => ({
-      current: false,
-    })),
-  };
-});
-
 describe('usePatient hook', () => {
-  let mockSetPatient: jest.Mock;
-  let mockSetLoading: jest.Mock;
-  let mockSetError: jest.Mock;
+  const mockPatientData: FormattedPatientData = {
+    id: 'test-uuid',
+    fullName: 'John Doe',
+    gender: 'M',
+    birthDate: '1994-01-01',
+    formattedAddress: '123 Main St, Anytown, State, Country 12345',
+    formattedContact: '+1-555-0123',
+    identifiers: new Map<string, string>([
+      ['OpenMRS ID', 'OP12345'],
+      ['National ID', 'NAT67890'],
+    ]),
+    age: {
+      years: 30,
+      months: 6,
+      days: 15,
+    },
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
-
-    // Setup useState mock implementation
-    mockSetPatient = jest.fn();
-    mockSetLoading = jest.fn();
-    mockSetError = jest.fn();
-
-    const useStateMock = jest.requireMock('react').useState;
-
-    // First call is for patient state
-    useStateMock.mockImplementationOnce((initialValue: Patient | null) => [
-      initialValue,
-      mockSetPatient,
-    ]);
-    // Second call is for loading state
-    useStateMock.mockImplementationOnce((initialValue: boolean) => [
-      initialValue,
-      mockSetLoading,
-    ]);
-    // Third call is for error state
-    useStateMock.mockImplementationOnce((initialValue: Error | null) => [
-      initialValue,
-      mockSetError,
-    ]);
   });
 
-  it('should initialize with correct default values', () => {
-    // Arrange - Set up the initial state values
-    const useStateMock = jest.requireMock('react').useState;
+  it('fetches patient data successfully', async () => {
+    mockedUsePatientUUID.mockReturnValue('test-uuid');
+    mockedGetFormattedPatientById.mockResolvedValueOnce(mockPatientData);
 
-    // Mock the useState calls to return the initial values we want to test
-    useStateMock.mockImplementationOnce(() => [null, mockSetPatient]); // patient state
-    useStateMock.mockImplementationOnce(() => [false, mockSetLoading]); // loading state
-    useStateMock.mockImplementationOnce(() => [null, mockSetError]); // error state
+    const { result } = renderHook(() => usePatient());
 
-    // Act
-    const result = usePatient('test-uuid');
-
-    // Assert - Check that the hook returns the expected values
-    expect(result.patient).toBeNull();
-    expect(result.loading).toBe(false);
-    expect(result.error).toBeNull();
-    expect(typeof result.refetch).toBe('function');
-  });
-
-  it('should call fetchPatient when patientUUID is provided', () => {
-    // Arrange
-    const useEffectMock = jest.requireMock('react').useEffect;
-
-    // Act
-    usePatient('test-uuid');
-
-    // Assert
-    expect(useEffectMock).toHaveBeenCalled();
-
-    // Get the effect function and dependencies
-    const effectFn = useEffectMock.mock.calls[0][0];
-    const deps = useEffectMock.mock.calls[0][1];
-
-    // Verify dependencies include patientUUID and fetchPatient
-    expect(deps).toContain('test-uuid');
-    expect(deps).toHaveLength(2); // patientUUID and fetchPatient
-
-    // Call the effect function to simulate useEffect execution
-    effectFn();
-
-    // Verify API call was made
-    expect(mockedGetPatientById).toHaveBeenCalledWith('test-uuid');
-  });
-
-  it('should return early with error when patientUUID is null', () => {
-    // Arrange - Set up the initial state values
-    const useStateMock = jest.requireMock('react').useState;
-
-    // Mock the useState calls
-    useStateMock.mockImplementationOnce(() => [null, mockSetPatient]); // patient state
-    useStateMock.mockImplementationOnce(() => [false, mockSetLoading]); // loading state
-    useStateMock.mockImplementationOnce(() => [null, mockSetError]); // error state
-
-    // Act
-    const result = usePatient(null);
-
-    // Assert
-    expect(result.patient).toBeNull();
-    expect(result.loading).toBe(false);
-    expect(typeof result.refetch).toBe('function');
-
-    // Verify the notification was attempted to be added
-    expect(mockAddNotification).toHaveBeenCalledWith({
-      type: 'error',
-      title: 'Error',
-      message: 'Invalid patient UUID',
+    await waitFor(() => {
+      expect(result.current.patient).toEqual(mockPatientData);
+      expect(result.current.loading).toBe(false);
+      expect(result.current.error).toBeNull();
     });
+
+    expect(mockedGetFormattedPatientById).toHaveBeenCalledWith('test-uuid');
   });
 
-  it('should not call fetchPatient when patientUUID is empty', () => {
-    // Arrange - Set up the initial state values
-    const useStateMock = jest.requireMock('react').useState;
+  it('sets error when patientUUID is invalid', async () => {
+    mockedUsePatientUUID.mockReturnValue(null);
 
-    // Mock the useState calls
-    useStateMock.mockImplementationOnce(() => [null, mockSetPatient]); // patient state
-    useStateMock.mockImplementationOnce(() => [false, mockSetLoading]); // loading state
-    useStateMock.mockImplementationOnce(() => [null, mockSetError]); // error state
+    const { result } = renderHook(() => usePatient());
 
-    // Act
-    usePatient(''); // Empty patientUUID
-
-    // Assert
-    // Verify API call was NOT made
-    expect(mockedGetPatientById).not.toHaveBeenCalled();
-
-    // Verify the notification was attempted to be added
-    expect(mockAddNotification).toHaveBeenCalledWith({
-      type: 'error',
-      title: 'Error',
-      message: 'Invalid patient UUID',
+    await waitFor(() => {
+      expect(result.current.error).toEqual(new Error('Invalid patient UUID'));
+      expect(result.current.patient).toBeNull();
+      expect(result.current.loading).toBe(false);
     });
+
+    expect(mockedGetFormattedPatientById).not.toHaveBeenCalled();
   });
 
-  it('should update state correctly on successful API response', async () => {
-    // Arrange
-    const mockPatient = {
-      resourceType: 'Patient' as const,
-      id: 'test-uuid',
-    };
-    mockedGetPatientById.mockResolvedValueOnce(mockPatient);
-
-    const useEffectMock = jest.requireMock('react').useEffect;
-    const useStateMock = jest.requireMock('react').useState;
-
-    // Mock the useState calls
-    useStateMock.mockImplementationOnce(() => [null, mockSetPatient]); // patient state
-    useStateMock.mockImplementationOnce(() => [false, mockSetLoading]); // loading state
-    useStateMock.mockImplementationOnce(() => [null, mockSetError]); // error state
-
-    // Act
-    usePatient('test-uuid');
-
-    // Get and call the effect function
-    const effectFn = useEffectMock.mock.calls[0][0];
-    await effectFn();
-
-    // Assert
-    expect(mockSetLoading).toHaveBeenCalledWith(true);
-    expect(mockSetPatient).toHaveBeenCalledWith(mockPatient);
-    expect(mockSetLoading).toHaveBeenCalledWith(false);
-  });
-
-  it('should handle Error objects correctly', async () => {
-    // Arrange
+  it('handles API errors', async () => {
     const mockError = new Error('Failed to fetch patient');
-    mockedGetPatientById.mockRejectedValueOnce(mockError);
+    mockedUsePatientUUID.mockReturnValue('test-uuid');
+    mockedGetFormattedPatientById.mockRejectedValueOnce(mockError);
 
-    const useEffectMock = jest.requireMock('react').useEffect;
+    const { result } = renderHook(() => usePatient());
 
-    // Act
-    usePatient('test-uuid');
-
-    // Get and call the effect function
-    const effectFn = useEffectMock.mock.calls[0][0];
-    await effectFn();
-
-    // Assert
-    expect(mockSetLoading).toHaveBeenCalledWith(true);
-    expect(mockSetError).toHaveBeenCalledWith(mockError);
-    expect(mockSetLoading).toHaveBeenCalledWith(false);
-    expect(mockAddNotification).toHaveBeenCalledWith({
-      type: 'error',
-      title: 'Error',
-      message: 'Failed to fetch patient',
+    await waitFor(() => {
+      expect(result.current.error).toEqual(mockError);
+      expect(result.current.patient).toBeNull();
+      expect(result.current.loading).toBe(false);
     });
   });
 
-  it('should handle non-Error objects by creating a new Error', async () => {
-    // Arrange
-    const nonErrorObject = { message: 'API error' }; // Not an Error instance
-    mockedGetPatientById.mockRejectedValueOnce(nonErrorObject);
+  it('handles non-Error rejections with default message', async () => {
+    const nonErrorObject = { message: 'API error' };
+    mockedUsePatientUUID.mockReturnValue('test-uuid');
+    mockedGetFormattedPatientById.mockRejectedValueOnce(nonErrorObject);
 
-    const useEffectMock = jest.requireMock('react').useEffect;
+    const { result } = renderHook(() => usePatient());
 
-    // Act
-    usePatient('test-uuid');
-
-    // Get and call the effect function
-    const effectFn = useEffectMock.mock.calls[0][0];
-    await effectFn();
-
-    // Assert
-    expect(mockSetLoading).toHaveBeenCalledWith(true);
-
-    // Verify a new Error was created with the default message
-    expect(mockSetError).toHaveBeenCalledWith(
-      expect.objectContaining({
-        message: 'An unknown error occurred',
-      }),
-    );
-    expect(mockSetLoading).toHaveBeenCalledWith(false);
-    expect(mockAddNotification).toHaveBeenCalledWith({
-      type: 'error',
-      title: 'Error',
-      message: 'An unknown error occurred',
+    await waitFor(() => {
+      expect(result.current.error).toEqual(
+        new Error('An unexpected error occurred while fetching patient data'),
+      );
     });
   });
 
-  it('should provide a refetch function that fetches data again', async () => {
-    // Arrange
-    const mockPatient = {
-      resourceType: 'Patient' as const,
-      id: 'test-uuid',
-    };
-    mockedGetPatientById.mockResolvedValueOnce(mockPatient);
+  it('refetches data when refetch is called', async () => {
+    mockedUsePatientUUID.mockReturnValue('test-uuid');
+    mockedGetFormattedPatientById.mockResolvedValue(mockPatientData);
 
-    // Act
-    const result = usePatient('test-uuid');
+    const { result } = renderHook(() => usePatient());
 
-    // Clear the mocks to verify new calls
-    mockSetPatient.mockClear();
-    mockSetLoading.mockClear();
-    mockSetError.mockClear();
-    mockedGetPatientById.mockClear();
+    await waitFor(() => {
+      expect(result.current.patient).toEqual(mockPatientData);
+    });
 
-    // Setup for refetch - Note: We're mocking the same patient object for simplicity
-    // In a real scenario, this could be a different patient object
-    mockedGetPatientById.mockResolvedValueOnce(mockPatient);
+    mockedGetFormattedPatientById.mockClear();
+    const updatedData = { ...mockPatientData, fullName: 'Jane Doe' };
+    mockedGetFormattedPatientById.mockResolvedValueOnce(updatedData);
 
-    // Call refetch
-    await result.refetch();
+    await act(async () => {
+      await result.current.refetch();
+    });
 
-    // Assert
-    expect(mockedGetPatientById).toHaveBeenCalledWith('test-uuid');
-    expect(mockSetLoading).toHaveBeenCalledWith(true);
-    expect(mockSetPatient).toHaveBeenCalledWith(mockPatient);
-    expect(mockSetLoading).toHaveBeenCalledWith(false);
+    await waitFor(() => {
+      expect(result.current.patient).toEqual(updatedData);
+    });
+    expect(mockedGetFormattedPatientById).toHaveBeenCalledWith('test-uuid');
+  });
+
+  it('refetches when patientUUID changes', async () => {
+    mockedUsePatientUUID.mockReturnValue('initial-uuid');
+    mockedGetFormattedPatientById.mockResolvedValue(mockPatientData);
+
+    const { result, rerender } = renderHook(() => usePatient());
+
+    await waitFor(() => {
+      expect(result.current.patient).toEqual(mockPatientData);
+    });
+
+    mockedUsePatientUUID.mockReturnValue('new-uuid');
+    const newPatientData = { ...mockPatientData, id: 'new-uuid' };
+    mockedGetFormattedPatientById.mockResolvedValueOnce(newPatientData);
+
+    rerender();
+
+    await waitFor(() => {
+      expect(result.current.patient).toEqual(newPatientData);
+    });
+    expect(mockedGetFormattedPatientById).toHaveBeenCalledWith('new-uuid');
+  });
+
+  it('clears error on successful refetch after failure', async () => {
+    const mockError = new Error('Network error');
+    mockedUsePatientUUID.mockReturnValue('test-uuid');
+    mockedGetFormattedPatientById.mockRejectedValueOnce(mockError);
+
+    const { result } = renderHook(() => usePatient());
+
+    await waitFor(() => {
+      expect(result.current.error).toEqual(mockError);
+    });
+
+    mockedGetFormattedPatientById.mockResolvedValueOnce(mockPatientData);
+
+    await act(async () => {
+      await result.current.refetch();
+    });
+
+    await waitFor(() => {
+      expect(result.current.patient).toEqual(mockPatientData);
+      expect(result.current.error).toBeNull();
+    });
   });
 });

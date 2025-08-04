@@ -1,11 +1,12 @@
-import { Patient } from 'fhir/r4';
 import { useState, useEffect, useCallback } from 'react';
-import { useNotification } from '@hooks/useNotification';
-import { getPatientById } from '@services/patientService';
-import { getFormattedError } from '@utils/common';
+import {
+  FormattedPatientData,
+  getFormattedPatientById,
+} from '@bahmni-frontend/bahmni-services';
+import { usePatientUUID } from './usePatientUUID';
 
 interface UsePatientResult {
-  patient: Patient | null;
+  patient: FormattedPatientData | null;
   loading: boolean;
   error: Error | null;
   refetch: () => void;
@@ -13,42 +14,37 @@ interface UsePatientResult {
 
 /**
  * Custom hook to fetch and manage patient data
- * @param patientUUID - The UUID of the patient
  * @returns Object containing patient, loading state, error state, and refetch function
  */
-export const usePatient = (patientUUID: string | null): UsePatientResult => {
-  const [patient, setPatient] = useState<Patient | null>(null);
+export const usePatient = (): UsePatientResult => {
+  const patientUUID = usePatientUUID();
+  const [patient, setPatient] = useState<FormattedPatientData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
-  const { addNotification } = useNotification();
 
   const fetchPatient = useCallback(async () => {
     if (!patientUUID) {
       setError(new Error('Invalid patient UUID'));
-      addNotification({
-        type: 'error',
-        title: 'Error',
-        message: 'Invalid patient UUID',
-      });
       return;
     }
 
     try {
       setLoading(true);
-      const data = await getPatientById(patientUUID);
+      setError(null); // Clear any previous errors
+      const data = await getFormattedPatientById(patientUUID);
       setPatient(data);
     } catch (err) {
-      const { title, message } = getFormattedError(err);
-      addNotification({
-        type: 'error',
-        title: title,
-        message: message,
-      });
-      setError(err instanceof Error ? err : new Error(message));
+      setError(
+        err instanceof Error
+          ? err
+          : new Error(
+              'An unexpected error occurred while fetching patient data',
+            ),
+      );
     } finally {
       setLoading(false);
     }
-  }, [patientUUID, addNotification]);
+  }, [patientUUID]);
 
   useEffect(() => {
     fetchPatient();
