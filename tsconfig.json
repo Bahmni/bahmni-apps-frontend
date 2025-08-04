@@ -39,6 +39,6 @@
     "declarations.d.ts",
     "vite.config.ts",
     "vite-env.d.ts"
-  ],
+, "bahmni-frontend/packages/bahmni-widgets/src/hooks/usePatient.ts"  ],
   "exclude": ["node_modules", "build", "dist"]
 }

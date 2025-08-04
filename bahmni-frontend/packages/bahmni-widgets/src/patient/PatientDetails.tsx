@@ -1,22 +1,16 @@
 import { SkeletonText } from '@carbon/react';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Icon, ICON_SIZE } from '@bahmni-frontend/bahmni-design-system';
 import styles from './__styles__/PatientDetails.module.scss';
+import { usePatient } from '../hooks/usePatient';
 
 // TODO: Extract this as a PatientDetails Display Control Component
 const PatientDetails: React.FC = () => {
   const { t } = useTranslation();
-  const patientUUID: string | null = usePatientUUID();
-  const { patient, loading, error } = usePatient(patientUUID);
+  const { patient, loading, error } = usePatient();
 
-  // Format patient data using the service
-  const formattedPatient = useMemo(() => {
-    if (!patient) return null;
-    return formatPatientData(patient);
-  }, [patient]);
-
-  if (loading || error || !patient || !formattedPatient) {
+  if (loading || error || !patient) {
     return (
       <div className={styles.skeletonContainer}>
         <SkeletonText
@@ -36,30 +30,30 @@ const PatientDetails: React.FC = () => {
 
   const formatField = (value?: string | number | null) => value ?? null;
 
-  const formattedIdentifiers = formattedPatient.identifiers.size
-    ? Array.from(formattedPatient.identifiers.entries())
+  const formattedIdentifiers = patient.identifiers.size
+    ? Array.from(patient.identifiers.entries())
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         .map(([key, value]) => `${value}`)
         .filter(Boolean)
         .join(' | ')
     : null;
 
-  const formattedGender = formatField(formattedPatient.gender);
+  const formattedGender = formatField(patient.gender);
 
   const formattedAge =
-    formattedPatient.age?.years !== undefined
-      ? `${formattedPatient.age.years} ${t('CLINICAL_YEARS_TRANSLATION_KEY', { count: formattedPatient.age.years })}, ${formattedPatient.age.months} ${t('CLINICAL_MONTHS_TRANSLATION_KEY', { count: formattedPatient.age.months })}, ${formattedPatient.age.days} ${t('CLINICAL_DAYS_TRANSLATION_KEY', { count: formattedPatient.age.days })}`
+    patient.age?.years !== undefined
+      ? `${patient.age.years} ${t('CLINICAL_YEARS_TRANSLATION_KEY', { count: patient.age.years })}, ${patient.age.months} ${t('CLINICAL_MONTHS_TRANSLATION_KEY', { count: patient.age.months })}, ${patient.age.days} ${t('CLINICAL_DAYS_TRANSLATION_KEY', { count: patient.age.days })}`
       : null;
 
-  const details = [formattedAge, formatField(formattedPatient.birthDate)]
+  const details = [formattedAge, formatField(patient.birthDate)]
     .filter(Boolean)
     .join(' | ');
 
   return (
     <div className={styles.header}>
-      {formattedPatient.fullName && (
+      {patient.fullName && (
         <p data-testid="patient-name" className={styles.patientName}>
-          {formattedPatient.fullName}
+          {patient.fullName}
         </p>
       )}
       <div className={styles.patientDetails}>

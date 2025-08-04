@@ -1,11 +1,8 @@
 {
-  "I18N_TEST_TITLE": "Prueba del Servicio i18n",
-  "I18N_TEST_DESCRIPTION": "Este componente demuestra la funcionalidad de internacionalización",
-  "I18N_TEST_CURRENT_LANGUAGE": "Idioma actual: {{language}}",
-  "I18N_TEST_SWITCH_TO_ENGLISH": "Cambiar a inglés",
-  "I18N_TEST_SWITCH_TO_SPANISH": "Cambiar a español",
-  "I18N_TEST_SIMPLE_MESSAGE": "Mensaje traducido simple",
-  "I18N_TEST_WELCOME_USER": "¡Bienvenido, {{username}}!",
-  "I18N_TEST_ITEM_COUNT_one": "Tienes {{count}} elemento",
-  "I18N_TEST_ITEM_COUNT_other": "Tienes {{count}} elementos"
+  "CLINICAL_DAYS_TRANSLATION_KEY_one": "día",
+  "CLINICAL_DAYS_TRANSLATION_KEY_other": "días",
+  "CLINICAL_MONTHS_TRANSLATION_KEY_one": "mes",
+  "CLINICAL_MONTHS_TRANSLATION_KEY_other": "meses",
+  "CLINICAL_YEARS_TRANSLATION_KEY_one": "año",
+  "CLINICAL_YEARS_TRANSLATION_KEY_other": "años"
 }
