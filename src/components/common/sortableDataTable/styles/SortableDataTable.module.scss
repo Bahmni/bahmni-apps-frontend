@@ -12,7 +12,7 @@
     align-content: start;
   }
   th,
-  th > button {
+  th * {
     background-color: $background !important;
     font-weight: normal;
     color: $text-secondary;
