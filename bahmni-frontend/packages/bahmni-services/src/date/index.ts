@@ -12,11 +12,18 @@ import {
 import type { Locale } from 'date-fns';
 import { enUS, enGB, es, fr, de } from 'date-fns/locale';
 import i18next from 'i18next';
-import { DATE_FORMAT, DATE_TIME_FORMAT } from '@constants/date';
-import { DATE_ERROR_MESSAGES } from '@constants/errors';
+import { DATE_FORMAT, DATE_TIME_FORMAT } from './constants';
+import { DATE_ERROR_MESSAGES } from './errors';
 import { getUserPreferredLocale } from '../i18n/translationService';
-import { FormatDateResult } from '@types/date';
-import { Age } from '@types/patient';
+import { Age } from '../patientService/models';
+
+export interface FormatDateResult {
+  formattedResult: string;
+  error?: {
+    title: string;
+    message: string;
+  };
+}
 
 /**
  * Mapping of user locale codes to date-fns locale objects
