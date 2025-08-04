@@ -20,7 +20,8 @@ import {
   Column,
   Link,
   DatePicker,
-  DatePickerInput
+  DatePickerInput,
+  DropdownSkeleton
 } from '@bahmni-frontend/bahmni-design-system';
 
 export const TestCarbonWrappers: React.FC = () => {
@@ -134,6 +135,7 @@ export const TestCarbonWrappers: React.FC = () => {
     titleText="Drop Down Example"
     type="inline"
   />
+  <DropdownSkeleton></DropdownSkeleton>
   <Grid>
       <Column lg={4}>Span 4 of 16</Column>
       <Column lg={4}>Span 4 of 16</Column>
