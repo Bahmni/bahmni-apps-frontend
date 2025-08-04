@@ -18,7 +18,9 @@ import {
   Grid,
   Checkbox,
   Column,
-  Link
+  Link,
+  DatePicker,
+  DatePickerInput
 } from '@bahmni-frontend/bahmni-design-system';
 
 export const TestCarbonWrappers: React.FC = () => {
@@ -51,6 +53,18 @@ export const TestCarbonWrappers: React.FC = () => {
           typeahead
         />
       </div>
+      <DatePicker
+  datePickerType="single"
+  onChange={() => {}}
+  onOpen={() => {}}
+>
+  <DatePickerInput
+    id="date-picker-single"
+    labelText="Date Picker label"
+    onChange={() => {}}
+    placeholder="mm/dd/yyyy"
+  />
+</DatePicker>
       <Link>This is a link</Link>
       <ButtonSet>
         <Button kind="secondary">Secondary button</Button>

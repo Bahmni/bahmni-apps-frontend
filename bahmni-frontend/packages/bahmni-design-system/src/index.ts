@@ -41,3 +41,9 @@ export {
   type ColumnProps,
 } from './atoms/grid';
 export { Link, type LinkProps } from './atoms/link';
+export {
+  DatePicker,
+  DatePickerInput,
+  type DatePickerProps,
+  type DatePickerInputProps,
+} from './atoms/datePicker';
