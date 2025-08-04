@@ -40,3 +40,4 @@ export {
   type RowProps,
   type ColumnProps,
 } from './atoms/grid';
+export { Link, type LinkProps } from './atoms/link';

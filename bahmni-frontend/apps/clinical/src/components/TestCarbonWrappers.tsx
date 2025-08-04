@@ -17,7 +17,8 @@ import {
   Dropdown,
   Grid,
   Checkbox,
-  Column
+  Column,
+  Link
 } from '@bahmni-frontend/bahmni-design-system';
 
 export const TestCarbonWrappers: React.FC = () => {
@@ -50,6 +51,7 @@ export const TestCarbonWrappers: React.FC = () => {
           typeahead
         />
       </div>
+      <Link>This is a link</Link>
       <ButtonSet>
         <Button kind="secondary">Secondary button</Button>
         <Button kind="primary">Primary button</Button>
@@ -95,7 +97,7 @@ export const TestCarbonWrappers: React.FC = () => {
       />
       <Dropdown
        id="inline"
-    itemToString={(item) => (item ? item.text : '')}
+    itemToString={(item: any) => (item ? item.text : '')}
     initialSelectedItem={{
       text: 'Option 1'
     }}
