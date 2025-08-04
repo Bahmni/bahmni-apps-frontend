@@ -15,6 +15,7 @@ import {
   ButtonSet,
   SkeletonText
 } from '@bahmni-frontend/bahmni-design-system';
+import { Dropdown } from '@carbon/react';
 export const TestCarbonWrappers: React.FC = () => {
   return (
     <div>
@@ -88,6 +89,31 @@ export const TestCarbonWrappers: React.FC = () => {
         value={50}
         warnText="Warning message that is really long can wrap to more lines but should not be excessively long."
       />
+      <Dropdown
+       id="inline"
+    itemToString={(item) => (item ? item.text : '')}
+    initialSelectedItem={{
+      text: 'Option 1'
+    }}
+    items={[
+      {
+        text: 'Lorem, ipsum dolor sit amet consectetur adipisicing elit.'
+      },
+      {
+        text: 'development',
+      },
+      {
+        text: 'Quality Assurance',
+      },
+      {
+        disabled: true,
+        text: 'Option 3 - a disabled item'
+      },
+    ]}
+    label="Option 1"
+    titleText="Drop Down Example"
+    type="inline"
+  />
     </div>
   );
 };
