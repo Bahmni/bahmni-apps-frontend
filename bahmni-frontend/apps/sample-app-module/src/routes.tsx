@@ -1,6 +1,6 @@
 import { Outlet, RouteObject } from 'react-router-dom';
 import { SamplePage } from './pages/SamplePage';
-import { SamplePatientPage } from './pages/SamplePatientPage';
+import { SampleParamPage } from './pages/SamplePageWithParam';
 
 
 const routes: RouteObject[] = [{
@@ -12,8 +12,8 @@ const routes: RouteObject[] = [{
             element: <SamplePage />,
         },
         {
-            path: ':patientUuid',
-            element: <SamplePatientPage />,
+            path: ':param',
+            element: <SampleParamPage />,
         }
     ]
 }];
