@@ -6,4 +6,12 @@ export {
   type FormattedPatientData,
 } from './patientService';
 export { getFormattedError } from './errorHandling';
-export { type Notification } from './notification';
+export {
+  capitalize,
+  generateId,
+  getCookieByName,
+  isStringEmpty,
+  getPriorityByOrder,
+  groupByDate,
+  filterReplacementEntries,
+} from './utils';
