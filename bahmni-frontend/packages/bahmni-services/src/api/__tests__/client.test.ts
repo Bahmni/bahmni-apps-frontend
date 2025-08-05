@@ -6,11 +6,14 @@ jest.mock('../constants', () => ({
   LOGIN_PATH: '/login',
 }));
 
-jest.mock('../utils', () => ({
+jest.mock('../../errorHandling', () => ({
   getFormattedError: jest.fn(() => ({
     title: 'Error',
     message: 'Test error message',
   })),
+}));
+
+jest.mock('../utils', () => ({
   decodeHtmlEntities: jest.fn((data) => data),
   isOpenMRSWebServiceApi: jest.fn(() => true),
   getResponseUrl: jest.fn(() => '/openmrs/ws/rest/v1/patient'),
@@ -34,7 +37,7 @@ describe('Axios Client', () => {
 
     it('should handle request errors', async () => {
       const mockError = new Error('Request failed');
-      const { getFormattedError } = await import('../utils');
+      const { getFormattedError } = await import('../../errorHandling');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const requestInterceptor = (client.interceptors.request as any)
         .handlers[0];
@@ -48,7 +51,7 @@ describe('Axios Client', () => {
 
   describe('Response Interceptor', () => {
     let getFormattedError: jest.MockedFunction<
-      typeof import('../utils').getFormattedError
+      typeof import('../../errorHandling').getFormattedError
     >;
     let decodeHtmlEntities: jest.MockedFunction<
       typeof import('../utils').decodeHtmlEntities
@@ -61,9 +64,10 @@ describe('Axios Client', () => {
     >;
 
     beforeEach(async () => {
+      const errorHandlingModule = await import('../../errorHandling');
       const utilsModule = await import('../utils');
-      getFormattedError = utilsModule.getFormattedError as jest.MockedFunction<
-        typeof import('../utils').getFormattedError
+      getFormattedError = errorHandlingModule.getFormattedError as jest.MockedFunction<
+        typeof import('../../errorHandling').getFormattedError
       >;
       decodeHtmlEntities =
         utilsModule.decodeHtmlEntities as jest.MockedFunction<

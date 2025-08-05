@@ -1,0 +1,1 @@
+export { SortableDataTable } from './SortableDataTable';
