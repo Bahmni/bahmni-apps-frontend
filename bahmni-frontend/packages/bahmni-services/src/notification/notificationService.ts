@@ -1,4 +1,4 @@
-import { Notification } from './notification';
+import { Notification } from './models';
 
 /**
  * Interface for the notification service

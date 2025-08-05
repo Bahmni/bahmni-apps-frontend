@@ -1,7 +1,16 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { NotificationContainer } from '../NotificationContainer';
-import { Notification } from '../../../../../bahmni-services/src/notification/notification';
+
+export type NotificationType = 'error' | 'warning' | 'info' | 'success';
+
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: NotificationType;
+  timeout?: number; // in milliseconds, undefined means no auto-dismiss
+}
 
 // Create a decorator to provide a better layout for the fixed-position component
 const NotificationDecorator = (Story: React.ComponentType) => (

@@ -1,2 +1,2 @@
-export { type Notification } from './notification';
+export { type Notification } from './models';
 export { notificationService } from './notificationService';
