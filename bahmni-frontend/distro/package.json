@@ -1,8 +1,5 @@
 {
-  "name": "@bahmni-frontend/app-shell",
+  "name": "@bahmni-frontend/distro",
   "version": "0.0.1",
-  "private": true,
-  "nx": {
-    "name": "@bahmni-frontend/distro"
-  }
+  "private": true
 }

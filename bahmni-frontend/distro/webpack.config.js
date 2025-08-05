@@ -5,12 +5,11 @@ const { join } = require('path');
 
 module.exports = (env, argv) => {
   const publicPath = env.PUBLIC_PATH || process.env.PUBLIC_PATH || '/';
-  console.log(`Using public path: ${publicPath}`);
   return {
     output: {
       path: join(__dirname, 'dist'),
       publicPath: publicPath,
-      clean: true,
+      clean: false,
     },
     devServer: {
       port: 3000,
