@@ -230,9 +230,7 @@ describe('LabInvestigationControl Integration', () => {
     render(<LabInvestigationControl />);
 
     // Use the translated text from the locale file
-    const pendingTexts = screen.getAllByText(
-      i18n.t('LAB_TEST_RESULTS_PENDING'),
-    );
+    const pendingTexts = screen.getAllByText('Results Pending ....');
     expect(pendingTexts).toHaveLength(3); // Three tests with pending results
   });
 
