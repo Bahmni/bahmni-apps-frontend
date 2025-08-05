@@ -2,14 +2,14 @@ name: Build and Publish
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 env:
   IMAGE_NAME: ghcr.io/bahnew/clinical-frontend
-  NODE_VERSION: '22'
+  NODE_VERSION: "22"
 
 jobs:
   lint-and-test:
@@ -22,7 +22,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'yarn'
+          cache: "yarn"
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
@@ -39,10 +39,10 @@ jobs:
       - name: Scan for package vulnerabilities
         uses: aquasecurity/trivy-action@0.30.0
         with:
-          scan-type: 'fs'
-          format: 'table'
-          exit-code: '1'
-          severity: 'CRITICAL,HIGH'
+          scan-type: "fs"
+          format: "table"
+          exit-code: "1"
+          severity: "CRITICAL,HIGH"
 
   build-and-publish:
     needs: lint-and-test
@@ -59,7 +59,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'yarn'
+          cache: "yarn"
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
@@ -70,12 +70,6 @@ jobs:
 
       - name: Build
         run: yarn build
-
-      - name: Cache build artifacts
-        uses: actions/cache@v3
-        with:
-          path: dist
-          key: ${{ runner.os }}-build-${{ github.sha }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -104,10 +98,10 @@ jobs:
       - name: Scan Docker image for vulnerabilities
         uses: aquasecurity/trivy-action@0.30.0
         with:
-          image-ref: '${{ env.IMAGE_NAME }}:scan-${{ github.sha }}'
-          format: 'table'
-          exit-code: '1'
-          severity: 'CRITICAL'
+          image-ref: "${{ env.IMAGE_NAME }}:scan-${{ github.sha }}"
+          format: "table"
+          exit-code: "1"
+          severity: "CRITICAL"
 
       # If scan passes, tag the image with final tags
       - name: Tag image with final tags
@@ -132,11 +126,11 @@ jobs:
 
       # Cleanup the older Docker images from GitHub Container Registry
       - name: Cleanup temporary Docker tags
-        if: always()  # This ensures the step runs even if previous steps fail
+        if: always() # This ensures the step runs even if previous steps fail
         uses: actions/delete-package-versions@v5
         with:
-          owner: 'bahnew'
-          package-name: 'clinical-frontend'
-          package-type: 'container'
+          owner: "bahnew"
+          package-name: "clinical-frontend"
+          package-type: "container"
           min-versions-to-keep: 6
           token: ${{ secrets.GITHUB_TOKEN }}
