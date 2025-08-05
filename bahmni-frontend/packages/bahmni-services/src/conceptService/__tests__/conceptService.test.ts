@@ -2,33 +2,29 @@ import { ValueSet } from 'fhir/r4';
 import {
   FHIR_VALUESET_URL,
   FHIR_VALUESET_FILTER_EXPAND_URL,
-} from '@constants/app';
-import * as api from '../api';
+} from '../constants';
+import * as api from '../../api';
 import {
   searchConcepts,
   searchFHIRConcepts,
   searchFHIRConceptsByName,
 } from '../conceptService';
-import * as translationService from '../../../bahmni-frontend/packages/bahmni-services/src/i18n/translationService';
+import { getUserPreferredLocale } from '../../i18n/translationService';
 
-jest.mock('../api');
-jest.mock('../translationService');
+jest.mock('../../api');
+jest.mock('../../i18n/translationService');
 
 describe('conceptService', () => {
   describe('searchConcepts', () => {
     beforeEach(() => {
       jest.clearAllMocks();
-      (translationService.getUserPreferredLocale as jest.Mock).mockReturnValue(
-        'en',
-      );
+      (getUserPreferredLocale as jest.Mock).mockReturnValue('en');
       (api.get as jest.Mock).mockResolvedValue([]);
     });
 
     it('should call API with correct URL including locale from getUserPreferredLocale', async () => {
       const mockLocale = 'fr';
-      (translationService.getUserPreferredLocale as jest.Mock).mockReturnValue(
-        mockLocale,
-      );
+      (getUserPreferredLocale as jest.Mock).mockReturnValue(mockLocale);
 
       await searchConcepts('test', 20);
 

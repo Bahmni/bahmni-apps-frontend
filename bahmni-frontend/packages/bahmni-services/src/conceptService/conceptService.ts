@@ -3,10 +3,10 @@ import {
   CONCEPT_SEARCH_URL,
   FHIR_VALUESET_FILTER_EXPAND_URL,
   FHIR_VALUESET_URL,
-} from '@constants/app';
-import { ConceptSearch } from '@types/concepts';
-import { get } from './api';
-import { getUserPreferredLocale } from '../../bahmni-frontend/packages/bahmni-services/src/i18n/translationService';
+} from './constants';
+import { ConceptSearch } from './concepts';
+import { get } from '../api';
+import { getUserPreferredLocale } from '../i18n/translationService';
 
 /**
  * Search for concepts matching the provided term
