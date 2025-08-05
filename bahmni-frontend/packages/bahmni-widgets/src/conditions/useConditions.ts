@@ -1,12 +1,14 @@
-import { Condition } from 'fhir/r4';
 import { useState, useCallback, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { getConditions } from '@services/conditionService';
-import { getFormattedError } from '@utils/common';
-import { usePatientUUID } from './usePatientUUID';
+import {
+  getFormattedError,
+  useTranslation,
+  FormattedCondition,
+  getFormattedConditions,
+} from '@bahmni-frontend/bahmni-services';
+import { usePatientUUID } from '../hooks/usePatientUUID';
 
 interface UseConditionsResult {
-  conditions: Condition[];
+  conditions: FormattedCondition[];
   loading: boolean;
   error: Error | null;
   refetch: () => void;
@@ -17,7 +19,7 @@ interface UseConditionsResult {
  * @returns Object containing conditions, loading state, error state, and refetch function
  */
 export const useConditions = (): UseConditionsResult => {
-  const [conditions, setConditions] = useState<Condition[]>([]);
+  const [conditions, setConditions] = useState<FormattedCondition[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const patientUUID = usePatientUUID();
@@ -30,7 +32,7 @@ export const useConditions = (): UseConditionsResult => {
         setError(new Error(t('ERROR_INVALID_PATIENT_UUID')));
         return;
       }
-      const conditionsData = await getConditions(patientUUID);
+      const conditionsData = await getFormattedConditions(patientUUID);
       setConditions(conditionsData);
       setError(null);
     } catch (err) {
