@@ -15,3 +15,4 @@ export {
   groupByDate,
   filterReplacementEntries,
 } from './utils';
+export { type Notification, notificationService } from './notification';

@@ -1,7 +1,7 @@
 import {
   createNotificationService,
   notificationService,
-} from '../../../../../src/services/notificationService';
+} from '../notificationService';
 
 describe('notificationService', () => {
   describe('createNotificationService', () => {
