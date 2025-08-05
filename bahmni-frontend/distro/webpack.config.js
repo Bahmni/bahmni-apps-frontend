@@ -10,6 +10,7 @@ module.exports = (env, argv) => {
     output: {
       path: join(__dirname, 'dist'),
       publicPath: publicPath,
+      clean: true,
     },
     devServer: {
       port: 3000,
