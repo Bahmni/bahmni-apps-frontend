@@ -34,7 +34,10 @@ export { SortableDataTable } from './molecules/sortableDataTable';
 export { TooltipIcon, type TooltipIconProps } from './molecules/tooltipIcon';
 export { StatusTag, type StatusTagProps } from './molecules/statusTag';
 export { SkeletonText, type SkeletonTextProps } from './atoms/skeletonText';
-export { DropdownSkeleton, type DropdownSkeletonProps } from './atoms/dropdownSkeleton';
+export {
+  DropdownSkeleton,
+  type DropdownSkeletonProps,
+} from './atoms/dropdownSkeleton';
 export { Dropdown, type DropdownProps } from './atoms/dropdown';
 export { Checkbox, type CheckboxProps } from './atoms/checkbox';
 export {

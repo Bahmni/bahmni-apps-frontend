@@ -1,9 +1,9 @@
-import {
-  DropdownSkeleton as CarbonDropdownSkeleton,
-} from '@carbon/react';
+import { DropdownSkeleton as CarbonDropdownSkeleton } from '@carbon/react';
 import React from 'react';
 
-export type DropdownSkeletonProps = React.ComponentProps<typeof CarbonDropdownSkeleton> & {
+export type DropdownSkeletonProps = React.ComponentProps<
+  typeof CarbonDropdownSkeleton
+> & {
   testId?: string;
 };
 
