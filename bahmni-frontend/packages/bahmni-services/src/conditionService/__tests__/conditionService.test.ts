@@ -12,7 +12,7 @@ import {
   formatConditions,
   getConditions,
   getPatientConditionsBundle,
-} from '../conditionService';
+} from '../../../../src/services/conditionService';
 
 jest.mock('../api');
 
