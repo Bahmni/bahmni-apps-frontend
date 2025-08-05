@@ -13,6 +13,15 @@ module.exports = {
       disableDotRule: true,
       htmlAcceptHeaders: ['text/html', 'application/xhtml+xml'],
     },
+    proxy: [
+      {
+        context: ['/bahmni_config', '/openmrs'],
+        target: 'https://localhost/',
+        changeOrigin: true,
+        secure: false,
+        logLevel: 'debug',
+      },
+    ],
   },
   plugins: [
     new NxAppWebpackPlugin({
