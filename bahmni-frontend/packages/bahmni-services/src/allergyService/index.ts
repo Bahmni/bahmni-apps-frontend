@@ -10,4 +10,5 @@ export {
   type FormattedAllergy,
   type AllergyStatus,
   type AllergySeverity,
+  type AllergenType,
 } from './models';

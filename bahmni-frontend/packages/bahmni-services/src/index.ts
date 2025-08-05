@@ -20,6 +20,7 @@ export {
   type FormattedAllergy,
   type AllergyStatus,
   type AllergySeverity,
+  type AllergenType,
   getPatientAllergiesBundle,
   getAllergies,
   formatAllergies,

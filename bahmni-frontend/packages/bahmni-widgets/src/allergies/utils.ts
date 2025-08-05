@@ -1,6 +1,8 @@
-import { FormattedAllergy } from '@types/allergy';
-import { AllergenType } from '@types/concepts';
-import { getPriorityByOrder } from './common';
+import {
+  getPriorityByOrder,
+  AllergenType,
+  FormattedAllergy,
+} from '@bahmni-frontend/bahmni-services';
 
 /**
  * Priority order for allergy severity levels (case insensitive)

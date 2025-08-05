@@ -1,11 +1,13 @@
-import { FormattedAllergy } from '@types/allergy';
-import { AllergenType } from '@types/concepts';
+import {
+  FormattedAllergy,
+  AllergenType,
+} from '@bahmni-frontend/bahmni-services';
 import {
   getCategoryDisplayName,
   getSeverityDisplayName,
   getSeverityPriority,
   sortAllergiesBySeverity,
-} from '../../../../../src/utils/allergy';
+} from '../utils';
 
 describe('allergy utils', () => {
   describe('getCategoryDisplayName', () => {
