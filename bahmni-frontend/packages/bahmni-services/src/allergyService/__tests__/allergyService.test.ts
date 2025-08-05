@@ -27,9 +27,9 @@ import {
   formatAllergies,
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
-} from '../allergyService';
-import { get } from '../api';
-import { searchFHIRConcepts } from '../conceptService';
+} from '../../../../../src/services/allergyService';
+import { get } from '../../api';
+import { searchFHIRConcepts } from '../../../../../../src/services/conceptService';
 import notificationService from '../notificationService';
 
 // Mock the api module

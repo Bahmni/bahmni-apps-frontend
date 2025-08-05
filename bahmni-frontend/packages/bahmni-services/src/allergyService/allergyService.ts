@@ -5,7 +5,7 @@ import { FormattedAllergy } from '@types/allergy';
 import { AllergenConcept, AllergenType } from '@types/concepts';
 import { getFormattedError } from '@utils/common';
 import { get } from './api';
-import { searchFHIRConcepts } from './conceptService';
+import { searchFHIRConcepts } from '../../../../../src/services/conceptService';
 import notificationService from './notificationService';
 
 /**
