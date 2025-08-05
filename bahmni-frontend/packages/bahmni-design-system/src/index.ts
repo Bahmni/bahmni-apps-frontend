@@ -1,4 +1,4 @@
-export { Button, ButtonSet, type ButtonProps } from './atoms/button';
+export { Button, type ButtonProps } from './atoms/button';
 export { Tile, type TileProps } from './atoms/tile';
 export { Tag, type TagProps } from './atoms/tag';
 export {
