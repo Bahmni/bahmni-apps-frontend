@@ -4,15 +4,27 @@ import { Outlet, RouteObject, useRoutes } from 'react-router-dom';
 import { routes as SampleAppRoutes } from '@bahmni-frontend/sample-app-module';
 
 export function App() {
-  const allRoutes: RouteObject[] = [
-    {
-      index: true,
-      element: (
-        <div>
-          <div> Welcome to the Bahmni App</div>
-        </div>
-      ),
-    },
+
+  const indexRoute: RouteObject = {
+    index: true,
+    element: (
+      <div>
+        <div>Welcome to the Bahmni App</div>
+      </div>
+    ),
+  };
+
+  const notFoundRoute: RouteObject = {
+    path: '/*',
+    element: (
+      <div>
+        <h1>404 - Not Found</h1>
+        <p>The page you are looking for does not exist.</p>
+      </div>
+    ),
+  };
+
+  const appRoutes = [
     ...SampleAppRoutes,
   ];
 
@@ -20,16 +32,11 @@ export function App() {
     {
       path: '/',
       element: <Outlet />,
-      children: [...allRoutes],
-    },
-    {
-      path: '/*',
-      element: (
-        <div>
-          <h1>404 - Not Found</h1>
-          <p>The page you are looking for does not exist.</p>
-        </div>
-      ),
+      children: [
+        indexRoute,
+        ...appRoutes,
+        notFoundRoute,
+      ],
     },
   ]);
 }
