@@ -71,6 +71,10 @@
   }
 }
 
+.rowSeperator {
+  border-block-end: 0 !important;
+}
+
 .customAccordianItem {
   background-color: $layer-01;
   :global(.cds--accordion__content) {
