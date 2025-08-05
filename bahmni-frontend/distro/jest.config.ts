@@ -2,6 +2,6 @@ const sharedConfig = require('../jest.config').default;
 
 export default {
   ...sharedConfig,
-  displayName: '@bahmni-frontend/app-shell',
+  displayName: 'distro/distro',
   coverageDirectory: 'test-output/jest/coverage',
 };

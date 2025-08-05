@@ -93,7 +93,7 @@
   "workspaces": [
     "apps/*",
     "packages/*",
-    "app-shell"
+    "distro"
   ],
   "lint-staged": {
     "*.{ts,tsx}": [

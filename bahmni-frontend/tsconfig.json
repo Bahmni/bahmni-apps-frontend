@@ -13,7 +13,7 @@
       "path": "./packages/bahmni-design-system"
     },
     {
-      "path": "./app-shell"
+      "path": "./distro"
     },
     {
       "path": "./apps/sample-app-module"
