@@ -95,3 +95,15 @@ export function formatConditions(
     };
   });
 }
+
+/**
+ * Fetches and formats conditions for a given patient UUID
+ * @param patientUUID - The UUID of the patient
+ * @returns Promise resolving to an array of FormattedCondition
+ */
+export async function getFormattedConditions(
+  patientUUID: string,
+): Promise<FormattedCondition[]> {
+  const allergies = await getConditions(patientUUID);
+  return formatConditions(allergies);
+}

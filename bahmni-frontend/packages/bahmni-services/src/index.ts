@@ -21,10 +21,12 @@ export {
   AllergyStatus,
   AllergySeverity,
   type AllergenType,
-  getPatientAllergiesBundle,
   getAllergies,
-  formatAllergies,
-  fetchAndFormatAllergenConcepts,
-  fetchReactionConcepts,
   getFormattedAllergies,
 } from './allergyService';
+export {
+  getConditions,
+  getFormattedConditions,
+  type FormattedCondition,
+  ConditionStatus,
+} from './conditionService';
