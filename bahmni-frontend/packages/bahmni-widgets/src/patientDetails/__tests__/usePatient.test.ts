@@ -5,7 +5,7 @@ import {
   getFormattedError,
 } from '@bahmni-frontend/bahmni-services';
 import { usePatient } from '../usePatient';
-import { usePatientUUID } from '../usePatientUUID';
+import { usePatientUUID } from '../../hooks/usePatientUUID';
 
 jest.mock('@bahmni-frontend/bahmni-services');
 const mockedGetFormattedPatientById =
@@ -20,7 +20,7 @@ jest.mock('react-router-dom', () => ({
   useParams: jest.fn(),
 }));
 
-jest.mock('../usePatientUUID');
+jest.mock('../../hooks/usePatientUUID');
 const mockedUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
 >;
@@ -50,7 +50,12 @@ describe('usePatient hook', () => {
 
   it('shows loading state during fetch', async () => {
     mockedUsePatientUUID.mockReturnValue('test-uuid');
-    mockedGetFormattedPatientById.mockImplementation(() => new Promise(resolve => setTimeout(() => resolve(mockPatientData), 100)));
+    mockedGetFormattedPatientById.mockImplementation(
+      () =>
+        new Promise((resolve) =>
+          setTimeout(() => resolve(mockPatientData), 100),
+        ),
+    );
 
     const { result } = renderHook(() => usePatient());
 
@@ -99,7 +104,7 @@ describe('usePatient hook', () => {
     mockedGetFormattedPatientById.mockRejectedValueOnce(mockError);
     mockedGetFormattedError.mockReturnValue({
       title: 'Error',
-      message: 'Failed to fetch patient'
+      message: 'Failed to fetch patient',
     });
 
     const { result } = renderHook(() => usePatient());
@@ -118,7 +123,7 @@ describe('usePatient hook', () => {
     mockedGetFormattedPatientById.mockRejectedValueOnce(nonErrorObject);
     mockedGetFormattedError.mockReturnValue({
       title: 'Error',
-      message: formattedErrorMessage
+      message: formattedErrorMessage,
     });
 
     const { result } = renderHook(() => usePatient());
@@ -184,7 +189,7 @@ describe('usePatient hook', () => {
     mockedGetFormattedPatientById.mockRejectedValueOnce(mockError);
     mockedGetFormattedError.mockReturnValue({
       title: 'Error',
-      message: 'Network error'
+      message: 'Network error',
     });
 
     const { result } = renderHook(() => usePatient());

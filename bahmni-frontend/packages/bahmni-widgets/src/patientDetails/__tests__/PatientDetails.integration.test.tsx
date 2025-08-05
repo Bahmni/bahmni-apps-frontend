@@ -3,7 +3,7 @@ import '@testing-library/jest-dom';
 import { FormattedPatientData } from '@bahmni-frontend/bahmni-services';
 import PatientDetails from '../PatientDetails';
 
-jest.mock('../../hooks/usePatient', () => ({
+jest.mock('../usePatient', () => ({
   usePatient: jest.fn(),
 }));
 
@@ -42,7 +42,7 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
   },
 }));
 
-const mockedUsePatient = require('../../hooks/usePatient')
+const mockedUsePatient = require('../usePatient')
   .usePatient as jest.MockedFunction<
   () => {
     patient: FormattedPatientData | null;

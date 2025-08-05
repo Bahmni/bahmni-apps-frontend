@@ -3,7 +3,7 @@ import {
   FormattedPatientData,
   getFormattedPatientById,
 } from '@bahmni-frontend/bahmni-services';
-import { usePatientUUID } from './usePatientUUID';
+import { usePatientUUID } from '../hooks/usePatientUUID';
 import { getFormattedError } from '@bahmni-frontend/bahmni-services';
 
 interface UsePatientResult {

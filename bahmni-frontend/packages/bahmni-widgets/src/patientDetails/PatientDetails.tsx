@@ -3,7 +3,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Icon, ICON_SIZE } from '@bahmni-frontend/bahmni-design-system';
 import styles from './__styles__/PatientDetails.module.scss';
-import { usePatient } from '../hooks/usePatient';
+import { usePatient } from './usePatient';
 
 // TODO: Extract this as a PatientDetails Display Control Component
 const PatientDetails: React.FC = () => {
@@ -34,7 +34,7 @@ const PatientDetails: React.FC = () => {
     ? Array.from(patient.identifiers.entries())
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         .map(([key, value]) => value)
-        .filter(value => value != null && value !== '')
+        .filter((value) => value != null && value !== '')
         .join(' | ')
     : null;
 
