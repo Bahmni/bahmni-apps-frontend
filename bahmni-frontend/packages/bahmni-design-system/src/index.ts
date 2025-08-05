@@ -31,3 +31,4 @@ export { ComboBox, type ComboBoxProps } from './atoms/comboBox';
 export { TextInput, type TextInputProps } from './atoms/textInput';
 export { NotificationContainer } from './molecules/notification';
 export { SortableDataTable } from './molecules/sortableDataTable';
+export { TooltipIcon, type TooltipIconProps } from './molecules/tooltipIcon';
