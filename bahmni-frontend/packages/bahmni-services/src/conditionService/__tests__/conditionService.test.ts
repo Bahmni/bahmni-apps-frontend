@@ -5,16 +5,16 @@ import {
   mockMalformedBundle,
   mockConditionWithoutOptionalFields,
   mockApiErrors,
-} from '@__mocks__/conditionMocks';
-import { ConditionStatus } from '@types/condition';
-import { get } from '../api';
+} from '../__mocks__/mocks';
+import { ConditionStatus } from '../models';
+import { get } from '../../api';
 import {
   formatConditions,
   getConditions,
   getPatientConditionsBundle,
-} from '../../../../src/services/conditionService';
+} from '../conditionService';
 
-jest.mock('../api');
+jest.mock('../../api');
 
 describe('conditionService', () => {
   beforeEach(() => {
