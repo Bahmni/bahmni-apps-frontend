@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './app/app';
 import { initAppI18n } from '@bahmni-frontend/bahmni-services';
 import { initFontAwesome } from '@bahmni-frontend/bahmni-design-system';
+import { NotificationProvider } from '@bahmni-frontend/bahmni-widgets';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement,
@@ -18,7 +19,9 @@ const initializeApp = async () => {
   root.render(
     <StrictMode>
       <BrowserRouter basename={process.env.PUBLIC_URL ?? '/'}>
-        <App />
+        <NotificationProvider>
+          <App />
+        </NotificationProvider>
       </BrowserRouter>
     </StrictMode>,
   );

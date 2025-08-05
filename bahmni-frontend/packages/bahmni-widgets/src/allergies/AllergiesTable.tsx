@@ -1,28 +1,23 @@
-import { DotMark } from '@carbon/icons-react';
 import {
   Tag,
-  Toggletip,
-  ToggletipButton,
-  ToggletipContent,
-} from '@carbon/react';
+  TooltipIcon,
+  StatusTag,
+  SortableDataTable,
+} from '@bahmni-frontend/bahmni-design-system';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { SortableDataTable } from '@/components/common/sortableDataTable/SortableDataTable';
-import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
-import { ICON_PADDING, ICON_SIZE } from '@constants/icon';
-import { useAllergies } from '@hooks/useAllergies';
-import { formatAllergies } from '@services/allergyService';
+import { useAllergies } from './useAllergies';
 import {
   AllergySeverity,
   AllergyStatus,
   FormattedAllergy,
-} from '@types/allergy';
+} from '@bahmni-frontend/bahmni-services';
 import {
   getCategoryDisplayName,
   getSeverityDisplayName,
   sortAllergiesBySeverity,
-} from '@utils/allergy';
-import * as styles from './styles/AllergiesTable.module.scss';
+} from './utils';
+import styles from './styles/AllergiesTable.module.scss';
 
 // Helper function to get severity CSS class
 const getSeverityClassName = (severity: string): string | undefined => {
@@ -33,6 +28,8 @@ const getSeverityClassName = (severity: string): string | undefined => {
       return styles.moderateSeverity;
     case AllergySeverity.severe:
       return styles.severeSeverity;
+    default:
+      return undefined;
   }
 };
 
@@ -66,9 +63,7 @@ const AllergiesTable: React.FC = () => {
 
   // Format and sort allergies for display
   const displayAllergies = useMemo(() => {
-    if (!allergies || allergies.length === 0) return [];
-    const formatted = formatAllergies(allergies);
-    return sortAllergiesBySeverity(formatted);
+    return sortAllergiesBySeverity(allergies);
   }, [allergies]);
 
   // Function to render cell content based on the cell ID
@@ -83,17 +78,11 @@ const AllergiesTable: React.FC = () => {
                 [{t(getCategoryDisplayName(allergy.category?.[0]))}]
               </span>
               {allergy.note && (
-                <Toggletip autoAlign className={styles.allergyNote}>
-                  <ToggletipButton>
-                    <BahmniIcon
-                      id="fa-file-lines"
-                      name="fa-file-lines"
-                      size={ICON_SIZE.LG}
-                      padding={ICON_PADDING.NONE}
-                    />
-                  </ToggletipButton>
-                  <ToggletipContent>{allergy.note}</ToggletipContent>
-                </Toggletip>
+                <TooltipIcon
+                  iconName="fa-file-lines"
+                  content={allergy.note}
+                  ariaLabel={allergy.note}
+                />
               )}
             </div>
             <Tag className={getSeverityClassName(allergy.severity!)}>
@@ -111,23 +100,22 @@ const AllergiesTable: React.FC = () => {
         return allergy.recorder ?? t('ALLERGY_TABLE_NOT_AVAILABLE');
       case 'status':
         return (
-          <Tag
-            type="outline"
-            renderIcon={() => (
-              <DotMark
-                className={
-                  allergy.status === AllergyStatus.Active
-                    ? styles.activeStatus
-                    : styles.inactiveStatus
-                }
-              />
-            )}
-          >
-            {allergy.status === AllergyStatus.Active
-              ? t('ALLERGY_LIST_ACTIVE')
-              : t('ALLERGY_LIST_INACTIVE')}
-          </Tag>
+          <StatusTag
+            label={
+              allergy.status === AllergyStatus.Active
+                ? t('ALLERGY_LIST_ACTIVE')
+                : t('ALLERGY_LIST_INACTIVE')
+            }
+            dotClassName={
+              allergy.status === AllergyStatus.Active
+                ? styles.activeStatus
+                : styles.inactiveStatus
+            }
+            testId={`status-${allergy.id}`}
+          />
         );
+      default:
+        return undefined;
     }
   };
 

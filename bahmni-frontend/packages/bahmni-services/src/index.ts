@@ -18,8 +18,8 @@ export {
 export { type Notification, notificationService } from './notification';
 export {
   type FormattedAllergy,
-  type AllergyStatus,
-  type AllergySeverity,
+  AllergyStatus,
+  AllergySeverity,
   type AllergenType,
   getPatientAllergiesBundle,
   getAllergies,

@@ -8,7 +8,7 @@ export {
 } from './allergyService';
 export {
   type FormattedAllergy,
-  type AllergyStatus,
-  type AllergySeverity,
+  AllergyStatus,
+  AllergySeverity,
   type AllergenType,
 } from './models';
