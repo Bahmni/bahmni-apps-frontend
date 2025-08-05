@@ -1,12 +1,14 @@
-import { AllergyIntolerance } from 'fhir/r4';
 import { useState, useCallback, useEffect } from 'react';
-import { getAllergies } from '@services/allergyService';
-import { getFormattedError } from '@utils/common';
-import { useNotification } from './useNotification';
-import { usePatientUUID } from './usePatientUUID';
+import {
+  FormattedAllergy,
+  getFormattedAllergies,
+  getFormattedError,
+} from '@bahmni-frontend/bahmni-services';
+import { useNotification } from '../notification';
+import { usePatientUUID } from '../hooks/usePatientUUID';
 
 interface UseAllergiesResult {
-  allergies: AllergyIntolerance[];
+  allergies: FormattedAllergy[];
   loading: boolean;
   error: Error | null;
   refetch: () => void;
@@ -17,7 +19,7 @@ interface UseAllergiesResult {
  * @returns Object containing allergies, loading state, error state, and refetch function
  */
 export const useAllergies = (): UseAllergiesResult => {
-  const [allergies, setAllergies] = useState<AllergyIntolerance[]>([]);
+  const [allergies, setAllergies] = useState<FormattedAllergy[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
   const { addNotification } = useNotification();
@@ -36,7 +38,7 @@ export const useAllergies = (): UseAllergiesResult => {
 
     try {
       setLoading(true);
-      const allergies = await getAllergies(patientUUID);
+      const allergies = await getFormattedAllergies(patientUUID);
       setAllergies(allergies);
     } catch (err) {
       const { title, message } = getFormattedError(err);

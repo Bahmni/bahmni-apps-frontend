@@ -4,5 +4,10 @@ export {
   formatAllergies,
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
+  getFormattedAllergies,
 } from './allergyService';
-export { type FormattedAllergy } from './models';
+export {
+  type FormattedAllergy,
+  type AllergyStatus,
+  type AllergySeverity,
+} from './models';

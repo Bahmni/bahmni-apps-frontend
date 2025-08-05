@@ -182,3 +182,15 @@ export function formatAllergies(
     return [];
   }
 }
+
+/**
+ * Fetches and formats allergies for a given patient UUID
+ * @param patientUUID - The UUID of the patient
+ * @returns Promise resolving to an array of FormattedAllergy
+ */
+export async function getFormattedAllergies(
+  patientUUID: string,
+): Promise<FormattedAllergy[]> {
+  const allergies = await getAllergies(patientUUID);
+  return formatAllergies(allergies);
+}

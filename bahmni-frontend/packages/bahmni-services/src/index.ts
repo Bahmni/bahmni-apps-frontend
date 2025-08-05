@@ -18,9 +18,12 @@ export {
 export { type Notification, notificationService } from './notification';
 export {
   type FormattedAllergy,
+  type AllergyStatus,
+  type AllergySeverity,
   getPatientAllergiesBundle,
   getAllergies,
   formatAllergies,
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
+  getFormattedAllergies,
 } from './allergyService';
