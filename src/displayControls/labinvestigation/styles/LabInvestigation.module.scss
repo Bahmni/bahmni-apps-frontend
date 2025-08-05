@@ -24,29 +24,23 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  row-gap: $spacing-05;
+  flex-wrap: nowrap;
 }
 
-.labHeader {
+.labTestNameWrapper {
+  @include type-style("heading-compact-01");
+  color: $text-primary;
   display: flex;
   align-items: center;
-  gap: $spacing-03;
-  margin-bottom: $spacing-03;
+  flex-wrap: wrap;
+  gap: $spacing-02;
+  height: $spacing-08;
 }
 
-/* Test type styles */
-.testType {
+.testInfo {
+  @include type-style("body-compact-01");
   color: $text-secondary;
-  font-size: 0.875rem;
-  font-weight: normal;
-}
-
-/* Result display styles */
-.labResult {
-  width: 100%;
-  background-color: $background-hover;
-  padding: $spacing-04;
-  border-radius: $spacing-02;
-  font-weight: 600;
 }
 
 .accordionItem {

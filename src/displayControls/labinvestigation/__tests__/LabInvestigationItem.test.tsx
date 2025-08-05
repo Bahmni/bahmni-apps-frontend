@@ -40,7 +40,7 @@ describe('LabInvestigationItem', () => {
           LAB_TEST_PANEL: 'Panel',
           LAB_TEST_URGENT: 'Urgent',
           LAB_TEST_ORDERED_BY: 'Ordered by:',
-          LAB_TEST_RESULTS_PENDING: 'Results pending…',
+          LAB_TEST_RESULTS_PENDING: 'Results Pending',
         };
         return translations[key] || key;
       },
@@ -65,7 +65,7 @@ describe('LabInvestigationItem', () => {
     render(<LabInvestigationItem test={mockLabTest} />);
 
     // Check for text content that contains "Results pending"
-    expect(screen.getByText('Results pending…')).toBeInTheDocument();
+    expect(screen.getByText('Results Pending ....')).toBeInTheDocument();
   });
 
   it('applies different tag color for urgent priority', () => {
