@@ -1,4 +1,4 @@
-export { Button, ButtonSet, type ButtonProps } from './atoms/button';
+export { Button, type ButtonProps } from './atoms/button';
 export { Tile, type TileProps } from './atoms/tile';
 export { Tag, type TagProps } from './atoms/tag';
 export {
@@ -29,6 +29,10 @@ export {
 export { NumberInput, type NumberInputProps } from './atoms/numberInput';
 export { ComboBox, type ComboBoxProps } from './atoms/comboBox';
 export { TextInput, type TextInputProps } from './atoms/textInput';
+export { NotificationContainer } from './molecules/notification';
+export { SortableDataTable } from './molecules/sortableDataTable';
+export { TooltipIcon, type TooltipIconProps } from './molecules/tooltipIcon';
+export { StatusTag, type StatusTagProps } from './molecules/statusTag';
 export { SkeletonText, type SkeletonTextProps } from './atoms/skeletonText';
 export { DropdownSkeleton, type DropdownSkeletonProps } from './atoms/dropdownSkeleton';
 export { Dropdown, type DropdownProps } from './atoms/dropdown';

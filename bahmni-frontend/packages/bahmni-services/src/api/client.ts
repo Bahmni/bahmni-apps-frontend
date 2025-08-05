@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import { LOGIN_PATH } from './constants';
+import { getFormattedError } from '../errorHandling';
 import {
-  getFormattedError,
   decodeHtmlEntities,
   isOpenMRSWebServiceApi,
   getResponseUrl,
