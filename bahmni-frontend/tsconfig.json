@@ -11,6 +11,9 @@
     },
     {
       "path": "./packages/bahmni-design-system"
+    },
+    {
+      "path": "./app-shell"
     }
   ]
 }
