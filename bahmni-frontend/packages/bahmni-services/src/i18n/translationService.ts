@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { get } from '../api';
 import {
   BUNDLED_TRANSLATIONS_URL_TEMPLATE,
   LOCALE_STORAGE_KEY,
@@ -17,7 +17,7 @@ export const getUserPreferredLocale = (): string => {
 };
 
 /**
- * Fetches translations from a URL using axios.
+ * Fetches translations from a URL using the API service.
  * Returns an empty object if the request fails for any reason.
  *
  * @param url - URL to fetch translations from
@@ -27,20 +27,19 @@ export const getTranslationFile = async (
   url: string,
 ): Promise<Record<string, string>> => {
   try {
-    const response = await axios.get(url);
-    if (!response?.data) {
+    const response = await get<Record<string, string>>(url);
+    if (!response) {
       // eslint-disable-next-line no-console
       console.error(`Invalid response from ${url}`);
       return {};
     }
-    return response.data;
+    return response;
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(`Failed to load translations from ${url}:`, error);
     return {};
   }
 };
-
 /**
  * Fetches and merges translations from standard and local config sources.
  * This function retrieves translations from both bundled and configuration sources,

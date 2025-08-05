@@ -888,7 +888,7 @@ describe('MedicationsTable', () => {
       await userEvent.click(allTab);
 
       await waitFor(() => {
-        // All tab should render content (ExpandableDataTable or SortableDataTable)
+        // All tab should render content SortableDataTable
         expect(screen.getAllByRole('tabpanel')).toHaveLength(1);
       });
     });

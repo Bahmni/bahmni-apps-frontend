@@ -13,6 +13,9 @@
       "path": "./packages/bahmni-design-system"
     },
     {
+      "path": "./packages/bahmni-widgets"
+    },
+    {
       "path": "./distro"
     },
     {

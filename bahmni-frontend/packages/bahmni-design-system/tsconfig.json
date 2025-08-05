@@ -3,6 +3,9 @@
   "include": [],
   "references": [
     {
+      "path": "../bahmni-services"
+    },
+    {
       "path": "./tsconfig.lib.json"
     },
     {
