@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import React from 'react';
-import { NotificationProvider } from '@providers/NotificationProvider';
+import { NotificationProvider } from '../NotificationProvider';
 import { useNotification } from '../useNotification';
 
 // Wrapper component to provide the NotificationContext

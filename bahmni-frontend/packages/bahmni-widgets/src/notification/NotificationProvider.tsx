@@ -5,10 +5,9 @@ import React, {
   useMemo,
   ReactNode,
 } from 'react';
-import { NotificationContainer } from '@components/common/notification/NotificationContainer';
-import { NotificationContext } from '@contexts/NotificationContext';
-import { Notification } from './notification';
-import { generateId } from '@utils/common';
+import { NotificationContainer } from '@bahmni-frontend/bahmni-design-system';
+import { NotificationContext } from './NotificationContext';
+import { Notification, generateId } from '@bahmni-frontend/bahmni-services';
 
 interface NotificationProviderProps {
   children: ReactNode;

@@ -1,6 +1,9 @@
 import React, { useEffect } from 'react';
-import { useNotification } from '@hooks/useNotification';
-import { notificationService } from './notificationService';
+import { useNotification } from './useNotification';
+import {
+  notificationService,
+  Notification,
+} from '@bahmni-frontend/bahmni-services';
 
 /**
  * Component that connects the notification service to the notification context
@@ -11,7 +14,7 @@ export const NotificationServiceComponent: React.FC = () => {
 
   useEffect(() => {
     // Register the addNotification callback with the notification service
-    notificationService.register((notification) => {
+    notificationService.register((notification: Omit<Notification, 'id'>) => {
       addNotification(notification);
     });
 

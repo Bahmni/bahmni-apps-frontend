@@ -1,10 +1,11 @@
 import { render, screen, act, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { useNotification } from '@hooks/useNotification';
+import { useNotification } from '../useNotification';
 import { NotificationProvider } from '../NotificationProvider';
+import '@testing-library/jest-dom';
 
 // Mock the generateId function to return predictable IDs for testing
-jest.mock('@utils/common', () => ({
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
   generateId: jest.fn().mockImplementation(() => 'test-id-123'),
 }));
 

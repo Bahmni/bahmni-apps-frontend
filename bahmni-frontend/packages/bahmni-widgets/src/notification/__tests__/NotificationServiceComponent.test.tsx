@@ -1,11 +1,11 @@
 import { render } from '@testing-library/react';
-import React from 'react';
-import { NotificationProvider } from '@providers/NotificationProvider';
-import { notificationService } from '../notificationService';
+import { NotificationProvider } from '../NotificationProvider';
+import { notificationService } from '@bahmni-frontend/bahmni-services';
 import { NotificationServiceComponent } from '../NotificationServiceComponent';
+import '@testing-library/jest-dom';
 
 // Mock the notificationService
-jest.mock('../notificationService', () => ({
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
   notificationService: {
     register: jest.fn(),
     showSuccess: jest.fn(),
