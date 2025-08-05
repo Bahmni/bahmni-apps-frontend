@@ -1,6 +1,7 @@
 // Uncomment this line to use CSS modules
 // import styles from './app.module.scss';
 import { Outlet, RouteObject, useRoutes } from 'react-router-dom';
+import { routes as SampleAppRoutes } from '@bahmni-frontend/sample-app-module';
 
 export function App() {
 
@@ -10,7 +11,8 @@ export function App() {
       element: <div>
         <div> Welcome to the Bahmni App</div>
       </div>
-    }
+    },
+    ...SampleAppRoutes,
   ];
 
   return useRoutes([{
