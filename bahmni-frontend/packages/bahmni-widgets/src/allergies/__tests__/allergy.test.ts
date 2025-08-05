@@ -5,7 +5,7 @@ import {
   getSeverityDisplayName,
   getSeverityPriority,
   sortAllergiesBySeverity,
-} from '../allergy';
+} from '../../../../../src/utils/allergy';
 
 describe('allergy utils', () => {
   describe('getCategoryDisplayName', () => {
