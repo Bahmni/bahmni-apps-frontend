@@ -1,8 +1,8 @@
 import { DataTableHeader } from '@carbon/react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import React from 'react';
 import { SortableDataTable } from '../SortableDataTable';
+import '@testing-library/jest-dom';
 
 expect.extend(toHaveNoViolations);
 

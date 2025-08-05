@@ -3,6 +3,7 @@
 exports[`SortableDataTable Snapshots matches snapshot when empty 1`] = `
 <div>
   <p
+    class="sortableDataTableBodyEmpty"
     data-testid="sortable-table-empty"
   >
     No medication history
@@ -20,7 +21,7 @@ exports[`SortableDataTable Snapshots matches snapshot when loading 1`] = `
       class="cds--skeleton cds--data-table-container"
     >
       <table
-        class="cds--skeleton cds--data-table cds--data-table--compact"
+        class="sortableDataTableSkeleton cds--skeleton cds--data-table cds--data-table--compact"
       >
         <thead>
           <tr>
@@ -191,7 +192,7 @@ exports[`SortableDataTable Snapshots matches snapshot when loading 1`] = `
 exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
 <div>
   <div
-    class="sortable-data-table"
+    class="sortable-data-table sortableDataTableBody"
     data-testid="sortable-data-table"
   >
     <div

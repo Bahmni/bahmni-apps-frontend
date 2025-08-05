@@ -11,7 +11,7 @@ import {
 } from '@carbon/react';
 import classnames from 'classnames';
 import React from 'react';
-import * as styles from './styles/SortableDataTable.module.scss';
+import styles from './styles/SortableDataTable.module.scss';
 
 interface SortableDataTableProps<T> {
   headers: DataTableHeader[];
