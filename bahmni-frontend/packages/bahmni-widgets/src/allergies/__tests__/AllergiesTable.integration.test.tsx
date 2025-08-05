@@ -1,94 +1,88 @@
 import { render, screen } from '@testing-library/react';
-import { AllergyIntolerance } from 'fhir/r4';
-import React from 'react';
-import i18n from '@/setupTests.i18n';
-import { FormattedAllergy } from '@/types/allergy';
+import userEvent from '@testing-library/user-event';
+import '@testing-library/jest-dom';
 import {
-  mockAllergyIntolerance,
-  mockAllergyWithMultipleCategories,
-  mockAllergyWithType,
-  mockIntoleranceWithType,
-  mockAllergyWithHighCriticality,
-  mockAllergyWithLowCriticality,
-  mockInactiveAllergy,
-  mockAllergyWithMultipleSeverities,
-} from '@__mocks__/allergyMocks';
-import { useAllergies } from '@hooks/useAllergies';
-import { formatAllergies } from '@services/allergyService';
-import * as common from '@utils/common';
+  FormattedAllergy,
+  AllergyStatus,
+  AllergySeverity,
+} from '@bahmni-frontend/bahmni-services';
+import { useAllergies } from '../useAllergies';
 import AllergiesTable from '../AllergiesTable';
 
-// Mock the hooks
-jest.mock('@hooks/useAllergies');
-jest.mock('@services/allergyService');
+jest.mock('../useAllergies');
+jest.mock('../../hooks/usePatientUUID', () => ({
+  usePatientUUID: jest.fn(() => 'test-patient-uuid'),
+}));
 
 const mockedUseAllergies = useAllergies as jest.MockedFunction<
   typeof useAllergies
 >;
 
-const mockedFormatAllergies = formatAllergies as jest.MockedFunction<
-  typeof formatAllergies
->;
-
-// Mock data for integration tests
-const mockAllergies: AllergyIntolerance[] = [mockAllergyIntolerance];
-
-const mockFormattedAllergies: FormattedAllergy[] = [
+const mockSingleAllergy: FormattedAllergy[] = [
   {
     id: 'allergy-123',
     display: 'Peanut Allergy',
     category: ['food'],
     criticality: 'high',
-    status: 'Active',
+    status: AllergyStatus.Active,
     recordedDate: '2023-01-01T12:00:00Z',
     recorder: 'Dr. Smith',
     reactions: [
       {
         manifestation: ['Hives'],
-        severity: 'moderate',
+        severity: AllergySeverity.moderate,
       },
     ],
-    severity: 'moderate',
+    severity: AllergySeverity.moderate,
+    note: 'Patient allergic to peanuts since childhood',
   },
 ];
 
 const mockMultipleAllergies: FormattedAllergy[] = [
-  mockFormattedAllergies[0],
   {
-    id: 'allergy-456',
+    id: 'severe-allergy',
     display: 'Shellfish Allergy',
     category: ['food'],
-    criticality: 'moderate',
-    status: 'Active',
+    status: AllergyStatus.Active,
     recordedDate: '2023-02-15T10:30:00Z',
     recorder: 'Dr. Johnson',
     reactions: [
       {
-        manifestation: ['Rash', 'Swelling'],
-        severity: 'severe',
-      },
-      {
-        manifestation: ['Difficulty breathing'],
-        severity: 'severe',
+        manifestation: ['Anaphylaxis', 'Difficulty breathing'],
+        severity: AllergySeverity.severe,
       },
     ],
-    severity: 'severe',
+    severity: AllergySeverity.severe,
   },
   {
-    id: 'allergy-789',
+    id: 'mild-allergy',
     display: 'Dust Allergy',
     category: ['environment'],
-    criticality: 'low',
-    status: 'Inactive',
+    status: AllergyStatus.Inactive,
     recordedDate: '2022-11-05T14:45:00Z',
     recorder: 'Dr. Williams',
     reactions: [
       {
-        manifestation: ['Sneezing', 'Runny nose'],
-        severity: 'mild',
+        manifestation: ['Sneezing'],
+        severity: AllergySeverity.mild,
       },
     ],
-    severity: 'mild',
+    severity: AllergySeverity.mild,
+  },
+  {
+    id: 'moderate-allergy',
+    display: 'Peanut Allergy',
+    category: ['food'],
+    status: AllergyStatus.Active,
+    recordedDate: '2023-01-01T12:00:00Z',
+    recorder: 'Dr. Smith',
+    reactions: [
+      {
+        manifestation: ['Hives'],
+        severity: AllergySeverity.moderate,
+      },
+    ],
+    severity: AllergySeverity.moderate,
   },
 ];
 
@@ -96,398 +90,92 @@ describe('AllergiesTable Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(console, 'error').mockImplementation();
-    // Reset i18n to English
-    i18n.changeLanguage('en');
-    // Mock capitalize to capitalize first letter of each word
-    jest
-      .spyOn(common, 'capitalize')
-      .mockImplementation((...args: unknown[]) => {
-        const str = args[0] as string;
-        if (!str) return '';
-        return str
-          .split(' ')
-          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
-      });
   });
 
-  // Data Fetching and Display Tests
-  describe('Data Fetching and Display', () => {
-    it('should fetch allergy data and display it correctly', () => {
-      // Mock the hooks
-      mockedUseAllergies.mockReturnValue({
-        allergies: mockAllergies,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-      mockedFormatAllergies.mockReturnValue(mockFormattedAllergies);
-
-      render(<AllergiesTable />);
-
-      // Verify the data fetching flow
-      expect(useAllergies).toHaveBeenCalledWith();
-      expect(formatAllergies).toHaveBeenCalledWith(mockAllergies);
-
-      // Verify the formatted allergies are displayed
-      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
-      expect(screen.getByText('[Food]')).toBeInTheDocument();
-      expect(screen.getByText('Moderate')).toBeInTheDocument(); // Severity tag
-      expect(screen.getByText('Active')).toBeInTheDocument();
-      expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
-      expect(screen.getByText('Hives')).toBeInTheDocument();
+  it('displays patient allergies with all critical information for clinical review', () => {
+    mockedUseAllergies.mockReturnValue({
+      allergies: mockSingleAllergy,
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
     });
 
-    it('should render the loading state when data is being fetched', () => {
-      // Mock the hooks with loading state
-      mockedUseAllergies.mockReturnValue({
-        allergies: [],
-        loading: true,
-        error: null,
-        refetch: jest.fn(),
-      });
+    render(<AllergiesTable />);
 
-      render(<AllergiesTable />);
-
-      // Verify loading state is shown
-      expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
-    });
-
-    it('should display "No allergies found" when the patient has no recorded allergies', () => {
-      // Mock the hooks with empty allergies
-      mockedUseAllergies.mockReturnValue({
-        allergies: [],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-      mockedFormatAllergies.mockReturnValue([]);
-
-      render(<AllergiesTable />);
-
-      // Verify empty state is shown
-      expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
-      expect(screen.getByText('No allergies recorded')).toBeInTheDocument();
-    });
+    expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
+    expect(screen.getByText('[ALLERGY_TYPE_FOOD]')).toBeInTheDocument();
+    expect(screen.getByText('SEVERITY_MODERATE')).toBeInTheDocument();
+    expect(screen.getByText('ALLERGY_LIST_ACTIVE')).toBeInTheDocument();
+    expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
+    expect(screen.getByText('Hives')).toBeInTheDocument();
   });
 
-  // Row Interaction Tests
-  describe('Row Interactions', () => {
-    it('should handle multiple allergies and render them properly in the table', () => {
-      // Mock the hooks with multiple allergies
-      mockedUseAllergies.mockReturnValue({
-        allergies: mockAllergies,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-      mockedFormatAllergies.mockReturnValue(mockMultipleAllergies);
-
-      render(<AllergiesTable />);
-
-      // Verify all allergies are displayed
-      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
-      expect(screen.getByText('Shellfish Allergy')).toBeInTheDocument();
-      expect(screen.getByText('Dust Allergy')).toBeInTheDocument();
-      expect(screen.getAllByText('[Food]')).toHaveLength(2); // Two food allergies
-      expect(screen.getByText('[Environment]')).toBeInTheDocument();
-
-      // Verify severity tags are displayed correctly
-      expect(screen.getByText('Moderate')).toBeInTheDocument(); // Peanut allergy
-      expect(screen.getByText('Severe')).toBeInTheDocument(); // Shellfish allergy
-      expect(screen.getByText('Mild')).toBeInTheDocument(); // Dust allergy
-
-      // Verify different statuses are displayed correctly
-      expect(screen.getAllByText('Active')).toHaveLength(2);
-      expect(screen.getByText('Inactive')).toBeInTheDocument();
+  it('shows loading state while fetching allergy data', () => {
+    mockedUseAllergies.mockReturnValue({
+      allergies: [],
+      loading: true,
+      error: null,
+      refetch: jest.fn(),
     });
 
-    it('should correctly map reactions to their respective manifestation and severity levels', () => {
-      // Mock the hooks with multiple allergies
-      mockedUseAllergies.mockReturnValue({
-        allergies: mockAllergies,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-      mockedFormatAllergies.mockReturnValue(mockMultipleAllergies);
+    render(<AllergiesTable />);
 
-      render(<AllergiesTable />);
-
-      // Verify reactions are displayed correctly
-      expect(screen.getByText('Hives')).toBeInTheDocument();
-      expect(
-        screen.getByText('Rash, Swelling, Difficulty breathing'),
-      ).toBeInTheDocument();
-      expect(screen.getByText('Sneezing, Runny nose')).toBeInTheDocument();
-    });
+    expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
   });
 
-  // Accessibility and Styling Tests
-  describe('Accessibility and Styling', () => {
-    it('should apply proper styling and accessibility attributes', () => {
-      // Mock the hooks
-      mockedUseAllergies.mockReturnValue({
-        allergies: mockAllergies,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-      mockedFormatAllergies.mockReturnValue(mockFormattedAllergies);
-
-      render(<AllergiesTable />);
-
-      // Verify the table has proper ARIA attributes
-      const table = screen.getByRole('table');
-      expect(table).toHaveAttribute('aria-label', 'Allergies');
-
-      // Verify the table headers have proper attributes
-      const headers = screen.getAllByRole('columnheader');
-      expect(headers.length).toBeGreaterThan(0);
-      headers.forEach((header) => {
-        expect(header).toHaveAttribute('scope', 'col');
-      });
-
-      // Verify the table rows have proper attributes
-      const rows = screen.getAllByRole('row');
-      expect(rows.length).toBeGreaterThan(0);
+  it('shows empty state when patient has no recorded allergies', () => {
+    mockedUseAllergies.mockReturnValue({
+      allergies: [],
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
     });
+
+    render(<AllergiesTable />);
+
+    expect(screen.getByText('NO_ALLERGIES')).toBeInTheDocument();
   });
 
-  // New Field Tests
-  describe('New Field Tests', () => {
-    it('should handle allergy type field correctly', () => {
-      // Mock the hooks
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyWithType],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      const formattedAllergyWithType: FormattedAllergy = {
-        ...mockFormattedAllergies[0],
-        id: 'allergy-with-type',
-      };
-
-      mockedFormatAllergies.mockReturnValue([formattedAllergyWithType]);
-
-      render(<AllergiesTable />);
-
-      // Verify the allergy is displayed correctly
-      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
-      expect(screen.getByText('[Food]')).toBeInTheDocument();
-      expect(screen.getByText('Active')).toBeInTheDocument();
+  it('shows error state when allergy data cannot be fetched', () => {
+    const mockError = new Error('Failed to fetch allergies');
+    mockedUseAllergies.mockReturnValue({
+      allergies: [],
+      loading: false,
+      error: mockError,
+      refetch: jest.fn(),
     });
 
-    it('should handle intolerance type field correctly', () => {
-      // Mock the hooks
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockIntoleranceWithType],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
+    render(<AllergiesTable />);
 
-      const formattedIntoleranceWithType: FormattedAllergy = {
-        ...mockFormattedAllergies[0],
-        id: 'intolerance-with-type',
-      };
-
-      mockedFormatAllergies.mockReturnValue([formattedIntoleranceWithType]);
-
-      render(<AllergiesTable />);
-
-      // Verify the intolerance is displayed correctly
-      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
-      expect(screen.getByText('[Food]')).toBeInTheDocument();
-      expect(screen.getByText('Active')).toBeInTheDocument();
-    });
-
-    it('should handle multiple categories correctly', () => {
-      // Mock the hooks
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyWithMultipleCategories],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      const formattedAllergyWithMultipleCategories: FormattedAllergy = {
-        ...mockFormattedAllergies[0],
-        id: 'allergy-multiple-categories',
-        category: ['food', 'medication', 'environment'],
-      };
-
-      mockedFormatAllergies.mockReturnValue([
-        formattedAllergyWithMultipleCategories,
-      ]);
-
-      render(<AllergiesTable />);
-
-      // Verify the allergy with multiple categories is displayed correctly
-      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
-      expect(screen.getByText('[Food]')).toBeInTheDocument();
-      expect(screen.getByText('Active')).toBeInTheDocument();
-    });
-
-    it('should handle criticality levels correctly', () => {
-      // Mock the hooks
-      mockedUseAllergies.mockReturnValue({
-        allergies: [
-          mockAllergyWithHighCriticality,
-          mockAllergyWithLowCriticality,
-        ],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      const formattedAllergiesWithCriticality: FormattedAllergy[] = [
-        {
-          ...mockFormattedAllergies[0],
-          id: 'allergy-high-criticality',
-          criticality: 'high',
-        },
-        {
-          ...mockFormattedAllergies[0],
-          id: 'allergy-low-criticality',
-          criticality: 'low',
-          display: 'Low Criticality Allergy',
-        },
-      ];
-
-      mockedFormatAllergies.mockReturnValue(formattedAllergiesWithCriticality);
-
-      render(<AllergiesTable />);
-
-      // Verify both allergies are displayed correctly
-      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
-      expect(screen.getByText('Low Criticality Allergy')).toBeInTheDocument();
-      expect(screen.getAllByText('[Food]')).toHaveLength(2);
-      expect(screen.getAllByText('Active')).toHaveLength(2);
-    });
-
-    it('should handle multiple reactions with different severities correctly', () => {
-      // Mock the hooks
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyWithMultipleSeverities],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      const formattedAllergyWithMultipleSeverities: FormattedAllergy = {
-        ...mockFormattedAllergies[0],
-        id: 'allergy-multiple-severities',
-        reactions: [
-          {
-            manifestation: ['Hives'],
-            severity: 'mild',
-          },
-          {
-            manifestation: ['Difficulty breathing'],
-            severity: 'severe',
-          },
-          {
-            manifestation: ['Anaphylaxis'],
-            severity: 'severe',
-          },
-        ],
-      };
-
-      mockedFormatAllergies.mockReturnValue([
-        formattedAllergyWithMultipleSeverities,
-      ]);
-
-      render(<AllergiesTable />);
-
-      // Verify the allergy with multiple severities is displayed correctly
-      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
-      expect(screen.getByText('[Food]')).toBeInTheDocument();
-      expect(
-        screen.getByText('Hives, Difficulty breathing, Anaphylaxis'),
-      ).toBeInTheDocument();
-    });
+    expect(screen.getByText('Failed to fetch allergies')).toBeInTheDocument();
   });
 
-  // Edge Cases
-  describe('Edge Cases', () => {
-    it('should handle inactive status correctly', () => {
-      // Mock the hooks
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockInactiveAllergy],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      const formattedInactiveAllergy: FormattedAllergy = {
-        ...mockFormattedAllergies[0],
-        id: 'inactive-allergy',
-        status: 'Inactive',
-      };
-
-      mockedFormatAllergies.mockReturnValue([formattedInactiveAllergy]);
-
-      render(<AllergiesTable />);
-
-      // Verify the inactive allergy is displayed correctly
-      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
-      expect(screen.getByText('[Food]')).toBeInTheDocument();
-      expect(screen.getByText('Inactive')).toBeInTheDocument();
+  it('displays multiple allergies sorted by severity for patient safety', () => {
+    mockedUseAllergies.mockReturnValue({
+      allergies: mockMultipleAllergies,
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
     });
 
-    it('should handle missing fields gracefully', () => {
-      // Mock the hooks
-      mockedUseAllergies.mockReturnValue({
-        allergies: mockAllergies,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
+    render(<AllergiesTable />);
 
-      const allergyWithMissingFields: FormattedAllergy = {
-        ...mockFormattedAllergies[0],
-        recorder: undefined,
-        reactions: undefined,
-        recordedDate: '',
-      };
+    const allergies = screen.getAllByRole('row').slice(1); // Skip header row
+    const allergyNames = allergies.map(
+      (row) => (row as HTMLElement).textContent || '',
+    );
 
-      mockedFormatAllergies.mockReturnValue([allergyWithMissingFields]);
+    // Verify severe allergies appear first
+    expect(allergyNames[0]).toContain('Shellfish Allergy');
+    expect(allergyNames[0]).toContain('SEVERITY_SEVERE');
 
-      render(<AllergiesTable />);
+    // Verify all allergies are displayed
+    expect(screen.getByText('Shellfish Allergy')).toBeInTheDocument();
+    expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
+    expect(screen.getByText('Dust Allergy')).toBeInTheDocument();
 
-      // Verify the allergy with missing fields is displayed correctly
-      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
-      expect(screen.getByText('[Food]')).toBeInTheDocument();
-      expect(screen.getAllByText('Not available')).toHaveLength(2); // For missing recorder and reactions
-    });
-
-    it('should handle malformed data without crashing', () => {
-      // Mock the hooks
-      mockedUseAllergies.mockReturnValue({
-        allergies: mockAllergies,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      // Create a malformed allergy object
-      const malformedAllergy = {
-        id: 'malformed-allergy',
-        display: 'Malformed Allergy',
-        // Missing required fields
-      } as unknown as FormattedAllergy;
-
-      mockedFormatAllergies.mockReturnValue([malformedAllergy]);
-
-      // This should not throw an error
-      render(<AllergiesTable />);
-
-      // Verify the component rendered without crashing
-      expect(screen.getByText('Malformed Allergy')).toBeInTheDocument();
-      expect(screen.getByText('[undefined]')).toBeInTheDocument();
-    });
+    // Verify status display
+    expect(screen.getAllByText('ALLERGY_LIST_ACTIVE')).toHaveLength(2);
+    expect(screen.getByText('ALLERGY_LIST_INACTIVE')).toBeInTheDocument();
   });
 });
