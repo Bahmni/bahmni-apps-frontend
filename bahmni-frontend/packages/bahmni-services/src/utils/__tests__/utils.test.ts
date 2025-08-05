@@ -9,7 +9,7 @@ import {
   getPriorityByOrder,
   groupByDate,
   filterReplacementEntries,
-} from '../common';
+} from '../utils';
 
 jest.mock('axios', () => ({
   isAxiosError: jest.fn(),
