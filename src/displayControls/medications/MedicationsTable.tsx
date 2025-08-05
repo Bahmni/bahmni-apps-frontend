@@ -9,6 +9,7 @@ import {
   Tabs,
   Tag,
 } from '@carbon/react';
+import classNames from 'classnames';
 import React, { useMemo, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SortableDataTable } from '@components/common/sortableDataTable/SortableDataTable';
@@ -280,7 +281,10 @@ const MedicationsTable: React.FC = () => {
                         sortable={sortable}
                         emptyStateMessage={t('NO_MEDICATION_HISTORY')}
                         renderCell={renderCell}
-                        className={styles.medicationsTableBody}
+                        className={classNames(
+                          styles.medicationsTableBody,
+                          styles.rowSeperator,
+                        )}
                       />
                     </AccordionItem>
                   );
