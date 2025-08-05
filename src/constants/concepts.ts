@@ -1,4 +1,5 @@
 import { Coding } from 'fhir/r4';
+import { AllergenType } from '@types/concepts';
 
 export const CERTAINITY_CONCEPTS: Coding[] = [
   {

@@ -16,3 +16,11 @@ export {
   filterReplacementEntries,
 } from './utils';
 export { type Notification, notificationService } from './notification';
+export {
+  type FormattedAllergy,
+  getPatientAllergiesBundle,
+  getAllergies,
+  formatAllergies,
+  fetchAndFormatAllergenConcepts,
+  fetchReactionConcepts,
+} from './allergyService';

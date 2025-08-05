@@ -1,12 +1,14 @@
 import type { AllergyIntolerance, Bundle, Coding, ValueSet } from 'fhir/r4';
-import { PATIENT_ALLERGY_RESOURCE_URL } from '@constants/app';
-import { ALLERGEN_TYPES, ALLERGY_REACTION } from '@constants/concepts';
-import { FormattedAllergy } from '@types/allergy';
-import { AllergenConcept, AllergenType } from '@types/concepts';
-import { getFormattedError } from '@utils/common';
-import { get } from './api';
-import { searchFHIRConcepts } from '../../../../../src/services/conceptService';
-import notificationService from './notificationService';
+import {
+  PATIENT_ALLERGY_RESOURCE_URL,
+  ALLERGEN_TYPES,
+  ALLERGY_REACTION,
+} from './constants';
+import { AllergenConcept, AllergenType, FormattedAllergy } from './models';
+import { getFormattedError } from '../errorHandling';
+import { get } from '../api';
+import { searchFHIRConcepts } from '../conceptService';
+import { notificationService } from '../notification';
 
 /**
  * Extended Coding interface to include inactive property

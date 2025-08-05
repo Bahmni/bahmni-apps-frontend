@@ -18,28 +18,28 @@ import {
   mockAllergyWithMultipleSeverities,
   mockBundleWithInvalidEntry,
   mockAllergyWithInvalidCoding,
-} from '@__mocks__/allergyMocks';
-import { ALLERGEN_TYPES, ALLERGY_REACTION } from '@constants/concepts';
-import { getFormattedError } from '@utils/common';
+} from '../__mocks__/mocks';
+import { ALLERGEN_TYPES, ALLERGY_REACTION } from '../constants';
+import { getFormattedError } from '../../errorHandling';
 import {
   getPatientAllergiesBundle,
   getAllergies,
   formatAllergies,
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
-} from '../../../../../src/services/allergyService';
+} from '../allergyService';
 import { get } from '../../api';
-import { searchFHIRConcepts } from '../../../../../../src/services/conceptService';
-import notificationService from '../notificationService';
+import { searchFHIRConcepts } from '../../conceptService';
+import { notificationService } from '../../notification';
 
 // Mock the api module
-jest.mock('../api');
+jest.mock('../../api');
 // Mock the notification service
-jest.mock('../notificationService');
+jest.mock('../../notification');
 // Mock the common utils
-jest.mock('@utils/common');
+jest.mock('../../errorHandling');
 // Mock the concept service
-jest.mock('../conceptService');
+jest.mock('../../conceptService');
 
 describe('allergyService', () => {
   const mockPatientUUID = 'patient-123';
