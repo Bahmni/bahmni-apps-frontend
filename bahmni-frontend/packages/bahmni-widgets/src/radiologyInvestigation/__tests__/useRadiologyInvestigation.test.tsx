@@ -9,7 +9,7 @@ import { getPatientRadiologyInvestigations } from '@services/radiologyInvestigat
 import { RadiologyInvestigation } from '@types/radiologyInvestigation';
 import { getFormattedError } from '@utils/common';
 import { usePatientUUID } from '../usePatientUUID';
-import { useRadiologyInvestigation } from '../useRadiologyInvestigation';
+import { useRadiologyInvestigation } from '../../../../../src/hooks/useRadiologyInvestigation';
 
 // Mock dependencies
 jest.mock('@services/radiologyInvestigationService');
