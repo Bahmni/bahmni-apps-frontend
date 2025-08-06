@@ -4,7 +4,7 @@ import {
 } from '@carbon/react';
 import React from 'react';
 
-export type ComboBoxProps = CarbonComboBoxProps<any> & {
+export type ComboBoxProps = CarbonComboBoxProps<unknown> & {
   testId?: string;
 };
 

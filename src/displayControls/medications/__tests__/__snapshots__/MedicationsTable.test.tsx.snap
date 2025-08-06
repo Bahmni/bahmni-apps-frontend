@@ -680,7 +680,7 @@ exports[`MedicationsTable Snapshots matches snapshot for active medications tab 
             id="accordion-item-«rgf»"
           >
             <div
-              class="sortable-data-table"
+              class=""
               data-testid="sortable-data-table"
             >
               <div
@@ -1774,7 +1774,7 @@ exports[`MedicationsTable Snapshots matches snapshot for all medications tab wit
             id="accordion-item-«rh2»"
           >
             <div
-              class="sortable-data-table"
+              class=""
               data-testid="sortable-data-table"
             >
               <div
@@ -2222,7 +2222,7 @@ exports[`MedicationsTable Snapshots matches snapshot for all medications tab wit
             id="accordion-item-«rhb»"
           >
             <div
-              class="sortable-data-table"
+              class=""
               data-testid="sortable-data-table"
             >
               <div
@@ -2670,7 +2670,7 @@ exports[`MedicationsTable Snapshots matches snapshot for all medications tab wit
             id="accordion-item-«rhk»"
           >
             <div
-              class="sortable-data-table"
+              class=""
               data-testid="sortable-data-table"
             >
               <div
