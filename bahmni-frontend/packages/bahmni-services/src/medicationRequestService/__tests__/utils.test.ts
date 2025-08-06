@@ -13,7 +13,7 @@ import {
   sortMedicationsByPriority,
   sortMedicationsByDateDistance,
   MEDICATION_STATUS_PRIORITY_ORDER,
-} from '../medicationRequest';
+} from '../utils';
 
 jest.mock('@utils/date', () => ({
   formatDate: (date: string | undefined) => ({
