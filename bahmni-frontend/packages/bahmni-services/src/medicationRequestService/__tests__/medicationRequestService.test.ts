@@ -1,9 +1,9 @@
 import { MedicationRequest as FhirMedicationRequest, Bundle } from 'fhir/r4';
-import { MedicationStatus } from '@types/medicationRequest';
+import { MedicationStatus } from '../models';
 import { get } from '../../api';
-import { getPatientMedications } from '../../../../../src/services/medicationRequestService';
+import { getPatientMedications } from '../medicationRequestService';
 
-jest.mock('../api');
+jest.mock('../../api');
 
 const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
 function createMockMedicationRequest(
