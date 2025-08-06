@@ -56,6 +56,7 @@ git clone git@github.com:bahnew/bahmni-docker.git
 cd bahmni-docker
 
 # Clone the Bahmni Clinical Frontend repository (in a separate terminal)
+# Clone from Bahnew(https://github.com/bahnew/bahmni-clinical-frontend/tree/main)
 git clone https://github.com/bahnew/bahmni-clinical-frontend.git
 ```
 
