@@ -3,7 +3,7 @@ import {
   MedicationRequest,
   MedicationStatus,
   FormattedMedicationRequest,
-} from '@types/medicationRequest';
+} from '../models';
 import {
   formatMedicationRequest,
   formatMedicationRequestDate,
@@ -15,7 +15,7 @@ import {
   MEDICATION_STATUS_PRIORITY_ORDER,
 } from '../utils';
 
-jest.mock('@utils/date', () => ({
+jest.mock('../../date', () => ({
   formatDate: (date: string | undefined) => ({
     formattedResult: date ? `Formatted(${date})` : '',
   }),
