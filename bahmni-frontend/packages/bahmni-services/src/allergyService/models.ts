@@ -14,6 +14,7 @@ export enum AllergySeverity {
 /**
  * Interface representing a formatted allergy for easier consumption by components
  */
+//TODO: Move to Bahmni Widgets
 export interface FormattedAllergy {
   readonly id: string;
   readonly display: string;
