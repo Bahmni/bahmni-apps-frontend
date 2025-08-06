@@ -31,6 +31,7 @@ import { ConsultationBundle } from '@types/consultationBundle';
 import { dispatchAuditEvent } from '@utils/auditEventDispatcher';
 import { createConsultationBundle } from '@utils/fhir/consultationBundleCreator';
 import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
+import ObservationForms from '../forms/observationForms/ObservationForms';
 import * as styles from './styles/ConsultationPad.module.scss';
 
 interface ConsultationPadProps {
@@ -298,6 +299,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
             <DiagnosesForm />
             <MenuItemDivider />
             <MedicationsForm />
+            <MenuItemDivider />
+            <ObservationForms />
             <MenuItemDivider />
           </>
         )

@@ -1,0 +1,52 @@
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.observationFormsTile {
+  margin: $spacing-03;
+  background-color: $background !important;
+  overflow: hidden !important;
+}
+
+.observationFormsTitle {
+  @include type-style("heading-compact-02");
+  padding-bottom: $spacing-05;
+}
+
+.observationFormsBox {
+  margin: $spacing-06;
+}
+
+.selectedObservationFormItem {
+  border-top: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 1px solid $border-subtle-02;
+}
+
+.selectedObservationFormItem:last-of-type {
+  border: 0 !important;
+}
+
+.selectedFormContent {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-02;
+}
+
+.selectedFormName {
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.selectedFormVersion {
+  font-size: 0.875rem;
+  color: $text-secondary;
+}
+
+.errorMessage {
+  color: $text-error;
+  margin-top: $spacing-03;
+  font-weight: 600;
+}
