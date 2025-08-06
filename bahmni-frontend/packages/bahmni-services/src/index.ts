@@ -22,6 +22,12 @@ export {
   formatDate,
   formatDateDistance,
   calculateOnsetDate,
+  sortByDate,
+  DATE_FORMAT,
+  DATE_PICKER_INPUT_FORMAT,
+  DATE_TIME_FORMAT,
+  ISO_DATE_FORMAT,
+  FULL_MONTH_DATE_FORMAT,
 } from './date';
 export { type Notification, notificationService } from './notification';
 export {

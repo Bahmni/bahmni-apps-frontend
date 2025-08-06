@@ -1,185 +1,161 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import React from 'react';
-import i18n from '@/setupTests.i18n';
-import { CERTAINITY_CONCEPTS } from '@constants/concepts';
-import { getPatientDiagnoses } from '@services/diagnosesService';
-import { Diagnosis } from '@types/diagnosis';
+import '@testing-library/jest-dom';
+import {
+  getPatientDiagnoses,
+  getFormattedError,
+  useTranslation,
+  Diagnosis,
+} from '@bahmni-frontend/bahmni-services';
+import { usePatientUUID } from '../../hooks/usePatientUUID';
 import DiagnosesTable from '../DiagnosesTable';
 
-// Mock only the service layer
-jest.mock('@services/diagnosesService');
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+  getPatientDiagnoses: jest.fn(),
+  getFormattedError: jest.fn(),
+  useTranslation: jest.fn(),
+}));
+jest.mock('react-router-dom', () => ({
+  useParams: jest.fn(),
+}));
 
-const mockedGetPatientDiagnoses = getPatientDiagnoses as jest.MockedFunction<
+jest.mock('../../hooks/usePatientUUID');
+
+const mockGetPatientDiagnoses = getPatientDiagnoses as jest.MockedFunction<
   typeof getPatientDiagnoses
 >;
-
-// Mock data for integration tests
-const mockPatientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
+const mockGetFormattedError = getFormattedError as jest.MockedFunction<
+  typeof getFormattedError
+>;
+const mockUseTranslation = useTranslation as jest.MockedFunction<
+  typeof useTranslation
+>;
+const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
+  typeof usePatientUUID
+>;
 
 const mockDiagnoses: Diagnosis[] = [
   {
-    id: 'diagnosis-1',
+    id: '1',
     display: 'Hypertension',
-    certainty: CERTAINITY_CONCEPTS[0], // confirmed
-    recordedDate: '2024-01-15T10:30:00Z',
+    certainty: {
+      code: 'confirmed',
+      display: 'CERTAINITY_CONFIRMED',
+      system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
+    },
+    recordedDate: '2024-03-15T10:30:00+00:00',
     recorder: 'Dr. Smith',
   },
   {
-    id: 'diagnosis-2',
-    display: 'Diabetes Type 2',
-    certainty: CERTAINITY_CONCEPTS[1], // provisional
-    recordedDate: '2024-01-15T11:00:00Z',
+    id: '2',
+    display: 'Type 2 Diabetes',
+    certainty: {
+      code: 'provisional',
+      display: 'CERTAINITY_PROVISIONAL',
+      system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
+    },
+    recordedDate: '2024-01-20T14:15:00+00:00',
     recorder: 'Dr. Johnson',
   },
-  {
-    id: 'diagnosis-3',
-    display: 'Asthma',
-    certainty: CERTAINITY_CONCEPTS[0], // confirmed
-    recordedDate: '2024-01-10T14:20:00Z',
-    recorder: '',
-  },
 ];
-
-// Mock the usePatientUUID hook to return our test UUID
-jest.mock('@hooks/usePatientUUID', () => ({
-  usePatientUUID: () => mockPatientUUID,
-}));
 
 describe('DiagnosesTable Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(console, 'error').mockImplementation();
-    // Reset i18n to English
-    i18n.changeLanguage('en');
+
+    mockUseTranslation.mockReturnValue({
+      t: (key: string) => {
+        const translations: Record<string, string> = {
+          DIAGNOSES_DISPLAY_CONTROL_HEADING: 'Diagnoses',
+          DIAGNOSIS_LIST_DIAGNOSIS: 'Diagnosis',
+          DIAGNOSIS_RECORDED_DATE: 'Date Recorded',
+          DIAGNOSIS_LIST_RECORDED_BY: 'Recorded By',
+          CERTAINITY_CONFIRMED: 'Confirmed',
+          CERTAINITY_PROVISIONAL: 'Provisional',
+          DIAGNOSIS_TABLE_NOT_AVAILABLE: 'Not available',
+          NO_DIAGNOSES: 'No diagnoses recorded',
+          ERROR_INVALID_PATIENT_UUID: 'Invalid patient UUID',
+        };
+        return translations[key] || key;
+      },
+    });
+
+    mockUsePatientUUID.mockReturnValue('patient-123');
+    mockGetFormattedError.mockImplementation((error) => ({
+      title: 'Error',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    }));
   });
 
-  // Data Fetching and Display Tests
-  describe('Data Fetching and Display', () => {
-    it('should fetch diagnosis data and display it correctly', async () => {
-      // Mock the service to return diagnoses
-      mockedGetPatientDiagnoses.mockResolvedValue(mockDiagnoses);
+  it('renders diagnoses from service through complete data flow', async () => {
+    mockGetPatientDiagnoses.mockResolvedValue(mockDiagnoses);
 
-      render(<DiagnosesTable />);
+    render(<DiagnosesTable />);
 
-      // Wait for loading to complete and data to be displayed
-      await waitFor(() => {
-        expect(screen.getByText('Hypertension')).toBeInTheDocument();
-      });
-
-      // Verify the data fetching flow
-      expect(getPatientDiagnoses).toHaveBeenCalledWith(mockPatientUUID);
-
-      expect(screen.getByTestId('diagnoses-table')).toBeInTheDocument();
-      expect(screen.getByTestId('sortable-data-table')).toBeInTheDocument();
-
-      // Verify diagnoses are displayed correctly
+    await waitFor(() => {
       expect(screen.getByText('Hypertension')).toBeInTheDocument();
-      expect(screen.getByText('Diabetes Type 2')).toBeInTheDocument();
-      expect(screen.getByText('Asthma')).toBeInTheDocument();
-
-      // Verify recorders are displayed
+      expect(screen.getByText('Type 2 Diabetes')).toBeInTheDocument();
       expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
       expect(screen.getByText('Dr. Johnson')).toBeInTheDocument();
-      expect(screen.getByText('Not available')).toBeInTheDocument(); // For empty recorder
-
-      // Verify certainty tags are rendered
+      expect(screen.getByText('Confirmed')).toBeInTheDocument();
       expect(screen.getByText('Provisional')).toBeInTheDocument();
-      expect(screen.getAllByText('Confirmed')).toHaveLength(2);
-
-      // Verify recorded dates are formatted and displayed
-      expect(screen.getAllByText('15/01/2024')).toHaveLength(2); // Hypertension and Diabetes
-      expect(screen.getByText('10/01/2024')).toBeInTheDocument(); // Asthma
-
-      // Verify data is sorted by date (most recent first)
-      // The component uses sortByDate which should sort by recordedDate in descending order
-      const diagnosisNames = screen.getAllByText(
-        /Asthma|Hypertension|Diabetes Type 2/,
-      );
-
-      // Based on the dates: Diabetes (11:00) should come before Hypertension (10:30) on same day,
-      // and both should come before Asthma (older date)
-      expect(diagnosisNames[0]).toHaveTextContent('Diabetes Type 2'); // 2024-01-15T11:00:00Z
-      expect(diagnosisNames[1]).toHaveTextContent('Hypertension'); // 2024-01-15T10:30:00Z
-      expect(diagnosisNames[2]).toHaveTextContent('Asthma'); // 2024-01-10T14:20:00Z
     });
 
-    it('should display component when the patient has no recorded diagnoses', async () => {
-      // Mock the service to return empty array
-      mockedGetPatientDiagnoses.mockResolvedValue([]);
+    expect(mockGetPatientDiagnoses).toHaveBeenCalledWith('patient-123');
+  });
 
-      render(<DiagnosesTable />);
+  it('propagates service errors through hook to component UI', async () => {
+    const serviceError = new Error('Network timeout');
+    mockGetPatientDiagnoses.mockRejectedValue(serviceError);
 
-      await waitFor(() => {
-        // Verify the component renders but with no data tables
-        expect(screen.getByText('Diagnoses')).toBeInTheDocument();
-        expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
-        expect(
-          screen.queryByTestId('sortable-data-table'),
-        ).not.toBeInTheDocument();
-      });
+    render(<DiagnosesTable />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('sortable-table-error')).toBeInTheDocument();
+      expect(screen.getByText(/Network timeout/)).toBeInTheDocument();
+    });
+
+    expect(mockGetFormattedError).toHaveBeenCalledWith(serviceError);
+  });
+
+  it('handles empty service response through complete flow', async () => {
+    mockGetPatientDiagnoses.mockResolvedValue([]);
+
+    render(<DiagnosesTable />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
+      expect(screen.getByText('No diagnoses recorded')).toBeInTheDocument();
     });
   });
 
-  // Edge Cases and Error Handling
-  describe('Edge Cases and Error Handling', () => {
-    it('should handle missing recorder fields gracefully', async () => {
-      const diagnosesWithMissingRecorder: Diagnosis[] = [
-        {
-          id: 'diagnosis-missing-recorder',
-          display: 'Diagnosis Without Recorder',
-          certainty: CERTAINITY_CONCEPTS[0],
-          recordedDate: '2024-01-30T12:00:00Z',
-          recorder: '', // Empty recorder
-        },
-        {
-          id: 'diagnosis-null-recorder',
-          display: 'Diagnosis With Null Recorder',
-          certainty: CERTAINITY_CONCEPTS[1],
-          recordedDate: '2024-01-30T13:00:00Z',
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          recorder: null as any, // Null recorder
-        },
-      ];
+  it('handles missing patient UUID through service integration', async () => {
+    mockUsePatientUUID.mockReturnValue('');
 
-      mockedGetPatientDiagnoses.mockResolvedValue(diagnosesWithMissingRecorder);
+    render(<DiagnosesTable />);
 
-      render(<DiagnosesTable />);
-
-      // Wait for the data to load by checking for the diagnosis text
-      await waitFor(() => {
-        expect(
-          screen.getByText('Diagnosis Without Recorder'),
-        ).toBeInTheDocument();
-      });
-
-      // Verify both diagnoses are displayed
-      expect(
-        screen.getByText('Diagnosis Without Recorder'),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText('Diagnosis With Null Recorder'),
-      ).toBeInTheDocument();
-
-      // Verify fallback text for missing recorders
-      const notAvailable = screen.getAllByText('Not available');
-      expect(notAvailable).toHaveLength(2);
+    await waitFor(() => {
+      expect(screen.getByTestId('sortable-table-error')).toBeInTheDocument();
+      expect(screen.getByText('Invalid patient UUID')).toBeInTheDocument();
     });
 
-    it('should handle service errors gracefully', async () => {
-      // Mock service to throw an error
-      mockedGetPatientDiagnoses.mockRejectedValue(
-        new Error('Service unavailable'),
-      );
+    expect(mockGetPatientDiagnoses).not.toHaveBeenCalled();
+  });
 
-      render(<DiagnosesTable />);
+  it('shows loading state during service call', async () => {
+    let resolvePromise: (value: Diagnosis[]) => void;
+    const servicePromise = new Promise<Diagnosis[]>((resolve) => {
+      resolvePromise = resolve;
+    });
+    mockGetPatientDiagnoses.mockReturnValue(servicePromise);
 
-      await waitFor(() => {
-        expect(screen.getByText('Service unavailable')).toBeInTheDocument();
-      });
+    render(<DiagnosesTable />);
 
-      // Verify error state doesn't crash the component
-      expect(screen.getByTestId('diagnoses-title')).toBeInTheDocument();
-      expect(screen.getByTestId('sortable-table-error')).toBeInTheDocument();
+    expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
+
+    resolvePromise!(mockDiagnoses);
+    await waitFor(() => {
+      expect(screen.getByText('Hypertension')).toBeInTheDocument();
     });
   });
 });

@@ -1,12 +1,18 @@
-import { Tag, Tile } from '@carbon/react';
 import React, { useMemo, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
-import { SortableDataTable } from '@/components/common/sortableDataTable/SortableDataTable';
-import { DATE_FORMAT } from '@constants/date';
-import { useDiagnoses } from '@hooks/useDiagnoses';
-import { Diagnosis } from '@types/diagnosis';
-import { formatDate, sortByDate } from '@utils/date';
-import * as styles from './styles/DiagnosesTable.module.scss';
+import {
+  SortableDataTable,
+  Tag,
+  Tile,
+} from '@bahmni-frontend/bahmni-design-system';
+import { useDiagnoses } from './useDiagnoses';
+import {
+  formatDate,
+  sortByDate,
+  Diagnosis,
+  DATE_FORMAT,
+  useTranslation,
+} from '@bahmni-frontend/bahmni-services';
+import styles from './styles/DiagnosesTable.module.scss';
 
 /**
  * Component to display patient diagnoses using SortableDataTable
@@ -55,6 +61,8 @@ const DiagnosesTable: React.FC = () => {
             .formattedResult;
         case 'recorder':
           return diagnosis.recorder || t('DIAGNOSIS_TABLE_NOT_AVAILABLE');
+        default:
+          return null;
       }
     },
     [t],

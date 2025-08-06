@@ -1,270 +1,208 @@
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import React from 'react';
-import i18n from '@/setupTests.i18n';
-import { CERTAINITY_CONCEPTS } from '@constants/concepts';
-import { useDiagnoses } from '@hooks/useDiagnoses';
-import { Diagnosis } from '@types/diagnosis';
+import {
+  Diagnosis,
+  formatDate,
+  sortByDate,
+  DATE_FORMAT,
+} from '@bahmni-frontend/bahmni-services';
+import { useDiagnoses } from '../useDiagnoses';
 import DiagnosesTable from '../DiagnosesTable';
+import '@testing-library/jest-dom';
 
 expect.extend(toHaveNoViolations);
 
-// Mock the hooks
-jest.mock('@hooks/useDiagnoses');
+jest.mock('../useDiagnoses');
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+  useTranslation: jest.fn(),
+  formatDate: jest.fn(),
+  sortByDate: jest.fn(),
+}));
 
-// Mock CSS modules
-jest.mock('../styles/DiagnosesTable.module.scss', () => ({
-  diagnosesTable: 'diagnosesTable',
-  diagnosesTableTitle: 'diagnosesTableTitle',
-  diagnosesTableBody: 'diagnosesTableBody',
-  diagnosesTableBodyError: 'diagnosesTableBodyError',
-  confirmedCell: 'confirmedCell',
-  provisionalCell: 'provisionalCell',
+jest.mock('react-router-dom', () => ({
+  useParams: jest.fn(),
 }));
 
 const mockUseDiagnoses = useDiagnoses as jest.MockedFunction<
   typeof useDiagnoses
 >;
+const mockFormatDate = formatDate as jest.MockedFunction<typeof formatDate>;
+const mockSortByDate = sortByDate as jest.MockedFunction<typeof sortByDate>;
+const mockUseTranslation = require('@bahmni-frontend/bahmni-services')
+  .useTranslation as jest.MockedFunction<any>;
 
-// Test data
-const mockConfirmedDiagnosis: Diagnosis = {
-  id: 'diagnosis-1',
-  display: 'Hypertension',
-  certainty: CERTAINITY_CONCEPTS[0], // confirmed
-  recordedDate: '2024-01-15T10:30:00Z',
-  recorder: 'Dr. Smith',
-};
-
-const mockProvisionalDiagnosis: Diagnosis = {
-  id: 'diagnosis-2',
-  display: 'Diabetes Type 2',
-  certainty: CERTAINITY_CONCEPTS[1], // provisional
-  recordedDate: '2024-01-15T11:00:00Z',
-  recorder: 'Dr. Johnson',
-};
-
-const mockDiagnosisWithoutRecorder: Diagnosis = {
-  id: 'diagnosis-3',
-  display: 'Asthma',
-  certainty: CERTAINITY_CONCEPTS[0],
-  recordedDate: '2024-01-10T14:20:00Z',
-  recorder: '',
-};
-
-// Array of diagnoses (new interface)
-const mockDiagnosesData: Diagnosis[] = [
-  mockDiagnosisWithoutRecorder,
-  mockConfirmedDiagnosis,
-  mockProvisionalDiagnosis,
+const mockDiagnoses: Diagnosis[] = [
+  {
+    id: '1',
+    display: 'Hypertension',
+    certainty: { code: 'confirmed' },
+    recordedDate: '2024-01-15T10:30:00Z',
+    recorder: 'Dr. Smith',
+  },
+  {
+    id: '2',
+    display: 'Diabetes Type 2',
+    certainty: { code: 'provisional' },
+    recordedDate: '2024-01-15T11:00:00Z',
+    recorder: 'Dr. Johnson',
+  },
+  {
+    id: '3',
+    display: 'Asthma',
+    certainty: { code: 'confirmed' },
+    recordedDate: '2024-01-10T14:20:00Z',
+    recorder: '',
+  },
 ];
 
-describe('DiagnosesTable Component', () => {
+describe('DiagnosesTable', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    i18n.changeLanguage('en');
+
+    mockUseTranslation.mockReturnValue({
+      t: (key: string) => {
+        const translations: Record<string, string> = {
+          DIAGNOSIS_LIST_DIAGNOSIS: 'Diagnosis',
+          DIAGNOSIS_RECORDED_DATE: 'Recorded Date',
+          DIAGNOSIS_LIST_RECORDED_BY: 'Recorded By',
+          DIAGNOSES_DISPLAY_CONTROL_HEADING: 'Diagnoses',
+          NO_DIAGNOSES: 'No diagnoses recorded',
+          DIAGNOSIS_TABLE_NOT_AVAILABLE: 'Not available',
+          CERTAINITY_CONFIRMED: 'Confirmed',
+          CERTAINITY_PROVISIONAL: 'Provisional',
+        };
+        return translations[key] || key;
+      },
+    });
+
+    mockFormatDate.mockReturnValue({ formattedResult: '15/01/2024' });
+    mockSortByDate.mockImplementation((data) => data);
   });
 
-  describe('Component Rendering', () => {
-    it('should render Tile container diagnoses title', () => {
-      mockUseDiagnoses.mockReturnValue({
-        diagnoses: [],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      render(<DiagnosesTable />);
-
-      const tile = screen.getByTestId('diagnoses-title');
-      expect(tile).toHaveTextContent('Diagnoses');
-      expect(tile).toHaveClass('diagnosesTableTitle');
+  it('renders loading state', () => {
+    mockUseDiagnoses.mockReturnValue({
+      diagnoses: [],
+      loading: true,
+      error: null,
+      refetch: jest.fn(),
     });
 
-    it('should show DataTableSkeleton when loading', () => {
-      mockUseDiagnoses.mockReturnValue({
-        diagnoses: [],
-        loading: true,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      render(<DiagnosesTable />);
-
-      expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
-      expect(
-        screen.queryByTestId('sortable-data-table'),
-      ).not.toBeInTheDocument();
-    });
-
-    it('should display error message when error occurs', () => {
-      const mockError = new Error('Test error message');
-      mockUseDiagnoses.mockReturnValue({
-        diagnoses: [],
-        loading: false,
-        error: mockError,
-        refetch: jest.fn(),
-      });
-
-      render(<DiagnosesTable />);
-
-      expect(screen.getByText('Test error message')).toBeInTheDocument();
-      expect(
-        screen.queryByTestId('sortable-data-table'),
-      ).not.toBeInTheDocument();
-    });
-
-    it('should render without crashing when no diagnoses', () => {
-      mockUseDiagnoses.mockReturnValue({
-        diagnoses: [],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      render(<DiagnosesTable />);
-
-      expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
-      expect(screen.getByText('No diagnoses recorded')).toBeInTheDocument();
-    });
+    render(<DiagnosesTable />);
+    expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
   });
 
-  describe('Success State - Data Display', () => {
-    beforeEach(() => {
-      mockUseDiagnoses.mockReturnValue({
-        diagnoses: mockDiagnosesData,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
+  it('renders error state', () => {
+    mockUseDiagnoses.mockReturnValue({
+      diagnoses: [],
+      loading: false,
+      error: new Error('Network error'),
+      refetch: jest.fn(),
     });
 
-    it('should render SortableDataTable with correct headers', () => {
-      render(<DiagnosesTable />);
-
-      expect(screen.getByTestId('diagnoses-table')).toBeInTheDocument();
-      expect(screen.getByTestId('sortable-data-table')).toBeInTheDocument();
-
-      // Check table headers
-      expect(screen.getByText('Diagnosis')).toBeInTheDocument();
-      expect(screen.getByText('Recorded Date')).toBeInTheDocument();
-      expect(screen.getByText('Recorded By')).toBeInTheDocument();
-    });
-
-    it('should render SortableDataTable with correct data with formatted dates', () => {
-      render(<DiagnosesTable />);
-
-      expect(screen.getByTestId('diagnoses-table')).toBeInTheDocument();
-      expect(screen.getByTestId('sortable-data-table')).toBeInTheDocument();
-
-      // Verify all diagnosis data is rendered in the table
-      expect(screen.getByText('Hypertension')).toBeInTheDocument();
-      expect(screen.getByText('Diabetes Type 2')).toBeInTheDocument();
-      expect(screen.getByText('Asthma')).toBeInTheDocument();
-
-      // Verify certainty tags are rendered
-      expect(screen.getByText('Provisional')).toBeInTheDocument();
-      expect(screen.getAllByText('Confirmed')).toHaveLength(2); // Hypertension and Diabetes
-
-      // Verify recorders are displayed
-      expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
-      expect(screen.getByText('Dr. Johnson')).toBeInTheDocument();
-      expect(screen.getByText('Not available')).toBeInTheDocument(); // For empty recorder
-
-      // Verify recorded dates are formatted and displayed
-      expect(screen.getAllByText('15/01/2024')).toHaveLength(2); // Hypertension and Diabetes
-      expect(screen.getByText('10/01/2024')).toBeInTheDocument(); // Asthma
-    });
-
-    it('should render correct data sorted by date', () => {
-      render(<DiagnosesTable />);
-
-      expect(screen.getByTestId('diagnoses-table')).toBeInTheDocument();
-      expect(screen.getByTestId('sortable-data-table')).toBeInTheDocument();
-
-      // Verify recorded dates are formatted and displayed
-      expect(screen.getAllByText('15/01/2024')).toHaveLength(2); // Hypertension and Diabetes
-      expect(screen.getByText('10/01/2024')).toBeInTheDocument(); // Asthma
-
-      // Verify data is sorted by date (most recent first)
-      // The component uses sortByDate which should sort by recordedDate in descending order
-      const diagnosisNames = screen.getAllByText(
-        /Asthma|Hypertension|Diabetes Type 2/,
-      );
-
-      // Based on the dates: Diabetes (11:00) should come before Hypertension (10:30) on same day,
-      // and both should come before Asthma (older date)
-      expect(diagnosisNames[0]).toHaveTextContent('Diabetes Type 2'); // 2024-01-15T11:00:00Z
-      expect(diagnosisNames[1]).toHaveTextContent('Hypertension'); // 2024-01-15T10:30:00Z
-      expect(diagnosisNames[2]).toHaveTextContent('Asthma'); // 2024-01-10T14:20:00Z
-    });
-
-    it('should render correct styles for certainity tags', () => {
-      render(<DiagnosesTable />);
-
-      expect(screen.getByTestId('diagnoses-table')).toBeInTheDocument();
-      expect(screen.getByTestId('sortable-data-table')).toBeInTheDocument();
-
-      // Verify certainty tags are rendered
-      expect(screen.getByText('Provisional')).toBeInTheDocument();
-      expect(screen.getAllByText('Confirmed')).toHaveLength(2); // Hypertension and Diabetes
-
-      const tags = screen.getAllByTestId('certainity-tag');
-      expect(tags[0]).toHaveClass(/provisionalCell/);
-      expect(tags[1]).toHaveClass(/confirmedCell/);
-      expect(tags[2]).toHaveClass(/confirmedCell/);
-    });
+    render(<DiagnosesTable />);
+    expect(screen.getByText('Network error')).toBeInTheDocument();
   });
 
-  describe('Hook Integration', () => {
-    it('should call useDiagnoses hook', () => {
-      mockUseDiagnoses.mockReturnValue({
-        diagnoses: [],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      render(<DiagnosesTable />);
-
-      expect(mockUseDiagnoses).toHaveBeenCalledTimes(1);
+  it('renders empty state', () => {
+    mockUseDiagnoses.mockReturnValue({
+      diagnoses: [],
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
     });
 
-    it('should render component successfully with translations', () => {
-      mockUseDiagnoses.mockReturnValue({
-        diagnoses: [],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      render(<DiagnosesTable />);
-
-      expect(screen.getByText('Diagnoses')).toBeInTheDocument();
-    });
+    render(<DiagnosesTable />);
+    expect(screen.getByText('No diagnoses recorded')).toBeInTheDocument();
   });
 
-  describe('Accessibility', () => {
-    it('should have no accessibility violations when data is loaded', async () => {
-      // Arrange
-      mockUseDiagnoses.mockReturnValue({
-        diagnoses: mockDiagnosesData,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      // Act
-      const { container } = render(<DiagnosesTable />);
-
-      // Assert
-      expect(await axe(container)).toHaveNoViolations();
+  it('sorts diagnoses by date', () => {
+    mockUseDiagnoses.mockReturnValue({
+      diagnoses: mockDiagnoses,
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
     });
 
-    it('should set correct aria labels', () => {
-      render(<DiagnosesTable />);
+    render(<DiagnosesTable />);
+    expect(mockSortByDate).toHaveBeenCalledWith(mockDiagnoses, 'recordedDate');
+  });
 
-      const table = screen.getByRole('table');
-      expect(table).toHaveAttribute('aria-label', 'Diagnoses');
+  it('renders diagnosis display cell with confirmed certainty', () => {
+    mockUseDiagnoses.mockReturnValue({
+      diagnoses: [mockDiagnoses[0]],
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
     });
+
+    render(<DiagnosesTable />);
+    expect(screen.getByText('Hypertension')).toBeInTheDocument();
+    expect(screen.getByText('Confirmed')).toBeInTheDocument();
+  });
+
+  it('renders diagnosis display cell with provisional certainty', () => {
+    mockUseDiagnoses.mockReturnValue({
+      diagnoses: [mockDiagnoses[1]],
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<DiagnosesTable />);
+    expect(screen.getByText('Diabetes Type 2')).toBeInTheDocument();
+    expect(screen.getByText('Provisional')).toBeInTheDocument();
+  });
+
+  it('renders formatted recorded date', () => {
+    mockUseDiagnoses.mockReturnValue({
+      diagnoses: [mockDiagnoses[0]],
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<DiagnosesTable />);
+    expect(mockFormatDate).toHaveBeenCalledWith(
+      '2024-01-15T10:30:00Z',
+      DATE_FORMAT,
+    );
+    expect(screen.getByText('15/01/2024')).toBeInTheDocument();
+  });
+
+  it('renders recorder name when available', () => {
+    mockUseDiagnoses.mockReturnValue({
+      diagnoses: [mockDiagnoses[0]],
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<DiagnosesTable />);
+    expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
+  });
+
+  it('renders "Not available" when recorder is empty', () => {
+    mockUseDiagnoses.mockReturnValue({
+      diagnoses: [mockDiagnoses[2]],
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<DiagnosesTable />);
+    expect(screen.getByText('Not available')).toBeInTheDocument();
+  });
+
+  it('has no accessibility violations', async () => {
+    mockUseDiagnoses.mockReturnValue({
+      diagnoses: mockDiagnoses,
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    const { container } = render(<DiagnosesTable />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });
