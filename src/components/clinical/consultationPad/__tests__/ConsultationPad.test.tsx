@@ -334,14 +334,15 @@ describe('ConsultationPad', () => {
       const forms = content.querySelectorAll('[data-testid]');
 
       expect(forms[0]).toHaveAttribute('data-testid', 'mock-encounter-details');
-      expect(forms[2]).toHaveAttribute(
-        'data-testid',
-        'mock-conditions-diagnoses',
-      );
-      expect(forms[4]).toHaveAttribute('data-testid', 'mock-allergies-form');
-      expect(forms[6]).toHaveAttribute(
+
+      expect(forms[2]).toHaveAttribute('data-testid', 'mock-allergies-form');
+      expect(forms[4]).toHaveAttribute(
         'data-testid',
         'mock-investigations-form',
+      );
+      expect(forms[6]).toHaveAttribute(
+        'data-testid',
+        'mock-conditions-diagnoses',
       );
       expect(forms[8]).toHaveAttribute('data-testid', 'mock-medications-form');
     });
@@ -367,16 +368,16 @@ describe('ConsultationPad', () => {
         'mock-encounter-details',
       );
       expect(children[1]).toHaveAttribute('data-testid', 'mock-divider');
-      expect(children[2]).toHaveAttribute(
-        'data-testid',
-        'mock-conditions-diagnoses',
-      );
+      expect(children[2]).toHaveAttribute('data-testid', 'mock-allergies-form');
       expect(children[3]).toHaveAttribute('data-testid', 'mock-divider');
-      expect(children[4]).toHaveAttribute('data-testid', 'mock-allergies-form');
+      expect(children[4]).toHaveAttribute(
+        'data-testid',
+        'mock-investigations-form',
+      );
       expect(children[5]).toHaveAttribute('data-testid', 'mock-divider');
       expect(children[6]).toHaveAttribute(
         'data-testid',
-        'mock-investigations-form',
+        'mock-conditions-diagnoses',
       );
       expect(children[7]).toHaveAttribute('data-testid', 'mock-divider');
       expect(children[8]).toHaveAttribute(

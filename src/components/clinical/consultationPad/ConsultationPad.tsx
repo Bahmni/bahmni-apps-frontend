@@ -291,11 +291,11 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
           <>
             <BasicForm />
             <MenuItemDivider />
-            <DiagnosesForm />
-            <MenuItemDivider />
             <AllergiesForm />
             <MenuItemDivider />
             <InvestigationsForm />
+            <MenuItemDivider />
+            <DiagnosesForm />
             <MenuItemDivider />
             <MedicationsForm />
             <MenuItemDivider />
