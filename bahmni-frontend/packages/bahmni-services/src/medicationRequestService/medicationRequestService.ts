@@ -36,7 +36,7 @@ const mapMedicationStatus = (
  * @param patientUUID - The UUID of the patient
  * @returns Promise resolving to a Bundle containing medications
  */
-async function getPatientMedicationBundle(
+export async function getPatientMedicationBundle(
   patientUUID: string,
 ): Promise<Bundle> {
   const url = PATIENT_MEDICATION_RESOURCE_URL(patientUUID);

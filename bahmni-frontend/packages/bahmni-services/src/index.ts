@@ -50,3 +50,15 @@ export {
   type DiagnosisInputEntry,
   type DiagnosesByDate,
 } from './diagnosesService';
+export {
+  getPatientMedications,
+  getPatientMedicationBundle,
+  getMedicationPriority,
+  getMedicationStatusPriority,
+  sortMedicationsByStatus,
+  sortMedicationsByDateDistance,
+  sortMedicationsByPriority,
+  type FormattedMedicationRequest,
+  type MedicationRequest,
+  MedicationStatus,
+} from './medicationRequestService';
