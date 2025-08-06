@@ -38,3 +38,9 @@ export {
   type FormattedCondition,
   ConditionStatus,
 } from './conditionService';
+export {
+  getPatientDiagnoses,
+  type Diagnosis,
+  type DiagnosisInputEntry,
+  type DiagnosesByDate,
+} from './diagnosesService';
