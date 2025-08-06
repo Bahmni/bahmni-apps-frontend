@@ -1,6 +1,6 @@
 import { Bundle, ServiceRequest } from 'fhir/r4';
 import { PATIENT_RADIOLOGY_RESOURCE_URL } from '@constants/app';
-import { RadiologyInvestigation } from '@types/radiologyInvestigation';
+import { RadiologyInvestigation } from '../../bahmni-frontend/packages/bahmni-services/src/radiologyInvestigationService/radiologyInvestigation';
 import { get } from './api';
 
 /**
