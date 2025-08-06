@@ -8,7 +8,7 @@ import {
   calculateOnsetDate,
   formatDateDistance,
   sortByDate,
-} from '../index';
+} from '../date';
 
 jest.mock('i18next', () => ({
   t: jest.fn((key: string, options?: { count?: number }) => {
