@@ -1,3 +1,3 @@
-import { routes } from './routes';
+import { SampleApp } from './routes';
 
-export { routes };
+export { SampleApp };

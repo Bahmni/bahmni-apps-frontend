@@ -1,45 +1,37 @@
 // Uncomment this line to use CSS modules
 // import styles from './app.module.scss';
-import { Outlet, RouteObject, useRoutes } from 'react-router-dom';
-import { routes as SampleAppRoutes } from '@bahmni-frontend/sample-app-module';
+import { Route, Routes } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import '@bahmni-frontend/sample-app-module/styles';
 
+// Lazy load components
+const IndexPage = lazy(() => import('./IndexPage').then(module => ({ default: module.IndexPage })));
+const NotFoundPage = lazy(() => import('./NotFoundPage').then(module => ({ default: module.NotFoundPage })));
+const SampleApp = lazy(() => import('@bahmni-frontend/sample-app-module').then(module => ({ default: module.SampleApp })));
+
+// Loading component
+const LoadingSpinner = () => (
+  <div style={{
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '200px',
+    fontSize: '16px'
+  }}>
+    Loading...
+  </div>
+);
+
 export function App() {
-
-  const indexRoute: RouteObject = {
-    index: true,
-    element: (
-      <div>
-        <div>Welcome to the Bahmni App</div>
-      </div>
-    ),
-  };
-
-  const notFoundRoute: RouteObject = {
-    path: '/*',
-    element: (
-      <div>
-        <h1>404 - Not Found</h1>
-        <p>The page you are looking for does not exist.</p>
-      </div>
-    ),
-  };
-
-  const appRoutes = [
-    ...SampleAppRoutes,
-  ];
-
-  return useRoutes([
-    {
-      path: '/',
-      element: <Outlet />,
-      children: [
-        indexRoute,
-        ...appRoutes,
-        notFoundRoute,
-      ],
-    },
-  ]);
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <Routes>
+        <Route index element={<IndexPage />} />
+        <Route path='/sample-app/*' element={<SampleApp />} />
+        <Route path='*' element={<NotFoundPage />} />
+      </Routes>
+    </Suspense>
+  );
 }
 
 export default App;
