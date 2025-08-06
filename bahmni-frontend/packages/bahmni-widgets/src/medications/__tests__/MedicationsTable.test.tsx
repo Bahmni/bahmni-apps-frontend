@@ -17,8 +17,11 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
   ...jest.requireActual('@bahmni-frontend/bahmni-services'),
   useTranslation: jest.fn(),
   formatDate: jest.fn(),
-  formatMedicationRequest: jest.fn(),
   groupByDate: jest.fn(),
+}));
+
+jest.mock('../utils', () => ({
+  formatMedicationRequest: jest.fn(),
   sortMedicationsByStatus: jest.fn(),
   sortMedicationsByPriority: jest.fn(),
   sortMedicationsByDateDistance: jest.fn(),
@@ -34,16 +37,14 @@ const mockUseMedicationRequest = useMedicationRequest as jest.MockedFunction<
 const mockUseTranslation = require('@bahmni-frontend/bahmni-services')
   .useTranslation as jest.MockedFunction<any>;
 const mockFormatDate = formatDate as jest.MockedFunction<typeof formatDate>;
-const mockFormatMedicationRequest = require('@bahmni-frontend/bahmni-services')
+const mockFormatMedicationRequest = require('../utils')
   .formatMedicationRequest as jest.MockedFunction<any>;
-const mockSortMedicationsByStatus = require('@bahmni-frontend/bahmni-services')
+const mockSortMedicationsByStatus = require('../utils')
   .sortMedicationsByStatus as jest.MockedFunction<any>;
-const mockSortMedicationsByPriority =
-  require('@bahmni-frontend/bahmni-services')
-    .sortMedicationsByPriority as jest.MockedFunction<any>;
-const mockSortMedicationsByDateDistance =
-  require('@bahmni-frontend/bahmni-services')
-    .sortMedicationsByDateDistance as jest.MockedFunction<any>;
+const mockSortMedicationsByPriority = require('../utils')
+  .sortMedicationsByPriority as jest.MockedFunction<any>;
+const mockSortMedicationsByDateDistance = require('../utils')
+  .sortMedicationsByDateDistance as jest.MockedFunction<any>;
 const mockGroupByDate = require('@bahmni-frontend/bahmni-services')
   .groupByDate as jest.MockedFunction<any>;
 

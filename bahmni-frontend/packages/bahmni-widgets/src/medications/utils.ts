@@ -1,6 +1,9 @@
 import { parseISO } from 'date-fns';
-import { MedicationRequest, FormattedMedicationRequest } from './models';
-import { getPriorityByOrder } from '../utils';
+import {
+  MedicationRequest,
+  FormattedMedicationRequest,
+} from '../../../bahmni-services/src/medicationRequestService/models';
+import { getPriorityByOrder } from '../../../bahmni-services/src/utils';
 
 /**
  * Priority order for medication status levels (case insensitive)

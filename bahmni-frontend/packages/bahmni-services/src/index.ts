@@ -53,12 +53,6 @@ export {
 export {
   getPatientMedications,
   getPatientMedicationBundle,
-  getMedicationPriority,
-  getMedicationStatusPriority,
-  sortMedicationsByStatus,
-  sortMedicationsByDateDistance,
-  sortMedicationsByPriority,
-  formatMedicationRequest,
   type FormattedMedicationRequest,
   type MedicationRequest,
   MedicationStatus,

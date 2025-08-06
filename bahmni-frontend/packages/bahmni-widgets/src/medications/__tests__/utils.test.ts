@@ -3,7 +3,7 @@ import {
   MedicationRequest,
   MedicationStatus,
   FormattedMedicationRequest,
-} from '../models';
+} from '@bahmni-frontend/bahmni-services';
 import {
   formatMedicationRequest,
   formatMedicationRequestDate,
@@ -14,12 +14,7 @@ import {
   sortMedicationsByDateDistance,
   MEDICATION_STATUS_PRIORITY_ORDER,
 } from '../utils';
-
-jest.mock('../../date', () => ({
-  formatDate: (date: string | undefined) => ({
-    formattedResult: date ? `Formatted(${date})` : '',
-  }),
-}));
+import '@testing-library/jest-dom';
 
 // Mock date-fns functions for consistent testing
 jest.mock('date-fns', () => ({

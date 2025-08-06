@@ -22,11 +22,13 @@ import {
   ISO_DATE_FORMAT,
   FormattedMedicationRequest,
   MedicationRequest,
+} from '@bahmni-frontend/bahmni-services';
+import {
   formatMedicationRequest,
   sortMedicationsByStatus,
   sortMedicationsByPriority,
   sortMedicationsByDateDistance,
-} from '@bahmni-frontend/bahmni-services';
+} from './utils';
 import styles from './styles/MedicationsTable.module.scss';
 
 // Helper function to get severity CSS class
