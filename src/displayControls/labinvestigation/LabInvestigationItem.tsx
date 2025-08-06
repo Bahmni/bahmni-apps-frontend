@@ -15,10 +15,10 @@ const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({
   return (
     <div className={styles.labBox}>
       <div className={styles.labHeaderWrapper}>
-        <div className={styles.labHeader}>
-          <strong>{test.testName}</strong>
+        <div className={styles.labTestNameWrapper}>
+          <span>{test.testName}</span>
           {test.testType === 'Panel' && (
-            <span className={styles.testType}>
+            <span className={styles.testInfo}>
               {t(`LAB_TEST_${test.testType.toUpperCase()}`)}
             </span>
           )}
@@ -28,9 +28,13 @@ const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({
             </Tag>
           )}
         </div>
-        {t('LAB_TEST_ORDERED_BY')}: {test.orderedBy}
+        <span className={styles.testInfo}>
+          {t('LAB_TEST_ORDERED_BY')}: {test.orderedBy}
+        </span>
       </div>
-      <div>{t('LAB_TEST_RESULTS_PENDING')}</div>
+      <div className={styles.testInfo}>
+        {t('LAB_TEST_RESULTS_PENDING') + ' ....'}
+      </div>
     </div>
   );
 };

@@ -61,20 +61,20 @@ const PatientDetails: React.FC = () => {
           {formattedIdentifiers && (
             <p className={styles.detailsWithIcon}>
               <Icon id="id-card" name="fa-id-card" size={ICON_SIZE.SM} />
-              <p>{formattedIdentifiers}</p>
+              <span>{formattedIdentifiers}</span>
             </p>
           )}
           {formattedGender && (
             <p className={styles.detailsWithIcon}>
               <Icon id="gender" name="fa-mars-stroke-up" size={ICON_SIZE.SM} />
-              <p>{formattedGender}</p>
+              <span>{formattedGender}</span>
             </p>
           )}
         </div>
         {details && (
           <p className={styles.detailsWithIcon}>
             <Icon id="age" name="fa-cake-candles" size={ICON_SIZE.SM} />
-            <p>{details}</p>
+            <span>{details}</span>
           </p>
         )}
       </div>
