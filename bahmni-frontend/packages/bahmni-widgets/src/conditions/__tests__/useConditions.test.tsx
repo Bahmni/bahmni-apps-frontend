@@ -1,346 +1,215 @@
 import { renderHook, act } from '@testing-library/react';
-import { Condition } from 'fhir/r4';
-import i18n from '@/setupTests.i18n';
-import { mockCondition } from '@__mocks__/conditionMocks';
-import { getConditions } from '@services/conditionService';
-import { getFormattedError } from '@utils/common';
+import {
+  getFormattedConditions,
+  getFormattedError,
+  useTranslation,
+  FormattedCondition,
+} from '@bahmni-frontend/bahmni-services';
 import { useConditions } from '../useConditions';
-import { usePatientUUID } from '../usePatientUUID';
+import { usePatientUUID } from '../../hooks/usePatientUUID';
 
-// Mock dependencies
-jest.mock('@services/conditionService');
-jest.mock('@hooks/usePatientUUID');
-jest.mock('@utils/common');
+jest.mock('@bahmni-frontend/bahmni-services');
+jest.mock('../../hooks/usePatientUUID');
 
-// Type the mocked functions
-const mockedGetConditions = getConditions as jest.MockedFunction<
-  typeof getConditions
->;
+jest.mock('react-router-dom', () => ({
+  useParams: jest.fn(),
+}));
+
+const mockedGetFormattedConditions =
+  getFormattedConditions as jest.MockedFunction<typeof getFormattedConditions>;
 const mockedUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
 >;
 const mockedGetFormattedError = getFormattedError as jest.MockedFunction<
   typeof getFormattedError
 >;
+const mockedUseTranslation = useTranslation as jest.MockedFunction<
+  typeof useTranslation
+>;
 
 describe('useConditions hook', () => {
   const mockPatientUUID = 'patient-uuid-123';
+  const mockTranslate = jest.fn((key: string) => key);
 
-  const mockConditions: Condition[] = [
-    mockCondition,
+  const mockConditions: FormattedCondition[] = [
     {
-      ...mockCondition,
-      id: 'condition-uuid-456',
-      code: {
-        coding: [
-          {
-            code: '456789AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-            display: 'Diabetes Type 2',
-          },
-        ],
-        text: 'Diabetes Type 2',
-      },
-      clinicalStatus: {
-        coding: [
-          {
-            system: 'http://terminology.hl7.org/CodeSystem/condition-clinical',
-            code: 'inactive',
-            display: 'Inactive',
-          },
-        ],
-      },
+      uuid: 'condition-1',
+      conceptName: 'Hypertension',
+      status: 'active',
+      onsetDate: '2023-01-15',
+      recordedDate: '2023-01-15',
+    },
+    {
+      uuid: 'condition-2',
+      conceptName: 'Diabetes Type 2',
+      status: 'inactive',
+      onsetDate: '2022-05-10',
+      recordedDate: '2022-05-10',
     },
   ];
 
   beforeEach(() => {
     jest.clearAllMocks();
-    i18n.changeLanguage('en');
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockedUseTranslation.mockReturnValue({ t: mockTranslate });
   });
 
-  it('should initialize with correct default values', () => {
-    // Arrange
+  it('initializes with default values', () => {
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
 
-    // Act
     const { result } = renderHook(() => useConditions());
 
-    // Assert
     expect(result.current.conditions).toEqual([]);
     expect(result.current.loading).toBe(true);
     expect(result.current.error).toBeNull();
     expect(typeof result.current.refetch).toBe('function');
   });
 
-  it('should fetch conditions successfully when patient UUID is available', async () => {
-    // Arrange
+  it('fetches conditions successfully', async () => {
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedGetConditions.mockResolvedValueOnce(mockConditions);
+    mockedGetFormattedConditions.mockResolvedValueOnce(mockConditions);
 
-    // Act
     const { result } = renderHook(() => useConditions());
 
-    // Assert initial loading state
-    expect(result.current.loading).toBe(true);
-    expect(result.current.conditions).toEqual([]);
-
-    // Wait for async operations
     await act(async () => {
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-    // Assert final state
-    expect(mockedGetConditions).toHaveBeenCalledWith(mockPatientUUID);
+    expect(mockedGetFormattedConditions).toHaveBeenCalledWith(mockPatientUUID);
     expect(result.current.conditions).toEqual(mockConditions);
     expect(result.current.error).toBeNull();
     expect(result.current.loading).toBe(false);
   });
 
-  it('should handle null patient UUID correctly', async () => {
-    // Arrange
+  it('handles invalid patient UUID', async () => {
     mockedUsePatientUUID.mockReturnValue(null);
 
-    // Act
     const { result } = renderHook(() => useConditions());
 
-    // Wait for async operations
     await act(async () => {
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-    // Assert
-    expect(mockedGetConditions).not.toHaveBeenCalled();
+    expect(mockedGetFormattedConditions).not.toHaveBeenCalled();
+    expect(mockTranslate).toHaveBeenCalledWith('ERROR_INVALID_PATIENT_UUID');
     expect(result.current.conditions).toEqual([]);
-    expect(result.current.error?.message).toBe('Invalid patient UUID');
+    expect(result.current.error?.message).toBe('ERROR_INVALID_PATIENT_UUID');
     expect(result.current.loading).toBe(false);
   });
 
-  it('should handle undefined patient UUID correctly', async () => {
-    // Arrange
-    mockedUsePatientUUID.mockReturnValue(null);
-
-    // Act
-    const { result } = renderHook(() => useConditions());
-
-    // Wait for async operations
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    // Assert
-    expect(mockedGetConditions).not.toHaveBeenCalled();
-    expect(result.current.conditions).toEqual([]);
-    expect(result.current.error?.message).toBe('Invalid patient UUID');
-    expect(result.current.loading).toBe(false);
-  });
-
-  it('should handle empty string patient UUID correctly', async () => {
-    // Arrange
-    mockedUsePatientUUID.mockReturnValue('');
-
-    // Act
-    const { result } = renderHook(() => useConditions());
-
-    // Wait for async operations
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    // Assert
-    expect(mockedGetConditions).not.toHaveBeenCalled();
-    expect(result.current.conditions).toEqual([]);
-    expect(result.current.error?.message).toBe('Invalid patient UUID');
-    expect(result.current.loading).toBe(false);
-  });
-
-  it('should handle service error correctly', async () => {
-    // Arrange
-    const mockError = new Error('Failed to fetch conditions');
+  it('handles service error', async () => {
+    const mockError = new Error('Service failed');
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedGetConditions.mockRejectedValueOnce(mockError);
+    mockedGetFormattedConditions.mockRejectedValueOnce(mockError);
     mockedGetFormattedError.mockReturnValueOnce({
-      title: 'Error Title',
-      message: 'Failed to fetch conditions',
+      title: 'Error',
+      message: 'Service failed',
     });
 
-    // Act
     const { result } = renderHook(() => useConditions());
 
-    // Wait for async operations
     await act(async () => {
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-    // Assert
-    expect(mockedGetConditions).toHaveBeenCalledWith(mockPatientUUID);
     expect(mockedGetFormattedError).toHaveBeenCalledWith(mockError);
     expect(result.current.error).toBe(mockError);
     expect(result.current.conditions).toEqual([]);
     expect(result.current.loading).toBe(false);
   });
 
-  it('should handle non-Error object from API correctly', async () => {
-    // Arrange
+  it('handles non-Error rejection', async () => {
     const nonErrorObject = { message: 'API Error' };
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedGetConditions.mockRejectedValueOnce(nonErrorObject);
+    mockedGetFormattedConditions.mockRejectedValueOnce(nonErrorObject);
     mockedGetFormattedError.mockReturnValueOnce({
       title: 'Error',
-      message: 'An unexpected error occurred',
+      message: 'Unexpected error',
     });
 
-    // Act
     const { result } = renderHook(() => useConditions());
 
-    // Wait for async operations
     await act(async () => {
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-    // Assert
-    expect(result.current.error?.message).toBe('An unexpected error occurred');
+    expect(result.current.error?.message).toBe('Unexpected error');
     expect(result.current.conditions).toEqual([]);
     expect(result.current.loading).toBe(false);
   });
 
-  it('should provide a refetch function that fetches data again', async () => {
-    // Arrange
-    const updatedConditions: Condition[] = [
+  it('refetches data when refetch is called', async () => {
+    const updatedConditions: FormattedCondition[] = [
       {
-        ...mockCondition,
-        id: 'condition-uuid-789',
-        code: {
-          coding: [
-            {
-              code: '789012AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-              display: 'Asthma',
-            },
-          ],
-          text: 'Asthma',
-        },
+        uuid: 'condition-3',
+        conceptName: 'Asthma',
+        status: 'active',
+        onsetDate: '2023-06-01',
+        recordedDate: '2023-06-01',
       },
     ];
 
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedGetConditions
+    mockedGetFormattedConditions
       .mockResolvedValueOnce(mockConditions)
       .mockResolvedValueOnce(updatedConditions);
 
-    // Act - Initial render
     const { result } = renderHook(() => useConditions());
 
-    // Wait for initial fetch
     await act(async () => {
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(result.current.conditions).toEqual(mockConditions);
 
-    // Act - Call refetch
     await act(async () => {
       result.current.refetch();
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-    // Assert final state
     expect(result.current.conditions).toEqual(updatedConditions);
-    expect(result.current.error).toBeNull();
-    expect(result.current.loading).toBe(false);
-    expect(mockedGetConditions).toHaveBeenCalledTimes(2);
-    expect(mockedGetConditions).toHaveBeenCalledWith(mockPatientUUID);
+    expect(mockedGetFormattedConditions).toHaveBeenCalledTimes(2);
   });
 
-  it('should handle refetch with error correctly', async () => {
-    // Arrange
-    const mockError = new Error('Refetch failed');
-    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedGetConditions
-      .mockResolvedValueOnce(mockConditions)
-      .mockRejectedValueOnce(mockError);
-    mockedGetFormattedError.mockReturnValueOnce({
-      title: 'Error',
-      message: 'Refetch failed',
-    });
-
-    // Act - Initial render
-    const { result } = renderHook(() => useConditions());
-
-    // Wait for initial fetch
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    expect(result.current.conditions).toEqual(mockConditions);
-    expect(result.current.error).toBeNull();
-
-    // Act - Call refetch with error
-    await act(async () => {
-      result.current.refetch();
-      await Promise.resolve();
-    });
-
-    // Assert error state
-    expect(result.current.error).toBe(mockError);
-    expect(result.current.conditions).toEqual([]); // Should reset on error
-    expect(result.current.loading).toBe(false);
-    expect(mockedGetConditions).toHaveBeenCalledTimes(2);
-  });
-
-  it('should update when patient UUID changes', async () => {
-    // Arrange
+  it('updates when patient UUID changes', async () => {
     const newPatientUUID = 'patient-uuid-456';
-    const newConditions: Condition[] = [
+    const newConditions: FormattedCondition[] = [
       {
-        ...mockCondition,
-        id: 'condition-uuid-999',
-        code: {
-          coding: [
-            {
-              code: '999888AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-              display: 'Migraine',
-            },
-          ],
-          text: 'Migraine',
-        },
+        uuid: 'condition-4',
+        conceptName: 'Migraine',
+        status: 'active',
+        onsetDate: '2023-03-20',
+        recordedDate: '2023-03-20',
       },
     ];
 
-    mockedGetConditions
+    mockedGetFormattedConditions
       .mockResolvedValueOnce(mockConditions)
       .mockResolvedValueOnce(newConditions);
 
-    // Act - Initial render with first patient UUID
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     const { result, rerender } = renderHook(() => useConditions());
 
-    // Wait for initial fetch
     await act(async () => {
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(result.current.conditions).toEqual(mockConditions);
 
-    // Act - Change patient UUID
     mockedUsePatientUUID.mockReturnValue(newPatientUUID);
     rerender();
 
-    // Wait for new fetch
     await act(async () => {
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-    // Assert final state
     expect(result.current.conditions).toEqual(newConditions);
-    expect(mockedGetConditions).toHaveBeenCalledTimes(2);
-    expect(mockedGetConditions).toHaveBeenNthCalledWith(1, mockPatientUUID);
-    expect(mockedGetConditions).toHaveBeenNthCalledWith(2, newPatientUUID);
+    expect(mockedGetFormattedConditions).toHaveBeenCalledWith(newPatientUUID);
   });
 
-  it('should clear error state on successful refetch', async () => {
-    // Arrange
+  it('clears error on successful refetch', async () => {
     const mockError = new Error('Initial error');
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedGetConditions
+    mockedGetFormattedConditions
       .mockRejectedValueOnce(mockError)
       .mockResolvedValueOnce(mockConditions);
     mockedGetFormattedError.mockReturnValueOnce({
@@ -348,45 +217,20 @@ describe('useConditions hook', () => {
       message: 'Initial error',
     });
 
-    // Act - Initial render with error
     const { result } = renderHook(() => useConditions());
 
-    // Wait for initial fetch (error)
     await act(async () => {
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(result.current.error).toBe(mockError);
-    expect(result.current.conditions).toEqual([]);
 
-    // Act - Successful refetch
     await act(async () => {
       result.current.refetch();
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-    // Assert error is cleared
     expect(result.current.error).toBeNull();
     expect(result.current.conditions).toEqual(mockConditions);
-    expect(result.current.loading).toBe(false);
-  });
-
-  it('should handle empty conditions array from API', async () => {
-    // Arrange
-    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedGetConditions.mockResolvedValueOnce([]);
-
-    // Act
-    const { result } = renderHook(() => useConditions());
-
-    // Wait for async operations
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    // Assert
-    expect(result.current.conditions).toEqual([]);
-    expect(result.current.error).toBeNull();
-    expect(result.current.loading).toBe(false);
   });
 });

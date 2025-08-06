@@ -1,14 +1,18 @@
-import { DotMark } from '@carbon/icons-react';
-import { Tag, Tile } from '@carbon/react';
 import React, { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { SortableDataTable } from '@/components/common/sortableDataTable/SortableDataTable';
-import { useConditions } from '@hooks/useConditions';
-import { formatConditions } from '@services/conditionService';
-import { ConditionStatus, FormattedCondition } from '@types/condition';
-import { FormatDateResult } from '@types/date';
-import { formatDateDistance } from '@utils/date';
-import * as styles from './styles/ConditionsTable.module.scss';
+import {
+  useTranslation,
+  ConditionStatus,
+  FormatDateResult,
+  FormattedCondition,
+  formatDateDistance,
+} from '@bahmni-frontend/bahmni-services';
+import {
+  SortableDataTable,
+  StatusTag,
+  Tile,
+} from '@bahmni-frontend/bahmni-design-system';
+import { useConditions } from './useConditions';
+import styles from './styles/ConditionsTable.module.scss';
 
 /**
  * Component to display patient conditions using SortableDataTable
@@ -28,12 +32,6 @@ const ConditionsTable: React.FC = () => {
     [t],
   );
 
-  // Format conditions for display
-  const formattedConditions = useMemo(() => {
-    if (!conditions || conditions.length === 0) return [];
-    return formatConditions(conditions);
-  }, [conditions]);
-
   // Function to render cell content based on the cell ID
   const renderCell = (condition: FormattedCondition, cellId: string) => {
     switch (cellId) {
@@ -43,22 +41,19 @@ const ConditionsTable: React.FC = () => {
         );
       case 'status':
         return (
-          <Tag
-            type="outline"
-            renderIcon={() => (
-              <DotMark
-                className={
-                  condition.status === ConditionStatus.Active
-                    ? styles.activeStatus
-                    : styles.inactiveStatus
-                }
-              />
-            )}
-          >
-            {condition.status === ConditionStatus.Active
-              ? t('CONDITION_LIST_ACTIVE')
-              : t('CONDITION_LIST_INACTIVE')}
-          </Tag>
+          <StatusTag
+            label={
+              condition.status === ConditionStatus.Active
+                ? t('CONDITION_LIST_ACTIVE')
+                : t('CONDITION_LIST_INACTIVE')
+            }
+            dotClassName={
+              condition.status === ConditionStatus.Active
+                ? styles.activeStatus
+                : styles.inactiveStatus
+            }
+            testId={`condition-status-${condition.code}`}
+          />
         );
       case 'onsetDate': {
         const onsetDate: FormatDateResult = formatDateDistance(
@@ -73,6 +68,8 @@ const ConditionsTable: React.FC = () => {
       }
       case 'recorder':
         return condition.recorder;
+      default:
+        return null;
     }
   };
 
@@ -90,7 +87,7 @@ const ConditionsTable: React.FC = () => {
         <SortableDataTable
           headers={headers}
           ariaLabel={t('CONDITION_LIST_DISPLAY_CONTROL_TITLE')}
-          rows={formattedConditions}
+          rows={conditions}
           loading={loading}
           errorStateMessage={error?.message}
           emptyStateMessage={t('CONDITION_LIST_NO_CONDITIONS')}

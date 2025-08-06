@@ -15,6 +15,14 @@ export {
   groupByDate,
   filterReplacementEntries,
 } from './utils';
+export {
+  type FormatDateResult,
+  calculateAge,
+  formatDateTime,
+  formatDate,
+  formatDateDistance,
+  calculateOnsetDate,
+} from './date';
 export { type Notification, notificationService } from './notification';
 export {
   type FormattedAllergy,
