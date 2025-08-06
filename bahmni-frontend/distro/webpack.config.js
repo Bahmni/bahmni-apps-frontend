@@ -39,6 +39,7 @@ module.exports = (env, argv) => {
         index: './src/index.html',
         baseHref: publicPath,
         assets: ['./src/favicon.ico', './src/assets'],
+        styles: ['./src/styles.scss'],
         outputHashing: process.env['NODE_ENV'] === 'production' ? 'all' : 'none',
         optimization: process.env['NODE_ENV'] === 'production',
       }),
