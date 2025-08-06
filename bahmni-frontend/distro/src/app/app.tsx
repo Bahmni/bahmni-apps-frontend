@@ -2,6 +2,7 @@
 // import styles from './app.module.scss';
 import { Outlet, RouteObject, useRoutes } from 'react-router-dom';
 import { routes as SampleAppRoutes } from '@bahmni-frontend/sample-app-module';
+import '@bahmni-frontend/sample-app-module/styles';
 
 export function App() {
 

@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import '@carbon/styles/css/styles.css';
+import '@bahmni-frontend/bahmni-widgets/styles';
 
 import { BrowserRouter } from 'react-router-dom';
 import App from './app/app';
