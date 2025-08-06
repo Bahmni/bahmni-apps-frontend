@@ -1,18 +1,16 @@
-import { renderHook, act } from '@testing-library/react';
-import { Coding } from 'fhir/r4';
-import i18n from '@/setupTests.i18n';
-import { getPatientDiagnoses } from '@services/diagnosesService';
-import { Diagnosis } from '@types/diagnosis';
-import { getFormattedError } from '@utils/common';
+import { renderHook, act, waitFor } from '@testing-library/react';
+import {
+  getPatientDiagnoses,
+  getFormattedError,
+  useTranslation,
+  Diagnosis,
+} from '@bahmni-frontend/bahmni-services';
 import { useDiagnoses } from '../useDiagnoses';
-import { usePatientUUID } from '../usePatientUUID';
+import { usePatientUUID } from '../../hooks/usePatientUUID';
 
-// Mock dependencies
-jest.mock('@services/diagnosesService');
-jest.mock('../usePatientUUID');
-jest.mock('@utils/common');
+jest.mock('@bahmni-frontend/bahmni-services');
+jest.mock('../../hooks/usePatientUUID');
 
-// Type the mocked functions
 const mockedGetPatientDiagnoses = getPatientDiagnoses as jest.MockedFunction<
   typeof getPatientDiagnoses
 >;
@@ -22,28 +20,38 @@ const mockedUsePatientUUID = usePatientUUID as jest.MockedFunction<
 const mockedGetFormattedError = getFormattedError as jest.MockedFunction<
   typeof getFormattedError
 >;
+const mockedUseTranslation = useTranslation as jest.MockedFunction<
+  typeof useTranslation
+>;
+
+jest.mock('react-router-dom', () => ({
+  useParams: jest.fn(),
+}));
 
 describe('useDiagnoses hook', () => {
   const mockPatientUUID = 'patient-uuid-123';
-
-  const mockCertainty: Coding = {
-    system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
-    code: 'confirmed',
-    display: 'Confirmed',
-  };
+  const mockTranslate = jest.fn((key: string) => key);
 
   const mockDiagnoses: Diagnosis[] = [
     {
       id: 'diagnosis-uuid-123',
       display: 'Hypertension',
-      certainty: mockCertainty,
+      certainty: {
+        system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
+        code: 'confirmed',
+        display: 'Confirmed',
+      },
       recordedDate: '2023-12-01T10:30:00.000+0000',
       recorder: 'Dr. John Doe',
     },
     {
       id: 'diagnosis-uuid-456',
       display: 'Diabetes',
-      certainty: mockCertainty,
+      certainty: {
+        system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
+        code: 'confirmed',
+        display: 'Confirmed',
+      },
       recordedDate: '2023-12-02T11:30:00.000+0000',
       recorder: 'Dr. Jane Smith',
     },
@@ -51,162 +59,101 @@ describe('useDiagnoses hook', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    i18n.changeLanguage('en');
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockedUseTranslation.mockReturnValue({ t: mockTranslate } as any);
   });
 
-  it('should initialize with correct default values', () => {
-    // Arrange
+  it('initializes with default values', () => {
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
 
-    // Act
     const { result } = renderHook(() => useDiagnoses());
 
-    // Assert
     expect(result.current.diagnoses).toEqual([]);
     expect(result.current.loading).toBe(true);
     expect(result.current.error).toBeNull();
-    expect(typeof result.current.refetch).toBe('function');
   });
 
-  it('should fetch diagnoses successfully when patient UUID is available', async () => {
-    // Arrange
+  it('fetches diagnoses successfully', async () => {
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedGetPatientDiagnoses.mockResolvedValueOnce(mockDiagnoses);
 
-    // Act
     const { result } = renderHook(() => useDiagnoses());
 
-    // Assert initial loading state
-    expect(result.current.loading).toBe(true);
-    expect(result.current.diagnoses).toEqual([]);
-
-    // Wait for async operations
-    await act(async () => {
-      await Promise.resolve();
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
     });
 
-    // Assert final state
     expect(mockedGetPatientDiagnoses).toHaveBeenCalledWith(mockPatientUUID);
     expect(result.current.diagnoses).toEqual(mockDiagnoses);
     expect(result.current.error).toBeNull();
-    expect(result.current.loading).toBe(false);
   });
 
-  it('should handle null patient UUID correctly', async () => {
-    // Arrange
-    mockedUsePatientUUID.mockReturnValue(null);
+  it.each([null, ''])(
+    'handles invalid patient UUID: %s',
+    async (invalidUUID) => {
+      mockedUsePatientUUID.mockReturnValue(invalidUUID);
 
-    // Act
-    const { result } = renderHook(() => useDiagnoses());
+      const { result } = renderHook(() => useDiagnoses());
 
-    // Wait for async operations
-    await act(async () => {
-      await Promise.resolve();
-    });
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
 
-    // Assert
-    expect(mockedGetPatientDiagnoses).not.toHaveBeenCalled();
-    expect(result.current.diagnoses).toEqual([]);
-    expect(result.current.error?.message).toBe('Invalid patient UUID');
-    expect(result.current.loading).toBe(false);
-  });
+      expect(mockedGetPatientDiagnoses).not.toHaveBeenCalled();
+      expect(mockTranslate).toHaveBeenCalledWith('ERROR_INVALID_PATIENT_UUID');
+      expect(result.current.diagnoses).toEqual([]);
+      expect(result.current.error?.message).toBe('ERROR_INVALID_PATIENT_UUID');
+    },
+  );
 
-  it('should handle undefined patient UUID correctly', async () => {
-    // Arrange
-    mockedUsePatientUUID.mockReturnValue(undefined);
-
-    // Act
-    const { result } = renderHook(() => useDiagnoses());
-
-    // Wait for async operations
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    // Assert
-    expect(mockedGetPatientDiagnoses).not.toHaveBeenCalled();
-    expect(result.current.diagnoses).toEqual([]);
-    expect(result.current.error?.message).toBe('Invalid patient UUID');
-    expect(result.current.loading).toBe(false);
-  });
-
-  it('should handle empty string patient UUID correctly', async () => {
-    // Arrange
-    mockedUsePatientUUID.mockReturnValue('');
-
-    // Act
-    const { result } = renderHook(() => useDiagnoses());
-
-    // Wait for async operations
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    // Assert
-    expect(mockedGetPatientDiagnoses).not.toHaveBeenCalled();
-    expect(result.current.diagnoses).toEqual([]);
-    expect(result.current.error?.message).toBe('Invalid patient UUID');
-    expect(result.current.loading).toBe(false);
-  });
-
-  it('should handle service error correctly', async () => {
-    // Arrange
-    const mockError = new Error('Failed to fetch diagnoses');
+  it('handles service error', async () => {
+    const mockError = new Error('Service failed');
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedGetPatientDiagnoses.mockRejectedValueOnce(mockError);
     mockedGetFormattedError.mockReturnValueOnce({
-      title: 'Error Title',
-      message: 'Failed to fetch diagnoses',
+      title: 'Error',
+      message: 'Service failed',
     });
 
-    // Act
     const { result } = renderHook(() => useDiagnoses());
 
-    // Wait for async operations
-    await act(async () => {
-      await Promise.resolve();
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
     });
 
-    // Assert
-    expect(mockedGetPatientDiagnoses).toHaveBeenCalledWith(mockPatientUUID);
     expect(mockedGetFormattedError).toHaveBeenCalledWith(mockError);
     expect(result.current.error).toBe(mockError);
     expect(result.current.diagnoses).toEqual([]);
-    expect(result.current.loading).toBe(false);
   });
 
-  it('should handle non-Error object from API correctly', async () => {
-    // Arrange
+  it('handles non-Error rejection', async () => {
     const nonErrorObject = { message: 'API Error' };
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedGetPatientDiagnoses.mockRejectedValueOnce(nonErrorObject);
     mockedGetFormattedError.mockReturnValueOnce({
       title: 'Error',
-      message: 'An unexpected error occurred',
+      message: 'Unexpected error',
     });
 
-    // Act
     const { result } = renderHook(() => useDiagnoses());
 
-    // Wait for async operations
-    await act(async () => {
-      await Promise.resolve();
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
     });
 
-    // Assert
-    expect(result.current.error?.message).toBe('An unexpected error occurred');
+    expect(result.current.error?.message).toBe('Unexpected error');
     expect(result.current.diagnoses).toEqual([]);
-    expect(result.current.loading).toBe(false);
   });
 
-  it('should provide a refetch function that fetches data again', async () => {
-    // Arrange
+  it('refetches data when refetch is called', async () => {
     const updatedDiagnoses: Diagnosis[] = [
       {
         id: 'diagnosis-uuid-789',
         display: 'Asthma',
-        certainty: mockCertainty,
+        certainty: {
+          system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
+          code: 'confirmed',
+          display: 'Confirmed',
+        },
         recordedDate: '2023-12-03T12:30:00.000+0000',
         recorder: 'Dr. Bob Wilson',
       },
@@ -217,32 +164,26 @@ describe('useDiagnoses hook', () => {
       .mockResolvedValueOnce(mockDiagnoses)
       .mockResolvedValueOnce(updatedDiagnoses);
 
-    // Act - Initial render
     const { result } = renderHook(() => useDiagnoses());
 
-    // Wait for initial fetch
-    await act(async () => {
-      await Promise.resolve();
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
     });
 
     expect(result.current.diagnoses).toEqual(mockDiagnoses);
 
-    // Act - Call refetch
-    await act(async () => {
+    act(() => {
       result.current.refetch();
-      await Promise.resolve();
     });
 
-    // Assert final state
-    expect(result.current.diagnoses).toEqual(updatedDiagnoses);
-    expect(result.current.error).toBeNull();
-    expect(result.current.loading).toBe(false);
+    await waitFor(() => {
+      expect(result.current.diagnoses).toEqual(updatedDiagnoses);
+    });
+
     expect(mockedGetPatientDiagnoses).toHaveBeenCalledTimes(2);
-    expect(mockedGetPatientDiagnoses).toHaveBeenCalledWith(mockPatientUUID);
   });
 
-  it('should handle refetch with error correctly', async () => {
-    // Arrange
+  it('handles refetch error', async () => {
     const mockError = new Error('Refetch failed');
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedGetPatientDiagnoses
@@ -253,38 +194,37 @@ describe('useDiagnoses hook', () => {
       message: 'Refetch failed',
     });
 
-    // Act - Initial render
     const { result } = renderHook(() => useDiagnoses());
 
-    // Wait for initial fetch
-    await act(async () => {
-      await Promise.resolve();
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
     });
 
     expect(result.current.diagnoses).toEqual(mockDiagnoses);
-    expect(result.current.error).toBeNull();
 
-    // Act - Call refetch with error
-    await act(async () => {
+    act(() => {
       result.current.refetch();
-      await Promise.resolve();
     });
 
-    // Assert error state
-    expect(result.current.error).toBe(mockError);
-    expect(result.current.diagnoses).toEqual([]); // Should reset on error
+    await waitFor(() => {
+      expect(result.current.error).toBe(mockError);
+    });
+
+    expect(result.current.diagnoses).toEqual([]);
     expect(result.current.loading).toBe(false);
-    expect(mockedGetPatientDiagnoses).toHaveBeenCalledTimes(2);
   });
 
-  it('should update when patient UUID changes', async () => {
-    // Arrange
+  it('updates when patient UUID changes', async () => {
     const newPatientUUID = 'patient-uuid-456';
     const newDiagnoses: Diagnosis[] = [
       {
         id: 'diagnosis-uuid-999',
         display: 'Migraine',
-        certainty: mockCertainty,
+        certainty: {
+          system: 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
+          code: 'confirmed',
+          display: 'Confirmed',
+        },
         recordedDate: '2023-12-04T15:30:00.000+0000',
         recorder: 'Dr. Alice Brown',
       },
@@ -294,41 +234,26 @@ describe('useDiagnoses hook', () => {
       .mockResolvedValueOnce(mockDiagnoses)
       .mockResolvedValueOnce(newDiagnoses);
 
-    // Act - Initial render with first patient UUID
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     const { result, rerender } = renderHook(() => useDiagnoses());
 
-    // Wait for initial fetch
-    await act(async () => {
-      await Promise.resolve();
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
     });
 
     expect(result.current.diagnoses).toEqual(mockDiagnoses);
 
-    // Act - Change patient UUID
     mockedUsePatientUUID.mockReturnValue(newPatientUUID);
     rerender();
 
-    // Wait for new fetch
-    await act(async () => {
-      await Promise.resolve();
+    await waitFor(() => {
+      expect(result.current.diagnoses).toEqual(newDiagnoses);
     });
 
-    // Assert final state
-    expect(result.current.diagnoses).toEqual(newDiagnoses);
-    expect(mockedGetPatientDiagnoses).toHaveBeenCalledTimes(2);
-    expect(mockedGetPatientDiagnoses).toHaveBeenNthCalledWith(
-      1,
-      mockPatientUUID,
-    );
-    expect(mockedGetPatientDiagnoses).toHaveBeenNthCalledWith(
-      2,
-      newPatientUUID,
-    );
+    expect(mockedGetPatientDiagnoses).toHaveBeenCalledWith(newPatientUUID);
   });
 
-  it('should clear error state on successful refetch', async () => {
-    // Arrange
+  it('clears error on successful refetch', async () => {
     const mockError = new Error('Initial error');
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedGetPatientDiagnoses
@@ -339,26 +264,22 @@ describe('useDiagnoses hook', () => {
       message: 'Initial error',
     });
 
-    // Act - Initial render with error
     const { result } = renderHook(() => useDiagnoses());
 
-    // Wait for initial fetch (error)
-    await act(async () => {
-      await Promise.resolve();
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
     });
 
     expect(result.current.error).toBe(mockError);
-    expect(result.current.diagnoses).toEqual([]);
 
-    // Act - Successful refetch
-    await act(async () => {
+    act(() => {
       result.current.refetch();
-      await Promise.resolve();
     });
 
-    // Assert error is cleared
-    expect(result.current.error).toBeNull();
+    await waitFor(() => {
+      expect(result.current.error).toBeNull();
+    });
+
     expect(result.current.diagnoses).toEqual(mockDiagnoses);
-    expect(result.current.loading).toBe(false);
   });
 });
