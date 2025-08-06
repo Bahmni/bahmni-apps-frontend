@@ -1,5 +1,8 @@
-import { RadiologyInvestigation } from '@types/radiologyInvestigation';
-import { getPriorityByOrder, filterReplacementEntries } from './common';
+import {
+  RadiologyInvestigation,
+  getPriorityByOrder,
+  filterReplacementEntries,
+} from '@bahmni-frontend/bahmni-services';
 
 /**
  * Priority order for radiology investigation priorities (case insensitive)

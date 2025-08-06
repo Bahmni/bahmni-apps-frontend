@@ -57,3 +57,8 @@ export {
   type MedicationRequest,
   MedicationStatus,
 } from './medicationRequestService';
+export {
+  getPatientRadiologyInvestigations,
+  getPatientRadiologyInvestigationBundle,
+  type RadiologyInvestigation,
+} from './radiologyInvestigationService';
