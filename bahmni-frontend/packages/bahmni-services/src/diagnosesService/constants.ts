@@ -1,5 +1,10 @@
 import { Coding } from 'fhir/r4';
-import { AllergenType } from '@types/concepts';
+import { OPENMRS_FHIR_R4 } from '../constants/app';
+import { HL7_CONDITION_CATEGORY_DIAGNOSIS_CODE } from '../constants/fhir';
+
+export const PATIENT_DIAGNOSIS_RESOURCE_URL = (patientUUID: string) =>
+  OPENMRS_FHIR_R4 +
+  `/Condition?category=${HL7_CONDITION_CATEGORY_DIAGNOSIS_CODE}&patient=${patientUUID}&_count=100&_sort=-_lastUpdated`;
 
 export const CERTAINITY_CONCEPTS: Coding[] = [
   {

@@ -1,9 +1,9 @@
 import { Condition, Bundle } from 'fhir/r4';
-import { CERTAINITY_CONCEPTS } from '@constants/concepts';
+import { CERTAINITY_CONCEPTS } from '../constants';
 import { get } from '../../api';
 import { getPatientDiagnoses } from '../diagnosesService';
 
-jest.mock('../api');
+jest.mock('../../api');
 
 describe('diagnosesService', () => {
   beforeEach(() => {
