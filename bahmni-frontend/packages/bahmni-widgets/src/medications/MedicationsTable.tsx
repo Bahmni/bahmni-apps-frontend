@@ -1,5 +1,7 @@
-import { DotMark } from '@carbon/icons-react';
+import classNames from 'classnames';
+import React, { useMemo, useState, useCallback } from 'react';
 import {
+  SortableDataTable,
   Accordion,
   AccordionItem,
   Tab,
@@ -8,30 +10,24 @@ import {
   TabPanels,
   Tabs,
   Tag,
-} from '@carbon/react';
-import classNames from 'classnames';
-import React, { useMemo, useState, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
-import { SortableDataTable } from '@components/common/sortableDataTable/SortableDataTable';
+  StatusTag,
+} from '@bahmni-frontend/bahmni-design-system';
+import { useMedicationRequest } from './useMedicationRequest';
 import {
+  useTranslation,
+  groupByDate,
+  formatDate,
   DATE_FORMAT,
   FULL_MONTH_DATE_FORMAT,
   ISO_DATE_FORMAT,
-} from '@constants/date';
-import { useMedicationRequest } from '@hooks/useMedicationRequest';
-import {
   FormattedMedicationRequest,
   MedicationRequest,
-} from '@types/medicationRequest';
-import { groupByDate } from '@utils/common';
-import { formatDate } from '@utils/date';
-import {
   formatMedicationRequest,
   sortMedicationsByStatus,
   sortMedicationsByPriority,
   sortMedicationsByDateDistance,
-} from '@utils/medicationRequest';
-import * as styles from './styles/MedicationsTable.module.scss';
+} from '@bahmni-frontend/bahmni-services';
+import styles from './styles/MedicationsTable.module.scss';
 
 // Helper function to get severity CSS class
 const getMedicationStatusClassName = (status: string): string => {
@@ -195,15 +191,14 @@ const MedicationsTable: React.FC = () => {
         return formatDate(row.orderDate, DATE_FORMAT).formattedResult;
       case 'status':
         return (
-          <Tag
-            type="outline"
-            renderIcon={() => (
-              <DotMark className={getMedicationStatusClassName(row.status)} />
-            )}
-          >
-            {t(getMedicationStatusKey(row.status))}
-          </Tag>
+          <StatusTag
+            testId={`medication-status-${row.id}`}
+            label={t(getMedicationStatusKey(row.status))}
+            dotClassName={getMedicationStatusClassName(row.status)}
+          />
         );
+      default:
+        return null;
     }
   };
 
