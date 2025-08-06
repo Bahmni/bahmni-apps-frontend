@@ -8,7 +8,7 @@ import { get } from '../api';
  * @param patientUUID - The UUID of the patient
  * @returns Promise resolving to a Bundle containing radiology investigations
  */
-async function getPatientRadiologyInvestigationBundle(
+export async function getPatientRadiologyInvestigationBundle(
   patientUUID: string,
 ): Promise<Bundle> {
   const url = PATIENT_RADIOLOGY_RESOURCE_URL(patientUUID);
