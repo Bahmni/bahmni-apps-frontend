@@ -9,7 +9,7 @@ import {
   getRadiologyPriority,
   sortRadiologyInvestigationsByPriority,
   filterRadiologyInvestionsReplacementEntries,
-} from '../radiologyInvestigation';
+} from '../utils';
 
 describe('radiologyInvestigation utilities', () => {
   describe('PRIORITY_ORDER', () => {
