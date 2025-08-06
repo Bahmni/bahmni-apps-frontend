@@ -3,6 +3,7 @@ import {
   PatientDetails,
   AllergiesTable,
   ConditionsTable,
+  DiagnosesTable,
 } from '@bahmni-frontend/bahmni-widgets';
 
 export const Dashboard: React.FC = () => {
@@ -11,6 +12,7 @@ export const Dashboard: React.FC = () => {
       <PatientDetails />
       <AllergiesTable />
       <ConditionsTable />
+      <DiagnosesTable />
     </div>
   );
 };
