@@ -1,6 +1,6 @@
 import { Condition, Bundle } from 'fhir/r4';
 import { CERTAINITY_CONCEPTS } from '@constants/concepts';
-import { get } from '../api';
+import { get } from '../../api';
 import { getPatientDiagnoses } from '../diagnosesService';
 
 jest.mock('../api');
