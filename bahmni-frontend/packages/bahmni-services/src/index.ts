@@ -58,6 +58,7 @@ export {
   sortMedicationsByStatus,
   sortMedicationsByDateDistance,
   sortMedicationsByPriority,
+  formatMedicationRequest,
   type FormattedMedicationRequest,
   type MedicationRequest,
   MedicationStatus,

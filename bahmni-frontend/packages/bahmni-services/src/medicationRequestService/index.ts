@@ -4,6 +4,7 @@ export {
   sortMedicationsByDateDistance,
   sortMedicationsByPriority,
   sortMedicationsByStatus,
+  formatMedicationRequest,
 } from './utils';
 
 export {
