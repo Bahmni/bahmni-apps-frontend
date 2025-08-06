@@ -1,7 +1,7 @@
 import { BASE_PATH } from '../constants/app';
 
 export const BUNDLED_TRANSLATIONS_URL_TEMPLATE = (lang: string) =>
-  BASE_PATH + `locales/locale_${lang}.json`;
+  BASE_PATH + `assets/locales/locale_${lang}.json`;
 
 export const DEFAULT_LOCALE = 'en';
 export const LOCALE_STORAGE_KEY = 'NG_TRANSLATE_LANG_KEY';
