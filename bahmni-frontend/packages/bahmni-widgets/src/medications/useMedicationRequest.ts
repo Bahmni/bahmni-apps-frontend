@@ -1,9 +1,11 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { getPatientMedications } from '@services/medicationRequestService';
-import { MedicationRequest } from '@types/medicationRequest';
-import { getFormattedError } from '@utils/common';
-import { usePatientUUID } from './usePatientUUID';
+import {
+  getPatientMedications,
+  MedicationRequest,
+  getFormattedError,
+  useTranslation,
+} from '@bahmni-frontend/bahmni-services';
+import { usePatientUUID } from '../hooks/usePatientUUID';
 
 interface MedicationRequestResult {
   medications: MedicationRequest[];
