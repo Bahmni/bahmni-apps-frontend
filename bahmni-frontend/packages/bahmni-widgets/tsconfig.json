@@ -3,9 +3,6 @@
   "include": [],
   "references": [
     {
-      "path": "../bahmni-design-system"
-    },
-    {
       "path": "../bahmni-services"
     },
     {
