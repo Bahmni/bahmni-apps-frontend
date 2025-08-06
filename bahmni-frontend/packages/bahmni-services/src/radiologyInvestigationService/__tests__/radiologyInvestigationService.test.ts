@@ -3,12 +3,12 @@ import {
   mockRadiologyTestBasic,
   mockRadiologyTestWithMultipleReplaces,
   mockRadiologyTestWithEmptyReplaces,
-} from '@__mocks__/radiologyInvestigationMocks';
-import { get } from '../api';
+} from '../__mocks__/mocks';
+import { get } from '../../api';
 import { getPatientRadiologyInvestigations } from '../radiologyInvestigationService';
 
 // Mock the API module
-jest.mock('../api');
+jest.mock('../../api');
 const mockGet = get as jest.MockedFunction<typeof get>;
 
 describe('radiologyInvestigationService', () => {
