@@ -5,12 +5,7 @@ import { ClinicalConfigContextType } from '../../contexts/models';
 import { useClinicalConfig } from '../useClinicalConfig';
 
 // Mock only the notificationService
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
-  notificationService: {
-    showError: jest.fn(),
-  },
-}));
+jest.mock('@bahmni-frontend/bahmni-services');
 
 // Wrapper component to provide the ClinicalConfigContext
 const wrapper = ({ children }: { children: React.ReactNode }) => (

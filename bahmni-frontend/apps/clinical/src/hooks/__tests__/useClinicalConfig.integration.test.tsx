@@ -1,16 +1,15 @@
 import { render, waitFor } from '@testing-library/react';
 import React from 'react';
 import { ClinicalConfigProvider } from '../../providers/ClinicalConfigProvider';
-import { getClinicalConfig } from '@bahmni-frontend/bahmni-services';
+import { getClinicalConfig, getFormattedError } from '@bahmni-frontend/bahmni-services';
 import { notificationService } from '@bahmni-frontend/bahmni-services/';
 import { ClinicalConfig } from '@bahmni-frontend/bahmni-services';
 import { useClinicalConfig } from '../useClinicalConfig';
 
 // Mock the configService and notificationService
-jest.mock('@services/configService');
-jest.mock('@services/notificationService', () => ({
-  showError: jest.fn(),
-}));
+jest.mock('@bahmni-frontend/bahmni-services');
+(getFormattedError as jest.Mock).mockReturnValue({title: 'Error', message: 'Failed to fetch config'});
+
 
 describe('useClinicalConfig Integration', () => {
   // Mock ClinicalConfig matching the schema
