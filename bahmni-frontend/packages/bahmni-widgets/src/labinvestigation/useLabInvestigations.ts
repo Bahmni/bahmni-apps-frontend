@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { getLabTests, formatLabTests } from '@services/labInvestigationService';
-import { FormattedLabTest } from '@types/labInvestigation';
-import { usePatientUUID } from './usePatientUUID';
+import {
+  getPatientLabInvestigations,
+  FormattedLabTest,
+} from '@bahmni-frontend/bahmni-services';
+import { usePatientUUID } from '../hooks/usePatientUUID';
 
 /**
  * Hook to fetch and manage lab investigations for the current patient
@@ -24,11 +26,7 @@ export default function useLabInvestigations() {
       setHasError(false);
 
       try {
-        // Fetch raw lab tests
-        const labTestFhirBundle = await getLabTests(patientUUID);
-
-        // Format the lab tests
-        const formattedTests = formatLabTests(labTestFhirBundle);
+        const formattedTests = await getPatientLabInvestigations(patientUUID);
 
         setLabTests(formattedTests);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
