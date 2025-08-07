@@ -1,14 +1,16 @@
 import type { Config } from '@jest/types';
 
+const nxPreset = require('@nx/jest/preset').default;
+
 const config: Config.InitialOptions = {
+  ...nxPreset,
   testEnvironment: 'jsdom',
-  roots: ['<rootDir>/src'],
+  setupFilesAfterEnv: ['<rootDir>/../setupTests.ts'],
   transform: {
-    '^.+\\.(ts|tsx)$': 'babel-jest',
+    '^(?!.*\\.(js|jsx|ts|tsx|css|json)$)': '@nx/react/plugins/jest',
+    '^.+\\.[tj]sx?$': ['babel-jest', { presets: ['@nx/react/babel'] }],
   },
-  testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.(ts|tsx)$',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
-  collectCoverageFrom: ['<rootDir>/src/**/*.{ts,tsx}'],
   coverageReporters: ['text', 'lcov'],
   coveragePathIgnorePatterns: [
     '**/constants',
