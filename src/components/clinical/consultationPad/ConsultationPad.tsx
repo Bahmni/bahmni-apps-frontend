@@ -28,6 +28,7 @@ import { useMedicationStore } from '@stores/medicationsStore';
 import useServiceRequestStore from '@stores/serviceRequestStore';
 import { AuditEventType } from '@types/auditLog';
 import { ConsultationBundle } from '@types/consultationBundle';
+import { ObservationForm } from '@types/observationForms';
 import { dispatchAuditEvent } from '@utils/auditEventDispatcher';
 import { createConsultationBundle } from '@utils/fhir/consultationBundleCreator';
 import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
@@ -40,6 +41,12 @@ interface ConsultationPadProps {
 
 const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [viewingForm, setViewingForm] = React.useState<ObservationForm | null>(
+    null,
+  );
+  const [selectedForms, setSelectedForms] = React.useState<ObservationForm[]>(
+    [],
+  );
 
   const { t } = useTranslation();
   const { addNotification } = useNotification();
@@ -99,6 +106,11 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     resetServiceRequests,
     resetMedications,
   ]);
+
+  // Helper function to remove form from selected forms list
+  const removeFormFromSelected = (formUuid: string) => {
+    setSelectedForms((prev) => prev.filter((form) => form.uuid !== formUuid));
+  };
 
   // Data validation check for consultation submission
   const canSubmitConsultation = !!(
@@ -249,23 +261,116 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   };
 
   const handleOnSecondaryButtonClick = () => {
-    resetDiagnoses();
-    resetAllergies();
-    resetServiceRequests();
-    resetMedications();
-    onClose();
+    if (viewingForm) {
+      setViewingForm(null);
+    } else {
+      resetDiagnoses();
+      resetAllergies();
+      resetServiceRequests();
+      resetMedications();
+      onClose();
+    }
   };
+
+  const handleDiscardForm = () => {
+    // Remove the currently viewed form from selected forms list
+    if (viewingForm) {
+      removeFormFromSelected(viewingForm.uuid);
+    }
+    setViewingForm(null);
+  };
+
+  const handleSaveForm = () => {
+    // TODO: Implement form saving logic
+    setViewingForm(null);
+  };
+
+  const handleFormSelection = (form: ObservationForm) => {
+    // Add form to selected forms if not already added
+    setSelectedForms((prev) => {
+      const isAlreadySelected = prev.some(
+        (selectedForm) => selectedForm.uuid === form.uuid,
+      );
+      if (!isAlreadySelected) {
+        return [...prev, form];
+      }
+      return prev;
+    });
+
+    // Open form view
+    setViewingForm(form);
+  };
+
+  // Form view content when a form is selected
+  const formViewContent = viewingForm && (
+    <div className={styles.formView}>
+      <div className={styles.formContent}>
+        {/* TODO: Actual form rendering will be implemented here */}
+        {/* For now, show empty content as form rendering is not yet implemented */}
+      </div>
+    </div>
+  );
+
+  const consultationContent = (
+    <>
+      <BasicForm />
+      <MenuItemDivider />
+      <AllergiesForm />
+      <MenuItemDivider />
+      <InvestigationsForm />
+      <MenuItemDivider />
+      <DiagnosesForm />
+      <MenuItemDivider />
+      <MedicationsForm />
+      <MenuItemDivider />
+      <ObservationForms
+        onFormSelect={handleFormSelection}
+        selectedForms={selectedForms}
+        onRemoveForm={removeFormFromSelected}
+      />
+      <MenuItemDivider />
+    </>
+  );
 
   return (
     <ActionArea
-      title={hasError ? '' : t('CONSULTATION_ACTION_NEW')}
-      primaryButtonText={t('CONSULTATION_PAD_DONE_BUTTON')}
-      onPrimaryButtonClick={handleOnPrimaryButtonClick}
-      isPrimaryButtonDisabled={
-        !isEncounterDetailsFormReady || !canSubmitConsultation || isSubmitting
+      className={viewingForm ? styles.formViewActionArea : undefined}
+      title={
+        hasError
+          ? ''
+          : viewingForm
+            ? viewingForm.name
+            : t('CONSULTATION_ACTION_NEW')
       }
-      secondaryButtonText={t('CONSULTATION_PAD_CANCEL_BUTTON')}
-      onSecondaryButtonClick={handleOnSecondaryButtonClick}
+      primaryButtonText={
+        viewingForm
+          ? t('OBSERVATION_FORM_SAVE_BUTTON')
+          : t('CONSULTATION_PAD_DONE_BUTTON')
+      }
+      onPrimaryButtonClick={
+        viewingForm ? handleSaveForm : handleOnPrimaryButtonClick
+      }
+      isPrimaryButtonDisabled={
+        viewingForm
+          ? false
+          : !isEncounterDetailsFormReady ||
+            !canSubmitConsultation ||
+            isSubmitting
+      }
+      secondaryButtonText={
+        viewingForm
+          ? t('OBSERVATION_FORM_DISCARD_BUTTON')
+          : t('CONSULTATION_PAD_CANCEL_BUTTON')
+      }
+      onSecondaryButtonClick={
+        viewingForm ? handleDiscardForm : handleOnSecondaryButtonClick
+      }
+      tertiaryButtonText={
+        viewingForm ? t('OBSERVATION_FORM_BACK_BUTTON') : undefined
+      }
+      onTertiaryButtonClick={
+        viewingForm ? () => setViewingForm(null) : undefined
+      }
       content={
         hasError ? (
           <Grid className={styles.emptyState}>
@@ -288,21 +393,10 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
               {t('CONSULTATION_PAD_ERROR_BODY')}
             </Column>
           </Grid>
+        ) : viewingForm ? (
+          formViewContent
         ) : (
-          <>
-            <BasicForm />
-            <MenuItemDivider />
-            <AllergiesForm />
-            <MenuItemDivider />
-            <InvestigationsForm />
-            <MenuItemDivider />
-            <DiagnosesForm />
-            <MenuItemDivider />
-            <MedicationsForm />
-            <MenuItemDivider />
-            <ObservationForms />
-            <MenuItemDivider />
-          </>
+          consultationContent
         )
       }
     />

@@ -7,6 +7,12 @@ import useObservationFormsSearch from '@hooks/useObservationFormsSearch';
 import { ObservationForm } from '../../../../types/observationForms';
 import * as styles from './styles/ObservationForms.module.scss';
 
+interface ObservationFormsProps {
+  onFormSelect?: (form: ObservationForm) => void;
+  selectedForms?: ObservationForm[];
+  onRemoveForm?: (formUuid: string) => void;
+}
+
 /**
  * ObservationForms component
  *
@@ -21,159 +27,153 @@ import * as styles from './styles/ObservationForms.module.scss';
  * - Internationalization support
  * - Error handling and loading states
  */
-const ObservationForms: React.FC = React.memo(() => {
-  const { t } = useTranslation();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedForms, setSelectedForms] = useState<ObservationForm[]>([]);
+const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
+  ({ onFormSelect, selectedForms = [], onRemoveForm }) => {
+    const { t } = useTranslation();
+    const [searchTerm, setSearchTerm] = useState('');
 
-  // Use the observation forms search hook
-  const {
-    forms: availableForms,
-    isLoading,
-    error,
-  } = useObservationFormsSearch(searchTerm);
+    // Use the observation forms search hook
+    const {
+      forms: availableForms,
+      isLoading,
+      error,
+    } = useObservationFormsSearch(searchTerm);
 
-  const handleSearch = useCallback((searchQuery: string) => {
-    setSearchTerm(searchQuery);
-  }, []);
+    const handleSearch = useCallback((searchQuery: string) => {
+      setSearchTerm(searchQuery);
+    }, []);
 
-  const addForm = useCallback(
-    (form: ObservationForm) => {
-      const isAlreadySelected = selectedForms.some(
-        (selectedForm) => selectedForm.uuid === form.uuid,
-      );
+    const handleOnChange = useCallback(
+      (data: {
+        selectedItem?: { id: string; label: string; disabled?: boolean } | null;
+      }) => {
+        const selectedItem = data.selectedItem;
+        if (!selectedItem?.id || selectedItem.disabled) {
+          return;
+        }
+        const form = availableForms.find(
+          (f: ObservationForm) => f.uuid === selectedItem.id,
+        );
+        if (form) {
+          onFormSelect?.(form);
+        }
+      },
+      [availableForms, onFormSelect],
+    );
 
-      if (!isAlreadySelected) {
-        setSelectedForms((prev) => [...prev, form]);
+    const handleRemoveForm = useCallback(
+      (formUuid: string) => {
+        onRemoveForm?.(formUuid);
+      },
+      [onRemoveForm],
+    );
+
+    const searchResults = useMemo(() => {
+      if (isLoading) {
+        return [
+          {
+            id: '',
+            label: t('OBSERVATION_FORMS_LOADING_FORMS'),
+            disabled: true,
+          },
+        ];
       }
-    },
-    [selectedForms],
-  );
 
-  const handleOnChange = useCallback(
-    (data: {
-      selectedItem?: { id: string; label: string; disabled?: boolean } | null;
-    }) => {
-      const selectedItem = data.selectedItem;
-      if (!selectedItem?.id || selectedItem.disabled) {
-        return;
+      if (error) {
+        return [
+          {
+            id: '',
+            label: t('OBSERVATION_FORMS_ERROR_LOADING_FORMS'),
+            disabled: true,
+          },
+        ];
       }
-      const form = availableForms.find(
-        (f: ObservationForm) => f.uuid === selectedItem.id,
-      );
-      if (form) {
-        addForm(form);
+
+      if (availableForms.length === 0 && searchTerm.length > 0) {
+        return [
+          {
+            id: '',
+            label: t('OBSERVATION_FORMS_NO_FORMS_FOUND'),
+            disabled: true,
+          },
+        ];
       }
-    },
-    [addForm, availableForms],
-  );
 
-  const handleRemoveForm = useCallback((formUuid: string) => {
-    setSelectedForms((prev) => prev.filter((form) => form.uuid !== formUuid));
-  }, []);
+      if (availableForms.length === 0) {
+        return [
+          {
+            id: '',
+            label: 'No forms available',
+            disabled: true,
+          },
+        ];
+      }
 
-  const searchResults = useMemo(() => {
-    if (isLoading) {
-      return [
-        {
-          id: '',
-          label: t('OBSERVATION_FORMS_LOADING_FORMS'),
-          disabled: true,
-        },
-      ];
-    }
+      // Map forms to ComboBox items with proper labeling for already selected forms
+      const results = availableForms.map((form: ObservationForm) => {
+        const isAlreadySelected = selectedForms.some(
+          (selected: ObservationForm) => selected.uuid === form.uuid,
+        );
 
-    if (error) {
-      return [
-        {
-          id: '',
-          label: t('OBSERVATION_FORMS_ERROR_LOADING_FORMS'),
-          disabled: true,
-        },
-      ];
-    }
+        return {
+          id: form.uuid,
+          label: isAlreadySelected
+            ? `${form.name} (${t('OBSERVATION_FORMS_FORM_ALREADY_ADDED')})`
+            : form.name,
+          disabled: isAlreadySelected,
+        };
+      });
 
-    if (availableForms.length === 0 && searchTerm.length > 0) {
-      return [
-        {
-          id: '',
-          label: t('OBSERVATION_FORMS_NO_FORMS_FOUND'),
-          disabled: true,
-        },
-      ];
-    }
+      return results;
+    }, [isLoading, error, searchTerm, availableForms, selectedForms, t]);
 
-    if (availableForms.length === 0) {
-      return [
-        {
-          id: '',
-          label: 'No forms available',
-          disabled: true,
-        },
-      ];
-    }
+    return (
+      <Tile className={styles.observationFormsTile}>
+        <div className={styles.observationFormsTitle}>
+          {t('OBSERVATION_FORMS_SECTION_TITLE')}
+        </div>
 
-    // Map forms to ComboBox items with proper labeling for already selected forms
-    const results = availableForms.map((form: ObservationForm) => {
-      const isAlreadySelected = selectedForms.some(
-        (selected: ObservationForm) => selected.uuid === form.uuid,
-      );
+        <ComboBox
+          id="observation-forms-search"
+          placeholder={t('OBSERVATION_FORMS_SEARCH_PLACEHOLDER')}
+          items={searchResults}
+          itemToString={(item) => item?.label ?? ''}
+          onChange={handleOnChange}
+          onInputChange={handleSearch}
+          size="md"
+          autoAlign
+          disabled={isLoading}
+          aria-label={t('OBSERVATION_FORMS_SEARCH_ARIA_LABEL')}
+        />
 
-      return {
-        id: form.uuid,
-        label: isAlreadySelected
-          ? `${form.name} (${t('OBSERVATION_FORMS_FORM_ALREADY_ADDED')})`
-          : form.name,
-        disabled: isAlreadySelected,
-      };
-    });
-
-    return results;
-  }, [isLoading, error, searchTerm, availableForms, selectedForms, t]);
-
-  return (
-    <Tile className={styles.observationFormsTile}>
-      <div className={styles.observationFormsTitle}>
-        {t('OBSERVATION_FORMS_SECTION_TITLE')}
-      </div>
-
-      <ComboBox
-        id="observation-forms-search"
-        placeholder={t('OBSERVATION_FORMS_SEARCH_PLACEHOLDER')}
-        items={searchResults}
-        itemToString={(item) => item?.label ?? ''}
-        onChange={handleOnChange}
-        onInputChange={handleSearch}
-        size="md"
-        autoAlign
-        disabled={isLoading}
-        aria-label={t('OBSERVATION_FORMS_SEARCH_ARIA_LABEL')}
-      />
-
-      {selectedForms && selectedForms.length > 0 && (
-        <BoxWHeader
-          title={t('OBSERVATION_FORMS_ADDED_FORMS')}
-          className={styles.observationFormsBox}
-        >
-          {selectedForms.map((form: ObservationForm) => (
-            <SelectedItem
-              key={form.uuid}
-              className={styles.selectedObservationFormItem}
-              onClose={() => handleRemoveForm(form.uuid)}
-            >
-              <div className={styles.selectedFormContent}>
-                <div className={styles.selectedFormName}>{form.name}</div>
-                <div className={styles.selectedFormVersion}>
-                  {t('OBSERVATION_FORMS_VERSION')}: {form.version}
+        {selectedForms && selectedForms.length > 0 && (
+          <BoxWHeader
+            title={t('OBSERVATION_FORMS_ADDED_FORMS')}
+            className={styles.observationFormsBox}
+          >
+            {selectedForms.map((form: ObservationForm) => (
+              <SelectedItem
+                key={form.uuid}
+                className={styles.selectedObservationFormItem}
+                onClose={() => handleRemoveForm(form.uuid)}
+              >
+                <div
+                  className={styles.selectedFormContent}
+                  onClick={() => onFormSelect?.(form)}
+                >
+                  <div className={styles.selectedFormName}>{form.name}</div>
+                  <div className={styles.selectedFormVersion}>
+                    {t('OBSERVATION_FORMS_VERSION')}: {form.version}
+                  </div>
                 </div>
-              </div>
-            </SelectedItem>
-          ))}
-        </BoxWHeader>
-      )}
-    </Tile>
-  );
-});
+              </SelectedItem>
+            ))}
+          </BoxWHeader>
+        )}
+      </Tile>
+    );
+  },
+);
 
 ObservationForms.displayName = 'ObservationForms';
 
