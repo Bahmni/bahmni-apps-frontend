@@ -55,6 +55,8 @@ jest.mock('@components/common/actionArea/ActionArea', () => ({
     isPrimaryButtonDisabled,
     secondaryButtonText,
     onSecondaryButtonClick,
+    tertiaryButtonText,
+    onTertiaryButtonClick,
     content,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }: any) => (
@@ -71,6 +73,11 @@ jest.mock('@components/common/actionArea/ActionArea', () => ({
       <button data-testid="secondary-button" onClick={onSecondaryButtonClick}>
         {secondaryButtonText}
       </button>
+      {tertiaryButtonText && (
+        <button data-testid="tertiary-button" onClick={onTertiaryButtonClick}>
+          {tertiaryButtonText}
+        </button>
+      )}
     </div>
   ),
 }));
@@ -118,6 +125,63 @@ jest.mock(
     __esModule: true,
     default: () => (
       <div data-testid="mock-medications-form">Medications Form</div>
+    ),
+  }),
+);
+
+jest.mock(
+  '@components/clinical/forms/observationForms/ObservationForms',
+  () => ({
+    __esModule: true,
+    default: ({
+      onFormSelect,
+      selectedForms,
+      onRemoveForm,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    }: any) => (
+      <div data-testid="mock-observation-forms">
+        <div data-testid="observation-forms-content">Observation Forms</div>
+        <button
+          data-testid="select-form-button"
+          onClick={() =>
+            onFormSelect?.({
+              uuid: 'form-1',
+              name: 'Test Form',
+              version: '1.0',
+              published: true,
+              id: 1,
+              resources: [],
+              privileges: [],
+              nameTranslation: null,
+            })
+          }
+        >
+          Select Form
+        </button>
+        <div data-testid="selected-forms-count">
+          Selected: {selectedForms?.length ?? 0}
+        </div>
+        {selectedForms?.map((form: { uuid: string; name: string }) => (
+          <div
+            key={form.uuid}
+            data-testid={`selected-form-${form.uuid}`}
+            onClick={() => onFormSelect?.(form)}
+            role="button"
+            tabIndex={0}
+          >
+            {form.name}
+            <button
+              data-testid={`remove-form-${form.uuid}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemoveForm?.(form.uuid);
+              }}
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+      </div>
     ),
   }),
 );
@@ -350,7 +414,7 @@ describe('ConsultationPad', () => {
     it('should render dividers between forms', () => {
       renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
       const dividers = screen.getAllByTestId('mock-divider');
-      expect(dividers).toHaveLength(5);
+      expect(dividers).toHaveLength(6);
     });
 
     it('should render forms and dividers in the correct sequence', () => {
@@ -360,7 +424,7 @@ describe('ConsultationPad', () => {
       const children = Array.from(content.children);
 
       // Verify the exact sequence of forms and dividers
-      expect(children).toHaveLength(10); // 5 forms + 5 dividers
+      expect(children).toHaveLength(12); // 6 forms + 6 dividers
 
       // Check each element in order
       expect(children[0]).toHaveAttribute(
@@ -385,6 +449,11 @@ describe('ConsultationPad', () => {
         'mock-medications-form',
       );
       expect(children[9]).toHaveAttribute('data-testid', 'mock-divider');
+      expect(children[10]).toHaveAttribute(
+        'data-testid',
+        'mock-observation-forms',
+      );
+      expect(children[11]).toHaveAttribute('data-testid', 'mock-divider');
     });
 
     it('should render action buttons with correct text', () => {
@@ -1354,7 +1423,321 @@ describe('ConsultationPad', () => {
         });
       });
     });
+  });
 
+  describe('Observation Forms Integration', () => {
+    describe('Form Selection and State Management', () => {
+      it('should render ObservationForms component with correct props', () => {
+        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+        const observationForms = screen.getByTestId('mock-observation-forms');
+        expect(observationForms).toBeInTheDocument();
+        expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
+          'Selected: 0',
+        );
+      });
+
+      it('should add form to selectedForms when form is selected', async () => {
+        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+        // Initially should show 0 selected forms
+        expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
+          'Selected: 0',
+        );
+
+        const selectButton = screen.getByTestId('select-form-button');
+        await userEvent.click(selectButton);
+
+        // After selecting, should switch to form view mode
+        expect(screen.getByTestId('action-area-title')).toHaveTextContent(
+          'Test Form',
+        );
+
+        // Go back to consultation view to see the selected forms using Back button (tertiary)
+        const backButton = screen.getByTestId('tertiary-button');
+        await userEvent.click(backButton);
+
+        // Now should show 1 selected form
+        expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
+          'Selected: 1',
+        );
+        expect(screen.getByTestId('selected-form-form-1')).toBeInTheDocument();
+        expect(screen.getByTestId('selected-form-form-1')).toHaveTextContent(
+          'Test Form',
+        );
+      });
+
+      it('should update ActionArea title when form is selected for viewing', async () => {
+        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+        const selectButton = screen.getByTestId('select-form-button');
+        await userEvent.click(selectButton);
+
+        // After form selection, the title should change to show the form name
+        expect(screen.getByTestId('action-area-title')).toHaveTextContent(
+          'Test Form',
+        );
+      });
+
+      it('should update ActionArea buttons when form is selected for viewing', async () => {
+        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+        const selectButton = screen.getByTestId('select-form-button');
+        await userEvent.click(selectButton);
+
+        // Buttons should change to Save and Back when viewing a form
+        expect(screen.getByTestId('primary-button')).toHaveTextContent(
+          'OBSERVATION_FORM_SAVE_BUTTON',
+        );
+        expect(screen.getByTestId('secondary-button')).toHaveTextContent(
+          'OBSERVATION_FORM_DISCARD_BUTTON',
+        );
+      });
+
+      it('should remove form from selectedForms when remove button is clicked', async () => {
+        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+        // First add a form
+        const selectButton = screen.getByTestId('select-form-button');
+        await userEvent.click(selectButton);
+
+        // Go back to consultation view to see the selected forms using Back button (tertiary)
+        const backButton = screen.getByTestId('tertiary-button');
+        await userEvent.click(backButton);
+
+        expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
+          'Selected: 1',
+        );
+
+        // Then remove it
+        const removeButton = screen.getByTestId('remove-form-form-1');
+        await userEvent.click(removeButton);
+
+        expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
+          'Selected: 0',
+        );
+        expect(
+          screen.queryByTestId('selected-form-form-1'),
+        ).not.toBeInTheDocument();
+      });
+
+      it('should maintain selectedForms state when navigating between forms and consultation view', async () => {
+        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+        // Add a form
+        const selectButton = screen.getByTestId('select-form-button');
+        await userEvent.click(selectButton);
+
+        // Should be in form view
+        expect(screen.getByTestId('action-area-title')).toHaveTextContent(
+          'Test Form',
+        );
+
+        // Go back to consultation view using Back button (tertiary)
+        const backButton = screen.getByTestId('tertiary-button');
+        await userEvent.click(backButton);
+
+        // Should be back in consultation view
+        expect(screen.getByTestId('action-area-title')).toHaveTextContent(
+          'CONSULTATION_ACTION_NEW',
+        );
+
+        // Form should still be in selectedForms
+        expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
+          'Selected: 1',
+        );
+        expect(screen.getByTestId('selected-form-form-1')).toBeInTheDocument();
+      });
+
+      it('should prevent duplicate forms from being added to selectedForms', async () => {
+        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+        const selectButton = screen.getByTestId('select-form-button');
+
+        // Add the form once
+        await userEvent.click(selectButton);
+
+        // Go back to consultation view using Back button (tertiary)
+        const backButton = screen.getByTestId('tertiary-button');
+        await userEvent.click(backButton);
+
+        // Try to add the same form again
+        const selectButtonAgain = screen.getByTestId('select-form-button');
+        await userEvent.click(selectButtonAgain);
+
+        // Go back to consultation view again using Back button (tertiary)
+        const backButtonAgain = screen.getByTestId('tertiary-button');
+        await userEvent.click(backButtonAgain);
+
+        // Should only have one form
+        expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
+          'Selected: 1',
+        );
+      });
+    });
+
+    describe('Form Lifecycle Management', () => {
+      it('should keep form in selectedForms when Save button is clicked', async () => {
+        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+        // Add and select a form
+        const selectButton = screen.getByTestId('select-form-button');
+        await userEvent.click(selectButton);
+
+        // Click Save button
+        const saveButton = screen.getByTestId('primary-button');
+        await userEvent.click(saveButton);
+
+        // Form should still be in selectedForms
+        expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
+          'Selected: 1',
+        );
+        expect(screen.getByTestId('selected-form-form-1')).toBeInTheDocument();
+      });
+
+      it('should keep form in selectedForms when Back button is clicked', async () => {
+        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+        // Add and select a form
+        const selectButton = screen.getByTestId('select-form-button');
+        await userEvent.click(selectButton);
+
+        // Click Back button (tertiary)
+        const backButton = screen.getByTestId('tertiary-button');
+        await userEvent.click(backButton);
+
+        // Should return to consultation view
+        expect(screen.getByTestId('action-area-title')).toHaveTextContent(
+          'CONSULTATION_ACTION_NEW',
+        );
+
+        // Form should still be in selectedForms
+        expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
+          'Selected: 1',
+        );
+        expect(screen.getByTestId('selected-form-form-1')).toBeInTheDocument();
+      });
+
+      it('should return to consultation view after Save button is clicked', async () => {
+        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+        // Add and select a form
+        const selectButton = screen.getByTestId('select-form-button');
+        await userEvent.click(selectButton);
+
+        // Verify we're in form view
+        expect(screen.getByTestId('action-area-title')).toHaveTextContent(
+          'Test Form',
+        );
+
+        // Click Save button
+        const saveButton = screen.getByTestId('primary-button');
+        await userEvent.click(saveButton);
+
+        // Should return to consultation view
+        expect(screen.getByTestId('action-area-title')).toHaveTextContent(
+          'CONSULTATION_ACTION_NEW',
+        );
+        expect(screen.getByTestId('primary-button')).toHaveTextContent('Done');
+        expect(screen.getByTestId('secondary-button')).toHaveTextContent(
+          'Cancel',
+        );
+      });
+
+      it('should return to consultation view after Back button is clicked', async () => {
+        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+        // Add and select a form
+        const selectButton = screen.getByTestId('select-form-button');
+        await userEvent.click(selectButton);
+
+        // Verify we're in form view
+        expect(screen.getByTestId('action-area-title')).toHaveTextContent(
+          'Test Form',
+        );
+
+        // Click Back button (tertiary)
+        const backButton = screen.getByTestId('tertiary-button');
+        await userEvent.click(backButton);
+
+        // Should return to consultation view
+        expect(screen.getByTestId('action-area-title')).toHaveTextContent(
+          'CONSULTATION_ACTION_NEW',
+        );
+        expect(screen.getByTestId('primary-button')).toHaveTextContent('Done');
+        expect(screen.getByTestId('secondary-button')).toHaveTextContent(
+          'Cancel',
+        );
+      });
+
+      it('should handle form selection from Added Forms section', async () => {
+        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+        // Add a form first
+        const selectButton = screen.getByTestId('select-form-button');
+        await userEvent.click(selectButton);
+
+        // Go back to consultation view using Back button (tertiary)
+        const backButton = screen.getByTestId('tertiary-button');
+        await userEvent.click(backButton);
+
+        // Verify we're back in consultation view and form is selected
+        expect(screen.getByTestId('action-area-title')).toHaveTextContent(
+          'CONSULTATION_ACTION_NEW',
+        );
+        expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
+          'Selected: 1',
+        );
+
+        // Click on the form in Added Forms section
+        const selectedForm = screen.getByTestId('selected-form-form-1');
+        await userEvent.click(selectedForm);
+
+        // Should navigate to form view
+        expect(screen.getByTestId('action-area-title')).toHaveTextContent(
+          'Test Form',
+        );
+        expect(screen.getByTestId('primary-button')).toHaveTextContent(
+          'OBSERVATION_FORM_SAVE_BUTTON',
+        );
+        expect(screen.getByTestId('secondary-button')).toHaveTextContent(
+          'OBSERVATION_FORM_DISCARD_BUTTON',
+        );
+      });
+
+      it('should remove form from selectedForms when Discard button is clicked', async () => {
+        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+        // Add and select a form
+        const selectButton = screen.getByTestId('select-form-button');
+        await userEvent.click(selectButton);
+
+        // Verify we're in form view
+        expect(screen.getByTestId('action-area-title')).toHaveTextContent(
+          'Test Form',
+        );
+
+        // Click Discard button (secondary)
+        const discardButton = screen.getByTestId('secondary-button');
+        await userEvent.click(discardButton);
+
+        // Should return to consultation view
+        expect(screen.getByTestId('action-area-title')).toHaveTextContent(
+          'CONSULTATION_ACTION_NEW',
+        );
+
+        // Form should be removed from selectedForms
+        expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
+          'Selected: 0',
+        );
+        expect(
+          screen.queryByTestId('selected-form-form-1'),
+        ).not.toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Audit Event Dispatching - Additional Tests', () => {
     it('should verify the audit event type constant is not hardcoded', async () => {
       (
         consultationBundleService.postConsultationBundle as jest.Mock
