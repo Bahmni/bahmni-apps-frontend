@@ -1,11 +1,4 @@
-export {
-  getPatientAllergiesBundle,
-  getAllergies,
-  formatAllergies,
-  fetchAndFormatAllergenConcepts,
-  fetchReactionConcepts,
-  getFormattedAllergies,
-} from './allergyService';
+export { getAllergies, getFormattedAllergies } from './allergyService';
 export {
   type FormattedAllergy,
   AllergyStatus,
