@@ -4,11 +4,11 @@ import {
   Dropdown,
   FilterableMultiSelect,
   Link,
-} from '@carbon/react';
+} from '@bahmni-frontend/bahmni-design-system';
 import { Coding } from 'fhir/r4';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import TextAreaWClose from '@components/common/textAreaWClose/TextAreaWClose';
+import TextAreaWClose from '../../common/textAreaWClose/TextAreaWClose';
 import { ALLERGY_SEVERITY_CONCEPTS } from '@constants/concepts';
 import { AllergyInputEntry } from '@types/allergy';
 import { getCategoryDisplayName } from '@utils/allergy';
