@@ -70,3 +70,8 @@ export {
   LabTestPriority,
   type LabTestsByDate,
 } from './labInvestigationService';
+
+export {
+  getClinicalConfig, getDashboardConfig, getMedicationConfig,
+  type ClinicalConfig, type DashboardConfig, type MedicationJSONConfig
+} from './configService';

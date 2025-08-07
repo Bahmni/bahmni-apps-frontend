@@ -55,3 +55,5 @@ export {
   type DatePickerProps,
   type DatePickerInputProps,
 } from './atoms/datePicker';
+
+import '@carbon/styles/css/styles.css';

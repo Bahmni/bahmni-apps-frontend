@@ -1,8 +1,11 @@
-import { Concept } from './encounterConcepts';
+interface Concept {
+  uuid: string;
+  name: string;
+}
 
 export interface MedicationConfig
   extends MedicationOrdersMetadataResponse,
-    MedicationJSONConfig {}
+  MedicationJSONConfig { }
 
 export interface DrugFormDefault {
   doseUnits?: string;

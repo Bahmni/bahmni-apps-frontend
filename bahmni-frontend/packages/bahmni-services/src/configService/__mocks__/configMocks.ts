@@ -1,6 +1,5 @@
-// src/__mocks__/configMocks.ts
 
-import { DashboardConfig } from '@types/dashboardConfig';
+import { DashboardConfig } from '../models';
 
 // Happy Path Mocks
 export const validFullClinicalConfig = {

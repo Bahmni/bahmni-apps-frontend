@@ -31,6 +31,9 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
+      "path": "../apps/clinical/tsconfig.lib.json"
+    },
+    {
       "path": "../apps/sample-app-module/tsconfig.lib.json"
     }
   ]
