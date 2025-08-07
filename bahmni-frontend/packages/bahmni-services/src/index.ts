@@ -62,3 +62,8 @@ export {
   getPatientRadiologyInvestigationBundle,
   type RadiologyInvestigation,
 } from './radiologyInvestigationService';
+export {
+  getPatientLabTestsBundle,
+  getPatientLabInvestigations,
+  type FormattedLabTest,
+} from './labInvestigationService';

@@ -178,3 +178,18 @@ export async function getPatientLabTestsByDate(
   const formattedLabTests = formatLabTests(labTests);
   return groupLabTestsByDate(formattedLabTests);
 }
+
+/**
+ * Fetches and formats lab investigations for a given patient UUID
+ * @param patientUUID - The UUID of the patient
+ * @returns Promise resolving to an array of lab investigations
+ */
+export async function getPatientLabInvestigations(
+  patientUUID: string,
+): Promise<FormattedLabTest[]> {
+  const bundle = await getPatientLabTestsBundle(patientUUID);
+  const labTests = bundle.entry
+    ?.map((entry) => entry.resource)
+    .filter((r): r is ServiceRequest => r !== undefined) ?? [];
+  return formatLabTests(labTests);
+}
