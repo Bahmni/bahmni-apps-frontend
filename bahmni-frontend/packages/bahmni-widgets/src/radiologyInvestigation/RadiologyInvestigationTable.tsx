@@ -1,17 +1,20 @@
 import { Tag, Accordion, AccordionItem } from '@carbon/react';
 import React, { useMemo, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
-import { SortableDataTable } from '@/components/common/sortableDataTable/SortableDataTable';
-import { FULL_MONTH_DATE_FORMAT, ISO_DATE_FORMAT } from '@constants/date';
-import { useRadiologyInvestigation } from '@hooks/useRadiologyInvestigation';
-import { RadiologyInvestigation } from '@types/radiologyInvestigation';
-import { groupByDate } from '@utils/common';
-import { formatDate } from '@utils/date';
+import { SortableDataTable } from '@bahmni-frontend/bahmni-design-system';
+import { useRadiologyInvestigation } from './useRadiologyInvestigation';
+import {
+  RadiologyInvestigation,
+  useTranslation,
+  groupByDate,
+  formatDate,
+  FULL_MONTH_DATE_FORMAT,
+  ISO_DATE_FORMAT,
+} from '@bahmni-frontend/bahmni-services';
 import {
   sortRadiologyInvestigationsByPriority,
   filterRadiologyInvestionsReplacementEntries,
-} from '@utils/radiologyInvestigation';
-import * as styles from './styles/RadiologyInvestigationTable.module.scss';
+} from './utils';
+import styles from './styles/RadiologyInvestigationTable.module.scss';
 
 /**
  * Component to display patient radiology investigations grouped by date in accordion format
@@ -81,6 +84,8 @@ const RadiologyInvestigationTable: React.FC = () => {
           return '--';
         case 'orderedBy':
           return investigation.orderedBy;
+        default:
+          return null;
       }
     },
     [t],
