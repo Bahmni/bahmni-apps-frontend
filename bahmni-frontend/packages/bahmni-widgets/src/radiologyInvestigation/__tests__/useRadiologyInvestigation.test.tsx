@@ -1,22 +1,25 @@
-import { renderHook, act } from '@testing-library/react';
-import i18n from '@/setupTests.i18n';
+import { renderHook, act, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import {
   mockPatientUUID,
   mockFormattedRadiologyInvestigations,
   createMockRadiologyInvestigation,
-} from '@__mocks__/radiologyInvestigationMocks';
-import { getPatientRadiologyInvestigations } from '@services/radiologyInvestigationService';
-import { RadiologyInvestigation } from '@types/radiologyInvestigation';
-import { getFormattedError } from '@utils/common';
-import { usePatientUUID } from '../usePatientUUID';
-import { useRadiologyInvestigation } from '../../../../../src/hooks/useRadiologyInvestigation';
+} from '../__mocks__/mocks';
+import {
+  getPatientRadiologyInvestigations,
+  RadiologyInvestigation,
+  getFormattedError,
+  useTranslation,
+} from '@bahmni-frontend/bahmni-services';
+import { usePatientUUID } from '../../hooks/usePatientUUID';
+import { useRadiologyInvestigation } from '../useRadiologyInvestigation';
 
-// Mock dependencies
-jest.mock('@services/radiologyInvestigationService');
-jest.mock('../usePatientUUID');
-jest.mock('@utils/common');
+jest.mock('@bahmni-frontend/bahmni-services');
+jest.mock('../../hooks/usePatientUUID');
+jest.mock('react-router-dom', () => ({
+  useParams: jest.fn(),
+}));
 
-// Type the mocked functions
 const mockedGetPatientRadiologyInvestigations =
   getPatientRadiologyInvestigations as jest.MockedFunction<
     typeof getPatientRadiologyInvestigations
@@ -27,51 +30,48 @@ const mockedUsePatientUUID = usePatientUUID as jest.MockedFunction<
 const mockedGetFormattedError = getFormattedError as jest.MockedFunction<
   typeof getFormattedError
 >;
+const mockedUseTranslation = useTranslation as jest.MockedFunction<
+  typeof useTranslation
+>;
 
 describe('useRadiologyInvestigation hook', () => {
   const mockRadiologyInvestigations =
     mockFormattedRadiologyInvestigations.slice(0, 2);
 
+  const mockTranslate = jest.fn((key: string) => key);
+
   beforeEach(() => {
     jest.clearAllMocks();
-    i18n.changeLanguage('en');
+    mockedUseTranslation.mockReturnValue({ t: mockTranslate } as any);
     jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   it('should initialize with correct default values', () => {
-    // Arrange
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
 
-    // Act
     const { result } = renderHook(() => useRadiologyInvestigation());
 
-    // Assert
     expect(result.current.radiologyInvestigations).toEqual([]);
     expect(result.current.loading).toBe(true);
     expect(result.current.error).toBeNull();
     expect(typeof result.current.refetch).toBe('function');
   });
 
-  it('should return ungrouped radiology investigations', async () => {
-    // Arrange
+  it('should fetch and return radiology investigations successfully', async () => {
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedGetPatientRadiologyInvestigations.mockResolvedValueOnce(
       mockRadiologyInvestigations,
     );
 
-    // Act
     const { result } = renderHook(() => useRadiologyInvestigation());
 
-    // Assert initial loading state
     expect(result.current.loading).toBe(true);
     expect(result.current.radiologyInvestigations).toEqual([]);
 
-    // Wait for async operations
-    await act(async () => {
-      await Promise.resolve();
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
     });
 
-    // Assert final state
     expect(mockedGetPatientRadiologyInvestigations).toHaveBeenCalledWith(
       mockPatientUUID,
     );
@@ -79,33 +79,10 @@ describe('useRadiologyInvestigation hook', () => {
       mockRadiologyInvestigations,
     );
     expect(result.current.error).toBeNull();
-    expect(result.current.loading).toBe(false);
   });
 
-  it('should handle loading state correctly', async () => {
-    // Arrange
-    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedGetPatientRadiologyInvestigations.mockResolvedValueOnce(
-      mockRadiologyInvestigations,
-    );
 
-    // Act
-    const { result } = renderHook(() => useRadiologyInvestigation());
-
-    // Assert loading is true initially
-    expect(result.current.loading).toBe(true);
-
-    // Wait for async operations
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    // Assert loading is false after completion
-    expect(result.current.loading).toBe(false);
-  });
-
-  it('should handle error state', async () => {
-    // Arrange
+  it('should handle fetch errors correctly', async () => {
     const mockError = new Error('Failed to fetch radiology investigations');
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedGetPatientRadiologyInvestigations.mockRejectedValueOnce(mockError);
@@ -114,26 +91,21 @@ describe('useRadiologyInvestigation hook', () => {
       message: 'Failed to fetch radiology investigations',
     });
 
-    // Act
     const { result } = renderHook(() => useRadiologyInvestigation());
 
-    // Wait for async operations
-    await act(async () => {
-      await Promise.resolve();
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
     });
 
-    // Assert
     expect(mockedGetPatientRadiologyInvestigations).toHaveBeenCalledWith(
       mockPatientUUID,
     );
     expect(mockedGetFormattedError).toHaveBeenCalledWith(mockError);
     expect(result.current.error).toBe(mockError);
     expect(result.current.radiologyInvestigations).toEqual([]);
-    expect(result.current.loading).toBe(false);
   });
 
   it('should refetch data when refetch is called', async () => {
-    // Arrange
     const updatedInvestigations: RadiologyInvestigation[] = [
       createMockRadiologyInvestigation('order-uuid-789', 'MRI', 'stat'),
     ];
@@ -143,73 +115,60 @@ describe('useRadiologyInvestigation hook', () => {
       .mockResolvedValueOnce(mockRadiologyInvestigations)
       .mockResolvedValueOnce(updatedInvestigations);
 
-    // Act - Initial render
     const { result } = renderHook(() => useRadiologyInvestigation());
 
-    // Wait for initial fetch
-    await act(async () => {
-      await Promise.resolve();
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
     });
 
     expect(result.current.radiologyInvestigations).toEqual(
       mockRadiologyInvestigations,
     );
 
-    // Act - Call refetch
     await act(async () => {
       result.current.refetch();
-      await Promise.resolve();
     });
 
-    // Assert final state
-    expect(result.current.radiologyInvestigations).toEqual(
-      updatedInvestigations,
-    );
+    await waitFor(() => {
+      expect(result.current.radiologyInvestigations).toEqual(
+        updatedInvestigations,
+      );
+    });
+
     expect(result.current.error).toBeNull();
     expect(result.current.loading).toBe(false);
     expect(mockedGetPatientRadiologyInvestigations).toHaveBeenCalledTimes(2);
   });
 
   it('should handle invalid patient UUID', async () => {
-    // Arrange
     mockedUsePatientUUID.mockReturnValue(null);
 
-    // Act
     const { result } = renderHook(() => useRadiologyInvestigation());
 
-    // Wait for async operations
-    await act(async () => {
-      await Promise.resolve();
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
     });
 
-    // Assert
     expect(mockedGetPatientRadiologyInvestigations).not.toHaveBeenCalled();
     expect(result.current.radiologyInvestigations).toEqual([]);
-    expect(result.current.error?.message).toBe('Invalid patient UUID');
-    expect(result.current.loading).toBe(false);
+    expect(result.current.error?.message).toBe('ERROR_INVALID_PATIENT_UUID');
   });
 
   it('should handle empty string patient UUID', async () => {
-    // Arrange
     mockedUsePatientUUID.mockReturnValue('');
 
-    // Act
     const { result } = renderHook(() => useRadiologyInvestigation());
 
-    // Wait for async operations
-    await act(async () => {
-      await Promise.resolve();
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
     });
 
-    // Assert
     expect(mockedGetPatientRadiologyInvestigations).not.toHaveBeenCalled();
     expect(result.current.radiologyInvestigations).toEqual([]);
-    expect(result.current.error?.message).toBe('Invalid patient UUID');
-    expect(result.current.loading).toBe(false);
+    expect(result.current.error?.message).toBe('ERROR_INVALID_PATIENT_UUID');
   });
 
-  it('should handle non-Error object from API', async () => {
-    // Arrange
+  it('should handle non-Error objects thrown by API', async () => {
     const nonErrorObject = { message: 'API Error' };
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedGetPatientRadiologyInvestigations.mockRejectedValueOnce(
@@ -220,22 +179,17 @@ describe('useRadiologyInvestigation hook', () => {
       message: 'An unexpected error occurred',
     });
 
-    // Act
     const { result } = renderHook(() => useRadiologyInvestigation());
 
-    // Wait for async operations
-    await act(async () => {
-      await Promise.resolve();
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
     });
 
-    // Assert
     expect(result.current.error?.message).toBe('An unexpected error occurred');
     expect(result.current.radiologyInvestigations).toEqual([]);
-    expect(result.current.loading).toBe(false);
   });
 
-  it('should update when patient UUID changes', async () => {
-    // Arrange
+  it('should refetch data when patient UUID changes', async () => {
     const newPatientUUID = 'patient-uuid-456';
     const newInvestigations: RadiologyInvestigation[] = [
       {
@@ -251,30 +205,24 @@ describe('useRadiologyInvestigation hook', () => {
       .mockResolvedValueOnce(mockRadiologyInvestigations)
       .mockResolvedValueOnce(newInvestigations);
 
-    // Act - Initial render with first patient UUID
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     const { result, rerender } = renderHook(() => useRadiologyInvestigation());
 
-    // Wait for initial fetch
-    await act(async () => {
-      await Promise.resolve();
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
     });
 
     expect(result.current.radiologyInvestigations).toEqual(
       mockRadiologyInvestigations,
     );
 
-    // Act - Change patient UUID
     mockedUsePatientUUID.mockReturnValue(newPatientUUID);
     rerender();
 
-    // Wait for new fetch
-    await act(async () => {
-      await Promise.resolve();
+    await waitFor(() => {
+      expect(result.current.radiologyInvestigations).toEqual(newInvestigations);
     });
 
-    // Assert final state
-    expect(result.current.radiologyInvestigations).toEqual(newInvestigations);
     expect(mockedGetPatientRadiologyInvestigations).toHaveBeenCalledTimes(2);
     expect(mockedGetPatientRadiologyInvestigations).toHaveBeenNthCalledWith(
       1,
@@ -287,7 +235,6 @@ describe('useRadiologyInvestigation hook', () => {
   });
 
   it('should clear error state on successful refetch', async () => {
-    // Arrange
     const mockError = new Error('Initial error');
     mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
     mockedGetPatientRadiologyInvestigations
@@ -298,25 +245,22 @@ describe('useRadiologyInvestigation hook', () => {
       message: 'Initial error',
     });
 
-    // Act - Initial render with error
     const { result } = renderHook(() => useRadiologyInvestigation());
 
-    // Wait for initial fetch (error)
-    await act(async () => {
-      await Promise.resolve();
+    await waitFor(() => {
+      expect(result.current.error).toBe(mockError);
     });
 
-    expect(result.current.error).toBe(mockError);
     expect(result.current.radiologyInvestigations).toEqual([]);
 
-    // Act - Successful refetch
     await act(async () => {
       result.current.refetch();
-      await Promise.resolve();
     });
 
-    // Assert error is cleared
-    expect(result.current.error).toBeNull();
+    await waitFor(() => {
+      expect(result.current.error).toBeNull();
+    });
+
     expect(result.current.radiologyInvestigations).toEqual(
       mockRadiologyInvestigations,
     );

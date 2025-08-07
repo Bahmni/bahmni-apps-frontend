@@ -1,9 +1,11 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { getPatientRadiologyInvestigations } from '@services/radiologyInvestigationService';
-import { RadiologyInvestigation } from '@types/radiologyInvestigation';
-import { getFormattedError } from '@utils/common';
-import { usePatientUUID } from './usePatientUUID';
+import {
+  useTranslation,
+  getPatientRadiologyInvestigations,
+  RadiologyInvestigation,
+  getFormattedError,
+} from '@bahmni-frontend/bahmni-services';
+import { usePatientUUID } from '../hooks/usePatientUUID';
 
 interface UseRadiologyInvestigationResult {
   radiologyInvestigations: RadiologyInvestigation[];
