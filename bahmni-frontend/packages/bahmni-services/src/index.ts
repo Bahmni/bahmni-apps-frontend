@@ -65,6 +65,8 @@ export {
 export {
   getPatientLabTestsBundle,
   getPatientLabInvestigations,
+  groupLabTestsByDate,
   type FormattedLabTest,
   LabTestPriority,
+  type LabTestsByDate,
 } from './labInvestigationService';

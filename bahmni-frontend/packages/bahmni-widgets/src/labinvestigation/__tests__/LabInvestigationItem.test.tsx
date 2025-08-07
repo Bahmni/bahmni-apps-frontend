@@ -1,25 +1,25 @@
+import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { FormattedLabTest, LabTestPriority } from '@types/labInvestigation';
+import {
+  FormattedLabTest,
+  LabTestPriority,
+} from '@bahmni-frontend/bahmni-services';
 import LabInvestigationItem from '../LabInvestigationItem';
 
-// Mock the BahmniIcon component
-jest.mock('@components/common/bahmniIcon/BahmniIcon', () => ({
-  __esModule: true,
-  default: ({ name, id }: { name: string; id: string }) => (
-    <span data-testid={id}>{name}</span>
-  ),
-}));
-
-// Mock the useTranslation hook
-jest.mock('react-i18next', () => ({
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
   useTranslation: jest.fn(),
 }));
 
+jest.mock('react-router-dom', () => ({
+  useParams: jest.fn(),
+}));
+
+const mockUseTranslation = require('@bahmni-frontend/bahmni-services')
+  .useTranslation as jest.MockedFunction<any>;
+
 describe('LabInvestigationItem', () => {
-  // Test data
-  const mockLabTest: FormattedLabTest = {
+  const baseLabTest: FormattedLabTest = {
     id: 'test-123',
     testName: 'Complete Blood Count',
     priority: LabTestPriority.routine,
@@ -27,19 +27,19 @@ describe('LabInvestigationItem', () => {
     orderedDate: '2025-05-08T12:44:24+00:00',
     formattedDate: '05/08/2025',
     result: undefined,
-    testType: 'Panel',
+    testType: 'Individual',
   };
 
-  // Setup translation mock before each test
   beforeEach(() => {
-    // Mock the translation function
-    (useTranslation as jest.Mock).mockReturnValue({
+    jest.clearAllMocks();
+
+    mockUseTranslation.mockReturnValue({
       t: (key: string) => {
-        // Return appropriate values based on the translation key
         const translations: Record<string, string> = {
           LAB_TEST_PANEL: 'Panel',
-          LAB_TEST_URGENT: 'Urgent',
-          LAB_TEST_ORDERED_BY: 'Ordered by:',
+          LAB_TEST_STAT: 'STAT',
+          LAB_TEST_URGENT: 'STAT',
+          LAB_TEST_ORDERED_BY: 'Ordered by',
           LAB_TEST_RESULTS_PENDING: 'Results Pending',
         };
         return translations[key] || key;
@@ -47,50 +47,65 @@ describe('LabInvestigationItem', () => {
     });
   });
 
-  it('renders the test name, test type, priority, and ordered by information', () => {
-    render(<LabInvestigationItem test={mockLabTest} />);
+  it('renders test name', () => {
+    render(<LabInvestigationItem test={baseLabTest} />);
 
-    // Check that the test name is displayed
     expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
-
-    // Check that the test type is displayed (using translation)
-    expect(screen.getByText('Panel')).toBeInTheDocument();
-
-    // Check that the ordered by information is displayed
-    expect(screen.getByText(/Ordered by:/)).toBeInTheDocument();
-    expect(screen.getByText(/Dr. Smith/)).toBeInTheDocument();
   });
 
-  it('displays results pending message', () => {
-    render(<LabInvestigationItem test={mockLabTest} />);
+  it('renders ordered by information', () => {
+    render(<LabInvestigationItem test={baseLabTest} />);
 
-    // Check for text content that contains "Results pending"
+    expect(screen.getByText('Ordered by: Dr. Smith')).toBeInTheDocument();
+  });
+
+  it('renders results pending message', () => {
+    render(<LabInvestigationItem test={baseLabTest} />);
+
     expect(screen.getByText('Results Pending ....')).toBeInTheDocument();
   });
 
-  it('applies different tag color for urgent priority', () => {
-    const urgentTest = {
-      ...mockLabTest,
-      priority: LabTestPriority.stat,
-    };
+  it('shows test type info only for Panel tests', () => {
+    const panelTest = { ...baseLabTest, testType: 'Panel' };
+    render(<LabInvestigationItem test={panelTest} />);
 
-    render(<LabInvestigationItem test={urgentTest} />);
-
-    expect(screen.getByText('Urgent')).toBeInTheDocument();
-    expect(
-      screen.getByTestId(`lab-test-priority-${LabTestPriority.stat}`),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Panel')).toBeInTheDocument();
   });
 
-  it('displays test type correctly', () => {
-    // Test with Panel Test type
-    const panelTest = {
-      ...mockLabTest,
-      testType: 'Panel',
-    };
+  it('does not show test type info for non-Panel tests', () => {
+    render(<LabInvestigationItem test={baseLabTest} />);
 
-    // Test with Panel type
-    render(<LabInvestigationItem test={panelTest} />);
+    expect(screen.queryByText('Individual')).not.toBeInTheDocument();
+  });
+
+  it('shows priority tag for stat priority', () => {
+    const statTest = { ...baseLabTest, priority: LabTestPriority.stat };
+    render(<LabInvestigationItem test={statTest} />);
+
+    expect(screen.getByText('STAT')).toBeInTheDocument();
+  });
+
+  it('does not show priority tag for routine priority', () => {
+    render(<LabInvestigationItem test={baseLabTest} />);
+
+    expect(screen.queryByText('STAT')).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId(`lab-test-priority-${LabTestPriority.routine}`),
+    ).not.toBeInTheDocument();
+  });
+
+  it('renders Panel test with stat priority correctly', () => {
+    const panelStatTest = {
+      ...baseLabTest,
+      testType: 'Panel',
+      priority: LabTestPriority.stat,
+    };
+    render(<LabInvestigationItem test={panelStatTest} />);
+
+    expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
     expect(screen.getByText('Panel')).toBeInTheDocument();
+    expect(screen.getByText('STAT')).toBeInTheDocument();
+    expect(screen.getByText('Ordered by: Dr. Smith')).toBeInTheDocument();
+    expect(screen.getByText('Results Pending ....')).toBeInTheDocument();
   });
 });

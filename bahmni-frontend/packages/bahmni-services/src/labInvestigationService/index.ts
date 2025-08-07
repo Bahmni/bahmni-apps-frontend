@@ -1,5 +1,10 @@
 export {
   getPatientLabTestsBundle,
   getPatientLabInvestigations,
+  groupLabTestsByDate,
 } from './labInvestigationService';
-export { type FormattedLabTest, LabTestPriority } from './models';
+export {
+  type FormattedLabTest,
+  type LabTestsByDate,
+  LabTestPriority,
+} from './models';

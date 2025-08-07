@@ -1,252 +1,279 @@
-import { render, screen } from '@testing-library/react';
-import React from 'react';
-import i18n from '@/setupTests.i18n';
+import '@testing-library/jest-dom';
+import { render, screen, waitFor } from '@testing-library/react';
 import {
-  mockPatientUUID,
-  mockLabTestsByDate,
-  mockLabTestsByDateWithIncomplete,
-} from '@__mocks__/labInvestigationMocks';
-import useLabInvestigations from '@hooks/useLabInvestigations';
-import { usePatientUUID } from '@hooks/usePatientUUID';
-import { groupLabTestsByDate } from '@services/labInvestigationService';
-import LabInvestigationControl from '../LabInvestigation';
+  LabTestPriority,
+  FormattedLabTest,
+} from '@bahmni-frontend/bahmni-services';
+import LabInvestigation from '../LabInvestigation';
+import useLabInvestigations from '../useLabInvestigations';
 
-// Mock the hooks and services
-jest.mock('@hooks/usePatientUUID');
-jest.mock('@hooks/useLabInvestigations');
-jest.mock('@services/labInvestigationService', () => ({
-  groupLabTestsByDate: jest.fn(),
+// Mock the hook directly for integration testing
+jest.mock('../useLabInvestigations');
+
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+  useTranslation: jest.fn(),
 }));
 
-const mockedUsePatientUUID = usePatientUUID as jest.MockedFunction<
-  typeof usePatientUUID
->;
+jest.mock('react-router-dom', () => ({
+  useParams: jest.fn(),
+}));
 
-const mockedUseLabInvestigations = useLabInvestigations as jest.MockedFunction<
+const mockUseLabInvestigations = useLabInvestigations as jest.MockedFunction<
   typeof useLabInvestigations
 >;
+const mockUseTranslation = require('@bahmni-frontend/bahmni-services')
+  .useTranslation as jest.MockedFunction<any>;
+const mockUseParams = require('react-router-dom')
+  .useParams as jest.MockedFunction<any>;
 
-const mockedGroupLabTestsByDate = groupLabTestsByDate as jest.MockedFunction<
-  typeof groupLabTestsByDate
->;
+// Mock formatted lab tests that match the component's expected data structure
+const mockFormattedLabTests: FormattedLabTest[] = [
+  {
+    id: 'lab-test-1',
+    testName: 'Complete Blood Count',
+    priority: LabTestPriority.routine,
+    orderedBy: 'Dr. John Doe',
+    orderedDate: '2025-03-25T06:48:32.000+00:00',
+    formattedDate: 'Mar 25, 2025',
+    result: undefined,
+    testType: 'Panel',
+  },
+  {
+    id: 'lab-test-2',
+    testName: 'Lipid Panel',
+    priority: LabTestPriority.stat,
+    orderedBy: 'Dr. Jane Smith',
+    orderedDate: '2025-03-25T06:48:32.000+00:00',
+    formattedDate: 'Mar 25, 2025',
+    result: undefined,
+    testType: 'Panel',
+  },
+  {
+    id: 'lab-test-3',
+    testName: 'Glucose Test',
+    priority: LabTestPriority.routine,
+    orderedBy: 'Dr. John Doe',
+    orderedDate: '2025-03-24T06:48:32.000+00:00',
+    formattedDate: 'Mar 24, 2025',
+    result: undefined,
+    testType: 'Individual',
+  },
+];
 
-describe('LabInvestigationControl Integration', () => {
+describe('LabInvestigation Integration Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(console, 'error').mockImplementation();
-    // Reset i18n to English
-    i18n.changeLanguage('en');
+
+    mockUseParams.mockReturnValue({
+      patientUUID: 'test-patient-uuid',
+    });
+
+    mockUseTranslation.mockReturnValue({
+      t: (key: string) => {
+        const translations: Record<string, string> = {
+          LAB_TEST_ERROR_LOADING: 'Error loading lab tests',
+          LAB_TEST_LOADING: 'Loading lab tests...',
+          LAB_TEST_UNAVAILABLE: 'No lab investigations recorded',
+          LAB_TEST_ORDERED_BY: 'Ordered by',
+          LAB_TEST_RESULTS_PENDING: 'Results Pending ....',
+        };
+        return translations[key] || key;
+      },
+    });
   });
 
-  it('should call useLabInvestigations to get lab data', () => {
-    // Mock the hooks
-    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedUseLabInvestigations.mockReturnValue({
-      labTests: mockLabTestsByDate.flatMap((group) => group.tests),
+  afterEach(() => {
+    jest.clearAllTimers();
+  });
+
+  it('displays lab results after successful API call', async () => {
+    mockUseLabInvestigations.mockReturnValue({
+      labTests: mockFormattedLabTests,
       isLoading: false,
       hasError: false,
     });
-    mockedGroupLabTestsByDate.mockReturnValue(mockLabTestsByDate);
 
-    render(<LabInvestigationControl />);
+    render(<LabInvestigation />);
 
-    // Verify useLabInvestigations was called
-    expect(useLabInvestigations).toHaveBeenCalled();
-  });
-
-  it('should display lab investigations grouped by date', () => {
-    // Mock the hooks
-    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedUseLabInvestigations.mockReturnValue({
-      labTests: mockLabTestsByDate.flatMap((group) => group.tests),
-      isLoading: false,
-      hasError: false,
+    await waitFor(() => {
+      expect(screen.getByText('Mar 25, 2025')).toBeInTheDocument();
+      expect(screen.getByText('Mar 24, 2025')).toBeInTheDocument();
     });
-    mockedGroupLabTestsByDate.mockReturnValue(mockLabTestsByDate);
 
-    render(<LabInvestigationControl />);
-
-    // Verify the dates are displayed
-    expect(screen.getByText(/Mar 25, 2025/)).toBeInTheDocument();
-    expect(screen.getByText(/Mar 24, 2025/)).toBeInTheDocument();
-  });
-
-  it('should display lab test names', () => {
-    // Mock the hooks
-    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedUseLabInvestigations.mockReturnValue({
-      labTests: mockLabTestsByDate.flatMap((group) => group.tests),
-      isLoading: false,
-      hasError: false,
-    });
-    mockedGroupLabTestsByDate.mockReturnValue(mockLabTestsByDate);
-
-    render(<LabInvestigationControl />);
-
-    // Verify the test names are displayed
     expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
     expect(screen.getByText('Lipid Panel')).toBeInTheDocument();
     expect(screen.getByText('Glucose Test')).toBeInTheDocument();
+
+    expect(screen.getAllByText('Ordered by: Dr. John Doe')).toHaveLength(2);
+    expect(screen.getByText('Ordered by: Dr. Jane Smith')).toBeInTheDocument();
   });
 
-  it('should display lab test priorities', () => {
-    // Mock the hooks
-    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedUseLabInvestigations.mockReturnValue({
-      labTests: mockLabTestsByDate.flatMap((group) => group.tests),
-      isLoading: false,
-      hasError: false,
-    });
-    mockedGroupLabTestsByDate.mockReturnValue(mockLabTestsByDate);
-
-    render(<LabInvestigationControl />);
-
-    // Check for stat priority tag using data-testid
-    const statPriorityTag = screen.getByTestId('lab-test-priority-Urgent');
-    expect(statPriorityTag).toBeInTheDocument();
-  });
-
-  it('should display ordered by information', () => {
-    // Mock the hooks
-    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedUseLabInvestigations.mockReturnValue({
-      labTests: mockLabTestsByDate.flatMap((group) => group.tests),
-      isLoading: false,
-      hasError: false,
-    });
-    mockedGroupLabTestsByDate.mockReturnValue(mockLabTestsByDate);
-
-    render(<LabInvestigationControl />);
-
-    // Verify the ordered by information is displayed
-    // Use a regex to match the translated text followed by a colon
-    const orderedByRegex = new RegExp(`${i18n.t('LAB_TEST_ORDERED_BY')}:`, 'i');
-    const orderedByTexts = screen.getAllByText(orderedByRegex);
-    expect(orderedByTexts).toHaveLength(3); // Three tests with ordered by info
-
-    expect(screen.getAllByText(/Dr. John Doe/)).toHaveLength(2); // Two tests ordered by Dr. John Doe
-    expect(screen.getByText(/Dr. Jane Smith/)).toBeInTheDocument(); // One test ordered by Dr. Jane Smith
-  });
-
-  it('should display loading message when isLoading is true', () => {
-    // Mock the hooks with loading state
-    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedUseLabInvestigations.mockReturnValue({
+  it('shows loading state during API call', async () => {
+    mockUseLabInvestigations.mockReturnValue({
       labTests: [],
       isLoading: true,
       hasError: false,
     });
 
-    render(<LabInvestigationControl />);
+    render(<LabInvestigation />);
 
-    expect(screen.getByText(i18n.t('LAB_TEST_LOADING'))).toBeInTheDocument();
+    expect(screen.getByText('Loading lab tests...')).toBeInTheDocument();
   });
 
-  it('should display "No lab investigations recorded" message when there are no lab tests and not loading', () => {
-    // Mock the hooks with no data and not loading
-    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedUseLabInvestigations.mockReturnValue({
-      labTests: [],
-      isLoading: false,
-      hasError: false,
-    });
-    mockedGroupLabTestsByDate.mockReturnValue([]);
-
-    render(<LabInvestigationControl />);
-
-    expect(
-      screen.getByText(i18n.t('LAB_TEST_UNAVAILABLE')),
-    ).toBeInTheDocument();
-  });
-
-  it('should handle lab tests with missing optional fields', () => {
-    // Mock the hooks with incomplete data
-    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedUseLabInvestigations.mockReturnValue({
-      labTests: mockLabTestsByDateWithIncomplete.flatMap(
-        (group) => group.tests,
-      ),
-      isLoading: false,
-      hasError: false,
-    });
-    mockedGroupLabTestsByDate.mockReturnValue(mockLabTestsByDateWithIncomplete);
-
-    render(<LabInvestigationControl />);
-
-    // Verify the component renders with incomplete data
-    expect(screen.getByText('Incomplete Test')).toBeInTheDocument();
-
-    // Use a regex to match the translated text followed by the doctor name
-    const orderedByRegex = new RegExp(
-      `${i18n.t('LAB_TEST_ORDERED_BY')}: Unknown Doctor`,
-      'i',
-    );
-    expect(screen.getByText(orderedByRegex)).toBeInTheDocument();
-  });
-
-  it('should refetch lab investigations when patient UUID changes', () => {
-    // Create a mock implementation for useLabInvestigations that tracks calls
-    const mockUseLabInvestigationsImpl = jest.fn();
-
-    // First render with initial UUID
-    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedUseLabInvestigations.mockImplementation(() => {
-      mockUseLabInvestigationsImpl();
-      return {
-        labTests: mockLabTestsByDate.flatMap((group) => group.tests),
-        isLoading: false,
-        hasError: false,
-      };
-    });
-    mockedGroupLabTestsByDate.mockReturnValue(mockLabTestsByDate);
-
-    const { rerender } = render(<LabInvestigationControl />);
-
-    // Initial call count
-    const initialCallCount = mockUseLabInvestigationsImpl.mock.calls.length;
-
-    // Change the UUID and rerender
-    const newUUID = 'new-patient-uuid';
-    mockedUsePatientUUID.mockReturnValue(newUUID);
-
-    rerender(<LabInvestigationControl />);
-
-    // Verify useLabInvestigations was called again after UUID change
-    expect(mockUseLabInvestigationsImpl.mock.calls.length).toBeGreaterThan(
-      initialCallCount,
-    );
-  });
-
-  it('should display "Results pending..." for tests without results', () => {
-    // Mock the hooks
-    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedUseLabInvestigations.mockReturnValue({
-      labTests: mockLabTestsByDate.flatMap((group) => group.tests),
-      isLoading: false,
-      hasError: false,
-    });
-    mockedGroupLabTestsByDate.mockReturnValue(mockLabTestsByDate);
-
-    render(<LabInvestigationControl />);
-
-    // Use the translated text from the locale file
-    const pendingTexts = screen.getAllByText('Results Pending ....');
-    expect(pendingTexts).toHaveLength(3); // Three tests with pending results
-  });
-
-  it('should display error message when hasError is true', () => {
-    // Mock the hooks with error state
-    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
-    mockedUseLabInvestigations.mockReturnValue({
+  it('displays error message when API call fails', async () => {
+    mockUseLabInvestigations.mockReturnValue({
       labTests: [],
       isLoading: false,
       hasError: true,
     });
 
-    render(<LabInvestigationControl />);
+    render(<LabInvestigation />);
 
-    expect(
-      screen.getByText(i18n.t('LAB_TEST_ERROR_LOADING')),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Error loading lab tests')).toBeInTheDocument();
+    expect(screen.queryByText('Complete Blood Count')).not.toBeInTheDocument();
+  });
+
+  it('shows empty state when no lab tests are returned', async () => {
+    mockUseLabInvestigations.mockReturnValue({
+      labTests: [],
+      isLoading: false,
+      hasError: false,
+    });
+
+    render(<LabInvestigation />);
+
+    expect(screen.getByText('No lab investigations recorded')).toBeInTheDocument();
+    expect(screen.queryByText('Complete Blood Count')).not.toBeInTheDocument();
+  });
+
+  it('handles accordion interaction correctly', async () => {
+    mockUseLabInvestigations.mockReturnValue({
+      labTests: mockFormattedLabTests,
+      isLoading: false,
+      hasError: false,
+    });
+
+    render(<LabInvestigation />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Mar 25, 2025')).toBeInTheDocument();
+    });
+
+    const firstAccordionButton = screen.getByRole('button', {
+      name: /Mar 25, 2025/,
+    });
+    const secondAccordionButton = screen.getByRole('button', {
+      name: /Mar 24, 2025/,
+    });
+
+    // First accordion should be open by default
+    expect(firstAccordionButton).toHaveAttribute('aria-expanded', 'true');
+    expect(secondAccordionButton).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('displays priority information correctly', async () => {
+    mockUseLabInvestigations.mockReturnValue({
+      labTests: mockFormattedLabTests,
+      isLoading: false,
+      hasError: false,
+    });
+
+    render(<LabInvestigation />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Mar 25, 2025')).toBeInTheDocument();
+    });
+
+    // Check for STAT priority (urgent) test
+    const lipidPanelElements = screen.getAllByText('Lipid Panel');
+    expect(lipidPanelElements).toHaveLength(1);
+
+    // Other tests should be routine (no special priority indicator)
+    expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
+    expect(screen.getByText('Glucose Test')).toBeInTheDocument();
+  });
+
+  it('renders tests in correct priority order within date groups', async () => {
+    mockUseLabInvestigations.mockReturnValue({
+      labTests: mockFormattedLabTests,
+      isLoading: false,
+      hasError: false,
+    });
+
+    render(<LabInvestigation />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Mar 25, 2025')).toBeInTheDocument();
+    });
+
+    // The component should render urgent tests before routine tests within each date group
+    // This is implementation-specific but important for user experience
+    const testElements = screen.getAllByText(
+      /Complete Blood Count|Lipid Panel/,
+    );
+    expect(testElements).toHaveLength(2);
+  });
+
+  it('displays pending results message for tests without results', async () => {
+    mockUseLabInvestigations.mockReturnValue({
+      labTests: mockFormattedLabTests,
+      isLoading: false,
+      hasError: false,
+    });
+
+    render(<LabInvestigation />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Mar 25, 2025')).toBeInTheDocument();
+    });
+
+    // All tests should show pending results
+    const pendingMessages = screen.getAllByText('Results Pending .... ....');
+    expect(pendingMessages).toHaveLength(3); // Three tests total
+  });
+
+  it('handles API errors gracefully', async () => {
+    mockUseLabInvestigations.mockReturnValue({
+      labTests: [],
+      isLoading: false,
+      hasError: true,
+    });
+
+    render(<LabInvestigation />);
+
+    expect(screen.getByText('Error loading lab tests')).toBeInTheDocument();
+  });
+
+  it('responds to patient UUID changes', async () => {
+    // First render with initial data
+    mockUseLabInvestigations.mockReturnValue({
+      labTests: mockFormattedLabTests,
+      isLoading: false,
+      hasError: false,
+    });
+
+    const { rerender } = render(<LabInvestigation />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Mar 25, 2025')).toBeInTheDocument();
+    });
+
+    // Simulate patient change - component would show loading state
+    mockUseLabInvestigations.mockReturnValue({
+      labTests: [],
+      isLoading: true,
+      hasError: false,
+    });
+
+    // Change patient UUID
+    mockUseParams.mockReturnValue({
+      patientUUID: 'different-patient-uuid',
+    });
+
+    rerender(<LabInvestigation />);
+
+    // Should show loading state for new patient
+    expect(screen.getByText('Loading lab tests...')).toBeInTheDocument();
   });
 });

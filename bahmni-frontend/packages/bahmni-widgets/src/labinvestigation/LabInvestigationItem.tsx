@@ -1,8 +1,11 @@
-import { Tag } from '@carbon/react';
+import { Tag } from '@bahmni-frontend/bahmni-design-system';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { FormattedLabTest, LabTestPriority } from '@types/labInvestigation';
-import * as styles from './styles/LabInvestigation.module.scss';
+import {
+  useTranslation,
+  FormattedLabTest,
+  LabTestPriority,
+} from '@bahmni-frontend/bahmni-services';
+import styles from './styles/LabInvestigation.module.scss';
 
 interface LabInvestigationItemProps {
   test: FormattedLabTest;
