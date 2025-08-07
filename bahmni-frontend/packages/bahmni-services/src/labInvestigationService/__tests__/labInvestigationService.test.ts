@@ -2,7 +2,7 @@ import { ServiceRequest } from 'fhir/r4';
 import { LabTestPriority, FormattedLabTest } from '@types/labInvestigation';
 import '@utils/date';
 import { getFormattedError } from '@utils/common';
-import { get } from '../api';
+import { get } from '../../api';
 import {
   getLabTests,
   formatLabTests,
