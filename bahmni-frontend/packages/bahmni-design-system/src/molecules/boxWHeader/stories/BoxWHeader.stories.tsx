@@ -1,8 +1,7 @@
-import React from 'react';
 import { StoryObj, Meta } from '@storybook/react';
 import { Column, Grid, Dropdown, TextInput } from '@carbon/react';
-import BoxWHeader from '../BoxWHeader';
-import SelectedItem from '../../selectedItem/SelectedItem';
+import { BoxWHeader } from '../BoxWHeader';
+import { SelectedItem } from '../../selectedItem/SelectedItem';
 import * as styles from './styles/BoxWHeader.stories.module.scss';
 
 const meta: Meta<typeof BoxWHeader> = {

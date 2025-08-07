@@ -2,15 +2,14 @@ import { Close } from '@carbon/icons-react';
 import { Button, Column, Grid } from '@carbon/react';
 import classNames from 'classnames';
 import React, { ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
-import * as styles from './styles/SelectedItem.module.scss';
+import styles from './styles/SelectedItem.module.scss';
 
 /**
  * SelectedItem is a common component that displays content with a close button.
  * It's typically used for displaying selected items in a list or form context
  * where users can dismiss/remove the selection.
  */
-interface SelectedItemProps {
+export interface SelectedItemProps {
   /**
    * The content to display within the selected item container
    */
@@ -35,13 +34,12 @@ interface SelectedItemProps {
 /**
  * A component for displaying selected items with a close button
  */
-const SelectedItem: React.FC<SelectedItemProps> = ({
+export const SelectedItem: React.FC<SelectedItemProps> = ({
   children,
   onClose,
   className,
   dataTestId = 'selected-item',
 }) => {
-  const { t } = useTranslation();
   return (
     <Grid
       narrow
@@ -58,8 +56,8 @@ const SelectedItem: React.FC<SelectedItemProps> = ({
           size="lg"
           hasIconOnly
           renderIcon={Close}
-          iconDescription={t('SELECTED_ITEM_CLOSE')}
-          aria-label={t('SELECTED_ITEM_CLOSE_ARIA_LABEL')}
+          iconDescription="Selected Item Close"
+          aria-label="Close Selected Item"
           onClick={onClose}
           data-testid={`${dataTestId}-close-button`}
         />
@@ -67,5 +65,4 @@ const SelectedItem: React.FC<SelectedItemProps> = ({
     </Grid>
   );
 };
-
 export default SelectedItem;

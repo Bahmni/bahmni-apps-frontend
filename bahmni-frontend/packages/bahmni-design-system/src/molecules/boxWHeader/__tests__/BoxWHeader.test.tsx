@@ -1,8 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import React from 'react';
-import i18n from '@/setupTests.i18n';
-import BoxWHeader from '../BoxWHeader';
+import { BoxWHeader } from '../BoxWHeader';
 
 expect.extend(toHaveNoViolations);
 // Mock the styles to prevent issues with CSS modules in tests
@@ -12,9 +10,6 @@ jest.mock('../styles/BoxWHeader.module.scss', () => ({
 }));
 
 describe('BoxWHeader', () => {
-  beforeEach(() => {
-    i18n.changeLanguage('en');
-  });
 
   describe('Happy Paths', () => {
     it('should render correctly with required props', () => {
@@ -37,7 +32,6 @@ describe('BoxWHeader', () => {
 
     it('should translate title when it is a translation key', () => {
       // Arrange - Add a test translation
-      i18n.addResource('en', 'clinical', 'test.key', 'Translated Title');
 
       // Act
       render(

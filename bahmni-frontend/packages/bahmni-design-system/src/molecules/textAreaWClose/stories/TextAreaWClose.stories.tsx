@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
-import TextAreaWClose from '../TextAreaWClose';
+import { TextAreaWClose } from '../TextAreaWClose';
 
 const meta: Meta<typeof TextAreaWClose> = {
   title: 'Components/Common/TextAreaWClose',

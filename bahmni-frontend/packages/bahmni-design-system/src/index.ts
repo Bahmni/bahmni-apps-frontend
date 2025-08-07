@@ -76,3 +76,6 @@ export {
   type FilterableMultiSelectProps,
 } from './atoms/filterableMultiSelect';
 export { Stack, type StackProps } from './atoms/stack';
+export { SelectedItem, type SelectedItemProps } from './molecules/selectedItem';
+export { TextAreaWClose, type TextAreaWCloseProps } from './molecules/textAreaWClose';
+export { BoxWHeader, type BoxWHeaderProps } from './molecules/boxWHeader';

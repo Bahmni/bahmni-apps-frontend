@@ -1,8 +1,7 @@
 import { Close } from '@carbon/icons-react';
 import { Column, Grid, TextArea, Button } from '@carbon/react';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import * as styles from './styles/TextAreaWClose.module.scss';
+import styles from './styles/TextAreaWClose.module.scss';
 
 /**
  * Properties for TextAreaWClose component
@@ -51,7 +50,7 @@ export interface TextAreaWCloseProps {
  * @param {TextAreaWCloseProps} props - Component props
  * @returns {JSX.Element} The rendered TextAreaWClose component
  */
-const TextAreaWClose: React.FC<TextAreaWCloseProps> = ({
+export const TextAreaWClose: React.FC<TextAreaWCloseProps> = ({
   id,
   labelText,
   placeholder,
@@ -68,7 +67,6 @@ const TextAreaWClose: React.FC<TextAreaWCloseProps> = ({
   enableCounter = false,
   counterMode = 'character',
 }) => {
-  const { t } = useTranslation();
 
   return (
     <Grid className={className}>
@@ -106,8 +104,8 @@ const TextAreaWClose: React.FC<TextAreaWCloseProps> = ({
             size="lg"
             hasIconOnly
             renderIcon={Close}
-            iconDescription={t('SELECTED_ITEM_CLOSE')}
-            aria-label={t('SELECTED_ITEM_CLOSE_ARIA_LABEL')}
+            iconDescription="Close"
+            aria-label="Close Selected Item"
             onClick={onClose}
             disabled={disabled}
           />
@@ -116,7 +114,5 @@ const TextAreaWClose: React.FC<TextAreaWCloseProps> = ({
     </Grid>
   );
 };
-
-TextAreaWClose.displayName = 'TextAreaWClose';
-
 export default TextAreaWClose;
+TextAreaWClose.displayName = 'TextAreaWClose';

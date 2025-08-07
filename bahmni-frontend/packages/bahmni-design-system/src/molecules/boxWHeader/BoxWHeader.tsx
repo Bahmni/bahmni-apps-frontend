@@ -1,8 +1,7 @@
 import { Column, Grid } from '@carbon/react';
 import classNames from 'classnames';
 import React, { ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
-import * as styles from './styles/BoxWHeader.module.scss';
+import styles from './styles/BoxWHeader.module.scss';
 
 /**
  * BoxWHeader Props
@@ -43,29 +42,25 @@ export interface BoxWHeaderProps {
  * A container with a header title and content area.
  * Uses Carbon Design Grid for responsive layout.
  */
-const BoxWHeader: React.FC<BoxWHeaderProps> = ({
+export const BoxWHeader: React.FC<BoxWHeaderProps> = ({
   title,
   children,
   className,
   dataTestId = 'box-w-title',
   ariaLabel,
 }) => {
-  const { t } = useTranslation();
-
-  // Translate title if it's a translation key
-  const translatedTitle = t(title);
-
+  
   return (
     <Grid
       narrow
       fullWidth
       className={classNames(styles.box, className)}
       data-testid={dataTestId}
-      aria-label={ariaLabel ?? translatedTitle}
+      aria-label={ariaLabel ?? title}
       role="region"
     >
       <Column sm={4} md={8} lg={16} xlg={16} className={styles.header}>
-        {translatedTitle}
+        {title}
       </Column>
       <Column sm={4} md={8} lg={16} xlg={16}>
         {children}

@@ -1,9 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import React from 'react';
-import i18n from '@/setupTests.i18n';
-import TextAreaWClose from '../TextAreaWClose';
+import { TextAreaWClose } from '../TextAreaWClose';
 
 expect.extend(toHaveNoViolations);
 
@@ -16,7 +14,6 @@ describe('TextAreaWClose', () => {
   };
 
   beforeEach(() => {
-    i18n.changeLanguage('en');
     jest.clearAllMocks();
   });
 
