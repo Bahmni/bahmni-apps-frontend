@@ -1,6 +1,6 @@
 import { useContext } from 'react';
-import { ClinicalConfigContext } from '@contexts/ClinicalConfigContext';
-import { ClinicalConfigContextType } from '@types/config';
+import { ClinicalConfigContext } from '../contexts/ClinicalConfigContext';
+import { ClinicalConfigContextType } from '../contexts/models';
 
 /**
  * Custom hook to access the config context

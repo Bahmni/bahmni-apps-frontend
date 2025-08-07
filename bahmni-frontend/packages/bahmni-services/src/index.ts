@@ -73,5 +73,5 @@ export {
 
 export {
   getClinicalConfig, getDashboardConfig, getMedicationConfig,
-  type ClinicalConfig, type DashboardConfig, type MedicationJSONConfig, type ClinicalConfigContextType
+  type ClinicalConfig, type DashboardConfig, type MedicationJSONConfig
 } from './configService';

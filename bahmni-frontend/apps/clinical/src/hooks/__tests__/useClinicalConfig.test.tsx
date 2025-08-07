@@ -1,12 +1,15 @@
 import { renderHook } from '@testing-library/react';
 import React from 'react';
-import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
-import { ClinicalConfigContextType } from '@types/config';
+import { ClinicalConfigProvider } from '../../providers/ClinicalConfigProvider';
+import { ClinicalConfigContextType } from '../../contexts/models';
 import { useClinicalConfig } from '../useClinicalConfig';
 
-// Mock notification service
-jest.mock('@services/notificationService', () => ({
-  showError: jest.fn(),
+// Mock only the notificationService
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+  notificationService: {
+    showError: jest.fn(),
+  },
 }));
 
 // Wrapper component to provide the ClinicalConfigContext
@@ -95,7 +98,7 @@ describe('useClinicalConfig', () => {
 
   it('should throw an error when used outside of ClinicalConfigProvider', () => {
     // Suppress console.error for this test to avoid noisy output
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => { });
 
     // Mock the ClinicalConfigContext
     jest.spyOn(React, 'useContext').mockReturnValue(null);

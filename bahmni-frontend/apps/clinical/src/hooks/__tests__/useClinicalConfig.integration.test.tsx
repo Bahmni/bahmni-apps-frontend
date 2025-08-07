@@ -1,9 +1,9 @@
 import { render, waitFor } from '@testing-library/react';
 import React from 'react';
-import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
-import { getClinicalConfig } from '@services/configService';
-import notificationService from '@services/notificationService';
-import { ClinicalConfig } from '@types/config';
+import { ClinicalConfigProvider } from '../../providers/ClinicalConfigProvider';
+import { getClinicalConfig } from '@bahmni-frontend/bahmni-services';
+import { notificationService } from '@bahmni-frontend/bahmni-services/';
+import { ClinicalConfig } from '@bahmni-frontend/bahmni-services';
 import { useClinicalConfig } from '../useClinicalConfig';
 
 // Mock the configService and notificationService
