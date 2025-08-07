@@ -1,20 +1,19 @@
 import Ajv from 'ajv';
-import i18next from 'i18next';
 import {
   CLINICAL_CONFIG_URL,
   DASHBOARD_CONFIG_URL,
   MEDICATIONS_CONFIG_URL,
-} from '@constants/config';
-import { CONFIG_ERROR_MESSAGES, ERROR_TITLES } from '@constants/errors';
-import clinicalConfigSchema from '@schemas/clinicalConfig.schema.json';
-import dashboardConfigSchema from '@schemas/dashboardConfig.schema.json';
-import medicationConfigSchema from '@schemas/medicationConfig.schema.json';
-import { ClinicalConfig } from '@types/config';
-import { DashboardConfig } from '@types/dashboardConfig';
-import { MedicationJSONConfig } from '@types/medicationConfig';
-import { getFormattedError, generateId } from '@utils/common';
-import { get } from './api';
-import notificationService from './notificationService';
+} from './constants';
+import { ERROR_MESSAGES, ERROR_TITLES } from './constants';
+import clinicalConfigSchema from './schemas/clinicalConfig.schema.json';
+import dashboardConfigSchema from './schemas/dashboardConfig.schema.json';
+import medicationConfigSchema from './schemas/medicationConfig.schema.json';
+import { ClinicalConfig, DashboardConfig, MedicationJSONConfig } from './models';
+import { generateId } from '../utils';
+import { getFormattedError } from '../errorHandling';
+import { get } from '../api';
+import { notificationService } from '../notification';
+import i18next from 'i18next';
 
 /**
  * Fetches and validates clinical app configuration from the server
@@ -92,7 +91,7 @@ const getConfig = async <
     if (!config) {
       notificationService.showError(
         i18next.t(ERROR_TITLES.CONFIG_ERROR),
-        i18next.t(CONFIG_ERROR_MESSAGES.CONFIG_NOT_FOUND),
+        i18next.t(ERROR_MESSAGES.CONFIG_NOT_FOUND),
       );
       return null;
     }
@@ -102,7 +101,7 @@ const getConfig = async <
     if (!isValid) {
       notificationService.showError(
         i18next.t(ERROR_TITLES.VALIDATION_ERROR),
-        i18next.t(CONFIG_ERROR_MESSAGES.VALIDATION_FAILED),
+        i18next.t(ERROR_MESSAGES.VALIDATION_FAILED),
       );
       return null;
     }

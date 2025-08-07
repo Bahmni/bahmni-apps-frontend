@@ -28,3 +28,8 @@ export {
   fetchReactionConcepts,
   getFormattedAllergies,
 } from './allergyService';
+
+export {
+  getClinicalConfig, getDashboardConfig, getMedicationConfig,
+  type ClinicalConfig, type DashboardConfig, type MedicationJSONConfig, type ClinicalConfigContextType
+} from './configService';

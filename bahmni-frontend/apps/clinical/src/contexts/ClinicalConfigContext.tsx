@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { ClinicalConfigContextType } from '@types/config';
+import { ClinicalConfigContextType } from '@bahmni-frontend/bahmni-services';
 
 export const ClinicalConfigContext = createContext<
   ClinicalConfigContextType | undefined

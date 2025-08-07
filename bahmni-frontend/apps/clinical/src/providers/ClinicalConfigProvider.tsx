@@ -1,9 +1,9 @@
 import React, { ReactNode, useState, useMemo, useEffect } from 'react';
-import { ClinicalConfigContext } from '@contexts/ClinicalConfigContext';
-import { getClinicalConfig } from '@services/configService';
-import notificationService from '@services/notificationService';
-import { ClinicalConfig } from '@types/config';
-import { getFormattedError } from '@utils/common';
+import { ClinicalConfigContext } from '../contexts/ClinicalConfigContext';
+import { getClinicalConfig } from '@bahmni-frontend/bahmni-services';
+import { notificationService } from '@bahmni-frontend/bahmni-services';
+import { ClinicalConfig } from '@bahmni-frontend/bahmni-services';
+import { getFormattedError } from '@bahmni-frontend/bahmni-services';
 
 interface ClinicalConfigProviderProps {
   children: ReactNode;

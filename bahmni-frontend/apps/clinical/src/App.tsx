@@ -5,6 +5,8 @@ import { Dashboard } from './pages/Dashboard';
 import { initAppI18n } from '@bahmni-frontend/bahmni-services';
 import { initFontAwesome } from '@bahmni-frontend/bahmni-design-system';
 import { NotificationProvider } from '@bahmni-frontend/bahmni-widgets';
+import { ClinicalConfigProvider } from './providers/ClinicalConfigProvider';
+import { NotificationServiceComponent } from '@bahmni-frontend/bahmni-widgets';
 
 const ClinicalApp: React.FC = () => {
     const [isInitialized, setIsInitialized] = useState(false);
@@ -30,9 +32,12 @@ const ClinicalApp: React.FC = () => {
 
     return (
         <NotificationProvider>
-            <Routes>
-                <Route path=":patientUuid" element={<Dashboard />} />
-            </Routes>
+            <NotificationServiceComponent />
+            <ClinicalConfigProvider>
+                <Routes>
+                    <Route path=":patientUuid" element={<Dashboard />} />
+                </Routes>
+            </ClinicalConfigProvider>
         </NotificationProvider>
     );
 };

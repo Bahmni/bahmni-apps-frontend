@@ -1,5 +1,4 @@
 import Ajv from 'ajv';
-import i18n from '@/setupTests.i18n';
 import {
   validFullClinicalConfig,
   minimalClinicalConfig,
@@ -9,25 +8,34 @@ import {
   allOptionalFieldsConfig,
   validDashboardConfig,
   invalidDashboardConfig,
-} from '@__mocks__/configMocks';
+} from '../__mocks__/configMocks';
 import {
   CLINICAL_CONFIG_URL,
   DASHBOARD_CONFIG_URL,
   MEDICATIONS_CONFIG_URL,
-} from '@constants/config';
-import { CONFIG_ERROR_MESSAGES, ERROR_TITLES } from '@constants/errors';
-import { MedicationJSONConfig } from '@types/medicationConfig';
-import * as commonUtils from '@utils/common';
-import * as api from '../api';
+} from '../constants';
+import { ERROR_MESSAGES, ERROR_TITLES } from '../constants';
+import { MedicationJSONConfig } from '../models/medicationConfig';
+import * as api from '../../api';
 import {
   getClinicalConfig,
   getDashboardConfig,
   getMedicationConfig,
 } from '../configService';
-import notificationService from '../notificationService';
+import { notificationService } from '../../notification';
+import { getFormattedError } from '../../errorHandling';
+
+//TODO: Remove this import once the test i18n setup is complete
+jest.mock('i18next', () => ({
+  __esModule: true,
+  default: {
+      t: jest.fn().mockImplementation((key: string) => key),
+  }
+}));
+
 
 // Mock the api module
-jest.mock('../api');
+jest.mock('../../api');
 const mockGet = api.get as jest.MockedFunction<typeof api.get>;
 
 // Mock Ajv
@@ -35,7 +43,7 @@ jest.mock('ajv');
 const mockAjv = Ajv as jest.MockedClass<typeof Ajv>;
 
 // Mock common utils
-jest.mock('@utils/common', () => ({
+jest.mock('../../errorHandling', () => ({
   getFormattedError: jest.fn().mockImplementation((error) => ({
     title: 'Error',
     message: error instanceof Error ? error.message : 'Unknown error',
@@ -43,20 +51,19 @@ jest.mock('@utils/common', () => ({
   generateId: jest.fn().mockReturnValue('mock-generated-id'),
 }));
 const mockGetFormattedError =
-  commonUtils.getFormattedError as jest.MockedFunction<
-    typeof commonUtils.getFormattedError
+  getFormattedError as jest.MockedFunction<
+    typeof getFormattedError
   >;
 
 // Mock notificationService
-jest.mock('../notificationService', () => ({
-  showError: jest.fn(),
-  __esModule: true,
-  default: {
+jest.mock('../../notification', () => ({
+  notificationService: {
     showError: jest.fn(),
   },
+  __esModule: true
 }));
 
-jest.mock('@schemas/clinicalConfig.schema.json', () => ({
+jest.mock('../schemas/clinicalConfig.schema.json', () => ({
   __esModule: true,
   default: {
     type: 'object',
@@ -149,7 +156,7 @@ const mockSchema = {
   required: ['patientInformation', 'actions', 'dashboards', 'consultationPad'],
 };
 
-jest.mock('@schemas/dashboardConfig.schema.json', () => ({
+jest.mock('../schemas/dashboardConfig.schema.json', () => ({
   __esModule: true,
   default: {
     type: 'object',
@@ -191,7 +198,7 @@ const mockDashboardSchema = {
   },
 };
 
-jest.mock('@schemas/medicationConfig.schema.json', () => ({
+jest.mock('../schemas/medicationConfig.schema.json', () => ({
   __esModule: true,
   default: {
     type: 'object',
@@ -393,8 +400,8 @@ describe('ConfigService', () => {
         expect(result).toBeNull();
         expect(mockGet).toHaveBeenCalledWith(CLINICAL_CONFIG_URL);
         expect(mockShowError).toHaveBeenCalledWith(
-          i18n.t(ERROR_TITLES.CONFIG_ERROR),
-          i18n.t(CONFIG_ERROR_MESSAGES.CONFIG_NOT_FOUND),
+          ERROR_TITLES.CONFIG_ERROR,
+          ERROR_MESSAGES.CONFIG_NOT_FOUND,
         );
       });
 
@@ -420,8 +427,8 @@ describe('ConfigService', () => {
         expect(mockGet).toHaveBeenCalledWith(CLINICAL_CONFIG_URL);
         expect(mockValidate).toHaveBeenCalledWith(invalidClinicalConfig);
         expect(mockShowError).toHaveBeenCalledWith(
-          i18n.t(ERROR_TITLES.VALIDATION_ERROR),
-          i18n.t(CONFIG_ERROR_MESSAGES.VALIDATION_FAILED),
+          ERROR_TITLES.VALIDATION_ERROR,
+          ERROR_MESSAGES.VALIDATION_FAILED,
         );
       });
 
@@ -556,8 +563,8 @@ describe('ConfigService', () => {
       expect(mockCompile).toHaveBeenCalledWith(mockSchema);
       expect(mockValidate).toHaveBeenCalledWith(invalidClinicalConfig);
       expect(mockShowError).toHaveBeenCalledWith(
-        i18n.t(ERROR_TITLES.VALIDATION_ERROR),
-        i18n.t(CONFIG_ERROR_MESSAGES.VALIDATION_FAILED),
+        ERROR_TITLES.VALIDATION_ERROR,
+        ERROR_MESSAGES.VALIDATION_FAILED,
       );
     });
   });
@@ -662,8 +669,8 @@ describe('ConfigService', () => {
       expect(mockCompile).toHaveBeenCalledWith(mockDashboardSchema);
       expect(mockValidate).toHaveBeenCalledWith(invalidDashboardConfig);
       expect(mockShowError).toHaveBeenCalledWith(
-        i18n.t(ERROR_TITLES.VALIDATION_ERROR),
-        i18n.t(CONFIG_ERROR_MESSAGES.VALIDATION_FAILED),
+        ERROR_TITLES.VALIDATION_ERROR,
+        ERROR_MESSAGES.VALIDATION_FAILED,
       );
     });
   });
@@ -772,8 +779,8 @@ describe('ConfigService', () => {
         expect(result).toBeNull();
         expect(mockGet).toHaveBeenCalledWith(MEDICATIONS_CONFIG_URL);
         expect(mockShowError).toHaveBeenCalledWith(
-          i18n.t(ERROR_TITLES.CONFIG_ERROR),
-          i18n.t(CONFIG_ERROR_MESSAGES.CONFIG_NOT_FOUND),
+          ERROR_TITLES.CONFIG_ERROR,
+          ERROR_MESSAGES.CONFIG_NOT_FOUND,
         );
       });
 
@@ -799,8 +806,8 @@ describe('ConfigService', () => {
         expect(mockGet).toHaveBeenCalledWith(MEDICATIONS_CONFIG_URL);
         expect(mockValidate).toHaveBeenCalledWith(invalidMedicationConfig);
         expect(mockShowError).toHaveBeenCalledWith(
-          i18n.t(ERROR_TITLES.VALIDATION_ERROR),
-          i18n.t(CONFIG_ERROR_MESSAGES.VALIDATION_FAILED),
+          ERROR_TITLES.VALIDATION_ERROR,
+          ERROR_MESSAGES.VALIDATION_FAILED,
         );
       });
 
