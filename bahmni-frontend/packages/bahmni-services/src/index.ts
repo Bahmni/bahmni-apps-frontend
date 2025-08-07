@@ -72,15 +72,27 @@ export {
 } from './labInvestigationService';
 
 export {
-  getClinicalConfig, getDashboardConfig, getMedicationConfig,
-  type ClinicalConfig, type DashboardConfig, type MedicationJSONConfig, type DashboardSectionConfig, type Dashboard,
+  getClinicalConfig,
+  getDashboardConfig,
+  getMedicationConfig,
+  type ClinicalConfig,
+  type DashboardConfig,
+  type MedicationJSONConfig,
+  type DashboardSectionConfig,
+  type Dashboard,
 } from './configService';
 
 export { getCurrentUser, type User } from './userService';
-export { getCurrentProvider, type Provider, type Person } from './providerService';
+export {
+  getCurrentProvider,
+  type Provider,
+  type Person,
+} from './providerService';
 export { findActiveEncounterInSession } from './encounterSessionService';
 
-export { 
-  dispatchAuditEvent, AUDIT_LOG_EVENT_DETAILS, initializeAuditListener,
+export {
+  dispatchAuditEvent,
+  AUDIT_LOG_EVENT_DETAILS,
+  initializeAuditListener,
   type AuditEventType,
- } from './auditLogService';
+} from './auditLogService';
