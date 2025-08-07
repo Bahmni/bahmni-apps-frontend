@@ -75,3 +75,4 @@ export {
   FilterableMultiSelect,
   type FilterableMultiSelectProps,
 } from './atoms/filterableMultiSelect';
+export { Stack, type StackProps } from './atoms/stack';
