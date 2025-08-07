@@ -1,5 +1,5 @@
 {
-  "name": "@bahmni-frontend/bahmni-widgets",
+  "name": "@bahmni-frontend/sample-app-module",
   "version": "0.0.1",
   "type": "module",
   "main": "./dist/index.js",
@@ -14,18 +14,5 @@
       "default": "./dist/index.js"
     },
     "./styles": "./dist/index.css"
-  },
-  "author": "Bahmni Team",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/bahnew/bahmni-clinical-frontend.git",
-    "directory": "bahmni-frontend/packages/bahmni-widgets"
-  },
-  "dependencies": {
-  },
-  "peerDependencies": {
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
   }
 }
