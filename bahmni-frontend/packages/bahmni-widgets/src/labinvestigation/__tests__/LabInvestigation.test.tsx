@@ -8,7 +8,7 @@ import {
   LabTestPriority,
   FormattedLabTest,
 } from '@types/labInvestigation';
-import LabInvestigationControl from '../LabInvestigationControl';
+import LabInvestigationControl from '../LabInvestigation';
 
 // Mock the useLabInvestigations hook
 jest.mock('@hooks/useLabInvestigations');

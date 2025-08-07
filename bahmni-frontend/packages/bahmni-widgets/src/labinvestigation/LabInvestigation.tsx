@@ -1,13 +1,19 @@
-import { Accordion, AccordionItem, SkeletonText } from '@carbon/react';
+import {
+  Accordion,
+  AccordionItem,
+  SkeletonText,
+} from '@bahmni-frontend/bahmni-design-system';
 import React, { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import useLabInvestigations from '@hooks/useLabInvestigations';
-import { groupLabTestsByDate } from '@services/labInvestigationService';
-import { LabTestsByDate } from '@types/labInvestigation';
+import useLabInvestigations from './useLabInvestigations';
+import {
+  groupLabTestsByDate,
+  useTranslation,
+  LabTestsByDate,
+} from '@bahmni-frontend/bahmni-services';
 import LabInvestigationItem from './LabInvestigationItem';
-import * as styles from './styles/LabInvestigation.module.scss';
+import styles from './styles/LabInvestigation.module.scss';
 
-const LabInvestigationControl: React.FC = () => {
+const LabInvestigation: React.FC = () => {
   const { t } = useTranslation();
   const { labTests, isLoading, hasError } = useLabInvestigations();
 
@@ -81,4 +87,4 @@ const LabInvestigationControl: React.FC = () => {
   );
 };
 
-export default LabInvestigationControl;
+export default LabInvestigation;

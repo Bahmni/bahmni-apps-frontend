@@ -9,7 +9,7 @@ import {
 import useLabInvestigations from '@hooks/useLabInvestigations';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import { groupLabTestsByDate } from '@services/labInvestigationService';
-import LabInvestigationControl from '../LabInvestigationControl';
+import LabInvestigationControl from '../LabInvestigation';
 
 // Mock the hooks and services
 jest.mock('@hooks/usePatientUUID');
