@@ -3,10 +3,13 @@
   "include": [],
   "references": [
     {
-      "path": "../../packages/bahmni-services"
+      "path": "../../packages/bahmni-widgets"
     },
     {
-      "path": "../../packages/bahmni-widgets"
+      "path": "../../packages/bahmni-design-system"
+    },
+    {
+      "path": "../../packages/bahmni-services"
     },
     {
       "path": "./tsconfig.lib.json"

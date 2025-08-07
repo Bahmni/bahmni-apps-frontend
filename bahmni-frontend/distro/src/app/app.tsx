@@ -2,8 +2,6 @@
 // import styles from './app.module.scss';
 import { Route, Routes } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
-import '@bahmni-frontend/clinical/styles';
-import '@bahmni-frontend/sample-app-module/styles';
 
 // Lazy load components
 const IndexPage = lazy(() => import('./IndexPage').then(module => ({ default: module.IndexPage })));

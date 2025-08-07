@@ -34,6 +34,9 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
+      "path": "../bahmni-design-system/tsconfig.lib.json"
+    },
+    {
       "path": "../bahmni-services/tsconfig.lib.json"
     }
   ]
