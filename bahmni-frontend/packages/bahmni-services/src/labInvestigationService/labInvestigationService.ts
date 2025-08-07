@@ -1,15 +1,11 @@
 import { Bundle, ServiceRequest } from 'fhir/r4';
-import { PATIENT_LAB_INVESTIGATION_RESOURCE_URL } from '@constants/app';
-import { FHIR_LAB_ORDER_CONCEPT_TYPE_EXTENSION_URL } from '@constants/fhir';
 import {
-  FormattedLabTest,
-  LabTestPriority,
-  LabTestsByDate,
-} from '@types/labInvestigation';
-import { getFormattedError } from '@utils/common';
-import { formatDate } from '@utils/date';
-import { get } from './api';
-import notificationService from './notificationService';
+  PATIENT_LAB_INVESTIGATION_RESOURCE_URL,
+  FHIR_LAB_ORDER_CONCEPT_TYPE_EXTENSION_URL,
+} from './constants';
+import { FormattedLabTest, LabTestPriority, LabTestsByDate } from './models';
+import { formatDate } from '../date';
+import { get } from '../api';
 
 /**
  * Maps a FHIR priority code to LabTestPriority enum
@@ -75,18 +71,12 @@ export async function getPatientLabTestsBundle(
 export async function getLabTests(
   patientUUID: string,
 ): Promise<ServiceRequest[]> {
-  try {
-    const fhirLabTestBundle = await getPatientLabTestsBundle(patientUUID);
-    return (
-      fhirLabTestBundle.entry
-        ?.map((entry) => entry.resource)
-        .filter((r): r is ServiceRequest => r !== undefined) ?? []
-    );
-  } catch (error) {
-    const { title, message } = getFormattedError(error);
-    notificationService.showError(title, message);
-    return [];
-  }
+  const fhirLabTestBundle = await getPatientLabTestsBundle(patientUUID);
+  return (
+    fhirLabTestBundle.entry
+      ?.map((entry) => entry.resource)
+      .filter((r): r is ServiceRequest => r !== undefined) ?? []
+  );
 }
 
 /**
@@ -116,40 +106,34 @@ export const determineTestType = (labTest: ServiceRequest): string => {
  * @returns An array of formatted lab test objects
  */
 export function formatLabTests(labTests: ServiceRequest[]): FormattedLabTest[] {
-  try {
-    return labTests
-      .filter(
-        (labTest): labTest is ServiceRequest & { id: string } => !!labTest.id,
-      )
-      .map((labTest) => {
-        const priority = mapLabTestPriority(labTest);
-        const orderedDate = labTest.occurrencePeriod?.start;
-        let formattedDate;
-        if (orderedDate) {
-          const dateFormatResult = formatDate(orderedDate, 'MMMM d, yyyy');
-          formattedDate =
-            dateFormatResult.formattedResult || orderedDate.split('T')[0];
-        }
+  return labTests
+    .filter(
+      (labTest): labTest is ServiceRequest & { id: string } => !!labTest.id,
+    )
+    .map((labTest) => {
+      const priority = mapLabTestPriority(labTest);
+      const orderedDate = labTest.occurrencePeriod?.start;
+      let formattedDate;
+      if (orderedDate) {
+        const dateFormatResult = formatDate(orderedDate, 'MMMM d, yyyy');
+        formattedDate =
+          dateFormatResult.formattedResult || orderedDate.split('T')[0];
+      }
 
-        const testType = determineTestType(labTest);
+      const testType = determineTestType(labTest);
 
-        return {
-          id: labTest.id,
-          testName: labTest.code?.text ?? '',
-          priority,
-          orderedBy: labTest.requester?.display ?? '',
-          orderedDate: orderedDate ?? '',
-          formattedDate: formattedDate ?? '',
-          // Result would typically come from a separate Observation resource
-          result: undefined,
-          testType,
-        };
-      });
-  } catch (error) {
-    const { title, message } = getFormattedError(error);
-    notificationService.showError(title, message);
-    return [];
-  }
+      return {
+        id: labTest.id,
+        testName: labTest.code?.text ?? '',
+        priority,
+        orderedBy: labTest.requester?.display ?? '',
+        orderedDate: orderedDate ?? '',
+        formattedDate: formattedDate ?? '',
+        // Result would typically come from a separate Observation resource
+        result: undefined,
+        testType,
+      };
+    });
 }
 
 /**
@@ -160,32 +144,26 @@ export function formatLabTests(labTests: ServiceRequest[]): FormattedLabTest[] {
 export function groupLabTestsByDate(
   labTests: FormattedLabTest[],
 ): LabTestsByDate[] {
-  try {
-    const dateMap = new Map<string, LabTestsByDate>();
+  const dateMap = new Map<string, LabTestsByDate>();
 
-    labTests.forEach((labTest) => {
-      const dateKey = labTest.orderedDate.split('T')[0]; // Get YYYY-MM-DD part
+  labTests.forEach((labTest) => {
+    const dateKey = labTest.orderedDate.split('T')[0]; // Get YYYY-MM-DD part
 
-      if (!dateMap.has(dateKey)) {
-        dateMap.set(dateKey, {
-          date: labTest.formattedDate,
-          rawDate: labTest.orderedDate,
-          tests: [],
-        });
-      }
+    if (!dateMap.has(dateKey)) {
+      dateMap.set(dateKey, {
+        date: labTest.formattedDate,
+        rawDate: labTest.orderedDate,
+        tests: [],
+      });
+    }
 
-      dateMap.get(dateKey)?.tests.push(labTest);
-    });
+    dateMap.get(dateKey)?.tests.push(labTest);
+  });
 
-    // Sort by date (newest first)
-    return Array.from(dateMap.values()).sort(
-      (a, b) => new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime(),
-    );
-  } catch (error) {
-    const { title, message } = getFormattedError(error);
-    notificationService.showError(title, message);
-    return [];
-  }
+  // Sort by date (newest first)
+  return Array.from(dateMap.values()).sort(
+    (a, b) => new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime(),
+  );
 }
 
 /**
@@ -196,20 +174,7 @@ export function groupLabTestsByDate(
 export async function getPatientLabTestsByDate(
   patientUUID: string,
 ): Promise<LabTestsByDate[]> {
-  try {
-    const labTests = await getLabTests(patientUUID);
-    const formattedLabTests = formatLabTests(labTests);
-    return groupLabTestsByDate(formattedLabTests);
-  } catch (error) {
-    const { title, message } = getFormattedError(error);
-    notificationService.showError(title, message);
-    return [];
-  }
+  const labTests = await getLabTests(patientUUID);
+  const formattedLabTests = formatLabTests(labTests);
+  return groupLabTestsByDate(formattedLabTests);
 }
-
-export default {
-  getLabTests,
-  formatLabTests,
-  groupLabTestsByDate,
-  getPatientLabTestsByDate,
-};
