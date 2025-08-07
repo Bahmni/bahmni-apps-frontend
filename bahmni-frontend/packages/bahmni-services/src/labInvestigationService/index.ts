@@ -2,4 +2,4 @@ export {
   getPatientLabTestsBundle,
   getPatientLabInvestigations,
 } from './labInvestigationService';
-export { type FormattedLabTest } from './models';
+export { type FormattedLabTest, LabTestPriority } from './models';

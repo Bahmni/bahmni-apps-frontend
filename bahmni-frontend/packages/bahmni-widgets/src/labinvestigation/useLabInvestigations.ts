@@ -32,6 +32,7 @@ export default function useLabInvestigations() {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_) {
         setHasError(true);
+        setLabTests([]);
       } finally {
         setIsLoading(false);
       }

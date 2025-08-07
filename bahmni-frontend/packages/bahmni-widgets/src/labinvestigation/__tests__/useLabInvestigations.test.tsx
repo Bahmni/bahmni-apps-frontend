@@ -1,360 +1,231 @@
 import { renderHook, waitFor } from '@testing-library/react';
-import React from 'react';
-import { usePatientUUID } from '@hooks/usePatientUUID';
-import { getLabTests, formatLabTests } from '@services/labInvestigationService';
-import { FormattedLabTest, LabTestPriority } from '@types/labInvestigation';
+import {
+  getPatientLabInvestigations,
+  FormattedLabTest,
+  LabTestPriority,
+} from '@bahmni-frontend/bahmni-services';
+import { usePatientUUID } from '../../hooks/usePatientUUID';
 import useLabInvestigations from '../useLabInvestigations';
 
-// Mock dependencies
-jest.mock('@services/labInvestigationService');
-jest.mock('@hooks/usePatientUUID');
+jest.mock('@bahmni-frontend/bahmni-services');
+jest.mock('../../hooks/usePatientUUID');
 
-// Type the mocked functions
-const mockedGetLabTests = getLabTests as jest.MockedFunction<
-  typeof getLabTests
->;
-const mockedFormatLabTests = formatLabTests as jest.MockedFunction<
-  typeof formatLabTests
->;
+const mockedGetPatientLabInvestigations =
+  getPatientLabInvestigations as jest.MockedFunction<
+    typeof getPatientLabInvestigations
+  >;
 const mockedUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
 >;
 
-describe('useLabInvestigations', () => {
-  // Mock state setters
-  let mockSetLabTests: jest.Mock;
-  let mockSetLoading: jest.Mock;
-  let mockSetError: jest.Mock;
+jest.mock('react-router-dom', () => ({
+  useParams: jest.fn(),
+}));
 
-  // Mock lab tests data
-  const mockFormattedLabTests: FormattedLabTest[] = [
+describe('useLabInvestigations hook', () => {
+  const mockPatientUUID = 'patient-uuid-123';
+
+  const mockLabTests: FormattedLabTest[] = [
     {
-      id: 'aba2a637-05f5-44c6-9021-c5cd05548342',
-      testName: 'CD8%',
+      id: 'test-uuid-123',
+      testName: 'Complete Blood Count',
       priority: LabTestPriority.routine,
-      orderedBy: 'Super Man',
-      orderedDate: '2025-05-08T12:44:24+00:00',
-      formattedDate: '05/08/2025',
-      result: undefined,
-      testType: 'Single Test',
-    },
-    {
-      id: '29e240ce-5a3d-4643-8d4b-ca5b4cbf665d',
-      testName: 'Absolute eosinophil count test',
-      priority: LabTestPriority.routine,
-      orderedBy: 'Super Man',
-      orderedDate: '2025-04-09T13:21:22+00:00',
-      formattedDate: '04/09/2025',
-      result: undefined,
-      testType: 'Single Test',
-    },
-    {
-      id: 'e7eca932-1d6f-44a4-bd94-e1105860ab77',
-      testName: 'Clotting Panel',
-      priority: LabTestPriority.routine,
-      orderedBy: 'Super Man',
-      orderedDate: '2025-04-09T13:21:22+00:00',
-      formattedDate: '04/09/2025',
+      orderedBy: 'Dr. John Smith',
+      orderedDate: '2025-01-15T10:30:00.000Z',
+      formattedDate: '01/15/2025',
       result: undefined,
       testType: 'Panel',
     },
-  ];
-
-  // Mock raw lab tests
-  const mockLabTestFhirBundle = [
     {
-      resourceType: 'ServiceRequest',
-      id: 'test1',
-      meta: {
-        versionId: '1744204882000',
-        lastUpdated: '2025-04-09T13:21:22.000+00:00',
-      },
-      extension: [
-        {
-          url: 'http://fhir.bahmni.org/ext/lab-order-concept-type',
-          valueString: 'Test',
-        },
-      ],
-      status: 'completed',
-      intent: 'order',
-      category: [
-        {
-          coding: [
-            {
-              system: 'http://fhir.bahmni.org/code-system/order-type',
-              code: 'd3560b17-5e07-11ef-8f7c-0242ac120002',
-              display: 'Lab Order',
-            },
-          ],
-          text: 'Lab Order',
-        },
-      ],
-      priority: 'routine',
-      code: {
-        coding: [
-          {
-            code: '161432AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-            display: 'Test 1',
-          },
-        ],
-        text: 'Test 1',
-      },
-      subject: {
-        reference: 'Patient/58493859-63f7-48b6-bd0b-698d5a119a21',
-        type: 'Patient',
-        display: 'John Doe',
-      },
-      encounter: {
-        reference: 'Encounter/da968503-e1ff-426e-a110-601d893847d4',
-        type: 'Encounter',
-      },
-      occurrencePeriod: {
-        start: '2025-04-09T13:21:22+00:00',
-        end: '2025-04-09T14:21:22+00:00',
-      },
-      requester: {
-        reference: 'Practitioner/d7a67c17-5e07-11ef-8f7c-0242ac120002',
-        type: 'Practitioner',
-        display: 'Dr. Smith',
-      },
-    },
-    {
-      resourceType: 'ServiceRequest',
-      id: 'test2',
-      meta: {
-        versionId: '1744204882000',
-        lastUpdated: '2025-04-09T13:21:22.000+00:00',
-      },
-      extension: [
-        {
-          url: 'http://fhir.bahmni.org/ext/lab-order-concept-type',
-          valueString: 'Test',
-        },
-      ],
-      status: 'completed',
-      intent: 'order',
-      category: [
-        {
-          coding: [
-            {
-              system: 'http://fhir.bahmni.org/code-system/order-type',
-              code: 'd3560b17-5e07-11ef-8f7c-0242ac120002',
-              display: 'Lab Order',
-            },
-          ],
-          text: 'Lab Order',
-        },
-      ],
-      priority: 'routine',
-      code: {
-        coding: [
-          {
-            code: '161432AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-            display: 'Test 2',
-          },
-        ],
-        text: 'Test 2',
-      },
-      subject: {
-        reference: 'Patient/58493859-63f7-48b6-bd0b-698d5a119a21',
-        type: 'Patient',
-        display: 'John Doe',
-      },
-      encounter: {
-        reference: 'Encounter/da968503-e1ff-426e-a110-601d893847d4',
-        type: 'Encounter',
-      },
-      occurrencePeriod: {
-        start: '2025-04-09T13:21:22+00:00',
-        end: '2025-04-09T14:21:22+00:00',
-      },
-      requester: {
-        reference: 'Practitioner/d7a67c17-5e07-11ef-8f7c-0242ac120002',
-        type: 'Practitioner',
-        display: 'Dr. Smith',
-      },
-    },
-    {
-      resourceType: 'ServiceRequest',
-      id: 'test3',
-      meta: {
-        versionId: '1744204882000',
-        lastUpdated: '2025-04-09T13:21:22.000+00:00',
-      },
-      extension: [
-        {
-          url: 'http://fhir.bahmni.org/ext/lab-order-concept-type',
-          valueString: 'Panel',
-        },
-      ],
-      status: 'completed',
-      intent: 'order',
-      category: [
-        {
-          coding: [
-            {
-              system: 'http://fhir.bahmni.org/code-system/order-type',
-              code: 'd3560b17-5e07-11ef-8f7c-0242ac120002',
-              display: 'Lab Order',
-            },
-          ],
-          text: 'Lab Order',
-        },
-      ],
-      priority: 'routine',
-      code: {
-        coding: [
-          {
-            code: '161432AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-            display: 'Test 3',
-          },
-        ],
-        text: 'Test 3',
-      },
-      subject: {
-        reference: 'Patient/58493859-63f7-48b6-bd0b-698d5a119a21',
-        type: 'Patient',
-        display: 'John Doe',
-      },
-      encounter: {
-        reference: 'Encounter/da968503-e1ff-426e-a110-601d893847d4',
-        type: 'Encounter',
-      },
-      occurrencePeriod: {
-        start: '2025-04-09T13:21:22+00:00',
-        end: '2025-04-09T14:21:22+00:00',
-      },
-      requester: {
-        reference: 'Practitioner/d7a67c17-5e07-11ef-8f7c-0242ac120002',
-        type: 'Practitioner',
-        display: 'Dr. Smith',
-      },
+      id: 'test-uuid-456',
+      testName: 'Blood Glucose',
+      priority: LabTestPriority.stat,
+      orderedBy: 'Dr. Jane Doe',
+      orderedDate: '2025-01-16T14:15:00.000Z',
+      formattedDate: '01/16/2025',
+      result: '95 mg/dL',
+      testType: 'Single Test',
     },
   ];
 
   beforeEach(() => {
     jest.clearAllMocks();
-
-    // Setup useState mock implementation
-    mockSetLabTests = jest.fn();
-    mockSetLoading = jest.fn();
-    mockSetError = jest.fn();
-
-    // Mock React hooks
-    jest
-      .spyOn(React, 'useState')
-      .mockImplementationOnce(() => [[], mockSetLabTests])
-      .mockImplementationOnce(() => [true, mockSetLoading])
-      .mockImplementationOnce(() => [false, mockSetError]);
-
-    let previousDeps: string | undefined;
-    jest.spyOn(React, 'useEffect').mockImplementation((effect, deps) => {
-      const depsString = JSON.stringify(deps);
-      if (depsString !== previousDeps) {
-        effect();
-        previousDeps = depsString;
-      }
-    });
-
-    // Mock service functions
-    mockedGetLabTests.mockResolvedValue(mockLabTestFhirBundle);
-    mockedFormatLabTests.mockReturnValue(mockFormattedLabTests);
   });
 
-  // Happy Path Tests
-  describe('Happy Paths', () => {
-    it('should fetch lab tests when a valid patientUUID is provided', async () => {
-      // Arrange
-      const patientUUID = '58493859-63f7-48b6-bd0b-698d5a119a21';
-      mockedUsePatientUUID.mockReturnValue(patientUUID);
+  it('initializes with default values', () => {
+    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
 
-      // Act
+    const { result } = renderHook(() => useLabInvestigations());
+
+    expect(result.current.labTests).toEqual([]);
+    expect(result.current.isLoading).toBe(true);
+    expect(result.current.hasError).toBe(false);
+  });
+
+  it('fetches lab investigations successfully', async () => {
+    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+    mockedGetPatientLabInvestigations.mockResolvedValueOnce(mockLabTests);
+
+    const { result } = renderHook(() => useLabInvestigations());
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(mockedGetPatientLabInvestigations).toHaveBeenCalledWith(
+      mockPatientUUID,
+    );
+    expect(result.current.labTests).toEqual(mockLabTests);
+    expect(result.current.hasError).toBe(false);
+  });
+
+  it.each([null, ''])(
+    'handles invalid patient UUID: %s',
+    async (invalidUUID) => {
+      mockedUsePatientUUID.mockReturnValue(invalidUUID);
+
       const { result } = renderHook(() => useLabInvestigations());
 
-      // Wait for async operations
       await waitFor(() => {
-        expect(mockedGetLabTests).toHaveBeenCalledWith(patientUUID);
-        expect(mockedFormatLabTests).toHaveBeenCalledWith(
-          mockLabTestFhirBundle,
-        );
-        expect(mockSetLabTests).toHaveBeenCalledWith(mockFormattedLabTests);
-        expect(mockSetLoading).toHaveBeenCalledWith(false);
-        expect(mockSetError).toHaveBeenCalledWith(false);
+        expect(result.current.isLoading).toBe(false);
       });
 
-      // Assert the returned values
+      expect(mockedGetPatientLabInvestigations).not.toHaveBeenCalled();
       expect(result.current.labTests).toEqual([]);
-      expect(result.current.isLoading).toBe(true);
       expect(result.current.hasError).toBe(false);
+    },
+  );
+
+  it('handles service error', async () => {
+    const mockError = new Error('Service failed');
+    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+    mockedGetPatientLabInvestigations.mockRejectedValueOnce(mockError);
+
+    const { result } = renderHook(() => useLabInvestigations());
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
     });
+
+    expect(mockedGetPatientLabInvestigations).toHaveBeenCalledWith(
+      mockPatientUUID,
+    );
+    expect(result.current.hasError).toBe(true);
+    expect(result.current.labTests).toEqual([]);
   });
 
-  // Sad Path Tests
-  describe('Sad Paths', () => {
-    it('should handle null patientUUID', async () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(null);
+  it('handles non-Error rejection', async () => {
+    const nonErrorObject = { message: 'API Error' };
+    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+    mockedGetPatientLabInvestigations.mockRejectedValueOnce(nonErrorObject);
 
-      // Act
-      renderHook(() => useLabInvestigations());
+    const { result } = renderHook(() => useLabInvestigations());
 
-      // Assert
-      await waitFor(() => {
-        expect(mockedGetLabTests).not.toHaveBeenCalled();
-        expect(mockedFormatLabTests).not.toHaveBeenCalled();
-        expect(mockSetLabTests).not.toHaveBeenCalled();
-        expect(mockSetLoading).toHaveBeenCalledWith(false);
-      });
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
     });
 
-    it('should handle API call failure', async () => {
-      // Arrange
-      const patientUUID = '58493859-63f7-48b6-bd0b-698d5a119a21';
-      mockedUsePatientUUID.mockReturnValue(patientUUID);
-      const error = new Error('Network error');
-      mockedGetLabTests.mockRejectedValueOnce(error);
+    expect(result.current.hasError).toBe(true);
+    expect(result.current.labTests).toEqual([]);
+  });
 
-      jest.spyOn(console, 'error').mockImplementation(() => {});
+  it('handles empty lab tests array from API', async () => {
+    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+    mockedGetPatientLabInvestigations.mockResolvedValueOnce([]);
 
-      // Act
-      renderHook(() => useLabInvestigations());
+    const { result } = renderHook(() => useLabInvestigations());
 
-      // Wait for async operations
-      await waitFor(() => {
-        expect(mockedGetLabTests).toHaveBeenCalledWith(patientUUID);
-        expect(mockSetError).toHaveBeenCalledWith(true);
-        expect(mockSetLoading).toHaveBeenCalledWith(false);
-      });
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
     });
 
-    it('should handle empty lab tests array from API', async () => {
-      // Arrange
-      const patientUUID = '58493859-63f7-48b6-bd0b-698d5a119a21';
-      mockedUsePatientUUID.mockReturnValue(patientUUID);
-      mockedGetLabTests.mockResolvedValueOnce([]);
-      mockedFormatLabTests.mockReturnValueOnce([]);
+    expect(mockedGetPatientLabInvestigations).toHaveBeenCalledWith(
+      mockPatientUUID,
+    );
+    expect(result.current.labTests).toEqual([]);
+    expect(result.current.hasError).toBe(false);
+  });
 
-      // Act
-      renderHook(() => useLabInvestigations());
+  it('updates when patient UUID changes', async () => {
+    const newPatientUUID = 'patient-uuid-456';
+    const newLabTests: FormattedLabTest[] = [
+      {
+        id: 'test-uuid-789',
+        testName: 'Lipid Panel',
+        priority: LabTestPriority.routine,
+        orderedBy: 'Dr. Bob Wilson',
+        orderedDate: '2025-01-17T09:00:00.000Z',
+        formattedDate: '01/17/2025',
+        result: undefined,
+        testType: 'Panel',
+      },
+    ];
 
-      // Wait for async operations
-      await waitFor(() => {
-        expect(mockedGetLabTests).toHaveBeenCalledWith(patientUUID);
-        expect(mockedFormatLabTests).toHaveBeenCalledWith([]);
-        expect(mockSetLabTests).toHaveBeenCalledWith([]);
-        expect(mockSetLoading).toHaveBeenCalledWith(false);
-      });
+    mockedGetPatientLabInvestigations
+      .mockResolvedValueOnce(mockLabTests)
+      .mockResolvedValueOnce(newLabTests);
+
+    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+    const { result, rerender } = renderHook(() => useLabInvestigations());
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
     });
 
-    it('should cleanup properly on unmount', () => {
-      // Arrange
-      mockedUsePatientUUID.mockReturnValue(
-        '58493859-63f7-48b6-bd0b-698d5a119a21',
-      );
+    expect(result.current.labTests).toEqual(mockLabTests);
 
-      // Act & Assert
-      const { unmount } = renderHook(() => useLabInvestigations());
-      expect(() => unmount()).not.toThrow();
+    mockedUsePatientUUID.mockReturnValue(newPatientUUID);
+    rerender();
+
+    await waitFor(() => {
+      expect(result.current.labTests).toEqual(newLabTests);
+    });
+
+    expect(mockedGetPatientLabInvestigations).toHaveBeenCalledWith(
+      newPatientUUID,
+    );
+  });
+
+  it('sets loading state correctly during fetch', async () => {
+    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+    mockedGetPatientLabInvestigations.mockImplementation(
+      () =>
+        new Promise((resolve) => setTimeout(() => resolve(mockLabTests), 100)),
+    );
+
+    const { result } = renderHook(() => useLabInvestigations());
+
+    expect(result.current.isLoading).toBe(true);
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.labTests).toEqual(mockLabTests);
+  });
+
+  it('resets error state on successful fetch after previous error', async () => {
+    const mockError = new Error('Initial error');
+    mockedUsePatientUUID.mockReturnValue(mockPatientUUID);
+    mockedGetPatientLabInvestigations
+      .mockRejectedValueOnce(mockError)
+      .mockResolvedValueOnce(mockLabTests);
+
+    const { result, rerender } = renderHook(() => useLabInvestigations());
+
+    await waitFor(() => {
+      expect(result.current.hasError).toBe(true);
+    });
+
+    expect(result.current.labTests).toEqual([]);
+
+    mockedUsePatientUUID.mockReturnValue('different-patient-uuid');
+    rerender();
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+      expect(result.current.hasError).toBe(false);
+      expect(result.current.labTests).toEqual(mockLabTests);
     });
   });
 });
