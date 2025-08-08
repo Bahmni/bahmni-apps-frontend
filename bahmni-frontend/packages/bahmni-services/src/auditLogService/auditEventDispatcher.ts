@@ -3,7 +3,7 @@
  * Components use this to announce audit events, a global listener handles the actual logging
  */
 
-import { AuditEventType } from '@types/auditLog';
+import { AuditEventType } from './models';
 
 export interface AuditEventPayload {
   eventType: AuditEventType;

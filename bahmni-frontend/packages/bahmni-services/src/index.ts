@@ -79,3 +79,8 @@ export {
 export { getCurrentUser, type User } from './userService';
 export { getCurrentProvider, type Provider, type Person } from './providerService';
 export { findActiveEncounterInSession } from './encounterSessionService';
+
+export { 
+  dispatchAuditEvent, AUDIT_LOG_EVENT_DETAILS, initializeAuditListener,
+  type AuditEventType,
+ } from './auditLogService';

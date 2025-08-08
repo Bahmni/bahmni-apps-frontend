@@ -1,6 +1,6 @@
-import { APP_PROPERTY_URL as APP_PROPERTY_URL } from '@constants/app';
-import { AUDIT_LOG_APP_PROPERTY } from '@constants/auditLog';
-import { get } from './api';
+import { APP_PROPERTY_URL } from './constants';
+import { AUDIT_LOG_APP_PROPERTY } from './constants';
+import { get } from '../api';
 
 // The API returns the raw value directly, not wrapped in an object
 type AppPropertyResponse = string | boolean | number;

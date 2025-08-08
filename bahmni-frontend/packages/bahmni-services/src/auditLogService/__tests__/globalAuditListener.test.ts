@@ -1,4 +1,4 @@
-import { logAuditEvent } from '@services/auditLogService';
+import { logAuditEvent } from '../auditLogService';
 import {
   setupAuditEventListener,
   AuditEventPayload,
@@ -11,7 +11,7 @@ jest.mock('../auditEventDispatcher', () => ({
   AuditEventPayload: {},
 }));
 
-jest.mock('@services/auditLogService', () => ({
+jest.mock('../auditLogService', () => ({
   logAuditEvent: jest.fn(),
 }));
 

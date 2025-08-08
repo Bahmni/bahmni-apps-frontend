@@ -1,10 +1,9 @@
-import { APP_PROPERTY_URL } from '@constants/app';
-import { AUDIT_LOG_APP_PROPERTY } from '@constants/auditLog';
-import { get } from '../api';
+import { APP_PROPERTY_URL, AUDIT_LOG_APP_PROPERTY } from '../constants';
+import { get } from '../../api';
 import { getAppProperty, isAuditLogEnabled } from '../ApplicationConfigService';
 
 // Mock dependencies
-jest.mock('../api');
+jest.mock('../../api');
 jest.mock('i18next');
 
 const mockGet = get as jest.MockedFunction<typeof get>;

@@ -1,18 +1,22 @@
-import { AuditEventType } from '@/types/auditLog';
-import { AUDIT_LOG_URL } from '@constants/app';
-import { MODULE_LABELS } from '@constants/auditLog';
-import { post } from '../api';
-import { isAuditLogEnabled } from '../ApplicationConfigService';
+import { AuditEventType } from '../models';
+import { AUDIT_LOG_URL } from '../constants';
+import { MODULE_LABELS } from '../constants';
+import { post } from '../../api';
+import { isAuditLogEnabled } from '../../applicationConfigService';
 import { logAuditEvent } from '../auditLogService';
 
 // Mock dependencies
-jest.mock('../ApplicationConfigService');
-jest.mock('../api');
+jest.mock('../../applicationConfigService');
+jest.mock('../../api');
 
 const mockIsAuditLogEnabled = isAuditLogEnabled as jest.MockedFunction<
   typeof isAuditLogEnabled
 >;
 const mockPost = post as jest.MockedFunction<typeof post>;
+
+ jest.mock('i18next', () => ({
+  t: (key: string) => key,
+}));
 
 describe('auditLogService', () => {
   beforeEach(() => {
@@ -83,7 +87,7 @@ describe('auditLogService', () => {
 
       expect(result).toEqual({
         logged: false,
-        error: 'Unknown audit event type: UNKNOWN_EVENT',
+        error: 'AUDIT_LOG_ERROR_UNKNOWN_EVENT_TYPE',
       });
       expect(mockPost).not.toHaveBeenCalled();
     });

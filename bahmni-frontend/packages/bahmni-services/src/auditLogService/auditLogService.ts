@@ -1,14 +1,13 @@
 import i18next from 'i18next';
-import { AUDIT_LOG_URL } from '@constants/app';
-import { AUDIT_LOG_EVENT_DETAILS, MODULE_LABELS } from '@constants/auditLog';
-import { AUDIT_LOG_ERROR_MESSAGES } from '@constants/errors';
+import { AUDIT_LOG_URL, AUDIT_LOG_EVENT_DETAILS, MODULE_LABELS } from './constants';
+import { AUDIT_LOG_ERROR_MESSAGES } from './constants';
 import {
   AuditLogEntry,
   AuditLogResponse,
   AuditEventType,
-} from '@types/auditLog';
-import { post } from './api';
-import { isAuditLogEnabled } from './ApplicationConfigService';
+} from './models';
+import { post } from '../api';
+import { isAuditLogEnabled } from '../applicationConfigService';
 
 /**
  * Log an audit event
