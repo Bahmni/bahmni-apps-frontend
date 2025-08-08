@@ -1,12 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import '@testing-library/jest-dom';
 import { Coding } from 'fhir/r4';
+import i18n from '../../../../../setupTests.i18n'
 import { axe, toHaveNoViolations } from 'jest-axe';
-import React from 'react';
-import { I18nextProvider } from 'react-i18next';
-import i18n from '@/setupTests.i18n';
-import { ALLERGY_SEVERITY_CONCEPTS } from '@constants/concepts';
-import { AllergenType } from '@types/concepts';
+import { ALLERGY_SEVERITY_CONCEPTS } from '../../../../constants/allergy';
+import { AllergenType } from '../../../../types/allergy';
 import SelectedAllergyItem from '../SelectedAllergyItem';
 
 expect.extend(toHaveNoViolations);
@@ -49,15 +48,10 @@ const defaultProps = {
   updateNote: jest.fn(),
 };
 
-const renderWithI18n = (component: React.ReactElement) => {
-  return render(<I18nextProvider i18n={i18n}>{component}</I18nextProvider>);
-};
-
 describe('SelectedAllergyItem', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(console, 'error').mockImplementation();
-    i18n.changeLanguage('en');
     // Mock scrollIntoView which is not available in jsdom
     window.HTMLElement.prototype.scrollIntoView = jest.fn();
   });
@@ -65,7 +59,7 @@ describe('SelectedAllergyItem', () => {
   // HAPPY PATH TESTS
   describe('Happy Path Scenarios', () => {
     test('renders allergy title with type correctly', () => {
-      renderWithI18n(<SelectedAllergyItem {...defaultProps} />);
+      render(<SelectedAllergyItem {...defaultProps} />);
       expect(screen.getByText('Peanut Allergy [Food]')).toBeInTheDocument();
     });
 
@@ -81,7 +75,7 @@ describe('SelectedAllergyItem', () => {
           ...mockAllergy,
           type,
         };
-        const { rerender } = renderWithI18n(
+        const { rerender } = render(
           <SelectedAllergyItem {...defaultProps} allergy={allergyWithType} />,
         );
         expect(
@@ -97,7 +91,7 @@ describe('SelectedAllergyItem', () => {
         ...mockAllergy,
         type: 'invalid-type' as AllergenType,
       };
-      renderWithI18n(
+      render(
         <SelectedAllergyItem
           {...defaultProps}
           allergy={allergyWithInvalidType}
@@ -109,7 +103,7 @@ describe('SelectedAllergyItem', () => {
     });
 
     test('renders severity dropdown with selected value', () => {
-      renderWithI18n(<SelectedAllergyItem {...defaultProps} />);
+      render(<SelectedAllergyItem {...defaultProps} />);
 
       const dropdown = screen.getByRole('combobox', {
         name: /Select severity for this allergy/i,
@@ -123,7 +117,7 @@ describe('SelectedAllergyItem', () => {
     });
 
     test('renders reactions multiselect with selected values', () => {
-      renderWithI18n(<SelectedAllergyItem {...defaultProps} />);
+      render(<SelectedAllergyItem {...defaultProps} />);
 
       const multiselect = screen.getByRole('combobox', {
         name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
@@ -139,7 +133,7 @@ describe('SelectedAllergyItem', () => {
 
     test('calls updateSeverity when severity is changed', async () => {
       const user = userEvent.setup();
-      renderWithI18n(<SelectedAllergyItem {...defaultProps} />);
+      render(<SelectedAllergyItem {...defaultProps} />);
 
       const dropdownButton = screen.getByRole('combobox', {
         name: /Select severity for this allergy/i,
@@ -159,7 +153,7 @@ describe('SelectedAllergyItem', () => {
 
     test('calls updateReactions when reactions are changed', async () => {
       const user = userEvent.setup();
-      renderWithI18n(<SelectedAllergyItem {...defaultProps} />);
+      render(<SelectedAllergyItem {...defaultProps} />);
 
       const multiselect = screen.getByRole('combobox', {
         name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
@@ -180,7 +174,7 @@ describe('SelectedAllergyItem', () => {
 
     test('handles deselecting reactions', async () => {
       const user = userEvent.setup();
-      renderWithI18n(<SelectedAllergyItem {...defaultProps} />);
+      render(<SelectedAllergyItem {...defaultProps} />);
 
       const multiselect = screen.getByRole('combobox', {
         name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
@@ -205,7 +199,7 @@ describe('SelectedAllergyItem', () => {
         note: undefined,
       };
 
-      renderWithI18n(
+      render(
         <SelectedAllergyItem {...defaultProps} allergy={allergyWithoutNote} />,
       );
 
@@ -220,7 +214,7 @@ describe('SelectedAllergyItem', () => {
         note: undefined,
       };
 
-      renderWithI18n(
+      render(
         <SelectedAllergyItem {...defaultProps} allergy={allergyWithoutNote} />,
       );
 
@@ -240,7 +234,7 @@ describe('SelectedAllergyItem', () => {
         note: undefined,
       };
 
-      renderWithI18n(
+      render(
         <SelectedAllergyItem {...defaultProps} allergy={allergyWithoutNote} />,
       );
 
@@ -266,7 +260,7 @@ describe('SelectedAllergyItem', () => {
         note: 'Existing note content',
       };
 
-      renderWithI18n(
+      render(
         <SelectedAllergyItem {...defaultProps} allergy={allergyWithNote} />,
       );
 
@@ -280,7 +274,7 @@ describe('SelectedAllergyItem', () => {
         note: 'Existing note content',
       };
 
-      renderWithI18n(
+      render(
         <SelectedAllergyItem {...defaultProps} allergy={allergyWithNote} />,
       );
 
@@ -299,7 +293,7 @@ describe('SelectedAllergyItem', () => {
         selectedSeverity: null,
       };
 
-      renderWithI18n(
+      render(
         <SelectedAllergyItem
           allergy={allergyWithNullSeverity}
           reactionConcepts={defaultProps.reactionConcepts}
@@ -324,7 +318,7 @@ describe('SelectedAllergyItem', () => {
         hasBeenValidated: true,
       };
 
-      renderWithI18n(
+      render(
         <SelectedAllergyItem
           allergy={allergyWithError}
           reactionConcepts={defaultProps.reactionConcepts}
@@ -349,7 +343,7 @@ describe('SelectedAllergyItem', () => {
         hasBeenValidated: false,
       };
 
-      renderWithI18n(
+      render(
         <SelectedAllergyItem
           allergy={allergyWithNoValidation}
           reactionConcepts={defaultProps.reactionConcepts}
@@ -378,7 +372,7 @@ describe('SelectedAllergyItem', () => {
         selectedReactions: mockReactionConcepts,
       };
 
-      renderWithI18n(
+      render(
         <SelectedAllergyItem
           allergy={allergyWithAllReactions}
           reactionConcepts={defaultProps.reactionConcepts}
@@ -400,7 +394,7 @@ describe('SelectedAllergyItem', () => {
         display: longDisplay,
       };
 
-      renderWithI18n(
+      render(
         <SelectedAllergyItem
           allergy={allergyWithLongDisplay}
           reactionConcepts={defaultProps.reactionConcepts}
@@ -422,7 +416,7 @@ describe('SelectedAllergyItem', () => {
         display: specialCharDisplay,
       };
 
-      renderWithI18n(
+      render(
         <SelectedAllergyItem
           allergy={allergyWithSpecialChars}
           reactionConcepts={defaultProps.reactionConcepts}
@@ -450,7 +444,7 @@ describe('SelectedAllergyItem', () => {
         },
       };
 
-      renderWithI18n(<SelectedAllergyItem {...propsWithUndefinedDisplay} />);
+      render(<SelectedAllergyItem {...propsWithUndefinedDisplay} />);
 
       expect(
         screen.getByRole('combobox', {
@@ -473,7 +467,7 @@ describe('SelectedAllergyItem', () => {
         hasBeenValidated: false,
       };
 
-      renderWithI18n(
+      render(
         <SelectedAllergyItem
           allergy={allergyWithError}
           reactionConcepts={defaultProps.reactionConcepts}
@@ -496,7 +490,7 @@ describe('SelectedAllergyItem', () => {
       };
 
       const mockUpdateNote = jest.fn();
-      const { rerender } = renderWithI18n(
+      const { rerender } = render(
         <SelectedAllergyItem
           {...defaultProps}
           allergy={allergyWithNote}
@@ -534,7 +528,7 @@ describe('SelectedAllergyItem', () => {
         note: 'Existing note content',
       };
 
-      renderWithI18n(
+      render(
         <SelectedAllergyItem {...defaultProps} allergy={allergyWithNote} />,
       );
 
@@ -548,7 +542,7 @@ describe('SelectedAllergyItem', () => {
         note: '',
       };
 
-      renderWithI18n(
+      render(
         <SelectedAllergyItem
           {...defaultProps}
           allergy={allergyWithEmptyNote}
@@ -570,7 +564,7 @@ describe('SelectedAllergyItem', () => {
         selectedReactions: [reactionConceptsWithoutDisplay[0]],
       };
 
-      renderWithI18n(
+      render(
         <SelectedAllergyItem
           {...defaultProps}
           allergy={allergyWithMissingDisplayReaction}
@@ -594,7 +588,7 @@ describe('SelectedAllergyItem', () => {
   // The test is currently failing due to an accessibility issue with FilterableMultiSelect
   describe('Accessibility', () => {
     test('should have no accessibility violations', async () => {
-      const { container } = renderWithI18n(
+      const { container } = render(
         <SelectedAllergyItem {...defaultProps} />,
       );
       const results = await axe(container);
@@ -605,7 +599,7 @@ describe('SelectedAllergyItem', () => {
   // SNAPSHOT TESTS
   describe('Snapshot Tests', () => {
     test('default rendering matches snapshot', () => {
-      const { container } = renderWithI18n(
+      const { container } = render(
         <SelectedAllergyItem {...defaultProps} />,
       );
       expect(container).toMatchSnapshot();
@@ -619,7 +613,7 @@ describe('SelectedAllergyItem', () => {
         hasBeenValidated: true,
       };
 
-      const { container } = renderWithI18n(
+      const { container } = render(
         <SelectedAllergyItem
           allergy={allergyWithErrors}
           reactionConcepts={defaultProps.reactionConcepts}

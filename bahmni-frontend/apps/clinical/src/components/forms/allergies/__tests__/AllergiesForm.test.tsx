@@ -2,19 +2,16 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Coding } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import React from 'react';
-import { I18nextProvider } from 'react-i18next';
-import i18n from '@/setupTests.i18n';
-import useAllergenSearch from '@hooks/useAllergenSearch';
-import { useAllergyStore } from '@stores/allergyStore';
-import { AllergenConcept } from '@types/concepts';
+import useAllergenSearch from '../../../../hooks/useAllergenSearch';
+import { useAllergyStore } from '../../../../stores/allergyStore';
+import { AllergenConcept } from '../../../../types/allergy';
 import AllergiesForm from '../AllergiesForm';
 
 expect.extend(toHaveNoViolations);
 
 // Mock modules
-jest.mock('@stores/allergyStore');
-jest.mock('@hooks/useAllergenSearch');
+jest.mock('../../../../stores/allergyStore');
+jest.mock('../../../../hooks/useAllergenSearch');
 jest.mock('../styles/AllergiesForm.module.scss', () => ({
   allergiesFormTile: 'allergiesFormTile',
   allergiesFormTitle: 'allergiesFormTitle',
@@ -78,9 +75,7 @@ const renderAllergiesForm = (overrides = {}) => {
   ).mockReturnValue(mockStore);
 
   return render(
-    <I18nextProvider i18n={i18n}>
       <AllergiesForm />
-    </I18nextProvider>,
   );
 };
 
@@ -105,8 +100,6 @@ describe('AllergiesForm', () => {
       useAllergyStore as jest.MockedFunction<typeof useAllergyStore>
     ).mockReturnValue(mockAllergyStore);
     mockAllergenSearchHook();
-
-    i18n.changeLanguage('en');
   });
 
   describe('Rendering', () => {
@@ -395,11 +388,7 @@ describe('AllergiesForm', () => {
       });
 
       // Rerender with same props should use memoized results
-      rerender(
-        <I18nextProvider i18n={i18n}>
-          <AllergiesForm />
-        </I18nextProvider>,
-      );
+      rerender(<AllergiesForm />);
 
       expect(screen.getByText('Peanut Allergy [Food]')).toBeInTheDocument();
     });
