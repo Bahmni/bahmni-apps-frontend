@@ -83,4 +83,6 @@ export {
 } from './molecules/textAreaWClose';
 export { BoxWHeader, type BoxWHeaderProps } from './molecules/boxWHeader';
 
+export { ClinicalLayout } from './templates/ClinicalLayout';
+
 import '@carbon/styles/css/styles.css';
