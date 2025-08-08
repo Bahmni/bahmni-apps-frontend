@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import React, { ReactNode } from 'react';
-import * as styles from './styles/ClinicalLayout.module.scss';
+import styles from './styles/ClinicalLayout.module.scss';
 
 interface ClinicalLayoutProps {
   headerWSideNav: ReactNode;
@@ -24,7 +24,7 @@ interface ClinicalLayoutProps {
  * @param {boolean} isActionAreaVisible - Flag to control visibility of the action area
  * @returns {React.ReactElement} The ClinicalLayout component
  */
-const ClinicalLayout: React.FC<ClinicalLayoutProps> = ({
+export const ClinicalLayout: React.FC<ClinicalLayoutProps> = ({
   headerWSideNav,
   patientHeader,
   mainDisplay,
@@ -64,4 +64,3 @@ const ClinicalLayout: React.FC<ClinicalLayoutProps> = ({
   );
 };
 
-export default ClinicalLayout;
