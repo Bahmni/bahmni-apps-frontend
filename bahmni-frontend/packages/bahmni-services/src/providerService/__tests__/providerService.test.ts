@@ -1,9 +1,9 @@
-import { PROVIDER_RESOURCE_URL } from '@constants/app';
-import { get } from '@services/api';
-import { getCurrentProvider } from '@services/providerService';
+import { PROVIDER_RESOURCE_URL } from '../constants';
+import { get } from '../../api';
+import { getCurrentProvider } from '../providerService';
 
 // Mock dependencies
-jest.mock('@services/api');
+jest.mock('../../api');
 
 describe('providerService', () => {
   const mockUserUUID = 'd7a669e7-5e07-11ef-8f7c-0242ac120002';
