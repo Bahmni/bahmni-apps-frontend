@@ -77,4 +77,4 @@ export {
 } from './configService';
 
 export { getCurrentUser, type User } from './userService';
-export { getCurrentProvider, type Provider } from './providerService';
+export { getCurrentProvider, type Provider, type Person } from './providerService';

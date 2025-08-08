@@ -1,2 +1,2 @@
 export { getCurrentProvider } from './providerService';
-export { type Provider } from './models';
+export { type Provider, type Person } from './models';
