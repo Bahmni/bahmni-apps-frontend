@@ -9,7 +9,6 @@ const OPENMRS_FHIR_R4 = '/openmrs/ws/fhir2/R4';
 const OPENMRS_REST_V1 = '/openmrs/ws/rest/v1';
 
 // Cookie name constants
-export const BAHMNI_USER_COOKIE_NAME = 'bahmni.user';
 export const BAHMNI_USER_LOCATION_COOKIE_NAME = 'bahmni.user.location';
 
 //TODO: When we work on taking values dynamically, we need to remove the hardcoded value of LAB_ORDER_TYPE_UUID */
@@ -47,8 +46,7 @@ export const ENCOUNTER_CONCEPTS_URL =
 export const PATIENT_MEDICATION_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 +
   `/MedicationRequest?patient=${patientUUID}&_count=100&_sort=-_lastUpdated`;
-export const PROVIDER_RESOURCE_URL = (userUUID: string) =>
-  OPENMRS_REST_V1 + `/provider?user=${userUUID}&v=custom:(uuid,display,person)`;
+
 export const PRACTITIONER_RESOURCE_URL = (uuid?: string) =>
   OPENMRS_FHIR_R4 + `/Practitioner${uuid ? `/${uuid}` : ''}`;
 export const CONSULTATION_BUNDLE_URL = OPENMRS_FHIR_R4 + '/ConsultationBundle';
