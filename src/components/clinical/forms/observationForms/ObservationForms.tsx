@@ -1,8 +1,10 @@
 import { ComboBox, Tile } from '@carbon/react';
 import React, { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
 import BoxWHeader from '@components/common/boxWHeader/BoxWHeader';
 import SelectedItem from '@components/common/selectedItem/SelectedItem';
+import { ICON_SIZE, ICON_PADDING } from '@constants/icon';
 import useObservationFormsSearch from '@hooks/useObservationFormsSearch';
 import { ObservationForm } from '../../../../types/observationForms';
 import * as styles from './styles/ObservationForms.module.scss';
@@ -161,7 +163,15 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
                   className={styles.selectedFormContent}
                   onClick={() => onFormSelect?.(form)}
                 >
-                  <div className={styles.selectedFormName}>{form.name}</div>
+                  <div className={styles.selectedFormHeader}>
+                    <BahmniIcon
+                      id="fa-file-lines"
+                      name="fa-file-lines"
+                      size={ICON_SIZE.LG}
+                      padding={ICON_PADDING.NONE}
+                    />
+                    <div className={styles.selectedFormName}>{form.name}</div>
+                  </div>
                   <div className={styles.selectedFormVersion}>
                     {t('OBSERVATION_FORMS_VERSION')}: {form.version}
                   </div>

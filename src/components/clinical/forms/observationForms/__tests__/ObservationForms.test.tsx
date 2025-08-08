@@ -69,6 +69,15 @@ jest.mock('@components/common/selectedItem/SelectedItem', () => {
   ));
 });
 
+// Mock BahmniIcon component
+jest.mock('@components/common/bahmniIcon/BahmniIcon', () => {
+  return jest.fn(({ id, name }) => (
+    <div data-testid={`bahmni-icon-${id}`} data-icon-name={name}>
+      Icon
+    </div>
+  ));
+});
+
 describe('ObservationForms', () => {
   const mockForms: ObservationForm[] = [
     {

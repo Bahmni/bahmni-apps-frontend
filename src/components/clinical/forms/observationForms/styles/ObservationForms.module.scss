@@ -36,6 +36,12 @@
   cursor: pointer;
 }
 
+.selectedFormHeader {
+  display: flex;
+  align-items: center;
+  gap: $spacing-03;
+}
+
 .selectedFormName {
   font-weight: 600;
   color: $text-primary;
