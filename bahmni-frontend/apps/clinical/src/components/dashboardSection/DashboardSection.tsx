@@ -1,14 +1,16 @@
 import { Tile } from '@carbon/react';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import AllergiesTable from '@displayControls/allergies/AllergiesTable';
-import ConditionsTable from '@displayControls/conditions/ConditionsTable';
-import DiagnosesTable from '@displayControls/diagnoses/DiagnosesTable';
-import LabInvestigation from '@displayControls/labinvestigation/LabInvestigationControl';
-import MedicationsTable from '@displayControls/medications/MedicationsTable';
-import RadiologyOrdersTable from '@displayControls/radiologyInvestigation/RadiologyInvestigationTable';
-import { DashboardSectionConfig } from '@types/dashboardConfig';
-import * as styles from './styles/DashboardSection.module.scss';
+import { useTranslation } from '@bahmni-frontend/bahmni-services';
+import {
+  AllergiesTable,
+  ConditionsTable,
+  DiagnosesTable,
+  LabInvestigation,
+  MedicationsTable,
+  RadiologyInvestigationTable,
+} from '@bahmni-frontend/bahmni-widgets/';
+import { DashboardSectionConfig } from '@bahmni-frontend/bahmni-services';
+import styles from './styles/DashboardSection.module.scss';
 
 export interface DashboardSectionProps {
   section: DashboardSectionConfig;
@@ -31,7 +33,7 @@ const renderSectionContent = (section: DashboardSectionConfig) => {
     case 'Lab Investigations':
       return <LabInvestigation />;
     case 'Radiology Investigations':
-      return <RadiologyOrdersTable />;
+      return <RadiologyInvestigationTable />;
     case 'Medications':
       return <MedicationsTable />;
     default:

@@ -73,7 +73,7 @@ export {
 
 export {
   getClinicalConfig, getDashboardConfig, getMedicationConfig,
-  type ClinicalConfig, type DashboardConfig, type MedicationJSONConfig
+  type ClinicalConfig, type DashboardConfig, type MedicationJSONConfig, type DashboardSectionConfig
 } from './configService';
 
 export { getCurrentUser, type User } from './userService';

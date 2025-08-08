@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
-import { DashboardSectionConfig } from '@types/dashboardConfig';
+import { DashboardSectionConfig } from '@bahmni-frontend/bahmni-services';
 import DashboardSection from '../DashboardSection';
 
 // Mock dependencies
@@ -28,37 +28,19 @@ jest.mock('../styles/DashboardSection.module.scss', () => ({
 }));
 
 // Mock the display control components
-jest.mock('@displayControls/allergies/AllergiesTable', () => ({
+jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
   __esModule: true,
-  default: () => <div data-testid="allergies-table">Allergies Table</div>,
+  AllergiesTable: () => <div data-testid="allergies-table">Allergies Table</div>,
+  ConditionsTable: () => <div data-testid="conditions-table">Conditions Table</div>,
+  DiagnosesTable: () => <div data-testid="diagnoses-table">Diagnoses Table</div>,
+  LabInvestigation: () => <div data-testid="lab-investigation">Lab Investigation</div>,
+  MedicationsTable: () => <div data-testid="medications-table">Medications Table</div>,
+  RadiologyInvestigationTable: () => (
+    <div data-testid="radiology-investigations-table">
+      Radiology Orders Table
+    </div>
+  ),
 }));
-
-jest.mock('@displayControls/conditions/ConditionsTable', () => ({
-  __esModule: true,
-  default: () => <div data-testid="conditions-table">Conditions Table</div>,
-}));
-
-jest.mock('@displayControls/labinvestigation/LabInvestigationControl', () => ({
-  __esModule: true,
-  default: () => <div data-testid="lab-investigation">Lab Investigation</div>,
-}));
-
-jest.mock('@displayControls/diagnoses/DiagnosesTable', () => ({
-  __esModule: true,
-  default: () => <div data-testid="diagnoses-table">Diagnoses Table</div>,
-}));
-
-jest.mock(
-  '@displayControls/radiologyInvestigation/RadiologyInvestigationTable',
-  () => ({
-    __esModule: true,
-    default: () => (
-      <div data-testid="radiology-investigations-table">
-        Radiology Orders Table
-      </div>
-    ),
-  }),
-);
 
 describe('DashboardSection Component', () => {
   const mockSection: DashboardSectionConfig = {
