@@ -172,9 +172,6 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
                     />
                     <div className={styles.selectedFormName}>{form.name}</div>
                   </div>
-                  <div className={styles.selectedFormVersion}>
-                    {t('OBSERVATION_FORMS_VERSION')}: {form.version}
-                  </div>
                 </div>
               </SelectedItem>
             ))}

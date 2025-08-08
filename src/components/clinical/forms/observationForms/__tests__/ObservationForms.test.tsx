@@ -236,7 +236,7 @@ describe('ObservationForms', () => {
 
       expect(screen.getByText('Admission Letter')).toBeInTheDocument();
       expect(
-        screen.getByText('translated_OBSERVATION_FORMS_VERSION: 1'),
+        screen.getByTestId('bahmni-icon-fa-file-lines'),
       ).toBeInTheDocument();
     });
 
