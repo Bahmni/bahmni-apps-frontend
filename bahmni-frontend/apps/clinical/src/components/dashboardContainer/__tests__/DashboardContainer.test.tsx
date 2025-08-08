@@ -1,21 +1,25 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
-import { DashboardSectionConfig as DashboardSectionType } from '@/types/dashboardConfig';
-import { AUDIT_LOG_EVENT_DETAILS } from '@constants/auditLog';
-import { usePatientUUID } from '@hooks/usePatientUUID';
-import { dispatchAuditEvent } from '@utils/auditEventDispatcher';
+import { DashboardSectionConfig as DashboardSectionType } from '@bahmni-frontend/bahmni-services';
+import { AUDIT_LOG_EVENT_DETAILS } from '@bahmni-frontend/bahmni-services';
+import { usePatientUUID } from '@bahmni-frontend/bahmni-widgets';
+import { dispatchAuditEvent } from '@bahmni-frontend/bahmni-services';
 import DashboardContainer from '../DashboardContainer';
 
 // Mock scrollIntoView
 const mockScrollIntoView = jest.fn();
 
 // Mock the audit event dispatcher
-jest.mock('@utils/auditEventDispatcher', () => ({
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
   dispatchAuditEvent: jest.fn(),
+  useTranslation: jest.fn(() => ({
+    t: (key: string) => key, // Mock translation function
+  })),
 }));
 
 // Mock the usePatientUUID hook
-jest.mock('@hooks/usePatientUUID', () => ({
+jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
   usePatientUUID: jest.fn(),
 }));
 
@@ -26,42 +30,14 @@ jest.mock('react-i18next', () => ({
   }),
 }));
 
-// Mock the Carbon components
-jest.mock('@carbon/react', () => ({
-  Grid: jest.fn(({ children }) => (
-    <div data-testid="carbon-grid">{children}</div>
-  )),
-  Column: jest.fn(({ children }) => (
-    <div data-testid="carbon-column">{children}</div>
-  )),
-  Section: jest.fn(({ children }) => (
-    <div data-testid="carbon-section">{children}</div>
-  )),
-}));
-
 // Mock the DashboardSection component
-jest.mock('@components/clinical/dashboardSection/DashboardSection', () => {
+jest.mock('../../dashboardSection/DashboardSection', () => {
   return jest.fn(({ section, ref }) => (
     <div data-testid={`mocked-section-${section.name}`} ref={ref}>
       Mocked Section: {section.name}
     </div>
   ));
 });
-
-// Mock the Carbon components with ref forwarding
-jest.mock('@carbon/react', () => ({
-  Grid: jest.fn(({ children }) => (
-    <div data-testid="carbon-grid">{children}</div>
-  )),
-  Column: jest.fn(({ children, ref }) => (
-    <div data-testid="carbon-column" ref={ref}>
-      {children}
-    </div>
-  )),
-  Section: jest.fn(({ children }) => (
-    <div data-testid="carbon-section">{children}</div>
-  )),
-}));
 
 const mockDispatchAuditEvent = dispatchAuditEvent as jest.MockedFunction<
   typeof dispatchAuditEvent

@@ -1,13 +1,13 @@
-import { Section } from '@carbon/react';
+import { Section } from '@bahmni-frontend/bahmni-design-system';
 import React, { useEffect, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
-import { AUDIT_LOG_EVENT_DETAILS } from '@constants/auditLog';
-import { usePatientUUID } from '@hooks/usePatientUUID';
-import { AuditEventType } from '@types/auditLog';
-import { DashboardSectionConfig } from '@types/dashboardConfig';
-import { dispatchAuditEvent } from '@utils/auditEventDispatcher';
+import { useTranslation } from '@bahmni-frontend/bahmni-services';
+import { usePatientUUID } from '@bahmni-frontend/bahmni-widgets';
+import { DashboardSectionConfig } from '@bahmni-frontend/bahmni-services';
+import { AUDIT_LOG_EVENT_DETAILS } from '@bahmni-frontend/bahmni-services';
+import { AuditEventType } from '@bahmni-frontend/bahmni-services';
+import { dispatchAuditEvent } from '@bahmni-frontend/bahmni-services';
 import DashboardSection from '../dashboardSection/DashboardSection';
-import * as styles from './styles/DashboardContainer.module.scss';
+import styles from './styles/DashboardContainer.module.scss';
 
 // TODO: The name is confusing for someone without project context, consider renaming
 export interface DashboardContainerProps {
