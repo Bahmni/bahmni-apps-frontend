@@ -1,6 +1,6 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import enTranslations from '../public/locales/locale_en.json';
+import enTranslations from './public/locales/locale_en.json';
 
 const initTestI18n = () => {
   i18n.use(initReactI18next).init({
