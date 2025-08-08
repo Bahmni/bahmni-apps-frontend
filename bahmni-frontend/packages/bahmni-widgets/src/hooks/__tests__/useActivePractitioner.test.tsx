@@ -1,16 +1,17 @@
 import { renderHook, act } from '@testing-library/react';
-import i18n from '@/setupTests.i18n';
-import { getCurrentProvider } from '@services/providerService';
-import { getCurrentUser } from '@services/userService';
-import { Provider, Person } from '@types/provider';
-import { User } from '@types/user';
-import { getFormattedError } from '@utils/common';
+import {
+  getCurrentProvider,
+  getCurrentUser,
+  Provider,
+  Person,
+  User,
+  getFormattedError,
+  useTranslation
+} from '@bahmni-frontend/bahmni-services';
 import { useActivePractitioner } from '../useActivePractitioner';
 
 // Mock dependencies
-jest.mock('@services/providerService');
-jest.mock('@services/userService');
-jest.mock('@utils/common');
+jest.mock('@bahmni-frontend/bahmni-services');
 
 // Type the mocked functions
 const mockedGetCurrentProvider = getCurrentProvider as jest.MockedFunction<
@@ -22,8 +23,19 @@ const mockedGetCurrentUser = getCurrentUser as jest.MockedFunction<
 const mockedGetFormattedError = getFormattedError as jest.MockedFunction<
   typeof getFormattedError
 >;
+const mockedUseTranslation = useTranslation as jest.MockedFunction<
+  typeof useTranslation
+>;
 
 describe('useActivePractitioner hook', () => {
+  const mockTranslate = jest.fn((key: string) => {
+    const translations: Record<string, string> = {
+      'ERROR_FETCHING_USER_DETAILS': 'Error fetching user details',
+      'ERROR_FETCHING_PRACTITIONERS_DETAILS': 'Error fetching practitioners details'
+    };
+    return translations[key] || key;
+  });
+
   const mockUser: User = {
     uuid: 'user-uuid-123',
     username: 'johndoe',
@@ -59,8 +71,8 @@ describe('useActivePractitioner hook', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    i18n.changeLanguage('en');
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => { });
+    mockedUseTranslation.mockReturnValue({ t: mockTranslate } as any);
   });
 
   it('should initialize with correct default values', () => {
@@ -88,7 +100,7 @@ describe('useActivePractitioner hook', () => {
 
     // Wait for async operations
     await act(async () => {
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     // Assert final state
@@ -109,7 +121,7 @@ describe('useActivePractitioner hook', () => {
 
     // Wait for async operations
     await act(async () => {
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     // Assert
@@ -131,7 +143,7 @@ describe('useActivePractitioner hook', () => {
 
     // Wait for async operations
     await act(async () => {
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     // Assert
@@ -159,7 +171,7 @@ describe('useActivePractitioner hook', () => {
 
     // Wait for async operations
     await act(async () => {
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     // Assert
@@ -187,7 +199,7 @@ describe('useActivePractitioner hook', () => {
 
     // Wait for async operations
     await act(async () => {
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     // Assert
@@ -214,7 +226,7 @@ describe('useActivePractitioner hook', () => {
 
     // Wait for async operations
     await act(async () => {
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     // Assert
@@ -241,7 +253,7 @@ describe('useActivePractitioner hook', () => {
 
     // Wait for initial fetch
     await act(async () => {
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(result.current.user).toEqual(mockUser);
@@ -250,7 +262,7 @@ describe('useActivePractitioner hook', () => {
     // Act - Call refetch
     await act(async () => {
       result.current.refetch();
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     // Assert final state
