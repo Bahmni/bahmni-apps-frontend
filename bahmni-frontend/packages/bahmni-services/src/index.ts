@@ -75,3 +75,5 @@ export {
   getClinicalConfig, getDashboardConfig, getMedicationConfig,
   type ClinicalConfig, type DashboardConfig, type MedicationJSONConfig
 } from './configService';
+
+export { getCurrentUser, type User } from './userService';

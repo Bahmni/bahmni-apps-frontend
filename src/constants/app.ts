@@ -47,8 +47,6 @@ export const ENCOUNTER_CONCEPTS_URL =
 export const PATIENT_MEDICATION_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 +
   `/MedicationRequest?patient=${patientUUID}&_count=100&_sort=-_lastUpdated`;
-export const USER_RESOURCE_URL = (username: string) =>
-  OPENMRS_REST_V1 + `/user?username=${username}&v=custom:(username,uuid)`;
 export const PROVIDER_RESOURCE_URL = (userUUID: string) =>
   OPENMRS_REST_V1 + `/provider?user=${userUUID}&v=custom:(uuid,display,person)`;
 export const PRACTITIONER_RESOURCE_URL = (uuid?: string) =>
