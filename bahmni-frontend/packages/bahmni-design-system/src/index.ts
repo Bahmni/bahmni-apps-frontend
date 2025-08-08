@@ -56,4 +56,6 @@ export {
   type DatePickerInputProps,
 } from './atoms/datePicker';
 
+export { ClinicalLayout } from './templates/ClinicalLayout';
+
 import '@carbon/styles/css/styles.css';

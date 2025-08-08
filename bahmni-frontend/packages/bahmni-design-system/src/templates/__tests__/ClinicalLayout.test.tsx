@@ -1,8 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
-import ClinicalLayout from '../ClinicalLayout';
+import { ClinicalLayout } from '../ClinicalLayout';
 
 expect.extend(toHaveNoViolations);
 
@@ -14,6 +13,9 @@ jest.mock('../styles/ClinicalLayout.module.scss', () => ({
   mainDisplay: 'mainDisplay',
   actionArea: 'actionArea',
   collapse: 'collapse',
+  expand: 'expand',
+  collapsedPatientHeader: 'collapsedPatientHeader',
+  collapsedMainDisplay: 'collapsedMainDisplay',
 }));
 
 describe('ClinicalLayout Component', () => {
@@ -38,9 +40,7 @@ describe('ClinicalLayout Component', () => {
   describe('Happy Path', () => {
     test('renders all four sections when all props are provided', () => {
       render(
-        <BrowserRouter>
           <ClinicalLayout {...defaultProps} />
-        </BrowserRouter>,
       );
 
       // Check if all sections are rendered
@@ -51,9 +51,7 @@ describe('ClinicalLayout Component', () => {
 
     test('applies correct CSS classes to each section', () => {
       const { container } = render(
-        <BrowserRouter>
           <ClinicalLayout {...defaultProps} />
-        </BrowserRouter>,
       );
 
       // Check for layout structure classes
@@ -80,9 +78,7 @@ describe('ClinicalLayout Component', () => {
       };
 
       render(
-        <BrowserRouter>
           <ClinicalLayout {...emptyProps} />
-        </BrowserRouter>,
       );
 
       // Check if empty sections are rendered
@@ -114,9 +110,7 @@ describe('ClinicalLayout Component', () => {
       };
 
       render(
-        <BrowserRouter>
           <ClinicalLayout {...complexProps} />
-        </BrowserRouter>,
       );
 
       // Check if deeply nested content renders
@@ -136,9 +130,7 @@ describe('ClinicalLayout Component', () => {
       };
 
       render(
-        <BrowserRouter>
           <ClinicalLayout {...visibleActionAreaProps} />
-        </BrowserRouter>,
       );
 
       // Check if action area is rendered when isActionAreaVisible is true
@@ -152,9 +144,7 @@ describe('ClinicalLayout Component', () => {
       };
 
       render(
-        <BrowserRouter>
           <ClinicalLayout {...hiddenActionAreaProps} />
-        </BrowserRouter>,
       );
 
       // Check if action area is not rendered when isActionAreaVisible is false
@@ -168,14 +158,12 @@ describe('ClinicalLayout Component', () => {
       };
 
       const { container } = render(
-        <BrowserRouter>
           <ClinicalLayout {...visibleActionAreaProps} />
-        </BrowserRouter>,
       );
 
       // Check if body div has collapse class when isActionAreaVisible is true
       const bodyElement = container.querySelector('[class*="body"]');
-      expect(bodyElement).toHaveClass('collapse');
+      expect(bodyElement).toHaveClass('body', 'collapse');
     });
 
     test('does not apply collapse class to body when isActionAreaVisible is false', () => {
@@ -185,13 +173,12 @@ describe('ClinicalLayout Component', () => {
       };
 
       const { container } = render(
-        <BrowserRouter>
           <ClinicalLayout {...hiddenActionAreaProps} />
-        </BrowserRouter>,
       );
 
       // Check if body div does not have collapse class when isActionAreaVisible is false
       const bodyElement = container.querySelector('[class*="body"]');
+      expect(bodyElement).toHaveClass('body', 'expand');
       expect(bodyElement).not.toHaveClass('collapse');
     });
   });
@@ -200,9 +187,7 @@ describe('ClinicalLayout Component', () => {
   describe('Accessibility', () => {
     test('has no accessibility violations', async () => {
       const { container } = render(
-        <BrowserRouter>
           <ClinicalLayout {...defaultProps} />
-        </BrowserRouter>,
       );
 
       const results = await axe(container);
