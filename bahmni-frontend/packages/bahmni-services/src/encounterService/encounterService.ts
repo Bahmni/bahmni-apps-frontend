@@ -1,6 +1,6 @@
-import { PATIENT_VISITS_URL } from '@constants/app';
-import { FhirEncounter, FhirEncounterBundle } from '@types/encounter';
-import { get } from './api';
+import { PATIENT_VISITS_URL } from './constants';
+import { Encounter, Bundle } from 'fhir/r4';
+import { get } from '../api';
 
 /**
  * Fetches visits for a given patient UUID from the FHIR R4 endpoint
@@ -9,8 +9,8 @@ import { get } from './api';
  */
 export async function getPatientVisits(
   patientUUID: string,
-): Promise<FhirEncounterBundle> {
-  return await get<FhirEncounterBundle>(PATIENT_VISITS_URL(patientUUID));
+): Promise<Bundle<Encounter>> {
+  return await get<Bundle<Encounter>>(PATIENT_VISITS_URL(patientUUID));
 }
 
 /**
@@ -18,9 +18,10 @@ export async function getPatientVisits(
  * @param patientUUID - The UUID of the patient
  * @returns Promise resolving to an array of FhirEncounter
  */
-export async function getVisits(patientUUID: string): Promise<FhirEncounter[]> {
+export async function getVisits(patientUUID: string): Promise<Encounter[]> {
   const fhirEncounterBundle = await getPatientVisits(patientUUID);
-  return fhirEncounterBundle.entry?.map((entry) => entry.resource) || [];
+  return fhirEncounterBundle.entry?.map((entry) => entry.resource).filter((resource): resource is Encounter => resource !== undefined) ||
+    []
 }
 
 /**
@@ -30,7 +31,7 @@ export async function getVisits(patientUUID: string): Promise<FhirEncounter[]> {
  */
 export async function getActiveVisit(
   patientUUID: string,
-): Promise<FhirEncounter | null> {
+): Promise<Encounter | null> {
   const encounters = await getVisits(patientUUID);
-  return encounters.find((encounter) => !encounter.period.end) ?? null;
+  return encounters.find((encounter) => !encounter.period?.end) ?? null;
 }

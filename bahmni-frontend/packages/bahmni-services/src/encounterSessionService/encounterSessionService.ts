@@ -2,11 +2,10 @@ import {
   ENCOUNTER_SESSION_DURATION_GP_URL,
   ENCOUNTER_SEARCH_URL,
   CONSULTATION_ENCOUNTER_TYPE_UUID,
-} from '@constants/app';
-
-import { FhirEncounter, FhirEncounterBundle } from '../types/encounter';
-import { get } from './api';
-import { getActiveVisit } from './encounterService';
+} from './constants';
+import { Encounter, Bundle } from 'fhir/r4';
+import { get } from '../api';
+import { getActiveVisit } from '../encounterService';
 
 interface EncounterSearchParams {
   patient: string;
@@ -23,7 +22,7 @@ interface EncounterSearchParams {
  */
 export async function searchEncounters(
   params: EncounterSearchParams,
-): Promise<FhirEncounter[]> {
+): Promise<Encounter[]> {
   const queryParams = new URLSearchParams();
 
   Object.entries(params).forEach(([key, value]) => {
@@ -34,10 +33,10 @@ export async function searchEncounters(
 
   const url = `${ENCOUNTER_SEARCH_URL}?${queryParams.toString()}`;
 
-  const bundle = await get<FhirEncounterBundle>(url);
+  const bundle = await get<Bundle<Encounter>>(url);
 
   return (
-    bundle.entry?.map((entry: { resource: FhirEncounter }) => entry.resource) ||
+    bundle.entry?.map((entry) => entry.resource).filter((resource): resource is Encounter => resource !== undefined) ||
     []
   );
 }
@@ -65,9 +64,9 @@ export async function getEncounterSessionDuration(): Promise<number> {
  * @returns Promise resolving to encounter within active visit or null
  */
 export async function filterByActiveVisit(
-  encounters: FhirEncounter[],
+  encounters: Encounter[],
   patientUUID: string,
-): Promise<FhirEncounter | null> {
+): Promise<Encounter | null> {
   if (!encounters.length) return null;
 
   try {
@@ -98,7 +97,7 @@ export async function findActiveEncounterInSession(
   patientUUID: string,
   practitionerUUID?: string,
   sessionDurationMinutes?: number,
-): Promise<FhirEncounter | null> {
+): Promise<Encounter | null> {
   try {
     if (!patientUUID) return null;
 

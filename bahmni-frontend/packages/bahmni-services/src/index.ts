@@ -78,3 +78,4 @@ export {
 
 export { getCurrentUser, type User } from './userService';
 export { getCurrentProvider, type Provider, type Person } from './providerService';
+export { findActiveEncounterInSession } from './encounterSessionService';

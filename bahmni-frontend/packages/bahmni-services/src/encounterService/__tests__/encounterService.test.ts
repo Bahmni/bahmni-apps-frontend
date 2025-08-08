@@ -1,13 +1,13 @@
-import { mockVisitBundle, mockActiveVisit } from '@__mocks__/encounterMocks';
-import { PATIENT_VISITS_URL } from '@constants/app';
-import { get } from '@services/api';
+import { mockVisitBundle, mockActiveVisit } from '../__mocks__/mocks';
+import { PATIENT_VISITS_URL } from '../constants';
+import { get } from '../../api';
 import {
   getPatientVisits,
   getVisits,
   getActiveVisit,
-} from '@services/encounterService';
+} from '../../encounterService';
 
-jest.mock('@services/api');
+jest.mock('../../api');
 const mockedGet = get as jest.MockedFunction<typeof get>;
 
 describe('encounterService', () => {

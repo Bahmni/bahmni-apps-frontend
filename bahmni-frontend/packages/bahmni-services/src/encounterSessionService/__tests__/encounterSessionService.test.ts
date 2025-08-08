@@ -1,12 +1,12 @@
-import { FhirEncounter } from '@types/encounter';
-import * as encounterService from '../encounterService';
+import { Encounter } from 'fhir/r4';
+import { getActiveVisit } from '../../encounterService';
 import { filterByActiveVisit } from '../encounterSessionService';
 
 // Mock the encounterService
-jest.mock('../encounterService');
+jest.mock('../../encounterService');
 const mockGetActiveVisit =
-  encounterService.getActiveVisit as jest.MockedFunction<
-    typeof encounterService.getActiveVisit
+  getActiveVisit as jest.MockedFunction<
+    typeof getActiveVisit
   >;
 
 describe('encounterSessionService', () => {
@@ -16,7 +16,7 @@ describe('encounterSessionService', () => {
     const createMockEncounter = (
       id: string,
       visitUUID: string,
-    ): FhirEncounter => ({
+    ): Encounter => ({
       resourceType: 'Encounter',
       id,
       meta: {
@@ -67,7 +67,7 @@ describe('encounterSessionService', () => {
     const createMockVisit = (
       id: string,
       hasEndDate: boolean,
-    ): FhirEncounter => ({
+    ): Encounter => ({
       resourceType: 'Encounter',
       id,
       meta: {
