@@ -9,7 +9,8 @@
   "dependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-router-dom": "^7.5.3"
+    "react-router-dom": "^7.5.3",
+    "zustand": "^5.0.7"
   },
   "devDependencies": {
     "@babel/core": "^7.22.15",
@@ -30,8 +31,8 @@
     "@swc-node/register": "~1.9.1",
     "@swc/cli": "~0.6.0",
     "@swc/core": "~1.5.7",
-    "@swc/types": "^0.1.23",
     "@swc/helpers": "~0.5.11",
+    "@swc/types": "^0.1.23",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
@@ -72,8 +73,8 @@
     "lint-staged": "^15.5.0",
     "nx": "21.3.2",
     "prettier": "^3.5.3",
-    "react-refresh": "^0.10.0",
     "react-is": "^19.0.0",
+    "react-refresh": "^0.10.0",
     "sass": "1.77.6",
     "sass-loader": "16.0.0",
     "terser-webpack-plugin": "^5.3.9",
