@@ -4,7 +4,7 @@ import { DashboardSectionConfig } from '@bahmni-frontend/bahmni-services';
 import DashboardSection from '../DashboardSection';
 
 // Mock dependencies
-jest.mock('@carbon/react', () => ({
+jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
   Tile: jest.fn(({ children, ref, ...rest }) => (
     <div className="cds--tile" data-testid="carbon-tile" ref={ref} {...rest}>
       {children}

@@ -1,4 +1,4 @@
-import { Tile } from '@carbon/react';
+import { Tile } from '@bahmni-frontend/bahmni-design-system';
 import React from 'react';
 import { useTranslation } from '@bahmni-frontend/bahmni-services';
 import {
@@ -8,7 +8,7 @@ import {
   LabInvestigation,
   MedicationsTable,
   RadiologyInvestigationTable,
-} from '@bahmni-frontend/bahmni-widgets/';
+} from '@bahmni-frontend/bahmni-widgets';
 import { DashboardSectionConfig } from '@bahmni-frontend/bahmni-services';
 import styles from './styles/DashboardSection.module.scss';
 

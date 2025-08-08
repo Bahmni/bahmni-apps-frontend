@@ -1,4 +1,4 @@
-import { Button } from '@carbon/react';
+import { Button } from '@bahmni-frontend/bahmni-design-system';
 import React from 'react';
 import { useTranslation } from '@bahmni-frontend/bahmni-services';
 import { useEncounterSession } from '../../hooks/useEncounterSession';
