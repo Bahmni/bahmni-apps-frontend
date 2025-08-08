@@ -44,6 +44,7 @@ export {
   getConditions,
   getFormattedConditions,
   type FormattedCondition,
+  type ConditionInputEntry,
   ConditionStatus,
 } from './conditionService';
 export {
@@ -52,6 +53,13 @@ export {
   type DiagnosisInputEntry,
   type DiagnosesByDate,
 } from './diagnosesService';
+export {
+  searchConcepts,
+  searchFHIRConcepts,
+  searchFHIRConceptsByName,
+  type ConceptSearch,
+  type ConceptClass,
+} from './conceptService';
 export {
   getPatientMedications,
   getPatientMedicationBundle,

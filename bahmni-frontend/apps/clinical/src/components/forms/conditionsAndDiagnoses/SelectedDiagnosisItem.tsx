@@ -1,10 +1,9 @@
-import { Column, Grid, Dropdown, Link } from '@carbon/react';
+import { Column, Grid, Dropdown, Link } from '@bahmni-frontend/bahmni-design-system';
 import { Coding } from 'fhir/r4';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { CERTAINITY_CONCEPTS } from '@constants/concepts';
-import { DiagnosisInputEntry } from '@types/diagnosis';
-import * as styles from './styles/SelectedDiagnosisItem.module.scss';
+import { useTranslation, type DiagnosisInputEntry } from '@bahmni-frontend/bahmni-services';
+import { CERTAINITY_CONCEPTS } from '../../../constants/diagnosis';
+import styles from './styles/SelectedDiagnosisItem.module.scss';
 
 export interface SelectedDiagnosisItemProps {
   diagnosis: DiagnosisInputEntry;
@@ -74,8 +73,8 @@ const SelectedDiagnosisItem: React.FC<SelectedDiagnosisItemProps> = React.memo(
             label={t('DIAGNOSES_SELECT_CERTAINTY')}
             items={CERTAINITY_CONCEPTS}
             selectedItem={selectedCertainty}
-            itemToString={(item) => (item?.display ? t(item.display) : '')}
-            onChange={(data) => {
+            itemToString={(item: any) => (item?.display ? t(item.display) : '')}
+            onChange={(data: any) => {
               updateCertainty(id, data.selectedItem);
             }}
             invalid={hasCertaintyError}

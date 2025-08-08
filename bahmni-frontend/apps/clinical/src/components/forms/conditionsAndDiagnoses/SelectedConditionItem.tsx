@@ -1,9 +1,8 @@
-import { Column, Grid, Dropdown, TextInput } from '@carbon/react';
+import { Column, Grid, Dropdown, TextInput } from '@bahmni-frontend/bahmni-design-system';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { DURATION_UNITS } from '@constants/conditions';
-import { ConditionInputEntry } from '@types/condition';
-import * as styles from './styles/SelectedConditionItem.module.scss';
+import { useTranslation, type ConditionInputEntry } from '@bahmni-frontend/bahmni-services';
+import { DURATION_UNITS } from '../../../constants/conditions';
+import styles from './styles/SelectedConditionItem.module.scss';
 
 export interface SelectedConditionItemProps {
   condition: ConditionInputEntry;
@@ -52,7 +51,7 @@ const SelectedConditionItem: React.FC<SelectedConditionItemProps> = React.memo(
             labelText={t('CONDITIONS_DURATION_VALUE_LABEL')}
             placeholder={t('CONDITIONS_DURATION_VALUE_PLACEHOLDER')}
             value={durationValue?.toString() ?? ''}
-            onChange={(event) => {
+            onChange={(event: any) => {
               const value = event.target.value.trim();
               if (value === '') {
                 updateConditionDuration(id, null, durationUnit);
@@ -80,8 +79,8 @@ const SelectedConditionItem: React.FC<SelectedConditionItemProps> = React.memo(
             selectedItem={
               DURATION_UNITS.find((unit) => unit.id === durationUnit) ?? null
             }
-            itemToString={(item) => t(item.display!)}
-            onChange={(event) => {
+            itemToString={(item: any) => t(item?.display || '')}
+            onChange={(event: any) => {
               const unit = event.selectedItem?.id as
                 | 'days'
                 | 'months'

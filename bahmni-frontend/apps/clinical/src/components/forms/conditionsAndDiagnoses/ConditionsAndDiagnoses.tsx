@@ -1,15 +1,13 @@
-import { ComboBox, Tile } from '@carbon/react';
+import { ComboBox, Tile } from '@bahmni-frontend/bahmni-design-system';
+import { BoxWHeader, SelectedItem } from '@bahmni-frontend/bahmni-design-system';
 import React, { useState, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import BoxWHeader from '@components/common/boxWHeader/BoxWHeader';
-import SelectedItem from '@components/common/selectedItem/SelectedItem';
-import { useConceptSearch } from '@hooks/useConceptSearch';
-import useConditions from '@hooks/useConditions';
-import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
-import { ConceptSearch } from '@types/concepts';
+import { useTranslation, type ConceptSearch } from '@bahmni-frontend/bahmni-services';
+import { useConceptSearch } from '../../../hooks/useConceptSearch';
+import useConditions from '../../../hooks/useConditions';
+import { useConditionsAndDiagnosesStore } from '../../../stores/conditionsAndDiagnosesStore';
 import SelectedConditionItem from './SelectedConditionItem';
 import SelectedDiagnosisItem from './SelectedDiagnosisItem';
-import * as styles from './styles/ConditionsAndDiagnoses.module.scss';
+import styles from './styles/ConditionsAndDiagnoses.module.scss';
 
 /**
  * ConditionsAndDiagnoses component
@@ -60,7 +58,7 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
 
   const isConditionDuplicate = (diagnosisId: string): boolean => {
     const isExistingCondition = existingConditions.some(
-      (d) => d.code?.coding?.[0]?.code === diagnosisId,
+      (d: any) => d.code?.coding?.[0]?.code === diagnosisId,
     );
     const isSelectedConditions =
       selectedConditions?.some((condition) => condition.id === diagnosisId) ||
@@ -136,8 +134,8 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
         id="diagnoses-search"
         placeholder={t('DIAGNOSES_SEARCH_PLACEHOLDER')}
         items={filteredSearchResults}
-        itemToString={(item) => item?.conceptName ?? ''}
-        onChange={(data) => handleOnChange(data.selectedItem!)}
+        itemToString={(item: any) => item?.conceptName ?? ''}
+        onChange={(data: any) => handleOnChange(data.selectedItem!)}
         onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
         size="md"
         autoAlign
