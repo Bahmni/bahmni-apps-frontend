@@ -3,37 +3,41 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import React from 'react';
 import PatientHeader from '../PatientHeader';
 import '@testing-library/jest-dom';
+import { useTranslation } from '@bahmni-frontend/bahmni-services';
 
 expect.extend(toHaveNoViolations);
 
-// Mock BahmniIcon
-jest.mock('@components/common/bahmniIcon/BahmniIcon', () => {
-  return function BahmniIcon(props: {
-    id: string;
-    name: string;
-    size: string;
-  }) {
-    return (
-      <div
-        data-testid={`${props.id}`}
-        data-icon-name={props.name}
-        data-size={props.size}
-      >
-        Icon Mock
-      </div>
-    );
+jest.mock('@bahmni-frontend/bahmni-services');
+// Mock the PatientDetails component
+jest.mock('@bahmni-frontend/bahmni-widgets', () => {
+  return {
+    __esModule: true,
+    PatientDetails: () => (
+      <div data-testid="patient-details-mock">PatientDetails Mock</div>
+    ),
+    useActivePractitioner: jest.fn(() => ({
+      uuid: 'active-practitioner-uuid',
+      practitioner: { uuid: 'active-practitioner-uuid' },
+    })),
+    usePatientUUID: jest.fn(() => 'patient-uuid'),
   };
 });
 
-// Mock the PatientDetails component
-jest.mock('@displayControls/patient/PatientDetails', () => {
-  return {
-    __esModule: true,
-    default: () => (
-      <div data-testid="patient-details-mock">PatientDetails Mock</div>
-    ),
-  };
-});
+jest.mock('../../../hooks/useEncounterSession', () => ({
+  useEncounterSession: jest.fn(() => ({
+    hasActiveSession: false,
+    activeEncounter: null,
+    isPractitionerMatch: false,
+    editActiveEncounter: false,
+    isLoading: false,
+    error: null,
+    refetch: jest.fn(),
+  })),
+}));
+
+const mockedUseTranslation = useTranslation as jest.MockedFunction<
+  typeof useTranslation
+>;
 
 describe('PatientHeader Component', () => {
   // Test props
@@ -49,9 +53,19 @@ describe('PatientHeader Component', () => {
   const renderComponent = (props = {}) => {
     return render(<PatientHeader {...defaultProps} {...props} />);
   };
+  const mockTranslate = jest.fn((key: string) => {
+    const translations: Record<string, string> = {
+      'CONSULTATION_ACTION_NEW': 'New Consultation',
+      'CONSULTATION_ACTION_EDIT': 'Edit Consultation',
+      'CONSULTATION_ACTION_IN_PROGRESS': 'Consultation in progress',
+      'PATIENT_HEADER_LABEL': 'Patient Header',
+    };
+    return translations[key] || key;
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockedUseTranslation.mockReturnValue({ t: mockTranslate } as any);
   });
 
   // Basic rendering tests

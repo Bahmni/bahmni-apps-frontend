@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useActivePractitioner } from '@hooks/useActivePractitioner';
-import { usePatientUUID } from '@hooks/usePatientUUID';
-import { findActiveEncounterInSession } from '@services/encounterSessionService';
-import { FhirEncounter } from '../types/encounter';
+import { useActivePractitioner } from '@bahmni-frontend/bahmni-widgets';
+import { usePatientUUID } from '@bahmni-frontend/bahmni-widgets';
+import { findActiveEncounterInSession } from '@bahmni-frontend/bahmni-services';
+import { Encounter } from 'fhir/r4';
 
 interface UseEncounterSessionReturn {
   hasActiveSession: boolean;
-  activeEncounter: FhirEncounter | null;
+  activeEncounter: Encounter | null;
   isPractitionerMatch: boolean;
   editActiveEncounter: boolean;
   isLoading: boolean;
@@ -22,7 +22,7 @@ interface UseEncounterSessionReturn {
 
 export function useEncounterSession(): UseEncounterSessionReturn {
   const [hasActiveSession, setHasActiveSession] = useState<boolean>(false);
-  const [activeEncounter, setActiveEncounter] = useState<FhirEncounter | null>(
+  const [activeEncounter, setActiveEncounter] = useState<Encounter | null>(
     null,
   );
   const [isPractitionerMatch, setIsPractitionerMatch] =

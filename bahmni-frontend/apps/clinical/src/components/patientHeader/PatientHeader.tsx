@@ -1,8 +1,8 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import ConsultationActionButton from '@/components/clinical/patientHeader/ConsultationActionButton';
-import PatientDetails from '@displayControls/patient/PatientDetails';
-import * as styles from './styles/PatientHeader.module.scss';
+import { useTranslation } from '@bahmni-frontend/bahmni-services';
+import ConsultationActionButton from './ConsultationActionButton';
+import { PatientDetails } from '@bahmni-frontend/bahmni-widgets';
+import styles from './styles/PatientHeader.module.scss';
 
 interface PatientHeaderProps {
   isActionAreaVisible: boolean;

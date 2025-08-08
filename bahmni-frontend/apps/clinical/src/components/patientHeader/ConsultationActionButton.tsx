@@ -1,8 +1,8 @@
 import { Button } from '@carbon/react';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { useEncounterSession } from '@hooks/useEncounterSession';
-import * as styles from './styles/PatientHeader.module.scss';
+import { useTranslation } from '@bahmni-frontend/bahmni-services';
+import { useEncounterSession } from '../../hooks/useEncounterSession';
+import styles from './styles/PatientHeader.module.scss';
 
 interface ConsultationActionButtonProps {
   isActionAreaVisible: boolean;
