@@ -1,12 +1,10 @@
 import { renderHook, waitFor, act } from '@testing-library/react';
 import React from 'react';
-import i18next from 'i18next';
 import { ALLERGEN_TYPES } from '../../constants/allergy';
 import { useClinicalConfig } from '../useClinicalConfig';
 import {
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
-  get
 } from '@bahmni-frontend/bahmni-services';
 import useAllergenSearch from '../useAllergenSearch';
 
@@ -15,15 +13,20 @@ jest.mock('../useClinicalConfig');
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
   fetchAndFormatAllergenConcepts: jest.fn(),
   fetchReactionConcepts: jest.fn(),
-  get:jest.fn()
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: {
+      changeLanguage: () => new Promise(() => {}),
+    },
+  }),
+  notificationService : {
+    showError:jest.fn()
+  }
 }));
 
 const mockUseClinicalConfig = useClinicalConfig as jest.MockedFunction<
   typeof useClinicalConfig
 >;
-jest.mock('@services/notificationService', () => ({
-  showError: jest.fn(),
-}));
 
 const mockClinicalConfig = {
   patientInformation: {},
@@ -50,7 +53,7 @@ const mockFetchReactionConcepts = fetchReactionConcepts as jest.MockedFunction<
   typeof fetchReactionConcepts
 >;
 
-const mockApiGet = get as jest.MockedFunction<typeof get>
+// const mockApiGet = get as jest.MockedFunction<typeof get>
 
 describe('useAllergenSearch', () => {
   beforeEach(() => {
@@ -65,10 +68,9 @@ describe('useAllergenSearch', () => {
       error: null,
       setError: jest.fn(),
     });
-    i18next.changeLanguage('en');
 
     // Mock API responses
-    mockApiGet.mockResolvedValue(mockApiResponse);
+    // mockApiGet.mockResolvedValue(mockApiResponse);
     mockFetchAndFormatAllergenConcepts.mockResolvedValue(mockAllergens);
     mockFetchReactionConcepts.mockResolvedValue(mockReactions);
   });

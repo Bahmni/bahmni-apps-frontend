@@ -1,21 +1,16 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Coding } from 'fhir/r4';
-import React from 'react';
-import { I18nextProvider } from 'react-i18next';
-import i18n from '@/setupTests.i18n';
-import { ALLERGEN_TYPES } from '@constants/concepts';
-import { useClinicalConfig } from '@hooks/useClinicalConfig';
-import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
-import { NotificationProvider } from '@providers/NotificationProvider';
-import * as api from '@services/api';
-import { useAllergyStore } from '@stores/allergyStore';
+import i18n from '../../../../../setupTests.i18n';
+import { ALLERGEN_TYPES } from '../.././../../constants/allergy';
+import { useClinicalConfig } from '../../../../hooks/useClinicalConfig';
+import { ClinicalConfigProvider } from '../../../../providers/ClinicalConfigProvider';
+import { useAllergyStore } from '../../../../stores/allergyStore';
 import AllergiesForm from '../AllergiesForm';
 
 // Mock hooks and services
-jest.mock('@services/api');
-jest.mock('@stores/allergyStore');
-jest.mock('@hooks/useClinicalConfig');
+jest.mock('../../../../stores/allergyStore');
+jest.mock('../../../../hooks/useClinicalConfig');
 jest.mock('@services/notificationService', () => ({
   __esModule: true,
   default: {
@@ -192,13 +187,10 @@ describe('AllergiesForm Integration Tests', () => {
 
   test('loads and displays allergens from API', async () => {
     render(
-      <I18nextProvider i18n={i18n}>
-        <NotificationProvider>
-          <ClinicalConfigProvider>
+      
+          
             <AllergiesForm />
-          </ClinicalConfigProvider>
-        </NotificationProvider>
-      </I18nextProvider>,
+        
     );
 
     const searchBox = screen.getByRole('combobox', {
