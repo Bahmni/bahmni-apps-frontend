@@ -4,15 +4,15 @@ import {
   Dropdown,
   FilterableMultiSelect,
   Link,
+  TextAreaWClose
 } from '@bahmni-frontend/bahmni-design-system';
 import { Coding } from 'fhir/r4';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import TextAreaWClose from '../../common/textAreaWClose/TextAreaWClose';
-import { ALLERGY_SEVERITY_CONCEPTS } from '@constants/concepts';
-import { AllergyInputEntry } from '@types/allergy';
-import { getCategoryDisplayName } from '@utils/allergy';
-import * as styles from './styles/SelectedAllergyItem.module.scss';
+import { ALLERGY_SEVERITY_CONCEPTS } from '../../../constants/allergy';
+import { AllergyInputEntry } from '../../../types/allergy';
+import { getCategoryDisplayName } from '../../../utils/allergy';
+import styles from './styles/SelectedAllergyItem.module.scss';
 
 /**
  * Properties for a selected allergy item
@@ -99,9 +99,9 @@ const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
               label={t('ALLERGY_SELECT_SEVERITY')}
               items={ALLERGY_SEVERITY_CONCEPTS}
               selectedItem={selectedSeverity}
-              itemToString={(item) => t(item!.display!)}
+              itemToString={(item) => t((item as Coding)?.display || '')}
               onChange={(data) => {
-                updateSeverity(id, data.selectedItem);
+                updateSeverity(id, data.selectedItem as Coding | null);
               }}
               invalid={hasSeverityError}
               invalidText={hasSeverityError && t(errors.severity!)}
@@ -125,9 +125,9 @@ const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
               placeholder={t('ALLERGY_SELECT_REACTIONS')}
               items={reactionConcepts}
               selectedItems={selectedReactions}
-              itemToString={(item) => item?.display ?? ''}
+              itemToString={(item) => (item as Coding)?.display ?? ''}
               onChange={(data) => {
-                updateReactions(id, data.selectedItems!);
+                updateReactions(id, data.selectedItems as Coding[]);
               }}
               invalid={hasReactionsError}
               invalidText={t(errors.reactions!)}
@@ -142,7 +142,10 @@ const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
             labelText={t('ADD_ALLERGY_NOTE')}
             placeholder={t('ADD_ALLERGY_NOTE_PLACEHOLDER')}
             value={note ?? ''}
-            onChange={(event) => updateNote(id, event.target.value)}
+            onChange={(event) => {
+              const target = event.target as any;
+              updateNote(id, target.value);
+            }}
             onClose={() => {
               setHasNote(false);
               updateNote(id, '');

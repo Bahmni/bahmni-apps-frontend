@@ -1,9 +1,8 @@
 import { renderHook } from '@testing-library/react';
 import { Coding } from 'fhir/r4';
 import { act } from 'react';
-import { ALLERGY_SEVERITY_CONCEPTS } from '@constants/concepts';
-import { AllergyInputEntry } from '@types/allergy';
-import { AllergenConcept } from '@types/concepts';
+import { ALLERGY_SEVERITY_CONCEPTS } from '../../constants/allergy';
+import { AllergyInputEntry, AllergenConcept } from '../../types/allergy';
 import { useAllergyStore } from '../allergyStore';
 
 const mockAllergen: AllergenConcept = {

@@ -1,10 +1,14 @@
 import { ComboBox, Tile } from '@bahmni-frontend/bahmni-design-system';
 import { BoxWHeader , SelectedItem } from '@bahmni-frontend/bahmni-design-system';
 import { useAllergyStore } from '../../../stores/allergyStore';
-import { AllergenConcept } from '@bahmni-frontend/bahmni-services';
-import { getCategoryDisplayName } from '@bahmni-frontend/bahmni-widgets';
+import { AllergenConcept } from '../../../types/allergy';
+import { getCategoryDisplayName } from '../../../utils/allergy';
 import SelectedAllergyItem from './SelectedAllergyItem';
 import styles from './styles/AllergiesForm.module.scss';
+import { useTranslation } from '@bahmni-frontend/bahmni-services';
+import { useMemo, useState } from 'react';
+import React from 'react';
+import useAllergenSearch from '../../../hooks/useAllergenSearch';
 
 /**
  * AllergiesForm component
@@ -118,14 +122,15 @@ const AllergiesForm: React.FC = React.memo(() => {
         id="allergies-search"
         placeholder={t('ALLERGIES_SEARCH_PLACEHOLDER')}
         items={filteredSearchResults}
-        itemToString={(item) =>
-          item?.type
-            ? `${item.display} [${t(getCategoryDisplayName(item.type))}]`
-            : item
-              ? `${item.display}`
-              : ''
-        }
-        onChange={(data) => handleOnChange(data.selectedItem!)}
+        itemToString={(item) => {
+          const allergenItem = item as AllergenConcept;
+          return allergenItem?.type
+            ? `${allergenItem.display} [${t(getCategoryDisplayName(allergenItem.type))}]`
+            : allergenItem
+              ? `${allergenItem.display}`
+              : '';
+        }}
+        onChange={(data) => handleOnChange(data.selectedItem as AllergenConcept | null)}
         onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
         size="md"
         autoAlign

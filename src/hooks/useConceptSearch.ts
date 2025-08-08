@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { searchConcepts } from '@services/conceptService';
 import { ConceptSearch } from '@types/concepts';
-import useDebounce from './useDebounce';
+import useDebounce from '../../bahmni-frontend/apps/clinical/src/hooks/useDebounce';
 
 /**
  * Result type for the concept search hook

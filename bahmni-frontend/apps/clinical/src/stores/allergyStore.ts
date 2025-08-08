@@ -1,7 +1,6 @@
 import { Coding } from 'fhir/r4';
 import { create } from 'zustand';
-import { AllergyInputEntry } from '@types/allergy';
-import { AllergenConcept } from '@types/concepts';
+import { AllergyInputEntry, AllergenConcept } from '../types/allergy';
 
 export interface AllergyState {
   selectedAllergies: AllergyInputEntry[];
@@ -24,7 +23,7 @@ export const useAllergyStore = create<AllergyState>((set, get) => ({
     const newAllergy: AllergyInputEntry = {
       id: allergy.uuid,
       display: allergy.display,
-      type: allergy.type,
+      type: allergy.type || '',
       selectedSeverity: null,
       selectedReactions: [],
       errors: {},

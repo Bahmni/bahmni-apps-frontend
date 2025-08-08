@@ -1,26 +1,26 @@
 import { renderHook, waitFor, act } from '@testing-library/react';
 import React from 'react';
-import i18n from '@/setupTests.i18n';
-import { ALLERGEN_TYPES } from '@constants/concepts';
-import { useClinicalConfig } from '@hooks/useClinicalConfig';
+import i18next from 'i18next';
+import { ALLERGEN_TYPES } from '../../constants/allergy';
+import { useClinicalConfig } from '../useClinicalConfig';
 import {
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
-} from '@services/allergyService';
-import * as api from '@services/api';
+  get
+} from '@bahmni-frontend/bahmni-services';
 import useAllergenSearch from '../useAllergenSearch';
 
 // Mock hooks
-jest.mock('@hooks/useClinicalConfig');
-jest.mock('@services/allergyService', () => ({
+jest.mock('../useClinicalConfig');
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
   fetchAndFormatAllergenConcepts: jest.fn(),
   fetchReactionConcepts: jest.fn(),
+  get:jest.fn()
 }));
 
 const mockUseClinicalConfig = useClinicalConfig as jest.MockedFunction<
   typeof useClinicalConfig
 >;
-jest.mock('@services/api');
 jest.mock('@services/notificationService', () => ({
   showError: jest.fn(),
 }));
@@ -42,9 +42,6 @@ const mockClinicalConfig = {
 // Mock the clinical config context
 const wrapper = ({ children }: { children: React.ReactNode }) => children;
 
-// Mock the api.get function
-const mockApiGet = api.get as jest.MockedFunction<typeof api.get>;
-
 const mockFetchAndFormatAllergenConcepts =
   fetchAndFormatAllergenConcepts as jest.MockedFunction<
     typeof fetchAndFormatAllergenConcepts
@@ -52,6 +49,8 @@ const mockFetchAndFormatAllergenConcepts =
 const mockFetchReactionConcepts = fetchReactionConcepts as jest.MockedFunction<
   typeof fetchReactionConcepts
 >;
+
+const mockApiGet = get as jest.MockedFunction<typeof get>
 
 describe('useAllergenSearch', () => {
   beforeEach(() => {
@@ -66,7 +65,7 @@ describe('useAllergenSearch', () => {
       error: null,
       setError: jest.fn(),
     });
-    i18n.changeLanguage('en');
+    i18next.changeLanguage('en');
 
     // Mock API responses
     mockApiGet.mockResolvedValue(mockApiResponse);

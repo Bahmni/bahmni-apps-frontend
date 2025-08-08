@@ -1,12 +1,12 @@
 import { Coding } from 'fhir/r4';
 import { useEffect, useState, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
-} from '@services/allergyService';
-import { AllergenConcept } from '@types/concepts';
-import { getFormattedError } from '@utils/common';
+  getFormattedError,
+  useTranslation,
+} from '@bahmni-frontend/bahmni-services';
+import { AllergenConcept } from '../types/allergy';
 import { useClinicalConfig } from './useClinicalConfig';
 import useDebounce from './useDebounce';
 
