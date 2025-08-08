@@ -37,6 +37,8 @@ export {
   type AllergenType,
   getAllergies,
   getFormattedAllergies,
+  fetchAndFormatAllergenConcepts,
+  fetchReactionConcepts,
 } from './allergyService';
 export {
   getConditions,

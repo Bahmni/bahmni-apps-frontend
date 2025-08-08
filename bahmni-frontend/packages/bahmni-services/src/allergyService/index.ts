@@ -1,4 +1,9 @@
-export { getAllergies, getFormattedAllergies } from './allergyService';
+export {
+  getAllergies,
+  getFormattedAllergies,
+  fetchAndFormatAllergenConcepts,
+  fetchReactionConcepts,
+} from './allergyService';
 export {
   type FormattedAllergy,
   AllergyStatus,
