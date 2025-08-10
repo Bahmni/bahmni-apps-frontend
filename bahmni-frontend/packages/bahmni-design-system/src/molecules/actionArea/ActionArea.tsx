@@ -1,8 +1,7 @@
 import { Button, ButtonSet } from '@carbon/react';
 import classNames from 'classnames';
 import React, { ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
-import * as styles from './styles/ActionArea.module.scss';
+import styles from './styles/ActionArea.module.scss';
 
 /**
  * ActionArea component props
@@ -21,14 +20,15 @@ export interface ActionAreaProps {
   content: ReactNode; // Content to be rendered inside the ActionArea
   className?: string; // Optional CSS class
   ariaLabel?: string; // Accessible label for the component
+  buttonGroupAriaLabel?: string; // Aria label for the button group
 }
 
 /**
  * ActionArea component provides a rectangular container with 2-3 action buttons
  * at the bottom and space for content passed in as children.
  *
- * It slides in from the right side of the screen and can be closed by setting
- * the isVisible prop to false.
+ * All text content including title and button labels should be passed as props
+ * to allow for external translation management.
  */
 const ActionArea: React.FC<ActionAreaProps> = ({
   title,
@@ -44,8 +44,8 @@ const ActionArea: React.FC<ActionAreaProps> = ({
   content,
   className,
   ariaLabel,
+  buttonGroupAriaLabel = 'Action buttons',
 }) => {
-  const { t } = useTranslation();
 
   const buttonCountClass =
     tertiaryButtonText && onTertiaryButtonClick
@@ -62,7 +62,7 @@ const ActionArea: React.FC<ActionAreaProps> = ({
       aria-label={accessibleLabel}
     >
       <h2 className={styles.title} id="action-area-title">
-        {t(title)}
+        {title}
       </h2>
       <div
         className={styles.content}
@@ -74,16 +74,16 @@ const ActionArea: React.FC<ActionAreaProps> = ({
 
       <ButtonSet
         className={styles.buttonSet}
-        aria-label={t('ACTION_AREA.BUTTON_GROUP')}
+        aria-label={buttonGroupAriaLabel}
       >
         <Button
           kind="secondary"
           onClick={onSecondaryButtonClick}
           disabled={isSecondaryButtonDisabled}
           className={buttonCountClass}
-          aria-label={t(secondaryButtonText)}
+          aria-label={secondaryButtonText}
         >
-          {t(secondaryButtonText)}
+          {secondaryButtonText}
         </Button>
 
         {tertiaryButtonText && onTertiaryButtonClick && (
@@ -92,9 +92,9 @@ const ActionArea: React.FC<ActionAreaProps> = ({
             onClick={onTertiaryButtonClick}
             disabled={isTertiaryButtonDisabled}
             className={buttonCountClass}
-            aria-label={t(tertiaryButtonText)}
+            aria-label={tertiaryButtonText}
           >
-            {t(tertiaryButtonText)}
+            {tertiaryButtonText}
           </Button>
         )}
 
@@ -103,9 +103,9 @@ const ActionArea: React.FC<ActionAreaProps> = ({
           onClick={onPrimaryButtonClick}
           disabled={isPrimaryButtonDisabled}
           className={buttonCountClass}
-          aria-label={t(primaryButtonText)}
+          aria-label={primaryButtonText}
         >
-          {t(primaryButtonText)}
+          {primaryButtonText}
         </Button>
       </ButtonSet>
     </div>
