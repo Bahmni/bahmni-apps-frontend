@@ -1,4 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { useHeaderSideNav } from '../useHeaderSideNav';
 
 // Mock window.innerWidth for testing
