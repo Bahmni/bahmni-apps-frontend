@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import { ReactNode, ComponentType } from 'react';
 
 /**
  * Side navigation item for header with side navigation component
@@ -9,7 +9,7 @@ export interface HeaderSideNavItem {
   label: string;
   href?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  renderIcon?: React.ComponentType<any>;
+  renderIcon?: ComponentType<any>;
 }
 
 /**
