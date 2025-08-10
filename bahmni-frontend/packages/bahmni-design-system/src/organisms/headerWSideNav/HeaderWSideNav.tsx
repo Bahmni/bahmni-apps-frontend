@@ -11,12 +11,11 @@ import {
 } from '@carbon/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
-import { ICON_SIZE } from '@constants/icon';
-import { useHeaderSideNav } from '@hooks/useHeaderSideNav';
-import { HeaderWSideNavProps } from '@types/headerSideNav';
-import { isMobile } from '@utils/common';
-import * as styles from './styles/HeaderWSideNav.module.scss';
+import { Icon, ICON_SIZE } from '../../molecules/icon';
+import { useHeaderSideNav } from './useHeaderSideNav';
+import { HeaderWSideNavProps } from './models';
+import { isMobile } from './utils';
+import styles from './styles/HeaderWSideNav.module.scss';
 
 /**
  * HeaderWSideNav component combines a header with side navigation, breadcrumbs, and global actions.
@@ -96,7 +95,7 @@ const HeaderWSideNav: React.FC<HeaderWSideNavProps> = ({
             <SideNavLink
               key={item.id}
               renderIcon={() => (
-                <BahmniIcon
+                <Icon
                   name={item.icon}
                   id={`sidebar-icon-${item.id}`}
                   size={ICON_SIZE.LG}
