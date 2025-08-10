@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { Dashboard } from './pages/Dashboard';
 
-import { initAppI18n } from '@bahmni-frontend/bahmni-services';
+import { initAppI18n, initializeAuditListener } from '@bahmni-frontend/bahmni-services';
 import { initFontAwesome } from '@bahmni-frontend/bahmni-design-system';
 import { NotificationProvider } from '@bahmni-frontend/bahmni-widgets';
 import { ClinicalConfigProvider } from './providers/ClinicalConfigProvider';
@@ -16,6 +16,7 @@ const ClinicalApp: React.FC = () => {
             try {
                 await initAppI18n();
                 initFontAwesome();
+                initializeAuditListener();
                 setIsInitialized(true);
             } catch (error) {
                 console.error('Failed to initialize app:', error);

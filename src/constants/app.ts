@@ -9,14 +9,11 @@ const OPENMRS_FHIR_R4 = '/openmrs/ws/fhir2/R4';
 const OPENMRS_REST_V1 = '/openmrs/ws/rest/v1';
 
 // Cookie name constants
-export const BAHMNI_USER_COOKIE_NAME = 'bahmni.user';
 export const BAHMNI_USER_LOCATION_COOKIE_NAME = 'bahmni.user.location';
 
 //TODO: When we work on taking values dynamically, we need to remove the hardcoded value of LAB_ORDER_TYPE_UUID */
 export const LAB_ORDER_TYPE_UUID = 'd3560b17-5e07-11ef-8f7c-0242ac120002';
 export const RADIOLOGY_ORDER_TYPE_UUID = 'd3561dc0-5e07-11ef-8f7c-0242ac120002';
-export const CONSULTATION_ENCOUNTER_TYPE_UUID =
-  'd34fe3ab-5e07-11ef-8f7c-0242ac120002';
 
 export const BUNDLED_TRANSLATIONS_URL_TEMPLATE = (lang: string) =>
   BASE_PATH + `locales/locale_${lang}.json`;
@@ -28,8 +25,6 @@ export const PATIENT_CONDITION_RESOURCE_URL = (patientUUID: string) =>
 export const PATIENT_ALLERGY_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 +
   `/AllergyIntolerance?patient=${patientUUID}&_count=100&_sort=-_lastUpdated`;
-export const PATIENT_VISITS_URL = (patientUUID: string) =>
-  OPENMRS_FHIR_R4 + `/Encounter?subject:Patient=${patientUUID}&_tag=visit`;
 export const PATIENT_LAB_INVESTIGATION_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 +
   `/ServiceRequest?category=${LAB_ORDER_TYPE_UUID}&patient=${patientUUID}&numberOfVisits=5&_count=100&_sort=-_lastUpdated`;
@@ -47,10 +42,7 @@ export const ENCOUNTER_CONCEPTS_URL =
 export const PATIENT_MEDICATION_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 +
   `/MedicationRequest?patient=${patientUUID}&_count=100&_sort=-_lastUpdated`;
-export const USER_RESOURCE_URL = (username: string) =>
-  OPENMRS_REST_V1 + `/user?username=${username}&v=custom:(username,uuid)`;
-export const PROVIDER_RESOURCE_URL = (userUUID: string) =>
-  OPENMRS_REST_V1 + `/provider?user=${userUUID}&v=custom:(uuid,display,person)`;
+
 export const PRACTITIONER_RESOURCE_URL = (uuid?: string) =>
   OPENMRS_FHIR_R4 + `/Practitioner${uuid ? `/${uuid}` : ''}`;
 export const CONSULTATION_BUNDLE_URL = OPENMRS_FHIR_R4 + '/ConsultationBundle';
@@ -64,10 +56,6 @@ export const CONCEPT_SEARCH_URL = (
 export const CONCEPT_DETAIL_URL = (uuid: string, locale: string): string =>
   OPENMRS_REST_V1 +
   `/concept/${uuid}?v=custom:(uuid,setMembers:(uuid,display,retired))&locale=${locale}`;
-export const ENCOUNTER_SEARCH_URL = OPENMRS_FHIR_R4 + '/Encounter';
-//TODO: chnage URL to use bahmni config api
-export const ENCOUNTER_SESSION_DURATION_GP_URL =
-  OPENMRS_REST_V1 + '/systemsetting/bahmni.encountersession.duration';
 export const FHIR_VALUESET_URL = (uuid: string) =>
   OPENMRS_FHIR_R4 + `/ValueSet/${uuid}/$expand`;
 export const FHIR_VALUESET_FILTER_EXPAND_URL = (filter: string) =>
@@ -90,7 +78,3 @@ export const BAHMNI_HOME_PATH = '/bahmni/home/index.html';
 export const BAHMNI_CLINICAL_PATH = '/bahmni/clinical/index.html';
 export const PANEL_CONCEPT_CLASS_NAME = 'LabSet';
 
-// Audit logging URLs
-export const AUDIT_LOG_URL = OPENMRS_REST_V1 + '/auditlog';
-export const APP_PROPERTY_URL = (property: string) =>
-  `${OPENMRS_REST_V1}/bahmnicore/sql/globalproperty?property=${property}`;
