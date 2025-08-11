@@ -371,7 +371,6 @@ exports[`AllergiesForm Snapshots should match snapshot with selected allergies 1
               >
                 <button
                   aria-label="Close Selected Item"
-                  aria-labelledby="tooltip-«r4t»"
                   class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
                   data-testid="selected-item-close-button"
                   id="close-selected-item"

@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Coding } from 'fhir/r4';
+import * as bahmniServices from '@bahmni-frontend/bahmni-services';
 import i18n from '../../../../../setupTests.i18n';
 import { ALLERGEN_TYPES } from '../.././../../constants/allergy';
 import { useClinicalConfig } from '../../../../hooks/useClinicalConfig';
@@ -11,22 +12,10 @@ import AllergiesForm from '../AllergiesForm';
 // Mock hooks and services
 jest.mock('../../../../stores/allergyStore');
 jest.mock('../../../../hooks/useClinicalConfig');
-jest.mock('@services/notificationService', () => ({
-  __esModule: true,
-  default: {
-    register: jest.fn(),
-    showError: jest.fn(),
-    showSuccess: jest.fn(),
-    showInfo: jest.fn(),
-    showWarning: jest.fn(),
-  },
-  notificationService: {
-    register: jest.fn(),
-    showError: jest.fn(),
-    showSuccess: jest.fn(),
-    showInfo: jest.fn(),
-    showWarning: jest.fn(),
-  },
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+  fetchAndFormatAllergenConcepts: jest.fn(),
+  fetchReactionConcepts: jest.fn(),
 }));
 
 const mockUseClinicalConfig = useClinicalConfig as jest.MockedFunction<
@@ -80,6 +69,7 @@ describe('AllergiesForm Integration Tests', () => {
   };
 
   beforeEach(() => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
     jest.clearAllMocks();
 
     // Setup default mock implementation for useClinicalConfig
@@ -95,90 +85,31 @@ describe('AllergiesForm Integration Tests', () => {
     // Mock scrollIntoView which is not available in jsdom
     window.HTMLElement.prototype.scrollIntoView = jest.fn();
 
-    // Mock the API responses for ValueSet endpoints
-    (api.get as jest.Mock).mockImplementation((url) => {
-      if (url.includes('ValueSet/162552')) {
-        // Medication allergens - using new expansion.contains format
-        return Promise.resolve({
-          resourceType: 'ValueSet',
-          expansion: {
-            timestamp: '2025-06-10T04:02:11+00:00',
-            contains: [
-              {
-                code: '162552AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', // Parent concept - will be filtered out
-                display: 'Reference application common drug allergens',
-                system: 'http://snomed.info/sct',
-              },
-              {
-                code: '123',
-                display: 'Penicillin',
-                system: 'http://snomed.info/sct',
-              },
-              {
-                code: 'inactive-med',
-                display: 'Inactive Medication',
-                system: 'http://snomed.info/sct',
-                inactive: true, // Will be filtered out
-              },
-            ],
-          },
-        });
-      } else if (url.includes('ValueSet/162553')) {
-        // Food allergens - using new expansion.contains format
-        return Promise.resolve({
-          resourceType: 'ValueSet',
-          expansion: {
-            timestamp: '2025-06-10T04:02:11+00:00',
-            contains: [
-              {
-                code: '162553AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', // Parent concept - will be filtered out
-                display: 'Food allergens parent concept',
-                system: 'http://snomed.info/sct',
-              },
-              {
-                code: '456',
-                display: 'Peanuts',
-                system: 'http://snomed.info/sct',
-              },
-            ],
-          },
-        });
-      } else if (url.includes('ValueSet/162554')) {
-        // Environment allergens - using new expansion.contains format
-        return Promise.resolve({
-          resourceType: 'ValueSet',
-          expansion: {
-            timestamp: '2025-06-10T04:02:11+00:00',
-            contains: [
-              {
-                code: '162554AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', // Parent concept - will be filtered out
-                display: 'Environment allergens parent concept',
-                system: 'http://snomed.info/sct',
-              },
-              {
-                code: '789',
-                display: 'Dust',
-                system: 'http://snomed.info/sct',
-              },
-            ],
-          },
-        });
-      } else if (url.includes('ValueSet/162555')) {
-        // Reaction concepts - keeping old format as this endpoint hasn't changed
-        return Promise.resolve({
-          resourceType: 'ValueSet',
-          compose: {
-            include: [
-              {
-                concept: mockReactionConcepts,
-              },
-            ],
-          },
-        });
-      }
+    // Mock the fetchAndFormatAllergenConcepts function
+    (
+      bahmniServices.fetchAndFormatAllergenConcepts as jest.Mock
+    ).mockResolvedValue([
+      {
+        uuid: '123',
+        display: 'Penicillin',
+        type: 'medication',
+      },
+      {
+        uuid: '456',
+        display: 'Peanuts',
+        type: 'food',
+      },
+      {
+        uuid: '789',
+        display: 'Dust',
+        type: 'environment',
+      },
+    ]);
 
-      return Promise.reject(new Error('Unknown URL'));
-    });
+    // Mock the fetchReactionConcepts function
+    (bahmniServices.fetchReactionConcepts as jest.Mock).mockResolvedValue(
+      mockReactionConcepts,
+    );
 
     // Mock the store
     (useAllergyStore as unknown as jest.Mock).mockReturnValue(mockStore);
@@ -186,12 +117,7 @@ describe('AllergiesForm Integration Tests', () => {
   });
 
   test('loads and displays allergens from API', async () => {
-    render(
-      
-          
-            <AllergiesForm />
-        
-    );
+    render(<AllergiesForm />);
 
     const searchBox = screen.getByRole('combobox', {
       name: /search for allergies/i,
@@ -206,13 +132,9 @@ describe('AllergiesForm Integration Tests', () => {
 
   test('adds allergy to store when selected', async () => {
     render(
-      <I18nextProvider i18n={i18n}>
-        <NotificationProvider>
-          <ClinicalConfigProvider>
-            <AllergiesForm />
-          </ClinicalConfigProvider>
-        </NotificationProvider>
-      </I18nextProvider>,
+      <ClinicalConfigProvider>
+        <AllergiesForm />
+      </ClinicalConfigProvider>,
     );
 
     const searchBox = screen.getByRole('combobox', {
@@ -236,16 +158,14 @@ describe('AllergiesForm Integration Tests', () => {
   });
 
   test('handles API error gracefully', async () => {
-    (api.get as jest.Mock).mockRejectedValue(new Error('API Error'));
+    (
+      bahmniServices.fetchAndFormatAllergenConcepts as jest.Mock
+    ).mockRejectedValue(new Error('API Error'));
 
     render(
-      <I18nextProvider i18n={i18n}>
-        <NotificationProvider>
-          <ClinicalConfigProvider>
-            <AllergiesForm />
-          </ClinicalConfigProvider>
-        </NotificationProvider>
-      </I18nextProvider>,
+      <ClinicalConfigProvider>
+        <AllergiesForm />
+      </ClinicalConfigProvider>,
     );
 
     const searchBox = screen.getByRole('combobox', {
@@ -264,13 +184,9 @@ describe('AllergiesForm Integration Tests', () => {
 
   test('full workflow: search, add, and remove allergy', async () => {
     render(
-      <I18nextProvider i18n={i18n}>
-        <NotificationProvider>
-          <ClinicalConfigProvider>
-            <AllergiesForm />
-          </ClinicalConfigProvider>
-        </NotificationProvider>
-      </I18nextProvider>,
+      <ClinicalConfigProvider>
+        <AllergiesForm />
+      </ClinicalConfigProvider>,
     );
 
     // Search and add allergy
@@ -310,13 +226,9 @@ describe('AllergiesForm Integration Tests', () => {
 
     // Re-render to show the selected allergy
     render(
-      <I18nextProvider i18n={i18n}>
-        <NotificationProvider>
-          <ClinicalConfigProvider>
-            <AllergiesForm />
-          </ClinicalConfigProvider>
-        </NotificationProvider>
-      </I18nextProvider>,
+      <ClinicalConfigProvider>
+        <AllergiesForm />
+      </ClinicalConfigProvider>,
     );
 
     // Remove allergy
