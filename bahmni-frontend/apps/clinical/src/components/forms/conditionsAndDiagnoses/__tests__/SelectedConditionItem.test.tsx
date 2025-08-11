@@ -1,10 +1,9 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import React from 'react';
-import i18n from '@/setupTests.i18n';
-import { DURATION_UNITS } from '@constants/conditions';
-import { ConditionInputEntry } from '@types/condition';
+import i18n from '../../../../../setupTests.i18n';
+import { DURATION_UNITS } from '../../../../constants/conditions';
+import { type ConditionInputEntry } from '@bahmni-frontend/bahmni-services';
 import SelectedConditionItem, {
   SelectedConditionItemProps,
 } from '../SelectedConditionItem';
@@ -12,7 +11,7 @@ import SelectedConditionItem, {
 expect.extend(toHaveNoViolations);
 
 // Mock Carbon Design System components
-jest.mock('@carbon/react', () => ({
+jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Column: ({ children, className, ...props }: any) => (
     <div data-testid="carbon-column" className={className} {...props}>

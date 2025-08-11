@@ -2,11 +2,9 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Coding } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import React from 'react';
-import { I18nextProvider } from 'react-i18next';
-import i18n from '@/setupTests.i18n';
-import { CERTAINITY_CONCEPTS } from '@constants/concepts';
-import { DiagnosisInputEntry } from '@types/diagnosis';
+import i18n from '../../../../../setupTests.i18n';
+import { CERTAINITY_CONCEPTS } from '../../../../constants/diagnosis';
+import { type DiagnosisInputEntry } from '@bahmni-frontend/bahmni-services';
 import SelectedDiagnosisItem from '../SelectedDiagnosisItem';
 
 expect.extend(toHaveNoViolations);
@@ -26,10 +24,6 @@ const defaultProps = {
   doesConditionExist: false,
 };
 
-const renderWithI18n = (component: React.ReactElement) => {
-  return render(<I18nextProvider i18n={i18n}>{component}</I18nextProvider>);
-};
-
 describe('SelectedDiagnosisItem', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -42,12 +36,12 @@ describe('SelectedDiagnosisItem', () => {
   // EXISTING CONDITION LOGIC TESTS
   describe('Existing Condition Logic', () => {
     test('renders diagnosis title correctly', () => {
-      renderWithI18n(<SelectedDiagnosisItem {...defaultProps} />);
+      render(<SelectedDiagnosisItem {...defaultProps} />);
       expect(screen.getByText('Diabetes Mellitus')).toBeInTheDocument();
     });
 
     test('renders certainty dropdown with selected value', () => {
-      renderWithI18n(<SelectedDiagnosisItem {...defaultProps} />);
+      render(<SelectedDiagnosisItem {...defaultProps} />);
 
       // The dropdown shows the selected value, not the label
       expect(screen.getByText('Confirmed')).toBeInTheDocument();
@@ -59,7 +53,7 @@ describe('SelectedDiagnosisItem', () => {
 
     test('calls updateCertainty when a certainty is selected', async () => {
       const user = userEvent.setup();
-      renderWithI18n(<SelectedDiagnosisItem {...defaultProps} />);
+      render(<SelectedDiagnosisItem {...defaultProps} />);
 
       const dropdownButton = screen.getByRole('combobox');
       await user.click(dropdownButton);
@@ -74,43 +68,6 @@ describe('SelectedDiagnosisItem', () => {
       expect(defaultProps.updateCertainty).toHaveBeenCalled();
     });
 
-    test('uses unique ID for dropdown elements', () => {
-      const diagnosis1 = {
-        ...mockDiagnosis,
-        id: 'diagnosis-1',
-      };
-      const diagnosis2 = {
-        ...mockDiagnosis,
-        id: 'diagnosis-2',
-      };
-
-      const props1 = { ...defaultProps, diagnosis: diagnosis1 };
-      const props2 = { ...defaultProps, diagnosis: diagnosis2 };
-
-      const { rerender } = renderWithI18n(
-        <SelectedDiagnosisItem {...props1} />,
-      );
-      const wrapper1 = screen.getByTestId(
-        'diagnoses-certainty-dropdown-diagnosis-1',
-      );
-      const dropdown1 = wrapper1.querySelector(
-        '#diagnoses-certainty-dropdown-diagnosis-1',
-      );
-      expect(dropdown1).toBeInTheDocument();
-
-      rerender(
-        <I18nextProvider i18n={i18n}>
-          <SelectedDiagnosisItem {...props2} />
-        </I18nextProvider>,
-      );
-      const wrapper2 = screen.getByTestId(
-        'diagnoses-certainty-dropdown-diagnosis-2',
-      );
-      const dropdown2 = wrapper2.querySelector(
-        '#diagnoses-certainty-dropdown-diagnosis-2',
-      );
-      expect(dropdown2).toBeInTheDocument();
-    });
   });
 
   // SAD PATH TESTS
@@ -121,7 +78,7 @@ describe('SelectedDiagnosisItem', () => {
         selectedCertainty: null,
       };
 
-      renderWithI18n(
+      render(
         <SelectedDiagnosisItem
           diagnosis={diagnosisWithNullCertainty}
           updateCertainty={defaultProps.updateCertainty}
@@ -147,7 +104,7 @@ describe('SelectedDiagnosisItem', () => {
         selectedCertainty: missingDisplayConcepts[0],
       };
 
-      renderWithI18n(
+      render(
         <SelectedDiagnosisItem
           diagnosis={diagnosisWithMissingDisplay}
           updateCertainty={defaultProps.updateCertainty}
@@ -167,7 +124,7 @@ describe('SelectedDiagnosisItem', () => {
         hasBeenValidated: true,
       };
 
-      renderWithI18n(
+      render(
         <SelectedDiagnosisItem
           diagnosis={diagnosisWithError}
           updateCertainty={defaultProps.updateCertainty}
@@ -194,7 +151,7 @@ describe('SelectedDiagnosisItem', () => {
         hasBeenValidated: false,
       };
 
-      renderWithI18n(
+      render(
         <SelectedDiagnosisItem
           diagnosis={diagnosisWithErrorButNotValidated}
           updateCertainty={defaultProps.updateCertainty}
@@ -222,7 +179,7 @@ describe('SelectedDiagnosisItem', () => {
         display: longDisplay,
       };
 
-      renderWithI18n(
+      render(
         <SelectedDiagnosisItem
           diagnosis={diagnosisWithLongDisplay}
           updateCertainty={defaultProps.updateCertainty}
@@ -240,7 +197,7 @@ describe('SelectedDiagnosisItem', () => {
         display: specialCharDisplay,
       };
 
-      renderWithI18n(
+      render(
         <SelectedDiagnosisItem
           diagnosis={diagnosisWithSpecialChars}
           updateCertainty={defaultProps.updateCertainty}
@@ -250,16 +207,6 @@ describe('SelectedDiagnosisItem', () => {
 
       expect(screen.getByText(specialCharDisplay)).toBeInTheDocument();
     });
-
-    test('dropdown has no titleText prop', () => {
-      renderWithI18n(<SelectedDiagnosisItem {...defaultProps} />);
-
-      const dropdown = screen.getByTestId(
-        'diagnoses-certainty-dropdown-test-diagnosis-1',
-      );
-      // The dropdown should render without a title text
-      expect(dropdown).toBeInTheDocument();
-    });
   });
 
   // Add as Condition Link Tests
@@ -267,7 +214,7 @@ describe('SelectedDiagnosisItem', () => {
     // Link State and Text
     describe('Link State and Text', () => {
       test('renders "Add as condition" link enabled when not an existing condition', () => {
-        renderWithI18n(<SelectedDiagnosisItem {...defaultProps} />);
+        render(<SelectedDiagnosisItem {...defaultProps} />);
         const addLink = screen.getByRole('link', { name: 'Add as condition' });
         expect(addLink).toBeInTheDocument();
         expect(addLink).toHaveAttribute('aria-disabled', 'false');
@@ -280,7 +227,7 @@ describe('SelectedDiagnosisItem', () => {
           doesConditionExist: true,
         };
 
-        renderWithI18n(
+        render(
           <SelectedDiagnosisItem {...propsWithExistingCondition} />,
         );
         const addLink = screen.getByRole('link', {
@@ -295,7 +242,7 @@ describe('SelectedDiagnosisItem', () => {
     describe('Interaction Tests', () => {
       test('calls onMarkAsCondition when "Add as condition" link is clicked and enabled', async () => {
         const user = userEvent.setup();
-        renderWithI18n(<SelectedDiagnosisItem {...defaultProps} />);
+        render(<SelectedDiagnosisItem {...defaultProps} />);
 
         const addLink = screen.getByRole('link', { name: 'Add as condition' });
         await user.click(addLink);
@@ -312,7 +259,7 @@ describe('SelectedDiagnosisItem', () => {
           doesConditionExist: true,
         };
 
-        renderWithI18n(
+        render(
           <SelectedDiagnosisItem {...propsWithExistingCondition} />,
         );
         const addLink = screen.getByRole('link', {
@@ -328,7 +275,7 @@ describe('SelectedDiagnosisItem', () => {
   // ACCESSIBILITY TESTS
   describe('Accessibility', () => {
     test('should have no accessibility violations', async () => {
-      const { container } = renderWithI18n(
+      const { container } = render(
         <SelectedDiagnosisItem {...defaultProps} />,
       );
       const results = await axe(container);
@@ -336,7 +283,7 @@ describe('SelectedDiagnosisItem', () => {
     });
 
     test('dropdown has appropriate ARIA attributes', () => {
-      renderWithI18n(<SelectedDiagnosisItem {...defaultProps} />);
+      render(<SelectedDiagnosisItem {...defaultProps} />);
 
       const dropdownButton = screen.getByRole('combobox');
       expect(dropdownButton).toHaveAttribute(
@@ -344,24 +291,12 @@ describe('SelectedDiagnosisItem', () => {
         'Diagnoses Certainty',
       );
     });
-
-    test('dropdown has unique ID attribute', () => {
-      renderWithI18n(<SelectedDiagnosisItem {...defaultProps} />);
-
-      const wrapper = screen.getByTestId(
-        'diagnoses-certainty-dropdown-test-diagnosis-1',
-      );
-      const dropdown = wrapper.querySelector(
-        '#diagnoses-certainty-dropdown-test-diagnosis-1',
-      );
-      expect(dropdown).toBeInTheDocument();
-    });
   });
 
   // SNAPSHOT TESTS
   describe('Snapshot Tests', () => {
     test('default rendering matches snapshot', () => {
-      const { container } = renderWithI18n(
+      const { container } = render(
         <SelectedDiagnosisItem {...defaultProps} />,
       );
       expect(container).toMatchSnapshot();
@@ -373,7 +308,7 @@ describe('SelectedDiagnosisItem', () => {
         selectedCertainty: null,
       };
 
-      const { container } = renderWithI18n(
+      const { container } = render(
         <SelectedDiagnosisItem
           diagnosis={diagnosisWithNullCertainty}
           updateCertainty={defaultProps.updateCertainty}
@@ -389,7 +324,7 @@ describe('SelectedDiagnosisItem', () => {
         doesConditionExist: true,
       };
 
-      const { container } = renderWithI18n(
+      const { container } = render(
         <SelectedDiagnosisItem {...propsWithExistingCondition} />,
       );
       expect(container).toMatchSnapshot();

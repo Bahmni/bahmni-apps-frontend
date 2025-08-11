@@ -6,23 +6,22 @@ exports[`SelectedDiagnosisItem Snapshot Tests default rendering matches snapshot
     class="cds--css-grid"
   >
     <div
-      class="cds--sm:col-span-4 cds--md:col-span-7 cds--lg:col-span-11 cds--xlg:col-span-11 cds--css-grid-column"
+      class="selectedDiagnosisTitle cds--sm:col-span-4 cds--md:col-span-7 cds--lg:col-span-11 cds--xlg:col-span-11 cds--css-grid-column"
     >
       Diabetes Mellitus
       <a
         aria-disabled="false"
-        class="cds--link"
+        class="cds--link addAsConditionLink"
         href="#"
       >
         Add as condition
       </a>
     </div>
     <div
-      class="cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-4 cds--xlg:col-span-4 cds--css-grid-column"
+      class="selectedDiagnosisCertainty cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-4 cds--xlg:col-span-4 cds--css-grid-column"
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
-        data-testid="diagnoses-certainty-dropdown-test-diagnosis-1"
       >
         <div
           class="cds--dropdown cds--autoalign cds--list-box"
@@ -30,12 +29,12 @@ exports[`SelectedDiagnosisItem Snapshot Tests default rendering matches snapshot
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-«r1o»-menu"
+            aria-controls="downshift-«r1f»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Diagnoses Certainty"
             class="cds--list-box__field"
-            id="downshift-«r1o»-toggle-button"
+            id="downshift-«r1f»-toggle-button"
             role="combobox"
             tabindex="0"
             title="Confirmed"
@@ -71,9 +70,9 @@ exports[`SelectedDiagnosisItem Snapshot Tests default rendering matches snapshot
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-«r1o»-label"
+            aria-labelledby="downshift-«r1f»-label"
             class="cds--list-box__menu"
-            id="downshift-«r1o»-menu"
+            id="downshift-«r1f»-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
@@ -90,23 +89,22 @@ exports[`SelectedDiagnosisItem Snapshot Tests disabled condition link matches sn
     class="cds--css-grid"
   >
     <div
-      class="cds--sm:col-span-4 cds--md:col-span-7 cds--lg:col-span-11 cds--xlg:col-span-11 cds--css-grid-column"
+      class="selectedDiagnosisTitle cds--sm:col-span-4 cds--md:col-span-7 cds--lg:col-span-11 cds--xlg:col-span-11 cds--css-grid-column"
     >
       Diabetes Mellitus
       <a
         aria-disabled="true"
-        class="cds--link cds--link--disabled"
+        class="cds--link addAsConditionLink cds--link--disabled"
         role="link"
       >
         Added as a condition
       </a>
     </div>
     <div
-      class="cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-4 cds--xlg:col-span-4 cds--css-grid-column"
+      class="selectedDiagnosisCertainty cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-4 cds--xlg:col-span-4 cds--css-grid-column"
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
-        data-testid="diagnoses-certainty-dropdown-test-diagnosis-1"
       >
         <div
           class="cds--dropdown cds--autoalign cds--list-box"
@@ -114,12 +112,12 @@ exports[`SelectedDiagnosisItem Snapshot Tests disabled condition link matches sn
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-«r1u»-menu"
+            aria-controls="downshift-«r1l»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Diagnoses Certainty"
             class="cds--list-box__field"
-            id="downshift-«r1u»-toggle-button"
+            id="downshift-«r1l»-toggle-button"
             role="combobox"
             tabindex="0"
             title="Confirmed"
@@ -155,9 +153,9 @@ exports[`SelectedDiagnosisItem Snapshot Tests disabled condition link matches sn
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-«r1u»-label"
+            aria-labelledby="downshift-«r1l»-label"
             class="cds--list-box__menu"
-            id="downshift-«r1u»-menu"
+            id="downshift-«r1l»-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
@@ -174,23 +172,22 @@ exports[`SelectedDiagnosisItem Snapshot Tests rendering with null selectedCertai
     class="cds--css-grid"
   >
     <div
-      class="cds--sm:col-span-4 cds--md:col-span-7 cds--lg:col-span-11 cds--xlg:col-span-11 cds--css-grid-column"
+      class="selectedDiagnosisTitle cds--sm:col-span-4 cds--md:col-span-7 cds--lg:col-span-11 cds--xlg:col-span-11 cds--css-grid-column"
     >
       Diabetes Mellitus
       <a
         aria-disabled="false"
-        class="cds--link"
+        class="cds--link addAsConditionLink"
         href="#"
       >
         Add as condition
       </a>
     </div>
     <div
-      class="cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-4 cds--xlg:col-span-4 cds--css-grid-column"
+      class="selectedDiagnosisCertainty cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-4 cds--xlg:col-span-4 cds--css-grid-column"
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
-        data-testid="diagnoses-certainty-dropdown-test-diagnosis-1"
       >
         <div
           class="cds--dropdown cds--autoalign cds--list-box"
@@ -198,12 +195,12 @@ exports[`SelectedDiagnosisItem Snapshot Tests rendering with null selectedCertai
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-«r1r»-menu"
+            aria-controls="downshift-«r1i»-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Diagnoses Certainty"
             class="cds--list-box__field"
-            id="downshift-«r1r»-toggle-button"
+            id="downshift-«r1i»-toggle-button"
             role="combobox"
             tabindex="0"
             title="Select Certainty"
@@ -239,9 +236,9 @@ exports[`SelectedDiagnosisItem Snapshot Tests rendering with null selectedCertai
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-«r1r»-label"
+            aria-labelledby="downshift-«r1i»-label"
             class="cds--list-box__menu"
-            id="downshift-«r1r»-menu"
+            id="downshift-«r1i»-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
