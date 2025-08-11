@@ -64,4 +64,6 @@ export { HeaderWSideNav, useSidebarNavigation, type HeaderSideNavItem } from './
 
 export { Content } from './atoms/content';
 
+export { Loading, type LoadingProps } from './atoms/loading';
+
 import '@carbon/styles/css/styles.css';
