@@ -9,7 +9,7 @@ import { FHIR_CONCEPT_CLASS_EXTENSION_URL } from '@constants/fhir';
 import { OrderTypeResponse } from '@types/orderType';
 import * as api from '../api';
 import * as conceptService from '../conceptService';
-import { getFlattenedInvestigations } from '../investigationService';
+import { getFlattenedInvestigations } from '../../../bahmni-frontend/packages/bahmni-services/src/investigationService/investigationService';
 
 jest.mock('../conceptService');
 jest.mock('../api');
