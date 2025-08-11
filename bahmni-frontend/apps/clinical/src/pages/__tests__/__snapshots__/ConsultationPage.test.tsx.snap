@@ -33,6 +33,7 @@ exports[`ConsultationPage Rendering and Structure should match the snapshot 1`] 
     >
       <div
         aria-label="translated_PATIENT_HEADER_LABEL"
+        class="header"
       >
         <div
           data-testid="mocked-patient-details"
