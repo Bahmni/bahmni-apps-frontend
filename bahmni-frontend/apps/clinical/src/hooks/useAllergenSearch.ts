@@ -100,7 +100,7 @@ const useAllergenSearch = (serchTerm: string = ''): UseAllergenSearchResult => {
       }
     };
     loadAllergens();
-  }, [clinicalConfig, isConfigLoading, configError, t]);
+  }, [clinicalConfig, isConfigLoading, configError]);
 
   // Filter allergens based on search term
   const filteredAllergens = useMemo(() => {

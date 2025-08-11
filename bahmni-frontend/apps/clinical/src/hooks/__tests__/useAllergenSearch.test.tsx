@@ -13,15 +13,13 @@ jest.mock('../useClinicalConfig');
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
   fetchAndFormatAllergenConcepts: jest.fn(),
   fetchReactionConcepts: jest.fn(),
+  getFormattedError: jest.fn(),
   useTranslation: () => ({
     t: (key: string) => key,
     i18n: {
       changeLanguage: () => new Promise(() => {}),
     },
   }),
-  notificationService : {
-    showError:jest.fn()
-  }
 }));
 
 const mockUseClinicalConfig = useClinicalConfig as jest.MockedFunction<
@@ -52,6 +50,7 @@ const mockFetchAndFormatAllergenConcepts =
 const mockFetchReactionConcepts = fetchReactionConcepts as jest.MockedFunction<
   typeof fetchReactionConcepts
 >;
+const mockGetFormattedError = require('@bahmni-frontend/bahmni-services').getFormattedError as jest.MockedFunction<any>;
 
 // const mockApiGet = get as jest.MockedFunction<typeof get>
 
@@ -73,6 +72,7 @@ describe('useAllergenSearch', () => {
     // mockApiGet.mockResolvedValue(mockApiResponse);
     mockFetchAndFormatAllergenConcepts.mockResolvedValue(mockAllergens);
     mockFetchReactionConcepts.mockResolvedValue(mockReactions);
+    mockGetFormattedError.mockImplementation((error: any) => ({ message: error.message || 'Unknown error' }));
   });
 
   const mockReactions = [
@@ -87,16 +87,6 @@ describe('useAllergenSearch', () => {
       system: 'http://snomed.info/sct',
     },
   ];
-  // Mock response data for API calls
-  const mockApiResponse = {
-    setMembers: [
-      {
-        uuid: '123',
-        display: 'Test Allergen',
-        retired: false,
-      },
-    ],
-  };
 
   const mockAllergens = [
     {
@@ -169,7 +159,7 @@ describe('useAllergenSearch', () => {
 
       expect(result.current.error).toBeInstanceOf(Error);
       expect(result.current.error?.message).toBe(
-        'Clinical configuration not found',
+        'ERROR_CLINICAL_CONFIG_NOT_FOUND',
       );
       expect(result.current.allergens).toEqual([]);
       expect(result.current.reactions).toEqual([]);
@@ -194,7 +184,7 @@ describe('useAllergenSearch', () => {
 
       expect(result.current.error).toBeInstanceOf(Error);
       expect(result.current.error?.message).toBe(
-        'Consultation pad configuration not found',
+        'ERROR_CONSULTATION_PAD_NOT_FOUND',
       );
       expect(result.current.allergens).toEqual([]);
       expect(result.current.reactions).toEqual([]);
@@ -220,7 +210,7 @@ describe('useAllergenSearch', () => {
 
       expect(result.current.error).toBeInstanceOf(Error);
       expect(result.current.error?.message).toBe(
-        'Allergy concept map configuration not found',
+        'ERROR_ALLERGY_CONCEPT_MAP_NOT_FOUND',
       );
       expect(result.current.allergens).toEqual([]);
       expect(result.current.reactions).toEqual([]);
