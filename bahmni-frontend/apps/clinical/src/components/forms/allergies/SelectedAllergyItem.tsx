@@ -4,13 +4,13 @@ import {
   Dropdown,
   FilterableMultiSelect,
   Link,
-  TextAreaWClose
+  TextAreaWClose,
 } from '@bahmni-frontend/bahmni-design-system';
 import { Coding } from 'fhir/r4';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ALLERGY_SEVERITY_CONCEPTS } from '../../../constants/allergy';
-import { AllergyInputEntry } from '../../../types/allergy';
+import { AllergyInputEntry } from '../../../models/allergy';
 import { getCategoryDisplayName } from '../../../utils/allergy';
 import styles from './styles/SelectedAllergyItem.module.scss';
 

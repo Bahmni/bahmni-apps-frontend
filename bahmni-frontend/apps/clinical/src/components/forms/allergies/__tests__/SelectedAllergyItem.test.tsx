@@ -2,10 +2,10 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { Coding } from 'fhir/r4';
-import i18n from '../../../../../setupTests.i18n'
+import i18n from '../../../../../setupTests.i18n';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { ALLERGY_SEVERITY_CONCEPTS } from '../../../../constants/allergy';
-import { AllergenType } from '../../../../types/allergy';
+import { AllergenType } from '../../../../models/allergy';
 import SelectedAllergyItem from '../SelectedAllergyItem';
 
 expect.extend(toHaveNoViolations);
@@ -588,9 +588,7 @@ describe('SelectedAllergyItem', () => {
   // The test is currently failing due to an accessibility issue with FilterableMultiSelect
   describe('Accessibility', () => {
     test('should have no accessibility violations', async () => {
-      const { container } = render(
-        <SelectedAllergyItem {...defaultProps} />,
-      );
+      const { container } = render(<SelectedAllergyItem {...defaultProps} />);
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });
@@ -599,9 +597,7 @@ describe('SelectedAllergyItem', () => {
   // SNAPSHOT TESTS
   describe('Snapshot Tests', () => {
     test('default rendering matches snapshot', () => {
-      const { container } = render(
-        <SelectedAllergyItem {...defaultProps} />,
-      );
+      const { container } = render(<SelectedAllergyItem {...defaultProps} />);
       expect(container).toMatchSnapshot();
     });
 

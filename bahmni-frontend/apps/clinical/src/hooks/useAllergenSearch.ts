@@ -6,7 +6,7 @@ import {
   getFormattedError,
   useTranslation,
 } from '@bahmni-frontend/bahmni-services';
-import { AllergenConcept } from '../types/allergy';
+import { AllergenConcept } from '../models/allergy';
 import { useClinicalConfig } from './useClinicalConfig';
 import useDebounce from './useDebounce';
 

@@ -1,15 +1,20 @@
-import { ComboBox, DropdownSkeleton, Tile } from '@carbon/react';
 import React, { useState, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import BoxWHeader from '@components/common/boxWHeader/BoxWHeader';
-import SelectedItem from '@components/common/selectedItem/SelectedItem';
+import {
+  BoxWHeader,
+  SelectedItem,
+  ComboBox,
+  DropdownSkeleton,
+  Tile,
+} from '@bahmni-frontend/bahmni-design-system';
+import 
 import useMedicationConfig from '@hooks/useMedicationConfig';
 import { useMedicationSearch } from '@hooks/useMedicationSearch';
 import { getMedicationDisplay } from '@services/medicationService';
 import { useMedicationStore } from '@stores/medicationsStore';
 import { MedicationFilterResult } from '@types/medication';
 import SelectedMedicationItem from './SelectedMedicationItem';
-import * as styles from './styles/MedicationsForm.module.scss';
+import styles from './styles/MedicationsForm.module.scss';
 
 /**
  * MedicationsForm component

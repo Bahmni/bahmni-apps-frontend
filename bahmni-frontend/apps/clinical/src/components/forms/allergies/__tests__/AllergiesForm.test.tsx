@@ -4,7 +4,7 @@ import { Coding } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import useAllergenSearch from '../../../../hooks/useAllergenSearch';
 import { useAllergyStore } from '../../../../stores/allergyStore';
-import { AllergenConcept } from '../../../../types/allergy';
+import { AllergenConcept } from '../../../../models/allergy';
 import AllergiesForm from '../AllergiesForm';
 
 expect.extend(toHaveNoViolations);
@@ -74,9 +74,7 @@ const renderAllergiesForm = (overrides = {}) => {
     useAllergyStore as jest.MockedFunction<typeof useAllergyStore>
   ).mockReturnValue(mockStore);
 
-  return render(
-      <AllergiesForm />
-  );
+  return render(<AllergiesForm />);
 };
 
 const mockAllergenSearchHook = (overrides = {}) => {

@@ -1,6 +1,6 @@
 import { Coding } from 'fhir/r4';
 import { create } from 'zustand';
-import { AllergyInputEntry, AllergenConcept } from '../types/allergy';
+import { AllergyInputEntry, AllergenConcept } from '../models/allergy';
 
 export interface AllergyState {
   selectedAllergies: AllergyInputEntry[];

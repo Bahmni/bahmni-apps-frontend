@@ -1,7 +1,10 @@
 import { ComboBox, Tile } from '@bahmni-frontend/bahmni-design-system';
-import { BoxWHeader , SelectedItem } from '@bahmni-frontend/bahmni-design-system';
+import {
+  BoxWHeader,
+  SelectedItem,
+} from '@bahmni-frontend/bahmni-design-system';
 import { useAllergyStore } from '../../../stores/allergyStore';
-import { AllergenConcept } from '../../../types/allergy';
+import { AllergenConcept } from '../../../models/allergy';
 import { getCategoryDisplayName } from '../../../utils/allergy';
 import SelectedAllergyItem from './SelectedAllergyItem';
 import styles from './styles/AllergiesForm.module.scss';
@@ -130,7 +133,9 @@ const AllergiesForm: React.FC = React.memo(() => {
               ? `${allergenItem.display}`
               : '';
         }}
-        onChange={(data) => handleOnChange(data.selectedItem as AllergenConcept | null)}
+        onChange={(data) =>
+          handleOnChange(data.selectedItem as AllergenConcept | null)
+        }
         onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
         size="md"
         autoAlign

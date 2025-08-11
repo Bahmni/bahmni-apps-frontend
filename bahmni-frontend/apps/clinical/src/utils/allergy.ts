@@ -1,4 +1,4 @@
-import { AllergenType } from '../types/allergy';
+import { AllergenType } from '../models/allergy';
 
 /**
  * Maps allergy types to their corresponding i18n translation keys

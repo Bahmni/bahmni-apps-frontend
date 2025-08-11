@@ -1,5 +1,5 @@
 import { Coding } from 'fhir/r4';
-import { AllergenType } from '../types/allergy';
+import { AllergenType } from '../models/allergy';
 
 export const ALLERGY_SEVERITY_CONCEPTS: Coding[] = [
   {
