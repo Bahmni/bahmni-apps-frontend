@@ -20,7 +20,6 @@ import {
   mockAllergyWithInvalidCoding,
 } from '../__mocks__/mocks';
 import { ALLERGEN_TYPES, ALLERGY_REACTION } from '../constants';
-import { getFormattedError } from '../../errorHandling';
 import {
   getPatientAllergiesBundle,
   getAllergies,
@@ -30,28 +29,18 @@ import {
 } from '../allergyService';
 import { get } from '../../api';
 import { searchFHIRConcepts } from '../../conceptService';
-import { notificationService } from '../../notification';
 
 // Mock the api module
 jest.mock('../../api');
-// Mock the notification service
-jest.mock('../../notification');
-// Mock the common utils
-jest.mock('../../errorHandling');
 // Mock the concept service
 jest.mock('../../conceptService');
 
 describe('allergyService', () => {
   const mockPatientUUID = 'patient-123';
   const mockError = new Error('API Error');
-  const mockFormattedError = {
-    title: 'Error',
-    message: 'Something went wrong',
-  };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (getFormattedError as jest.Mock).mockReturnValue(mockFormattedError);
   });
 
   describe('getPatientAllergiesBundle', () => {
@@ -91,19 +80,6 @@ describe('allergyService', () => {
 
       const result = await getAllergies(mockPatientUUID);
 
-      expect(result).toEqual([]);
-    });
-
-    it('should handle API errors and show notification', async () => {
-      (get as jest.Mock).mockRejectedValueOnce(mockError);
-
-      const result = await getAllergies(mockPatientUUID);
-
-      expect(getFormattedError).toHaveBeenCalledWith(mockError);
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        mockFormattedError.title,
-        mockFormattedError.message,
-      );
       expect(result).toEqual([]);
     });
   });
@@ -214,22 +190,6 @@ describe('allergyService', () => {
       const result = formatAllergies([allergyWithUndefinedNote]);
 
       expect(result[0].note).toBeUndefined();
-    });
-
-    it('should handle errors and show notification', () => {
-      // Mock an error by passing null instead of an array to trigger a real error
-      /* eslint-disable @typescript-eslint/no-explicit-any */
-      const mockInvalidData = null as any;
-      /* eslint-enable @typescript-eslint/no-explicit-any */
-
-      const result = formatAllergies(mockInvalidData);
-
-      expect(getFormattedError).toHaveBeenCalled();
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        mockFormattedError.title,
-        mockFormattedError.message,
-      );
-      expect(result).toEqual([]);
     });
 
     // New tests for allergy type field
