@@ -4,8 +4,21 @@ import { ClinicalConfigProvider } from '../../providers/ClinicalConfigProvider';
 import { ClinicalConfigContextType } from '../../contexts/models';
 import { useClinicalConfig } from '../useClinicalConfig';
 
-// Mock only the notificationService
-jest.mock('@bahmni-frontend/bahmni-services');
+// Mock notification service
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  getDashboardConfig: jest.fn(),
+  getFormattedError: jest.fn((error) => ({
+      title: 'Error',
+      message: error instanceof Error ? error.message : 'An unexpected error occurred',
+    })),
+    notificationService: {
+      showError: jest.fn(),
+      showSuccess: jest.fn(),
+      showInfo: jest.fn(),
+      showWarning: jest.fn(),
+    },
+  __esModule: true
+}));
 
 // Wrapper component to provide the ClinicalConfigContext
 const wrapper = ({ children }: { children: React.ReactNode }) => (
