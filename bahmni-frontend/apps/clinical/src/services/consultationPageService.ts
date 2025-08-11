@@ -36,11 +36,12 @@ export const getDefaultDashboard = (
  */
 export const getSidebarItems = (
   dashboardConfig: DashboardConfig,
+  t: (key: string) => string,
 ): HeaderSideNavItem[] => {
   //const { t } = useTranslation();
   return dashboardConfig.sections.map((section) => ({
     id: section.id,
     icon: section.icon,
-    label: section.translationKey ?? section.name,
+    label: t(section.translationKey ?? section.name),
   }));
 };
