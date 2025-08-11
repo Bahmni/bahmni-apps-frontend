@@ -60,4 +60,6 @@ export { ClinicalLayout } from './templates/ClinicalLayout';
 
 export { Section, type SectionProps } from './atoms/section';
 
+export { Content } from './atoms/content';
+
 import '@carbon/styles/css/styles.css';
