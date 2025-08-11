@@ -6,9 +6,6 @@
       "path": "../apps/clinical"
     },
     {
-      "path": "../apps/sample-app-module"
-    },
-    {
       "path": "../packages/bahmni-design-system"
     },
     {
