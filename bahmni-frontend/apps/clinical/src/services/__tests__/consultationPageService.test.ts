@@ -1,9 +1,8 @@
 import {
   validFullClinicalConfig,
   validDashboardConfig,
-} from '@__mocks__/configMocks';
-import { Dashboard } from '@types/config';
-import { DashboardConfig } from '@types/dashboardConfig';
+} from '../../__mocks__/configMocks';
+import { Dashboard, DashboardConfig } from '@bahmni-frontend/bahmni-services';
 import {
   getDefaultDashboard,
   getSidebarItems,
@@ -40,16 +39,12 @@ describe('ConsultationPageService', () => {
       expect(result[0]).toEqual({
         id: 'vitals',
         icon: 'heartbeat',
-        label: 'Vitals',
-        active: false,
-        action: expect.any(Function),
+        label: 'Vitals'
       });
       expect(result[1]).toEqual({
         id: 'medications',
         icon: 'pills',
-        label: 'Medications',
-        active: false,
-        action: expect.any(Function),
+        label: 'Medications'
       });
     });
 

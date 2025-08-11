@@ -1,6 +1,6 @@
-import { SidebarItemProps } from '@components/common/sidebar/Sidebar';
-import { Dashboard } from '@types/config';
-import { DashboardConfig } from '@types/dashboardConfig';
+import { HeaderSideNavItem } from '@bahmni-frontend/bahmni-design-system';
+import { Dashboard } from '@bahmni-frontend/bahmni-services';
+import { DashboardConfig } from '@bahmni-frontend/bahmni-services';
 
 /**
  * Gets the default dashboard from an array of dashboards
@@ -36,12 +36,11 @@ export const getDefaultDashboard = (
  */
 export const getSidebarItems = (
   dashboardConfig: DashboardConfig,
-): SidebarItemProps[] => {
+): HeaderSideNavItem[] => {
+  //const { t } = useTranslation();
   return dashboardConfig.sections.map((section) => ({
     id: section.id,
     icon: section.icon,
     label: section.translationKey ?? section.name,
-    active: false,
-    action: () => {},
   }));
 };
