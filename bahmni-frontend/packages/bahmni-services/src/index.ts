@@ -90,6 +90,7 @@ export {
   type MedicationJSONConfig,
   type DashboardSectionConfig,
   type Dashboard,
+  type Frequency,
 } from './configService';
 
 export { getCurrentUser, type User } from './userService';

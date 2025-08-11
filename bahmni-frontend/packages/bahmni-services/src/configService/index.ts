@@ -9,4 +9,5 @@ export {
   type MedicationJSONConfig,
   type DashboardSectionConfig,
   type Dashboard,
+  type Frequency,
 } from './models';

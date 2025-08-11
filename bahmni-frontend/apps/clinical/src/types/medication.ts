@@ -1,6 +1,6 @@
 import { Medication } from 'fhir/r4';
 import { Concept } from './encounterConcepts';
-import { Frequency } from './medicationConfig';
+import { Frequency } from '@bahmni-frontend/bahmni-services';
 
 export interface MedicationFilterResult {
   displayName: string;
