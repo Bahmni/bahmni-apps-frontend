@@ -3,7 +3,7 @@ import React, { useMemo, useCallback } from 'react';
 import { useTranslation } from '@bahmni-frontend/bahmni-services';
 import useInvestigationsSearch from '../../../hooks/useInvestigationsSearch';
 import useServiceRequestStore from '../../../stores/serviceRequestStore';
-import type { FlattenedInvestigations } from '../../../types/investigations';
+import type { FlattenedInvestigations } from '@bahmni-frontend/bahmni-services';
 import SelectedInvestigationItem from './SelectedInvestigationItem';
 import styles from './styles/InvestigationsForm.module.scss';
 
@@ -146,8 +146,8 @@ const InvestigationsForm: React.FC = React.memo(() => {
         id="investigations-procedures-search"
         placeholder={t('INVESTIGATIONS_SEARCH_PLACEHOLDER')}
         items={filteredInvestigations}
-        itemToString={(item) => item?.display ?? ''}
-        onChange={({ selectedItem }) => handleChange(selectedItem)}
+        itemToString={(item: unknown) => (item as FlattenedInvestigations)?.display ?? ''}
+        onChange={(data: any) => handleChange(data.selectedItem)}
         onInputChange={(input) => setSearchTerm(input)}
         autoAlign
         aria-label={t('INVESTIGATIONS_SEARCH_ARIA_LABEL')}

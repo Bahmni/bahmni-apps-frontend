@@ -1,6 +1,10 @@
 import { useEffect, useState, useMemo } from 'react';
-import { useTranslation, getFormattedError } from '@bahmni-frontend/bahmni-services';
-import { FlattenedInvestigations } from '../types/investigations';
+import {
+  useTranslation,
+  getFormattedError,
+  getFlattenedInvestigations,
+  type FlattenedInvestigations
+} from '@bahmni-frontend/bahmni-services';
 import useDebounce from './useDebounce';
 
 interface UseInvestigationsSearchResult {
@@ -25,10 +29,8 @@ const useInvestigationsSearch = (
       try {
         setIsLoading(true);
         setError(null);
-        // TODO: Replace with actual investigation service call
-        // const fetchedInvestigations = await getFlattenedInvestigations();
-        // For now, return empty array until service is implemented
-        const fetchedInvestigations: FlattenedInvestigations[] = [];
+        // Use the migrated investigation service
+        const fetchedInvestigations = await getFlattenedInvestigations(t);
         setInvestigations(fetchedInvestigations);
       } catch (err) {
         const formattedError = getFormattedError(err);
@@ -38,7 +40,7 @@ const useInvestigationsSearch = (
       }
     };
     fetchInvestigations();
-  }, []);
+  }, [t]);
 
   const filteredInvestigations = useMemo(() => {
     if (!investigations.length) return [];
