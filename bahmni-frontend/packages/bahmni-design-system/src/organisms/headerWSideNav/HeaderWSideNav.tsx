@@ -10,7 +10,6 @@ import {
   BreadcrumbItem,
 } from '@carbon/react';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { Icon, ICON_SIZE } from '../../molecules/icon';
 import { useHeaderSideNav } from './useHeaderSideNav';
 import { HeaderWSideNavProps } from './models';
@@ -25,7 +24,7 @@ import styles from './styles/HeaderWSideNav.module.scss';
  * @param {HeaderWSideNavProps} props - The component props
  * @returns {React.ReactElement} The rendered component
  */
-const HeaderWSideNav: React.FC<HeaderWSideNavProps> = ({
+export const HeaderWSideNav: React.FC<HeaderWSideNavProps> = React.memo(({
   breadcrumbItems = [],
   globalActions = [],
   sideNavItems,
@@ -34,7 +33,6 @@ const HeaderWSideNav: React.FC<HeaderWSideNavProps> = ({
   isRail = false,
   ariaLabel = 'HeaderWSideNav',
 }) => {
-  const { t } = useTranslation();
   const { isSideNavExpanded, handleSideNavItemClick } =
     useHeaderSideNav(onSideNavItemClick);
 
@@ -53,7 +51,7 @@ const HeaderWSideNav: React.FC<HeaderWSideNavProps> = ({
             href={item.href}
             isCurrentPage={item.isCurrentPage}
           >
-            {t(item.label)}
+            {item.label}
           </BreadcrumbItem>
         ))}
       </Breadcrumb>
@@ -68,7 +66,7 @@ const HeaderWSideNav: React.FC<HeaderWSideNavProps> = ({
         {globalActions.map((action) => (
           <HeaderGlobalAction
             key={action.id}
-            aria-label={t(action.label)}
+            aria-label={action.label}
             onClick={action.onClick}
             tooltipAlignment="end"
             data-testid={`global-action-${action.id}`}
@@ -83,7 +81,7 @@ const HeaderWSideNav: React.FC<HeaderWSideNavProps> = ({
   const renderSideNav = () => {
     return (
       <SideNav
-        aria-label={t('SIDE_NAVIGATION')}
+        aria-label={'SIDE_NAVIGATION'}
         expanded={isSideNavExpanded && !isRail}
         isPersistent
         isRail={isRail || isMobile()}
@@ -107,7 +105,7 @@ const HeaderWSideNav: React.FC<HeaderWSideNavProps> = ({
               data-testid={`sidenav-item-${item.id}`}
               large
             >
-              {t(item.label)}
+              {item.label}
             </SideNavLink>
           ))}
         </SideNavItems>
@@ -126,6 +124,5 @@ const HeaderWSideNav: React.FC<HeaderWSideNavProps> = ({
       )}
     />
   );
-};
+});
 
-export default React.memo(HeaderWSideNav);

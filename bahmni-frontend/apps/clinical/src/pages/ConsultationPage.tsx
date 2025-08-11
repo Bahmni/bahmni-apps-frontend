@@ -1,22 +1,22 @@
-import { Loading } from '@carbon/react';
+import { Loading } from '@bahmni-frontend/bahmni-design-system';
 import React, { Suspense, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import ConsultationPad from '@components/clinical/consultationPad/ConsultationPad';
-import DashboardContainer from '@components/clinical/dashboardContainer/DashboardContainer';
-import PatientHeader from '@components/clinical/patientHeader/PatientHeader';
-import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
-import HeaderWSideNav from '@components/common/headerWSideNav/HeaderWSideNav';
-import { BAHMNI_CLINICAL_PATH, BAHMNI_HOME_PATH } from '@constants/app';
-import { ICON_SIZE } from '@constants/icon';
-import { useClinicalConfig } from '@hooks/useClinicalConfig';
-import { useDashboardConfig } from '@hooks/useDashboardConfig';
-import useNotification from '@hooks/useNotification';
-import { useSidebarNavigation } from '@hooks/useSidebarNavigation';
-import ClinicalLayout from '@layouts/clinical/ClinicalLayout';
+import { useTranslation } from '@bahmni-frontend/bahmni-services';
+//import ConsultationPad from '@components/clinical/consultationPad/ConsultationPad';
+import DashboardContainer from '../components/dashboardContainer/DashboardContainer';
+import PatientHeader from '../components/patientHeader/PatientHeader';
+import { Icon } from '@bahmni-frontend/bahmni-design-system';
+import { HeaderWSideNav } from '@bahmni-frontend/bahmni-design-system';
+import { BAHMNI_CLINICAL_PATH, BAHMNI_HOME_PATH } from '../constants/app';
+import { ICON_SIZE } from '@bahmni-frontend/bahmni-design-system';
+import { useClinicalConfig } from '../hooks/useClinicalConfig';
+import { useDashboardConfig } from '../hooks/useDashboardConfig';
+import { useNotification } from '@bahmni-frontend/bahmni-widgets';
+import { useSidebarNavigation } from '@bahmni-frontend/bahmni-design-system';
+import { ClinicalLayout } from '@bahmni-frontend/bahmni-design-system';
 import {
   getDefaultDashboard,
   getSidebarItems,
-} from '@services/consultationPageService';
+} from '../services/consultationPageService';
 
 const breadcrumbItems = [
   { id: 'home', label: 'Home', href: BAHMNI_HOME_PATH },
@@ -33,25 +33,25 @@ const globalActions = [
     id: 'search',
     label: 'Search',
     renderIcon: (
-      <BahmniIcon id="search-icon" name="fa-search" size={ICON_SIZE.LG} />
+      <Icon id="search-icon" name="fa-search" size={ICON_SIZE.LG} />
     ),
-    onClick: () => {},
+    onClick: () => { },
   },
   {
     id: 'notifications',
     label: 'Notifications',
     renderIcon: (
-      <BahmniIcon id="notifications-icon" name="fa-bell" size={ICON_SIZE.LG} />
+      <Icon id="notifications-icon" name="fa-bell" size={ICON_SIZE.LG} />
     ),
-    onClick: () => {},
+    onClick: () => { },
   },
   {
     id: 'user',
     label: 'User',
     renderIcon: (
-      <BahmniIcon id="user-icon" name="fa-user" size={ICON_SIZE.LG} />
+      <Icon id="user-icon" name="fa-user" size={ICON_SIZE.LG} />
     ),
-    onClick: () => {},
+    onClick: () => { },
   },
 ];
 
@@ -80,7 +80,7 @@ const ConsultationPage: React.FC = () => {
 
   const sidebarItems = useMemo(() => {
     if (!dashboardConfig) return [];
-    return getSidebarItems(dashboardConfig);
+    return getSidebarItems(dashboardConfig, t);
   }, [dashboardConfig]);
 
   const { activeItemId, handleItemClick } = useSidebarNavigation(sidebarItems);
@@ -138,11 +138,12 @@ const ConsultationPage: React.FC = () => {
         </Suspense>
       }
       isActionAreaVisible={isActionAreaVisible}
-      actionArea={
-        <ConsultationPad
-          onClose={() => setIsActionAreaVisible((prev) => !prev)}
-        />
-      }
+      // actionArea={
+      //   <ConsultationPad
+      //     onClose={() => setIsActionAreaVisible((prev) => !prev)}
+      //   />
+      // }
+      actionArea={<div>Action Area Placeholder</div>} // Placeholder for ConsultationPad
     />
   );
 };

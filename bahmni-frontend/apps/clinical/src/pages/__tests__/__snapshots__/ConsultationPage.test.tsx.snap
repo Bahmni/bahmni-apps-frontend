@@ -14,12 +14,12 @@ exports[`ConsultationPage Rendering and Structure should match the snapshot 1`] 
         <div
           data-testid="sidenav-item-vitals"
         >
-          Vitals
+          translated_VITALS_SECTION
         </div>
         <div
           data-testid="sidenav-item-medications"
         >
-          Medications
+          translated_Medications
         </div>
         <div
           data-testid="active-sidenav-item"
@@ -33,6 +33,7 @@ exports[`ConsultationPage Rendering and Structure should match the snapshot 1`] 
     >
       <div
         aria-label="translated_PATIENT_HEADER_LABEL"
+        class="header"
       >
         <div
           data-testid="mocked-patient-details"

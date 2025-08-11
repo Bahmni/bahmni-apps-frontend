@@ -6,7 +6,7 @@
       "path": "../apps/clinical"
     },
     {
-      "path": "../apps/sample-app-module"
+      "path": "../packages/bahmni-design-system"
     },
     {
       "path": "./tsconfig.app.json"

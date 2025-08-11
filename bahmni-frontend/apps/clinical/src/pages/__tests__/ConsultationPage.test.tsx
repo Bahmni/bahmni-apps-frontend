@@ -1,15 +1,14 @@
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React, { ReactNode } from 'react';
-import i18n from '@/setupTests.i18n';
 import {
   validFullClinicalConfig,
   validDashboardConfig,
-} from '@__mocks__/configMocks';
-import { useClinicalConfig } from '@hooks/useClinicalConfig';
-import { useDashboardConfig } from '@hooks/useDashboardConfig';
-import useNotification from '@hooks/useNotification';
-import { useSidebarNavigation } from '@hooks/useSidebarNavigation';
+} from '../../__mocks__/configMocks';
+import { useClinicalConfig } from '../../hooks/useClinicalConfig';
+import { useDashboardConfig } from '../../hooks/useDashboardConfig';
+import { useNotification } from '@bahmni-frontend/bahmni-widgets';
+import { useSidebarNavigation } from '@bahmni-frontend/bahmni-design-system';
 import ConsultationPage from '../ConsultationPage';
 
 expect.extend(toHaveNoViolations);
@@ -32,29 +31,23 @@ jest.mock('react', () => ({
 }));
 
 // Mock existing hooks and components
-jest.mock('@hooks/useClinicalConfig');
-jest.mock('@hooks/useDashboardConfig');
-jest.mock('@hooks/useNotification');
-jest.mock('@hooks/usePatientUUID');
-jest.mock('@hooks/useEncounterSession');
+jest.mock('../../hooks/useClinicalConfig');
+jest.mock('../../hooks/useDashboardConfig');
+jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
+  useNotification: jest.fn(),
+  usePatientUUID: jest.fn(),
+}));
+jest.mock('../../hooks/useEncounterSession');
 jest.mock('react-i18next', () => ({
   useTranslation: jest.fn(() => ({
     t: jest.fn((key) => `translated_${key}`),
   })),
 }));
-jest.mock('@hooks/useSidebarNavigation');
 
 // Mock Carbon components
-jest.mock('@carbon/react', () => ({
-  Grid: jest.fn(({ children }) => (
-    <div data-testid="carbon-grid">{children}</div>
-  )),
-  Column: jest.fn(({ children }) => (
-    <div data-testid="carbon-column">{children}</div>
-  )),
-  Section: jest.fn(({ children }) => (
-    <div data-testid="carbon-section">{children}</div>
-  )),
+jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-design-system'),
+  useSidebarNavigation: jest.fn(),
   Loading: jest.fn(({ description, role }) => (
     <div data-testid="carbon-loading" role={role}>
       {description}
@@ -69,16 +62,7 @@ jest.mock('@carbon/react', () => ({
       {children}
     </button>
   )),
-  Tile: jest.fn(({ children, style }) => (
-    <div data-testid="carbon-tile" data-style={JSON.stringify(style)}>
-      {children}
-    </div>
-  )),
-}));
-
-// Other necessary mocks from the original test
-jest.mock('@layouts/clinical/ClinicalLayout', () => {
-  return jest.fn(
+  ClinicalLayout: jest.fn(
     ({
       headerWSideNav,
       patientHeader,
@@ -97,12 +81,8 @@ jest.mock('@layouts/clinical/ClinicalLayout', () => {
         )}
       </div>
     ),
-  );
-});
-
-// Add this mock to ConsultationPage.test.tsx
-jest.mock('@components/common/headerWSideNav/HeaderWSideNav', () => {
-  return jest.fn(({ sideNavItems, activeSideNavItemId }) => (
+  ),
+  HeaderWSideNav: jest.fn(({ sideNavItems, activeSideNavItemId }) => (
     <div data-testid="mocked-header-component">
       {sideNavItems.map(
         (item: {
@@ -121,16 +101,22 @@ jest.mock('@components/common/headerWSideNav/HeaderWSideNav', () => {
         {activeSideNavItemId ?? 'none'}
       </div>
     </div>
-  ));
-});
+  )),
+}));
 
-jest.mock('@displayControls/patient/PatientDetails', () => {
-  return jest.fn(() => (
+
+jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
+  
+  PatientDetails: jest.fn(() => (
     <div data-testid="mocked-patient-details">Mocked PatientDetails</div>
-  ));
-});
+  )),
+  useNotification: jest.fn(() => ({
+    addNotification: jest.fn(),
+  })),
+  usePatientUUID: jest.fn(() => 'mock-patient-uuid'),
+}));
 
-jest.mock('@components/clinical/dashboardContainer/DashboardContainer', () => {
+jest.mock('../../components/dashboardContainer/DashboardContainer', () => {
   return jest.fn(({ sections, activeItemId }) => (
     <div data-testid="mocked-dashboard-container">
       <div data-testid="dashboard-sections-count">{sections.length}</div>
@@ -139,22 +125,20 @@ jest.mock('@components/clinical/dashboardContainer/DashboardContainer', () => {
   ));
 });
 
-jest.mock('@components/clinical/consultationPad/ConsultationPad', () => {
-  return jest.fn(({ patientUUID, onClose }) => (
-    <div data-testid="mocked-consultation-pad">
-      <div data-testid="consultation-pad-patient-uuid">{patientUUID}</div>
-      <button data-testid="consultation-pad-close-button" onClick={onClose}>
-        Close
-      </button>
-    </div>
-  ));
-});
+// jest.mock('../../components/consultationPad/ConsultationPad', () => {
+//   return jest.fn(({ patientUUID, onClose }) => (
+//     <div data-testid="mocked-consultation-pad">
+//       <div data-testid="consultation-pad-patient-uuid">{patientUUID}</div>
+//       <button data-testid="consultation-pad-close-button" onClick={onClose}>
+//         Close
+//       </button>
+//     </div>
+//   ));
+// });
 
 describe('ConsultationPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-
-    i18n.changeLanguage('en');
     // Default mock implementations
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: jest.fn(),
@@ -166,17 +150,12 @@ describe('ConsultationPage', () => {
     });
 
     // Mock useEncounterSession hook
-    jest.requireMock('@hooks/useEncounterSession').useEncounterSession =
+    jest.requireMock('../../hooks/useEncounterSession').useEncounterSession =
       jest.fn(() => ({
         hasActiveSession: false,
         isPractitionerMatch: false,
         isLoading: false,
       }));
-
-    // Mock usePatientUUID hook
-    jest.requireMock('@hooks/usePatientUUID').usePatientUUID = jest.fn(
-      () => 'mock-patient-uuid',
-    );
   });
 
   describe('Rendering and Structure', () => {

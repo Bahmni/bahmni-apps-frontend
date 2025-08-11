@@ -34,7 +34,7 @@
       "path": "../apps/clinical/tsconfig.lib.json"
     },
     {
-      "path": "../apps/sample-app-module/tsconfig.lib.json"
+      "path": "../packages/bahmni-design-system/tsconfig.lib.json"
     }
   ]
 }

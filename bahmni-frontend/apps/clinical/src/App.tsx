@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { Dashboard } from './pages/Dashboard';
-
 import { initAppI18n, initializeAuditListener } from '@bahmni-frontend/bahmni-services';
 import { initFontAwesome } from '@bahmni-frontend/bahmni-design-system';
 import { NotificationProvider } from '@bahmni-frontend/bahmni-widgets';
 import { ClinicalConfigProvider } from './providers/ClinicalConfigProvider';
 import { NotificationServiceComponent } from '@bahmni-frontend/bahmni-widgets';
+import ConsultationPage from './pages/ConsultationPage';
 
 const ClinicalApp: React.FC = () => {
     const [isInitialized, setIsInitialized] = useState(false);
@@ -36,7 +35,7 @@ const ClinicalApp: React.FC = () => {
             <NotificationServiceComponent />
             <ClinicalConfigProvider>
                 <Routes>
-                    <Route path=":patientUuid" element={<Dashboard />} />
+                    <Route path=":patientUuid" element={<ConsultationPage />} />
                 </Routes>
             </ClinicalConfigProvider>
         </NotificationProvider>

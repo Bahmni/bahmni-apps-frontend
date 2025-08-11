@@ -1,6 +1,6 @@
 import { render, screen, act } from '@testing-library/react';
 import React from 'react';
-import { useSidebarNavigation, SidebarItem } from '@hooks/useSidebarNavigation';
+import { useSidebarNavigation, SidebarItem } from '../useSidebarNavigation';
 
 // Test component to expose hook values
 interface TestComponentProps {
