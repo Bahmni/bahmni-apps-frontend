@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React from 'react';
-import HeaderWSideNav from '../HeaderWSideNav';
+import { HeaderWSideNav } from '../HeaderWSideNav';
 import {
   HeaderWSideNavProps,
   HeaderSideNavItem,
@@ -26,13 +26,6 @@ Object.defineProperty(global, 'matchMedia', {
   })),
 });
 
-// Mock react-i18next
-const mockT = jest.fn((key: string) => key);
-jest.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: mockT,
-  }),
-}));
 
 // Mock useHeaderSideNav hook
 const mockHandleSideNavItemClick = jest.fn();
@@ -125,7 +118,6 @@ describe('HeaderWSideNav', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockT.mockClear();
     mockIsMobile.mockReturnValue(false);
     resetSideNavMock(false);
   });
@@ -192,12 +184,6 @@ describe('HeaderWSideNav', () => {
       expect(screen.queryByTestId('breadcrumb')).not.toBeInTheDocument();
     });
 
-    it('translates breadcrumb labels', () => {
-      render(<HeaderWSideNav {...defaultProps} />);
-
-      expect(mockT).toHaveBeenCalledWith('Home');
-      expect(mockT).toHaveBeenCalledWith('Current Page');
-    });
   });
 
   describe('Global Actions', () => {
@@ -220,13 +206,6 @@ describe('HeaderWSideNav', () => {
 
       fireEvent.click(screen.getByTestId('global-action-notifications'));
       expect(mockGlobalActions[1].onClick).toHaveBeenCalledTimes(1);
-    });
-
-    it('translates global action labels for aria-label', () => {
-      render(<HeaderWSideNav {...defaultProps} />);
-
-      expect(mockT).toHaveBeenCalledWith('Search');
-      expect(mockT).toHaveBeenCalledWith('Notifications');
     });
 
     it('does not render global actions when array is empty', () => {
@@ -279,13 +258,6 @@ describe('HeaderWSideNav', () => {
         'href',
         '#',
       );
-    });
-
-    it('translates side nav item labels', () => {
-      render(<HeaderWSideNav {...defaultProps} />);
-
-      expect(mockT).toHaveBeenCalledWith('Dashboard');
-      expect(mockT).toHaveBeenCalledWith('Patients');
     });
 
     it('passes correct props to Icon component', () => {

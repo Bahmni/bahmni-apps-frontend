@@ -60,6 +60,8 @@ export { ClinicalLayout } from './templates/ClinicalLayout';
 
 export { Section, type SectionProps } from './atoms/section';
 
+export { HeaderWSideNav, useSidebarNavigation, type HeaderSideNavItem } from './organisms/headerWSideNav';
+
 export { Content } from './atoms/content';
 
 import '@carbon/styles/css/styles.css';
