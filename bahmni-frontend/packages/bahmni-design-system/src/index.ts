@@ -70,7 +70,6 @@ export { Content } from './atoms/content';
 
 export { Loading, type LoadingProps } from './atoms/loading';
 
-import '@carbon/styles/css/styles.css';
 export {
   FilterableMultiSelect,
   type FilterableMultiSelectProps,
@@ -82,7 +81,5 @@ export {
   type TextAreaWCloseProps,
 } from './molecules/textAreaWClose';
 export { BoxWHeader, type BoxWHeaderProps } from './molecules/boxWHeader';
-
-export { ClinicalLayout } from './templates/ClinicalLayout';
 
 import '@carbon/styles/css/styles.css';
