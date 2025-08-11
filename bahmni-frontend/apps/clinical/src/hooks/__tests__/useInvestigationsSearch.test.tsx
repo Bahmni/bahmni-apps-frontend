@@ -1,7 +1,7 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import * as investigationService from '@services/investigationService';
 import { FlattenedInvestigations } from '@types/investigations';
-import useInvestigationsSearch from '../useInvestigationsSearch';
+import useInvestigationsSearch from '../../../../../../src/hooks/useInvestigationsSearch';
 
 jest.mock('@services/investigationService');
 

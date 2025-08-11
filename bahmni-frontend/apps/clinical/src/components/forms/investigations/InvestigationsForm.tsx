@@ -1,13 +1,11 @@
-import { ComboBox, Tile } from '@carbon/react';
+import { ComboBox, Tile ,BoxWHeader, SelectedItem } from '@bahmni-frontend/bahmni-design-system';
 import React, { useMemo, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
-import BoxWHeader from '@components/common/boxWHeader/BoxWHeader';
-import SelectedItem from '@components/common/selectedItem/SelectedItem';
-import useInvestigationsSearch from '@hooks/useInvestigationsSearch';
-import useServiceRequestStore from '@stores/serviceRequestStore';
-import type { FlattenedInvestigations } from '@types/investigations';
+import { useTranslation } from '@bahmni-frontend/bahmni-services';
+import useInvestigationsSearch from '../../../hooks/useInvestigationsSearch';
+import useServiceRequestStore from '../../../stores/serviceRequestStore';
+import type { FlattenedInvestigations } from '../../../types/investigations';
 import SelectedInvestigationItem from './SelectedInvestigationItem';
-import * as styles from './styles/InvestigationsForm.module.scss';
+import styles from './styles/InvestigationsForm.module.scss';
 
 const InvestigationsForm: React.FC = React.memo(() => {
   const { t } = useTranslation();

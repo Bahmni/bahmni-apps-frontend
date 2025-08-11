@@ -1,11 +1,11 @@
-import { Column, Grid, Checkbox } from '@carbon/react';
+import { Column, Grid, Checkbox } from '@bahmni-frontend/bahmni-design-system';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@bahmni-frontend/bahmni-services';
 import {
   ServiceRequestInputEntry,
   SupportedServiceRequestPriority,
-} from '@types/serviceRequest';
-import * as styles from './styles/SelectedInvestigationItem.module.scss';
+} from '../../../types/serviceRequest';
+import styles from './styles/SelectedInvestigationItem.module.scss';
 
 export interface SelectedInvestigationItemProps {
   investigation: ServiceRequestInputEntry;
