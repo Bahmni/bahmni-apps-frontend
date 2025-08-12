@@ -22,6 +22,7 @@ exports[`SelectedDiagnosisItem Snapshot Tests default rendering matches snapshot
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
+        data-testid="diagnoses-certainty-dropdown-test-diagnosis-1"
       >
         <div
           class="cds--dropdown cds--autoalign cds--list-box"
@@ -105,6 +106,7 @@ exports[`SelectedDiagnosisItem Snapshot Tests disabled condition link matches sn
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
+        data-testid="diagnoses-certainty-dropdown-test-diagnosis-1"
       >
         <div
           class="cds--dropdown cds--autoalign cds--list-box"
@@ -188,6 +190,7 @@ exports[`SelectedDiagnosisItem Snapshot Tests rendering with null selectedCertai
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
+        data-testid="diagnoses-certainty-dropdown-test-diagnosis-1"
       >
         <div
           class="cds--dropdown cds--autoalign cds--list-box"

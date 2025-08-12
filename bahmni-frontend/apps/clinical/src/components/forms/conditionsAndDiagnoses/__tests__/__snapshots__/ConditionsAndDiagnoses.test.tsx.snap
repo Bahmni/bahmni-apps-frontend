@@ -112,6 +112,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
               >
                 <div
                   class="cds--dropdown__wrapper cds--list-box__wrapper"
+                  data-testid="diagnoses-certainty-dropdown-uuid-1"
                 >
                   <div
                     class="cds--dropdown cds--autoalign cds--list-box"
@@ -415,6 +416,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
               >
                 <div
                   class="cds--dropdown__wrapper cds--list-box__wrapper"
+                  data-testid="diagnoses-certainty-dropdown-uuid-1"
                 >
                   <div
                     class="cds--dropdown cds--autoalign cds--list-box"
@@ -1521,6 +1523,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
               >
                 <div
                   class="cds--dropdown__wrapper cds--list-box__wrapper"
+                  data-testid="diagnoses-certainty-dropdown-uuid-1"
                 >
                   <div
                     class="cds--dropdown cds--autoalign cds--list-box"
