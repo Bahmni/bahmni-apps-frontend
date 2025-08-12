@@ -74,3 +74,23 @@ export const validDashboardConfig: DashboardConfig = {
     },
   ],
 };
+
+export const minimalClinicalConfig = {
+  patientInformation: {},
+  actions: [],
+  dashboards: [
+    {
+      name: 'Basic Information',
+      url: 'basic-information',
+      requiredPrivileges: ['View Patient Dashboard'],
+    },
+  ],
+  consultationPad: {
+    allergyConceptMap: {
+      medicationAllergenUuid: '162552AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      foodAllergenUuid: '162553AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      environmentalAllergenUuid: '162554AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      allergyReactionUuid: '162555AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    },
+  },
+};
