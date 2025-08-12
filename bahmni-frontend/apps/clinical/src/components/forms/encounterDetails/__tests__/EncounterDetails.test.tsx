@@ -8,7 +8,7 @@ import { useEncounterConcepts } from '@hooks/useEncounterConcepts';
 import { useLocations } from '@hooks/useLocations';
 import { usePatientUUID } from '@hooks/usePatientUUID';
 import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
-import { FhirEncounter } from '@types/encounter';
+import { FhirEncounter } from '../../../../models/encounter';
 import BasicForm from '../EncounterDetails';
 
 jest.mock('@hooks/useLocations');

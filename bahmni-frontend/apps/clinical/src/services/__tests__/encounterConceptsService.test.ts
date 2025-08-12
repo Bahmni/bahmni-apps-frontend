@@ -6,7 +6,7 @@ import {
   EncounterConcepts,
 } from '@types/encounterConcepts';
 import { get } from '../api';
-import { getEncounterConcepts } from '../encounterConceptsService';
+import { getEncounterConcepts } from '../../../bahmni-frontend/apps/clinical/src/services/encounterConceptsService';
 
 // Mock dependencies
 jest.mock('../api');

@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { getLocations } from '@services/locationService';
-import { OpenMRSLocation } from '@types/location';
+import { useTranslation } from '@bahmni-frontend/bahmni-services';
+import { getLocations } from '../services/locationService';
+import { OpenMRSLocation } from '../models/location';
 
 interface UseLocationsResult {
   locations: OpenMRSLocation[];

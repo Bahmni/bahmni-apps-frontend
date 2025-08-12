@@ -1,10 +1,10 @@
 import { renderHook, act } from '@testing-library/react';
-import { FhirEncounter } from '@types/encounter';
+import { FhirEncounter } from '../../../bahmni-frontend/apps/clinical/src/models/encounter';
 import { Concept } from '@types/encounterConcepts';
 import { OpenMRSLocation } from '@types/location';
 import { Provider } from '@types/provider';
 import { User } from '@types/user';
-import { useEncounterDetailsStore } from '../encounterDetailsStore';
+import { useEncounterDetailsStore } from '../../../bahmni-frontend/apps/clinical/src/stores/encounterDetailsStore';
 
 // Mock practitioner and user data
 const mockPractitioner: Provider = {

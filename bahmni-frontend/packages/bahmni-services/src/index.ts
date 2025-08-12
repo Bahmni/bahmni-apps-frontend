@@ -107,6 +107,8 @@ export {
 } from './providerService';
 export { findActiveEncounterInSession } from './encounterSessionService';
 
+export { getActiveVisit } from './encounterService';
+
 export {
   dispatchAuditEvent,
   AUDIT_LOG_EVENT_DETAILS,

@@ -1,5 +1,5 @@
 import { COMMON_ERROR_MESSAGES } from '@constants/errors';
-import { getLocations } from '../locationService';
+import { getLocations } from '../../../bahmni-frontend/apps/clinical/src/services/locationService';
 
 describe('locationService', () => {
   // Store the original document.cookie descriptor

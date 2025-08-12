@@ -4,22 +4,18 @@ import {
   DatePickerInput,
   Grid,
   Column,
-  SkeletonPlaceholder,
-} from '@carbon/react';
+  SkeletonText,
+} from '@bahmni-frontend/bahmni-design-system';
 import React, { useEffect, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { DATE_FORMAT } from '@constants/date';
-import { useActivePractitioner } from '@hooks/useActivePractitioner';
-import { useActiveVisit } from '@hooks/useActiveVisit';
-import { useEncounterConcepts } from '@hooks/useEncounterConcepts';
-import { useLocations } from '@hooks/useLocations';
-import { usePatientUUID } from '@hooks/usePatientUUID';
-import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
-import { Concept } from '@types/encounterConcepts';
-import { OpenMRSLocation } from '@types/location';
-import { Provider } from '@types/provider';
-import { formatDate } from '@utils/date';
-import * as styles from './styles/EncounterDetails.module.scss';
+import { useTranslation, DATE_FORMAT, formatDate, type Provider } from '@bahmni-frontend/bahmni-services';
+import { usePatientUUID, useActivePractitioner } from '@bahmni-frontend/bahmni-widgets';
+import { useActiveVisit } from '../../../hooks/useActiveVisit';
+import { useEncounterConcepts } from '../../../hooks/useEncounterConcepts';
+import { useLocations } from '../../../hooks/useLocations';
+import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore';
+import { Concept } from '../../../models/encounterConcepts';
+import { OpenMRSLocation } from '../../../models/location';
+import styles from './styles/EncounterDetails.module.scss';
 
 // Constants
 const CONSULTATION_ENCOUNTER_NAME = 'Consultation';
@@ -350,8 +346,8 @@ const FormField: React.FC<FormFieldProps> = ({
 const DropdownPlaceholder: React.FC = React.memo(() => {
   return (
     <>
-      <SkeletonPlaceholder className={styles.skeletonTitle} />
-      <SkeletonPlaceholder className={styles.skeletonBody} />
+      <SkeletonText className={styles.skeletonTitle} />
+      <SkeletonText className={styles.skeletonBody} />
     </>
   );
 });

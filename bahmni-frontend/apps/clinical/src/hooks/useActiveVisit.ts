@@ -1,8 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { getActiveVisit } from '@services/encounterService';
-import { FhirEncounter } from '@types/encounter';
-import { getFormattedError } from '@utils/common';
+import {
+  getActiveVisit,
+  getFormattedError,
+  useTranslation,
+} from '@bahmni-frontend/bahmni-services';
+import { FhirEncounter } from '../models/encounter';
 
 interface UseActiveVisitResult {
   activeVisit: FhirEncounter | null;
