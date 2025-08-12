@@ -2,6 +2,8 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/setupTests.i18n';
+import { UserPrivilegeProvider } from '@providers/UserPrivilegeProvider';
+import * as privilegeService from '@services/privilegeService';
 import ConsultationPad from '../ConsultationPad';
 
 // Mock the useEncounterSession hook
@@ -137,6 +139,9 @@ jest.mock('@utils/fhir/consultationBundleCreator', () => ({
   })),
 }));
 
+// Mock privilege service
+jest.mock('@services/privilegeService');
+
 // Mock stores
 const createMockEncounterDetailsStore = () => ({
   activeVisit: { id: 'visit-123' },
@@ -215,7 +220,11 @@ Object.defineProperty(global, 'crypto', {
 });
 
 const renderWithProviders = (ui: React.ReactElement) => {
-  return render(<I18nextProvider i18n={i18n}>{ui}</I18nextProvider>);
+  return render(
+    <I18nextProvider i18n={i18n}>
+      <UserPrivilegeProvider>{ui}</UserPrivilegeProvider>
+    </I18nextProvider>,
+  );
 };
 
 describe('ConsultationPad - Encounter Session Integration', () => {
@@ -223,6 +232,12 @@ describe('ConsultationPad - Encounter Session Integration', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Mock privilege service
+    (privilegeService.getCurrentUserPrivileges as jest.Mock).mockResolvedValue([
+      { name: 'app:clinical:observationForms' },
+      { name: 'app:clinical:locationpicker' },
+    ]);
 
     // Reset stores to initial state
     mockEncounterDetailsStore = createMockEncounterDetailsStore();
@@ -407,7 +422,9 @@ describe('ConsultationPad - Encounter Session Integration', () => {
 
       rerender(
         <I18nextProvider i18n={i18n}>
-          <ConsultationPad onClose={mockOnClose} />
+          <UserPrivilegeProvider>
+            <ConsultationPad onClose={mockOnClose} />
+          </UserPrivilegeProvider>
         </I18nextProvider>,
       );
 
@@ -444,7 +461,9 @@ describe('ConsultationPad - Encounter Session Integration', () => {
 
       rerender(
         <I18nextProvider i18n={i18n}>
-          <ConsultationPad onClose={mockOnClose} />
+          <UserPrivilegeProvider>
+            <ConsultationPad onClose={mockOnClose} />
+          </UserPrivilegeProvider>
         </I18nextProvider>,
       );
 
@@ -478,7 +497,9 @@ describe('ConsultationPad - Encounter Session Integration', () => {
 
       rerender(
         <I18nextProvider i18n={i18n}>
-          <ConsultationPad onClose={mockOnClose} />
+          <UserPrivilegeProvider>
+            <ConsultationPad onClose={mockOnClose} />
+          </UserPrivilegeProvider>
         </I18nextProvider>,
       );
 

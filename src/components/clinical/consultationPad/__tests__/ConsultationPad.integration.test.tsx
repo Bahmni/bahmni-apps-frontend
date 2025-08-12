@@ -14,12 +14,14 @@ import {
 } from '@__mocks__/consultationPadMocks';
 import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
 import { NotificationProvider } from '@providers/NotificationProvider';
+import { UserPrivilegeProvider } from '@providers/UserPrivilegeProvider';
 import { logAuditEvent } from '@services/auditLogService';
 import * as consultationBundleService from '@services/consultationBundleService';
 import { getEncounterConcepts } from '@services/encounterConceptsService';
 import { getActiveVisit } from '@services/encounterService';
 import { getLocations } from '@services/locationService';
 import notificationService from '@services/notificationService';
+import * as privilegeService from '@services/privilegeService';
 import { getCurrentProvider } from '@services/providerService';
 import { getCurrentUser } from '@services/userService';
 import useAllergyStore from '@stores/allergyStore';
@@ -64,6 +66,7 @@ jest.mock('@services/userService');
 jest.mock('@services/encounterService');
 jest.mock('@services/notificationService');
 jest.mock('@services/auditLogService');
+jest.mock('@services/privilegeService');
 
 // Create mock user
 const mockUser: User = {
@@ -93,11 +96,13 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <I18nextProvider i18n={i18n}>
     <NotificationProvider>
       <ClinicalConfigProvider>
-        <MemoryRouter initialEntries={['/patient/patient-1']}>
-          <Routes>
-            <Route path="/patient/:patientUuid" element={children} />
-          </Routes>
-        </MemoryRouter>
+        <UserPrivilegeProvider>
+          <MemoryRouter initialEntries={['/patient/patient-1']}>
+            <Routes>
+              <Route path="/patient/:patientUuid" element={children} />
+            </Routes>
+          </MemoryRouter>
+        </UserPrivilegeProvider>
       </ClinicalConfigProvider>
     </NotificationProvider>
   </I18nextProvider>
@@ -151,6 +156,12 @@ describe('ConsultationPad Integration', () => {
 
     // Reset audit logging mocks
     mockLogAuditEvent.mockResolvedValue({ logged: true });
+
+    // Mock privilege service
+    (privilegeService.getCurrentUserPrivileges as jest.Mock).mockResolvedValue([
+      { name: 'app:clinical:observationForms' },
+      { name: 'app:clinical:locationpicker' },
+    ]);
 
     // Mock implementation for each service
     (getLocations as jest.Mock).mockResolvedValue(mockLocations);

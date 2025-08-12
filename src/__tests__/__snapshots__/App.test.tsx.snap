@@ -9,9 +9,13 @@ exports[`App Component should match snapshot 1`] = `
       data-testid="mock-clinical-config-provider"
     >
       <div
-        data-testid="mock-home-page"
+        data-testid="mock-user-privilege-provider"
       >
-        Home Page
+        <div
+          data-testid="mock-home-page"
+        >
+          Home Page
+        </div>
       </div>
     </div>
   </div>

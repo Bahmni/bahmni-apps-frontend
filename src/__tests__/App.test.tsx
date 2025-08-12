@@ -27,6 +27,12 @@ jest.mock('@providers/ClinicalConfigProvider', () => ({
   )),
 }));
 
+jest.mock('@providers/UserPrivilegeProvider', () => ({
+  UserPrivilegeProvider: jest.fn(({ children }) => (
+    <div data-testid="mock-user-privilege-provider">{children}</div>
+  )),
+}));
+
 describe('App Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -81,6 +87,21 @@ describe('App Component', () => {
 
     // Since Routes is not easily testable directly, we verify its behavior
     // by testing the rendered components based on different routes
+  });
+
+  it('should render with UserPrivilegeProvider integration', () => {
+    render(
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>,
+    );
+
+    expect(
+      screen.getByTestId('mock-user-privilege-provider'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId('mock-clinical-config-provider'),
+    ).toBeInTheDocument();
   });
 
   it('should match snapshot', () => {
