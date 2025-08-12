@@ -1,9 +1,9 @@
 import { renderHook } from '@testing-library/react';
 import { Coding } from 'fhir/r4';
 import { act } from 'react';
-import { ConceptSearch } from '@types/concepts';
-import { ConditionInputEntry } from '@types/condition';
-import { DiagnosisInputEntry } from '@types/diagnosis';
+import { ConceptSearch } from '../../models/concepts';
+import { type ConditionInputEntry } from '@bahmni-frontend/bahmni-services';
+import { type DiagnosisInputEntry } from '@bahmni-frontend/bahmni-services';
 import { useConditionsAndDiagnosesStore } from '../conditionsAndDiagnosesStore';
 
 const mockConcept: ConceptSearch = {

@@ -1,14 +1,14 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
-import * as conceptService from '@services/conceptService';
+import { searchConcepts } from '@bahmni-frontend/bahmni-services';
 import { useConceptSearch } from '../useConceptSearch';
 
-jest.mock('@services/conceptService');
+jest.mock('@bahmni-frontend/bahmni-services');
 
 describe('useConceptSearch', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
-    (conceptService.searchConcepts as jest.Mock).mockResolvedValue([]);
+    (searchConcepts as jest.Mock).mockResolvedValue([]);
   });
 
   afterEach(() => {
@@ -24,7 +24,7 @@ describe('useConceptSearch', () => {
     });
 
     // Mock the API call to use our controlled promise
-    (conceptService.searchConcepts as jest.Mock).mockReturnValue(promise);
+    (searchConcepts as jest.Mock).mockReturnValue(promise);
 
     // Start with empty search term to avoid immediate fetch
     const { result, rerender } = renderHook(
@@ -64,7 +64,7 @@ describe('useConceptSearch', () => {
     const mockConcepts = [
       { conceptName: 'Test', conceptUuid: '123', matchedName: 'Test' },
     ];
-    (conceptService.searchConcepts as jest.Mock).mockResolvedValue(
+    (searchConcepts as jest.Mock).mockResolvedValue(
       mockConcepts,
     );
 
@@ -85,7 +85,7 @@ describe('useConceptSearch', () => {
     const mockConcepts = [
       { conceptName: 'A', conceptUuid: '123', matchedName: 'A' },
     ];
-    (conceptService.searchConcepts as jest.Mock).mockResolvedValue(
+    (searchConcepts as jest.Mock).mockResolvedValue(
       mockConcepts,
     );
 
@@ -98,7 +98,7 @@ describe('useConceptSearch', () => {
 
     // Wait for the API call to complete
     await waitFor(() => {
-      expect(conceptService.searchConcepts).toHaveBeenCalledWith('a', 20);
+      expect(searchConcepts).toHaveBeenCalledWith('a', 20);
       expect(result.current.searchResults).toEqual(mockConcepts);
     });
   });
@@ -110,13 +110,13 @@ describe('useConceptSearch', () => {
       jest.advanceTimersByTime(500);
     });
 
-    expect(conceptService.searchConcepts).not.toHaveBeenCalled();
+    expect(searchConcepts).not.toHaveBeenCalled();
     expect(result.current.searchResults).toEqual([]);
   });
 
   it('should set error state when fetch fails', async () => {
     const mockError = new Error('API error');
-    (conceptService.searchConcepts as jest.Mock).mockRejectedValue(mockError);
+    (searchConcepts as jest.Mock).mockRejectedValue(mockError);
 
     const { result } = renderHook(() => useConceptSearch('test'));
 
@@ -145,7 +145,7 @@ describe('useConceptSearch', () => {
     rerender({ searchTerm: 'test' });
 
     // API should not be called yet (before debounce time)
-    expect(conceptService.searchConcepts).not.toHaveBeenCalled();
+    expect(searchConcepts).not.toHaveBeenCalled();
 
     // Advance timers to trigger the debounced fetch
     await act(async () => {
@@ -155,15 +155,15 @@ describe('useConceptSearch', () => {
     // Wait for API to be called
     await waitFor(() => {
       // API should be called with the latest searchTerm
-      expect(conceptService.searchConcepts).toHaveBeenCalledTimes(1);
-      expect(conceptService.searchConcepts).toHaveBeenCalledWith('test', 20);
+      expect(searchConcepts).toHaveBeenCalledTimes(1);
+      expect(searchConcepts).toHaveBeenCalledWith('test', 20);
     });
   });
 
   it('should reset the error state when a new search begins', async () => {
     // First, cause an error
     const mockError = new Error('API error');
-    (conceptService.searchConcepts as jest.Mock).mockRejectedValue(mockError);
+    (searchConcepts as jest.Mock).mockRejectedValue(mockError);
 
     const { result, rerender } = renderHook(
       ({ searchTerm }) => useConceptSearch(searchTerm),
@@ -183,7 +183,7 @@ describe('useConceptSearch', () => {
     });
 
     // Now, fix the mock and try a new search
-    (conceptService.searchConcepts as jest.Mock).mockResolvedValue([]);
+    (searchConcepts as jest.Mock).mockResolvedValue([]);
 
     await act(async () => {
       rerender({ searchTerm: 'new-term' });
@@ -203,7 +203,7 @@ describe('useConceptSearch', () => {
   it('should convert non-Error objects to Error instances', async () => {
     // Mock a non-Error object rejection
     const nonErrorObj = { message: 'Custom error message' };
-    (conceptService.searchConcepts as jest.Mock).mockRejectedValue(nonErrorObj);
+    (searchConcepts as jest.Mock).mockRejectedValue(nonErrorObj);
 
     const { result } = renderHook(() => useConceptSearch('test'));
 
@@ -240,7 +240,7 @@ describe('useConceptSearch', () => {
     });
 
     // API should still not be called
-    expect(conceptService.searchConcepts).not.toHaveBeenCalled();
+    expect(searchConcepts).not.toHaveBeenCalled();
 
     // Advance timers to complete custom delay
     await act(async () => {
@@ -249,7 +249,7 @@ describe('useConceptSearch', () => {
 
     // Wait for API to be called
     await waitFor(() => {
-      expect(conceptService.searchConcepts).toHaveBeenCalledWith('test', 20);
+      expect(searchConcepts).toHaveBeenCalledWith('test', 20);
     });
   });
 
@@ -260,7 +260,7 @@ describe('useConceptSearch', () => {
       jest.advanceTimersByTime(500);
     });
 
-    expect(conceptService.searchConcepts).not.toHaveBeenCalled();
+    expect(searchConcepts).not.toHaveBeenCalled();
     expect(result.current.searchResults).toEqual([]);
   });
 });

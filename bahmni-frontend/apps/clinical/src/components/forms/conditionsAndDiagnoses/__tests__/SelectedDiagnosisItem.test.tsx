@@ -291,6 +291,40 @@ describe('SelectedDiagnosisItem', () => {
         'Diagnoses Certainty',
       );
     });
+    test('uses unique ID for dropdown elements', () => {
+      const diagnosis1 = {
+        ...mockDiagnosis,
+        id: 'diagnosis-1',
+      };
+      const diagnosis2 = {
+        ...mockDiagnosis,
+        id: 'diagnosis-2',
+      };
+
+      const props1 = { ...defaultProps, diagnosis: diagnosis1 };
+      const props2 = { ...defaultProps, diagnosis: diagnosis2 };
+
+      const { rerender } = render(
+        <SelectedDiagnosisItem {...props1} />,
+      );
+      const wrapper1 = screen.getByTestId(
+        'diagnoses-certainty-dropdown-diagnosis-1',
+      );
+      const dropdown1 = wrapper1.querySelector(
+        '#diagnoses-certainty-dropdown-diagnosis-1',
+      );
+      expect(dropdown1).toBeInTheDocument();
+
+      rerender(<SelectedDiagnosisItem {...props2} />);
+      const wrapper2 = screen.getByTestId(
+        'diagnoses-certainty-dropdown-diagnosis-2',
+      );
+      const dropdown2 = wrapper2.querySelector(
+        '#diagnoses-certainty-dropdown-diagnosis-2',
+      );
+      expect(dropdown2).toBeInTheDocument();
+    });
+
   });
 
   // SNAPSHOT TESTS

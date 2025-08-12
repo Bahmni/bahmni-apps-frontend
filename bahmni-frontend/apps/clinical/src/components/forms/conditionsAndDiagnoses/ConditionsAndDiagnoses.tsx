@@ -1,5 +1,4 @@
-import { ComboBox, Tile } from '@bahmni-frontend/bahmni-design-system';
-import { BoxWHeader, SelectedItem } from '@bahmni-frontend/bahmni-design-system';
+import { ComboBox, Tile, BoxWHeader, SelectedItem } from '@bahmni-frontend/bahmni-design-system';
 import React, { useState, useMemo } from 'react';
 import { useTranslation, type ConceptSearch } from '@bahmni-frontend/bahmni-services';
 import { useConceptSearch } from '../../../hooks/useConceptSearch';

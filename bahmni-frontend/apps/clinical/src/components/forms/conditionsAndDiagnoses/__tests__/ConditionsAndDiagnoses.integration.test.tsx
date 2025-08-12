@@ -2,21 +2,18 @@ import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Condition } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import React from 'react';
-import { I18nextProvider } from 'react-i18next';
-import i18n from '@/setupTests.i18n';
-import { CERTAINITY_CONCEPTS } from '@constants/concepts';
-import { useConceptSearch } from '@hooks/useConceptSearch';
-import useConditions from '@hooks/useConditions';
-import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
-import { ConceptSearch } from '@types/concepts';
+import { CERTAINITY_CONCEPTS } from '../../../../constants/diagnosis';
+import { useConceptSearch } from '../../../../hooks/useConceptSearch';
+import useConditions from '../../../../hooks/useConditions';
+import { useConditionsAndDiagnosesStore } from '../../../../stores/conditionsAndDiagnosesStore';
+import { ConceptSearch } from '../../../../models/concepts';
 import ConditionsAndDiagnoses from '../ConditionsAndDiagnoses';
 
 expect.extend(toHaveNoViolations);
 
 // Mock only external APIs - keep the store real for integration testing
-jest.mock('@hooks/useConceptSearch');
-jest.mock('@hooks/useConditions');
+jest.mock('../../../../hooks/useConceptSearch');
+jest.mock('../../../../hooks/useConditions');
 
 const mockedUseConceptSearch = useConceptSearch as jest.Mock;
 const mockedUseConditions = useConditions as jest.Mock;
@@ -46,10 +43,7 @@ const mockSearchResults: ConceptSearch[] = [
 ];
 
 describe('ConditionsAndDiagnoses Integration Tests', () => {
-  const renderWithI18n = (component: React.ReactElement) => {
-    return render(<I18nextProvider i18n={i18n}>{component}</I18nextProvider>);
-  };
-
+  
   beforeEach(async () => {
     jest.clearAllMocks();
 
@@ -75,7 +69,6 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
       refetch: jest.fn(),
     });
 
-    i18n.changeLanguage('en');
   });
 
   describe('Complete Workflow Tests', () => {
@@ -89,7 +82,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
         error: null,
       });
 
-      renderWithI18n(<ConditionsAndDiagnoses />);
+      render(<ConditionsAndDiagnoses />);
 
       // Step 1: Search for and select a diagnosis
       const searchInput = screen.getByPlaceholderText(
@@ -168,7 +161,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
         error: null,
       });
 
-      renderWithI18n(<ConditionsAndDiagnoses />);
+      render(<ConditionsAndDiagnoses />);
 
       const searchInput = screen.getByPlaceholderText(
         'Search to add new diagnosis',
@@ -240,7 +233,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
         error: null,
       });
 
-      renderWithI18n(<ConditionsAndDiagnoses />);
+      render(<ConditionsAndDiagnoses />);
 
       const searchInput = screen.getByPlaceholderText(
         'Search to add new diagnosis',
@@ -337,7 +330,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
         );
       });
 
-      renderWithI18n(<ConditionsAndDiagnoses />);
+      render(<ConditionsAndDiagnoses />);
 
       // Verify initial state
       await waitFor(() => {
@@ -397,7 +390,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
         );
       });
 
-      renderWithI18n(<ConditionsAndDiagnoses />);
+      render(<ConditionsAndDiagnoses />);
 
       // Verify initial diagnosis state
       await waitFor(() => {
@@ -457,7 +450,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
         store.markAsCondition(mockSearchResults[0].conceptUuid);
       });
 
-      renderWithI18n(<ConditionsAndDiagnoses />);
+      render(<ConditionsAndDiagnoses />);
 
       // Verify both sections exist
       await waitFor(() => {
@@ -496,7 +489,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
         store.markAsCondition(mockSearchResults[1].conceptUuid);
       });
 
-      renderWithI18n(<ConditionsAndDiagnoses />);
+      render(<ConditionsAndDiagnoses />);
 
       // Trigger validation - wrap in act()
       let isValid;
@@ -571,7 +564,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
         // Don't set certainty for either
       });
 
-      renderWithI18n(<ConditionsAndDiagnoses />);
+      render(<ConditionsAndDiagnoses />);
 
       // Trigger validation - wrap in act()
       await act(async () => {
@@ -581,7 +574,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
       });
 
       // Re-render to see validation state
-      renderWithI18n(<ConditionsAndDiagnoses />);
+      render(<ConditionsAndDiagnoses />);
 
       // Both diagnoses should show validation errors
       await waitFor(() => {
@@ -610,7 +603,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
         error: null,
       });
 
-      renderWithI18n(<ConditionsAndDiagnoses />);
+      render(<ConditionsAndDiagnoses />);
 
       const searchInput = screen.getByPlaceholderText(
         'Search to add new diagnosis',
@@ -682,7 +675,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
         error: new Error('Search failed'),
       });
 
-      renderWithI18n(<ConditionsAndDiagnoses />);
+      render(<ConditionsAndDiagnoses />);
 
       // Verify existing diagnosis is shown
       await waitFor(() => {
@@ -729,7 +722,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
         error: null,
       });
 
-      renderWithI18n(<ConditionsAndDiagnoses />);
+      render(<ConditionsAndDiagnoses />);
 
       // Verify existing data is preserved
       await waitFor(() => {
@@ -764,7 +757,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
         error: null,
       });
 
-      const { container } = renderWithI18n(<ConditionsAndDiagnoses />);
+      const { container } = render(<ConditionsAndDiagnoses />);
 
       // Test initial accessibility
       expect(await axe(container)).toHaveNoViolations();
@@ -815,7 +808,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
         error: null,
       });
 
-      renderWithI18n(<ConditionsAndDiagnoses />);
+      render(<ConditionsAndDiagnoses />);
 
       const searchInput = screen.getByPlaceholderText(
         'Search to add new diagnosis',
@@ -862,7 +855,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
         store.addDiagnosis(mockSearchResults[1]);
       });
 
-      renderWithI18n(<ConditionsAndDiagnoses />);
+      render(<ConditionsAndDiagnoses />);
 
       // Verify initial state
       await waitFor(() => {
@@ -879,7 +872,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
       });
 
       // Re-render to see the effect
-      renderWithI18n(<ConditionsAndDiagnoses />);
+      render(<ConditionsAndDiagnoses />);
 
       // Verify UI reflects reset state
       await waitFor(() => {
@@ -918,7 +911,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
         error: null,
       });
 
-      renderWithI18n(<ConditionsAndDiagnoses />);
+      render(<ConditionsAndDiagnoses />);
 
       // Search and select the diagnosis that is already a condition
       const searchInput = screen.getByPlaceholderText(

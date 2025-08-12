@@ -2,26 +2,23 @@ import { render, screen, fireEvent, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Condition } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import React from 'react';
-import { I18nextProvider } from 'react-i18next';
-import i18n from '@/setupTests.i18n';
-import { CERTAINITY_CONCEPTS } from '@constants/concepts';
-import { useConceptSearch } from '@hooks/useConceptSearch';
-import useConditions from '@hooks/useConditions';
-import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
-import { ConceptSearch } from '@types/concepts';
-import { ConditionInputEntry } from '@types/condition';
-import { DiagnosisInputEntry } from '@types/diagnosis';
+import { CERTAINITY_CONCEPTS } from '../../../../constants/diagnosis';
+import { useConceptSearch } from '../../../../hooks/useConceptSearch';
+import useConditions from '../../../../hooks/useConditions';
+import { useConditionsAndDiagnosesStore } from '../../../../stores/conditionsAndDiagnosesStore';
+import { ConceptSearch } from '../../../../models/concepts';
+import { type ConditionInputEntry } from '@bahmni-frontend/bahmni-services';
+import { type DiagnosisInputEntry } from '@bahmni-frontend/bahmni-services';
 import ConditionsAndDiagnoses from '../ConditionsAndDiagnoses';
 
 expect.extend(toHaveNoViolations);
 
 // Mock the hooks
-jest.mock('@hooks/useConceptSearch');
-jest.mock('@hooks/useConditions');
+jest.mock('../../../../hooks/useConceptSearch');
+jest.mock('../../../../hooks/useConditions');
 
 // Mock the Zustand store
-jest.mock('@stores/conditionsAndDiagnosesStore');
+jest.mock('../../../../stores/conditionsAndDiagnosesStore');
 
 // Typed mock functions
 const mockedUseConceptSearch = useConceptSearch as jest.MockedFunction<
@@ -148,7 +145,6 @@ describe('ConditionsAndDiagnoses', () => {
   let resetMock: jest.Mock;
   let getStateMock: jest.Mock;
 
-  // Custom render function for the component with i18n provider
   const renderComponent = (
     selectedDiagnoses: DiagnosisInputEntry[] = [],
     selectedConditions: ConditionInputEntry[] = [],
@@ -196,16 +192,11 @@ describe('ConditionsAndDiagnoses', () => {
       updateConditionDuration: updateConditionDurationMock,
     });
 
-    return render(
-      <I18nextProvider i18n={i18n}>
-        <ConditionsAndDiagnoses />
-      </I18nextProvider>,
-    );
+    return render(<ConditionsAndDiagnoses/>);
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    i18n.changeLanguage('en');
     jest.spyOn(console, 'error').mockImplementation(() => {});
     window.HTMLElement.prototype.scrollIntoView = jest.fn();
   });
@@ -336,7 +327,7 @@ describe('ConditionsAndDiagnoses', () => {
       renderComponent(mockDiagnosisEntries);
 
       const removeButton = screen.getByRole('button', {
-        name: 'Close Selected Item',
+        name: 'Selected Item Close',
       });
       await user.click(removeButton);
 
@@ -454,7 +445,7 @@ describe('ConditionsAndDiagnoses', () => {
       renderComponent([], [mockConditionEntries[0]]);
 
       const removeButtons = screen.getAllByRole('button', {
-        name: 'Close Selected Item',
+        name: 'Selected Item Close',
       });
       await user.click(removeButtons[0]);
 
