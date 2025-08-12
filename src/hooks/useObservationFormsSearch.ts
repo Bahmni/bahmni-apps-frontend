@@ -1,8 +1,10 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ObservationForm } from '@types/observationForms';
 import { getFormattedError } from '@utils/common';
+import { filterFormsByUserPrivileges } from '@utils/privilegeUtils';
+import { ObservationForm } from '../types/observationForms';
 import useDebounce from './useDebounce';
+import { useUserPrivilege } from './useUserPrivilege';
 
 interface UseObservationFormsSearchResult {
   forms: ObservationForm[];
@@ -16,6 +18,11 @@ interface FormApiResponse {
   formName?: string;
   formUuid?: string;
   version?: string;
+  published?: boolean;
+  id?: number;
+  resources?: unknown;
+  privileges?: unknown[];
+  nameTranslation?: string;
 }
 
 /**
@@ -28,11 +35,12 @@ interface FormApiResponse {
 const useObservationFormsSearch = (
   searchTerm: string = '',
 ): UseObservationFormsSearchResult => {
-  const [forms, setForms] = useState<ObservationForm[]>([]);
+  const [allForms, setAllForms] = useState<ObservationForm[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const debouncedSearchTerm = useDebounce(searchTerm);
   const { t } = useTranslation();
+  const { userPrivileges } = useUserPrivilege();
 
   // Load all observation forms
   useEffect(() => {
@@ -58,11 +66,16 @@ const useObservationFormsSearch = (
             name: form.name ?? form.formName ?? '',
             uuid: form.uuid ?? form.formUuid ?? '',
             version: form.version ?? '1.0',
+            published: form.published ?? true,
+            id: form.id ?? 0,
+            resources: form.resources ?? null,
+            privileges: form.privileges ?? [],
+            nameTranslation: form.nameTranslation ?? '[]',
             formName: form.formName,
             formUuid: form.formUuid,
           }))
           .filter((form: ObservationForm) => form.uuid && form.name);
-        setForms(mappedForms);
+        setAllForms(mappedForms);
       } catch (err) {
         const formattedError = getFormattedError(err);
         setError(
@@ -76,17 +89,29 @@ const useObservationFormsSearch = (
     loadObservationForms();
   }, [t]);
 
-  // Filter forms based on search term
+  // Filter forms based on user privileges and search term
   const filteredForms = useMemo(() => {
-    if (!forms.length) return [];
+    if (!allForms.length) return [];
+
+    // Don't filter if user privileges are still loading (null)
+    // This prevents showing all forms before privileges are loaded
+    if (userPrivileges === null) {
+      return [];
+    }
+
+    // First filter by user privileges
+    const privilegeFilteredForms = filterFormsByUserPrivileges(
+      userPrivileges,
+      allForms,
+    );
 
     const searchTermLower = debouncedSearchTerm?.toLowerCase().trim() ?? '';
-    if (!searchTermLower) return forms;
+    if (!searchTermLower) return privilegeFilteredForms;
 
-    // Split search term into words for more flexible matching
+    // Then filter by search term
     const searchWords = searchTermLower.split(/\s+/);
 
-    return forms.filter((form) => {
+    return privilegeFilteredForms.filter((form) => {
       const nameLower = form.name?.toLowerCase() ?? '';
       const formNameLower = form.formName?.toLowerCase() ?? '';
 
@@ -95,7 +120,7 @@ const useObservationFormsSearch = (
         (word) => nameLower.includes(word) || formNameLower.includes(word),
       );
     });
-  }, [forms, debouncedSearchTerm]);
+  }, [allForms, userPrivileges, debouncedSearchTerm]);
 
   return {
     forms: filteredForms,
