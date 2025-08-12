@@ -6,9 +6,6 @@
       "path": "../apps/clinical"
     },
     {
-      "path": "../packages/bahmni-design-system"
-    },
-    {
       "path": "./tsconfig.app.json"
     },
     {

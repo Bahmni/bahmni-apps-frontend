@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { initAppI18n, initializeAuditListener } from '@bahmni-frontend/bahmni-services';
-import { initFontAwesome } from '@bahmni-frontend/bahmni-design-system';
+import { Content, initFontAwesome } from '@bahmni-frontend/bahmni-design-system';
 import { NotificationProvider } from '@bahmni-frontend/bahmni-widgets';
 import { ClinicalConfigProvider } from './providers/ClinicalConfigProvider';
 import { NotificationServiceComponent } from '@bahmni-frontend/bahmni-widgets';
@@ -31,14 +31,16 @@ const ClinicalApp: React.FC = () => {
     }
 
     return (
-        <NotificationProvider>
-            <NotificationServiceComponent />
-            <ClinicalConfigProvider>
-                <Routes>
-                    <Route path=":patientUuid" element={<ConsultationPage />} />
-                </Routes>
-            </ClinicalConfigProvider>
-        </NotificationProvider>
+        <Content>
+            <NotificationProvider>
+                <NotificationServiceComponent />
+                <ClinicalConfigProvider>
+                    <Routes>
+                        <Route path=":patientUuid" element={<ConsultationPage />} />
+                    </Routes>
+                </ClinicalConfigProvider>
+            </NotificationProvider>
+        </Content>
     );
 };
 
