@@ -38,7 +38,7 @@ jobs:
       #   run: yarn lint:styles
 
       - name: Run tests
-        run: nx run-many --target=test
+        run: npx nx run-many --target=test
 
       - name: Scan for package vulnerabilities
         uses: aquasecurity/trivy-action@0.30.0
@@ -73,7 +73,7 @@ jobs:
         run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
       - name: Build
-        run: nx build distro
+        run: npx nx build distro
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
