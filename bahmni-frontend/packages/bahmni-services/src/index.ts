@@ -80,6 +80,12 @@ export {
   LabTestPriority,
   type LabTestsByDate,
 } from './labInvestigationService';
+export {
+  getFlattenedInvestigations,
+  type FlattenedInvestigations,
+  type OrderType,
+  type OrderTypeResponse,
+} from './investigationService';
 
 export {
   getClinicalConfig,
