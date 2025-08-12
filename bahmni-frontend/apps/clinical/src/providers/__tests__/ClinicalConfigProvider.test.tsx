@@ -7,27 +7,31 @@ import {
 } from '@testing-library/react';
 import React from 'react';
 import '@testing-library/jest-dom';
-import * as configMocks from '@__mocks__/configMocks';
-import { useClinicalConfig } from '@hooks/useClinicalConfig';
-import { getClinicalConfig } from '@services/configService';
-import notificationService from '@services/notificationService';
-import { ClinicalConfig } from '@types/config';
+import * as configMocks from '../../__mocks__/configMocks';
+import { useClinicalConfig } from '../../hooks/useClinicalConfig';
+import { getClinicalConfig } from '@bahmni-frontend/bahmni-services';
+import { notificationService } from '@bahmni-frontend/bahmni-services';
+import { ClinicalConfig } from '@bahmni-frontend/bahmni-services';
 import { ClinicalConfigProvider } from '../ClinicalConfigProvider';
 
-// Mock the configService
-jest.mock('@services/configService');
+
+
+// Mock the notificationService
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+  getClinicalConfig: jest.fn(),
+  notificationService: {
+    showError: jest.fn(),
+    showSuccess: jest.fn(),
+    showInfo: jest.fn(),
+    showWarning: jest.fn(),
+  },
+  __esModule: true,
+}));
+
 const mockGetConfig = getClinicalConfig as jest.MockedFunction<
   typeof getClinicalConfig
 >;
-
-// Mock the notificationService
-jest.mock('@services/notificationService', () => ({
-  showError: jest.fn(),
-  showSuccess: jest.fn(),
-  showInfo: jest.fn(),
-  showWarning: jest.fn(),
-}));
-
 // Mock the timer functions
 jest.useFakeTimers();
 
