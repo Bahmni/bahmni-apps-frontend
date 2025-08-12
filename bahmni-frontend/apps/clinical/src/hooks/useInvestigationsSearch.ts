@@ -23,14 +23,12 @@ const useInvestigationsSearch = (
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const debouncedSearchTerm = useDebounce(searchTerm);
-
   useEffect(() => {
     const fetchInvestigations = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        // Use the migrated investigation service
-        const fetchedInvestigations = await getFlattenedInvestigations(t);
+        const fetchedInvestigations = await getFlattenedInvestigations();
         setInvestigations(fetchedInvestigations);
       } catch (err) {
         const formattedError = getFormattedError(err);
@@ -40,7 +38,7 @@ const useInvestigationsSearch = (
       }
     };
     fetchInvestigations();
-  }, [t]);
+  },[]);
 
   const filteredInvestigations = useMemo(() => {
     if (!investigations.length) return [];
@@ -61,10 +59,9 @@ const useInvestigationsSearch = (
 
     return investigations.filter((investigation) => {
       const displayLower = investigation.display.toLowerCase();
-      return searchWords.some((word: string) => displayLower.includes(word));
+      return searchWords.some((word) => displayLower.includes(word));
     });
-  }, [investigations, debouncedSearchTerm, t]);
-
+  }, [investigations, debouncedSearchTerm]);
   return {
     investigations: filteredInvestigations,
     isLoading,
@@ -72,5 +69,4 @@ const useInvestigationsSearch = (
   };
 };
 
-export { useInvestigationsSearch };
 export default useInvestigationsSearch;

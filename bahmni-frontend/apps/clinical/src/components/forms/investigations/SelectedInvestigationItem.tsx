@@ -4,7 +4,7 @@ import { useTranslation } from '@bahmni-frontend/bahmni-services';
 import {
   ServiceRequestInputEntry,
   SupportedServiceRequestPriority,
-} from '../../../types/serviceRequest';
+} from '../../../models/serviceRequest';
 import styles from './styles/SelectedInvestigationItem.module.scss';
 
 export interface SelectedInvestigationItemProps {
