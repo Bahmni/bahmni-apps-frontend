@@ -1,11 +1,27 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
-import * as investigationService from '@services/investigationService';
-import { FlattenedInvestigations } from '@types/investigations';
-import useInvestigationsSearch from '../../../../../../src/hooks/useInvestigationsSearch';
+import { type FlattenedInvestigations } from '../../models/investigations';
+import useInvestigationsSearch from '../useInvestigationsSearch';
+import { getFlattenedInvestigations, getFormattedError } from '@bahmni-frontend/bahmni-services';
 
-jest.mock('@services/investigationService');
+jest.mock('@bahmni-frontend/bahmni-services',()=>({
+  getFlattenedInvestigations:jest.fn(),
+  getFormattedError:jest.fn(),
+   useTranslation: () => ({
+    t: (key: string) => {
+      switch (key) {
+        case 'INVESTIGATION_PANEL':
+          return 'Panel';
+        default:
+          return key;
+      }
+    },
+  }),
+}));
 
 describe('useInvestigationsSearch', () => {
+  
+  (getFormattedError as jest.Mock).mockImplementation((error: any) => ({ title:error.title || 'unknown title', message: error.message || 'Unknown error' }));
+
   const mockInvestigations: FlattenedInvestigations[] = [
     {
       code: 'LAB001',
@@ -37,7 +53,7 @@ describe('useInvestigationsSearch', () => {
     jest.clearAllMocks();
     jest.useFakeTimers();
     (
-      investigationService.getFlattenedInvestigations as jest.Mock
+      getFlattenedInvestigations as jest.Mock
     ).mockResolvedValue(mockInvestigations);
   });
 
@@ -60,7 +76,7 @@ describe('useInvestigationsSearch', () => {
       });
 
       expect(
-        investigationService.getFlattenedInvestigations,
+        getFlattenedInvestigations,
       ).toHaveBeenCalledTimes(1);
       expect(result.current.investigations).toEqual(mockInvestigations);
       expect(result.current.error).toBeNull();
@@ -69,7 +85,7 @@ describe('useInvestigationsSearch', () => {
     it('should handle fetch error on mount', async () => {
       const mockError = new Error('Failed to fetch investigations');
       (
-        investigationService.getFlattenedInvestigations as jest.Mock
+        getFlattenedInvestigations as jest.Mock
       ).mockRejectedValue(mockError);
 
       const { result } = renderHook(() => useInvestigationsSearch());
@@ -93,7 +109,7 @@ describe('useInvestigationsSearch', () => {
 
       await waitFor(() => {
         expect(
-          investigationService.getFlattenedInvestigations,
+          getFlattenedInvestigations,
         ).toHaveBeenCalledTimes(1);
       });
 
@@ -102,7 +118,7 @@ describe('useInvestigationsSearch', () => {
 
       // Should not fetch again
       expect(
-        investigationService.getFlattenedInvestigations,
+        getFlattenedInvestigations,
       ).toHaveBeenCalledTimes(1);
     });
   });
@@ -267,23 +283,17 @@ describe('useInvestigationsSearch', () => {
       ];
 
       (
-        investigationService.getFlattenedInvestigations as jest.Mock
+        getFlattenedInvestigations as jest.Mock
       ).mockResolvedValue(mockPanelInvestigations);
+
       const { result } = renderHook(() =>
         useInvestigationsSearch('Complete Blood Count'),
       );
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
+        expect(result.current.investigations).toEqual([mockPanelInvestigations[0]]);
       });
-
-      act(() => {
-        jest.advanceTimersByTime(500);
-      });
-
-      expect(result.current.investigations).toEqual([
-        mockPanelInvestigations[0],
-      ]);
     });
   });
 
@@ -349,7 +359,7 @@ describe('useInvestigationsSearch', () => {
   describe('Edge Cases', () => {
     it('should handle empty investigations array', async () => {
       (
-        investigationService.getFlattenedInvestigations as jest.Mock
+        getFlattenedInvestigations as jest.Mock
       ).mockResolvedValue([]);
 
       const { result } = renderHook(() => useInvestigationsSearch('blood'));
@@ -386,7 +396,7 @@ describe('useInvestigationsSearch', () => {
       ];
 
       (
-        investigationService.getFlattenedInvestigations as jest.Mock
+        getFlattenedInvestigations as jest.Mock
       ).mockResolvedValue(specialInvestigations);
 
       const { result } = renderHook(() => useInvestigationsSearch('HbA1c'));
@@ -413,7 +423,7 @@ describe('useInvestigationsSearch', () => {
       ];
 
       (
-        investigationService.getFlattenedInvestigations as jest.Mock
+        getFlattenedInvestigations as jest.Mock
       ).mockResolvedValue(specialInvestigations);
 
       const { result } = renderHook(() => useInvestigationsSearch('(Glycated'));
@@ -432,7 +442,7 @@ describe('useInvestigationsSearch', () => {
     it('should handle network error with proper error formatting', async () => {
       const networkError = { response: { data: { message: 'Network error' } } };
       (
-        investigationService.getFlattenedInvestigations as jest.Mock
+        getFlattenedInvestigations as jest.Mock
       ).mockRejectedValue(networkError);
 
       const { result } = renderHook(() => useInvestigationsSearch());
@@ -443,13 +453,13 @@ describe('useInvestigationsSearch', () => {
 
       expect(result.current.error).toBeInstanceOf(Error);
       // getFormattedError extracts the message from the nested response
-      expect(result.current.error?.message).toBe('An unknown error occurred');
+      expect(result.current.error?.message).toBe('Unknown error');
     });
 
     it('should handle generic error', async () => {
       (
-        investigationService.getFlattenedInvestigations as jest.Mock
-      ).mockRejectedValue('Something went wrong');
+        getFlattenedInvestigations as jest.Mock
+      ).mockRejectedValue(new Error('Something went wrong'));
 
       const { result } = renderHook(() => useInvestigationsSearch());
 

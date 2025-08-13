@@ -1,10 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import React from 'react';
-import { I18nextProvider } from 'react-i18next';
-import i18n from '@/setupTests.i18n';
-import { ServiceRequestInputEntry } from '@types/serviceRequest';
+import { ServiceRequestInputEntry } from '../../../../models/serviceRequest';
 import SelectedInvestigationItem from '../SelectedInvestigationItem';
 
 expect.extend(toHaveNoViolations);
@@ -29,7 +26,6 @@ const defaultProps = {
 describe('SelectedInvestigationItem', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    i18n.changeLanguage('en');
   });
 
   afterEach(() => {
@@ -40,9 +36,7 @@ describe('SelectedInvestigationItem', () => {
   describe('Happy Path Scenarios', () => {
     test('renders investigation display name correctly', () => {
       render(
-        <I18nextProvider i18n={i18n}>
           <SelectedInvestigationItem {...defaultProps} />
-        </I18nextProvider>,
       );
 
       expect(
@@ -52,9 +46,7 @@ describe('SelectedInvestigationItem', () => {
 
     test('renders urgent priority checkbox with correct label', () => {
       render(
-        <I18nextProvider i18n={i18n}>
           <SelectedInvestigationItem {...defaultProps} />
-        </I18nextProvider>,
       );
 
       const checkbox = screen.getByRole('checkbox', { name: /urgent/i });
@@ -70,12 +62,10 @@ describe('SelectedInvestigationItem', () => {
       const mockOnPriorityChange = jest.fn();
 
       render(
-        <I18nextProvider i18n={i18n}>
           <SelectedInvestigationItem
             {...defaultProps}
             onPriorityChange={mockOnPriorityChange}
           />
-        </I18nextProvider>,
       );
 
       const checkbox = screen.getByRole('checkbox', { name: /urgent/i });
@@ -90,12 +80,10 @@ describe('SelectedInvestigationItem', () => {
       const mockOnPriorityChange = jest.fn();
 
       render(
-        <I18nextProvider i18n={i18n}>
           <SelectedInvestigationItem
             {...defaultProps}
             onPriorityChange={mockOnPriorityChange}
           />
-        </I18nextProvider>,
       );
 
       const checkbox = screen.getByRole('checkbox', { name: /urgent/i });
@@ -118,12 +106,10 @@ describe('SelectedInvestigationItem', () => {
       };
 
       render(
-        <I18nextProvider i18n={i18n}>
           <SelectedInvestigationItem
             {...defaultProps}
             investigation={emptyDisplayInvestigation}
           />
-        </I18nextProvider>,
       );
 
       // Should still render without crashing
@@ -139,12 +125,10 @@ describe('SelectedInvestigationItem', () => {
       };
 
       render(
-        <I18nextProvider i18n={i18n}>
           <SelectedInvestigationItem
             {...defaultProps}
             investigation={longDisplayInvestigation}
           />
-        </I18nextProvider>,
       );
 
       expect(
@@ -157,12 +141,10 @@ describe('SelectedInvestigationItem', () => {
       const mockOnPriorityChange = jest.fn();
 
       render(
-        <I18nextProvider i18n={i18n}>
           <SelectedInvestigationItem
             {...defaultProps}
             onPriorityChange={mockOnPriorityChange}
           />
-        </I18nextProvider>,
       );
 
       const checkbox = screen.getByRole('checkbox', { name: /urgent/i });
@@ -182,9 +164,7 @@ describe('SelectedInvestigationItem', () => {
   describe('Accessibility', () => {
     test('has no accessibility violations', async () => {
       const { container } = render(
-        <I18nextProvider i18n={i18n}>
           <SelectedInvestigationItem {...defaultProps} />
-        </I18nextProvider>,
       );
 
       const results = await axe(container);
@@ -194,9 +174,7 @@ describe('SelectedInvestigationItem', () => {
   describe('Snapshot', () => {
     test('matches snapshot', () => {
       const { container } = render(
-        <I18nextProvider i18n={i18n}>
           <SelectedInvestigationItem {...defaultProps} />
-        </I18nextProvider>,
       );
       expect(container.firstChild).toMatchSnapshot();
     });

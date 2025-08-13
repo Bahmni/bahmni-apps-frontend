@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import {
   ServiceRequestInputEntry,
   SupportedServiceRequestPriority,
-} from '../types/serviceRequest';
+} from '../models/serviceRequest';
 
 export interface ServiceRequestState {
   selectedServiceRequests: Map<string, ServiceRequestInputEntry[]>;

@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react';
 import { act } from 'react';
-import { SupportedServiceRequestPriority } from '@types/serviceRequest';
+import { SupportedServiceRequestPriority } from '../../models/serviceRequest';
 import { useServiceRequestStore } from '../serviceRequestStore';
 
 describe('useServiceRequestStore', () => {

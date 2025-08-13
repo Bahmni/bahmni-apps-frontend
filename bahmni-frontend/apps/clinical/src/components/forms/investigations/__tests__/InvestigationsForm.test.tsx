@@ -1,12 +1,9 @@
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import React from 'react';
-import { I18nextProvider } from 'react-i18next';
-import i18n from '@/setupTests.i18n';
-import useInvestigationsSearch from '@hooks/useInvestigationsSearch';
-import useServiceRequestStore from '@stores/serviceRequestStore';
-import type { FlattenedInvestigations } from '@types/investigations';
+import useInvestigationsSearch from '../../../../hooks/useInvestigationsSearch';
+import useServiceRequestStore from '../../../../stores/serviceRequestStore';
+import type { FlattenedInvestigations } from '../../../../models/investigations';
 import InvestigationsForm from '../InvestigationsForm';
 
 expect.extend(toHaveNoViolations);
@@ -20,22 +17,18 @@ jest.mock('../styles/InvestigationsForm.module.scss', () => ({
   selectedInvestigationItem: 'selectedInvestigationItem',
 }));
 
-jest.mock('@hooks/useInvestigationsSearch');
-jest.mock('@stores/serviceRequestStore');
-jest.mock('@components/common/boxWHeader/BoxWHeader', () => ({
-  __esModule: true,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  default: ({ children, title, className }: any) => (
-    <div className={className} data-testid="box-w-header">
+jest.mock('../../../../hooks/useInvestigationsSearch');
+jest.mock('../../../../stores/serviceRequestStore');
+
+jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-design-system'),
+  BoxHeader: ({ children, title, className }: any) => (
+    <div className={className} data-testid="box-header">
       <h3>{title}</h3>
       {children}
     </div>
   ),
-}));
-jest.mock('@components/common/selectedItem/SelectedItem', () => ({
-  __esModule: true,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  default: ({ children, onClose, className }: any) => (
+  SelectedItem: ({ children, onClose, className }: any) => (
     <div className={className} data-testid="selected-item">
       {children}
       <button onClick={onClose} aria-label="Remove">
@@ -44,6 +37,7 @@ jest.mock('@components/common/selectedItem/SelectedItem', () => ({
     </div>
   ),
 }));
+
 jest.mock('../SelectedInvestigationItem', () => ({
   __esModule: true,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -108,9 +102,7 @@ describe('InvestigationsForm', () => {
   describe('Component Rendering', () => {
     test('renders form with title and search combobox', () => {
       render(
-        <I18nextProvider i18n={i18n}>
           <InvestigationsForm />
-        </I18nextProvider>,
       );
 
       expect(
@@ -138,9 +130,7 @@ describe('InvestigationsForm', () => {
       const user = userEvent.setup();
 
       render(
-        <I18nextProvider i18n={i18n}>
           <InvestigationsForm />
-        </I18nextProvider>,
       );
 
       const combobox = screen.getByRole('combobox');
@@ -159,9 +149,7 @@ describe('InvestigationsForm', () => {
       const user = userEvent.setup();
 
       render(
-        <I18nextProvider i18n={i18n}>
           <InvestigationsForm />
-        </I18nextProvider>,
       );
 
       const combobox = screen.getByRole('combobox');
@@ -182,9 +170,7 @@ describe('InvestigationsForm', () => {
       const user = userEvent.setup();
 
       render(
-        <I18nextProvider i18n={i18n}>
           <InvestigationsForm />
-        </I18nextProvider>,
       );
 
       const combobox = screen.getByRole('combobox');
@@ -207,9 +193,7 @@ describe('InvestigationsForm', () => {
       const user = userEvent.setup();
 
       render(
-        <I18nextProvider i18n={i18n}>
           <InvestigationsForm />
-        </I18nextProvider>,
       );
 
       const combobox = screen.getByRole('combobox');
@@ -231,9 +215,7 @@ describe('InvestigationsForm', () => {
       const user = userEvent.setup();
 
       render(
-        <I18nextProvider i18n={i18n}>
           <InvestigationsForm />
-        </I18nextProvider>,
       );
 
       const combobox = screen.getByRole('combobox');
@@ -282,9 +264,7 @@ describe('InvestigationsForm', () => {
       const user = userEvent.setup();
 
       render(
-        <I18nextProvider i18n={i18n}>
           <InvestigationsForm />
-        </I18nextProvider>,
       );
 
       const combobox = screen.getByRole('combobox');
@@ -314,9 +294,7 @@ describe('InvestigationsForm', () => {
       });
 
       render(
-        <I18nextProvider i18n={i18n}>
           <InvestigationsForm />
-        </I18nextProvider>,
       );
 
       // Simulate selecting an investigation by calling the onChange handler
@@ -383,9 +361,7 @@ describe('InvestigationsForm', () => {
       });
 
       render(
-        <I18nextProvider i18n={i18n}>
           <InvestigationsForm />
-        </I18nextProvider>,
       );
 
       // Check category headers
@@ -420,9 +396,7 @@ describe('InvestigationsForm', () => {
       const user = userEvent.setup();
 
       render(
-        <I18nextProvider i18n={i18n}>
           <InvestigationsForm />
-        </I18nextProvider>,
       );
 
       const removeButton = screen.getByLabelText('Remove');
@@ -456,9 +430,7 @@ describe('InvestigationsForm', () => {
       const user = userEvent.setup();
 
       render(
-        <I18nextProvider i18n={i18n}>
           <InvestigationsForm />
-        </I18nextProvider>,
       );
 
       const urgentCheckbox = screen.getByLabelText('Set as urgent');
@@ -501,9 +473,7 @@ describe('InvestigationsForm', () => {
       const user = userEvent.setup();
 
       render(
-        <I18nextProvider i18n={i18n}>
           <InvestigationsForm />
-        </I18nextProvider>,
       );
 
       const combobox = screen.getByRole('combobox');
@@ -550,9 +520,7 @@ describe('InvestigationsForm', () => {
       const user = userEvent.setup();
 
       render(
-        <I18nextProvider i18n={i18n}>
           <InvestigationsForm />
-        </I18nextProvider>,
       );
 
       const combobox = screen.getByRole('combobox');
@@ -603,9 +571,7 @@ describe('InvestigationsForm', () => {
       const user = userEvent.setup();
 
       render(
-        <I18nextProvider i18n={i18n}>
           <InvestigationsForm />
-        </I18nextProvider>,
       );
 
       const combobox = screen.getByRole('combobox');
@@ -674,9 +640,7 @@ describe('InvestigationsForm', () => {
       const user = userEvent.setup();
 
       render(
-        <I18nextProvider i18n={i18n}>
           <InvestigationsForm />
-        </I18nextProvider>,
       );
 
       const combobox = screen.getByRole('combobox');
@@ -754,9 +718,7 @@ describe('InvestigationsForm', () => {
       const user = userEvent.setup();
 
       const { rerender } = render(
-        <I18nextProvider i18n={i18n}>
           <InvestigationsForm />
-        </I18nextProvider>,
       );
 
       // First search - CBC should be marked as already selected
@@ -781,9 +743,7 @@ describe('InvestigationsForm', () => {
 
       // Rerender to reflect the state change
       rerender(
-        <I18nextProvider i18n={i18n}>
           <InvestigationsForm />
-        </I18nextProvider>,
       );
 
       // Search again - CBC should NOT be marked as already selected
@@ -803,9 +763,7 @@ describe('InvestigationsForm', () => {
   describe('Edge Cases', () => {
     test('handles empty search term correctly', () => {
       render(
-        <I18nextProvider i18n={i18n}>
           <InvestigationsForm />
-        </I18nextProvider>,
       );
 
       const combobox = screen.getByRole('combobox');
@@ -826,9 +784,7 @@ describe('InvestigationsForm', () => {
       });
 
       render(
-        <I18nextProvider i18n={i18n}>
           <InvestigationsForm />
-        </I18nextProvider>,
       );
 
       const combobox = screen.getByRole('combobox');
@@ -848,9 +804,9 @@ describe('InvestigationsForm', () => {
 
       await act(async () => {
         const rendered = render(
-          <I18nextProvider i18n={i18n}>
+
             <InvestigationsForm />
-          </I18nextProvider>,
+
         );
         container = rendered.container;
       });
