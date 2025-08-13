@@ -147,12 +147,8 @@ jest.mock(
             onFormSelect?.({
               uuid: 'form-1',
               name: 'Test Form',
-              version: '1.0',
-              published: true,
               id: 1,
-              resources: [],
               privileges: [],
-              nameTranslation: null,
             })
           }
         >

@@ -83,26 +83,14 @@ describe('ObservationForms', () => {
     {
       name: 'Admission Letter',
       uuid: 'form-1',
-      version: '1',
-      published: true,
       id: 1,
-      resources: null,
       privileges: [],
-      nameTranslation: '[]',
-      formName: 'Admission Letter',
-      formUuid: 'form-1',
     },
     {
       name: 'Death Note',
       uuid: 'form-2',
-      version: '1',
-      published: true,
       id: 2,
-      resources: null,
       privileges: [],
-      nameTranslation: '[]',
-      formName: 'Death Note',
-      formUuid: 'form-2',
     },
   ];
 
@@ -445,6 +433,14 @@ describe('ObservationForms', () => {
       render(<ObservationForms />);
 
       // Should not throw when callbacks are not provided
+      const formButton = screen.getByTestId('combobox-item-form-1');
+      expect(() => fireEvent.click(formButton)).not.toThrow();
+    });
+
+    it('should handle onFormSelect being undefined', () => {
+      // Test the branch where onFormSelect is undefined (line 59)
+      render(<ObservationForms onFormSelect={undefined} />);
+
       const formButton = screen.getByTestId('combobox-item-form-1');
       expect(() => fireEvent.click(formButton)).not.toThrow();
     });

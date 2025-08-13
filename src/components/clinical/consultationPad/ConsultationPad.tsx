@@ -261,15 +261,11 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   };
 
   const handleOnSecondaryButtonClick = () => {
-    if (viewingForm) {
-      setViewingForm(null);
-    } else {
-      resetDiagnoses();
-      resetAllergies();
-      resetServiceRequests();
-      resetMedications();
-      onClose();
-    }
+    resetDiagnoses();
+    resetAllergies();
+    resetServiceRequests();
+    resetMedications();
+    onClose();
   };
 
   const handleDiscardForm = () => {

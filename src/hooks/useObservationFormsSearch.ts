@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { OBSERVATION_FORMS_URL } from '@constants/app';
 import { getFormattedError } from '@utils/common';
 import { filterFormsByUserPrivileges } from '@utils/privilegeUtils';
 import { ObservationForm } from '../types/observationForms';
@@ -12,17 +13,15 @@ interface UseObservationFormsSearchResult {
   error: Error | null;
 }
 
+interface ApiFormPrivilege {
+  privilegeName: string;
+}
+// API Response model (what backend sends)
 interface FormApiResponse {
-  name?: string;
-  uuid?: string;
-  formName?: string;
-  formUuid?: string;
-  version?: string;
-  published?: boolean;
-  id?: number;
-  resources?: unknown;
-  privileges?: unknown[];
-  nameTranslation?: string;
+  uuid: string;
+  name: string;
+  id: number;
+  privileges: ApiFormPrivilege[];
 }
 
 /**
@@ -49,9 +48,7 @@ const useObservationFormsSearch = (
       setError(null);
 
       try {
-        const response = await fetch(
-          '/openmrs/ws/rest/v1/bahmniie/form/latestPublishedForms',
-        );
+        const response = await fetch(OBSERVATION_FORMS_URL);
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -63,16 +60,12 @@ const useObservationFormsSearch = (
         const formsArray = data.results ?? data ?? [];
         const mappedForms: ObservationForm[] = formsArray
           .map((form: FormApiResponse) => ({
-            name: form.name ?? form.formName ?? '',
-            uuid: form.uuid ?? form.formUuid ?? '',
-            version: form.version ?? '1.0',
-            published: form.published ?? true,
-            id: form.id ?? 0,
-            resources: form.resources ?? null,
-            privileges: form.privileges ?? [],
-            nameTranslation: form.nameTranslation ?? '[]',
-            formName: form.formName,
-            formUuid: form.formUuid,
+            uuid: form.uuid,
+            name: form.name,
+            id: form.id,
+            privileges: form.privileges.map((p) => ({
+              privilegeName: p.privilegeName,
+            })),
           }))
           .filter((form: ObservationForm) => form.uuid && form.name);
         setAllForms(mappedForms);
@@ -105,20 +98,17 @@ const useObservationFormsSearch = (
       allForms,
     );
 
-    const searchTermLower = debouncedSearchTerm?.toLowerCase().trim() ?? '';
+    const searchTermLower = debouncedSearchTerm.toLowerCase().trim();
     if (!searchTermLower) return privilegeFilteredForms;
 
     // Then filter by search term
     const searchWords = searchTermLower.split(/\s+/);
 
     return privilegeFilteredForms.filter((form) => {
-      const nameLower = form.name?.toLowerCase() ?? '';
-      const formNameLower = form.formName?.toLowerCase() ?? '';
+      const nameLower = form.name.toLowerCase();
 
-      // Match if any search word is found in either name or formName
-      return searchWords.some(
-        (word) => nameLower.includes(word) || formNameLower.includes(word),
-      );
+      // Match if any search word is found in name
+      return searchWords.some((word) => nameLower.includes(word));
     });
   }, [allForms, userPrivileges, debouncedSearchTerm]);
 

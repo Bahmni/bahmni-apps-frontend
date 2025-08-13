@@ -1,12 +1,11 @@
+export interface FormPrivilege {
+  privilegeName: string;
+}
+
+// Domain model (what we use for application logic)
 export interface ObservationForm {
   uuid: string;
   name: string;
-  version: string;
-  published: boolean;
   id: number;
-  resources: unknown;
-  privileges: unknown[];
-  nameTranslation: string;
-  formName?: string;
-  formUuid?: string;
+  privileges: FormPrivilege[];
 }

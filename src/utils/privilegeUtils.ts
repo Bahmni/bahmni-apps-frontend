@@ -8,13 +8,6 @@ export interface UserPrivilege {
 }
 
 /**
- * Interface for form privilege object from /latestPublishedForms API
- */
-interface FormPrivilegeObject {
-  privilegeName: string;
-}
-
-/**
  * Check if user has required privileges to access a form
  * @param userPrivileges - Array of user privileges from whoami API
  * @param form - Form with privilege requirements
@@ -38,8 +31,7 @@ export const canUserAccessForm = (
   const userPrivilegeNames = userPrivileges.map((privilege) => privilege.name);
 
   // Extract required privilege names from form privileges
-  const formPrivileges = form.privileges as FormPrivilegeObject[];
-  const requiredPrivilegeNames = formPrivileges.map(
+  const requiredPrivilegeNames = form.privileges.map(
     (formPrivilege) => formPrivilege.privilegeName,
   );
   // Check if user has required privileges

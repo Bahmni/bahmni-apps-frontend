@@ -81,6 +81,8 @@ export const MEDICATION_ORDERS_METADATA_URL =
 export const MEDICATIONS_SEARCH_URL = (searchTerm: string, count: number) =>
   OPENMRS_FHIR_R4 +
   `/Medication?name=${encodeURIComponent(searchTerm)}&_count=${count}`;
+export const OBSERVATION_FORMS_URL =
+  OPENMRS_REST_V1 + '/bahmniie/form/latestPublishedForms';
 
 export const ALL_ORDERABLES_CONCEPT_NAME = 'All Orderables';
 export const LOGIN_PATH = '/bahmni/home/index.html#/login';

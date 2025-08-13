@@ -2,6 +2,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { I18nextProvider } from 'react-i18next';
 
+import { OBSERVATION_FORMS_URL } from '@/constants/app';
 import i18n from '@/setupTests.i18n';
 import { UserPrivilegeProvider } from '@providers/UserPrivilegeProvider';
 import * as privilegeService from '@services/privilegeService';
@@ -46,22 +47,27 @@ describe('useObservationFormsSearch', () => {
       {
         name: 'Patient History Form',
         uuid: 'form-uuid-1',
-        version: '1.0',
-        formName: 'Patient History Form',
-        formUuid: 'form-uuid-1',
-        privileges: ['app:clinical:observationForms'],
+        id: 1,
+        privileges: [
+          {
+            privilegeName: 'app:clinical:observationForms',
+          },
+        ],
       },
       {
         name: 'Physical Examination Form',
         uuid: 'form-uuid-2',
-        version: '2.0',
-        privileges: ['app:clinical:physicalExam'],
+        id: 2,
+        privileges: [
+          {
+            privilegeName: 'app:clinical:physicalExam',
+          },
+        ],
       },
       {
         name: 'Laboratory Results',
         uuid: 'form-uuid-3',
-        version: '1.0',
-        formName: 'Patient Lab Results',
+        id: 3,
         privileges: [],
       },
     ],
@@ -111,44 +117,32 @@ describe('useObservationFormsSearch', () => {
         {
           name: 'Patient History Form',
           uuid: 'form-uuid-1',
-          version: '1.0',
-          formName: 'Patient History Form',
-          formUuid: 'form-uuid-1',
-          id: 0,
-          nameTranslation: '[]',
-          privileges: ['app:clinical:observationForms'],
-          published: true,
-          resources: null,
+          id: 1,
+          privileges: [
+            {
+              privilegeName: 'app:clinical:observationForms',
+            },
+          ],
         },
         {
           name: 'Physical Examination Form',
           uuid: 'form-uuid-2',
-          version: '2.0',
-          formName: undefined,
-          formUuid: undefined,
-          id: 0,
-          nameTranslation: '[]',
-          privileges: ['app:clinical:physicalExam'],
-          published: true,
-          resources: null,
+          id: 2,
+          privileges: [
+            {
+              privilegeName: 'app:clinical:physicalExam',
+            },
+          ],
         },
         {
           name: 'Laboratory Results',
           uuid: 'form-uuid-3',
-          version: '1.0',
-          formName: 'Patient Lab Results',
-          formUuid: undefined,
-          id: 0,
-          nameTranslation: '[]',
+          id: 3,
           privileges: [],
-          published: true,
-          resources: null,
         },
       ]);
       expect(result.current.error).toBeNull();
-      expect(mockFetch).toHaveBeenCalledWith(
-        '/openmrs/ws/rest/v1/bahmniie/form/latestPublishedForms',
-      );
+      expect(mockFetch).toHaveBeenCalledWith(OBSERVATION_FORMS_URL);
     });
   });
 
@@ -187,14 +181,12 @@ describe('useObservationFormsSearch', () => {
           {
             name: 'Patient History Form',
             uuid: 'form-uuid-1',
-            version: '1.0',
-            formName: 'Patient History Form',
-            formUuid: 'form-uuid-1',
-            id: 0,
-            nameTranslation: '[]',
-            privileges: ['app:clinical:observationForms'],
-            published: true,
-            resources: null,
+            id: 1,
+            privileges: [
+              {
+                privilegeName: 'app:clinical:observationForms',
+              },
+            ],
           },
         ],
       );
@@ -267,66 +259,66 @@ describe('useObservationFormsSearch', () => {
         expect(result.current.isLoading).toBe(false);
       });
 
-      // Should match forms containing "patient" in name or formName
-      expect(result.current.forms).toHaveLength(2);
+      // Should match forms containing "patient" in name
+      expect(result.current.forms).toHaveLength(1);
       expect(result.current.forms[0].name).toBe('Patient History Form');
-      expect(result.current.forms[1].name).toBe('Laboratory Results');
     });
 
-    it('should handle multi-word search terms', async () => {
+    it('should handle multi-word search terms and empty search', async () => {
+      // Test multi-word search
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockFormsData,
       });
 
-      const { result } = renderHook(
+      const { result: multiWordResult } = renderHook(
         () => useObservationFormsSearch('patient history'),
+        { wrapper },
+      );
+
+      await waitFor(() => {
+        expect(multiWordResult.current.isLoading).toBe(false);
+      });
+
+      expect(multiWordResult.current.forms).toHaveLength(1);
+      expect(multiWordResult.current.forms[0].name).toBe(
+        'Patient History Form',
+      );
+
+      // Test empty search returns all forms
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockFormsData,
+      });
+
+      const { result: emptyResult } = renderHook(
+        () => useObservationFormsSearch('   '),
         {
           wrapper,
         },
       );
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(emptyResult.current.isLoading).toBe(false);
       });
 
-      // Should match forms containing either "patient" or "history"
-      expect(result.current.forms).toHaveLength(2);
-      expect(result.current.forms[0].name).toBe('Patient History Form');
-      expect(result.current.forms[1].name).toBe('Laboratory Results');
+      expect(emptyResult.current.forms).toHaveLength(3);
     });
 
-    it('should return all forms when search term is empty or whitespace', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockFormsData,
-      });
-
-      const { result } = renderHook(() => useObservationFormsSearch('   '), {
-        wrapper,
-      });
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.forms).toHaveLength(3);
-    });
-
-    it('should search in both name and formName fields', async () => {
+    it('should search in name field only', async () => {
       const searchFormsData = {
         results: [
           {
             name: 'Form A',
             uuid: 'form-uuid-1',
-            version: '1.0',
-            formName: 'Patient Registration',
+            id: 1,
+            privileges: [],
           },
           {
             name: 'Patient Details',
             uuid: 'form-uuid-2',
-            version: '1.0',
-            formName: 'Form B',
+            id: 2,
+            privileges: [],
           },
         ],
       };
@@ -347,8 +339,9 @@ describe('useObservationFormsSearch', () => {
         expect(result.current.isLoading).toBe(false);
       });
 
-      // Should match both forms - one by formName, one by name
-      expect(result.current.forms).toHaveLength(2);
+      // Should match only the form with "patient" in name
+      expect(result.current.forms).toHaveLength(1);
+      expect(result.current.forms[0].name).toBe('Patient Details');
     });
 
     it('should handle search with no matches', async () => {
@@ -440,50 +433,25 @@ describe('useObservationFormsSearch', () => {
     });
   });
 
-  describe('data mapping and fallbacks', () => {
-    it('should handle forms with missing fields using fallbacks', async () => {
-      const formsWithMissingFields = {
-        results: [
-          {
-            // Missing name, should use formName
-            formName: 'Form from formName',
-            uuid: 'form-1',
-            formUuid: 'form-1',
-          },
-          {
-            // Missing uuid, should use formUuid
-            name: 'Form with formUuid',
-            formUuid: 'form-2',
-          },
-          {
-            // Missing both name and formName, should use empty string
-            uuid: 'form-3',
-            formUuid: 'form-3',
-          },
-          {
-            // Missing version, should use default
-            name: 'Form without version',
-            uuid: 'form-4',
-            formUuid: 'form-4',
-          },
-          {
-            // Missing published, should use default
-            name: 'Form without published',
-            uuid: 'form-5',
-            formUuid: 'form-5',
-          },
-          {
-            // Missing id, should use default
-            name: 'Form without id',
-            uuid: 'form-6',
-            formUuid: 'form-6',
-          },
-        ],
-      };
+  describe('data handling', () => {
+    it('should handle API response where results is undefined but data is truthy', async () => {
+      // Test line 60: data.results ?? data ?? []
+      // When data.results is undefined but data itself is an array
+      const mockDataArray = [
+        {
+          uuid: 'form-2',
+          name: 'Fallback Form Undefined',
+          id: 2,
+          privileges: [{ privilegeName: 'app:clinical' }],
+        },
+      ];
+
+      // Create object with undefined results property but truthy data
+      const mockData = Object.assign(mockDataArray, { results: undefined });
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => formsWithMissingFields,
+        json: async () => mockData,
       });
 
       const { result } = renderHook(() => useObservationFormsSearch(), {
@@ -494,91 +462,8 @@ describe('useObservationFormsSearch', () => {
         expect(result.current.isLoading).toBe(false);
       });
 
-      // Should filter out forms without both uuid and name
-      expect(result.current.forms).toHaveLength(5);
-
-      // Check fallback values are applied
-      const forms = result.current.forms;
-      expect(forms[0].name).toBe('Form from formName'); // name fallback to formName
-      expect(forms[1].uuid).toBe('form-2'); // uuid fallback to formUuid
-      expect(forms[2].version).toBe('1.0'); // version fallback
-      expect(forms[3].published).toBe(true); // published fallback
-      expect(forms[4].id).toBe(0); // id fallback
-    });
-
-    it('should handle null or undefined search term', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockFormsData,
-      });
-
-      // Mock useDebounce to return null to test fallback
-      const mockUseDebounce = jest.requireMock('../useDebounce').default;
-      mockUseDebounce.mockReturnValueOnce(null);
-
-      const { result } = renderHook(() => useObservationFormsSearch(), {
-        wrapper,
-      });
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      // Should return all forms when search term is null
-      expect(result.current.forms).toHaveLength(3);
-    });
-
-    it('should handle forms with null name fields in search', async () => {
-      const formsWithNullNames = {
-        results: [
-          {
-            name: null,
-            formName: null,
-            uuid: 'form-1',
-            formUuid: 'form-1',
-          },
-          {
-            name: 'Valid Form',
-            uuid: 'form-2',
-            formUuid: 'form-2',
-          },
-        ],
-      };
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => formsWithNullNames,
-      });
-
-      const { result } = renderHook(() => useObservationFormsSearch('valid'), {
-        wrapper,
-      });
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      // Should handle null names gracefully and find the valid form
       expect(result.current.forms).toHaveLength(1);
-      expect(result.current.forms[0].name).toBe('Valid Form');
-    });
-
-    it('should handle API response without results wrapper', async () => {
-      // Test direct array response (data.results ?? data)
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockFormsData.results, // Direct array without results wrapper
-      });
-
-      const { result } = renderHook(() => useObservationFormsSearch(), {
-        wrapper,
-      });
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.forms).toHaveLength(3);
+      expect(result.current.forms[0].name).toBe('Fallback Form Undefined');
     });
   });
 });

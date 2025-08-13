@@ -15,33 +15,21 @@ describe('privilegeUtils', () => {
   const mockFormWithPrivileges: ObservationForm = {
     id: 1,
     name: 'Test Form',
-    version: '1.0',
-    published: true,
     uuid: 'test-uuid-1',
-    resources: {},
-    nameTranslation: 'Test Form',
     privileges: [{ privilegeName: 'app:clinical:observationForms' }],
   };
 
   const mockFormWithoutPrivileges: ObservationForm = {
     id: 2,
     name: 'Public Form',
-    version: '1.0',
-    published: true,
     uuid: 'test-uuid-2',
-    resources: {},
-    nameTranslation: 'Public Form',
     privileges: [],
   };
 
   const mockFormWithUnauthorizedPrivileges: ObservationForm = {
     id: 3,
     name: 'Unauthorized Form',
-    version: '1.0',
-    published: true,
     uuid: 'test-uuid-3',
-    resources: {},
-    nameTranslation: 'Unauthorized Form',
     privileges: [{ privilegeName: 'admin:superuser' }],
   };
 
@@ -76,11 +64,7 @@ describe('privilegeUtils', () => {
       const formWithMultiplePrivileges: ObservationForm = {
         id: 4,
         name: 'Multi Privilege Form',
-        version: '1.0',
-        published: true,
         uuid: 'test-uuid-4',
-        resources: {},
-        nameTranslation: 'Multi Privilege Form',
         privileges: [
           { privilegeName: 'admin:superuser' },
           { privilegeName: 'view:forms' }, // User has this one
