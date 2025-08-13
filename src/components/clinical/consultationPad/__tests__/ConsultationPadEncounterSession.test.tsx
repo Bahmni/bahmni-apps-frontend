@@ -12,6 +12,13 @@ jest.mock('@hooks/useEncounterSession', () => ({
   useEncounterSession: () => mockUseEncounterSession(),
 }));
 
+// Mock useUserPrivilege hook
+jest.mock('@hooks/useUserPrivilege', () => ({
+  useUserPrivilege: jest.fn(() => ({
+    userPrivileges: ['Get Patients', 'Add Patients'],
+  })),
+}));
+
 // Mock all other dependencies
 jest.mock('@components/common/actionArea/ActionArea', () => ({
   __esModule: true,

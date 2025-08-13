@@ -311,4 +311,142 @@ describe('ObservationForms', () => {
       expect(screen.getByText('Death Note')).toBeInTheDocument();
     });
   });
+
+  describe('Loading and Error States', () => {
+    it('should show loading state in dropdown', () => {
+      const mockUseObservationFormsSearch = jest.requireMock(
+        '@hooks/useObservationFormsSearch',
+      ).default;
+      mockUseObservationFormsSearch.mockReturnValue({
+        forms: [],
+        isLoading: true,
+        error: null,
+      });
+
+      render(<ObservationForms {...defaultProps} />);
+
+      expect(
+        screen.getByText('translated_OBSERVATION_FORMS_LOADING_FORMS'),
+      ).toBeInTheDocument();
+      expect(screen.getByTestId('combobox-input')).toBeDisabled();
+    });
+
+    it('should show error state in dropdown', () => {
+      const mockUseObservationFormsSearch = jest.requireMock(
+        '@hooks/useObservationFormsSearch',
+      ).default;
+      mockUseObservationFormsSearch.mockReturnValue({
+        forms: [],
+        isLoading: false,
+        error: new Error('Failed to load forms'),
+      });
+
+      render(<ObservationForms {...defaultProps} />);
+
+      expect(
+        screen.getByText('translated_OBSERVATION_FORMS_ERROR_LOADING_FORMS'),
+      ).toBeInTheDocument();
+    });
+
+    it('should show no forms found message when search returns empty results', () => {
+      const mockUseObservationFormsSearch = jest.requireMock(
+        '@hooks/useObservationFormsSearch',
+      ).default;
+      mockUseObservationFormsSearch.mockReturnValue({
+        forms: [],
+        isLoading: false,
+        error: null,
+      });
+
+      render(<ObservationForms {...defaultProps} />);
+
+      // Simulate search input to trigger the "no forms found" state
+      const input = screen.getByTestId('combobox-input');
+      fireEvent.change(input, { target: { value: 'nonexistent form' } });
+
+      expect(
+        screen.getByText('translated_OBSERVATION_FORMS_NO_FORMS_FOUND'),
+      ).toBeInTheDocument();
+    });
+
+    it('should show no forms available message when no forms exist', () => {
+      const mockUseObservationFormsSearch = jest.requireMock(
+        '@hooks/useObservationFormsSearch',
+      ).default;
+      mockUseObservationFormsSearch.mockReturnValue({
+        forms: [],
+        isLoading: false,
+        error: null,
+      });
+
+      render(<ObservationForms {...defaultProps} />);
+
+      expect(screen.getByText('No forms available')).toBeInTheDocument();
+    });
+  });
+
+  describe('Edge Cases and Branch Coverage', () => {
+    it('should not call onFormSelect when selectedItem is null', () => {
+      const mockOnFormSelect = jest.fn();
+      render(
+        <ObservationForms {...defaultProps} onFormSelect={mockOnFormSelect} />,
+      );
+
+      // Simulate ComboBox onChange with null selectedItem
+      const ComboBox = jest.requireMock('@carbon/react').ComboBox;
+      const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
+      const onChange = lastCall[0].onChange;
+
+      onChange({ selectedItem: null });
+
+      expect(mockOnFormSelect).not.toHaveBeenCalled();
+    });
+
+    it('should not call onFormSelect when selectedItem has no id', () => {
+      const mockOnFormSelect = jest.fn();
+      render(
+        <ObservationForms {...defaultProps} onFormSelect={mockOnFormSelect} />,
+      );
+
+      // Simulate ComboBox onChange with selectedItem without id
+      const ComboBox = jest.requireMock('@carbon/react').ComboBox;
+      const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
+      const onChange = lastCall[0].onChange;
+
+      onChange({
+        selectedItem: { id: '', label: 'Loading...', disabled: true },
+      });
+
+      expect(mockOnFormSelect).not.toHaveBeenCalled();
+    });
+
+    it('should handle itemToString function correctly', () => {
+      render(<ObservationForms {...defaultProps} />);
+
+      // Get the itemToString function from ComboBox mock
+      const ComboBox = jest.requireMock('@carbon/react').ComboBox;
+      const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
+      const itemToString = lastCall[0].itemToString;
+
+      // Test with valid item
+      expect(itemToString({ label: 'Test Form' })).toBe('Test Form');
+
+      // Test with null item (covers line 142 fallback)
+      expect(itemToString(null)).toBe('');
+
+      // Test with undefined item
+      expect(itemToString(undefined)).toBe('');
+
+      // Test with item without label
+      expect(itemToString({})).toBe('');
+    });
+
+    it('should handle optional callbacks gracefully', () => {
+      render(<ObservationForms />);
+
+      // Should not throw when callbacks are not provided
+      const formButton = screen.getByTestId('combobox-item-form-1');
+      expect(() => fireEvent.click(formButton)).not.toThrow();
+    });
+  });
 });

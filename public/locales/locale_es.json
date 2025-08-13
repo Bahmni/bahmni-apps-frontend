@@ -166,6 +166,7 @@
   "LOADING_DASHBOARD_CONTENT": "Cargando contenido del panel...",
   "LOADING_LOCATIONS": "Cargando ubicaciones...",
   "LOADING_MEDICATIONS": "Cargando medicamentos...",
+  "LOADING_USER_PRIVILEGES": "Cargando privilegios de usuario...",
   "LOCATION": "Ubicación",
   "MEDICATIONS_DISPLAY_CONTROL_HEADING": "Medicamentos",
   "MEDICATIONS_DOSAGE": "Dosificación",

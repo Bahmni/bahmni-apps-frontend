@@ -12,6 +12,7 @@ import { useClinicalConfig } from '@hooks/useClinicalConfig';
 import { useDashboardConfig } from '@hooks/useDashboardConfig';
 import useNotification from '@hooks/useNotification';
 import { useSidebarNavigation } from '@hooks/useSidebarNavigation';
+import { useUserPrivilege } from '@hooks/useUserPrivilege';
 import ClinicalLayout from '@layouts/clinical/ClinicalLayout';
 import {
   getDefaultDashboard,
@@ -67,6 +68,7 @@ const globalActions = [
 const ConsultationPage: React.FC = () => {
   const { t } = useTranslation();
   const { clinicalConfig } = useClinicalConfig();
+  const { userPrivileges } = useUserPrivilege();
   const { addNotification } = useNotification();
   const [isActionAreaVisible, setIsActionAreaVisible] = useState(false);
 
@@ -87,6 +89,10 @@ const ConsultationPage: React.FC = () => {
 
   if (!clinicalConfig) {
     return <Loading description={t('LOADING_CLINICAL_CONFIG')} role="status" />;
+  }
+
+  if (!userPrivileges) {
+    return <Loading description={t('LOADING_USER_PRIVILEGES')} role="status" />;
   }
 
   if (!currentDashboard) {

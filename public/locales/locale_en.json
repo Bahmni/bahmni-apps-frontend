@@ -165,6 +165,7 @@
   "LOADING_DASHBOARD_CONTENT": "Loading dashboard content...",
   "LOADING_LOCATIONS": "Loading locations...",
   "LOADING_MEDICATIONS": "Loading medications...",
+  "LOADING_USER_PRIVILEGES": "Loading user privileges...",
   "LOCATION": "Location",
   "MEDICATIONS_DISPLAY_CONTROL_HEADING": "Medications",
   "MEDICATIONS_DOSAGE": "Dosage",

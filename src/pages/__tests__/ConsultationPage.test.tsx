@@ -10,6 +10,7 @@ import { useClinicalConfig } from '@hooks/useClinicalConfig';
 import { useDashboardConfig } from '@hooks/useDashboardConfig';
 import useNotification from '@hooks/useNotification';
 import { useSidebarNavigation } from '@hooks/useSidebarNavigation';
+import { useUserPrivilege } from '@hooks/useUserPrivilege';
 import ConsultationPage from '../ConsultationPage';
 
 expect.extend(toHaveNoViolations);
@@ -37,6 +38,7 @@ jest.mock('@hooks/useDashboardConfig');
 jest.mock('@hooks/useNotification');
 jest.mock('@hooks/usePatientUUID');
 jest.mock('@hooks/useEncounterSession');
+jest.mock('@hooks/useUserPrivilege');
 jest.mock('react-i18next', () => ({
   useTranslation: jest.fn(() => ({
     t: jest.fn((key) => `translated_${key}`),
@@ -165,6 +167,10 @@ describe('ConsultationPage', () => {
       handleItemClick: jest.fn(),
     });
 
+    (useUserPrivilege as jest.Mock).mockReturnValue({
+      userPrivileges: ['Get Patients', 'Add Patients'],
+    });
+
     // Mock useEncounterSession hook
     jest.requireMock('@hooks/useEncounterSession').useEncounterSession =
       jest.fn(() => ({
@@ -258,6 +264,20 @@ describe('ConsultationPage', () => {
         type: 'error',
       });
     });
+
+    it('should use translation keys for loading user privileges', () => {
+      // Mock loading state for user privileges
+      (useUserPrivilege as jest.Mock).mockReturnValue({
+        userPrivileges: null,
+      });
+
+      render(<ConsultationPage />);
+
+      // Verify translation is used
+      expect(screen.getByTestId('carbon-loading')).toHaveTextContent(
+        'translated_LOADING_USER_PRIVILEGES',
+      );
+    });
   });
 
   describe('Edge Case Branch Coverage', () => {
@@ -336,6 +356,38 @@ describe('ConsultationPage', () => {
         'translated_ERROR_LOADING_DASHBOARD',
       );
     });
+
+    it('should return Loading when user privileges are still loading', () => {
+      // Mock valid clinical config and dashboard
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: validFullClinicalConfig,
+      });
+      (useDashboardConfig as jest.Mock).mockReturnValue({
+        dashboardConfig: validDashboardConfig,
+      });
+
+      // But useUserPrivilege returns null (still loading)
+      (useUserPrivilege as jest.Mock).mockReturnValue({
+        userPrivileges: null,
+      });
+
+      render(<ConsultationPage />);
+
+      // Verify Loading component is shown with correct message and role
+      expect(screen.getByTestId('carbon-loading')).toBeInTheDocument();
+      expect(screen.getByTestId('carbon-loading')).toHaveTextContent(
+        'translated_LOADING_USER_PRIVILEGES',
+      );
+      expect(screen.getByTestId('carbon-loading')).toHaveAttribute(
+        'role',
+        'status',
+      );
+
+      // Verify main layout is not rendered
+      expect(
+        screen.queryByTestId('mocked-clinical-layout'),
+      ).not.toBeInTheDocument();
+    });
   });
 
   describe('Accessibility Improvements', () => {
@@ -376,6 +428,17 @@ describe('ConsultationPage', () => {
       // Mock null clinical config
       (useClinicalConfig as jest.Mock).mockReturnValue({
         clinicalConfig: null,
+      });
+
+      const { container } = render(<ConsultationPage />);
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('should have no accessibility violations with null user privileges', async () => {
+      // Mock null user privileges
+      (useUserPrivilege as jest.Mock).mockReturnValue({
+        userPrivileges: null,
       });
 
       const { container } = render(<ConsultationPage />);

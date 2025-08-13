@@ -414,5 +414,171 @@ describe('useObservationFormsSearch', () => {
       expect(result.current.error).toBeInstanceOf(Error);
       expect(result.current.forms).toEqual([]);
     });
+
+    it('should handle network errors with fallback error message when formatted error has no message', async () => {
+      const networkError = new Error('Network error');
+      mockFetch.mockRejectedValueOnce(networkError);
+
+      // Mock getFormattedError to return null message to test fallback
+      (commonUtils.getFormattedError as jest.Mock).mockReturnValue({
+        title: 'Error',
+        message: null,
+      });
+
+      const { result } = renderHook(() => useObservationFormsSearch(), {
+        wrapper,
+      });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.error?.message).toBe(
+        'An unexpected error occurred. Please try again later.',
+      );
+      expect(result.current.forms).toEqual([]);
+    });
+  });
+
+  describe('data mapping and fallbacks', () => {
+    it('should handle forms with missing fields using fallbacks', async () => {
+      const formsWithMissingFields = {
+        results: [
+          {
+            // Missing name, should use formName
+            formName: 'Form from formName',
+            uuid: 'form-1',
+            formUuid: 'form-1',
+          },
+          {
+            // Missing uuid, should use formUuid
+            name: 'Form with formUuid',
+            formUuid: 'form-2',
+          },
+          {
+            // Missing both name and formName, should use empty string
+            uuid: 'form-3',
+            formUuid: 'form-3',
+          },
+          {
+            // Missing version, should use default
+            name: 'Form without version',
+            uuid: 'form-4',
+            formUuid: 'form-4',
+          },
+          {
+            // Missing published, should use default
+            name: 'Form without published',
+            uuid: 'form-5',
+            formUuid: 'form-5',
+          },
+          {
+            // Missing id, should use default
+            name: 'Form without id',
+            uuid: 'form-6',
+            formUuid: 'form-6',
+          },
+        ],
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => formsWithMissingFields,
+      });
+
+      const { result } = renderHook(() => useObservationFormsSearch(), {
+        wrapper,
+      });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      // Should filter out forms without both uuid and name
+      expect(result.current.forms).toHaveLength(5);
+
+      // Check fallback values are applied
+      const forms = result.current.forms;
+      expect(forms[0].name).toBe('Form from formName'); // name fallback to formName
+      expect(forms[1].uuid).toBe('form-2'); // uuid fallback to formUuid
+      expect(forms[2].version).toBe('1.0'); // version fallback
+      expect(forms[3].published).toBe(true); // published fallback
+      expect(forms[4].id).toBe(0); // id fallback
+    });
+
+    it('should handle null or undefined search term', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockFormsData,
+      });
+
+      // Mock useDebounce to return null to test fallback
+      const mockUseDebounce = jest.requireMock('../useDebounce').default;
+      mockUseDebounce.mockReturnValueOnce(null);
+
+      const { result } = renderHook(() => useObservationFormsSearch(), {
+        wrapper,
+      });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      // Should return all forms when search term is null
+      expect(result.current.forms).toHaveLength(3);
+    });
+
+    it('should handle forms with null name fields in search', async () => {
+      const formsWithNullNames = {
+        results: [
+          {
+            name: null,
+            formName: null,
+            uuid: 'form-1',
+            formUuid: 'form-1',
+          },
+          {
+            name: 'Valid Form',
+            uuid: 'form-2',
+            formUuid: 'form-2',
+          },
+        ],
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => formsWithNullNames,
+      });
+
+      const { result } = renderHook(() => useObservationFormsSearch('valid'), {
+        wrapper,
+      });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      // Should handle null names gracefully and find the valid form
+      expect(result.current.forms).toHaveLength(1);
+      expect(result.current.forms[0].name).toBe('Valid Form');
+    });
+
+    it('should handle API response without results wrapper', async () => {
+      // Test direct array response (data.results ?? data)
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockFormsData.results, // Direct array without results wrapper
+      });
+
+      const { result } = renderHook(() => useObservationFormsSearch(), {
+        wrapper,
+      });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.forms).toHaveLength(3);
+    });
   });
 });

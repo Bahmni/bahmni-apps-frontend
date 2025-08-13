@@ -68,6 +68,13 @@ jest.mock('@services/notificationService');
 jest.mock('@services/auditLogService');
 jest.mock('@services/privilegeService');
 
+// Mock useUserPrivilege hook
+jest.mock('@hooks/useUserPrivilege', () => ({
+  useUserPrivilege: jest.fn(() => ({
+    userPrivileges: ['Get Patients', 'Add Patients'],
+  })),
+}));
+
 // Create mock user
 const mockUser: User = {
   uuid: 'user-1',
