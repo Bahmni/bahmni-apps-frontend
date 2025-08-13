@@ -1,24 +1,30 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ValueSet } from 'fhir/r4';
-import React from 'react';
-import { I18nextProvider } from 'react-i18next';
-import i18n from '@/setupTests.i18n';
-import { ORDER_TYPE_URL, ALL_ORDERABLES_CONCEPT_NAME } from '@constants/app';
-import { FHIR_CONCEPT_CLASS_EXTENSION_URL } from '@constants/fhir';
-import { NotificationProvider } from '@providers/NotificationProvider';
-import { get } from '@services/api';
-import useServiceRequestStore from '@stores/serviceRequestStore';
-import { OrderTypeResponse } from '@types/orderType';
-import { ServiceRequestInputEntry } from '@types/serviceRequest';
+import { ORDER_TYPE_URL, ALL_ORDERABLES_CONCEPT_NAME } from '../../../../constants/app';
+import { FHIR_CONCEPT_CLASS_EXTENSION_URL } from '../../../../constants/fhir';
+import useServiceRequestStore from '../../../../stores/serviceRequestStore';
+import { type OrderTypeResponse, get } from '@bahmni-frontend/bahmni-services';
+import { ServiceRequestInputEntry } from '../../../../models/serviceRequest';
 import InvestigationsForm from '../InvestigationsForm';
 
 // Mock only the API layer
-jest.mock('@services/api', () => ({
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
   get: jest.fn(),
+  useTranslation: () => ({
+    t: (key: string) => {
+      switch (key) {
+        case 'INVESTIGATION_PANEL':
+          return 'Panel';
+        default:
+          return key;
+      }
+    },
+  }),
 }));
 
-jest.mock('@stores/serviceRequestStore');
+jest.mock('../../../../stores/serviceRequestStore');
+
 Element.prototype.scrollIntoView = jest.fn();
 
 // Mock data for the OrderType response
@@ -159,14 +165,6 @@ const mockValueSetResponse: ValueSet = {
   },
 };
 
-const renderWithProviders = (component: React.ReactElement) => {
-  return render(
-    <I18nextProvider i18n={i18n}>
-      <NotificationProvider>{component}</NotificationProvider>
-    </I18nextProvider>,
-  );
-};
-
 describe('InvestigationsForm Integration Tests', () => {
   const mockStore = {
     selectedServiceRequests: new Map<string, ServiceRequestInputEntry[]>(),
@@ -198,7 +196,7 @@ describe('InvestigationsForm Integration Tests', () => {
   describe('Component Initialization and Search', () => {
     test('should load investigations on component mount and display them when searching', async () => {
       const user = userEvent.setup();
-      renderWithProviders(<InvestigationsForm />);
+      render(<InvestigationsForm />);
 
       // Verify the form renders with title
       expect(
@@ -238,7 +236,7 @@ describe('InvestigationsForm Integration Tests', () => {
 
     test('should filter investigations based on search term', async () => {
       const user = userEvent.setup();
-      renderWithProviders(<InvestigationsForm />);
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
 
@@ -256,7 +254,7 @@ describe('InvestigationsForm Integration Tests', () => {
 
     test('should show "No matching investigations found" when search returns no results', async () => {
       const user = userEvent.setup();
-      renderWithProviders(<InvestigationsForm />);
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
 
@@ -294,7 +292,7 @@ describe('InvestigationsForm Integration Tests', () => {
     });
     test('should add investigation when selected and display it with priority checkbox', async () => {
       const user = userEvent.setup();
-      renderWithProviders(<InvestigationsForm />);
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
 
@@ -330,7 +328,7 @@ describe('InvestigationsForm Integration Tests', () => {
 
     test('should handle multiple investigation selections from different categories', async () => {
       const user = userEvent.setup();
-      renderWithProviders(<InvestigationsForm />);
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
 
@@ -373,7 +371,7 @@ describe('InvestigationsForm Integration Tests', () => {
 
     test('should toggle investigation priority when urgent checkbox is clicked', async () => {
       const user = userEvent.setup();
-      renderWithProviders(<InvestigationsForm />);
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
 
@@ -401,7 +399,7 @@ describe('InvestigationsForm Integration Tests', () => {
 
     test('should remove investigation when close button is clicked', async () => {
       const user = userEvent.setup();
-      renderWithProviders(<InvestigationsForm />);
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
 
@@ -451,7 +449,7 @@ describe('InvestigationsForm Integration Tests', () => {
       });
 
       const user = userEvent.setup();
-      renderWithProviders(<InvestigationsForm />);
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
       await user.type(combobox, 'test');
@@ -476,7 +474,7 @@ describe('InvestigationsForm Integration Tests', () => {
       });
 
       const user = userEvent.setup();
-      renderWithProviders(<InvestigationsForm />);
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
       await user.type(combobox, 'test');
@@ -502,7 +500,7 @@ describe('InvestigationsForm Integration Tests', () => {
       });
 
       const user = userEvent.setup();
-      renderWithProviders(<InvestigationsForm />);
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
       await user.type(combobox, 'test');
@@ -532,7 +530,7 @@ describe('InvestigationsForm Integration Tests', () => {
       });
 
       const user = userEvent.setup();
-      renderWithProviders(<InvestigationsForm />);
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
       await user.type(combobox, 'test');
@@ -551,7 +549,7 @@ describe('InvestigationsForm Integration Tests', () => {
     test('should handle adding multiple investigations of same category and managing priorities', async () => {
       const user = userEvent.setup();
 
-      renderWithProviders(<InvestigationsForm />);
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
 
@@ -596,7 +594,7 @@ describe('InvestigationsForm Integration Tests', () => {
 
     test('should maintain search input value after selection', async () => {
       const user = userEvent.setup();
-      renderWithProviders(<InvestigationsForm />);
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
 
@@ -668,7 +666,7 @@ describe('InvestigationsForm Integration Tests', () => {
       });
 
       const user = userEvent.setup();
-      renderWithProviders(<InvestigationsForm />);
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
       await user.type(combobox, 'liver');
@@ -706,7 +704,7 @@ describe('InvestigationsForm Integration Tests', () => {
         mockStoreWithSelection,
       );
 
-      renderWithProviders(<InvestigationsForm />);
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
       await user.type(combobox, 'complete blood');

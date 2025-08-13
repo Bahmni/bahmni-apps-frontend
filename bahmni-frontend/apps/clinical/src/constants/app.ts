@@ -13,3 +13,8 @@ export const PROVIDER_RESOURCE_URL = (userUUID: string) =>
 
 export const USER_RESOURCE_URL = (username: string) =>
   OPENMRS_REST_V1 + `/user?username=${username}&v=custom:(username,uuid)`;
+
+export const ORDER_TYPE_URL =
+  '/openmrs/ws/rest/v1/ordertype?v=custom:(uuid,display,conceptClasses:(uuid,name))';
+
+export const ALL_ORDERABLES_CONCEPT_NAME = 'All Orderables';
