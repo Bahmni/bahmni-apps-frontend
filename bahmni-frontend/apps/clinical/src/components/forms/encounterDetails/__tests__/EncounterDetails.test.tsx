@@ -1,33 +1,49 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React from 'react';
-import i18n from '@/setupTests.i18n';
-import { useActivePractitioner } from '@hooks/useActivePractitioner';
-import { useActiveVisit } from '@hooks/useActiveVisit';
-import { useEncounterConcepts } from '@hooks/useEncounterConcepts';
-import { useLocations } from '@hooks/useLocations';
-import { usePatientUUID } from '@hooks/usePatientUUID';
-import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
+import { usePatientUUID, useActivePractitioner } from '@bahmni-frontend/bahmni-widgets';
+import { useActiveVisit } from '../../../../hooks/useActiveVisit';
+import { useEncounterConcepts } from '../../../../hooks/useEncounterConcepts';
+import { useLocations } from '../../../../hooks/useLocations';
+import { useEncounterDetailsStore } from '../../../../stores/encounterDetailsStore';
 import { FhirEncounter } from '../../../../models/encounter';
 import BasicForm from '../EncounterDetails';
 
-jest.mock('@hooks/useLocations');
-jest.mock('@hooks/useEncounterConcepts');
-jest.mock('@hooks/useActivePractitioner');
-jest.mock('@hooks/useActiveVisit');
-jest.mock('@hooks/usePatientUUID');
-jest.mock('@stores/encounterDetailsStore');
+jest.mock('../../../../hooks/useLocations');
+jest.mock('../../../../hooks/useEncounterConcepts');
+jest.mock('../../../../hooks/useActiveVisit');
+jest.mock('../../../../stores/encounterDetailsStore');
+
+jest.mock('@bahmni-frontend/bahmni-widgets');
 
 // Mock the utils
-jest.mock('@utils/date', () => ({
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
   formatDate: jest.fn(() => ({
     formattedResult: '16/05/2025',
     error: null,
   })),
+  useTranslation: () => ({
+    t: (key: string) => {
+      switch (key) {
+        case 'LOCATION':
+          return 'Location';
+        case 'ENCOUNTER_TYPE':
+          return 'Encounter Type';
+        case 'VISIT_TYPE':
+          return 'Visit Type';
+        case 'PARTICIPANT':
+          return 'Participant(s)';
+        case 'ENCOUNTER_DATE':
+          return 'Encounter Date';
+        default:
+          return key;
+      }
+    },
+  })
 }));
 
 // Mock the Carbon components
-jest.mock('@carbon/react', () => {
+jest.mock('@bahmni-frontend/bahmni-design-system', () => {
   const actual = jest.requireActual('@carbon/react');
 
   interface MockDropdownProps {
@@ -101,7 +117,7 @@ jest.mock('@carbon/react', () => {
         </div>
       );
     },
-    SkeletonPlaceholder: ({ className }: { className: string }) => (
+    SkeletonText: ({ className }: { className: string }) => (
       <div className={className} data-testid="skeleton-placeholder" />
     ),
     MenuItemDivider: () => <hr />,
@@ -140,7 +156,6 @@ jest.mock('@carbon/react', () => {
 expect.extend(toHaveNoViolations);
 
 describe('BasicForm', () => {
-  i18n.changeLanguage('en');
 
   // Common setup
   const mockLocations = [

@@ -1,11 +1,11 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
-import i18n from '@/setupTests.i18n';
-import { getLocations } from '@services/locationService';
-import { OpenMRSLocation } from '@types/location';
+// import i18n from '@/setupTests.i18n';
+import { getLocations } from '../../services/locationService';
+import { OpenMRSLocation } from '../../models/location';
 import { useLocations } from '../useLocations';
 
 // Mock dependencies
-jest.mock('@services/locationService');
+jest.mock('../../services/locationService');
 
 // Type the mocked functions
 const mockedGetLocations = getLocations as jest.MockedFunction<
@@ -28,7 +28,6 @@ const mockLocation: OpenMRSLocation = {
 describe('useLocations', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    i18n.changeLanguage('en');
   });
 
   // Happy Path Tests

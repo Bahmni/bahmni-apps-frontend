@@ -49,7 +49,7 @@ export const useActiveVisit = (
     } finally {
       setLoading(false);
     }
-  }, [patientUUID, t]);
+  }, [patientUUID]);
 
   useEffect(() => {
     fetchActiveVisit();

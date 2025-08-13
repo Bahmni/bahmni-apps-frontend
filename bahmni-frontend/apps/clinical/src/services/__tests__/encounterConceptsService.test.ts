@@ -1,15 +1,15 @@
-import i18n from '@/setupTests.i18n';
-import { ENCOUNTER_CONCEPTS_URL } from '@constants/app';
-import { COMMON_ERROR_MESSAGES } from '@constants/errors';
+import { ENCOUNTER_CONCEPTS_URL } from '../../constants/app';
+import { COMMON_ERROR_MESSAGES } from '../../constants/errors';
 import {
   EncounterConceptsResponse,
   EncounterConcepts,
-} from '@types/encounterConcepts';
-import { get } from '../api';
-import { getEncounterConcepts } from '../../../bahmni-frontend/apps/clinical/src/services/encounterConceptsService';
+} from '../../models/encounterConcepts';
+import { get } from '@bahmni-frontend/bahmni-services';
+import { getEncounterConcepts } from '../../services/encounterConceptsService';
+import i18n from '../../../setupTests.i18n';
 
 // Mock dependencies
-jest.mock('../api');
+jest.mock('@bahmni-frontend/bahmni-services');
 
 // Type the mocked functions
 const mockedGet = get as jest.MockedFunction<typeof get>;
@@ -17,7 +17,6 @@ const mockedGet = get as jest.MockedFunction<typeof get>;
 describe('encounterConceptsService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    i18n.changeLanguage('en');
   });
 
   // Happy Path Tests

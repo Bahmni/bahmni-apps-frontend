@@ -1,35 +1,41 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
-import { I18nextProvider } from 'react-i18next';
-import i18n from '@/setupTests.i18n';
 import {
   ENCOUNTER_CONCEPTS_URL,
   PROVIDER_RESOURCE_URL,
   USER_RESOURCE_URL,
-} from '@constants/app';
-import * as api from '@services/api';
-import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
-import * as commonUtils from '@utils/common';
+} from '../../../../constants/app';
+import {get, getCookieByName, getFormattedError} from '@bahmni-frontend/bahmni-services';
+import { useEncounterDetailsStore } from '../../../../stores/encounterDetailsStore';
 import BasicForm from '../EncounterDetails';
 
-// Mock services
-jest.mock('@services/api');
-jest.mock('@utils/common', () => ({
-  ...jest.requireActual('@utils/common'),
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
   getCookieByName: jest.fn(),
-}));
-
-// Mock the usePatientUUID hook
-jest.mock('@hooks/usePatientUUID', () => ({
+  get: jest.fn(),
+  getFormattedError:jest.fn(),
   usePatientUUID: jest.fn(() => 'test-patient-uuid'),
-}));
-
-// Mock the date utility
-jest.mock('@utils/date', () => ({
   formatDate: jest.fn(() => ({
     formattedResult: '16/05/2025',
     error: null,
   })),
+  useTranslation: () => ({
+    t: (key: string) => {
+      switch (key) {
+        case 'LOCATION':
+          return 'Location';
+        case 'ENCOUNTER_TYPE':
+          return 'Encounter Type';
+        case 'VISIT_TYPE':
+          return 'Visit Type';
+        case 'PARTICIPANT':
+          return 'Participant(s)';
+        case 'ENCOUNTER_DATE':
+          return 'Encounter Date';
+        default:
+          return key;
+      }
+    },
+  })
 }));
 
 // Mock CSS modules
@@ -40,7 +46,7 @@ jest.mock('../styles/BasicForm.module.scss', () => ({
 }));
 
 // Mock Carbon components
-jest.mock('@carbon/react', () => {
+jest.mock('@bahmni-frontend/bahmni-design-system', () => {
   const actual = jest.requireActual('@carbon/react');
 
   interface MockDropdownProps {
@@ -113,7 +119,7 @@ jest.mock('@carbon/react', () => {
         </div>
       );
     },
-    SkeletonPlaceholder: ({ className }: { className: string }) => (
+    SkeletonText: ({ className }: { className: string }) => (
       <div className={className} data-testid="skeleton-placeholder" />
     ),
     MenuItemDivider: () => <hr />,
@@ -224,10 +230,9 @@ describe('BasicForm Integration Tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    i18n.changeLanguage('en');
 
     // Mock successful cookie access for location and user
-    (commonUtils.getCookieByName as jest.Mock).mockImplementation(
+    (getCookieByName as jest.Mock).mockImplementation(
       (cookieName) => {
         if (cookieName === 'bahmni.user.location') {
           return encodeURIComponent(JSON.stringify(mockLocationData));
@@ -238,8 +243,10 @@ describe('BasicForm Integration Tests', () => {
       },
     );
 
+    (getFormattedError as jest.Mock).mockImplementation((error: any) => ({ title:error.title || 'unknown title', message: error.message || 'Unknown error' }));
+
     // Setup default successful API responses
-    (api.get as jest.Mock).mockImplementation((url) => {
+    (get as jest.Mock).mockImplementation((url) => {
       if (url === ENCOUNTER_CONCEPTS_URL) {
         return Promise.resolve(mockEncounterConcepts);
       } else if (url === USER_RESOURCE_URL('testuser')) {
@@ -263,11 +270,7 @@ describe('BasicForm Integration Tests', () => {
   });
 
   const renderBasicForm = () => {
-    return render(
-      <I18nextProvider i18n={i18n}>
-        <BasicForm />
-      </I18nextProvider>,
-    );
+    return render(<BasicForm />);
   };
 
   test('successfully initializes form with all data loaded', async () => {
@@ -289,10 +292,10 @@ describe('BasicForm Integration Tests', () => {
     expect(screen.getByText('Participant(s)')).toBeInTheDocument();
 
     // Verify API calls were made
-    expect(api.get).toHaveBeenCalledWith(ENCOUNTER_CONCEPTS_URL);
-    expect(api.get).toHaveBeenCalledWith(USER_RESOURCE_URL('testuser'));
-    expect(api.get).toHaveBeenCalledWith(PROVIDER_RESOURCE_URL(mockUser.uuid));
-    expect(api.get).toHaveBeenCalledWith(
+    expect(get).toHaveBeenCalledWith(ENCOUNTER_CONCEPTS_URL);
+    expect(get).toHaveBeenCalledWith(USER_RESOURCE_URL('testuser'));
+    expect(get).toHaveBeenCalledWith(PROVIDER_RESOURCE_URL(mockUser.uuid));
+    expect(get).toHaveBeenCalledWith(
       expect.stringContaining('/ws/fhir2/R4/Encounter'),
     );
 
@@ -311,7 +314,7 @@ describe('BasicForm Integration Tests', () => {
   });
 
   test('handles location cookie not found error', async () => {
-    (commonUtils.getCookieByName as jest.Mock).mockImplementation(
+    (getCookieByName as jest.Mock).mockImplementation(
       (cookieName) => {
         if (cookieName === 'bahmni.user.location') {
           return null;
@@ -335,7 +338,7 @@ describe('BasicForm Integration Tests', () => {
   });
 
   test('handles encounter concepts API error', async () => {
-    (api.get as jest.Mock).mockImplementation((url) => {
+    (get as jest.Mock).mockImplementation((url) => {
       if (url === ENCOUNTER_CONCEPTS_URL) {
         return Promise.reject(new Error('Encounter concepts API error'));
       } else if (url === USER_RESOURCE_URL('testuser')) {
@@ -364,7 +367,7 @@ describe('BasicForm Integration Tests', () => {
   });
 
   test('handles practitioner API error', async () => {
-    (api.get as jest.Mock).mockImplementation((url) => {
+    (get as jest.Mock).mockImplementation((url) => {
       if (url === ENCOUNTER_CONCEPTS_URL) {
         return Promise.resolve(mockEncounterConcepts);
       } else if (url === USER_RESOURCE_URL('testuser')) {
@@ -389,7 +392,7 @@ describe('BasicForm Integration Tests', () => {
   });
 
   test('handles active visit API error', async () => {
-    (api.get as jest.Mock).mockImplementation((url) => {
+    (get as jest.Mock).mockImplementation((url) => {
       if (url === ENCOUNTER_CONCEPTS_URL) {
         return Promise.resolve(mockEncounterConcepts);
       } else if (url === USER_RESOURCE_URL('testuser')) {
@@ -467,8 +470,8 @@ describe('BasicForm Integration Tests', () => {
 
   test('displays error messages when API calls fail', async () => {
     // Mock all APIs to fail
-    (api.get as jest.Mock).mockRejectedValue(new Error('API Error'));
-    (commonUtils.getCookieByName as jest.Mock).mockImplementation(() => {
+    (get as jest.Mock).mockRejectedValue(new Error('API Error'));
+    (getCookieByName as jest.Mock).mockImplementation(() => {
       throw new Error('Cookie error');
     });
 

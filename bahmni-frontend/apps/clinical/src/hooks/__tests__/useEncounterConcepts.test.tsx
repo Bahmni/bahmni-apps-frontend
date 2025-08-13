@@ -1,12 +1,14 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { getEncounterConcepts } from '@services/encounterConceptsService';
-import { EncounterConcepts } from '@types/encounterConcepts';
-import { getFormattedError } from '@utils/common';
+import { getEncounterConcepts } from '../../services/encounterConceptsService';
+import { EncounterConcepts } from '../../models/encounterConcepts';
+import { getFormattedError } from '@bahmni-frontend/bahmni-services';
 import { useEncounterConcepts } from '../useEncounterConcepts';
 
 // Mock dependencies
-jest.mock('@services/encounterConceptsService');
-jest.mock('@utils/common');
+jest.mock('../../services/encounterConceptsService');
+jest.mock('@bahmni-frontend/bahmni-services',()=>({
+  getFormattedError:jest.fn()
+}));
 
 // Type the mocked functions
 const mockedGetEncounterConcepts = getEncounterConcepts as jest.MockedFunction<
@@ -168,17 +170,14 @@ describe('useEncounterConcepts', () => {
 
       mockedGetEncounterConcepts.mockResolvedValueOnce(emptyConcepts);
 
-      // Act
       const { result } = renderHook(() => useEncounterConcepts());
 
       // Wait for async operations
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
+        expect(result.current.encounterConcepts).toEqual(emptyConcepts);
+        expect(result.current.error).toBeNull();
       });
-
-      // Assert
-      expect(result.current.encounterConcepts).toEqual(emptyConcepts);
-      expect(result.current.error).toBeNull();
       expect(mockedGetEncounterConcepts).toHaveBeenCalled();
     });
 

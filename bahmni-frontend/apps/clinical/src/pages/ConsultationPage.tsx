@@ -17,6 +17,8 @@ import {
   getDefaultDashboard,
   getSidebarItems,
 } from '../services/consultationPageService';
+import AllergiesForm from '../components/forms/allergies/AllergiesForm';
+import EncounterDetails from '../components/forms/encounterDetails/EncounterDetails';
 
 const breadcrumbItems = [
   { id: 'home', label: 'Home', href: BAHMNI_HOME_PATH },
@@ -143,7 +145,7 @@ const ConsultationPage: React.FC = () => {
       //     onClose={() => setIsActionAreaVisible((prev) => !prev)}
       //   />
       // }
-      actionArea={<div>Action Area Placeholder</div>} // Placeholder for ConsultationPad
+      actionArea={<div><AllergiesForm/><EncounterDetails/></div>} // Placeholder for ConsultationPad
     />
   );
 };

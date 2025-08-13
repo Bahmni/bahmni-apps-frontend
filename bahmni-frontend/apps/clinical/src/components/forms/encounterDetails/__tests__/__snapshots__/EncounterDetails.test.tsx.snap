@@ -144,19 +144,11 @@ exports[`BasicForm Snapshot Tests should match snapshot when loading 1`] = `
     data-testid="column"
   >
     <div
+      class="skeletonTitle"
       data-testid="skeleton-placeholder"
     />
     <div
-      data-testid="skeleton-placeholder"
-    />
-  </div>
-  <div
-    data-testid="column"
-  >
-    <div
-      data-testid="skeleton-placeholder"
-    />
-    <div
+      class="skeletonBody"
       data-testid="skeleton-placeholder"
     />
   </div>
@@ -164,9 +156,11 @@ exports[`BasicForm Snapshot Tests should match snapshot when loading 1`] = `
     data-testid="column"
   >
     <div
+      class="skeletonTitle"
       data-testid="skeleton-placeholder"
     />
     <div
+      class="skeletonBody"
       data-testid="skeleton-placeholder"
     />
   </div>
@@ -174,9 +168,23 @@ exports[`BasicForm Snapshot Tests should match snapshot when loading 1`] = `
     data-testid="column"
   >
     <div
+      class="skeletonTitle"
       data-testid="skeleton-placeholder"
     />
     <div
+      class="skeletonBody"
+      data-testid="skeleton-placeholder"
+    />
+  </div>
+  <div
+    data-testid="column"
+  >
+    <div
+      class="skeletonTitle"
+      data-testid="skeleton-placeholder"
+    />
+    <div
+      class="skeletonBody"
       data-testid="skeleton-placeholder"
     />
   </div>
