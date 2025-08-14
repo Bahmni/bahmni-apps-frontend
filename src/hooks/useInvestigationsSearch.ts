@@ -3,7 +3,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { getFlattenedInvestigations } from '@services/investigationService';
 import { FlattenedInvestigations } from '@types/investigations';
 import { getFormattedError } from '@utils/common';
-import useDebounce from './useDebounce';
+import useDebounce from '../../bahmni-frontend/apps/clinical/src/hooks/useDebounce';
 
 interface UseInvestigationsSearchResult {
   investigations: FlattenedInvestigations[];

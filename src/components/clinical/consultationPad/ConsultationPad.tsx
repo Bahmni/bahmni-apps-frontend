@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import AllergiesForm from '@components/clinical/forms/allergies/AllergiesForm';
 import DiagnosesForm from '@components/clinical/forms/conditionsAndDiagnoses/ConditionsAndDiagnoses';
-import BasicForm from '@components/clinical/forms/encounterDetails/EncounterDetails';
+import BasicForm from '../../../../bahmni-frontend/apps/clinical/src/components/forms/encounterDetails/EncounterDetails';
 import InvestigationsForm from '@components/clinical/forms/investigations/InvestigationsForm';
 import MedicationsForm from '@components/clinical/forms/prescribeMedicines/MedicationsForm';
 import ActionArea from '@components/common/actionArea/ActionArea';

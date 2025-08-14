@@ -1,2 +1,13 @@
-export { getClinicalConfig, getDashboardConfig, getMedicationConfig } from './configService';
-export { type ClinicalConfig, type DashboardConfig, type MedicationJSONConfig, type DashboardSectionConfig, type Dashboard } from './models';
+export {
+  getClinicalConfig,
+  getDashboardConfig,
+  getMedicationConfig,
+} from './configService';
+export {
+  type ClinicalConfig,
+  type DashboardConfig,
+  type MedicationJSONConfig,
+  type DashboardSectionConfig,
+  type Dashboard,
+  type Frequency,
+} from './models';

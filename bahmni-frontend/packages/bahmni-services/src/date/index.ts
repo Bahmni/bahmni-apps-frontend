@@ -6,6 +6,7 @@ export {
   formatDateDistance,
   calculateOnsetDate,
   sortByDate,
+  getTodayDate,
 } from './date';
 export {
   DATE_FORMAT,

@@ -28,6 +28,7 @@ export {
   DATE_TIME_FORMAT,
   ISO_DATE_FORMAT,
   FULL_MONTH_DATE_FORMAT,
+  getTodayDate,
 } from './date';
 export { type Notification, notificationService } from './notification';
 export {
@@ -37,11 +38,14 @@ export {
   type AllergenType,
   getAllergies,
   getFormattedAllergies,
+  fetchAndFormatAllergenConcepts,
+  fetchReactionConcepts,
 } from './allergyService';
 export {
   getConditions,
   getFormattedConditions,
   type FormattedCondition,
+  type ConditionInputEntry,
   ConditionStatus,
 } from './conditionService';
 export {
@@ -50,6 +54,13 @@ export {
   type DiagnosisInputEntry,
   type DiagnosesByDate,
 } from './diagnosesService';
+export {
+  searchConcepts,
+  searchFHIRConcepts,
+  searchFHIRConceptsByName,
+  type ConceptSearch,
+  type ConceptClass,
+} from './conceptService';
 export {
   getPatientMedications,
   getPatientMedicationBundle,
@@ -70,17 +81,38 @@ export {
   LabTestPriority,
   type LabTestsByDate,
 } from './labInvestigationService';
+export {
+  getFlattenedInvestigations,
+  type FlattenedInvestigations,
+  type OrderType,
+  type OrderTypeResponse,
+} from './investigationService';
 
 export {
-  getClinicalConfig, getDashboardConfig, getMedicationConfig,
-  type ClinicalConfig, type DashboardConfig, type MedicationJSONConfig, type DashboardSectionConfig, type Dashboard,
+  getClinicalConfig,
+  getDashboardConfig,
+  getMedicationConfig,
+  type ClinicalConfig,
+  type DashboardConfig,
+  type MedicationJSONConfig,
+  type DashboardSectionConfig,
+  type Dashboard,
+  type Frequency,
 } from './configService';
 
 export { getCurrentUser, type User } from './userService';
-export { getCurrentProvider, type Provider, type Person } from './providerService';
+export {
+  getCurrentProvider,
+  type Provider,
+  type Person,
+} from './providerService';
 export { findActiveEncounterInSession } from './encounterSessionService';
 
-export { 
-  dispatchAuditEvent, AUDIT_LOG_EVENT_DETAILS, initializeAuditListener,
+export { getActiveVisit } from './encounterService';
+
+export {
+  dispatchAuditEvent,
+  AUDIT_LOG_EVENT_DETAILS,
+  initializeAuditListener,
   type AuditEventType,
- } from './auditLogService';
+} from './auditLogService';

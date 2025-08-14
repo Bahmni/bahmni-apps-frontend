@@ -10,7 +10,7 @@ import { CONSULTATION_ERROR_MESSAGES } from '@constants/errors';
 import { AllergyInputEntry } from '@types/allergy';
 import { ConditionInputEntry } from '@types/condition';
 import { DiagnosisInputEntry } from '@types/diagnosis';
-import { FhirEncounter } from '@types/encounter';
+import { FhirEncounter } from '../../../bahmni-frontend/apps/clinical/src/models/encounter';
 import { MedicationInputEntry } from '@types/medication';
 import { ServiceRequestInputEntry } from '@types/serviceRequest';
 import { post } from '../api';

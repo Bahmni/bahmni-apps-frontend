@@ -5,10 +5,8 @@ import {
   ALLERGY_REACTION,
 } from './constants';
 import { AllergenConcept, AllergenType, FormattedAllergy } from './models';
-import { getFormattedError } from '../errorHandling';
 import { get } from '../api';
 import { searchFHIRConcepts } from '../conceptService';
-import { notificationService } from '../notification';
 
 /**
  * Extended Coding interface to include inactive property
@@ -131,18 +129,12 @@ export async function getPatientAllergiesBundle(
 export async function getAllergies(
   patientUUID: string,
 ): Promise<AllergyIntolerance[]> {
-  try {
-    const fhirAllergyBundle = await getPatientAllergiesBundle(patientUUID);
-    return (
-      fhirAllergyBundle.entry?.map(
-        (entry) => entry.resource as AllergyIntolerance,
-      ) ?? []
-    );
-  } catch (error) {
-    const { title, message } = getFormattedError(error);
-    notificationService.showError(title, message);
-    return [];
-  }
+  const fhirAllergyBundle = await getPatientAllergiesBundle(patientUUID);
+  return (
+    fhirAllergyBundle.entry?.map(
+      (entry) => entry.resource as AllergyIntolerance,
+    ) ?? []
+  );
 }
 
 /**
@@ -153,34 +145,28 @@ export async function getAllergies(
 export function formatAllergies(
   allergies: AllergyIntolerance[],
 ): FormattedAllergy[] {
-  try {
-    return allergies.map((allergy) => {
-      const status = allergy.clinicalStatus?.coding?.[0]?.display ?? 'Unknown';
-      const allergySeverity = allergy.reaction?.[0]?.severity ?? 'Unknown';
+  return allergies.map((allergy) => {
+    const status = allergy.clinicalStatus?.coding?.[0]?.display ?? 'Unknown';
+    const allergySeverity = allergy.reaction?.[0]?.severity ?? 'Unknown';
 
-      return {
-        id: allergy.id,
-        display: allergy.code?.text ?? '',
-        category: allergy.category,
-        criticality: allergy.criticality,
-        status,
-        recordedDate: allergy.recordedDate!,
-        recorder: allergy.recorder?.display,
-        reactions: allergy.reaction?.map((reaction) => ({
-          manifestation: reaction.manifestation.map(
-            (manifestation) => manifestation.text,
-          ),
-          severity: reaction.severity,
-        })),
-        severity: allergySeverity,
-        note: allergy.note?.map((note) => note.text),
-      };
-    });
-  } catch (error) {
-    const { title, message } = getFormattedError(error);
-    notificationService.showError(title, message);
-    return [];
-  }
+    return {
+      id: allergy.id,
+      display: allergy.code?.text ?? '',
+      category: allergy.category,
+      criticality: allergy.criticality,
+      status,
+      recordedDate: allergy.recordedDate!,
+      recorder: allergy.recorder?.display,
+      reactions: allergy.reaction?.map((reaction) => ({
+        manifestation: reaction.manifestation.map(
+          (manifestation) => manifestation.text,
+        ),
+        severity: reaction.severity,
+      })),
+      severity: allergySeverity,
+      note: allergy.note?.map((note) => note.text),
+    };
+  });
 }
 
 /**

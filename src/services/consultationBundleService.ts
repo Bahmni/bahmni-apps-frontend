@@ -5,7 +5,7 @@ import { AllergyInputEntry } from '@types/allergy';
 import { ConditionInputEntry } from '@types/condition';
 import { ConsultationBundle } from '@types/consultationBundle';
 import { DiagnosisInputEntry } from '@types/diagnosis';
-import { FhirEncounter } from '@types/encounter';
+import { FhirEncounter } from '../../bahmni-frontend/apps/clinical/src/models/encounter';
 import { MedicationInputEntry } from '@types/medication';
 import { ServiceRequestInputEntry } from '@types/serviceRequest';
 import { calculateOnsetDate } from '@utils/date';
