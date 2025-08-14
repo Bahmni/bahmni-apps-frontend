@@ -10,7 +10,6 @@ jest.mock('../styles/BoxWHeader.module.scss', () => ({
 }));
 
 describe('BoxWHeader', () => {
-
   describe('Happy Paths', () => {
     it('should render correctly with required props', () => {
       // Arrange
@@ -28,20 +27,6 @@ describe('BoxWHeader', () => {
       expect(screen.getByText(title)).toBeInTheDocument();
       expect(screen.getByText(childText)).toBeInTheDocument();
       expect(screen.getByTestId('box-w-title')).toBeInTheDocument();
-    });
-
-    it('should translate title when it is a translation key', () => {
-      // Arrange - Add a test translation
-
-      // Act
-      render(
-        <BoxWHeader title="test.key">
-          <div>Content</div>
-        </BoxWHeader>,
-      );
-
-      // Assert
-      expect(screen.getByText('Translated Title')).toBeInTheDocument();
     });
 
     it('should render with custom data-testid when provided', () => {

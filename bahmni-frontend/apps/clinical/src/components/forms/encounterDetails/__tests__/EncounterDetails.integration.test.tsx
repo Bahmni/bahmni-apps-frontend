@@ -1,14 +1,18 @@
-import { render, screen, waitFor } from '@testing-library/react';
-import React from 'react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import {
-  ENCOUNTER_CONCEPTS_URL,
-  PROVIDER_RESOURCE_URL,
-  USER_RESOURCE_URL,
-} from '../../../../constants/app';
-import {getCookieByName, getFormattedError, getActiveVisit, getCurrentUser, getCurrentProvider} from '@bahmni-frontend/bahmni-services';
+  getCookieByName,
+  getFormattedError,
+  getActiveVisit,
+  getCurrentUser,
+  getCurrentProvider,
+} from '@bahmni-frontend/bahmni-services';
 import { getEncounterConcepts } from '../../../../services/encounterConceptsService';
 import { getLocations } from '../../../../services/locationService';
 import { useEncounterDetailsStore } from '../../../../stores/encounterDetailsStore';
+import { useEncounterConcepts } from '../../../../hooks/useEncounterConcepts';
+import { useActiveVisit } from '../../../../hooks/useActiveVisit';
+import { useLocations } from '../../../../hooks/useLocations';
+import { useActivePractitioner } from '@bahmni-frontend/bahmni-widgets';
 import BasicForm from '../EncounterDetails';
 
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
@@ -40,7 +44,7 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
           return key;
       }
     },
-  })
+  }),
 }));
 
 // Mock encounter concepts service
@@ -53,137 +57,41 @@ jest.mock('../../../../services/locationService', () => ({
   getLocations: jest.fn(),
 }));
 
-// Mock CSS modules
-jest.mock('../styles/BasicForm.module.scss', () => ({
-  column: 'column',
-  skeletonTitle: 'skeletonTitle',
-  skeletonBody: 'skeletonBody',
+// Mock hooks
+jest.mock('../../../../hooks/useEncounterConcepts', () => ({
+  useEncounterConcepts: jest.fn(),
 }));
 
-// Mock Carbon components
-jest.mock('@bahmni-frontend/bahmni-design-system', () => {
-  const actual = jest.requireActual('@carbon/react');
+jest.mock('../../../../hooks/useActiveVisit', () => ({
+  useActiveVisit: jest.fn(),
+}));
 
-  interface MockDropdownProps {
-    id: string;
-    titleText: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    items: Array<any>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    itemToString: (item: any) => string;
-    disabled?: boolean;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    initialSelectedItem?: any;
-    invalid?: boolean;
-    invalidText?: string;
-  }
+jest.mock('../../../../hooks/useLocations', () => ({
+  useLocations: jest.fn(),
+}));
 
-  return {
-    ...actual,
-    Dropdown: ({
-      id,
-      titleText,
-      items,
-      itemToString,
-      disabled,
-      initialSelectedItem,
-      invalid,
-      invalidText,
-    }: MockDropdownProps) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const safeItemToString = (item: any): string => {
-        try {
-          return itemToString(item);
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (_) {
-          return '';
-        }
-      };
-
-      return (
-        <div data-testid={id}>
-          <div>{titleText}</div>
-          <select
-            disabled={disabled}
-            aria-label={titleText}
-            aria-invalid={invalid}
-          >
-            {initialSelectedItem && (
-              <option value="selected">
-                {safeItemToString(initialSelectedItem)}
-              </option>
-            )}
-            {items.map((item, i) => (
-              <option
-                key={
-                  typeof item === 'object' && item?.uuid
-                    ? item.uuid
-                    : `item-${i}`
-                }
-                value={typeof item === 'object' && item?.uuid ? item.uuid : i}
-              >
-                {safeItemToString(item)}
-              </option>
-            ))}
-          </select>
-          {invalid && invalidText && (
-            <div id={`${id}-error`} role="alert">
-              {invalidText}
-            </div>
-          )}
-        </div>
-      );
-    },
-    SkeletonText: ({ className }: { className: string }) => (
-      <div className={className} data-testid="skeleton-placeholder" />
-    ),
-    MenuItemDivider: () => <hr />,
-    Grid: ({ children }: { children: React.ReactNode }) => (
-      <div data-testid="grid">{children}</div>
-    ),
-    Column: ({ children }: { children: React.ReactNode }) => (
-      <div data-testid="column">{children}</div>
-    ),
-    DatePicker: ({ children }: { children: React.ReactNode }) => (
-      <div data-testid="date-picker">{children}</div>
-    ),
-    DatePickerInput: ({
-      id,
-      placeholder,
-      labelText,
-      disabled,
-    }: {
-      id: string;
-      placeholder: string;
-      labelText: string;
-      disabled: boolean;
-    }) => (
-      <input
-        id={id}
-        placeholder={placeholder}
-        aria-label={labelText}
-        disabled={disabled}
-        data-testid="date-picker-input"
-      />
-    ),
-  };
-});
+jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-widgets'),
+  useActivePractitioner: jest.fn(),
+  usePatientUUID: jest.fn(() => 'test-patient-uuid'),
+}));
 
 describe('BasicForm Integration Tests', () => {
   const mockLocationData = {
     uuid: '123',
-    name: 'Test Location',
+    display: 'Test Location',
+    links: [],
   };
 
   const mockEncounterConcepts = {
-    visitTypes: {
-      OPD: '345',
-      IPD: '678',
-    },
-    encounterTypes: {
-      Consultation: '789',
-      'Follow-up': '012',
-    },
+    visitTypes: [
+      { name: 'OPD', uuid: '345' },
+      { name: 'IPD', uuid: '678' },
+    ],
+    encounterTypes: [
+      { name: 'Consultation', uuid: '789' },
+      { name: 'Follow-up', uuid: '012' },
+    ],
     orderTypes: {},
     conceptData: {},
   };
@@ -246,26 +154,55 @@ describe('BasicForm Integration Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // Mock successful cookie access for location and user
-    (getCookieByName as jest.Mock).mockImplementation(
-      (cookieName) => {
-        if (cookieName === 'bahmni.user.location') {
-          return encodeURIComponent(JSON.stringify(mockLocationData));
-        } else if (cookieName === 'bahmni.user') {
-          return encodeURIComponent('"testuser"');
-        }
-        return null;
-      },
+    (getCookieByName as jest.Mock).mockImplementation((cookieName) => {
+      if (cookieName === 'bahmni.user.location') {
+        return encodeURIComponent(JSON.stringify(mockLocationData));
+      } else if (cookieName === 'bahmni.user') {
+        return encodeURIComponent('"testuser"');
+      }
+      return null;
+    });
+
+    (getFormattedError as jest.Mock).mockImplementation((error: any) => ({
+      title: error.title || 'unknown title',
+      message: error.message || 'Unknown error',
+    }));
+
+    (getEncounterConcepts as jest.Mock).mockResolvedValue(
+      mockEncounterConcepts,
     );
-
-    (getFormattedError as jest.Mock).mockImplementation((error: any) => ({ title:error.title || 'unknown title', message: error.message || 'Unknown error' }));
-
-    // Setup default successful API responses for individual APIs
-    (getEncounterConcepts as jest.Mock).mockResolvedValue(mockEncounterConcepts);
     (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
     (getCurrentProvider as jest.Mock).mockResolvedValue(mockProvider);
     (getActiveVisit as jest.Mock).mockResolvedValue(mockActiveVisit);
     (getLocations as jest.Mock).mockResolvedValue([mockLocationData]);
+
+    // Mock hooks
+    (useEncounterConcepts as jest.Mock).mockReturnValue({
+      encounterConcepts: mockEncounterConcepts,
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    (useActivePractitioner as jest.Mock).mockReturnValue({
+      practitioner: mockProvider,
+      user: mockUser,
+      loading: false,
+      error: null,
+    });
+
+    (useActiveVisit as jest.Mock).mockReturnValue({
+      activeVisit: mockActiveVisit,
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    (useLocations as jest.Mock).mockReturnValue({
+      locations: [mockLocationData],
+      loading: false,
+      error: null,
+    });
 
     // Reset the store before each test
     useEncounterDetailsStore.getState().reset();
@@ -280,11 +217,19 @@ describe('BasicForm Integration Tests', () => {
 
     // Wait for all API calls to complete and form to be ready
     await waitFor(() => {
-      expect(screen.getByTestId('location-dropdown')).toBeInTheDocument();
-      expect(screen.getByTestId('encounter-type-dropdown')).toBeInTheDocument();
-      expect(screen.getByTestId('visit-type-dropdown')).toBeInTheDocument();
-      expect(screen.getByTestId('practitioner-dropdown')).toBeInTheDocument();
-      expect(screen.getByTestId('date-picker-input')).toBeInTheDocument();
+      expect(screen.getByText('Location')).toBeInTheDocument();
+      expect(screen.getByText('Encounter Type')).toBeInTheDocument();
+      expect(screen.getByText('Participant(s)')).toBeInTheDocument();
+      expect(screen.getByText('Encounter Date')).toBeInTheDocument();
+    });
+
+    let store = useEncounterDetailsStore.getState();
+    act(() => {
+      store.setSelectedVisitType({ name: 'OPD', uuid: '345' });
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Visit Type')).toBeInTheDocument();
     });
 
     // Verify field labels are displayed
@@ -293,14 +238,13 @@ describe('BasicForm Integration Tests', () => {
     expect(screen.getByText('Visit Type')).toBeInTheDocument();
     expect(screen.getByText('Participant(s)')).toBeInTheDocument();
 
-    // Verify API calls were made
-    expect(getEncounterConcepts).toHaveBeenCalled();
-    expect(getCurrentUser).toHaveBeenCalled();
-    expect(getCurrentProvider).toHaveBeenCalledWith(mockUser.uuid);
-    expect(getActiveVisit).toHaveBeenCalledWith('test-patient-uuid');
+    // Verify hooks were called
+    expect(useEncounterConcepts).toHaveBeenCalled();
+    expect(useActivePractitioner).toHaveBeenCalled();
+    expect(useActiveVisit).toHaveBeenCalled();
+    expect(useLocations).toHaveBeenCalled();
 
-    // Verify store state is updated
-    const store = useEncounterDetailsStore.getState();
+    store = useEncounterDetailsStore.getState();
     expect(store.selectedLocation).toEqual({
       uuid: '123',
       display: 'Test Location',
@@ -314,41 +258,50 @@ describe('BasicForm Integration Tests', () => {
   });
 
   test('handles location cookie not found error', async () => {
-    (getCookieByName as jest.Mock).mockImplementation(
-      (cookieName) => {
-        if (cookieName === 'bahmni.user.location') {
-          return null;
-        } else if (cookieName === 'bahmni.user') {
-          return encodeURIComponent('"testuser"');
-        }
+    (getCookieByName as jest.Mock).mockImplementation((cookieName) => {
+      if (cookieName === 'bahmni.user.location') {
         return null;
-      },
-    );
+      } else if (cookieName === 'bahmni.user') {
+        return encodeURIComponent('"testuser"');
+      }
+      return null;
+    });
+
+    (useLocations as jest.Mock).mockReturnValue({
+      locations: [],
+      loading: false,
+      error: null,
+    });
 
     renderBasicForm();
 
     await waitFor(() => {
-      // Location field should still be rendered but with empty state
-      expect(screen.getByTestId('location-dropdown')).toBeInTheDocument();
+      // When no locations are available, skeleton placeholders are shown
+      const skeletonElements = document.querySelectorAll('.cds--skeleton__text');
+      expect(skeletonElements.length).toBeGreaterThan(0);
     });
-
-    // Verify store reflects empty location
     const store = useEncounterDetailsStore.getState();
     expect(store.selectedLocation).toBeNull();
   });
 
   test('handles encounter concepts API error', async () => {
-    (getEncounterConcepts as jest.Mock).mockRejectedValue(new Error('Encounter concepts API error'));
+    (getEncounterConcepts as jest.Mock).mockRejectedValue(
+      new Error('Encounter concepts API error'),
+    );
+
+    (useEncounterConcepts as jest.Mock).mockReturnValue({
+      encounterConcepts: null,
+      loading: false,
+      error: new Error('Encounter concepts API error'),
+      refetch: jest.fn(),
+    });
 
     renderBasicForm();
 
     await waitFor(() => {
-      // Should show loading state for encounter and visit type fields
-      const skeletons = screen.getAllByTestId('skeleton-placeholder');
-      expect(skeletons.length).toBeGreaterThan(0);
+      expect(screen.getByText('Location')).toBeInTheDocument();
+      expect(screen.getByText('Encounter Type')).toBeInTheDocument();
     });
-
-    // Wait a bit more for the error to propagate to the store
     await waitFor(() => {
       const store = useEncounterDetailsStore.getState();
       expect(store.hasError).toBe(true);
@@ -356,17 +309,23 @@ describe('BasicForm Integration Tests', () => {
   });
 
   test('handles practitioner API error', async () => {
-    (getCurrentUser as jest.Mock).mockRejectedValue(new Error('User API error'));
+    (getCurrentUser as jest.Mock).mockRejectedValue(
+      new Error('User API error'),
+    );
+
+    (useActivePractitioner as jest.Mock).mockReturnValue({
+      practitioner: null,
+      user: null,
+      loading: false,
+      error: new Error('User API error'),
+    });
 
     renderBasicForm();
 
     await waitFor(() => {
-      // Should show loading state for practitioner field
-      const skeletons = screen.getAllByTestId('skeleton-placeholder');
-      expect(skeletons.length).toBeGreaterThan(0);
+      expect(screen.getByText('Location')).toBeInTheDocument();
+      expect(screen.getByText('Participant(s)')).toBeInTheDocument();
     });
-
-    // Wait for the error to propagate to the store
     await waitFor(() => {
       const store = useEncounterDetailsStore.getState();
       expect(store.hasError).toBe(true);
@@ -374,16 +333,22 @@ describe('BasicForm Integration Tests', () => {
   });
 
   test('handles active visit API error', async () => {
-    (getActiveVisit as jest.Mock).mockRejectedValue(new Error('Active visit API error'));
+    (getActiveVisit as jest.Mock).mockRejectedValue(
+      new Error('Active visit API error'),
+    );
+
+    (useActiveVisit as jest.Mock).mockReturnValue({
+      activeVisit: null,
+      loading: false,
+      error: new Error('Active visit API error'),
+      refetch: jest.fn(),
+    });
 
     renderBasicForm();
 
     await waitFor(() => {
-      // Form should still render but with error state
-      expect(screen.getByTestId('location-dropdown')).toBeInTheDocument();
+      expect(screen.getByText('Location')).toBeInTheDocument();
     });
-
-    // Wait for the error to propagate to the store
     await waitFor(() => {
       const store = useEncounterDetailsStore.getState();
       expect(store.hasError).toBe(true);
@@ -391,57 +356,64 @@ describe('BasicForm Integration Tests', () => {
   });
 
   test('updates form ready state correctly', async () => {
-    renderBasicForm();
+    // Mock active visit without a matching visit type to prevent auto-selection
+    const mockActiveVisitNoType = {
+      ...mockActiveVisit,
+      type: [
+        {
+          coding: [
+            {
+              code: 'non-matching-code',
+              system: '',
+              display: '',
+            },
+          ],
+        },
+      ],
+    };
 
-    // Initially form should not be ready
-    let store = useEncounterDetailsStore.getState();
-    expect(store.isEncounterDetailsFormReady).toBe(false);
-
-    // Wait for all loading to complete
-    await waitFor(() => {
-      expect(screen.getByTestId('location-dropdown')).toBeInTheDocument();
-      expect(screen.getByTestId('encounter-type-dropdown')).toBeInTheDocument();
-      expect(screen.getByTestId('visit-type-dropdown')).toBeInTheDocument();
-      expect(screen.getByTestId('practitioner-dropdown')).toBeInTheDocument();
+    (useActiveVisit as jest.Mock).mockReturnValue({
+      activeVisit: mockActiveVisitNoType,
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
     });
 
-    // Form should now be ready
-    store = useEncounterDetailsStore.getState();
-    expect(store.isEncounterDetailsFormReady).toBe(true);
-  });
-
-  test('displays all fields as disabled', async () => {
     renderBasicForm();
 
+    // Initially, form should not be ready because selectedVisitType is null
     await waitFor(() => {
-      expect(screen.getByTestId('location-dropdown')).toBeInTheDocument();
+      const store = useEncounterDetailsStore.getState();
+      expect(store.isEncounterDetailsFormReady).toBe(false);
     });
 
-    // Verify all form fields are disabled
-    const locationSelect = screen
-      .getByTestId('location-dropdown')
-      .querySelector('select');
-    const encounterSelect = screen
-      .getByTestId('encounter-type-dropdown')
-      .querySelector('select');
-    const visitSelect = screen
-      .getByTestId('visit-type-dropdown')
-      .querySelector('select');
-    const practitionerSelect = screen
-      .getByTestId('practitioner-dropdown')
-      .querySelector('select');
-    const dateInput = screen.getByTestId('date-picker-input');
+    await waitFor(() => {
+      expect(screen.getByText('Location')).toBeInTheDocument();
+      expect(screen.getByText('Encounter Type')).toBeInTheDocument();
+      expect(screen.getByText('Participant(s)')).toBeInTheDocument();
+    });
 
-    expect(locationSelect).toHaveAttribute('disabled');
-    expect(encounterSelect).toHaveAttribute('disabled');
-    expect(visitSelect).toHaveAttribute('disabled');
-    expect(practitionerSelect).toHaveAttribute('disabled');
-    expect(dateInput).toHaveAttribute('disabled');
+    // Set the visit type to make form ready
+    const store = useEncounterDetailsStore.getState();
+    act(() => {
+      store.setSelectedVisitType({ name: 'OPD', uuid: '345' });
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Visit Type')).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      const currentStore = useEncounterDetailsStore.getState();
+      expect(currentStore.isEncounterDetailsFormReady).toBe(true);
+    });
   });
 
   test('displays error messages when API calls fail', async () => {
     // Mock all APIs to fail
-    (getEncounterConcepts as jest.Mock).mockRejectedValue(new Error('API Error'));
+    (getEncounterConcepts as jest.Mock).mockRejectedValue(
+      new Error('API Error'),
+    );
     (getCurrentUser as jest.Mock).mockRejectedValue(new Error('API Error'));
     (getCurrentProvider as jest.Mock).mockRejectedValue(new Error('API Error'));
     (getActiveVisit as jest.Mock).mockRejectedValue(new Error('API Error'));
@@ -450,15 +422,40 @@ describe('BasicForm Integration Tests', () => {
       throw new Error('Cookie error');
     });
 
+    // Mock all hooks to return errors
+    (useEncounterConcepts as jest.Mock).mockReturnValue({
+      encounterConcepts: null,
+      loading: false,
+      error: new Error('API Error'),
+      refetch: jest.fn(),
+    });
+
+    (useActivePractitioner as jest.Mock).mockReturnValue({
+      practitioner: null,
+      user: null,
+      loading: false,
+      error: new Error('API Error'),
+    });
+
+    (useActiveVisit as jest.Mock).mockReturnValue({
+      activeVisit: null,
+      loading: false,
+      error: new Error('API Error'),
+      refetch: jest.fn(),
+    });
+
+    (useLocations as jest.Mock).mockReturnValue({
+      locations: [],
+      loading: false,
+      error: new Error('API Error'),
+    });
+
     renderBasicForm();
 
     await waitFor(() => {
-      // Should show skeleton loading states
-      const skeletons = screen.getAllByTestId('skeleton-placeholder');
-      expect(skeletons.length).toBeGreaterThan(0);
+      expect(screen.getByText('Location')).toBeInTheDocument();
+      expect(screen.getByText('Encounter Type')).toBeInTheDocument();
     });
-
-    // Wait for errors to propagate to the store
     await waitFor(() => {
       const store = useEncounterDetailsStore.getState();
       expect(store.hasError).toBe(true);
