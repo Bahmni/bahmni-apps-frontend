@@ -5,14 +5,19 @@ import {
   PROVIDER_RESOURCE_URL,
   USER_RESOURCE_URL,
 } from '../../../../constants/app';
-import {get, getCookieByName, getFormattedError} from '@bahmni-frontend/bahmni-services';
+import {getCookieByName, getFormattedError, getActiveVisit, getCurrentUser, getCurrentProvider} from '@bahmni-frontend/bahmni-services';
+import { getEncounterConcepts } from '../../../../services/encounterConceptsService';
+import { getLocations } from '../../../../services/locationService';
 import { useEncounterDetailsStore } from '../../../../stores/encounterDetailsStore';
 import BasicForm from '../EncounterDetails';
 
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
   getCookieByName: jest.fn(),
-  get: jest.fn(),
-  getFormattedError:jest.fn(),
+  getFormattedError: jest.fn(),
+  getActiveVisit: jest.fn(),
+  getCurrentUser: jest.fn(),
+  getCurrentProvider: jest.fn(),
   usePatientUUID: jest.fn(() => 'test-patient-uuid'),
   formatDate: jest.fn(() => ({
     formattedResult: '16/05/2025',
@@ -36,6 +41,16 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
       }
     },
   })
+}));
+
+// Mock encounter concepts service
+jest.mock('../../../../services/encounterConceptsService', () => ({
+  getEncounterConcepts: jest.fn(),
+}));
+
+// Mock location service
+jest.mock('../../../../services/locationService', () => ({
+  getLocations: jest.fn(),
 }));
 
 // Mock CSS modules
@@ -245,25 +260,12 @@ describe('BasicForm Integration Tests', () => {
 
     (getFormattedError as jest.Mock).mockImplementation((error: any) => ({ title:error.title || 'unknown title', message: error.message || 'Unknown error' }));
 
-    // Setup default successful API responses
-    (get as jest.Mock).mockImplementation((url) => {
-      if (url === ENCOUNTER_CONCEPTS_URL) {
-        return Promise.resolve(mockEncounterConcepts);
-      } else if (url === USER_RESOURCE_URL('testuser')) {
-        return Promise.resolve({
-          results: [mockUser],
-        });
-      } else if (url === PROVIDER_RESOURCE_URL(mockUser.uuid)) {
-        return Promise.resolve({
-          results: [mockProvider],
-        });
-      } else if (url.includes('/ws/fhir2/R4/Encounter')) {
-        return Promise.resolve({
-          entry: [{ resource: mockActiveVisit }],
-        });
-      }
-      return Promise.reject(new Error('Unknown URL'));
-    });
+    // Setup default successful API responses for individual APIs
+    (getEncounterConcepts as jest.Mock).mockResolvedValue(mockEncounterConcepts);
+    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
+    (getCurrentProvider as jest.Mock).mockResolvedValue(mockProvider);
+    (getActiveVisit as jest.Mock).mockResolvedValue(mockActiveVisit);
+    (getLocations as jest.Mock).mockResolvedValue([mockLocationData]);
 
     // Reset the store before each test
     useEncounterDetailsStore.getState().reset();
@@ -292,12 +294,10 @@ describe('BasicForm Integration Tests', () => {
     expect(screen.getByText('Participant(s)')).toBeInTheDocument();
 
     // Verify API calls were made
-    expect(get).toHaveBeenCalledWith(ENCOUNTER_CONCEPTS_URL);
-    expect(get).toHaveBeenCalledWith(USER_RESOURCE_URL('testuser'));
-    expect(get).toHaveBeenCalledWith(PROVIDER_RESOURCE_URL(mockUser.uuid));
-    expect(get).toHaveBeenCalledWith(
-      expect.stringContaining('/ws/fhir2/R4/Encounter'),
-    );
+    expect(getEncounterConcepts).toHaveBeenCalled();
+    expect(getCurrentUser).toHaveBeenCalled();
+    expect(getCurrentProvider).toHaveBeenCalledWith(mockUser.uuid);
+    expect(getActiveVisit).toHaveBeenCalledWith('test-patient-uuid');
 
     // Verify store state is updated
     const store = useEncounterDetailsStore.getState();
@@ -338,18 +338,7 @@ describe('BasicForm Integration Tests', () => {
   });
 
   test('handles encounter concepts API error', async () => {
-    (get as jest.Mock).mockImplementation((url) => {
-      if (url === ENCOUNTER_CONCEPTS_URL) {
-        return Promise.reject(new Error('Encounter concepts API error'));
-      } else if (url === USER_RESOURCE_URL('testuser')) {
-        return Promise.resolve({ results: [mockUser] });
-      } else if (url === PROVIDER_RESOURCE_URL(mockUser.uuid)) {
-        return Promise.resolve({ results: [mockProvider] });
-      } else if (url.includes('/ws/fhir2/R4/Encounter')) {
-        return Promise.resolve({ entry: [{ resource: mockActiveVisit }] });
-      }
-      return Promise.reject(new Error('Unknown URL'));
-    });
+    (getEncounterConcepts as jest.Mock).mockRejectedValue(new Error('Encounter concepts API error'));
 
     renderBasicForm();
 
@@ -367,14 +356,7 @@ describe('BasicForm Integration Tests', () => {
   });
 
   test('handles practitioner API error', async () => {
-    (get as jest.Mock).mockImplementation((url) => {
-      if (url === ENCOUNTER_CONCEPTS_URL) {
-        return Promise.resolve(mockEncounterConcepts);
-      } else if (url === USER_RESOURCE_URL('testuser')) {
-        return Promise.reject(new Error('User API error'));
-      }
-      return Promise.reject(new Error('Unknown URL'));
-    });
+    (getCurrentUser as jest.Mock).mockRejectedValue(new Error('User API error'));
 
     renderBasicForm();
 
@@ -392,18 +374,7 @@ describe('BasicForm Integration Tests', () => {
   });
 
   test('handles active visit API error', async () => {
-    (get as jest.Mock).mockImplementation((url) => {
-      if (url === ENCOUNTER_CONCEPTS_URL) {
-        return Promise.resolve(mockEncounterConcepts);
-      } else if (url === USER_RESOURCE_URL('testuser')) {
-        return Promise.resolve({ results: [mockUser] });
-      } else if (url === PROVIDER_RESOURCE_URL(mockUser.uuid)) {
-        return Promise.resolve({ results: [mockProvider] });
-      } else if (url.includes('/ws/fhir2/R4/Encounter')) {
-        return Promise.reject(new Error('Active visit API error'));
-      }
-      return Promise.reject(new Error('Unknown URL'));
-    });
+    (getActiveVisit as jest.Mock).mockRejectedValue(new Error('Active visit API error'));
 
     renderBasicForm();
 
@@ -470,7 +441,11 @@ describe('BasicForm Integration Tests', () => {
 
   test('displays error messages when API calls fail', async () => {
     // Mock all APIs to fail
-    (get as jest.Mock).mockRejectedValue(new Error('API Error'));
+    (getEncounterConcepts as jest.Mock).mockRejectedValue(new Error('API Error'));
+    (getCurrentUser as jest.Mock).mockRejectedValue(new Error('API Error'));
+    (getCurrentProvider as jest.Mock).mockRejectedValue(new Error('API Error'));
+    (getActiveVisit as jest.Mock).mockRejectedValue(new Error('API Error'));
+    (getLocations as jest.Mock).mockRejectedValue(new Error('API Error'));
     (getCookieByName as jest.Mock).mockImplementation(() => {
       throw new Error('Cookie error');
     });
