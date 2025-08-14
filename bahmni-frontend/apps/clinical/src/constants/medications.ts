@@ -1,4 +1,4 @@
-import { DurationUnitOption } from '@types/medication';
+import { DurationUnitOption } from '../models/medication';
 
 export const DURATION_UNIT_OPTIONS: DurationUnitOption[] = [
   {
