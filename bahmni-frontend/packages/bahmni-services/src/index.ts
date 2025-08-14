@@ -28,6 +28,7 @@ export {
   DATE_TIME_FORMAT,
   ISO_DATE_FORMAT,
   FULL_MONTH_DATE_FORMAT,
+  getTodayDate,
 } from './date';
 export { type Notification, notificationService } from './notification';
 export {

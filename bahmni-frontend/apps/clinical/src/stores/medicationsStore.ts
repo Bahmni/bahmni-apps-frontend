@@ -1,8 +1,8 @@
 import { Medication } from 'fhir/r4';
 import { create } from 'zustand';
-import { Concept } from '@types/encounterConcepts';
-import { Frequency } from '@types/medicationConfig';
-import { DurationUnitOption, MedicationInputEntry } from '../types/medication';
+import { Concept } from '../models/encounterConcepts';
+import { Frequency } from '../models/medicationConfig';
+import { DurationUnitOption, MedicationInputEntry } from '../models/medication';
 
 export interface MedicationState {
   selectedMedications: MedicationInputEntry[];

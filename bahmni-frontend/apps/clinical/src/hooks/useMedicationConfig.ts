@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { getMedicationConfig } from '@services/configService';
-import { fetchMedicationOrdersMetadata } from '@services/medicationService';
-import { MedicationConfig } from '@types/medicationConfig';
+import { getMedicationConfig } from '@bahmni-frontend/bahmni-services';
+import { fetchMedicationOrdersMetadata } from '../services/medicationService';
+import { MedicationConfig } from '../models/medicationConfig';
 
 interface UseMedicationConfigResult {
   medicationConfig: MedicationConfig | null;

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@bahmni-frontend/bahmni-services';
 import {
   BoxWHeader,
   SelectedItem,
@@ -7,12 +7,11 @@ import {
   DropdownSkeleton,
   Tile,
 } from '@bahmni-frontend/bahmni-design-system';
-import 
-import useMedicationConfig from '@hooks/useMedicationConfig';
-import { useMedicationSearch } from '@hooks/useMedicationSearch';
-import { getMedicationDisplay } from '@services/medicationService';
-import { useMedicationStore } from '@stores/medicationsStore';
-import { MedicationFilterResult } from '@types/medication';
+import useMedicationConfig from '../../../hooks/useMedicationConfig';
+import { useMedicationSearch } from '../../../hooks/useMedicationSearch';
+import { getMedicationDisplay } from '../../../services/medicationService';
+import { useMedicationStore } from '../../../stores/medicationsStore';
+import { MedicationFilterResult } from '../../../models/medication';
 import SelectedMedicationItem from './SelectedMedicationItem';
 import styles from './styles/MedicationsForm.module.scss';
 
@@ -145,8 +144,8 @@ const MedicationsForm: React.FC = React.memo(() => {
           id="medications-search"
           placeholder={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
           items={filteredSearchResults}
-          itemToString={(item) => (item ? item.displayName : '')}
-          onChange={(data) => handleOnChange(data.selectedItem!)}
+          itemToString={(item: any) => (item ? item.displayName : '')}
+          onChange={(data: any) => handleOnChange(data.selectedItem!)}
           onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
           size="md"
           autoAlign

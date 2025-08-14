@@ -1,8 +1,8 @@
 import { act, renderHook } from '@testing-library/react';
 import { Medication } from 'fhir/r4';
-import { Concept } from '@types/encounterConcepts';
-import { DurationUnitOption } from '@types/medication';
-import { Frequency } from '@types/medicationConfig';
+import { Concept } from '../../models/encounterConcepts';
+import { DurationUnitOption } from '../../models/medication';
+import { Frequency } from '../../models/medicationConfig';
 import { useMedicationStore } from '../medicationsStore';
 
 describe('useMedicationStore', () => {

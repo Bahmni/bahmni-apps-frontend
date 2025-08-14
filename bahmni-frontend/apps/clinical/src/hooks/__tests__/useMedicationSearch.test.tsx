@@ -1,10 +1,10 @@
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { Bundle, Medication } from 'fhir/r4';
-import { searchMedications } from '@/services/medicationService';
+import { searchMedications } from '../../services/medicationService';
 import { useMedicationSearch } from '../useMedicationSearch';
 
 // Mock the dependencies
-jest.mock('@/services/medicationService');
+jest.mock('../../services/medicationService');
 
 const mockSearchMedications = searchMedications as jest.MockedFunction<
   typeof searchMedications

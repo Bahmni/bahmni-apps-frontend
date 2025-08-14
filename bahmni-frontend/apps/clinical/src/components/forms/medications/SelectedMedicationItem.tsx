@@ -6,22 +6,20 @@ import {
   Checkbox,
   DatePicker,
   DatePickerInput,
-} from '@carbon/react';
+} from '@bahmni-frontend/bahmni-design-system';
 import React, { useEffect, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
-import { DATE_PICKER_INPUT_FORMAT } from '@constants/date';
-import { DURATION_UNIT_OPTIONS } from '@constants/medications';
+import { useTranslation, getTodayDate, DATE_PICKER_INPUT_FORMAT } from '@bahmni-frontend/bahmni-services';
+import { DURATION_UNIT_OPTIONS } from '../../../constants/medications';
 import {
   calculateTotalQuantity,
   getDefaultDosingUnit,
   getDefaultRoute,
   isImmediateFrequency,
-} from '@services/medicationsValueCalculator';
-import { Concept } from '@types/encounterConcepts';
-import { DurationUnitOption, MedicationInputEntry } from '@types/medication';
-import { Frequency, MedicationConfig } from '@types/medicationConfig';
-import { getTodayDate } from '@utils/date';
-import * as styles from './styles/SelectedMedicationItem.module.scss';
+} from '../../../services/medicationsValueCalculator';
+import { Concept } from '../../../models/encounterConcepts';
+import { DurationUnitOption, MedicationInputEntry } from '../../../models/medication';
+import { Frequency, MedicationConfig } from '../../../models/medicationConfig';
+import styles from './styles/SelectedMedicationItem.module.scss';
 
 export interface SelectedMedicationItemProps {
   medicationInputEntry: MedicationInputEntry;
@@ -214,7 +212,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               labelText={t('MEDICATION_STAT')}
               aria-label="STAT"
               checked={isSTAT}
-              onChange={(e) => updateisSTAT(id, e.target.checked)}
+              onChange={(e: any) => updateisSTAT(id, e.target.checked)}
               className={styles.statControl}
             />
             <Checkbox
@@ -222,7 +220,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               labelText={t('MEDICATION_PRN')}
               aria-label="PRN"
               checked={isPRN}
-              onChange={(e) => updateisPRN(id, e.target.checked)}
+              onChange={(e: any) => updateisPRN(id, e.target.checked)}
             />
           </Column>
 
@@ -256,9 +254,9 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               hideLabel
               size="sm"
               items={medicationConfig.doseUnits ?? []}
-              itemToString={(item) => (item ? item.name : '')}
+              itemToString={(item: any) => (item ? item.name : '')}
               selectedItem={dosageUnit}
-              onChange={(e) => {
+              onChange={(e: any) => {
                 if (e.selectedItem) {
                   updateDosageUnit(id, e.selectedItem);
                   updateDispenseUnit(id, e.selectedItem);
@@ -282,9 +280,9 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                   (item) => !isImmediateFrequency(item),
                 ) ?? []
               }
-              itemToString={(item) => (item ? item.name : '')}
+              itemToString={(item: any) => (item ? item.name : '')}
               selectedItem={frequency}
-              onChange={(e) => {
+              onChange={(e: any) => {
                 if (e.selectedItem) {
                   updateFrequency(id, e.selectedItem);
                 }
@@ -325,11 +323,11 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               hideLabel
               size="sm"
               items={DURATION_UNIT_OPTIONS}
-              itemToString={(item) =>
+              itemToString={(item: any) =>
                 item ? t(item.display, { defaultValue: item.code }) : ''
               }
               selectedItem={durationUnit}
-              onChange={(e) => {
+              onChange={(e: any) => {
                 if (e.selectedItem) {
                   updateDurationUnit(id, e.selectedItem);
                 }
@@ -350,9 +348,9 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               hideLabel
               size="sm"
               items={medicationConfig.dosingInstructions ?? []}
-              itemToString={(item) => (item ? item.name : '')}
+              itemToString={(item: any) => (item ? item.name : '')}
               selectedItem={instruction}
-              onChange={(e) => {
+              onChange={(e: any) => {
                 if (e.selectedItem) {
                   updateInstruction(id, e.selectedItem);
                 }
@@ -370,9 +368,9 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               hideLabel
               size="sm"
               items={medicationConfig.routes ?? []}
-              itemToString={(item) => (item ? item.name : '')}
+              itemToString={(item: any) => (item ? item.name : '')}
               selectedItem={route}
-              onChange={(e) => {
+              onChange={(e: any) => {
                 if (e.selectedItem) {
                   updateRoute(id, e.selectedItem);
                 }

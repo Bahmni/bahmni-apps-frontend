@@ -1,7 +1,7 @@
 import { Medication } from 'fhir/r4';
-import { Concept } from '@types/encounterConcepts';
-import { DurationUnitOption } from '@types/medication';
-import { DrugFormDefault, Frequency } from '@types/medicationConfig';
+import { Concept } from '../models/encounterConcepts';
+import { DurationUnitOption } from '../models/medication';
+import { DrugFormDefault, Frequency } from '../models/medicationConfig';
 
 export const getDefaultRoute = (
   medication: Medication,

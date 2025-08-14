@@ -1,17 +1,17 @@
 import { renderHook, waitFor } from '@testing-library/react';
-import { getMedicationConfig } from '@services/configService';
-import { fetchMedicationOrdersMetadata } from '@services/medicationService';
+import { getMedicationConfig } from '@bahmni-frontend/bahmni-services';
+import { fetchMedicationOrdersMetadata } from '../../services/medicationService';
 import {
   MedicationOrdersMetadataResponse,
   MedicationJSONConfig,
-} from '@types/medicationConfig';
+} from '../../models/medicationConfig';
 import { useMedicationConfig } from '../useMedicationConfig';
 
-jest.mock('@services/medicationService', () => ({
+jest.mock('../../services/medicationService', () => ({
   fetchMedicationOrdersMetadata: jest.fn(),
 }));
 
-jest.mock('@services/configService', () => ({
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
   getMedicationConfig: jest.fn(),
 }));
 

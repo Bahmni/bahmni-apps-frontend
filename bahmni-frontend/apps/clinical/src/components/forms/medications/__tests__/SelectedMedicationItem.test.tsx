@@ -2,17 +2,14 @@ import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Medication } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import React from 'react';
-import { I18nextProvider } from 'react-i18next';
-import i18n from '@/setupTests.i18n';
-import { DURATION_UNIT_OPTIONS } from '@constants/medications';
+import { DURATION_UNIT_OPTIONS } from '../../../../constants/medications';
 import {
   calculateTotalQuantity,
   getDefaultDosingUnit,
   getDefaultRoute,
-} from '@services/medicationsValueCalculator';
-import { MedicationInputEntry } from '@types/medication';
-import { MedicationConfig } from '@types/medicationConfig';
+} from '../../../../services/medicationsValueCalculator';
+import { MedicationInputEntry } from '../../../../models/medication';
+import { MedicationConfig } from '../../../../models/medicationConfig';
 import SelectedMedicationItem, {
   SelectedMedicationItemProps,
 } from '../SelectedMedicationItem';
@@ -20,17 +17,21 @@ import SelectedMedicationItem, {
 // Extend Jest matchers
 expect.extend(toHaveNoViolations);
 
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  getTodayDate: jest.fn().mockReturnValue(new Date('2025-01-01')),
+  useTranslation: () => ({
+    t: (key: string) => key
+  })
+}));
+
 // Mock the services
-jest.mock('@services/medicationsValueCalculator', () => ({
+jest.mock('../../../../services/medicationsValueCalculator', () => ({
   getDefaultRoute: jest.fn(),
   getDefaultDosingUnit: jest.fn(),
   calculateTotalQuantity: jest.fn(),
   isImmediateFrequency: jest
     .fn()
     .mockImplementation((frequency) => frequency.uuid === '0'),
-}));
-jest.mock('@utils/date', () => ({
-  getTodayDate: jest.fn().mockReturnValue(new Date('2025-01-01')),
 }));
 
 // Mock CSS modules
@@ -136,11 +137,6 @@ const createDefaultProps = (overrides = {}): SelectedMedicationItemProps => ({
   ...overrides,
 });
 
-// Helper to render with i18n
-const renderWithI18n = (ui: React.ReactElement) => {
-  return render(<I18nextProvider i18n={i18n}>{ui}</I18nextProvider>);
-};
-
 describe('SelectedMedicationItem', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -159,7 +155,7 @@ describe('SelectedMedicationItem', () => {
       const props = createDefaultProps();
 
       // Act
-      renderWithI18n(<SelectedMedicationItem {...props} />);
+      render(<SelectedMedicationItem {...props} />);
 
       // Assert
       expect(screen.getByText('Paracetamol 500mg')).toBeInTheDocument();
@@ -170,7 +166,7 @@ describe('SelectedMedicationItem', () => {
       const props = createDefaultProps();
 
       // Act
-      renderWithI18n(<SelectedMedicationItem {...props} />);
+      render(<SelectedMedicationItem {...props} />);
 
       expect(
         screen.getByRole('spinbutton', { name: /Dosage/i }),
@@ -212,7 +208,7 @@ describe('SelectedMedicationItem', () => {
       });
 
       // Act
-      renderWithI18n(<SelectedMedicationItem {...props} />);
+      render(<SelectedMedicationItem {...props} />);
 
       // Assert
       expect(screen.getByText(/Total Quantity : 30 mg/i)).toBeInTheDocument();
@@ -227,7 +223,7 @@ describe('SelectedMedicationItem', () => {
         const user = userEvent.setup();
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
         const dosageInput = screen.getByRole('spinbutton', { name: /Dosage/i });
 
         await user.clear(dosageInput);
@@ -244,7 +240,7 @@ describe('SelectedMedicationItem', () => {
         const user = userEvent.setup();
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
         const dosageInput = screen.getByRole('spinbutton', { name: /Dosage/i });
 
         // Clear and type non-numeric value
@@ -262,7 +258,7 @@ describe('SelectedMedicationItem', () => {
         const props = createDefaultProps({ updateDosage });
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
         const dosageInput = screen.getByRole('spinbutton', { name: /Dosage/i });
 
         // Assert - the input should have min=0, preventing negative values
@@ -282,7 +278,7 @@ describe('SelectedMedicationItem', () => {
         const user = userEvent.setup();
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
 
         // Click on the dosage unit dropdown
         const unitDropdown = screen.getByRole('combobox', {
@@ -312,7 +308,7 @@ describe('SelectedMedicationItem', () => {
         const user = userEvent.setup();
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
 
         // Click on the frequency dropdown
         const frequencyDropdown = screen.getByRole('combobox', {
@@ -339,7 +335,7 @@ describe('SelectedMedicationItem', () => {
         const user = userEvent.setup();
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
 
         // Click on the route dropdown
         const routeDropdown = screen.getByRole('combobox', { name: /Route/i });
@@ -363,7 +359,7 @@ describe('SelectedMedicationItem', () => {
         const user = userEvent.setup();
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
 
         // Wait for component to mount and useEffect hooks to complete
         await waitFor(() => {
@@ -402,7 +398,7 @@ describe('SelectedMedicationItem', () => {
         const user = userEvent.setup();
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
 
         // Wait for component to mount and useEffect hooks to complete
         await waitFor(() => {
@@ -443,7 +439,7 @@ describe('SelectedMedicationItem', () => {
         const user = userEvent.setup();
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
         const statCheckbox = screen.getByRole('checkbox', { name: /STAT/i });
         await user.click(statCheckbox);
 
@@ -458,7 +454,7 @@ describe('SelectedMedicationItem', () => {
         const user = userEvent.setup();
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
         const prnCheckbox = screen.getByRole('checkbox', { name: /PRN/i });
         await user.click(prnCheckbox);
 
@@ -475,7 +471,7 @@ describe('SelectedMedicationItem', () => {
         const user = userEvent.setup();
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
         const durationInput = screen.getByRole('spinbutton', {
           name: /Duration/i,
         });
@@ -493,7 +489,7 @@ describe('SelectedMedicationItem', () => {
         const user = userEvent.setup();
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
         const dateInput = screen.getByPlaceholderText('d/m/Y');
 
         // Click on the date input to open the calendar
@@ -529,7 +525,7 @@ describe('SelectedMedicationItem', () => {
         });
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
         const dateInput = screen.getByPlaceholderText('d/m/Y');
 
         // Assert
@@ -560,7 +556,7 @@ describe('SelectedMedicationItem', () => {
           });
 
           // Act
-          renderWithI18n(<SelectedMedicationItem {...props} />);
+          render(<SelectedMedicationItem {...props} />);
 
           // Assert
           expect(updateInstruction).toHaveBeenCalledWith('entry-1', {
@@ -588,7 +584,7 @@ describe('SelectedMedicationItem', () => {
           });
 
           // Act
-          renderWithI18n(<SelectedMedicationItem {...props} />);
+          render(<SelectedMedicationItem {...props} />);
 
           // Assert
           expect(updateInstruction).not.toHaveBeenCalled();
@@ -610,7 +606,7 @@ describe('SelectedMedicationItem', () => {
           });
 
           // Act
-          renderWithI18n(<SelectedMedicationItem {...props} />);
+          render(<SelectedMedicationItem {...props} />);
 
           // Assert
           expect(updateInstruction).not.toHaveBeenCalled();
@@ -632,7 +628,7 @@ describe('SelectedMedicationItem', () => {
           });
 
           // Act
-          renderWithI18n(<SelectedMedicationItem {...props} />);
+          render(<SelectedMedicationItem {...props} />);
 
           // Assert
           expect(updateInstruction).not.toHaveBeenCalled();
@@ -657,7 +653,7 @@ describe('SelectedMedicationItem', () => {
           });
 
           // Act
-          renderWithI18n(<SelectedMedicationItem {...props} />);
+          render(<SelectedMedicationItem {...props} />);
 
           // Assert
           expect(updateInstruction).not.toHaveBeenCalled();
@@ -684,7 +680,7 @@ describe('SelectedMedicationItem', () => {
           });
 
           // Act
-          renderWithI18n(<SelectedMedicationItem {...props} />);
+          render(<SelectedMedicationItem {...props} />);
 
           // Assert
           expect(updateDurationUnit).toHaveBeenCalledWith(
@@ -712,7 +708,7 @@ describe('SelectedMedicationItem', () => {
           });
 
           // Act
-          renderWithI18n(<SelectedMedicationItem {...props} />);
+          render(<SelectedMedicationItem {...props} />);
 
           // Assert
           expect(updateDurationUnit).not.toHaveBeenCalled();
@@ -734,7 +730,7 @@ describe('SelectedMedicationItem', () => {
           });
 
           // Act
-          renderWithI18n(<SelectedMedicationItem {...props} />);
+          render(<SelectedMedicationItem {...props} />);
 
           // Assert
           expect(updateDurationUnit).not.toHaveBeenCalled();
@@ -756,7 +752,7 @@ describe('SelectedMedicationItem', () => {
           });
 
           // Act
-          renderWithI18n(<SelectedMedicationItem {...props} />);
+          render(<SelectedMedicationItem {...props} />);
 
           // Assert
           expect(updateDurationUnit).not.toHaveBeenCalled();
@@ -778,7 +774,7 @@ describe('SelectedMedicationItem', () => {
           });
 
           // Act
-          renderWithI18n(<SelectedMedicationItem {...props} />);
+          render(<SelectedMedicationItem {...props} />);
 
           // Assert
           expect(updateDurationUnit).not.toHaveBeenCalled();
@@ -803,7 +799,7 @@ describe('SelectedMedicationItem', () => {
           });
 
           // Act
-          renderWithI18n(<SelectedMedicationItem {...props} />);
+          render(<SelectedMedicationItem {...props} />);
 
           // Assert
           expect(updateDurationUnit).toHaveBeenCalledWith(
@@ -832,7 +828,7 @@ describe('SelectedMedicationItem', () => {
             }),
           });
 
-          const { rerender } = renderWithI18n(
+          const { rerender } = render(
             <SelectedMedicationItem {...props} />,
           );
 
@@ -847,12 +843,10 @@ describe('SelectedMedicationItem', () => {
           // Act
           await act(async () => {
             rerender(
-              <I18nextProvider i18n={i18n}>
                 <SelectedMedicationItem
                   {...props}
                   medicationConfig={updatedConfig}
                 />
-              </I18nextProvider>,
             );
           });
 
@@ -884,7 +878,7 @@ describe('SelectedMedicationItem', () => {
             }),
           });
 
-          const { rerender } = renderWithI18n(
+          const { rerender } = render(
             <SelectedMedicationItem {...props} />,
           );
 
@@ -897,12 +891,10 @@ describe('SelectedMedicationItem', () => {
           // Act
           await act(async () => {
             rerender(
-              <I18nextProvider i18n={i18n}>
                 <SelectedMedicationItem
                   {...props}
                   medicationConfig={updatedConfig}
                 />
-              </I18nextProvider>,
             );
           });
 
@@ -940,7 +932,7 @@ describe('SelectedMedicationItem', () => {
         });
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
 
         // Assert
         expect(updateRoute).toHaveBeenCalledWith('entry-1', {
@@ -974,7 +966,7 @@ describe('SelectedMedicationItem', () => {
         (getDefaultRoute as jest.Mock).mockReturnValue(undefined);
         (getDefaultDosingUnit as jest.Mock).mockReturnValue(undefined);
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
 
         // Assert
         expect(updateRoute).not.toHaveBeenCalled();
@@ -997,7 +989,7 @@ describe('SelectedMedicationItem', () => {
         });
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
 
         // Assert
         expect(updateRoute).not.toHaveBeenCalled();
@@ -1022,7 +1014,7 @@ describe('SelectedMedicationItem', () => {
         });
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
 
         // Assert
         expect(calculateTotalQuantity).toHaveBeenCalled();
@@ -1045,7 +1037,7 @@ describe('SelectedMedicationItem', () => {
         });
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
 
         // Assert
         expect(calculateTotalQuantity).toHaveBeenCalled();
@@ -1068,7 +1060,7 @@ describe('SelectedMedicationItem', () => {
         });
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
 
         // Assert
         expect(calculateTotalQuantity).toHaveBeenCalled();
@@ -1095,7 +1087,7 @@ describe('SelectedMedicationItem', () => {
         });
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
 
         // Assert
         expect(updateFrequency).toHaveBeenCalledWith('entry-1', {
@@ -1121,7 +1113,7 @@ describe('SelectedMedicationItem', () => {
         });
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
 
         // Assert
         expect(
@@ -1145,7 +1137,7 @@ describe('SelectedMedicationItem', () => {
         });
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
 
         // Assert
         expect(updateFrequency).toHaveBeenCalledWith('entry-1', null);
@@ -1163,7 +1155,7 @@ describe('SelectedMedicationItem', () => {
         });
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
 
         // Assert
         expect(updateFrequency).toHaveBeenCalledWith('entry-1', null);
@@ -1204,7 +1196,7 @@ describe('SelectedMedicationItem', () => {
         });
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
 
         expect(updateFrequency).toHaveBeenCalledWith(
           'entry-1',
@@ -1249,7 +1241,7 @@ describe('SelectedMedicationItem', () => {
         });
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
 
         // Assert
         // Should not call updateFrequency since immediate frequency is not found
@@ -1272,7 +1264,7 @@ describe('SelectedMedicationItem', () => {
         const user = userEvent.setup();
 
         // Act
-        renderWithI18n(<SelectedMedicationItem {...props} />);
+        render(<SelectedMedicationItem {...props} />);
         const frequencyDropdown = screen.getByRole('combobox', {
           name: /Frequency/i,
         });
@@ -1305,7 +1297,7 @@ describe('SelectedMedicationItem', () => {
       });
 
       // Act
-      renderWithI18n(<SelectedMedicationItem {...props} />);
+      render(<SelectedMedicationItem {...props} />);
 
       // Assert
       // Check that error messages are displayed
@@ -1343,7 +1335,7 @@ describe('SelectedMedicationItem', () => {
 
       // Act & Assert (should not throw)
       expect(() =>
-        renderWithI18n(<SelectedMedicationItem {...props} />),
+        render(<SelectedMedicationItem {...props} />),
       ).not.toThrow();
     });
 
@@ -1357,7 +1349,7 @@ describe('SelectedMedicationItem', () => {
       });
 
       // Act
-      renderWithI18n(<SelectedMedicationItem {...props} />);
+      render(<SelectedMedicationItem {...props} />);
 
       // Assert
       expect(updateRoute).not.toHaveBeenCalled();
@@ -1377,7 +1369,7 @@ describe('SelectedMedicationItem', () => {
 
       // Act & Assert (should not throw)
       expect(() =>
-        renderWithI18n(<SelectedMedicationItem {...props} />),
+        render(<SelectedMedicationItem {...props} />),
       ).not.toThrow();
     });
   });
@@ -1388,7 +1380,7 @@ describe('SelectedMedicationItem', () => {
       const props = createDefaultProps();
 
       // Act
-      const { container } = renderWithI18n(
+      const { container } = render(
         <SelectedMedicationItem {...props} />,
       );
 
@@ -1402,7 +1394,7 @@ describe('SelectedMedicationItem', () => {
       const props = createDefaultProps();
 
       // Act
-      renderWithI18n(<SelectedMedicationItem {...props} />);
+      render(<SelectedMedicationItem {...props} />);
 
       // Assert
       expect(
@@ -1429,7 +1421,7 @@ describe('SelectedMedicationItem', () => {
       const props = createDefaultProps();
 
       // Act
-      const { container } = renderWithI18n(
+      const { container } = render(
         <SelectedMedicationItem {...props} />,
       );
 
@@ -1453,7 +1445,7 @@ describe('SelectedMedicationItem', () => {
       });
 
       // Act
-      const { container } = renderWithI18n(
+      const { container } = render(
         <SelectedMedicationItem {...props} />,
       );
 
@@ -1470,7 +1462,7 @@ describe('SelectedMedicationItem', () => {
       const user = userEvent.setup();
 
       // Act
-      renderWithI18n(<SelectedMedicationItem {...props} />);
+      render(<SelectedMedicationItem {...props} />);
       const dateInput = screen.getByPlaceholderText('d/m/Y');
 
       // Try to enter a past date
@@ -1500,7 +1492,7 @@ describe('SelectedMedicationItem', () => {
       const tomorrowString = `${day}/${month}/${year}`;
 
       // Act
-      renderWithI18n(<SelectedMedicationItem {...props} />);
+      render(<SelectedMedicationItem {...props} />);
       const dateInput = screen.getByPlaceholderText('d/m/Y');
 
       await user.click(dateInput);

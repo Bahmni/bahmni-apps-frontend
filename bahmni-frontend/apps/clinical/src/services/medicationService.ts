@@ -2,13 +2,13 @@ import { Bundle, Medication } from 'fhir/r4';
 import {
   MEDICATION_ORDERS_METADATA_URL,
   MEDICATIONS_SEARCH_URL,
-} from '@constants/app';
+} from '../constants/app';
 import {
   FHIR_MEDICATION_EXTENSION_URL,
   FHIR_MEDICATION_NAME_EXTENSION_URL,
-} from '@constants/fhir';
-import { MedicationOrdersMetadataResponse } from '@types/medicationConfig';
-import { get } from './api';
+} from '../constants/fhir';
+import { MedicationOrdersMetadataResponse } from '../models/medicationConfig';
+import { get } from '@bahmni-frontend/bahmni-services';
 
 export async function fetchMedicationOrdersMetadata(): Promise<MedicationOrdersMetadataResponse> {
   return await get<MedicationOrdersMetadataResponse>(
