@@ -4,11 +4,11 @@ import {
   ALL_ORDERABLES_CONCEPT_NAME,
   ORDER_TYPE_URL,
   PANEL_CONCEPT_CLASS_NAME,
-} from '@constants/app';
-import { FHIR_CONCEPT_CLASS_EXTENSION_URL } from '@constants/fhir';
-import { OrderTypeResponse } from '@types/orderType';
-import * as api from '../api';
-import * as conceptService from '../conceptService';
+  FHIR_CONCEPT_CLASS_EXTENSION_URL
+} from '../constants';
+import { OrderTypeResponse } from '../model';
+import * as api from '../../api';
+import * as conceptService from '../../conceptService';
 import { getFlattenedInvestigations } from '../investigationService';
 
 jest.mock('../conceptService');
