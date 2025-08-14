@@ -15,6 +15,7 @@ interface UseObservationFormsSearchResult {
 
 interface ApiFormPrivilege {
   privilegeName: string;
+  editable: boolean;
 }
 // API Response model (what backend sends)
 interface FormApiResponse {
@@ -65,6 +66,7 @@ const useObservationFormsSearch = (
             id: form.id,
             privileges: form.privileges.map((p) => ({
               privilegeName: p.privilegeName,
+              editable: p.editable,
             })),
           }))
           .filter((form: ObservationForm) => form.uuid && form.name);

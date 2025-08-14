@@ -30,14 +30,16 @@ export const canUserAccessForm = (
   // Extract user privilege names
   const userPrivilegeNames = userPrivileges.map((privilege) => privilege.name);
 
-  // Extract required privilege names from form privileges
-  const requiredPrivilegeNames = form.privileges.map(
-    (formPrivilege) => formPrivilege.privilegeName,
-  );
-  // Check if user has required privileges
-  const hasAccess = requiredPrivilegeNames.some((requiredPrivilege) =>
-    userPrivilegeNames.includes(requiredPrivilege),
-  );
+  // Check if user has required privileges AND the privilege is editable
+  const hasAccess = form.privileges.some((formPrivilege) => {
+    const hasPrivilege = userPrivilegeNames.includes(
+      formPrivilege.privilegeName,
+    );
+    const isEditable = formPrivilege.editable;
+    // User must have the privilege and it must be editable
+    return hasPrivilege && isEditable;
+  });
+
   return hasAccess;
 };
 

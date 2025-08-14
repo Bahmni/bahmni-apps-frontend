@@ -16,7 +16,9 @@ describe('privilegeUtils', () => {
     id: 1,
     name: 'Test Form',
     uuid: 'test-uuid-1',
-    privileges: [{ privilegeName: 'app:clinical:observationForms' }],
+    privileges: [
+      { privilegeName: 'app:clinical:observationForms', editable: true },
+    ],
   };
 
   const mockFormWithoutPrivileges: ObservationForm = {
@@ -30,7 +32,16 @@ describe('privilegeUtils', () => {
     id: 3,
     name: 'Unauthorized Form',
     uuid: 'test-uuid-3',
-    privileges: [{ privilegeName: 'admin:superuser' }],
+    privileges: [{ privilegeName: 'admin:superuser', editable: true }],
+  };
+
+  const mockFormWithNonEditablePrivileges: ObservationForm = {
+    id: 4,
+    name: 'Non-Editable Form',
+    uuid: 'test-uuid-4',
+    privileges: [
+      { privilegeName: 'app:clinical:observationForms', editable: false },
+    ],
   };
 
   describe('canUserAccessForm', () => {
@@ -62,12 +73,12 @@ describe('privilegeUtils', () => {
 
     it('should handle multiple required privileges correctly', () => {
       const formWithMultiplePrivileges: ObservationForm = {
-        id: 4,
+        id: 5,
         name: 'Multi Privilege Form',
-        uuid: 'test-uuid-4',
+        uuid: 'test-uuid-5',
         privileges: [
-          { privilegeName: 'admin:superuser' },
-          { privilegeName: 'view:forms' }, // User has this one
+          { privilegeName: 'admin:superuser', editable: true },
+          { privilegeName: 'view:forms', editable: true }, // User has this one
         ],
       };
 
@@ -76,6 +87,71 @@ describe('privilegeUtils', () => {
         formWithMultiplePrivileges,
       );
       expect(result).toBe(true);
+    });
+
+    it('should return false when user has privilege but editable is false', () => {
+      const result = canUserAccessForm(
+        mockUserPrivileges,
+        mockFormWithNonEditablePrivileges,
+      );
+      expect(result).toBe(false);
+    });
+
+    it('should return true when user has privilege and editable is true', () => {
+      const result = canUserAccessForm(
+        mockUserPrivileges,
+        mockFormWithPrivileges,
+      );
+      expect(result).toBe(true);
+    });
+
+    it('should handle mixed editable privileges correctly', () => {
+      const formWithMixedPrivileges: ObservationForm = {
+        id: 6,
+        name: 'Mixed Privilege Form',
+        uuid: 'test-uuid-6',
+        privileges: [
+          { privilegeName: 'admin:superuser', editable: false }, // User doesn't have this
+          { privilegeName: 'app:clinical:observationForms', editable: false }, // User has this but not editable
+          { privilegeName: 'view:forms', editable: true }, // User has this and it's editable
+        ],
+      };
+
+      const result = canUserAccessForm(
+        mockUserPrivileges,
+        formWithMixedPrivileges,
+      );
+      expect(result).toBe(true);
+    });
+
+    it('should return false when privilege name does not match and editable is false', () => {
+      const formWithUnmatchedNonEditablePrivilege: ObservationForm = {
+        id: 7,
+        name: 'Unmatched Non-Editable Form',
+        uuid: 'test-uuid-7',
+        privileges: [{ privilegeName: 'admin:superuser', editable: false }], // User doesn't have this privilege AND it's not editable
+      };
+
+      const result = canUserAccessForm(
+        mockUserPrivileges,
+        formWithUnmatchedNonEditablePrivilege,
+      );
+      expect(result).toBe(false);
+    });
+
+    it('should return false when privilege name is matching but editable is false', () => {
+      const formWithMatchingButNonEditablePrivilege: ObservationForm = {
+        id: 8,
+        name: 'Matching But Non-Editable Form',
+        uuid: 'test-uuid-8',
+        privileges: [{ privilegeName: 'view:forms', editable: false }], // User HAS this privilege but editable is false
+      };
+
+      const result = canUserAccessForm(
+        mockUserPrivileges,
+        formWithMatchingButNonEditablePrivilege,
+      );
+      expect(result).toBe(false);
     });
   });
 

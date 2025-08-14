@@ -228,7 +228,6 @@
   "OBSERVATION_FORMS_ERROR_LOADING_FORMS": "Error loading forms. Please try again later.",
   "OBSERVATION_FORMS_NO_FORMS_FOUND": "No matching forms found",
   "OBSERVATION_FORMS_FORM_ALREADY_ADDED": "Already added",
-  "OBSERVATION_FORM_RENDERING_PLACEHOLDER": "Form rendering is not yet implemented. Only the form title is displayed.",
   "OBSERVATION_FORM_DISCARD_BUTTON": "Discard Form",
   "OBSERVATION_FORM_BACK_BUTTON": "Back",
   "OBSERVATION_FORM_SAVE_BUTTON": "Save Form",

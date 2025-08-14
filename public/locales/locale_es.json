@@ -229,7 +229,6 @@
   "OBSERVATION_FORMS_ERROR_LOADING_FORMS": "Error al cargar formularios. Por favor, inténtelo de nuevo más tarde.",
   "OBSERVATION_FORMS_NO_FORMS_FOUND": "No se encontraron formularios coincidentes",
   "OBSERVATION_FORMS_FORM_ALREADY_ADDED": "Ya agregado",
-  "OBSERVATION_FORM_RENDERING_PLACEHOLDER": "La representación del formulario aún no está implementada. Solo se muestra el título del formulario.",
   "OBSERVATION_FORM_DISCARD_BUTTON": "Descartar Formulario",
   "OBSERVATION_FORM_BACK_BUTTON": "Atrás",
   "OBSERVATION_FORM_SAVE_BUTTON": "Guardar Formulario",

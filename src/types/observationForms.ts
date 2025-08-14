@@ -1,5 +1,6 @@
 export interface FormPrivilege {
   privilegeName: string;
+  editable: boolean;
 }
 
 // Domain model (what we use for application logic)

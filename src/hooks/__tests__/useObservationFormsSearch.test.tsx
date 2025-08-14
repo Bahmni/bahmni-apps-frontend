@@ -51,6 +51,7 @@ describe('useObservationFormsSearch', () => {
         privileges: [
           {
             privilegeName: 'app:clinical:observationForms',
+            editable: true,
           },
         ],
       },
@@ -61,6 +62,7 @@ describe('useObservationFormsSearch', () => {
         privileges: [
           {
             privilegeName: 'app:clinical:physicalExam',
+            editable: true,
           },
         ],
       },
@@ -121,6 +123,7 @@ describe('useObservationFormsSearch', () => {
           privileges: [
             {
               privilegeName: 'app:clinical:observationForms',
+              editable: true,
             },
           ],
         },
@@ -131,6 +134,7 @@ describe('useObservationFormsSearch', () => {
           privileges: [
             {
               privilegeName: 'app:clinical:physicalExam',
+              editable: true,
             },
           ],
         },
@@ -185,6 +189,7 @@ describe('useObservationFormsSearch', () => {
             privileges: [
               {
                 privilegeName: 'app:clinical:observationForms',
+                editable: true,
               },
             ],
           },
@@ -442,7 +447,7 @@ describe('useObservationFormsSearch', () => {
           uuid: 'form-2',
           name: 'Fallback Form Undefined',
           id: 2,
-          privileges: [{ privilegeName: 'app:clinical' }],
+          privileges: [{ privilegeName: 'app:clinical', editable: true }],
         },
       ];
 
