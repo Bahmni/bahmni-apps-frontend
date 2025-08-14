@@ -81,5 +81,7 @@ export {
   type TextAreaWCloseProps,
 } from './molecules/textAreaWClose';
 export { BoxWHeader, type BoxWHeaderProps } from './molecules/boxWHeader';
+export { ActionArea, type ActionAreaProps } from './molecules/actionArea';
+export { MenuItemDivider, type MenuItemDividerProps } from './atoms/menuItemDivider';
 
 import '@carbon/styles/css/styles.css';

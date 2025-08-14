@@ -4,7 +4,7 @@ import React from 'react';
 import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import i18n from '@/setupTests.i18n';
-import { FhirEncounter, FhirEncounterType } from '../../../../../bahmni-frontend/apps/clinical/src/models/encounter';
+import { FhirEncounter, FhirEncounterType } from '../../../models/encounter';
 import { User } from '@/types/user';
 import {
   mockLocations,

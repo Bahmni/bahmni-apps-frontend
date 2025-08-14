@@ -1,16 +1,15 @@
-import { Column, Grid, MenuItemDivider } from '@carbon/react';
+import { Column, Grid , MenuItemDivider , ActionArea} from '@bahmni-frontend/bahmni-design-system';
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import AllergiesForm from '@components/clinical/forms/allergies/AllergiesForm';
-import DiagnosesForm from '@components/clinical/forms/conditionsAndDiagnoses/ConditionsAndDiagnoses';
-import BasicForm from '../../../../bahmni-frontend/apps/clinical/src/components/forms/encounterDetails/EncounterDetails';
-import InvestigationsForm from '@components/clinical/forms/investigations/InvestigationsForm';
-import MedicationsForm from '@components/clinical/forms/prescribeMedicines/MedicationsForm';
-import ActionArea from '@components/common/actionArea/ActionArea';
-import { AUDIT_LOG_EVENT_DETAILS } from '@constants/auditLog';
-import { ERROR_TITLES } from '@constants/errors';
-import { useEncounterSession } from '@hooks/useEncounterSession';
-import useNotification from '@hooks/useNotification';
+import AllergiesForm from '../forms/allergies/AllergiesForm';
+import ConditionsAndDiagnoses from '../forms/conditionsAndDiagnoses/ConditionsAndDiagnoses';
+import BasicForm from '../forms/encounterDetails/EncounterDetails';
+import InvestigationsForm from '../forms/investigations/InvestigationsForm';
+import MedicationsForm from '../forms/medications/MedicationsForm';
+import { AUDIT_LOG_EVENT_DETAILS , AuditEventType , dispatchAuditEvent } from '@bahmni-frontend/bahmni-services';
+import { ERROR_TITLES } from '../../constants/errors';
+import { useEncounterSession } from '../../../src/hooks/useEncounterSession';
+import { useNotification } from '@bahmni-frontend/bahmni-widgets';
 import {
   postConsultationBundle,
   createDiagnosisBundleEntries,
@@ -20,18 +19,16 @@ import {
   createMedicationRequestEntries,
   createEncounterBundleEntry,
   getEncounterReference,
-} from '@services/consultationBundleService';
-import useAllergyStore from '@stores/allergyStore';
-import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
-import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
-import { useMedicationStore } from '@stores/medicationsStore';
-import useServiceRequestStore from '@stores/serviceRequestStore';
-import { AuditEventType } from '@types/auditLog';
+} from '@bahmni-frontend/bahmni-services';
+import useAllergyStore from '../../../src/stores/allergyStore'
+import { useConditionsAndDiagnosesStore } from '../../../src/stores/conditionsAndDiagnosesStore';
+import { useEncounterDetailsStore } from '../../../src/stores/encounterDetailsStore';
+import { useMedicationStore } from '../../../src/stores/medicationsStore';
+import useServiceRequestStore from '../../../src/stores/serviceRequestStore';
 import { ConsultationBundle } from '@types/consultationBundle';
-import { dispatchAuditEvent } from '@utils/auditEventDispatcher';
-import { createConsultationBundle } from '@utils/fhir/consultationBundleCreator';
+import { createConsultationBundle } from '../../';
 import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
-import * as styles from './styles/ConsultationPad.module.scss';
+import styles from './styles/ConsultationPad.module.scss';
 
 interface ConsultationPadProps {
   onClose: () => void;
@@ -295,7 +292,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
             <MenuItemDivider />
             <InvestigationsForm />
             <MenuItemDivider />
-            <DiagnosesForm />
+            <ConditionsAndDiagnoses />
             <MenuItemDivider />
             <MedicationsForm />
             <MenuItemDivider />

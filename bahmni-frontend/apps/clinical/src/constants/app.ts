@@ -26,3 +26,6 @@ export const MEDICATION_ORDERS_METADATA_URL =
 export const MEDICATIONS_SEARCH_URL = (searchTerm: string, count: number) =>
   OPENMRS_FHIR_R4 +
   `/Medication?name=${encodeURIComponent(searchTerm)}&_count=${count}`;
+
+export const CONSULTATION_BUNDLE_URL = OPENMRS_FHIR_R4 + '/ConsultationBundle';
+export const ENCOUNTER_SEARCH_URL = OPENMRS_FHIR_R4 + '/Encounter';

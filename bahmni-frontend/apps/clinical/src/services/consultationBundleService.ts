@@ -1,15 +1,14 @@
 import { BundleEntry, Reference } from 'fhir/r4';
-import { CONSULTATION_BUNDLE_URL, ENCOUNTER_SEARCH_URL } from '@constants/app';
-import { CONSULTATION_ERROR_MESSAGES } from '@constants/errors';
-import { AllergyInputEntry } from '@types/allergy';
-import { ConditionInputEntry } from '@types/condition';
-import { ConsultationBundle } from '@types/consultationBundle';
-import { DiagnosisInputEntry } from '@types/diagnosis';
-import { FhirEncounter } from '../../bahmni-frontend/apps/clinical/src/models/encounter';
-import { MedicationInputEntry } from '@types/medication';
-import { ServiceRequestInputEntry } from '@types/serviceRequest';
-import { calculateOnsetDate } from '@utils/date';
-import { createEncounterAllergyResource } from '@utils/fhir/allergyResourceCreator';
+import { CONSULTATION_BUNDLE_URL, ENCOUNTER_SEARCH_URL } from '../constants/app';
+import { CONSULTATION_ERROR_MESSAGES } from '../constants/errors';
+import { AllergyInputEntry } from '../models/allergy';
+import { ConditionInputEntry } from '../models/condition';
+import { ConsultationBundle } from '../models/consultationBundle';
+import { FhirEncounter } from '../models/encounter';
+import { MedicationInputEntry } from '../models/medication';
+import { ServiceRequestInputEntry } from '../models/serviceRequest';
+import { DiagnosisInputEntry , calculateOnsetDate } from '@bahmni-frontend/bahmni-services';
+import { createEncounterAllergyResource } from '../utils/fhir/allergyResourceCreator';
 import {
   createEncounterDiagnosisResource,
   createEncounterConditionResource,
