@@ -2,23 +2,21 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Medication } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import React from 'react';
-import { I18nextProvider } from 'react-i18next';
-import i18n from '@/setupTests.i18n';
-import useMedicationConfig from '@hooks/useMedicationConfig';
-import { useMedicationSearch } from '@hooks/useMedicationSearch';
-import { useMedicationStore } from '@stores/medicationsStore';
-import { MedicationInputEntry } from '@types/medication';
-import { MedicationConfig } from '@types/medicationConfig';
+import useMedicationConfig from '../../../../hooks/useMedicationConfig';
+import { useMedicationSearch } from '../../../../hooks/useMedicationSearch';
+import { useMedicationStore } from '../../../../stores/medicationsStore';
+import { MedicationInputEntry } from '../../../../models/medication';
+import { MedicationConfig } from '../../../../models/medicationConfig';
 import MedicationsForm from '../MedicationsForm';
 
 expect.extend(toHaveNoViolations);
 
 // Mock dependencies
-jest.mock('@stores/medicationsStore');
-jest.mock('@hooks/useMedicationConfig');
-jest.mock('@hooks/useMedicationSearch');
-jest.mock('@services/medicationService', () => ({
+jest.mock('../../../../stores/medicationsStore');
+jest.mock('../../../../models/medicationConfig');
+jest.mock('../../../../hooks/useMedicationSearch');
+jest.mock('../../../../hooks/useMedicationConfig');
+jest.mock('../../../../services/medicationService', () => ({
   getMedicationDisplay: jest.fn(
     (medication) =>
       medication?.code?.text ?? medication?.code?.display ?? 'Test Medication',
@@ -140,17 +138,13 @@ describe('MedicationsForm', () => {
     (useMedicationSearch as jest.Mock).mockReturnValue(
       mockMedicationSearchHook,
     );
-
-    i18n.changeLanguage('en');
   });
 
   // HAPPY PATH TESTS
   describe('Happy Path Scenarios', () => {
     test('renders medication search box correctly', () => {
       render(
-        <I18nextProvider i18n={i18n}>
           <MedicationsForm />
-        </I18nextProvider>,
       );
 
       expect(
@@ -160,9 +154,7 @@ describe('MedicationsForm', () => {
 
     test('renders form title correctly', () => {
       render(
-        <I18nextProvider i18n={i18n}>
           <MedicationsForm />
-        </I18nextProvider>,
       );
 
       expect(screen.getByText(/prescribe medication/i)).toBeInTheDocument();
@@ -176,9 +168,7 @@ describe('MedicationsForm', () => {
       });
 
       render(
-        <I18nextProvider i18n={i18n}>
           <MedicationsForm />
-        </I18nextProvider>,
       );
 
       const searchBox = screen.getByRole('combobox', {
@@ -222,9 +212,7 @@ describe('MedicationsForm', () => {
       });
 
       render(
-        <I18nextProvider i18n={i18n}>
           <MedicationsForm />
-        </I18nextProvider>,
       );
 
       const searchBox = screen.getByRole('combobox', {
@@ -283,9 +271,7 @@ describe('MedicationsForm', () => {
       });
 
       render(
-        <I18nextProvider i18n={i18n}>
           <MedicationsForm />
-        </I18nextProvider>,
       );
 
       expect(screen.getByText(/added medicines/i)).toBeInTheDocument();
@@ -300,9 +286,7 @@ describe('MedicationsForm', () => {
       });
 
       render(
-        <I18nextProvider i18n={i18n}>
           <MedicationsForm />
-        </I18nextProvider>,
       );
 
       // Find the close button by its aria-label from SelectedItem component
@@ -322,9 +306,7 @@ describe('MedicationsForm', () => {
 
     test('does not show selected medications section when no medications selected', () => {
       render(
-        <I18nextProvider i18n={i18n}>
           <MedicationsForm />
-        </I18nextProvider>,
       );
 
       expect(screen.queryByText(/added medicines/i)).not.toBeInTheDocument();
@@ -341,9 +323,7 @@ describe('MedicationsForm', () => {
       });
 
       render(
-        <I18nextProvider i18n={i18n}>
           <MedicationsForm />
-        </I18nextProvider>,
       );
 
       const searchBox = screen.getByRole('combobox', {
@@ -367,9 +347,7 @@ describe('MedicationsForm', () => {
       });
 
       render(
-        <I18nextProvider i18n={i18n}>
           <MedicationsForm />
-        </I18nextProvider>,
       );
 
       const searchBox = screen.getByRole('combobox', {
@@ -394,9 +372,7 @@ describe('MedicationsForm', () => {
       });
 
       render(
-        <I18nextProvider i18n={i18n}>
           <MedicationsForm />
-        </I18nextProvider>,
       );
 
       const searchBox = screen.getByRole('combobox', {
@@ -425,9 +401,7 @@ describe('MedicationsForm', () => {
       });
 
       render(
-        <I18nextProvider i18n={i18n}>
           <MedicationsForm />
-        </I18nextProvider>,
       );
 
       // Should show the selected medication in the added medicines section
@@ -465,9 +439,7 @@ describe('MedicationsForm', () => {
       });
 
       render(
-        <I18nextProvider i18n={i18n}>
           <MedicationsForm />
-        </I18nextProvider>,
       );
 
       const searchBox = screen.getByRole('combobox', {
@@ -500,9 +472,7 @@ describe('MedicationsForm', () => {
 
     test('does not add medication when selected item is invalid', async () => {
       render(
-        <I18nextProvider i18n={i18n}>
           <MedicationsForm />
-        </I18nextProvider>,
       );
 
       const searchBox = screen.getByRole('combobox', {
@@ -535,9 +505,7 @@ describe('MedicationsForm', () => {
       });
 
       render(
-        <I18nextProvider i18n={i18n}>
           <MedicationsForm />
-        </I18nextProvider>,
       );
 
       // Should show loading skeleton (look for skeleton class)
@@ -553,9 +521,7 @@ describe('MedicationsForm', () => {
       });
 
       render(
-        <I18nextProvider i18n={i18n}>
           <MedicationsForm />
-        </I18nextProvider>,
       );
 
       expect(
@@ -578,9 +544,7 @@ describe('MedicationsForm', () => {
       });
 
       render(
-        <I18nextProvider i18n={i18n}>
           <MedicationsForm />
-        </I18nextProvider>,
       );
 
       // Should not show selected medications section without config
@@ -596,9 +560,7 @@ describe('MedicationsForm', () => {
       });
 
       render(
-        <I18nextProvider i18n={i18n}>
           <MedicationsForm />
-        </I18nextProvider>,
       );
 
       const searchBox = screen.getByRole('combobox', {
@@ -619,9 +581,7 @@ describe('MedicationsForm', () => {
   describe('Accessibility', () => {
     test('should have no accessibility violations', async () => {
       const { container } = render(
-        <I18nextProvider i18n={i18n}>
           <MedicationsForm />
-        </I18nextProvider>,
       );
 
       const results = await axe(container);
@@ -633,9 +593,7 @@ describe('MedicationsForm', () => {
   describe('Snapshot Tests', () => {
     test('matches snapshot with no medications', () => {
       const { container } = render(
-        <I18nextProvider i18n={i18n}>
           <MedicationsForm />
-        </I18nextProvider>,
       );
       expect(container).toMatchSnapshot();
     });
@@ -647,9 +605,7 @@ describe('MedicationsForm', () => {
       });
 
       const { container } = render(
-        <I18nextProvider i18n={i18n}>
           <MedicationsForm />
-        </I18nextProvider>,
       );
       expect(container).toMatchSnapshot();
     });

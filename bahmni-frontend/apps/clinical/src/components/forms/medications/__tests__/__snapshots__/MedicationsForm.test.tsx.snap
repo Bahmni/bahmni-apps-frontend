@@ -148,12 +148,12 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
     </div>
     <div
       aria-label="Added medicines"
-      class="medicationsBox cds--css-grid cds--css-grid--narrow cds--css-grid--full-width"
+      class="_box_1jr6a_1 medicationsBox cds--css-grid cds--css-grid--narrow cds--css-grid--full-width"
       data-testid="box-w-title"
       role="region"
     >
       <div
-        class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
+        class="_header_1jr6a_8 cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
       >
         Added medicines
       </div>
@@ -161,11 +161,11 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
         class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
       >
         <div
-          class="cds--subgrid cds--subgrid--narrow"
+          class="_grid_4oucb_1 cds--subgrid cds--subgrid--narrow"
           data-testid="selected-item"
         >
           <div
-            class="cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
+            class="_children_4oucb_8 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
           >
             <div
               class="cds--subgrid cds--subgrid--wide"
@@ -252,6 +252,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                         aria-invalid="false"
                         aria-label="Dosage"
                         id="dosage-unit-test-medication-1"
+                        inputmode="decimal"
                         min="0"
                         pattern="[0-9]*"
                         step="1"
@@ -475,6 +476,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                         aria-invalid="false"
                         aria-label="Duration"
                         id="duration-test-medication-1"
+                        inputmode="decimal"
                         min="0"
                         pattern="[0-9]*"
                         step="1"
@@ -810,7 +812,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
             </div>
           </div>
           <div
-            class="cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
+            class="_close_4oucb_15 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
           >
             <span
               class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
@@ -820,6 +822,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
               >
                 <button
                   aria-label="Close Selected Item"
+                  aria-labelledby="tooltip-«r51»"
                   class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
                   data-testid="selected-item-close-button"
                   id="close-selected-item"
@@ -850,7 +853,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 <span
                   class="cds--popover-content cds--tooltip-content"
                 >
-                  Close
+                  Selected Item Close
                 </span>
                 <span
                   class="cds--popover-caret"
