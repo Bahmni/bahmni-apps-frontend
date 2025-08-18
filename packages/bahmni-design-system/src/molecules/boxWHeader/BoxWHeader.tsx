@@ -49,7 +49,6 @@ export const BoxWHeader: React.FC<BoxWHeaderProps> = ({
   dataTestId = 'box-w-title',
   ariaLabel,
 }) => {
-  
   return (
     <Grid
       narrow

@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { TooltipIcon } from '../TooltipIcon';
-import { ICON_SIZE } from '../../icon';
 import { initFontAwesome } from '../../../fontawesome';
+import { ICON_SIZE } from '../../icon';
+import { TooltipIcon } from '../TooltipIcon';
 import '@testing-library/jest-dom';
 
 beforeAll(() => {
@@ -44,7 +44,9 @@ describe('TooltipIcon', () => {
   it('does not render when content is falsy', () => {
     render(<TooltipIcon iconName="fa-test" content="" testId="empty" />);
     render(<TooltipIcon iconName="fa-test" content={null} testId="null" />);
-    render(<TooltipIcon iconName="fa-test" content={undefined} testId="undefined" />);
+    render(
+      <TooltipIcon iconName="fa-test" content={undefined} testId="undefined" />,
+    );
 
     expect(screen.queryByTestId('empty')).not.toBeInTheDocument();
     expect(screen.queryByTestId('null')).not.toBeInTheDocument();
@@ -58,7 +60,7 @@ describe('TooltipIcon', () => {
         {...defaultProps}
         className={customClass}
         testId="styled-tooltip"
-      />
+      />,
     );
 
     const tooltip = screen.getByTestId('styled-tooltip');
@@ -79,7 +81,7 @@ describe('TooltipIcon', () => {
         {...defaultProps}
         ariaLabel={ariaLabel}
         testId="aria-test"
-      />
+      />,
     );
 
     const icon = screen.getByLabelText(ariaLabel);
@@ -106,7 +108,7 @@ describe('TooltipIcon', () => {
         content="Info"
         iconSize={ICON_SIZE.XL}
         testId="icon-props-test"
-      />
+      />,
     );
 
     expect(screen.getByTestId('icon-props-test-icon')).toBeInTheDocument();

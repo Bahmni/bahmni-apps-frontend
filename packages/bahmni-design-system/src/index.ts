@@ -1,3 +1,5 @@
+import '@carbon/styles/css/styles.css';
+
 export { Button, type ButtonProps } from './atoms/button';
 export { Tile, type TileProps } from './atoms/tile';
 export { Tag, type TagProps } from './atoms/tag';
@@ -82,6 +84,7 @@ export {
 } from './molecules/textAreaWClose';
 export { BoxWHeader, type BoxWHeaderProps } from './molecules/boxWHeader';
 export { ActionArea, type ActionAreaProps } from './molecules/actionArea';
-export { MenuItemDivider, type MenuItemDividerProps } from './atoms/menuItemDivider';
-
-import '@carbon/styles/css/styles.css';
+export {
+  MenuItemDivider,
+  type MenuItemDividerProps,
+} from './atoms/menuItemDivider';

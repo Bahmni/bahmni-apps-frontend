@@ -67,7 +67,6 @@ export const TextAreaWClose: React.FC<TextAreaWCloseProps> = ({
   enableCounter = false,
   counterMode = 'character',
 }) => {
-
   return (
     <Grid className={className}>
       <Column

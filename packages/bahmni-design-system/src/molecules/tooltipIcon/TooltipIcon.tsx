@@ -1,5 +1,5 @@
-import React from 'react';
 import { Toggletip, ToggletipButton, ToggletipContent } from '@carbon/react';
+import React from 'react';
 import { Icon, ICON_SIZE, ICON_PADDING } from '../icon';
 import styles from './styles/TooltipIcon.module.scss';
 
@@ -77,7 +77,7 @@ export const TooltipIcon: React.FC<TooltipIconProps> = ({
   }
 
   const iconId = testId ? `${testId}-icon` : `tooltip-icon-${iconName}`;
-  const combinedClassName = `${styles.tooltipIcon} ${className || ''}`.trim();
+  const combinedClassName = `${styles.tooltipIcon} ${className ?? ''}`.trim();
 
   return (
     <Toggletip

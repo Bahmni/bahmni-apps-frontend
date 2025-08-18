@@ -8,9 +8,6 @@ export type SectionProps = CarbonSectionProps<'div'> & {
   testId?: string;
 };
 
-export const Section: React.FC<SectionProps> = ({
-  testId,
-  ...carbonProps
-}) => {
+export const Section: React.FC<SectionProps> = ({ testId, ...carbonProps }) => {
   return <CarbonSection {...carbonProps} data-testid={testId} />;
 };

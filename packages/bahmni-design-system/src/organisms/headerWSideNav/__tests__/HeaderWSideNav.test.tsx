@@ -9,6 +9,7 @@ import {
   HeaderGlobalAction,
 } from '../models';
 import '@testing-library/jest-dom';
+
 expect.extend(toHaveNoViolations);
 
 // Mock window.matchMedia for Carbon components
@@ -25,7 +26,6 @@ Object.defineProperty(global, 'matchMedia', {
     dispatchEvent: jest.fn(),
   })),
 });
-
 
 // Mock useHeaderSideNav hook
 const mockHandleSideNavItemClick = jest.fn();
@@ -183,7 +183,6 @@ describe('HeaderWSideNav', () => {
 
       expect(screen.queryByTestId('breadcrumb')).not.toBeInTheDocument();
     });
-
   });
 
   describe('Global Actions', () => {

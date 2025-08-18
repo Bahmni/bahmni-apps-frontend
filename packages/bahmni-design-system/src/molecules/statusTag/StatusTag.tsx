@@ -1,6 +1,6 @@
-import React from 'react';
 import { DotMark } from '@carbon/icons-react';
 import { Tag } from '@carbon/react';
+import React from 'react';
 
 export interface StatusTagProps {
   /**

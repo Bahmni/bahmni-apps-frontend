@@ -63,4 +63,3 @@ export const ClinicalLayout: React.FC<ClinicalLayoutProps> = ({
     </div>
   );
 };
-

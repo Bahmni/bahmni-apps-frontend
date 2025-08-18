@@ -46,7 +46,6 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
   ariaLabel,
   buttonGroupAriaLabel = 'Action buttons',
 }) => {
-
   const buttonCountClass =
     tertiaryButtonText && onTertiaryButtonClick
       ? styles.threeButtons
@@ -72,10 +71,7 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
         {content}
       </div>
 
-      <ButtonSet
-        className={styles.buttonSet}
-        aria-label={buttonGroupAriaLabel}
-      >
+      <ButtonSet className={styles.buttonSet} aria-label={buttonGroupAriaLabel}>
         <Button
           kind="secondary"
           onClick={onSecondaryButtonClick}
