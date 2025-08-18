@@ -11,10 +11,6 @@ env:
   IMAGE_NAME: ghcr.io/bahnew/clinical-frontend
   NODE_VERSION: "22"
 
-defaults:
-  run:
-    working-directory: ./bahmni-frontend
-
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
@@ -89,8 +85,8 @@ jobs:
       - name: Build and push multi-arch image (temp)
         uses: docker/build-push-action@v5
         with:
-          context: bahmni-frontend
-          file: bahmni-frontend/docker/Dockerfile
+          context: .
+          file: docker/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
