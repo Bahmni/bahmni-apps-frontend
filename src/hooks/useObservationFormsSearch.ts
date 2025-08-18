@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { OBSERVATION_FORMS_URL } from '@constants/app';
+import { getUserPreferredLocale } from '@services/translationService';
 import { getFormattedError } from '@utils/common';
 import { filterFormsByUserPrivileges } from '@utils/privilegeUtils';
 import { ObservationForm } from '../types/observationForms';
@@ -17,12 +18,19 @@ interface ApiFormPrivilege {
   privilegeName: string;
   editable: boolean;
 }
+
+interface ApiNameTranslation {
+  display: string;
+  locale: string;
+}
+
 // API Response model (what backend sends)
 interface FormApiResponse {
   uuid: string;
   name: string;
   id: number;
   privileges: ApiFormPrivilege[];
+  nameTranslation: string; // JSON string containing array of translations
 }
 
 /**
@@ -59,16 +67,37 @@ const useObservationFormsSearch = (
 
         // Map forms to expected format - handle both data.results and direct data array
         const formsArray = data.results ?? data ?? [];
+        const currentLocale = getUserPreferredLocale(); // Get current locale from localStorage
         const mappedForms: ObservationForm[] = formsArray
-          .map((form: FormApiResponse) => ({
-            uuid: form.uuid,
-            name: form.name,
-            id: form.id,
-            privileges: form.privileges.map((p) => ({
-              privilegeName: p.privilegeName,
-              editable: p.editable,
-            })),
-          }))
+          .map((form: FormApiResponse) => {
+            let translatedName = form.name; // Default to original name field
+
+            if (form.nameTranslation && currentLocale) {
+              const translations = JSON.parse(form.nameTranslation);
+
+              if (Array.isArray(translations) && translations.length > 0) {
+                // Find translation for current locale
+                const translation = translations.find(
+                  (translation: ApiNameTranslation) =>
+                    translation.locale === currentLocale,
+                );
+
+                if (translation?.display) {
+                  translatedName = translation.display;
+                }
+              }
+            }
+            const mappedForm = {
+              uuid: form.uuid,
+              name: translatedName, // Use translated name or fallback to original name field
+              id: form.id,
+              privileges: form.privileges.map((p) => ({
+                privilegeName: p.privilegeName,
+                editable: p.editable,
+              })),
+            };
+            return mappedForm;
+          })
           .filter((form: ObservationForm) => form.uuid && form.name);
         setAllForms(mappedForms);
       } catch (err) {

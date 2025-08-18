@@ -6,6 +6,7 @@ import { OBSERVATION_FORMS_URL } from '@/constants/app';
 import i18n from '@/setupTests.i18n';
 import { UserPrivilegeProvider } from '@providers/UserPrivilegeProvider';
 import * as privilegeService from '@services/privilegeService';
+import * as translationService from '@services/translationService';
 import * as commonUtils from '@utils/common';
 import * as privilegeUtils from '@utils/privilegeUtils';
 
@@ -28,6 +29,11 @@ jest.mock('@utils/privilegeUtils', () => ({
   filterFormsByUserPrivileges: jest.fn(),
 }));
 
+// Mock translation service
+jest.mock('@services/translationService', () => ({
+  getUserPreferredLocale: jest.fn(),
+}));
+
 // Mock useDebounce to return value immediately for testing
 jest.mock('../useDebounce', () => ({
   __esModule: true,
@@ -41,40 +47,45 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
   </I18nextProvider>
 );
 
+// Mock data shared across all tests
+const mockFormsData = {
+  results: [
+    {
+      name: 'Patient History Form',
+      uuid: 'form-uuid-1',
+      id: 1,
+      privileges: [
+        {
+          privilegeName: 'app:clinical:observationForms',
+          editable: true,
+        },
+      ],
+      nameTranslation:
+        '[{"display":"Formulario de Historia del Paciente","locale":"es"},{"display":"Patient History Form","locale":"en"}]',
+    },
+    {
+      name: 'Physical Examination Form',
+      uuid: 'form-uuid-2',
+      id: 2,
+      privileges: [
+        {
+          privilegeName: 'app:clinical:physicalExam',
+          editable: true,
+        },
+      ],
+      nameTranslation:
+        '[{"display":"Formulario de Examen Físico","locale":"es"}]',
+    },
+    {
+      name: 'Laboratory Results',
+      uuid: 'form-uuid-3',
+      id: 3,
+      privileges: [],
+      nameTranslation: '',
+    },
+  ],
+};
 describe('useObservationFormsSearch', () => {
-  const mockFormsData = {
-    results: [
-      {
-        name: 'Patient History Form',
-        uuid: 'form-uuid-1',
-        id: 1,
-        privileges: [
-          {
-            privilegeName: 'app:clinical:observationForms',
-            editable: true,
-          },
-        ],
-      },
-      {
-        name: 'Physical Examination Form',
-        uuid: 'form-uuid-2',
-        id: 2,
-        privileges: [
-          {
-            privilegeName: 'app:clinical:physicalExam',
-            editable: true,
-          },
-        ],
-      },
-      {
-        name: 'Laboratory Results',
-        uuid: 'form-uuid-3',
-        id: 3,
-        privileges: [],
-      },
-    ],
-  };
-
   beforeEach(() => {
     jest.clearAllMocks();
     (commonUtils.getFormattedError as jest.Mock).mockReturnValue({
@@ -92,6 +103,11 @@ describe('useObservationFormsSearch', () => {
     (
       privilegeUtils.filterFormsByUserPrivileges as jest.Mock
     ).mockImplementation((privileges, forms) => forms);
+
+    // Mock translation service to return English by default
+    (translationService.getUserPreferredLocale as jest.Mock).mockReturnValue(
+      'en',
+    );
   });
 
   describe('basic functionality', () => {
@@ -470,5 +486,148 @@ describe('useObservationFormsSearch', () => {
       expect(result.current.forms).toHaveLength(1);
       expect(result.current.forms[0].name).toBe('Fallback Form Undefined');
     });
+  });
+});
+
+describe('name translation functionality', () => {
+  beforeEach(() => {
+    // Mock privilege filtering to return all forms for translation tests
+    (
+      privilegeUtils.filterFormsByUserPrivileges as jest.Mock
+    ).mockImplementation((privileges, forms) => forms);
+  });
+
+  it('should use translated names when locale matches and translations are available', async () => {
+    // Mock Spanish locale
+    (translationService.getUserPreferredLocale as jest.Mock).mockReturnValue(
+      'es',
+    );
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockFormsData,
+    });
+
+    const { result } = renderHook(() => useObservationFormsSearch(), {
+      wrapper,
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    // Should use Spanish translations where available
+    expect(result.current.forms).toEqual([
+      {
+        name: 'Formulario de Historia del Paciente', // Spanish translation
+        uuid: 'form-uuid-1',
+        id: 1,
+        privileges: [
+          {
+            privilegeName: 'app:clinical:observationForms',
+            editable: true,
+          },
+        ],
+      },
+      {
+        name: 'Formulario de Examen Físico', // Spanish translation
+        uuid: 'form-uuid-2',
+        id: 2,
+        privileges: [
+          {
+            privilegeName: 'app:clinical:physicalExam',
+            editable: true,
+          },
+        ],
+      },
+      {
+        name: 'Laboratory Results', // Fallback to original name (no translation)
+        uuid: 'form-uuid-3',
+        id: 3,
+        privileges: [],
+      },
+    ]);
+  });
+
+  it('should fallback to original name when locale has no translation', async () => {
+    // Mock French locale (not available in translations)
+    (translationService.getUserPreferredLocale as jest.Mock).mockReturnValue(
+      'fr',
+    );
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockFormsData,
+    });
+
+    const { result } = renderHook(() => useObservationFormsSearch(), {
+      wrapper,
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    // Should use original names when no translation available for locale
+    expect(result.current.forms).toEqual([
+      {
+        name: 'Patient History Form', // Original name
+        uuid: 'form-uuid-1',
+        id: 1,
+        privileges: [
+          {
+            privilegeName: 'app:clinical:observationForms',
+            editable: true,
+          },
+        ],
+      },
+      {
+        name: 'Physical Examination Form', // Original name
+        uuid: 'form-uuid-2',
+        id: 2,
+        privileges: [
+          {
+            privilegeName: 'app:clinical:physicalExam',
+            editable: true,
+          },
+        ],
+      },
+      {
+        name: 'Laboratory Results', // Original name
+        uuid: 'form-uuid-3',
+        id: 3,
+        privileges: [],
+      },
+    ]);
+  });
+  it('should search translated names correctly', async () => {
+    // Mock Spanish locale
+    (translationService.getUserPreferredLocale as jest.Mock).mockReturnValue(
+      'es',
+    );
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockFormsData,
+    });
+
+    // Search for Spanish term
+    const { result } = renderHook(
+      () => useObservationFormsSearch('formulario'),
+      {
+        wrapper,
+      },
+    );
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    // Should match forms with "formulario" in Spanish translation
+    expect(result.current.forms).toHaveLength(2);
+    expect(result.current.forms[0].name).toBe(
+      'Formulario de Historia del Paciente',
+    );
+    expect(result.current.forms[1].name).toBe('Formulario de Examen Físico');
   });
 });
