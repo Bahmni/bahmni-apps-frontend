@@ -1,5 +1,5 @@
 import { CodeableConcept, Coding } from 'fhir/r4';
-import { isStringEmpty } from '../common';
+import { isStringEmpty } from '@bahmni-frontend/bahmni-services';
 
 export const createCodeableConcept = (
   coding?: Coding[],
