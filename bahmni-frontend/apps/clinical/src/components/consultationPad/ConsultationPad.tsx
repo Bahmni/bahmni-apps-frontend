@@ -1,12 +1,11 @@
 import { Column, Grid , MenuItemDivider , ActionArea} from '@bahmni-frontend/bahmni-design-system';
 import React, { useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import AllergiesForm from '../forms/allergies/AllergiesForm';
 import ConditionsAndDiagnoses from '../forms/conditionsAndDiagnoses/ConditionsAndDiagnoses';
 import BasicForm from '../forms/encounterDetails/EncounterDetails';
 import InvestigationsForm from '../forms/investigations/InvestigationsForm';
 import MedicationsForm from '../forms/medications/MedicationsForm';
-import { AUDIT_LOG_EVENT_DETAILS , AuditEventType , dispatchAuditEvent } from '@bahmni-frontend/bahmni-services';
+import { AUDIT_LOG_EVENT_DETAILS , AuditEventType , dispatchAuditEvent, useTranslation } from '@bahmni-frontend/bahmni-services';
 import { ERROR_TITLES } from '../../constants/errors';
 import { useEncounterSession } from '../../../src/hooks/useEncounterSession';
 import { useNotification } from '@bahmni-frontend/bahmni-widgets';

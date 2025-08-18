@@ -7,8 +7,6 @@ import {
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BundleEntry } from 'fhir/r4';
-import React from 'react';
-import { I18nextProvider } from 'react-i18next';
 import { AUDIT_LOG_EVENT_DETAILS, dispatchAuditEvent } from '@bahmni-frontend/bahmni-services';
 import * as consultationBundleService from '../../../services/consultationBundleService';
 import useAllergyStore from '../../../stores/allergyStore';
@@ -17,11 +15,11 @@ import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore'
 import { useMedicationStore } from '../../../stores/medicationsStore';
 import useServiceRequestStore from '../../../stores/serviceRequestStore';
 import ConsultationPad from '../ConsultationPad';
-import i18n from '../../../../setupTests.i18n';
 
-// Mock i18next translation function
-jest.mock('react-i18next', () => ({
-  ...jest.requireActual('react-i18next'),
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+  dispatchAuditEvent: jest.fn(),
+  __esModule: true,
   useTranslation: () => ({
     t: (key: string) => {
       // Return specific translations for common keys
@@ -30,8 +28,7 @@ jest.mock('react-i18next', () => ({
         CONSULTATION_PAD_DONE_BUTTON: 'Done',
         CONSULTATION_PAD_CANCEL_BUTTON: 'Cancel',
         CONSULTATION_SUBMITTED_SUCCESS_TITLE: 'Success',
-        CONSULTATION_SUBMITTED_SUCCESS_MESSAGE:
-          'Consultation saved successfully',
+        CONSULTATION_SUBMITTED_SUCCESS_MESSAGE: 'Consultation saved successfully',
         ERROR_CONSULTATION_TITLE: 'Consultation Error',
         CONSULTATION_ERROR_GENERIC: 'Error creating consultation bundle',
         CONSULTATION_PAD_ERROR_TITLE: 'Something went wrong',
@@ -148,14 +145,6 @@ jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
   __esModule: true,
 }));
 
-
-// Mock audit event dispatcher
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
-  dispatchAuditEvent: jest.fn(),
-  __esModule: true,
-}));
-
 // Mock utilities
 jest.mock('../../../utils/fhir/encounterResourceCreator', () => ({
   createEncounterResource: jest.fn(() => ({
@@ -268,11 +257,6 @@ const mockDispatchAuditEvent = dispatchAuditEvent as jest.MockedFunction<
   typeof dispatchAuditEvent
 >;
 
-// Test wrapper
-const renderWithProviders = (ui: React.ReactElement) => {
-  return render(<I18nextProvider i18n={i18n}>{ui}</I18nextProvider>);
-};
-
 describe('ConsultationPad', () => {
   const mockOnClose = jest.fn();
 
@@ -315,19 +299,19 @@ describe('ConsultationPad', () => {
 
   describe('Rendering', () => {
     it('should render without crashing', () => {
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
       expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
     });
 
     it('should display correct title when no error', () => {
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
       expect(screen.getByTestId('action-area-title')).toHaveTextContent(
         'CONSULTATION_ACTION_NEW',
       );
     });
 
     it('should render all child forms in correct order', () => {
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const content = screen.getByTestId('action-area-content');
       const forms = content.querySelectorAll('[data-testid]');
@@ -347,13 +331,13 @@ describe('ConsultationPad', () => {
     });
 
     it('should render dividers between forms', () => {
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
       const dividers = screen.getAllByTestId('mock-divider');
       expect(dividers).toHaveLength(5);
     });
 
     it('should render forms and dividers in the correct sequence', () => {
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const content = screen.getByTestId('action-area-content');
       const children = Array.from(content.children);
@@ -387,7 +371,7 @@ describe('ConsultationPad', () => {
     });
 
     it('should render action buttons with correct text', () => {
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       expect(screen.getByTestId('primary-button')).toHaveTextContent('Done');
       expect(screen.getByTestId('secondary-button')).toHaveTextContent(
@@ -398,7 +382,7 @@ describe('ConsultationPad', () => {
     it('should render error state when hasError is true', () => {
       mockEncounterDetailsStore.hasError = true;
 
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       expect(screen.getByTestId('action-area-title')).toHaveTextContent('');
       expect(screen.getByText('Something went wrong')).toBeInTheDocument();
@@ -416,13 +400,13 @@ describe('ConsultationPad', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockEncounterDetailsStore.selectedLocation = null as any;
 
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       expect(screen.getByTestId('primary-button')).toBeDisabled();
     });
 
     it('should enable Done button when all required data is present', () => {
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       expect(screen.getByTestId('primary-button')).not.toBeDisabled();
     });
@@ -430,7 +414,7 @@ describe('ConsultationPad', () => {
 
   describe('Snapshot Tests', () => {
     it('should match snapshot for form order and dividers', () => {
-      const { container } = renderWithProviders(
+      const { container } = render(
         <ConsultationPad onClose={mockOnClose} />,
       );
       expect(container).toMatchSnapshot();
@@ -438,7 +422,7 @@ describe('ConsultationPad', () => {
 
     it('should match snapshot for error state', () => {
       mockEncounterDetailsStore.hasError = true;
-      const { container } = renderWithProviders(
+      const { container } = render(
         <ConsultationPad onClose={mockOnClose} />,
       );
       expect(container).toMatchSnapshot();
@@ -447,14 +431,14 @@ describe('ConsultationPad', () => {
     it('should match snapshot with disabled Done button', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockEncounterDetailsStore.selectedLocation = null as any;
-      const { container } = renderWithProviders(
+      const { container } = render(
         <ConsultationPad onClose={mockOnClose} />,
       );
       expect(container).toMatchSnapshot();
     });
 
     it('should verify correct order of forms and dividers in snapshot', () => {
-      const { container } = renderWithProviders(
+      const { container } = render(
         <ConsultationPad onClose={mockOnClose} />,
       );
       const content = container.querySelector(
@@ -477,7 +461,7 @@ describe('ConsultationPad', () => {
           }),
       );
 
-      const { container } = renderWithProviders(
+      const { container } = render(
         <ConsultationPad onClose={mockOnClose} />,
       );
 
@@ -499,7 +483,7 @@ describe('ConsultationPad', () => {
   describe('User Interactions', () => {
     describe('Cancel Button', () => {
       it('should call onClose when clicked', async () => {
-        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+        render(<ConsultationPad onClose={mockOnClose} />);
 
         const cancelButton = screen.getByTestId('secondary-button');
         await userEvent.click(cancelButton);
@@ -508,7 +492,7 @@ describe('ConsultationPad', () => {
       });
 
       it('should reset all stores when clicked', async () => {
-        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+        render(<ConsultationPad onClose={mockOnClose} />);
 
         const cancelButton = screen.getByTestId('secondary-button');
         await userEvent.click(cancelButton);
@@ -520,7 +504,7 @@ describe('ConsultationPad', () => {
       });
 
       it('should not submit data when clicked', async () => {
-        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+        render(<ConsultationPad onClose={mockOnClose} />);
 
         const cancelButton = screen.getByTestId('secondary-button');
         await userEvent.click(cancelButton);
@@ -540,7 +524,7 @@ describe('ConsultationPad', () => {
           type: 'transaction-response',
         });
 
-        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+        render(<ConsultationPad onClose={mockOnClose} />);
 
         const doneButton = screen.getByTestId('primary-button');
         await userEvent.click(doneButton);
@@ -564,7 +548,7 @@ describe('ConsultationPad', () => {
       it('should not submit when diagnoses validation fails', async () => {
         mockDiagnosesStore.validate.mockReturnValue(false);
 
-        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+        render(<ConsultationPad onClose={mockOnClose} />);
 
         const doneButton = screen.getByTestId('primary-button');
         await userEvent.click(doneButton);
@@ -579,7 +563,7 @@ describe('ConsultationPad', () => {
       it('should not submit when allergies validation fails', async () => {
         mockAllergyStore.validateAllAllergies.mockReturnValue(false);
 
-        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+        render(<ConsultationPad onClose={mockOnClose} />);
 
         const doneButton = screen.getByTestId('primary-button');
         await userEvent.click(doneButton);
@@ -594,7 +578,7 @@ describe('ConsultationPad', () => {
       it('should not submit when medications validation fails', async () => {
         mockMedicationStore.validateAllMedications.mockReturnValue(false);
 
-        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+        render(<ConsultationPad onClose={mockOnClose} />);
 
         const doneButton = screen.getByTestId('primary-button');
         await userEvent.click(doneButton);
@@ -612,7 +596,7 @@ describe('ConsultationPad', () => {
           consultationBundleService.postConsultationBundle as jest.Mock
         ).mockRejectedValue(error);
 
-        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+        render(<ConsultationPad onClose={mockOnClose} />);
 
         const doneButton = screen.getByTestId('primary-button');
 
@@ -646,7 +630,7 @@ describe('ConsultationPad', () => {
             }),
         );
 
-        renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+        render(<ConsultationPad onClose={mockOnClose} />);
 
         const doneButton = screen.getByTestId('primary-button');
         expect(doneButton).not.toBeDisabled();
@@ -668,7 +652,7 @@ describe('ConsultationPad', () => {
 
   describe('State Management', () => {
     it('should cleanup stores on unmount', () => {
-      const { unmount } = renderWithProviders(
+      const { unmount } = render(
         <ConsultationPad onClose={mockOnClose} />,
       );
 
@@ -693,7 +677,7 @@ describe('ConsultationPad', () => {
           }),
       );
 
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
 
@@ -724,7 +708,7 @@ describe('ConsultationPad', () => {
         id: 'bundle-123',
       });
 
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
       await userEvent.click(doneButton);
@@ -741,7 +725,7 @@ describe('ConsultationPad', () => {
 
   describe('Validation', () => {
     it('should validate all forms before submission', async () => {
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
       await userEvent.click(doneButton);
@@ -760,7 +744,7 @@ describe('ConsultationPad', () => {
         testStore,
       );
 
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
       expect(doneButton).toBeDisabled();
@@ -775,7 +759,7 @@ describe('ConsultationPad', () => {
         testStore,
       );
 
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
       expect(doneButton).toBeDisabled();
@@ -790,7 +774,7 @@ describe('ConsultationPad', () => {
         testStore,
       );
 
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
       expect(doneButton).toBeDisabled();
@@ -805,7 +789,7 @@ describe('ConsultationPad', () => {
         testStore,
       );
 
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
       expect(doneButton).toBeDisabled();
@@ -820,7 +804,7 @@ describe('ConsultationPad', () => {
         testStore,
       );
 
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
       expect(doneButton).toBeDisabled();
@@ -835,7 +819,7 @@ describe('ConsultationPad', () => {
         testStore,
       );
 
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
       expect(doneButton).toBeDisabled();
@@ -848,7 +832,7 @@ describe('ConsultationPad', () => {
         consultationBundleService.postConsultationBundle as jest.Mock
       ).mockRejectedValue('String error');
 
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
 
@@ -875,7 +859,7 @@ describe('ConsultationPad', () => {
         consultationBundleService.postConsultationBundle as jest.Mock
       ).mockRejectedValue(timeoutError);
 
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
 
@@ -899,7 +883,7 @@ describe('ConsultationPad', () => {
     it('should not submit when encounterDetailsFormReady is false', () => {
       mockEncounterDetailsStore.isEncounterDetailsFormReady = false;
 
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
       expect(doneButton).toBeDisabled();
@@ -960,7 +944,7 @@ describe('ConsultationPad', () => {
         },
       ]);
 
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
 
@@ -1019,7 +1003,7 @@ describe('ConsultationPad', () => {
         id: 'bundle-123',
       });
 
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
 
@@ -1090,7 +1074,7 @@ describe('ConsultationPad', () => {
         id: 'bundle-123',
       });
 
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
 
@@ -1122,7 +1106,7 @@ describe('ConsultationPad', () => {
         id: 'bundle-123',
       });
 
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
 
@@ -1181,7 +1165,7 @@ describe('ConsultationPad', () => {
         });
       });
 
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
 
@@ -1229,7 +1213,7 @@ describe('ConsultationPad', () => {
         name: encounterType,
       };
 
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
       await userEvent.click(doneButton);
@@ -1253,7 +1237,7 @@ describe('ConsultationPad', () => {
         type: 'transaction-response',
       });
 
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
       await userEvent.click(doneButton);
@@ -1275,7 +1259,7 @@ describe('ConsultationPad', () => {
         consultationBundleService.postConsultationBundle as jest.Mock
       ).mockRejectedValue(submissionError);
 
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
       await userEvent.click(doneButton);
@@ -1305,7 +1289,7 @@ describe('ConsultationPad', () => {
         name: encounterType,
       };
 
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
       await userEvent.click(doneButton);
@@ -1329,7 +1313,7 @@ describe('ConsultationPad', () => {
         type: 'transaction-response',
       });
 
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
       await userEvent.click(doneButton);
@@ -1362,7 +1346,7 @@ describe('ConsultationPad', () => {
         type: 'transaction-response',
       });
 
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
       await userEvent.click(doneButton);

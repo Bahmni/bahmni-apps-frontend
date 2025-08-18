@@ -12,6 +12,20 @@ export const mockEncounterConcepts = {
   visitTypes: [{ uuid: 'visit-type-1', name: 'OPD' }],
 };
 
+export const mockProvider = {
+  uuid: 'provider-uuid-123',
+  display: 'Dr. Smith - Clinician',
+  person: {
+    uuid: 'person-uuid-456',
+    display: 'Dr. John Smith',
+    preferredName: {
+      uuid: 'name-uuid-789',
+      display: 'Dr. John Smith',
+      links: [],
+    },
+  },
+};
+
 export const mockPractitioner = {
   uuid: 'practitioner-1',
   display: 'Dr. Test',
