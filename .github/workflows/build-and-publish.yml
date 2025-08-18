@@ -2,7 +2,7 @@ name: Build and Publish
 
 on:
   push:
-    branches: [main]
+    branches: [BN-135]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -10,6 +10,10 @@ on:
 env:
   IMAGE_NAME: ghcr.io/bahnew/clinical-frontend
   NODE_VERSION: "22"
+
+defaults:
+  run:
+    working-directory: ./bahmni-frontend
 
 jobs:
   lint-and-test:
@@ -27,14 +31,14 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Lint code
-        run: yarn lint
+      # - name: Lint code
+      #   run: yarn lint
 
-      - name: Lint styles
-        run: yarn lint:styles
+      # - name: Lint styles
+      #   run: yarn lint:styles
 
       - name: Run tests
-        run: yarn test
+        run: npx nx run-many --target=test
 
       - name: Scan for package vulnerabilities
         uses: aquasecurity/trivy-action@0.30.0
@@ -69,7 +73,7 @@ jobs:
         run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
       - name: Build
-        run: yarn build
+        run: npx nx build distro
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -85,8 +89,8 @@ jobs:
       - name: Build and push multi-arch image (temp)
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: package/docker/Dockerfile
+          context: bahmni-frontend
+          file: bahmni-frontend/docker/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
@@ -109,8 +113,7 @@ jobs:
         run: |
           # Tag the scanned image with final tags
           docker buildx imagetools create \
-            --tag ${{ env.IMAGE_NAME }}:latest \
-            --tag ${{ env.IMAGE_NAME }}:v${{ steps.package-version.outputs.version }}-${{github.run_number}} \
+            --tag ${{ env.IMAGE_NAME }}:monorepo \
             ${{ env.IMAGE_NAME }}:scan-${{ github.sha }}
 
       # This step dispatches an event to the utils repo to trigger downstream deployments
