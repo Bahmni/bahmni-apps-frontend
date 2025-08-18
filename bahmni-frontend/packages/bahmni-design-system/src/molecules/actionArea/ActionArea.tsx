@@ -30,7 +30,7 @@ export interface ActionAreaProps {
  * All text content including title and button labels should be passed as props
  * to allow for external translation management.
  */
-const ActionArea: React.FC<ActionAreaProps> = ({
+export const ActionArea: React.FC<ActionAreaProps> = ({
   title,
   primaryButtonText,
   onPrimaryButtonClick,

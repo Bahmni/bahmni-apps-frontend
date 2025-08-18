@@ -1,7 +1,7 @@
 import { Loading } from '@bahmni-frontend/bahmni-design-system';
 import React, { Suspense, useMemo, useState } from 'react';
 import { useTranslation } from '@bahmni-frontend/bahmni-services';
-//import ConsultationPad from '@components/clinical/consultationPad/ConsultationPad';
+import ConsultationPad from '../components/consultationPad/ConsultationPad';
 import DashboardContainer from '../components/dashboardContainer/DashboardContainer';
 import PatientHeader from '../components/patientHeader/PatientHeader';
 import { Icon } from '@bahmni-frontend/bahmni-design-system';
@@ -138,12 +138,11 @@ const ConsultationPage: React.FC = () => {
         </Suspense>
       }
       isActionAreaVisible={isActionAreaVisible}
-      // actionArea={
-      //   <ConsultationPad
-      //     onClose={() => setIsActionAreaVisible((prev) => !prev)}
-      //   />
-      // }
-      actionArea={<div>Action Area Placeholder</div>} // Placeholder for ConsultationPad
+      actionArea={
+        <ConsultationPad
+          onClose={() => setIsActionAreaVisible((prev) => !prev)}
+        />
+      }
     />
   );
 };

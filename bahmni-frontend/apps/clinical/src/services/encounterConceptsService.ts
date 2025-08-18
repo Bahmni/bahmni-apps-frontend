@@ -1,0 +1,55 @@
+import i18next from 'i18next';
+import { ENCOUNTER_CONCEPTS_URL } from '../constants/app';
+import { COMMON_ERROR_MESSAGES } from '../constants/errors';
+import {
+  EncounterConceptsResponse,
+  EncounterConcepts,
+  Concept,
+} from '../models/encounterConcepts';
+import { get } from '@bahmni-frontend/bahmni-services';
+
+/**
+ * Transforms a record of string key-value pairs into an array of Concept objects
+ * @param record Record with string keys and values
+ * @returns Array of Concept objects with name and uuid properties
+ */
+function transformToConcepts<T>(record: Record<string, T> = {}): Concept[] {
+  return Object.entries(record).map(([name, uuid]) => ({
+    name,
+    uuid: String(uuid),
+  }));
+}
+
+/**
+ * Fetches encounter concepts from the OpenMRS API and transforms the response
+ * @returns Promise resolving to EncounterConcepts containing arrays of Concept objects
+ * @throws Error when the response has an unexpected structure or format
+ */
+export async function getEncounterConcepts(): Promise<EncounterConcepts> {
+  try {
+    const response = await get<EncounterConceptsResponse>(
+      ENCOUNTER_CONCEPTS_URL,
+    );
+
+    // Check if response is a valid object with the expected structure
+    if (!response || typeof response !== 'object') {
+      throw new Error(i18next.t(COMMON_ERROR_MESSAGES.INVALID_RESPONSE));
+    }
+
+    return {
+      visitTypes: transformToConcepts(response.visitTypes),
+      encounterTypes: transformToConcepts(response.encounterTypes),
+      orderTypes: transformToConcepts(response.orderTypes),
+      conceptData: transformToConcepts(response.conceptData),
+    };
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message.includes(i18next.t(COMMON_ERROR_MESSAGES.INVALID_RESPONSE))
+    ) {
+      throw error;
+    }
+
+    throw new Error(i18next.t('ERROR_FETCHING_ENCOUNTER_DETAILS'));
+  }
+}

@@ -60,10 +60,28 @@ export { ClinicalLayout } from './templates/ClinicalLayout';
 
 export { Section, type SectionProps } from './atoms/section';
 
-export { HeaderWSideNav, useSidebarNavigation, type HeaderSideNavItem } from './organisms/headerWSideNav';
+export {
+  HeaderWSideNav,
+  useSidebarNavigation,
+  type HeaderSideNavItem,
+} from './organisms/headerWSideNav';
 
 export { Content } from './atoms/content';
 
 export { Loading, type LoadingProps } from './atoms/loading';
+
+export {
+  FilterableMultiSelect,
+  type FilterableMultiSelectProps,
+} from './atoms/filterableMultiSelect';
+export { Stack, type StackProps } from './atoms/stack';
+export { SelectedItem, type SelectedItemProps } from './molecules/selectedItem';
+export {
+  TextAreaWClose,
+  type TextAreaWCloseProps,
+} from './molecules/textAreaWClose';
+export { BoxWHeader, type BoxWHeaderProps } from './molecules/boxWHeader';
+export { ActionArea, type ActionAreaProps } from './molecules/actionArea';
+export { MenuItemDivider, type MenuItemDividerProps } from './atoms/menuItemDivider';
 
 import '@carbon/styles/css/styles.css';

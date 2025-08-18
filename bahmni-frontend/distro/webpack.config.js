@@ -38,9 +38,10 @@ module.exports = (env, argv) => {
         main: './src/main.tsx',
         index: './src/index.html',
         baseHref: publicPath,
-        assets: ['./src/favicon.ico', './src/assets'],
+        assets: ['./src/assets'],
         styles: ['./src/styles.scss'],
-        outputHashing: process.env['NODE_ENV'] === 'production' ? 'all' : 'none',
+        outputHashing:
+          process.env['NODE_ENV'] === 'production' ? 'all' : 'none',
         optimization: process.env['NODE_ENV'] === 'production',
       }),
       new NxReactWebpackPlugin({
@@ -49,5 +50,5 @@ module.exports = (env, argv) => {
         // svgr: false
       }),
     ],
-  }
+  };
 };
