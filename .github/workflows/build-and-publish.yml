@@ -2,7 +2,7 @@ name: Build and Publish
 
 on:
   push:
-    branches: [BN-157]
+    branches: [BN-135]
   pull_request:
     branches: [main]
   workflow_dispatch:
