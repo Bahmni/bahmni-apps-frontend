@@ -116,3 +116,17 @@ export {
   initializeAuditListener,
   type AuditEventType,
 } from './auditLogService';
+
+export {
+  HL7_CONDITION_CLINICAL_STATUS_CODE_SYSTEM,
+  HL7_CONDITION_VERIFICATION_STATUS_CODE_SYSTEM,
+  HL7_CONDITION_CATEGORY_CODE_SYSTEM,
+  HL7_CONDITION_CATEGORY_CONDITION_CODE,
+  HL7_CONDITION_CATEGORY_DIAGNOSIS_CODE,
+  FHIR_ENCOUNTER_TYPE_CODE_SYSTEM
+} from './constants/fhir';
+
+export {
+  OPENMRS_REST_V1,
+  OPENMRS_FHIR_R4,
+} from './constants/app';
