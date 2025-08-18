@@ -1,0 +1,14 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.sectionContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-08;
+}
+
+.displayControlSection {
+  width: 100%;
+}

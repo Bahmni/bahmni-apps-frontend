@@ -1,0 +1,7 @@
+@use "@carbon/react/scss/theme" as *;
+
+.tooltipIcon {
+  svg {
+    color: $icon-secondary !important;
+  }
+}

@@ -1,44 +1,25 @@
 {
-  "compilerOptions": {
-    "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": false,
-    "jsx": "react-jsx",
-    "baseUrl": "src",
-    "paths": {
-      "@/*": ["*"],
-      "@__mocks__/*": ["__mocks__/*"],
-      "@components/*": ["components/*"],
-      "@constants/*": ["constants/*"],
-      "@contexts/*": ["contexts/*"],
-      "@displayControls/*": ["displayControls/*"],
-      "@hooks/*": ["hooks/*"],
-      "@layouts/*": ["layouts/*"],
-      "@pages/*": ["pages/*"],
-      "@providers/*": ["providers/*"],
-      "@schemas/*": ["schemas/*"],
-      "@services/*": ["services/*"],
-      "@stores/*": ["stores/*"],
-      "@types/*": ["types/*"],
-      "@utils/*": ["utils/*"]
+  "extends": "./tsconfig.base.json",
+  "compileOnSave": false,
+  "files": [],
+  "references": [
+    {
+      "path": "./apps/clinical"
+    },
+    {
+      "path": "./packages/bahmni-services"
+    },
+    {
+      "path": "./packages/bahmni-design-system"
+    },
+    {
+      "path": "./packages/bahmni-widgets"
+    },
+    {
+      "path": "./distro"
+    },
+    {
+      "path": "./apps/sample-app-module"
     }
-  },
-  "include": [
-    "src/**/*",
-    "declarations.d.ts",
-    "vite.config.ts",
-    "vite-env.d.ts"
-  ],
-  "exclude": ["node_modules", "build", "dist"]
+  ]
 }

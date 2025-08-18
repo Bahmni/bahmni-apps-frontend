@@ -1,1 +1,0 @@
-export { SelectedItem, type SelectedItemProps } from './SelectedItem';

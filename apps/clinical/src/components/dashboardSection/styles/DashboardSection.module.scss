@@ -1,0 +1,21 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+
+.sectionWrapper {
+  box-shadow: 0px 2px 6px 0px $shadow;
+}
+
+.sectionName {
+  min-block-size: fit-content !important;
+  p {
+    @include type-style("heading-compact-02");
+    color: $text-primary;
+  }
+}
+
+.divider {
+  height: $spacing-07;
+  background-color: $layer-01;
+}

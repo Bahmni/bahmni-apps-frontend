@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Clinical App Configuration Schema",
+  "description": "Schema for global clinical app configuration including patient information, actions and available dashboards",
+  "type": "object",
+  "required": [
+    "patientInformation",
+    "actions",
+    "dashboards",
+    "consultationPad"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "patientInformation": {
+      "type": "object",
+      "description": "Patient information configuration",
+      "additionalProperties": false
+    },
+    "actions": {
+      "type": "array",
+      "description": "List of available actions"
+    },
+    "dashboards": {
+      "type": "array",
+      "description": "List of available dashboards",
+      "items": {
+        "type": "object",
+        "required": ["name", "requiredPrivileges", "url"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Display name of the dashboard"
+          },
+          "requiredPrivileges": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of permissions required to access this dashboard"
+          },
+          "icon": {
+            "type": "string",
+            "description": "Icon class name for the dashboard"
+          },
+          "default": {
+            "type": "boolean",
+            "description": "Whether this is the default dashboard"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL to access the dashboard data"
+          }
+        }
+      }
+    },
+    "consultationPad": {
+      "type": "object",
+      "description": "Configuration for consultation pad forms",
+      "required": ["allergyConceptMap"],
+      "additionalProperties": false,
+      "properties": {
+        "allergyConceptMap": {
+          "type": "object",
+          "description": "UUID mappings for allergy concepts",
+          "required": [
+            "medicationAllergenUuid",
+            "foodAllergenUuid",
+            "environmentalAllergenUuid",
+            "allergyReactionUuid"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "medicationAllergenUuid": {
+              "type": "string",
+              "description": "UUID for medication allergen concept"
+            },
+            "foodAllergenUuid": {
+              "type": "string",
+              "description": "UUID for food allergen concept"
+            },
+            "environmentalAllergenUuid": {
+              "type": "string",
+              "description": "UUID for environmental allergen concept"
+            },
+            "allergyReactionUuid": {
+              "type": "string",
+              "description": "UUID for allergy reaction concept"
+            }
+          }
+        }
+      }
+    }
+  }
+}

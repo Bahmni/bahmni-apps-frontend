@@ -1,0 +1,35 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.conditionsTableTitle {
+  background: $background !important;
+  min-block-size: fit-content !important;
+  border-top: 1px solid $border-subtle;
+  p {
+    @include type-style("heading-compact-02");
+    color: $text-primary;
+  }
+}
+
+.conditionName {
+  @include type-style("heading-compact-01");
+}
+
+.conditionsTableBody {
+  td {
+    width: 25%;
+  }
+  td:nth-child(4) {
+    padding-inline: 0 !important;
+  }
+}
+
+.activeStatus {
+  color: $green-50;
+}
+
+.inactiveStatus {
+  color: $cool-gray-20;
+}

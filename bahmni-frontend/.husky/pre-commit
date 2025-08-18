@@ -1,4 +1,0 @@
-#!/bin/sh
-
-npx lint-staged
-nx run-many --all --target=test

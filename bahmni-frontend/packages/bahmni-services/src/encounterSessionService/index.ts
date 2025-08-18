@@ -1,1 +1,0 @@
-export { findActiveEncounterInSession } from './encounterSessionService';

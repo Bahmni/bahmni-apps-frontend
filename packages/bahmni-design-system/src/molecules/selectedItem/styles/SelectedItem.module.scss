@@ -1,0 +1,27 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
+.grid {
+  border: 1px solid $border-subtle-02;
+  background-color: $background !important;
+  padding: $spacing-04;
+  padding-inline: 0 !important;
+}
+
+.children {
+  align-content: center;
+  justify-self: start;
+  padding-left: $spacing-04;
+  width: -webkit-fill-available;
+}
+
+.close {
+  margin-left: 0 !important;
+  align-self: self-start;
+  justify-self: start;
+
+  :global(.cds--btn--icon-only) {
+    background-color: $background !important;
+    color: $icon-primary !important;
+  }
+}

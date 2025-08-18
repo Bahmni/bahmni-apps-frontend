@@ -1,0 +1,58 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/breakpoint" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.skeletonContainer {
+  width: 70%;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: $spacing-03;
+  align-self: stretch;
+
+  .patientName {
+    @include type-style("heading-compact-02");
+  }
+}
+
+.patientDetails {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: $spacing-05;
+  row-gap: $spacing-03;
+
+  p {
+    @include type-style("body-compact-01");
+    text-transform: capitalize;
+  }
+}
+
+.identifierAndGenderWrapper {
+  display: flex;
+  gap: $spacing-05;
+}
+
+.detailsWithIcon {
+  display: flex;
+  align-items: center;
+  gap: $spacing-01;
+  height: $spacing-05 + $spacing-01;
+  svg {
+    height: $spacing-05;
+    width: $spacing-05;
+    color: $icon-secondary;
+  }
+}
+
+@include breakpoint-down(lg) {
+  .patientDetails {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-03;
+  }
+}

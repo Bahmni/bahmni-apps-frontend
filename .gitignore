@@ -1,3 +1,5 @@
+# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+
 # Logs
 logs
 *.log
@@ -6,6 +8,8 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+yarn-error.log
+.yarn/releases/*
 
 # Dependencies
 node_modules
@@ -22,18 +26,49 @@ dist-ssr
 build
 *.local
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json
-!.vscode/launch.json
+# IDEs and editors
 .idea
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# misc
+/.sass-cache
+/connect.lock
+/coverage
+/libpeerconnection.log
+npm-debug.log
+yarn-error.log
+testem.log
+/typings
+
+# System Files
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+Thumbs.db
+
+.nx/cache
+.nx/workspace-data
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md
+
+test-output
+
 
 # TypeScript
 *.tsbuildinfo
@@ -73,3 +108,6 @@ stats.html
 # Cline
 docs/memory-bank/*
 .clinerules
+
+vite.config.*.timestamp*
+vitest.config.*.timestamp*

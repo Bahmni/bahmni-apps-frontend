@@ -1,0 +1,30 @@
+@use "@carbon/react/scss/breakpoint" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  row-gap: $spacing-04;
+  align-items: center;
+  height: 100%;
+}
+
+.controls {
+  align-content: center;
+  padding-block: $spacing-04 !important;
+}
+
+.newConsultationButton {
+  border-radius: 2px !important;
+  padding-right: $spacing-05 !important;
+}
+
+@include breakpoint-down(lg) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    flex-wrap: nowrap;
+  }
+}

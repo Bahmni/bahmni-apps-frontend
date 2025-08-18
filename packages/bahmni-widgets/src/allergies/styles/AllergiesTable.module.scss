@@ -1,0 +1,62 @@
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/spacing" as *;
+
+.allergiesTableError {
+  @include type-style("body-compact-01");
+  background-color: $background;
+  padding: $spacing-06 $spacing-05;
+  text-align: center;
+}
+
+.mildSeverity {
+  background-color: $blue-20 !important;
+  color: $blue-70 !important;
+}
+
+.moderateSeverity {
+  background-color: $yellow-20 !important;
+  color: $yellow-70 !important;
+}
+
+.severeSeverity {
+  background-color: $red-20 !important;
+  color: $red-70 !important;
+}
+
+.allergyName {
+  @include type-style("heading-compact-01");
+  color: $text-primary;
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-02;
+}
+
+.allergyCategory {
+  @include type-style("body-compact-01");
+  color: $text-secondary;
+  text-transform: uppercase;
+}
+
+.allergyNote {
+  svg {
+    color: $icon-secondary !important;
+  }
+}
+
+.activeStatus {
+  color: $green-50;
+}
+.inactiveStatus {
+  color: $cool-gray-20;
+}
+
+.allergiesTableBody {
+  td {
+    width: 25%;
+  }
+  td:nth-child(4) {
+    padding-inline: 0 !important;
+  }
+}
