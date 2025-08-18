@@ -1,69 +1,42 @@
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import i18n from '@/setupTests.i18n';
 import { FhirEncounter, FhirEncounterType } from '../../../models/encounter';
-import { User } from '@/types/user';
+import { type User, getActiveVisit, notificationService, getCurrentProvider, getCurrentUser, logAuditEvent, getFormattedError } from '@bahmni-frontend/bahmni-services';
+import { NotificationProvider } from '@bahmni-frontend/bahmni-widgets';
 import {
   mockLocations,
   mockEncounterConcepts,
   mockPractitioner,
   mockActiveVisit,
-} from '@__mocks__/consultationPadMocks';
-import { ClinicalConfigProvider } from '@providers/ClinicalConfigProvider';
-import { NotificationProvider } from '@providers/NotificationProvider';
-import { logAuditEvent } from '@services/auditLogService';
-import * as consultationBundleService from '@services/consultationBundleService';
-import { getEncounterConcepts } from '@services/encounterConceptsService';
-import { getActiveVisit } from '@services/encounterService';
-import { getLocations } from '@services/locationService';
-import notificationService from '@services/notificationService';
-import { getCurrentProvider } from '@services/providerService';
-import { getCurrentUser } from '@services/userService';
-import useAllergyStore from '@stores/allergyStore';
-import { useConditionsAndDiagnosesStore } from '@stores/conditionsAndDiagnosesStore';
-import { useEncounterDetailsStore } from '@stores/encounterDetailsStore';
-import useServiceRequestStore from '@stores/serviceRequestStore';
+} from '../../../__mocks__/consultationPadMocks';
+import { ClinicalConfigProvider } from '../../../providers/ClinicalConfigProvider';
+import * as consultationBundleService from '../../../services/consultationBundleService';
+import { getEncounterConcepts } from '../../../services/encounterConceptsService';
+import { getLocations } from '../../../services/locationService';
+import useAllergyStore from '../../../stores/allergyStore';
+import { useConditionsAndDiagnosesStore } from '../../../stores/conditionsAndDiagnosesStore';
+import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore';
+import useServiceRequestStore from '../../../stores/serviceRequestStore';
 import ConsultationPad from '../ConsultationPad';
 
-const mockLogAuditEvent = logAuditEvent as jest.MockedFunction<
-  typeof logAuditEvent
->;
-// Mock axios to prevent actual HTTP requests and SSL certificate errors
-jest.mock('axios', () => ({
-  create: jest.fn(() => ({
-    defaults: {
-      headers: {
-        common: {},
-      },
-    },
-    interceptors: {
-      request: {
-        use: jest.fn(),
-      },
-      response: {
-        use: jest.fn(),
-      },
-    },
-    get: jest.fn(),
-    post: jest.fn(),
-    put: jest.fn(),
-    delete: jest.fn(),
-  })),
-  isAxiosError: jest.fn(() => true),
-}));
-
 // Mock all service dependencies
-jest.mock('@services/consultationBundleService');
-jest.mock('@services/locationService');
-jest.mock('@services/encounterConceptsService');
-jest.mock('@services/providerService');
-jest.mock('@services/userService');
-jest.mock('@services/encounterService');
-jest.mock('@services/notificationService');
-jest.mock('@services/auditLogService');
+jest.mock('../../../services/consultationBundleService');
+jest.mock('../../../services/locationService');
+jest.mock('../../../services/encounterConceptsService');
+
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+  getFormattedError: jest.fn(),
+  getActiveVisit: jest.fn(),
+  getCurrentUser: jest.fn(),
+  getCurrentProvider: jest.fn(),
+  logAuditEvent: jest.fn(),
+  // useTranslation: () => ({
+  //   t: (key: string) => key
+  // }),
+}));
 
 // Create mock user
 const mockUser: User = {
@@ -90,7 +63,6 @@ global.crypto = {
 
 // Test wrapper component with all required providers
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <I18nextProvider i18n={i18n}>
     <NotificationProvider>
       <ClinicalConfigProvider>
         <MemoryRouter initialEntries={['/patient/patient-1']}>
@@ -100,7 +72,6 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
         </MemoryRouter>
       </ClinicalConfigProvider>
     </NotificationProvider>
-  </I18nextProvider>
 );
 
 // Create a proper FhirEncounter object
@@ -149,24 +120,22 @@ describe('ConsultationPad Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // Reset audit logging mocks
-    mockLogAuditEvent.mockResolvedValue({ logged: true });
-
     // Mock implementation for each service
+    (logAuditEvent as jest.Mock).mockResolvedValue({ logged: true });
     (getLocations as jest.Mock).mockResolvedValue(mockLocations);
-    (getEncounterConcepts as jest.Mock).mockResolvedValue(
-      mockEncounterConcepts,
-    );
     (getCurrentProvider as jest.Mock).mockResolvedValue(mockPractitioner);
     (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
     (getActiveVisit as jest.Mock).mockResolvedValue(fullMockActiveVisit);
-    (
-      consultationBundleService.postConsultationBundle as jest.Mock
-    ).mockResolvedValue({});
+    (getFormattedError as jest.Mock).mockImplementation((error: any) => ({
+          title: error.title || 'unknown title',
+          message: error.message || 'Unknown error',
+        }));
+
+    (getEncounterConcepts as jest.Mock).mockResolvedValue(mockEncounterConcepts);
+    (consultationBundleService.postConsultationBundle as jest.Mock).mockResolvedValue({});
 
     // Mock the bundle creation functions
-    (
-      consultationBundleService.createDiagnosisBundleEntries as jest.Mock
+    (consultationBundleService.createDiagnosisBundleEntries as jest.Mock
     ).mockReturnValue([
       {
         resource: {
