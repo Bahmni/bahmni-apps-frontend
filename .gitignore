@@ -9,7 +9,6 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 yarn-error.log
-.yarn/releases/*
 
 # Dependencies
 node_modules
