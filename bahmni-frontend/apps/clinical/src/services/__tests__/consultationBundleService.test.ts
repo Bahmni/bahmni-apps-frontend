@@ -6,14 +6,14 @@ import {
   MedicationRequest,
   Coding,
 } from 'fhir/r4';
-import { CONSULTATION_ERROR_MESSAGES } from '@constants/errors';
-import { AllergyInputEntry } from '@types/allergy';
-import { ConditionInputEntry } from '@types/condition';
-import { DiagnosisInputEntry } from '@types/diagnosis';
+import { CONSULTATION_ERROR_MESSAGES } from '../../constants/errors';
+import { AllergyInputEntry } from '../../models/allergy';
+import { ConditionInputEntry } from '../../models/condition';
+import { DiagnosisInputEntry } from '@bahmni-frontend/bahmni-services';
 import { FhirEncounter } from '../../models/encounter';
-import { MedicationInputEntry } from '@types/medication';
-import { ServiceRequestInputEntry } from '@types/serviceRequest';
-import { post } from '../api';
+import { MedicationInputEntry } from '../../models/medication';
+import { ServiceRequestInputEntry } from '../../models/serviceRequest';
+import { post } from '@bahmni-frontend/bahmni-services';
 import {
   createDiagnosisBundleEntries,
   createAllergiesBundleEntries,
@@ -28,7 +28,10 @@ import {
 // Mock crypto.randomUUID
 const mockUUID = '1d87ab20-8b86-4b41-a30d-984b2208d945';
 global.crypto.randomUUID = jest.fn().mockReturnValue(mockUUID);
-jest.mock('../api');
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+  post: jest.fn(),
+}));
 
 describe('consultationBundleService', () => {
   afterAll(() => {
@@ -524,7 +527,7 @@ describe('consultationBundleService', () => {
           );
 
           expect(result.fullUrl).toBe(
-            '/openmrs/ws/fhir2/R4/Encounter/encounter-123',
+            'Encounter/encounter-123',
           );
           expect(result.resource).toEqual({
             ...mockEncounterResource,
@@ -549,7 +552,7 @@ describe('consultationBundleService', () => {
           );
 
           expect(result.fullUrl).toBe(
-            '/openmrs/ws/fhir2/R4/Encounter/undefined',
+            'Encounter/undefined',
           );
           expect(result.resource).toEqual({
             ...mockEncounterResource,
@@ -602,7 +605,7 @@ describe('consultationBundleService', () => {
             'placeholder-ref',
           );
 
-          expect(result).toBe('/openmrs/ws/fhir2/R4/Encounter/encounter-123');
+          expect(result).toBe('Encounter/encounter-123');
         });
 
         it('should return placeholder reference when no active encounter', () => {
@@ -627,7 +630,7 @@ describe('consultationBundleService', () => {
             'placeholder-ref',
           );
 
-          expect(result).toBe('/openmrs/ws/fhir2/R4/Encounter/undefined');
+          expect(result).toBe('Encounter/undefined');
         });
 
         it('should handle empty placeholder reference', () => {
