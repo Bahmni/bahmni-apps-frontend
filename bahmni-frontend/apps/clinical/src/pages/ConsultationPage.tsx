@@ -1,7 +1,7 @@
 import { Loading } from '@bahmni-frontend/bahmni-design-system';
 import React, { Suspense, useMemo, useState } from 'react';
 import { useTranslation } from '@bahmni-frontend/bahmni-services';
-//import ConsultationPad from '@components/clinical/consultationPad/ConsultationPad';
+import ConsultationPad from '../components/consultationPad/ConsultationPad';
 import DashboardContainer from '../components/dashboardContainer/DashboardContainer';
 import PatientHeader from '../components/patientHeader/PatientHeader';
 import { Icon } from '@bahmni-frontend/bahmni-design-system';
@@ -17,11 +17,6 @@ import {
   getDefaultDashboard,
   getSidebarItems,
 } from '../services/consultationPageService';
-import AllergiesForm from '../components/forms/allergies/AllergiesForm';
-import EncounterDetails from '../components/forms/encounterDetails/EncounterDetails';
-import ConditionsAndDiagnoses from '../components/forms/conditionsAndDiagnoses/ConditionsAndDiagnoses';
-import InvestigationsForm from '../components/forms/investigations/InvestigationsForm';
-import MedicationsForm from '../components/forms/medications/MedicationsForm';
 
 const breadcrumbItems = [
   { id: 'home', label: 'Home', href: BAHMNI_HOME_PATH },
@@ -143,12 +138,11 @@ const ConsultationPage: React.FC = () => {
         </Suspense>
       }
       isActionAreaVisible={isActionAreaVisible}
-      // actionArea={
-      //   <ConsultationPad
-      //     onClose={() => setIsActionAreaVisible((prev) => !prev)}
-      //   />
-      // }
-      actionArea={<div><EncounterDetails/><AllergiesForm/><InvestigationsForm/><ConditionsAndDiagnoses/><MedicationsForm/></div>} // Placeholder for ConsultationPad
+      actionArea={
+        <ConsultationPad
+          onClose={() => setIsActionAreaVisible((prev) => !prev)}
+        />
+      }
     />
   );
 };
