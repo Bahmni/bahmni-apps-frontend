@@ -19,15 +19,15 @@ import {
   createMedicationRequestEntries,
   createEncounterBundleEntry,
   getEncounterReference,
-} from '@bahmni-frontend/bahmni-services';
+} from '../../services/consultationBundleService';
 import useAllergyStore from '../../../src/stores/allergyStore'
 import { useConditionsAndDiagnosesStore } from '../../../src/stores/conditionsAndDiagnosesStore';
 import { useEncounterDetailsStore } from '../../../src/stores/encounterDetailsStore';
 import { useMedicationStore } from '../../../src/stores/medicationsStore';
 import useServiceRequestStore from '../../../src/stores/serviceRequestStore';
-import { ConsultationBundle } from '@types/consultationBundle';
-import { createConsultationBundle } from '../../';
-import { createEncounterResource } from '@utils/fhir/encounterResourceCreator';
+import { ConsultationBundle } from '../../models/consultationBundle';
+import { createConsultationBundle } from '../../utils/fhir/consultationBundleCreator';
+import { createEncounterResource } from '../../utils/fhir/encounterResourceCreator';
 import styles from './styles/ConsultationPad.module.scss';
 
 interface ConsultationPadProps {

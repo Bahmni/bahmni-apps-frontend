@@ -1,26 +1,27 @@
 import { BundleEntry, Reference } from 'fhir/r4';
-import { CONSULTATION_BUNDLE_URL, ENCOUNTER_SEARCH_URL } from '../constants/app';
+import { CONSULTATION_BUNDLE_URL } from '../constants/app';
 import { CONSULTATION_ERROR_MESSAGES } from '../constants/errors';
 import { AllergyInputEntry } from '../models/allergy';
-import { ConditionInputEntry } from '../models/condition';
+import { ConditionInputEntry } from '@bahmni-frontend/bahmni-services';
 import { ConsultationBundle } from '../models/consultationBundle';
-import { FhirEncounter } from '../models/encounter';
+import { DiagnosisInputEntry } from '@bahmni-frontend/bahmni-services';
+import { Encounter } from 'fhir/r4';
 import { MedicationInputEntry } from '../models/medication';
 import { ServiceRequestInputEntry } from '../models/serviceRequest';
-import { DiagnosisInputEntry , calculateOnsetDate } from '@bahmni-frontend/bahmni-services';
+import { calculateOnsetDate } from '@bahmni-frontend/bahmni-services';
 import { createEncounterAllergyResource } from '../utils/fhir/allergyResourceCreator';
 import {
   createEncounterDiagnosisResource,
   createEncounterConditionResource,
-} from '@utils/fhir/conditionResourceCreator';
-import { createBundleEntry } from '@utils/fhir/consultationBundleCreator';
-import { createMedicationRequestResource } from '@utils/fhir/medicationRequestResourceCreator';
+} from '../utils/fhir/conditionResourceCreator';
+import { createBundleEntry } from '../utils/fhir/consultationBundleCreator';
+import { createMedicationRequestResource } from '../utils/fhir/medicationRequestResourceCreator';
 import {
   createPractitionerReference,
   createEncounterReferenceFromString,
-} from '@utils/fhir/referenceCreator';
-import { createServiceRequestResource } from '@utils/fhir/serviceRequestResourceCreator';
-import { post } from './api';
+} from '../utils/fhir/referenceCreator';
+import { createServiceRequestResource } from '../utils/fhir/serviceRequestResourceCreator';
+import { post } from '@bahmni-frontend/bahmni-services';
 
 interface CreateAllergiesBundleEntriesParams {
   selectedAllergies: AllergyInputEntry[];
@@ -228,7 +229,7 @@ export function createServiceRequestBundleEntries({
         encounterSubject,
         createEncounterReferenceFromString(encounterReference),
         createPractitionerReference(practitionerUUID),
-        serviceRequest.selectedPriority,
+        serviceRequest.selectedPriority!!,
       );
       const serviceRequestEntry = createBundleEntry(
         resourceURL,
@@ -365,13 +366,13 @@ export function createMedicationRequestEntries({
  * @returns BundleEntry for the encounter
  */
 export function createEncounterBundleEntry(
-  activeEncounter: FhirEncounter | null,
-  encounterResource: FhirEncounter,
+  activeEncounter: Encounter | null,
+  encounterResource: Encounter,
 ): BundleEntry {
   // For existing encounters (PUT), use the full encounter URL as fullUrl
   // For new encounters (POST), use a placeholder UUID
   const fullUrl = activeEncounter
-    ? `${ENCOUNTER_SEARCH_URL}/${activeEncounter.id}`
+    ? `Encounter/${activeEncounter.id}`
     : `urn:uuid:${crypto.randomUUID()}`;
 
   const method = activeEncounter ? 'PUT' : 'POST';
@@ -396,11 +397,11 @@ export function createEncounterBundleEntry(
  * @returns Reference string to use in other resources
  */
 export function getEncounterReference(
-  activeEncounter: FhirEncounter | null,
+  activeEncounter: Encounter | null,
   placeholderReference: string,
 ): string {
   return activeEncounter
-    ? `${ENCOUNTER_SEARCH_URL}/${activeEncounter.id}`
+    ? `Encounter/${activeEncounter.id}`
     : placeholderReference;
 }
 
