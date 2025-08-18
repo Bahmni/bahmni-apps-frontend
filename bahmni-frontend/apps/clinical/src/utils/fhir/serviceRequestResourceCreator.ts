@@ -1,5 +1,5 @@
 import { ServiceRequest, Reference } from 'fhir/r4';
-import { SupportedServiceRequestPriority } from '@types/serviceRequest';
+import { SupportedServiceRequestPriority } from '../../models/serviceRequest';
 import { createCodeableConcept, createCoding } from './codeableConceptCreator';
 
 /**

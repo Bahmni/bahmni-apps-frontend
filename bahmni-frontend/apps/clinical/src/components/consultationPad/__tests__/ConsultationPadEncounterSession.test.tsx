@@ -1,19 +1,20 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { I18nextProvider } from 'react-i18next';
-import i18n from '@/setupTests.i18n';
+import i18n from '../../../../setupTests.i18n';
 import ConsultationPad from '../ConsultationPad';
 
 // Mock the useEncounterSession hook
 const mockUseEncounterSession = jest.fn();
-jest.mock('@hooks/useEncounterSession', () => ({
+jest.mock('../../../hooks/useEncounterSession', () => ({
   useEncounterSession: () => mockUseEncounterSession(),
 }));
 
-// Mock all other dependencies
-jest.mock('@components/common/actionArea/ActionArea', () => ({
+// Mock all child components
+jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
   __esModule: true,
-  default: ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-design-system'),
+  ActionArea: ({
     title,
     primaryButtonText,
     onPrimaryButtonClick,
@@ -21,15 +22,8 @@ jest.mock('@components/common/actionArea/ActionArea', () => ({
     secondaryButtonText,
     onSecondaryButtonClick,
     content,
-  }: {
-    title: string;
-    primaryButtonText: string;
-    onPrimaryButtonClick: () => void;
-    isPrimaryButtonDisabled: boolean;
-    secondaryButtonText: string;
-    onSecondaryButtonClick: () => void;
-    content: React.ReactNode;
-  }) => (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  }: any) => (
     <div data-testid="mock-action-area">
       <div data-testid="action-area-title">{title}</div>
       <div data-testid="action-area-content">{content}</div>
@@ -45,10 +39,11 @@ jest.mock('@components/common/actionArea/ActionArea', () => ({
       </button>
     </div>
   ),
+  MenuItemDivider: () => <hr data-testid="mock-divider" />,
 }));
 
 jest.mock(
-  '@components/clinical/forms/encounterDetails/EncounterDetails',
+  '../../../components/forms/encounterDetails/EncounterDetails',
   () => ({
     __esModule: true,
     default: () => (
@@ -58,7 +53,7 @@ jest.mock(
 );
 
 jest.mock(
-  '@components/clinical/forms/conditionsAndDiagnoses/ConditionsAndDiagnoses',
+  '../../../components/forms/conditionsAndDiagnoses/ConditionsAndDiagnoses',
   () => ({
     __esModule: true,
     default: () => (
@@ -69,13 +64,13 @@ jest.mock(
   }),
 );
 
-jest.mock('@components/clinical/forms/allergies/AllergiesForm', () => ({
+jest.mock('../../../components/forms/allergies/AllergiesForm', () => ({
   __esModule: true,
   default: () => <div data-testid="mock-allergies-form">Allergies Form</div>,
 }));
 
 jest.mock(
-  '@components/clinical/forms/investigations/InvestigationsForm',
+  '../../../components/forms/investigations/InvestigationsForm',
   () => ({
     __esModule: true,
     default: () => (
@@ -85,7 +80,7 @@ jest.mock(
 );
 
 jest.mock(
-  '@components/clinical/forms/prescribeMedicines/MedicationsForm',
+  '../../../components/forms/medications/MedicationsForm',
   () => ({
     __esModule: true,
     default: () => (
@@ -99,7 +94,8 @@ jest.mock('@carbon/react', () => ({
   MenuItemDivider: () => <hr data-testid="mock-divider" />,
 }));
 
-jest.mock('@services/consultationBundleService', () => ({
+// Mock services
+jest.mock('../../../services/consultationBundleService', () => ({
   postConsultationBundle: jest.fn(),
   createDiagnosisBundleEntries: jest.fn(() => []),
   createAllergiesBundleEntries: jest.fn(() => []),
@@ -108,15 +104,18 @@ jest.mock('@services/consultationBundleService', () => ({
   createMedicationRequestEntries: jest.fn(() => []),
 }));
 
+// Mock hooks
 const mockAddNotification = jest.fn();
-jest.mock('@hooks/useNotification', () => ({
-  __esModule: true,
-  default: jest.fn(() => ({
+jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
+  useNotification: jest.fn(() => ({
     addNotification: mockAddNotification,
   })),
+  __esModule: true,
 }));
 
-jest.mock('@utils/fhir/encounterResourceCreator', () => ({
+
+// Mock utilities
+jest.mock('../../../utils/fhir/encounterResourceCreator', () => ({
   createEncounterResource: jest.fn(() => ({
     resourceType: 'Encounter',
     id: 'mock-encounter-id',
@@ -124,7 +123,7 @@ jest.mock('@utils/fhir/encounterResourceCreator', () => ({
   })),
 }));
 
-jest.mock('@utils/fhir/consultationBundleCreator', () => ({
+jest.mock('../../../utils/fhir/consultationBundleCreator', () => ({
   createBundleEntry: jest.fn((url, resource, method) => ({
     fullUrl: url,
     resource,
@@ -137,7 +136,7 @@ jest.mock('@utils/fhir/consultationBundleCreator', () => ({
   })),
 }));
 
-// Mock stores
+// Create mock store factories
 const createMockEncounterDetailsStore = () => ({
   activeVisit: { id: 'visit-123' },
   selectedLocation: { uuid: 'location-123', display: 'OPD' },
@@ -177,36 +176,38 @@ const createMockMedicationStore = () => ({
   getState: jest.fn(() => ({ selectedMedications: [] })),
 });
 
+// Mock stores
 let mockEncounterDetailsStore = createMockEncounterDetailsStore();
 let mockDiagnosesStore = createMockDiagnosesStore();
 let mockAllergyStore = createMockAllergyStore();
 let mockServiceRequestStore = createMockServiceRequestStore();
 let mockMedicationStore = createMockMedicationStore();
 
-jest.mock('@stores/encounterDetailsStore', () => ({
+jest.mock('../../../stores/encounterDetailsStore', () => ({
   useEncounterDetailsStore: jest.fn(() => mockEncounterDetailsStore),
 }));
 
-jest.mock('@stores/conditionsAndDiagnosesStore', () => ({
+jest.mock('../../../stores/conditionsAndDiagnosesStore', () => ({
   useConditionsAndDiagnosesStore: jest.fn(() => mockDiagnosesStore),
 }));
 
-jest.mock('@stores/allergyStore', () => ({
+jest.mock('../../../stores/allergyStore', () => ({
   __esModule: true,
   default: jest.fn(() => mockAllergyStore),
   useAllergyStore: jest.fn(() => mockAllergyStore),
 }));
 
-jest.mock('@stores/serviceRequestStore', () => ({
+jest.mock('../../../stores/serviceRequestStore', () => ({
   __esModule: true,
   default: jest.fn(() => mockServiceRequestStore),
 }));
 
-jest.mock('@stores/medicationsStore', () => ({
+jest.mock('../../../stores/medicationsStore', () => ({
   __esModule: true,
   useMedicationStore: jest.fn(() => mockMedicationStore),
   default: jest.fn(() => mockMedicationStore),
 }));
+
 
 Object.defineProperty(global, 'crypto', {
   value: {
