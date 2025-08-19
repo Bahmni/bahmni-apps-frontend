@@ -2,12 +2,20 @@ import {
   getPatientLabInvestigations,
   FormattedLabTest,
   LabTestPriority,
+  useTranslation,
 } from '@bahmni-frontend/bahmni-services';
 import { renderHook, waitFor } from '@testing-library/react';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import useLabInvestigations from '../useLabInvestigations';
 
-jest.mock('@bahmni-frontend/bahmni-services');
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  getPatientLabInvestigations: jest.fn(),
+  FormattedLabTest: jest.requireActual('@bahmni-frontend/bahmni-services')
+    .FormattedLabTest,
+  LabTestPriority: jest.requireActual('@bahmni-frontend/bahmni-services')
+    .LabTestPriority,
+  useTranslation: jest.fn(),
+}));
 jest.mock('../../hooks/usePatientUUID');
 
 const mockedGetPatientLabInvestigations =
@@ -16,6 +24,9 @@ const mockedGetPatientLabInvestigations =
   >;
 const mockedUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
+>;
+const mockUseTranslation = useTranslation as jest.MockedFunction<
+  typeof useTranslation
 >;
 
 jest.mock('react-router-dom', () => ({
@@ -50,6 +61,9 @@ describe('useLabInvestigations hook', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUseTranslation.mockReturnValue({
+      t: (key: string) => key,
+    });
   });
 
   it('initializes with default values', () => {
@@ -74,6 +88,7 @@ describe('useLabInvestigations hook', () => {
 
     expect(mockedGetPatientLabInvestigations).toHaveBeenCalledWith(
       mockPatientUUID,
+      mockUseTranslation().t,
     );
     expect(result.current.labTests).toEqual(mockLabTests);
     expect(result.current.hasError).toBe(false);
@@ -109,6 +124,7 @@ describe('useLabInvestigations hook', () => {
 
     expect(mockedGetPatientLabInvestigations).toHaveBeenCalledWith(
       mockPatientUUID,
+      mockUseTranslation().t,
     );
     expect(result.current.hasError).toBe(true);
     expect(result.current.labTests).toEqual([]);
@@ -141,6 +157,7 @@ describe('useLabInvestigations hook', () => {
 
     expect(mockedGetPatientLabInvestigations).toHaveBeenCalledWith(
       mockPatientUUID,
+      mockUseTranslation().t,
     );
     expect(result.current.labTests).toEqual([]);
     expect(result.current.hasError).toBe(false);
@@ -183,6 +200,7 @@ describe('useLabInvestigations hook', () => {
 
     expect(mockedGetPatientLabInvestigations).toHaveBeenCalledWith(
       newPatientUUID,
+      mockUseTranslation().t,
     );
   });
 

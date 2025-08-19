@@ -87,7 +87,7 @@ const MedicationsTable: React.FC = () => {
       if (!medications || medications.length === 0) return [];
 
       const grouped = groupByDate(medications, (medication) => {
-        return formatDate(medication.orderDate, ISO_DATE_FORMAT)
+        return formatDate(medication.orderDate, t, ISO_DATE_FORMAT)
           .formattedResult;
       });
 
@@ -186,11 +186,11 @@ const MedicationsTable: React.FC = () => {
       case 'instruction':
         return row.instruction;
       case 'startDate':
-        return formatDate(row.startDate, DATE_FORMAT).formattedResult;
+        return formatDate(row.startDate, t, DATE_FORMAT).formattedResult;
       case 'orderedBy':
         return row.orderedBy;
       case 'orderDate':
-        return formatDate(row.orderDate, DATE_FORMAT).formattedResult;
+        return formatDate(row.orderDate, t, DATE_FORMAT).formattedResult;
       case 'status':
         return (
           <StatusTag
@@ -260,6 +260,7 @@ const MedicationsTable: React.FC = () => {
                   const { date, medications } = medicationsByDate;
                   const formattedDate = formatDate(
                     date,
+                    t,
                     FULL_MONTH_DATE_FORMAT,
                   ).formattedResult;
 

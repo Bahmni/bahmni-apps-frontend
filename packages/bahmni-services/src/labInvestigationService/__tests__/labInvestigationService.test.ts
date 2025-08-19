@@ -1,6 +1,7 @@
 import { ServiceRequest, Bundle } from 'fhir/r4';
 import { get } from '../../api';
 import { formatDate } from '../../date';
+import { useTranslation } from '../../i18n';
 import {
   getLabTests,
   formatLabTests,
@@ -14,6 +15,14 @@ import { LabTestPriority, FormattedLabTest } from '../models';
 
 jest.mock('../../api');
 jest.mock('../../date');
+jest.mock('../../i18n', () => ({
+  useTranslation: jest.fn(),
+}));
+
+// Mock useTranslation
+const mockUseTranslation = useTranslation as jest.MockedFunction<
+  typeof useTranslation
+>;
 
 describe('labInvestigationService', () => {
   beforeEach(() => {
@@ -23,6 +32,9 @@ describe('labInvestigationService', () => {
         ? 'May 8, 2025'
         : 'April 9, 2025',
     }));
+    mockUseTranslation.mockReturnValue({
+      t: (key: string) => key,
+    });
   });
 
   const patientUUID = '58493859-63f7-48b6-bd0b-698d5a119a21';
@@ -225,7 +237,7 @@ describe('labInvestigationService', () => {
         }),
       ];
 
-      const result = formatLabTests(mockTests);
+      const result = formatLabTests(mockTests, mockUseTranslation().t);
 
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({
@@ -250,7 +262,7 @@ describe('labInvestigationService', () => {
         }),
       ];
 
-      const result = formatLabTests(mockTests);
+      const result = formatLabTests(mockTests, mockUseTranslation().t);
 
       expect(result[0].testName).toBe('');
       expect(result[0].orderedBy).toBe('');
@@ -264,7 +276,7 @@ describe('labInvestigationService', () => {
         createMockServiceRequest({ id: 'test-1' }),
       ];
 
-      const result = formatLabTests(mockTests);
+      const result = formatLabTests(mockTests, mockUseTranslation().t);
 
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe('test-1');
@@ -280,7 +292,7 @@ describe('labInvestigationService', () => {
         }),
       ];
 
-      const result = formatLabTests(mockTests);
+      const result = formatLabTests(mockTests, mockUseTranslation().t);
 
       expect(result[0].formattedDate).toBe('2025-05-08');
     });
@@ -368,7 +380,10 @@ describe('labInvestigationService', () => {
 
       (get as jest.Mock).mockResolvedValue(mockBundle);
 
-      const result = await getPatientLabTestsByDate(patientUUID);
+      const result = await getPatientLabTestsByDate(
+        patientUUID,
+        mockUseTranslation().t,
+      );
 
       expect(result).toHaveLength(1);
       expect(result[0].date).toBe('May 8, 2025');
@@ -380,7 +395,10 @@ describe('labInvestigationService', () => {
       const emptyBundle = createMockBundle([]);
       (get as jest.Mock).mockResolvedValue(emptyBundle);
 
-      const result = await getPatientLabTestsByDate(patientUUID);
+      const result = await getPatientLabTestsByDate(
+        patientUUID,
+        mockUseTranslation().t,
+      );
 
       expect(result).toEqual([]);
     });

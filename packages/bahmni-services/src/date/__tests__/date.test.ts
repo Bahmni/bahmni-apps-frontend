@@ -10,32 +10,30 @@ import {
   sortByDate,
 } from '../date';
 
-jest.mock('i18next', () => ({
-  t: jest.fn((key: string, options?: { count?: number }) => {
-    const { count = 1 } = options ?? {};
+const mockT = (key: string, options?: { count?: number }) => {
+  const { count = 1 } = options ?? {};
 
-    switch (key) {
-      case 'CLINICAL_DAYS_TRANSLATION_KEY':
-        return count === 1 ? 'day' : 'days';
-      case 'CLINICAL_MONTHS_TRANSLATION_KEY':
-        return count === 1 ? 'month' : 'months';
-      case 'CLINICAL_YEARS_TRANSLATION_KEY':
-        return count === 1 ? 'year' : 'years';
-      case 'DATE_ERROR_PARSE':
-        return 'Parse Error';
-      case 'DATE_ERROR_FORMAT':
-        return 'Format Error';
-      case 'DATE_ERROR_EMPTY_OR_INVALID':
-        return 'Empty or invalid input';
-      case 'DATE_ERROR_INVALID_FORMAT':
-        return 'Invalid format';
-      case 'DATE_ERROR_NULL_OR_UNDEFINED':
-        return 'Null or undefined input';
-      default:
-        return key;
-    }
-  }),
-}));
+  switch (key) {
+    case 'CLINICAL_DAYS_TRANSLATION_KEY':
+      return count === 1 ? 'day' : 'days';
+    case 'CLINICAL_MONTHS_TRANSLATION_KEY':
+      return count === 1 ? 'month' : 'months';
+    case 'CLINICAL_YEARS_TRANSLATION_KEY':
+      return count === 1 ? 'year' : 'years';
+    case 'DATE_ERROR_PARSE':
+      return 'Parse Error';
+    case 'DATE_ERROR_FORMAT':
+      return 'Format Error';
+    case 'DATE_ERROR_EMPTY_OR_INVALID':
+      return 'Empty or invalid input';
+    case 'DATE_ERROR_INVALID_FORMAT':
+      return 'Invalid format';
+    case 'DATE_ERROR_NULL_OR_UNDEFINED':
+      return 'Null or undefined input';
+    default:
+      return key;
+  }
+};
 
 jest.mock('../../i18n/translationService', () => ({
   getUserPreferredLocale: jest.fn(),
@@ -179,41 +177,41 @@ describe('formatDate', () => {
 
   it('should format valid dates correctly', () => {
     const date = new Date(2024, 2, 28);
-    const result = formatDate(date);
+    const result = formatDate(date, mockT);
     expect(result.formattedResult).toBe('28/03/2024');
     expect(result.error).toBeUndefined();
   });
 
   it('should format date strings correctly', () => {
-    const result = formatDate('2024-03-28');
+    const result = formatDate('2024-03-28', mockT);
     expect(result.formattedResult).toBe('28/03/2024');
     expect(result.error).toBeUndefined();
   });
 
   it('should format timestamps correctly', () => {
     const timestamp = new Date(2024, 2, 28).getTime();
-    const result = formatDate(timestamp);
+    const result = formatDate(timestamp, mockT);
     expect(result.formattedResult).toBe('28/03/2024');
     expect(result.error).toBeUndefined();
   });
 
   it('should accept custom format parameter', () => {
     const date = new Date(2024, 2, 28);
-    const result = formatDate(date, 'MMMM d, yyyy');
+    const result = formatDate(date, mockT, 'MMMM d, yyyy');
     expect(result.formattedResult).toBe('March 28, 2024');
     expect(result.error).toBeUndefined();
   });
 
   it('should return errors for invalid inputs', () => {
-    const invalidResult = formatDate('invalid-date');
+    const invalidResult = formatDate('invalid-date', mockT);
     expect(invalidResult.formattedResult).toBe('');
     expect(invalidResult.error).toBeDefined();
 
-    const emptyResult = formatDate('');
+    const emptyResult = formatDate('', mockT);
     expect(emptyResult.formattedResult).toBe('');
     expect(emptyResult.error).toBeDefined();
 
-    const nullResult = formatDate(null as unknown as Date);
+    const nullResult = formatDate(null as unknown as Date, mockT);
     expect(nullResult.formattedResult).toBe('');
     expect(nullResult.error).toBeDefined();
   });
@@ -222,14 +220,14 @@ describe('formatDate', () => {
 describe('formatDateTime', () => {
   it('should format valid date-time correctly', () => {
     const date = new Date(2024, 2, 28, 12, 30);
-    const result = formatDateTime(date);
+    const result = formatDateTime(date, mockT);
     expect(result.formattedResult).toBe(format(date, DATE_TIME_FORMAT));
     expect(result.error).toBeUndefined();
   });
 
   it('should format date strings with time correctly', () => {
     const dateString = '2024-03-28T12:30:00Z';
-    const result = formatDateTime(dateString);
+    const result = formatDateTime(dateString, mockT);
     expect(result.formattedResult).toBe(
       format(parseISO(dateString), DATE_TIME_FORMAT),
     );
@@ -238,16 +236,16 @@ describe('formatDateTime', () => {
 
   it('should format timestamps correctly', () => {
     const timestamp = new Date(2024, 2, 28, 12, 30).getTime();
-    const result = formatDateTime(timestamp);
+    const result = formatDateTime(timestamp, mockT);
     expect(result.formattedResult).toBe('28/03/2024 12:30');
     expect(result.error).toBeUndefined();
   });
 
   it('should return errors for invalid inputs', () => {
-    expect(formatDateTime('invalid-date').error).toBeDefined();
-    expect(formatDateTime('').error).toBeDefined();
-    expect(formatDateTime(null as unknown as Date).error).toBeDefined();
-    expect(formatDateTime({} as unknown as Date).error).toBeDefined();
+    expect(formatDateTime('invalid-date', mockT).error).toBeDefined();
+    expect(formatDateTime('', mockT).error).toBeDefined();
+    expect(formatDateTime(null as unknown as Date, mockT).error).toBeDefined();
+    expect(formatDateTime({} as unknown as Date, mockT).error).toBeDefined();
   });
 });
 
@@ -260,31 +258,31 @@ describe('formatDate locale support', () => {
 
   it('should format with different locales', () => {
     mockedGetUserPreferredLocale.mockReturnValue('en');
-    expect(formatDate('2024-03-28', 'MMMM dd, yyyy').formattedResult).toBe(
-      'March 28, 2024',
-    );
+    expect(
+      formatDate('2024-03-28', mockT, 'MMMM dd, yyyy').formattedResult,
+    ).toBe('March 28, 2024');
 
     mockedGetUserPreferredLocale.mockReturnValue('es');
-    expect(formatDate('2024-03-28', 'MMMM dd, yyyy').formattedResult).toBe(
-      'marzo 28, 2024',
-    );
+    expect(
+      formatDate('2024-03-28', mockT, 'MMMM dd, yyyy').formattedResult,
+    ).toBe('marzo 28, 2024');
 
     mockedGetUserPreferredLocale.mockReturnValue('fr');
-    expect(formatDate('2024-03-28', 'MMMM dd, yyyy').formattedResult).toBe(
-      'mars 28, 2024',
-    );
+    expect(
+      formatDate('2024-03-28', mockT, 'MMMM dd, yyyy').formattedResult,
+    ).toBe('mars 28, 2024');
   });
 
   it('should fallback to English for unsupported locales', () => {
     mockedGetUserPreferredLocale.mockReturnValue('unsupported-locale');
-    const result = formatDate('2024-03-28', 'MMMM dd, yyyy');
+    const result = formatDate('2024-03-28', mockT, 'MMMM dd, yyyy');
     expect(result.formattedResult).toBe('March 28, 2024');
   });
 
   it('should use numeric format regardless of locale for default format', () => {
     ['en', 'es', 'fr'].forEach((locale) => {
       mockedGetUserPreferredLocale.mockReturnValue(locale);
-      const result = formatDate('2024-03-28');
+      const result = formatDate('2024-03-28', mockT);
       expect(result.formattedResult).toBe('28/03/2024');
     });
   });
@@ -306,63 +304,71 @@ describe('formatDateDistance', () => {
   });
 
   it('should format different time periods correctly', () => {
-    expect(formatDateDistance('2025-06-17T07:02:38.000Z').formattedResult).toBe(
-      '1 day',
-    );
-    expect(formatDateDistance('2025-06-16T07:02:38.000Z').formattedResult).toBe(
-      '2 days',
-    );
-    expect(formatDateDistance('2025-05-18T07:02:38.000Z').formattedResult).toBe(
-      '1 month',
-    );
-    expect(formatDateDistance('2025-03-18T07:02:38.000Z').formattedResult).toBe(
-      '3 months',
-    );
-    expect(formatDateDistance('2024-06-18T07:02:38.000Z').formattedResult).toBe(
-      '1 year',
-    );
-    expect(formatDateDistance('2023-06-18T07:02:38.000Z').formattedResult).toBe(
-      '2 years',
-    );
+    expect(
+      formatDateDistance('2025-06-17T07:02:38.000Z', mockT).formattedResult,
+    ).toBe('1 day');
+    expect(
+      formatDateDistance('2025-06-16T07:02:38.000Z', mockT).formattedResult,
+    ).toBe('2 days');
+    expect(
+      formatDateDistance('2025-05-18T07:02:38.000Z', mockT).formattedResult,
+    ).toBe('1 month');
+    expect(
+      formatDateDistance('2025-03-18T07:02:38.000Z', mockT).formattedResult,
+    ).toBe('3 months');
+    expect(
+      formatDateDistance('2024-06-18T07:02:38.000Z', mockT).formattedResult,
+    ).toBe('1 year');
+    expect(
+      formatDateDistance('2023-06-18T07:02:38.000Z', mockT).formattedResult,
+    ).toBe('2 years');
   });
 
   it('should round up small time periods to 1 day', () => {
-    expect(formatDateDistance('2025-06-18T03:02:38.000Z').formattedResult).toBe(
-      '1 day',
-    );
-    expect(formatDateDistance('2025-06-18T06:32:38.000Z').formattedResult).toBe(
-      '1 day',
-    );
+    expect(
+      formatDateDistance('2025-06-18T03:02:38.000Z', mockT).formattedResult,
+    ).toBe('1 day');
+    expect(
+      formatDateDistance('2025-06-18T06:32:38.000Z', mockT).formattedResult,
+    ).toBe('1 day');
   });
 
   it('should handle fractional years correctly', () => {
-    expect(formatDateDistance('2023-12-18T07:02:38.000Z').formattedResult).toBe(
-      '1.5 years',
-    );
-    expect(formatDateDistance('2020-07-18T07:02:38.000Z').formattedResult).toBe(
-      '5 years',
-    );
+    expect(
+      formatDateDistance('2023-12-18T07:02:38.000Z', mockT).formattedResult,
+    ).toBe('1.5 years');
+    expect(
+      formatDateDistance('2020-07-18T07:02:38.000Z', mockT).formattedResult,
+    ).toBe('5 years');
   });
 
   it('should format 11 months as 1 year', () => {
-    expect(formatDateDistance('2024-07-18T07:02:38.000Z').formattedResult).toBe(
-      '1 year',
-    );
+    expect(
+      formatDateDistance('2024-07-18T07:02:38.000Z', mockT).formattedResult,
+    ).toBe('1 year');
   });
 
   it('should handle month rounding', () => {
-    expect(formatDateDistance('2025-05-01').formattedResult).toBe('2 months');
-    expect(formatDateDistance('2025-05-10').formattedResult).toBe('1 month');
+    expect(formatDateDistance('2025-05-01', mockT).formattedResult).toBe(
+      '2 months',
+    );
+    expect(formatDateDistance('2025-05-10', mockT).formattedResult).toBe(
+      '1 month',
+    );
   });
 
   it('should return errors for invalid inputs', () => {
-    expect(formatDateDistance('').error).toBeDefined();
-    expect(formatDateDistance('invalid-date').error).toBeDefined();
-    expect(formatDateDistance(null as unknown as string).error).toBeDefined();
+    expect(formatDateDistance('', mockT).error).toBeDefined();
+    expect(formatDateDistance('invalid-date', mockT).error).toBeDefined();
     expect(
-      formatDateDistance(undefined as unknown as string).error,
+      formatDateDistance(null as unknown as string, mockT).error,
     ).toBeDefined();
-    expect(formatDateDistance(123 as unknown as string).error).toBeDefined();
+    expect(
+      formatDateDistance(undefined as unknown as string, mockT).error,
+    ).toBeDefined();
+    expect(
+      formatDateDistance(123 as unknown as string, mockT).error,
+    ).toBeDefined();
   });
 });
 

@@ -1,3 +1,7 @@
+import {
+  ConditionStatus,
+  FormattedCondition,
+} from '@bahmni-frontend/bahmni-services';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -7,7 +11,6 @@ import useConditions from '../../../../hooks/useConditions';
 import { ConceptSearch } from '../../../../models/concepts';
 import { useConditionsAndDiagnosesStore } from '../../../../stores/conditionsAndDiagnosesStore';
 import ConditionsAndDiagnoses from '../ConditionsAndDiagnoses';
-import { ConditionStatus, FormattedCondition } from '@bahmni-frontend/bahmni-services';
 
 expect.extend(toHaveNoViolations);
 
@@ -885,11 +888,11 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
   describe('Integration with Existing Conditions', () => {
     const existingCondition: FormattedCondition = {
       id: 'existing-condition-1',
-            display: mockSearchResults[0].conceptName,
-            code: mockSearchResults[0].conceptUuid,
-            codeDisplay: mockSearchResults[0].conceptName,
-            note: undefined,
-            status: ConditionStatus.Active,
+      display: mockSearchResults[0].conceptName,
+      code: mockSearchResults[0].conceptUuid,
+      codeDisplay: mockSearchResults[0].conceptName,
+      note: undefined,
+      status: ConditionStatus.Active,
     };
 
     it('should disable "Add as condition" if a diagnosis is already an existing condition', async () => {

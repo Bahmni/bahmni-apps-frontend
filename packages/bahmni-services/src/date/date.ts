@@ -11,7 +11,6 @@ import {
 } from 'date-fns';
 import type { Locale } from 'date-fns';
 import { enUS, enGB, es, fr, de } from 'date-fns/locale';
-import i18next from 'i18next';
 import { getUserPreferredLocale } from '../i18n/translationService';
 import { Age } from '../patientService/models';
 import { DATE_FORMAT, DATE_TIME_FORMAT } from './constants';
@@ -94,13 +93,16 @@ interface DateParseResult {
  * @param dateString - The date string to parse.
  * @returns A DateParseResult object containing either a valid Date or an error.
  */
-function safeParseDate(dateString: string): DateParseResult {
+function safeParseDate(
+  dateString: string,
+  t: (key: string, options?: { count?: number }) => string,
+): DateParseResult {
   if (!dateString?.trim()) {
     return {
       date: null,
       error: {
-        title: i18next.t(DATE_ERROR_MESSAGES.PARSE_ERROR),
-        message: i18next.t(DATE_ERROR_MESSAGES.EMPTY_OR_INVALID),
+        title: t(DATE_ERROR_MESSAGES.PARSE_ERROR),
+        message: t(DATE_ERROR_MESSAGES.EMPTY_OR_INVALID),
       },
     };
   }
@@ -109,8 +111,8 @@ function safeParseDate(dateString: string): DateParseResult {
     return {
       date: null,
       error: {
-        title: i18next.t(DATE_ERROR_MESSAGES.PARSE_ERROR),
-        message: i18next.t(DATE_ERROR_MESSAGES.INVALID_FORMAT),
+        title: t(DATE_ERROR_MESSAGES.PARSE_ERROR),
+        message: t(DATE_ERROR_MESSAGES.INVALID_FORMAT),
       },
     };
   }
@@ -130,13 +132,14 @@ function safeParseDate(dateString: string): DateParseResult {
 function formatDateGeneric(
   date: string | Date | number,
   dateFormat: string,
+  t: (key: string, options?: { count?: number }) => string,
 ): FormatDateResult {
   if (date === null || date === undefined) {
     return {
       formattedResult: '',
       error: {
-        title: i18next.t(DATE_ERROR_MESSAGES.FORMAT_ERROR),
-        message: i18next.t(DATE_ERROR_MESSAGES.NULL_OR_UNDEFINED),
+        title: t(DATE_ERROR_MESSAGES.FORMAT_ERROR),
+        message: t(DATE_ERROR_MESSAGES.NULL_OR_UNDEFINED),
       },
     };
   }
@@ -144,7 +147,7 @@ function formatDateGeneric(
   let dateToFormat: Date | null;
 
   if (typeof date === 'string') {
-    const parseResult = safeParseDate(date);
+    const parseResult = safeParseDate(date, t);
     if (parseResult.error) {
       return {
         formattedResult: '',
@@ -160,8 +163,8 @@ function formatDateGeneric(
     return {
       formattedResult: '',
       error: {
-        title: i18next.t(DATE_ERROR_MESSAGES.PARSE_ERROR),
-        message: i18next.t(DATE_ERROR_MESSAGES.INVALID_FORMAT),
+        title: t(DATE_ERROR_MESSAGES.PARSE_ERROR),
+        message: t(DATE_ERROR_MESSAGES.INVALID_FORMAT),
       },
     };
   }
@@ -175,8 +178,11 @@ function formatDateGeneric(
  * @param date - The date string or Date object to format.
  * @returns A FormatDateResult object containing either a formatted date string or an error.
  */
-export function formatDateTime(date: string | Date | number): FormatDateResult {
-  return formatDateGeneric(date, DATE_TIME_FORMAT);
+export function formatDateTime(
+  date: string | Date | number,
+  t: (key: string, options?: { count?: number }) => string,
+): FormatDateResult {
+  return formatDateGeneric(date, DATE_TIME_FORMAT, t);
 }
 
 /**
@@ -187,9 +193,10 @@ export function formatDateTime(date: string | Date | number): FormatDateResult {
  */
 export function formatDate(
   date: string | Date | number,
+  t: (key: string, options?: { count?: number }) => string,
   format: string = DATE_FORMAT,
 ): FormatDateResult {
-  return formatDateGeneric(date, format);
+  return formatDateGeneric(date, format, t);
 }
 
 /**
@@ -237,13 +244,16 @@ export function calculateOnsetDate(
  * @param date - ISO date string to format (e.g., "2025-06-17T07:02:38.000Z" or "2025-06-17")
  * @returns FormatDateResult with clean time format (e.g., "3 days", "1 month", "2 years")
  */
-export function formatDateDistance(date: string): FormatDateResult {
+export function formatDateDistance(
+  date: string,
+  t: (key: string, options?: { count?: number }) => string,
+): FormatDateResult {
   if (date === null || date === undefined) {
     return {
       formattedResult: '',
       error: {
-        title: i18next.t(DATE_ERROR_MESSAGES.FORMAT_ERROR),
-        message: i18next.t(DATE_ERROR_MESSAGES.NULL_OR_UNDEFINED),
+        title: t(DATE_ERROR_MESSAGES.FORMAT_ERROR),
+        message: t(DATE_ERROR_MESSAGES.NULL_OR_UNDEFINED),
       },
     };
   }
@@ -252,13 +262,13 @@ export function formatDateDistance(date: string): FormatDateResult {
     return {
       formattedResult: '',
       error: {
-        title: i18next.t(DATE_ERROR_MESSAGES.FORMAT_ERROR),
-        message: i18next.t(DATE_ERROR_MESSAGES.INVALID_FORMAT),
+        title: t(DATE_ERROR_MESSAGES.FORMAT_ERROR),
+        message: t(DATE_ERROR_MESSAGES.INVALID_FORMAT),
       },
     };
   }
 
-  const parseResult = safeParseDate(date);
+  const parseResult = safeParseDate(date, t);
   if (parseResult.error) {
     return {
       formattedResult: '',
@@ -279,14 +289,14 @@ export function formatDateDistance(date: string): FormatDateResult {
   if (diffInYears >= 5) {
     const monthInFraction = diffInMonths % 12;
     const yearValue = monthInFraction > 6 ? diffInYears + 1 : diffInYears;
-    const yearUnit = i18next.t('CLINICAL_YEARS_TRANSLATION_KEY', {
+    const yearUnit = t('CLINICAL_YEARS_TRANSLATION_KEY', {
       count: yearValue,
     });
     formattedResult = `${yearValue} ${yearUnit}`;
   } else if (diffInYears >= 1) {
     // Use years for periods >= 1 year
     const monthInFraction = diffInMonths % 12;
-    const yearUnit = i18next.t('CLINICAL_YEARS_TRANSLATION_KEY', {
+    const yearUnit = t('CLINICAL_YEARS_TRANSLATION_KEY', {
       count: diffInYears + monthInFraction,
     });
     formattedResult =
@@ -296,7 +306,7 @@ export function formatDateDistance(date: string): FormatDateResult {
           ? `${diffInYears + 1} ${yearUnit}`
           : `${diffInYears}.5 ${yearUnit}`;
   } else if (diffInMonths >= 11) {
-    const yearUnit = i18next.t('CLINICAL_YEARS_TRANSLATION_KEY', {
+    const yearUnit = t('CLINICAL_YEARS_TRANSLATION_KEY', {
       count: 1,
     });
     formattedResult = `1 ${yearUnit}`;
@@ -304,14 +314,14 @@ export function formatDateDistance(date: string): FormatDateResult {
     // Use months for periods >= 1 month but < 1 year
     const daysInFraction = diffInDays % 30;
     const monthValue = daysInFraction > 15 ? diffInMonths + 1 : diffInMonths;
-    const monthUnit = i18next.t('CLINICAL_MONTHS_TRANSLATION_KEY', {
+    const monthUnit = t('CLINICAL_MONTHS_TRANSLATION_KEY', {
       count: monthValue,
     });
     formattedResult = `${monthValue} ${monthUnit}`;
   } else {
     // Use days for everything else (including hours, minutes - round up to at least 1 day)
     const days = Math.max(1, diffInDays);
-    const dayUnit = i18next.t('CLINICAL_DAYS_TRANSLATION_KEY', {
+    const dayUnit = t('CLINICAL_DAYS_TRANSLATION_KEY', {
       count: days,
     });
     formattedResult = `${days} ${dayUnit}`;

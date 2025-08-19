@@ -85,7 +85,7 @@ const EncounterDetails: React.FC = () => {
   );
 
   const formattedDate = useMemo(
-    () => formatDate(consultationDate),
+    () => formatDate(consultationDate, t),
     [consultationDate],
   );
 

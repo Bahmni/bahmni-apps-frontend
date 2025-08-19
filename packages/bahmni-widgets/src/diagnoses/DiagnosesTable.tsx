@@ -57,7 +57,7 @@ const DiagnosesTable: React.FC = () => {
             </div>
           );
         case 'recordedDate':
-          return formatDate(diagnosis.recordedDate, DATE_FORMAT)
+          return formatDate(diagnosis.recordedDate, t, DATE_FORMAT)
             .formattedResult;
         case 'recorder':
           return diagnosis.recorder || t('DIAGNOSIS_TABLE_NOT_AVAILABLE');

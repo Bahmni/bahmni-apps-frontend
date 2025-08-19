@@ -189,6 +189,7 @@ describe('RadiologyInvestigationTable', () => {
     dateExtractor(mockRadiologyInvestigations[0]);
     expect(mockFormatDate).toHaveBeenCalledWith(
       mockRadiologyInvestigations[0].orderedDate,
+      mockUseTranslation().t,
       ISO_DATE_FORMAT,
     );
   });
@@ -212,6 +213,7 @@ describe('RadiologyInvestigationTable', () => {
     render(<RadiologyInvestigationTable />);
     expect(mockFormatDate).toHaveBeenCalledWith(
       '2023-12-01',
+      mockUseTranslation().t,
       FULL_MONTH_DATE_FORMAT,
     );
   });

@@ -180,9 +180,11 @@ describe('ConditionsTable', () => {
       expect(screen.getAllByText('Since 3 days')).toHaveLength(2);
       expect(mockFormatDateDistance).toHaveBeenCalledWith(
         '2025-03-24T18:30:00+00:00',
+        mockUseTranslation().t,
       );
       expect(mockFormatDateDistance).toHaveBeenCalledWith(
         '2025-01-15T10:00:00+00:00',
+        mockUseTranslation().t,
       );
     });
 
@@ -221,7 +223,10 @@ describe('ConditionsTable', () => {
 
       render(<ConditionsTable />);
 
-      expect(mockFormatDateDistance).toHaveBeenCalledWith('');
+      expect(mockFormatDateDistance).toHaveBeenCalledWith(
+        '',
+        mockUseTranslation().t,
+      );
     });
 
     it('handles missing recorder', () => {

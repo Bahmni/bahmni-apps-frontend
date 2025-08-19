@@ -7,9 +7,6 @@ export type DropdownProps<T> = CarbonDropdownProps<T> & {
   testId?: string;
 };
 
-export const Dropdown = <T,>({
-  testId,
-  ...carbonProps
-}: DropdownProps<T>) => {
+export const Dropdown = <T,>({ testId, ...carbonProps }: DropdownProps<T>) => {
   return <CarbonDropdown {...carbonProps} data-testid={testId} />;
 };

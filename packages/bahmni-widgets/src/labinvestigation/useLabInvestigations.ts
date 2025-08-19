@@ -1,6 +1,7 @@
 import {
   getPatientLabInvestigations,
   FormattedLabTest,
+  useTranslation,
 } from '@bahmni-frontend/bahmni-services';
 import { useState, useEffect } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
@@ -14,6 +15,7 @@ export default function useLabInvestigations() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [hasError, setHasError] = useState<boolean>(false);
   const patientUUID = usePatientUUID();
+  const { t } = useTranslation();
 
   useEffect(() => {
     async function fetchLabInvestigations() {
@@ -26,7 +28,10 @@ export default function useLabInvestigations() {
       setHasError(false);
 
       try {
-        const formattedTests = await getPatientLabInvestigations(patientUUID);
+        const formattedTests = await getPatientLabInvestigations(
+          patientUUID,
+          t,
+        );
 
         setLabTests(formattedTests);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars

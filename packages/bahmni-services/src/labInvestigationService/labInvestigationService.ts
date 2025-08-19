@@ -105,7 +105,10 @@ export const determineTestType = (labTest: ServiceRequest): string => {
  * @param labTests - The FHIR lab test array to format
  * @returns An array of formatted lab test objects
  */
-export function formatLabTests(labTests: ServiceRequest[]): FormattedLabTest[] {
+export function formatLabTests(
+  labTests: ServiceRequest[],
+  t: (key: string) => string,
+): FormattedLabTest[] {
   return labTests
     .filter(
       (labTest): labTest is ServiceRequest & { id: string } => !!labTest.id,
@@ -115,7 +118,7 @@ export function formatLabTests(labTests: ServiceRequest[]): FormattedLabTest[] {
       const orderedDate = labTest.occurrencePeriod?.start;
       let formattedDate;
       if (orderedDate) {
-        const dateFormatResult = formatDate(orderedDate, 'MMMM d, yyyy');
+        const dateFormatResult = formatDate(orderedDate, t, 'MMMM d, yyyy');
         formattedDate =
           dateFormatResult.formattedResult || orderedDate.split('T')[0];
       }
@@ -173,9 +176,10 @@ export function groupLabTestsByDate(
  */
 export async function getPatientLabTestsByDate(
   patientUUID: string,
+  t: (key: string) => string,
 ): Promise<LabTestsByDate[]> {
   const labTests = await getLabTests(patientUUID);
-  const formattedLabTests = formatLabTests(labTests);
+  const formattedLabTests = formatLabTests(labTests, t);
   return groupLabTestsByDate(formattedLabTests);
 }
 
@@ -186,11 +190,12 @@ export async function getPatientLabTestsByDate(
  */
 export async function getPatientLabInvestigations(
   patientUUID: string,
+  t: (key: string) => string,
 ): Promise<FormattedLabTest[]> {
   const bundle = await getPatientLabTestsBundle(patientUUID);
   const labTests =
     bundle.entry
       ?.map((entry) => entry.resource)
       .filter((r): r is ServiceRequest => r !== undefined) ?? [];
-  return formatLabTests(labTests);
+  return formatLabTests(labTests, t);
 }

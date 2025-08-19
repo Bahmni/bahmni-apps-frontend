@@ -49,7 +49,7 @@ const RadiologyInvestigationTable: React.FC = () => {
     );
 
     const grouped = groupByDate(filteredInvestigations, (investigation) => {
-      const result = formatDate(investigation.orderedDate, ISO_DATE_FORMAT);
+      const result = formatDate(investigation.orderedDate, t, ISO_DATE_FORMAT);
       return result.formattedResult;
     });
 
@@ -110,6 +110,7 @@ const RadiologyInvestigationTable: React.FC = () => {
             const { date, investigations } = investigationsByDate;
             const formattedDate = formatDate(
               date,
+              t,
               FULL_MONTH_DATE_FORMAT,
             ).formattedResult;
 

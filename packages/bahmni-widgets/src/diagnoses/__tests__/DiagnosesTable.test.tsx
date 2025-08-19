@@ -167,6 +167,7 @@ describe('DiagnosesTable', () => {
     render(<DiagnosesTable />);
     expect(mockFormatDate).toHaveBeenCalledWith(
       '2024-01-15T10:30:00Z',
+      mockUseTranslation().t,
       DATE_FORMAT,
     );
     expect(screen.getByText('15/01/2024')).toBeInTheDocument();
