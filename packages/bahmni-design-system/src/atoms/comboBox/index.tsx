@@ -2,13 +2,12 @@ import {
   ComboBox as CarbonComboBox,
   ComboBoxProps as CarbonComboBoxProps,
 } from '@carbon/react';
-import React from 'react';
 
-export type ComboBoxProps<T = unknown> = CarbonComboBoxProps<T> & {
+export type ComboBoxProps<T> = CarbonComboBoxProps<T> & {
   testId?: string;
 };
 
-export const ComboBox = <T = unknown>({
+export const ComboBox = <T,>({
   testId,
   ...carbonProps
 }: ComboBoxProps<T>) => {
