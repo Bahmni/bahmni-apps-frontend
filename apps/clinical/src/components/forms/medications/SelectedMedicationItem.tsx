@@ -287,7 +287,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                   (item) => !isImmediateFrequency(item),
                 ) ?? []
               }
-              itemToString={(item: any) => (item ? item.name : '')}
+              itemToString={(item) => (item ? item.name : '')}
               selectedItem={frequency}
               onChange={(e: any) => {
                 if (e.selectedItem) {

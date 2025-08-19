@@ -1,9 +1,9 @@
+import { useTranslation } from '@bahmni-frontend/bahmni-services';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React from 'react';
 import PatientHeader from '../PatientHeader';
 import '@testing-library/jest-dom';
-import { useTranslation } from '@bahmni-frontend/bahmni-services';
 
 expect.extend(toHaveNoViolations);
 

@@ -79,7 +79,7 @@ const ConsultationPage: React.FC = () => {
   const sidebarItems = useMemo(() => {
     if (!dashboardConfig) return [];
     return getSidebarItems(dashboardConfig, t);
-  }, [dashboardConfig]);
+  }, [dashboardConfig, t]);
 
   const { activeItemId, handleItemClick } = useSidebarNavigation(sidebarItems);
 

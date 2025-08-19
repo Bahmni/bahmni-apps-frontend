@@ -23,8 +23,8 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
 
 describe('useInvestigationsSearch', () => {
   (getFormattedError as jest.Mock).mockImplementation((error: any) => ({
-    title: error.title || 'unknown title',
-    message: error.message || 'Unknown error',
+    title: error.title ?? 'unknown title',
+    message: error.message ?? 'Unknown error',
   }));
 
   const mockInvestigations: FlattenedInvestigations[] = [

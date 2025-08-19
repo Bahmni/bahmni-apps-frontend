@@ -32,8 +32,8 @@ const mockedGetActiveVisit = getActiveVisit as jest.MockedFunction<
 describe('useActiveVisit', () => {
   const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
   mockGetFormattedError.mockImplementation((error: any) => ({
-    title: error.title || 'unknown title',
-    message: error.message || 'Unknown error',
+    title: error.title ?? 'unknown title',
+    message: error.message ?? 'Unknown error',
   }));
 
   beforeEach(() => {

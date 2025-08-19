@@ -4,7 +4,6 @@ import {
   logAuditEvent,
   getFormattedError,
   notificationService,
-  get,
 } from '@bahmni-frontend/bahmni-services';
 import {
   NotificationProvider,
@@ -141,8 +140,8 @@ describe('ConsultationPad Integration', () => {
     (getLocations as jest.Mock).mockResolvedValue(mockLocations);
     (getActiveVisit as jest.Mock).mockResolvedValue(fullMockActiveVisit);
     (getFormattedError as jest.Mock).mockImplementation((error: any) => ({
-      title: error.title || 'unknown title',
-      message: error.message || 'Unknown error',
+      title: error.title ?? 'unknown title',
+      message: error.message ?? 'Unknown error',
     }));
 
     (useActivePractitioner as jest.Mock).mockReturnValue({
@@ -343,21 +342,21 @@ describe('ConsultationPad Integration', () => {
     // Find the submit button
     const submitButton = screen.getByRole('button', { name: /Done/i });
 
-    // Wait for button to be enabled
-    // await waitFor(() => {
-    //   expect(submitButton).not.toBeDisabled();
-    // });
+    //Wait for button to be enabled
+    await waitFor(() => {
+      expect(submitButton).not.toBeDisabled();
+    });
 
-    // Click the submit button with fireEvent instead of userEvent
-    // await act(async () => {
-    //   userEvent.click(submitButton);
-    // });
+    //Click the submit button with fireEvent instead of userEvent
+    await act(async () => {
+      userEvent.click(submitButton);
+    });
 
-    // // Verify stores were reset
-    // expect(
-    //   useConditionsAndDiagnosesStore.getState().selectedDiagnoses,
-    // ).toHaveLength(0);
-    // expect(useAllergyStore.getState().selectedAllergies).toHaveLength(0);
+    // Verify stores were reset
+    expect(
+      useConditionsAndDiagnosesStore.getState().selectedDiagnoses,
+    ).toHaveLength(0);
+    expect(useAllergyStore.getState().selectedAllergies).toHaveLength(0);
   });
 
   it('should handle errors during consultation submission', async () => {

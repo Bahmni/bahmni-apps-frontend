@@ -1,4 +1,9 @@
 import {
+  getClinicalConfig,
+  notificationService,
+  ClinicalConfig,
+} from '@bahmni-frontend/bahmni-services';
+import {
   render,
   screen,
   act,
@@ -9,11 +14,6 @@ import React from 'react';
 import '@testing-library/jest-dom';
 import * as configMocks from '../../__mocks__/configMocks';
 import { useClinicalConfig } from '../../hooks/useClinicalConfig';
-import {
-  getClinicalConfig,
-  notificationService,
-  ClinicalConfig,
-} from '@bahmni-frontend/bahmni-services';
 import { ClinicalConfigProvider } from '../ClinicalConfigProvider';
 
 // Mock the notificationService

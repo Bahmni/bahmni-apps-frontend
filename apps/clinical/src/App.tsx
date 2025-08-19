@@ -26,6 +26,7 @@ const ClinicalApp: React.FC = () => {
         initializeAuditListener();
         setIsInitialized(true);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Failed to initialize app:', error);
         setIsInitialized(true);
       }

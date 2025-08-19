@@ -99,7 +99,7 @@ const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
               label={t('ALLERGY_SELECT_SEVERITY')}
               items={ALLERGY_SEVERITY_CONCEPTS}
               selectedItem={selectedSeverity}
-              itemToString={(item) => t((item as Coding)?.display || '')}
+              itemToString={(item) => t((item as Coding)?.display ?? '')}
               onChange={(data) => {
                 updateSeverity(id, data.selectedItem as Coding | null);
               }}

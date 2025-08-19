@@ -87,7 +87,7 @@ const SelectedConditionItem: React.FC<SelectedConditionItemProps> = React.memo(
             selectedItem={
               DURATION_UNITS.find((unit) => unit.id === durationUnit) ?? null
             }
-            itemToString={(item: any) => t(item?.display || '')}
+            itemToString={(item: any) => t(item?.display ?? '')}
             onChange={(event: any) => {
               const unit = event.selectedItem?.id as
                 | 'days'

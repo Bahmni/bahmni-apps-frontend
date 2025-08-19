@@ -164,8 +164,8 @@ describe('BasicForm Integration Tests', () => {
     });
 
     (getFormattedError as jest.Mock).mockImplementation((error: any) => ({
-      title: error.title || 'unknown title',
-      message: error.message || 'Unknown error',
+      title: error.title ?? 'unknown title',
+      message: error.message ?? 'Unknown error',
     }));
 
     (getEncounterConcepts as jest.Mock).mockResolvedValue(

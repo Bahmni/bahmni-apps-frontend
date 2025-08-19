@@ -87,8 +87,8 @@ describe('InvestigationsForm Integration Tests', () => {
     );
 
     (getFormattedError as jest.Mock).mockImplementation((error: any) => ({
-      title: error.title || 'unknown title',
-      message: error.message || 'Unknown error',
+      title: error.title ?? 'unknown title',
+      message: error.message ?? 'Unknown error',
     }));
     (useServiceRequestStore as unknown as jest.Mock).mockReturnValue(mockStore);
     mockStore.reset();
