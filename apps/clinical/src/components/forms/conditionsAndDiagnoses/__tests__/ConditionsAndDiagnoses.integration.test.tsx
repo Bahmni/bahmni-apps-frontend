@@ -1,6 +1,5 @@
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Condition } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { CERTAINITY_CONCEPTS } from '../../../../constants/diagnosis';
 import { useConceptSearch } from '../../../../hooks/useConceptSearch';
@@ -8,6 +7,7 @@ import useConditions from '../../../../hooks/useConditions';
 import { ConceptSearch } from '../../../../models/concepts';
 import { useConditionsAndDiagnosesStore } from '../../../../stores/conditionsAndDiagnosesStore';
 import ConditionsAndDiagnoses from '../ConditionsAndDiagnoses';
+import { ConditionStatus, FormattedCondition } from '@bahmni-frontend/bahmni-services';
 
 expect.extend(toHaveNoViolations);
 
@@ -16,7 +16,9 @@ jest.mock('../../../../hooks/useConceptSearch');
 jest.mock('../../../../hooks/useConditions');
 
 const mockedUseConceptSearch = useConceptSearch as jest.Mock;
-const mockedUseConditions = useConditions as jest.Mock;
+const mockedUseConditions = useConditions as jest.MockedFunction<
+  typeof useConditions
+>;
 
 // Mock scrollIntoView which is not available in jsdom
 beforeAll(() => {
@@ -881,19 +883,13 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
   });
 
   describe('Integration with Existing Conditions', () => {
-    const existingCondition: Condition = {
-      resourceType: 'Condition',
+    const existingCondition: FormattedCondition = {
       id: 'existing-condition-1',
-      code: {
-        coding: [
-          {
-            system: 'http://snomed.info/sct',
-            code: mockSearchResults[0].conceptUuid,
             display: mockSearchResults[0].conceptName,
-          },
-        ],
-      },
-      subject: { reference: 'Patient/123' },
+            code: mockSearchResults[0].conceptUuid,
+            codeDisplay: mockSearchResults[0].conceptName,
+            note: undefined,
+            status: ConditionStatus.Active,
     };
 
     it('should disable "Add as condition" if a diagnosis is already an existing condition', async () => {
@@ -902,6 +898,7 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
         conditions: [existingCondition],
         loading: false,
         error: null,
+        refetch: jest.fn(),
       });
       mockedUseConceptSearch.mockReturnValue({
         searchResults: mockSearchResults,
