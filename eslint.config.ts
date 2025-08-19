@@ -187,6 +187,7 @@ const config = [
       'jest/prefer-to-be': 'error',
       'jest/no-duplicate-hooks': 'error',
       'jest/no-test-return-statement': 'error',
+      'jest/no-mocks-import': 'off',
     },
   },
 ];
