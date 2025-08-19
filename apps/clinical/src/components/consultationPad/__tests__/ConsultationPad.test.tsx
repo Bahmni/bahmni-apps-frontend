@@ -57,7 +57,6 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
     secondaryButtonText,
     onSecondaryButtonClick,
     content,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }: any) => (
     <div data-testid="mock-action-area">
       <div data-testid="action-area-title">{title}</div>
@@ -398,7 +397,6 @@ describe('ConsultationPad', () => {
     });
 
     it('should disable Done button when required data is missing', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockEncounterDetailsStore.selectedLocation = null as any;
 
       render(<ConsultationPad onClose={mockOnClose} />);
@@ -426,7 +424,6 @@ describe('ConsultationPad', () => {
     });
 
     it('should match snapshot with disabled Done button', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockEncounterDetailsStore.selectedLocation = null as any;
       const { container } = render(<ConsultationPad onClose={mockOnClose} />);
       expect(container).toMatchSnapshot();
@@ -443,7 +440,6 @@ describe('ConsultationPad', () => {
     });
 
     it('should match snapshot during submission state', async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let resolveSubmission: any;
       (
         consultationBundleService.postConsultationBundle as jest.Mock
@@ -610,7 +606,6 @@ describe('ConsultationPad', () => {
       });
 
       it('should disable button during submission', async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let resolveSubmission: any;
         (
           consultationBundleService.postConsultationBundle as jest.Mock
@@ -655,7 +650,6 @@ describe('ConsultationPad', () => {
     });
 
     it('should track submission state correctly', async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let resolveSubmission: any;
       (
         consultationBundleService.postConsultationBundle as jest.Mock
@@ -1137,7 +1131,6 @@ describe('ConsultationPad', () => {
     });
 
     it('should prevent multiple simultaneous submissions', async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let resolveFirst: any;
       let callCount = 0;
 

@@ -172,9 +172,8 @@ describe('allergyService', () => {
     it('should handle malformed notes data', () => {
       const allergyWithMalformedNotes = {
         ...mockAllergyIntolerance,
-        /* eslint-disable @typescript-eslint/no-explicit-any */
+
         note: [{ invalid: 'data' }] as any,
-        /* eslint-enable @typescript-eslint/no-explicit-any */
       };
 
       const result = formatAllergies([allergyWithMalformedNotes]);

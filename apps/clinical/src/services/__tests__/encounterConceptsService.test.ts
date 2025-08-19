@@ -163,7 +163,7 @@ describe('encounterConceptsService', () => {
 
     it('should handle unexpected response structure', async () => {
       // Arrange - Response without the expected structure
-      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+
       mockedGet.mockResolvedValueOnce('invalid response' as any);
 
       // Act & Assert

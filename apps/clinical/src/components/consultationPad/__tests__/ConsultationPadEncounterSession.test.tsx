@@ -22,7 +22,6 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
     secondaryButtonText,
     onSecondaryButtonClick,
     content,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }: any) => (
     <div data-testid="mock-action-area">
       <div data-testid="action-area-title">{title}</div>

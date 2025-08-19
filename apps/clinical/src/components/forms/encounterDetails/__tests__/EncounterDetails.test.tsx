@@ -52,12 +52,12 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => {
   interface MockDropdownProps {
     id: string;
     titleText: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     items: Array<any>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     itemToString: (item: any) => string;
     disabled?: boolean;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     initialSelectedItem?: any;
     invalid?: boolean;
     invalidText?: string;
@@ -75,7 +75,6 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => {
       invalid,
       invalidText,
     }: MockDropdownProps) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const safeItemToString = (item: any): string => {
         try {
           return itemToString(item);

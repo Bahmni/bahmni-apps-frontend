@@ -174,7 +174,6 @@ describe('useAllergenSearch', () => {
           patientInformation: {},
           actions: [],
           dashboards: [],
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
         setClinicalConfig: jest.fn(),
         isLoading: false,
@@ -200,7 +199,6 @@ describe('useAllergenSearch', () => {
           actions: [],
           dashboards: [],
           consultationPad: {},
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
         setClinicalConfig: jest.fn(),
         isLoading: false,

@@ -135,9 +135,8 @@ describe('useConditionsAndDiagnosesStore', () => {
       const { result } = renderHook(() => useConditionsAndDiagnosesStore());
 
       act(() => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         result.current.addDiagnosis(null as any);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         result.current.addDiagnosis(undefined as any);
       });
 
@@ -919,7 +918,7 @@ describe('useConditionsAndDiagnosesStore', () => {
         result.current.updateConditionDuration(
           mockConcept.conceptUuid,
           5,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
           'invalid' as any,
         );
       });

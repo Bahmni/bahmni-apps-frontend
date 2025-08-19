@@ -8,7 +8,6 @@ expect.extend(toHaveNoViolations);
 
 // Mock FontAwesomeIcon and pass props to the rendered element
 jest.mock('@fortawesome/react-fontawesome', () => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   FontAwesomeIcon: ({ icon, size, color, ...props }: any) => (
     <svg
       data-testid={props['data-testid']}

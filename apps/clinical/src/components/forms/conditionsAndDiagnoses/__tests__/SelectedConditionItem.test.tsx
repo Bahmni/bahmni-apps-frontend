@@ -12,13 +12,12 @@ expect.extend(toHaveNoViolations);
 
 // Mock Carbon Design System components
 jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Column: ({ children, className, ...props }: any) => (
     <div data-testid="carbon-column" className={className} {...props}>
       {children}
     </div>
   ),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   Grid: ({ children, ...props }: any) => (
     <div data-testid="carbon-grid" {...props}>
       {children}
@@ -37,7 +36,6 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
     className,
     'data-testid': dataTestId,
     ...props
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }: any) => (
     <div className={className}>
       {!hideLabel && <label htmlFor={id}>{labelText}</label>}
@@ -74,7 +72,6 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     autoAlign,
     ...props
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }: any) => (
     <div className={className}>
       {!hideLabel && <label htmlFor={id}>{titleText ?? label}</label>}
@@ -84,7 +81,6 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
         onChange={(e) => {
           const selectedValue = e.target.value;
           const selectedOption = items.find(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (item: any) => item.id === selectedValue,
           );
           onChange({ selectedItem: selectedOption });
@@ -96,14 +92,11 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
         {...props}
       >
         <option value="">Select...</option>
-        {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          items.map((item: any) => (
-            <option key={item.id} value={item.id}>
-              {itemToString(item)}
-            </option>
-          ))
-        }
+        {items.map((item: any) => (
+          <option key={item.id} value={item.id}>
+            {itemToString(item)}
+          </option>
+        ))}
       </select>
       {invalid && invalidText && (
         <div data-testid={`dropdown-${id}-error`} role="alert">
@@ -670,7 +663,7 @@ describe('SelectedConditionItem Unit Tests', () => {
       // Test with a condition that has an invalid duration unit
       const conditionWithInvalidUnit = {
         ...mockValidCondition,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         durationUnit: 'invalid-unit' as any,
       };
 

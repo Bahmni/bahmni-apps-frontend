@@ -399,7 +399,7 @@ describe('Patient Service', () => {
       const address = {
         line: ['123 Main St'],
         city: 'Boston',
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         extension: 'invalid' as any, // Intentionally incorrect type
       };
 
@@ -842,7 +842,6 @@ describe('Patient Service', () => {
               text: 'MRN',
             },
             // Missing value
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
           } as any, // Intentionally incorrect type
         ],
       };

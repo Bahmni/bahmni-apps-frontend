@@ -233,9 +233,7 @@ describe('conditionService', () => {
         const malformedCondition = {
           id: 'malformed',
           // Missing required code property
-          /* eslint-disable  @typescript-eslint/no-explicit-any */
         } as any;
-        /* eslint-enable @typescript-eslint/no-explicit-any */
 
         expect(() => formatConditions([malformedCondition])).toThrow(
           'Incomplete condition data',

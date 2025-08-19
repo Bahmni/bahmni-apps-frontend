@@ -239,7 +239,6 @@ describe('diagnosesService', () => {
               resource: {
                 resourceType: 'Patient',
                 id: 'patient-1',
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
               } as any,
               fullUrl: 'http://example.com/Patient/patient-1',
             },

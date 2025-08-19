@@ -181,17 +181,16 @@ describe('common utility functions', () => {
     // Test null/undefined values
     test('returns 999 for null/undefined value', () => {
       expect(getPriorityByOrder('', mockPriorityOrder)).toBe(999);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       expect(getPriorityByOrder(null as any, mockPriorityOrder)).toBe(999);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       expect(getPriorityByOrder(undefined as any, mockPriorityOrder)).toBe(999);
     });
 
     // Test null/undefined priority array
     test('returns 999 for null/undefined priority array', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect(getPriorityByOrder('high', null as any)).toBe(999);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       expect(getPriorityByOrder('high', undefined as any)).toBe(999);
     });
 
@@ -275,9 +274,9 @@ describe('common utility functions', () => {
 
     it('should handle null/undefined items', () => {
       // Act & Assert
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       expect(groupByDate(null as any, () => '')).toEqual([]);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       expect(groupByDate(undefined as any, () => '')).toEqual([]);
     });
 

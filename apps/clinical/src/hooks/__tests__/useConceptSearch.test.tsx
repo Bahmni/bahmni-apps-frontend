@@ -17,7 +17,7 @@ describe('useConceptSearch', () => {
 
   it('should set loading state during fetch', async () => {
     // Set up a delayed promise that we can control
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     let resolvePromise: (value: any) => void;
     const promise = new Promise((resolve) => {
       resolvePromise = resolve;

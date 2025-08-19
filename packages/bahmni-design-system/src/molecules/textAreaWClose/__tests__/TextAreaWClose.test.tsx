@@ -187,7 +187,6 @@ describe('TextAreaWClose', () => {
   describe('Edge Cases', () => {
     it('should handle empty onChange gracefully', () => {
       const { container } = render(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         <TextAreaWClose {...defaultProps} onChange={undefined as any} />,
       );
 
@@ -196,7 +195,6 @@ describe('TextAreaWClose', () => {
 
     it('should handle empty onClose gracefully', () => {
       const { container } = render(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         <TextAreaWClose {...defaultProps} onClose={undefined as any} />,
       );
 

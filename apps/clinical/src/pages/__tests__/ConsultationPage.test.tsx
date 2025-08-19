@@ -24,7 +24,7 @@ jest.mock('react', () => ({
     fallback: ReactNode;
   }) => {
     // Store fallback for testing
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     (global as any).suspenseFallback = fallback;
     return children;
   },
@@ -243,7 +243,7 @@ describe('ConsultationPage', () => {
       (useClinicalConfig as jest.Mock).mockReturnValue({
         clinicalConfig: {
           ...validFullClinicalConfig,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
           dashboards: undefined as any, // Force undefined for testing the OR branch
         },
       });
@@ -375,7 +375,7 @@ describe('ConsultationPage', () => {
       render(<ConsultationPage />);
 
       // The suspenseFallback will be captured in global by our mock
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const fallback = (global as any).suspenseFallback;
 
       // Render the fallback to check its structure

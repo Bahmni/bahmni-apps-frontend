@@ -95,7 +95,6 @@ describe('consultationBundleService', () => {
     it('should throw error when selectedDiagnoses is null', () => {
       expect(() =>
         createDiagnosisBundleEntries({
-          /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
           selectedDiagnoses: null as any,
           encounterSubject: mockEncounterSubject,
           encounterReference: mockDiagnosisEncounterReference,
@@ -109,7 +108,7 @@ describe('consultationBundleService', () => {
       expect(() =>
         createDiagnosisBundleEntries({
           selectedDiagnoses: [mockDiagnosis],
-          /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+
           encounterSubject: null as any,
           encounterReference: mockDiagnosisEncounterReference,
           practitionerUUID: mockDiagnosisPractitionerUUID,
@@ -199,7 +198,6 @@ describe('consultationBundleService', () => {
 
   describe('postConsultationBundle', () => {
     it('should call post with the correct URL and payload', async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const mockBundle = { resourceType: 'ConsultationBundle' } as any;
       const mockResponse = { status: 'success' };
 
@@ -297,7 +295,6 @@ describe('consultationBundleService', () => {
       it('should throw error for invalid allergy params', () => {
         expect(() =>
           createAllergiesBundleEntries({
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             selectedAllergies: null as any,
             encounterSubject: mockEncounterSubject,
             encounterReference: mockEncounterReference,
@@ -310,7 +307,7 @@ describe('consultationBundleService', () => {
         expect(() =>
           createAllergiesBundleEntries({
             selectedAllergies: [mockValidAllergy],
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
             encounterSubject: null as any,
             encounterReference: mockEncounterReference,
             practitionerUUID: mockPractitionerUUID,
@@ -782,7 +779,7 @@ describe('consultationBundleService', () => {
         expect(() =>
           createServiceRequestBundleEntries({
             selectedServiceRequests: serviceRequestsMap,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
             encounterSubject: null as any,
             encounterReference: mockEncounterReference,
             practitionerUUID: mockPractitionerUUID,
@@ -835,7 +832,7 @@ describe('consultationBundleService', () => {
           createServiceRequestBundleEntries({
             selectedServiceRequests: serviceRequestsMap,
             encounterSubject: mockEncounterSubject,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
             encounterReference: null as any,
             practitionerUUID: mockPractitionerUUID,
           }),
@@ -871,7 +868,7 @@ describe('consultationBundleService', () => {
             selectedServiceRequests: serviceRequestsMap,
             encounterSubject: mockEncounterSubject,
             encounterReference: mockEncounterReference,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
             practitionerUUID: null as any,
           }),
         ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_PRACTITIONER);
@@ -919,7 +916,7 @@ describe('consultationBundleService', () => {
           string,
           ServiceRequestInputEntry[]
         >();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         serviceRequestsMap.set('lab', null as any);
         serviceRequestsMap.set('radiology', [mockServiceRequest]);
 
@@ -943,7 +940,7 @@ describe('consultationBundleService', () => {
           ServiceRequestInputEntry[]
         >();
         serviceRequestsMap.set('lab', []);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         serviceRequestsMap.set('radiology', null as any);
         serviceRequestsMap.set('other', []);
 
@@ -1109,7 +1106,6 @@ describe('consultationBundleService', () => {
       it('should throw error for null/undefined selectedConditions', () => {
         expect(() =>
           createConditionsBundleEntries({
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             selectedConditions: null as any,
             encounterSubject: mockEncounterSubject,
             encounterReference: mockEncounterReference,
@@ -1123,7 +1119,7 @@ describe('consultationBundleService', () => {
         expect(() =>
           createConditionsBundleEntries({
             selectedConditions: [mockValidCondition],
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
             encounterSubject: null as any,
             encounterReference: mockEncounterReference,
             practitionerUUID: mockPractitionerUUID,
@@ -1364,7 +1360,6 @@ describe('consultationBundleService', () => {
       it('should throw error for null selectedMedications', () => {
         expect(() =>
           createMedicationRequestEntries({
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
             selectedMedications: null as any,
             encounterSubject: mockEncounterSubject,
             encounterReference: mockEncounterReference,
@@ -1376,7 +1371,6 @@ describe('consultationBundleService', () => {
       it('should throw error for non-array selectedMedications', () => {
         expect(() =>
           createMedicationRequestEntries({
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
             selectedMedications: 'not-an-array' as any,
             encounterSubject: mockEncounterSubject,
             encounterReference: mockEncounterReference,
@@ -1389,7 +1383,7 @@ describe('consultationBundleService', () => {
         expect(() =>
           createMedicationRequestEntries({
             selectedMedications: [mockMedicationEntry],
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+
             encounterSubject: null as any,
             encounterReference: mockEncounterReference,
             practitionerUUID: mockPractitionerUUID,

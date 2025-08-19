@@ -40,7 +40,7 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
 
 jest.mock('../SelectedInvestigationItem', () => ({
   __esModule: true,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   default: ({ investigation, onPriorityChange }: any) => (
     <div data-testid="selected-investigation-item">
       <span>{investigation.display}</span>

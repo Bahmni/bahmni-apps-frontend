@@ -207,7 +207,6 @@ describe('SortableDataTable', () => {
     render(
       <SortableDataTable
         headers={mockHeaders}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         rows={undefined as any}
         ariaLabel="Undefined Rows"
       />,
@@ -220,7 +219,6 @@ describe('SortableDataTable', () => {
     render(
       <SortableDataTable
         headers={mockHeaders}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         rows={null as any}
         ariaLabel="Null Rows"
       />,

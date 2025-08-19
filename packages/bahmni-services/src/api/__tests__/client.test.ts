@@ -27,7 +27,7 @@ describe('Axios Client', () => {
   describe('Request Interceptor', () => {
     it('should pass through successful requests', () => {
       const mockConfig = { url: '/api/test' };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const requestInterceptor = (client.interceptors.request as any)
         .handlers[0];
 
@@ -38,7 +38,7 @@ describe('Axios Client', () => {
     it('should handle request errors', async () => {
       const mockError = new Error('Request failed');
       const { getFormattedError } = await import('../../errorHandling');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const requestInterceptor = (client.interceptors.request as any)
         .handlers[0];
 
@@ -103,7 +103,6 @@ describe('Axios Client', () => {
           config: { url: '/openmrs/ws/rest/v1/patient' },
         };
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const responseInterceptor = (client.interceptors.response as any)
           .handlers[0];
         const result = responseInterceptor.fulfilled(mockResponse);
@@ -127,7 +126,6 @@ describe('Axios Client', () => {
           config: { url: '/api/v1/patient' },
         };
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const responseInterceptor = (client.interceptors.response as any)
           .handlers[0];
         const result = responseInterceptor.fulfilled(mockResponse);
@@ -151,7 +149,6 @@ describe('Axios Client', () => {
           .fn()
           .mockReturnValue(true);
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const responseInterceptor = (client.interceptors.response as any)
           .handlers[0];
 
@@ -171,7 +168,6 @@ describe('Axios Client', () => {
           .fn()
           .mockReturnValue(true);
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const responseInterceptor = (client.interceptors.response as any)
           .handlers[0];
 
@@ -188,7 +184,6 @@ describe('Axios Client', () => {
           .fn()
           .mockReturnValue(false);
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const responseInterceptor = (client.interceptors.response as any)
           .handlers[0];
 
@@ -208,7 +203,6 @@ describe('Axios Client', () => {
           .fn()
           .mockReturnValue(true);
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const responseInterceptor = (client.interceptors.response as any)
           .handlers[0];
 
@@ -232,7 +226,6 @@ describe('Axios Client', () => {
           config: { url: '/openmrs/ws/rest/v1/patient' },
         };
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const responseInterceptor = (client.interceptors.response as any)
           .handlers[0];
 
@@ -245,7 +238,6 @@ describe('Axios Client', () => {
       it('should handle unexpected errors in response interceptor', async () => {
         const mockResponse = null; // forceful unexpected shape
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const responseInterceptor = (client.interceptors.response as any)
           .handlers[0];
 

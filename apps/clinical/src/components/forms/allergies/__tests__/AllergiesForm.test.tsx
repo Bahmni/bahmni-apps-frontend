@@ -447,7 +447,6 @@ describe('AllergiesForm', () => {
         disabled: false,
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockAllergenSearchHook({ allergens: [malformedAllergen as any] });
 
       renderAllergiesForm();
