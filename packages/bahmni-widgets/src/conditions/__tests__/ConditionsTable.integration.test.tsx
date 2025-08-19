@@ -1,5 +1,3 @@
-import { render, screen, waitFor } from '@testing-library/react';
-import '@testing-library/jest-dom';
 import {
   getFormattedConditions,
   getFormattedError,
@@ -7,6 +5,8 @@ import {
   ConditionStatus,
   FormattedCondition,
 } from '@bahmni-frontend/bahmni-services';
+import { render, screen, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import ConditionsTable from '../ConditionsTable';
 
@@ -61,7 +61,7 @@ describe('ConditionsTable Integration', () => {
     jest.clearAllMocks();
 
     mockUseTranslation.mockReturnValue({
-      t: (key: string, options?: any) => {
+      t: (key: string, options?: { timeAgo?: string }) => {
         const translations: Record<string, string> = {
           CONDITION_LIST_DISPLAY_CONTROL_TITLE: 'Conditions',
           CONDITION_LIST_CONDITION: 'Condition',

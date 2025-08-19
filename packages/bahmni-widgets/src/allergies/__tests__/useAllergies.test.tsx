@@ -2,8 +2,6 @@ import {
   getFormattedAllergies,
   getFormattedError,
   FormattedAllergy,
-  AllergyStatus,
-  AllergySeverity,
 } from '@bahmni-frontend/bahmni-services';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { usePatientUUID } from '../../hooks/usePatientUUID';

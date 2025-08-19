@@ -1,7 +1,9 @@
 import {
   formatDate,
+  groupByDate,
   MedicationRequest,
   MedicationStatus,
+  useTranslation,
 } from '@bahmni-frontend/bahmni-services';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -9,6 +11,12 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import MedicationsTable from '../MedicationsTable';
 import { useMedicationRequest } from '../useMedicationRequest';
 import '@testing-library/jest-dom';
+import {
+  formatMedicationRequest,
+  sortMedicationsByDateDistance,
+  sortMedicationsByPriority,
+  sortMedicationsByStatus,
+} from '../utils';
 
 expect.extend(toHaveNoViolations);
 
@@ -34,20 +42,28 @@ jest.mock('react-router-dom', () => ({
 const mockUseMedicationRequest = useMedicationRequest as jest.MockedFunction<
   typeof useMedicationRequest
 >;
-const mockUseTranslation = require('@bahmni-frontend/bahmni-services')
-  .useTranslation as jest.MockedFunction<any>;
+const mockUseTranslation = useTranslation as jest.MockedFunction<
+  typeof useTranslation
+>;
 
 const mockFormatDate = formatDate as jest.MockedFunction<typeof formatDate>;
-const mockFormatMedicationRequest = require('../utils')
-  .formatMedicationRequest as jest.MockedFunction<any>;
-const mockSortMedicationsByStatus = require('../utils')
-  .sortMedicationsByStatus as jest.MockedFunction<any>;
-const mockSortMedicationsByPriority = require('../utils')
-  .sortMedicationsByPriority as jest.MockedFunction<any>;
-const mockSortMedicationsByDateDistance = require('../utils')
-  .sortMedicationsByDateDistance as jest.MockedFunction<any>;
-const mockGroupByDate = require('@bahmni-frontend/bahmni-services')
-  .groupByDate as jest.MockedFunction<any>;
+const mockFormatMedicationRequest =
+  formatMedicationRequest as jest.MockedFunction<
+    typeof formatMedicationRequest
+  >;
+const mockSortMedicationsByStatus =
+  sortMedicationsByStatus as jest.MockedFunction<
+    typeof sortMedicationsByStatus
+  >;
+const mockSortMedicationsByPriority =
+  sortMedicationsByPriority as jest.MockedFunction<
+    typeof sortMedicationsByPriority
+  >;
+const mockSortMedicationsByDateDistance =
+  sortMedicationsByDateDistance as jest.MockedFunction<
+    typeof sortMedicationsByDateDistance
+  >;
+const mockGroupByDate = groupByDate as jest.MockedFunction<typeof groupByDate>;
 
 const mockMedications: MedicationRequest[] = [
   {
@@ -149,7 +165,7 @@ describe('MedicationsTable', () => {
         id: med.id,
         name: med.name,
         dosage: `${med.dose?.value} ${med.dose?.unit}`,
-        dosageUnit: med.dose?.unit || '',
+        dosageUnit: med.dose?.unit ?? '',
         quantity: `${med.quantity.value} ${med.quantity.unit}`,
         instruction: med.instructions,
         startDate: med.startDate,

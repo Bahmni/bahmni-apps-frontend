@@ -170,9 +170,9 @@ describe('formatMedicationRequest', () => {
     const input: MedicationRequest = {
       id: '790',
       name: 'Penicillin',
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       startDate: undefined as any,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       orderDate: undefined as any,
       status: MedicationStatus.Active,
       quantity: { value: 5, unit: 'tablets' },
@@ -232,7 +232,7 @@ describe('sortMedicationsByStatus', () => {
       MEDICATION_STATUS_PRIORITY_ORDER.map((status, i) => ({
         id: `${i}`,
         name: `Med-${status}`,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         status: status as any,
         dosage: '',
         dosageUnit: '',
@@ -312,7 +312,7 @@ describe('sortMedicationsByStatus', () => {
       {
         id: '2',
         name: 'Invalid',
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         status: 'bogus' as any,
         dosage: '',
         dosageUnit: '',

@@ -188,6 +188,7 @@ const config = [
       'jest/no-duplicate-hooks': 'error',
       'jest/no-test-return-statement': 'error',
       'jest/no-mocks-import': 'off',
+      '@typescript-eslint/no-explicit-any': 'off'
     },
   },
 ];

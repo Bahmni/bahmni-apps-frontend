@@ -1,7 +1,8 @@
+import { FormattedPatientData } from '@bahmni-frontend/bahmni-services';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { FormattedPatientData } from '@bahmni-frontend/bahmni-services';
 import PatientDetails from '../PatientDetails';
+import { usePatient } from '../usePatient';
 
 jest.mock('../usePatient', () => ({
   usePatient: jest.fn(),
@@ -31,7 +32,7 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
     name: string;
     testId?: string;
   }) => (
-    <span data-testid={testId || `icon-${id}`} data-icon-name={name}>
+    <span data-testid={testId ?? `icon-${id}`} data-icon-name={name}>
       {name}
     </span>
   ),
@@ -42,8 +43,7 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
   },
 }));
 
-const mockedUsePatient = require('../usePatient')
-  .usePatient as jest.MockedFunction<
+const mockedUsePatient = usePatient as jest.MockedFunction<
   () => {
     patient: FormattedPatientData | null;
     loading: boolean;

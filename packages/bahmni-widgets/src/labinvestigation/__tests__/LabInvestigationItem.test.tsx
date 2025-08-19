@@ -2,6 +2,7 @@ import '@testing-library/jest-dom';
 import {
   FormattedLabTest,
   LabTestPriority,
+  useTranslation,
 } from '@bahmni-frontend/bahmni-services';
 import { render, screen } from '@testing-library/react';
 import LabInvestigationItem from '../LabInvestigationItem';
@@ -15,9 +16,9 @@ jest.mock('react-router-dom', () => ({
   useParams: jest.fn(),
 }));
 
-const mockUseTranslation = require('@bahmni-frontend/bahmni-services')
-  .useTranslation as jest.MockedFunction<any>;
-
+const mockUseTranslation = useTranslation as jest.MockedFunction<
+  typeof useTranslation
+>;
 describe('LabInvestigationItem', () => {
   const baseLabTest: FormattedLabTest = {
     id: 'test-123',

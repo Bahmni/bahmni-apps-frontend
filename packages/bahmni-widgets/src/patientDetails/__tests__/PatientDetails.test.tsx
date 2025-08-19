@@ -25,7 +25,7 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
     name: string;
     testId?: string;
   }) => (
-    <span data-testid={testId || `icon-${id}`} data-icon-name={name}>
+    <span data-testid={testId ?? `icon-${id}`} data-icon-name={name}>
       {name}
     </span>
   ),

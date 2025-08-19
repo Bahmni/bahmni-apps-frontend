@@ -1,3 +1,9 @@
+import {
+  getPatientRadiologyInvestigations,
+  RadiologyInvestigation,
+  getFormattedError,
+  useTranslation,
+} from '@bahmni-frontend/bahmni-services';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
@@ -6,12 +12,6 @@ import {
   mockFormattedRadiologyInvestigations,
   createMockRadiologyInvestigation,
 } from '../__mocks__/mocks';
-import {
-  getPatientRadiologyInvestigations,
-  RadiologyInvestigation,
-  getFormattedError,
-  useTranslation,
-} from '@bahmni-frontend/bahmni-services';
 import { useRadiologyInvestigation } from '../useRadiologyInvestigation';
 
 jest.mock('@bahmni-frontend/bahmni-services');

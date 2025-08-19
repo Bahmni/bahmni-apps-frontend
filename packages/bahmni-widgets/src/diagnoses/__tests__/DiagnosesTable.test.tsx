@@ -3,6 +3,7 @@ import {
   formatDate,
   sortByDate,
   DATE_FORMAT,
+  useTranslation,
 } from '@bahmni-frontend/bahmni-services';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -29,8 +30,9 @@ const mockUseDiagnoses = useDiagnoses as jest.MockedFunction<
 >;
 const mockFormatDate = formatDate as jest.MockedFunction<typeof formatDate>;
 const mockSortByDate = sortByDate as jest.MockedFunction<typeof sortByDate>;
-const mockUseTranslation = require('@bahmni-frontend/bahmni-services')
-  .useTranslation as jest.MockedFunction<any>;
+const mockUseTranslation = useTranslation as jest.MockedFunction<
+  typeof useTranslation
+>;
 
 const mockDiagnoses: Diagnosis[] = [
   {

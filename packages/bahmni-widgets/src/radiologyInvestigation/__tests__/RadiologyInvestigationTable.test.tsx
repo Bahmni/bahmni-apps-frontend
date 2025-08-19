@@ -4,6 +4,7 @@ import {
   formatDate,
   FULL_MONTH_DATE_FORMAT,
   ISO_DATE_FORMAT,
+  useTranslation,
 } from '@bahmni-frontend/bahmni-services';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -38,8 +39,9 @@ const mockUseRadiologyInvestigation =
   useRadiologyInvestigation as jest.MockedFunction<
     typeof useRadiologyInvestigation
   >;
-const mockUseTranslation = require('@bahmni-frontend/bahmni-services')
-  .useTranslation as jest.MockedFunction<any>;
+const mockUseTranslation = useTranslation as jest.MockedFunction<
+  typeof useTranslation
+>;
 
 const mockGroupByDate = groupByDate as jest.MockedFunction<typeof groupByDate>;
 const mockFormatDate = formatDate as jest.MockedFunction<typeof formatDate>;
@@ -184,7 +186,7 @@ describe('RadiologyInvestigationTable', () => {
     expect(groupByDateCall[0]).toBe(mockRadiologyInvestigations);
 
     const dateExtractor = groupByDateCall[1];
-    const result = dateExtractor(mockRadiologyInvestigations[0]);
+    dateExtractor(mockRadiologyInvestigations[0]);
     expect(mockFormatDate).toHaveBeenCalledWith(
       mockRadiologyInvestigations[0].orderedDate,
       ISO_DATE_FORMAT,

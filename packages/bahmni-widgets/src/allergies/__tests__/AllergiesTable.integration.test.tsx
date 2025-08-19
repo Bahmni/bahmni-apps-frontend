@@ -1,11 +1,10 @@
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import '@testing-library/jest-dom';
 import {
   FormattedAllergy,
   AllergyStatus,
   AllergySeverity,
 } from '@bahmni-frontend/bahmni-services';
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import AllergiesTable from '../AllergiesTable';
 import { useAllergies } from '../useAllergies';
 
@@ -162,7 +161,7 @@ describe('AllergiesTable Integration', () => {
 
     const allergies = screen.getAllByRole('row').slice(1); // Skip header row
     const allergyNames = allergies.map(
-      (row) => (row as HTMLElement).textContent || '',
+      (row) => (row as HTMLElement).textContent ?? '',
     );
 
     // Verify severe allergies appear first

@@ -1,11 +1,12 @@
-import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
-import { axe, toHaveNoViolations } from 'jest-axe';
 import {
   ConditionStatus,
   FormattedCondition,
   formatDateDistance,
+  useTranslation,
 } from '@bahmni-frontend/bahmni-services';
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import ConditionsTable from '../ConditionsTable';
 import { useConditions } from '../useConditions';
 
@@ -29,8 +30,9 @@ const mockFormatDateDistance = formatDateDistance as jest.MockedFunction<
 >;
 
 // Mock useTranslation
-const mockUseTranslation = require('@bahmni-frontend/bahmni-services')
-  .useTranslation as jest.MockedFunction<any>;
+const mockUseTranslation = useTranslation as jest.MockedFunction<
+  typeof useTranslation
+>;
 
 const mockConditions: FormattedCondition[] = [
   {
@@ -59,7 +61,7 @@ describe('ConditionsTable', () => {
 
     // Mock translation function
     mockUseTranslation.mockReturnValue({
-      t: (key: string, options?: any) => {
+      t: (key: string, options?: { timeAgo?: string }) => {
         const translations: Record<string, string> = {
           CONDITION_LIST_DISPLAY_CONTROL_TITLE: 'Conditions',
           CONDITION_LIST_CONDITION: 'Condition',

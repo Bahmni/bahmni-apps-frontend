@@ -4,6 +4,7 @@ import {
   LabTestsByDate,
   LabTestPriority,
   groupLabTestsByDate,
+  useTranslation,
 } from '@bahmni-frontend/bahmni-services';
 import { render, screen } from '@testing-library/react';
 import LabInvestigation from '../LabInvestigation';
@@ -29,8 +30,9 @@ jest.mock('../LabInvestigationItem', () => ({
   ),
 }));
 
-const mockUseTranslation = require('@bahmni-frontend/bahmni-services')
-  .useTranslation as jest.MockedFunction<any>;
+const mockUseTranslation = useTranslation as jest.MockedFunction<
+  typeof useTranslation
+>;
 
 describe('LabInvestigation', () => {
   const mockFormattedLabTests: FormattedLabTest[] = [

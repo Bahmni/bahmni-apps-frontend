@@ -1,13 +1,13 @@
-import { render, screen, act } from '@testing-library/react';
-import { axe, toHaveNoViolations } from 'jest-axe';
-import '@testing-library/jest-dom';
-import AllergiesTable from '../AllergiesTable';
-import { useAllergies } from '../useAllergies';
 import {
   FormattedAllergy,
   AllergySeverity,
   AllergyStatus,
 } from '@bahmni-frontend/bahmni-services';
+import { render, screen, act } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
+import '@testing-library/jest-dom';
+import AllergiesTable from '../AllergiesTable';
+import { useAllergies } from '../useAllergies';
 
 expect.extend(toHaveNoViolations);
 
@@ -33,7 +33,9 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
     ariaLabel: string;
   }) => (
     <div data-testid="tooltip-icon" title={content} aria-label={ariaLabel}>
-      ℹ️
+      <span role="img" aria-label="notes">
+        ℹ️
+      </span>
     </div>
   ),
 }));

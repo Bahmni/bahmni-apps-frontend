@@ -2,8 +2,10 @@ import '@testing-library/jest-dom';
 import {
   LabTestPriority,
   FormattedLabTest,
+  useTranslation,
 } from '@bahmni-frontend/bahmni-services';
 import { render, screen, waitFor } from '@testing-library/react';
+import { useParams } from 'react-router-dom';
 import LabInvestigation from '../LabInvestigation';
 import useLabInvestigations from '../useLabInvestigations';
 
@@ -22,10 +24,10 @@ jest.mock('react-router-dom', () => ({
 const mockUseLabInvestigations = useLabInvestigations as jest.MockedFunction<
   typeof useLabInvestigations
 >;
-const mockUseTranslation = require('@bahmni-frontend/bahmni-services')
-  .useTranslation as jest.MockedFunction<any>;
-const mockUseParams = require('react-router-dom')
-  .useParams as jest.MockedFunction<any>;
+const mockUseTranslation = useTranslation as jest.MockedFunction<
+  typeof useTranslation
+>;
+const mockUseParams = useParams as jest.MockedFunction<typeof useParams>;
 
 // Mock formatted lab tests that match the component's expected data structure
 const mockFormattedLabTests: FormattedLabTest[] = [
