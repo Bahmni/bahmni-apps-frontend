@@ -151,8 +151,8 @@ const InvestigationsForm: React.FC = React.memo(() => {
         id="investigations-procedures-search"
         placeholder={t('INVESTIGATIONS_SEARCH_PLACEHOLDER')}
         items={filteredInvestigations}
-        itemToString={(item: any) => item?.display ?? ''}
-        onChange={({ selectedItem }: any) => handleChange(selectedItem)}
+        itemToString={(item) => item?.display ?? ''}
+        onChange={({ selectedItem }) => handleChange(selectedItem)}
         onInputChange={(input) => setSearchTerm(input)}
         autoAlign
         aria-label={t('INVESTIGATIONS_SEARCH_ARIA_LABEL')}

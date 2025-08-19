@@ -141,8 +141,8 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
         id="diagnoses-search"
         placeholder={t('DIAGNOSES_SEARCH_PLACEHOLDER')}
         items={filteredSearchResults}
-        itemToString={(item: any) => item?.conceptName ?? ''}
-        onChange={(data: any) => handleOnChange(data.selectedItem!)}
+        itemToString={(item) => item?.conceptName ?? ''}
+        onChange={(data) => handleOnChange(data.selectedItem!)}
         onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
         size="md"
         autoAlign

@@ -81,8 +81,8 @@ const SelectedDiagnosisItem: React.FC<SelectedDiagnosisItemProps> = React.memo(
             label={t('DIAGNOSES_SELECT_CERTAINTY')}
             items={CERTAINITY_CONCEPTS}
             selectedItem={selectedCertainty}
-            itemToString={(item: any) => (item?.display ? t(item.display) : '')}
-            onChange={(data: any) => {
+            itemToString={(item) => (item?.display ? t(item.display) : '')}
+            onChange={(data) => {
               updateCertainty(id, data.selectedItem);
             }}
             invalid={hasCertaintyError}

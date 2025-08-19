@@ -261,9 +261,9 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               hideLabel
               size="sm"
               items={medicationConfig.doseUnits ?? []}
-              itemToString={(item: any) => (item ? item.name : '')}
+              itemToString={(item) => (item ? item.name : '')}
               selectedItem={dosageUnit}
-              onChange={(e: any) => {
+              onChange={(e) => {
                 if (e.selectedItem) {
                   updateDosageUnit(id, e.selectedItem);
                   updateDispenseUnit(id, e.selectedItem);
@@ -289,7 +289,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               }
               itemToString={(item) => (item ? item.name : '')}
               selectedItem={frequency}
-              onChange={(e: any) => {
+              onChange={(e) => {
                 if (e.selectedItem) {
                   updateFrequency(id, e.selectedItem);
                 }
@@ -330,11 +330,11 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               hideLabel
               size="sm"
               items={DURATION_UNIT_OPTIONS}
-              itemToString={(item: any) =>
+              itemToString={(item) =>
                 item ? t(item.display, { defaultValue: item.code }) : ''
               }
               selectedItem={durationUnit}
-              onChange={(e: any) => {
+              onChange={(e) => {
                 if (e.selectedItem) {
                   updateDurationUnit(id, e.selectedItem);
                 }
@@ -355,9 +355,9 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               hideLabel
               size="sm"
               items={medicationConfig.dosingInstructions ?? []}
-              itemToString={(item: any) => (item ? item.name : '')}
+              itemToString={(item) => (item ? item.name : '')}
               selectedItem={instruction}
-              onChange={(e: any) => {
+              onChange={(e) => {
                 if (e.selectedItem) {
                   updateInstruction(id, e.selectedItem);
                 }
@@ -375,9 +375,9 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               hideLabel
               size="sm"
               items={medicationConfig.routes ?? []}
-              itemToString={(item: any) => (item ? item.name : '')}
+              itemToString={(item) => (item ? item.name : '')}
               selectedItem={route}
-              onChange={(e: any) => {
+              onChange={(e) => {
                 if (e.selectedItem) {
                   updateRoute(id, e.selectedItem);
                 }

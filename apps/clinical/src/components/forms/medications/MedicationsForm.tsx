@@ -144,8 +144,8 @@ const MedicationsForm: React.FC = React.memo(() => {
           id="medications-search"
           placeholder={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
           items={filteredSearchResults}
-          itemToString={(item: any) => (item ? item.displayName : '')}
-          onChange={(data: any) => handleOnChange(data.selectedItem!)}
+          itemToString={(item) => (item ? item.displayName : '')}
+          onChange={(data) => handleOnChange(data.selectedItem!)}
           onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
           size="md"
           autoAlign
