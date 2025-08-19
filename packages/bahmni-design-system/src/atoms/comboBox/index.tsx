@@ -4,13 +4,13 @@ import {
 } from '@carbon/react';
 import React from 'react';
 
-export type ComboBoxProps = CarbonComboBoxProps<unknown> & {
+export type ComboBoxProps<T = unknown> = CarbonComboBoxProps<T> & {
   testId?: string;
 };
 
-export const ComboBox: React.FC<ComboBoxProps> = ({
+export const ComboBox = <T = unknown>({
   testId,
   ...carbonProps
-}) => {
-  return <CarbonComboBox {...carbonProps} data-testid={testId} />;
+}: ComboBoxProps<T>) => {
+  return <CarbonComboBox<T> {...carbonProps} data-testid={testId} />;
 };

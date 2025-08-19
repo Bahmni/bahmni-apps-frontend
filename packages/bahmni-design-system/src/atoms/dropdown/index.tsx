@@ -2,15 +2,14 @@ import {
   Dropdown as CarbonDropdown,
   DropdownProps as CarbonDropdownProps,
 } from '@carbon/react';
-import React from 'react';
 
-export type DropdownProps = CarbonDropdownProps<unknown> & {
+export type DropdownProps<T> = CarbonDropdownProps<T> & {
   testId?: string;
 };
 
-export const Dropdown: React.FC<DropdownProps> = ({
+export const Dropdown = <T,>({
   testId,
   ...carbonProps
-}) => {
+}: DropdownProps<T>) => {
   return <CarbonDropdown {...carbonProps} data-testid={testId} />;
 };
