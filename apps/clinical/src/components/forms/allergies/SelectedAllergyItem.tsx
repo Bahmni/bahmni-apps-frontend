@@ -143,7 +143,7 @@ const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
             placeholder={t('ADD_ALLERGY_NOTE_PLACEHOLDER')}
             value={note ?? ''}
             onChange={(event) => {
-              const target = event.target as any;
+              const target = event.target;
               updateNote(id, target.value);
             }}
             onClose={() => {

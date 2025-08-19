@@ -219,7 +219,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               labelText={t('MEDICATION_STAT')}
               aria-label="STAT"
               checked={isSTAT}
-              onChange={(e: any) => updateisSTAT(id, e.target.checked)}
+              onChange={(e) => updateisSTAT(id, e.target.checked)}
               className={styles.statControl}
             />
             <Checkbox
@@ -227,7 +227,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               labelText={t('MEDICATION_PRN')}
               aria-label="PRN"
               checked={isPRN}
-              onChange={(e: any) => updateisPRN(id, e.target.checked)}
+              onChange={(e) => updateisPRN(id, e.target.checked)}
             />
           </Column>
 

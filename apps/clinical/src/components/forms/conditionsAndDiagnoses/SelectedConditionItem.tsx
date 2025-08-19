@@ -59,7 +59,7 @@ const SelectedConditionItem: React.FC<SelectedConditionItemProps> = React.memo(
             labelText={t('CONDITIONS_DURATION_VALUE_LABEL')}
             placeholder={t('CONDITIONS_DURATION_VALUE_PLACEHOLDER')}
             value={durationValue?.toString() ?? ''}
-            onChange={(event: any) => {
+            onChange={(event) => {
               const value = event.target.value.trim();
               if (value === '') {
                 updateConditionDuration(id, null, durationUnit);
