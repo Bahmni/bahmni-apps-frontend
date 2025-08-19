@@ -1,10 +1,10 @@
 import { Coding, Condition as Diagnoses, Bundle } from 'fhir/r4';
+import { get } from '../api';
 import {
   CERTAINITY_CONCEPTS,
   PATIENT_DIAGNOSIS_RESOURCE_URL,
 } from './constants';
 import { Diagnosis } from './models';
-import { get } from '../api';
 
 // Constants for better maintainability
 const CONFIRMED_STATUS = 'confirmed';

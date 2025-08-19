@@ -1,5 +1,3 @@
-import React, { useState, useMemo, useRef } from 'react';
-import { useTranslation } from '@bahmni-frontend/bahmni-services';
 import {
   BoxWHeader,
   SelectedItem,
@@ -7,11 +5,13 @@ import {
   DropdownSkeleton,
   Tile,
 } from '@bahmni-frontend/bahmni-design-system';
+import { useTranslation } from '@bahmni-frontend/bahmni-services';
+import React, { useState, useMemo, useRef } from 'react';
 import useMedicationConfig from '../../../hooks/useMedicationConfig';
 import { useMedicationSearch } from '../../../hooks/useMedicationSearch';
+import { MedicationFilterResult } from '../../../models/medication';
 import { getMedicationDisplay } from '../../../services/medicationService';
 import { useMedicationStore } from '../../../stores/medicationsStore';
-import { MedicationFilterResult } from '../../../models/medication';
 import SelectedMedicationItem from './SelectedMedicationItem';
 import styles from './styles/MedicationsForm.module.scss';
 

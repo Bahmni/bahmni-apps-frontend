@@ -1,8 +1,8 @@
-import { USER_RESOURCE_URL } from '../constants';
-import { BAHMNI_USER_COOKIE_NAME } from '../../constants/app';
 import { get } from '../../api';
-import { getCurrentUser } from '../userService';
+import { BAHMNI_USER_COOKIE_NAME } from '../../constants/app';
 import { getCookieByName } from '../../utils';
+import { USER_RESOURCE_URL } from '../constants';
+import { getCurrentUser } from '../userService';
 
 // Mock dependencies
 jest.mock('../../api');
@@ -15,8 +15,8 @@ jest.mock('../../utils', () => ({
 jest.mock('i18next', () => ({
   __esModule: true,
   default: {
-      t: jest.fn().mockImplementation((key: string) => key),
-  }
+    t: jest.fn().mockImplementation((key: string) => key),
+  },
 }));
 
 describe('userService', () => {
@@ -65,18 +65,14 @@ describe('userService', () => {
       const result = await getCurrentUser();
 
       // Assert
-      expect(getCookieByName).toHaveBeenCalledWith(
-        BAHMNI_USER_COOKIE_NAME,
-      );
+      expect(getCookieByName).toHaveBeenCalledWith(BAHMNI_USER_COOKIE_NAME);
       expect(get).toHaveBeenCalledWith(USER_RESOURCE_URL(mockUsername));
       expect(result).toEqual(mockUserResponse.results[0]);
     });
 
     it('should handle URL-encoded username in cookie', async () => {
       // Arrange
-      (getCookieByName as jest.Mock).mockReturnValue(
-        mockEncodedUsername,
-      );
+      (getCookieByName as jest.Mock).mockReturnValue(mockEncodedUsername);
       (get as jest.Mock).mockResolvedValue(mockUserResponse);
 
       // Act
@@ -89,9 +85,7 @@ describe('userService', () => {
 
     it('should handle quoted username in cookie', async () => {
       // Arrange
-      (getCookieByName as jest.Mock).mockReturnValue(
-        mockQuotedUsername,
-      );
+      (getCookieByName as jest.Mock).mockReturnValue(mockQuotedUsername);
       (get as jest.Mock).mockResolvedValue(mockUserResponse);
 
       // Act
@@ -180,7 +174,7 @@ describe('userService', () => {
 
       // Act & Assert
       await expect(getCurrentUser()).rejects.toThrow(
-        'ERROR_FETCHING_USER_DETAILS'
+        'ERROR_FETCHING_USER_DETAILS',
       );
       expect(get).toHaveBeenCalledWith(USER_RESOURCE_URL(mockUsername));
     });
@@ -188,13 +182,11 @@ describe('userService', () => {
     it('should throw error when username decoding fails', async () => {
       // Arrange
       const invalidEncoding = '%invalid';
-      (getCookieByName as jest.Mock).mockReturnValue(
-        invalidEncoding,
-      );
+      (getCookieByName as jest.Mock).mockReturnValue(invalidEncoding);
 
       // Act & Assert
       await expect(getCurrentUser()).rejects.toThrow(
-        'ERROR_FETCHING_USER_DETAILS'
+        'ERROR_FETCHING_USER_DETAILS',
       );
       expect(get).not.toHaveBeenCalled();
     });
@@ -203,13 +195,11 @@ describe('userService', () => {
     it('should handle malformed cookie values', async () => {
       // Arrange
       const malformedValue = '%%%invalid%%%';
-      (getCookieByName as jest.Mock).mockReturnValue(
-        malformedValue,
-      );
+      (getCookieByName as jest.Mock).mockReturnValue(malformedValue);
 
       // Act & Assert
       await expect(getCurrentUser()).rejects.toThrow(
-        'ERROR_FETCHING_USER_DETAILS'
+        'ERROR_FETCHING_USER_DETAILS',
       );
       expect(get).not.toHaveBeenCalledWith(USER_RESOURCE_URL(malformedValue));
     });
@@ -218,9 +208,7 @@ describe('userService', () => {
       // Arrange
       const usernameWithSpace = 'super man';
       const encodedUsernameWithSpace = encodeURIComponent(usernameWithSpace);
-      (getCookieByName as jest.Mock).mockReturnValue(
-        encodedUsernameWithSpace,
-      );
+      (getCookieByName as jest.Mock).mockReturnValue(encodedUsernameWithSpace);
       const spaceUserResponse = {
         results: [
           { ...mockUserResponse.results[0], username: usernameWithSpace },

@@ -3,15 +3,15 @@ import {
   AccordionItem,
   SkeletonText,
 } from '@bahmni-frontend/bahmni-design-system';
-import React, { useMemo } from 'react';
-import useLabInvestigations from './useLabInvestigations';
 import {
   groupLabTestsByDate,
   useTranslation,
   LabTestsByDate,
 } from '@bahmni-frontend/bahmni-services';
+import React, { useMemo } from 'react';
 import LabInvestigationItem from './LabInvestigationItem';
 import styles from './styles/LabInvestigation.module.scss';
+import useLabInvestigations from './useLabInvestigations';
 
 const LabInvestigation: React.FC = () => {
   const { t } = useTranslation();

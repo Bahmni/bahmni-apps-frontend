@@ -1,4 +1,8 @@
-import React, { useMemo } from 'react';
+import {
+  SortableDataTable,
+  StatusTag,
+  Tile,
+} from '@bahmni-frontend/bahmni-design-system';
 import {
   useTranslation,
   ConditionStatus,
@@ -6,13 +10,9 @@ import {
   FormattedCondition,
   formatDateDistance,
 } from '@bahmni-frontend/bahmni-services';
-import {
-  SortableDataTable,
-  StatusTag,
-  Tile,
-} from '@bahmni-frontend/bahmni-design-system';
-import { useConditions } from './useConditions';
+import React, { useMemo } from 'react';
 import styles from './styles/ConditionsTable.module.scss';
+import { useConditions } from './useConditions';
 
 /**
  * Component to display patient conditions using SortableDataTable

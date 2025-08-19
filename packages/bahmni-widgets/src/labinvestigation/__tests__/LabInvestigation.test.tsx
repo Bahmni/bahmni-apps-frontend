@@ -1,13 +1,14 @@
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
 import {
   FormattedLabTest,
   LabTestsByDate,
   LabTestPriority,
   groupLabTestsByDate,
 } from '@bahmni-frontend/bahmni-services';
+import { render, screen } from '@testing-library/react';
 import LabInvestigation from '../LabInvestigation';
 import useLabInvestigations from '../useLabInvestigations';
+
 jest.mock('../useLabInvestigations');
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
   ...jest.requireActual('@bahmni-frontend/bahmni-services'),

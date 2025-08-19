@@ -1,12 +1,12 @@
-import { renderHook, waitFor, act } from '@testing-library/react';
-import React from 'react';
-import { ALLERGEN_TYPES } from '../../constants/allergy';
-import { useClinicalConfig } from '../useClinicalConfig';
 import {
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
 } from '@bahmni-frontend/bahmni-services';
+import { renderHook, waitFor, act } from '@testing-library/react';
+import React from 'react';
+import { ALLERGEN_TYPES } from '../../constants/allergy';
 import useAllergenSearch from '../useAllergenSearch';
+import { useClinicalConfig } from '../useClinicalConfig';
 
 // Mock hooks
 jest.mock('../useClinicalConfig');
@@ -50,7 +50,8 @@ const mockFetchAndFormatAllergenConcepts =
 const mockFetchReactionConcepts = fetchReactionConcepts as jest.MockedFunction<
   typeof fetchReactionConcepts
 >;
-const mockGetFormattedError = require('@bahmni-frontend/bahmni-services').getFormattedError as jest.MockedFunction<any>;
+const mockGetFormattedError = require('@bahmni-frontend/bahmni-services')
+  .getFormattedError as jest.MockedFunction<any>;
 
 // const mockApiGet = get as jest.MockedFunction<typeof get>
 
@@ -72,7 +73,9 @@ describe('useAllergenSearch', () => {
     // mockApiGet.mockResolvedValue(mockApiResponse);
     mockFetchAndFormatAllergenConcepts.mockResolvedValue(mockAllergens);
     mockFetchReactionConcepts.mockResolvedValue(mockReactions);
-    mockGetFormattedError.mockImplementation((error: any) => ({ message: error.message || 'Unknown error' }));
+    mockGetFormattedError.mockImplementation((error: any) => ({
+      message: error.message || 'Unknown error',
+    }));
   });
 
   const mockReactions = [

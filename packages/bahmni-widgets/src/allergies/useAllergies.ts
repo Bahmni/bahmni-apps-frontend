@@ -1,11 +1,11 @@
-import { useState, useCallback, useEffect } from 'react';
 import {
   FormattedAllergy,
   getFormattedAllergies,
   getFormattedError,
 } from '@bahmni-frontend/bahmni-services';
-import { useNotification } from '../notification';
+import { useState, useCallback, useEffect } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
+import { useNotification } from '../notification';
 
 interface UseAllergiesResult {
   allergies: FormattedAllergy[];

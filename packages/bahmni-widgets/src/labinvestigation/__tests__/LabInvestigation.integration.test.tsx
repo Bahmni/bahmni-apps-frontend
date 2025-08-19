@@ -1,9 +1,9 @@
 import '@testing-library/jest-dom';
-import { render, screen, waitFor } from '@testing-library/react';
 import {
   LabTestPriority,
   FormattedLabTest,
 } from '@bahmni-frontend/bahmni-services';
+import { render, screen, waitFor } from '@testing-library/react';
 import LabInvestigation from '../LabInvestigation';
 import useLabInvestigations from '../useLabInvestigations';
 
@@ -143,7 +143,9 @@ describe('LabInvestigation Integration Tests', () => {
 
     render(<LabInvestigation />);
 
-    expect(screen.getByText('No lab investigations recorded')).toBeInTheDocument();
+    expect(
+      screen.getByText('No lab investigations recorded'),
+    ).toBeInTheDocument();
     expect(screen.queryByText('Complete Blood Count')).not.toBeInTheDocument();
   });
 

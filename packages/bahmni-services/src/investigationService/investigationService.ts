@@ -1,14 +1,14 @@
 import { ValueSet, ValueSetExpansionContains } from 'fhir/r4';
 import i18next from 'i18next';
+import { get } from '../api';
+import { searchFHIRConceptsByName } from '../conceptService';
 import {
   ALL_ORDERABLES_CONCEPT_NAME,
   ORDER_TYPE_URL,
   PANEL_CONCEPT_CLASS_NAME,
-  FHIR_CONCEPT_CLASS_EXTENSION_URL
+  FHIR_CONCEPT_CLASS_EXTENSION_URL,
 } from './constants';
 import { FlattenedInvestigations, OrderType, OrderTypeResponse } from './model';
-import { get } from '../api';
-import { searchFHIRConceptsByName } from '../conceptService';
 
 const fetchInvestigations = async (): Promise<ValueSet> => {
   return await searchFHIRConceptsByName(ALL_ORDERABLES_CONCEPT_NAME);

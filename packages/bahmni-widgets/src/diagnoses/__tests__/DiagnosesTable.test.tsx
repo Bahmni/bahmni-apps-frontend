@@ -1,13 +1,13 @@
-import { render, screen } from '@testing-library/react';
-import { axe, toHaveNoViolations } from 'jest-axe';
 import {
   Diagnosis,
   formatDate,
   sortByDate,
   DATE_FORMAT,
 } from '@bahmni-frontend/bahmni-services';
-import { useDiagnoses } from '../useDiagnoses';
+import { render, screen } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import DiagnosesTable from '../DiagnosesTable';
+import { useDiagnoses } from '../useDiagnoses';
 import '@testing-library/jest-dom';
 
 expect.extend(toHaveNoViolations);

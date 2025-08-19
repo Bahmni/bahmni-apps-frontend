@@ -66,9 +66,10 @@ describe('Axios Client', () => {
     beforeEach(async () => {
       const errorHandlingModule = await import('../../errorHandling');
       const utilsModule = await import('../utils');
-      getFormattedError = errorHandlingModule.getFormattedError as jest.MockedFunction<
-        typeof import('../../errorHandling').getFormattedError
-      >;
+      getFormattedError =
+        errorHandlingModule.getFormattedError as jest.MockedFunction<
+          typeof import('../../errorHandling').getFormattedError
+        >;
       decodeHtmlEntities =
         utilsModule.decodeHtmlEntities as jest.MockedFunction<
           typeof import('../utils').decodeHtmlEntities

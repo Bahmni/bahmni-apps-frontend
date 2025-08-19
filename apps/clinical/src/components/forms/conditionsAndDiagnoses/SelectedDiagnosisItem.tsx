@@ -1,7 +1,15 @@
-import { Column, Grid, Dropdown, Link } from '@bahmni-frontend/bahmni-design-system';
+import {
+  Column,
+  Grid,
+  Dropdown,
+  Link,
+} from '@bahmni-frontend/bahmni-design-system';
+import {
+  useTranslation,
+  type DiagnosisInputEntry,
+} from '@bahmni-frontend/bahmni-services';
 import { Coding } from 'fhir/r4';
 import React from 'react';
-import { useTranslation, type DiagnosisInputEntry } from '@bahmni-frontend/bahmni-services';
 import { CERTAINITY_CONCEPTS } from '../../../constants/diagnosis';
 import styles from './styles/SelectedDiagnosisItem.module.scss';
 

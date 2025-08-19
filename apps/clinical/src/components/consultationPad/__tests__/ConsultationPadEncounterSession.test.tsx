@@ -79,15 +79,12 @@ jest.mock(
   }),
 );
 
-jest.mock(
-  '../../../components/forms/medications/MedicationsForm',
-  () => ({
-    __esModule: true,
-    default: () => (
-      <div data-testid="mock-medications-form">Medications Form</div>
-    ),
-  }),
-);
+jest.mock('../../../components/forms/medications/MedicationsForm', () => ({
+  __esModule: true,
+  default: () => (
+    <div data-testid="mock-medications-form">Medications Form</div>
+  ),
+}));
 
 jest.mock('@carbon/react', () => ({
   ...jest.requireActual('@carbon/react'),
@@ -112,7 +109,6 @@ jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
   })),
   __esModule: true,
 }));
-
 
 // Mock utilities
 jest.mock('../../../utils/fhir/encounterResourceCreator', () => ({
@@ -207,7 +203,6 @@ jest.mock('../../../stores/medicationsStore', () => ({
   useMedicationStore: jest.fn(() => mockMedicationStore),
   default: jest.fn(() => mockMedicationStore),
 }));
-
 
 Object.defineProperty(global, 'crypto', {
   value: {

@@ -1,3 +1,4 @@
+import { get } from '../../api';
 import {
   mockCondition,
   mockConditionBundle,
@@ -6,13 +7,12 @@ import {
   mockConditionWithoutOptionalFields,
   mockApiErrors,
 } from '../__mocks__/mocks';
-import { ConditionStatus } from '../models';
-import { get } from '../../api';
 import {
   formatConditions,
   getConditions,
   getPatientConditionsBundle,
 } from '../conditionService';
+import { ConditionStatus } from '../models';
 
 jest.mock('../../api');
 

@@ -1,9 +1,12 @@
+import {
+  getActiveVisit,
+  getFormattedError,
+} from '@bahmni-frontend/bahmni-services';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { mockActiveVisit } from './__mocks__/encounterMocks';
 import { useActiveVisit } from '../useActiveVisit';
-import { getActiveVisit, getFormattedError } from '@bahmni-frontend/bahmni-services';
+import { mockActiveVisit } from './__mocks__/encounterMocks';
 
-jest.mock('@bahmni-frontend/bahmni-services',()=>({
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
   useTranslation: () => ({
     t: (key: string) => {
       switch (key) {
@@ -16,17 +19,22 @@ jest.mock('@bahmni-frontend/bahmni-services',()=>({
       }
     },
   }),
-  getActiveVisit:jest.fn(),
-  getFormattedError:jest.fn()
+  getActiveVisit: jest.fn(),
+  getFormattedError: jest.fn(),
 }));
-const mockGetFormattedError = getFormattedError as jest.MockedFunction<typeof getFormattedError>;
+const mockGetFormattedError = getFormattedError as jest.MockedFunction<
+  typeof getFormattedError
+>;
 const mockedGetActiveVisit = getActiveVisit as jest.MockedFunction<
   typeof getActiveVisit
 >;
 
 describe('useActiveVisit', () => {
   const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
-  mockGetFormattedError.mockImplementation((error: any) => ({ title:error.title || 'unknown title', message: error.message || 'Unknown error' }));
+  mockGetFormattedError.mockImplementation((error: any) => ({
+    title: error.title || 'unknown title',
+    message: error.message || 'Unknown error',
+  }));
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -52,12 +60,12 @@ describe('useActiveVisit', () => {
     expect(result.current.loading).toBe(true);
 
     // Verify the state after the promise resolves
-    await waitFor(()=>{
+    await waitFor(() => {
       expect(result.current.loading).toBe(false);
       expect(result.current.activeVisit).toEqual(mockActiveVisit);
       expect(result.current.error).toBeNull();
-    })
-   
+    });
+
     expect(mockedGetActiveVisit).toHaveBeenCalledWith(patientUUID);
   });
 

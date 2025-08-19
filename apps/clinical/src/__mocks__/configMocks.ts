@@ -1,4 +1,4 @@
-import { DashboardConfig } from "@bahmni-frontend/bahmni-services";
+import { DashboardConfig } from '@bahmni-frontend/bahmni-services';
 
 export const validFullClinicalConfig = {
   patientInformation: {

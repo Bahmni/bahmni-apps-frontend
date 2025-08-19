@@ -1,5 +1,5 @@
-import { PROVIDER_RESOURCE_URL } from '../constants';
 import { get } from '../../api';
+import { PROVIDER_RESOURCE_URL } from '../constants';
 import { getCurrentProvider } from '../providerService';
 
 // Mock dependencies

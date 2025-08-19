@@ -1,4 +1,8 @@
 import {
+  AUDIT_LOG_EVENT_DETAILS,
+  dispatchAuditEvent,
+} from '@bahmni-frontend/bahmni-services';
+import {
   render,
   screen,
   waitFor,
@@ -7,7 +11,6 @@ import {
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BundleEntry } from 'fhir/r4';
-import { AUDIT_LOG_EVENT_DETAILS, dispatchAuditEvent } from '@bahmni-frontend/bahmni-services';
 import * as consultationBundleService from '../../../services/consultationBundleService';
 import useAllergyStore from '../../../stores/allergyStore';
 import { useConditionsAndDiagnosesStore } from '../../../stores/conditionsAndDiagnosesStore';
@@ -28,7 +31,8 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
         CONSULTATION_PAD_DONE_BUTTON: 'Done',
         CONSULTATION_PAD_CANCEL_BUTTON: 'Cancel',
         CONSULTATION_SUBMITTED_SUCCESS_TITLE: 'Success',
-        CONSULTATION_SUBMITTED_SUCCESS_MESSAGE: 'Consultation saved successfully',
+        CONSULTATION_SUBMITTED_SUCCESS_MESSAGE:
+          'Consultation saved successfully',
         ERROR_CONSULTATION_TITLE: 'Consultation Error',
         CONSULTATION_ERROR_GENERIC: 'Error creating consultation bundle',
         CONSULTATION_PAD_ERROR_TITLE: 'Something went wrong',
@@ -110,15 +114,12 @@ jest.mock(
   }),
 );
 
-jest.mock(
-  '../../../components/forms/medications/MedicationsForm',
-  () => ({
-    __esModule: true,
-    default: () => (
-      <div data-testid="mock-medications-form">Medications Form</div>
-    ),
-  }),
-);
+jest.mock('../../../components/forms/medications/MedicationsForm', () => ({
+  __esModule: true,
+  default: () => (
+    <div data-testid="mock-medications-form">Medications Form</div>
+  ),
+}));
 
 // Mock services
 jest.mock('../../../services/consultationBundleService', () => ({
@@ -414,33 +415,25 @@ describe('ConsultationPad', () => {
 
   describe('Snapshot Tests', () => {
     it('should match snapshot for form order and dividers', () => {
-      const { container } = render(
-        <ConsultationPad onClose={mockOnClose} />,
-      );
+      const { container } = render(<ConsultationPad onClose={mockOnClose} />);
       expect(container).toMatchSnapshot();
     });
 
     it('should match snapshot for error state', () => {
       mockEncounterDetailsStore.hasError = true;
-      const { container } = render(
-        <ConsultationPad onClose={mockOnClose} />,
-      );
+      const { container } = render(<ConsultationPad onClose={mockOnClose} />);
       expect(container).toMatchSnapshot();
     });
 
     it('should match snapshot with disabled Done button', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockEncounterDetailsStore.selectedLocation = null as any;
-      const { container } = render(
-        <ConsultationPad onClose={mockOnClose} />,
-      );
+      const { container } = render(<ConsultationPad onClose={mockOnClose} />);
       expect(container).toMatchSnapshot();
     });
 
     it('should verify correct order of forms and dividers in snapshot', () => {
-      const { container } = render(
-        <ConsultationPad onClose={mockOnClose} />,
-      );
+      const { container } = render(<ConsultationPad onClose={mockOnClose} />);
       const content = container.querySelector(
         '[data-testid="action-area-content"]',
       );
@@ -461,9 +454,7 @@ describe('ConsultationPad', () => {
           }),
       );
 
-      const { container } = render(
-        <ConsultationPad onClose={mockOnClose} />,
-      );
+      const { container } = render(<ConsultationPad onClose={mockOnClose} />);
 
       const doneButton = screen.getByTestId('primary-button');
       fireEvent.click(doneButton);
@@ -652,9 +643,7 @@ describe('ConsultationPad', () => {
 
   describe('State Management', () => {
     it('should cleanup stores on unmount', () => {
-      const { unmount } = render(
-        <ConsultationPad onClose={mockOnClose} />,
-      );
+      const { unmount } = render(<ConsultationPad onClose={mockOnClose} />);
 
       unmount();
 

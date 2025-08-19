@@ -1,4 +1,3 @@
-import { render, screen, waitFor, act } from '@testing-library/react';
 import {
   getCookieByName,
   getFormattedError,
@@ -6,13 +5,14 @@ import {
   getCurrentUser,
   getCurrentProvider,
 } from '@bahmni-frontend/bahmni-services';
+import { useActivePractitioner } from '@bahmni-frontend/bahmni-widgets';
+import { render, screen, waitFor, act } from '@testing-library/react';
+import { useActiveVisit } from '../../../../hooks/useActiveVisit';
+import { useEncounterConcepts } from '../../../../hooks/useEncounterConcepts';
+import { useLocations } from '../../../../hooks/useLocations';
 import { getEncounterConcepts } from '../../../../services/encounterConceptsService';
 import { getLocations } from '../../../../services/locationService';
 import { useEncounterDetailsStore } from '../../../../stores/encounterDetailsStore';
-import { useEncounterConcepts } from '../../../../hooks/useEncounterConcepts';
-import { useActiveVisit } from '../../../../hooks/useActiveVisit';
-import { useLocations } from '../../../../hooks/useLocations';
-import { useActivePractitioner } from '@bahmni-frontend/bahmni-widgets';
 import BasicForm from '../EncounterDetails';
 
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
@@ -277,7 +277,9 @@ describe('BasicForm Integration Tests', () => {
 
     await waitFor(() => {
       // When no locations are available, skeleton placeholders are shown
-      const skeletonElements = document.querySelectorAll('.cds--skeleton__text');
+      const skeletonElements = document.querySelectorAll(
+        '.cds--skeleton__text',
+      );
       expect(skeletonElements.length).toBeGreaterThan(0);
     });
     const store = useEncounterDetailsStore.getState();

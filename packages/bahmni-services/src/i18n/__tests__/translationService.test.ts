@@ -1,3 +1,4 @@
+import { get } from '../../api';
 import {
   BUNDLED_TRANSLATIONS_URL_TEMPLATE,
   LOCALE_STORAGE_KEY,
@@ -9,7 +10,6 @@ import {
   getUserPreferredLocale,
   getTranslationFile,
 } from '../translationService';
-import { get } from '../../api';
 
 jest.mock('../../api');
 

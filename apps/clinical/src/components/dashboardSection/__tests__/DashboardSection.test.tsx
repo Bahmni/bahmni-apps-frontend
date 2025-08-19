@@ -1,6 +1,6 @@
+import { DashboardSectionConfig } from '@bahmni-frontend/bahmni-services';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
-import { DashboardSectionConfig } from '@bahmni-frontend/bahmni-services';
 import DashboardSection from '../DashboardSection';
 
 // Mock dependencies
@@ -30,11 +30,21 @@ jest.mock('../styles/DashboardSection.module.scss', () => ({
 // Mock the display control components
 jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
   __esModule: true,
-  AllergiesTable: () => <div data-testid="allergies-table">Allergies Table</div>,
-  ConditionsTable: () => <div data-testid="conditions-table">Conditions Table</div>,
-  DiagnosesTable: () => <div data-testid="diagnoses-table">Diagnoses Table</div>,
-  LabInvestigation: () => <div data-testid="lab-investigation">Lab Investigation</div>,
-  MedicationsTable: () => <div data-testid="medications-table">Medications Table</div>,
+  AllergiesTable: () => (
+    <div data-testid="allergies-table">Allergies Table</div>
+  ),
+  ConditionsTable: () => (
+    <div data-testid="conditions-table">Conditions Table</div>
+  ),
+  DiagnosesTable: () => (
+    <div data-testid="diagnoses-table">Diagnoses Table</div>
+  ),
+  LabInvestigation: () => (
+    <div data-testid="lab-investigation">Lab Investigation</div>
+  ),
+  MedicationsTable: () => (
+    <div data-testid="medications-table">Medications Table</div>
+  ),
   RadiologyInvestigationTable: () => (
     <div data-testid="radiology-investigations-table">
       Radiology Orders Table

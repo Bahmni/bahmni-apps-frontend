@@ -1,10 +1,10 @@
+import { type DiagnosisInputEntry } from '@bahmni-frontend/bahmni-services';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Coding } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import i18n from '../../../../../setupTests.i18n';
 import { CERTAINITY_CONCEPTS } from '../../../../constants/diagnosis';
-import { type DiagnosisInputEntry } from '@bahmni-frontend/bahmni-services';
 import SelectedDiagnosisItem from '../SelectedDiagnosisItem';
 
 expect.extend(toHaveNoViolations);
@@ -67,7 +67,6 @@ describe('SelectedDiagnosisItem', () => {
 
       expect(defaultProps.updateCertainty).toHaveBeenCalled();
     });
-
   });
 
   // SAD PATH TESTS
@@ -227,9 +226,7 @@ describe('SelectedDiagnosisItem', () => {
           doesConditionExist: true,
         };
 
-        render(
-          <SelectedDiagnosisItem {...propsWithExistingCondition} />,
-        );
+        render(<SelectedDiagnosisItem {...propsWithExistingCondition} />);
         const addLink = screen.getByRole('link', {
           name: 'Added as a condition',
         });
@@ -259,9 +256,7 @@ describe('SelectedDiagnosisItem', () => {
           doesConditionExist: true,
         };
 
-        render(
-          <SelectedDiagnosisItem {...propsWithExistingCondition} />,
-        );
+        render(<SelectedDiagnosisItem {...propsWithExistingCondition} />);
         const addLink = screen.getByRole('link', {
           name: 'Added as a condition',
         });
@@ -275,9 +270,7 @@ describe('SelectedDiagnosisItem', () => {
   // ACCESSIBILITY TESTS
   describe('Accessibility', () => {
     test('should have no accessibility violations', async () => {
-      const { container } = render(
-        <SelectedDiagnosisItem {...defaultProps} />,
-      );
+      const { container } = render(<SelectedDiagnosisItem {...defaultProps} />);
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });
@@ -304,9 +297,7 @@ describe('SelectedDiagnosisItem', () => {
       const props1 = { ...defaultProps, diagnosis: diagnosis1 };
       const props2 = { ...defaultProps, diagnosis: diagnosis2 };
 
-      const { rerender } = render(
-        <SelectedDiagnosisItem {...props1} />,
-      );
+      const { rerender } = render(<SelectedDiagnosisItem {...props1} />);
       const wrapper1 = screen.getByTestId(
         'diagnoses-certainty-dropdown-diagnosis-1',
       );
@@ -324,15 +315,12 @@ describe('SelectedDiagnosisItem', () => {
       );
       expect(dropdown2).toBeInTheDocument();
     });
-
   });
 
   // SNAPSHOT TESTS
   describe('Snapshot Tests', () => {
     test('default rendering matches snapshot', () => {
-      const { container } = render(
-        <SelectedDiagnosisItem {...defaultProps} />,
-      );
+      const { container } = render(<SelectedDiagnosisItem {...defaultProps} />);
       expect(container).toMatchSnapshot();
     });
 

@@ -1,8 +1,10 @@
+import {
+  getDashboardConfig,
+  notificationService,
+  DashboardConfig,
+  getFormattedError,
+} from '@bahmni-frontend/bahmni-services';
 import { useState, useEffect } from 'react';
-import { getDashboardConfig } from '@bahmni-frontend/bahmni-services';
-import { notificationService } from '@bahmni-frontend/bahmni-services';
-import { DashboardConfig } from '@bahmni-frontend/bahmni-services';
-import { getFormattedError } from '@bahmni-frontend/bahmni-services';
 
 interface UseDashboardConfigResult {
   dashboardConfig: DashboardConfig | null;

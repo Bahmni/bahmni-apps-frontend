@@ -1,9 +1,11 @@
+import {
+  type ConditionInputEntry,
+  type DiagnosisInputEntry,
+} from '@bahmni-frontend/bahmni-services';
 import { renderHook } from '@testing-library/react';
 import { Coding } from 'fhir/r4';
 import { act } from 'react';
 import { ConceptSearch } from '../../models/concepts';
-import { type ConditionInputEntry } from '@bahmni-frontend/bahmni-services';
-import { type DiagnosisInputEntry } from '@bahmni-frontend/bahmni-services';
 import { useConditionsAndDiagnosesStore } from '../conditionsAndDiagnosesStore';
 
 const mockConcept: ConceptSearch = {

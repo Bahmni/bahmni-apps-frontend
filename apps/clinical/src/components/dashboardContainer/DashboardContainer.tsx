@@ -1,11 +1,13 @@
 import { Section } from '@bahmni-frontend/bahmni-design-system';
-import React, { useEffect, useRef } from 'react';
-import { useTranslation } from '@bahmni-frontend/bahmni-services';
+import {
+  useTranslation,
+  DashboardSectionConfig,
+  AUDIT_LOG_EVENT_DETAILS,
+  AuditEventType,
+  dispatchAuditEvent,
+} from '@bahmni-frontend/bahmni-services';
 import { usePatientUUID } from '@bahmni-frontend/bahmni-widgets';
-import { DashboardSectionConfig } from '@bahmni-frontend/bahmni-services';
-import { AUDIT_LOG_EVENT_DETAILS } from '@bahmni-frontend/bahmni-services';
-import { AuditEventType } from '@bahmni-frontend/bahmni-services';
-import { dispatchAuditEvent } from '@bahmni-frontend/bahmni-services';
+import React, { useEffect, useRef } from 'react';
 import DashboardSection from '../dashboardSection/DashboardSection';
 import styles from './styles/DashboardContainer.module.scss';
 

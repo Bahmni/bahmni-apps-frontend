@@ -1,5 +1,5 @@
-import { renderHook, act, waitFor } from '@testing-library/react';
 import { searchConcepts } from '@bahmni-frontend/bahmni-services';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { useConceptSearch } from '../useConceptSearch';
 
 jest.mock('@bahmni-frontend/bahmni-services');
@@ -64,9 +64,7 @@ describe('useConceptSearch', () => {
     const mockConcepts = [
       { conceptName: 'Test', conceptUuid: '123', matchedName: 'Test' },
     ];
-    (searchConcepts as jest.Mock).mockResolvedValue(
-      mockConcepts,
-    );
+    (searchConcepts as jest.Mock).mockResolvedValue(mockConcepts);
 
     const { result } = renderHook(() => useConceptSearch('test'));
 
@@ -85,9 +83,7 @@ describe('useConceptSearch', () => {
     const mockConcepts = [
       { conceptName: 'A', conceptUuid: '123', matchedName: 'A' },
     ];
-    (searchConcepts as jest.Mock).mockResolvedValue(
-      mockConcepts,
-    );
+    (searchConcepts as jest.Mock).mockResolvedValue(mockConcepts);
 
     const { result } = renderHook(() => useConceptSearch('a'));
 

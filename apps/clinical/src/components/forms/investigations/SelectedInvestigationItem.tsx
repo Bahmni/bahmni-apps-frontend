@@ -1,6 +1,6 @@
 import { Column, Grid, Checkbox } from '@bahmni-frontend/bahmni-design-system';
-import React from 'react';
 import { useTranslation } from '@bahmni-frontend/bahmni-services';
+import React from 'react';
 import {
   ServiceRequestInputEntry,
   SupportedServiceRequestPriority,

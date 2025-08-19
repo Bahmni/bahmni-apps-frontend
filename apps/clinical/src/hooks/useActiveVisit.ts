@@ -1,9 +1,9 @@
-import { useState, useCallback, useEffect } from 'react';
 import {
   getActiveVisit,
   getFormattedError,
   useTranslation,
 } from '@bahmni-frontend/bahmni-services';
+import { useState, useCallback, useEffect } from 'react';
 import { FhirEncounter } from '../models/encounter';
 
 interface UseActiveVisitResult {

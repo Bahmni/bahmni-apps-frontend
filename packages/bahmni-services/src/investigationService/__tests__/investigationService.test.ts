@@ -1,15 +1,15 @@
 import { ValueSet } from 'fhir/r4';
 import i18next from 'i18next';
+import * as api from '../../api';
+import * as conceptService from '../../conceptService';
 import {
   ALL_ORDERABLES_CONCEPT_NAME,
   ORDER_TYPE_URL,
   PANEL_CONCEPT_CLASS_NAME,
   FHIR_CONCEPT_CLASS_EXTENSION_URL,
 } from '../constants';
-import { OrderTypeResponse } from '../model';
-import * as api from '../../api';
-import * as conceptService from '../../conceptService';
 import { getFlattenedInvestigations } from '../investigationService';
+import { OrderTypeResponse } from '../model';
 
 jest.mock('../../conceptService');
 jest.mock('../../api');

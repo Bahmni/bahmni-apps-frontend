@@ -1,17 +1,29 @@
+import {
+  type User,
+  getActiveVisit,
+  logAuditEvent,
+  getFormattedError,
+  notificationService,
+  get,
+} from '@bahmni-frontend/bahmni-services';
+import {
+  NotificationProvider,
+  useActivePractitioner,
+} from '@bahmni-frontend/bahmni-widgets';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
+import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { FhirEncounter, FhirEncounterType } from '../../../models/encounter';
-import { type User, getActiveVisit, logAuditEvent, getFormattedError, notificationService, get } from '@bahmni-frontend/bahmni-services';
-import { NotificationProvider, useActivePractitioner } from '@bahmni-frontend/bahmni-widgets';
+import i18n from '../../../../setupTests.i18n';
 import {
   mockLocations,
   mockEncounterConcepts,
   mockPractitioner,
   mockActiveVisit,
-  mockProvider
+  mockProvider,
 } from '../../../__mocks__/consultationPadMocks';
+import { FhirEncounter, FhirEncounterType } from '../../../models/encounter';
 import { ClinicalConfigProvider } from '../../../providers/ClinicalConfigProvider';
 import * as consultationBundleService from '../../../services/consultationBundleService';
 import { getEncounterConcepts } from '../../../services/encounterConceptsService';
@@ -21,8 +33,6 @@ import { useConditionsAndDiagnosesStore } from '../../../stores/conditionsAndDia
 import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore';
 import useServiceRequestStore from '../../../stores/serviceRequestStore';
 import ConsultationPad from '../ConsultationPad';
-import i18n from '../../../../setupTests.i18n'
-import { I18nextProvider } from 'react-i18next';
 
 // Mock all service dependencies
 jest.mock('../../../services/consultationBundleService');
@@ -131,22 +141,27 @@ describe('ConsultationPad Integration', () => {
     (getLocations as jest.Mock).mockResolvedValue(mockLocations);
     (getActiveVisit as jest.Mock).mockResolvedValue(fullMockActiveVisit);
     (getFormattedError as jest.Mock).mockImplementation((error: any) => ({
-          title: error.title || 'unknown title',
-          message: error.message || 'Unknown error',
-        }));
-    
+      title: error.title || 'unknown title',
+      message: error.message || 'Unknown error',
+    }));
+
     (useActivePractitioner as jest.Mock).mockReturnValue({
       practitioner: mockProvider,
       user: mockUser,
       loading: false,
       error: null,
-    });    
+    });
 
-    (getEncounterConcepts as jest.Mock).mockResolvedValue(mockEncounterConcepts);
-    (consultationBundleService.postConsultationBundle as jest.Mock).mockResolvedValue({});
+    (getEncounterConcepts as jest.Mock).mockResolvedValue(
+      mockEncounterConcepts,
+    );
+    (
+      consultationBundleService.postConsultationBundle as jest.Mock
+    ).mockResolvedValue({});
 
     // Mock the bundle creation functions
-    (consultationBundleService.createDiagnosisBundleEntries as jest.Mock
+    (
+      consultationBundleService.createDiagnosisBundleEntries as jest.Mock
     ).mockReturnValue([
       {
         resource: {

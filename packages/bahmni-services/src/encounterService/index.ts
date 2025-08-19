@@ -1,1 +1,5 @@
-export { getActiveVisit, getPatientVisits, getVisits } from './encounterService';
+export {
+  getActiveVisit,
+  getPatientVisits,
+  getVisits,
+} from './encounterService';

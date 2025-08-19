@@ -1,9 +1,9 @@
+import * as bahmniServices from '@bahmni-frontend/bahmni-services';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Coding } from 'fhir/r4';
-import * as bahmniServices from '@bahmni-frontend/bahmni-services';
-import i18n from '../../../../../setupTests.i18n';
 import { ALLERGEN_TYPES } from '../.././../../constants/allergy';
+import i18n from '../../../../../setupTests.i18n';
 import { useClinicalConfig } from '../../../../hooks/useClinicalConfig';
 import { ClinicalConfigProvider } from '../../../../providers/ClinicalConfigProvider';
 import { useAllergyStore } from '../../../../stores/allergyStore';

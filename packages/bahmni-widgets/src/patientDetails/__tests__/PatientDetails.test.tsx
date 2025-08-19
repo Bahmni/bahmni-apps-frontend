@@ -1,9 +1,9 @@
+import { FormattedPatientData } from '@bahmni-frontend/bahmni-services';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { useTranslation } from 'react-i18next';
-import { usePatient } from '../usePatient';
-import { FormattedPatientData } from '@bahmni-frontend/bahmni-services';
 import PatientDetails from '../PatientDetails';
+import { usePatient } from '../usePatient';
 import '@testing-library/jest-dom';
 
 expect.extend(toHaveNoViolations);

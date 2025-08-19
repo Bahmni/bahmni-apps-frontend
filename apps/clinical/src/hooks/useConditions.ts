@@ -1,4 +1,3 @@
-import { useState, useCallback, useEffect } from 'react';
 import {
   getFormattedError,
   useTranslation,
@@ -6,6 +5,7 @@ import {
   getFormattedConditions,
 } from '@bahmni-frontend/bahmni-services';
 import { usePatientUUID } from '@bahmni-frontend/bahmni-widgets';
+import { useState, useCallback, useEffect } from 'react';
 
 interface UseConditionsResult {
   conditions: FormattedCondition[];

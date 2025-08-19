@@ -1,11 +1,11 @@
 import { Bundle, ServiceRequest } from 'fhir/r4';
+import { get } from '../api';
+import { formatDate } from '../date';
 import {
   PATIENT_LAB_INVESTIGATION_RESOURCE_URL,
   FHIR_LAB_ORDER_CONCEPT_TYPE_EXTENSION_URL,
 } from './constants';
 import { FormattedLabTest, LabTestPriority, LabTestsByDate } from './models';
-import { formatDate } from '../date';
-import { get } from '../api';
 
 /**
  * Maps a FHIR priority code to LabTestPriority enum
@@ -188,8 +188,9 @@ export async function getPatientLabInvestigations(
   patientUUID: string,
 ): Promise<FormattedLabTest[]> {
   const bundle = await getPatientLabTestsBundle(patientUUID);
-  const labTests = bundle.entry
-    ?.map((entry) => entry.resource)
-    .filter((r): r is ServiceRequest => r !== undefined) ?? [];
+  const labTests =
+    bundle.entry
+      ?.map((entry) => entry.resource)
+      .filter((r): r is ServiceRequest => r !== undefined) ?? [];
   return formatLabTests(labTests);
 }

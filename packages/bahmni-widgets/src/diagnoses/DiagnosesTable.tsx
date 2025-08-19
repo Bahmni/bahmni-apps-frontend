@@ -1,10 +1,8 @@
-import React, { useMemo, useCallback } from 'react';
 import {
   SortableDataTable,
   Tag,
   Tile,
 } from '@bahmni-frontend/bahmni-design-system';
-import { useDiagnoses } from './useDiagnoses';
 import {
   formatDate,
   sortByDate,
@@ -12,7 +10,9 @@ import {
   DATE_FORMAT,
   useTranslation,
 } from '@bahmni-frontend/bahmni-services';
+import React, { useMemo, useCallback } from 'react';
 import styles from './styles/DiagnosesTable.module.scss';
+import { useDiagnoses } from './useDiagnoses';
 
 /**
  * Component to display patient diagnoses using SortableDataTable

@@ -1,3 +1,5 @@
+import '@bahmni-frontend/bahmni-design-system/styles';
+
 export { PatientDetails } from './patientDetails';
 export { AllergiesTable } from './allergies';
 export { ConditionsTable } from './conditions';
@@ -12,4 +14,3 @@ export {
 } from './notification';
 export { usePatientUUID } from './hooks/usePatientUUID';
 export { useActivePractitioner } from './hooks/useActivePractitioner';
-import '@bahmni-frontend/bahmni-design-system/styles';

@@ -1,8 +1,8 @@
-import { logAuditEvent } from '../auditLogService';
 import {
   setupAuditEventListener,
   AuditEventPayload,
 } from '../auditEventDispatcher';
+import { logAuditEvent } from '../auditLogService';
 import { initializeAuditListener } from '../globalAuditListener';
 
 // Mock dependencies

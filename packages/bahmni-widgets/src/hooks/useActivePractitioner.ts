@@ -1,12 +1,12 @@
-import { useState, useCallback, useEffect } from 'react';
 import {
   getCurrentProvider,
   getCurrentUser,
   Provider,
   User,
   getFormattedError,
-  useTranslation
+  useTranslation,
 } from '@bahmni-frontend/bahmni-services';
+import { useState, useCallback, useEffect } from 'react';
 
 interface useActivePractitionerResult {
   practitioner: Provider | null;

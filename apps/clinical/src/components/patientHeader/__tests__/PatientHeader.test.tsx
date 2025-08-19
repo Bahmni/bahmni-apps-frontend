@@ -55,10 +55,10 @@ describe('PatientHeader Component', () => {
   };
   const mockTranslate = jest.fn((key: string) => {
     const translations: Record<string, string> = {
-      'CONSULTATION_ACTION_NEW': 'New Consultation',
-      'CONSULTATION_ACTION_EDIT': 'Edit Consultation',
-      'CONSULTATION_ACTION_IN_PROGRESS': 'Consultation in progress',
-      'PATIENT_HEADER_LABEL': 'Patient Header',
+      CONSULTATION_ACTION_NEW: 'New Consultation',
+      CONSULTATION_ACTION_EDIT: 'Edit Consultation',
+      CONSULTATION_ACTION_IN_PROGRESS: 'Consultation in progress',
+      PATIENT_HEADER_LABEL: 'Patient Header',
     };
     return translations[key] || key;
   });

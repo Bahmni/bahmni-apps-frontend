@@ -1,5 +1,5 @@
-import { OPENMRS_FHIR_R4 } from '../constants/app';
 import { Coding } from 'fhir/r4';
+import { OPENMRS_FHIR_R4 } from '../constants/app';
 import { AllergenType } from './models';
 
 export const PATIENT_ALLERGY_RESOURCE_URL = (patientUUID: string) =>

@@ -1,12 +1,12 @@
-import { renderHook, act } from '@testing-library/react';
 import {
   getFormattedConditions,
   getFormattedError,
   useTranslation,
   FormattedCondition,
 } from '@bahmni-frontend/bahmni-services';
-import { useConditions } from '../useConditions';
+import { renderHook, act } from '@testing-library/react';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
+import { useConditions } from '../useConditions';
 
 jest.mock('@bahmni-frontend/bahmni-services');
 jest.mock('../../hooks/usePatientUUID');

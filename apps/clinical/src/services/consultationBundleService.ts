@@ -1,14 +1,16 @@
-import { BundleEntry, Reference } from 'fhir/r4';
+import {
+  ConditionInputEntry,
+  DiagnosisInputEntry,
+  calculateOnsetDate,
+  post,
+} from '@bahmni-frontend/bahmni-services';
+import { BundleEntry, Reference, Encounter } from 'fhir/r4';
 import { CONSULTATION_BUNDLE_URL } from '../constants/app';
 import { CONSULTATION_ERROR_MESSAGES } from '../constants/errors';
 import { AllergyInputEntry } from '../models/allergy';
-import { ConditionInputEntry } from '@bahmni-frontend/bahmni-services';
 import { ConsultationBundle } from '../models/consultationBundle';
-import { DiagnosisInputEntry } from '@bahmni-frontend/bahmni-services';
-import { Encounter } from 'fhir/r4';
 import { MedicationInputEntry } from '../models/medication';
 import { ServiceRequestInputEntry } from '../models/serviceRequest';
-import { calculateOnsetDate } from '@bahmni-frontend/bahmni-services';
 import { createEncounterAllergyResource } from '../utils/fhir/allergyResourceCreator';
 import {
   createEncounterDiagnosisResource,
@@ -21,7 +23,6 @@ import {
   createEncounterReferenceFromString,
 } from '../utils/fhir/referenceCreator';
 import { createServiceRequestResource } from '../utils/fhir/serviceRequestResourceCreator';
-import { post } from '@bahmni-frontend/bahmni-services';
 
 interface CreateAllergiesBundleEntriesParams {
   selectedAllergies: AllergyInputEntry[];
@@ -229,7 +230,7 @@ export function createServiceRequestBundleEntries({
         encounterSubject,
         createEncounterReferenceFromString(encounterReference),
         createPractitionerReference(practitionerUUID),
-        serviceRequest.selectedPriority!!,
+        serviceRequest.selectedPriority!,
       );
       const serviceRequestEntry = createBundleEntry(
         resourceURL,

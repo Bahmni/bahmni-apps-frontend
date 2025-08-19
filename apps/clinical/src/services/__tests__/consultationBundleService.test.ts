@@ -1,3 +1,4 @@
+import { DiagnosisInputEntry, post } from '@bahmni-frontend/bahmni-services';
 import {
   Reference,
   Condition,
@@ -9,11 +10,9 @@ import {
 import { CONSULTATION_ERROR_MESSAGES } from '../../constants/errors';
 import { AllergyInputEntry } from '../../models/allergy';
 import { ConditionInputEntry } from '../../models/condition';
-import { DiagnosisInputEntry } from '@bahmni-frontend/bahmni-services';
 import { FhirEncounter } from '../../models/encounter';
 import { MedicationInputEntry } from '../../models/medication';
 import { ServiceRequestInputEntry } from '../../models/serviceRequest';
-import { post } from '@bahmni-frontend/bahmni-services';
 import {
   createDiagnosisBundleEntries,
   createAllergiesBundleEntries,
@@ -526,9 +525,7 @@ describe('consultationBundleService', () => {
             mockEncounterResource,
           );
 
-          expect(result.fullUrl).toBe(
-            'Encounter/encounter-123',
-          );
+          expect(result.fullUrl).toBe('Encounter/encounter-123');
           expect(result.resource).toEqual({
             ...mockEncounterResource,
             id: 'encounter-123',
@@ -551,9 +548,7 @@ describe('consultationBundleService', () => {
             mockEncounterResource,
           );
 
-          expect(result.fullUrl).toBe(
-            'Encounter/undefined',
-          );
+          expect(result.fullUrl).toBe('Encounter/undefined');
           expect(result.resource).toEqual({
             ...mockEncounterResource,
             id: undefined,

@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
 import {
   FormattedPatientData,
   getFormattedPatientById,
+  getFormattedError,
 } from '@bahmni-frontend/bahmni-services';
+import { useState, useEffect, useCallback } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
-import { getFormattedError } from '@bahmni-frontend/bahmni-services';
 
 interface UsePatientResult {
   patient: FormattedPatientData | null;

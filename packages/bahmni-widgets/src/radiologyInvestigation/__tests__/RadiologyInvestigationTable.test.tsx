@@ -1,5 +1,3 @@
-import { render, screen } from '@testing-library/react';
-import { axe, toHaveNoViolations } from 'jest-axe';
 import {
   RadiologyInvestigation,
   groupByDate,
@@ -7,12 +5,14 @@ import {
   FULL_MONTH_DATE_FORMAT,
   ISO_DATE_FORMAT,
 } from '@bahmni-frontend/bahmni-services';
+import { render, screen } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
+import RadiologyInvestigationTable from '../RadiologyInvestigationTable';
 import { useRadiologyInvestigation } from '../useRadiologyInvestigation';
 import {
   sortRadiologyInvestigationsByPriority,
   filterRadiologyInvestionsReplacementEntries,
 } from '../utils';
-import RadiologyInvestigationTable from '../RadiologyInvestigationTable';
 import '@testing-library/jest-dom';
 
 expect.extend(toHaveNoViolations);
@@ -40,6 +40,7 @@ const mockUseRadiologyInvestigation =
   >;
 const mockUseTranslation = require('@bahmni-frontend/bahmni-services')
   .useTranslation as jest.MockedFunction<any>;
+
 const mockGroupByDate = groupByDate as jest.MockedFunction<typeof groupByDate>;
 const mockFormatDate = formatDate as jest.MockedFunction<typeof formatDate>;
 const mockSortRadiologyInvestigationsByPriority =

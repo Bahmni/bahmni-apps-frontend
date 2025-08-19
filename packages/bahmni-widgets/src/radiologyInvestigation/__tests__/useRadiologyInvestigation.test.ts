@@ -1,5 +1,6 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import { usePatientUUID } from '../../hooks/usePatientUUID';
 import {
   mockPatientUUID,
   mockFormattedRadiologyInvestigations,
@@ -11,7 +12,6 @@ import {
   getFormattedError,
   useTranslation,
 } from '@bahmni-frontend/bahmni-services';
-import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { useRadiologyInvestigation } from '../useRadiologyInvestigation';
 
 jest.mock('@bahmni-frontend/bahmni-services');
@@ -80,7 +80,6 @@ describe('useRadiologyInvestigation hook', () => {
     );
     expect(result.current.error).toBeNull();
   });
-
 
   it('should handle fetch errors correctly', async () => {
     const mockError = new Error('Failed to fetch radiology investigations');

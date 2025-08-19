@@ -3,11 +3,11 @@
  * Call this once in your application to handle all audit events
  */
 
-import { logAuditEvent } from './auditLogService';
 import {
   setupAuditEventListener,
   AuditEventPayload,
 } from './auditEventDispatcher';
+import { logAuditEvent } from './auditLogService';
 
 /**
  * Initialize global audit event listener

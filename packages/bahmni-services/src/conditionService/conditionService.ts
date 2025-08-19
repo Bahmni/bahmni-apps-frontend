@@ -1,7 +1,7 @@
 import { Condition, Bundle } from 'fhir/r4';
+import { get } from '../api';
 import { PATIENT_CONDITION_RESOURCE_URL } from './constants';
 import { FormattedCondition, ConditionStatus } from './models';
-import { get } from '../api';
 
 // Constants for better maintainability
 const ACTIVE_STATUS = 'active';

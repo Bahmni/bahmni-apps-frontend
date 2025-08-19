@@ -1,4 +1,6 @@
 import { AllergyIntolerance, ValueSet } from 'fhir/r4';
+import { get } from '../../api';
+import { searchFHIRConcepts } from '../../conceptService';
 import {
   mockAllergyIntolerance,
   mockAllergyIntoleranceBundle,
@@ -19,7 +21,6 @@ import {
   mockBundleWithInvalidEntry,
   mockAllergyWithInvalidCoding,
 } from '../__mocks__/mocks';
-import { ALLERGEN_TYPES, ALLERGY_REACTION } from '../constants';
 import {
   getPatientAllergiesBundle,
   getAllergies,
@@ -27,8 +28,7 @@ import {
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
 } from '../allergyService';
-import { get } from '../../api';
-import { searchFHIRConcepts } from '../../conceptService';
+import { ALLERGEN_TYPES, ALLERGY_REACTION } from '../constants';
 
 // Mock the api module
 jest.mock('../../api');

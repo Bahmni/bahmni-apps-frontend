@@ -4,20 +4,20 @@ import {
   StatusTag,
   SortableDataTable,
 } from '@bahmni-frontend/bahmni-design-system';
-import React, { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useAllergies } from './useAllergies';
 import {
   AllergySeverity,
   AllergyStatus,
   FormattedAllergy,
 } from '@bahmni-frontend/bahmni-services';
+import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import styles from './styles/AllergiesTable.module.scss';
+import { useAllergies } from './useAllergies';
 import {
   getCategoryDisplayName,
   getSeverityDisplayName,
   sortAllergiesBySeverity,
 } from './utils';
-import styles from './styles/AllergiesTable.module.scss';
 
 // Helper function to get severity CSS class
 const getSeverityClassName = (severity: string): string | undefined => {

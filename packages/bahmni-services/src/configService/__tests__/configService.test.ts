@@ -1,4 +1,7 @@
 import Ajv from 'ajv';
+import * as api from '../../api';
+import { getFormattedError } from '../../errorHandling';
+import { notificationService } from '../../notification';
 import {
   validFullClinicalConfig,
   minimalClinicalConfig,
@@ -10,29 +13,26 @@ import {
   invalidDashboardConfig,
 } from '../__mocks__/configMocks';
 import {
-  CLINICAL_CONFIG_URL,
-  DASHBOARD_CONFIG_URL,
-  MEDICATIONS_CONFIG_URL,
-} from '../constants';
-import { ERROR_MESSAGES, ERROR_TITLES } from '../constants';
-import { MedicationJSONConfig } from '../models/medicationConfig';
-import * as api from '../../api';
-import {
   getClinicalConfig,
   getDashboardConfig,
   getMedicationConfig,
 } from '../configService';
-import { notificationService } from '../../notification';
-import { getFormattedError } from '../../errorHandling';
+import {
+  CLINICAL_CONFIG_URL,
+  DASHBOARD_CONFIG_URL,
+  MEDICATIONS_CONFIG_URL,
+  ERROR_MESSAGES,
+  ERROR_TITLES,
+} from '../constants';
+import { MedicationJSONConfig } from '../models/medicationConfig';
 
 //TODO: Remove this import once the test i18n setup is complete
 jest.mock('i18next', () => ({
   __esModule: true,
   default: {
-      t: jest.fn().mockImplementation((key: string) => key),
-  }
+    t: jest.fn().mockImplementation((key: string) => key),
+  },
 }));
-
 
 // Mock the api module
 jest.mock('../../api');
@@ -50,17 +50,16 @@ jest.mock('../../errorHandling', () => ({
   })),
   generateId: jest.fn().mockReturnValue('mock-generated-id'),
 }));
-const mockGetFormattedError =
-  getFormattedError as jest.MockedFunction<
-    typeof getFormattedError
-  >;
+const mockGetFormattedError = getFormattedError as jest.MockedFunction<
+  typeof getFormattedError
+>;
 
 // Mock notificationService
 jest.mock('../../notification', () => ({
   notificationService: {
     showError: jest.fn(),
   },
-  __esModule: true
+  __esModule: true,
 }));
 
 jest.mock('../schemas/clinicalConfig.schema.json', () => ({

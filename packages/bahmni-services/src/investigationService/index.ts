@@ -1,8 +1,6 @@
+export { getFlattenedInvestigations } from './investigationService';
 export {
-  getFlattenedInvestigations,
-} from './investigationService';
-export {
-    type FlattenedInvestigations,
-    type OrderType,
-    type OrderTypeResponse,
+  type FlattenedInvestigations,
+  type OrderType,
+  type OrderTypeResponse,
 } from './model';

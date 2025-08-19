@@ -1,8 +1,8 @@
+import { RadiologyInvestigation } from '@bahmni-frontend/bahmni-services';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { RadiologyInvestigation } from '@bahmni-frontend/bahmni-services';
-import { useRadiologyInvestigation } from '../useRadiologyInvestigation';
 import RadiologyInvestigationTable from '../RadiologyInvestigationTable';
+import { useRadiologyInvestigation } from '../useRadiologyInvestigation';
 import '@testing-library/jest-dom';
 
 jest.mock('../useRadiologyInvestigation');

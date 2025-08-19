@@ -3,13 +3,13 @@ import userEvent from '@testing-library/user-event';
 import { Medication } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { DURATION_UNIT_OPTIONS } from '../../../../constants/medications';
+import { MedicationInputEntry } from '../../../../models/medication';
+import { MedicationConfig } from '../../../../models/medicationConfig';
 import {
   calculateTotalQuantity,
   getDefaultDosingUnit,
   getDefaultRoute,
 } from '../../../../services/medicationsValueCalculator';
-import { MedicationInputEntry } from '../../../../models/medication';
-import { MedicationConfig } from '../../../../models/medicationConfig';
 import SelectedMedicationItem, {
   SelectedMedicationItemProps,
 } from '../SelectedMedicationItem';
@@ -19,38 +19,38 @@ expect.extend(toHaveNoViolations);
 
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
   getTodayDate: jest.fn().mockReturnValue(new Date('2025-01-01')),
-  DATE_PICKER_INPUT_FORMAT : 'd/m/Y',
+  DATE_PICKER_INPUT_FORMAT: 'd/m/Y',
   useTranslation: () => ({
     t: (key: string, options?: any) => {
       const translations: Record<string, string> = {
-        'MEDICATION_STAT': 'STAT',
-        'MEDICATION_PRN': 'PRN',
-        'MEDICATION_DOSAGE_INPUT_LABEL': 'Dosage',
-        'MEDICATION_DOSAGE_UNIT_INPUT_LABEL': 'Dosage unit',
-        'MEDICATION_FREQUENCY_INPUT_LABEL': 'Frequency',
-        'MEDICATION_DURATION_INPUT_LABEL': 'Duration',
-        'MEDICATION_DURATION_UNIT_INPUT_LABEL': 'Duration unit',
-        'MEDICATION_INSTRUCTIONS_INPUT_LABEL': 'Instructions',
-        'MEDICATION_ROUTE_INPUT_LABEL': 'Route',
-        'MEDICATION_START_DATE_INPUT_LABEL': 'Start date',
-        'MEDICATION_TOTAL_QUANTITY': 'Total quantity',
-        'INPUT_VALUE_REQUIRED': 'Please enter a value',
-        'DROPDOWN_VALUE_REQUIRED': 'Please select a value',
-        'DURATION_UNIT_DAYS': 'Days',
-        'DURATION_UNIT_WEEKS': 'Weeks',
-        'DURATION_UNIT_MONTHS': 'Months',
-        'DURATION_UNIT_YEARS': 'Years',
-        'DURATION_UNIT_HOURS': 'Hours',
-        'DURATION_UNIT_MINUTES': 'Minutes'
+        MEDICATION_STAT: 'STAT',
+        MEDICATION_PRN: 'PRN',
+        MEDICATION_DOSAGE_INPUT_LABEL: 'Dosage',
+        MEDICATION_DOSAGE_UNIT_INPUT_LABEL: 'Dosage unit',
+        MEDICATION_FREQUENCY_INPUT_LABEL: 'Frequency',
+        MEDICATION_DURATION_INPUT_LABEL: 'Duration',
+        MEDICATION_DURATION_UNIT_INPUT_LABEL: 'Duration unit',
+        MEDICATION_INSTRUCTIONS_INPUT_LABEL: 'Instructions',
+        MEDICATION_ROUTE_INPUT_LABEL: 'Route',
+        MEDICATION_START_DATE_INPUT_LABEL: 'Start date',
+        MEDICATION_TOTAL_QUANTITY: 'Total quantity',
+        INPUT_VALUE_REQUIRED: 'Please enter a value',
+        DROPDOWN_VALUE_REQUIRED: 'Please select a value',
+        DURATION_UNIT_DAYS: 'Days',
+        DURATION_UNIT_WEEKS: 'Weeks',
+        DURATION_UNIT_MONTHS: 'Months',
+        DURATION_UNIT_YEARS: 'Years',
+        DURATION_UNIT_HOURS: 'Hours',
+        DURATION_UNIT_MINUTES: 'Minutes',
       };
-      
+
       if (options?.defaultValue && !translations[key]) {
         return options.defaultValue;
       }
-      
+
       return translations[key] || key;
-    }
-  })
+    },
+  }),
 }));
 
 // Mock the services
@@ -857,9 +857,7 @@ describe('SelectedMedicationItem', () => {
             }),
           });
 
-          const { rerender } = render(
-            <SelectedMedicationItem {...props} />,
-          );
+          const { rerender } = render(<SelectedMedicationItem {...props} />);
 
           // Update config with defaults
           const updatedConfig = createMockMedicationConfig({
@@ -872,10 +870,10 @@ describe('SelectedMedicationItem', () => {
           // Act
           await act(async () => {
             rerender(
-                <SelectedMedicationItem
-                  {...props}
-                  medicationConfig={updatedConfig}
-                />
+              <SelectedMedicationItem
+                {...props}
+                medicationConfig={updatedConfig}
+              />,
             );
           });
 
@@ -907,9 +905,7 @@ describe('SelectedMedicationItem', () => {
             }),
           });
 
-          const { rerender } = render(
-            <SelectedMedicationItem {...props} />,
-          );
+          const { rerender } = render(<SelectedMedicationItem {...props} />);
 
           // Update config with defaults
           const updatedConfig = createMockMedicationConfig({
@@ -920,10 +916,10 @@ describe('SelectedMedicationItem', () => {
           // Act
           await act(async () => {
             rerender(
-                <SelectedMedicationItem
-                  {...props}
-                  medicationConfig={updatedConfig}
-                />
+              <SelectedMedicationItem
+                {...props}
+                medicationConfig={updatedConfig}
+              />,
             );
           });
 
@@ -1363,9 +1359,7 @@ describe('SelectedMedicationItem', () => {
       });
 
       // Act & Assert (should not throw)
-      expect(() =>
-        render(<SelectedMedicationItem {...props} />),
-      ).not.toThrow();
+      expect(() => render(<SelectedMedicationItem {...props} />)).not.toThrow();
     });
 
     test('handles medication without form information', () => {
@@ -1397,9 +1391,7 @@ describe('SelectedMedicationItem', () => {
       });
 
       // Act & Assert (should not throw)
-      expect(() =>
-        render(<SelectedMedicationItem {...props} />),
-      ).not.toThrow();
+      expect(() => render(<SelectedMedicationItem {...props} />)).not.toThrow();
     });
   });
 
@@ -1409,9 +1401,7 @@ describe('SelectedMedicationItem', () => {
       const props = createDefaultProps();
 
       // Act
-      const { container } = render(
-        <SelectedMedicationItem {...props} />,
-      );
+      const { container } = render(<SelectedMedicationItem {...props} />);
 
       // Assert
       const results = await axe(container);
@@ -1450,9 +1440,7 @@ describe('SelectedMedicationItem', () => {
       const props = createDefaultProps();
 
       // Act
-      const { container } = render(
-        <SelectedMedicationItem {...props} />,
-      );
+      const { container } = render(<SelectedMedicationItem {...props} />);
 
       // Assert
       expect(container).toMatchSnapshot();
@@ -1474,9 +1462,7 @@ describe('SelectedMedicationItem', () => {
       });
 
       // Act
-      const { container } = render(
-        <SelectedMedicationItem {...props} />,
-      );
+      const { container } = render(<SelectedMedicationItem {...props} />);
 
       // Assert
       expect(container).toMatchSnapshot();

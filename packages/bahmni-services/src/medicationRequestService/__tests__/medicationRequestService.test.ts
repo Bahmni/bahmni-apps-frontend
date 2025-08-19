@@ -1,7 +1,7 @@
 import { MedicationRequest as FhirMedicationRequest, Bundle } from 'fhir/r4';
-import { MedicationStatus } from '../models';
 import { get } from '../../api';
 import { getPatientMedications } from '../medicationRequestService';
+import { MedicationStatus } from '../models';
 
 jest.mock('../../api');
 

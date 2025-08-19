@@ -1,6 +1,6 @@
-import { PATIENT_VISITS_URL } from './constants';
 import { Encounter, Bundle } from 'fhir/r4';
 import { get } from '../api';
+import { PATIENT_VISITS_URL } from './constants';
 
 /**
  * Fetches visits for a given patient UUID from the FHIR R4 endpoint
@@ -20,8 +20,11 @@ export async function getPatientVisits(
  */
 export async function getVisits(patientUUID: string): Promise<Encounter[]> {
   const fhirEncounterBundle = await getPatientVisits(patientUUID);
-  return fhirEncounterBundle.entry?.map((entry) => entry.resource).filter((resource): resource is Encounter => resource !== undefined) ||
-    []
+  return (
+    fhirEncounterBundle.entry
+      ?.map((entry) => entry.resource)
+      .filter((resource): resource is Encounter => resource !== undefined) ?? []
+  );
 }
 
 /**

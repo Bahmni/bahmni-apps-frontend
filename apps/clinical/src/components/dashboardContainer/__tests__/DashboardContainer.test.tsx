@@ -1,9 +1,11 @@
+import {
+  DashboardSectionConfig as DashboardSectionType,
+  AUDIT_LOG_EVENT_DETAILS,
+  dispatchAuditEvent,
+} from '@bahmni-frontend/bahmni-services';
+import { usePatientUUID } from '@bahmni-frontend/bahmni-widgets';
 import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
-import { DashboardSectionConfig as DashboardSectionType } from '@bahmni-frontend/bahmni-services';
-import { AUDIT_LOG_EVENT_DETAILS } from '@bahmni-frontend/bahmni-services';
-import { usePatientUUID } from '@bahmni-frontend/bahmni-widgets';
-import { dispatchAuditEvent } from '@bahmni-frontend/bahmni-services';
 import DashboardContainer from '../DashboardContainer';
 
 // Mock scrollIntoView

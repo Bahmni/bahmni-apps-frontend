@@ -1,8 +1,8 @@
+import { type Provider, type User } from '@bahmni-frontend/bahmni-services';
 import { create } from 'zustand';
 import { FhirEncounter } from '../models/encounter';
 import { Concept } from '../models/encounterConcepts';
 import { OpenMRSLocation } from '../models/location';
-import { type Provider, type User } from '@bahmni-frontend/bahmni-services';
 
 export interface EncounterDetailsState {
   // Selected values

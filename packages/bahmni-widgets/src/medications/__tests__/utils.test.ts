@@ -1,9 +1,9 @@
-import { differenceInDays, parseISO } from 'date-fns';
 import {
   MedicationRequest,
   MedicationStatus,
   FormattedMedicationRequest,
 } from '@bahmni-frontend/bahmni-services';
+import { differenceInDays, parseISO } from 'date-fns';
 import {
   formatMedicationRequest,
   formatMedicationRequestDate,

@@ -1,3 +1,4 @@
+import { get } from '@bahmni-frontend/bahmni-services';
 import i18next from 'i18next';
 import { ENCOUNTER_CONCEPTS_URL } from '../constants/app';
 import { COMMON_ERROR_MESSAGES } from '../constants/errors';
@@ -6,7 +7,6 @@ import {
   EncounterConcepts,
   Concept,
 } from '../models/encounterConcepts';
-import { get } from '@bahmni-frontend/bahmni-services';
 
 /**
  * Transforms a record of string key-value pairs into an array of Concept objects

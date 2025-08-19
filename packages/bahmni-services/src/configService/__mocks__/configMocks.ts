@@ -1,4 +1,3 @@
-
 import { DashboardConfig } from '../models';
 
 // Happy Path Mocks

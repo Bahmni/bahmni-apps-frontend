@@ -1,28 +1,29 @@
+import { getDashboardConfig } from '@bahmni-frontend/bahmni-services';
 import { renderHook, act } from '@testing-library/react';
 import { validDashboardConfig } from '../../__mocks__/configMocks';
-import { getDashboardConfig } from '@bahmni-frontend/bahmni-services';
 import { useDashboardConfig } from '../useDashboardConfig';
 
 // Mock notification service
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
   getDashboardConfig: jest.fn(),
   getFormattedError: jest.fn((error) => ({
-      title: 'Error',
-      message: error instanceof Error ? error.message : 'An unexpected error occurred',
-    })),
-    notificationService: {
-      showError: jest.fn(),
-      showSuccess: jest.fn(),
-      showInfo: jest.fn(),
-      showWarning: jest.fn(),
-    },
-  __esModule: true
+    title: 'Error',
+    message:
+      error instanceof Error ? error.message : 'An unexpected error occurred',
+  })),
+  notificationService: {
+    showError: jest.fn(),
+    showSuccess: jest.fn(),
+    showInfo: jest.fn(),
+    showWarning: jest.fn(),
+  },
+  __esModule: true,
 }));
 
 describe('useDashboardConfig', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(console, 'error').mockImplementation(() => { });
+    jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {

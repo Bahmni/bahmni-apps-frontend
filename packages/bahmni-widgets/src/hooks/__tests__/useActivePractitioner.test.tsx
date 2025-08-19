@@ -1,4 +1,3 @@
-import { renderHook, act } from '@testing-library/react';
 import {
   getCurrentProvider,
   getCurrentUser,
@@ -6,8 +5,9 @@ import {
   Person,
   User,
   getFormattedError,
-  useTranslation
+  useTranslation,
 } from '@bahmni-frontend/bahmni-services';
+import { renderHook, act } from '@testing-library/react';
 import { useActivePractitioner } from '../useActivePractitioner';
 
 // Mock dependencies
@@ -30,8 +30,9 @@ const mockedUseTranslation = useTranslation as jest.MockedFunction<
 describe('useActivePractitioner hook', () => {
   const mockTranslate = jest.fn((key: string) => {
     const translations: Record<string, string> = {
-      'ERROR_FETCHING_USER_DETAILS': 'Error fetching user details',
-      'ERROR_FETCHING_PRACTITIONERS_DETAILS': 'Error fetching practitioners details'
+      ERROR_FETCHING_USER_DETAILS: 'Error fetching user details',
+      ERROR_FETCHING_PRACTITIONERS_DETAILS:
+        'Error fetching practitioners details',
     };
     return translations[key] || key;
   });
@@ -71,7 +72,7 @@ describe('useActivePractitioner hook', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(console, 'error').mockImplementation(() => { });
+    jest.spyOn(console, 'error').mockImplementation(() => {});
     mockedUseTranslation.mockReturnValue({ t: mockTranslate } as any);
   });
 

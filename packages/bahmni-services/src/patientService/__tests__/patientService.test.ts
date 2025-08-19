@@ -1,6 +1,6 @@
 import { Patient } from 'fhir/r4';
-import { PATIENT_RESOURCE_URL } from '../constants';
 import { get } from '../../api';
+import { PATIENT_RESOURCE_URL } from '../constants';
 import {
   getPatientById,
   formatPatientName,

@@ -1,9 +1,8 @@
-import { AuditEventType } from '../models';
-import { AUDIT_LOG_URL } from '../constants';
-import { MODULE_LABELS } from '../constants';
 import { post } from '../../api';
 import { isAuditLogEnabled } from '../../applicationConfigService';
 import { logAuditEvent } from '../auditLogService';
+import { MODULE_LABELS, AUDIT_LOG_URL } from '../constants';
+import { AuditEventType } from '../models';
 
 // Mock dependencies
 jest.mock('../../applicationConfigService');
@@ -14,7 +13,7 @@ const mockIsAuditLogEnabled = isAuditLogEnabled as jest.MockedFunction<
 >;
 const mockPost = post as jest.MockedFunction<typeof post>;
 
- jest.mock('i18next', () => ({
+jest.mock('i18next', () => ({
   t: (key: string) => key,
 }));
 

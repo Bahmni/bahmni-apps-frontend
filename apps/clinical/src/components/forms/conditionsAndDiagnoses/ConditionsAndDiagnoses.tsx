@@ -1,6 +1,14 @@
-import { ComboBox, Tile, BoxWHeader, SelectedItem } from '@bahmni-frontend/bahmni-design-system';
+import {
+  ComboBox,
+  Tile,
+  BoxWHeader,
+  SelectedItem,
+} from '@bahmni-frontend/bahmni-design-system';
+import {
+  useTranslation,
+  type ConceptSearch,
+} from '@bahmni-frontend/bahmni-services';
 import React, { useState, useMemo } from 'react';
-import { useTranslation, type ConceptSearch } from '@bahmni-frontend/bahmni-services';
 import { useConceptSearch } from '../../../hooks/useConceptSearch';
 import useConditions from '../../../hooks/useConditions';
 import { useConditionsAndDiagnosesStore } from '../../../stores/conditionsAndDiagnosesStore';

@@ -1,9 +1,9 @@
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
 import {
   FormattedLabTest,
   LabTestPriority,
 } from '@bahmni-frontend/bahmni-services';
+import { render, screen } from '@testing-library/react';
 import LabInvestigationItem from '../LabInvestigationItem';
 
 jest.mock('@bahmni-frontend/bahmni-services', () => ({

@@ -1,5 +1,3 @@
-import classNames from 'classnames';
-import React, { useMemo, useState, useCallback } from 'react';
 import {
   SortableDataTable,
   Accordion,
@@ -12,7 +10,6 @@ import {
   Tag,
   StatusTag,
 } from '@bahmni-frontend/bahmni-design-system';
-import { useMedicationRequest } from './useMedicationRequest';
 import {
   useTranslation,
   groupByDate,
@@ -23,13 +20,16 @@ import {
   FormattedMedicationRequest,
   MedicationRequest,
 } from '@bahmni-frontend/bahmni-services';
+import classNames from 'classnames';
+import React, { useMemo, useState, useCallback } from 'react';
+import styles from './styles/MedicationsTable.module.scss';
+import { useMedicationRequest } from './useMedicationRequest';
 import {
   formatMedicationRequest,
   sortMedicationsByStatus,
   sortMedicationsByPriority,
   sortMedicationsByDateDistance,
 } from './utils';
-import styles from './styles/MedicationsTable.module.scss';
 
 // Helper function to get severity CSS class
 const getMedicationStatusClassName = (status: string): string => {

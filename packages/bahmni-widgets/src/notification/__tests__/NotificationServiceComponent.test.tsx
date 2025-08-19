@@ -1,6 +1,6 @@
+import { notificationService } from '@bahmni-frontend/bahmni-services';
 import { render } from '@testing-library/react';
 import { NotificationProvider } from '../NotificationProvider';
-import { notificationService } from '@bahmni-frontend/bahmni-services';
 import { NotificationServiceComponent } from '../NotificationServiceComponent';
 import '@testing-library/jest-dom';
 

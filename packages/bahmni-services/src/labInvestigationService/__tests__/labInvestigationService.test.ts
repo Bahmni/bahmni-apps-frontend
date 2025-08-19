@@ -1,6 +1,6 @@
 import { ServiceRequest, Bundle } from 'fhir/r4';
-import { LabTestPriority, FormattedLabTest } from '../models';
 import { get } from '../../api';
+import { formatDate } from '../../date';
 import {
   getLabTests,
   formatLabTests,
@@ -10,7 +10,7 @@ import {
   mapLabTestPriority,
   determineTestType,
 } from '../labInvestigationService';
-import { formatDate } from '../../date';
+import { LabTestPriority, FormattedLabTest } from '../models';
 
 jest.mock('../../api');
 jest.mock('../../date');
@@ -19,13 +19,17 @@ describe('labInvestigationService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (formatDate as jest.Mock).mockImplementation((date, format) => ({
-      formattedResult: date.includes('2025-05-08') ? 'May 8, 2025' : 'April 9, 2025',
+      formattedResult: date.includes('2025-05-08')
+        ? 'May 8, 2025'
+        : 'April 9, 2025',
     }));
   });
 
   const patientUUID = '58493859-63f7-48b6-bd0b-698d5a119a21';
 
-  const createMockServiceRequest = (overrides: Partial<ServiceRequest> = {}): ServiceRequest => ({
+  const createMockServiceRequest = (
+    overrides: Partial<ServiceRequest> = {},
+  ): ServiceRequest => ({
     resourceType: 'ServiceRequest',
     id: 'test-id',
     status: 'completed',
@@ -46,7 +50,9 @@ describe('labInvestigationService', () => {
     ...overrides,
   });
 
-  const createMockBundle = (serviceRequests: ServiceRequest[] = []): Bundle<ServiceRequest> => ({
+  const createMockBundle = (
+    serviceRequests: ServiceRequest[] = [],
+  ): Bundle<ServiceRequest> => ({
     resourceType: 'Bundle',
     id: 'bundle-id',
     type: 'searchset',
@@ -171,7 +177,9 @@ describe('labInvestigationService', () => {
     it('should throw error when API call fails', async () => {
       (get as jest.Mock).mockRejectedValue(new Error('API Error'));
 
-      await expect(getPatientLabTestsBundle(patientUUID)).rejects.toThrow('API Error');
+      await expect(getPatientLabTestsBundle(patientUUID)).rejects.toThrow(
+        'API Error',
+      );
     });
   });
 

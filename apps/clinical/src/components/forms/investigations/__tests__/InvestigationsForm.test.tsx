@@ -2,8 +2,8 @@ import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import useInvestigationsSearch from '../../../../hooks/useInvestigationsSearch';
-import useServiceRequestStore from '../../../../stores/serviceRequestStore';
 import type { FlattenedInvestigations } from '../../../../models/investigations';
+import useServiceRequestStore from '../../../../stores/serviceRequestStore';
 import InvestigationsForm from '../InvestigationsForm';
 
 expect.extend(toHaveNoViolations);
@@ -101,9 +101,7 @@ describe('InvestigationsForm', () => {
 
   describe('Component Rendering', () => {
     test('renders form with title and search combobox', () => {
-      render(
-          <InvestigationsForm />
-      );
+      render(<InvestigationsForm />);
 
       expect(
         screen.getByText('Order Investigations/Procedures'),
@@ -129,9 +127,7 @@ describe('InvestigationsForm', () => {
     test('updates search term on input change', async () => {
       const user = userEvent.setup();
 
-      render(
-          <InvestigationsForm />
-      );
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
       await user.type(combobox, 'blood');
@@ -148,9 +144,7 @@ describe('InvestigationsForm', () => {
 
       const user = userEvent.setup();
 
-      render(
-          <InvestigationsForm />
-      );
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
       await user.type(combobox, 'test');
@@ -169,9 +163,7 @@ describe('InvestigationsForm', () => {
 
       const user = userEvent.setup();
 
-      render(
-          <InvestigationsForm />
-      );
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
       await user.type(combobox, 'test');
@@ -192,9 +184,7 @@ describe('InvestigationsForm', () => {
 
       const user = userEvent.setup();
 
-      render(
-          <InvestigationsForm />
-      );
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
       await user.type(combobox, 'nonexistent');
@@ -214,9 +204,7 @@ describe('InvestigationsForm', () => {
 
       const user = userEvent.setup();
 
-      render(
-          <InvestigationsForm />
-      );
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
       await user.type(combobox, 'test');
@@ -263,9 +251,7 @@ describe('InvestigationsForm', () => {
 
       const user = userEvent.setup();
 
-      render(
-          <InvestigationsForm />
-      );
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
       await user.type(combobox, 'test');
@@ -293,9 +279,7 @@ describe('InvestigationsForm', () => {
         error: null,
       });
 
-      render(
-          <InvestigationsForm />
-      );
+      render(<InvestigationsForm />);
 
       // Simulate selecting an investigation by calling the onChange handler
       const combobox = screen.getByRole('combobox');
@@ -360,9 +344,7 @@ describe('InvestigationsForm', () => {
         selectedServiceRequests: selectedMap,
       });
 
-      render(
-          <InvestigationsForm />
-      );
+      render(<InvestigationsForm />);
 
       // Check category headers
       expect(screen.getByText('Added Laboratory')).toBeInTheDocument();
@@ -395,9 +377,7 @@ describe('InvestigationsForm', () => {
 
       const user = userEvent.setup();
 
-      render(
-          <InvestigationsForm />
-      );
+      render(<InvestigationsForm />);
 
       const removeButton = screen.getByLabelText('Remove');
       await user.click(removeButton);
@@ -429,9 +409,7 @@ describe('InvestigationsForm', () => {
 
       const user = userEvent.setup();
 
-      render(
-          <InvestigationsForm />
-      );
+      render(<InvestigationsForm />);
 
       const urgentCheckbox = screen.getByLabelText('Set as urgent');
       await user.click(urgentCheckbox);
@@ -472,9 +450,7 @@ describe('InvestigationsForm', () => {
 
       const user = userEvent.setup();
 
-      render(
-          <InvestigationsForm />
-      );
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
       await user.type(combobox, 'blood');
@@ -519,9 +495,7 @@ describe('InvestigationsForm', () => {
 
       const user = userEvent.setup();
 
-      render(
-          <InvestigationsForm />
-      );
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
       await user.type(combobox, 'complete');
@@ -570,9 +544,7 @@ describe('InvestigationsForm', () => {
 
       const user = userEvent.setup();
 
-      render(
-          <InvestigationsForm />
-      );
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
       await user.type(combobox, 'glucose');
@@ -639,9 +611,7 @@ describe('InvestigationsForm', () => {
 
       const user = userEvent.setup();
 
-      render(
-          <InvestigationsForm />
-      );
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
       await user.type(combobox, 'test');
@@ -717,9 +687,7 @@ describe('InvestigationsForm', () => {
 
       const user = userEvent.setup();
 
-      const { rerender } = render(
-          <InvestigationsForm />
-      );
+      const { rerender } = render(<InvestigationsForm />);
 
       // First search - CBC should be marked as already selected
       const combobox = screen.getByRole('combobox');
@@ -742,9 +710,7 @@ describe('InvestigationsForm', () => {
       selectedMap = new Map();
 
       // Rerender to reflect the state change
-      rerender(
-          <InvestigationsForm />
-      );
+      rerender(<InvestigationsForm />);
 
       // Search again - CBC should NOT be marked as already selected
       await user.type(combobox, 'complete');
@@ -762,9 +728,7 @@ describe('InvestigationsForm', () => {
 
   describe('Edge Cases', () => {
     test('handles empty search term correctly', () => {
-      render(
-          <InvestigationsForm />
-      );
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
       expect(combobox).toHaveValue('');
@@ -783,9 +747,7 @@ describe('InvestigationsForm', () => {
         error: null,
       });
 
-      render(
-          <InvestigationsForm />
-      );
+      render(<InvestigationsForm />);
 
       const combobox = screen.getByRole('combobox');
       const user = userEvent.setup();
@@ -803,11 +765,7 @@ describe('InvestigationsForm', () => {
       let container: HTMLElement;
 
       await act(async () => {
-        const rendered = render(
-
-            <InvestigationsForm />
-
-        );
+        const rendered = render(<InvestigationsForm />);
         container = rendered.container;
       });
 

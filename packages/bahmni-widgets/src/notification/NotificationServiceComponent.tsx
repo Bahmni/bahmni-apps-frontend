@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
-import { useNotification } from './useNotification';
 import {
   notificationService,
   Notification,
 } from '@bahmni-frontend/bahmni-services';
+import React, { useEffect } from 'react';
+import { useNotification } from './useNotification';
 
 /**
  * Component that connects the notification service to the notification context

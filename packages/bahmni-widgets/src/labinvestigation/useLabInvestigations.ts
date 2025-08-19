@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
 import {
   getPatientLabInvestigations,
   FormattedLabTest,
 } from '@bahmni-frontend/bahmni-services';
+import { useState, useEffect } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 
 /**

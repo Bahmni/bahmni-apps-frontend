@@ -4,9 +4,9 @@ import { Medication } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import useMedicationConfig from '../../../../hooks/useMedicationConfig';
 import { useMedicationSearch } from '../../../../hooks/useMedicationSearch';
-import { useMedicationStore } from '../../../../stores/medicationsStore';
 import { MedicationInputEntry } from '../../../../models/medication';
 import { MedicationConfig } from '../../../../models/medicationConfig';
+import { useMedicationStore } from '../../../../stores/medicationsStore';
 import MedicationsForm from '../MedicationsForm';
 
 expect.extend(toHaveNoViolations);
@@ -143,9 +143,7 @@ describe('MedicationsForm', () => {
   // HAPPY PATH TESTS
   describe('Happy Path Scenarios', () => {
     test('renders medication search box correctly', () => {
-      render(
-          <MedicationsForm />
-      );
+      render(<MedicationsForm />);
 
       expect(
         screen.getByRole('combobox', { name: /search to add medication/i }),
@@ -153,9 +151,7 @@ describe('MedicationsForm', () => {
     });
 
     test('renders form title correctly', () => {
-      render(
-          <MedicationsForm />
-      );
+      render(<MedicationsForm />);
 
       expect(screen.getByText(/prescribe medication/i)).toBeInTheDocument();
     });
@@ -167,9 +163,7 @@ describe('MedicationsForm', () => {
         searchResults: [mockMedication],
       });
 
-      render(
-          <MedicationsForm />
-      );
+      render(<MedicationsForm />);
 
       const searchBox = screen.getByRole('combobox', {
         name: /search to add medication/i,
@@ -211,9 +205,7 @@ describe('MedicationsForm', () => {
         };
       });
 
-      render(
-          <MedicationsForm />
-      );
+      render(<MedicationsForm />);
 
       const searchBox = screen.getByRole('combobox', {
         name: /search to add medication/i,
@@ -270,9 +262,7 @@ describe('MedicationsForm', () => {
         selectedMedications: [mockSelectedMedication],
       });
 
-      render(
-          <MedicationsForm />
-      );
+      render(<MedicationsForm />);
 
       expect(screen.getByText(/added medicines/i)).toBeInTheDocument();
       expect(screen.getByText(/Paracetamol 500mg/)).toBeInTheDocument();
@@ -285,9 +275,7 @@ describe('MedicationsForm', () => {
         selectedMedications: [mockSelectedMedication],
       });
 
-      render(
-          <MedicationsForm />
-      );
+      render(<MedicationsForm />);
 
       // Find the close button by its aria-label from SelectedItem component
       const closeButton = screen.getByRole('button', {
@@ -305,9 +293,7 @@ describe('MedicationsForm', () => {
     });
 
     test('does not show selected medications section when no medications selected', () => {
-      render(
-          <MedicationsForm />
-      );
+      render(<MedicationsForm />);
 
       expect(screen.queryByText(/added medicines/i)).not.toBeInTheDocument();
     });
@@ -322,9 +308,7 @@ describe('MedicationsForm', () => {
         loading: true,
       });
 
-      render(
-          <MedicationsForm />
-      );
+      render(<MedicationsForm />);
 
       const searchBox = screen.getByRole('combobox', {
         name: /search to add medication/i,
@@ -346,9 +330,7 @@ describe('MedicationsForm', () => {
         error,
       });
 
-      render(
-          <MedicationsForm />
-      );
+      render(<MedicationsForm />);
 
       const searchBox = screen.getByRole('combobox', {
         name: /search to add medication/i,
@@ -371,9 +353,7 @@ describe('MedicationsForm', () => {
         searchResults: [],
       });
 
-      render(
-          <MedicationsForm />
-      );
+      render(<MedicationsForm />);
 
       const searchBox = screen.getByRole('combobox', {
         name: /search to add medication/i,
@@ -400,9 +380,7 @@ describe('MedicationsForm', () => {
         selectedMedications: [mockSelectedMedication],
       });
 
-      render(
-          <MedicationsForm />
-      );
+      render(<MedicationsForm />);
 
       // Should show the selected medication in the added medicines section
       expect(screen.getByText(/added medicines/i)).toBeInTheDocument();
@@ -438,9 +416,7 @@ describe('MedicationsForm', () => {
         selectedMedications: [mockSelectedMedication],
       });
 
-      render(
-          <MedicationsForm />
-      );
+      render(<MedicationsForm />);
 
       const searchBox = screen.getByRole('combobox', {
         name: /search to add medication/i,
@@ -471,9 +447,7 @@ describe('MedicationsForm', () => {
     });
 
     test('does not add medication when selected item is invalid', async () => {
-      render(
-          <MedicationsForm />
-      );
+      render(<MedicationsForm />);
 
       const searchBox = screen.getByRole('combobox', {
         name: /search to add medication/i,
@@ -504,9 +478,7 @@ describe('MedicationsForm', () => {
         loading: true,
       });
 
-      render(
-          <MedicationsForm />
-      );
+      render(<MedicationsForm />);
 
       // Should show loading skeleton (look for skeleton class)
       expect(document.querySelector('.cds--skeleton')).toBeInTheDocument();
@@ -520,9 +492,7 @@ describe('MedicationsForm', () => {
         error,
       });
 
-      render(
-          <MedicationsForm />
-      );
+      render(<MedicationsForm />);
 
       expect(
         screen.getByText(/Error fetching medication configuration/i),
@@ -543,9 +513,7 @@ describe('MedicationsForm', () => {
         selectedMedications: [mockSelectedMedication],
       });
 
-      render(
-          <MedicationsForm />
-      );
+      render(<MedicationsForm />);
 
       // Should not show selected medications section without config
       expect(screen.queryByText(/added medicines/i)).not.toBeInTheDocument();
@@ -559,9 +527,7 @@ describe('MedicationsForm', () => {
         searchResults: [medicationWithoutId],
       });
 
-      render(
-          <MedicationsForm />
-      );
+      render(<MedicationsForm />);
 
       const searchBox = screen.getByRole('combobox', {
         name: /search to add medication/i,
@@ -580,9 +546,7 @@ describe('MedicationsForm', () => {
   // ACCESSIBILITY TESTS
   describe('Accessibility', () => {
     test('should have no accessibility violations', async () => {
-      const { container } = render(
-          <MedicationsForm />
-      );
+      const { container } = render(<MedicationsForm />);
 
       const results = await axe(container);
       expect(results).toHaveNoViolations();
@@ -592,9 +556,7 @@ describe('MedicationsForm', () => {
   // SNAPSHOT TESTS
   describe('Snapshot Tests', () => {
     test('matches snapshot with no medications', () => {
-      const { container } = render(
-          <MedicationsForm />
-      );
+      const { container } = render(<MedicationsForm />);
       expect(container).toMatchSnapshot();
     });
 
@@ -604,9 +566,7 @@ describe('MedicationsForm', () => {
         selectedMedications: [mockSelectedMedication],
       });
 
-      const { container } = render(
-          <MedicationsForm />
-      );
+      const { container } = render(<MedicationsForm />);
       expect(container).toMatchSnapshot();
     });
   });

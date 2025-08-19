@@ -1,14 +1,25 @@
-import { Column, Grid , MenuItemDivider , ActionArea} from '@bahmni-frontend/bahmni-design-system';
-import React, { useEffect } from 'react';
-import AllergiesForm from '../forms/allergies/AllergiesForm';
-import ConditionsAndDiagnoses from '../forms/conditionsAndDiagnoses/ConditionsAndDiagnoses';
-import BasicForm from '../forms/encounterDetails/EncounterDetails';
-import InvestigationsForm from '../forms/investigations/InvestigationsForm';
-import MedicationsForm from '../forms/medications/MedicationsForm';
-import { AUDIT_LOG_EVENT_DETAILS , AuditEventType , dispatchAuditEvent, useTranslation } from '@bahmni-frontend/bahmni-services';
-import { ERROR_TITLES } from '../../constants/errors';
-import { useEncounterSession } from '../../../src/hooks/useEncounterSession';
+import {
+  Column,
+  Grid,
+  MenuItemDivider,
+  ActionArea,
+} from '@bahmni-frontend/bahmni-design-system';
+import {
+  AUDIT_LOG_EVENT_DETAILS,
+  AuditEventType,
+  dispatchAuditEvent,
+  useTranslation,
+} from '@bahmni-frontend/bahmni-services';
 import { useNotification } from '@bahmni-frontend/bahmni-widgets';
+import React, { useEffect } from 'react';
+import { useEncounterSession } from '../../../src/hooks/useEncounterSession';
+import useAllergyStore from '../../../src/stores/allergyStore';
+import { useConditionsAndDiagnosesStore } from '../../../src/stores/conditionsAndDiagnosesStore';
+import { useEncounterDetailsStore } from '../../../src/stores/encounterDetailsStore';
+import { useMedicationStore } from '../../../src/stores/medicationsStore';
+import useServiceRequestStore from '../../../src/stores/serviceRequestStore';
+import { ERROR_TITLES } from '../../constants/errors';
+import { ConsultationBundle } from '../../models/consultationBundle';
 import {
   postConsultationBundle,
   createDiagnosisBundleEntries,
@@ -19,14 +30,13 @@ import {
   createEncounterBundleEntry,
   getEncounterReference,
 } from '../../services/consultationBundleService';
-import useAllergyStore from '../../../src/stores/allergyStore'
-import { useConditionsAndDiagnosesStore } from '../../../src/stores/conditionsAndDiagnosesStore';
-import { useEncounterDetailsStore } from '../../../src/stores/encounterDetailsStore';
-import { useMedicationStore } from '../../../src/stores/medicationsStore';
-import useServiceRequestStore from '../../../src/stores/serviceRequestStore';
-import { ConsultationBundle } from '../../models/consultationBundle';
 import { createConsultationBundle } from '../../utils/fhir/consultationBundleCreator';
 import { createEncounterResource } from '../../utils/fhir/encounterResourceCreator';
+import AllergiesForm from '../forms/allergies/AllergiesForm';
+import ConditionsAndDiagnoses from '../forms/conditionsAndDiagnoses/ConditionsAndDiagnoses';
+import BasicForm from '../forms/encounterDetails/EncounterDetails';
+import InvestigationsForm from '../forms/investigations/InvestigationsForm';
+import MedicationsForm from '../forms/medications/MedicationsForm';
 import styles from './styles/ConsultationPad.module.scss';
 
 interface ConsultationPadProps {

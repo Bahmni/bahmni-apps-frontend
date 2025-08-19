@@ -1,11 +1,11 @@
+import { Encounter, Bundle } from 'fhir/r4';
+import { get } from '../api';
+import { getActiveVisit } from '../encounterService';
 import {
   ENCOUNTER_SESSION_DURATION_GP_URL,
   ENCOUNTER_SEARCH_URL,
   CONSULTATION_ENCOUNTER_TYPE_UUID,
 } from './constants';
-import { Encounter, Bundle } from 'fhir/r4';
-import { get } from '../api';
-import { getActiveVisit } from '../encounterService';
 
 interface EncounterSearchParams {
   patient: string;
@@ -36,8 +36,9 @@ export async function searchEncounters(
   const bundle = await get<Bundle<Encounter>>(url);
 
   return (
-    bundle.entry?.map((entry) => entry.resource).filter((resource): resource is Encounter => resource !== undefined) ||
-    []
+    bundle.entry
+      ?.map((entry) => entry.resource)
+      .filter((resource): resource is Encounter => resource !== undefined) ?? []
   );
 }
 

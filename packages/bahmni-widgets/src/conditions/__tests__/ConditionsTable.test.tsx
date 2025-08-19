@@ -6,8 +6,8 @@ import {
   FormattedCondition,
   formatDateDistance,
 } from '@bahmni-frontend/bahmni-services';
-import { useConditions } from '../useConditions';
 import ConditionsTable from '../ConditionsTable';
+import { useConditions } from '../useConditions';
 
 expect.extend(toHaveNoViolations);
 

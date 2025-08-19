@@ -1,5 +1,8 @@
 import { MedicationRequest, Reference, Dosage, Timing } from 'fhir/r4';
-import { DurationUnitOption, MedicationInputEntry } from '../../models/medication';
+import {
+  DurationUnitOption,
+  MedicationInputEntry,
+} from '../../models/medication';
 import { Frequency } from '../../models/medicationConfig';
 import { createCodeableConcept, createCoding } from './codeableConceptCreator';
 import { createMedicationReference } from './referenceCreator';

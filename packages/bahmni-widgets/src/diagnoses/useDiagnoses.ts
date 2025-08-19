@@ -1,10 +1,10 @@
-import { useState, useCallback, useEffect } from 'react';
 import {
   getFormattedError,
   getPatientDiagnoses,
   useTranslation,
   Diagnosis,
 } from '@bahmni-frontend/bahmni-services';
+import { useState, useCallback, useEffect } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 
 interface UseDiagnosesResult {

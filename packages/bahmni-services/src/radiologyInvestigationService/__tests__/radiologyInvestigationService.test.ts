@@ -1,10 +1,10 @@
 import { Bundle, ServiceRequest } from 'fhir/r4';
+import { get } from '../../api';
 import {
   mockRadiologyTestBasic,
   mockRadiologyTestWithMultipleReplaces,
   mockRadiologyTestWithEmptyReplaces,
 } from '../__mocks__/mocks';
-import { get } from '../../api';
 import { getPatientRadiologyInvestigations } from '../radiologyInvestigationService';
 
 // Mock the API module

@@ -1,4 +1,3 @@
-import { renderHook, act, waitFor } from '@testing-library/react';
 import {
   getPatientMedications,
   getFormattedError,
@@ -6,8 +5,9 @@ import {
   MedicationRequest,
   MedicationStatus,
 } from '@bahmni-frontend/bahmni-services';
-import { useMedicationRequest } from '../useMedicationRequest';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
+import { useMedicationRequest } from '../useMedicationRequest';
 
 jest.mock('@bahmni-frontend/bahmni-services');
 jest.mock('../../hooks/usePatientUUID');

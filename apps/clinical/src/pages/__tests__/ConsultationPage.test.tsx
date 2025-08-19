@@ -1,3 +1,5 @@
+import { useSidebarNavigation } from '@bahmni-frontend/bahmni-design-system';
+import { useNotification } from '@bahmni-frontend/bahmni-widgets';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React, { ReactNode } from 'react';
@@ -7,8 +9,6 @@ import {
 } from '../../__mocks__/configMocks';
 import { useClinicalConfig } from '../../hooks/useClinicalConfig';
 import { useDashboardConfig } from '../../hooks/useDashboardConfig';
-import { useNotification } from '@bahmni-frontend/bahmni-widgets';
-import { useSidebarNavigation } from '@bahmni-frontend/bahmni-design-system';
 import ConsultationPage from '../ConsultationPage';
 
 expect.extend(toHaveNoViolations);
@@ -104,9 +104,7 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
   )),
 }));
 
-
 jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
-  
   PatientDetails: jest.fn(() => (
     <div data-testid="mocked-patient-details">Mocked PatientDetails</div>
   )),

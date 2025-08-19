@@ -1,7 +1,7 @@
+import { Icon, ICON_SIZE } from '@bahmni-frontend/bahmni-design-system';
 import { SkeletonText } from '@carbon/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Icon, ICON_SIZE } from '@bahmni-frontend/bahmni-design-system';
 import styles from './__styles__/PatientDetails.module.scss';
 import { usePatient } from './usePatient';
 
@@ -32,7 +32,7 @@ const PatientDetails: React.FC = () => {
 
   const formattedIdentifiers = patient.identifiers.size
     ? Array.from(patient.identifiers.entries())
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
         .map(([key, value]) => value)
         .filter((value) => value != null && value !== '')
         .join(' | ')

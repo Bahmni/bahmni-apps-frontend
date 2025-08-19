@@ -1,12 +1,15 @@
+import {
+  usePatientUUID,
+  useActivePractitioner,
+} from '@bahmni-frontend/bahmni-widgets';
 import { render, screen, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React from 'react';
-import { usePatientUUID, useActivePractitioner } from '@bahmni-frontend/bahmni-widgets';
 import { useActiveVisit } from '../../../../hooks/useActiveVisit';
 import { useEncounterConcepts } from '../../../../hooks/useEncounterConcepts';
 import { useLocations } from '../../../../hooks/useLocations';
-import { useEncounterDetailsStore } from '../../../../stores/encounterDetailsStore';
 import { FhirEncounter } from '../../../../models/encounter';
+import { useEncounterDetailsStore } from '../../../../stores/encounterDetailsStore';
 import BasicForm from '../EncounterDetails';
 
 jest.mock('../../../../hooks/useLocations');
@@ -39,7 +42,7 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
           return key;
       }
     },
-  })
+  }),
 }));
 
 // Mock the Carbon components
@@ -156,7 +159,6 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => {
 expect.extend(toHaveNoViolations);
 
 describe('BasicForm', () => {
-
   // Common setup
   const mockLocations = [
     {

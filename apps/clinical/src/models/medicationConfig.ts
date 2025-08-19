@@ -5,7 +5,7 @@ interface Concept {
 
 export interface MedicationConfig
   extends MedicationOrdersMetadataResponse,
-  MedicationJSONConfig { }
+    MedicationJSONConfig {}
 
 export interface DrugFormDefault {
   doseUnits?: string;

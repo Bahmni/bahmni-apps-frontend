@@ -1,6 +1,9 @@
 import { Reference } from 'fhir/r4';
 import { Concept } from '../../../models/encounterConcepts';
-import { MedicationInputEntry, DurationUnitOption } from '../../../models/medication';
+import {
+  MedicationInputEntry,
+  DurationUnitOption,
+} from '../../../models/medication';
 import { Frequency } from '../../../models/medicationConfig';
 import * as codeableConceptCreator from '../codeableConceptCreator';
 import {

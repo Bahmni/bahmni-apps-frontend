@@ -4,19 +4,15 @@ import { filterByActiveVisit } from '../encounterSessionService';
 
 // Mock the encounterService
 jest.mock('../../encounterService');
-const mockGetActiveVisit =
-  getActiveVisit as jest.MockedFunction<
-    typeof getActiveVisit
-  >;
+const mockGetActiveVisit = getActiveVisit as jest.MockedFunction<
+  typeof getActiveVisit
+>;
 
 describe('encounterSessionService', () => {
   describe('filterByActiveVisit', () => {
     const mockPatientUUID = 'patient-123';
 
-    const createMockEncounter = (
-      id: string,
-      visitUUID: string,
-    ): Encounter => ({
+    const createMockEncounter = (id: string, visitUUID: string): Encounter => ({
       resourceType: 'Encounter',
       id,
       meta: {
@@ -64,10 +60,7 @@ describe('encounterSessionService', () => {
       partOf: { reference: `Encounter/${visitUUID}`, type: 'Encounter' },
     });
 
-    const createMockVisit = (
-      id: string,
-      hasEndDate: boolean,
-    ): Encounter => ({
+    const createMockVisit = (id: string, hasEndDate: boolean): Encounter => ({
       resourceType: 'Encounter',
       id,
       meta: {

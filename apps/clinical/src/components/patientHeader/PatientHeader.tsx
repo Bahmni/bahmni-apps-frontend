@@ -1,7 +1,7 @@
-import React from 'react';
 import { useTranslation } from '@bahmni-frontend/bahmni-services';
-import ConsultationActionButton from './ConsultationActionButton';
 import { PatientDetails } from '@bahmni-frontend/bahmni-widgets';
+import React from 'react';
+import ConsultationActionButton from './ConsultationActionButton';
 import styles from './styles/PatientHeader.module.scss';
 
 interface PatientHeaderProps {

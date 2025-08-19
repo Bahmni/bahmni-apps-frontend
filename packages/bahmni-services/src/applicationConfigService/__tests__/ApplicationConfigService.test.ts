@@ -1,6 +1,6 @@
-import { APP_PROPERTY_URL, AUDIT_LOG_APP_PROPERTY } from '../constants';
 import { get } from '../../api';
 import { getAppProperty, isAuditLogEnabled } from '../ApplicationConfigService';
+import { APP_PROPERTY_URL, AUDIT_LOG_APP_PROPERTY } from '../constants';
 
 // Mock dependencies
 jest.mock('../../api');

@@ -1,9 +1,9 @@
+import { RadiologyInvestigation } from '@bahmni-frontend/bahmni-services';
 import {
   createMockRadiologyInvestigation,
   mockRadiologyInvestigationsForFiltering,
   mockRadiologyChainReplacement,
 } from '../__mocks__/mocks';
-import { RadiologyInvestigation } from '@bahmni-frontend/bahmni-services';
 import {
   PRIORITY_ORDER,
   getRadiologyPriority,

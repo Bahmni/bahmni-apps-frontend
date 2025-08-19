@@ -1,6 +1,10 @@
+import {
+  type ConceptSearch,
+  type ConditionInputEntry,
+  type DiagnosisInputEntry,
+} from '@bahmni-frontend/bahmni-services';
 import { Coding } from 'fhir/r4';
 import { create } from 'zustand';
-import { type ConceptSearch, type ConditionInputEntry, type DiagnosisInputEntry } from '@bahmni-frontend/bahmni-services';
 
 /**
  * Interface defining the state and actions for managing conditions and diagnoses

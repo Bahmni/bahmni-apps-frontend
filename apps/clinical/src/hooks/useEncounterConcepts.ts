@@ -1,7 +1,7 @@
-import { useState, useCallback, useEffect } from 'react';
-import { getEncounterConcepts } from '../services/encounterConceptsService';
-import { EncounterConcepts } from '../models/encounterConcepts';
 import { getFormattedError } from '@bahmni-frontend/bahmni-services';
+import { useState, useCallback, useEffect } from 'react';
+import { EncounterConcepts } from '../models/encounterConcepts';
+import { getEncounterConcepts } from '../services/encounterConceptsService';
 
 interface UseEncounterConceptsResult {
   encounterConcepts: EncounterConcepts | null;

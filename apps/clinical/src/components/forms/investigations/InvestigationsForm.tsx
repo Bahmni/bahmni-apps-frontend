@@ -1,9 +1,14 @@
-import { ComboBox, Tile ,BoxWHeader, SelectedItem } from '@bahmni-frontend/bahmni-design-system';
-import React, { useMemo, useCallback } from 'react';
+import {
+  ComboBox,
+  Tile,
+  BoxWHeader,
+  SelectedItem,
+} from '@bahmni-frontend/bahmni-design-system';
 import { useTranslation } from '@bahmni-frontend/bahmni-services';
+import React, { useMemo, useCallback } from 'react';
 import useInvestigationsSearch from '../../../hooks/useInvestigationsSearch';
-import useServiceRequestStore from '../../../stores/serviceRequestStore';
 import type { FlattenedInvestigations } from '../../../models/investigations';
+import useServiceRequestStore from '../../../stores/serviceRequestStore';
 import SelectedInvestigationItem from './SelectedInvestigationItem';
 import styles from './styles/InvestigationsForm.module.scss';
 

@@ -1,47 +1,55 @@
+import {
+  Content,
+  initFontAwesome,
+} from '@bahmni-frontend/bahmni-design-system';
+import {
+  initAppI18n,
+  initializeAuditListener,
+} from '@bahmni-frontend/bahmni-services';
+import {
+  NotificationProvider,
+  NotificationServiceComponent,
+} from '@bahmni-frontend/bahmni-widgets';
 import React, { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { initAppI18n, initializeAuditListener } from '@bahmni-frontend/bahmni-services';
-import { Content, initFontAwesome } from '@bahmni-frontend/bahmni-design-system';
-import { NotificationProvider } from '@bahmni-frontend/bahmni-widgets';
-import { ClinicalConfigProvider } from './providers/ClinicalConfigProvider';
-import { NotificationServiceComponent } from '@bahmni-frontend/bahmni-widgets';
 import ConsultationPage from './pages/ConsultationPage';
+import { ClinicalConfigProvider } from './providers/ClinicalConfigProvider';
 
 const ClinicalApp: React.FC = () => {
-    const [isInitialized, setIsInitialized] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-    useEffect(() => {
-        const initializeApp = async () => {
-            try {
-                await initAppI18n();
-                initFontAwesome();
-                initializeAuditListener();
-                setIsInitialized(true);
-            } catch (error) {
-                console.error('Failed to initialize app:', error);
-                setIsInitialized(true);
-            }
-        };
+  useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        await initAppI18n();
+        initFontAwesome();
+        initializeAuditListener();
+        setIsInitialized(true);
+      } catch (error) {
+        console.error('Failed to initialize app:', error);
+        setIsInitialized(true);
+      }
+    };
 
-        initializeApp();
-    }, []);
+    initializeApp();
+  }, []);
 
-    if (!isInitialized) {
-        return <div>Loading...</div>;
-    }
+  if (!isInitialized) {
+    return <div>Loading...</div>;
+  }
 
-    return (
-        <Content>
-            <NotificationProvider>
-                <NotificationServiceComponent />
-                <ClinicalConfigProvider>
-                    <Routes>
-                        <Route path=":patientUuid" element={<ConsultationPage />} />
-                    </Routes>
-                </ClinicalConfigProvider>
-            </NotificationProvider>
-        </Content>
-    );
+  return (
+    <Content>
+      <NotificationProvider>
+        <NotificationServiceComponent />
+        <ClinicalConfigProvider>
+          <Routes>
+            <Route path=":patientUuid" element={<ConsultationPage />} />
+          </Routes>
+        </ClinicalConfigProvider>
+      </NotificationProvider>
+    </Content>
+  );
 };
 
 export { ClinicalApp };

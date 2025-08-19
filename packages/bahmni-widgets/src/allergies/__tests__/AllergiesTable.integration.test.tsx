@@ -6,8 +6,8 @@ import {
   AllergyStatus,
   AllergySeverity,
 } from '@bahmni-frontend/bahmni-services';
-import { useAllergies } from '../useAllergies';
 import AllergiesTable from '../AllergiesTable';
+import { useAllergies } from '../useAllergies';
 
 jest.mock('../useAllergies');
 jest.mock('../../hooks/usePatientUUID', () => ({

@@ -1,5 +1,5 @@
-import { Reference } from 'fhir/r4';
 import { HL7_CONDITION_VERIFICATION_STATUS_CODE_SYSTEM } from '@bahmni-frontend/bahmni-services';
+import { Reference } from 'fhir/r4';
 import { createCodeableConcept, createCoding } from '../codeableConceptCreator';
 import {
   createEncounterDiagnosisResource,

@@ -1,18 +1,20 @@
-import { Loading } from '@bahmni-frontend/bahmni-design-system';
-import React, { Suspense, useMemo, useState } from 'react';
+import {
+  Loading,
+  Icon,
+  HeaderWSideNav,
+  ICON_SIZE,
+  useSidebarNavigation,
+  ClinicalLayout,
+} from '@bahmni-frontend/bahmni-design-system';
 import { useTranslation } from '@bahmni-frontend/bahmni-services';
+import { useNotification } from '@bahmni-frontend/bahmni-widgets';
+import React, { Suspense, useMemo, useState } from 'react';
 import ConsultationPad from '../components/consultationPad/ConsultationPad';
 import DashboardContainer from '../components/dashboardContainer/DashboardContainer';
 import PatientHeader from '../components/patientHeader/PatientHeader';
-import { Icon } from '@bahmni-frontend/bahmni-design-system';
-import { HeaderWSideNav } from '@bahmni-frontend/bahmni-design-system';
 import { BAHMNI_CLINICAL_PATH, BAHMNI_HOME_PATH } from '../constants/app';
-import { ICON_SIZE } from '@bahmni-frontend/bahmni-design-system';
 import { useClinicalConfig } from '../hooks/useClinicalConfig';
 import { useDashboardConfig } from '../hooks/useDashboardConfig';
-import { useNotification } from '@bahmni-frontend/bahmni-widgets';
-import { useSidebarNavigation } from '@bahmni-frontend/bahmni-design-system';
-import { ClinicalLayout } from '@bahmni-frontend/bahmni-design-system';
 import {
   getDefaultDashboard,
   getSidebarItems,
@@ -32,10 +34,8 @@ const globalActions = [
   {
     id: 'search',
     label: 'Search',
-    renderIcon: (
-      <Icon id="search-icon" name="fa-search" size={ICON_SIZE.LG} />
-    ),
-    onClick: () => { },
+    renderIcon: <Icon id="search-icon" name="fa-search" size={ICON_SIZE.LG} />,
+    onClick: () => {},
   },
   {
     id: 'notifications',
@@ -43,15 +43,13 @@ const globalActions = [
     renderIcon: (
       <Icon id="notifications-icon" name="fa-bell" size={ICON_SIZE.LG} />
     ),
-    onClick: () => { },
+    onClick: () => {},
   },
   {
     id: 'user',
     label: 'User',
-    renderIcon: (
-      <Icon id="user-icon" name="fa-user" size={ICON_SIZE.LG} />
-    ),
-    onClick: () => { },
+    renderIcon: <Icon id="user-icon" name="fa-user" size={ICON_SIZE.LG} />,
+    onClick: () => {},
   },
 ];
 

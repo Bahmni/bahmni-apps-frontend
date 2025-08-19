@@ -1,17 +1,17 @@
-import { ComboBox, Tile } from '@bahmni-frontend/bahmni-design-system';
 import {
+  ComboBox,
+  Tile,
   BoxWHeader,
   SelectedItem,
 } from '@bahmni-frontend/bahmni-design-system';
-import { useAllergyStore } from '../../../stores/allergyStore';
+import { useTranslation } from '@bahmni-frontend/bahmni-services';
+import React, { useMemo, useState } from 'react';
+import useAllergenSearch from '../../../hooks/useAllergenSearch';
 import { AllergenConcept } from '../../../models/allergy';
+import { useAllergyStore } from '../../../stores/allergyStore';
 import { getCategoryDisplayName } from '../../../utils/allergy';
 import SelectedAllergyItem from './SelectedAllergyItem';
 import styles from './styles/AllergiesForm.module.scss';
-import { useTranslation } from '@bahmni-frontend/bahmni-services';
-import { useMemo, useState } from 'react';
-import React from 'react';
-import useAllergenSearch from '../../../hooks/useAllergenSearch';
 
 /**
  * AllergiesForm component

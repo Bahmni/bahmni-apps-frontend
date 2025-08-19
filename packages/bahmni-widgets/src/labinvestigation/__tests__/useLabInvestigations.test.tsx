@@ -1,9 +1,9 @@
-import { renderHook, waitFor } from '@testing-library/react';
 import {
   getPatientLabInvestigations,
   FormattedLabTest,
   LabTestPriority,
 } from '@bahmni-frontend/bahmni-services';
+import { renderHook, waitFor } from '@testing-library/react';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import useLabInvestigations from '../useLabInvestigations';
 

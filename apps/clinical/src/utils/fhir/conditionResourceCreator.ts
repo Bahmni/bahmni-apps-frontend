@@ -1,4 +1,3 @@
-import { Condition, Reference } from 'fhir/r4';
 import {
   HL7_CONDITION_VERIFICATION_STATUS_CODE_SYSTEM,
   HL7_CONDITION_CATEGORY_CONDITION_CODE,
@@ -6,6 +5,7 @@ import {
   HL7_CONDITION_CATEGORY_CODE_SYSTEM,
   HL7_CONDITION_CATEGORY_DIAGNOSIS_CODE,
 } from '@bahmni-frontend/bahmni-services';
+import { Condition, Reference } from 'fhir/r4';
 import { createCodeableConcept, createCoding } from './codeableConceptCreator';
 
 export const createEncounterDiagnosisResource = (

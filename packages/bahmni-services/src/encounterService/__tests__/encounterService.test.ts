@@ -1,11 +1,11 @@
-import { mockVisitBundle, mockActiveVisit } from '../__mocks__/mocks';
-import { PATIENT_VISITS_URL } from '../constants';
 import { get } from '../../api';
 import {
   getPatientVisits,
   getVisits,
   getActiveVisit,
 } from '../../encounterService';
+import { mockVisitBundle, mockActiveVisit } from '../__mocks__/mocks';
+import { PATIENT_VISITS_URL } from '../constants';
 
 jest.mock('../../api');
 const mockedGet = get as jest.MockedFunction<typeof get>;

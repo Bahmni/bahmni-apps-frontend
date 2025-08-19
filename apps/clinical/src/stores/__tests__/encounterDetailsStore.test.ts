@@ -1,9 +1,9 @@
+import { type Provider, type User } from '@bahmni-frontend/bahmni-services';
 import { renderHook, act } from '@testing-library/react';
+import { useEncounterDetailsStore } from '..//encounterDetailsStore';
 import { FhirEncounter } from '../../models/encounter';
 import { Concept } from '../../models/encounterConcepts';
 import { OpenMRSLocation } from '../../models/location';
-import { type Provider, type User } from '@bahmni-frontend/bahmni-services';
-import { useEncounterDetailsStore } from '..//encounterDetailsStore';
 
 // Mock practitioner and user data
 const mockPractitioner: Provider = {

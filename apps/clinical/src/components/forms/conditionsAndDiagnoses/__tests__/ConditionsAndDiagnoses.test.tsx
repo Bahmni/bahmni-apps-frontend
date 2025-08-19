@@ -1,3 +1,7 @@
+import {
+  type ConditionInputEntry,
+  type DiagnosisInputEntry,
+} from '@bahmni-frontend/bahmni-services';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Condition } from 'fhir/r4';
@@ -5,10 +9,8 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import { CERTAINITY_CONCEPTS } from '../../../../constants/diagnosis';
 import { useConceptSearch } from '../../../../hooks/useConceptSearch';
 import useConditions from '../../../../hooks/useConditions';
-import { useConditionsAndDiagnosesStore } from '../../../../stores/conditionsAndDiagnosesStore';
 import { ConceptSearch } from '../../../../models/concepts';
-import { type ConditionInputEntry } from '@bahmni-frontend/bahmni-services';
-import { type DiagnosisInputEntry } from '@bahmni-frontend/bahmni-services';
+import { useConditionsAndDiagnosesStore } from '../../../../stores/conditionsAndDiagnosesStore';
 import ConditionsAndDiagnoses from '../ConditionsAndDiagnoses';
 
 expect.extend(toHaveNoViolations);
@@ -192,7 +194,7 @@ describe('ConditionsAndDiagnoses', () => {
       updateConditionDuration: updateConditionDurationMock,
     });
 
-    return render(<ConditionsAndDiagnoses/>);
+    return render(<ConditionsAndDiagnoses />);
   };
 
   beforeEach(() => {

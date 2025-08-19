@@ -6,9 +6,9 @@ import {
   Link,
   TextAreaWClose,
 } from '@bahmni-frontend/bahmni-design-system';
+import { useTranslation } from '@bahmni-frontend/bahmni-services';
 import { Coding } from 'fhir/r4';
 import React, { useState } from 'react';
-import { useTranslation } from '@bahmni-frontend/bahmni-services';
 import { ALLERGY_SEVERITY_CONCEPTS } from '../../../constants/allergy';
 import { AllergyInputEntry } from '../../../models/allergy';
 import { getCategoryDisplayName } from '../../../utils/allergy';

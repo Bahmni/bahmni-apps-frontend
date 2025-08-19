@@ -9,12 +9,12 @@ import React from 'react';
 import '@testing-library/jest-dom';
 import * as configMocks from '../../__mocks__/configMocks';
 import { useClinicalConfig } from '../../hooks/useClinicalConfig';
-import { getClinicalConfig } from '@bahmni-frontend/bahmni-services';
-import { notificationService } from '@bahmni-frontend/bahmni-services';
-import { ClinicalConfig } from '@bahmni-frontend/bahmni-services';
+import {
+  getClinicalConfig,
+  notificationService,
+  ClinicalConfig,
+} from '@bahmni-frontend/bahmni-services';
 import { ClinicalConfigProvider } from '../ClinicalConfigProvider';
-
-
 
 // Mock the notificationService
 jest.mock('@bahmni-frontend/bahmni-services', () => ({

@@ -3,8 +3,8 @@ import userEvent from '@testing-library/user-event';
 import { Coding } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import useAllergenSearch from '../../../../hooks/useAllergenSearch';
-import { useAllergyStore } from '../../../../stores/allergyStore';
 import { AllergenConcept } from '../../../../models/allergy';
+import { useAllergyStore } from '../../../../stores/allergyStore';
 import AllergiesForm from '../AllergiesForm';
 
 expect.extend(toHaveNoViolations);

@@ -1,4 +1,3 @@
-
 export interface ConditionInputEntry {
   id: string;
   display: string;

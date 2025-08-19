@@ -1,15 +1,15 @@
 import { ValueSet } from 'fhir/r4';
-import {
-  FHIR_VALUESET_URL,
-  FHIR_VALUESET_FILTER_EXPAND_URL,
-} from '../constants';
 import * as api from '../../api';
+import { getUserPreferredLocale } from '../../i18n/translationService';
 import {
   searchConcepts,
   searchFHIRConcepts,
   searchFHIRConceptsByName,
 } from '../conceptService';
-import { getUserPreferredLocale } from '../../i18n/translationService';
+import {
+  FHIR_VALUESET_URL,
+  FHIR_VALUESET_FILTER_EXPAND_URL,
+} from '../constants';
 
 jest.mock('../../api');
 jest.mock('../../i18n/translationService');

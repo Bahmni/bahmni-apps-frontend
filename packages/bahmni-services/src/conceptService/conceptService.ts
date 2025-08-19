@@ -1,12 +1,12 @@
 import { ValueSet } from 'fhir/r4';
+import { get } from '../api';
+import { getUserPreferredLocale } from '../i18n/translationService';
 import {
   CONCEPT_SEARCH_URL,
   FHIR_VALUESET_FILTER_EXPAND_URL,
   FHIR_VALUESET_URL,
 } from './constants';
 import { ConceptSearch } from './models';
-import { get } from '../api';
-import { getUserPreferredLocale } from '../i18n/translationService';
 
 /**
  * Search for concepts matching the provided term

@@ -35,9 +35,7 @@ describe('SelectedInvestigationItem', () => {
   // HAPPY PATH TESTS
   describe('Happy Path Scenarios', () => {
     test('renders investigation display name correctly', () => {
-      render(
-          <SelectedInvestigationItem {...defaultProps} />
-      );
+      render(<SelectedInvestigationItem {...defaultProps} />);
 
       expect(
         screen.getByText('Complete Blood Count (CBC)'),
@@ -45,9 +43,7 @@ describe('SelectedInvestigationItem', () => {
     });
 
     test('renders urgent priority checkbox with correct label', () => {
-      render(
-          <SelectedInvestigationItem {...defaultProps} />
-      );
+      render(<SelectedInvestigationItem {...defaultProps} />);
 
       const checkbox = screen.getByRole('checkbox', { name: /urgent/i });
       expect(checkbox).toBeInTheDocument();
@@ -62,10 +58,10 @@ describe('SelectedInvestigationItem', () => {
       const mockOnPriorityChange = jest.fn();
 
       render(
-          <SelectedInvestigationItem
-            {...defaultProps}
-            onPriorityChange={mockOnPriorityChange}
-          />
+        <SelectedInvestigationItem
+          {...defaultProps}
+          onPriorityChange={mockOnPriorityChange}
+        />,
       );
 
       const checkbox = screen.getByRole('checkbox', { name: /urgent/i });
@@ -80,10 +76,10 @@ describe('SelectedInvestigationItem', () => {
       const mockOnPriorityChange = jest.fn();
 
       render(
-          <SelectedInvestigationItem
-            {...defaultProps}
-            onPriorityChange={mockOnPriorityChange}
-          />
+        <SelectedInvestigationItem
+          {...defaultProps}
+          onPriorityChange={mockOnPriorityChange}
+        />,
       );
 
       const checkbox = screen.getByRole('checkbox', { name: /urgent/i });
@@ -106,10 +102,10 @@ describe('SelectedInvestigationItem', () => {
       };
 
       render(
-          <SelectedInvestigationItem
-            {...defaultProps}
-            investigation={emptyDisplayInvestigation}
-          />
+        <SelectedInvestigationItem
+          {...defaultProps}
+          investigation={emptyDisplayInvestigation}
+        />,
       );
 
       // Should still render without crashing
@@ -125,10 +121,10 @@ describe('SelectedInvestigationItem', () => {
       };
 
       render(
-          <SelectedInvestigationItem
-            {...defaultProps}
-            investigation={longDisplayInvestigation}
-          />
+        <SelectedInvestigationItem
+          {...defaultProps}
+          investigation={longDisplayInvestigation}
+        />,
       );
 
       expect(
@@ -141,10 +137,10 @@ describe('SelectedInvestigationItem', () => {
       const mockOnPriorityChange = jest.fn();
 
       render(
-          <SelectedInvestigationItem
-            {...defaultProps}
-            onPriorityChange={mockOnPriorityChange}
-          />
+        <SelectedInvestigationItem
+          {...defaultProps}
+          onPriorityChange={mockOnPriorityChange}
+        />,
       );
 
       const checkbox = screen.getByRole('checkbox', { name: /urgent/i });
@@ -164,7 +160,7 @@ describe('SelectedInvestigationItem', () => {
   describe('Accessibility', () => {
     test('has no accessibility violations', async () => {
       const { container } = render(
-          <SelectedInvestigationItem {...defaultProps} />
+        <SelectedInvestigationItem {...defaultProps} />,
       );
 
       const results = await axe(container);
@@ -174,7 +170,7 @@ describe('SelectedInvestigationItem', () => {
   describe('Snapshot', () => {
     test('matches snapshot', () => {
       const { container } = render(
-          <SelectedInvestigationItem {...defaultProps} />
+        <SelectedInvestigationItem {...defaultProps} />,
       );
       expect(container.firstChild).toMatchSnapshot();
     });

@@ -6,15 +6,23 @@ import {
   Column,
   SkeletonText,
 } from '@bahmni-frontend/bahmni-design-system';
+import {
+  useTranslation,
+  DATE_FORMAT,
+  formatDate,
+  type Provider,
+} from '@bahmni-frontend/bahmni-services';
+import {
+  usePatientUUID,
+  useActivePractitioner,
+} from '@bahmni-frontend/bahmni-widgets';
 import React, { useEffect, useMemo } from 'react';
-import { useTranslation, DATE_FORMAT, formatDate, type Provider } from '@bahmni-frontend/bahmni-services';
-import { usePatientUUID, useActivePractitioner } from '@bahmni-frontend/bahmni-widgets';
 import { useActiveVisit } from '../../../hooks/useActiveVisit';
 import { useEncounterConcepts } from '../../../hooks/useEncounterConcepts';
 import { useLocations } from '../../../hooks/useLocations';
-import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore';
 import { Concept } from '../../../models/encounterConcepts';
 import { OpenMRSLocation } from '../../../models/location';
+import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore';
 import styles from './styles/EncounterDetails.module.scss';
 
 // Constants

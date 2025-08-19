@@ -1,9 +1,9 @@
+import { type ConditionInputEntry } from '@bahmni-frontend/bahmni-services';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import i18n from '../../../../../setupTests.i18n';
 import { DURATION_UNITS } from '../../../../constants/conditions';
-import { type ConditionInputEntry } from '@bahmni-frontend/bahmni-services';
 import SelectedConditionItem, {
   SelectedConditionItemProps,
 } from '../SelectedConditionItem';

@@ -1,6 +1,6 @@
 import { format, parseISO } from 'date-fns';
-import { DATE_TIME_FORMAT } from '../constants';
 import { getUserPreferredLocale } from '../../i18n/translationService';
+import { DATE_TIME_FORMAT } from '../constants';
 import {
   calculateAge,
   formatDate,
@@ -12,7 +12,7 @@ import {
 
 jest.mock('i18next', () => ({
   t: jest.fn((key: string, options?: { count?: number }) => {
-    const { count = 1 } = options || {};
+    const { count = 1 } = options ?? {};
 
     switch (key) {
       case 'CLINICAL_DAYS_TRANSLATION_KEY':
@@ -152,13 +152,17 @@ describe('calculateOnsetDate', () => {
       calculateOnsetDate(mockConsultationDate, null, 'days'),
     ).toBeUndefined();
     expect(calculateOnsetDate(mockConsultationDate, 10, null)).toBeUndefined();
-    expect(calculateOnsetDate(null as any, 10, 'days')).toBeUndefined();
     expect(
-      calculateOnsetDate(mockConsultationDate, '10' as any, 'days'),
+      calculateOnsetDate(null as unknown as Date, 10, 'days'),
     ).toBeUndefined();
     expect(
-      calculateOnsetDate(mockConsultationDate, 10, 'invalid' as any),
+      calculateOnsetDate(
+        mockConsultationDate,
+        '10' as unknown as number,
+        'days',
+      ),
     ).toBeUndefined();
+    expect(calculateOnsetDate(mockConsultationDate, 10, null)).toBeUndefined();
   });
 
   it('should not mutate the original date', () => {
@@ -209,7 +213,7 @@ describe('formatDate', () => {
     expect(emptyResult.formattedResult).toBe('');
     expect(emptyResult.error).toBeDefined();
 
-    const nullResult = formatDate(null as any);
+    const nullResult = formatDate(null as unknown as Date);
     expect(nullResult.formattedResult).toBe('');
     expect(nullResult.error).toBeDefined();
   });
@@ -242,8 +246,8 @@ describe('formatDateTime', () => {
   it('should return errors for invalid inputs', () => {
     expect(formatDateTime('invalid-date').error).toBeDefined();
     expect(formatDateTime('').error).toBeDefined();
-    expect(formatDateTime(null as any).error).toBeDefined();
-    expect(formatDateTime({} as any).error).toBeDefined();
+    expect(formatDateTime(null as unknown as Date).error).toBeDefined();
+    expect(formatDateTime({} as unknown as Date).error).toBeDefined();
   });
 });
 
@@ -354,9 +358,11 @@ describe('formatDateDistance', () => {
   it('should return errors for invalid inputs', () => {
     expect(formatDateDistance('').error).toBeDefined();
     expect(formatDateDistance('invalid-date').error).toBeDefined();
-    expect(formatDateDistance(null as any).error).toBeDefined();
-    expect(formatDateDistance(undefined as any).error).toBeDefined();
-    expect(formatDateDistance(123 as any).error).toBeDefined();
+    expect(formatDateDistance(null as unknown as string).error).toBeDefined();
+    expect(
+      formatDateDistance(undefined as unknown as string).error,
+    ).toBeDefined();
+    expect(formatDateDistance(123 as unknown as string).error).toBeDefined();
   });
 });
 
@@ -421,8 +427,8 @@ describe('sortByDate', () => {
 
   it('should handle edge cases gracefully', () => {
     expect(sortByDate([], 'date')).toEqual([]);
-    expect(sortByDate(null as any, 'date')).toEqual([]);
-    expect(sortByDate('not-an-array' as any, 'date')).toEqual([]);
+    expect(sortByDate(null as unknown as Date[], 'date')).toEqual([]);
+    expect(sortByDate('not-an-array' as unknown as Date[], 'date')).toEqual([]);
 
     const singleItem = [{ id: 1, date: '2025-01-15T10:00:00Z' }];
     expect(sortByDate(singleItem, 'date')).toEqual(singleItem);

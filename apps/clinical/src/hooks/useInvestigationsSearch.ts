@@ -1,10 +1,10 @@
-import { useEffect, useState, useMemo } from 'react';
 import {
   useTranslation,
   getFormattedError,
   getFlattenedInvestigations,
-  type FlattenedInvestigations
+  type FlattenedInvestigations,
 } from '@bahmni-frontend/bahmni-services';
+import { useEffect, useState, useMemo } from 'react';
 import useDebounce from './useDebounce';
 
 interface UseInvestigationsSearchResult {
@@ -38,7 +38,7 @@ const useInvestigationsSearch = (
       }
     };
     fetchInvestigations();
-  },[]);
+  }, []);
 
   const filteredInvestigations = useMemo(() => {
     if (!investigations.length) return [];

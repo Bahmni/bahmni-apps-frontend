@@ -5,8 +5,8 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import { CERTAINITY_CONCEPTS } from '../../../../constants/diagnosis';
 import { useConceptSearch } from '../../../../hooks/useConceptSearch';
 import useConditions from '../../../../hooks/useConditions';
-import { useConditionsAndDiagnosesStore } from '../../../../stores/conditionsAndDiagnosesStore';
 import { ConceptSearch } from '../../../../models/concepts';
+import { useConditionsAndDiagnosesStore } from '../../../../stores/conditionsAndDiagnosesStore';
 import ConditionsAndDiagnoses from '../ConditionsAndDiagnoses';
 
 expect.extend(toHaveNoViolations);
@@ -43,7 +43,6 @@ const mockSearchResults: ConceptSearch[] = [
 ];
 
 describe('ConditionsAndDiagnoses Integration Tests', () => {
-  
   beforeEach(async () => {
     jest.clearAllMocks();
 
@@ -68,7 +67,6 @@ describe('ConditionsAndDiagnoses Integration Tests', () => {
       error: null,
       refetch: jest.fn(),
     });
-
   });
 
   describe('Complete Workflow Tests', () => {

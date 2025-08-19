@@ -1,3 +1,4 @@
+import { get } from '@bahmni-frontend/bahmni-services';
 import { Bundle, Medication } from 'fhir/r4';
 import {
   MEDICATION_ORDERS_METADATA_URL,
@@ -8,7 +9,6 @@ import {
   FHIR_MEDICATION_NAME_EXTENSION_URL,
 } from '../../constants/fhir';
 import { MedicationOrdersMetadataResponse } from '../../models/medicationConfig';
-import { get } from '@bahmni-frontend/bahmni-services';
 import {
   fetchMedicationOrdersMetadata,
   searchMedications,

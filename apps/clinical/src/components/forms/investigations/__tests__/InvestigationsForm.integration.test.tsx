@@ -1,13 +1,13 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import i18n from '../../../../../setupTests.i18n';
-import useServiceRequestStore from '../../../../stores/serviceRequestStore';
 import {
   getFlattenedInvestigations,
   getFormattedError,
 } from '@bahmni-frontend/bahmni-services';
-import { ServiceRequestInputEntry } from '../../../../models/serviceRequest';
+import { render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import i18n from '../../../../../setupTests.i18n';
 import { FlattenedInvestigations } from '../../../../models/investigations';
+import { ServiceRequestInputEntry } from '../../../../models/serviceRequest';
+import useServiceRequestStore from '../../../../stores/serviceRequestStore';
 import InvestigationsForm from '../InvestigationsForm';
 
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
