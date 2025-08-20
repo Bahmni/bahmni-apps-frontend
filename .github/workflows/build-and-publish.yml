@@ -109,7 +109,8 @@ jobs:
         run: |
           # Tag the scanned image with final tags
           docker buildx imagetools create \
-            --tag ${{ env.IMAGE_NAME }}:monorepo \
+            --tag ${{ env.IMAGE_NAME }}:latest \
+            --tag ${{ env.IMAGE_NAME }}:v${{ steps.package-version.outputs.version }}-${{github.run_number}} \
             ${{ env.IMAGE_NAME }}:scan-${{ github.sha }}
 
       # This step dispatches an event to the utils repo to trigger downstream deployments
