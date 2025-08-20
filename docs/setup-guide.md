@@ -123,7 +123,7 @@ This method allows you to build the application locally and mount it into the Do
    yarn
 
    # Build the application
-   yarn build
+   yarn nx build distro
    ```
 
 4. **Start the Docker Services**:
@@ -159,7 +159,7 @@ This method provides a faster development experience with hot reloading:
    yarn
 
    # Start the development server
-   yarn start
+   yarn nx serve distro
    ```
 
    This will start the development server and automatically open your browser at [http://localhost:3000](http://localhost:3000).
@@ -191,7 +191,7 @@ This method provides a faster development experience with hot reloading:
 
 ```bash
 # Build the application for production
-yarn build
+yarn nx build distro
 ```
 
 The build artifacts will be stored in the `dist/` directory.
@@ -200,16 +200,10 @@ The build artifacts will be stored in the `dist/` directory.
 
 ```bash
 # Run ESLint to check for code quality issues
-yarn lint
+yarn nx run-many -t lint
 
 # Fix ESLint issues automatically
-yarn lint:fix
-
-# Check formatting with Prettier
-yarn prettier:check
-
-# Fix formatting issues with Prettier
-yarn prettier:fix
+yarn nx run-many -t lint --fix
 ```
 
 ## Code Quality Tools
@@ -259,8 +253,13 @@ This configuration ensures consistent code formatting across the project, with r
 ### Testing
 
 ```bash
-# Run tests
-yarn test
+# Run tests all tests
+yarn nx run-many -t test 
+
+# Run specific module test
+yarn nx test <module/packagename>
+
+yarn nx test clinical
 
 # Run tests in watch mode
 yarn test:watch

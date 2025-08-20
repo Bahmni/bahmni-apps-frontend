@@ -20,10 +20,13 @@ const config = [
       'dist/**',
       'node_modules/**',
       'coverage/**',
+      '**/coverage/**',
+      '**/test-output/**',
       '*.config.{js,ts}',
       'declarations.d.ts',
       'public/**',
       'package/**',
+      'bahmni-frontend/**',
     ],
   },
 
@@ -89,6 +92,7 @@ const config = [
       // React rules optimized for performance
       'react/jsx-filename-extension': ['error', { extensions: ['.tsx'] }],
       'react/jsx-pascal-case': 'error',
+      'react/react-in-jsx-scope': 'off',
       'react/jsx-closing-bracket-location': 'error',
       'react/jsx-curly-spacing': ['error', 'never'],
       'react/jsx-boolean-value': ['error', 'never'],
@@ -183,6 +187,8 @@ const config = [
       'jest/prefer-to-be': 'error',
       'jest/no-duplicate-hooks': 'error',
       'jest/no-test-return-statement': 'error',
+      'jest/no-mocks-import': 'off',
+      '@typescript-eslint/no-explicit-any': 'off'
     },
   },
 ];

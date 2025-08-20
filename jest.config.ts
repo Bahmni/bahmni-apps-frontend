@@ -1,43 +1,24 @@
 import type { Config } from '@jest/types';
 
+const nxPreset = require('@nx/jest/preset').default;
+
 const config: Config.InitialOptions = {
+  ...nxPreset,
   testEnvironment: 'jsdom',
-  roots: ['<rootDir>/src'],
+  setupFilesAfterEnv: ['<rootDir>/../setupTests.ts'],
   transform: {
-    '^.+\\.(ts|tsx)$': 'babel-jest',
+    '^(?!.*\\.(js|jsx|ts|tsx|css|json)$)': '@nx/react/plugins/jest',
+    '^.+\\.[tj]sx?$': ['babel-jest', { presets: ['@nx/react/babel'] }],
   },
-  testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.(ts|tsx)$',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
-  moduleNameMapper: {
-    '\\.(css|less|scss|sass)$': '<rootDir>/src/__mocks__/styleMock.ts',
-    '@/(.*)$': ['<rootDir>/src/$1'],
-    '@components/(.*)$': ['<rootDir>/src/components/$1'],
-    '@contexts/(.*)$': ['<rootDir>/src/contexts/$1'],
-    '@constants/(.*)$': ['<rootDir>/src/constants/$1'],
-    '@displayControls/(.*)$': ['<rootDir>/src/displayControls/$1'],
-    '@hooks/(.*)$': ['<rootDir>/src/hooks/$1'],
-    '@layouts/(.*)$': ['<rootDir>/src/layouts/$1'],
-    '@pages/(.*)$': ['<rootDir>/src/pages/$1'],
-    '@providers/(.*)$': ['<rootDir>/src/providers/$1'],
-    '@schemas/(.*)$': ['<rootDir>/src/schemas/$1'],
-    '@services/(.*)$': ['<rootDir>/src/services/$1'],
-    '@types/(.*)$': ['<rootDir>/src/types/$1'],
-    '@utils/(.*)$': ['<rootDir>/src/utils/$1'],
-    '@stores/(.*)$': ['<rootDir>/src/stores/$1'],
-    '@__mocks__/(.*)$': ['<rootDir>/src/__mocks__/$1'],
-  },
-  setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
-  collectCoverageFrom: ['<rootDir>/src/**/*.{ts,tsx}'],
   coverageReporters: ['text', 'lcov'],
   coveragePathIgnorePatterns: [
-    '<rootDir>/src/constants',
-    '<rootDir>/src/styles',
-    '<rootDir>/src/__mocks__',
-    '<rootDir>/src/setupTests.ts',
-    '<rootDir>/src/types',
-    '<rootDir>/src/.*/stories/',
-    '<rootDir>/src/i18n.ts',
-    '<rootDir>/src/setupTests.i18n.ts',
+    '**/constants',
+    '**/styles',
+    '**/__mocks__',
+    '**/setupTests.ts',
+    '**/types',
+    '**/.*/stories/',
   ],
   coverageThreshold: {
     global: {

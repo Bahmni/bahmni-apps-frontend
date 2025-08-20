@@ -1,7 +1,0 @@
-This is a placeholder for logo192.png and logo512.png.
-
-Please replace this file with actual logo files:
-- logo192.png (192x192 pixels)
-- logo512.png (512x512 pixels)
-
-These logos are used for PWA icons and app icons on mobile devices.

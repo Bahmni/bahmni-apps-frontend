@@ -1,0 +1,1 @@
+export { BoxWHeader, type BoxWHeaderProps } from './BoxWHeader';
