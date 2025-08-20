@@ -44,7 +44,7 @@ For a comprehensive setup guide including development environments, Docker confi
 
 ```bash
 # Start the development server
-yarn start
+yarn nx serve distro
 ```
 
 This will start the development server at [http://localhost:3000](http://localhost:3000).
@@ -53,7 +53,7 @@ This will start the development server at [http://localhost:3000](http://localho
 
 ```bash
 # Build the application
-yarn build
+yarn nx build distro
 ```
 
 The build artifacts will be stored in the `dist/` directory.

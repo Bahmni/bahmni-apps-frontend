@@ -1,0 +1,418 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AllergiesForm Snapshots should match snapshot with no allergies 1`] = `
+<div>
+  <div
+    class="cds--tile allergiesFormTile"
+  >
+    <div
+      class="allergiesFormTitle"
+    >
+      Allergies
+    </div>
+    <div
+      class="cds--list-box__wrapper"
+    >
+      <div
+        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--md"
+      >
+        <div
+          class="cds--list-box__field"
+        >
+          <input
+            aria-activedescendant=""
+            aria-autocomplete="list"
+            aria-controls="downshift-«r4i»-menu"
+            aria-expanded="false"
+            aria-haspopup="listbox"
+            aria-label="Search for allergies"
+            autocomplete="off"
+            class="cds--text-input cds--text-input--empty"
+            id="allergies-search"
+            placeholder="Search to add new allergy"
+            role="combobox"
+            tabindex="0"
+            title=""
+            type="text"
+            value=""
+          />
+          <button
+            aria-controls="downshift-«r4i»-menu"
+            aria-expanded="false"
+            aria-label="Open"
+            class="cds--list-box__menu-icon"
+            id="downshift-«r4i»-toggle-button"
+            tabindex="-1"
+            title="Open"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="currentColor"
+              focusable="false"
+              height="16"
+              preserveAspectRatio="xMidYMid meet"
+              viewBox="0 0 16 16"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+              />
+            </svg>
+          </button>
+        </div>
+        <ul
+          aria-labelledby="downshift-«r4i»-label"
+          class="cds--list-box__menu"
+          id="downshift-«r4i»-menu"
+          role="listbox"
+          style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`AllergiesForm Snapshots should match snapshot with selected allergies 1`] = `
+<div>
+  <div
+    class="cds--tile allergiesFormTile"
+  >
+    <div
+      class="allergiesFormTitle"
+    >
+      Allergies
+    </div>
+    <div
+      class="cds--list-box__wrapper"
+    >
+      <div
+        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--md"
+      >
+        <div
+          class="cds--list-box__field"
+        >
+          <input
+            aria-activedescendant=""
+            aria-autocomplete="list"
+            aria-controls="downshift-«r4l»-menu"
+            aria-expanded="false"
+            aria-haspopup="listbox"
+            aria-label="Search for allergies"
+            autocomplete="off"
+            class="cds--text-input cds--text-input--empty"
+            id="allergies-search"
+            placeholder="Search to add new allergy"
+            role="combobox"
+            tabindex="0"
+            title=""
+            type="text"
+            value=""
+          />
+          <button
+            aria-controls="downshift-«r4l»-menu"
+            aria-expanded="false"
+            aria-label="Open"
+            class="cds--list-box__menu-icon"
+            id="downshift-«r4l»-toggle-button"
+            tabindex="-1"
+            title="Open"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="currentColor"
+              focusable="false"
+              height="16"
+              preserveAspectRatio="xMidYMid meet"
+              viewBox="0 0 16 16"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+              />
+            </svg>
+          </button>
+        </div>
+        <ul
+          aria-labelledby="downshift-«r4l»-label"
+          class="cds--list-box__menu"
+          id="downshift-«r4l»-menu"
+          role="listbox"
+          style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+        />
+      </div>
+    </div>
+    <div
+      aria-label="Added Allergies"
+      class="_box_1jr6a_1 allergiesBox cds--css-grid cds--css-grid--narrow cds--css-grid--full-width"
+      data-testid="box-w-title"
+      role="region"
+    >
+      <div
+        class="_header_1jr6a_8 cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
+      >
+        Added Allergies
+      </div>
+      <div
+        class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
+      >
+        <div
+          class="_grid_4oucb_1 selectedAllergyItem cds--subgrid cds--subgrid--narrow"
+          data-testid="selected-item"
+        >
+          <div
+            class="_children_4oucb_8 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
+          >
+            <div
+              class="cds--subgrid cds--subgrid--wide"
+            >
+              <div
+                class="cds--sm:col-span-4 cds--md:col-span-5 cds--lg:col-span-8 cds--xlg:col-span-8 cds--css-grid-column"
+              >
+                Peanut Allergy
+                 [
+                undefined
+                ]
+                <a
+                  class="cds--link"
+                  href="#"
+                >
+                  Add Note
+                </a>
+              </div>
+              <div
+                class="cds--sm:col-span-4 cds--md:col-span-3 cds--lg:col-span-3 cds--xlg:col-span-3 cds--css-grid-column"
+              >
+                <div
+                  class="cds--dropdown__wrapper cds--list-box__wrapper"
+                >
+                  <label
+                    class="cds--label cds--visually-hidden"
+                    for="downshift-«r4o»-toggle-button"
+                    id="downshift-«r4o»-label"
+                  >
+                    Select Severity
+                  </label>
+                  <div
+                    class="cds--dropdown cds--autoalign cds--list-box"
+                    id="allergy-severity-dropdown-test-allergy-1"
+                  >
+                    <button
+                      aria-activedescendant=""
+                      aria-controls="downshift-«r4o»-menu"
+                      aria-expanded="false"
+                      aria-haspopup="listbox"
+                      aria-label="Select severity for this allergy"
+                      class="cds--list-box__field"
+                      id="downshift-«r4o»-toggle-button"
+                      role="combobox"
+                      tabindex="0"
+                      title="Select Severity"
+                      type="button"
+                    >
+                      <span
+                        class="cds--list-box__label"
+                      >
+                        Select Severity
+                      </span>
+                      <div
+                        class="cds--list-box__menu-icon"
+                      >
+                        <svg
+                          aria-label="Open menu"
+                          fill="currentColor"
+                          focusable="false"
+                          height="16"
+                          name="chevron--down"
+                          preserveAspectRatio="xMidYMid meet"
+                          role="img"
+                          viewBox="0 0 16 16"
+                          width="16"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                          />
+                          <title>
+                            Open menu
+                          </title>
+                        </svg>
+                      </div>
+                    </button>
+                    <ul
+                      aria-labelledby="downshift-«r4o»-label"
+                      class="cds--list-box__menu"
+                      id="downshift-«r4o»-menu"
+                      role="listbox"
+                      style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div
+                class="cds--sm:col-span-4 cds--md:col-span-4 cds--lg:col-span-4 cds--xlg:col-span-4 cds--css-grid-column"
+              >
+                <div
+                  class="cds--multi-select__wrapper cds--multi-select--filterable__wrapper cds--list-box__wrapper cds--autoalign"
+                >
+                  <label
+                    class="cds--label cds--visually-hidden"
+                    for="allergy-reactions-multiselect-test-allergy-1-input"
+                    id="allergy-reactions-multiselect-test-allergy-1-label"
+                  >
+                    Select Reactions
+                    <span
+                      class="cds--visually-hidden"
+                    >
+                      Total items selected:  1. To clear selection, press Delete or Backspace.
+                    </span>
+                  </label>
+                  <div
+                    class="cds--multi-select cds--combo-box cds--multi-select--filterable cds--multi-select--selected cds--list-box"
+                    id="allergy-reactions-multiselect-test-allergy-1"
+                  >
+                    <div
+                      class="cds--list-box__field"
+                    >
+                      <div
+                        class="cds--tag cds--tag--filter cds--tag--high-contrast"
+                      >
+                        <span
+                          class="cds--tag__label"
+                          title="1"
+                        >
+                          1
+                        </span>
+                        <button
+                          aria-label="Clear all selected items"
+                          class="cds--tag__close-icon"
+                          tabindex="-1"
+                          title="Clear all selected items"
+                          type="button"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            fill="currentColor"
+                            focusable="false"
+                            height="16"
+                            preserveAspectRatio="xMidYMid meet"
+                            viewBox="0 0 32 32"
+                            width="16"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                      <input
+                        aria-activedescendant=""
+                        aria-autocomplete="list"
+                        aria-expanded="false"
+                        aria-haspopup="listbox"
+                        autocomplete="off"
+                        class="cds--text-input cds--text-input--empty"
+                        id="allergy-reactions-multiselect-test-allergy-1-input"
+                        placeholder="Select Reactions"
+                        role="combobox"
+                        value=""
+                      />
+                      <button
+                        aria-controls="allergy-reactions-multiselect-test-allergy-1__menu"
+                        aria-expanded="false"
+                        aria-label="Open"
+                        class="cds--list-box__menu-icon"
+                        id="allergy-reactions-multiselect-test-allergy-1-toggle-button"
+                        tabindex="-1"
+                        title="Open"
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          fill="currentColor"
+                          focusable="false"
+                          height="16"
+                          preserveAspectRatio="xMidYMid meet"
+                          viewBox="0 0 16 16"
+                          width="16"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                    <ul
+                      aria-labelledby="allergy-reactions-multiselect-test-allergy-1-label"
+                      class="cds--list-box__menu"
+                      id="allergy-reactions-multiselect-test-allergy-1__menu"
+                      role="listbox"
+                      style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="_close_4oucb_15 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
+          >
+            <span
+              class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
+            >
+              <div
+                class="cds--tooltip-trigger__wrapper"
+              >
+                <button
+                  aria-label="Close Selected Item"
+                  aria-labelledby="tooltip-«r4t»"
+                  class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
+                  data-testid="selected-item-close-button"
+                  id="close-selected-item"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    fill="currentColor"
+                    focusable="false"
+                    height="16"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <span
+                aria-hidden="true"
+                class="cds--popover"
+                id="tooltip-«r4t»"
+                role="tooltip"
+              >
+                <span
+                  class="cds--popover-content cds--tooltip-content"
+                >
+                  Selected Item Close
+                </span>
+                <span
+                  class="cds--popover-caret"
+                />
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

@@ -1,0 +1,1 @@
+export { isAuditLogEnabled } from './ApplicationConfigService';

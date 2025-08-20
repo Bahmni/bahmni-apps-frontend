@@ -1,0 +1,1 @@
+export { ActionArea, type ActionAreaProps } from './ActionArea';
