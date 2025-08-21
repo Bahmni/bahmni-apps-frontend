@@ -7,9 +7,9 @@ const breadcrumbItems = [
 ];
 
 /**
- * SearchPage
+ * PatientSearchPage
  *
- * Registration Search interface that let's the user search for a patient using keywords.
+ * Registration Patient Search interface that let's the user search for a patient using keywords.
  *
  * @returns React component with registration search interface
  */
