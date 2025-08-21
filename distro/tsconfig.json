@@ -3,6 +3,9 @@
   "include": [],
   "references": [
     {
+      "path": "../apps/registration"
+    },
+    {
       "path": "../apps/clinical"
     },
     {
