@@ -2,7 +2,7 @@ import { useSidebarNavigation } from '@bahmni-frontend/bahmni-design-system';
 import { useNotification } from '@bahmni-frontend/bahmni-widgets';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 import {
   validFullClinicalConfig,
   validDashboardConfig,
