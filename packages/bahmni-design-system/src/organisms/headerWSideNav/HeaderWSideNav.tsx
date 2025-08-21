@@ -28,9 +28,9 @@ export const HeaderWSideNav: React.FC<HeaderWSideNavProps> = React.memo(
   ({
     breadcrumbItems = [],
     globalActions = [],
-    sideNavItems,
+    sideNavItems = [],
     activeSideNavItemId = null,
-    onSideNavItemClick,
+    onSideNavItemClick = () => {},
     isRail = false,
     ariaLabel = 'HeaderWSideNav',
   }) => {
@@ -80,6 +80,8 @@ export const HeaderWSideNav: React.FC<HeaderWSideNavProps> = React.memo(
     };
 
     const renderSideNav = () => {
+      if (sideNavItems.length === 0) return null;
+
       return (
         <SideNav
           aria-label={'SIDE_NAVIGATION'}

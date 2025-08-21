@@ -133,7 +133,6 @@ export const Default: Story = {
  */
 export const WithBreadcrumbs: Story = {
   args: {
-    ...Default.args,
     breadcrumbItems: [
       { id: 'home', label: 'Home', href: '#' },
       { id: 'patients', label: 'Patients', href: '#' },

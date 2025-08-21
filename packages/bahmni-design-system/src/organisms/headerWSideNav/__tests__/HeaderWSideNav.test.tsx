@@ -123,18 +123,16 @@ describe('HeaderWSideNav', () => {
   });
 
   describe('Rendering', () => {
-    it('renders with minimal required props', () => {
+    it('renders with just breadcrumbs', () => {
       const minimalProps: HeaderWSideNavProps = {
-        sideNavItems: mockSideNavItems,
-        onSideNavItemClick: mockOnSideNavItemClick,
+        breadcrumbItems: mockBreadcrumbItems,
       };
 
       render(<HeaderWSideNav {...minimalProps} />);
 
       expect(screen.getByTestId('header')).toBeInTheDocument();
-      expect(screen.getByTestId('side-nav')).toBeInTheDocument();
-      expect(screen.getByTestId('sidenav-item-dashboard')).toBeInTheDocument();
-      expect(screen.getByTestId('sidenav-item-patients')).toBeInTheDocument();
+      expect(screen.getByText('Home')).toBeInTheDocument();
+      expect(screen.getByText('Current Page')).toBeInTheDocument();
     });
 
     it('renders all sections when fully configured', () => {
