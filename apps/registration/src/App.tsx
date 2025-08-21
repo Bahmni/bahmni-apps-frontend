@@ -12,7 +12,7 @@ import {
 } from '@bahmni-frontend/bahmni-widgets';
 import React, { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
-import BahmniFrontendRegistration from './lib/registration';
+import PatientSearchPage from './pages/PatientSearchPage';
 
 const RegistrationApp: React.FC = () => {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -44,7 +44,7 @@ const RegistrationApp: React.FC = () => {
       <NotificationProvider>
         <NotificationServiceComponent />
         <Routes>
-          <Route path="/search" element={<BahmniFrontendRegistration />} />
+          <Route path="/search" element={<PatientSearchPage />} />
         </Routes>
       </NotificationProvider>
     </Content>
