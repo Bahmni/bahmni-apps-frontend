@@ -3,6 +3,7 @@ export { initAppI18n, useTranslation } from './i18n';
 export {
   getPatientById,
   getFormattedPatientById,
+  searchPatientByNameOrId,
   type FormattedPatientData,
 } from './patientService';
 export { getFormattedError } from './errorHandling';

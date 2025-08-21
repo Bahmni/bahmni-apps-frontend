@@ -1,8 +1,13 @@
 import { Patient } from 'fhir/r4';
 import { get } from '../api';
 import { calculateAge } from '../date';
-import { PATIENT_RESOURCE_URL } from './constants';
-import { FormattedPatientData } from './models';
+import { getUserLoginLocation } from '../locationService';
+import { PATIENT_LUCENE_SEARCH_URL, PATIENT_RESOURCE_URL } from './constants';
+import {
+  FormattedPatientData,
+  PatientSearchResult,
+  PatientSearchResultBundle,
+} from './models';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
   return get<Patient>(PATIENT_RESOURCE_URL(patientUUID));
@@ -147,4 +152,24 @@ export const getFormattedPatientById = async (
 ): Promise<FormattedPatientData> => {
   const patient = await getPatientById(patientUUID);
   return formatPatientData(patient);
+};
+
+/**
+ * Search patient by Name / Identifier
+ * @param searchTerm - The Name / Identifier of the patient
+ * @returns A formatted patient data object
+ * @throws Error when the user login location is null
+ */
+export const searchPatientByNameOrId = async (
+  searchTerm: string,
+): Promise<PatientSearchResult[]> => {
+  const loginLocationUuid = getUserLoginLocation();
+  if (!loginLocationUuid?.uuid)
+    throw new Error(
+      'Login location is missing or invalid. Please reauthenticate.',
+    );
+  const searchResultsBundle = await get<PatientSearchResultBundle>(
+    PATIENT_LUCENE_SEARCH_URL(searchTerm, loginLocationUuid.uuid),
+  );
+  return searchResultsBundle.pageOfResults;
 };

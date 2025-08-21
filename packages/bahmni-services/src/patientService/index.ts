@@ -1,2 +1,6 @@
-export { getPatientById, getFormattedPatientById } from './patientService';
+export {
+  getPatientById,
+  getFormattedPatientById,
+  searchPatientByNameOrId,
+} from './patientService';
 export { type FormattedPatientData } from './models';
