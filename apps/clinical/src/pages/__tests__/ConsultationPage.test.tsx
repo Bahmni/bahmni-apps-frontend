@@ -62,7 +62,7 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
       {children}
     </button>
   )),
-  ClinicalLayout: jest.fn(
+  ActionAreaLayout: jest.fn(
     ({
       headerWSideNav,
       patientHeader,
@@ -82,7 +82,7 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
       </div>
     ),
   ),
-  HeaderWSideNav: jest.fn(({ sideNavItems, activeSideNavItemId }) => (
+  Header: jest.fn(({ sideNavItems, activeSideNavItemId }) => (
     <div data-testid="mocked-header-component">
       {sideNavItems.map(
         (item: {

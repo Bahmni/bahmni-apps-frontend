@@ -7,7 +7,27 @@ exports[`ConsultationPage Rendering and Structure should match the snapshot 1`] 
   >
     <div
       data-testid="mocked-header"
-    />
+    >
+      <div
+        data-testid="mocked-header-component"
+      >
+        <div
+          data-testid="sidenav-item-vitals"
+        >
+          translated_VITALS_SECTION
+        </div>
+        <div
+          data-testid="sidenav-item-medications"
+        >
+          translated_Medications
+        </div>
+        <div
+          data-testid="active-sidenav-item"
+        >
+          Vitals
+        </div>
+      </div>
+    </div>
     <div
       data-testid="mocked-patient-section"
     >

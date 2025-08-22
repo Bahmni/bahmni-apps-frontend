@@ -4,7 +4,7 @@ import {
   Header,
   ICON_SIZE,
   useSidebarNavigation,
-  ClinicalLayout,
+  ActionAreaLayout,
 } from '@bahmni-frontend/bahmni-design-system';
 import {
   useTranslation,
@@ -106,8 +106,8 @@ const ConsultationPage: React.FC = () => {
   }
 
   return (
-    <ClinicalLayout
-      header={
+    <ActionAreaLayout
+      headerWSideNav={
         <Header
           breadcrumbItems={breadcrumbItems}
           globalActions={globalActions}
