@@ -19,6 +19,7 @@ import {
   getDefaultDashboard,
   getSidebarItems,
 } from '../services/consultationPageService';
+import { useUserPrivilege } from '../../../../packages/bahmni-widgets/src/userPrivileges/useUserPrivilege';
 
 const breadcrumbItems = [
   { id: 'home', label: 'Home', href: BAHMNI_HOME_PATH },
@@ -65,6 +66,7 @@ const globalActions = [
 const ConsultationPage: React.FC = () => {
   const { t } = useTranslation();
   const { clinicalConfig } = useClinicalConfig();
+  const { userPrivileges } = useUserPrivilege();
   const { addNotification } = useNotification();
   const [isActionAreaVisible, setIsActionAreaVisible] = useState(false);
 
@@ -86,7 +88,9 @@ const ConsultationPage: React.FC = () => {
   if (!clinicalConfig) {
     return <Loading description={t('LOADING_CLINICAL_CONFIG')} role="status" />;
   }
-
+  if (!userPrivileges) {
+    return <Loading description={t('LOADING_USER_PRIVILEGES')} role="status" />;
+  }
   if (!currentDashboard) {
     addNotification({
       title: t('ERROR_DEFAULT_TITLE'),

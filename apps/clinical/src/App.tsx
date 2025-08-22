@@ -14,6 +14,7 @@ import React, { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import ConsultationPage from './pages/ConsultationPage';
 import { ClinicalConfigProvider } from './providers/ClinicalConfigProvider';
+import { UserPrivilegeProvider } from '../../../packages/bahmni-widgets/src/userPrivileges/UserPrivilegeProvider';
 
 const ClinicalApp: React.FC = () => {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -44,9 +45,11 @@ const ClinicalApp: React.FC = () => {
       <NotificationProvider>
         <NotificationServiceComponent />
         <ClinicalConfigProvider>
+          <UserPrivilegeProvider>
           <Routes>
             <Route path=":patientUuid" element={<ConsultationPage />} />
           </Routes>
+          </UserPrivilegeProvider>
         </ClinicalConfigProvider>
       </NotificationProvider>
     </Content>

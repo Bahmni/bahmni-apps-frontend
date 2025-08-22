@@ -56,6 +56,8 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
     isPrimaryButtonDisabled,
     secondaryButtonText,
     onSecondaryButtonClick,
+    tertiaryButtonText,
+    onTertiaryButtonClick,
     content,
   }: any) => (
     <div data-testid="mock-action-area">
@@ -71,6 +73,11 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
       <button data-testid="secondary-button" onClick={onSecondaryButtonClick}>
         {secondaryButtonText}
       </button>
+      {tertiaryButtonText && (
+        <button data-testid="tertiary-button" onClick={onTertiaryButtonClick}>
+          {tertiaryButtonText}
+        </button>
+      )}
     </div>
   ),
   MenuItemDivider: () => <hr data-testid="mock-divider" />,
@@ -173,7 +180,96 @@ jest.mock('../../../hooks/useEncounterSession', () => ({
   __esModule: true,
   useEncounterSession: () => mockUseEncounterSession(),
 }));
+jest.mock(
+  '@components/clinical/forms/observationForms/ObservationForms',
+  () => ({
+    __esModule: true,
+    default: ({
+      onFormSelect,
+      selectedForms,
+      onRemoveForm,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    }: any) => (
+      <div data-testid="mock-observation-forms">
+        <div data-testid="observation-forms-content">Observation Forms</div>
+        <button
+          data-testid="select-form-button"
+          onClick={() =>
+            onFormSelect?.({
+              uuid: 'form-1',
+              name: 'Test Form',
+              id: 1,
+              privileges: [],
+            })
+          }
+        >
+          Select Form
+        </button>
+        <div data-testid="selected-forms-count">
+          Selected: {selectedForms?.length ?? 0}
+        </div>
+        {selectedForms?.map((form: { uuid: string; name: string }) => (
+          <div
+            key={form.uuid}
+            data-testid={`selected-form-${form.uuid}`}
+            onClick={() => onFormSelect?.(form)}
+            role="button"
+            tabIndex={0}
+          >
+            {form.name}
+            <button
+              data-testid={`remove-form-${form.uuid}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemoveForm?.(form.uuid);
+              }}
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+      </div>
+    ),
+  }),
+);
 
+jest.mock(
+  '@components/clinical/forms/observationForms/ObservationFormsWrapper',
+  () => ({
+    __esModule: true,
+    default: ({
+      viewingForm,
+      onViewingFormChange,
+      onRemoveForm,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    }: any) => (
+      <div data-testid="mock-observation-forms-wrapper">
+        <div data-testid="wrapper-viewing-form">{viewingForm?.name}</div>
+        <button
+          data-testid="wrapper-save-button"
+          onClick={() => onViewingFormChange?.(null)}
+        >
+          Save
+        </button>
+        <button
+          data-testid="wrapper-discard-button"
+          onClick={() => {
+            onRemoveForm?.(viewingForm?.uuid);
+            onViewingFormChange?.(null);
+          }}
+        >
+          Discard
+        </button>
+        <button
+          data-testid="wrapper-back-button"
+          onClick={() => onViewingFormChange?.(null)}
+        >
+          Back
+        </button>
+      </div>
+    ),
+  }),
+);
 // Create mock store factories
 const createMockEncounterDetailsStore = () => ({
   activeVisit: { id: 'visit-123' },
@@ -333,7 +429,7 @@ describe('ConsultationPad', () => {
     it('should render dividers between forms', () => {
       render(<ConsultationPad onClose={mockOnClose} />);
       const dividers = screen.getAllByTestId('mock-divider');
-      expect(dividers).toHaveLength(5);
+      expect(dividers).toHaveLength(6);
     });
 
     it('should render forms and dividers in the correct sequence', () => {
@@ -343,7 +439,7 @@ describe('ConsultationPad', () => {
       const children = Array.from(content.children);
 
       // Verify the exact sequence of forms and dividers
-      expect(children).toHaveLength(10); // 5 forms + 5 dividers
+      expect(children).toHaveLength(12); // 6 forms + 6 dividers
 
       // Check each element in order
       expect(children[0]).toHaveAttribute(
@@ -368,6 +464,11 @@ describe('ConsultationPad', () => {
         'mock-medications-form',
       );
       expect(children[9]).toHaveAttribute('data-testid', 'mock-divider');
+      expect(children[10]).toHaveAttribute(
+        'data-testid',
+        'mock-observation-forms',
+      );
+      expect(children[11]).toHaveAttribute('data-testid', 'mock-divider');
     });
 
     it('should render action buttons with correct text', () => {
@@ -410,7 +511,142 @@ describe('ConsultationPad', () => {
       expect(screen.getByTestId('primary-button')).not.toBeDisabled();
     });
   });
+  describe('Observation Forms Integration', () => {
+    it('should render ObservationForms component with correct props', () => {
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
 
+      const observationForms = screen.getByTestId('mock-observation-forms');
+      expect(observationForms).toBeInTheDocument();
+      expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
+        'Selected: 0',
+      );
+    });
+
+    it('should render ObservationFormsWrapper when form is selected for viewing', async () => {
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      const selectButton = screen.getByTestId('select-form-button');
+      await userEvent.click(selectButton);
+
+      // Should render ObservationFormsWrapper instead of consultation ActionArea
+      expect(
+        screen.getByTestId('mock-observation-forms-wrapper'),
+      ).toBeInTheDocument();
+      expect(screen.getByTestId('wrapper-viewing-form')).toHaveTextContent(
+        'Test Form',
+      );
+      expect(screen.queryByTestId('mock-action-area')).not.toBeInTheDocument();
+    });
+
+    it('should manage selectedForms state correctly', async () => {
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      // Initially should show 0 selected forms
+      expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
+        'Selected: 0',
+      );
+
+      const selectButton = screen.getByTestId('select-form-button');
+      await userEvent.click(selectButton);
+
+      // After selecting, should switch to ObservationFormsWrapper
+      expect(
+        screen.getByTestId('mock-observation-forms-wrapper'),
+      ).toBeInTheDocument();
+
+      // Go back to consultation view using wrapper back button
+      const backButton = screen.getByTestId('wrapper-back-button');
+      await userEvent.click(backButton);
+
+      // Now should show 1 selected form
+      expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
+        'Selected: 1',
+      );
+      expect(screen.getByTestId('selected-form-form-1')).toBeInTheDocument();
+    });
+
+    it('should prevent duplicate forms from being added to selectedForms', async () => {
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      const selectButton = screen.getByTestId('select-form-button');
+
+      // Add the form once
+      await userEvent.click(selectButton);
+
+      // Go back to consultation view using wrapper back button
+      const backButton = screen.getByTestId('wrapper-back-button');
+      await userEvent.click(backButton);
+
+      // Try to add the same form again
+      const selectButtonAgain = screen.getByTestId('select-form-button');
+      await userEvent.click(selectButtonAgain);
+
+      // Go back to consultation view again using wrapper back button
+      const backButtonAgain = screen.getByTestId('wrapper-back-button');
+      await userEvent.click(backButtonAgain);
+
+      // Should only have one form
+      expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
+        'Selected: 1',
+      );
+    });
+
+    it('should remove forms from selectedForms when onRemoveForm is called', async () => {
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      // Add a form first
+      const selectButton = screen.getByTestId('select-form-button');
+      await userEvent.click(selectButton);
+
+      // Go back to consultation view using wrapper back button
+      const backButton = screen.getByTestId('wrapper-back-button');
+      await userEvent.click(backButton);
+
+      // Verify form is selected
+      expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
+        'Selected: 1',
+      );
+      expect(screen.getByTestId('selected-form-form-1')).toBeInTheDocument();
+
+      // Remove the form
+      const removeButton = screen.getByTestId('remove-form-form-1');
+      await userEvent.click(removeButton);
+
+      // Verify form is removed
+      expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
+        'Selected: 0',
+      );
+      expect(
+        screen.queryByTestId('selected-form-form-1'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should remove form from selectedForms when discarded from wrapper', async () => {
+      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+
+      // Add a form first
+      const selectButton = screen.getByTestId('select-form-button');
+      await userEvent.click(selectButton);
+
+      // Should render ObservationFormsWrapper
+      expect(
+        screen.getByTestId('mock-observation-forms-wrapper'),
+      ).toBeInTheDocument();
+
+      // Discard the form using wrapper discard button
+      const discardButton = screen.getByTestId('wrapper-discard-button');
+      await userEvent.click(discardButton);
+
+      // Should be back to consultation view with no selected forms
+      expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
+      expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
+        'Selected: 0',
+      );
+      expect(
+        screen.queryByTestId('selected-form-form-1'),
+      ).not.toBeInTheDocument();
+    });
+  });
   describe('Snapshot Tests', () => {
     it('should match snapshot for form order and dividers', () => {
       const { container } = render(<ConsultationPad onClose={mockOnClose} />);

@@ -14,3 +14,4 @@ export {
 } from './notification';
 export { usePatientUUID } from './hooks/usePatientUUID';
 export { useActivePractitioner } from './hooks/useActivePractitioner';
+export { useUserPrivilege } from './userPrivileges/useUserPrivilege';

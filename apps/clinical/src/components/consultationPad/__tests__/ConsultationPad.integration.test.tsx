@@ -50,6 +50,14 @@ jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
   useActivePractitioner: jest.fn(),
   usePatientUUID: jest.fn(() => 'patient-1'),
 }));
+jest.mock('@services/privilegeService');
+
+// Mock useUserPrivilege hook
+jest.mock('@hooks/useUserPrivilege', () => ({
+  useUserPrivilege: jest.fn(() => ({
+    userPrivileges: ['Get Patients', 'Add Patients'],
+  })),
+}));
 
 // Create mock user
 const mockUser: User = {
@@ -79,11 +87,13 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <I18nextProvider i18n={i18n}>
     <NotificationProvider>
       <ClinicalConfigProvider>
-        <MemoryRouter initialEntries={['/patient/patient-1']}>
-          <Routes>
-            <Route path="/patient/:patientUuid" element={children} />
-          </Routes>
-        </MemoryRouter>
+        <UserPrivilegeProvider>
+          <MemoryRouter initialEntries={['/patient/patient-1']}>
+            <Routes>
+              <Route path="/patient/:patientUuid" element={children} />
+            </Routes>
+          </MemoryRouter>
+        </UserPrivilegeProvider>
       </ClinicalConfigProvider>
     </NotificationProvider>
   </I18nextProvider>
@@ -134,7 +144,11 @@ describe('ConsultationPad Integration', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-
+    // Mock privilege service
+    (privilegeService.getCurrentUserPrivileges as jest.Mock).mockResolvedValue([
+      { name: 'app:clinical:observationForms' },
+      { name: 'app:clinical:locationpicker' },
+    ]);
     // Mock implementation for each service
     (logAuditEvent as jest.Mock).mockResolvedValue({ logged: true });
     (getLocations as jest.Mock).mockResolvedValue(mockLocations);
