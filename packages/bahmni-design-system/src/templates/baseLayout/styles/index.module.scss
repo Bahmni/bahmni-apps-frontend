@@ -1,0 +1,31 @@
+// Layout styles for the ActionArea component
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/breakpoint" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/layer" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; // Full viewport height
+  width: 100%; // Full width but not forcing vw which can cause overflow
+  overflow: hidden; // Prevent scrolling of the overall layout
+}
+
+.main {
+  margin-top: 1rem;
+  overflow-y: auto;
+  position: fixed;
+  width: 100%;
+}
+
+// Responsive adjustments using Carbon breakpoints
+@include breakpoint-down(lg) {
+  .main {
+    left: 3rem;
+    width: calc(100vw - 3rem);
+    left: 3rem;
+    top: 13rem;
+  }
+}

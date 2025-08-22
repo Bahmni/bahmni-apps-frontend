@@ -59,7 +59,8 @@ export {
   type DatePickerInputProps,
 } from './atoms/datePicker';
 
-export { ActionAreaLayout } from './templates/actionAreaLayout';
+export { default as ActionAreaLayout } from './templates/actionAreaLayout';
+export { default as BaseLayout } from './templates/baseLayout';
 
 export { Section, type SectionProps } from './atoms/section';
 
