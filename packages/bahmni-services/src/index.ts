@@ -5,6 +5,14 @@ export {
   getFormattedPatientById,
   type FormattedPatientData,
 } from './patientService';
+export {
+  searchPatients,
+  searchPatientsFormatted,
+  getPatientSearchResults,
+  type PatientSearchResult,
+  type PatientSearchResponse,
+  type FormattedPatientSearchResult,
+} from './patientSearchService';
 export { getFormattedError } from './errorHandling';
 export {
   capitalize,
