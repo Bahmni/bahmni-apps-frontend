@@ -1,4 +1,6 @@
+import { BAHMNI_USER_LOCATION_COOKIE_NAME } from '../constants/app';
 import { formatDate } from '../date';
+import { getCookieByName } from '../utils';
 import { PatientSearchResult, FormattedPatientSearchResult } from './models';
 
 /**
@@ -72,16 +74,24 @@ export const formatPatientSearchResults = (
 };
 
 /**
- * Gets the login location UUID from localStorage
+ * Gets the login location UUID from cookie
  * @returns The login location UUID or null if not found
  */
-export const getLoginLocationUuid = (): string | null => {
-  // try {
-  //   return localStorage.getItem('loginLocationUuid');
-  // } catch (error) {
-  //   return null;
-  // }
-  return '';
+export const getUuidFromUserLocationCookie = (): string | null => {
+  try {
+    const cookieValue = getCookieByName(BAHMNI_USER_LOCATION_COOKIE_NAME);
+    if (!cookieValue) {
+      return null;
+    }
+
+    // Parse the location cookie as JSON to extract the UUID
+    const locationData = JSON.parse(decodeURIComponent(cookieValue));
+    return locationData?.uuid ?? null;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.warn('Failed to get login location UUID from cookie:', error);
+    return null;
+  }
 };
 
 /**

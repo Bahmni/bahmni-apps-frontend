@@ -129,7 +129,7 @@ const PatientSearch: React.FC = () => {
         testId="patient-search-page-header"
       />
 
-      <main className={styles.mainContent}>
+      <div className={styles.mainContent}>
         <div className={styles.searchSection}>
           <h1 className={styles.pageTitle}>{t('PATIENT_SEARCH_TITLE')}</h1>
           <PatientSearchWidget
@@ -140,7 +140,7 @@ const PatientSearch: React.FC = () => {
         </div>
 
         {renderSearchResults()}
-      </main>
+      </div>
     </div>
   );
 };

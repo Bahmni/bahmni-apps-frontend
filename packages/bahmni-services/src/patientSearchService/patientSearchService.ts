@@ -8,7 +8,7 @@ import {
 import { PatientSearchResponse, FormattedPatientSearchResult } from './models';
 import {
   formatPatientSearchResults,
-  getLoginLocationUuid,
+  getUuidFromUserLocationCookie,
   isValidSearchTerm,
 } from './utils';
 
@@ -20,10 +20,10 @@ import {
 export async function searchPatients(
   searchTerm: string,
 ): Promise<PatientSearchResponse> {
-  const loginLocationUuid = getLoginLocationUuid();
+  const loginLocationUuid = getUuidFromUserLocationCookie();
 
   if (!loginLocationUuid) {
-    throw new Error('Login location UUID not found in localStorage');
+    throw new Error('Login location UUID not found in cookie');
   }
 
   if (!isValidSearchTerm(searchTerm)) {
