@@ -6,3 +6,4 @@ export const BAHMNI_USER_LOCATION_COOKIE_NAME = 'bahmni.user.location';
 export const USER_PRIVILEGES_URL = OPENMRS_REST_V1 + '/bahmnicore/whoami';
 export const OBSERVATION_FORMS_URL =
   OPENMRS_REST_V1 + '/bahmniie/form/latestPublishedForms';
+export const BAHMNI_USER_LOCATION_COOKIE_NAME = 'bahmni.user.location';
