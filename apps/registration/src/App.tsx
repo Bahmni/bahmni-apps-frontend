@@ -10,9 +10,14 @@ import {
   NotificationProvider,
   NotificationServiceComponent,
 } from '@bahmni-frontend/bahmni-widgets';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import React, { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
+import { queryClientConfig } from './config/tanstackQuery';
 import PatientSearchPage from './pages/PatientSearchPage';
+
+const queryClient = new QueryClient(queryClientConfig);
 
 const RegistrationApp: React.FC = () => {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -38,14 +43,16 @@ const RegistrationApp: React.FC = () => {
     return <div>Loading...</div>;
   }
 
-  // TODO: Replace with actual routes
   return (
     <Content>
       <NotificationProvider>
         <NotificationServiceComponent />
-        <Routes>
-          <Route path="/search" element={<PatientSearchPage />} />
-        </Routes>
+        <QueryClientProvider client={queryClient}>
+          <Routes>
+            <Route path="/search" element={<PatientSearchPage />} />
+          </Routes>
+          <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
       </NotificationProvider>
     </Content>
   );

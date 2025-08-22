@@ -7,6 +7,7 @@
   },
   "private": true,
   "dependencies": {
+    "@tanstack/react-query": "^5.85.5",
     "@types/fhir": "^0.0.41",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -34,6 +35,8 @@
     "@swc/core": "~1.5.7",
     "@swc/helpers": "~0.5.11",
     "@swc/types": "^0.1.23",
+    "@tanstack/eslint-plugin-query": "^5.83.1",
+    "@tanstack/react-query-devtools": "^5.85.5",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
