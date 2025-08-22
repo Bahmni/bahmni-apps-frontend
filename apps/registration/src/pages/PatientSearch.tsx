@@ -1,7 +1,7 @@
 import {
   PageHeader,
   SortableDataTable,
-  Button,
+  Tile,
   type BreadcrumbItem,
 } from '@bahmni-frontend/bahmni-design-system';
 import {
@@ -12,8 +12,7 @@ import {
   PatientSearch as PatientSearchWidget,
   useNotification,
 } from '@bahmni-frontend/bahmni-widgets';
-import { DataTableHeader } from '@carbon/react';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import styles from './styles/PatientSearch.module.scss';
 
 /**
@@ -43,16 +42,18 @@ const PatientSearch: React.FC = () => {
     },
   ];
 
-  // Table headers for search results
-  const tableHeaders: DataTableHeader[] = [
-    { key: 'patientId', header: t('PATIENT_ID') },
-    { key: 'fullName', header: t('PATIENT_NAME') },
-    { key: 'phoneNumber', header: t('PHONE_NUMBER') },
-    { key: 'alternatePhoneNumber', header: t('ALTERNATE_PHONE_NUMBER') },
-    { key: 'gender', header: t('GENDER') },
-    { key: 'age', header: t('AGE') },
-    { key: 'registrationDate', header: t('REGISTRATION_DATE') },
-  ];
+  const tableHeaders = useMemo(
+    () => [
+      { key: 'patientId', header: t('PATIENT_ID') },
+      { key: 'fullName', header: t('PATIENT_NAME') },
+      { key: 'phoneNumber', header: t('PHONE_NUMBER') },
+      { key: 'alternatePhoneNumber', header: t('ALTERNATE_PHONE_NUMBER') },
+      { key: 'gender', header: t('GENDER') },
+      { key: 'age', header: t('AGE') },
+      { key: 'registrationDate', header: t('REGISTRATION_DATE') },
+    ],
+    [],
+  );
 
   const handleSearchResults = useCallback(
     (results: FormattedPatientSearchResult[]) => {
@@ -104,19 +105,15 @@ const PatientSearch: React.FC = () => {
 
     return (
       <div className={styles.resultsContainer}>
-        <div className={styles.resultsHeader}>
-          <h2>
-            {t('PATIENT_SEARCH_RESULTS')} ({searchResults.length})
-          </h2>
-          <Button kind="primary" className={styles.createPatientButton}>
-            {t('CREATE_NEW_PATIENT')}
-          </Button>
-        </div>
+        <Tile className={styles.resultsHeader}>
+          {t('PATIENT_SEARCH_RESULTS')} ({searchResults.length})
+        </Tile>
         <SortableDataTable
           headers={tableHeaders}
           rows={searchResults}
           ariaLabel={t('PATIENT_SEARCH_RESULTS_TABLE')}
           emptyStateMessage={t('PATIENT_SEARCH_NO_RESULTS')}
+          loading={loading}
         />
       </div>
     );
@@ -131,7 +128,6 @@ const PatientSearch: React.FC = () => {
 
       <div className={styles.mainContent}>
         <div className={styles.searchSection}>
-          <h1 className={styles.pageTitle}>{t('PATIENT_SEARCH_TITLE')}</h1>
           <PatientSearchWidget
             onSearchResults={handleSearchResults}
             onError={handleSearchError}
