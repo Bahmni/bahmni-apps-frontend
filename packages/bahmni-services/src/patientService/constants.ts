@@ -8,4 +8,4 @@ export const PATIENT_LUCENE_SEARCH_URL = (
   loginLocationUuid: string,
 ) =>
   OPENMRS_REST_V1 +
-  `/bahmni/search/patient/lucene?filterOnAllIdentifiers=true&identifier=${searchTerm}&q=${searchTerm}&loginLocationUuid=${loginLocationUuid}&patientSearchResultsConfig=phoneNumber&patientSearchResultsConfig=alternatePhoneNumber`;
+  `/bahmni/search/patient/lucene?filterOnAllIdentifiers=false&identifier=${searchTerm}&q=${searchTerm}&loginLocationUuid=${loginLocationUuid}&patientSearchResultsConfig=phoneNumber&patientSearchResultsConfig=alternatePhoneNumber&s=byIdOrName`;

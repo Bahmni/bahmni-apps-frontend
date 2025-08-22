@@ -5,9 +5,17 @@ import '@testing-library/jest-dom';
 describe('SearchPatient', () => {
   it('should render the searchbar and the search button', () => {
     render(<SearchPatient />);
+    expect(screen.getByTestId('search-patient')).toBeInTheDocument();
     expect(screen.getByTestId('search-patient-seachbar')).toBeInTheDocument();
+    expect(screen.getByTestId('search-patient-seachbar')).toHaveAttribute(
+      'placeholder',
+      'Search by name or patient ID',
+    );
     expect(
       screen.getByTestId('search-patient-search-button'),
     ).toBeInTheDocument();
+    expect(
+      screen.getByTestId('search-patient-search-button'),
+    ).toHaveTextContent('Search');
   });
 });

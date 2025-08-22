@@ -1,15 +1,15 @@
 import { Search, Button } from '@bahmni-frontend/bahmni-design-system';
+import styles from './styles/SearchPatient.module.scss';
 
 const SearchPatient: React.FC = () => {
   return (
-    <div>
+    <div data-testid="search-patient" className={styles.searchPatient}>
       <Search
         testId="search-patient-seachbar"
         size="lg"
-        placeholder="Find your items"
+        placeholder="Search by name or patient ID"
         labelText="Search"
-        closeButtonLabelText="Clear search input"
-        id="search-1"
+        id="search-patient-seachbar"
         onChange={() => {}}
         onKeyDown={() => {}}
       />
