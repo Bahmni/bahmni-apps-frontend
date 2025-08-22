@@ -1,7 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { OBSERVATION_FORMS_URL } from '@constants/app';
-import { getUserPreferredLocale } from '@services/translationService';
+import { fetchObservationForms } from '@services/observationFormsService';
 import { getFormattedError } from '@utils/common';
 import { filterFormsByUserPrivileges } from '@utils/privilegeUtils';
 import { ObservationForm } from '../types/observationForms';
@@ -12,25 +11,6 @@ interface UseObservationFormsSearchResult {
   forms: ObservationForm[];
   isLoading: boolean;
   error: Error | null;
-}
-
-interface ApiFormPrivilege {
-  privilegeName: string;
-  editable: boolean;
-}
-
-interface ApiNameTranslation {
-  display: string;
-  locale: string;
-}
-
-// API Response model (what backend sends)
-interface FormApiResponse {
-  uuid: string;
-  name: string;
-  id: number;
-  privileges: ApiFormPrivilege[];
-  nameTranslation: string; // JSON string containing array of translations
 }
 
 /**
@@ -52,53 +32,12 @@ const useObservationFormsSearch = (
 
   // Load all observation forms
   useEffect(() => {
-    const loadObservationForms = async () => {
+    const fetchForms = async () => {
       setIsLoading(true);
       setError(null);
 
       try {
-        const response = await fetch(OBSERVATION_FORMS_URL);
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        // Map forms to expected format - handle both data.results and direct data array
-        const formsArray = data.results ?? data ?? [];
-        const currentLocale = getUserPreferredLocale(); // Get current locale from localStorage
-        const mappedForms: ObservationForm[] = formsArray
-          .map((form: FormApiResponse) => {
-            let translatedName = form.name; // Default to original name field
-
-            if (form.nameTranslation && currentLocale) {
-              const translations = JSON.parse(form.nameTranslation);
-
-              if (Array.isArray(translations) && translations.length > 0) {
-                // Find translation for current locale
-                const translation = translations.find(
-                  (translation: ApiNameTranslation) =>
-                    translation.locale === currentLocale,
-                );
-
-                if (translation?.display) {
-                  translatedName = translation.display;
-                }
-              }
-            }
-            const mappedForm = {
-              uuid: form.uuid,
-              name: translatedName, // Use translated name or fallback to original name field
-              id: form.id,
-              privileges: form.privileges.map((p) => ({
-                privilegeName: p.privilegeName,
-                editable: p.editable,
-              })),
-            };
-            return mappedForm;
-          })
-          .filter((form: ObservationForm) => form.uuid && form.name);
+        const mappedForms = await fetchObservationForms();
         setAllForms(mappedForms);
       } catch (err) {
         const formattedError = getFormattedError(err);
@@ -110,7 +49,7 @@ const useObservationFormsSearch = (
       }
     };
 
-    loadObservationForms();
+    fetchForms();
   }, [t]);
 
   // Filter forms based on user privileges and search term
