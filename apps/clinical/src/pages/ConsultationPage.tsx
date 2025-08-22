@@ -1,7 +1,7 @@
 import {
   Loading,
   Icon,
-  HeaderWSideNav,
+  Header,
   ICON_SIZE,
   useSidebarNavigation,
   ClinicalLayout,
@@ -107,8 +107,8 @@ const ConsultationPage: React.FC = () => {
 
   return (
     <ClinicalLayout
-      headerWSideNav={
-        <HeaderWSideNav
+      header={
+        <Header
           breadcrumbItems={breadcrumbItems}
           globalActions={globalActions}
           sideNavItems={sidebarItems}

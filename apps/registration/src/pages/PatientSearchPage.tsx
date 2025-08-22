@@ -1,4 +1,4 @@
-import { HeaderWSideNav } from '@bahmni-frontend/bahmni-design-system';
+import { Header } from '@bahmni-frontend/bahmni-design-system';
 import { BAHMNI_HOME_PATH } from '@bahmni-frontend/bahmni-services';
 
 const breadcrumbItems = [
@@ -15,7 +15,7 @@ const breadcrumbItems = [
  */
 const PatientSearchPage: React.FC = () => {
   return (
-    <HeaderWSideNav
+    <Header
       breadcrumbItems={breadcrumbItems}
       ariaLabel="registration-search-page-header"
     />

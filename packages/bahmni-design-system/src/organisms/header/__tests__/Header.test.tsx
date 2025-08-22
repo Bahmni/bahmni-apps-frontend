@@ -1,9 +1,9 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React from 'react';
-import { HeaderWSideNav } from '../HeaderWSideNav';
+import { Header } from '../Header';
 import {
-  HeaderWSideNavProps,
+  HeaderProps,
   HeaderSideNavItem,
   HeaderBreadcrumbItem,
   HeaderGlobalAction,
@@ -53,7 +53,7 @@ jest.mock('../utils', () => ({
   isMobile: () => mockIsMobile(),
 }));
 
-// Mock Icon component to isolate HeaderWSideNav testing
+// Mock Icon component to isolate Header testing
 jest.mock('../../../molecules/icon', () => ({
   Icon: ({ name, id, size }: { name: string; id: string; size: string }) => (
     <div data-testid={id} data-icon-name={name} data-size={size} />
@@ -61,7 +61,7 @@ jest.mock('../../../molecules/icon', () => ({
   ICON_SIZE: { LG: 'lg' },
 }));
 
-describe('HeaderWSideNav', () => {
+describe('Header', () => {
   // Test data
   const mockSideNavItems: HeaderSideNavItem[] = [
     {
@@ -107,7 +107,7 @@ describe('HeaderWSideNav', () => {
 
   const mockOnSideNavItemClick = jest.fn();
 
-  const defaultProps: HeaderWSideNavProps = {
+  const defaultProps: HeaderProps = {
     breadcrumbItems: mockBreadcrumbItems,
     globalActions: mockGlobalActions,
     sideNavItems: mockSideNavItems,
@@ -124,11 +124,11 @@ describe('HeaderWSideNav', () => {
 
   describe('Rendering', () => {
     it('renders with just breadcrumbs', () => {
-      const minimalProps: HeaderWSideNavProps = {
+      const minimalProps: HeaderProps = {
         breadcrumbItems: mockBreadcrumbItems,
       };
 
-      render(<HeaderWSideNav {...minimalProps} />);
+      render(<Header {...minimalProps} />);
 
       expect(screen.getByTestId('header')).toBeInTheDocument();
       expect(screen.getByText('Home')).toBeInTheDocument();
@@ -136,7 +136,7 @@ describe('HeaderWSideNav', () => {
     });
 
     it('renders all sections when fully configured', () => {
-      render(<HeaderWSideNav {...defaultProps} />);
+      render(<Header {...defaultProps} />);
 
       expect(screen.getByTestId('header')).toBeInTheDocument();
       expect(screen.getByTestId('breadcrumb')).toBeInTheDocument();
@@ -145,7 +145,7 @@ describe('HeaderWSideNav', () => {
     });
 
     it('uses correct aria-label on header', () => {
-      render(<HeaderWSideNav {...defaultProps} />);
+      render(<Header {...defaultProps} />);
 
       expect(screen.getByTestId('header')).toHaveAttribute(
         'aria-label',
@@ -157,18 +157,18 @@ describe('HeaderWSideNav', () => {
       const propsWithoutAriaLabel = { ...defaultProps };
       delete propsWithoutAriaLabel.ariaLabel;
 
-      render(<HeaderWSideNav {...propsWithoutAriaLabel} />);
+      render(<Header {...propsWithoutAriaLabel} />);
 
       expect(screen.getByTestId('header')).toHaveAttribute(
         'aria-label',
-        'HeaderWSideNav',
+        'Header',
       );
     });
   });
 
   describe('Breadcrumbs', () => {
     it('does not render breadcrumbs when array is empty', () => {
-      render(<HeaderWSideNav {...defaultProps} breadcrumbItems={[]} />);
+      render(<Header {...defaultProps} breadcrumbItems={[]} />);
 
       expect(screen.queryByTestId('breadcrumb')).not.toBeInTheDocument();
     });
@@ -177,7 +177,7 @@ describe('HeaderWSideNav', () => {
       const propsWithoutBreadcrumbs = { ...defaultProps };
       delete propsWithoutBreadcrumbs.breadcrumbItems;
 
-      render(<HeaderWSideNav {...propsWithoutBreadcrumbs} />);
+      render(<Header {...propsWithoutBreadcrumbs} />);
 
       expect(screen.queryByTestId('breadcrumb')).not.toBeInTheDocument();
     });
@@ -185,7 +185,7 @@ describe('HeaderWSideNav', () => {
 
   describe('Global Actions', () => {
     it('renders global actions with correct content', () => {
-      render(<HeaderWSideNav {...defaultProps} />);
+      render(<Header {...defaultProps} />);
 
       expect(screen.getByTestId('global-action-search')).toBeInTheDocument();
       expect(
@@ -196,7 +196,7 @@ describe('HeaderWSideNav', () => {
     });
 
     it('handles global action clicks', () => {
-      render(<HeaderWSideNav {...defaultProps} />);
+      render(<Header {...defaultProps} />);
 
       fireEvent.click(screen.getByTestId('global-action-search'));
       expect(mockGlobalActions[0].onClick).toHaveBeenCalledTimes(1);
@@ -206,7 +206,7 @@ describe('HeaderWSideNav', () => {
     });
 
     it('does not render global actions when array is empty', () => {
-      render(<HeaderWSideNav {...defaultProps} globalActions={[]} />);
+      render(<Header {...defaultProps} globalActions={[]} />);
 
       expect(screen.queryByTestId('header-global-bar')).not.toBeInTheDocument();
     });
@@ -215,7 +215,7 @@ describe('HeaderWSideNav', () => {
       const propsWithoutGlobalActions = { ...defaultProps };
       delete propsWithoutGlobalActions.globalActions;
 
-      render(<HeaderWSideNav {...propsWithoutGlobalActions} />);
+      render(<Header {...propsWithoutGlobalActions} />);
 
       expect(screen.queryByTestId('header-global-bar')).not.toBeInTheDocument();
     });
@@ -223,7 +223,7 @@ describe('HeaderWSideNav', () => {
 
   describe('Side Navigation', () => {
     it('renders side nav items with correct content and icons', () => {
-      render(<HeaderWSideNav {...defaultProps} />);
+      render(<Header {...defaultProps} />);
 
       expect(screen.getByTestId('sidenav-item-dashboard')).toBeInTheDocument();
       expect(screen.getByTestId('sidenav-item-patients')).toBeInTheDocument();
@@ -233,7 +233,7 @@ describe('HeaderWSideNav', () => {
     });
 
     it('handles item clicks correctly', () => {
-      render(<HeaderWSideNav {...defaultProps} />);
+      render(<Header {...defaultProps} />);
 
       fireEvent.click(screen.getByTestId('sidenav-item-patients'));
 
@@ -245,7 +245,7 @@ describe('HeaderWSideNav', () => {
     });
 
     it('uses href when provided, defaults to # when not', () => {
-      render(<HeaderWSideNav {...defaultProps} />);
+      render(<Header {...defaultProps} />);
 
       expect(screen.getByTestId('sidenav-item-dashboard')).toHaveAttribute(
         'href',
@@ -258,7 +258,7 @@ describe('HeaderWSideNav', () => {
     });
 
     it('passes correct props to Icon component', () => {
-      render(<HeaderWSideNav {...defaultProps} />);
+      render(<Header {...defaultProps} />);
 
       const dashboardIcon = screen.getByTestId('sidebar-icon-dashboard');
       expect(dashboardIcon).toHaveAttribute('data-icon-name', 'fa-dashboard');
@@ -268,7 +268,7 @@ describe('HeaderWSideNav', () => {
 
   describe('Props and Data Flow', () => {
     it('handles null activeSideNavItemId', () => {
-      render(<HeaderWSideNav {...defaultProps} activeSideNavItemId={null} />);
+      render(<Header {...defaultProps} activeSideNavItemId={null} />);
 
       expect(screen.getByTestId('sidenav-item-dashboard')).not.toHaveAttribute(
         'aria-current',
@@ -282,7 +282,7 @@ describe('HeaderWSideNav', () => {
       const propsWithUndefinedActive = { ...defaultProps };
       delete propsWithUndefinedActive.activeSideNavItemId;
 
-      render(<HeaderWSideNav {...propsWithUndefinedActive} />);
+      render(<Header {...propsWithUndefinedActive} />);
 
       expect(screen.getByTestId('sidenav-item-dashboard')).not.toHaveAttribute(
         'aria-current',
@@ -293,7 +293,7 @@ describe('HeaderWSideNav', () => {
     });
 
     it('correctly integrates with useHeaderSideNav hook', () => {
-      render(<HeaderWSideNav {...defaultProps} />);
+      render(<Header {...defaultProps} />);
 
       expect(mockHandleSideNavItemClick).not.toHaveBeenCalled();
 
@@ -312,9 +312,7 @@ describe('HeaderWSideNav', () => {
         { id: 'no-icon', label: 'No Icon Item', icon: '' },
       ];
 
-      render(
-        <HeaderWSideNav {...defaultProps} sideNavItems={itemsWithoutIcon} />,
-      );
+      render(<Header {...defaultProps} sideNavItems={itemsWithoutIcon} />);
 
       expect(screen.getByTestId('sidenav-item-no-icon')).toBeInTheDocument();
       expect(screen.getByTestId('sidebar-icon-no-icon')).toHaveAttribute(
@@ -330,7 +328,7 @@ describe('HeaderWSideNav', () => {
         label: `Item ${i}`,
       }));
 
-      render(<HeaderWSideNav {...defaultProps} sideNavItems={longNavList} />);
+      render(<Header {...defaultProps} sideNavItems={longNavList} />);
 
       longNavList.forEach((item) => {
         expect(
@@ -343,10 +341,7 @@ describe('HeaderWSideNav', () => {
       const breadcrumbsWithoutHref = [{ id: 'no-href', label: 'No Href Item' }];
 
       render(
-        <HeaderWSideNav
-          {...defaultProps}
-          breadcrumbItems={breadcrumbsWithoutHref}
-        />,
+        <Header {...defaultProps} breadcrumbItems={breadcrumbsWithoutHref} />,
       );
 
       const item = screen.getByText('No Href Item');
@@ -357,7 +352,7 @@ describe('HeaderWSideNav', () => {
 
   describe('Accessibility', () => {
     it('should have no accessibility violations', async () => {
-      const { container } = render(<HeaderWSideNav {...defaultProps} />);
+      const { container } = render(<Header {...defaultProps} />);
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });

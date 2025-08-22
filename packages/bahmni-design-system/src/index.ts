@@ -64,7 +64,7 @@ export { ClinicalLayout } from './templates/ClinicalLayout';
 export { Section, type SectionProps } from './atoms/section';
 
 export {
-  HeaderWSideNav,
+  Header,
   useSidebarNavigation,
   type HeaderSideNavItem,
 } from './organisms/header';
