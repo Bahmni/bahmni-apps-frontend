@@ -16,6 +16,7 @@ export {
   type AccordionProps,
   type AccordionItemProps,
 } from './atoms/accordion';
+export { Search, type SearchProps } from './atoms/search';
 export {
   Tabs,
   TabList,
