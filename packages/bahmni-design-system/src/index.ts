@@ -67,7 +67,7 @@ export {
   HeaderWSideNav,
   useSidebarNavigation,
   type HeaderSideNavItem,
-} from './organisms/headerWSideNav';
+} from './organisms/header';
 
 export { Content } from './atoms/content';
 
