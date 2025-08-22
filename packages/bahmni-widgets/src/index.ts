@@ -1,6 +1,7 @@
 import '@bahmni-frontend/bahmni-design-system/styles';
 
 export { PatientDetails } from './patientDetails';
+export { PatientSearch } from './patientSearch';
 export { AllergiesTable } from './allergies';
 export { ConditionsTable } from './conditions';
 export { DiagnosesTable } from './diagnoses';
