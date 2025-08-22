@@ -68,6 +68,12 @@ export {
   type HeaderSideNavItem,
 } from './organisms/headerWSideNav';
 
+export {
+  PageHeader,
+  type PageHeaderProps,
+  type BreadcrumbItem,
+} from './organisms/pageHeader';
+
 export { Content } from './atoms/content';
 
 export { Loading, type LoadingProps } from './atoms/loading';
