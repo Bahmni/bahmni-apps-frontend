@@ -9,9 +9,7 @@ import { getUserPreferredLocale } from './translationService';
 /**
  * Fetches and normalizes raw observation forms data from the API
  */
-export const fetchAndNormalizeFormsData = async (): Promise<
-  FormApiResponse[]
-> => {
+const fetchAndNormalizeFormsData = async (): Promise<FormApiResponse[]> => {
   const response = await fetch(OBSERVATION_FORMS_URL);
 
   if (!response.ok) {
@@ -28,7 +26,7 @@ export const fetchAndNormalizeFormsData = async (): Promise<
 /**
  * Gets translated name for a form based on current locale
  */
-export const getTranslatedFormName = (
+const getTranslatedFormName = (
   form: FormApiResponse,
   currentLocale: string,
 ): string => {
@@ -50,7 +48,7 @@ export const getTranslatedFormName = (
 /**
  * Transforms API form data to application domain model
  */
-export const transformToObservationForm = (
+const transformToObservationForm = (
   form: FormApiResponse,
   currentLocale: string,
 ): ObservationForm => {
