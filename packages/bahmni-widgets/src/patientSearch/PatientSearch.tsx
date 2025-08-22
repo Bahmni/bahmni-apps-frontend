@@ -24,6 +24,7 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
 }) => {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [hasPerformedSearch, setHasPerformedSearch] = useState<boolean>(false);
   const { searchResults, searchPatients, loading, error } = usePatientSearch();
 
   // Notify parent component of state changes
@@ -38,8 +39,10 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
   }, [error, onError]);
 
   React.useEffect(() => {
-    onSearchResults(searchResults);
-  }, [searchResults, onSearchResults]);
+    if (hasPerformedSearch) {
+      onSearchResults(searchResults);
+    }
+  }, [searchResults, onSearchResults, hasPerformedSearch]);
 
   const handleSearch = useCallback(async () => {
     if (!searchTerm.trim()) {
@@ -47,6 +50,7 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
     }
 
     try {
+      setHasPerformedSearch(true);
       await searchPatients(searchTerm);
     } catch (err) {
       // Error handling is managed by the custom hook
