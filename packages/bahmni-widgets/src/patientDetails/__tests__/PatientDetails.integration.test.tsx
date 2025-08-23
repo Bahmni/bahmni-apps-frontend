@@ -1,6 +1,5 @@
 import { FormattedPatientData } from '@bahmni-frontend/bahmni-services';
 import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
 import PatientDetails from '../PatientDetails';
 import { usePatient } from '../usePatient';
 

@@ -3,7 +3,6 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import RadiologyInvestigationTable from '../RadiologyInvestigationTable';
 import { useRadiologyInvestigation } from '../useRadiologyInvestigation';
-import '@testing-library/jest-dom';
 
 jest.mock('../useRadiologyInvestigation');
 
