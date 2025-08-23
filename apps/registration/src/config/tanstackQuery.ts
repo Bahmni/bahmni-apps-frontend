@@ -6,9 +6,7 @@ export const queryClientConfig: QueryClientConfig = {
       retry: 2,
       staleTime: 1000 * 30,
       refetchOnMount: 'always',
-      refetchOnWindowFocus: 'always',
       refetchOnReconnect: 'always',
-      refetchInterval: 1000 * 30,
       refetchIntervalInBackground: false,
     },
     mutations: {
