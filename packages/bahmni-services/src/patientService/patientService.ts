@@ -5,8 +5,8 @@ import { getUserLoginLocation } from '../locationService';
 import { PATIENT_LUCENE_SEARCH_URL, PATIENT_RESOURCE_URL } from './constants';
 import {
   FormattedPatientData,
-  PatientSearchResult,
-  PatientSearchResultBundle,
+  PatientSearch,
+  PatientSearchBundle,
 } from './models';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
@@ -162,13 +162,13 @@ export const getFormattedPatientById = async (
  */
 export const searchPatientByNameOrId = async (
   searchTerm: string,
-): Promise<PatientSearchResult[]> => {
+): Promise<PatientSearch[]> => {
   const loginLocationUuid = getUserLoginLocation();
   if (!loginLocationUuid?.uuid)
     throw new Error(
       'Login location is missing or invalid. Please reauthenticate.',
     );
-  const searchResultsBundle = await get<PatientSearchResultBundle>(
+  const searchResultsBundle = await get<PatientSearchBundle>(
     PATIENT_LUCENE_SEARCH_URL(searchTerm, loginLocationUuid.uuid),
   );
   return searchResultsBundle.pageOfResults;

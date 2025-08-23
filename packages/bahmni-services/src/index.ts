@@ -5,6 +5,7 @@ export {
   getFormattedPatientById,
   searchPatientByNameOrId,
   type FormattedPatientData,
+  type PatientSearch,
 } from './patientService';
 export { getFormattedError } from './errorHandling';
 export {

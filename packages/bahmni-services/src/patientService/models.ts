@@ -15,14 +15,14 @@ export interface FormattedPatientData {
   age: Age | null;
 }
 
-export interface PatientSearchResult {
+export interface PatientSearch {
   uuid: string;
   birthDate: Date;
-  extraIdentifiers: string;
+  extraIdentifiers: string | null;
   personId: number;
-  deathDate: Date;
+  deathDate: Date | null;
   identifier: string;
-  addressFieldValue: string;
+  addressFieldValue: string | null;
   givenName: string;
   middleName: string;
   familyName: string;
@@ -37,7 +37,7 @@ export interface PatientSearchResult {
   age: string;
 }
 
-export interface PatientSearchResultBundle {
+export interface PatientSearchBundle {
   totalCount: number;
-  pageOfResults: PatientSearchResult[];
+  pageOfResults: PatientSearch[];
 }
