@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import ActionArea from '@components/common/actionArea/ActionArea';
 import { ObservationForm } from '@types/observationForms';
-import * as styles from '../../consultationPad/styles/ConsultationPad.module.scss';
+import * as styles from './styles/ObservationFormsContainer.module.scss';
 
 interface ObservationFormsContainerProps {
   // Callback to notify parent when form viewing starts/ends
