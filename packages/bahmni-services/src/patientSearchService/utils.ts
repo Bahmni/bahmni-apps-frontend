@@ -3,11 +3,6 @@ import { formatDate } from '../date';
 import { getCookieByName } from '../utils';
 import { PatientSearchResult, FormattedPatientSearchResult } from './models';
 
-/**
- * Formats a patient's full name from search result
- * @param patient - The patient search result
- * @returns A formatted name string
- */
 export const formatPatientName = (patient: PatientSearchResult): string => {
   const parts = [
     patient.givenName,
@@ -18,12 +13,6 @@ export const formatPatientName = (patient: PatientSearchResult): string => {
   return parts.join(' ');
 };
 
-/**
- * Formats a timestamp to a readable date string
- * @param timestamp - The timestamp in milliseconds
- * @param t - Translation function
- * @returns A formatted date string
- */
 export const formatRegistrationDate = (
   timestamp: number,
   t: (key: string) => string,

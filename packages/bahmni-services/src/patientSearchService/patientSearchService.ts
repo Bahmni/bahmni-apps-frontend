@@ -13,11 +13,6 @@ import {
   sortPatientsByIdentifierAscending,
 } from './utils';
 
-/**
- * Searches for patients using the Bahmni Lucene search API
- * @param searchTerm - The search term (patient ID or name)
- * @returns Promise resolving to patient search response
- */
 export async function searchPatients(
   searchTerm: string,
 ): Promise<PatientSearchResponse> {
@@ -42,7 +37,6 @@ export async function searchPatients(
     patientSearchResultsConfig: PATIENT_SEARCH_CONFIG.PHONE_NUMBER,
   });
 
-  // Add alternate phone number config as a separate parameter
   params.append(
     'patientSearchResultsConfig',
     PATIENT_SEARCH_CONFIG.ALTERNATE_PHONE_NUMBER,
@@ -52,10 +46,8 @@ export async function searchPatients(
 
   try {
     const response = await get<PatientSearchResponse>(url);
-
-    // Log the search event for audit purposes
     await logAuditEvent(
-      undefined, // No specific patient UUID for search
+      undefined, 
       'PATIENT_SEARCH',
       {
         searchTerm: trimmedSearchTerm,
@@ -66,7 +58,6 @@ export async function searchPatients(
 
     return response;
   } catch (error) {
-    // Log failed search attempt
     await logAuditEvent(undefined, 'PATIENT_SEARCH_FAILED', {
       searchTerm: trimmedSearchTerm,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -76,12 +67,6 @@ export async function searchPatients(
   }
 }
 
-/**
- * Searches for patients and returns formatted results
- * @param searchTerm - The search term (patient ID or name)
- * @param t - Translation function for date formatting
- * @returns Promise resolving to formatted patient search results
- */
 export async function searchPatientsFormatted(
   searchTerm: string,
   t: (key: string) => string,
@@ -91,12 +76,6 @@ export async function searchPatientsFormatted(
   return formatPatientSearchResults(sortedResults, t);
 }
 
-/**
- * Gets patient search results with total count
- * @param searchTerm - The search term (patient ID or name)
- * @param t - Translation function for date formatting
- * @returns Promise resolving to search results with metadata
- */
 export async function getPatientSearchResults(
   searchTerm: string,
   t: (key: string) => string,
