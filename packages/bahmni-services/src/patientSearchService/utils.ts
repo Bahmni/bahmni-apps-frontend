@@ -102,3 +102,23 @@ export const getUuidFromUserLocationCookie = (): string | null => {
 export const isValidSearchTerm = (searchTerm: string): boolean => {
   return searchTerm.trim().length > 0;
 };
+
+
+/**
+ * Sorts patient search results by identifier in ascending order
+ * @param patients - Array of patient search results
+ * @returns Sorted array of patient search results in ascending identifier order
+ */
+export const sortPatientsByIdentifierAscending = (
+  patients: PatientSearchResult[],
+): PatientSearchResult[] => {
+  if (!patients?.length) return patients;
+
+  return [...patients].sort((a, b) => {
+    return a.identifier.localeCompare(b.identifier, undefined, {
+      numeric: true,
+      sensitivity: 'base',
+    });
+  });
+};
+

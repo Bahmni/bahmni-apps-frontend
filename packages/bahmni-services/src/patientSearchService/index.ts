@@ -10,6 +10,7 @@ export {
   formatPatientSearchResult,
   formatPatientSearchResults,
   isValidSearchTerm,
+  sortPatientsByIdentifierAscending,
 } from './utils';
 
 export type {
