@@ -1,29 +1,5 @@
-.pageHeader {
-  background-color: var(--cds-layer-01);
-  border-bottom: 1px solid var(--cds-border-subtle-01);
-  padding: 1rem 2rem;
-  width: 100%;
-}
-
-.headerContent {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-}
+@use "@carbon/react/scss/spacing" as *;
 
 .breadcrumb {
-  margin: 0;
-}
-
-@media (max-width: 768px) {
-  .pageHeader {
-    padding: 0.75rem 1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .pageHeader {
-    padding: 0.5rem 0.75rem;
-  }
+  margin-left: $spacing-05;
 }

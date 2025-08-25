@@ -11,8 +11,7 @@ import {
   NotificationServiceComponent,
 } from '@bahmni-frontend/bahmni-widgets';
 import React, { useEffect, useState } from 'react';
-import { Route, Routes } from 'react-router-dom';
-import PatientSearch from './pages/PatientSearch';
+import RegistrationRoutes from './RegistrationRoutes';
 
 const RegistrationApp: React.FC = () => {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -38,14 +37,11 @@ const RegistrationApp: React.FC = () => {
     return <div>Loading...</div>;
   }
 
-  // TODO: Replace with actual routes
   return (
     <Content>
       <NotificationProvider>
         <NotificationServiceComponent />
-        <Routes>
-          <Route path="/search" element={<PatientSearch />} />
-        </Routes>
+        <RegistrationRoutes />
       </NotificationProvider>
     </Content>
   );

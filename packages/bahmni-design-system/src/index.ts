@@ -59,6 +59,7 @@ export {
 } from './atoms/datePicker';
 
 export { ClinicalLayout } from './templates/ClinicalLayout';
+export { RegistrationLayout } from './templates/RegistrationLayout';
 
 export { Section, type SectionProps } from './atoms/section';
 

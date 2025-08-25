@@ -1,9 +1,4 @@
-import {
-  PageHeader,
-  SortableDataTable,
-  Tile,
-  type BreadcrumbItem,
-} from '@bahmni-frontend/bahmni-design-system';
+import { SortableDataTable, Tile } from '@bahmni-frontend/bahmni-design-system';
 import {
   useTranslation,
   FormattedPatientSearchResult,
@@ -27,20 +22,6 @@ const PatientSearch: React.FC = () => {
   >([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [hasSearched, setHasSearched] = useState<boolean>(false);
-
-  // Breadcrumb navigation
-  const breadcrumbItems: BreadcrumbItem[] = [
-    {
-      id: 'home',
-      label: t('HOME'),
-      href: '/',
-    },
-    {
-      id: 'registration',
-      label: t('REGISTRATION'),
-      isCurrentPage: true,
-    },
-  ];
 
   const tableHeaders = useMemo(
     () => [
@@ -121,22 +102,15 @@ const PatientSearch: React.FC = () => {
 
   return (
     <div className={styles.patientSearchPage}>
-      <PageHeader
-        breadcrumbItems={breadcrumbItems}
-        testId="patient-search-page-header"
-      />
-
-      <div className={styles.mainContent}>
-        <div className={styles.searchSection}>
-          <PatientSearchWidget
-            onSearchResults={handleSearchResults}
-            onError={handleSearchError}
-            onLoading={handleSearchLoading}
-          />
-        </div>
-
-        {renderSearchResults()}
+      <div className={styles.searchSection}>
+        <PatientSearchWidget
+          onSearchResults={handleSearchResults}
+          onError={handleSearchError}
+          onLoading={handleSearchLoading}
+        />
       </div>
+
+      {renderSearchResults()}
     </div>
   );
 };

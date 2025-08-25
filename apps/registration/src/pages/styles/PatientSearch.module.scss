@@ -7,14 +7,29 @@
   background-color: $layer-02;
 }
 
-.mainContent {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-}
-
 .searchSection {
   margin-bottom: 2rem;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: $spacing-08;
+  @include type-style("body-compact-01");
+  color: $text-secondary;
+}
+
+.noResultsContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: $spacing-08;
+}
+
+.noResultsText {
+  @include type-style("body-compact-01");
+  color: $text-secondary;
 }
 
 .resultsContainer {
@@ -25,16 +40,4 @@
   min-block-size: fit-content !important;
   @include type-style("heading-compact-02");
   color: $text-primary;
-}
-
-@media (max-width: 768px) {
-  .mainContent {
-    padding: 1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .mainContent {
-    padding: 0.75rem;
-  }
 }

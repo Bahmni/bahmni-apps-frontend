@@ -1,4 +1,4 @@
-import { Breadcrumb, BreadcrumbItem } from '@carbon/react';
+import { Breadcrumb, BreadcrumbItem, Header } from '@carbon/react';
 import React from 'react';
 import styles from './styles/PageHeader.module.scss';
 
@@ -10,17 +10,8 @@ export interface BreadcrumbItem {
 }
 
 export interface PageHeaderProps {
-  /**
-   * Array of breadcrumb items to display
-   */
   breadcrumbItems?: BreadcrumbItem[];
-  /**
-   * Additional CSS class name for the header
-   */
   className?: string;
-  /**
-   * Test ID for the header component
-   */
   testId?: string;
 }
 
@@ -57,12 +48,9 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   };
 
   return (
-    <header
-      className={`${styles.pageHeader} ${className}`}
-      data-testid={testId}
-    >
+    <Header className={className} data-testid={testId}>
       <div className={styles.headerContent}>{renderBreadcrumbs()}</div>
-    </header>
+    </Header>
   );
 };
 
