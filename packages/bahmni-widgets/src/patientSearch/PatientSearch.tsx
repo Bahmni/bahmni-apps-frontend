@@ -80,29 +80,28 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
       className={styles.patientSearchContainer}
       data-testid="patient-search-widget"
     >
-      <div className={styles.searchInputContainer}>
-        <TextInput
-          id="patient-search-input"
-          testId="patient-search-input"
-          labelText=""
-          placeholder={t('PATIENT_SEARCH_PLACEHOLDER')}
-          value={searchTerm}
-          onChange={handleInputChange}
-          onKeyPress={handleKeyPress}
-          disabled={loading}
-          className={styles.searchInput}
-          aria-label={t('PATIENT_SEARCH_PLACEHOLDER')}
-        />
-        <Button
-          testId="patient-search-button"
-          onClick={handleSearch}
-          disabled={isSearchDisabled}
-          className={styles.searchButton}
-          aria-label={t('PATIENT_SEARCH_BUTTON')}
-        >
-          {loading ? t('PATIENT_SEARCH_LOADING') : t('PATIENT_SEARCH_BUTTON')}
-        </Button>
-      </div>
+      <TextInput
+        id="patient-search-input"
+        testId="patient-search-input"
+        labelText=""
+        placeholder={t('PATIENT_SEARCH_PLACEHOLDER')}
+        value={searchTerm}
+        onChange={handleInputChange}
+        onKeyPress={handleKeyPress}
+        disabled={loading}
+        className={styles.searchInput}
+        aria-label={t('PATIENT_SEARCH_PLACEHOLDER')}
+      />
+      <Button
+        size="md"
+        testId="patient-search-button"
+        onClick={handleSearch}
+        disabled={isSearchDisabled}
+        className={styles.searchButton}
+        aria-label={t('PATIENT_SEARCH_BUTTON')}
+      >
+        {t('PATIENT_SEARCH_BUTTON')}
+      </Button>
     </div>
   );
 };

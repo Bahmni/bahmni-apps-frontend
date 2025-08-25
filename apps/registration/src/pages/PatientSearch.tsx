@@ -1,4 +1,8 @@
-import { SortableDataTable, Tile } from '@bahmni-frontend/bahmni-design-system';
+import {
+  SkeletonText,
+  SortableDataTable,
+  Tile,
+} from '@bahmni-frontend/bahmni-design-system';
 import {
   useTranslation,
   FormattedPatientSearchResult,
@@ -66,15 +70,7 @@ const PatientSearch: React.FC = () => {
       return null;
     }
 
-    if (loading) {
-      return (
-        <div className={styles.loadingContainer}>
-          <p>{t('PATIENT_SEARCH_LOADING')}</p>
-        </div>
-      );
-    }
-
-    if (searchResults.length === 0) {
+    if (searchResults.length === 0 && !loading) {
       return (
         <div className={styles.noResultsContainer}>
           <p className={styles.noResultsText}>
@@ -86,9 +82,13 @@ const PatientSearch: React.FC = () => {
 
     return (
       <div className={styles.resultsContainer}>
-        <Tile className={styles.resultsHeader}>
-          {t('PATIENT_SEARCH_RESULTS')} ({searchResults.length})
-        </Tile>
+        {loading ? (
+          <SkeletonText heading />
+        ) : (
+          <Tile className={styles.resultsHeader}>
+            {t('PATIENT_SEARCH_RESULTS')} ({searchResults.length})
+          </Tile>
+        )}
         <SortableDataTable
           headers={tableHeaders}
           rows={searchResults}

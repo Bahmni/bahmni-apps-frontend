@@ -8,16 +8,7 @@
 }
 
 .searchSection {
-  margin-bottom: 2rem;
-}
-
-.loadingContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: $spacing-08;
-  @include type-style("body-compact-01");
-  color: $text-secondary;
+  margin: $spacing-09 $spacing-12 $spacing-08;
 }
 
 .noResultsContainer {
@@ -33,7 +24,8 @@
 }
 
 .resultsContainer {
-  margin-top: $spacing-08;
+  margin: 0 $spacing-12;
+  box-shadow: 0 2px 6px 0 $shadow;
 }
 
 .resultsHeader {
