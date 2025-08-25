@@ -234,7 +234,7 @@ jest.mock(
 );
 
 jest.mock(
-  '@components/clinical/forms/observationForms/ObservationFormsWrapper',
+  '@components/clinical/forms/observationForms/ObservationFormsContainer',
   () => ({
     __esModule: true,
     default: ({

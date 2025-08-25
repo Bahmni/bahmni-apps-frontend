@@ -39,7 +39,7 @@ import InvestigationsForm from '../forms/investigations/InvestigationsForm';
 import MedicationsForm from '../forms/medications/MedicationsForm';
 import styles from './styles/ConsultationPad.module.scss';
 import ObservationForms from '../forms/observationForms/ObservationForms';
-import ObservationFormsWrapper from '../forms/observationForms/ObservationFormsWrapper';
+import ObservationFormsContainer from '../forms/observationForms/ObservationFormsContainer';
 import { ObservationForm } from '../../models/observationForms';
 
 interface ConsultationPadProps {
@@ -316,7 +316,7 @@ const consultationContent = (
   // If viewing a form, let ObservationFormsWrapper take over the entire screen
   if (viewingForm) {
     return (
-      <ObservationFormsWrapper
+      <ObservationFormsContainer
         onViewingFormChange={handleViewingFormChange}
         viewingForm={viewingForm}
         onRemoveForm={removeFormFromSelected}
