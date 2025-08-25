@@ -1,0 +1,8 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.main {
+  background-color: $layer-02;
+  padding-inline: calc($spacing-12 + $spacing-02);
+  padding-top: $spacing-12;
+}
