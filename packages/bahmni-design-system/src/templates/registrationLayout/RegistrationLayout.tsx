@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { PageHeader, type BreadcrumbItem } from '../organisms/pageHeader';
+import { PageHeader, type BreadcrumbItem } from '../../organisms/pageHeader';
 import styles from './styles/RegistrationLayout.module.scss';
 
 interface RegistrationLayoutProps {

@@ -16,7 +16,6 @@
   overflow-y: auto;
 }
 
-// Responsive adjustments using Carbon breakpoints
 @include breakpoint-down(md) {
   .mainContent {
     padding: $spacing-04;

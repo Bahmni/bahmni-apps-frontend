@@ -8,7 +8,7 @@
 .layout {
   display: flex;
   flex-direction: column;
-  height: 100vh; // Full viewport height
+  height: 100vh;
   width: 100%; // Full width but not forcing vw which can cause overflow
   overflow: hidden; // Prevent scrolling of the overall layout
 }
@@ -63,7 +63,6 @@
   z-index: 1000;
 }
 
-// Responsive adjustments using Carbon breakpoints
 @include breakpoint-down(lg) {
   .body {
     left: 3rem;

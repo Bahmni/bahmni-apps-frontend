@@ -58,8 +58,8 @@ export {
   type DatePickerInputProps,
 } from './atoms/datePicker';
 
-export { ClinicalLayout } from './templates/ClinicalLayout';
-export { RegistrationLayout } from './templates/RegistrationLayout';
+export { ClinicalLayout } from './templates/clinicalLayout';
+export { RegistrationLayout } from './templates/registrationLayout';
 
 export { Section, type SectionProps } from './atoms/section';
 

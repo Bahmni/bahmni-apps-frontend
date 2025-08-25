@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React from 'react';
-import { ClinicalLayout } from '../ClinicalLayout';
+import { ClinicalLayout } from '../clinicalLayout/ClinicalLayout';
 
 expect.extend(toHaveNoViolations);
 
