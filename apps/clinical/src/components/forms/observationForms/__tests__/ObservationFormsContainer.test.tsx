@@ -51,7 +51,7 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
 }));
 
 // Mock styles
-jest.mock('../../consultationPad/styles/ConsultationPad.module.scss', () => ({
+jest.mock('./styles/ObservationFormsContainer.module.scss', () => ({
   formView: 'formView',
   formContent: 'formContent',
   formViewActionArea: 'formViewActionArea',

@@ -2,7 +2,7 @@ import { ActionArea } from '@bahmni-frontend/bahmni-design-system';
 import { ObservationForm } from '@bahmni-frontend/bahmni-services';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import styles from '../../consultationPad/styles/ConsultationPad.module.scss';
+import styles from './styles/ObservationFormsContainer.module.scss';
 
 interface ObservationFormsContainerProps {
   // Callback to notify parent when form viewing starts/ends
