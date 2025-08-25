@@ -1,5 +1,5 @@
 import { BAHMNI_USER_LOCATION_COOKIE_NAME } from '../constants/app';
-import { formatDate } from '../date';
+import { DATE_FORMAT, formatDate } from '../date';
 import { getCookieByName } from '../utils';
 import { PatientSearchResult, FormattedPatientSearchResult } from './models';
 
@@ -19,19 +19,13 @@ export const formatRegistrationDate = (
 ): string => {
   try {
     const date = new Date(timestamp);
-    const result = formatDate(date.toISOString(), t);
+    const result = formatDate(date, t, DATE_FORMAT);
     return result.formattedResult || 'Invalid Date';
   } catch (error) {
     return 'Invalid Date';
   }
 };
 
-/**
- * Formats a single patient search result for display
- * @param patient - The raw patient search result
- * @param t - Translation function
- * @returns A formatted patient result
- */
 export const formatPatientSearchResult = (
   patient: PatientSearchResult,
   t: (key: string) => string,
@@ -49,12 +43,6 @@ export const formatPatientSearchResult = (
   };
 };
 
-/**
- * Formats an array of patient search results
- * @param patients - Array of raw patient search results
- * @param t - Translation function
- * @returns Array of formatted patient results
- */
 export const formatPatientSearchResults = (
   patients: PatientSearchResult[],
   t: (key: string) => string,
@@ -62,10 +50,7 @@ export const formatPatientSearchResults = (
   return patients.map((patient) => formatPatientSearchResult(patient, t));
 };
 
-/**
- * Gets the login location UUID from cookie
- * @returns The login location UUID or null if not found
- */
+
 export const getUuidFromUserLocationCookie = (): string | null => {
   try {
     const cookieValue = getCookieByName(BAHMNI_USER_LOCATION_COOKIE_NAME);
@@ -83,21 +68,11 @@ export const getUuidFromUserLocationCookie = (): string | null => {
   }
 };
 
-/**
- * Validates if a search term is valid (not empty after trimming)
- * @param searchTerm - The search term to validate
- * @returns True if valid, false otherwise
- */
+
 export const isValidSearchTerm = (searchTerm: string): boolean => {
   return searchTerm.trim().length > 0;
 };
 
-
-/**
- * Sorts patient search results by identifier in ascending order
- * @param patients - Array of patient search results
- * @returns Sorted array of patient search results in ascending identifier order
- */
 export const sortPatientsByIdentifierAscending = (
   patients: PatientSearchResult[],
 ): PatientSearchResult[] => {
