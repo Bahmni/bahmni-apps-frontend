@@ -13,10 +13,6 @@ interface PatientSearchProps {
   onLoading: (loading: boolean) => void;
 }
 
-/**
- * PatientSearch widget component
- * Provides a search input field and search button for finding patients by ID or name
- */
 export const PatientSearch: React.FC<PatientSearchProps> = ({
   onSearchResults,
   onError,
@@ -64,15 +60,6 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
     [],
   );
 
-  const handleKeyPress = useCallback(
-    (event: React.KeyboardEvent<HTMLInputElement>) => {
-      if (event.key === 'Enter') {
-        handleSearch();
-      }
-    },
-    [handleSearch],
-  );
-
   const isSearchDisabled = !searchTerm.trim() || loading;
 
   return (
@@ -87,7 +74,6 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
         placeholder={t('PATIENT_SEARCH_PLACEHOLDER')}
         value={searchTerm}
         onChange={handleInputChange}
-        onKeyPress={handleKeyPress}
         disabled={loading}
         className={styles.searchInput}
         aria-label={t('PATIENT_SEARCH_PLACEHOLDER')}
