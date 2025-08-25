@@ -50,7 +50,6 @@ export const formatPatientSearchResults = (
   return patients.map((patient) => formatPatientSearchResult(patient, t));
 };
 
-
 export const getUuidFromUserLocationCookie = (): string | null => {
   try {
     const cookieValue = getCookieByName(BAHMNI_USER_LOCATION_COOKIE_NAME);
@@ -68,7 +67,6 @@ export const getUuidFromUserLocationCookie = (): string | null => {
   }
 };
 
-
 export const isValidSearchTerm = (searchTerm: string): boolean => {
   return searchTerm.trim().length > 0;
 };
@@ -85,4 +83,3 @@ export const sortPatientsByIdentifierAscending = (
     });
   });
 };
-

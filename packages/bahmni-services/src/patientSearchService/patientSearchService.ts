@@ -46,15 +46,11 @@ export async function searchPatients(
 
   try {
     const response = await get<PatientSearchResponse>(url);
-    await logAuditEvent(
-      undefined, 
-      'PATIENT_SEARCH',
-      {
-        searchTerm: trimmedSearchTerm,
-        resultCount: response.totalCount,
-        searchType: 'COMBINED_ID_NAME',
-      },
-    );
+    await logAuditEvent(undefined, 'PATIENT_SEARCH', {
+      searchTerm: trimmedSearchTerm,
+      resultCount: response.totalCount,
+      searchType: 'COMBINED_ID_NAME',
+    });
 
     return response;
   } catch (error) {
@@ -72,7 +68,9 @@ export async function searchPatientsFormatted(
   t: (key: string) => string,
 ): Promise<FormattedPatientSearchResult[]> {
   const response = await searchPatients(searchTerm);
-  const sortedResults = sortPatientsByIdentifierAscending(response.pageOfResults);
+  const sortedResults = sortPatientsByIdentifierAscending(
+    response.pageOfResults,
+  );
   return formatPatientSearchResults(sortedResults, t);
 }
 
@@ -84,7 +82,9 @@ export async function getPatientSearchResults(
   totalCount: number;
 }> {
   const response = await searchPatients(searchTerm);
-  const sortedResults = sortPatientsByIdentifierAscending(response.pageOfResults);
+  const sortedResults = sortPatientsByIdentifierAscending(
+    response.pageOfResults,
+  );
   const formattedResults = formatPatientSearchResults(sortedResults, t);
 
   return {

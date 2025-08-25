@@ -1,17 +1,15 @@
+import { formatDate } from '../../date';
+import { getCookieByName } from '../../utils';
+import { PatientSearchResult } from '../models';
 import {
   formatPatientName,
   formatRegistrationDate,
-  formatPatientSearchResult,
   formatPatientSearchResults,
   getUuidFromUserLocationCookie,
   isValidSearchTerm,
   sortPatientsByIdentifierAscending,
 } from '../utils';
-import { PatientSearchResult } from '../models';
-import { getCookieByName } from '../../utils';
-import { formatDate } from '../../date';
 
-// Mock dependencies
 jest.mock('../../utils');
 jest.mock('../../date');
 
@@ -211,7 +209,10 @@ describe('PatientSearchService Utils', () => {
     });
 
     it('should format array of patient search results', () => {
-      const result = formatPatientSearchResults(mockPatients, mockTranslationFunction);
+      const result = formatPatientSearchResults(
+        mockPatients,
+        mockTranslationFunction,
+      );
 
       expect(result).toHaveLength(2);
       expect(result[0]).toEqual({
@@ -250,7 +251,10 @@ describe('PatientSearchService Utils', () => {
     });
 
     it('should extract UUID from valid cookie', () => {
-      const mockLocationData = { uuid: 'location-uuid-123', name: 'Test Location' };
+      const mockLocationData = {
+        uuid: 'location-uuid-123',
+        name: 'Test Location',
+      };
       (getCookieByName as jest.Mock).mockReturnValue(
         encodeURIComponent(JSON.stringify(mockLocationData)),
       );
@@ -438,7 +442,9 @@ describe('PatientSearchService Utils', () => {
 
     it('should handle null/undefined input', () => {
       expect(sortPatientsByIdentifierAscending(null as any)).toBeNull();
-      expect(sortPatientsByIdentifierAscending(undefined as any)).toBeUndefined();
+      expect(
+        sortPatientsByIdentifierAscending(undefined as any),
+      ).toBeUndefined();
     });
 
     it('should handle mixed alphanumeric identifiers', () => {

@@ -1,20 +1,6 @@
 import { get } from '../../api';
 import { logAuditEvent } from '../../auditLogService';
 import {
-  searchPatients,
-  searchPatientsFormatted,
-  getPatientSearchResults,
-} from '../patientSearchService';
-import {
-  PATIENT_SEARCH_BASE_URL,
-  PATIENT_SEARCH_CONFIG,
-  PATIENT_SEARCH_DEFAULTS,
-} from '../constants';
-import {
-  sortPatientsByIdentifierAscending,
-  getUuidFromUserLocationCookie,
-} from '../utils';
-import {
   mockPatientSearchResponse,
   mockEmptyPatientSearchResponse,
   mockPatientSearchResultsForIdentifierSorting,
@@ -24,7 +10,20 @@ import {
   mockSinglePatientSearchResponse,
   mockPatientSearchResponseForPercentSearch,
 } from '../__mocks__/mocks';
-
+import {
+  PATIENT_SEARCH_BASE_URL,
+  PATIENT_SEARCH_CONFIG,
+  PATIENT_SEARCH_DEFAULTS,
+} from '../constants';
+import {
+  searchPatients,
+  searchPatientsFormatted,
+  getPatientSearchResults,
+} from '../patientSearchService';
+import {
+  sortPatientsByIdentifierAscending,
+  getUuidFromUserLocationCookie,
+} from '../utils';
 
 jest.mock('../../api');
 jest.mock('../../auditLogService');
@@ -92,9 +91,7 @@ describe('PatientSearchService', () => {
 
       await searchPatients(searchTermWithSpaces);
 
-      expect(get).toHaveBeenCalledWith(
-        expect.stringContaining('q=John+Doe'),
-      );
+      expect(get).toHaveBeenCalledWith(expect.stringContaining('q=John+Doe'));
       expect(get).toHaveBeenCalledWith(
         expect.stringContaining('identifier=John+Doe'),
       );
@@ -112,13 +109,13 @@ describe('PatientSearchService', () => {
     });
 
     it('should handle percent sign search term', async () => {
-      (get as jest.Mock).mockResolvedValueOnce(mockPatientSearchResponseForPercentSearch);
+      (get as jest.Mock).mockResolvedValueOnce(
+        mockPatientSearchResponseForPercentSearch,
+      );
 
       await searchPatients('%');
 
-      expect(get).toHaveBeenCalledWith(
-        expect.stringContaining('q=%25'),
-      );
+      expect(get).toHaveBeenCalledWith(expect.stringContaining('q=%25'));
       expect(logAuditEvent).toHaveBeenCalledWith(
         undefined,
         'PATIENT_SEARCH',
@@ -177,7 +174,9 @@ describe('PatientSearchService', () => {
         mockTranslationFunction,
       );
 
-      expect(result).toHaveLength(mockPatientSearchResponse.pageOfResults.length);
+      expect(result).toHaveLength(
+        mockPatientSearchResponse.pageOfResults.length,
+      );
       expect(result[0]).toHaveProperty('id');
       expect(result[0]).toHaveProperty('patientId');
       expect(result[0]).toHaveProperty('fullName');
@@ -199,7 +198,9 @@ describe('PatientSearchService', () => {
     });
 
     it('should sort results in ascending identifier order', async () => {
-      (get as jest.Mock).mockResolvedValueOnce(mockPatientSearchResponseForIdentifierSorting);
+      (get as jest.Mock).mockResolvedValueOnce(
+        mockPatientSearchResponseForIdentifierSorting,
+      );
 
       const result = await searchPatientsFormatted(
         mockSearchTerm,
@@ -219,7 +220,7 @@ describe('PatientSearchService', () => {
       (get as jest.Mock).mockRejectedValueOnce(mockError);
 
       await expect(
-        searchPatientsFormatted(mockSearchTerm, mockTranslationFunction)
+        searchPatientsFormatted(mockSearchTerm, mockTranslationFunction),
       ).rejects.toThrow(mockError);
     });
   });
@@ -257,7 +258,7 @@ describe('PatientSearchService', () => {
       (get as jest.Mock).mockRejectedValueOnce(mockError);
 
       await expect(
-        getPatientSearchResults(mockSearchTerm, mockTranslationFunction)
+        getPatientSearchResults(mockSearchTerm, mockTranslationFunction),
       ).rejects.toThrow(mockError);
     });
   });
@@ -266,7 +267,9 @@ describe('PatientSearchService', () => {
     const searchTerm = 'ABC200';
 
     it('should sort patient results by identifier in ascending order', async () => {
-      (get as jest.Mock).mockResolvedValueOnce(mockPatientSearchResponseForIdentifierSorting);
+      (get as jest.Mock).mockResolvedValueOnce(
+        mockPatientSearchResponseForIdentifierSorting,
+      );
 
       const result = await getPatientSearchResults(
         searchTerm,
@@ -286,7 +289,9 @@ describe('PatientSearchService', () => {
     });
 
     it('should sort consistently regardless of search term', async () => {
-      (get as jest.Mock).mockResolvedValueOnce(mockPatientSearchResponseWithPartialMatches);
+      (get as jest.Mock).mockResolvedValueOnce(
+        mockPatientSearchResponseWithPartialMatches,
+      );
 
       const result = await getPatientSearchResults(
         searchTerm,
@@ -303,7 +308,9 @@ describe('PatientSearchService', () => {
     });
 
     it('should handle case-insensitive sorting', async () => {
-      (get as jest.Mock).mockResolvedValueOnce(mockPatientSearchResponseWithCaseVariations);
+      (get as jest.Mock).mockResolvedValueOnce(
+        mockPatientSearchResponseWithCaseVariations,
+      );
 
       const result = await getPatientSearchResults(
         searchTerm,
@@ -314,11 +321,11 @@ describe('PatientSearchService', () => {
       expect(sortedResults).toHaveLength(3);
 
       // Should sort case-insensitively in ascending order
-      const patientIds = sortedResults.map(r => r.patientId);
+      const patientIds = sortedResults.map((r) => r.patientId);
       expect(patientIds).toContain('abc200');
       expect(patientIds).toContain('ABC200');
       expect(patientIds).toContain('AbC200');
-      
+
       // First should be 'ABC200' or 'AbC200' or 'abc200' (all equivalent)
       expect(sortedResults[0].patientId.toLowerCase()).toBe('abc200');
     });
@@ -348,7 +355,9 @@ describe('PatientSearchService', () => {
     });
 
     it('should handle percent search (show all patients) with proper sorting', async () => {
-      (get as jest.Mock).mockResolvedValueOnce(mockPatientSearchResponseForPercentSearch);
+      (get as jest.Mock).mockResolvedValueOnce(
+        mockPatientSearchResponseForPercentSearch,
+      );
 
       const result = await getPatientSearchResults(
         '%',
@@ -356,12 +365,14 @@ describe('PatientSearchService', () => {
       );
 
       // Should sort all patients in ascending identifier order
-      expect(result.results).toHaveLength(mockPatientSearchResponseForPercentSearch.pageOfResults.length);
-      
+      expect(result.results).toHaveLength(
+        mockPatientSearchResponseForPercentSearch.pageOfResults.length,
+      );
+
       // Verify sorting is applied
-      const patientIds = result.results.map(r => r.patientId);
-      const sortedIds = [...patientIds].sort((a, b) => 
-        a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
+      const patientIds = result.results.map((r) => r.patientId);
+      const sortedIds = [...patientIds].sort((a, b) =>
+        a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }),
       );
       expect(patientIds).toEqual(sortedIds);
     });
@@ -370,9 +381,15 @@ describe('PatientSearchService', () => {
       const mixedResponse = {
         ...mockPatientSearchResponse,
         pageOfResults: [
-          { ...mockPatientSearchResponse.pageOfResults[0], identifier: 'PAT100' },
+          {
+            ...mockPatientSearchResponse.pageOfResults[0],
+            identifier: 'PAT100',
+          },
           { ...mockPatientSearchResponse.pageOfResults[0], identifier: 'PAT2' },
-          { ...mockPatientSearchResponse.pageOfResults[0], identifier: 'PAT10' },
+          {
+            ...mockPatientSearchResponse.pageOfResults[0],
+            identifier: 'PAT10',
+          },
           { ...mockPatientSearchResponse.pageOfResults[0], identifier: 'PAT1' },
         ],
       };
@@ -412,23 +429,32 @@ describe('PatientSearchService', () => {
 
     it('should not mutate original array', () => {
       const patients = mockPatientSearchResultsForIdentifierSorting;
-      const originalOrder = patients.map(p => p.identifier);
-      
+      const originalOrder = patients.map((p) => p.identifier);
+
       sortPatientsByIdentifierAscending(patients);
-      
+
       // Original array should remain unchanged
-      expect(patients.map(p => p.identifier)).toEqual(originalOrder);
+      expect(patients.map((p) => p.identifier)).toEqual(originalOrder);
     });
 
     it('should handle numeric sorting correctly', () => {
       const patientsWithNumbers = [
-        { ...mockPatientSearchResultsForIdentifierSorting[0], identifier: 'PAT10' },
-        { ...mockPatientSearchResultsForIdentifierSorting[1], identifier: 'PAT2' },
-        { ...mockPatientSearchResultsForIdentifierSorting[2], identifier: 'PAT1' },
+        {
+          ...mockPatientSearchResultsForIdentifierSorting[0],
+          identifier: 'PAT10',
+        },
+        {
+          ...mockPatientSearchResultsForIdentifierSorting[1],
+          identifier: 'PAT2',
+        },
+        {
+          ...mockPatientSearchResultsForIdentifierSorting[2],
+          identifier: 'PAT1',
+        },
       ];
 
       const sorted = sortPatientsByIdentifierAscending(patientsWithNumbers);
-      
+
       // Should sort numerically: PAT1, PAT2, PAT10 (not PAT1, PAT10, PAT2)
       expect(sorted[0].identifier).toBe('PAT1');
       expect(sorted[1].identifier).toBe('PAT2');
@@ -438,7 +464,7 @@ describe('PatientSearchService', () => {
     it('should handle single patient array', () => {
       const singlePatient = [mockPatientSearchResultsForIdentifierSorting[0]];
       const sorted = sortPatientsByIdentifierAscending(singlePatient);
-      
+
       expect(sorted).toHaveLength(1);
       expect(sorted[0]).toEqual(singlePatient[0]);
     });
