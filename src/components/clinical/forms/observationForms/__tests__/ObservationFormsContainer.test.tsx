@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import { ObservationForm } from '@types/observationForms';
-import ObservationFormsWrapper from '../ObservationFormsWrapper';
+import ObservationFormsContainer from '../ObservationFormsContainer';
 
 // Mock the translation hook
 jest.mock('react-i18next', () => ({
@@ -58,7 +58,7 @@ jest.mock('../../consultationPad/styles/ConsultationPad.module.scss', () => ({
   formViewActionArea: 'formViewActionArea',
 }));
 
-describe('ObservationFormsWrapper', () => {
+describe('ObservationFormsContainer', () => {
   const mockForm: ObservationForm = {
     name: 'Test Form',
     uuid: 'test-form-uuid',
@@ -79,7 +79,7 @@ describe('ObservationFormsWrapper', () => {
   describe('Rendering and Structure', () => {
     it('should render ActionArea when viewingForm is provided', () => {
       render(
-        <ObservationFormsWrapper {...defaultProps} viewingForm={mockForm} />,
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
       );
 
       expect(screen.getByTestId('action-area')).toBeInTheDocument();
@@ -90,14 +90,14 @@ describe('ObservationFormsWrapper', () => {
 
     it('should match the snapshot when viewing a form', () => {
       const { container } = render(
-        <ObservationFormsWrapper {...defaultProps} viewingForm={mockForm} />,
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
       );
       expect(container).toMatchSnapshot();
     });
 
     it('should match the snapshot when not viewing a form', () => {
       const { container } = render(
-        <ObservationFormsWrapper {...defaultProps} viewingForm={null} />,
+        <ObservationFormsContainer {...defaultProps} viewingForm={null} />,
       );
       expect(container).toMatchSnapshot();
     });
@@ -106,7 +106,7 @@ describe('ObservationFormsWrapper', () => {
   describe('ActionArea Configuration', () => {
     it('should configure ActionArea with correct props', () => {
       render(
-        <ObservationFormsWrapper {...defaultProps} viewingForm={mockForm} />,
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
       );
 
       const actionArea = screen.getByTestId('action-area');
@@ -128,7 +128,7 @@ describe('ObservationFormsWrapper', () => {
     it('should call onViewingFormChange with null when Save button is clicked', () => {
       const mockOnViewingFormChange = jest.fn();
       render(
-        <ObservationFormsWrapper
+        <ObservationFormsContainer
           {...defaultProps}
           onViewingFormChange={mockOnViewingFormChange}
           viewingForm={mockForm}
@@ -144,7 +144,7 @@ describe('ObservationFormsWrapper', () => {
     it('should call onViewingFormChange with null when Back button is clicked', () => {
       const mockOnViewingFormChange = jest.fn();
       render(
-        <ObservationFormsWrapper
+        <ObservationFormsContainer
           {...defaultProps}
           onViewingFormChange={mockOnViewingFormChange}
           viewingForm={mockForm}
@@ -161,7 +161,7 @@ describe('ObservationFormsWrapper', () => {
       const mockOnViewingFormChange = jest.fn();
       const mockOnRemoveForm = jest.fn();
       render(
-        <ObservationFormsWrapper
+        <ObservationFormsContainer
           {...defaultProps}
           onViewingFormChange={mockOnViewingFormChange}
           onRemoveForm={mockOnRemoveForm}
@@ -179,7 +179,7 @@ describe('ObservationFormsWrapper', () => {
     it('should only call onViewingFormChange when Discard button is clicked and onRemoveForm is not provided', () => {
       const mockOnViewingFormChange = jest.fn();
       render(
-        <ObservationFormsWrapper
+        <ObservationFormsContainer
           {...defaultProps}
           onViewingFormChange={mockOnViewingFormChange}
           onRemoveForm={undefined}
@@ -204,7 +204,10 @@ describe('ObservationFormsWrapper', () => {
       };
 
       render(
-        <ObservationFormsWrapper {...defaultProps} viewingForm={customForm} />,
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={customForm}
+        />,
       );
 
       expect(screen.getByTestId('action-area-title')).toHaveTextContent(
@@ -216,7 +219,7 @@ describe('ObservationFormsWrapper', () => {
   describe('Translation Integration', () => {
     it('should use translation keys for button texts', () => {
       render(
-        <ObservationFormsWrapper {...defaultProps} viewingForm={mockForm} />,
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
       );
 
       expect(

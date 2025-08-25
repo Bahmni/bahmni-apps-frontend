@@ -4,7 +4,7 @@ import ActionArea from '@components/common/actionArea/ActionArea';
 import { ObservationForm } from '@types/observationForms';
 import * as styles from '../../consultationPad/styles/ConsultationPad.module.scss';
 
-interface ObservationFormsWrapperProps {
+interface ObservationFormsContainerProps {
   // Callback to notify parent when form viewing starts/ends
   onViewingFormChange: (viewingForm: ObservationForm | null) => void;
   // The currently viewing form (passed from parent)
@@ -23,7 +23,7 @@ interface ObservationFormsWrapperProps {
  * When viewing a form, it takes over the entire UI with its own ActionArea.
  * When not viewing a form, it renders just the observation forms component.
  */
-const ObservationFormsWrapper: React.FC<ObservationFormsWrapperProps> = ({
+const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   onViewingFormChange,
   viewingForm: externalViewingForm,
   onRemoveForm,
@@ -81,4 +81,4 @@ const ObservationFormsWrapper: React.FC<ObservationFormsWrapperProps> = ({
   return null;
 };
 
-export default ObservationFormsWrapper;
+export default ObservationFormsContainer;
