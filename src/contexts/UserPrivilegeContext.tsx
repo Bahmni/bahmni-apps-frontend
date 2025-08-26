@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { UserPrivilege } from '@utils/privilegeUtils';
+import { UserPrivilege } from '@components/clinical/forms/observationForms/utils/privilegeUtils';
 
 export interface UserPrivilegeContextType {
   userPrivileges: UserPrivilege[] | null;

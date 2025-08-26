@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import React from 'react';
 import { UserPrivilegeContext } from '@contexts/UserPrivilegeContext';
-import { UserPrivilege } from '@utils/privilegeUtils';
+import { UserPrivilege } from '@components/clinical/forms/observationForms/utils/privilegeUtils';
 import { useUserPrivilege } from '../useUserPrivilege';
 
 // Mock the privilegeService

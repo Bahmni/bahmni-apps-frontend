@@ -1,10 +1,10 @@
-import { ObservationForm } from '../../types/observationForms';
+import { ObservationForm } from '../../../../../../types/observationForms';
 import {
   canUserAccessForm,
   filterFormsByUserPrivileges,
-  hasPrivilege,
   UserPrivilege,
 } from '../privilegeUtils';
+import { hasPrivilege } from '../../../../../../services/privilegeService';
 
 describe('privilegeUtils', () => {
   const mockUserPrivileges: UserPrivilege[] = [

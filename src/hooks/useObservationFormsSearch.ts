@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { fetchObservationForms } from '@services/observationFormsService';
 import { getFormattedError } from '@utils/common';
-import { filterFormsByUserPrivileges } from '@utils/privilegeUtils';
+import { filterFormsByUserPrivileges } from '@components/clinical/forms/observationForms/utils/privilegeUtils';
 import { ObservationForm } from '../types/observationForms';
 import useDebounce from './useDebounce';
 import { useUserPrivilege } from './useUserPrivilege';

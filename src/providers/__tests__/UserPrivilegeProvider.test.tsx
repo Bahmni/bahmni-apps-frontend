@@ -5,7 +5,7 @@ import '@testing-library/jest-dom';
 
 import { useUserPrivilege } from '@hooks/useUserPrivilege';
 import { getCurrentUserPrivileges } from '@services/privilegeService';
-import { UserPrivilege } from '@utils/privilegeUtils';
+import { UserPrivilege } from '@components/clinical/forms/observationForms/utils/privilegeUtils';
 
 import { UserPrivilegeProvider } from '../UserPrivilegeProvider';
 

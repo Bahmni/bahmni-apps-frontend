@@ -3,7 +3,7 @@ import { UserPrivilegeContext } from '@contexts/UserPrivilegeContext';
 import notificationService from '@services/notificationService';
 import { getCurrentUserPrivileges } from '@services/privilegeService';
 import { getFormattedError } from '@utils/common';
-import { UserPrivilege } from '@utils/privilegeUtils';
+import { UserPrivilege } from '@components/clinical/forms/observationForms/utils/privilegeUtils';
 
 interface UserPrivilegeProviderProps {
   children: ReactNode;

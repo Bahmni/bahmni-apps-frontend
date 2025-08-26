@@ -7,7 +7,7 @@ import { UserPrivilegeProvider } from '@providers/UserPrivilegeProvider';
 import * as observationFormsService from '@services/observationFormsService';
 import * as privilegeService from '@services/privilegeService';
 import * as commonUtils from '@utils/common';
-import * as privilegeUtils from '@utils/privilegeUtils';
+import * as privilegeUtils from '@components/clinical/forms/observationForms/utils/privilegeUtils';
 
 import useObservationFormsSearch from '../useObservationFormsSearch';
 
@@ -25,7 +25,7 @@ jest.mock('@services/observationFormsService', () => ({
 }));
 
 // Mock privilege utils
-jest.mock('@utils/privilegeUtils', () => ({
+jest.mock('@components/clinical/forms/observationForms/utils/privilegeUtils', () => ({
   filterFormsByUserPrivileges: jest.fn(),
 }));
 

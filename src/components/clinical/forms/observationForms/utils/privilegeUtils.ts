@@ -1,4 +1,4 @@
-import { ObservationForm } from '../types/observationForms';
+import { ObservationForm } from '../../../../../types/observationForms';
 
 /**
  * Interface for user privilege from whoami API
@@ -61,21 +61,4 @@ export const filterFormsByUserPrivileges = (
     canUserAccessForm(userPrivileges, form),
   );
   return filteredForms;
-};
-
-/**
- * Check if user has a specific privilege by name
- * @param userPrivileges - Array of user privileges from whoami API
- * @param privilegeName - Name of the privilege to check
- * @returns true if user has the privilege, false otherwise
- */
-export const hasPrivilege = (
-  userPrivileges: UserPrivilege[] | null,
-  privilegeName: string,
-): boolean => {
-  if (!userPrivileges || userPrivileges.length === 0) {
-    return false;
-  }
-
-  return userPrivileges.some((privilege) => privilege.name === privilegeName);
 };
