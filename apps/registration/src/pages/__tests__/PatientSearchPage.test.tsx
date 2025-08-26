@@ -5,7 +5,11 @@ import {
   useQuery,
 } from '@tanstack/react-query';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
+import i18n from '../../../setupTests.i18n';
 import PatientSearchPage from '../PatientSearchPage';
+
+expect.extend(toHaveNoViolations);
 
 const mockSearchPatientData: PatientSearch[] = [
   {
@@ -76,6 +80,7 @@ describe('PatientSearchPage', () => {
   let queryClient: QueryClient;
 
   beforeEach(() => {
+    i18n.changeLanguage('en');
     jest.clearAllMocks();
     (useQuery as jest.Mock).mockReturnValue({
       data: undefined,
@@ -194,5 +199,15 @@ describe('PatientSearchPage', () => {
         screen.queryByRole('div', { name: 'Add to cart' }),
       ).not.toBeInTheDocument();
     });
+  });
+
+  it('should have no accessibility violations', async () => {
+    const { container } = render(
+      <QueryClientProvider client={queryClient}>
+        <PatientSearchPage />
+      </QueryClientProvider>,
+    );
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
   });
 });

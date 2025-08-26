@@ -8,6 +8,8 @@ import { useEffect, useState } from 'react';
 import styles from './styles/SearchPatient.module.scss';
 
 interface SearchPatientProps {
+  buttonTitle: string;
+  searchBarPlaceholder: string;
   emptyStateMessage: string;
   errorMessage: string;
   handleSearchPatient: (
@@ -17,6 +19,8 @@ interface SearchPatientProps {
 }
 
 const SearchPatient: React.FC<SearchPatientProps> = ({
+  buttonTitle,
+  searchBarPlaceholder,
   emptyStateMessage,
   errorMessage,
   handleSearchPatient,
@@ -62,7 +66,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
           id="search-patient-seachbar"
           testId="search-patient-seachbar"
           size="lg"
-          placeholder="Search by name or patient ID"
+          placeholder={searchBarPlaceholder}
           labelText="Search"
           onChange={(e) => handleSearchTermUpdate(e.target.value)}
           onClear={handleOnClear}
@@ -73,7 +77,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
           onClick={() => handlePatientSearch()}
           disabled={isLoading}
         >
-          Search
+          {buttonTitle}
         </Button>
       </div>
       {error && searchTerm !== '' && (

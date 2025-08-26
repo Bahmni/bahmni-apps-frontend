@@ -7,6 +7,7 @@ import {
 import {
   BAHMNI_HOME_PATH,
   PatientSearch,
+  useTranslation,
 } from '@bahmni-frontend/bahmni-services';
 import { SearchPatient } from '@bahmni-frontend/bahmni-widgets';
 import { useState } from 'react';
@@ -34,6 +35,7 @@ const PatientSearchPage: React.FC = () => {
     [],
   );
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const { t } = useTranslation();
 
   const handleSearchPatientUpdate = (
     data: PatientSearch[] | undefined,
@@ -57,12 +59,18 @@ const PatientSearchPage: React.FC = () => {
     }));
 
   const headers = [
-    { key: 'id', header: 'Patient ID' },
-    { key: 'name', header: 'Patient Name' },
-    { key: 'gender', header: 'Gender' },
-    { key: 'age', header: 'Age' },
-    { key: 'phoneNumber', header: 'Phone Number' },
-    { key: 'alternatePhoneNumber', header: 'Alternate Phone Number' },
+    { key: 'id', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_ID') },
+    { key: 'name', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_NAME') },
+    { key: 'gender', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_GENDER') },
+    { key: 'age', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_AGE') },
+    {
+      key: 'phoneNumber',
+      header: t('REGISTRATION_PATIENT_SEARCH_HEADER_PHONE_NUMBER'),
+    },
+    {
+      key: 'alternatePhoneNumber',
+      header: t('REGISTRATION_PATIENT_SEARCH_HEADER_ALTERNATE_PHONE_NUMBER'),
+    },
   ];
 
   const renderCell = (
@@ -96,10 +104,14 @@ const PatientSearchPage: React.FC = () => {
       main={
         <div className={styles.main}>
           <SearchPatient
-            emptyStateMessage={`Could not find patient with identifier/name ${searchTerm}`}
-            errorMessage={
-              'An unexpected error occurred during search. Please try again later.'
-            }
+            buttonTitle={t('REGISTRATION_PATIENT_SEARCH_BUTTON_TITLE')}
+            searchBarPlaceholder={t(
+              'REGISTRATION_PATIENT_SEARCH_INPUT_PLACEHOLDER',
+            )}
+            emptyStateMessage={t('REGISTRATION_PATIENT_SEARCH_EMPTY_MESSAGE', {
+              searchTerm: searchTerm,
+            })}
+            errorMessage={t('REGISTRATION_PATIENT_SEARCH_ERROR_MESSAGE')}
             handleSearchPatient={handleSearchPatientUpdate}
           />
           {patientSearchResult && patientSearchResult.length > 0 && (
@@ -109,7 +121,9 @@ const PatientSearchPage: React.FC = () => {
               className={styles.patientSearchTable}
             >
               <p className={styles.title}>
-                Patient results ({patientSearchResult.length})
+                {t('REGISTRATION_PATIENT_SEARCH_TABLE_TITLE', {
+                  count: patientSearchResult.length,
+                })}
               </p>
               <SortableDataTable
                 headers={headers}
