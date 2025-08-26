@@ -18,8 +18,6 @@
   align-items: center;
 }
 
-.errorMessage {
-  padding-top: $spacing-02;
-  color: $red-60;
-  @include type-style("label-02");
+.searchButton {
+  padding-inline: $spacing-08 !important;
 }

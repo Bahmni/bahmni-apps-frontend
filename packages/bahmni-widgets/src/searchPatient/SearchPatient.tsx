@@ -5,30 +5,27 @@ import {
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { useNotification } from '@bahmni-frontend/bahmni-widgets';
 import styles from './styles/SearchPatient.module.scss';
 
 interface SearchPatientProps {
   buttonTitle: string;
   searchBarPlaceholder: string;
-  errorMessage: string;
   handleSearchPatient: (
     data: PatientSearch[] | undefined,
     searchTerm: string,
     isLoading: boolean,
+    isError: boolean,
   ) => void;
 }
 
 const SearchPatient: React.FC<SearchPatientProps> = ({
   buttonTitle,
   searchBarPlaceholder,
-  errorMessage,
   handleSearchPatient,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchInput, setSearchInput] = useState('');
-  const { addNotification } = useNotification();
-  const { data, error, isLoading, isError } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['patientSearch', searchTerm],
     queryFn: () => searchPatientByNameOrId(searchTerm),
     enabled: !!searchTerm,
@@ -49,14 +46,10 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
   };
 
   useEffect(() => {
-    if (error)
-      addNotification({
-        title: 'Error',
-        message: errorMessage,
-        type: 'error',
-      });
-    if (searchTerm) handleSearchPatient(data, searchTerm, isLoading);
-  }, [searchTerm, isLoading, error]);
+    if (isError && searchTerm)
+      handleSearchPatient(data, searchTerm, isLoading, isError);
+    if (searchTerm) handleSearchPatient(data, searchTerm, isLoading, isError);
+  }, [searchTerm, isLoading, isError]);
 
   return (
     <div
@@ -75,7 +68,13 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
           size="lg"
           placeholder={searchBarPlaceholder}
           labelText="Search"
+          value={searchInput}
           onChange={(e) => handleSearchTermUpdate(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.code === 'Enter') {
+              handlePatientSearch();
+            }
+          }}
           onClear={handleOnClear}
         />
         <Button
@@ -83,19 +82,11 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
           testId="search-patient-search-button"
           onClick={() => handlePatientSearch()}
           disabled={isLoading}
+          className={styles.searchButton}
         >
           {buttonTitle}
         </Button>
       </div>
-      {error && searchTerm !== '' && (
-        <div
-          className={styles.errorMessage}
-          data-testid="search-patient-error-message"
-          id="search-patient-error-message"
-        >
-          {errorMessage}
-        </div>
-      )}
     </div>
   );
 };
