@@ -1,12 +1,24 @@
 @use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/type" as *;
+
+.searchPatientTile {
+  column-gap: 0.75rem;
+  height: 100%;
+  padding: 1.5rem;
+  box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.3);
+  margin-bottom: $spacing-08;
+}
 
 .searchPatient {
   display: flex;
   justify-content: space-between;
   column-gap: 0.75rem;
   align-items: center;
-  height: 100%;
-  padding: 1.5rem;
-  box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.3);
-  margin-bottom: $spacing-08;
+}
+
+.errorMessage {
+  padding-top: $spacing-02;
+  color: $red-60;
+  @include type-style("label-02");
 }

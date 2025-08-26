@@ -8,14 +8,17 @@ import { useEffect, useState } from 'react';
 import styles from './styles/SearchPatient.module.scss';
 
 interface SearchPatientProps {
+  emptyStateMessage: string;
+  errorMessage: string;
   handleSearchPatient: (
     data: PatientSearch[] | undefined,
-    error: Error | null,
-    loading: boolean,
+    searchTerm: string,
   ) => void;
 }
 
 const SearchPatient: React.FC<SearchPatientProps> = ({
+  emptyStateMessage,
+  errorMessage,
   handleSearchPatient,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -35,26 +38,60 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
     setSearchTerm(searchInput);
   };
 
+  const handleOnClear = () => {
+    setSearchInput('');
+    setSearchTerm('');
+  };
+
   useEffect(() => {
-    if (searchTerm) handleSearchPatient(data, error, isLoading);
+    if (searchTerm) handleSearchPatient(data, searchTerm);
   }, [searchTerm, isLoading]);
 
   return (
-    <div data-testid="search-patient" className={styles.searchPatient}>
-      <Search
-        testId="search-patient-seachbar"
-        size="lg"
-        placeholder="Search by name or patient ID"
-        labelText="Search"
-        id="search-patient-seachbar"
-        onChange={(e) => handleSearchTermUpdate(e.target.value)}
-      />
-      <Button
-        testId="search-patient-search-button"
-        onClick={() => handlePatientSearch()}
+    <div
+      data-testid="search-patient-tile"
+      id="search-patient-tile"
+      className={styles.searchPatientTile}
+    >
+      <div
+        className={styles.searchPatient}
+        data-testid="search-patient-input"
+        id="search-patient-input"
       >
-        Search
-      </Button>
+        <Search
+          testId="search-patient-seachbar"
+          size="lg"
+          placeholder="Search by name or patient ID"
+          labelText="Search"
+          id="search-patient-seachbar"
+          onChange={(e) => handleSearchTermUpdate(e.target.value)}
+          onClear={handleOnClear}
+        />
+        <Button
+          testId="search-patient-search-button"
+          onClick={() => handlePatientSearch()}
+        >
+          Search
+        </Button>
+      </div>
+      {error && searchTerm !== '' && (
+        <div
+          className={styles.errorMessage}
+          data-testid="search-patient-error-message"
+          id="search-patient-error-message"
+        >
+          {errorMessage}
+        </div>
+      )}
+      {data && data.length == 0 && searchTerm !== '' && (
+        <div
+          className={styles.errorMessage}
+          data-testid="search-patient-empty-message"
+          id="search-patient-empty-message"
+        >
+          {emptyStateMessage}
+        </div>
+      )}
     </div>
   );
 };

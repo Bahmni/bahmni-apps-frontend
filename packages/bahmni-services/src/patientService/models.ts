@@ -29,10 +29,7 @@ export interface PatientSearch {
   gender: string;
   dateCreated: Date;
   activeVisitUuid: string;
-  customAttribute: {
-    phoneNumber: string;
-    alternatePhoneNumber: string;
-  };
+  customAttribute: string;
   hasBeenAdmitted: boolean;
   age: string;
 }
