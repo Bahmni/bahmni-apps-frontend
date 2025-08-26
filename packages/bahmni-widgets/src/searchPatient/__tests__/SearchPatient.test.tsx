@@ -5,12 +5,19 @@ import {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import { useNotification } from '@bahmni-frontend/bahmni-widgets';
 import SearchPatient from '../SearchPatient';
 
 expect.extend(toHaveNoViolations);
 
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
   searchPatientByNameOrId: jest.fn(),
+}));
+
+jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
+  useNotification: jest.fn(() => ({
+    addNotification: jest.fn(),
+  })),
 }));
 
 const mockHandleSearchPatientUpdate = jest.fn();
@@ -83,8 +90,6 @@ const mockSearchPatientData: PatientSearch[] = [
 
 const buttonTitle = 'Search';
 const searchBarPlaceholder = 'Search by name or patient ID';
-const searchTerm = 'invalid_searchTerm';
-const emptyStateMessage = `Could not find patient with identifier/name '${searchTerm}'`;
 const errorMessage =
   'An unexpected error occurred during search. Please try again later.';
 
@@ -112,7 +117,6 @@ describe('SearchPatient', () => {
         <SearchPatient
           buttonTitle={buttonTitle}
           searchBarPlaceholder={searchBarPlaceholder}
-          emptyStateMessage={emptyStateMessage}
           errorMessage={errorMessage}
           handleSearchPatient={mockHandleSearchPatientUpdate}
         />
@@ -138,7 +142,6 @@ describe('SearchPatient', () => {
         <SearchPatient
           buttonTitle={buttonTitle}
           searchBarPlaceholder={searchBarPlaceholder}
-          emptyStateMessage={emptyStateMessage}
           errorMessage={errorMessage}
           handleSearchPatient={mockHandleSearchPatientUpdate}
         />
@@ -172,7 +175,6 @@ describe('SearchPatient', () => {
         <SearchPatient
           buttonTitle={buttonTitle}
           searchBarPlaceholder={searchBarPlaceholder}
-          emptyStateMessage={emptyStateMessage}
           errorMessage={errorMessage}
           handleSearchPatient={mockHandleSearchPatientUpdate}
         />
@@ -203,11 +205,13 @@ describe('SearchPatient', () => {
       expect(mockHandleSearchPatientUpdate).toHaveBeenCalledWith(
         undefined,
         'new value',
+        true,
       );
       expect(mockHandleSearchPatientUpdate).toHaveBeenCalledTimes(2);
       expect(mockHandleSearchPatientUpdate).toHaveBeenCalledWith(
         mockSearchPatientData,
         'new value',
+        false,
       );
     });
   });
@@ -218,7 +222,6 @@ describe('SearchPatient', () => {
         <SearchPatient
           buttonTitle={buttonTitle}
           searchBarPlaceholder={searchBarPlaceholder}
-          emptyStateMessage={emptyStateMessage}
           errorMessage={errorMessage}
           handleSearchPatient={mockHandleSearchPatientUpdate}
         />
@@ -245,7 +248,6 @@ describe('SearchPatient', () => {
         <SearchPatient
           buttonTitle={buttonTitle}
           searchBarPlaceholder={searchBarPlaceholder}
-          emptyStateMessage={emptyStateMessage}
           errorMessage={errorMessage}
           handleSearchPatient={mockHandleSearchPatientUpdate}
         />
@@ -283,7 +285,6 @@ describe('SearchPatient', () => {
         <SearchPatient
           buttonTitle={buttonTitle}
           searchBarPlaceholder={searchBarPlaceholder}
-          emptyStateMessage={emptyStateMessage}
           errorMessage={errorMessage}
           handleSearchPatient={mockHandleSearchPatientUpdate}
         />
@@ -302,6 +303,10 @@ describe('SearchPatient', () => {
     const error = new Error(
       'Login location is missing or invalid. Please reauthenticate.',
     );
+    const mockAddNotification = jest.fn();
+    (useNotification as jest.Mock).mockReturnValue({
+      addNotification: mockAddNotification,
+    });
 
     (searchPatientByNameOrId as jest.Mock).mockRejectedValue(error);
 
@@ -309,9 +314,10 @@ describe('SearchPatient', () => {
       fireEvent.input(searchInput, { target: { value: 'new value' } });
       fireEvent.click(screen.getByTestId('search-patient-search-button'));
     });
-    await waitFor(() =>
-      expect(screen.getByText(errorMessage)).toBeInTheDocument(),
-    );
+    await waitFor(() => {
+      expect(screen.getByText(errorMessage)).toBeInTheDocument();
+      expect(mockAddNotification).toHaveBeenCalled();
+    });
   });
 
   it('should remove error message when search term is cleared', async () => {
@@ -320,7 +326,6 @@ describe('SearchPatient', () => {
         <SearchPatient
           buttonTitle={buttonTitle}
           searchBarPlaceholder={searchBarPlaceholder}
-          emptyStateMessage={emptyStateMessage}
           errorMessage={errorMessage}
           handleSearchPatient={mockHandleSearchPatientUpdate}
         />
@@ -365,93 +370,12 @@ describe('SearchPatient', () => {
     );
   });
 
-  it('should show empty state message when search returns no match', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          emptyStateMessage={emptyStateMessage}
-          errorMessage={errorMessage}
-          handleSearchPatient={mockHandleSearchPatientUpdate}
-        />
-      </QueryClientProvider>,
-    );
-
-    expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-seachbar')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-seachbar')).toHaveAttribute(
-      'placeholder',
-      searchBarPlaceholder,
-    );
-
-    const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
-
-    (searchPatientByNameOrId as jest.Mock).mockReturnValue([]);
-
-    await waitFor(() => {
-      fireEvent.input(searchInput, { target: { value: searchTerm } });
-      fireEvent.click(screen.getByTestId('search-patient-search-button'));
-    });
-    await waitFor(() =>
-      expect(screen.getByText(emptyStateMessage)).toBeInTheDocument(),
-    );
-  });
-
-  it('should clear empty state message when search input is cleared', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          emptyStateMessage={emptyStateMessage}
-          errorMessage={errorMessage}
-          handleSearchPatient={mockHandleSearchPatientUpdate}
-        />
-      </QueryClientProvider>,
-    );
-
-    expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-seachbar')).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', {
-        name: 'Clear search input',
-      }),
-    ).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-seachbar')).toHaveAttribute(
-      'placeholder',
-      searchBarPlaceholder,
-    );
-
-    const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
-
-    (searchPatientByNameOrId as jest.Mock).mockReturnValue([]);
-
-    await waitFor(() => {
-      fireEvent.input(searchInput, { target: { value: searchTerm } });
-      fireEvent.click(screen.getByTestId('search-patient-search-button'));
-    });
-    await waitFor(() =>
-      expect(screen.getByText(emptyStateMessage)).toBeInTheDocument(),
-    );
-    const searchClear = screen.getByRole('button', {
-      name: 'Clear search input',
-    });
-    await waitFor(() => {
-      fireEvent.click(searchClear);
-    });
-    await waitFor(() =>
-      expect(screen.queryByText(emptyStateMessage)).not.toBeInTheDocument(),
-    );
-  });
-
   it('should have no accessibility violations', async () => {
     const { container } = render(
       <QueryClientProvider client={queryClient}>
         <SearchPatient
           buttonTitle={buttonTitle}
           searchBarPlaceholder={searchBarPlaceholder}
-          emptyStateMessage={emptyStateMessage}
           errorMessage={errorMessage}
           handleSearchPatient={mockHandleSearchPatientUpdate}
         />

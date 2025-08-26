@@ -5,29 +5,30 @@ import {
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
+import { useNotification } from '@bahmni-frontend/bahmni-widgets';
 import styles from './styles/SearchPatient.module.scss';
 
 interface SearchPatientProps {
   buttonTitle: string;
   searchBarPlaceholder: string;
-  emptyStateMessage: string;
   errorMessage: string;
   handleSearchPatient: (
     data: PatientSearch[] | undefined,
     searchTerm: string,
+    isLoading: boolean,
   ) => void;
 }
 
 const SearchPatient: React.FC<SearchPatientProps> = ({
   buttonTitle,
   searchBarPlaceholder,
-  emptyStateMessage,
   errorMessage,
   handleSearchPatient,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchInput, setSearchInput] = useState('');
-  const { data, error, isLoading } = useQuery({
+  const { addNotification } = useNotification();
+  const { data, error, isLoading, isError } = useQuery({
     queryKey: ['patientSearch', searchTerm],
     queryFn: () => searchPatientByNameOrId(searchTerm),
     enabled: !!searchTerm,
@@ -48,8 +49,14 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
   };
 
   useEffect(() => {
-    if (searchTerm) handleSearchPatient(data, searchTerm);
-  }, [searchTerm, isLoading]);
+    if (error)
+      addNotification({
+        title: 'Error',
+        message: errorMessage,
+        type: 'error',
+      });
+    if (searchTerm) handleSearchPatient(data, searchTerm, isLoading);
+  }, [searchTerm, isLoading, error]);
 
   return (
     <div
@@ -87,15 +94,6 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
           id="search-patient-error-message"
         >
           {errorMessage}
-        </div>
-      )}
-      {data && data.length == 0 && searchTerm !== '' && (
-        <div
-          className={styles.errorMessage}
-          data-testid="search-patient-empty-message"
-          id="search-patient-empty-message"
-        >
-          {emptyStateMessage}
         </div>
       )}
     </div>
