@@ -37,7 +37,7 @@ const PatientSearch: React.FC = () => {
       { key: 'age', header: t('AGE') },
       { key: 'registrationDate', header: t('REGISTRATION_DATE') },
     ],
-    [],
+    [t],
   );
 
   const handleSearchResults = useCallback(
@@ -68,16 +68,6 @@ const PatientSearch: React.FC = () => {
   const renderSearchResults = () => {
     if (!hasSearched) {
       return null;
-    }
-
-    if (searchResults.length === 0 && !loading) {
-      return (
-        <div className={styles.noResultsContainer}>
-          <p className={styles.noResultsText}>
-            {t('PATIENT_SEARCH_NO_RESULTS')}
-          </p>
-        </div>
-      );
     }
 
     return (
