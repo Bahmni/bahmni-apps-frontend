@@ -232,6 +232,8 @@
   "RADIOLOGY_PRIORITY_URGENT": "Urgente",
   "RADIOLOGY_RESULTS": "Resultados",
   "RADIOLOGY_TEST_NAME": "Nombre de la Prueba",
+  "REGISTRATION_PATIENT_SEARCH_BREADCRUMB_HOME": "Hogar",
+  "REGISTRATION_PATIENT_SEARCH_BREADCRUMB_REGISTRATION": "Registro",
   "REGISTRATION_PATIENT_SEARCH_BUTTON_TITLE": "Buscar",
   "REGISTRATION_PATIENT_SEARCH_EMPTY_MESSAGE": "No se pudo encontrar un paciente con el identificador/nombre {{searchTerm}}",
   "REGISTRATION_PATIENT_SEARCH_ERROR_MESSAGE": "Ocurrió un error inesperado durante la búsqueda. Por favor, inténtelo de nuevo más tarde.",

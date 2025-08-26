@@ -1,6 +1,7 @@
 import {
   BaseLayout,
   Header,
+  SkeletonText,
   SortableDataTable,
   Tile,
 } from '@bahmni-frontend/bahmni-design-system';
@@ -8,15 +9,16 @@ import {
   BAHMNI_HOME_PATH,
   PatientSearch,
   useTranslation,
+  AUDIT_LOG_EVENT_DETAILS,
+  AuditEventType,
+  dispatchAuditEvent,
 } from '@bahmni-frontend/bahmni-services';
-import { SearchPatient } from '@bahmni-frontend/bahmni-widgets';
-import { useState } from 'react';
+import {
+  SearchPatient,
+  useNotification,
+} from '@bahmni-frontend/bahmni-widgets';
+import { useEffect, useState } from 'react';
 import styles from './styles/PatientSearchPage.module.scss';
-
-const breadcrumbItems = [
-  { id: 'home', label: 'Home', href: BAHMNI_HOME_PATH },
-  { id: 'current', label: 'Registration', isCurrentPage: true },
-];
 
 type PatientSearchViewModel<T> = T & {
   id: string;
@@ -31,22 +33,58 @@ type PatientSearchViewModel<T> = T & {
  * @returns React component with registration search interface
  */
 const PatientSearchPage: React.FC = () => {
-  const [patientSearchData, setPatientSearchData] = useState<PatientSearch[]>(
-    [],
-  );
+  const [patientSearchData, setPatientSearchData] = useState<
+    PatientSearch[] | undefined
+  >([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isError, setIsError] = useState<boolean>(false);
   const { t } = useTranslation();
+  const { addNotification } = useNotification();
+
+  const breadcrumbItems = [
+    {
+      id: 'home',
+      label: t('REGISTRATION_PATIENT_SEARCH_BREADCRUMB_HOME'),
+      href: BAHMNI_HOME_PATH,
+    },
+    {
+      id: 'current',
+      label: t('REGISTRATION_PATIENT_SEARCH_BREADCRUMB_REGISTRATION'),
+      isCurrentPage: true,
+    },
+  ];
+
+  useEffect(() => {
+    dispatchAuditEvent({
+      eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_REGISTRATION_PATIENT_SEARCH
+        .eventType as AuditEventType,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (isError)
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: t('REGISTRATION_PATIENT_SEARCH_ERROR_MESSAGE'),
+        type: 'error',
+      });
+  }, [isError]);
 
   const handleSearchPatientUpdate = (
     data: PatientSearch[] | undefined,
     searchTerm: string,
+    isLoading: boolean,
+    isError: boolean,
   ) => {
     setPatientSearchData(data ?? []);
     setSearchTerm(searchTerm);
+    setIsLoading(isLoading);
+    setIsError(isError);
   };
 
   const patientSearchResult: PatientSearchViewModel<PatientSearch>[] =
-    patientSearchData.map((item, index) => ({
+    patientSearchData!.map((item, index) => ({
       ...item,
       id: index.toString(),
       name: [item.givenName, item.middleName, item.familyName].join(' '),
@@ -72,6 +110,30 @@ const PatientSearchPage: React.FC = () => {
       header: t('REGISTRATION_PATIENT_SEARCH_HEADER_ALTERNATE_PHONE_NUMBER'),
     },
   ];
+
+  const renderTitle = (
+    isLoading: boolean,
+    isError: boolean,
+    dataLength: number,
+  ) => {
+    if (isLoading) {
+      return <SkeletonText testId="patient-search-title-loading" />;
+    } else if (isError) {
+      return (
+        <p className={styles.title} data-testid="patient-search-title-error">
+          {t('ERROR_DEFAULT_TITLE')}
+        </p>
+      );
+    } else {
+      return (
+        <p className={styles.title} data-testid="patient-search-title">
+          {t('REGISTRATION_PATIENT_SEARCH_TABLE_TITLE', {
+            count: dataLength,
+          })}
+        </p>
+      );
+    }
+  };
 
   const renderCell = (
     row: PatientSearchViewModel<PatientSearch>,
@@ -108,27 +170,31 @@ const PatientSearchPage: React.FC = () => {
             searchBarPlaceholder={t(
               'REGISTRATION_PATIENT_SEARCH_INPUT_PLACEHOLDER',
             )}
-            emptyStateMessage={t('REGISTRATION_PATIENT_SEARCH_EMPTY_MESSAGE', {
-              searchTerm: searchTerm,
-            })}
-            errorMessage={t('REGISTRATION_PATIENT_SEARCH_ERROR_MESSAGE')}
             handleSearchPatient={handleSearchPatientUpdate}
           />
-          {patientSearchResult && patientSearchResult.length > 0 && (
+          {patientSearchData && searchTerm !== '' && (
             <Tile
               id="patient-search-result"
               aria-label="patient-search-result"
               className={styles.patientSearchTable}
             >
-              <p className={styles.title}>
-                {t('REGISTRATION_PATIENT_SEARCH_TABLE_TITLE', {
-                  count: patientSearchResult.length,
-                })}
-              </p>
+              {renderTitle(isLoading, isError, patientSearchResult.length)}
               <SortableDataTable
                 headers={headers}
                 ariaLabel="patient-search-sortable-data-table"
+                loading={isLoading}
                 rows={patientSearchResult}
+                emptyStateMessage={t(
+                  'REGISTRATION_PATIENT_SEARCH_EMPTY_MESSAGE',
+                  {
+                    searchTerm: searchTerm,
+                  },
+                )}
+                errorStateMessage={
+                  isError
+                    ? t('REGISTRATION_PATIENT_SEARCH_ERROR_MESSAGE')
+                    : undefined
+                }
                 renderCell={renderCell}
               />
             </Tile>

@@ -1,4 +1,9 @@
-import { PatientSearch } from '@bahmni-frontend/bahmni-services';
+import {
+  PatientSearch,
+  AUDIT_LOG_EVENT_DETAILS,
+  AuditEventType,
+  dispatchAuditEvent,
+} from '@bahmni-frontend/bahmni-services';
 import {
   QueryClient,
   QueryClientProvider,
@@ -76,6 +81,19 @@ jest.mock('@tanstack/react-query', () => ({
   useQuery: jest.fn(),
 }));
 
+const mockAddNotification = jest.fn();
+jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-widgets'),
+  useNotification: jest.fn(() => ({
+    addNotification: mockAddNotification,
+  })),
+}));
+
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+  dispatchAuditEvent: jest.fn(),
+}));
+
 describe('PatientSearchPage', () => {
   let queryClient: QueryClient;
 
@@ -102,6 +120,18 @@ describe('PatientSearchPage', () => {
 
   afterEach(() => {
     queryClient.clear();
+  });
+
+  it("should log the user's visit to page", () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <PatientSearchPage />
+      </QueryClientProvider>,
+    );
+    expect(dispatchAuditEvent).toHaveBeenCalledWith({
+      eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_REGISTRATION_PATIENT_SEARCH
+        .eventType as AuditEventType,
+    });
   });
 
   it('should render the Header with Breadcrumbs component', () => {
@@ -170,10 +200,10 @@ describe('PatientSearchPage', () => {
     });
   });
 
-  it('should show not show sortable table when patient search returns no match', async () => {
+  it('should show patient error notification and error details when search is fails', async () => {
     (useQuery as jest.Mock).mockReturnValue({
       data: undefined,
-      error: null,
+      isError: true,
       isLoading: false,
     });
 
@@ -191,13 +221,45 @@ describe('PatientSearchPage', () => {
       'Search by name or patient ID',
     );
 
-    fireEvent.input(searchInput, { target: { value: 'ABC20000' } });
+    fireEvent.input(searchInput, { target: { value: 'new value' } });
+    fireEvent.click(screen.getByTestId('search-patient-search-button'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Error')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'An unexpected error occurred during search. Please try again later.',
+        ),
+      ).toBeInTheDocument();
+      expect(mockAddNotification).toHaveBeenCalled();
+    });
+  });
+
+  it('should show loading state during search', async () => {
+    (useQuery as jest.Mock).mockImplementation(({ queryKey, enabled }) => {
+      const [, searchTerm] = queryKey;
+      if (!enabled || !searchTerm) {
+        return { data: undefined, error: null, isLoading: false };
+      }
+      return { data: undefined, error: null, isLoading: true };
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <PatientSearchPage />
+      </QueryClientProvider>,
+    );
+
+    const searchInput = screen.getByPlaceholderText(
+      'Search by name or patient ID',
+    );
+    fireEvent.input(searchInput, { target: { value: 'test search' } });
     fireEvent.click(screen.getByTestId('search-patient-search-button'));
 
     await waitFor(() => {
       expect(
-        screen.queryByRole('div', { name: 'Add to cart' }),
-      ).not.toBeInTheDocument();
+        screen.getByTestId('patient-search-title-loading'),
+      ).toBeInTheDocument();
     });
   });
 
