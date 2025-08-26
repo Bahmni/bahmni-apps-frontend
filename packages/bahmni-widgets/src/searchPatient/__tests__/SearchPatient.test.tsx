@@ -233,6 +233,44 @@ describe('SearchPatient', () => {
     expect(searchPatientByNameOrId).not.toHaveBeenCalled();
   });
 
+  it('should disable search button when search call is happening', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SearchPatient
+          emptyStateMessage={emptyStateMessage}
+          errorMessage={errorMessage}
+          handleSearchPatient={mockHandleSearchPatientUpdate}
+        />
+      </QueryClientProvider>,
+    );
+
+    expect(
+      screen.getByTestId('search-patient-search-button'),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('search-patient-seachbar')).toBeInTheDocument();
+    expect(screen.getByTestId('search-patient-seachbar')).toHaveAttribute(
+      'placeholder',
+      'Search by name or patient ID',
+    );
+    const searchInput = screen.getByPlaceholderText(
+      'Search by name or patient ID',
+    );
+
+    (searchPatientByNameOrId as jest.Mock).mockReturnValue([]);
+
+    await waitFor(() => {
+      fireEvent.input(searchInput, { target: { value: 'new value' } });
+      fireEvent.click(screen.getByTestId('search-patient-search-button'));
+      expect(screen.getByTestId('search-patient-search-button')).toBeDisabled();
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('search-patient-search-button'),
+      ).not.toBeDisabled();
+    });
+  });
+
   it('should show error message when search throws an error', async () => {
     render(
       <QueryClientProvider client={queryClient}>

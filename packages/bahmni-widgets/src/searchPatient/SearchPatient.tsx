@@ -59,17 +59,19 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
         id="search-patient-input"
       >
         <Search
+          id="search-patient-seachbar"
           testId="search-patient-seachbar"
           size="lg"
           placeholder="Search by name or patient ID"
           labelText="Search"
-          id="search-patient-seachbar"
           onChange={(e) => handleSearchTermUpdate(e.target.value)}
           onClear={handleOnClear}
         />
         <Button
+          id="search-patient-search-button"
           testId="search-patient-search-button"
           onClick={() => handlePatientSearch()}
+          disabled={isLoading}
         >
           Search
         </Button>
