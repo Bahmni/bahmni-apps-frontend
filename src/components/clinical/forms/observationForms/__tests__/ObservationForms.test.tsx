@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
-import { ObservationForm } from '@types/observationForms';
+import { ObservationForm } from '../../../../../types/observationForms';
 import ObservationForms from '../ObservationForms';
 
 // Mock the translation hook
@@ -443,6 +443,24 @@ describe('ObservationForms', () => {
 
       const formButton = screen.getByTestId('combobox-item-form-1');
       expect(() => fireEvent.click(formButton)).not.toThrow();
+    });
+
+    it('should not call onFormSelect when form is not found in availableForms', () => {
+      const mockOnFormSelect = jest.fn();
+      render(
+        <ObservationForms {...defaultProps} onFormSelect={mockOnFormSelect} />,
+      );
+
+      // Simulate ComboBox onChange with a selectedItem that doesn't exist in availableForms
+      const ComboBox = jest.requireMock('@carbon/react').ComboBox;
+      const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
+      const onChange = lastCall[0].onChange;
+
+      onChange({
+        selectedItem: { id: 'non-existent-form', label: 'Non-existent Form', disabled: false },
+      });
+
+      expect(mockOnFormSelect).not.toHaveBeenCalled();
     });
   });
 });

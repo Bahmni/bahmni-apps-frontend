@@ -257,5 +257,20 @@ describe('observationFormsService', () => {
 
       expect(result).toEqual([]);
     });
+
+    it('should handle non-array response from API', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => null, // Non-array response
+      });
+
+      (translationService.getUserPreferredLocale as jest.Mock).mockReturnValue(
+        'en',
+      );
+
+      const result = await fetchObservationForms();
+
+      expect(result).toEqual([]);
+    });
   });
 });
