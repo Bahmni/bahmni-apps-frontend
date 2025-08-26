@@ -3,14 +3,11 @@ import { QueryClientConfig } from '@tanstack/react-query';
 export const queryClientConfig: QueryClientConfig = {
   defaultOptions: {
     queries: {
-      retry: 2,
-      staleTime: 1000 * 30,
-      refetchOnMount: 'always',
-      refetchOnReconnect: 'always',
+      retry: false,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      refetchOnWindowFocus: false,
       refetchIntervalInBackground: false,
-    },
-    mutations: {
-      retry: 2,
     },
   },
 };
