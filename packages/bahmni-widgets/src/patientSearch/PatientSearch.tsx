@@ -3,7 +3,7 @@ import {
   useTranslation,
   FormattedPatientSearchResult,
 } from '@bahmni-frontend/bahmni-services';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import styles from './styles/PatientSearch.module.scss';
 import { usePatientSearch } from './usePatientSearch';
 
@@ -20,11 +20,11 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
 }) => {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [activeSearchTerm, setActiveSearchTerm] = useState<string>('');
   const [hasPerformedSearch, setHasPerformedSearch] = useState<boolean>(false);
-  const { searchResults, searchPatients, loading, error } = usePatientSearch();
+  const { searchResults, loading, error } = usePatientSearch(activeSearchTerm);
 
-  // Notify parent component of state changes
-  React.useEffect(() => {
+  useEffect(() => {
     onLoading(loading);
   }, [loading, onLoading]);
 
@@ -40,24 +40,30 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
     }
   }, [searchResults, onSearchResults, hasPerformedSearch]);
 
-  const handleSearch = useCallback(async () => {
+  const handleSearch = useCallback(() => {
     if (!searchTerm.trim()) {
       return;
     }
 
-    try {
-      setHasPerformedSearch(true);
-      await searchPatients(searchTerm);
-    } catch (err) {
-      // Error handling is managed by the custom hook
-    }
-  }, [searchTerm, searchPatients]);
+    setHasPerformedSearch(true);
+    setActiveSearchTerm(searchTerm);
+  }, [searchTerm]);
 
   const handleInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       setSearchTerm(event.target.value);
     },
     [],
+  );
+
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        handleSearch();
+      }
+    },
+    [handleSearch],
   );
 
   const isSearchDisabled = !searchTerm.trim() || loading;
@@ -74,6 +80,7 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
         placeholder={t('PATIENT_SEARCH_PLACEHOLDER')}
         value={searchTerm}
         onChange={handleInputChange}
+        onKeyDown={handleKeyDown}
         disabled={loading}
         className={styles.searchInput}
         aria-label={t('PATIENT_SEARCH_PLACEHOLDER')}

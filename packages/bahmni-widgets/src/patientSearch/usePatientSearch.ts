@@ -4,22 +4,23 @@ import {
   getFormattedError,
   useTranslation,
 } from '@bahmni-frontend/bahmni-services';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 interface UsePatientSearchResult {
   searchResults: FormattedPatientSearchResult[];
   totalCount: number;
   loading: boolean;
   error: string | null;
-  searchPatients: (searchTerm: string) => Promise<void>;
-  clearResults: () => void;
 }
 
 /**
  * Custom hook to manage patient search functionality
- * @returns Object containing search results, loading state, error state, and search functions
+ * @param searchTerm - The search term to search for patients
+ * @returns Object containing search results, loading state, error state, and clear function
  */
-export const usePatientSearch = (): UsePatientSearchResult => {
+export const usePatientSearch = (
+  searchTerm: string,
+): UsePatientSearchResult => {
   const { t } = useTranslation();
   const [searchResults, setSearchResults] = useState<
     FormattedPatientSearchResult[]
@@ -28,48 +29,43 @@ export const usePatientSearch = (): UsePatientSearchResult => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const searchPatients = useCallback(
-    async (searchTerm: string) => {
-      if (!searchTerm.trim()) {
-        setError('Search term cannot be empty');
-        return;
-      }
+  const performSearch = useCallback(async (term: string) => {
+    if (!term.trim()) {
+      setSearchResults([]);
+      setTotalCount(0);
+      setError(null);
+      return;
+    }
 
-      try {
-        setLoading(true);
-        setError(null);
+    try {
+      setLoading(true);
+      setError(null);
 
-        const { results, totalCount: count } = await getPatientSearchResults(
-          searchTerm,
-          t,
-        );
+      const { results, totalCount: count } = await getPatientSearchResults(
+        term,
+        t,
+      );
 
-        setSearchResults(results);
-        setTotalCount(count);
-      } catch (err) {
-        const { message } = getFormattedError(err);
-        setError(message);
-        setSearchResults([]);
-        setTotalCount(0);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [t],
-  );
-
-  const clearResults = useCallback(() => {
-    setSearchResults([]);
-    setTotalCount(0);
-    setError(null);
+      setSearchResults(results);
+      setTotalCount(count);
+    } catch (err) {
+      const { message } = getFormattedError(err);
+      setError(message);
+      setSearchResults([]);
+      setTotalCount(0);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    performSearch(searchTerm);
+  }, [searchTerm, performSearch]);
 
   return {
     searchResults,
     totalCount,
     loading,
     error,
-    searchPatients,
-    clearResults,
   };
 };
