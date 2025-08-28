@@ -9,6 +9,7 @@ import {
   PatientSearch as PatientSearchWidget,
 } from '@bahmni-frontend/bahmni-widgets';
 import { render, screen, act } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import PatientSearch from '../PatientSearch';
 
 // Mock the dependencies
@@ -72,6 +73,10 @@ describe('PatientSearch Page', () => {
     },
   ];
 
+  const renderWithRouter = (component: React.ReactElement) => {
+    return render(<MemoryRouter>{component}</MemoryRouter>);
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     (useNotification as jest.Mock).mockReturnValue({
@@ -113,7 +118,7 @@ describe('PatientSearch Page', () => {
 
   describe('Initial Render', () => {
     it("should log the user's visit to page", () => {
-      render(<PatientSearch />);
+      renderWithRouter(<PatientSearch />);
       expect(dispatchAuditEvent).toHaveBeenCalledWith({
         eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_REGISTRATION_PATIENT_SEARCH
           .eventType as AuditEventType,
@@ -121,7 +126,7 @@ describe('PatientSearch Page', () => {
     });
 
     it('should render the patient search page with search widget', () => {
-      render(<PatientSearch />);
+      renderWithRouter(<PatientSearch />);
 
       expect(screen.getByTestId('patient-search-widget')).toBeInTheDocument();
       expect(mockPatientSearchWidget).toHaveBeenCalledWith(
@@ -135,7 +140,7 @@ describe('PatientSearch Page', () => {
     });
 
     it('should not show search results initially', () => {
-      render(<PatientSearch />);
+      renderWithRouter(<PatientSearch />);
 
       // Should not show results header or table initially
       expect(screen.queryByText(/Patient Results/)).not.toBeInTheDocument();
@@ -144,7 +149,7 @@ describe('PatientSearch Page', () => {
 
   describe('Search Results Handling', () => {
     it('should display search results when search is successful', async () => {
-      render(<PatientSearch />);
+      renderWithRouter(<PatientSearch />);
 
       await act(async () => {
         screen.getByTestId('trigger-search-results').click();
@@ -171,7 +176,7 @@ describe('PatientSearch Page', () => {
         </div>
       ));
 
-      render(<PatientSearch />);
+      renderWithRouter(<PatientSearch />);
 
       await act(async () => {
         screen.getByTestId('trigger-empty-results').click();
@@ -188,7 +193,7 @@ describe('PatientSearch Page', () => {
 
   describe('Loading State', () => {
     it('should handle loading state changes', async () => {
-      render(<PatientSearch />);
+      renderWithRouter(<PatientSearch />);
 
       // Verify loading callbacks are properly set up
       expect(mockPatientSearchWidget).toHaveBeenCalledWith(
@@ -202,7 +207,7 @@ describe('PatientSearch Page', () => {
 
   describe('Error Handling', () => {
     it('should show error notification when search fails', async () => {
-      render(<PatientSearch />);
+      renderWithRouter(<PatientSearch />);
 
       await act(async () => {
         screen.getByTestId('trigger-search-error').click();
@@ -224,7 +229,7 @@ describe('PatientSearch Page', () => {
     });
 
     it('should hide results when error occurs after successful search', async () => {
-      render(<PatientSearch />);
+      renderWithRouter(<PatientSearch />);
 
       // First have some results
       await act(async () => {
@@ -248,7 +253,7 @@ describe('PatientSearch Page', () => {
 
   describe('Component State Management', () => {
     it('should maintain search results state correctly', async () => {
-      render(<PatientSearch />);
+      renderWithRouter(<PatientSearch />);
 
       // Initially no results
       expect(
@@ -265,7 +270,7 @@ describe('PatientSearch Page', () => {
 
   describe('Accessibility', () => {
     it('should have proper semantic structure', async () => {
-      render(<PatientSearch />);
+      renderWithRouter(<PatientSearch />);
 
       const searchSection = document.querySelector('[class*="searchSection"]');
       expect(searchSection).toBeInTheDocument();
@@ -278,6 +283,49 @@ describe('PatientSearch Page', () => {
         '[class*="resultsContainer"]',
       );
       expect(resultsContainer).toBeInTheDocument();
+    });
+  });
+
+  describe('Patient ID Link Navigation', () => {
+    it('should render patient ID as a clickable link with correct href', async () => {
+      renderWithRouter(<PatientSearch />);
+
+      await act(async () => {
+        screen.getByTestId('trigger-search-results').click();
+      });
+
+      // Check that patient IDs are rendered as links
+      const patientLink1 = screen.getByRole('link', { name: 'PAT001' });
+      const patientLink2 = screen.getByRole('link', { name: 'PAT002' });
+
+      expect(patientLink1).toBeInTheDocument();
+      expect(patientLink2).toBeInTheDocument();
+
+      expect(patientLink1).toHaveClass('patientLink');
+
+      // Verify the href attributes contain the correct patient UUIDs
+      expect(patientLink1).toHaveAttribute(
+        'href',
+        '/bahmni/registration/index.html#/patient/uuid-1',
+      );
+      expect(patientLink2).toHaveAttribute(
+        'href',
+        '/bahmni/registration/index.html#/patient/uuid-2',
+      );
+
+      // Check that other columns are not rendered as links
+      const patientName = screen.getByText('John Doe');
+      const phoneNumber = screen.getByText('1234567890');
+      const gender = screen.getByText('Male');
+
+      expect(patientName).toBeInTheDocument();
+      expect(phoneNumber).toBeInTheDocument();
+      expect(gender).toBeInTheDocument();
+
+      // Verify these are not links
+      expect(patientName.tagName).not.toBe('A');
+      expect(phoneNumber.tagName).not.toBe('A');
+      expect(gender.tagName).not.toBe('A');
     });
   });
 });

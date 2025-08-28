@@ -15,6 +15,7 @@ import {
   useNotification,
 } from '@bahmni-frontend/bahmni-widgets';
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import styles from './styles/PatientSearch.module.scss';
 
 /**
@@ -82,6 +83,23 @@ const PatientSearch: React.FC = () => {
     setLoading(isLoading);
   }, []);
 
+  const renderCell = useCallback(
+    (row: FormattedPatientSearchResult, cellId: string) => {
+      if (cellId === 'patientId') {
+        return (
+          <Link
+            to={`/bahmni/registration/index.html#/patient/${row.uuid}`}
+            className={styles.patientLink}
+          >
+            {row.patientId}
+          </Link>
+        );
+      }
+      return row[cellId as keyof FormattedPatientSearchResult];
+    },
+    [],
+  );
+
   const renderSearchResults = () => {
     if (!hasSearched || error) {
       return null;
@@ -102,6 +120,7 @@ const PatientSearch: React.FC = () => {
           ariaLabel={t('PATIENT_SEARCH_RESULTS_TABLE')}
           emptyStateMessage={t('PATIENT_SEARCH_NO_RESULTS')}
           loading={loading}
+          renderCell={renderCell}
         />
       </div>
     );
