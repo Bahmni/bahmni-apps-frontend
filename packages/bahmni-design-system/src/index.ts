@@ -30,6 +30,7 @@ export {
 } from './atoms/tabs';
 export { NumberInput, type NumberInputProps } from './atoms/numberInput';
 export { ComboBox, type ComboBoxProps } from './atoms/comboBox';
+export { Search, type SearchProps } from './atoms/search';
 export { TextInput, type TextInputProps } from './atoms/textInput';
 export { NotificationContainer } from './molecules/notification';
 export { SortableDataTable } from './molecules/sortableDataTable';

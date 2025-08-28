@@ -1,4 +1,4 @@
-import { Button, TextInput } from '@bahmni-frontend/bahmni-design-system';
+import { Button, Search } from '@bahmni-frontend/bahmni-design-system';
 import {
   useTranslation,
   FormattedPatientSearchResult,
@@ -73,7 +73,7 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
       className={styles.patientSearchContainer}
       data-testid="patient-search-widget"
     >
-      <TextInput
+      <Search
         id="patient-search-input"
         testId="patient-search-input"
         labelText=""
