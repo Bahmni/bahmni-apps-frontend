@@ -1,4 +1,4 @@
-import { FormattedPatientSearchResult } from '@bahmni-frontend/bahmni-services';
+import { AUDIT_LOG_EVENT_DETAILS, AuditEventType, dispatchAuditEvent, FormattedPatientSearchResult } from '@bahmni-frontend/bahmni-services';
 import {
   useNotification,
   PatientSearch as PatientSearchWidget,
@@ -8,6 +8,8 @@ import PatientSearch from '../PatientSearch';
 
 // Mock the dependencies
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+  dispatchAuditEvent: jest.fn(),
   useTranslation: jest.fn().mockImplementation(() => ({
     t: (key: string) => {
       const translations: Record<string, string> = {
@@ -105,6 +107,15 @@ describe('PatientSearch Page', () => {
   });
 
   describe('Initial Render', () => {
+
+    it("should log the user's visit to page", () => {
+      render(<PatientSearch />);
+      expect(dispatchAuditEvent).toHaveBeenCalledWith({
+        eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_REGISTRATION_PATIENT_SEARCH
+          .eventType as AuditEventType,
+      });
+    });
+
     it('should render the patient search page with search widget', () => {
       render(<PatientSearch />);
 

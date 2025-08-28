@@ -6,12 +6,15 @@ import {
 import {
   useTranslation,
   FormattedPatientSearchResult,
+  dispatchAuditEvent,
+  AUDIT_LOG_EVENT_DETAILS,
+  AuditEventType,
 } from '@bahmni-frontend/bahmni-services';
 import {
   PatientSearch as PatientSearchWidget,
   useNotification,
 } from '@bahmni-frontend/bahmni-widgets';
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import styles from './styles/PatientSearch.module.scss';
 
 /**
@@ -26,6 +29,13 @@ const PatientSearch: React.FC = () => {
   >([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [hasSearched, setHasSearched] = useState<boolean>(false);
+
+  useEffect(() => {
+    dispatchAuditEvent({
+      eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_REGISTRATION_PATIENT_SEARCH
+        .eventType as AuditEventType,
+    });
+  }, []);
 
   const tableHeaders = useMemo(
     () => [
