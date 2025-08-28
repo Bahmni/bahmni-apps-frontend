@@ -20,6 +20,7 @@ import { useMedicationStore } from '../../../src/stores/medicationsStore';
 import useServiceRequestStore from '../../../src/stores/serviceRequestStore';
 import { ERROR_TITLES } from '../../constants/errors';
 import { ConsultationBundle } from '../../models/consultationBundle';
+import { ObservationForm } from '@bahmni-frontend/bahmni-services';
 import {
   postConsultationBundle,
   createDiagnosisBundleEntries,
@@ -37,10 +38,9 @@ import ConditionsAndDiagnoses from '../forms/conditionsAndDiagnoses/ConditionsAn
 import BasicForm from '../forms/encounterDetails/EncounterDetails';
 import InvestigationsForm from '../forms/investigations/InvestigationsForm';
 import MedicationsForm from '../forms/medications/MedicationsForm';
-import styles from './styles/ConsultationPad.module.scss';
 import ObservationForms from '../forms/observationForms/ObservationForms';
 import ObservationFormsContainer from '../forms/observationForms/ObservationFormsContainer';
-import { ObservationForm } from '../../models/observationForms';
+import styles from './styles/ConsultationPad.module.scss';
 
 interface ConsultationPadProps {
   onClose: () => void;
@@ -292,25 +292,25 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     resetMedications();
     onClose();
   };
-const consultationContent = (
-  <>
-    <BasicForm />
-    <MenuItemDivider />
-    <AllergiesForm />
-    <MenuItemDivider />
-    <InvestigationsForm />
-    <MenuItemDivider />
-    <ConditionsAndDiagnoses />
-    <MenuItemDivider />
-    <MedicationsForm />
-    <MenuItemDivider />
-    <ObservationForms
-      onFormSelect={handleFormSelection}
-      selectedForms={selectedForms}
-      onRemoveForm={removeFormFromSelected}
-    />
-    <MenuItemDivider />
-  </>   
+  const consultationContent = (
+    <>
+      <BasicForm />
+      <MenuItemDivider />
+      <AllergiesForm />
+      <MenuItemDivider />
+      <InvestigationsForm />
+      <MenuItemDivider />
+      <ConditionsAndDiagnoses />
+      <MenuItemDivider />
+      <MedicationsForm />
+      <MenuItemDivider />
+      <ObservationForms
+        onFormSelect={handleFormSelection}
+        selectedForms={selectedForms}
+        onRemoveForm={removeFormFromSelected}
+      />
+      <MenuItemDivider />
+    </>
   );
 
   // If viewing a form, let ObservationFormsWrapper take over the entire screen

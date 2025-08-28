@@ -1,6 +1,5 @@
+import { ObservationForm } from '@bahmni-frontend/bahmni-services';
 import { render, screen, fireEvent } from '@testing-library/react';
-import React from 'react';
-import { ObservationForm } from '@types/observationForms';
 import ObservationForms from '../ObservationForms';
 
 // Mock the translation hook
@@ -11,7 +10,7 @@ jest.mock('react-i18next', () => ({
 }));
 
 // Mock the observation forms search hook
-jest.mock('@hooks/useObservationFormsSearch');
+jest.mock('../../../../hooks/useObservationFormsSearch');
 
 // Mock Carbon components
 jest.mock('@carbon/react', () => ({
@@ -49,34 +48,63 @@ jest.mock('@carbon/react', () => ({
 }));
 
 // Mock common components
-jest.mock('@components/common/boxWHeader/BoxWHeader', () => {
-  return jest.fn(({ title, children, className }) => (
+jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-design-system'),
+  ComboBox: jest.fn(
+    ({ items, onChange, onInputChange, disabled, placeholder }) => (
+      <div data-testid="combobox">
+        <input
+          data-testid="combobox-input"
+          placeholder={placeholder}
+          disabled={disabled}
+          onChange={(e) => onInputChange?.(e.target.value)}
+        />
+        <div data-testid="combobox-items">
+          {items?.map(
+            (item: { id: string; label: string; disabled?: boolean }) => (
+              <button
+                key={item.id}
+                data-testid={`combobox-item-${item.id}`}
+                disabled={item.disabled}
+                onClick={() => onChange?.({ selectedItem: item })}
+              >
+                {item.label}
+              </button>
+            ),
+          )}
+        </div>
+      </div>
+    ),
+  ),
+  Tile: jest.fn(({ children, className }) => (
+    <div data-testid="tile" className={className}>
+      {children}
+    </div>
+  )),
+  BoxWHeader: jest.fn(({ title, children, className }) => (
     <div data-testid="box-with-header" className={className}>
       <div data-testid="box-header">{title}</div>
       <div data-testid="box-content">{children}</div>
     </div>
-  ));
-});
-
-jest.mock('@components/common/selectedItem/SelectedItem', () => {
-  return jest.fn(({ children, onClose, className }) => (
+  )),
+  SelectedItem: jest.fn(({ children, onClose, className }) => (
     <div data-testid="selected-item" className={className}>
       {children}
       <button data-testid="selected-item-close" onClick={() => onClose?.()}>
         ×
       </button>
     </div>
-  ));
-});
-
-// Mock BahmniIcon component
-jest.mock('@components/common/bahmniIcon/BahmniIcon', () => {
-  return jest.fn(({ id, name }) => (
+  )),
+  Icon: jest.fn(({ id, name }) => (
     <div data-testid={`bahmni-icon-${id}`} data-icon-name={name}>
       Icon
     </div>
-  ));
-});
+  )),
+}));
+
+// SelectedItem is already mocked as part of the design system mock above
+
+// BahmniIcon is already mocked as part of the design system mock above
 
 describe('ObservationForms', () => {
   const mockForms: ObservationForm[] = [
@@ -105,7 +133,7 @@ describe('ObservationForms', () => {
 
     // Default mock for useObservationFormsSearch
     const mockUseObservationFormsSearch = jest.requireMock(
-      '@hooks/useObservationFormsSearch',
+      '../../../../hooks/useObservationFormsSearch',
     ).default;
     mockUseObservationFormsSearch.mockReturnValue({
       forms: mockForms,
@@ -165,7 +193,7 @@ describe('ObservationForms', () => {
 
     it('should handle search input changes', () => {
       const mockUseObservationFormsSearch = jest.requireMock(
-        '@hooks/useObservationFormsSearch',
+        '../../../../hooks/useObservationFormsSearch',
       ).default;
       render(<ObservationForms {...defaultProps} />);
 
@@ -303,7 +331,7 @@ describe('ObservationForms', () => {
   describe('Loading and Error States', () => {
     it('should show loading state in dropdown', () => {
       const mockUseObservationFormsSearch = jest.requireMock(
-        '@hooks/useObservationFormsSearch',
+        '../../../../hooks/useObservationFormsSearch',
       ).default;
       mockUseObservationFormsSearch.mockReturnValue({
         forms: [],
@@ -321,7 +349,7 @@ describe('ObservationForms', () => {
 
     it('should show error state in dropdown', () => {
       const mockUseObservationFormsSearch = jest.requireMock(
-        '@hooks/useObservationFormsSearch',
+        '../../../../hooks/useObservationFormsSearch',
       ).default;
       mockUseObservationFormsSearch.mockReturnValue({
         forms: [],
@@ -338,7 +366,7 @@ describe('ObservationForms', () => {
 
     it('should show no forms found message when search returns empty results', () => {
       const mockUseObservationFormsSearch = jest.requireMock(
-        '@hooks/useObservationFormsSearch',
+        '../../../../hooks/useObservationFormsSearch',
       ).default;
       mockUseObservationFormsSearch.mockReturnValue({
         forms: [],
@@ -359,7 +387,7 @@ describe('ObservationForms', () => {
 
     it('should show no forms available message when no forms exist', () => {
       const mockUseObservationFormsSearch = jest.requireMock(
-        '@hooks/useObservationFormsSearch',
+        '../../../../hooks/useObservationFormsSearch',
       ).default;
       mockUseObservationFormsSearch.mockReturnValue({
         forms: [],
@@ -443,6 +471,100 @@ describe('ObservationForms', () => {
 
       const formButton = screen.getByTestId('combobox-item-form-1');
       expect(() => fireEvent.click(formButton)).not.toThrow();
+    });
+  });
+
+  describe('Search Functionality Edge Cases', () => {
+    it('should handle empty search term correctly', () => {
+      render(<ObservationForms {...defaultProps} />);
+
+      const input = screen.getByTestId('combobox-input');
+      fireEvent.change(input, { target: { value: '' } });
+
+      // Should show all available forms when search is empty
+      expect(screen.getByTestId('combobox-item-form-1')).toBeInTheDocument();
+      expect(screen.getByTestId('combobox-item-form-2')).toBeInTheDocument();
+    });
+
+    it('should handle whitespace-only search terms', () => {
+      render(<ObservationForms {...defaultProps} />);
+
+      const input = screen.getByTestId('combobox-input');
+      fireEvent.change(input, { target: { value: '   ' } });
+
+      // Should treat whitespace-only as empty search
+      expect(screen.getByTestId('combobox-item-form-1')).toBeInTheDocument();
+    });
+
+    it('should handle special characters in search', () => {
+      render(<ObservationForms {...defaultProps} />);
+
+      const input = screen.getByTestId('combobox-input');
+      fireEvent.change(input, { target: { value: '@#$%' } });
+
+      // Should not crash with special characters
+      expect(input).toHaveValue('@#$%');
+    });
+
+    it('should handle very long search terms', () => {
+      render(<ObservationForms {...defaultProps} />);
+
+      const longSearchTerm = 'a'.repeat(1000);
+      const input = screen.getByTestId('combobox-input');
+      fireEvent.change(input, { target: { value: longSearchTerm } });
+
+      expect(input).toHaveValue(longSearchTerm);
+    });
+  });
+  describe('Internationalization Support', () => {
+    it('should use translation keys for all user-facing text', () => {
+      render(<ObservationForms {...defaultProps} />);
+
+      // Check that translation function is called with correct keys
+      expect(screen.getByText('translated_OBSERVATION_FORMS_SECTION_TITLE')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('')).toHaveAttribute(
+        'placeholder',
+        'translated_OBSERVATION_FORMS_SEARCH_PLACEHOLDER'
+      );
+    });
+  });
+  describe('Form Selection Edge Cases', () => {
+    it('should handle case where form is not found in availableForms', () => {
+      const mockOnFormSelect = jest.fn();
+      render(
+        <ObservationForms {...defaultProps} onFormSelect={mockOnFormSelect} />,
+      );
+
+      // Simulate ComboBox onChange with a selectedItem that doesn't exist in availableForms
+      const ComboBox = jest.requireMock('@carbon/react').ComboBox;
+      const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
+      const onChange = lastCall[0].onChange;
+
+      // Use an ID that doesn't exist in mockForms
+      onChange({
+        selectedItem: { id: 'non-existent-form-id', label: 'Non-existent Form', disabled: false },
+      });
+
+      // Should not call onFormSelect when form is not found (covers line 62 branch)
+      expect(mockOnFormSelect).not.toHaveBeenCalled();
+    });
+
+    it('should handle selectedItem with disabled true', () => {
+      const mockOnFormSelect = jest.fn();
+      render(
+        <ObservationForms {...defaultProps} onFormSelect={mockOnFormSelect} />,
+      );
+
+      const ComboBox = jest.requireMock('@carbon/react').ComboBox;
+      const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
+      const onChange = lastCall[0].onChange;
+
+      // Test with disabled selectedItem
+      onChange({
+        selectedItem: { id: 'form-1', label: 'Test Form', disabled: true },
+      });
+
+      expect(mockOnFormSelect).not.toHaveBeenCalled();
     });
   });
 });

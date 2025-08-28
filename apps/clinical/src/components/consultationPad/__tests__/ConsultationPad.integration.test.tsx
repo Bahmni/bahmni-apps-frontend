@@ -50,10 +50,19 @@ jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
   useActivePractitioner: jest.fn(),
   usePatientUUID: jest.fn(() => 'patient-1'),
 }));
-jest.mock('@services/privilegeService');
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+  getFormattedError: jest.fn(),
+  getActiveVisit: jest.fn(),
+  logAuditEvent: jest.fn(),
+  getCurrentUserPrivileges: jest.fn(),
+}));
 
 // Mock useUserPrivilege hook
-jest.mock('@hooks/useUserPrivilege', () => ({
+jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-widgets'),
+  useActivePractitioner: jest.fn(),
+  usePatientUUID: jest.fn(() => 'patient-1'),
   useUserPrivilege: jest.fn(() => ({
     userPrivileges: ['Get Patients', 'Add Patients'],
   })),
@@ -87,13 +96,11 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <I18nextProvider i18n={i18n}>
     <NotificationProvider>
       <ClinicalConfigProvider>
-        <UserPrivilegeProvider>
-          <MemoryRouter initialEntries={['/patient/patient-1']}>
-            <Routes>
-              <Route path="/patient/:patientUuid" element={children} />
-            </Routes>
-          </MemoryRouter>
-        </UserPrivilegeProvider>
+        <MemoryRouter initialEntries={['/patient/patient-1']}>
+          <Routes>
+            <Route path="/patient/:patientUuid" element={children} />
+          </Routes>
+        </MemoryRouter>
       </ClinicalConfigProvider>
     </NotificationProvider>
   </I18nextProvider>
@@ -145,7 +152,8 @@ describe('ConsultationPad Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Mock privilege service
-    (privilegeService.getCurrentUserPrivileges as jest.Mock).mockResolvedValue([
+    const { getCurrentUserPrivileges } = jest.requireMock('@bahmni-frontend/bahmni-services');
+    (getCurrentUserPrivileges as jest.Mock).mockResolvedValue([
       { name: 'app:clinical:observationForms' },
       { name: 'app:clinical:locationpicker' },
     ]);

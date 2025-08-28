@@ -180,96 +180,80 @@ jest.mock('../../../hooks/useEncounterSession', () => ({
   __esModule: true,
   useEncounterSession: () => mockUseEncounterSession(),
 }));
-jest.mock(
-  '@components/clinical/forms/observationForms/ObservationForms',
-  () => ({
-    __esModule: true,
-    default: ({
-      onFormSelect,
-      selectedForms,
-      onRemoveForm,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    }: any) => (
-      <div data-testid="mock-observation-forms">
-        <div data-testid="observation-forms-content">Observation Forms</div>
-        <button
-          data-testid="select-form-button"
-          onClick={() =>
-            onFormSelect?.({
-              uuid: 'form-1',
-              name: 'Test Form',
-              id: 1,
-              privileges: [],
-            })
-          }
+jest.mock('../../forms/observationForms/ObservationForms', () => ({
+  __esModule: true,
+  default: ({ onFormSelect, selectedForms, onRemoveForm }: any) => (
+    <div data-testid="mock-observation-forms">
+      <div data-testid="observation-forms-content">Observation Forms</div>
+      <button
+        data-testid="select-form-button"
+        onClick={() =>
+          onFormSelect?.({
+            uuid: 'form-1',
+            name: 'Test Form',
+            id: 1,
+            privileges: [],
+          })
+        }
+      >
+        Select Form
+      </button>
+      <div data-testid="selected-forms-count">
+        Selected: {selectedForms?.length ?? 0}
+      </div>
+      {selectedForms?.map((form: { uuid: string; name: string }) => (
+        <div
+          key={form.uuid}
+          data-testid={`selected-form-${form.uuid}`}
+          onClick={() => onFormSelect?.(form)}
+          role="button"
+          tabIndex={0}
         >
-          Select Form
-        </button>
-        <div data-testid="selected-forms-count">
-          Selected: {selectedForms?.length ?? 0}
-        </div>
-        {selectedForms?.map((form: { uuid: string; name: string }) => (
-          <div
-            key={form.uuid}
-            data-testid={`selected-form-${form.uuid}`}
-            onClick={() => onFormSelect?.(form)}
-            role="button"
-            tabIndex={0}
+          {form.name}
+          <button
+            data-testid={`remove-form-${form.uuid}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemoveForm?.(form.uuid);
+            }}
           >
-            {form.name}
-            <button
-              data-testid={`remove-form-${form.uuid}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                onRemoveForm?.(form.uuid);
-              }}
-            >
-              Remove
-            </button>
-          </div>
-        ))}
-      </div>
-    ),
-  }),
-);
+            Remove
+          </button>
+        </div>
+      ))}
+    </div>
+  ),
+}));
 
-jest.mock(
-  '@components/clinical/forms/observationForms/ObservationFormsContainer',
-  () => ({
-    __esModule: true,
-    default: ({
-      viewingForm,
-      onViewingFormChange,
-      onRemoveForm,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    }: any) => (
-      <div data-testid="mock-observation-forms-wrapper">
-        <div data-testid="wrapper-viewing-form">{viewingForm?.name}</div>
-        <button
-          data-testid="wrapper-save-button"
-          onClick={() => onViewingFormChange?.(null)}
-        >
-          Save
-        </button>
-        <button
-          data-testid="wrapper-discard-button"
-          onClick={() => {
-            onRemoveForm?.(viewingForm?.uuid);
-            onViewingFormChange?.(null);
-          }}
-        >
-          Discard
-        </button>
-        <button
-          data-testid="wrapper-back-button"
-          onClick={() => onViewingFormChange?.(null)}
-        >
-          Back
-        </button>
-      </div>
-    ),
-  }),
-);
+jest.mock('../../forms/observationForms/ObservationFormsContainer', () => ({
+  __esModule: true,
+  default: ({ viewingForm, onViewingFormChange, onRemoveForm }: any) => (
+    <div data-testid="mock-observation-forms-wrapper">
+      <div data-testid="wrapper-viewing-form">{viewingForm?.name}</div>
+      <button
+        data-testid="wrapper-save-button"
+        onClick={() => onViewingFormChange?.(null)}
+      >
+        Save
+      </button>
+      <button
+        data-testid="wrapper-discard-button"
+        onClick={() => {
+          onRemoveForm?.(viewingForm?.uuid);
+          onViewingFormChange?.(null);
+        }}
+      >
+        Discard
+      </button>
+      <button
+        data-testid="wrapper-back-button"
+        onClick={() => onViewingFormChange?.(null)}
+      >
+        Back
+      </button>
+    </div>
+  ),
+}));
 // Create mock store factories
 const createMockEncounterDetailsStore = () => ({
   activeVisit: { id: 'visit-123' },
@@ -513,7 +497,7 @@ describe('ConsultationPad', () => {
   });
   describe('Observation Forms Integration', () => {
     it('should render ObservationForms component with correct props', () => {
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const observationForms = screen.getByTestId('mock-observation-forms');
       expect(observationForms).toBeInTheDocument();
@@ -523,7 +507,7 @@ describe('ConsultationPad', () => {
     });
 
     it('should render ObservationFormsWrapper when form is selected for viewing', async () => {
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const selectButton = screen.getByTestId('select-form-button');
       await userEvent.click(selectButton);
@@ -539,7 +523,7 @@ describe('ConsultationPad', () => {
     });
 
     it('should manage selectedForms state correctly', async () => {
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       // Initially should show 0 selected forms
       expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
@@ -566,7 +550,7 @@ describe('ConsultationPad', () => {
     });
 
     it('should prevent duplicate forms from being added to selectedForms', async () => {
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       const selectButton = screen.getByTestId('select-form-button');
 
@@ -592,7 +576,7 @@ describe('ConsultationPad', () => {
     });
 
     it('should remove forms from selectedForms when onRemoveForm is called', async () => {
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       // Add a form first
       const selectButton = screen.getByTestId('select-form-button');
@@ -622,7 +606,7 @@ describe('ConsultationPad', () => {
     });
 
     it('should remove form from selectedForms when discarded from wrapper', async () => {
-      renderWithProviders(<ConsultationPad onClose={mockOnClose} />);
+      render(<ConsultationPad onClose={mockOnClose} />);
 
       // Add a form first
       const selectButton = screen.getByTestId('select-form-button');

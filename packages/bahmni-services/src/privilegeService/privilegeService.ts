@@ -1,6 +1,6 @@
 import { USER_PRIVILEGES_URL } from '../constants/app';
 import { getFormattedError } from '../errorHandling';
-import { UserPrivilege } from '../observationFormsService/privilegeUtils';
+import { UserPrivilege } from '../observationFormsService';
 import { get } from '../api';
 
 /**

@@ -1,13 +1,13 @@
-import { OBSERVATION_FORMS_URL } from '@constants/app';
+import { OBSERVATION_FORMS_URL } from '../../constants/app';
 import { fetchObservationForms } from '../observationFormsService';
-import * as translationService from '../translationService';
+import { getUserPreferredLocale } from '../../i18n/translationService';
 
 // Mock fetch globally
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
 // Mock translation service
-jest.mock('../translationService', () => ({
+jest.mock('../../i18n/translationService', () => ({
   getUserPreferredLocale: jest.fn(),
 }));
 
@@ -53,9 +53,7 @@ describe('observationFormsService', () => {
         json: async () => mockApiResponse,
       });
 
-      (translationService.getUserPreferredLocale as jest.Mock).mockReturnValue(
-        'es',
-      );
+      (getUserPreferredLocale as jest.Mock).mockReturnValue('es');
 
       const result = await fetchObservationForms();
 
@@ -109,9 +107,7 @@ describe('observationFormsService', () => {
         json: async () => mockApiResponse,
       });
 
-      (translationService.getUserPreferredLocale as jest.Mock).mockReturnValue(
-        'en',
-      );
+      (getUserPreferredLocale as jest.Mock).mockReturnValue('en');
 
       const result = await fetchObservationForms();
 
@@ -134,9 +130,7 @@ describe('observationFormsService', () => {
         json: async () => mockApiResponse,
       });
 
-      (translationService.getUserPreferredLocale as jest.Mock).mockReturnValue(
-        'fr', // Locale not in translations
-      );
+      (getUserPreferredLocale as jest.Mock).mockReturnValue('fr'); // Locale not in translations
 
       const result = await fetchObservationForms();
 
@@ -159,9 +153,7 @@ describe('observationFormsService', () => {
         json: async () => mockApiResponse,
       });
 
-      (translationService.getUserPreferredLocale as jest.Mock).mockReturnValue(
-        'es',
-      );
+      (getUserPreferredLocale as jest.Mock).mockReturnValue('es');
 
       const result = await fetchObservationForms();
 
@@ -193,9 +185,7 @@ describe('observationFormsService', () => {
         json: async () => mockApiResponse,
       });
 
-      (translationService.getUserPreferredLocale as jest.Mock).mockReturnValue(
-        'en',
-      );
+      (getUserPreferredLocale as jest.Mock).mockReturnValue('en');
 
       const result = await fetchObservationForms();
 
@@ -227,9 +217,7 @@ describe('observationFormsService', () => {
         json: async () => mockApiResponse,
       });
 
-      (translationService.getUserPreferredLocale as jest.Mock).mockReturnValue(
-        'en',
-      );
+      (getUserPreferredLocale as jest.Mock).mockReturnValue('en');
 
       const result = await fetchObservationForms();
 
@@ -249,9 +237,7 @@ describe('observationFormsService', () => {
         json: async () => [],
       });
 
-      (translationService.getUserPreferredLocale as jest.Mock).mockReturnValue(
-        'en',
-      );
+      (getUserPreferredLocale as jest.Mock).mockReturnValue('en');
 
       const result = await fetchObservationForms();
 

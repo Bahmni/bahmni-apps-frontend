@@ -1,6 +1,5 @@
+import { ObservationForm } from '@bahmni-frontend/bahmni-services';
 import { render, screen, fireEvent } from '@testing-library/react';
-import React from 'react';
-import { ObservationForm } from '@types/observationForms';
 import ObservationFormsContainer from '../ObservationFormsContainer';
 
 // Mock the translation hook
@@ -11,8 +10,8 @@ jest.mock('react-i18next', () => ({
 }));
 
 // Mock ActionArea component
-jest.mock('@components/common/actionArea/ActionArea', () => {
-  return jest.fn(
+jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
+  ActionArea: jest.fn(
     ({
       className,
       title,
@@ -48,8 +47,8 @@ jest.mock('@components/common/actionArea/ActionArea', () => {
         </div>
       </div>
     ),
-  );
-});
+  ),
+}));
 
 // Mock styles
 jest.mock('../../consultationPad/styles/ConsultationPad.module.scss', () => ({

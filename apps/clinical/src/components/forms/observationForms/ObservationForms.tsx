@@ -9,7 +9,7 @@ import {
   ICON_PADDING
 } from '@bahmni-frontend/bahmni-design-system';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
-import { ObservationForm } from '../../../models/observationForms';
+import { ObservationForm } from '@bahmni-frontend/bahmni-services';
 import styles from './styles/ObservationForms.module.scss';
 
 interface ObservationFormsProps {

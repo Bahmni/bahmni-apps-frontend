@@ -1,8 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ObservationFormsWrapper Rendering and Structure should match the snapshot when not viewing a form 1`] = `<div />`;
+exports[`ObservationFormsContainer Rendering and Structure should match the snapshot when not viewing a form 1`] = `<div />`;
 
-exports[`ObservationFormsWrapper Rendering and Structure should match the snapshot when viewing a form 1`] = `
+exports[`ObservationFormsContainer Rendering and Structure should match the snapshot when viewing a form 1`] = `
 <div>
   <div
     class="formViewActionArea"

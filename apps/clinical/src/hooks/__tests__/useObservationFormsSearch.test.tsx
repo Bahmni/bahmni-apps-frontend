@@ -1,32 +1,36 @@
+import {
+  getFormattedError,
+  getCurrentUserPrivileges,
+  fetchObservationForms,
+  filterFormsByUserPrivileges,
+} from '@bahmni-frontend/bahmni-services';
+import { UserPrivilegeProvider } from '@bahmni-frontend/bahmni-widgets';
 import { renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { I18nextProvider } from 'react-i18next';
 
-import i18n from '@/setupTests.i18n';
-import { UserPrivilegeProvider } from '@providers/UserPrivilegeProvider';
-import * as observationFormsService from '@services/observationFormsService';
-import * as privilegeService from '@services/privilegeService';
-import * as commonUtils from '@utils/common';
-import * as privilegeUtils from '@utils/privilegeUtils';
+import i18n from '../../../setupTests.i18n';
 
 import useObservationFormsSearch from '../useObservationFormsSearch';
 
 // Mock the common utils
-jest.mock('@utils/common', () => ({
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
   getFormattedError: jest.fn(),
-}));
-
-// Mock privilege service
-jest.mock('@services/privilegeService');
-
-// Mock observation forms service
-jest.mock('@services/observationFormsService', () => ({
+  getCurrentUserPrivileges: jest.fn(),
   fetchObservationForms: jest.fn(),
+  filterFormsByUserPrivileges: jest.fn(),
 }));
 
-// Mock privilege utils
-jest.mock('@utils/privilegeUtils', () => ({
-  filterFormsByUserPrivileges: jest.fn(),
+// Mock useUserPrivilege hook
+jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-widgets'),
+  useUserPrivilege: jest.fn(() => ({
+    userPrivileges: [
+      { name: 'app:clinical:observationForms' },
+      { name: 'app:clinical:locationpicker' },
+    ],
+  })),
 }));
 
 // Mock useDebounce to return value immediately for testing
@@ -77,26 +81,24 @@ const mockFormsData = [
 describe('useObservationFormsSearch', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (commonUtils.getFormattedError as jest.Mock).mockReturnValue({
+    (getFormattedError as jest.Mock).mockReturnValue({
       title: 'Error',
       message: 'Something went wrong',
     });
 
     // Mock privilege service
-    (privilegeService.getCurrentUserPrivileges as jest.Mock).mockResolvedValue([
+    (getCurrentUserPrivileges as jest.Mock).mockResolvedValue([
       { name: 'app:clinical:observationForms' },
       { name: 'app:clinical:locationpicker' },
     ]);
 
     // Mock privilege utils to return filtered forms
-    (
-      privilegeUtils.filterFormsByUserPrivileges as jest.Mock
-    ).mockImplementation((privileges, forms) => forms);
+    (filterFormsByUserPrivileges as jest.Mock).mockImplementation(
+      (privileges, forms) => forms,
+    );
 
     // Mock observation forms service
-    (
-      observationFormsService.fetchObservationForms as jest.Mock
-    ).mockResolvedValue(mockFormsData);
+    (fetchObservationForms as jest.Mock).mockResolvedValue(mockFormsData);
   });
 
   describe('basic functionality', () => {
@@ -117,19 +119,15 @@ describe('useObservationFormsSearch', () => {
 
       expect(result.current.forms).toEqual(mockFormsData);
       expect(result.current.error).toBeNull();
-      expect(
-        observationFormsService.fetchObservationForms,
-      ).toHaveBeenCalledTimes(1);
+      expect(fetchObservationForms).toHaveBeenCalledTimes(1);
     });
 
     it('should handle service error with fallback error message when formatted error has no message', async () => {
       const serviceError = new Error('Service error');
-      (
-        observationFormsService.fetchObservationForms as jest.Mock
-      ).mockRejectedValue(serviceError);
+      (fetchObservationForms as jest.Mock).mockRejectedValue(serviceError);
 
       // Mock getFormattedError to return null message to test fallback
-      (commonUtils.getFormattedError as jest.Mock).mockReturnValue({
+      (getFormattedError as jest.Mock).mockReturnValue({
         title: 'Error',
         message: null,
       });
@@ -151,9 +149,15 @@ describe('useObservationFormsSearch', () => {
 
   describe('privilege filtering', () => {
     it('should return empty array when user privileges are null (loading)', async () => {
-      (
-        privilegeService.getCurrentUserPrivileges as jest.Mock
-      ).mockResolvedValue(null);
+      // Mock useUserPrivilege to return null privileges
+      const { useUserPrivilege } = jest.requireMock(
+        '@bahmni-frontend/bahmni-widgets',
+      );
+      (useUserPrivilege as jest.Mock).mockReturnValue({
+        userPrivileges: null,
+      });
+
+      (getCurrentUserPrivileges as jest.Mock).mockResolvedValue(null);
 
       const { result } = renderHook(() => useObservationFormsSearch(), {
         wrapper,
@@ -169,16 +173,21 @@ describe('useObservationFormsSearch', () => {
 
     it('should filter forms based on user privileges', async () => {
       const mockPrivileges = [{ name: 'app:clinical:observationForms' }];
-      (
-        privilegeService.getCurrentUserPrivileges as jest.Mock
-      ).mockResolvedValue(mockPrivileges);
+
+      // Mock useUserPrivilege to return specific privileges
+      const { useUserPrivilege } = jest.requireMock(
+        '@bahmni-frontend/bahmni-widgets',
+      );
+      (useUserPrivilege as jest.Mock).mockReturnValue({
+        userPrivileges: mockPrivileges,
+      });
+
+      (getCurrentUserPrivileges as jest.Mock).mockResolvedValue(mockPrivileges);
 
       // Mock privilege utils to return only forms user has access to
-      (privilegeUtils.filterFormsByUserPrivileges as jest.Mock).mockReturnValue(
-        [
-          mockFormsData[0], // Only first form
-        ],
-      );
+      (filterFormsByUserPrivileges as jest.Mock).mockReturnValue([
+        mockFormsData[0], // Only first form
+      ]);
 
       const { result } = renderHook(() => useObservationFormsSearch(), {
         wrapper,
@@ -190,20 +199,16 @@ describe('useObservationFormsSearch', () => {
 
       expect(result.current.forms).toHaveLength(1);
       expect(result.current.forms[0].name).toBe('Patient History Form');
-      expect(privilegeUtils.filterFormsByUserPrivileges).toHaveBeenCalledWith(
+      expect(filterFormsByUserPrivileges).toHaveBeenCalledWith(
         mockPrivileges,
         mockFormsData,
       );
     });
 
     it('should return empty array when user has no privileges', async () => {
-      (
-        privilegeService.getCurrentUserPrivileges as jest.Mock
-      ).mockResolvedValue([]);
+      (getCurrentUserPrivileges as jest.Mock).mockResolvedValue([]);
 
-      (privilegeUtils.filterFormsByUserPrivileges as jest.Mock).mockReturnValue(
-        [],
-      );
+      (filterFormsByUserPrivileges as jest.Mock).mockReturnValue([]);
 
       const { result } = renderHook(() => useObservationFormsSearch(), {
         wrapper,
@@ -220,9 +225,9 @@ describe('useObservationFormsSearch', () => {
   describe('search functionality', () => {
     beforeEach(() => {
       // Mock privilege filtering to return all forms for search tests
-      (
-        privilegeUtils.filterFormsByUserPrivileges as jest.Mock
-      ).mockImplementation((privileges, forms) => forms);
+      (filterFormsByUserPrivileges as jest.Mock).mockImplementation(
+        (privileges, forms) => forms,
+      );
     });
 
     it('should filter forms based on search term (case-insensitive)', async () => {

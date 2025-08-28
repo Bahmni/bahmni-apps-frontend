@@ -1,10 +1,10 @@
-import { getFormattedError } from '@utils/common';
+import { getFormattedError } from '../../errorHandling';
 
-import { get } from '../api';
+import { get } from '../../api';
 import { getCurrentUserPrivileges } from '../privilegeService';
 
-jest.mock('../api');
-jest.mock('@utils/common');
+jest.mock('../../api');
+jest.mock('../../errorHandling');
 
 const mockedGet = get as jest.MockedFunction<typeof get>;
 const mockedGetFormattedError = getFormattedError as jest.MockedFunction<

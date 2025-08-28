@@ -3,14 +3,13 @@ import React from 'react';
 
 import '@testing-library/jest-dom';
 
-import { useUserPrivilege } from '@hooks/useUserPrivilege';
-import { getCurrentUserPrivileges } from '@services/privilegeService';
-import { UserPrivilege } from '@utils/privilegeUtils';
+import { useUserPrivilege } from '@bahmni-frontend/bahmni-widgets';
+import { getCurrentUserPrivileges, UserPrivilege } from '@bahmni-frontend/bahmni-services';
 
 import { UserPrivilegeProvider } from '../UserPrivilegeProvider';
 
 // Mock the privilegeService
-jest.mock('@services/privilegeService');
+jest.mock('@bahmni-frontend/bahmni-services');
 const mockGetCurrentUserPrivileges =
   getCurrentUserPrivileges as jest.MockedFunction<
     typeof getCurrentUserPrivileges

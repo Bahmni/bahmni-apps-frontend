@@ -3,9 +3,12 @@
 exports[`ObservationForms Rendering and Structure should match the snapshot 1`] = `
 <div>
   <div
+    class="observationFormsTile"
     data-testid="tile"
   >
-    <div>
+    <div
+      class="observationFormsTitle"
+    >
       translated_OBSERVATION_FORMS_SECTION_TITLE
     </div>
     <div

@@ -1,8 +1,11 @@
 import React, { ReactNode, useState, useMemo, useEffect } from 'react';
 import { UserPrivilegeContext } from './UserPrivilegeContext';
-import { notificationService, getFormattedError } from '@bahmni-frontend/bahmni-services';
-import { getCurrentUserPrivileges } from '../../../bahmni-services/src/privilegeService/privilegeService';
-import { UserPrivilege } from '../../../bahmni-services/src/observationFormsService/privilegeUtils';
+import {
+  notificationService,
+  getFormattedError,
+  getCurrentUserPrivileges,
+  type UserPrivilege
+} from '@bahmni-frontend/bahmni-services';
 
 interface UserPrivilegeProviderProps {
   children: ReactNode;

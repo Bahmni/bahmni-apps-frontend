@@ -7,7 +7,7 @@ import {
   ClinicalLayout,
 } from '@bahmni-frontend/bahmni-design-system';
 import { useTranslation } from '@bahmni-frontend/bahmni-services';
-import { useNotification } from '@bahmni-frontend/bahmni-widgets';
+import { useNotification, useUserPrivilege } from '@bahmni-frontend/bahmni-widgets';
 import React, { Suspense, useMemo, useState } from 'react';
 import ConsultationPad from '../components/consultationPad/ConsultationPad';
 import DashboardContainer from '../components/dashboardContainer/DashboardContainer';
@@ -19,7 +19,6 @@ import {
   getDefaultDashboard,
   getSidebarItems,
 } from '../services/consultationPageService';
-import { useUserPrivilege } from '../../../../packages/bahmni-widgets/src/userPrivileges/useUserPrivilege';
 
 const breadcrumbItems = [
   { id: 'home', label: 'Home', href: BAHMNI_HOME_PATH },

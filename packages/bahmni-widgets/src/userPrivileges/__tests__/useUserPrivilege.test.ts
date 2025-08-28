@@ -1,13 +1,8 @@
 import { renderHook } from '@testing-library/react';
 import React from 'react';
-import { UserPrivilegeContext } from '@contexts/UserPrivilegeContext';
-import { UserPrivilege } from '@utils/privilegeUtils';
+import { UserPrivilegeContext } from '../UserPrivilegeContext';
+import { UserPrivilege } from '@bahmni-frontend/bahmni-services';
 import { useUserPrivilege } from '../useUserPrivilege';
-
-// Mock the privilegeService
-jest.mock('@services/privilegeService', () => ({
-  fetchUserPrivileges: jest.fn(),
-}));
 
 describe('useUserPrivilege', () => {
   const mockSetUserPrivileges = jest.fn();
