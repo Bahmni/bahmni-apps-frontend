@@ -41,13 +41,10 @@ export const usePatientSearch = (
       setLoading(true);
       setError(null);
 
-      const { results, totalCount: count } = await getPatientSearchResults(
-        term,
-        t,
-      );
+      const results = await getPatientSearchResults(term, t);
 
       setSearchResults(results);
-      setTotalCount(count);
+      setTotalCount(results.length);
     } catch (err) {
       const { message } = getFormattedError(err);
       setError(message);

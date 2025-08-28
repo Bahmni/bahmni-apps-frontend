@@ -48,18 +48,10 @@ export async function searchPatients(
 export async function getPatientSearchResults(
   searchTerm: string,
   t: (key: string) => string,
-): Promise<{
-  results: FormattedPatientSearchResult[];
-  totalCount: number;
-}> {
+): Promise<FormattedPatientSearchResult[]> {
   const response = await searchPatients(searchTerm);
   const sortedResults = sortPatientsByIdentifierAscending(
     response.pageOfResults,
   );
-  const formattedResults = formatPatientSearchResults(sortedResults, t);
-
-  return {
-    results: formattedResults,
-    totalCount: response.totalCount,
-  };
+  return formatPatientSearchResults(sortedResults, t);
 }

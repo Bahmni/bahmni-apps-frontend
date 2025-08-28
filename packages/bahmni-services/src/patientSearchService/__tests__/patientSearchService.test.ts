@@ -131,7 +131,7 @@ describe('PatientSearchService', () => {
   });
 
   describe('getPatientSearchResults', () => {
-    it('should return search results with total count', async () => {
+    it('should return formatted patient search results', async () => {
       (get as jest.Mock).mockResolvedValueOnce(mockPatientSearchResponse);
 
       const result = await getPatientSearchResults(
@@ -139,15 +139,19 @@ describe('PatientSearchService', () => {
         mockTranslationFunction,
       );
 
-      expect(result).toHaveProperty('results');
-      expect(result).toHaveProperty('totalCount');
-      expect(result.totalCount).toBe(mockPatientSearchResponse.totalCount);
-      expect(result.results).toHaveLength(
+      expect(result).toHaveLength(
         mockPatientSearchResponse.pageOfResults.length,
       );
+      expect(result[0]).toHaveProperty('id');
+      expect(result[0]).toHaveProperty('patientId');
+      expect(result[0]).toHaveProperty('fullName');
+      expect(result[0]).toHaveProperty('gender');
+      expect(result[0]).toHaveProperty('age');
+      expect(result[0]).toHaveProperty('registrationDate');
+      expect(result[0]).toHaveProperty('uuid');
     });
 
-    it('should handle empty search results with zero count', async () => {
+    it('should handle empty search results', async () => {
       (get as jest.Mock).mockResolvedValueOnce(mockEmptyPatientSearchResponse);
 
       const result = await getPatientSearchResults(
@@ -155,8 +159,7 @@ describe('PatientSearchService', () => {
         mockTranslationFunction,
       );
 
-      expect(result.totalCount).toBe(0);
-      expect(result.results).toEqual([]);
+      expect(result).toEqual([]);
     });
 
     it('should handle API errors and propagate them', async () => {
@@ -181,16 +184,15 @@ describe('PatientSearchService', () => {
         mockTranslationFunction,
       );
 
-      const sortedResults = result.results;
-      expect(sortedResults).toHaveLength(6);
+      expect(result).toHaveLength(6);
 
       // Expected order: alphabetical/numeric ascending order
-      expect(sortedResults[0].patientId).toBe('ABC200');
-      expect(sortedResults[1].patientId).toBe('ABC20000');
-      expect(sortedResults[2].patientId).toBe('ABC200000');
-      expect(sortedResults[3].patientId).toBe('ABC2000001');
-      expect(sortedResults[4].patientId).toBe('DEF456');
-      expect(sortedResults[5].patientId).toBe('XYZ123ABC200');
+      expect(result[0].patientId).toBe('ABC200');
+      expect(result[1].patientId).toBe('ABC20000');
+      expect(result[2].patientId).toBe('ABC200000');
+      expect(result[3].patientId).toBe('ABC2000001');
+      expect(result[4].patientId).toBe('DEF456');
+      expect(result[5].patientId).toBe('XYZ123ABC200');
     });
 
     it('should sort consistently regardless of search term', async () => {
@@ -203,13 +205,12 @@ describe('PatientSearchService', () => {
         mockTranslationFunction,
       );
 
-      const sortedResults = result.results;
-      expect(sortedResults).toHaveLength(3);
+      expect(result).toHaveLength(3);
 
       // Expected order: alphabetical ascending
-      expect(sortedResults[0].patientId).toBe('AB200');
-      expect(sortedResults[1].patientId).toBe('ABC123');
-      expect(sortedResults[2].patientId).toBe('XYZ789');
+      expect(result[0].patientId).toBe('AB200');
+      expect(result[1].patientId).toBe('ABC123');
+      expect(result[2].patientId).toBe('XYZ789');
     });
 
     it('should handle case-insensitive sorting', async () => {
@@ -222,17 +223,16 @@ describe('PatientSearchService', () => {
         mockTranslationFunction,
       );
 
-      const sortedResults = result.results;
-      expect(sortedResults).toHaveLength(3);
+      expect(result).toHaveLength(3);
 
       // Should sort case-insensitively in ascending order
-      const patientIds = sortedResults.map((r) => r.patientId);
+      const patientIds = result.map((r) => r.patientId);
       expect(patientIds).toContain('abc200');
       expect(patientIds).toContain('ABC200');
       expect(patientIds).toContain('AbC200');
 
       // First should be 'ABC200' or 'AbC200' or 'abc200' (all equivalent)
-      expect(sortedResults[0].patientId.toLowerCase()).toBe('abc200');
+      expect(result[0].patientId.toLowerCase()).toBe('abc200');
     });
 
     it('should handle single patient result correctly', async () => {
@@ -243,8 +243,8 @@ describe('PatientSearchService', () => {
         mockTranslationFunction,
       );
 
-      expect(result.results).toHaveLength(1);
-      expect(result.results[0].patientId).toBe('ABC200');
+      expect(result).toHaveLength(1);
+      expect(result[0].patientId).toBe('ABC200');
     });
 
     it('should handle empty search results', async () => {
@@ -255,8 +255,7 @@ describe('PatientSearchService', () => {
         mockTranslationFunction,
       );
 
-      expect(result.results).toEqual([]);
-      expect(result.totalCount).toBe(0);
+      expect(result).toEqual([]);
     });
 
     it('should handle percent search (show all patients) with proper sorting', async () => {
@@ -270,12 +269,12 @@ describe('PatientSearchService', () => {
       );
 
       // Should sort all patients in ascending identifier order
-      expect(result.results).toHaveLength(
+      expect(result).toHaveLength(
         mockPatientSearchResponseForPercentSearch.pageOfResults.length,
       );
 
       // Verify sorting is applied
-      const patientIds = result.results.map((r) => r.patientId);
+      const patientIds = result.map((r) => r.patientId);
       const sortedIds = [...patientIds].sort((a, b) =>
         a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }),
       );
@@ -306,10 +305,10 @@ describe('PatientSearchService', () => {
       );
 
       // Should sort numerically: PAT1, PAT2, PAT10, PAT100
-      expect(result.results[0].patientId).toBe('PAT1');
-      expect(result.results[1].patientId).toBe('PAT2');
-      expect(result.results[2].patientId).toBe('PAT10');
-      expect(result.results[3].patientId).toBe('PAT100');
+      expect(result[0].patientId).toBe('PAT1');
+      expect(result[1].patientId).toBe('PAT2');
+      expect(result[2].patientId).toBe('PAT10');
+      expect(result[3].patientId).toBe('PAT100');
     });
   });
 

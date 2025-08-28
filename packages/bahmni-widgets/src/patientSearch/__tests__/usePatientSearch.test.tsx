@@ -52,10 +52,7 @@ describe('usePatientSearch hook', () => {
     uuid: 'patient-uuid-123',
   };
 
-  const mockSearchResults = {
-    results: [mockPatientSearchResult],
-    totalCount: 1,
-  };
+  const mockSearchResults = [mockPatientSearchResult];
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -84,8 +81,8 @@ describe('usePatientSearch hook', () => {
         searchTerm,
         mockTranslate,
       );
-      expect(result.current.searchResults).toEqual(mockSearchResults.results);
-      expect(result.current.totalCount).toBe(mockSearchResults.totalCount);
+      expect(result.current.searchResults).toEqual(mockSearchResults);
+      expect(result.current.totalCount).toBe(mockSearchResults.length);
       expect(result.current.loading).toBe(false);
       expect(result.current.error).toBeNull();
     });
@@ -94,7 +91,7 @@ describe('usePatientSearch hook', () => {
   it('should handle empty search results', async () => {
     // Arrange
     const searchTerm = 'NonExistentPatient';
-    const emptyResults = { results: [], totalCount: 0 };
+    const emptyResults: FormattedPatientSearchResult[] = [];
     mockedGetPatientSearchResults.mockResolvedValueOnce(emptyResults);
 
     const { result } = renderHook(() => usePatientSearch(searchTerm));
@@ -121,10 +118,12 @@ describe('usePatientSearch hook', () => {
   it('should show loading state during search', async () => {
     // Arrange
     const searchTerm = 'John';
-    let resolvePromise: (value: typeof mockSearchResults) => void;
-    const pendingPromise = new Promise<typeof mockSearchResults>((resolve) => {
-      resolvePromise = resolve;
-    });
+    let resolvePromise: (value: FormattedPatientSearchResult[]) => void;
+    const pendingPromise = new Promise<FormattedPatientSearchResult[]>(
+      (resolve) => {
+        resolvePromise = resolve;
+      },
+    );
     mockedGetPatientSearchResults.mockReturnValueOnce(pendingPromise);
 
     const { result } = renderHook(() => usePatientSearch(searchTerm));
@@ -147,7 +146,7 @@ describe('usePatientSearch hook', () => {
     // Assert final state
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
-      expect(result.current.searchResults).toEqual(mockSearchResults.results);
+      expect(result.current.searchResults).toEqual(mockSearchResults);
     });
   });
 
@@ -225,34 +224,31 @@ describe('usePatientSearch hook', () => {
     // Assert
     await waitFor(() => {
       expect(result.current.error).toBeNull();
-      expect(result.current.searchResults).toEqual(mockSearchResults.results);
-      expect(result.current.totalCount).toBe(mockSearchResults.totalCount);
+      expect(result.current.searchResults).toEqual(mockSearchResults);
+      expect(result.current.totalCount).toBe(mockSearchResults.length);
     });
   });
 
   it('should handle multiple search results', async () => {
     // Arrange
     const searchTerm = 'John';
-    const multipleResults = {
-      results: [
-        mockPatientSearchResult,
-        {
-          ...mockPatientSearchResult,
-          id: 'patient-id-456',
-          uuid: 'patient-uuid-456',
-          patientId: 'PAT002',
-          fullName: 'John Smith',
-          age: '42',
-        },
-      ],
-      totalCount: 2,
-    };
+    const multipleResults = [
+      mockPatientSearchResult,
+      {
+        ...mockPatientSearchResult,
+        id: 'patient-id-456',
+        uuid: 'patient-uuid-456',
+        patientId: 'PAT002',
+        fullName: 'John Smith',
+        age: '42',
+      },
+    ];
     mockedGetPatientSearchResults.mockResolvedValueOnce(multipleResults);
 
     const { result } = renderHook(() => usePatientSearch(searchTerm));
 
     await waitFor(() => {
-      expect(result.current.searchResults).toEqual(multipleResults.results);
+      expect(result.current.searchResults).toEqual(multipleResults);
       expect(result.current.totalCount).toBe(2);
       expect(result.current.loading).toBe(false);
       expect(result.current.error).toBeNull();
