@@ -29,6 +29,7 @@ const PatientSearch: React.FC = () => {
   >([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [hasSearched, setHasSearched] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(false);
 
   useEffect(() => {
     dispatchAuditEvent({
@@ -54,16 +55,18 @@ const PatientSearch: React.FC = () => {
     (results: FormattedPatientSearchResult[]) => {
       setSearchResults(results);
       setHasSearched(true);
+      setError(false);
     },
     [],
   );
 
   const handleSearchError = useCallback(
-    (error: string) => {
+    (errorMessage: string) => {
+      setError(true);
       addNotification({
         type: 'error',
         title: t('ERROR_SEARCHING_PATIENTS'),
-        message: error,
+        message: errorMessage,
       });
       setSearchResults([]);
       setHasSearched(true);
@@ -76,7 +79,7 @@ const PatientSearch: React.FC = () => {
   }, []);
 
   const renderSearchResults = () => {
-    if (!hasSearched) {
+    if (!hasSearched || error) {
       return null;
     }
 

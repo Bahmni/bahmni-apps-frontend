@@ -35,10 +35,10 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
   }, [error, onError]);
 
   React.useEffect(() => {
-    if (hasPerformedSearch) {
+    if (hasPerformedSearch && !error) {
       onSearchResults(searchResults);
     }
-  }, [searchResults, onSearchResults, hasPerformedSearch]);
+  }, [searchResults, onSearchResults, hasPerformedSearch, error]);
 
   const handleSearch = useCallback(() => {
     if (!searchTerm.trim()) {

@@ -1,4 +1,9 @@
-import { AUDIT_LOG_EVENT_DETAILS, AuditEventType, dispatchAuditEvent, FormattedPatientSearchResult } from '@bahmni-frontend/bahmni-services';
+import {
+  AUDIT_LOG_EVENT_DETAILS,
+  AuditEventType,
+  dispatchAuditEvent,
+  FormattedPatientSearchResult,
+} from '@bahmni-frontend/bahmni-services';
 import {
   useNotification,
   PatientSearch as PatientSearchWidget,
@@ -107,7 +112,6 @@ describe('PatientSearch Page', () => {
   });
 
   describe('Initial Render', () => {
-
     it("should log the user's visit to page", () => {
       render(<PatientSearch />);
       expect(dispatchAuditEvent).toHaveBeenCalledWith({
@@ -202,11 +206,16 @@ describe('PatientSearch Page', () => {
         message: 'Search failed',
       });
 
-      // Should show results header with count of 0 when search has been performed (even with error)
-      expect(screen.getByText('Patient results (0)')).toBeInTheDocument();
+      // Should NOT show any results when there's an error
+      expect(screen.queryByText(/Patient results/)).not.toBeInTheDocument();
+      // Should not show results container at all when there's an error
+      const resultsContainer = document.querySelector(
+        '[class*="resultsContainer"]',
+      );
+      expect(resultsContainer).not.toBeInTheDocument();
     });
 
-    it('should clear search results when error occurs', async () => {
+    it('should hide results when error occurs after successful search', async () => {
       render(<PatientSearch />);
 
       // First have some results
@@ -220,19 +229,12 @@ describe('PatientSearch Page', () => {
         screen.getByTestId('trigger-search-error').click();
       });
 
-      // Results should be cleared and header should show 0 count
-      expect(screen.getByText('Patient results (0)')).toBeInTheDocument();
-    });
-
-    it('should set hasSearched to true when error occurs', async () => {
-      render(<PatientSearch />);
-
-      await act(async () => {
-        screen.getByTestId('trigger-search-error').click();
-      });
-
-      // Should show results header (which only appears when hasSearched is true)
-      expect(screen.getByText('Patient results (0)')).toBeInTheDocument();
+      // Results should be completely hidden when error occurs
+      expect(screen.queryByText(/Patient results/)).not.toBeInTheDocument();
+      const resultsContainer = document.querySelector(
+        '[class*="resultsContainer"]',
+      );
+      expect(resultsContainer).not.toBeInTheDocument();
     });
   });
 
