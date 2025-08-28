@@ -1,28 +1,32 @@
+import { FormattedPatientSearchResult } from '@bahmni-frontend/bahmni-services';
 import {
-  FormattedPatientSearchResult,
-} from '@bahmni-frontend/bahmni-services';
-import { useNotification } from '@bahmni-frontend/bahmni-widgets';
+  useNotification,
+  PatientSearch as PatientSearchWidget,
+} from '@bahmni-frontend/bahmni-widgets';
 import { render, screen, act } from '@testing-library/react';
 import PatientSearch from '../PatientSearch';
 
 // Mock the dependencies
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  useTranslation: jest.fn().mockImplementation(() => ({ t: (key: string) => {
-    const translations: Record<string, string> = {
-      'PATIENT_SEARCH_RESULTS': 'Patient results',
-      'PATIENT_ID': 'Patient ID',
-      'PATIENT_NAME': 'Patient Name',
-      'PHONE_NUMBER': 'Phone Number',
-      'ALTERNATE_PHONE_NUMBER': 'Alternate Phone Number',
-      'GENDER': 'Gender',
-      'AGE': 'Age',
-      'REGISTRATION_DATE': 'Registration Date',
-      'ERROR_SEARCHING_PATIENTS': 'Error searching for patients',
-      'PATIENT_SEARCH_RESULTS_TABLE': 'Patient search results table',
-      'PATIENT_SEARCH_NO_RESULTS': 'Could not find patient with the entered identifier/name. Please verify the patient ID or name entered or create a new patient record.',
-    };
-    return translations[key] || key;
-  }}  )),
+  useTranslation: jest.fn().mockImplementation(() => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        PATIENT_SEARCH_RESULTS: 'Patient results',
+        PATIENT_ID: 'Patient ID',
+        PATIENT_NAME: 'Patient Name',
+        PHONE_NUMBER: 'Phone Number',
+        ALTERNATE_PHONE_NUMBER: 'Alternate Phone Number',
+        GENDER: 'Gender',
+        AGE: 'Age',
+        REGISTRATION_DATE: 'Registration Date',
+        ERROR_SEARCHING_PATIENTS: 'Error searching for patients',
+        PATIENT_SEARCH_RESULTS_TABLE: 'Patient search results table',
+        PATIENT_SEARCH_NO_RESULTS:
+          'Could not find patient with the entered identifier/name. Please verify the patient ID or name entered or create a new patient record.',
+      };
+      return translations[key] || key;
+    },
+  })),
 }));
 
 jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
@@ -30,11 +34,12 @@ jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
   useNotification: jest.fn(),
 }));
 
-describe('PatientSearch Page', () => {
-  
-  const mockAddNotification = jest.fn();
-  let mockPatientSearchWidget: jest.Mock;
+const mockPatientSearchWidget = PatientSearchWidget as jest.MockedFunction<
+  typeof PatientSearchWidget
+>;
 
+describe('PatientSearch Page', () => {
+  const mockAddNotification = jest.fn();
   const mockSearchResults: FormattedPatientSearchResult[] = [
     {
       id: '1',
@@ -67,7 +72,7 @@ describe('PatientSearch Page', () => {
     });
 
     // Create a fresh mock for each test
-    mockPatientSearchWidget = jest.fn(
+    mockPatientSearchWidget.mockImplementation(
       ({ onSearchResults, onError, onLoading }) => (
         <div data-testid="patient-search-widget">
           <button
@@ -97,10 +102,6 @@ describe('PatientSearch Page', () => {
         </div>
       ),
     );
-
-    // Set the mock on the module
-    const bahmniFrontendWidgets = require('@bahmni-frontend/bahmni-widgets');
-    bahmniFrontendWidgets.PatientSearch = mockPatientSearchWidget;
   });
 
   describe('Initial Render', () => {
@@ -229,7 +230,9 @@ describe('PatientSearch Page', () => {
       render(<PatientSearch />);
 
       // Initially no results
-      expect(screen.queryByText(/Patient Search Results/)).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(/Patient Search Results/),
+      ).not.toBeInTheDocument();
 
       // After search
       await act(async () => {
@@ -237,7 +240,6 @@ describe('PatientSearch Page', () => {
       });
       expect(screen.getByText('Patient results (2)')).toBeInTheDocument();
     });
-
   });
 
   describe('Accessibility', () => {

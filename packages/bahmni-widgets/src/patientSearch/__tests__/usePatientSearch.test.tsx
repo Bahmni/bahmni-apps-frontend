@@ -7,7 +7,7 @@ import {
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { usePatientSearch } from '../usePatientSearch';
 
-jest.mock('@bahmni-frontend/bahmni-services',() => ({
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
   ...jest.requireActual('@bahmni-frontend/bahmni-services'),
   getPatientSearchResults: jest.fn(),
   getFormattedError: jest.fn(),

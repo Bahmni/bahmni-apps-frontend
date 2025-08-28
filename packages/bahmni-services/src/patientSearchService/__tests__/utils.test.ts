@@ -136,7 +136,7 @@ describe('PatientSearchService Utils', () => {
       expect(formatDate).toHaveBeenCalledWith(
         new Date(timestamp),
         mockTranslationFunction,
-        'dd/MM/yyyy'
+        'dd/MM/yyyy',
       );
       expect(result).toBe('01/01/2020');
     });
