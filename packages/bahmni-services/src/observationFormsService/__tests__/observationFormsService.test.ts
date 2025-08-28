@@ -1,6 +1,6 @@
 import { OBSERVATION_FORMS_URL } from '../../constants/app';
-import { fetchObservationForms } from '../observationFormsService';
 import { getUserPreferredLocale } from '../../i18n/translationService';
+import { fetchObservationForms } from '../observationFormsService';
 
 // Mock fetch globally
 const mockFetch = jest.fn();

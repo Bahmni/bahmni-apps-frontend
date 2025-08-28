@@ -152,7 +152,9 @@ describe('ConsultationPad Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Mock privilege service
-    const { getCurrentUserPrivileges } = jest.requireMock('@bahmni-frontend/bahmni-services');
+    const { getCurrentUserPrivileges } = jest.requireMock(
+      '@bahmni-frontend/bahmni-services',
+    );
     (getCurrentUserPrivileges as jest.Mock).mockResolvedValue([
       { name: 'app:clinical:observationForms' },
       { name: 'app:clinical:locationpicker' },

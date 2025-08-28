@@ -9,6 +9,7 @@ import {
   AuditEventType,
   dispatchAuditEvent,
   useTranslation,
+  ObservationForm,
 } from '@bahmni-frontend/bahmni-services';
 import { useNotification } from '@bahmni-frontend/bahmni-widgets';
 import React, { useEffect } from 'react';
@@ -20,7 +21,6 @@ import { useMedicationStore } from '../../../src/stores/medicationsStore';
 import useServiceRequestStore from '../../../src/stores/serviceRequestStore';
 import { ERROR_TITLES } from '../../constants/errors';
 import { ConsultationBundle } from '../../models/consultationBundle';
-import { ObservationForm } from '@bahmni-frontend/bahmni-services';
 import {
   postConsultationBundle,
   createDiagnosisBundleEntries,

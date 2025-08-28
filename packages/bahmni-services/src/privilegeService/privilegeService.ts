@@ -1,7 +1,7 @@
+import { get } from '../api';
 import { USER_PRIVILEGES_URL } from '../constants/app';
 import { getFormattedError } from '../errorHandling';
 import { UserPrivilege } from '../observationFormsService';
-import { get } from '../api';
 
 /**
  * Fetches current user privileges from whoami API

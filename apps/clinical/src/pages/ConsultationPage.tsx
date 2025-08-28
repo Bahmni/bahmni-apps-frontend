@@ -7,7 +7,10 @@ import {
   ClinicalLayout,
 } from '@bahmni-frontend/bahmni-design-system';
 import { useTranslation } from '@bahmni-frontend/bahmni-services';
-import { useNotification, useUserPrivilege } from '@bahmni-frontend/bahmni-widgets';
+import {
+  useNotification,
+  useUserPrivilege,
+} from '@bahmni-frontend/bahmni-widgets';
 import React, { Suspense, useMemo, useState } from 'react';
 import ConsultationPad from '../components/consultationPad/ConsultationPad';
 import DashboardContainer from '../components/dashboardContainer/DashboardContainer';

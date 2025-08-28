@@ -1,7 +1,7 @@
 import { ActionArea } from '@bahmni-frontend/bahmni-design-system';
+import { ObservationForm } from '@bahmni-frontend/bahmni-services';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ObservationForm } from '@bahmni-frontend/bahmni-services';
 import styles from '../../consultationPad/styles/ConsultationPad.module.scss';
 
 interface ObservationFormsContainerProps {

@@ -141,4 +141,3 @@ export {
   hasPrivilege,
   type UserPrivilege,
 } from './observationFormsService';
-

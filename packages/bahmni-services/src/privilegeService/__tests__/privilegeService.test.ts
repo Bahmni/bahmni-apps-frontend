@@ -1,6 +1,6 @@
+import { get } from '../../api';
 import { getFormattedError } from '../../errorHandling';
 
-import { get } from '../../api';
 import { getCurrentUserPrivileges } from '../privilegeService';
 
 jest.mock('../../api');

@@ -1,11 +1,11 @@
-import React, { ReactNode, useState, useMemo, useEffect } from 'react';
-import { UserPrivilegeContext } from './UserPrivilegeContext';
 import {
   notificationService,
   getFormattedError,
   getCurrentUserPrivileges,
-  type UserPrivilege
+  type UserPrivilege,
 } from '@bahmni-frontend/bahmni-services';
+import React, { ReactNode, useState, useMemo, useEffect } from 'react';
+import { UserPrivilegeContext } from './UserPrivilegeContext';
 
 interface UserPrivilegeProviderProps {
   children: ReactNode;

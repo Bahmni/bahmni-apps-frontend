@@ -521,10 +521,12 @@ describe('ObservationForms', () => {
       render(<ObservationForms {...defaultProps} />);
 
       // Check that translation function is called with correct keys
-      expect(screen.getByText('translated_OBSERVATION_FORMS_SECTION_TITLE')).toBeInTheDocument();
+      expect(
+        screen.getByText('translated_OBSERVATION_FORMS_SECTION_TITLE'),
+      ).toBeInTheDocument();
       expect(screen.getByDisplayValue('')).toHaveAttribute(
         'placeholder',
-        'translated_OBSERVATION_FORMS_SEARCH_PLACEHOLDER'
+        'translated_OBSERVATION_FORMS_SEARCH_PLACEHOLDER',
       );
     });
   });
@@ -542,7 +544,11 @@ describe('ObservationForms', () => {
 
       // Use an ID that doesn't exist in mockForms
       onChange({
-        selectedItem: { id: 'non-existent-form-id', label: 'Non-existent Form', disabled: false },
+        selectedItem: {
+          id: 'non-existent-form-id',
+          label: 'Non-existent Form',
+          disabled: false,
+        },
       });
 
       // Should not call onFormSelect when form is not found (covers line 62 branch)

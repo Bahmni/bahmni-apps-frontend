@@ -1,5 +1,5 @@
-import { createContext } from 'react';
 import { UserPrivilege } from '@bahmni-frontend/bahmni-services';
+import { createContext } from 'react';
 
 export interface UserPrivilegeContextType {
   userPrivileges: UserPrivilege[] | null;

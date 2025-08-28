@@ -1,19 +1,39 @@
+import {
+  getCurrentUserPrivileges,
+  UserPrivilege,
+  getFormattedError,
+} from '@bahmni-frontend/bahmni-services';
 import { render, screen, waitFor } from '@testing-library/react';
-import React from 'react';
 
 import '@testing-library/jest-dom';
 
-import { useUserPrivilege } from '@bahmni-frontend/bahmni-widgets';
-import { getCurrentUserPrivileges, UserPrivilege } from '@bahmni-frontend/bahmni-services';
-
 import { UserPrivilegeProvider } from '../UserPrivilegeProvider';
+import { useUserPrivilege } from '../useUserPrivilege';
 
 // Mock the privilegeService
-jest.mock('@bahmni-frontend/bahmni-services');
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  getCurrentUserPrivileges: jest.fn(),
+  getFormattedError: jest.fn(),
+  notificationService: {
+    showError: jest.fn(),
+  },
+}));
+
 const mockGetCurrentUserPrivileges =
   getCurrentUserPrivileges as jest.MockedFunction<
     typeof getCurrentUserPrivileges
   >;
+
+const mockGetFormattedError = getFormattedError as jest.MockedFunction<
+  typeof getFormattedError
+>;
+
+// Mock react-router-dom to prevent TextEncoder issues
+jest.mock('react-router-dom', () => ({
+  useParams: jest.fn(),
+  useNavigate: jest.fn(),
+  useLocation: jest.fn(),
+}));
 
 // Mock the timer functions
 jest.useFakeTimers();
@@ -61,7 +81,7 @@ describe('UserPrivilegeProvider', () => {
   });
 
   describe('Initial Load Tests', () => {
-    test('should load user privileges successfully on mount', async () => {
+    it('should load user privileges successfully on mount', async () => {
       mockGetCurrentUserPrivileges.mockResolvedValueOnce(mockUserPrivileges);
 
       render(
@@ -86,7 +106,7 @@ describe('UserPrivilegeProvider', () => {
       expect(mockGetCurrentUserPrivileges).toHaveBeenCalledTimes(1);
     });
 
-    test('should handle empty privileges array', async () => {
+    it('should handle empty privileges array', async () => {
       mockGetCurrentUserPrivileges.mockResolvedValueOnce(mockEmptyPrivileges);
 
       render(
@@ -107,7 +127,7 @@ describe('UserPrivilegeProvider', () => {
       );
     });
 
-    test('should handle admin privileges', async () => {
+    it('should handle admin privileges', async () => {
       mockGetCurrentUserPrivileges.mockResolvedValueOnce(mockAdminPrivileges);
 
       render(
@@ -128,7 +148,7 @@ describe('UserPrivilegeProvider', () => {
       );
     });
 
-    test('should handle limited privileges', async () => {
+    it('should handle limited privileges', async () => {
       mockGetCurrentUserPrivileges.mockResolvedValueOnce(mockLimitedPrivileges);
 
       render(
@@ -151,9 +171,13 @@ describe('UserPrivilegeProvider', () => {
   });
 
   describe('Error Handling Tests', () => {
-    test('should handle malformed response error', async () => {
+    it('should handle malformed response error', async () => {
       const jsonError = new SyntaxError('Unexpected token in JSON');
       mockGetCurrentUserPrivileges.mockRejectedValueOnce(jsonError);
+      mockGetFormattedError.mockReturnValueOnce({
+        title: 'Error',
+        message: 'Unexpected token in JSON',
+      });
 
       render(
         <UserPrivilegeProvider>
@@ -173,7 +197,7 @@ describe('UserPrivilegeProvider', () => {
     });
   });
   describe('Provider Integration Tests', () => {
-    test('should provide context to multiple child components', async () => {
+    it('should provide context to multiple child components', async () => {
       mockGetCurrentUserPrivileges.mockResolvedValueOnce(mockUserPrivileges);
 
       const ChildComponent1 = () => {

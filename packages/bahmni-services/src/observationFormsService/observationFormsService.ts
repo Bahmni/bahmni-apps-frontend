@@ -1,10 +1,6 @@
 import { OBSERVATION_FORMS_URL } from '../constants/app';
-import {
-  ObservationForm,
-  ApiNameTranslation,
-  FormApiResponse,
-} from './models';
 import { getUserPreferredLocale } from '../i18n/translationService';
+import { ObservationForm, ApiNameTranslation, FormApiResponse } from './models';
 
 /**
  * Fetches and normalizes raw observation forms data from the API
