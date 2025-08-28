@@ -1,16 +1,4 @@
-export {
-  searchPatients,
-  getPatientSearchResults,
-} from './patientSearchService';
-
-export {
-  formatPatientName,
-  formatRegistrationDate,
-  formatPatientSearchResult,
-  formatPatientSearchResults,
-  isValidSearchTerm,
-  sortPatientsByIdentifierAscending,
-} from './utils';
+export { getPatientSearchResults } from './patientSearchService';
 
 export type {
   PatientSearchResult,
