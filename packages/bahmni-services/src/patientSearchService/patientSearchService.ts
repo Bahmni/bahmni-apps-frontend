@@ -1,5 +1,4 @@
 import { get } from '../api';
-import { logAuditEvent } from '../auditLogService';
 import {
   PATIENT_SEARCH_BASE_URL,
   PATIENT_SEARCH_CONFIG,
@@ -43,24 +42,7 @@ export async function searchPatients(
   );
 
   const url = `${PATIENT_SEARCH_BASE_URL}?${params.toString()}`;
-
-  try {
-    const response = await get<PatientSearchResponse>(url);
-    await logAuditEvent(undefined, 'PATIENT_SEARCH', {
-      searchTerm: trimmedSearchTerm,
-      resultCount: response.totalCount,
-      searchType: 'COMBINED_ID_NAME',
-    });
-
-    return response;
-  } catch (error) {
-    await logAuditEvent(undefined, 'PATIENT_SEARCH_FAILED', {
-      searchTerm: trimmedSearchTerm,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    });
-
-    throw error;
-  }
+  return get<PatientSearchResponse>(url);
 }
 
 export async function searchPatientsFormatted(

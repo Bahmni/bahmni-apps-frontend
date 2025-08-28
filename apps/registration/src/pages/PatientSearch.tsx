@@ -56,6 +56,10 @@ const PatientSearch: React.FC = () => {
       setSearchResults(results);
       setHasSearched(true);
       setError(false);
+      dispatchAuditEvent({
+        eventType: AUDIT_LOG_EVENT_DETAILS.REGISTRATION_PATIENT_SEARCHED
+          .eventType as AuditEventType,
+      });
     },
     [],
   );

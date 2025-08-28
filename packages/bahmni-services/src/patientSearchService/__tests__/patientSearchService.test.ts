@@ -1,5 +1,4 @@
 import { get } from '../../api';
-import { logAuditEvent } from '../../auditLogService';
 import {
   mockPatientSearchResponse,
   mockEmptyPatientSearchResponse,
@@ -43,7 +42,6 @@ describe('PatientSearchService', () => {
     (getUuidFromUserLocationCookie as jest.Mock).mockReturnValue(
       mockLoginLocationUuid,
     );
-    (logAuditEvent as jest.Mock).mockResolvedValue(undefined);
   });
 
   describe('searchPatients', () => {
@@ -57,15 +55,6 @@ describe('PatientSearchService', () => {
         expect.stringContaining(PATIENT_SEARCH_BASE_URL),
       );
       expect(result).toEqual(mockPatientSearchResponse);
-      expect(logAuditEvent).toHaveBeenCalledWith(
-        undefined,
-        'PATIENT_SEARCH',
-        expect.objectContaining({
-          searchTerm: mockSearchTerm,
-          resultCount: mockPatientSearchResponse.totalCount,
-          searchType: 'COMBINED_ID_NAME',
-        }),
-      );
     });
 
     it('should throw error when login location UUID is not found', async () => {
@@ -116,14 +105,6 @@ describe('PatientSearchService', () => {
       await searchPatients('%');
 
       expect(get).toHaveBeenCalledWith(expect.stringContaining('q=%25'));
-      expect(logAuditEvent).toHaveBeenCalledWith(
-        undefined,
-        'PATIENT_SEARCH',
-        expect.objectContaining({
-          searchTerm: '%',
-          searchType: 'COMBINED_ID_NAME',
-        }),
-      );
     });
 
     it('should include correct URL parameters', async () => {
@@ -146,21 +127,6 @@ describe('PatientSearchService', () => {
 
       expect(get).toHaveBeenCalledWith(
         `${PATIENT_SEARCH_BASE_URL}?${expectedParams.toString()}`,
-      );
-    });
-
-    it('should handle API errors and log failed search attempt', async () => {
-      (get as jest.Mock).mockRejectedValueOnce(mockError);
-
-      await expect(searchPatients(mockSearchTerm)).rejects.toThrow(mockError);
-
-      expect(logAuditEvent).toHaveBeenCalledWith(
-        undefined,
-        'PATIENT_SEARCH_FAILED',
-        expect.objectContaining({
-          searchTerm: mockSearchTerm,
-          error: mockError.message,
-        }),
       );
     });
   });
