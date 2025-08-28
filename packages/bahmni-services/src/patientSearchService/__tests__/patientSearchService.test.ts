@@ -16,7 +16,6 @@ import {
 } from '../constants';
 import {
   searchPatients,
-  searchPatientsFormatted,
   getPatientSearchResults,
 } from '../patientSearchService';
 import {
@@ -128,66 +127,6 @@ describe('PatientSearchService', () => {
       expect(get).toHaveBeenCalledWith(
         `${PATIENT_SEARCH_BASE_URL}?${expectedParams.toString()}`,
       );
-    });
-  });
-
-  describe('searchPatientsFormatted', () => {
-    it('should return formatted patient search results', async () => {
-      (get as jest.Mock).mockResolvedValueOnce(mockPatientSearchResponse);
-
-      const result = await searchPatientsFormatted(
-        mockSearchTerm,
-        mockTranslationFunction,
-      );
-
-      expect(result).toHaveLength(
-        mockPatientSearchResponse.pageOfResults.length,
-      );
-      expect(result[0]).toHaveProperty('id');
-      expect(result[0]).toHaveProperty('patientId');
-      expect(result[0]).toHaveProperty('fullName');
-      expect(result[0]).toHaveProperty('gender');
-      expect(result[0]).toHaveProperty('age');
-      expect(result[0]).toHaveProperty('registrationDate');
-      expect(result[0]).toHaveProperty('uuid');
-    });
-
-    it('should handle empty search results', async () => {
-      (get as jest.Mock).mockResolvedValueOnce(mockEmptyPatientSearchResponse);
-
-      const result = await searchPatientsFormatted(
-        mockSearchTerm,
-        mockTranslationFunction,
-      );
-
-      expect(result).toEqual([]);
-    });
-
-    it('should sort results in ascending identifier order', async () => {
-      (get as jest.Mock).mockResolvedValueOnce(
-        mockPatientSearchResponseForIdentifierSorting,
-      );
-
-      const result = await searchPatientsFormatted(
-        mockSearchTerm,
-        mockTranslationFunction,
-      );
-
-      expect(result).toHaveLength(6);
-      expect(result[0].patientId).toBe('ABC200');
-      expect(result[1].patientId).toBe('ABC20000');
-      expect(result[2].patientId).toBe('ABC200000');
-      expect(result[3].patientId).toBe('ABC2000001');
-      expect(result[4].patientId).toBe('DEF456');
-      expect(result[5].patientId).toBe('XYZ123ABC200');
-    });
-
-    it('should handle API errors properly', async () => {
-      (get as jest.Mock).mockRejectedValueOnce(mockError);
-
-      await expect(
-        searchPatientsFormatted(mockSearchTerm, mockTranslationFunction),
-      ).rejects.toThrow(mockError);
     });
   });
 

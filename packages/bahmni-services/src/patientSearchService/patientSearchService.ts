@@ -45,17 +45,6 @@ export async function searchPatients(
   return get<PatientSearchResponse>(url);
 }
 
-export async function searchPatientsFormatted(
-  searchTerm: string,
-  t: (key: string) => string,
-): Promise<FormattedPatientSearchResult[]> {
-  const response = await searchPatients(searchTerm);
-  const sortedResults = sortPatientsByIdentifierAscending(
-    response.pageOfResults,
-  );
-  return formatPatientSearchResults(sortedResults, t);
-}
-
 export async function getPatientSearchResults(
   searchTerm: string,
   t: (key: string) => string,

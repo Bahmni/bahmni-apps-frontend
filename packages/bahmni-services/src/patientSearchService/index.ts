@@ -1,6 +1,5 @@
 export {
   searchPatients,
-  searchPatientsFormatted,
   getPatientSearchResults,
 } from './patientSearchService';
 
