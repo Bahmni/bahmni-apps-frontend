@@ -38,9 +38,9 @@
     cursor: pointer;
     &:hover {
       background-color: $layer-hover !important;
-    }
-    td {
-      background-color: $layer-hover !important;
+      td {
+        background-color: $layer-hover !important;
+      }
     }
   }
 }
