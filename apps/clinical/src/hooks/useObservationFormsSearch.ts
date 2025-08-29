@@ -1,12 +1,12 @@
 import {
   fetchObservationForms,
-  filterFormsByUserPrivileges,
   getFormattedError,
   ObservationForm,
 } from '@bahmni-frontend/bahmni-services';
 import { useUserPrivilege } from '@bahmni-frontend/bahmni-widgets';
 import { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { filterFormsByUserPrivileges } from '../components/forms/observationForms/utils/privilegeUtils';
 import useDebounce from './useDebounce';
 
 interface UseObservationFormsSearchResult {

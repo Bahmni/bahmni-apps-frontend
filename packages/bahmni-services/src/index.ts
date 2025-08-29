@@ -128,7 +128,11 @@ export {
 } from './constants/fhir';
 
 export { OPENMRS_REST_V1, OPENMRS_FHIR_R4 } from './constants/app';
-export { getCurrentUserPrivileges } from './privilegeService';
+export {
+  getCurrentUserPrivileges,
+  hasPrivilege,
+  type UserPrivilege,
+} from './privilegeService';
 export {
   fetchObservationForms,
   type ObservationForm,
@@ -136,8 +140,4 @@ export {
   type ApiNameTranslation,
   type FormPrivilege,
   type ApiFormPrivilege,
-  filterFormsByUserPrivileges,
-  canUserAccessForm,
-  hasPrivilege,
-  type UserPrivilege,
 } from './observationFormsService';

@@ -1,15 +1,16 @@
-import { ObservationForm } from '../../types/observationForms';
+import {
+  ObservationForm,
+  UserPrivilege,
+} from '@bahmni-frontend/bahmni-services';
 import {
   canUserAccessForm,
   filterFormsByUserPrivileges,
-  hasPrivilege,
-  UserPrivilege,
 } from '../privilegeUtils';
 
 describe('privilegeUtils', () => {
   const mockUserPrivileges: UserPrivilege[] = [
-    { name: 'app:clinical:observationForms' },
-    { name: 'view:forms' },
+    { uuid: 'privilege-uuid-1', name: 'app:clinical:observationForms' },
+    { uuid: 'privilege-uuid-2', name: 'view:forms' },
   ];
 
   const mockFormWithPrivileges: ObservationForm = {
@@ -193,44 +194,6 @@ describe('privilegeUtils', () => {
       expect(result).toHaveLength(2);
       expect(result[0]).toBe(mockFormWithoutPrivileges);
       expect(result[1]).toBe(mockFormWithPrivileges);
-    });
-  });
-
-  describe('hasPrivilege', () => {
-    it('should return true when user has the specified privilege', () => {
-      const result = hasPrivilege(
-        mockUserPrivileges,
-        'app:clinical:observationForms',
-      );
-      expect(result).toBe(true);
-    });
-
-    it('should return false when user does not have the specified privilege', () => {
-      const result = hasPrivilege(mockUserPrivileges, 'admin:superuser');
-      expect(result).toBe(false);
-    });
-
-    it('should return false when user privileges is null', () => {
-      const result = hasPrivilege(null, 'app:clinical:observationForms');
-      expect(result).toBe(false);
-    });
-
-    it('should return false when user privileges is empty array', () => {
-      const result = hasPrivilege([], 'app:clinical:observationForms');
-      expect(result).toBe(false);
-    });
-
-    it('should handle empty privilege name', () => {
-      const result = hasPrivilege(mockUserPrivileges, '');
-      expect(result).toBe(false);
-    });
-
-    it('should be case-sensitive', () => {
-      const result = hasPrivilege(
-        mockUserPrivileges,
-        'APP:CLINICAL:OBSERVATIONFORMS',
-      );
-      expect(result).toBe(false);
     });
   });
 });

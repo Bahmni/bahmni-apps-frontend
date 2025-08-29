@@ -2,7 +2,6 @@ import {
   getFormattedError,
   getCurrentUserPrivileges,
   fetchObservationForms,
-  filterFormsByUserPrivileges,
 } from '@bahmni-frontend/bahmni-services';
 import { UserPrivilegeProvider } from '@bahmni-frontend/bahmni-widgets';
 import { renderHook, waitFor } from '@testing-library/react';
@@ -11,6 +10,7 @@ import { I18nextProvider } from 'react-i18next';
 
 import i18n from '../../../setupTests.i18n';
 
+import { filterFormsByUserPrivileges } from '../../components/forms/observationForms/utils/privilegeUtils';
 import useObservationFormsSearch from '../useObservationFormsSearch';
 
 // Mock the common utils
@@ -19,8 +19,15 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
   getFormattedError: jest.fn(),
   getCurrentUserPrivileges: jest.fn(),
   fetchObservationForms: jest.fn(),
-  filterFormsByUserPrivileges: jest.fn(),
 }));
+
+// Mock the local privilegeUtils
+jest.mock(
+  '../../components/forms/observationForms/utils/privilegeUtils',
+  () => ({
+    filterFormsByUserPrivileges: jest.fn(),
+  }),
+);
 
 // Mock useUserPrivilege hook
 jest.mock('@bahmni-frontend/bahmni-widgets', () => ({

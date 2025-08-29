@@ -1,12 +1,7 @@
-import { ObservationForm } from './models';
-
-/**
- * Interface for user privilege from whoami API
- */
-export interface UserPrivilege {
-  name: string;
-}
-
+import {
+  ObservationForm,
+  UserPrivilege,
+} from '@bahmni-frontend/bahmni-services';
 /**
  * Check if user has required privileges to access a form
  * @param userPrivileges - Array of user privileges from whoami API
@@ -61,22 +56,4 @@ export const filterFormsByUserPrivileges = (
     canUserAccessForm(userPrivileges, form),
   );
   return filteredForms;
-};
-
-/**
- * Check if user has a specific privilege by name
- * @param userPrivileges - Array of user privileges from whoami API
- * @param privilegeName - Name of the privilege to check
- * @returns true if user has the privilege, false otherwise
- */
-// to privilege service
-export const hasPrivilege = (
-  userPrivileges: UserPrivilege[] | null,
-  privilegeName: string,
-): boolean => {
-  if (!userPrivileges || userPrivileges.length === 0) {
-    return false;
-  }
-
-  return userPrivileges.some((privilege) => privilege.name === privilegeName);
 };

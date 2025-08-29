@@ -1,7 +1,8 @@
 import { get } from '../../api';
 import { getFormattedError } from '../../errorHandling';
 
-import { getCurrentUserPrivileges } from '../privilegeService';
+import { UserPrivilege } from '../models';
+import { getCurrentUserPrivileges, hasPrivilege } from '../privilegeService';
 
 jest.mock('../../api');
 jest.mock('../../errorHandling');
@@ -167,6 +168,87 @@ describe('privilegeService', () => {
       expect(mockedGet).toHaveBeenCalledWith(
         '/openmrs/ws/rest/v1/bahmnicore/whoami',
       );
+    });
+  });
+
+  describe('hasPrivilege', () => {
+    const mockUserPrivileges: UserPrivilege[] = [
+      { uuid: '1', name: 'app:clinical:observationForms' },
+      { uuid: '2', name: 'view:forms' },
+      { uuid: '3', name: 'edit:forms' },
+      { uuid: '4', name: 'delete:forms' },
+    ];
+
+    it('should return true when user has the specified privilege', () => {
+      // Act
+      const result = hasPrivilege(
+        mockUserPrivileges,
+        'app:clinical:observationForms',
+      );
+
+      // Assert
+      expect(result).toBe(true);
+    });
+
+    it('should return true when user has privilege with exact match', () => {
+      // Act
+      const result = hasPrivilege(mockUserPrivileges, 'view:forms');
+
+      // Assert
+      expect(result).toBe(true);
+    });
+
+    it('should return false when user does not have the specified privilege', () => {
+      // Act
+      const result = hasPrivilege(mockUserPrivileges, 'nonexistent:privilege');
+
+      // Assert
+      expect(result).toBe(false);
+    });
+
+    it('should return false when user privileges is null', () => {
+      // Act
+      const result = hasPrivilege(null, 'app:clinical:observationForms');
+
+      // Assert
+      expect(result).toBe(false);
+    });
+
+    it('should return false when user privileges is empty array', () => {
+      // Act
+      const result = hasPrivilege([], 'app:clinical:observationForms');
+
+      // Assert
+      expect(result).toBe(false);
+    });
+
+    it('should return false when privilege name is empty string', () => {
+      // Act
+      const result = hasPrivilege(mockUserPrivileges, '');
+
+      // Assert
+      expect(result).toBe(false);
+    });
+    it('should handle privileges with special characters', () => {
+      // Arrange
+      const specialPrivileges: UserPrivilege[] = [
+        { uuid: '1', name: 'app:clinical-forms_view.restricted' },
+        { uuid: '2', name: 'app:clinical@forms#edit' },
+      ];
+
+      // Act
+      const result1 = hasPrivilege(
+        specialPrivileges,
+        'app:clinical-forms_view.restricted',
+      );
+      const result2 = hasPrivilege(
+        specialPrivileges,
+        'app:clinical@forms#edit',
+      );
+
+      // Assert
+      expect(result1).toBe(true);
+      expect(result2).toBe(true);
     });
   });
 });

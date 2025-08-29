@@ -6,9 +6,3 @@ export {
   type FormPrivilege,
   type ApiFormPrivilege,
 } from './models';
-export {
-  filterFormsByUserPrivileges,
-  canUserAccessForm,
-  hasPrivilege,
-  type UserPrivilege,
-} from './privilegeUtils';
