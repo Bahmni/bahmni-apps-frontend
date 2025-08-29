@@ -55,3 +55,46 @@ export async function getPatientSearchResults(
   );
   return formatPatientSearchResults(sortedResults, t);
 }
+
+export async function searchPatientByCustomAttribute(
+  searchTerm: string,
+  attributeType: string,
+  t: (key: string) => string,
+): Promise<FormattedPatientSearchResult[]> {
+  const loginLocationUuid = getUuidFromUserLocationCookie();
+
+  if (!loginLocationUuid) {
+    throw new Error('Login location UUID not found in cookie');
+  }
+
+  if (!isValidSearchTerm(searchTerm)) {
+    throw new Error('Search term cannot be empty');
+  }
+  const trimmedSearchTerm = searchTerm.trim();
+
+  const params = new URLSearchParams({
+    customAttribute: trimmedSearchTerm,
+    loginLocationUuid,
+    patientAttributes: attributeType,
+    patientSearchResultsConfig: PATIENT_SEARCH_CONFIG.PHONE_NUMBER,
+    startIndex: '0',
+  });
+
+  if (attributeType === PATIENT_SEARCH_CONFIG.PHONE_NUMBER) {
+    params.append(
+      'patientAttributes',
+      PATIENT_SEARCH_CONFIG.ALTERNATE_PHONE_NUMBER,
+    );
+  }
+  params.append(
+    'patientSearchResultsConfig',
+    PATIENT_SEARCH_CONFIG.ALTERNATE_PHONE_NUMBER,
+  );
+
+  const url = `/openmrs/ws/rest/v1/bahmni/search/patient?${params.toString()}`;
+  const response = await get<PatientSearchResponse>(url);
+  const sortedResults = sortPatientsByIdentifierAscending(
+    response.pageOfResults,
+  );
+  return formatPatientSearchResults(sortedResults, t);
+}

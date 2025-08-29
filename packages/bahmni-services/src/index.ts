@@ -7,6 +7,7 @@ export {
 } from './patientService';
 export {
   getPatientSearchResults,
+  searchPatientByCustomAttribute,
   type PatientSearchResult,
   type PatientSearchResponse,
   type FormattedPatientSearchResult,

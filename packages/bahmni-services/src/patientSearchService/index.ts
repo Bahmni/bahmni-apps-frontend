@@ -1,4 +1,7 @@
-export { getPatientSearchResults } from './patientSearchService';
+export {
+  getPatientSearchResults,
+  searchPatientByCustomAttribute,
+} from './patientSearchService';
 
 export type {
   PatientSearchResult,
