@@ -87,10 +87,7 @@ const PatientSearch: React.FC = () => {
     (row: FormattedPatientSearchResult, cellId: string) => {
       if (cellId === 'patientId') {
         return (
-          <Link
-            to={`/bahmni/registration/index.html#/patient/${row.uuid}`}
-            className={styles.patientLink}
-          >
+          <Link to={`/bahmni/registration/index.html#/patient/${row.uuid}`}>
             {row.patientId}
           </Link>
         );
@@ -99,6 +96,13 @@ const PatientSearch: React.FC = () => {
     },
     [],
   );
+
+  //TODO Refactor to use useNavigate from react-router-dom
+  const handleRowClick = (row: FormattedPatientSearchResult) => {
+    if (row.uuid) {
+      window.location.href = `/bahmni/registration/index.html#/patient/${row.uuid}`;
+    }
+  };
 
   const renderSearchResults = () => {
     if (!hasSearched || error) {
@@ -121,6 +125,7 @@ const PatientSearch: React.FC = () => {
           emptyStateMessage={t('PATIENT_SEARCH_NO_RESULTS')}
           loading={loading}
           renderCell={renderCell}
+          onRowClick={handleRowClick}
         />
       </div>
     );

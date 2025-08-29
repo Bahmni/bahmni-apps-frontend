@@ -20,6 +20,29 @@
   th {
     border-block: 1px solid $border-subtle !important;
   }
+
+  // Hover styles for clickable rows
+  tr[style*="cursor: pointer"] {
+    &:hover {
+      background-color: $layer-hover !important;
+
+      td {
+        background-color: $layer-hover !important;
+      }
+    }
+  }
+}
+
+.interactiveRow {
+  tr {
+    cursor: pointer;
+    &:hover {
+      background-color: $layer-hover !important;
+    }
+    td {
+      background-color: $layer-hover !important;
+    }
+  }
 }
 
 .sortableDataTableSkeleton {

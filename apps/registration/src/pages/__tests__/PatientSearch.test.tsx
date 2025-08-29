@@ -301,8 +301,6 @@ describe('PatientSearch Page', () => {
       expect(patientLink1).toBeInTheDocument();
       expect(patientLink2).toBeInTheDocument();
 
-      expect(patientLink1).toHaveClass('patientLink');
-
       // Verify the href attributes contain the correct patient UUIDs
       expect(patientLink1).toHaveAttribute(
         'href',
