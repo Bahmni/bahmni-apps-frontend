@@ -11,6 +11,7 @@ interface UsePhoneNumberSearchResult {
   totalCount: number;
   loading: boolean;
   error: string | null;
+  search: (term: string, attributeType: string) => void;
 }
 
 /**
@@ -30,7 +31,7 @@ export const usePhoneNumberSearch = (
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const performSearch = useCallback(async (searchTerm: string) => {
+  const performSearch = useCallback(async (searchTerm: string, currentAttributeType: string) => {
     if (!searchTerm.trim()) {
       setSearchResults([]);
       setTotalCount(0);
@@ -44,7 +45,7 @@ export const usePhoneNumberSearch = (
 
       const results = await searchPatientByCustomAttribute(
         searchTerm,
-        attributeType,
+        currentAttributeType,
         t,
       );
 
@@ -61,13 +62,14 @@ export const usePhoneNumberSearch = (
   }, []);
 
   useEffect(() => {
-    performSearch(searchTerm);
-  }, [searchTerm, performSearch]);
+    performSearch(searchTerm, attributeType);
+  }, [searchTerm, attributeType, performSearch]);
 
   return {
     searchResults,
     totalCount,
     loading,
     error,
+    search: performSearch,
   };
 };

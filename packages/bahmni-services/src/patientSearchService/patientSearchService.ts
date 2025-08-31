@@ -76,7 +76,7 @@ export async function searchPatientByCustomAttribute(
     customAttribute: trimmedSearchTerm,
     loginLocationUuid,
     patientAttributes: attributeType,
-    patientSearchResultsConfig: PATIENT_SEARCH_CONFIG.PHONE_NUMBER,
+    patientSearchResultsConfig: attributeType,
     startIndex: '0',
   });
 
@@ -85,11 +85,11 @@ export async function searchPatientByCustomAttribute(
       'patientAttributes',
       PATIENT_SEARCH_CONFIG.ALTERNATE_PHONE_NUMBER,
     );
+    params.append(
+      'patientSearchResultsConfig',
+      PATIENT_SEARCH_CONFIG.ALTERNATE_PHONE_NUMBER,
+    );
   }
-  params.append(
-    'patientSearchResultsConfig',
-    PATIENT_SEARCH_CONFIG.ALTERNATE_PHONE_NUMBER,
-  );
 
   const url = `/openmrs/ws/rest/v1/bahmni/search/patient?${params.toString()}`;
   const response = await get<PatientSearchResponse>(url);
