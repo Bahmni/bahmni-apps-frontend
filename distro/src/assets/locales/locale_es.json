@@ -266,5 +266,6 @@
   "GENDER": "énero",
   "AGE": "Edad",
   "REGISTRATION_DATE": "Fecha de Registro",
-  "CREATE_NEW_PATIENT": "Crear Nuevo Paciente"
+  "CREATE_NEW_PATIENT": "Crear Nuevo Paciente",
+  "PHONE_SEARCH_PLACEHOLDER":"Buscar por número de teléfono"
 }
