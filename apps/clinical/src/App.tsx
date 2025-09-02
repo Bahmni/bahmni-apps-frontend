@@ -9,6 +9,7 @@ import {
 import {
   NotificationProvider,
   NotificationServiceComponent,
+  UserPrivilegeProvider,
 } from '@bahmni-frontend/bahmni-widgets';
 import React, { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
@@ -44,9 +45,11 @@ const ClinicalApp: React.FC = () => {
       <NotificationProvider>
         <NotificationServiceComponent />
         <ClinicalConfigProvider>
-          <Routes>
-            <Route path=":patientUuid" element={<ConsultationPage />} />
-          </Routes>
+          <UserPrivilegeProvider>
+            <Routes>
+              <Route path=":patientUuid" element={<ConsultationPage />} />
+            </Routes>
+          </UserPrivilegeProvider>
         </ClinicalConfigProvider>
       </NotificationProvider>
     </Content>
