@@ -1,22 +1,5 @@
-@use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/spacing" as *;
-@use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
-
-.emptyState {
-  height: -webkit-fill-available !important;
-  padding-bottom: $spacing-10;
-  align-items: center;
-  align-content: center;
-}
-
-.emptyStateTitle {
-  @include type-style("heading-compact-02");
-}
-
-.emptyStateBody {
-  @include type-style("body-long-01");
-}
 
 .formView {
   display: flex;
@@ -31,13 +14,6 @@
   align-items: center;
   justify-content: center;
   padding: $spacing-05;
-}
-
-.formPlaceholder {
-  @include type-style("body-long-01");
-  color: $text-secondary;
-  text-align: center;
-  font-style: italic;
 }
 
 // Custom button spacing for form view
