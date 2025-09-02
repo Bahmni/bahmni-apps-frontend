@@ -54,6 +54,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   const [selectedForms, setSelectedForms] = React.useState<ObservationForm[]>(
     [],
   );
+  const [pinnedForms, setPinnedForms] = React.useState<ObservationForm[]>([]);
   const { t } = useTranslation();
   const { addNotification } = useNotification();
 
@@ -136,6 +137,27 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
 
     // Open form view
     handleViewingFormChange(form);
+  };
+
+  const handlePinToggle = (form: ObservationForm) => {
+    setPinnedForms((prev) => {
+      const isAlreadyPinned = prev.some(
+        (pinnedForm) => pinnedForm.uuid === form.uuid,
+      );
+      if (isAlreadyPinned) {
+        // Unpin the form
+        return prev.filter((pinnedForm) => pinnedForm.uuid !== form.uuid);
+      } else {
+        // Pin the form
+        return [...prev, form];
+      }
+    });
+  };
+
+  const handleUnpinForm = (formUuid: string) => {
+    setPinnedForms((prev) => 
+      prev.filter((pinnedForm) => pinnedForm.uuid !== formUuid)
+    );
   };
   // Data validation check for consultation submission
   const canSubmitConsultation = !!(
@@ -308,6 +330,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         onFormSelect={handleFormSelection}
         selectedForms={selectedForms}
         onRemoveForm={removeFormFromSelected}
+        pinnedForms={pinnedForms}
+        onPinToggle={handlePinToggle}
+        onUnpinForm={handleUnpinForm}
       />
       <MenuItemDivider />
     </>
@@ -320,6 +345,13 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         onViewingFormChange={handleViewingFormChange}
         viewingForm={viewingForm}
         onRemoveForm={removeFormFromSelected}
+        pinnedForms={pinnedForms.map(form => form.uuid)}
+        onPinToggle={(formUuid: string, isPinned: boolean) => {
+          const form = [...selectedForms, ...pinnedForms].find(f => f.uuid === formUuid);
+          if (form) {
+            handlePinToggle(form);
+          }
+        }}
       />
     );
   }

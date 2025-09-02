@@ -1,4 +1,4 @@
-import { ActionArea } from '@bahmni-frontend/bahmni-design-system';
+import { ActionArea, Icon, ICON_SIZE } from '@bahmni-frontend/bahmni-design-system';
 import { ObservationForm } from '@bahmni-frontend/bahmni-services';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +11,10 @@ interface ObservationFormsContainerProps {
   viewingForm?: ObservationForm | null;
   // Callback to remove form from selected forms list
   onRemoveForm?: (formUuid: string) => void;
+  // Callback to handle pin/unpin actions
+  onPinToggle?: (formUuid: string, isPinned: boolean) => void;
+  // List of pinned form UUIDs
+  pinnedForms?: string[];
 }
 
 /**
@@ -27,11 +31,36 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   onViewingFormChange,
   viewingForm: externalViewingForm,
   onRemoveForm,
+  onPinToggle,
+  pinnedForms = [],
 }) => {
   const { t } = useTranslation();
+  const [localPinState, setLocalPinState] = React.useState<boolean>(false);
 
   // Use the external viewingForm from parent
   const viewingForm = externalViewingForm;
+
+  // Check if current form is pinned (use local state if no external state provided)
+  const isCurrentFormPinned = viewingForm 
+    ? (pinnedForms.length > 0 ? pinnedForms.includes(viewingForm.uuid) : localPinState)
+    : false;
+
+  const handlePinToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (viewingForm) {
+      const newPinState = !isCurrentFormPinned;
+      
+      // Update local state immediately for visual feedback
+      setLocalPinState(newPinState);
+      
+      // Call parent callback if provided
+      if (onPinToggle) {
+        onPinToggle(viewingForm.uuid, newPinState);
+      }
+    }
+  };
 
   const handleDiscardForm = () => {
     // Remove the form from selected forms list if callback is provided
@@ -57,12 +86,30 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     </div>
   );
 
+  // Create a custom title with pin icon
+  const formTitleWithPin = (
+    <div className={styles.formTitleContainer}>
+      <span>{viewingForm?.name}</span>
+      <div 
+        onClick={handlePinToggle}
+        className={`${styles.pinIconContainer} ${isCurrentFormPinned ? styles.pinned : styles.unpinned}`}
+        title={isCurrentFormPinned ? 'Unpin form' : 'Pin form'}
+      >
+        <Icon 
+          id="pin-icon" 
+          name="fa-thumbtack" 
+          size={ICON_SIZE.SM}
+        />
+      </div>
+    </div>
+  );
+
   // If viewing a form, render the form with its own ActionArea
   if (viewingForm) {
     return (
       <ActionArea
         className={styles.formViewActionArea}
-        title={viewingForm.name}
+        title={formTitleWithPin as any}
         primaryButtonText={t('OBSERVATION_FORM_SAVE_BUTTON')}
         onPrimaryButtonClick={handleSaveForm}
         isPrimaryButtonDisabled={false}
