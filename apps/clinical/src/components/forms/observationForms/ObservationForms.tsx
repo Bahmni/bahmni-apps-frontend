@@ -16,6 +16,9 @@ interface ObservationFormsProps {
   onFormSelect?: (form: ObservationForm) => void;
   selectedForms?: ObservationForm[];
   onRemoveForm?: (formUuid: string) => void;
+  pinnedForms?: ObservationForm[];
+  onPinToggle?: (form: ObservationForm) => void;
+  onUnpinForm?: (formUuid: string) => void;
 }
 
 /**
@@ -33,7 +36,7 @@ interface ObservationFormsProps {
  * - Error handling and loading states
  */
 const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
-  ({ onFormSelect, selectedForms = [], onRemoveForm }) => {
+  ({ onFormSelect, selectedForms = [], onRemoveForm, pinnedForms = [], onPinToggle, onUnpinForm }) => {
     const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -43,6 +46,18 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
       isLoading,
       error,
     } = useObservationFormsSearch(searchTerm);
+
+    const defaultFormNames = ['History and Examination', 'Vitals'];
+    const defaultPinnedForms = availableForms.filter(form => 
+      defaultFormNames.includes(form.name)
+    );
+
+     // Merge with user-pinned forms (avoid duplicates)
+    const userPinnedUuids = pinnedForms.map(f => f.uuid);
+    const filteredDefaultForms = defaultPinnedForms.filter(f => 
+      !userPinnedUuids.includes(f.uuid)
+    );
+    const allPinnedForms = [...filteredDefaultForms, ...pinnedForms];
 
     const handleSearch = useCallback((searchQuery: string) => {
       setSearchTerm(searchQuery);
@@ -66,7 +81,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
       [availableForms, onFormSelect],
     );
 
-    const handleRemoveForm = useCallback(
+        const handleRemoveForm = useCallback(
       (formUuid: string) => {
         onRemoveForm?.(formUuid);
       },
@@ -180,6 +195,58 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
             ))}
           </BoxWHeader>
         )}
+
+        {/* Pinned And Popular Forms Section - Now comes second */}
+        <div className={styles.pinnedFormsSection}>
+          <div className={styles.observationFormsBox}>
+            {t('PINNED_AND_POPULAR_FORMS_TITLE', 'Pinned And Popular Forms')}
+          </div>
+
+          {allPinnedForms.length > 0 ? (
+            <div className={styles.pinnedFormsGrid}>
+              {allPinnedForms.map((form: ObservationForm) => (
+                <div
+                  key={form.uuid}
+                  className={styles.pinnedFormCard}
+                  onClick={() => onFormSelect?.(form)}
+                >
+                  <div className={styles.selectedFormHeader}>
+                    <Icon
+                      id={`fa-file-lines-${form.uuid}`}
+                      name="fa-file-lines"
+                      size={ICON_SIZE.LG}
+                      padding={ICON_PADDING.NONE}
+                    />
+                     <div className={styles.selectedFormName}>{form.name}</div>
+                    {!defaultFormNames.includes(form.name) &&(
+                    <div 
+                      className={styles.unpinButton}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onUnpinForm?.(form.uuid);
+                      }}
+                      title="Unpin form"
+                    >
+                      <Icon
+                        id={`unpin-icon-${form.uuid}`}
+                        name="fa-thumbtack"
+                        size={ICON_SIZE.SM}
+                        padding={ICON_PADDING.NONE}
+                      />
+                    </div>
+                    )}
+                  </div>
+                  <div className={styles.formCardContent}>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className={styles.noFormsMessage}>
+              {t('PINNED_AND_POPULAR_FORMS_NO_FORMS', 'No pinned or popular forms available')}
+            </div>
+          )}
+        </div>
       </Tile>
     );
   },
