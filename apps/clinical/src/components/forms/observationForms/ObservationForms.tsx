@@ -199,7 +199,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
         {/* Pinned And Popular Forms Section - Now comes second */}
         <div className={styles.pinnedFormsSection}>
           <div className={styles.observationFormsBox}>
-            {t('PINNED_AND_POPULAR_FORMS_TITLE', 'Pinned And Popular Forms')}
+            {t('DEFAULT_AND_PINNED_FORMS_TITLE')}
           </div>
 
           {allPinnedForms.length > 0 ? (
@@ -243,7 +243,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
             </div>
           ) : (
             <div className={styles.noFormsMessage}>
-              {t('PINNED_AND_POPULAR_FORMS_NO_FORMS', 'No pinned or popular forms available')}
+              {t('DEFAULT_AND_PINNED_FORMS_NO_FORMS_FOUND')}
             </div>
           )}
         </div>
