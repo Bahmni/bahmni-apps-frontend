@@ -3,6 +3,7 @@ import { ObservationForm } from '@bahmni-frontend/bahmni-services';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './styles/ObservationFormsContainer.module.scss';
+import { defaultFormNames } from './ObservationForms';
 
 interface ObservationFormsContainerProps {
   // Callback to notify parent when form viewing starts/ends
@@ -90,6 +91,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   const formTitleWithPin = (
     <div className={styles.formTitleContainer}>
       <span>{viewingForm?.name}</span>
+      {!defaultFormNames.includes(viewingForm?.name ||'')&&(
       <div 
         onClick={handlePinToggle}
         className={`${styles.pinIconContainer} ${isCurrentFormPinned ? styles.pinned : styles.unpinned}`}
@@ -101,6 +103,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
           size={ICON_SIZE.SM}
         />
       </div>
+      )}
     </div>
   );
 

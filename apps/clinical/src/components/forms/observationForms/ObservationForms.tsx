@@ -35,6 +35,7 @@ interface ObservationFormsProps {
  * - Internationalization support
  * - Error handling and loading states
  */
+export const defaultFormNames = ['History and Examination', 'Vitals'];
 const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
   ({ onFormSelect, selectedForms = [], onRemoveForm, pinnedForms = [], onPinToggle, onUnpinForm }) => {
     const { t } = useTranslation();
@@ -47,17 +48,26 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
       error,
     } = useObservationFormsSearch(searchTerm);
 
-    const defaultFormNames = ['History and Examination', 'Vitals'];
-    const defaultPinnedForms = availableForms.filter(form => 
+
+    const defaultPinnedForms = availableForms.filter(form =>
       defaultFormNames.includes(form.name)
     );
 
-     // Merge with user-pinned forms (avoid duplicates)
+    // Merge with user-pinned forms (avoid duplicates)
     const userPinnedUuids = pinnedForms.map(f => f.uuid);
-    const filteredDefaultForms = defaultPinnedForms.filter(f => 
-      !userPinnedUuids.includes(f.uuid)
-    );
-    const allPinnedForms = [...filteredDefaultForms, ...pinnedForms];
+
+    // Step 1: Get default forms that user hasn't pinned, sorted alphabetically
+    const sortedDefaultForms = defaultPinnedForms
+      .filter(f => !userPinnedUuids.includes(f.uuid))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    // Step 2: Get user-pinned forms, sorted alphabetically  
+    const sortedUserPinnedForms = [...pinnedForms]
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    // Step 3: Combine - defaults first, then user-pinned
+    const allPinnedForms = [...sortedDefaultForms, ...sortedUserPinnedForms];
+
 
     const handleSearch = useCallback((searchQuery: string) => {
       setSearchTerm(searchQuery);
@@ -81,7 +91,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
       [availableForms, onFormSelect],
     );
 
-        const handleRemoveForm = useCallback(
+    const handleRemoveForm = useCallback(
       (formUuid: string) => {
         onRemoveForm?.(formUuid);
       },
@@ -217,23 +227,23 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
                       size={ICON_SIZE.LG}
                       padding={ICON_PADDING.NONE}
                     />
-                     <div className={styles.selectedFormName}>{form.name}</div>
-                    {!defaultFormNames.includes(form.name) &&(
-                    <div 
-                      className={styles.unpinButton}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onUnpinForm?.(form.uuid);
-                      }}
-                      title="Unpin form"
-                    >
-                      <Icon
-                        id={`unpin-icon-${form.uuid}`}
-                        name="fa-thumbtack"
-                        size={ICON_SIZE.SM}
-                        padding={ICON_PADDING.NONE}
-                      />
-                    </div>
+                    <div className={styles.selectedFormName}>{form.name}</div>
+                    {!defaultFormNames.includes(form.name) && (
+                      <div
+                        className={styles.unpinButton}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onUnpinForm?.(form.uuid);
+                        }}
+                        title="Unpin form"
+                      >
+                        <Icon
+                          id={`unpin-icon-${form.uuid}`}
+                          name="fa-thumbtack"
+                          size={ICON_SIZE.SM}
+                          padding={ICON_PADDING.NONE}
+                        />
+                      </div>
                     )}
                   </div>
                   <div className={styles.formCardContent}>
