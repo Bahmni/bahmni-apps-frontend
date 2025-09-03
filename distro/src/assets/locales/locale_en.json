@@ -78,6 +78,8 @@
   "DATE_ERROR_INVALID_FORMAT": "Invalid date format",
   "DATE_ERROR_NULL_OR_UNDEFINED": "Date is null or undefined",
   "DATE_ERROR_PARSE": "Date Parse Error",
+  "DEFAULT_AND_PINNED_FORMS_TITLE": "Default and Pinned Forms",
+  "DEFAULT_AND_PINNED_FORMS_NO_FORMS_FOUND": "No default or pinned forms found",
   "DIAGNOSES_ADDED_DIAGNOSES": "Added Diagnoses",
   "DIAGNOSES_ALREADY_ADDED_AS_CONDITION": "Added as a condition",
   "DIAGNOSES_CERTAINTY_ARIA_LABEL": "Diagnoses Certainty",
