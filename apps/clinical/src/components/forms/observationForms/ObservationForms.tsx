@@ -4,9 +4,10 @@ import {
   SelectedItem,
   ICON_SIZE,
   ICON_PADDING,
+  ComboBox,
+  Tile,
 } from '@bahmni-frontend/bahmni-design-system';
 import { ObservationForm } from '@bahmni-frontend/bahmni-services';
-import { ComboBox, Tile } from '@carbon/react';
 import React, { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
