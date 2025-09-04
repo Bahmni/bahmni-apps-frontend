@@ -1,0 +1,33 @@
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/type" as *;
+
+// Using the same styles as pinnedFormsSection from ObservationForms.module.scss
+.formCardContainer {
+  margin-top: $spacing-06;
+  margin-bottom: $spacing-05;
+}
+
+// Using the same styles as observationFormsBox from ObservationForms.module.scss  
+.title {
+  margin: $spacing-01;
+  margin-bottom: $spacing-05;
+  margin-top: $spacing-07;
+}
+
+// Using the same styles as pinnedFormsGrid from ObservationForms.module.scss
+.formsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  gap: $spacing-05;
+  margin-bottom: $spacing-05;
+}
+
+// Using the same styles as noFormsMessage from ObservationForms.module.scss
+.noFormsMessage {
+  @include type-style("body-01");
+  color: $text-secondary;
+  text-align: center;
+  padding: $spacing-07;
+  font-style: italic;
+}
