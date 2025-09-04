@@ -6,6 +6,7 @@ import {
   ICON_PADDING,
   ComboBox,
   Tile,
+  FormCard,
 } from '@bahmni-frontend/bahmni-design-system';
 import { ObservationForm } from '@bahmni-frontend/bahmni-services';
 import React, { useState, useMemo, useCallback } from 'react';
@@ -216,40 +217,16 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
           {allPinnedForms.length > 0 ? (
             <div className={styles.pinnedFormsGrid}>
               {allPinnedForms.map((form: ObservationForm) => (
-                <div
+                <FormCard
                   key={form.uuid}
-                  className={styles.pinnedFormCard}
-                  onClick={() => onFormSelect?.(form)}
-                >
-                  <div className={styles.selectedFormHeader}>
-                    <Icon
-                      id={`fa-file-lines-${form.uuid}`}
-                      name="fa-file-lines"
-                      size={ICON_SIZE.LG}
-                      padding={ICON_PADDING.NONE}
-                    />
-                    <div className={styles.selectedFormName}>{form.name}</div>
-                    {!defaultFormNames.includes(form.name) && (
-                      <div
-                        className={styles.unpinButton}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onUnpinForm?.(form.uuid);
-                        }}
-                        title="Unpin form"
-                      >
-                        <Icon
-                          id={`unpin-icon-${form.uuid}`}
-                          name="fa-thumbtack"
-                          size={ICON_SIZE.SM}
-                          padding={ICON_PADDING.NONE}
-                        />
-                      </div>
-                    )}
-                  </div>
-                  <div className={styles.formCardContent}>
-                  </div>
-                </div>
+                  title={form.name}
+                  icon="fa-file-lines"
+                  actionIcon={!defaultFormNames.includes(form.name) ? "fa-thumbtack" : undefined}
+                  onOpen={() => onFormSelect?.(form)}
+                  onActionClick={() => onUnpinForm?.(form.uuid)}
+                  dataTestId={`pinned-form-${form.uuid}`}
+                  ariaLabel={`Open ${form.name} form`}
+                />
               ))}
             </div>
           ) : (

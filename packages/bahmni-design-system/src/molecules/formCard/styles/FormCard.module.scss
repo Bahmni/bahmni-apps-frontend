@@ -1,0 +1,143 @@
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.formCard {
+  background-color: $layer-01;
+  border: 1px solid $border-subtle-01;
+  padding: $spacing-05;
+  transition: all 0.2s ease;
+  position: relative;
+  border-radius: 4px;
+
+  &.clickable {
+    cursor: pointer;
+
+    &:hover:not(.disabled) {
+      background-color: $layer-hover-01;
+      border-color: $border-subtle-02;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    &:focus:not(.disabled) {
+      outline: 2px solid $focus;
+      outline-offset: 2px;
+    }
+  }
+
+  &.selected {
+    border-color: $border-interactive;
+    background-color: $layer-selected-01;
+    
+    &:hover:not(.disabled) {
+      background-color: $layer-selected-hover-01;
+    }
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    
+    * {
+      pointer-events: none;
+    }
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: $spacing-03;
+  margin-bottom: $spacing-03;
+}
+
+.title {
+  @include type-style("body-compact-01");
+  font-weight: 400;
+  color: $text-primary;
+  flex: 1;
+  line-height: 1.4;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-02;
+}
+
+.description {
+  @include type-style("body-01");
+  color: $text-secondary;
+  line-height: 1.4;
+}
+
+.actionIcon {
+  cursor: pointer;
+  padding: $spacing-02;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  color: $text-secondary;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &:hover:not(.disabled) {
+    background-color: $layer-hover-02;
+    color: $text-primary;
+  }
+
+  &:focus:not(.disabled) {
+    outline: 2px solid $focus;
+    outline-offset: 2px;
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Responsive design for smaller screens
+@media (max-width: 672px) {
+  .formCard {
+    padding: $spacing-04;
+  }
+  
+  .header {
+    gap: $spacing-02;
+    margin-bottom: $spacing-02;
+  }
+  
+  .title {
+    @include type-style("body-compact-02");
+  }
+  
+  .description {
+    @include type-style("body-compact-01");
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .formCard {
+    border-width: 2px;
+    
+    &.selected {
+      border-width: 3px;
+    }
+  }
+  
+  .actionIcon:focus:not(.disabled) {
+    outline-width: 3px;
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  .formCard,
+  .actionIcon {
+    transition: none;
+  }
+}
