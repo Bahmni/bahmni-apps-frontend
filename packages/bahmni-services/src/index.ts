@@ -101,6 +101,7 @@ export {
 } from './configService';
 
 export { getCurrentUser, type User } from './userService';
+export { USER_PINNED_PREFERENCE_URL } from './constants/app';
 export {
   getCurrentProvider,
   type Provider,
