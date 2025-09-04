@@ -13,7 +13,9 @@ import {
 } from '@bahmni-frontend/bahmni-services';
 import { useNotification } from '@bahmni-frontend/bahmni-widgets';
 import React, { useEffect } from 'react';
+import { loadPinnedForms, savePinnedForms } from '../../services/pinnedFormsService';
 import { useEncounterSession } from '../../../src/hooks/useEncounterSession';
+import useObservationFormsSearch from '../../../src/hooks/useObservationFormsSearch';
 import useAllergyStore from '../../../src/stores/allergyStore';
 import { useConditionsAndDiagnosesStore } from '../../../src/stores/conditionsAndDiagnosesStore';
 import { useEncounterDetailsStore } from '../../../src/stores/encounterDetailsStore';
@@ -97,6 +99,31 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   // Get encounter session state
   const { activeEncounter } = useEncounterSession();
 
+  // Get available observation forms
+  const { forms: availableForms } = useObservationFormsSearch('');
+
+  // Load pinned forms on component mount when available forms are loaded
+  useEffect(() => {
+    const initializePinnedForms = async () => {
+      if (availableForms.length === 0) return; // Wait for forms to load
+
+      try {
+        const pinnedFormNames = await loadPinnedForms();
+        
+        // Match pinned form names with available forms
+        const matchedForms = availableForms.filter(form =>
+          pinnedFormNames.includes(form.name)
+        );
+        
+        setPinnedForms(matchedForms);
+      } catch (error) {
+        console.error('Error loading pinned forms:', error);
+      }
+    };
+
+    initializePinnedForms();
+  }, [availableForms]);
+
   // Clean up on unmount
   useEffect(() => {
     return () => {
@@ -139,25 +166,49 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     handleViewingFormChange(form);
   };
 
-  const handlePinToggle = (form: ObservationForm) => {
-    setPinnedForms((prev) => {
-      const isAlreadyPinned = prev.some(
-        (pinnedForm) => pinnedForm.uuid === form.uuid,
-      );
-      if (isAlreadyPinned) {
-        // Unpin the form
-        return prev.filter((pinnedForm) => pinnedForm.uuid !== form.uuid);
-      } else {
-        // Pin the form
-        return [...prev, form];
-      }
-    });
+  const handlePinToggle = async (form: ObservationForm) => {
+    const newPinnedForms = pinnedForms.some(f => f.uuid === form.uuid)
+      ? pinnedForms.filter(f => f.uuid !== form.uuid)  // Unpin
+      : [...pinnedForms, form];  // Pin
+
+    setPinnedForms(newPinnedForms);
+
+    // Save to server
+    try {
+      const formNames = newPinnedForms.map(f => f.name);
+      await savePinnedForms(formNames);
+    } catch (error) {
+      console.error('Error saving pinned forms:', error);
+      addNotification({
+        title: t('ERROR_SAVING_PINNED_FORMS'),
+        message: t('ERROR_SAVING_PINNED_FORMS_MESSAGE'),
+        type: 'error',
+        timeout: 3000,
+      });
+      // Revert the state change if save failed
+      setPinnedForms(pinnedForms);
+    }
   };
 
-  const handleUnpinForm = (formUuid: string) => {
-    setPinnedForms((prev) => 
-      prev.filter((pinnedForm) => pinnedForm.uuid !== formUuid)
-    );
+  const handleUnpinForm = async (formUuid: string) => {
+    const newPinnedForms = pinnedForms.filter(f => f.uuid !== formUuid);
+    setPinnedForms(newPinnedForms);
+
+    // Save to server
+    try {
+      const formNames = newPinnedForms.map(f => f.name);
+      await savePinnedForms(formNames);
+    } catch (error) {
+      console.error('Error saving pinned forms:', error);
+      addNotification({
+        title: t('ERROR_SAVING_PINNED_FORMS'),
+        message: t('ERROR_SAVING_PINNED_FORMS_MESSAGE'),
+        type: 'error',
+        timeout: 3000,
+      });
+      // Revert the state change if save failed
+      setPinnedForms(pinnedForms);
+    }
   };
   // Data validation check for consultation submission
   const canSubmitConsultation = !!(
