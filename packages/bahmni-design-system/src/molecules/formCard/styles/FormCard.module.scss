@@ -66,12 +66,6 @@
   gap: $spacing-02;
 }
 
-.description {
-  @include type-style("body-01");
-  color: $text-secondary;
-  line-height: 1.4;
-}
-
 .actionIcon {
   cursor: pointer;
   padding: $spacing-02;
