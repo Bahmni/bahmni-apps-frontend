@@ -88,3 +88,4 @@ export {
   MenuItemDivider,
   type MenuItemDividerProps,
 } from './atoms/menuItemDivider';
+export { FormCard, type FormCardProps } from './molecules/formCard';
