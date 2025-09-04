@@ -1,7 +1,6 @@
-import React from 'react';
 import classNames from 'classnames';
-import { Icon } from '../icon';
-import { ICON_SIZE, ICON_PADDING } from '../icon';
+import React from 'react';
+import { Icon, ICON_SIZE, ICON_PADDING } from '../icon';
 import styles from './styles/FormCard.module.scss';
 
 export interface FormCardProps {
@@ -22,7 +21,7 @@ export interface FormCardProps {
 
 interface ActionIconProps {
   icon: string;
-  onClick: (e: React.MouseEvent) => void;
+  onClick: (e: React.MouseEvent | React.KeyboardEvent) => void;
   disabled?: boolean;
   ariaLabel?: string;
 }
@@ -44,7 +43,7 @@ const ActionIcon: React.FC<ActionIconProps> = ({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if ((e.key === 'Enter' || e.key === ' ') && !disabled) {
       e.preventDefault();
-      onClick(e as any);
+      onClick(e);
     }
   };
 
@@ -111,9 +110,9 @@ const useClickHandler = (
   onCardClick?: () => void,
   onOpen?: () => void,
   onEdit?: () => void,
-  disabled?: boolean
+  disabled?: boolean,
 ) => {
-  const primaryClickHandler = onCardClick || onOpen || onEdit;
+  const primaryClickHandler = onCardClick ?? onOpen ?? onEdit;
 
   const handleCardClick = () => {
     if (!disabled && primaryClickHandler) {
@@ -122,7 +121,7 @@ const useClickHandler = (
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if ((e.key === 'Enter' || e.key === ' ') && !disabled && primaryClickHandler) {
+    if (e.key === 'Enter' && !disabled && primaryClickHandler) {
       e.preventDefault();
       primaryClickHandler();
     }
@@ -154,7 +153,7 @@ export const FormCard: React.FC<FormCardProps> = ({
     onCardClick,
     onOpen,
     onEdit,
-    disabled
+    disabled,
   );
 
   const cardClasses = classNames(
@@ -164,12 +163,12 @@ export const FormCard: React.FC<FormCardProps> = ({
       [styles.selected]: selected,
       [styles.clickable]: hasClickHandler,
     },
-    className
+    className,
   );
 
   const accessibilityProps = {
     'data-testid': dataTestId,
-    'aria-label': ariaLabel || title,
+    'aria-label': ariaLabel ?? title,
     'aria-disabled': disabled,
     ...(hasClickHandler && {
       role: 'button',
