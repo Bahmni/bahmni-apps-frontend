@@ -10,10 +10,10 @@ import {
   dispatchAuditEvent,
   useTranslation,
   ObservationForm,
+  getFormattedError,
 } from '@bahmni-frontend/bahmni-services';
 import { useNotification } from '@bahmni-frontend/bahmni-widgets';
 import React, { useEffect } from 'react';
-import { loadPinnedForms, savePinnedForms } from '../../services/pinnedFormsService';
 import { useEncounterSession } from '../../../src/hooks/useEncounterSession';
 import useObservationFormsSearch from '../../../src/hooks/useObservationFormsSearch';
 import useAllergyStore from '../../../src/stores/allergyStore';
@@ -33,6 +33,10 @@ import {
   createEncounterBundleEntry,
   getEncounterReference,
 } from '../../services/consultationBundleService';
+import {
+  loadPinnedForms,
+  savePinnedForms,
+} from '../../services/pinnedFormsService';
 import { createConsultationBundle } from '../../utils/fhir/consultationBundleCreator';
 import { createEncounterResource } from '../../utils/fhir/encounterResourceCreator';
 import AllergiesForm from '../forms/allergies/AllergiesForm';
@@ -109,15 +113,16 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
 
       try {
         const pinnedFormNames = await loadPinnedForms();
-        
+
         // Match pinned form names with available forms
-        const matchedForms = availableForms.filter(form =>
-          pinnedFormNames.includes(form.name)
+        const matchedForms = availableForms.filter((form) =>
+          pinnedFormNames.includes(form.name),
         );
-        
+
         setPinnedForms(matchedForms);
       } catch (error) {
-        console.error('Error loading pinned forms:', error);
+        const formattedError = getFormattedError(error);
+        throw formattedError.message;
       }
     };
 
@@ -167,18 +172,17 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   };
 
   const handlePinToggle = async (form: ObservationForm) => {
-    const newPinnedForms = pinnedForms.some(f => f.uuid === form.uuid)
-      ? pinnedForms.filter(f => f.uuid !== form.uuid)  // Unpin
-      : [...pinnedForms, form];  // Pin
+    const newPinnedForms = pinnedForms.some((f) => f.uuid === form.uuid)
+      ? pinnedForms.filter((f) => f.uuid !== form.uuid) // Unpin
+      : [...pinnedForms, form]; // Pin
 
     setPinnedForms(newPinnedForms);
 
     // Save to server
     try {
-      const formNames = newPinnedForms.map(f => f.name);
+      const formNames = newPinnedForms.map((f) => f.name);
       await savePinnedForms(formNames);
-    } catch (error) {
-      console.error('Error saving pinned forms:', error);
+    } catch {
       addNotification({
         title: t('ERROR_SAVING_PINNED_FORMS'),
         message: t('ERROR_SAVING_PINNED_FORMS_MESSAGE'),
@@ -191,15 +195,14 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   };
 
   const handleUnpinForm = async (formUuid: string) => {
-    const newPinnedForms = pinnedForms.filter(f => f.uuid !== formUuid);
+    const newPinnedForms = pinnedForms.filter((f) => f.uuid !== formUuid);
     setPinnedForms(newPinnedForms);
 
     // Save to server
     try {
-      const formNames = newPinnedForms.map(f => f.name);
+      const formNames = newPinnedForms.map((f) => f.name);
       await savePinnedForms(formNames);
-    } catch (error) {
-      console.error('Error saving pinned forms:', error);
+    } catch {
       addNotification({
         title: t('ERROR_SAVING_PINNED_FORMS'),
         message: t('ERROR_SAVING_PINNED_FORMS_MESSAGE'),
@@ -396,9 +399,11 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         onViewingFormChange={handleViewingFormChange}
         viewingForm={viewingForm}
         onRemoveForm={removeFormFromSelected}
-        pinnedForms={pinnedForms.map(form => form.uuid)}
-        onPinToggle={(formUuid: string, isPinned: boolean) => {
-          const form = [...selectedForms, ...pinnedForms].find(f => f.uuid === formUuid);
+        pinnedForms={pinnedForms.map((form) => form.uuid)}
+        onPinToggle={(formUuid: string) => {
+          const form = [...selectedForms, ...pinnedForms].find(
+            (f) => f.uuid === formUuid,
+          );
           if (form) {
             handlePinToggle(form);
           }

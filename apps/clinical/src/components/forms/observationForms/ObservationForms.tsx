@@ -20,7 +20,6 @@ interface ObservationFormsProps {
   selectedForms?: ObservationForm[];
   onRemoveForm?: (formUuid: string) => void;
   pinnedForms?: ObservationForm[];
-  onPinToggle?: (form: ObservationForm) => void;
   onUnpinForm?: (formUuid: string) => void;
 }
 
@@ -40,7 +39,13 @@ interface ObservationFormsProps {
  */
 export const defaultFormNames = ['History and Examination', 'Vitals'];
 const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
-  ({ onFormSelect, selectedForms = [], onRemoveForm, pinnedForms = [], onPinToggle, onUnpinForm }) => {
+  ({
+    onFormSelect,
+    selectedForms = [],
+    onRemoveForm,
+    pinnedForms = [],
+    onUnpinForm,
+  }) => {
     const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -51,26 +56,25 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
       error,
     } = useObservationFormsSearch(searchTerm);
 
-
-    const defaultPinnedForms = availableForms.filter(form =>
-      defaultFormNames.includes(form.name)
+    const defaultPinnedForms = availableForms.filter((form) =>
+      defaultFormNames.includes(form.name),
     );
 
     // Merge with user-pinned forms (avoid duplicates)
-    const userPinnedUuids = pinnedForms.map(f => f.uuid);
+    const userPinnedUuids = pinnedForms.map((f) => f.uuid);
 
     // Step 1: Get default forms that user hasn't pinned, sorted alphabetically
     const sortedDefaultForms = defaultPinnedForms
-      .filter(f => !userPinnedUuids.includes(f.uuid))
+      .filter((f) => !userPinnedUuids.includes(f.uuid))
       .sort((a, b) => a.name.localeCompare(b.name));
 
-    // Step 2: Get user-pinned forms, sorted alphabetically  
-    const sortedUserPinnedForms = [...pinnedForms]
-      .sort((a, b) => a.name.localeCompare(b.name));
+    // Step 2: Get user-pinned forms, sorted alphabetically
+    const sortedUserPinnedForms = [...pinnedForms].sort((a, b) =>
+      a.name.localeCompare(b.name),
+    );
 
     // Step 3: Combine - defaults first, then user-pinned
     const allPinnedForms = [...sortedDefaultForms, ...sortedUserPinnedForms];
-
 
     const handleSearch = useCallback((searchQuery: string) => {
       setSearchTerm(searchQuery);
@@ -220,7 +224,11 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
               key={form.uuid}
               title={form.name}
               icon="fa-file-lines"
-              actionIcon={!defaultFormNames.includes(form.name) ? "fa-thumbtack" : undefined}
+              actionIcon={
+                !defaultFormNames.includes(form.name)
+                  ? 'fa-thumbtack'
+                  : undefined
+              }
               onOpen={() => onFormSelect?.(form)}
               onActionClick={() => onUnpinForm?.(form.uuid)}
               dataTestId={`pinned-form-${form.uuid}`}
