@@ -7,6 +7,7 @@ import {
   ComboBox,
   Tile,
   FormCard,
+  FormCardContainer,
 } from '@bahmni-frontend/bahmni-design-system';
 import { ObservationForm } from '@bahmni-frontend/bahmni-services';
 import React, { useState, useMemo, useCallback } from 'react';
@@ -209,32 +210,24 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
         )}
 
         {/* Pinned And Popular Forms Section - Now comes second */}
-        <div className={styles.pinnedFormsSection}>
-          <div className={styles.observationFormsBox}>
-            {t('DEFAULT_AND_PINNED_FORMS_TITLE')}
-          </div>
-
-          {allPinnedForms.length > 0 ? (
-            <div className={styles.pinnedFormsGrid}>
-              {allPinnedForms.map((form: ObservationForm) => (
-                <FormCard
-                  key={form.uuid}
-                  title={form.name}
-                  icon="fa-file-lines"
-                  actionIcon={!defaultFormNames.includes(form.name) ? "fa-thumbtack" : undefined}
-                  onOpen={() => onFormSelect?.(form)}
-                  onActionClick={() => onUnpinForm?.(form.uuid)}
-                  dataTestId={`pinned-form-${form.uuid}`}
-                  ariaLabel={`Open ${form.name} form`}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className={styles.noFormsMessage}>
-              {t('DEFAULT_AND_PINNED_FORMS_NO_FORMS_FOUND')}
-            </div>
-          )}
-        </div>
+        <FormCardContainer
+          title={t('DEFAULT_AND_PINNED_FORMS_TITLE')}
+          showNoFormsMessage={allPinnedForms.length === 0}
+          noFormsMessage={t('DEFAULT_AND_PINNED_FORMS_NO_FORMS_FOUND')}
+        >
+          {allPinnedForms.map((form: ObservationForm) => (
+            <FormCard
+              key={form.uuid}
+              title={form.name}
+              icon="fa-file-lines"
+              actionIcon={!defaultFormNames.includes(form.name) ? "fa-thumbtack" : undefined}
+              onOpen={() => onFormSelect?.(form)}
+              onActionClick={() => onUnpinForm?.(form.uuid)}
+              dataTestId={`pinned-form-${form.uuid}`}
+              ariaLabel={`Open ${form.name} form`}
+            />
+          ))}
+        </FormCardContainer>
       </Tile>
     );
   },
