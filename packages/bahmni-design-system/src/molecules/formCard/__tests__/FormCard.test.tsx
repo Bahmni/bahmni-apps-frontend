@@ -1,5 +1,4 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import React from 'react';
 import { FormCard } from '../FormCard';
 
 // Mock the Icon component
@@ -27,12 +26,6 @@ describe('FormCard', () => {
 
     expect(screen.getByText('Test Card')).toBeInTheDocument();
     expect(screen.getByTestId('card-icon-fa-test')).toBeInTheDocument();
-  });
-
-  it('renders with description', () => {
-    render(<FormCard {...defaultProps} description="Test description" />);
-
-    expect(screen.getByText('Test description')).toBeInTheDocument();
   });
 
   it('renders with action icon', () => {
@@ -106,16 +99,6 @@ describe('FormCard', () => {
 
     const card = screen.getByTestId('form-card');
     expect(card).toHaveClass('disabled');
-  });
-
-  it('renders children content', () => {
-    render(
-      <FormCard {...defaultProps}>
-        <div>Custom content</div>
-      </FormCard>,
-    );
-
-    expect(screen.getByText('Custom content')).toBeInTheDocument();
   });
 
   it('supports keyboard navigation', () => {

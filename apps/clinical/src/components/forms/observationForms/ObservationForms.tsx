@@ -1,9 +1,4 @@
 import {
-  Icon,
-  BoxWHeader,
-  SelectedItem,
-  ICON_SIZE,
-  ICON_PADDING,
   ComboBox,
   Tile,
   FormCard,
@@ -98,13 +93,6 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
       [availableForms, onFormSelect],
     );
 
-    const handleRemoveForm = useCallback(
-      (formUuid: string) => {
-        onRemoveForm?.(formUuid);
-      },
-      [onRemoveForm],
-    );
-
     const searchResults = useMemo(() => {
       if (isLoading) {
         return [
@@ -184,33 +172,20 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
         />
 
         {selectedForms && selectedForms.length > 0 && (
-          <BoxWHeader
-            title={t('OBSERVATION_FORMS_ADDED_FORMS')}
-            className={styles.observationFormsBox}
-          >
+          <FormCardContainer title={t('OBSERVATION_FORMS_ADDED_FORMS')}>
             {selectedForms.map((form: ObservationForm) => (
-              <SelectedItem
+              <FormCard
                 key={form.uuid}
-                className={styles.selectedObservationFormItem}
-                onClose={() => handleRemoveForm(form.uuid)}
-              >
-                <div
-                  className={styles.selectedFormContent}
-                  onClick={() => onFormSelect?.(form)}
-                >
-                  <div className={styles.selectedFormHeader}>
-                    <Icon
-                      id="fa-file-lines"
-                      name="fa-file-lines"
-                      size={ICON_SIZE.LG}
-                      padding={ICON_PADDING.NONE}
-                    />
-                    <div className={styles.selectedFormName}>{form.name}</div>
-                  </div>
-                </div>
-              </SelectedItem>
+                title={form.name}
+                icon="fa-file-lines"
+                actionIcon="fa-times"
+                onOpen={() => onFormSelect?.(form)}
+                onActionClick={() => onRemoveForm?.(form.uuid)}
+                dataTestId={`selected-form-${form.uuid}`}
+                ariaLabel={`Open ${form.name} form`}
+              />
             ))}
-          </BoxWHeader>
+          </FormCardContainer>
         )}
 
         {/* Pinned And Popular Forms Section - Now comes second */}
