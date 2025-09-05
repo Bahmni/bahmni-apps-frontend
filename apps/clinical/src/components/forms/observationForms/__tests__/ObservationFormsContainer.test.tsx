@@ -48,6 +48,16 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
       </div>
     ),
   ),
+  Icon: jest.fn(({ id, name, size }) => (
+    <div data-testid={`icon-${id}`} data-icon-name={name} data-size={size}>
+      Icon
+    </div>
+  )),
+  ICON_SIZE: {
+    SM: 'SM',
+    MD: 'MD',
+    LG: 'LG',
+  },
 }));
 
 // Mock styles
