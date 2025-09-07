@@ -2,12 +2,17 @@ import { ObservationForm } from '@bahmni-frontend/bahmni-services';
 import { render, screen, fireEvent } from '@testing-library/react';
 import ObservationFormsContainer from '../ObservationFormsContainer';
 
+// Mock the defaultFormNames import
+jest.mock('../ObservationForms', () => ({
+  defaultFormNames: ['History and Examination', 'Vitals'],
+}));
+
 // Mock the translation hook
 jest.mock('react-i18next', () => ({
   useTranslation: jest.fn(() => ({
     t: jest.fn((key) => `translated_${key}`),
   })),
-}));
+}));  
 
 // Mock ActionArea component
 jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
@@ -61,10 +66,14 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
 }));
 
 // Mock styles
-jest.mock('./styles/ObservationFormsContainer.module.scss', () => ({
+jest.mock('../styles/ObservationFormsContainer.module.scss', () => ({
   formView: 'formView',
   formContent: 'formContent',
   formViewActionArea: 'formViewActionArea',
+  formTitleContainer: 'formTitleContainer',
+  pinIconContainer: 'pinIconContainer',
+  pinned: 'pinned',
+  unpinned: 'unpinned',
 }));
 
 describe('ObservationFormsContainer', () => {
@@ -240,6 +249,83 @@ describe('ObservationFormsContainer', () => {
       expect(
         screen.getByText('translated_OBSERVATION_FORM_BACK_BUTTON'),
       ).toBeInTheDocument();
+    });
+  });
+
+  describe('Pin Toggle Functionality', () => {
+    const nonDefaultForm: ObservationForm = {
+      name: 'Custom Form',
+      uuid: 'custom-form-uuid',
+      id: 3,
+      privileges: [],
+    };
+
+    it('should show pinned state when form is in pinnedForms array', () => {
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={nonDefaultForm}
+          pinnedForms={['custom-form-uuid']}
+        />,
+      );
+
+      const pinIcon = screen.getByTestId('icon-pin-icon');
+      const pinContainer = pinIcon.parentElement;
+      
+      expect(pinContainer).toHaveClass('pinned');
+      expect(pinContainer).toHaveAttribute('title', 'Unpin form');
+    });
+
+    it('should show unpinned state when form is not in pinnedForms array', () => {
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={nonDefaultForm}
+          pinnedForms={[]}
+        />,
+      );
+
+      const pinIcon = screen.getByTestId('icon-pin-icon');
+      const pinContainer = pinIcon.parentElement;
+      
+      expect(pinContainer).toHaveClass('unpinned');
+      expect(pinContainer).toHaveAttribute('title', 'Pin form');
+    });
+
+    it('should call onPinToggle when pin icon is clicked', () => {
+      const mockOnPinToggle = jest.fn();
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={nonDefaultForm}
+          pinnedForms={['custom-form-uuid']}
+          onPinToggle={mockOnPinToggle}
+        />,
+      );
+
+      const pinIcon = screen.getByTestId('icon-pin-icon');
+      const pinContainer = pinIcon.parentElement;
+      
+      fireEvent.click(pinContainer!);
+
+      expect(mockOnPinToggle).toHaveBeenCalledWith('custom-form-uuid', false);
+    });
+
+    it('should handle pin toggle when onPinToggle is not provided', () => {
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={nonDefaultForm}
+          pinnedForms={['custom-form-uuid']}
+          onPinToggle={undefined}
+        />,
+      );
+
+      const pinIcon = screen.getByTestId('icon-pin-icon');
+      const pinContainer = pinIcon.parentElement;
+      
+      // Should not throw error when clicking without onPinToggle callback
+      expect(() => fireEvent.click(pinContainer!)).not.toThrow();
     });
   });
 });
