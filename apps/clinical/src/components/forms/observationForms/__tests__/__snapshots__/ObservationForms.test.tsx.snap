@@ -33,6 +33,20 @@ exports[`ObservationForms Rendering and Structure should match the snapshot 1`] 
         </button>
       </div>
     </div>
+    <div
+      data-testid="form-card-container"
+    >
+      <div
+        data-testid="form-card-container-title"
+      >
+        translated_DEFAULT_AND_PINNED_FORMS_TITLE
+      </div>
+      <div
+        data-testid="no-forms-message"
+      >
+        translated_DEFAULT_AND_PINNED_FORMS_NO_FORMS_FOUND
+      </div>
+    </div>
   </div>
 </div>
 `;
