@@ -8,6 +8,7 @@
   "PATIENT_SEARCH_NO_RESULTS": "Could not find patient with the entered identifier/name. Please verify the patient ID or name entered or create a new patient record.",
   "PATIENT_SEARCH_RESULTS": "Patient results",
   "PATIENT_SEARCH_RESULTS_TABLE": "Patient search results table",
+  "SEARCH_BY_PHONE_NUMBER": "Search by phone number",
   "ERROR_SEARCHING_PATIENTS": "Error searching for patients",
   "PATIENT_ID": "Patient ID",
   "PATIENT_NAME": "Patient Name",

@@ -5,6 +5,7 @@
   "PATIENT_SEARCH_PLACEHOLDER": "Buscar por nombre o ID de paciente",
   "PATIENT_SEARCH_BUTTON": "Buscar",
   "PATIENT_SEARCH_LOADING": "Buscando pacientes...",
+  "SEARCH_BY_PHONE_NUMBER": "Buscar por número de teléfono",
   "PATIENT_SEARCH_NO_RESULTS": "No se pudo encontrar un paciente con el identificador o nombre proporcionado",
   "PATIENT_SEARCH_RESULTS": "Resultados de la búsqueda de pacientes",
   "PATIENT_SEARCH_RESULTS_TABLE": "Tabla de resultados de búsqueda de pacientes",

@@ -251,6 +251,7 @@
   "REGISTRATION": "Registration",
   "PATIENT_SEARCH_TITLE": "Patient Search",
   "PATIENT_SEARCH_PLACEHOLDER": "Search by name or patient ID",
+  "SEARCH_BY_PHONE_NUMBER": "Search by phone number",
   "PATIENT_SEARCH_BUTTON": "Search",
   "PATIENT_SEARCH_LOADING": "Searching for patients...",
   "PATIENT_SEARCH_NO_RESULTS": "Could not find patient with the entered identifier/name. Please verify the patient ID or name entered or phone number entered or create a new patient record.",
