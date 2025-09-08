@@ -81,29 +81,67 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
       {children}
     </div>
   )),
-  FormCardContainer: jest.fn(({ title, children, className, showNoFormsMessage, noFormsMessage }) => (
-    <div data-testid="form-card-container" className={className}>
-      <div data-testid="form-card-container-title">{title}</div>
-      {showNoFormsMessage && children?.length === 0 ? (
-        <div data-testid="no-forms-message">{noFormsMessage}</div>
-      ) : (
-        <div data-testid="forms-grid">{children}</div>
-      )}
-    </div>
-  )),
-  FormCard: jest.fn(({ title, icon, actionIcon, onOpen, onActionClick, dataTestId, ariaLabel }) => (
-    <div data-testid={dataTestId} className="form-card" onClick={onOpen} aria-label={ariaLabel} role="button" tabIndex={0}>
-      <div className="form-card-header">
-        <span data-testid={`card-icon-${icon}`} aria-label={`card-icon-${icon}`}>Icon</span>
-        <div className="form-card-title">{title}</div>
-        {actionIcon && (
-          <div data-testid={`action-icon-${actionIcon}`} onClick={(e) => { e.stopPropagation(); onActionClick?.(); }} role="button" tabIndex={0} aria-label={`Action for ${title}`}>
-            <span data-testid={`action-icon-${actionIcon}`} aria-label={`action-icon-${actionIcon}`}>×</span>
-          </div>
+  FormCardContainer: jest.fn(
+    ({ title, children, className, showNoFormsMessage, noFormsMessage }) => (
+      <div data-testid="form-card-container" className={className}>
+        <div data-testid="form-card-container-title">{title}</div>
+        {showNoFormsMessage && children?.length === 0 ? (
+          <div data-testid="no-forms-message">{noFormsMessage}</div>
+        ) : (
+          <div data-testid="forms-grid">{children}</div>
         )}
       </div>
-    </div>
-  )),
+    ),
+  ),
+  FormCard: jest.fn(
+    ({
+      title,
+      icon,
+      actionIcon,
+      onOpen,
+      onActionClick,
+      dataTestId,
+      ariaLabel,
+    }) => (
+      <div
+        data-testid={dataTestId}
+        className="form-card"
+        onClick={onOpen}
+        aria-label={ariaLabel}
+        role="button"
+        tabIndex={0}
+      >
+        <div className="form-card-header">
+          <span
+            data-testid={`card-icon-${icon}`}
+            aria-label={`card-icon-${icon}`}
+          >
+            Icon
+          </span>
+          <div className="form-card-title">{title}</div>
+          {actionIcon && (
+            <div
+              data-testid={`action-icon-${actionIcon}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onActionClick?.();
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Action for ${title}`}
+            >
+              <span
+                data-testid={`action-icon-${actionIcon}`}
+                aria-label={`action-icon-${actionIcon}`}
+              >
+                ×
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+    ),
+  ),
   Icon: jest.fn(({ id, name }) => (
     <div data-testid={`bahmni-icon-${id}`} data-icon-name={name}>
       Icon
@@ -262,9 +300,7 @@ describe('ObservationForms', () => {
       );
 
       expect(screen.getByText('Admission Letter')).toBeInTheDocument();
-      expect(
-        screen.getByTestId('card-icon-fa-file-lines'),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('card-icon-fa-file-lines')).toBeInTheDocument();
     });
 
     it('should call onFormSelect when clicking on selected form', () => {
@@ -420,7 +456,9 @@ describe('ObservationForms', () => {
       );
 
       // Simulate ComboBox onChange with null selectedItem by clicking a disabled item
-      const ComboBox = jest.requireMock('@bahmni-frontend/bahmni-design-system').ComboBox;
+      const ComboBox = jest.requireMock(
+        '@bahmni-frontend/bahmni-design-system',
+      ).ComboBox;
       if (ComboBox.mock && ComboBox.mock.calls.length > 0) {
         const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
         const onChange = lastCall[0].onChange;
@@ -437,7 +475,9 @@ describe('ObservationForms', () => {
       );
 
       // Simulate ComboBox onChange with selectedItem without id
-      const ComboBox = jest.requireMock('@bahmni-frontend/bahmni-design-system').ComboBox;
+      const ComboBox = jest.requireMock(
+        '@bahmni-frontend/bahmni-design-system',
+      ).ComboBox;
       if (ComboBox.mock && ComboBox.mock.calls.length > 0) {
         const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
         const onChange = lastCall[0].onChange;
@@ -453,26 +493,28 @@ describe('ObservationForms', () => {
       render(<ObservationForms {...defaultProps} />);
 
       // Get the itemToString function from ComboBox mock
-      const ComboBox = jest.requireMock('@bahmni-frontend/bahmni-design-system').ComboBox;
-      if (ComboBox.mock && ComboBox.mock.calls.length > 0) {
-        const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
-        const itemToString = lastCall[0].itemToString;
+      const ComboBox = jest.requireMock(
+        '@bahmni-frontend/bahmni-design-system',
+      ).ComboBox;
 
-        // Test with valid item
-        expect(itemToString({ label: 'Test Form' })).toBe('Test Form');
+      // Ensure mock is available
+      expect(ComboBox.mock).toBeDefined();
+      expect(ComboBox.mock.calls.length).toBeGreaterThan(0);
 
-        // Test with null item (covers line 142 fallback)
-        expect(itemToString(null)).toBe('');
+      const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
+      const itemToString = lastCall[0].itemToString;
 
-        // Test with undefined item
-        expect(itemToString(undefined)).toBe('');
+      // Test with valid item
+      expect(itemToString({ label: 'Test Form' })).toBe('Test Form');
 
-        // Test with item without label
-        expect(itemToString({})).toBe('');
-      } else {
-        // If mock is not available, just test that the component renders without error
-        expect(screen.getByTestId('combobox')).toBeInTheDocument();
-      }
+      // Test with null item (covers line 142 fallback)
+      expect(itemToString(null)).toBe('');
+
+      // Test with undefined item
+      expect(itemToString(undefined)).toBe('');
+
+      // Test with item without label
+      expect(itemToString({})).toBe('');
     });
 
     it('should handle optional callbacks gracefully', () => {
@@ -556,7 +598,9 @@ describe('ObservationForms', () => {
       );
 
       // Simulate ComboBox onChange with a selectedItem that doesn't exist in availableForms
-      const ComboBox = jest.requireMock('@bahmni-frontend/bahmni-design-system').ComboBox;
+      const ComboBox = jest.requireMock(
+        '@bahmni-frontend/bahmni-design-system',
+      ).ComboBox;
       if (ComboBox.mock && ComboBox.mock.calls.length > 0) {
         const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
         const onChange = lastCall[0].onChange;
@@ -581,7 +625,9 @@ describe('ObservationForms', () => {
         <ObservationForms {...defaultProps} onFormSelect={mockOnFormSelect} />,
       );
 
-      const ComboBox = jest.requireMock('@bahmni-frontend/bahmni-design-system').ComboBox;
+      const ComboBox = jest.requireMock(
+        '@bahmni-frontend/bahmni-design-system',
+      ).ComboBox;
       if (ComboBox.mock && ComboBox.mock.calls.length > 0) {
         const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
         const onChange = lastCall[0].onChange;
@@ -603,14 +649,21 @@ describe('ObservationForms', () => {
       ).default;
       mockUseObservationFormsSearch.mockReturnValue({
         forms: [
-          { name: 'History and Examination', uuid: 'default-1', id: 1, privileges: [] },
+          {
+            name: 'History and Examination',
+            uuid: 'default-1',
+            id: 1,
+            privileges: [],
+          },
           { name: 'Custom Form', uuid: 'user-1', id: 2, privileges: [] },
         ],
         isLoading: false,
         error: null,
       });
 
-      const pinnedForms = [{ name: 'Custom Form', uuid: 'user-1', id: 2, privileges: [] }];
+      const pinnedForms = [
+        { name: 'Custom Form', uuid: 'user-1', id: 2, privileges: [] },
+      ];
       render(<ObservationForms {...defaultProps} pinnedForms={pinnedForms} />);
 
       // This covers lines 59, 62-64, 67-69 (userPinnedUuids mapping and sorting logic)
@@ -623,7 +676,14 @@ describe('ObservationForms', () => {
         '../../../../hooks/useObservationFormsSearch',
       ).default;
       mockUseObservationFormsSearch.mockReturnValue({
-        forms: [{ name: 'History and Examination', uuid: 'default-1', id: 1, privileges: [] }],
+        forms: [
+          {
+            name: 'History and Examination',
+            uuid: 'default-1',
+            id: 1,
+            privileges: [],
+          },
+        ],
         isLoading: false,
         error: null,
       });
@@ -641,7 +701,12 @@ describe('ObservationForms', () => {
       mockUseObservationFormsSearch.mockReturnValue({
         forms: [
           { name: 'Vitals', uuid: 'default-2', id: 2, privileges: [] },
-          { name: 'History and Examination', uuid: 'default-1', id: 1, privileges: [] },
+          {
+            name: 'History and Examination',
+            uuid: 'default-1',
+            id: 1,
+            privileges: [],
+          },
         ],
         isLoading: false,
         error: null,
@@ -689,8 +754,16 @@ describe('ObservationForms', () => {
         error: null,
       });
 
-      const pinnedForms = [{ name: 'Custom Form', uuid: 'user-1', id: 2, privileges: [] }];
-      render(<ObservationForms {...defaultProps} pinnedForms={pinnedForms} onFormSelect={mockOnFormSelect} />);
+      const pinnedForms = [
+        { name: 'Custom Form', uuid: 'user-1', id: 2, privileges: [] },
+      ];
+      render(
+        <ObservationForms
+          {...defaultProps}
+          pinnedForms={pinnedForms}
+          onFormSelect={mockOnFormSelect}
+        />,
+      );
 
       const pinnedForm = screen.getByTestId('pinned-form-user-1');
       fireEvent.click(pinnedForm);
@@ -710,11 +783,21 @@ describe('ObservationForms', () => {
         error: null,
       });
 
-      const pinnedForms = [{ name: 'Custom Form', uuid: 'user-1', id: 2, privileges: [] }];
-      render(<ObservationForms {...defaultProps} pinnedForms={pinnedForms} onUnpinForm={mockOnUnpinForm} />);
+      const pinnedForms = [
+        { name: 'Custom Form', uuid: 'user-1', id: 2, privileges: [] },
+      ];
+      render(
+        <ObservationForms
+          {...defaultProps}
+          pinnedForms={pinnedForms}
+          onUnpinForm={mockOnUnpinForm}
+        />,
+      );
 
       const pinnedFormCard = screen.getByTestId('pinned-form-user-1');
-      const thumbtackIcon = pinnedFormCard.querySelector('[data-testid="action-icon-fa-thumbtack"]');
+      const thumbtackIcon = pinnedFormCard.querySelector(
+        '[data-testid="action-icon-fa-thumbtack"]',
+      );
       expect(thumbtackIcon).not.toBeNull();
       fireEvent.click(thumbtackIcon!);
 
