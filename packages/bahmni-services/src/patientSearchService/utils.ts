@@ -34,8 +34,18 @@ export const formatPatientSearchResult = (
     id: patient.uuid,
     patientId: patient.identifier,
     fullName: formatPatientName(patient),
-    phoneNumber: null, // Will be populated from API response if available
-    alternatePhoneNumber: null, // Will be populated from API response if available
+    phoneNumber: (() => {
+      try {
+        const attrs = patient.customAttribute ? JSON.parse(patient.customAttribute) : {};
+        return attrs.phoneNumber || null;
+      } catch { return null; }
+    })(),
+    alternatePhoneNumber: (() => {
+      try {
+        const attrs = patient.customAttribute ? JSON.parse(patient.customAttribute) : {};
+        return attrs.alternatePhoneNumber || null;
+      } catch { return null; }
+    })(),
     gender: patient.gender,
     age: patient.age,
     registrationDate: formatRegistrationDate(patient.dateCreated, t),
