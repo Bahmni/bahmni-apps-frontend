@@ -7,6 +7,7 @@ import {
 import { ObservationForm } from '@bahmni-frontend/bahmni-services';
 import React, { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { DEFAULT_FORM_API_NAMES } from '../../../constants/forms';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
 import styles from './styles/ObservationForms.module.scss';
 
@@ -15,6 +16,7 @@ interface ObservationFormsProps {
   selectedForms?: ObservationForm[];
   onRemoveForm?: (formUuid: string) => void;
   pinnedForms?: ObservationForm[];
+  onPinToggle?: (form: ObservationForm) => void;
   onUnpinForm?: (formUuid: string) => void;
 }
 
@@ -32,7 +34,6 @@ interface ObservationFormsProps {
  * - Internationalization support
  * - Error handling and loading states
  */
-export const defaultFormNames = ['History and Examination', 'Vitals'];
 const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
   ({
     onFormSelect,
@@ -51,8 +52,9 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
       error,
     } = useObservationFormsSearch(searchTerm);
 
+    // Use API names for filtering (these match the actual form names from backend)
     const defaultPinnedForms = availableForms.filter((form) =>
-      defaultFormNames.includes(form.name),
+      DEFAULT_FORM_API_NAMES.includes(form.name),
     );
 
     // Merge with user-pinned forms (avoid duplicates)
@@ -200,7 +202,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
               title={form.name}
               icon="fa-file-lines"
               actionIcon={
-                !defaultFormNames.includes(form.name)
+                !DEFAULT_FORM_API_NAMES.includes(form.name)
                   ? 'fa-thumbtack'
                   : undefined
               }

@@ -6,7 +6,7 @@ import {
 import { ObservationForm } from '@bahmni-frontend/bahmni-services';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { defaultFormNames } from './ObservationForms';
+import { DEFAULT_FORM_API_NAMES } from '../../../constants/forms';
 import styles from './styles/ObservationFormsContainer.module.scss';
 
 interface ObservationFormsContainerProps {
@@ -44,6 +44,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
 
   // Use the external viewingForm from parent
   const viewingForm = externalViewingForm;
+
 
   // Check if current form is pinned (use local state if no external state provided)
   const isCurrentFormPinned = viewingForm
@@ -97,7 +98,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   const formTitleWithPin = (
     <div className={styles.formTitleContainer}>
       <span>{viewingForm?.name}</span>
-      {!defaultFormNames.includes(viewingForm?.name ?? '') && (
+      {!DEFAULT_FORM_API_NAMES.includes(viewingForm?.name ?? '') && (
         <div
           onClick={handlePinToggle}
           className={`${styles.pinIconContainer} ${isCurrentFormPinned ? styles.pinned : styles.unpinned}`}

@@ -182,10 +182,13 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     try {
       const formNames = newPinnedForms.map((f) => f.name);
       await savePinnedForms(formNames);
-    } catch {
+    } catch (error) {
       addNotification({
         title: t('ERROR_SAVING_PINNED_FORMS'),
-        message: t('ERROR_SAVING_PINNED_FORMS_MESSAGE'),
+        message:
+          typeof error === 'string'
+            ? t(error)
+            : t('ERROR_SAVING_PINNED_FORMS_MESSAGE'),
         type: 'error',
         timeout: 3000,
       });
@@ -202,10 +205,13 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     try {
       const formNames = newPinnedForms.map((f) => f.name);
       await savePinnedForms(formNames);
-    } catch {
+    } catch (error) {
       addNotification({
         title: t('ERROR_SAVING_PINNED_FORMS'),
-        message: t('ERROR_SAVING_PINNED_FORMS_MESSAGE'),
+        message:
+          typeof error === 'string'
+            ? t(error)
+            : t('ERROR_SAVING_PINNED_FORMS_MESSAGE'),
         type: 'error',
         timeout: 3000,
       });
