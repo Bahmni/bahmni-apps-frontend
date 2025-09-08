@@ -12,7 +12,7 @@ jest.mock('react-i18next', () => ({
   useTranslation: jest.fn(() => ({
     t: jest.fn((key) => `translated_${key}`),
   })),
-}));  
+}));
 
 // Mock ActionArea component
 jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
@@ -271,7 +271,7 @@ describe('ObservationFormsContainer', () => {
 
       const pinIcon = screen.getByTestId('icon-pin-icon');
       const pinContainer = pinIcon.parentElement;
-      
+
       expect(pinContainer).toHaveClass('pinned');
       expect(pinContainer).toHaveAttribute('title', 'Unpin form');
     });
@@ -287,7 +287,7 @@ describe('ObservationFormsContainer', () => {
 
       const pinIcon = screen.getByTestId('icon-pin-icon');
       const pinContainer = pinIcon.parentElement;
-      
+
       expect(pinContainer).toHaveClass('unpinned');
       expect(pinContainer).toHaveAttribute('title', 'Pin form');
     });
@@ -305,7 +305,7 @@ describe('ObservationFormsContainer', () => {
 
       const pinIcon = screen.getByTestId('icon-pin-icon');
       const pinContainer = pinIcon.parentElement;
-      
+
       fireEvent.click(pinContainer!);
 
       expect(mockOnPinToggle).toHaveBeenCalledWith('custom-form-uuid', false);
@@ -323,7 +323,7 @@ describe('ObservationFormsContainer', () => {
 
       const pinIcon = screen.getByTestId('icon-pin-icon');
       const pinContainer = pinIcon.parentElement;
-      
+
       // Should not throw error when clicking without onPinToggle callback
       expect(() => fireEvent.click(pinContainer!)).not.toThrow();
     });

@@ -45,7 +45,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   // Use the external viewingForm from parent
   const viewingForm = externalViewingForm;
 
-
   // Check if current form is pinned (use local state if no external state provided)
   const isCurrentFormPinned = viewingForm
     ? pinnedForms.length > 0

@@ -8,7 +8,7 @@ describe('FormCardContainer', () => {
       <FormCardContainer title="Test Forms">
         <div>Form Card 1</div>
         <div>Form Card 2</div>
-      </FormCardContainer>
+      </FormCardContainer>,
     );
 
     expect(screen.getByText('Test Forms')).toBeInTheDocument();
@@ -18,14 +18,12 @@ describe('FormCardContainer', () => {
 
   it('renders nothing when no children and showNoFormsMessage is false', () => {
     const { container } = render(
-      <FormCardContainer title="Empty Forms">
-        {null}
-      </FormCardContainer>
+      <FormCardContainer title="Empty Forms">{null}</FormCardContainer>,
     );
 
     expect(screen.getByText('Empty Forms')).toBeInTheDocument();
     expect(screen.queryByText('No forms found')).not.toBeInTheDocument();
-    
+
     // Should only have title div, no forms grid or message
     const formCardContainer = container.firstChild;
     expect(formCardContainer?.childNodes).toHaveLength(1);
@@ -33,12 +31,9 @@ describe('FormCardContainer', () => {
 
   it('shows no forms message when no children and showNoFormsMessage is true', () => {
     render(
-      <FormCardContainer
-        title="Empty Forms"
-        showNoFormsMessage={true}
-      >
+      <FormCardContainer title="Empty Forms" showNoFormsMessage>
         {null}
-      </FormCardContainer>
+      </FormCardContainer>,
     );
 
     expect(screen.getByText('Empty Forms')).toBeInTheDocument();
@@ -50,10 +45,10 @@ describe('FormCardContainer', () => {
       <FormCardContainer
         title="Custom Empty"
         noFormsMessage="Custom message here"
-        showNoFormsMessage={true}
+        showNoFormsMessage
       >
         {null}
-      </FormCardContainer>
+      </FormCardContainer>,
     );
 
     expect(screen.getByText('Custom Empty')).toBeInTheDocument();

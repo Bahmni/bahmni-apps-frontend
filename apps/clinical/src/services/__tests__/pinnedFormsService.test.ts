@@ -3,8 +3,8 @@ import {
   post,
   getCurrentUser,
   USER_PINNED_PREFERENCE_URL,
-  getFormattedError,
 } from '@bahmni-frontend/bahmni-services';
+import { PINNED_FORMS_ERROR_MESSAGES } from '../../constants/errors';
 import { loadPinnedForms, savePinnedForms } from '../pinnedFormsService';
 
 // Mock the bahmni-services module
@@ -13,7 +13,6 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
   post: jest.fn(),
   getCurrentUser: jest.fn(),
   USER_PINNED_PREFERENCE_URL: jest.fn(),
-  getFormattedError: jest.fn(),
 }));
 
 describe('pinnedFormsService', () => {
@@ -32,7 +31,9 @@ describe('pinnedFormsService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (USER_PINNED_PREFERENCE_URL as jest.Mock).mockReturnValue('/openmrs/ws/rest/v1/user/user-uuid-123');
+    (USER_PINNED_PREFERENCE_URL as jest.Mock).mockReturnValue(
+      '/openmrs/ws/rest/v1/user/user-uuid-123',
+    );
   });
 
   describe('loadPinnedForms', () => {
@@ -44,18 +45,21 @@ describe('pinnedFormsService', () => {
 
       expect(getCurrentUser).toHaveBeenCalled();
       expect(USER_PINNED_PREFERENCE_URL).toHaveBeenCalledWith('user-uuid-123');
-      expect(get).toHaveBeenCalledWith('/openmrs/ws/rest/v1/user/user-uuid-123');
+      expect(get).toHaveBeenCalledWith(
+        '/openmrs/ws/rest/v1/user/user-uuid-123',
+      );
       expect(result).toEqual(['Form A', 'Form B', 'Form C']);
     });
 
-    it('should return empty array when no user found', async () => {
+    it('should throw error when no user found', async () => {
       (getCurrentUser as jest.Mock).mockResolvedValue(null);
 
-      const result = await loadPinnedForms();
+      await expect(loadPinnedForms()).rejects.toBe(
+        PINNED_FORMS_ERROR_MESSAGES.USER_NOT_FOUND,
+      );
 
       expect(getCurrentUser).toHaveBeenCalled();
       expect(get).not.toHaveBeenCalled();
-      expect(result).toEqual([]);
     });
 
     it('should return empty array when userProperties is undefined', async () => {
@@ -88,15 +92,12 @@ describe('pinnedFormsService', () => {
       expect(result).toEqual([]);
     });
 
-    it('should throw formatted error when request fails', async () => {
+    it('should throw error message when request fails', async () => {
       const error = new Error('API request failed');
-      const formattedError = { message: 'Formatted: API request failed' };
 
       (getCurrentUser as jest.Mock).mockRejectedValue(error);
-      (getFormattedError as jest.Mock).mockReturnValue(formattedError);
 
-      await expect(loadPinnedForms()).rejects.toBe('Formatted: API request failed');
-      expect(getFormattedError).toHaveBeenCalledWith(error);
+      await expect(loadPinnedForms()).rejects.toBe('API request failed');
     });
   });
 
@@ -111,34 +112,46 @@ describe('pinnedFormsService', () => {
       await savePinnedForms(formNames);
 
       expect(getCurrentUser).toHaveBeenCalled();
-      expect(get).toHaveBeenCalledWith('/openmrs/ws/rest/v1/user/user-uuid-123');
-      expect(post).toHaveBeenCalledWith('/openmrs/ws/rest/v1/user/user-uuid-123', {
-        userProperties: {
-          ...mockUserData.userProperties,
-          pinnedObsTemplates: 'New Form A###New Form B',
+      expect(get).toHaveBeenCalledWith(
+        '/openmrs/ws/rest/v1/user/user-uuid-123',
+      );
+      expect(post).toHaveBeenCalledWith(
+        '/openmrs/ws/rest/v1/user/user-uuid-123',
+        {
+          userProperties: {
+            ...mockUserData.userProperties,
+            pinnedObsTemplates: 'New Form A###New Form B',
+          },
         },
-      });
+      );
     });
 
-    it('should return early when no user found', async () => {
+    it('should throw error when no user found', async () => {
       (getCurrentUser as jest.Mock).mockResolvedValue(null);
 
-      await savePinnedForms(['Form A']);
+      await expect(savePinnedForms(['Form A'])).rejects.toBe(
+        PINNED_FORMS_ERROR_MESSAGES.USER_NOT_FOUND,
+      );
 
       expect(getCurrentUser).toHaveBeenCalled();
       expect(get).not.toHaveBeenCalled();
       expect(post).not.toHaveBeenCalled();
     });
 
-    it('should throw formatted error when request fails', async () => {
+    it('should throw error message when request fails', async () => {
       const error = new Error('Save request failed');
-      const formattedError = { message: 'Formatted: Save request failed' };
 
       (getCurrentUser as jest.Mock).mockRejectedValue(error);
-      (getFormattedError as jest.Mock).mockReturnValue(formattedError);
 
-      await expect(savePinnedForms(['Form A'])).rejects.toBe('Formatted: Save request failed');
-      expect(getFormattedError).toHaveBeenCalledWith(error);
+      await expect(savePinnedForms(['Form A'])).rejects.toBe(
+        'Save request failed',
+      );
+    });
+
+    it('should throw error when invalid data provided', async () => {
+      await expect(savePinnedForms(null as any)).rejects.toBe(
+        PINNED_FORMS_ERROR_MESSAGES.INVALID_DATA,
+      );
     });
   });
 });
