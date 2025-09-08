@@ -1,4 +1,8 @@
-import { Button, Search, Dropdown } from '@bahmni-frontend/bahmni-design-system';
+import {
+  Button,
+  Search,
+  Dropdown,
+} from '@bahmni-frontend/bahmni-design-system';
 import {
   useTranslation,
   FormattedPatientSearchResult,
@@ -24,51 +28,63 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
   const [activeSearchTerm, setActiveSearchTerm] = useState<string>('');
   const [hasPerformedSearch, setHasPerformedSearch] = useState<boolean>(false);
   const [phoneSearchTerm, setPhoneSearchTerm] = useState<string>('');
-  const [hasPerformedPhoneSearch, setHasPerformedPhoneSearch] = useState<boolean>(false);
+  const [hasPerformedPhoneSearch, setHasPerformedPhoneSearch] =
+    useState<boolean>(false);
   const { searchResults, loading, error } = usePatientSearch(activeSearchTerm);
+
+  // Dropdown options for advance search
+  const searchTypeOptions = [
+    {
+      id: 'phoneNumber',
+      text: t('PHONE_NUMBER'),
+    },
+  ];
+
+  const getDefaultSearchType = () => {
+    const defaultType = Object.values(searchTypeOptions).find(
+      (type) => type.id,
+    );
+    return defaultType?.id ?? 'phoneNumber';
+  };
+
+  const [selectedSearchType, setSelectedSearchType] = useState<string>(
+    getDefaultSearchType(),
+  );
+
+  const {
+    searchResults: phoneResults,
+    loading: phoneLoading,
+    error: phoneError,
+    search: performPhoneSearch,
+  } = usePhoneNumberSearch('', selectedSearchType);
 
   useEffect(() => {
     onLoading(loading);
   }, [loading, onLoading]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (error) {
       onError(error);
     }
   }, [error, onError]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (hasPerformedSearch && !error) {
       onSearchResults(searchResults);
     }
   }, [searchResults, onSearchResults, hasPerformedSearch, error]);
 
-    // Dropdown options
-  const searchTypeOptions = [
-    {
-      id: 'phoneNumber',
-      text: t('PHONE_NUMBER'),
-    }
-  ];
-
-  const getDefaultSearchType = () => {
-  const defaultType = Object.values(searchTypeOptions).find(type => type.id);
-  return defaultType?.id || 'phoneNumber';
-};
-
-  const [selectedSearchType, setSelectedSearchType] = useState<string>(getDefaultSearchType());
-  
-  const { searchResults: phoneResults, loading: phoneLoading, error: phoneError, search: performPhoneSearch } = usePhoneNumberSearch('', selectedSearchType);
-    useEffect(() => {
+  useEffect(() => {
     onLoading(phoneLoading);
   }, [phoneLoading, onLoading]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (phoneError) {
       onError(phoneError);
     }
   }, [phoneError, onError]);
-  React.useEffect(() => {
+
+  useEffect(() => {
     if (hasPerformedPhoneSearch && !phoneError) {
       onSearchResults(phoneResults);
     }
@@ -78,17 +94,10 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
     if (!searchTerm.trim()) {
       return;
     }
-
     setHasPerformedSearch(true);
     setActiveSearchTerm(searchTerm);
+    setPhoneSearchTerm('');
   }, [searchTerm]);
-
-  const handleInputChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchTerm(event.target.value);
-    },
-    [],
-  );
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -104,19 +113,12 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
     if (!phoneSearchTerm.trim()) {
       return;
     }
-
     setHasPerformedPhoneSearch(true);
     setHasPerformedSearch(false);
+    setSearchTerm('');
     // Call search function directly - this will work even with same search term
     performPhoneSearch(phoneSearchTerm, selectedSearchType);
   }, [phoneSearchTerm, selectedSearchType, performPhoneSearch]);
-
-  const handlePhoneInputChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setPhoneSearchTerm(event.target.value);
-    },
-    [],
-  );
 
   const handlePhoneKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -144,7 +146,7 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
           labelText=""
           placeholder={t('PATIENT_SEARCH_PLACEHOLDER')}
           value={searchTerm}
-          onChange={handleInputChange}
+          onChange={(e) => setSearchTerm(e.target.value)}
           onKeyDown={handleKeyDown}
           disabled={loading}
           className={styles.searchInput}
@@ -175,7 +177,7 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
           labelText=""
           placeholder={t('SEARCH_BY_PHONE_NUMBER')}
           value={phoneSearchTerm}
-          onChange={handlePhoneInputChange}
+          onChange={(e) => setPhoneSearchTerm(e.target.value)}
           onKeyDown={handlePhoneKeyDown}
           disabled={loading}
           className={styles.searchInput}
@@ -187,8 +189,10 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
           titleText=""
           label="Phone number"
           items={searchTypeOptions}
-          selectedItem={searchTypeOptions.find(item => item.id === selectedSearchType)}
-          onChange={({ selectedItem }: { selectedItem: any }) => {
+          selectedItem={searchTypeOptions.find(
+            (item) => item.id === selectedSearchType,
+          )}
+          onChange={({ selectedItem }) => {
             if (selectedItem) {
               setSelectedSearchType(selectedItem.id);
             }
@@ -196,7 +200,7 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
           className={styles.searchTypeDropdown}
           disabled={loading}
           size="md"
-          itemToString={(item: any) => item ? item.text : ''}
+          itemToString={(item) => (item ? item.text : '')}
         />
         <Button
           size="md"
