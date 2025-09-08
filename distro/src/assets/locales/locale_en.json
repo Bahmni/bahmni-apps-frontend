@@ -227,6 +227,7 @@
   "NO_RADIOLOGY_INVESTIGATIONS": "No radiology investigations recorded",
   "NO_MATCHING_INVESTIGATIONS_FOUND": "No matching investigations found",
   "NO_MATCHING_MEDICATIONS_FOUND": "No matching medications found",
+  "NO_VITAL_SIGNS_DATA": "No Vital signs data found",
   "OBSERVATION_FORMS_SECTION_TITLE": "Observation Forms",
   "OBSERVATION_FORMS_SEARCH_PLACEHOLDER": "Search to add observation form",
   "OBSERVATION_FORMS_SEARCH_ARIA_LABEL": "Search for observation forms",

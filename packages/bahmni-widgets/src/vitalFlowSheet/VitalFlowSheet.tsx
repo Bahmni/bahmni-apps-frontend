@@ -141,9 +141,32 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
     [t],
   );
 
+  // Define static headers (always available for skeleton rendering)
+  const headers = useMemo(
+    () => [
+      {
+        key: 'vitalSign',
+        header: t('VITAL_SIGN'),
+      },
+    ],
+    [t],
+  );
+
   // Transform data for table display
-  const { headers, rows } = useMemo(() => {
+  const processedData = useMemo(() => {
+    // Check if we have valid data to process
     if (!data?.tabularData || !data?.conceptDetails) {
+      return { headers: [], rows: [] };
+    }
+
+    // Check for truly empty data scenarios
+    const hasNoData =
+      Object.keys(data.tabularData).length === 0 ||
+      Object.values(data.tabularData).every(
+        (obsData) => !obsData || Object.keys(obsData).length === 0,
+      );
+
+    if (hasNoData) {
       return { headers: [], rows: [] };
     }
 
@@ -231,7 +254,6 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
 
     // Add ungrouped concepts as regular rows
     ungroupedConcepts.forEach((concept) => {
-      // Try to get translated concept name, fallback to fullName
       const translatedConceptName = getTranslatedConceptName(concept.fullName);
       const row: FlowSheetRow = {
         id: concept.name,
@@ -254,7 +276,6 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
     return { headers: tableHeaders, rows: tableRows };
   }, [data, t, getTranslatedConceptName]);
 
-  // Function to render cell content
   const renderCell = useCallback(
     (row: FlowSheetRow, cellId: string) => {
       if (cellId === 'vitalSign') {
@@ -369,16 +390,29 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
 
   return (
     <div className={styles.vitalFlowSheetTable}>
-      <SortableDataTable
-        headers={headers}
-        ariaLabel={t('VITAL_FLOW_SHEET_TABLE')}
-        rows={rows}
-        loading={loading}
-        errorStateMessage={error?.message}
-        emptyStateMessage={t('NO_VITAL_SIGNS_DATA')}
-        renderCell={renderCell}
-        className={styles.vitalFlowSheetDataTable}
-      />
+      {loading || !!error || processedData.rows.length === 0 ? (
+        <SortableDataTable
+          headers={headers}
+          ariaLabel={t('VITAL_FLOW_SHEET_TABLE')}
+          rows={[]}
+          loading={loading}
+          errorStateMessage={error?.message}
+          emptyStateMessage={t('NO_VITAL_SIGNS_DATA')}
+          renderCell={renderCell}
+          className={styles.vitalFlowSheetDataTable}
+        />
+      ) : (
+        <SortableDataTable
+          headers={processedData.headers}
+          ariaLabel={t('VITAL_FLOW_SHEET_TABLE')}
+          rows={processedData.rows}
+          loading={false}
+          errorStateMessage={null}
+          emptyStateMessage={t('NO_VITAL_SIGNS_DATA')}
+          renderCell={renderCell}
+          className={styles.vitalFlowSheetDataTable}
+        />
+      )}
     </div>
   );
 };

@@ -228,6 +228,7 @@
   "NO_RADIOLOGY_INVESTIGATIONS": "No se encontraron investigaciones de radiología",
   "NO_MATCHING_INVESTIGATIONS_FOUND": "No se encontraron investigaciones coincidentes",
   "NO_MATCHING_MEDICATIONS_FOUND": "No se encontraron medicamentos coincidentes",
+  "NO_VITAL_SIGNS_DATA": "No se encontraron datos de signos vitales",
   "OBSERVATION_FORMS_SECTION_TITLE": "Formularios de Observación",
   "OBSERVATION_FORMS_SEARCH_PLACEHOLDER": "Buscar para agregar formulario de observación",
   "OBSERVATION_FORMS_SEARCH_ARIA_LABEL": "Buscar formularios de observación",
