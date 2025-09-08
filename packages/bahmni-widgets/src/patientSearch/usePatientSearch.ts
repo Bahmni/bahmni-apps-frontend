@@ -8,7 +8,6 @@ import { useState, useCallback, useEffect } from 'react';
 
 interface UsePatientSearchResult {
   searchResults: FormattedPatientSearchResult[];
-  totalCount: number;
   loading: boolean;
   error: string | null;
 }
@@ -25,14 +24,12 @@ export const usePatientSearch = (
   const [searchResults, setSearchResults] = useState<
     FormattedPatientSearchResult[]
   >([]);
-  const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const performSearch = useCallback(async (term: string) => {
     if (!term.trim()) {
       setSearchResults([]);
-      setTotalCount(0);
       setError(null);
       return;
     }
@@ -44,12 +41,10 @@ export const usePatientSearch = (
       const results = await getPatientSearchResults(term, t);
 
       setSearchResults(results);
-      setTotalCount(results.length);
     } catch (err) {
       const { message } = getFormattedError(err);
       setError(message);
       setSearchResults([]);
-      setTotalCount(0);
     } finally {
       setLoading(false);
     }
@@ -61,7 +56,6 @@ export const usePatientSearch = (
 
   return {
     searchResults,
-    totalCount,
     loading,
     error,
   };

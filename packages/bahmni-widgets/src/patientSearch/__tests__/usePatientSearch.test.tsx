@@ -64,7 +64,6 @@ describe('usePatientSearch hook', () => {
 
     // Assert
     expect(result.current.searchResults).toEqual([]);
-    expect(result.current.totalCount).toBe(0);
     expect(result.current.loading).toBe(false);
     expect(result.current.error).toBeNull();
   });
@@ -82,7 +81,7 @@ describe('usePatientSearch hook', () => {
         mockTranslate,
       );
       expect(result.current.searchResults).toEqual(mockSearchResults);
-      expect(result.current.totalCount).toBe(mockSearchResults.length);
+
       expect(result.current.loading).toBe(false);
       expect(result.current.error).toBeNull();
     });
@@ -98,7 +97,7 @@ describe('usePatientSearch hook', () => {
 
     await waitFor(() => {
       expect(result.current.searchResults).toEqual([]);
-      expect(result.current.totalCount).toBe(0);
+
       expect(result.current.loading).toBe(false);
       expect(result.current.error).toBeNull();
     });
@@ -111,7 +110,6 @@ describe('usePatientSearch hook', () => {
     expect(mockedGetPatientSearchResults).not.toHaveBeenCalled();
     expect(result.current.error).toBeNull();
     expect(result.current.searchResults).toEqual([]);
-    expect(result.current.totalCount).toBe(0);
     expect(result.current.loading).toBe(false);
   });
 
@@ -171,7 +169,7 @@ describe('usePatientSearch hook', () => {
       expect(mockedGetFormattedError).toHaveBeenCalledWith(mockError);
       expect(result.current.error).toBe(formattedError.message);
       expect(result.current.searchResults).toEqual([]);
-      expect(result.current.totalCount).toBe(0);
+
       expect(result.current.loading).toBe(false);
     });
   });
@@ -191,7 +189,7 @@ describe('usePatientSearch hook', () => {
       expect(mockedGetFormattedError).toHaveBeenCalledWith(nonErrorObject);
       expect(result.current.error).toBe(formattedError.message);
       expect(result.current.searchResults).toEqual([]);
-      expect(result.current.totalCount).toBe(0);
+
       expect(result.current.loading).toBe(false);
     });
   });
@@ -225,7 +223,7 @@ describe('usePatientSearch hook', () => {
     await waitFor(() => {
       expect(result.current.error).toBeNull();
       expect(result.current.searchResults).toEqual(mockSearchResults);
-      expect(result.current.totalCount).toBe(mockSearchResults.length);
+
     });
   });
 
@@ -249,7 +247,7 @@ describe('usePatientSearch hook', () => {
 
     await waitFor(() => {
       expect(result.current.searchResults).toEqual(multipleResults);
-      expect(result.current.totalCount).toBe(2);
+
       expect(result.current.loading).toBe(false);
       expect(result.current.error).toBeNull();
     });
