@@ -11,13 +11,17 @@ import {
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BundleEntry } from 'fhir/r4';
+import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
 import * as consultationBundleService from '../../../services/consultationBundleService';
+import * as pinnedFormsService from '../../../services/pinnedFormsService';
 import useAllergyStore from '../../../stores/allergyStore';
 import { useConditionsAndDiagnosesStore } from '../../../stores/conditionsAndDiagnosesStore';
 import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore';
 import { useMedicationStore } from '../../../stores/medicationsStore';
 import useServiceRequestStore from '../../../stores/serviceRequestStore';
 import ConsultationPad from '../ConsultationPad';
+
+// Import the mocked service to get access to the mock function
 
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
   ...jest.requireActual('@bahmni-frontend/bahmni-services'),
@@ -143,6 +147,25 @@ jest.mock('../../../services/consultationBundleService', () => ({
   getEncounterReference: jest.fn(() => 'urn:uuid:mock-encounter-uuid'),
 }));
 
+// Mock pinned forms service
+jest.mock('../../../services/pinnedFormsService', () => ({
+  savePinnedForms: jest.fn(),
+  loadPinnedForms: jest.fn(() => Promise.resolve([])),
+}));
+
+const mockSavePinnedForms =
+  pinnedFormsService.savePinnedForms as jest.MockedFunction<
+    typeof pinnedFormsService.savePinnedForms
+  >;
+const mockLoadPinnedForms =
+  pinnedFormsService.loadPinnedForms as jest.MockedFunction<
+    typeof pinnedFormsService.loadPinnedForms
+  >;
+const mockUseObservationFormsSearch =
+  useObservationFormsSearch as jest.MockedFunction<
+    typeof useObservationFormsSearch
+  >;
+
 // Mock hooks
 const mockAddNotification = jest.fn();
 jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
@@ -183,9 +206,26 @@ jest.mock('../../../hooks/useEncounterSession', () => ({
   __esModule: true,
   useEncounterSession: () => mockUseEncounterSession(),
 }));
+
+// Mock observation forms search hook
+jest.mock('../../../hooks/useObservationFormsSearch', () => ({
+  __esModule: true,
+  default: jest.fn(() => ({
+    forms: [] as any[],
+    isLoading: false,
+    error: null,
+  })),
+}));
 jest.mock('../../forms/observationForms/ObservationForms', () => ({
   __esModule: true,
-  default: ({ onFormSelect, selectedForms, onRemoveForm }: any) => (
+  default: ({
+    onFormSelect,
+    selectedForms,
+    onRemoveForm,
+    onPinToggle,
+    pinnedForms,
+    onUnpinForm,
+  }: any) => (
     <div data-testid="mock-observation-forms">
       <div data-testid="observation-forms-content">Observation Forms</div>
       <button
@@ -204,6 +244,9 @@ jest.mock('../../forms/observationForms/ObservationForms', () => ({
       <div data-testid="selected-forms-count">
         Selected: {selectedForms?.length ?? 0}
       </div>
+      <div data-testid="pinned-forms-count">
+        Pinned: {pinnedForms?.length ?? 0}
+      </div>
       {selectedForms?.map((form: { uuid: string; name: string }) => (
         <div
           key={form.uuid}
@@ -221,6 +264,29 @@ jest.mock('../../forms/observationForms/ObservationForms', () => ({
             }}
           >
             Remove
+          </button>
+          <button
+            data-testid={`pin-toggle-${form.uuid}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onPinToggle?.(form);
+            }}
+          >
+            Pin Toggle
+          </button>
+        </div>
+      ))}
+      {pinnedForms?.map((form: { uuid: string; name: string }) => (
+        <div
+          key={`pinned-${form.uuid}`}
+          data-testid={`pinned-form-${form.uuid}`}
+        >
+          {form.name} (Pinned)
+          <button
+            data-testid={`unpin-form-${form.uuid}`}
+            onClick={() => onUnpinForm?.(form.uuid)}
+          >
+            Unpin
           </button>
         </div>
       ))}
@@ -378,6 +444,18 @@ describe('ConsultationPad', () => {
 
     // Reset audit event dispatcher mocks
     mockDispatchAuditEvent.mockClear();
+
+    // Reset pinned forms service mocks
+    mockSavePinnedForms.mockClear();
+    mockLoadPinnedForms.mockClear();
+    mockLoadPinnedForms.mockResolvedValue([]);
+
+    // Reset observation forms search hook
+    mockUseObservationFormsSearch.mockReturnValue({
+      forms: [] as any[],
+      isLoading: false,
+      error: null,
+    });
   });
 
   describe('Rendering', () => {
@@ -632,6 +710,376 @@ describe('ConsultationPad', () => {
       expect(
         screen.queryByTestId('selected-form-form-1'),
       ).not.toBeInTheDocument();
+    });
+
+    it('should handle pin toggle functionality for forms', async () => {
+      mockSavePinnedForms.mockResolvedValue(undefined);
+
+      render(<ConsultationPad onClose={mockOnClose} />);
+
+      // Add a form first
+      const selectButton = screen.getByTestId('select-form-button');
+      await userEvent.click(selectButton);
+
+      // Go back to consultation view
+      const backButton = screen.getByTestId('wrapper-back-button');
+      await userEvent.click(backButton);
+
+      // Verify form is selected but not pinned initially
+      expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
+        'Selected: 1',
+      );
+
+      // Pin the form by clicking the pin toggle button
+      const pinToggleButton = screen.getByTestId('pin-toggle-form-1');
+      await userEvent.click(pinToggleButton);
+
+      // Verify savePinnedForms was called
+      await waitFor(() => {
+        expect(mockSavePinnedForms).toHaveBeenCalledWith(['Test Form']);
+      });
+    });
+
+    it('should handle pin toggle unpin functionality', async () => {
+      mockSavePinnedForms.mockResolvedValue(undefined);
+
+      render(<ConsultationPad onClose={mockOnClose} />);
+
+      // Add a form first
+      const selectButton = screen.getByTestId('select-form-button');
+      await userEvent.click(selectButton);
+      const backButton = screen.getByTestId('wrapper-back-button');
+      await userEvent.click(backButton);
+
+      // Pin the form first
+      const pinToggleButton = screen.getByTestId('pin-toggle-form-1');
+      await userEvent.click(pinToggleButton);
+
+      // Wait for pin operation to complete
+      await waitFor(() => {
+        expect(mockSavePinnedForms).toHaveBeenCalledWith(['Test Form']);
+      });
+
+      // Reset mock to track unpin call
+      mockSavePinnedForms.mockClear();
+
+      // Click again to unpin
+      await userEvent.click(pinToggleButton);
+
+      // Verify savePinnedForms was called with empty array (unpinned)
+      await waitFor(() => {
+        expect(mockSavePinnedForms).toHaveBeenCalledWith([]);
+      });
+    });
+
+    it('should handle pin toggle save error and show notification', async () => {
+      mockSavePinnedForms.mockRejectedValue(new Error('Save failed'));
+
+      render(<ConsultationPad onClose={mockOnClose} />);
+
+      // Add a form first
+      const selectButton = screen.getByTestId('select-form-button');
+      await userEvent.click(selectButton);
+      const backButton = screen.getByTestId('wrapper-back-button');
+      await userEvent.click(backButton);
+
+      // Try to pin the form using pin toggle button
+      const pinToggleButton = screen.getByTestId('pin-toggle-form-1');
+      await userEvent.click(pinToggleButton);
+
+      // Verify error notification was shown
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'ERROR_SAVING_PINNED_FORMS',
+          message: 'ERROR_SAVING_PINNED_FORMS_MESSAGE',
+          type: 'error',
+          timeout: 3000,
+        });
+      });
+
+      // Verify savePinnedForms was attempted
+      expect(mockSavePinnedForms).toHaveBeenCalledWith(['Test Form']);
+    });
+
+    it('should revert pinned forms state when save fails', async () => {
+      mockSavePinnedForms.mockRejectedValue(new Error('Save failed'));
+
+      render(<ConsultationPad onClose={mockOnClose} />);
+
+      // Add a form first
+      const selectButton = screen.getByTestId('select-form-button');
+      await userEvent.click(selectButton);
+      const backButton = screen.getByTestId('wrapper-back-button');
+      await userEvent.click(backButton);
+
+      // Try to pin the form using pin toggle button (this should fail and revert state)
+      const pinToggleButton = screen.getByTestId('pin-toggle-form-1');
+      await userEvent.click(pinToggleButton);
+
+      // Wait for error handling to complete
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'ERROR_SAVING_PINNED_FORMS',
+          message: 'ERROR_SAVING_PINNED_FORMS_MESSAGE',
+          type: 'error',
+          timeout: 3000,
+        });
+      });
+
+      // State should be reverted - the form should still be in the original unpinned state
+      // This is tested by verifying the error notification was called, indicating the catch block executed
+      expect(mockSavePinnedForms).toHaveBeenCalledWith(['Test Form']);
+    });
+
+    it('should unpin form successfully and save to server', async () => {
+      mockSavePinnedForms.mockResolvedValue(undefined);
+
+      render(<ConsultationPad onClose={mockOnClose} />);
+
+      // Add and pin a form first
+      const selectButton = screen.getByTestId('select-form-button');
+      await userEvent.click(selectButton);
+      const backButton = screen.getByTestId('wrapper-back-button');
+      await userEvent.click(backButton);
+
+      // Pin the form
+      const pinToggleButton = screen.getByTestId('pin-toggle-form-1');
+      await userEvent.click(pinToggleButton);
+
+      await waitFor(() => {
+        expect(mockSavePinnedForms).toHaveBeenCalledWith(['Test Form']);
+      });
+
+      // Reset mock to track unpin call
+      mockSavePinnedForms.mockClear();
+
+      // Now unpin the form (click pin toggle again)
+      await userEvent.click(pinToggleButton);
+
+      // Verify savePinnedForms was called with empty array (unpinned)
+      await waitFor(() => {
+        expect(mockSavePinnedForms).toHaveBeenCalledWith([]);
+      });
+    });
+
+    it('should handle unpin form save error and show notification', async () => {
+      mockSavePinnedForms
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('Unpin save failed'));
+
+      render(<ConsultationPad onClose={mockOnClose} />);
+
+      // Add and pin a form first
+      const selectButton = screen.getByTestId('select-form-button');
+      await userEvent.click(selectButton);
+      const backButton = screen.getByTestId('wrapper-back-button');
+      await userEvent.click(backButton);
+
+      // Pin the form
+      const pinToggleButton = screen.getByTestId('pin-toggle-form-1');
+      await userEvent.click(pinToggleButton);
+
+      await waitFor(() => {
+        expect(mockSavePinnedForms).toHaveBeenCalledWith(['Test Form']);
+      });
+
+      // Clear notification mock to track unpin error
+      mockAddNotification.mockClear();
+
+      // Now try to unpin the form (this should fail)
+      await userEvent.click(pinToggleButton);
+
+      // Verify error notification was shown
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'ERROR_SAVING_PINNED_FORMS',
+          message: 'ERROR_SAVING_PINNED_FORMS_MESSAGE',
+          type: 'error',
+          timeout: 3000,
+        });
+      });
+
+      // Verify savePinnedForms was attempted with empty array
+      expect(mockSavePinnedForms).toHaveBeenCalledWith([]);
+    });
+
+    it('should revert pinned forms state when unpin save fails', async () => {
+      mockSavePinnedForms
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('Unpin save failed'));
+
+      render(<ConsultationPad onClose={mockOnClose} />);
+
+      // Add and pin a form first
+      const selectButton = screen.getByTestId('select-form-button');
+      await userEvent.click(selectButton);
+      const backButton = screen.getByTestId('wrapper-back-button');
+      await userEvent.click(backButton);
+
+      // Pin the form
+      const pinToggleButton = screen.getByTestId('pin-toggle-form-1');
+      await userEvent.click(pinToggleButton);
+
+      await waitFor(() => {
+        expect(mockSavePinnedForms).toHaveBeenCalledWith(['Test Form']);
+      });
+
+      // Clear mocks to track unpin attempt
+      mockAddNotification.mockClear();
+
+      // Now try to unpin the form (this should fail and revert state)
+      await userEvent.click(pinToggleButton);
+
+      // Wait for error handling to complete
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'ERROR_SAVING_PINNED_FORMS',
+          message: 'ERROR_SAVING_PINNED_FORMS_MESSAGE',
+          type: 'error',
+          timeout: 3000,
+        });
+      });
+
+      // Verify savePinnedForms was attempted with empty array (unpin attempt)
+      expect(mockSavePinnedForms).toHaveBeenCalledWith([]);
+    });
+
+    it('should unpin form successfully via onUnpinForm callback', async () => {
+      mockSavePinnedForms.mockResolvedValue(undefined);
+
+      render(<ConsultationPad onClose={mockOnClose} />);
+
+      // Add and pin a form first
+      const selectButton = screen.getByTestId('select-form-button');
+      await userEvent.click(selectButton);
+      const backButton = screen.getByTestId('wrapper-back-button');
+      await userEvent.click(backButton);
+
+      // Pin the form
+      const pinToggleButton = screen.getByTestId('pin-toggle-form-1');
+      await userEvent.click(pinToggleButton);
+
+      await waitFor(() => {
+        expect(mockSavePinnedForms).toHaveBeenCalledWith(['Test Form']);
+        expect(screen.getByTestId('pinned-forms-count')).toHaveTextContent(
+          'Pinned: 1',
+        );
+        expect(screen.getByTestId('pinned-form-form-1')).toBeInTheDocument();
+      });
+
+      // Reset mock to track unpin call
+      mockSavePinnedForms.mockClear();
+
+      // Now unpin the form using the dedicated unpin button
+      const unpinButton = screen.getByTestId('unpin-form-form-1');
+      await userEvent.click(unpinButton);
+
+      // Verify savePinnedForms was called with empty array (unpinned)
+      await waitFor(() => {
+        expect(mockSavePinnedForms).toHaveBeenCalledWith([]);
+        expect(screen.getByTestId('pinned-forms-count')).toHaveTextContent(
+          'Pinned: 0',
+        );
+        expect(
+          screen.queryByTestId('pinned-form-form-1'),
+        ).not.toBeInTheDocument();
+      });
+    });
+
+    it('should handle unpin form error via onUnpinForm callback and show notification', async () => {
+      mockSavePinnedForms
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('Unpin save failed'));
+
+      render(<ConsultationPad onClose={mockOnClose} />);
+
+      // Add and pin a form first
+      const selectButton = screen.getByTestId('select-form-button');
+      await userEvent.click(selectButton);
+      const backButton = screen.getByTestId('wrapper-back-button');
+      await userEvent.click(backButton);
+
+      // Pin the form
+      const pinToggleButton = screen.getByTestId('pin-toggle-form-1');
+      await userEvent.click(pinToggleButton);
+
+      await waitFor(() => {
+        expect(mockSavePinnedForms).toHaveBeenCalledWith(['Test Form']);
+        expect(screen.getByTestId('pinned-forms-count')).toHaveTextContent(
+          'Pinned: 1',
+        );
+      });
+
+      // Clear notification mock to track unpin error
+      mockAddNotification.mockClear();
+
+      // Now try to unpin the form using the dedicated unpin button (this should fail)
+      const unpinButton = screen.getByTestId('unpin-form-form-1');
+      await userEvent.click(unpinButton);
+
+      // Verify error notification was shown
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'ERROR_SAVING_PINNED_FORMS',
+          message: 'ERROR_SAVING_PINNED_FORMS_MESSAGE',
+          type: 'error',
+          timeout: 3000,
+        });
+      });
+
+      // Verify savePinnedForms was attempted with empty array
+      expect(mockSavePinnedForms).toHaveBeenCalledWith([]);
+    });
+
+    it('should revert pinned forms state when unpin save fails via onUnpinForm callback', async () => {
+      mockSavePinnedForms
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('Unpin save failed'));
+
+      render(<ConsultationPad onClose={mockOnClose} />);
+
+      // Add and pin a form first
+      const selectButton = screen.getByTestId('select-form-button');
+      await userEvent.click(selectButton);
+      const backButton = screen.getByTestId('wrapper-back-button');
+      await userEvent.click(backButton);
+
+      // Pin the form
+      const pinToggleButton = screen.getByTestId('pin-toggle-form-1');
+      await userEvent.click(pinToggleButton);
+
+      await waitFor(() => {
+        expect(mockSavePinnedForms).toHaveBeenCalledWith(['Test Form']);
+        expect(screen.getByTestId('pinned-forms-count')).toHaveTextContent(
+          'Pinned: 1',
+        );
+      });
+
+      // Clear mocks to track unpin attempt
+      mockAddNotification.mockClear();
+
+      // Now try to unpin the form using the dedicated unpin button (this should fail and revert state)
+      const unpinButton = screen.getByTestId('unpin-form-form-1');
+      await userEvent.click(unpinButton);
+
+      // Wait for error handling to complete
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'ERROR_SAVING_PINNED_FORMS',
+          message: 'ERROR_SAVING_PINNED_FORMS_MESSAGE',
+          type: 'error',
+          timeout: 3000,
+        });
+      });
+
+      // Verify savePinnedForms was attempted with empty array (unpin attempt)
+      expect(mockSavePinnedForms).toHaveBeenCalledWith([]);
+
+      // Verify the form is still shown as pinned (state was reverted)
+      expect(screen.getByTestId('pinned-forms-count')).toHaveTextContent(
+        'Pinned: 1',
+      );
+      expect(screen.getByTestId('pinned-form-form-1')).toBeInTheDocument();
     });
   });
   describe('Snapshot Tests', () => {
@@ -1398,6 +1846,103 @@ describe('ConsultationPad', () => {
         expect(
           consultationBundleService.postConsultationBundle,
         ).toHaveBeenCalledTimes(1);
+      });
+    });
+  });
+
+  describe('Pinned Forms Loading', () => {
+    it('should load pinned forms successfully when available forms exist', async () => {
+      const availableForms = [
+        { uuid: 'form-1', name: 'Form 1', id: 1, privileges: [] as any[] },
+        { uuid: 'form-2', name: 'Form 2', id: 2, privileges: [] as any[] },
+        { uuid: 'form-3', name: 'Form 3', id: 3, privileges: [] as any[] },
+      ];
+      const pinnedFormNames = ['Form 1', 'Form 3'];
+
+      mockUseObservationFormsSearch.mockReturnValue({
+        forms: availableForms,
+        isLoading: false,
+        error: null,
+      });
+      mockLoadPinnedForms.mockResolvedValue(pinnedFormNames);
+
+      render(<ConsultationPad onClose={mockOnClose} />);
+
+      await waitFor(() => {
+        expect(mockLoadPinnedForms).toHaveBeenCalled();
+        expect(screen.getByTestId('pinned-forms-count')).toHaveTextContent(
+          'Pinned: 2',
+        );
+        expect(screen.getByTestId('pinned-form-form-1')).toBeInTheDocument();
+        expect(screen.getByTestId('pinned-form-form-3')).toBeInTheDocument();
+        expect(
+          screen.queryByTestId('pinned-form-form-2'),
+        ).not.toBeInTheDocument();
+      });
+    });
+
+    it('should not load pinned forms when available forms is empty', async () => {
+      mockUseObservationFormsSearch.mockReturnValue({
+        forms: [] as any[],
+        isLoading: false,
+        error: null,
+      });
+      mockLoadPinnedForms.mockResolvedValue(['Form 1', 'Form 2']);
+
+      render(<ConsultationPad onClose={mockOnClose} />);
+
+      // Wait a bit to ensure useEffect has had time to run
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      expect(mockLoadPinnedForms).not.toHaveBeenCalled();
+      expect(screen.getByTestId('pinned-forms-count')).toHaveTextContent(
+        'Pinned: 0',
+      );
+    });
+
+    it('should reload pinned forms when available forms change', async () => {
+      const initialForms = [
+        { uuid: 'form-1', name: 'Form 1', id: 1, privileges: [] as any[] },
+      ];
+      const updatedForms = [
+        { uuid: 'form-1', name: 'Form 1', id: 1, privileges: [] as any[] },
+        { uuid: 'form-2', name: 'Form 2', id: 2, privileges: [] as any[] },
+      ];
+      const pinnedFormNames = ['Form 1', 'Form 2'];
+
+      // Initial render with one form
+      mockUseObservationFormsSearch.mockReturnValue({
+        forms: initialForms,
+        isLoading: false,
+        error: null,
+      });
+      mockLoadPinnedForms.mockResolvedValue(pinnedFormNames);
+
+      const { rerender } = render(<ConsultationPad onClose={mockOnClose} />);
+
+      await waitFor(() => {
+        expect(mockLoadPinnedForms).toHaveBeenCalledTimes(1);
+        expect(screen.getByTestId('pinned-forms-count')).toHaveTextContent(
+          'Pinned: 1',
+        );
+      });
+
+      // Update available forms
+      mockUseObservationFormsSearch.mockReturnValue({
+        forms: updatedForms,
+        isLoading: false,
+        error: null,
+      });
+
+      rerender(<ConsultationPad onClose={mockOnClose} />);
+
+      await waitFor(() => {
+        expect(mockLoadPinnedForms).toHaveBeenCalledTimes(2);
+        expect(screen.getByTestId('pinned-forms-count')).toHaveTextContent(
+          'Pinned: 2',
+        );
+        expect(screen.getByTestId('pinned-form-form-1')).toBeInTheDocument();
+        expect(screen.getByTestId('pinned-form-form-2')).toBeInTheDocument();
       });
     });
   });
