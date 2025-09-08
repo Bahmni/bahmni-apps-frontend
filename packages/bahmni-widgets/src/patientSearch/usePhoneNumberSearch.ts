@@ -8,10 +8,8 @@ import { useState, useCallback, useEffect } from 'react';
 
 interface UsePhoneNumberSearchResult {
   searchResults: FormattedPatientSearchResult[];
-  totalCount: number;
   loading: boolean;
   error: string | null;
-  search: (term: string, attributeType: string) => void;
 }
 
 /**
@@ -27,7 +25,6 @@ export const usePhoneNumberSearch = (
   const [searchResults, setSearchResults] = useState<
     FormattedPatientSearchResult[]
   >([]);
-  const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,7 +32,6 @@ export const usePhoneNumberSearch = (
     async (searchTerm: string, currentAttributeType: string) => {
       if (!searchTerm.trim()) {
         setSearchResults([]);
-        setTotalCount(0);
         setError(null);
         return;
       }
@@ -51,12 +47,10 @@ export const usePhoneNumberSearch = (
         );
 
         setSearchResults(results);
-        setTotalCount(results.length);
       } catch (err) {
         const { message } = getFormattedError(err);
         setError(message);
         setSearchResults([]);
-        setTotalCount(0);
       } finally {
         setLoading(false);
       }
@@ -70,9 +64,7 @@ export const usePhoneNumberSearch = (
 
   return {
     searchResults,
-    totalCount,
     loading,
     error,
-    search: performSearch,
   };
 };

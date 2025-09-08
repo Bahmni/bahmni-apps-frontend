@@ -55,8 +55,7 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
     searchResults: phoneResults,
     loading: phoneLoading,
     error: phoneError,
-    search: performPhoneSearch,
-  } = usePhoneNumberSearch('', selectedSearchType);
+  } = usePhoneNumberSearch(activeSearchTerm, selectedSearchType);
 
   useEffect(() => {
     onLoading(loading);
@@ -94,9 +93,9 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
     if (!searchTerm.trim()) {
       return;
     }
-    setHasPerformedSearch(true);
     setActiveSearchTerm(searchTerm);
     setPhoneSearchTerm('');
+    setHasPerformedSearch(true);
   }, [searchTerm]);
 
   const handleKeyDown = useCallback(
@@ -113,12 +112,10 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
     if (!phoneSearchTerm.trim()) {
       return;
     }
-    setHasPerformedPhoneSearch(true);
-    setHasPerformedSearch(false);
+    setActiveSearchTerm(phoneSearchTerm);
     setSearchTerm('');
-    // Call search function directly - this will work even with same search term
-    performPhoneSearch(phoneSearchTerm, selectedSearchType);
-  }, [phoneSearchTerm, selectedSearchType, performPhoneSearch]);
+    setHasPerformedPhoneSearch(true);
+  }, [phoneSearchTerm]);
 
   const handlePhoneKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
