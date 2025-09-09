@@ -8,43 +8,52 @@ exports[`ObservationForms Rendering and Structure should match the snapshot 1`] 
   >
     <div
       class="observationFormsTitle"
+      data-testid="observation-forms-title"
     >
       translated_OBSERVATION_FORMS_SECTION_TITLE
     </div>
     <div
-      data-testid="combobox"
+      data-testid="observation-forms-search-section"
     >
-      <input
-        data-testid="combobox-input"
-        placeholder="translated_OBSERVATION_FORMS_SEARCH_PLACEHOLDER"
-      />
       <div
-        data-testid="combobox-items"
+        data-testid="combobox"
       >
-        <button
-          data-testid="combobox-item-form-1"
+        <input
+          data-testid="combobox-input"
+          placeholder="translated_OBSERVATION_FORMS_SEARCH_PLACEHOLDER"
+        />
+        <div
+          data-testid="combobox-items"
         >
-          Admission Letter
-        </button>
-        <button
-          data-testid="combobox-item-form-2"
-        >
-          Death Note
-        </button>
+          <button
+            data-testid="combobox-item-form-1"
+          >
+            Admission Letter
+          </button>
+          <button
+            data-testid="combobox-item-form-2"
+          >
+            Death Note
+          </button>
+        </div>
       </div>
     </div>
     <div
-      data-testid="form-card-container"
+      data-testid="pinned-forms-section"
     >
       <div
-        data-testid="form-card-container-title"
+        data-testid="form-card-container"
       >
-        translated_DEFAULT_AND_PINNED_FORMS_TITLE
-      </div>
-      <div
-        data-testid="no-forms-message"
-      >
-        translated_DEFAULT_AND_PINNED_FORMS_NO_FORMS_FOUND
+        <div
+          data-testid="form-card-container-title"
+        >
+          translated_DEFAULT_AND_PINNED_FORMS_TITLE
+        </div>
+        <div
+          data-testid="no-forms-message"
+        >
+          translated_DEFAULT_AND_PINNED_FORMS_NO_FORMS_FOUND
+        </div>
       </div>
     </div>
   </div>
