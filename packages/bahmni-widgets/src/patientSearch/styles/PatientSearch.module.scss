@@ -5,28 +5,28 @@
 .patientSearchContainer {
   display: flex;
   align-items: center;
-  gap: $spacing-06;
-  padding: $spacing-06;
   background: $layer-02;
   box-shadow: 0 2px 6px 0 $shadow;
-  width: 100%;
 }
 
 .searchSection {
   display: flex;
   flex: 1 1 0;
-  min-width: 0;
   align-items: center;
+  padding: $spacing-06;
 }
 
 .searchInput {
-  flex: 1 1 auto;
-  min-width: 0;
+  min-width: $spacing-12;
 }
 
 .searchButton {
-  flex: 0 0 auto;
-  padding-inline: $spacing-05;
+  padding-right: $spacing-05 !important;
+}
+
+.phoneSearchContainer {
+  display: flex;
+  width: 100%;
 }
 
 .searchTypeDropdown {
@@ -35,43 +35,28 @@
 
 .orDivider {
   display: flex;
-  flex-direction: column; 
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: $spacing-02; 
 
   &::before {
     content: "";
     width: 1px;
     height: 20px;
-    background: $border-subtle-01;
+    background: $border-subtle-02;
   }
 
   &::after {
     content: "";
     width: 1px;
     height: 20px;
-    background: $border-subtle-01;
-  }
-
-  .orText {
-    background: $layer-01;
-    border-radius: 999px;
-    padding: $spacing-02 $spacing-04;
-    color: $text-primary;
-    font-weight: 500;
-    text-transform: uppercase;
-    white-space: nowrap;
+    background: $border-subtle-02;
   }
 }
 
 @include breakpoint-down(lg) {
   .patientSearchContainer {
     flex-direction: column;
-    align-items: flex-start;
-    gap: $spacing-05;
-    padding: $spacing-05;
-    flex-wrap: nowrap;
   }
 
   .searchSection {
@@ -80,29 +65,22 @@
     gap: $spacing-03;
   }
 
-  .searchButton {
-    width: 100%;
-  }
-
   .searchTypeDropdown {
     width: 100%;
   }
 
   .orDivider {
     flex-direction: row;
-    width: 100%;
-    gap: $spacing-03;
+    width: 50%;
 
     &::before {
-      width: auto;
       height: 1px;
-      flex: 1; 
+      flex: 1;
     }
 
     &::after {
-      width: auto;
       height: 1px;
-      flex: 1; 
+      flex: 1;
     }
   }
 }

@@ -2,6 +2,7 @@ import {
   Button,
   Search,
   Dropdown,
+  Tag,
 } from '@bahmni-frontend/bahmni-design-system';
 import {
   useTranslation,
@@ -28,7 +29,8 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
   const [activeSearchTerm, setActiveSearchTerm] = useState<string>('');
   const [hasPerformedSearch, setHasPerformedSearch] = useState<boolean>(false);
   const [phoneSearchTerm, setPhoneSearchTerm] = useState<string>('');
-  const [activePhoneSearchTerm, setActivePhoneSearchTerm] = useState<string>('');
+  const [activePhoneSearchTerm, setActivePhoneSearchTerm] =
+    useState<string>('');
   const [hasPerformedPhoneSearch, setHasPerformedPhoneSearch] =
     useState<boolean>(false);
   const { searchResults, loading, error } = usePatientSearch(activeSearchTerm);
@@ -164,42 +166,44 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
 
       {/* OR Divider */}
       <div className={styles.orDivider}>
-        <span className={styles.orText}>{t('OR') || 'OR'}</span>
+        <Tag type="cool-gray">{t('OR')}</Tag>
       </div>
 
       {/* Phone Search Section */}
       <div className={styles.searchSection}>
-        <Search
-          id="phone-search-input"
-          testId="phone-search-input"
-          labelText=""
-          placeholder={t('SEARCH_BY_PHONE_NUMBER')}
-          value={phoneSearchTerm}
-          onChange={(e) => setPhoneSearchTerm(e.target.value)}
-          onKeyDown={handlePhoneKeyDown}
-          disabled={loading}
-          className={styles.searchInput}
-          aria-label={t('SEARCH_BY_PHONE_NUMBER')}
-        />
-        <Dropdown
-          id="search-type-dropdown"
-          testId="search-type-dropdown"
-          titleText=""
-          label="Phone number"
-          items={searchTypeOptions}
-          selectedItem={searchTypeOptions.find(
-            (item) => item.id === selectedSearchType,
-          )}
-          onChange={({ selectedItem }) => {
-            if (selectedItem) {
-              setSelectedSearchType(selectedItem.id);
-            }
-          }}
-          className={styles.searchTypeDropdown}
-          disabled={loading}
-          size="md"
-          itemToString={(item) => (item ? item.text : '')}
-        />
+        <div className={styles.phoneSearchContainer}>
+          <Search
+            id="phone-search-input"
+            testId="phone-search-input"
+            labelText=""
+            placeholder={t('SEARCH_BY_PHONE_NUMBER')}
+            value={phoneSearchTerm}
+            onChange={(e) => setPhoneSearchTerm(e.target.value)}
+            onKeyDown={handlePhoneKeyDown}
+            disabled={loading}
+            className={styles.searchInput}
+            aria-label={t('SEARCH_BY_PHONE_NUMBER')}
+          />
+          <Dropdown
+            id="search-type-dropdown"
+            testId="search-type-dropdown"
+            titleText=""
+            label="Phone number"
+            items={searchTypeOptions}
+            selectedItem={searchTypeOptions.find(
+              (item) => item.id === selectedSearchType,
+            )}
+            onChange={({ selectedItem }) => {
+              if (selectedItem) {
+                setSelectedSearchType(selectedItem.id);
+              }
+            }}
+            className={styles.searchTypeDropdown}
+            disabled={loading}
+            size="md"
+            itemToString={(item) => (item ? item.text : '')}
+          />
+        </div>
         <Button
           size="md"
           testId="phone-search-button"
