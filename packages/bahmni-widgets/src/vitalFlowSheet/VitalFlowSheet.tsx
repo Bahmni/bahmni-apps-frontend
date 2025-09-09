@@ -109,7 +109,7 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
   const translateBodyPosition = useCallback(
     (position: string): string => {
       const positionMap: Record<string, string> = {
-        seatedg: t('BODY_POSITION_SITTING'),
+        seated: t('BODY_POSITION_SITTING'),
         recumbent: t('BODY_POSITION_RECUMBENT'),
         Unknown: t('BODY_POSITION_UNKNOWN'),
         Other: t('BODY_POSITION_OTHER'),
