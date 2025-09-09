@@ -3,6 +3,7 @@ import {
   post,
   getCurrentUser,
   USER_PINNED_PREFERENCE_URL,
+  getFormattedError,
 } from '@bahmni-frontend/bahmni-services';
 import { PINNED_FORMS_ERROR_MESSAGES } from '../constants/errors';
 import { PINNED_FORMS_DELIMITER } from '../constants/forms';
@@ -36,14 +37,25 @@ export const loadPinnedForms = async (): Promise<string[]> => {
     }
 
     const userData = await get<UserData>(USER_PINNED_PREFERENCE_URL(user.uuid));
-    const pinnedString = userData.userProperties?.pinnedObsTemplates ?? '';
-    return pinnedString ? pinnedString.split(PINNED_FORMS_DELIMITER) : [];
-  } catch (error) {
-    if (error instanceof Error) {
-      throw error.message;
+
+    // Validate user data structure
+    if (!userData || typeof userData !== 'object') {
+      return [];
     }
 
-    throw PINNED_FORMS_ERROR_MESSAGES.LOAD_FAILED;
+    const pinnedString = userData.userProperties?.pinnedObsTemplates ?? '';
+
+    // Additional validation for malformed data
+    if (typeof pinnedString !== 'string') {
+      return [];
+    }
+
+    return pinnedString
+      ? pinnedString.split(PINNED_FORMS_DELIMITER).filter(Boolean)
+      : [];
+  } catch (error) {
+    const formattedError = getFormattedError(error);
+    throw new Error(formattedError.message);
   }
 };
 
@@ -57,25 +69,33 @@ export const savePinnedForms = async (formNames: string[]): Promise<void> => {
       throw new Error(PINNED_FORMS_ERROR_MESSAGES.INVALID_DATA);
     }
 
+    // Validate form names are strings
+    const validFormNames = formNames.filter(
+      (name) => typeof name === 'string' && name.trim().length > 0,
+    );
+
     const user = await getCurrentUser();
     if (!user) {
       throw new Error(PINNED_FORMS_ERROR_MESSAGES.USER_NOT_FOUND);
     }
 
     const userData = await get<UserData>(USER_PINNED_PREFERENCE_URL(user.uuid));
+
+    // Validate userData structure
+    if (!userData || typeof userData !== 'object') {
+      throw new Error('Invalid user data structure');
+    }
+
     const updatedUserProperties: UserProperties = {
       ...userData.userProperties,
-      pinnedObsTemplates: formNames.join(PINNED_FORMS_DELIMITER),
+      pinnedObsTemplates: validFormNames.join(PINNED_FORMS_DELIMITER),
     };
 
     await post(USER_PINNED_PREFERENCE_URL(user.uuid), {
       userProperties: updatedUserProperties,
     });
   } catch (error) {
-    if (error instanceof Error) {
-      throw error.message;
-    }
-
-    throw PINNED_FORMS_ERROR_MESSAGES.SAVE_FAILED;
+    const formattedError = getFormattedError(error);
+    throw new Error(formattedError.message);
   }
 };
