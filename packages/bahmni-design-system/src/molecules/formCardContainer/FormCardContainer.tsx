@@ -13,6 +13,9 @@ export interface FormCardContainerProps {
 
   /** Show no forms message when children is empty */
   showNoFormsMessage?: boolean;
+
+  /** Data test ID for testing */
+  dataTestId?: string;
 }
 
 /**
@@ -26,17 +29,27 @@ export const FormCardContainer: React.FC<FormCardContainerProps> = ({
   children,
   noFormsMessage = 'No forms found',
   showNoFormsMessage = false,
+  dataTestId = 'form-card-container',
 }) => {
   const hasChildren = React.Children.count(children) > 0;
 
   return (
-    <div className={styles.formCardContainer}>
-      <div className={styles.title}>{title}</div>
+    <div className={styles.formCardContainer} data-testid={dataTestId}>
+      <div className={styles.title} data-testid={`${dataTestId}-title`}>
+        {title}
+      </div>
 
       {hasChildren ? (
-        <div className={styles.formsGrid}>{children}</div>
+        <div className={styles.formsGrid} data-testid={`${dataTestId}-grid`}>
+          {children}
+        </div>
       ) : showNoFormsMessage ? (
-        <div className={styles.noFormsMessage}>{noFormsMessage}</div>
+        <div
+          className={styles.noFormsMessage}
+          data-testid={`${dataTestId}-no-forms`}
+        >
+          {noFormsMessage}
+        </div>
       ) : null}
     </div>
   );

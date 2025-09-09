@@ -45,20 +45,39 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
     const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
 
-    // Use the observation forms search hook
     const {
       forms: availableForms,
       isLoading,
       error,
     } = useObservationFormsSearch(searchTerm);
 
+    // Validate and filter available forms - handle malformed data
+    const validatedAvailableForms = useMemo(() => {
+      return availableForms.filter((form) => {
+        // Check required properties
+        if (!form || typeof form !== 'object') return false;
+        if (!form.uuid || typeof form.uuid !== 'string') return false;
+        if (!form.name || typeof form.name !== 'string') return false;
+        return true;
+      });
+    }, [availableForms]);
+
     // Use API names for filtering (these match the actual form names from backend)
-    const defaultPinnedForms = availableForms.filter((form) =>
+    const defaultPinnedForms = validatedAvailableForms.filter((form) =>
       DEFAULT_FORM_API_NAMES.includes(form.name),
     );
 
+    // Filter orphaned pinned forms - remove forms that are pinned but no longer available
+    const validUserPinnedForms = useMemo(() => {
+      return pinnedForms.filter((pinnedForm) => {
+        return validatedAvailableForms.some(
+          (availableForm) => availableForm.uuid === pinnedForm.uuid,
+        );
+      });
+    }, [pinnedForms, validatedAvailableForms]);
+
     // Merge with user-pinned forms (avoid duplicates)
-    const userPinnedUuids = pinnedForms.map((f) => f.uuid);
+    const userPinnedUuids = validUserPinnedForms.map((f) => f.uuid);
 
     // Step 1: Get default forms that user hasn't pinned, sorted alphabetically
     const sortedDefaultForms = defaultPinnedForms
@@ -66,7 +85,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
       .sort((a, b) => a.name.localeCompare(b.name));
 
     // Step 2: Get user-pinned forms, sorted alphabetically
-    const sortedUserPinnedForms = [...pinnedForms].sort((a, b) =>
+    const sortedUserPinnedForms = [...validUserPinnedForms].sort((a, b) =>
       a.name.localeCompare(b.name),
     );
 
@@ -155,64 +174,80 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
     }, [isLoading, error, searchTerm, availableForms, selectedForms, t]);
 
     return (
-      <Tile className={styles.observationFormsTile}>
-        <div className={styles.observationFormsTitle}>
+      <Tile
+        className={styles.observationFormsTile}
+        data-testid="observation-forms-tile"
+      >
+        <div
+          className={styles.observationFormsTitle}
+          data-testid="observation-forms-title"
+        >
           {t('OBSERVATION_FORMS_SECTION_TITLE')}
         </div>
 
-        <ComboBox
-          id="observation-forms-search"
-          placeholder={t('OBSERVATION_FORMS_SEARCH_PLACEHOLDER')}
-          items={searchResults}
-          itemToString={(item) => item?.label ?? ''}
-          onChange={handleOnChange}
-          onInputChange={handleSearch}
-          size="md"
-          autoAlign
-          disabled={isLoading}
-          aria-label={t('OBSERVATION_FORMS_SEARCH_ARIA_LABEL')}
-        />
+        <div data-testid="observation-forms-search-section">
+          <ComboBox
+            id="observation-forms-search"
+            placeholder={t('OBSERVATION_FORMS_SEARCH_PLACEHOLDER')}
+            items={searchResults}
+            itemToString={(item) => item?.label ?? ''}
+            onChange={handleOnChange}
+            onInputChange={handleSearch}
+            size="md"
+            autoAlign
+            disabled={isLoading}
+            aria-label={t('OBSERVATION_FORMS_SEARCH_ARIA_LABEL')}
+            data-testid="observation-forms-search-combobox"
+          />
+        </div>
 
         {selectedForms && selectedForms.length > 0 && (
-          <FormCardContainer title={t('OBSERVATION_FORMS_ADDED_FORMS')}>
-            {selectedForms.map((form: ObservationForm) => (
+          <div data-testid="added-forms-section">
+            <FormCardContainer
+              title={t('OBSERVATION_FORMS_ADDED_FORMS')}
+              dataTestId="added-forms-container"
+            >
+              {selectedForms.map((form: ObservationForm) => (
+                <FormCard
+                  key={form.uuid}
+                  title={form.name}
+                  icon="fa-file-lines"
+                  actionIcon="fa-times"
+                  onOpen={() => onFormSelect?.(form)}
+                  onActionClick={() => onRemoveForm?.(form.uuid)}
+                  dataTestId={`selected-form-${form.uuid}`}
+                  ariaLabel={`Open ${form.name} form`}
+                />
+              ))}
+            </FormCardContainer>
+          </div>
+        )}
+
+        <div data-testid="pinned-forms-section">
+          <FormCardContainer
+            title={t('DEFAULT_AND_PINNED_FORMS_TITLE')}
+            showNoFormsMessage={allPinnedForms.length === 0}
+            noFormsMessage={t('DEFAULT_AND_PINNED_FORMS_NO_FORMS_FOUND')}
+            dataTestId="pinned-forms-container"
+          >
+            {allPinnedForms.map((form: ObservationForm) => (
               <FormCard
                 key={form.uuid}
                 title={form.name}
                 icon="fa-file-lines"
-                actionIcon="fa-times"
+                actionIcon={
+                  !DEFAULT_FORM_API_NAMES.includes(form.name)
+                    ? 'fa-thumbtack'
+                    : undefined
+                }
                 onOpen={() => onFormSelect?.(form)}
-                onActionClick={() => onRemoveForm?.(form.uuid)}
-                dataTestId={`selected-form-${form.uuid}`}
+                onActionClick={() => onUnpinForm?.(form.uuid)}
+                dataTestId={`pinned-form-${form.uuid}`}
                 ariaLabel={`Open ${form.name} form`}
               />
             ))}
           </FormCardContainer>
-        )}
-
-        {/* Pinned And Popular Forms Section - Now comes second */}
-        <FormCardContainer
-          title={t('DEFAULT_AND_PINNED_FORMS_TITLE')}
-          showNoFormsMessage={allPinnedForms.length === 0}
-          noFormsMessage={t('DEFAULT_AND_PINNED_FORMS_NO_FORMS_FOUND')}
-        >
-          {allPinnedForms.map((form: ObservationForm) => (
-            <FormCard
-              key={form.uuid}
-              title={form.name}
-              icon="fa-file-lines"
-              actionIcon={
-                !DEFAULT_FORM_API_NAMES.includes(form.name)
-                  ? 'fa-thumbtack'
-                  : undefined
-              }
-              onOpen={() => onFormSelect?.(form)}
-              onActionClick={() => onUnpinForm?.(form.uuid)}
-              dataTestId={`pinned-form-${form.uuid}`}
-              ariaLabel={`Open ${form.name} form`}
-            />
-          ))}
-        </FormCardContainer>
+        </div>
       </Tile>
     );
   },
