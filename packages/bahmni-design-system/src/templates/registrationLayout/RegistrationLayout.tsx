@@ -27,7 +27,7 @@ export const RegistrationLayout: React.FC<RegistrationLayoutProps> = ({
   testId,
 }) => {
   return (
-    <div>
+    <div className={styles.layout}>
       {breadcrumbItems && (
         <PageHeader breadcrumbItems={breadcrumbItems} testId={testId} />
       )}
