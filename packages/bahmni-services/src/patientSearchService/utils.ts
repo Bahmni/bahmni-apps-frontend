@@ -26,6 +26,15 @@ export const formatRegistrationDate = (
   }
 };
 
+export const extractCustomAttribute = (patient: PatientSearchResult, attributeName: string): string | null => {
+  try {
+    const attrs = patient.customAttribute ? JSON.parse(patient.customAttribute) : {};
+    return attrs[attributeName] || null;
+  } catch {
+    return null;
+  }
+};
+
 export const formatPatientSearchResult = (
   patient: PatientSearchResult,
   t: (key: string) => string,
@@ -34,8 +43,8 @@ export const formatPatientSearchResult = (
     id: patient.uuid,
     patientId: patient.identifier,
     fullName: formatPatientName(patient),
-    phoneNumber: null, // Will be populated from API response if available
-    alternatePhoneNumber: null, // Will be populated from API response if available
+    phoneNumber: extractCustomAttribute(patient, 'phoneNumber'),
+    alternatePhoneNumber: extractCustomAttribute(patient, 'alternatePhoneNumber'),
     gender: patient.gender,
     age: patient.age,
     registrationDate: formatRegistrationDate(patient.dateCreated, t),
