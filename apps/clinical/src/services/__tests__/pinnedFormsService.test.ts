@@ -13,6 +13,7 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
   post: jest.fn(),
   getCurrentUser: jest.fn(),
   USER_PINNED_PREFERENCE_URL: jest.fn(),
+  getFormattedError: jest.fn((error) => ({ message: error.message })),
 }));
 
 describe('pinnedFormsService', () => {
@@ -54,7 +55,7 @@ describe('pinnedFormsService', () => {
     it('should throw error when no user found', async () => {
       (getCurrentUser as jest.Mock).mockResolvedValue(null);
 
-      await expect(loadPinnedForms()).rejects.toBe(
+      await expect(loadPinnedForms()).rejects.toThrow(
         PINNED_FORMS_ERROR_MESSAGES.USER_NOT_FOUND,
       );
 
@@ -97,7 +98,7 @@ describe('pinnedFormsService', () => {
 
       (getCurrentUser as jest.Mock).mockRejectedValue(error);
 
-      await expect(loadPinnedForms()).rejects.toBe('API request failed');
+      await expect(loadPinnedForms()).rejects.toThrow('API request failed');
     });
   });
 
@@ -129,7 +130,7 @@ describe('pinnedFormsService', () => {
     it('should throw error when no user found', async () => {
       (getCurrentUser as jest.Mock).mockResolvedValue(null);
 
-      await expect(savePinnedForms(['Form A'])).rejects.toBe(
+      await expect(savePinnedForms(['Form A'])).rejects.toThrow(
         PINNED_FORMS_ERROR_MESSAGES.USER_NOT_FOUND,
       );
 
@@ -143,13 +144,13 @@ describe('pinnedFormsService', () => {
 
       (getCurrentUser as jest.Mock).mockRejectedValue(error);
 
-      await expect(savePinnedForms(['Form A'])).rejects.toBe(
+      await expect(savePinnedForms(['Form A'])).rejects.toThrow(
         'Save request failed',
       );
     });
 
     it('should throw error when invalid data provided', async () => {
-      await expect(savePinnedForms(null as any)).rejects.toBe(
+      await expect(savePinnedForms(null as any)).rejects.toThrow(
         PINNED_FORMS_ERROR_MESSAGES.INVALID_DATA,
       );
     });
