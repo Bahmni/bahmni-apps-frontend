@@ -1,9 +1,9 @@
 @use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/breakpoint" as *;
 
 .patientSearchPage {
-  min-height: 100vh;
   background-color: $layer-02;
 }
 
@@ -32,4 +32,10 @@
   min-block-size: fit-content !important;
   @include type-style("heading-compact-02");
   color: $text-primary;
+}
+
+@include breakpoint-down(lg) {
+  .searchSection {
+    margin: $spacing-09 $spacing-06 $spacing-08;
+  }
 }
