@@ -8,6 +8,7 @@ import {
   getUuidFromUserLocationCookie,
   isValidSearchTerm,
   sortPatientsByIdentifierAscending,
+  extractCustomAttribute,
 } from '../utils';
 
 jest.mock('../../utils');
@@ -196,7 +197,7 @@ describe('PatientSearchService Utils', () => {
         gender: 'F',
         dateCreated: 1609459200000,
         activeVisitUuid: null,
-        customAttribute: null,
+        customAttribute: '{"phoneNumber":"9876543210","alternatePhoneNumber":"1234567890"}',
         patientProgramAttributeValue: null,
         hasBeenAdmitted: false,
         age: '33',
@@ -231,8 +232,8 @@ describe('PatientSearchService Utils', () => {
         id: 'uuid-2',
         patientId: 'PAT002',
         fullName: 'Jane Smith',
-        phoneNumber: null,
-        alternatePhoneNumber: null,
+        phoneNumber: '9876543210',
+        alternatePhoneNumber: '1234567890',
         gender: 'F',
         age: '33',
         registrationDate: '01/01/2020',
@@ -462,6 +463,133 @@ describe('PatientSearchService Utils', () => {
       expect(result[1].identifier).toBe('A200');
       expect(result[2].identifier).toBe('B50');
       expect(result[3].identifier).toBe('Z100');
+    });
+  });
+
+  describe('extractCustomAttribute', () => {
+    it('should extract phone number and alternate phone number from valid customAttribute JSON', () => {
+      const patient: PatientSearchResult = {
+        uuid: 'test-uuid',
+        birthDate: 631152000000,
+        extraIdentifiers: null,
+        personId: 1001,
+        deathDate: null,
+        identifier: 'PAT001',
+        addressFieldValue: '123 Main St',
+        givenName: 'John',
+        middleName: null,
+        familyName: 'Doe',
+        gender: 'M',
+        dateCreated: 1577836800000,
+        activeVisitUuid: null,
+        customAttribute: '{"phoneNumber":"9876543210","alternatePhoneNumber":"1234567890"}',
+        patientProgramAttributeValue: null,
+        hasBeenAdmitted: false,
+        age: '34',
+      };
+
+      expect(extractCustomAttribute(patient, 'phoneNumber')).toBe('9876543210');
+      expect(extractCustomAttribute(patient, 'alternatePhoneNumber')).toBe('1234567890');
+    });
+
+    it('should return null when requested attributes are not present in customAttribute', () => {
+      const patient: PatientSearchResult = {
+        uuid: 'test-uuid',
+        birthDate: 631152000000,
+        extraIdentifiers: null,
+        personId: 1001,
+        deathDate: null,
+        identifier: 'PAT001',
+        addressFieldValue: '123 Main St',
+        givenName: 'John',
+        middleName: null,
+        familyName: 'Doe',
+        gender: 'M',
+        dateCreated: 1577836800000,
+        activeVisitUuid: null,
+        customAttribute: '{"email":"john@example.com"}',
+        patientProgramAttributeValue: null,
+        hasBeenAdmitted: false,
+        age: '34',
+      };
+
+      expect(extractCustomAttribute(patient, 'phoneNumber')).toBeNull();
+      expect(extractCustomAttribute(patient, 'alternatePhoneNumber')).toBeNull();
+    });
+
+    it('should return null when customAttribute is null', () => {
+      const patient: PatientSearchResult = {
+        uuid: 'test-uuid',
+        birthDate: 631152000000,
+        extraIdentifiers: null,
+        personId: 1001,
+        deathDate: null,
+        identifier: 'PAT001',
+        addressFieldValue: '123 Main St',
+        givenName: 'John',
+        middleName: null,
+        familyName: 'Doe',
+        gender: 'M',
+        dateCreated: 1577836800000,
+        activeVisitUuid: null,
+        customAttribute: null,
+        patientProgramAttributeValue: null,
+        hasBeenAdmitted: false,
+        age: '34',
+      };
+
+      expect(extractCustomAttribute(patient, 'phoneNumber')).toBeNull();
+      expect(extractCustomAttribute(patient, 'alternatePhoneNumber')).toBeNull();
+    });
+
+    it('should return null when customAttribute contains invalid JSON', () => {
+      const patient: PatientSearchResult = {
+        uuid: 'test-uuid',
+        birthDate: 631152000000,
+        extraIdentifiers: null,
+        personId: 1001,
+        deathDate: null,
+        identifier: 'PAT001',
+        addressFieldValue: '123 Main St',
+        givenName: 'John',
+        middleName: null,
+        familyName: 'Doe',
+        gender: 'M',
+        dateCreated: 1577836800000,
+        activeVisitUuid: null,
+        customAttribute: 'invalid-json',
+        patientProgramAttributeValue: null,
+        hasBeenAdmitted: false,
+        age: '34',
+      };
+
+      expect(extractCustomAttribute(patient, 'phoneNumber')).toBeNull();
+      expect(extractCustomAttribute(patient, 'alternatePhoneNumber')).toBeNull();
+    });
+
+    it('should return null when attributes are empty strings', () => {
+      const patient: PatientSearchResult = {
+        uuid: 'test-uuid',
+        birthDate: 631152000000,
+        extraIdentifiers: null,
+        personId: 1001,
+        deathDate: null,
+        identifier: 'PAT001',
+        addressFieldValue: '123 Main St',
+        givenName: 'John',
+        middleName: null,
+        familyName: 'Doe',
+        gender: 'M',
+        dateCreated: 1577836800000,
+        activeVisitUuid: null,
+        customAttribute: '{"phoneNumber":"","alternatePhoneNumber":""}',
+        patientProgramAttributeValue: null,
+        hasBeenAdmitted: false,
+        age: '34',
+      };
+
+      expect(extractCustomAttribute(patient, 'phoneNumber')).toBeNull();
+      expect(extractCustomAttribute(patient, 'alternatePhoneNumber')).toBeNull();
     });
   });
 });
