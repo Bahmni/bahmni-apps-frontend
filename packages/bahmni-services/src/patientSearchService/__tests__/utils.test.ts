@@ -197,7 +197,8 @@ describe('PatientSearchService Utils', () => {
         gender: 'F',
         dateCreated: 1609459200000,
         activeVisitUuid: null,
-        customAttribute: '{"phoneNumber":"9876543210","alternatePhoneNumber":"1234567890"}',
+        customAttribute:
+          '{"phoneNumber":"9876543210","alternatePhoneNumber":"1234567890"}',
         patientProgramAttributeValue: null,
         hasBeenAdmitted: false,
         age: '33',
@@ -467,129 +468,91 @@ describe('PatientSearchService Utils', () => {
   });
 
   describe('extractCustomAttribute', () => {
-    it('should extract phone number and alternate phone number from valid customAttribute JSON', () => {
-      const patient: PatientSearchResult = {
-        uuid: 'test-uuid',
-        birthDate: 631152000000,
-        extraIdentifiers: null,
-        personId: 1001,
-        deathDate: null,
-        identifier: 'PAT001',
-        addressFieldValue: '123 Main St',
-        givenName: 'John',
-        middleName: null,
-        familyName: 'Doe',
-        gender: 'M',
-        dateCreated: 1577836800000,
-        activeVisitUuid: null,
-        customAttribute: '{"phoneNumber":"9876543210","alternatePhoneNumber":"1234567890"}',
-        patientProgramAttributeValue: null,
-        hasBeenAdmitted: false,
-        age: '34',
-      };
+    const patient: PatientSearchResult = {
+      uuid: 'test-uuid',
+      birthDate: 631152000000,
+      extraIdentifiers: null,
+      personId: 1001,
+      deathDate: null,
+      identifier: 'PAT001',
+      addressFieldValue: '123 Main St',
+      givenName: 'John',
+      middleName: null,
+      familyName: 'Doe',
+      gender: 'M',
+      dateCreated: 1577836800000,
+      activeVisitUuid: null,
+      customAttribute:
+        '{"phoneNumber":"9876543210","alternatePhoneNumber":"1234567890"}',
+      patientProgramAttributeValue: null,
+      hasBeenAdmitted: false,
+      age: '34',
+    };
 
+    const patientWithNullCustomAtt = { ...patient, customAttribute: null };
+    const patientWithMissingAttributes = {
+      ...patient,
+      customAttribute: '{"email":"john@example.com"}',
+    };
+    const patientWithInvalidJSON = {
+      ...patient,
+      customAttribute: 'invalid-json',
+    };
+    const patientWithEmptyAttributes = {
+      ...patient,
+      customAttribute: '{"phoneNumber":"","alternatePhoneNumber":""}',
+    };
+
+    it('should extract phone number and alternate phone number from valid customAttribute JSON', () => {
       expect(extractCustomAttribute(patient, 'phoneNumber')).toBe('9876543210');
-      expect(extractCustomAttribute(patient, 'alternatePhoneNumber')).toBe('1234567890');
+      expect(extractCustomAttribute(patient, 'alternatePhoneNumber')).toBe(
+        '1234567890',
+      );
     });
 
     it('should return null when requested attributes are not present in customAttribute', () => {
-      const patient: PatientSearchResult = {
-        uuid: 'test-uuid',
-        birthDate: 631152000000,
-        extraIdentifiers: null,
-        personId: 1001,
-        deathDate: null,
-        identifier: 'PAT001',
-        addressFieldValue: '123 Main St',
-        givenName: 'John',
-        middleName: null,
-        familyName: 'Doe',
-        gender: 'M',
-        dateCreated: 1577836800000,
-        activeVisitUuid: null,
-        customAttribute: '{"email":"john@example.com"}',
-        patientProgramAttributeValue: null,
-        hasBeenAdmitted: false,
-        age: '34',
-      };
-
-      expect(extractCustomAttribute(patient, 'phoneNumber')).toBeNull();
-      expect(extractCustomAttribute(patient, 'alternatePhoneNumber')).toBeNull();
+      expect(
+        extractCustomAttribute(patientWithMissingAttributes, 'phoneNumber'),
+      ).toBeNull();
+      expect(
+        extractCustomAttribute(
+          patientWithMissingAttributes,
+          'alternatePhoneNumber',
+        ),
+      ).toBeNull();
     });
 
     it('should return null when customAttribute is null', () => {
-      const patient: PatientSearchResult = {
-        uuid: 'test-uuid',
-        birthDate: 631152000000,
-        extraIdentifiers: null,
-        personId: 1001,
-        deathDate: null,
-        identifier: 'PAT001',
-        addressFieldValue: '123 Main St',
-        givenName: 'John',
-        middleName: null,
-        familyName: 'Doe',
-        gender: 'M',
-        dateCreated: 1577836800000,
-        activeVisitUuid: null,
-        customAttribute: null,
-        patientProgramAttributeValue: null,
-        hasBeenAdmitted: false,
-        age: '34',
-      };
-
-      expect(extractCustomAttribute(patient, 'phoneNumber')).toBeNull();
-      expect(extractCustomAttribute(patient, 'alternatePhoneNumber')).toBeNull();
+      expect(
+        extractCustomAttribute(patientWithNullCustomAtt, 'phoneNumber'),
+      ).toBeNull();
+      expect(
+        extractCustomAttribute(
+          patientWithNullCustomAtt,
+          'alternatePhoneNumber',
+        ),
+      ).toBeNull();
     });
 
     it('should return null when customAttribute contains invalid JSON', () => {
-      const patient: PatientSearchResult = {
-        uuid: 'test-uuid',
-        birthDate: 631152000000,
-        extraIdentifiers: null,
-        personId: 1001,
-        deathDate: null,
-        identifier: 'PAT001',
-        addressFieldValue: '123 Main St',
-        givenName: 'John',
-        middleName: null,
-        familyName: 'Doe',
-        gender: 'M',
-        dateCreated: 1577836800000,
-        activeVisitUuid: null,
-        customAttribute: 'invalid-json',
-        patientProgramAttributeValue: null,
-        hasBeenAdmitted: false,
-        age: '34',
-      };
-
-      expect(extractCustomAttribute(patient, 'phoneNumber')).toBeNull();
-      expect(extractCustomAttribute(patient, 'alternatePhoneNumber')).toBeNull();
+      expect(
+        extractCustomAttribute(patientWithInvalidJSON, 'phoneNumber'),
+      ).toBeNull();
+      expect(
+        extractCustomAttribute(patientWithInvalidJSON, 'alternatePhoneNumber'),
+      ).toBeNull();
     });
 
     it('should return null when attributes are empty strings', () => {
-      const patient: PatientSearchResult = {
-        uuid: 'test-uuid',
-        birthDate: 631152000000,
-        extraIdentifiers: null,
-        personId: 1001,
-        deathDate: null,
-        identifier: 'PAT001',
-        addressFieldValue: '123 Main St',
-        givenName: 'John',
-        middleName: null,
-        familyName: 'Doe',
-        gender: 'M',
-        dateCreated: 1577836800000,
-        activeVisitUuid: null,
-        customAttribute: '{"phoneNumber":"","alternatePhoneNumber":""}',
-        patientProgramAttributeValue: null,
-        hasBeenAdmitted: false,
-        age: '34',
-      };
-
-      expect(extractCustomAttribute(patient, 'phoneNumber')).toBeNull();
-      expect(extractCustomAttribute(patient, 'alternatePhoneNumber')).toBeNull();
+      expect(
+        extractCustomAttribute(patientWithEmptyAttributes, 'phoneNumber'),
+      ).toBeNull();
+      expect(
+        extractCustomAttribute(
+          patientWithEmptyAttributes,
+          'alternatePhoneNumber',
+        ),
+      ).toBeNull();
     });
   });
 });
