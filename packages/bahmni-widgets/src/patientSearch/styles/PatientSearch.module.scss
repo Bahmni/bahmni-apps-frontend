@@ -1,6 +1,6 @@
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/theme" as *;
-@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/breakpoint" as *;
 
 .patientSearchContainer {
   display: flex;
@@ -10,21 +10,6 @@
   background: $layer-02;
   box-shadow: 0 2px 6px 0 $shadow;
   width: 100%;
-
-  @media (max-width: 1400px) {
-    flex-direction: column;
-    align-items: stretch;
-    gap: $spacing-05;
-  }
-
-  @media (max-width: 768px) {
-    padding: $spacing-05;
-    gap: $spacing-04;
-  }
-
-  @media (max-width: 480px) {
-    padding: $spacing-04;
-  }
 }
 
 .searchSection {
@@ -32,76 +17,92 @@
   flex: 1 1 0;
   min-width: 0;
   align-items: center;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    width: 100%;
-    gap: $spacing-03;
-  }
 }
 
 .searchInput {
   flex: 1 1 auto;
-  min-width: 160px;
+  min-width: 0;
 }
 
 .searchButton {
-  flex-shrink: 0;
-  padding: 0 $spacing-05;
-
-  @media (max-width: 768px) {
-    width: 100%;
-  }
+  flex: 0 0 auto;
+  padding-inline: $spacing-05;
 }
 
 .searchTypeDropdown {
-  flex-shrink: 0;
-  min-width: 120px;
-
-  @media (max-width: 768px) {
-    width: 100%;
-    min-width: 0;
-  }
+  min-width: auto;
 }
 
 .orDivider {
   display: flex;
+  flex-direction: column; 
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  padding: 0 $spacing-03;
+  gap: $spacing-02; 
 
   &::before {
     content: "";
-    flex: 1;
-    height: 1px;
+    width: 1px;
+    height: 20px;
     background: $border-subtle-01;
-    margin-right: $spacing-03;
   }
 
   &::after {
     content: "";
-    flex: 1;
-    height: 1px;
+    width: 1px;
+    height: 20px;
     background: $border-subtle-01;
-    margin-left: $spacing-03;
   }
 
-  @media (max-width: 1400px) {
-    width: 100%;
-    &::before, &::after {
-      flex: none;
-      width: 20%;
-    }
+  .orText {
+    background: $layer-01;
+    border-radius: 999px;
+    padding: $spacing-02 $spacing-04;
+    color: $text-primary;
+    font-weight: 500;
+    text-transform: uppercase;
+    white-space: nowrap;
   }
 }
 
-.orText {
-  @include type-style("body-compact-01");
-  color: $text-secondary;
-  background: $layer-02;
-  padding: 0 $spacing-02;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+@include breakpoint-down(lg) {
+  .patientSearchContainer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $spacing-05;
+    padding: $spacing-05;
+    flex-wrap: nowrap;
+  }
+
+  .searchSection {
+    flex-direction: column;
+    width: 100%;
+    gap: $spacing-03;
+  }
+
+  .searchButton {
+    width: 100%;
+  }
+
+  .searchTypeDropdown {
+    width: 100%;
+  }
+
+  .orDivider {
+    flex-direction: row;
+    width: 100%;
+    gap: $spacing-03;
+
+    &::before {
+      width: auto;
+      height: 1px;
+      flex: 1; 
+    }
+
+    &::after {
+      width: auto;
+      height: 1px;
+      flex: 1; 
+    }
+  }
 }
