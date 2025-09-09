@@ -28,6 +28,7 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
   const [activeSearchTerm, setActiveSearchTerm] = useState<string>('');
   const [hasPerformedSearch, setHasPerformedSearch] = useState<boolean>(false);
   const [phoneSearchTerm, setPhoneSearchTerm] = useState<string>('');
+  const [activePhoneSearchTerm, setActivePhoneSearchTerm] = useState<string>('');
   const [hasPerformedPhoneSearch, setHasPerformedPhoneSearch] =
     useState<boolean>(false);
   const { searchResults, loading, error } = usePatientSearch(activeSearchTerm);
@@ -55,7 +56,7 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
     searchResults: phoneResults,
     loading: phoneLoading,
     error: phoneError,
-  } = usePhoneNumberSearch(activeSearchTerm, selectedSearchType);
+  } = usePhoneNumberSearch(activePhoneSearchTerm, selectedSearchType);
 
   useEffect(() => {
     onLoading(loading);
@@ -112,7 +113,7 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
     if (!phoneSearchTerm.trim()) {
       return;
     }
-    setActiveSearchTerm(phoneSearchTerm);
+    setActivePhoneSearchTerm(phoneSearchTerm);
     setSearchTerm('');
     setHasPerformedPhoneSearch(true);
   }, [phoneSearchTerm]);
