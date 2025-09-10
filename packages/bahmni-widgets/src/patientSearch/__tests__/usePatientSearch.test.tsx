@@ -189,7 +189,6 @@ describe('usePatientSearch hook', () => {
       expect(mockedGetFormattedError).toHaveBeenCalledWith(nonErrorObject);
       expect(result.current.error).toBe(formattedError.message);
       expect(result.current.searchResults).toEqual([]);
-
       expect(result.current.loading).toBe(false);
     });
   });
@@ -223,7 +222,6 @@ describe('usePatientSearch hook', () => {
     await waitFor(() => {
       expect(result.current.error).toBeNull();
       expect(result.current.searchResults).toEqual(mockSearchResults);
-
     });
   });
 
