@@ -232,7 +232,7 @@
   "REGISTRATION_PATIENT_SEARCH_BREADCRUMB_HOME": "Home",
   "REGISTRATION_PATIENT_SEARCH_BREADCRUMB_REGISTRATION": "Registration",
   "REGISTRATION_PATIENT_SEARCH_BUTTON_TITLE": "Search",
-  "REGISTRATION_PATIENT_SEARCH_EMPTY_MESSAGE": "Could not find patient with identifier/name {{searchTerm}}",
+  "REGISTRATION_PATIENT_SEARCH_EMPTY_MESSAGE": "Could not find patient with identifier/name '{{searchTerm}}'. Please check the patient ID or name and try again, or create a new patient record.",
   "REGISTRATION_PATIENT_SEARCH_ERROR_MESSAGE": "An unexpected error occurred during search. Please try again later.",
   "REGISTRATION_PATIENT_SEARCH_HEADER_AGE": "Age",
   "REGISTRATION_PATIENT_SEARCH_HEADER_ALTERNATE_PHONE_NUMBER": "Alternate Phone Number",
