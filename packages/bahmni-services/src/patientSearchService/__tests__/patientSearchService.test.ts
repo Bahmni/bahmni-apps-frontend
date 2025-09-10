@@ -17,6 +17,7 @@ import {
 import {
   searchPatients,
   getPatientSearchResults,
+  searchPatientByCustomAttribute,
 } from '../patientSearchService';
 import {
   sortPatientsByIdentifierAscending,
@@ -371,6 +372,174 @@ describe('PatientSearchService', () => {
 
       expect(sorted).toHaveLength(1);
       expect(sorted[0]).toEqual(singlePatient[0]);
+    });
+  });
+
+  describe('searchPatientByCustomAttribute', () => {
+    const mockAttributeType = 'customAttribute';
+    const mockPhoneAttributeType = PATIENT_SEARCH_CONFIG.PHONE_NUMBER;
+
+    it('should search patients by custom attribute successfully', async () => {
+      (get as jest.Mock).mockResolvedValueOnce(mockPatientSearchResponse);
+
+      const result = await searchPatientByCustomAttribute(
+        mockSearchTerm,
+        mockAttributeType,
+        mockTranslationFunction,
+      );
+
+      expect(getUuidFromUserLocationCookie).toHaveBeenCalled();
+      expect(get).toHaveBeenCalledWith(
+        expect.stringContaining('/openmrs/ws/rest/v1/bahmni/search/patient'),
+      );
+      expect(result).toHaveLength(
+        mockPatientSearchResponse.pageOfResults.length,
+      );
+      expect(result[0]).toHaveProperty('id');
+      expect(result[0]).toHaveProperty('patientId');
+      expect(result[0]).toHaveProperty('fullName');
+    });
+
+    it('should throw error when login location UUID is not found', async () => {
+      (getUuidFromUserLocationCookie as jest.Mock).mockReturnValue(null);
+
+      await expect(
+        searchPatientByCustomAttribute(
+          mockSearchTerm,
+          mockAttributeType,
+          mockTranslationFunction,
+        ),
+      ).rejects.toThrow('Login location UUID not found in cookie');
+    });
+
+    it('should throw error when search term is empty or whitespace', async () => {
+      await expect(
+        searchPatientByCustomAttribute(
+          '',
+          mockAttributeType,
+          mockTranslationFunction,
+        ),
+      ).rejects.toThrow('Search term cannot be empty');
+
+      await expect(
+        searchPatientByCustomAttribute(
+          '   ',
+          mockAttributeType,
+          mockTranslationFunction,
+        ),
+      ).rejects.toThrow('Search term cannot be empty');
+    });
+
+    it('should trim search term before processing', async () => {
+      (get as jest.Mock).mockResolvedValueOnce(mockPatientSearchResponse);
+      const searchTermWithSpaces = '  John Doe  ';
+
+      await searchPatientByCustomAttribute(
+        searchTermWithSpaces,
+        mockAttributeType,
+        mockTranslationFunction,
+      );
+
+      expect(get).toHaveBeenCalledWith(
+        expect.stringContaining('customAttribute=John+Doe'),
+      );
+    });
+
+    it('should include correct URL parameters for custom attribute search', async () => {
+      (get as jest.Mock).mockResolvedValueOnce(mockPatientSearchResponse);
+
+      await searchPatientByCustomAttribute(
+        mockSearchTerm,
+        mockAttributeType,
+        mockTranslationFunction,
+      );
+
+      const expectedParams = new URLSearchParams({
+        customAttribute: mockSearchTerm,
+        loginLocationUuid: mockLoginLocationUuid,
+        patientAttributes: mockAttributeType,
+        patientSearchResultsConfig: mockAttributeType,
+        startIndex: '0',
+      });
+
+      expect(get).toHaveBeenCalledWith(
+        `/openmrs/ws/rest/v1/bahmni/search/patient?${expectedParams.toString()}`,
+      );
+    });
+
+    it('should append alternate phone number parameters when attribute type is phone number', async () => {
+      (get as jest.Mock).mockResolvedValueOnce(mockPatientSearchResponse);
+
+      await searchPatientByCustomAttribute(
+        mockSearchTerm,
+        mockPhoneAttributeType,
+        mockTranslationFunction,
+      );
+
+      const expectedParams = new URLSearchParams({
+        customAttribute: mockSearchTerm,
+        loginLocationUuid: mockLoginLocationUuid,
+        patientAttributes: mockPhoneAttributeType,
+        patientSearchResultsConfig: mockPhoneAttributeType,
+        startIndex: '0',
+      });
+      expectedParams.append(
+        'patientAttributes',
+        PATIENT_SEARCH_CONFIG.ALTERNATE_PHONE_NUMBER,
+      );
+      expectedParams.append(
+        'patientSearchResultsConfig',
+        PATIENT_SEARCH_CONFIG.ALTERNATE_PHONE_NUMBER,
+      );
+
+      expect(get).toHaveBeenCalledWith(
+        `/openmrs/ws/rest/v1/bahmni/search/patient?${expectedParams.toString()}`,
+      );
+    });
+
+    it('should return sorted and formatted patient search results', async () => {
+      (get as jest.Mock).mockResolvedValueOnce(
+        mockPatientSearchResponseForIdentifierSorting,
+      );
+
+      const result = await searchPatientByCustomAttribute(
+        mockSearchTerm,
+        mockAttributeType,
+        mockTranslationFunction,
+      );
+
+      expect(result).toHaveLength(6);
+      // Verify sorting is applied
+      expect(result[0].patientId).toBe('ABC200');
+      expect(result[1].patientId).toBe('ABC20000');
+      expect(result[2].patientId).toBe('ABC200000');
+      expect(result[3].patientId).toBe('ABC2000001');
+      expect(result[4].patientId).toBe('DEF456');
+      expect(result[5].patientId).toBe('XYZ123ABC200');
+    });
+
+    it('should handle empty search results', async () => {
+      (get as jest.Mock).mockResolvedValueOnce(mockEmptyPatientSearchResponse);
+
+      const result = await searchPatientByCustomAttribute(
+        mockSearchTerm,
+        mockAttributeType,
+        mockTranslationFunction,
+      );
+
+      expect(result).toEqual([]);
+    });
+
+    it('should handle API errors and propagate them', async () => {
+      (get as jest.Mock).mockRejectedValueOnce(mockError);
+
+      await expect(
+        searchPatientByCustomAttribute(
+          mockSearchTerm,
+          mockAttributeType,
+          mockTranslationFunction,
+        ),
+      ).rejects.toThrow(mockError);
     });
   });
 });
