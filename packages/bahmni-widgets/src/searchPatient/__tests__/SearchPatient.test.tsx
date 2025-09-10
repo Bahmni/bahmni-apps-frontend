@@ -155,7 +155,9 @@ describe('SearchPatient', () => {
 
     expect(searchPatientByNameOrId).toHaveBeenCalledTimes(1);
     expect(mockHandleSearchPatientUpdate).toHaveBeenCalled();
-    expect(searchPatientByNameOrId).toHaveBeenCalledWith('new value');
+    expect(searchPatientByNameOrId).toHaveBeenCalledWith(
+      encodeURI('new value'),
+    );
   });
 
   it('should search for patient when search input has a valid text and hits enter', async () => {
@@ -189,7 +191,9 @@ describe('SearchPatient', () => {
     await waitFor(() => {
       expect(searchPatientByNameOrId).toHaveBeenCalledTimes(1);
       expect(mockHandleSearchPatientUpdate).toHaveBeenCalled();
-      expect(searchPatientByNameOrId).toHaveBeenCalledWith('new value');
+      expect(searchPatientByNameOrId).toHaveBeenCalledWith(
+        encodeURI('new value'),
+      );
     });
   });
 
@@ -223,7 +227,9 @@ describe('SearchPatient', () => {
     });
 
     expect(searchPatientByNameOrId).toHaveBeenCalledTimes(1);
-    expect(searchPatientByNameOrId).toHaveBeenCalledWith('new value');
+    expect(searchPatientByNameOrId).toHaveBeenCalledWith(
+      encodeURI('new value'),
+    );
     await waitFor(() => {
       expect(mockHandleSearchPatientUpdate).toHaveBeenCalledWith(
         undefined,

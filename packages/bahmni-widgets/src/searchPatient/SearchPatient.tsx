@@ -27,8 +27,9 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
   const [searchInput, setSearchInput] = useState('');
   const { data, isLoading, isError } = useQuery({
     queryKey: ['patientSearch', searchTerm],
-    queryFn: () => searchPatientByNameOrId(searchTerm),
+    queryFn: () => searchPatientByNameOrId(encodeURI(searchTerm)),
     enabled: !!searchTerm,
+    staleTime: 0,
   });
 
   const handleSearchTermUpdate = (searchInput: string) => {
@@ -37,7 +38,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
 
   const handlePatientSearch = () => {
     if (!searchInput) return;
-    setSearchTerm(searchInput);
+    setSearchTerm(searchInput.trim());
   };
 
   const handleOnClear = () => {
@@ -81,7 +82,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
           id="search-patient-search-button"
           testId="search-patient-search-button"
           onClick={() => handlePatientSearch()}
-          disabled={isLoading}
+          disabled={isLoading || searchInput.trim().length === 0}
           className={styles.searchButton}
         >
           {buttonTitle}
