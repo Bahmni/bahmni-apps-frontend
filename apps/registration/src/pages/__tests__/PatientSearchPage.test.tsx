@@ -131,6 +131,7 @@ describe('PatientSearchPage', () => {
     expect(dispatchAuditEvent).toHaveBeenCalledWith({
       eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_REGISTRATION_PATIENT_SEARCH
         .eventType as AuditEventType,
+      module: AUDIT_LOG_EVENT_DETAILS.VIEWED_REGISTRATION_PATIENT_SEARCH.module,
     });
   });
 
