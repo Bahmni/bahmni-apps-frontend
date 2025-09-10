@@ -41,6 +41,15 @@ export const extractCustomAttribute = (
   }
 };
 
+export const formatGender = (gender: string): string => {
+  const genderMap: { [key: string]: string } = {
+    'M': 'Male',
+    'F': 'Female',
+    'O': 'Other'
+  };
+  return genderMap[gender] ?? gender;
+};
+
 export const formatPatientSearchResult = (
   patient: PatientSearchResult,
   t: (key: string) => string,
@@ -54,7 +63,7 @@ export const formatPatientSearchResult = (
       patient,
       'alternatePhoneNumber',
     ),
-    gender: patient.gender,
+    gender: formatGender(patient.gender),
     age: patient.age,
     registrationDate: formatRegistrationDate(patient.dateCreated, t),
     uuid: patient.uuid,
