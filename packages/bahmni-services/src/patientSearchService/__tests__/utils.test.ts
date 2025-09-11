@@ -9,7 +9,6 @@ import {
   isValidSearchTerm,
   sortPatientsByIdentifierAscending,
   extractCustomAttribute,
-  formatGender,
 } from '../utils';
 
 jest.mock('../../utils');
@@ -225,7 +224,7 @@ describe('PatientSearchService Utils', () => {
         fullName: 'John Doe',
         phoneNumber: null,
         alternatePhoneNumber: null,
-        gender: 'Male',
+        gender: 'M',
         age: '34',
         registrationDate: '01/01/2020',
         uuid: 'uuid-1',
@@ -236,7 +235,7 @@ describe('PatientSearchService Utils', () => {
         fullName: 'Jane Smith',
         phoneNumber: '9876543210',
         alternatePhoneNumber: '1234567890',
-        gender: 'Female',
+        gender: 'F',
         age: '33',
         registrationDate: '01/01/2020',
         uuid: 'uuid-2',
@@ -465,25 +464,6 @@ describe('PatientSearchService Utils', () => {
       expect(result[1].identifier).toBe('A200');
       expect(result[2].identifier).toBe('B50');
       expect(result[3].identifier).toBe('Z100');
-    });
-  });
-
-  describe('formatGender', () => {
-    it('should format M to Male', () => {
-      expect(formatGender('M')).toBe('Male');
-    });
-
-    it('should format F to Female', () => {
-      expect(formatGender('F')).toBe('Female');
-    });
-
-    it('should format O to Other', () => {
-      expect(formatGender('O')).toBe('Other');
-    });
-
-    it('should handle null and undefined gracefully', () => {
-      expect(formatGender(null as any)).toBeNull();
-      expect(formatGender(undefined as any)).toBeUndefined();
     });
   });
 
