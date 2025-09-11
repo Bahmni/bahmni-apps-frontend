@@ -7,7 +7,6 @@ import {
 } from '@bahmni-frontend/bahmni-design-system';
 import {
   BAHMNI_HOME_PATH,
-  PatientSearchResult,
   PatientSearchResultBundle,
   useTranslation,
   AUDIT_LOG_EVENT_DETAILS,
@@ -20,13 +19,7 @@ import {
 } from '@bahmni-frontend/bahmni-widgets';
 import { useEffect, useState } from 'react';
 import styles from './styles/PatientSearchPage.module.scss';
-
-type PatientSearchViewModel<T> = T & {
-  id: string;
-  name: string;
-  phoneNumber: string;
-  alternatePhoneNumber: string;
-};
+import { formatPatientSearchResult } from './utils';
 
 /**
  * PatientSearchPage
@@ -84,24 +77,6 @@ const PatientSearchPage: React.FC = () => {
     setIsLoading(isLoading);
     setIsError(isError);
   };
-
-  const patientSearchResult:
-    | PatientSearchViewModel<PatientSearchResult>[]
-    | undefined = patientSearchData
-    ? patientSearchData.pageOfResults!.map((patient) => ({
-        ...patient,
-        id: patient.identifier,
-        name: [patient.givenName, patient.middleName, patient.familyName].join(
-          ' ',
-        ),
-        phoneNumber: patient.customAttribute
-          ? JSON.parse(patient.customAttribute)['phoneNumber']
-          : '',
-        alternatePhoneNumber: patient.customAttribute
-          ? JSON.parse(patient.customAttribute)['alternatePhoneNumber']
-          : '',
-      }))
-    : [];
 
   const headers = [
     { key: 'identifier', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_ID') },
@@ -174,7 +149,7 @@ const PatientSearchPage: React.FC = () => {
                 headers={headers}
                 ariaLabel="patient-search-sortable-data-table"
                 loading={isLoading}
-                rows={patientSearchResult}
+                rows={formatPatientSearchResult(patientSearchData)}
                 emptyStateMessage={t(
                   'REGISTRATION_PATIENT_SEARCH_EMPTY_MESSAGE',
                   {
