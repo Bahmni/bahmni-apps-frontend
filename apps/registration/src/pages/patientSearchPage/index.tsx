@@ -18,7 +18,7 @@ import {
   useNotification,
 } from '@bahmni-frontend/bahmni-widgets';
 import { useEffect, useState } from 'react';
-import styles from './styles/PatientSearchPage.module.scss';
+import styles from './styles/index.module.scss';
 import { formatPatientSearchResult } from './utils';
 
 /**
