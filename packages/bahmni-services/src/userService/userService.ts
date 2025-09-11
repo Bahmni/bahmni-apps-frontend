@@ -34,14 +34,17 @@ export async function getCurrentUser(): Promise<User | null> {
  * Fetches user's log in location details from the cache.
  * @returns The user's log in location if valid
  * @returns null if user location cookie not found or invalid
+ * @throws Error when the user login location is null / invalid
  */
-export const getUserLoginLocation = (): UserLocation | null => {
+export const getUserLoginLocation = (): UserLocation => {
   const encodedUserLocation =
     getCookieByName(BAHMNI_USER_LOCATION_COOKIE) ?? null;
-  if (!encodedUserLocation) return null;
-  const userLocation = decodeURIComponent(encodedUserLocation).replace(
-    /^"(.*)"$/,
-    '$1',
+  if (!encodedUserLocation)
+    throw new Error(i18next.t('ERROR_FETCHING_USER_LOCATION_DETAILS'));
+  const userLocation: UserLocation = JSON.parse(
+    decodeURIComponent(encodedUserLocation).replace(/^"(.*)"$/, '$1'),
   );
-  return JSON.parse(userLocation);
+  if (!userLocation.name || !userLocation.uuid)
+    throw new Error(i18next.t('ERROR_FETCHING_USER_LOCATION_DETAILS'));
+  return userLocation;
 };

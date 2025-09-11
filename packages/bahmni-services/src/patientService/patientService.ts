@@ -154,16 +154,11 @@ export const getFormattedPatientById = async (
  * Search patient by Name / Identifier
  * @param searchTerm - The Name / Identifier of the patient
  * @returns A formatted patient search bundle object
- * @throws Error when the user login location is null
  */
 export const searchPatientByNameOrId = async (
   searchTerm: string,
 ): Promise<PatientSearchResultBundle> => {
   const loginLocationUuid = getUserLoginLocation();
-  if (!loginLocationUuid?.uuid)
-    throw new Error(
-      'Login location is missing or invalid. Please reauthenticate.',
-    );
   const searchResultsBundle = await get<PatientSearchResultBundle>(
     PATIENT_LUCENE_SEARCH_URL(searchTerm, loginLocationUuid.uuid),
   );

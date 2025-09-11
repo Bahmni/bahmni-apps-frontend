@@ -95,15 +95,6 @@ describe('Patient Service', () => {
       );
       expect(result).toEqual(mockPatientSearchResultBundle);
     });
-
-    it('should throw errors when login location returns null', async () => {
-      const searchTerm = 'ABC200003';
-      const mockLocationDetails = null;
-      mockGetUserLoginLocation.mockReturnValue(mockLocationDetails);
-      await expect(searchPatientByNameOrId(searchTerm)).rejects.toThrow(
-        'Login location is missing or invalid. Please reauthenticate.',
-      );
-    });
   });
 
   describe('formatPatientName', () => {
