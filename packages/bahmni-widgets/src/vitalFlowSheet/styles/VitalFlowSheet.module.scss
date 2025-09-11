@@ -3,26 +3,6 @@
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
 
-.vitalFlowSheetContainer {
-  background-color: $background;
-  border: 1px solid $border-subtle;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.vitalFlowSheetHeader {
-  background-color: $layer-01;
-  padding: $spacing-04 $spacing-05;
-  border-bottom: 1px solid $border-subtle;
-}
-
-.title {
-  @include type-style("heading-compact-02");
-  color: $text-primary;
-  margin: 0;
-  font-weight: 600;
-}
-
 .vitalFlowSheetTable {
   // Multi-line headers support
   th {
@@ -111,16 +91,6 @@
   color: $text-disabled;
   text-align: center;
   font-style: italic;
-}
-
-.errorMessage {
-  @include type-style("body-compact-01");
-  color: $support-error;
-  padding: $spacing-05;
-  text-align: center;
-  border: 1px solid $support-error;
-  border-radius: 4px;
-  margin: $spacing-04;
 }
 
 // Responsive design
