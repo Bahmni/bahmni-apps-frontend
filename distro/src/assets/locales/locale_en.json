@@ -120,6 +120,7 @@
   "ERROR_FETCHING_PRACTITIONERS_DETAILS": "Error fetching practitioners details",
   "ERROR_FETCHING_RADIOLOGY_INVESTIGATIONS": "Error fetching radiology investigations",
   "ERROR_FETCHING_USER_DETAILS": "Error fetching user details",
+  "ERROR_FETCHING_USER_LOCATION_DETAILS": "Login location is missing or invalid. Please reauthenticate.",
   "ERROR_INVALID_PATIENT_UUID": "Invalid patient UUID",
   "ERROR_LOADING_DASHBOARD": "Error loading dashboard",
   "ERROR_NETWORK_MESSAGE": "Unable to connect to the server. Please check your internet connection.",

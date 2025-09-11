@@ -2,9 +2,11 @@ import { Search, Button } from '@bahmni-frontend/bahmni-design-system';
 import {
   searchPatientByNameOrId,
   PatientSearchResultBundle,
+  useTranslation,
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
+import { useNotification } from '../notification';
 import styles from './styles/SearchPatient.module.scss';
 
 interface SearchPatientProps {
@@ -25,7 +27,9 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchInput, setSearchInput] = useState('');
-  const { data, isLoading, isError } = useQuery({
+  const { addNotification } = useNotification();
+  const { t } = useTranslation();
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ['patientSearch', searchTerm],
     queryFn: () => searchPatientByNameOrId(encodeURI(searchTerm)),
     enabled: !!searchTerm,
@@ -47,7 +51,15 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
   };
 
   useEffect(() => {
-    if (isError && searchTerm) onSearch(data, searchTerm, isLoading, isError);
+    if (isError && searchTerm) {
+      onSearch(data, searchTerm, isLoading, isError);
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: error.message,
+        type: 'error',
+        timeout: 5000,
+      });
+    }
     if (searchTerm) onSearch(data, searchTerm, isLoading, isError);
   }, [searchTerm, isLoading, isError]);
 

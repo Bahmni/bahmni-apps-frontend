@@ -13,10 +13,7 @@ import {
   AuditEventType,
   dispatchAuditEvent,
 } from '@bahmni-frontend/bahmni-services';
-import {
-  SearchPatient,
-  useNotification,
-} from '@bahmni-frontend/bahmni-widgets';
+import { SearchPatient } from '@bahmni-frontend/bahmni-widgets';
 import { useEffect, useState } from 'react';
 import styles from './styles/index.module.scss';
 import { formatPatientSearchResult } from './utils';
@@ -34,7 +31,6 @@ const PatientSearchPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
   const { t } = useTranslation();
-  const { addNotification } = useNotification();
 
   const breadcrumbItems = [
     {
@@ -56,15 +52,6 @@ const PatientSearchPage: React.FC = () => {
       module: AUDIT_LOG_EVENT_DETAILS.VIEWED_REGISTRATION_PATIENT_SEARCH.module,
     });
   }, []);
-
-  useEffect(() => {
-    if (isError)
-      addNotification({
-        title: t('ERROR_DEFAULT_TITLE'),
-        message: t('REGISTRATION_PATIENT_SEARCH_ERROR_MESSAGE'),
-        type: 'error',
-      });
-  }, [isError]);
 
   const handleOnSearch = (
     data: PatientSearchResultBundle | undefined,

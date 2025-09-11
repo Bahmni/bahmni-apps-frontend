@@ -4,6 +4,7 @@ import {
   AuditEventType,
   dispatchAuditEvent,
 } from '@bahmni-frontend/bahmni-services';
+import { NotificationProvider } from '@bahmni-frontend/bahmni-widgets';
 import {
   QueryClient,
   QueryClientProvider,
@@ -81,14 +82,6 @@ jest.mock('@tanstack/react-query', () => ({
   useQuery: jest.fn(),
 }));
 
-const mockAddNotification = jest.fn();
-jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-widgets'),
-  useNotification: jest.fn(() => ({
-    addNotification: mockAddNotification,
-  })),
-}));
-
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
   ...jest.requireActual('@bahmni-frontend/bahmni-services'),
   dispatchAuditEvent: jest.fn(),
@@ -124,9 +117,11 @@ describe('PatientSearchPage', () => {
 
   it("should log the user's visit to page", () => {
     render(
-      <QueryClientProvider client={queryClient}>
-        <PatientSearchPage />
-      </QueryClientProvider>,
+      <NotificationProvider>
+        <QueryClientProvider client={queryClient}>
+          <PatientSearchPage />
+        </QueryClientProvider>
+      </NotificationProvider>,
     );
     expect(dispatchAuditEvent).toHaveBeenCalledWith({
       eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_REGISTRATION_PATIENT_SEARCH
@@ -137,9 +132,11 @@ describe('PatientSearchPage', () => {
 
   it('should render the Header with Breadcrumbs component', () => {
     render(
-      <QueryClientProvider client={queryClient}>
-        <PatientSearchPage />
-      </QueryClientProvider>,
+      <NotificationProvider>
+        <QueryClientProvider client={queryClient}>
+          <PatientSearchPage />
+        </QueryClientProvider>
+      </NotificationProvider>,
     );
     expect(
       screen.getByRole('banner', { name: 'registration-search-page-header' }),
@@ -156,9 +153,11 @@ describe('PatientSearchPage', () => {
 
   it('should render only search patient widget on mount', async () => {
     render(
-      <QueryClientProvider client={queryClient}>
-        <PatientSearchPage />
-      </QueryClientProvider>,
+      <NotificationProvider>
+        <QueryClientProvider client={queryClient}>
+          <PatientSearchPage />
+        </QueryClientProvider>
+      </NotificationProvider>,
     );
 
     expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
@@ -179,9 +178,11 @@ describe('PatientSearchPage', () => {
     });
 
     render(
-      <QueryClientProvider client={queryClient}>
-        <PatientSearchPage />
-      </QueryClientProvider>,
+      <NotificationProvider>
+        <QueryClientProvider client={queryClient}>
+          <PatientSearchPage />
+        </QueryClientProvider>
+      </NotificationProvider>,
     );
 
     expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
@@ -204,17 +205,20 @@ describe('PatientSearchPage', () => {
     });
   });
 
-  it('should show patient error notification and error details when search is fails', async () => {
+  it('should show patient error details when search fails', async () => {
     (useQuery as jest.Mock).mockReturnValue({
       data: undefined,
       isError: true,
       isLoading: false,
+      error: new Error('Search Failed'),
     });
 
     render(
-      <QueryClientProvider client={queryClient}>
-        <PatientSearchPage />
-      </QueryClientProvider>,
+      <NotificationProvider>
+        <QueryClientProvider client={queryClient}>
+          <PatientSearchPage />
+        </QueryClientProvider>
+      </NotificationProvider>,
     );
 
     expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
@@ -229,13 +233,12 @@ describe('PatientSearchPage', () => {
     fireEvent.click(screen.getByTestId('search-patient-search-button'));
 
     await waitFor(() => {
-      expect(screen.getByText('Error')).toBeInTheDocument();
+      expect(screen.getAllByText('Error')).toHaveLength(2);
       expect(
         screen.getByText(
           'An unexpected error occurred during search. Please try again later.',
         ),
       ).toBeInTheDocument();
-      expect(mockAddNotification).toHaveBeenCalled();
     });
   });
 
@@ -249,9 +252,11 @@ describe('PatientSearchPage', () => {
     });
 
     render(
-      <QueryClientProvider client={queryClient}>
-        <PatientSearchPage />
-      </QueryClientProvider>,
+      <NotificationProvider>
+        <QueryClientProvider client={queryClient}>
+          <PatientSearchPage />
+        </QueryClientProvider>
+      </NotificationProvider>,
     );
 
     const searchInput = screen.getByPlaceholderText(
@@ -269,9 +274,11 @@ describe('PatientSearchPage', () => {
 
   it('should have no accessibility violations', async () => {
     const { container } = render(
-      <QueryClientProvider client={queryClient}>
-        <PatientSearchPage />
-      </QueryClientProvider>,
+      <NotificationProvider>
+        <QueryClientProvider client={queryClient}>
+          <PatientSearchPage />
+        </QueryClientProvider>
+      </NotificationProvider>,
     );
     const results = await axe(container);
     expect(results).toHaveNoViolations();

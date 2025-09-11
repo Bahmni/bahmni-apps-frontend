@@ -1,21 +1,28 @@
 import {
   PatientSearchResult,
   searchPatientByNameOrId,
+  useTranslation,
 } from '@bahmni-frontend/bahmni-services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import { useNotification } from '../../notification';
 import SearchPatient from '../SearchPatient';
 
 expect.extend(toHaveNoViolations);
 
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
   searchPatientByNameOrId: jest.fn(),
+  useTranslation: jest.fn(),
 }));
-
+jest.mock('../../notification');
 const mockOnSearch = jest.fn();
 
+const mockAddNotification = jest.fn();
+const mockUseTranslation = useTranslation as jest.MockedFunction<
+  typeof useTranslation
+>;
 const mockSearchPatientData: PatientSearchResult[] = [
   {
     uuid: '02f47490-d657-48ee-98e7-4c9133ea168b',
@@ -95,6 +102,17 @@ describe('SearchPatient', () => {
           retry: false,
         },
       },
+    });
+    (useNotification as jest.Mock).mockReturnValue({
+      addNotification: mockAddNotification,
+    });
+    mockUseTranslation.mockReturnValue({
+      t: ((key: string) => {
+        const translations: Record<string, string> = {
+          ERROR_DEFAULT_TITLE: 'Error',
+        };
+        return translations[key] || key;
+      }) as any,
     });
   });
 
@@ -346,6 +364,12 @@ describe('SearchPatient', () => {
         false,
         true,
       );
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        type: 'error',
+        title: 'Error',
+        message: 'Login location is missing or invalid. Please reauthenticate.',
+        timeout: 5000,
+      });
     });
   });
 
@@ -392,6 +416,12 @@ describe('SearchPatient', () => {
         false,
         true,
       );
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        type: 'error',
+        title: 'Error',
+        message: 'Login location is missing or invalid. Please reauthenticate.',
+        timeout: 5000,
+      });
     });
 
     const searchClear = screen.getByRole('button', {
