@@ -15,7 +15,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import React, { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { queryClientConfig } from './config/tanstackQuery';
-import PatientSearchPage from './pages/patientSearchPage/PatientSearchPage';
+import PatientSearchPage from './pages/patientSearchPage';
 
 const queryClient = new QueryClient(queryClientConfig);
 

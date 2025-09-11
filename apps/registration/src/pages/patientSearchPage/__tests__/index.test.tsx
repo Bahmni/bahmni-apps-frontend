@@ -11,8 +11,8 @@ import {
 } from '@tanstack/react-query';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import PatientSearchPage from '..';
 import i18n from '../../../../setupTests.i18n';
-import PatientSearchPage from '../PatientSearchPage';
 
 expect.extend(toHaveNoViolations);
 
