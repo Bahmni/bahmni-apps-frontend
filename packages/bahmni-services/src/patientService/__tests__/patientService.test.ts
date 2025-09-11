@@ -1,6 +1,6 @@
 import { Patient } from 'fhir/r4';
 import { get } from '../../api';
-import { getUserLoginLocation } from '../../locationService';
+import { getUserLoginLocation } from '../../userService';
 import { PATIENT_RESOURCE_URL, PATIENT_LUCENE_SEARCH_URL } from '../constants';
 import {
   getPatientById,
@@ -14,7 +14,7 @@ import {
 // Mock the api module
 jest.mock('../../api');
 const mockedGet = get as jest.MockedFunction<typeof get>;
-jest.mock('../../locationService');
+jest.mock('../../userService');
 const mockGetUserLoginLocation = getUserLoginLocation as jest.MockedFunction<
   typeof getUserLoginLocation
 >;

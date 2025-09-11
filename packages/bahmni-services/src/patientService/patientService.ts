@@ -1,7 +1,7 @@
 import { Patient } from 'fhir/r4';
 import { get } from '../api';
 import { calculateAge } from '../date';
-import { getUserLoginLocation } from '../locationService';
+import { getUserLoginLocation } from '../userService';
 import { PATIENT_LUCENE_SEARCH_URL, PATIENT_RESOURCE_URL } from './constants';
 import { FormattedPatientData, PatientSearchResultBundle } from './models';
 

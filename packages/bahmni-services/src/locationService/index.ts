@@ -1,1 +1,0 @@
-export { getUserLoginLocation } from './locationService';

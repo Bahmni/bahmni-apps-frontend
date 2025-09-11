@@ -2,8 +2,8 @@ import i18next from 'i18next';
 import { get } from '../api';
 import { BAHMNI_USER_COOKIE_NAME } from '../constants/app';
 import { getCookieByName } from '../utils';
-import { USER_RESOURCE_URL } from './constants';
-import { UserResponse, User } from './models';
+import { USER_RESOURCE_URL, BAHMNI_USER_LOCATION_COOKIE } from './constants';
+import { UserResponse, User, UserLocation } from './models';
 
 export async function getCurrentUser(): Promise<User | null> {
   // Get username from cookie
@@ -29,3 +29,19 @@ export async function getCurrentUser(): Promise<User | null> {
     throw new Error(i18next.t('ERROR_FETCHING_USER_DETAILS'));
   }
 }
+
+/**
+ * Fetches user's log in location details from the cache.
+ * @returns The user's log in location if valid
+ * @returns null if user location cookie not found or invalid
+ */
+export const getUserLoginLocation = (): UserLocation | null => {
+  const encodedUserLocation =
+    getCookieByName(BAHMNI_USER_LOCATION_COOKIE) ?? null;
+  if (!encodedUserLocation) return null;
+  const userLocation = decodeURIComponent(encodedUserLocation).replace(
+    /^"(.*)"$/,
+    '$1',
+  );
+  return JSON.parse(userLocation);
+};
