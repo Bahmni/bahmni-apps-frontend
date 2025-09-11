@@ -7,7 +7,8 @@ import {
 } from '@bahmni-frontend/bahmni-design-system';
 import {
   BAHMNI_HOME_PATH,
-  PatientSearch,
+  PatientSearchResult,
+  PatientSearchResultBundle,
   useTranslation,
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
@@ -34,8 +35,8 @@ type PatientSearchViewModel<T> = T & {
  */
 const PatientSearchPage: React.FC = () => {
   const [patientSearchData, setPatientSearchData] = useState<
-    PatientSearch[] | undefined
-  >([]);
+    PatientSearchResultBundle | undefined
+  >();
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
@@ -72,33 +73,38 @@ const PatientSearchPage: React.FC = () => {
       });
   }, [isError]);
 
-  const handleSearchPatientUpdate = (
-    data: PatientSearch[] | undefined,
+  const handleOnSearch = (
+    data: PatientSearchResultBundle | undefined,
     searchTerm: string,
     isLoading: boolean,
     isError: boolean,
   ) => {
-    setPatientSearchData(data ?? []);
+    setPatientSearchData(data ?? undefined);
     setSearchTerm(searchTerm);
     setIsLoading(isLoading);
     setIsError(isError);
   };
 
-  const patientSearchResult: PatientSearchViewModel<PatientSearch>[] =
-    patientSearchData!.map((item, index) => ({
-      ...item,
-      id: index.toString(),
-      name: [item.givenName, item.middleName, item.familyName].join(' '),
-      phoneNumber: item.customAttribute
-        ? JSON.parse(item.customAttribute)['phoneNumber']
-        : '',
-      alternatePhoneNumber: item.customAttribute
-        ? JSON.parse(item.customAttribute)['alternatePhoneNumber']
-        : '',
-    }));
+  const patientSearchResult:
+    | PatientSearchViewModel<PatientSearchResult>[]
+    | undefined = patientSearchData
+    ? patientSearchData.pageOfResults!.map((patient) => ({
+        ...patient,
+        id: patient.identifier,
+        name: [patient.givenName, patient.middleName, patient.familyName].join(
+          ' ',
+        ),
+        phoneNumber: patient.customAttribute
+          ? JSON.parse(patient.customAttribute)['phoneNumber']
+          : '',
+        alternatePhoneNumber: patient.customAttribute
+          ? JSON.parse(patient.customAttribute)['alternatePhoneNumber']
+          : '',
+      }))
+    : [];
 
   const headers = [
-    { key: 'id', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_ID') },
+    { key: 'identifier', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_ID') },
     { key: 'name', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_NAME') },
     { key: 'gender', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_GENDER') },
     { key: 'age', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_AGE') },
@@ -136,26 +142,6 @@ const PatientSearchPage: React.FC = () => {
     }
   };
 
-  const renderCell = (
-    row: PatientSearchViewModel<PatientSearch>,
-    key: string,
-  ) => {
-    switch (key) {
-      case 'id':
-        return row.identifier;
-      case 'name':
-        return row.name;
-      case 'gender':
-        return row.gender;
-      case 'age':
-        return row.age;
-      case 'phoneNumber':
-        return row.phoneNumber;
-      case 'alternatePhoneNumber':
-        return row.alternatePhoneNumber;
-    }
-  };
-
   return (
     <BaseLayout
       header={
@@ -171,15 +157,19 @@ const PatientSearchPage: React.FC = () => {
             searchBarPlaceholder={t(
               'REGISTRATION_PATIENT_SEARCH_INPUT_PLACEHOLDER',
             )}
-            handleSearchPatient={handleSearchPatientUpdate}
+            onSearch={handleOnSearch}
           />
-          {patientSearchData && searchTerm !== '' && (
+          {searchTerm !== '' && (
             <Tile
               id="patient-search-result"
               aria-label="patient-search-result"
               className={styles.patientSearchTable}
             >
-              {renderTitle(isLoading, isError, patientSearchResult.length)}
+              {renderTitle(
+                isLoading,
+                isError,
+                patientSearchData?.totalCount ?? 0,
+              )}
               <SortableDataTable
                 headers={headers}
                 ariaLabel="patient-search-sortable-data-table"
@@ -196,7 +186,6 @@ const PatientSearchPage: React.FC = () => {
                     ? t('REGISTRATION_PATIENT_SEARCH_ERROR_MESSAGE')
                     : undefined
                 }
-                renderCell={renderCell}
               />
             </Tile>
           )}

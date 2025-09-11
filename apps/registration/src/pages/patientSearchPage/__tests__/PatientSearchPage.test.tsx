@@ -1,5 +1,5 @@
 import {
-  PatientSearch,
+  PatientSearchResult,
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
@@ -11,12 +11,12 @@ import {
 } from '@tanstack/react-query';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import i18n from '../../../setupTests.i18n';
+import i18n from '../../../../setupTests.i18n';
 import PatientSearchPage from '../PatientSearchPage';
 
 expect.extend(toHaveNoViolations);
 
-const mockSearchPatientData: PatientSearch[] = [
+const mockSearchPatientData: PatientSearchResult[] = [
   {
     uuid: '02f47490-d657-48ee-98e7-4c9133ea168b',
     birthDate: new Date(-17366400000),
@@ -147,8 +147,8 @@ describe('PatientSearchPage', () => {
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Registration')).toBeInTheDocument();
     expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-seachbar')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-seachbar')).toHaveAttribute(
+    expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
+    expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
       'placeholder',
       'Search by name or patient ID',
     );
@@ -161,7 +161,7 @@ describe('PatientSearchPage', () => {
       </QueryClientProvider>,
     );
 
-    expect(screen.getByTestId('search-patient-seachbar')).toHaveAttribute(
+    expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
       'placeholder',
       'Search by name or patient ID',
     );
@@ -170,7 +170,10 @@ describe('PatientSearchPage', () => {
 
   it('should show patient details when search is successfull', async () => {
     (useQuery as jest.Mock).mockReturnValue({
-      data: mockSearchPatientData,
+      data: {
+        totalCount: mockSearchPatientData.length,
+        pageOfResults: mockSearchPatientData,
+      },
       error: null,
       isLoading: false,
     });
@@ -181,7 +184,7 @@ describe('PatientSearchPage', () => {
       </QueryClientProvider>,
     );
 
-    expect(screen.getByTestId('search-patient-seachbar')).toHaveAttribute(
+    expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
       'placeholder',
       'Search by name or patient ID',
     );
@@ -214,7 +217,7 @@ describe('PatientSearchPage', () => {
       </QueryClientProvider>,
     );
 
-    expect(screen.getByTestId('search-patient-seachbar')).toHaveAttribute(
+    expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
       'placeholder',
       'Search by name or patient ID',
     );
