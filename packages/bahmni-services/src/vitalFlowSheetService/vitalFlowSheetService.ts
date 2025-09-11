@@ -1,30 +1,6 @@
 import { get } from '../api';
 import { VITAL_FLOW_SHEET_URL } from './constants';
-
-export interface VitalFlowSheetConceptDetail {
-  name: string;
-  fullName: string;
-  units: string;
-  hiNormal: number;
-  lowNormal: number;
-  attributes: Record<string, unknown>;
-}
-
-export interface VitalFlowSheetObservation {
-  value: string;
-  abnormal: boolean;
-}
-
-export interface VitalFlowSheetData {
-  tabularData: Record<string, Record<string, VitalFlowSheetObservation>>;
-  conceptDetails: VitalFlowSheetConceptDetail[];
-}
-
-export interface VitalFlowSheetConfig {
-  latestCount?: number;
-  numberOfVisits?: number;
-  obsConcepts: string[];
-}
+import { VitalFlowSheetData } from './model';
 
 /**
  * Fetches vital flow sheet data for a patient using direct parameters
@@ -34,12 +10,11 @@ export interface VitalFlowSheetConfig {
  * @param groupBy - How to group the data (default: 'obstime')
  * @returns Promise<VitalFlowSheetData>
  */
-
 export const getVitalFlowSheetData = async (
   patientUuid: string,
   latestCount: number,
   obsConcepts: string[],
-  groupBy: string = 'obstime',
+  groupBy: string,
 ): Promise<VitalFlowSheetData> => {
   const params = new URLSearchParams({
     groupBy,
