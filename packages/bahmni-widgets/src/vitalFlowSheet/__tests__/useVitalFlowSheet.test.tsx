@@ -8,7 +8,13 @@ import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { useNotification } from '../../notification';
 import { useVitalFlowSheet } from '../useVitalFlowSheet';
 
-jest.mock('@bahmni-frontend/bahmni-services');
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  getVitalFlowSheetData: jest.fn(),
+  getFormattedError: jest.fn(),
+  useTranslation: jest.fn(() => ({
+    t: jest.fn((key: string) => key),
+  })),
+}));
 jest.mock('../../hooks/usePatientUUID');
 jest.mock('../../notification');
 

@@ -68,26 +68,6 @@ describe('VitalFlowSheet Empty State', () => {
     jest.clearAllMocks();
   });
 
-  it('should show empty state when data is null', () => {
-    // Arrange
-    mockUseVitalFlowSheet.mockReturnValue({
-      data: null,
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
-
-    // Act
-    render(<VitalFlowSheet {...defaultProps} />);
-
-    // Assert
-    expect(screen.getByTestId('empty-state')).toBeInTheDocument();
-    expect(
-      screen.getByText('No vital signs data available'),
-    ).toBeInTheDocument();
-    expect(screen.queryByTestId('data-table')).not.toBeInTheDocument();
-  });
-
   it('should show empty state when tabularData has empty observation data', () => {
     // Arrange
     mockUseVitalFlowSheet.mockReturnValue({

@@ -265,11 +265,13 @@ describe('VitalFlowSheet Integration Tests', () => {
     expect(screen.queryByTestId('sortable-data-table')).not.toBeInTheDocument();
   });
 
-  it('handles missing patient UUID gracefully', async () => {
+  it('shows empty state when patient UUID is missing', async () => {
+    // Mock empty patient UUID - hook will not fetch data
     mockUsePatientUUID.mockReturnValue('');
 
     render(<VitalFlowSheet {...defaultProps} />);
 
+    // Should show empty state since no data will be fetched
     await waitFor(() => {
       expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
     });
@@ -446,5 +448,22 @@ describe('VitalFlowSheet Integration Tests', () => {
     expect(
       screen.queryByTestId('sortable-table-empty'),
     ).not.toBeInTheDocument();
+  });
+
+  it('shows empty state when patient UUID is null', async () => {
+    // Mock null patient UUID - hook will not fetch data
+    mockUsePatientUUID.mockReturnValue(null);
+
+    render(<VitalFlowSheet {...defaultProps} />);
+
+    // Should show empty state since no data will be fetched
+    await waitFor(() => {
+      expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
+    });
+
+    expect(
+      screen.getByText('No vital signs data available'),
+    ).toBeInTheDocument();
+    expect(mockGetVitalFlowSheetData).not.toHaveBeenCalled();
   });
 });
