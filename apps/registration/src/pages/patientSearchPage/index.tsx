@@ -40,7 +40,7 @@ const PatientSearchPage: React.FC = () => {
     },
     {
       id: 'current',
-      label: t('REGISTRATION_PATIENT_SEARCH_BREADCRUMB_REGISTRATION'),
+      label: t('REGISTRATION_PATIENT_SEARCH_BREADCRUMB_CURRENT'),
       isCurrentPage: true,
     },
   ];
@@ -125,7 +125,7 @@ const PatientSearchPage: React.FC = () => {
             <Tile
               id="patient-search-result"
               aria-label="patient-search-result"
-              className={styles.patientSearchTable}
+              className={styles.patientSearchResult}
             >
               {renderTitle(
                 isLoading,
@@ -143,6 +143,7 @@ const PatientSearchPage: React.FC = () => {
                     searchTerm: searchTerm,
                   },
                 )}
+                className={styles.patientSearchTableBody}
                 errorStateMessage={
                   isError
                     ? t('REGISTRATION_PATIENT_SEARCH_ERROR_MESSAGE')

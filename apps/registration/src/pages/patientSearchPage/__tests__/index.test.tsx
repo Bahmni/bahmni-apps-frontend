@@ -142,7 +142,7 @@ describe('PatientSearchPage', () => {
       screen.getByRole('banner', { name: 'registration-search-page-header' }),
     ).toBeInTheDocument();
     expect(screen.getByText('Home')).toBeInTheDocument();
-    expect(screen.getByText('Registration')).toBeInTheDocument();
+    expect(screen.getByText('Search Patient')).toBeInTheDocument();
     expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
     expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
     expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
