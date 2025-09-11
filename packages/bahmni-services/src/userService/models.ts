@@ -6,6 +6,11 @@ export interface User {
   uuid: string;
 }
 
+export interface UserLocation {
+  name: string;
+  uuid: string;
+}
+
 /**
  * Interface representing User response from REST API
  */

@@ -93,7 +93,7 @@ describe('Patient Service', () => {
           'b5da9afd-b29a-4cbf-91c9-ccf2aa5f799e',
         ),
       );
-      expect(result).toEqual(mockPatientSearchResultBundle['pageOfResults']);
+      expect(result).toEqual(mockPatientSearchResultBundle);
     });
 
     it('should throw errors when login location returns null', async () => {

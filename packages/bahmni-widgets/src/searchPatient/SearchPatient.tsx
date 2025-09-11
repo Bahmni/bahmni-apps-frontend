@@ -1,7 +1,7 @@
 import { Search, Button } from '@bahmni-frontend/bahmni-design-system';
 import {
   searchPatientByNameOrId,
-  PatientSearch,
+  PatientSearchResultBundle,
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
@@ -10,8 +10,8 @@ import styles from './styles/SearchPatient.module.scss';
 interface SearchPatientProps {
   buttonTitle: string;
   searchBarPlaceholder: string;
-  handleSearchPatient: (
-    data: PatientSearch[] | undefined,
+  onSearch: (
+    data: PatientSearchResultBundle | undefined,
     searchTerm: string,
     isLoading: boolean,
     isError: boolean,
@@ -21,7 +21,7 @@ interface SearchPatientProps {
 const SearchPatient: React.FC<SearchPatientProps> = ({
   buttonTitle,
   searchBarPlaceholder,
-  handleSearchPatient,
+  onSearch,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchInput, setSearchInput] = useState('');
@@ -32,11 +32,11 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
     staleTime: 0,
   });
 
-  const handleSearchTermUpdate = (searchInput: string) => {
+  const handleChange = (searchInput: string) => {
     setSearchInput(searchInput);
   };
 
-  const handlePatientSearch = () => {
+  const handleClick = () => {
     if (!searchInput) return;
     setSearchTerm(searchInput.trim());
   };
@@ -47,9 +47,8 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
   };
 
   useEffect(() => {
-    if (isError && searchTerm)
-      handleSearchPatient(data, searchTerm, isLoading, isError);
-    if (searchTerm) handleSearchPatient(data, searchTerm, isLoading, isError);
+    if (isError && searchTerm) onSearch(data, searchTerm, isLoading, isError);
+    if (searchTerm) onSearch(data, searchTerm, isLoading, isError);
   }, [searchTerm, isLoading, isError]);
 
   return (
@@ -64,16 +63,16 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
         id="search-patient-input"
       >
         <Search
-          id="search-patient-seachbar"
-          testId="search-patient-seachbar"
+          id="search-patient-searchbar"
+          testId="search-patient-searchbar"
           size="lg"
           placeholder={searchBarPlaceholder}
           labelText="Search"
           value={searchInput}
-          onChange={(e) => handleSearchTermUpdate(e.target.value)}
+          onChange={(e) => handleChange(e.target.value)}
           onKeyDown={(e) => {
             if (e.code === 'Enter') {
-              handlePatientSearch();
+              handleClick();
             }
           }}
           onClear={handleOnClear}
@@ -81,7 +80,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
         <Button
           id="search-patient-search-button"
           testId="search-patient-search-button"
-          onClick={() => handlePatientSearch()}
+          onClick={handleClick}
           disabled={isLoading || searchInput.trim().length === 0}
           className={styles.searchButton}
         >

@@ -15,7 +15,7 @@ export interface FormattedPatientData {
   age: Age | null;
 }
 
-export interface PatientSearch {
+export interface PatientSearchResult {
   uuid: string;
   birthDate: Date;
   extraIdentifiers: string | null;
@@ -34,7 +34,7 @@ export interface PatientSearch {
   age: string;
 }
 
-export interface PatientSearchBundle {
+export interface PatientSearchResultBundle {
   totalCount: number;
-  pageOfResults: PatientSearch[];
+  pageOfResults: PatientSearchResult[];
 }

@@ -5,7 +5,8 @@ export {
   getFormattedPatientById,
   searchPatientByNameOrId,
   type FormattedPatientData,
-  type PatientSearch,
+  type PatientSearchResult,
+  type PatientSearchResultBundle,
 } from './patientService';
 export { getFormattedError } from './errorHandling';
 export {

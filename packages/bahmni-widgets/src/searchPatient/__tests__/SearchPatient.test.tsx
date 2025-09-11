@@ -1,5 +1,5 @@
 import {
-  PatientSearch,
+  PatientSearchResult,
   searchPatientByNameOrId,
 } from '@bahmni-frontend/bahmni-services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -14,9 +14,9 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
   searchPatientByNameOrId: jest.fn(),
 }));
 
-const mockHandleSearchPatientUpdate = jest.fn();
+const mockOnSearch = jest.fn();
 
-const mockSearchPatientData: PatientSearch[] = [
+const mockSearchPatientData: PatientSearchResult[] = [
   {
     uuid: '02f47490-d657-48ee-98e7-4c9133ea168b',
     birthDate: new Date(-17366400000),
@@ -108,13 +108,13 @@ describe('SearchPatient', () => {
         <SearchPatient
           buttonTitle={buttonTitle}
           searchBarPlaceholder={searchBarPlaceholder}
-          handleSearchPatient={mockHandleSearchPatientUpdate}
+          onSearch={mockOnSearch}
         />
       </QueryClientProvider>,
     );
     expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-seachbar')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-seachbar')).toHaveAttribute(
+    expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
+    expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
       'placeholder',
       searchBarPlaceholder,
     );
@@ -132,14 +132,14 @@ describe('SearchPatient', () => {
         <SearchPatient
           buttonTitle={buttonTitle}
           searchBarPlaceholder={searchBarPlaceholder}
-          handleSearchPatient={mockHandleSearchPatientUpdate}
+          onSearch={mockOnSearch}
         />
       </QueryClientProvider>,
     );
 
     expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-seachbar')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-seachbar')).toHaveAttribute(
+    expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
+    expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
       'placeholder',
       searchBarPlaceholder,
     );
@@ -154,7 +154,7 @@ describe('SearchPatient', () => {
     });
 
     expect(searchPatientByNameOrId).toHaveBeenCalledTimes(1);
-    expect(mockHandleSearchPatientUpdate).toHaveBeenCalled();
+    expect(mockOnSearch).toHaveBeenCalled();
     expect(searchPatientByNameOrId).toHaveBeenCalledWith(
       encodeURI('new value'),
     );
@@ -166,14 +166,14 @@ describe('SearchPatient', () => {
         <SearchPatient
           buttonTitle={buttonTitle}
           searchBarPlaceholder={searchBarPlaceholder}
-          handleSearchPatient={mockHandleSearchPatientUpdate}
+          onSearch={mockOnSearch}
         />
       </QueryClientProvider>,
     );
 
     expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-seachbar')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-seachbar')).toHaveAttribute(
+    expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
+    expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
       'placeholder',
       searchBarPlaceholder,
     );
@@ -190,7 +190,7 @@ describe('SearchPatient', () => {
 
     await waitFor(() => {
       expect(searchPatientByNameOrId).toHaveBeenCalledTimes(1);
-      expect(mockHandleSearchPatientUpdate).toHaveBeenCalled();
+      expect(mockOnSearch).toHaveBeenCalled();
       expect(searchPatientByNameOrId).toHaveBeenCalledWith(
         encodeURI('new value'),
       );
@@ -203,14 +203,14 @@ describe('SearchPatient', () => {
         <SearchPatient
           buttonTitle={buttonTitle}
           searchBarPlaceholder={searchBarPlaceholder}
-          handleSearchPatient={mockHandleSearchPatientUpdate}
+          onSearch={mockOnSearch}
         />
       </QueryClientProvider>,
     );
 
     expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-seachbar')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-seachbar')).toHaveAttribute(
+    expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
+    expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
       'placeholder',
       searchBarPlaceholder,
     );
@@ -231,14 +231,14 @@ describe('SearchPatient', () => {
       encodeURI('new value'),
     );
     await waitFor(() => {
-      expect(mockHandleSearchPatientUpdate).toHaveBeenCalledWith(
+      expect(mockOnSearch).toHaveBeenCalledWith(
         undefined,
         'new value',
         true,
         false,
       );
-      expect(mockHandleSearchPatientUpdate).toHaveBeenCalledTimes(2);
-      expect(mockHandleSearchPatientUpdate).toHaveBeenCalledWith(
+      expect(mockOnSearch).toHaveBeenCalledTimes(2);
+      expect(mockOnSearch).toHaveBeenCalledWith(
         mockSearchPatientData,
         'new value',
         false,
@@ -253,14 +253,14 @@ describe('SearchPatient', () => {
         <SearchPatient
           buttonTitle={buttonTitle}
           searchBarPlaceholder={searchBarPlaceholder}
-          handleSearchPatient={mockHandleSearchPatientUpdate}
+          onSearch={mockOnSearch}
         />
       </QueryClientProvider>,
     );
 
     expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-seachbar')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-seachbar')).toHaveAttribute(
+    expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
+    expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
       'placeholder',
       searchBarPlaceholder,
     );
@@ -278,7 +278,7 @@ describe('SearchPatient', () => {
         <SearchPatient
           buttonTitle={buttonTitle}
           searchBarPlaceholder={searchBarPlaceholder}
-          handleSearchPatient={mockHandleSearchPatientUpdate}
+          onSearch={mockOnSearch}
         />
       </QueryClientProvider>,
     );
@@ -286,8 +286,8 @@ describe('SearchPatient', () => {
     expect(
       screen.getByTestId('search-patient-search-button'),
     ).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-seachbar')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-seachbar')).toHaveAttribute(
+    expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
+    expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
       'placeholder',
       searchBarPlaceholder,
     );
@@ -314,14 +314,14 @@ describe('SearchPatient', () => {
         <SearchPatient
           buttonTitle={buttonTitle}
           searchBarPlaceholder={searchBarPlaceholder}
-          handleSearchPatient={mockHandleSearchPatientUpdate}
+          onSearch={mockOnSearch}
         />
       </QueryClientProvider>,
     );
 
     expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-seachbar')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-seachbar')).toHaveAttribute(
+    expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
+    expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
       'placeholder',
       searchBarPlaceholder,
     );
@@ -340,7 +340,7 @@ describe('SearchPatient', () => {
     });
 
     await waitFor(() => {
-      expect(mockHandleSearchPatientUpdate).toHaveBeenCalledWith(
+      expect(mockOnSearch).toHaveBeenCalledWith(
         undefined,
         'new value',
         false,
@@ -355,19 +355,19 @@ describe('SearchPatient', () => {
         <SearchPatient
           buttonTitle={buttonTitle}
           searchBarPlaceholder={searchBarPlaceholder}
-          handleSearchPatient={mockHandleSearchPatientUpdate}
+          onSearch={mockOnSearch}
         />
       </QueryClientProvider>,
     );
 
     expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-seachbar')).toBeInTheDocument();
+    expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
     expect(
       screen.getByRole('button', {
         name: 'Clear search input',
       }),
     ).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-seachbar')).toHaveAttribute(
+    expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
       'placeholder',
       searchBarPlaceholder,
     );
@@ -386,7 +386,7 @@ describe('SearchPatient', () => {
     });
 
     await waitFor(() => {
-      expect(mockHandleSearchPatientUpdate).toHaveBeenCalledWith(
+      expect(mockOnSearch).toHaveBeenCalledWith(
         undefined,
         'new value',
         false,
@@ -401,7 +401,7 @@ describe('SearchPatient', () => {
       fireEvent.click(searchClear);
     });
     await waitFor(() =>
-      expect(mockHandleSearchPatientUpdate).toHaveBeenCalledWith(
+      expect(mockOnSearch).toHaveBeenCalledWith(
         undefined,
         'new value',
         false,
@@ -416,7 +416,7 @@ describe('SearchPatient', () => {
         <SearchPatient
           buttonTitle={buttonTitle}
           searchBarPlaceholder={searchBarPlaceholder}
-          handleSearchPatient={mockHandleSearchPatientUpdate}
+          onSearch={mockOnSearch}
         />
       </QueryClientProvider>,
     );

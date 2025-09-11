@@ -3,4 +3,8 @@ export {
   getFormattedPatientById,
   searchPatientByNameOrId,
 } from './patientService';
-export { type FormattedPatientData, type PatientSearch } from './models';
+export {
+  type FormattedPatientData,
+  type PatientSearchResultBundle,
+  type PatientSearchResult,
+} from './models';
