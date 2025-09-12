@@ -250,7 +250,7 @@
   "AUDIT_LOG_ERROR_UNKNOWN_EVENT_TYPE": "Tipo de evento de auditoría desconocido: {{eventType}}",
   "NO_DASHBOARD_SECTIONS": "No hay secciones del panel configuradas",
   "HOME": "Inicio",
-  "REGISTRATION": "Registro",
+  "SEARCH_PATIENT_PAGE": "Buscar Paciente",
   "PATIENT_SEARCH_TITLE": "Búsqueda de Pacientes",
   "PATIENT_SEARCH_PLACEHOLDER": "Buscar por nombre o ID de paciente",
   "PATIENT_SEARCH_BUTTON": "Buscar",

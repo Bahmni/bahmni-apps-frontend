@@ -248,7 +248,7 @@
   "AUDIT_LOG_ERROR_UNKNOWN_EVENT_TYPE": "Unknown audit event type: {{eventType}}",
   "NO_DASHBOARD_SECTIONS": "No dashboard sections configured",
   "HOME": "Home",
-  "REGISTRATION": "Registration",
+  "SEARCH_PATIENT_PAGE": "Search Patient",
   "PATIENT_SEARCH_TITLE": "Patient Search",
   "PATIENT_SEARCH_PLACEHOLDER": "Search by name or patient ID",
   "PATIENT_SEARCH_BUTTON": "Search",

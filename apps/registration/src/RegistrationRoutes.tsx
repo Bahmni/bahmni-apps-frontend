@@ -19,8 +19,8 @@ const RegistrationRoutes: React.FC = () => {
       href: '/',
     },
     {
-      id: 'registration',
-      label: t('REGISTRATION'),
+      id: 'search-patient',
+      label: t('SEARCH_PATIENT_PAGE'),
       isCurrentPage: true,
     },
   ];
