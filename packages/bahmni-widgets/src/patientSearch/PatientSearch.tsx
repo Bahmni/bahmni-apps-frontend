@@ -22,7 +22,6 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [activeSearchTerm, setActiveSearchTerm] = useState<string>('');
   const [hasPerformedSearch, setHasPerformedSearch] = useState<boolean>(false);
-  const [cursorPosition, setCursorPosition] = useState<number>(0);
   const { searchResults, loading, error } = usePatientSearch(activeSearchTerm);
 
   useEffect(() => {
@@ -41,28 +40,6 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
     }
   }, [searchResults, onSearchResults, hasPerformedSearch, error]);
 
-  useEffect(() => {
-    if (!loading && hasPerformedSearch) {
-      setTimeout(() => {
-        const inputElement = document.getElementById(
-          'patient-search-input',
-        ) as HTMLInputElement;
-
-        if (inputElement && !inputElement.disabled) {
-          inputElement.focus();
-          inputElement.setSelectionRange(cursorPosition, cursorPosition);
-        } else if (inputElement?.disabled) {
-          setTimeout(() => {
-            if (!inputElement.disabled) {
-              inputElement.focus();
-              inputElement.setSelectionRange(cursorPosition, cursorPosition);
-            }
-          }, 50);
-        }
-      }, 50);
-    }
-  }, [loading, hasPerformedSearch, cursorPosition]);
-
   const handleSearch = useCallback(() => {
     if (!searchTerm.trim()) {
       return;
@@ -75,7 +52,6 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
   const handleInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       setSearchTerm(event.target.value);
-      setCursorPosition(event.target.selectionStart ?? 0);
     },
     [],
   );
@@ -84,7 +60,6 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       if (event.key === 'Enter') {
         event.preventDefault();
-        setCursorPosition(event.currentTarget.selectionStart ?? 0);
         handleSearch();
       }
     },
