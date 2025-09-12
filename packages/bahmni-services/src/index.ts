@@ -3,16 +3,16 @@ export { initAppI18n, useTranslation } from './i18n';
 export {
   getPatientById,
   getFormattedPatientById,
-  type FormattedPatientData,
-} from './patientService';
-export {
-  searchPatients,
-  searchPatientsFormatted,
   getPatientSearchResults,
+  formatPatientName,
+  formatPatientAddress,
+  formatPatientContact,
+  formatPatientData,
+  type FormattedPatientData,
   type PatientSearchResult,
   type PatientSearchResponse,
-  type FormattedPatientSearchResult,
-} from './patientSearchService';
+  type Age,
+} from './patientService';
 export { getFormattedError } from './errorHandling';
 export {
   capitalize,

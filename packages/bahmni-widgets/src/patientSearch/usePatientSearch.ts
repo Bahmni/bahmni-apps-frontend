@@ -1,13 +1,13 @@
 import {
   getPatientSearchResults,
-  FormattedPatientSearchResult,
+  PatientSearchResult,
   getFormattedError,
   useTranslation,
 } from '@bahmni-frontend/bahmni-services';
 import { useState, useCallback, useEffect } from 'react';
 
 interface UsePatientSearchResult {
-  searchResults: FormattedPatientSearchResult[];
+  searchResults: PatientSearchResult[];
   totalCount: number;
   loading: boolean;
   error: string | null;
@@ -22,9 +22,9 @@ export const usePatientSearch = (
   searchTerm: string,
 ): UsePatientSearchResult => {
   const { t } = useTranslation();
-  const [searchResults, setSearchResults] = useState<
-    FormattedPatientSearchResult[]
-  >([]);
+  const [searchResults, setSearchResults] = useState<PatientSearchResult[]>(
+    [],
+  );
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);

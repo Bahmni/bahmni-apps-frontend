@@ -2,7 +2,7 @@ import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
-  FormattedPatientSearchResult,
+  PatientSearchResult,
 } from '@bahmni-frontend/bahmni-services';
 import {
   useNotification,
@@ -47,7 +47,7 @@ const mockPatientSearchWidget = PatientSearchWidget as jest.MockedFunction<
 
 describe('PatientSearch Page', () => {
   const mockAddNotification = jest.fn();
-  const mockSearchResults: FormattedPatientSearchResult[] = [
+  const mockSearchResults: PatientSearchResult[] = [
     {
       id: '1',
       patientId: 'PAT001',
@@ -55,9 +55,8 @@ describe('PatientSearch Page', () => {
       phoneNumber: '1234567890',
       alternatePhoneNumber: '0987654321',
       gender: 'Male',
-      age: '30',
+      age: '30y 0m 0d',
       registrationDate: '2023-01-15',
-      uuid: 'uuid-1',
     },
     {
       id: '2',
@@ -66,9 +65,8 @@ describe('PatientSearch Page', () => {
       phoneNumber: '5555555555',
       alternatePhoneNumber: '',
       gender: 'Female',
-      age: '25',
+      age: '25y 0m 0d',
       registrationDate: '2023-02-20',
-      uuid: 'uuid-2',
     },
   ];
 

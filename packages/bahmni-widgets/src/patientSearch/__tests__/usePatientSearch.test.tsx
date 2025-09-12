@@ -1,6 +1,6 @@
 import {
   getPatientSearchResults,
-  FormattedPatientSearchResult,
+  PatientSearchResult,
   getFormattedError,
   useTranslation,
 } from '@bahmni-frontend/bahmni-services';
@@ -40,16 +40,15 @@ describe('usePatientSearch hook', () => {
     message: error.message ?? 'Unknown error',
   }));
 
-  const mockPatientSearchResult: FormattedPatientSearchResult = {
+  const mockPatientSearchResult: PatientSearchResult = {
     id: 'patient-id-123',
     patientId: 'PAT001',
     fullName: 'John Doe',
     phoneNumber: '+1234567890',
     alternatePhoneNumber: null,
     gender: 'M',
-    age: '35',
-    registrationDate: '2024-01-15',
-    uuid: 'patient-uuid-123',
+    age: '35y 0m 0d',
+    registrationDate: '2023-01-15',
   };
 
   const mockSearchResults = {
@@ -239,7 +238,6 @@ describe('usePatientSearch hook', () => {
         {
           ...mockPatientSearchResult,
           id: 'patient-id-456',
-          uuid: 'patient-uuid-456',
           patientId: 'PAT002',
           fullName: 'John Smith',
           age: '42',

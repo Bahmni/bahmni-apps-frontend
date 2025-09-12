@@ -1,8 +1,18 @@
 import { Patient } from 'fhir/r4';
 import { get } from '../api';
-import { calculateAge } from '../date';
-import { PATIENT_RESOURCE_URL } from './constants';
-import { FormattedPatientData } from './models';
+import { BAHMNI_USER_LOCATION_COOKIE_NAME } from '../constants/app';
+import { DATE_FORMAT, formatDate, calculateAge } from '../date';
+import { getCookieByName } from '../utils';
+import {
+  PATIENT_RESOURCE_URL,
+  PATIENT_SEARCH_BASE_URL,
+  PATIENT_SEARCH_CONFIG
+} from './constants';
+import {
+  FormattedPatientData,
+  PatientSearchResult,
+  PatientSearchApiResult,
+} from './models';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
   return get<Patient>(PATIENT_RESOURCE_URL(patientUUID));
@@ -148,3 +158,112 @@ export const getFormattedPatientById = async (
   const patient = await getPatientById(patientUUID);
   return formatPatientData(patient);
 };
+
+const isNonEmpty = (s: string) => s.trim().length > 0;
+
+const getLoginLocationUuid = (): string | null => {
+  try {
+    const cookieValue = getCookieByName(BAHMNI_USER_LOCATION_COOKIE_NAME);
+    if (!cookieValue) return null;
+    const locationData = JSON.parse(decodeURIComponent(cookieValue));
+    return locationData?.uuid ?? null;
+  } catch (error) {
+    return null;
+  }
+};
+
+const formatTimestamp = (ts: number, t: (k: string) => string): string => {
+  try {
+    const date = new Date(ts);
+    const result = formatDate(date, t, DATE_FORMAT);
+    return result.formattedResult || 'Invalid Date';
+  } catch {
+    return 'Invalid Date';
+  }
+};
+
+const sortBy = <T>(items: T[], pick: (x: T) => string): T[] => {
+  if (!items?.length) return items;
+  return [...items].sort((a, b) =>
+    pick(a).localeCompare(pick(b), undefined, {
+      numeric: true,
+      sensitivity: 'base',
+    }),
+  );
+};
+
+const joinNameParts = (...parts: Array<string | null | undefined>) =>
+  parts.filter(Boolean).join(' ');
+
+const extractFromJsonAttr = (
+  raw: string | null,
+  key: string,
+): string | null => {
+  try {
+    const obj = raw ? JSON.parse(raw) : {};
+    return obj?.[key] ?? null;
+  } catch {
+    return null;
+  }
+};
+
+async function searchPatientsInternal(
+  searchTerm: string,
+): Promise<{ totalCount: number; pageOfResults: PatientSearchApiResult[] }> {
+  const loginLocationUuid = getLoginLocationUuid();
+  if (!loginLocationUuid)
+    throw new Error('Login location UUID not found in cookie');
+  if (!isNonEmpty(searchTerm)) throw new Error('Search term cannot be empty');
+
+  const q = searchTerm.trim();
+  const params = new URLSearchParams({
+    filterOnAllIdentifiers: 'true',
+    q,
+    identifier: q,
+    loginLocationUuid,
+    patientSearchResultsConfig: PATIENT_SEARCH_CONFIG.PHONE_NUMBER,
+  });
+  params.append(
+    'patientSearchResultsConfig',
+    PATIENT_SEARCH_CONFIG.ALTERNATE_PHONE_NUMBER,
+  );
+
+  const url = `${PATIENT_SEARCH_BASE_URL}?${params.toString()}`;
+  return get<{ totalCount: number; pageOfResults: PatientSearchApiResult[] }>(url);
+}
+
+function convertToPatientSearchResult(
+  apiResult: PatientSearchApiResult,
+  t: (key: string) => string,
+): PatientSearchResult {
+  return {
+    id: apiResult.uuid,
+    patientId: apiResult.identifier,
+    fullName: joinNameParts(apiResult.givenName, apiResult.middleName, apiResult.familyName),
+    gender: apiResult.gender,
+    age: apiResult.age,
+    phoneNumber: extractFromJsonAttr(apiResult.customAttribute, 'phoneNumber'),
+    alternatePhoneNumber: extractFromJsonAttr(apiResult.customAttribute, 'alternatePhoneNumber'),
+    registrationDate: formatTimestamp(apiResult.dateCreated, t),
+  };
+}
+
+/**
+ * Search for patients based on search term
+ * @param searchTerm - The term to search for patients
+ * @param t - Translation function
+ * @returns Patient search results with total count
+ */
+export async function getPatientSearchResults(
+  searchTerm: string,
+  t: (key: string) => string,
+): Promise<{ results: PatientSearchResult[]; totalCount: number }> {
+  const response = await searchPatientsInternal(searchTerm);
+  const sorted = sortBy(response.pageOfResults, (p) => p.identifier);
+  const formattedResults = sorted.map((p) => convertToPatientSearchResult(p, t));
+  
+  return {
+    results: formattedResults,
+    totalCount: response.totalCount,
+  };
+}

@@ -1,14 +1,14 @@
 import { Button, Search } from '@bahmni-frontend/bahmni-design-system';
 import {
   useTranslation,
-  FormattedPatientSearchResult,
+  PatientSearchResult,
 } from '@bahmni-frontend/bahmni-services';
 import React, { useState, useCallback, useEffect } from 'react';
 import styles from './styles/PatientSearch.module.scss';
 import { usePatientSearch } from './usePatientSearch';
 
 interface PatientSearchProps {
-  onSearchResults: (results: FormattedPatientSearchResult[]) => void;
+  onSearchResults: (results: PatientSearchResult[]) => void;
   onError: (error: string) => void;
   onLoading: (loading: boolean) => void;
 }

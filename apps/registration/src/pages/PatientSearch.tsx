@@ -5,7 +5,7 @@ import {
 } from '@bahmni-frontend/bahmni-design-system';
 import {
   useTranslation,
-  FormattedPatientSearchResult,
+  PatientSearchResult,
   dispatchAuditEvent,
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
@@ -25,7 +25,7 @@ const PatientSearch: React.FC = () => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const [searchResults, setSearchResults] = useState<
-    FormattedPatientSearchResult[]
+    PatientSearchResult[]
   >([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [hasSearched, setHasSearched] = useState<boolean>(false);
@@ -52,7 +52,7 @@ const PatientSearch: React.FC = () => {
   );
 
   const handleSearchResults = useCallback(
-    (results: FormattedPatientSearchResult[]) => {
+    (results: PatientSearchResult[]) => {
       setSearchResults(results);
       setHasSearched(true);
       setError(false);
