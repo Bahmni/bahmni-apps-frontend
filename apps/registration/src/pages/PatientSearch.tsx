@@ -42,11 +42,10 @@ const PatientSearch: React.FC = () => {
     () => [
       { key: 'patientId', header: t('PATIENT_ID') },
       { key: 'fullName', header: t('PATIENT_NAME') },
-      { key: 'phoneNumber', header: t('PHONE_NUMBER') },
-      { key: 'alternatePhoneNumber', header: t('ALTERNATE_PHONE_NUMBER') },
       { key: 'gender', header: t('GENDER') },
       { key: 'age', header: t('AGE') },
-      { key: 'registrationDate', header: t('REGISTRATION_DATE') },
+      { key: 'phoneNumber', header: t('PHONE_NUMBER') },
+      { key: 'alternatePhoneNumber', header: t('ALTERNATE_PHONE_NUMBER') },
     ],
     [t],
   );
