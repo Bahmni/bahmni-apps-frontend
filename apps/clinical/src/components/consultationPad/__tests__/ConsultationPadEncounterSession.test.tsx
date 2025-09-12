@@ -1,3 +1,4 @@
+import { UserPrivilegeProvider } from '@bahmni-frontend/bahmni-widgets';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { I18nextProvider } from 'react-i18next';
@@ -9,7 +10,19 @@ const mockUseEncounterSession = jest.fn();
 jest.mock('../../../hooks/useEncounterSession', () => ({
   useEncounterSession: () => mockUseEncounterSession(),
 }));
-
+// Mock useUserPrivilege hook
+jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-widgets'),
+  useUserPrivilege: jest.fn(() => ({
+    userPrivileges: ['Get Patients', 'Add Patients'],
+  })),
+  useNotification: jest.fn(() => ({
+    addNotification: jest.fn(),
+  })),
+  UserPrivilegeProvider: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+}));
 // Mock all child components
 jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
   __esModule: true,
@@ -100,15 +113,6 @@ jest.mock('../../../services/consultationBundleService', () => ({
   createMedicationRequestEntries: jest.fn(() => []),
 }));
 
-// Mock hooks
-const mockAddNotification = jest.fn();
-jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
-  useNotification: jest.fn(() => ({
-    addNotification: mockAddNotification,
-  })),
-  __esModule: true,
-}));
-
 // Mock utilities
 jest.mock('../../../utils/fhir/encounterResourceCreator', () => ({
   createEncounterResource: jest.fn(() => ({
@@ -131,6 +135,11 @@ jest.mock('../../../utils/fhir/consultationBundleCreator', () => ({
   })),
 }));
 
+// Mock privilege service
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+  getCurrentUserPrivileges: jest.fn(),
+}));
 // Create mock store factories
 const createMockEncounterDetailsStore = () => ({
   activeVisit: { id: 'visit-123' },
@@ -210,7 +219,11 @@ Object.defineProperty(global, 'crypto', {
 });
 
 const renderWithProviders = (ui: React.ReactElement) => {
-  return render(<I18nextProvider i18n={i18n}>{ui}</I18nextProvider>);
+  return render(
+    <I18nextProvider i18n={i18n}>
+      <UserPrivilegeProvider>{ui}</UserPrivilegeProvider>
+    </I18nextProvider>,
+  );
 };
 
 describe('ConsultationPad - Encounter Session Integration', () => {
@@ -218,7 +231,14 @@ describe('ConsultationPad - Encounter Session Integration', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-
+    // Mock privilege service
+    const { getCurrentUserPrivileges } = jest.requireMock(
+      '@bahmni-frontend/bahmni-services',
+    );
+    (getCurrentUserPrivileges as jest.Mock).mockResolvedValue([
+      { name: 'app:clinical:observationForms' },
+      { name: 'app:clinical:locationpicker' },
+    ]);
     // Reset stores to initial state
     mockEncounterDetailsStore = createMockEncounterDetailsStore();
     mockDiagnosesStore = createMockDiagnosesStore();

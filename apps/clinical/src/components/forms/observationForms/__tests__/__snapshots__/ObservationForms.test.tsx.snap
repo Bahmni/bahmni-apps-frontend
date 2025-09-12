@@ -1,0 +1,38 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ObservationForms Rendering and Structure should match the snapshot 1`] = `
+<div>
+  <div
+    class="observationFormsTile"
+    data-testid="tile"
+  >
+    <div
+      class="observationFormsTitle"
+    >
+      translated_OBSERVATION_FORMS_SECTION_TITLE
+    </div>
+    <div
+      data-testid="combobox"
+    >
+      <input
+        data-testid="combobox-input"
+        placeholder="translated_OBSERVATION_FORMS_SEARCH_PLACEHOLDER"
+      />
+      <div
+        data-testid="combobox-items"
+      >
+        <button
+          data-testid="combobox-item-form-1"
+        >
+          Admission Letter
+        </button>
+        <button
+          data-testid="combobox-item-form-2"
+        >
+          Death Note
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+`;

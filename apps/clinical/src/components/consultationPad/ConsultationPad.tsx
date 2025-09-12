@@ -9,6 +9,7 @@ import {
   AuditEventType,
   dispatchAuditEvent,
   useTranslation,
+  ObservationForm,
 } from '@bahmni-frontend/bahmni-services';
 import { useNotification } from '@bahmni-frontend/bahmni-widgets';
 import React, { useEffect } from 'react';
@@ -37,6 +38,8 @@ import ConditionsAndDiagnoses from '../forms/conditionsAndDiagnoses/ConditionsAn
 import BasicForm from '../forms/encounterDetails/EncounterDetails';
 import InvestigationsForm from '../forms/investigations/InvestigationsForm';
 import MedicationsForm from '../forms/medications/MedicationsForm';
+import ObservationForms from '../forms/observationForms/ObservationForms';
+import ObservationFormsContainer from '../forms/observationForms/ObservationFormsContainer';
 import styles from './styles/ConsultationPad.module.scss';
 
 interface ConsultationPadProps {
@@ -45,7 +48,12 @@ interface ConsultationPadProps {
 
 const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-
+  const [viewingForm, setViewingForm] = React.useState<ObservationForm | null>(
+    null,
+  );
+  const [selectedForms, setSelectedForms] = React.useState<ObservationForm[]>(
+    [],
+  );
   const { t } = useTranslation();
   const { addNotification } = useNotification();
 
@@ -104,7 +112,31 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     resetServiceRequests,
     resetMedications,
   ]);
+  // Observation forms handlers
+  const handleViewingFormChange = (form: ObservationForm | null) => {
+    setViewingForm(form);
+  };
 
+  // Helper function to remove form from selected forms list
+  const removeFormFromSelected = (formUuid: string) => {
+    setSelectedForms((prev) => prev.filter((form) => form.uuid !== formUuid));
+  };
+
+  const handleFormSelection = (form: ObservationForm) => {
+    // Add form to selected forms if not already added
+    setSelectedForms((prev) => {
+      const isAlreadySelected = prev.some(
+        (selectedForm) => selectedForm.uuid === form.uuid,
+      );
+      if (!isAlreadySelected) {
+        return [...prev, form];
+      }
+      return prev;
+    });
+
+    // Open form view
+    handleViewingFormChange(form);
+  };
   // Data validation check for consultation submission
   const canSubmitConsultation = !!(
     patientUUID &&
@@ -260,7 +292,39 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     resetMedications();
     onClose();
   };
+  const consultationContent = (
+    <>
+      <BasicForm />
+      <MenuItemDivider />
+      <AllergiesForm />
+      <MenuItemDivider />
+      <InvestigationsForm />
+      <MenuItemDivider />
+      <ConditionsAndDiagnoses />
+      <MenuItemDivider />
+      <MedicationsForm />
+      <MenuItemDivider />
+      <ObservationForms
+        onFormSelect={handleFormSelection}
+        selectedForms={selectedForms}
+        onRemoveForm={removeFormFromSelected}
+      />
+      <MenuItemDivider />
+    </>
+  );
 
+  // If viewing a form, let ObservationFormsWrapper take over the entire screen
+  if (viewingForm) {
+    return (
+      <ObservationFormsContainer
+        onViewingFormChange={handleViewingFormChange}
+        viewingForm={viewingForm}
+        onRemoveForm={removeFormFromSelected}
+      />
+    );
+  }
+
+  // Otherwise, render consultation ActionArea with consultation content
   return (
     <ActionArea
       title={hasError ? '' : t('CONSULTATION_ACTION_NEW')}
@@ -294,18 +358,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
             </Column>
           </Grid>
         ) : (
-          <>
-            <BasicForm />
-            <MenuItemDivider />
-            <AllergiesForm />
-            <MenuItemDivider />
-            <InvestigationsForm />
-            <MenuItemDivider />
-            <ConditionsAndDiagnoses />
-            <MenuItemDivider />
-            <MedicationsForm />
-            <MenuItemDivider />
-          </>
+          consultationContent
         )
       }
     />

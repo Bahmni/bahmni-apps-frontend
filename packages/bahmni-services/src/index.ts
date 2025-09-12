@@ -135,3 +135,16 @@ export {
   OPENMRS_FHIR_R4,
   BAHMNI_HOME_PATH,
 } from './constants/app';
+export {
+  getCurrentUserPrivileges,
+  hasPrivilege,
+  type UserPrivilege,
+} from './privilegeService';
+export {
+  fetchObservationForms,
+  type ObservationForm,
+  type FormApiResponse,
+  type ApiNameTranslation,
+  type FormPrivilege,
+  type ApiFormPrivilege,
+} from './observationFormsService';
