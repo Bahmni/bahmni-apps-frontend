@@ -14,7 +14,13 @@ import {
   PatientSearch as PatientSearchWidget,
   useNotification,
 } from '@bahmni-frontend/bahmni-widgets';
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, {
+  useState,
+  useCallback,
+  useMemo,
+  useEffect,
+  useRef,
+} from 'react';
 import styles from './styles/PatientSearch.module.scss';
 
 /**
@@ -28,12 +34,18 @@ const PatientSearch: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [hasSearched, setHasSearched] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
+  const auditEventDispatched = useRef<boolean>(false);
 
   useEffect(() => {
-    dispatchAuditEvent({
-      eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_REGISTRATION_PATIENT_SEARCH
-        .eventType as AuditEventType,
-    });
+    if (!auditEventDispatched.current) {
+      dispatchAuditEvent({
+        eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_REGISTRATION_PATIENT_SEARCH
+          .eventType as AuditEventType,
+        module:
+          AUDIT_LOG_EVENT_DETAILS.VIEWED_REGISTRATION_PATIENT_SEARCH.module,
+      });
+      auditEventDispatched.current = true;
+    }
   }, []);
 
   const tableHeaders = useMemo(
@@ -52,10 +64,6 @@ const PatientSearch: React.FC = () => {
     setSearchResults(results);
     setHasSearched(true);
     setError(false);
-    dispatchAuditEvent({
-      eventType: AUDIT_LOG_EVENT_DETAILS.REGISTRATION_PATIENT_SEARCHED
-        .eventType as AuditEventType,
-    });
   }, []);
 
   const handleSearchError = useCallback(

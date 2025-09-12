@@ -115,6 +115,8 @@ describe('PatientSearch Page', () => {
       expect(dispatchAuditEvent).toHaveBeenCalledWith({
         eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_REGISTRATION_PATIENT_SEARCH
           .eventType as AuditEventType,
+        module:
+          AUDIT_LOG_EVENT_DETAILS.VIEWED_REGISTRATION_PATIENT_SEARCH.module,
       });
     });
 
@@ -150,10 +152,6 @@ describe('PatientSearch Page', () => {
 
       // Should show results header with count
       expect(screen.getByText('Patient results (2)')).toBeInTheDocument();
-      expect(dispatchAuditEvent).toHaveBeenCalledWith({
-        eventType: AUDIT_LOG_EVENT_DETAILS.REGISTRATION_PATIENT_SEARCHED
-          .eventType as AuditEventType,
-      });
     });
 
     it('should show no results message when search returns empty results', async () => {
@@ -177,10 +175,6 @@ describe('PatientSearch Page', () => {
 
       // Should show results header with count of 0 when search has been performed
       expect(screen.getByText('Patient results (0)')).toBeInTheDocument();
-      expect(dispatchAuditEvent).toHaveBeenCalledWith({
-        eventType: AUDIT_LOG_EVENT_DETAILS.REGISTRATION_PATIENT_SEARCHED
-          .eventType as AuditEventType,
-      });
     });
   });
 
