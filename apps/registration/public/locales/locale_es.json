@@ -5,7 +5,7 @@
   "PATIENT_SEARCH_PLACEHOLDER": "Buscar por nombre o ID de paciente",
   "PATIENT_SEARCH_BUTTON": "Buscar",
   "PATIENT_SEARCH_LOADING": "Buscando pacientes...",
-  "PATIENT_SEARCH_NO_RESULTS": "No se pudo encontrar un paciente con el identificador o nombre proporcionado",
+  "PATIENT_SEARCH_NO_RESULTS": "No se pudo encontrar al paciente con el identificador/nombre ingresado. Verifique el ID o el nombre del paciente introducido o cree un nuevo registro de paciente.",
   "PATIENT_SEARCH_RESULTS": "Resultados de la búsqueda de pacientes",
   "PATIENT_SEARCH_RESULTS_TABLE": "Tabla de resultados de búsqueda de pacientes",
   "ERROR_SEARCHING_PATIENTS": "Error al buscar pacientes",
