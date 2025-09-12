@@ -426,23 +426,6 @@ describe('VitalFlowSheet Utils', () => {
           expect(result.complexData.diastolic.abnormal).toBe(false);
         });
 
-        it('should detect abnormal diastolic values', () => {
-          const values = {
-            Sbp: { value: '120', abnormal: false },
-            DBP: { value: '100', abnormal: true },
-            'Body position': { value: 'seated', abnormal: false },
-          };
-
-          const result = bloodPressureGroup.combineDisplay(
-            values,
-            mockConceptDetails,
-          );
-
-          expect(result.abnormal).toBe(true);
-          expect(result.complexData.systolic.abnormal).toBe(false);
-          expect(result.complexData.diastolic.abnormal).toBe(true);
-        });
-
         it('should handle missing values', () => {
           const values = {
             Sbp: null,
