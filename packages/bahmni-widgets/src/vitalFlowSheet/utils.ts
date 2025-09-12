@@ -201,7 +201,7 @@ export const CONCEPT_GROUPS = {
         (diastolicValue > (diastolicConcept.hiNormal ?? Infinity) ||
           diastolicValue < (diastolicConcept.lowNormal ?? 0));
 
-      const isAbnormal = Boolean(isSystolicAbnormal || isDiastolicAbnormal);
+      const isAbnormal = Boolean(isSystolicAbnormal ?? isDiastolicAbnormal);
 
       return {
         value: 'COMPLEX_DISPLAY', // Special marker for complex rendering
