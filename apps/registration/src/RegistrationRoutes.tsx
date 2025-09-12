@@ -2,7 +2,7 @@ import { RegistrationLayout } from '@bahmni-frontend/bahmni-design-system';
 import { useTranslation } from '@bahmni-frontend/bahmni-services';
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
-import PatientSearch from './pages/PatientSearch';
+import PatientSearch from './pages/patientSearch/PatientSearch';
 
 /**
  * Registration Routes component that wraps routes with RegistrationLayout
