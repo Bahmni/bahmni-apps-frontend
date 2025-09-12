@@ -102,6 +102,7 @@ const PatientSearch: React.FC = () => {
           ariaLabel={t('PATIENT_SEARCH_RESULTS_TABLE')}
           emptyStateMessage={t('PATIENT_SEARCH_NO_RESULTS')}
           loading={loading}
+          className={styles.patientSearchResultsTable}
         />
       </div>
     );
