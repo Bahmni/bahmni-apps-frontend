@@ -70,40 +70,12 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
         key: 'vitalSign',
         header: t('VITAL_SIGN'),
       },
-      // Create placeholder headers for skeleton
       ...Array.from({ length: latestCount }, (_, index) => ({
         key: `obs_${index}`,
         header: `${t('DATE')}\n${t('TIME')}`,
       })),
     ],
     [t, latestCount],
-  );
-
-  // Static skeleton rows for loading state
-  const staticSkeletonRows = useMemo(
-    () => [
-      {
-        id: 'skeleton-blood-pressure',
-        vitalSign: t('VITAL_SIGNS_BLOOD_PRESSURE'),
-        type: 'group' as const,
-      },
-      {
-        id: 'skeleton-pulse',
-        vitalSign: t('VITAL_SIGNS_PULSE'),
-        type: 'concept' as const,
-      },
-      {
-        id: 'skeleton-temperature',
-        vitalSign: t('VITAL_SIGNS_TEMPERATURE'),
-        type: 'concept' as const,
-      },
-      {
-        id: 'skeleton-respiratory-rate',
-        vitalSign: t('VITAL_SIGNS_RESPIRATORY_RATE'),
-        type: 'concept' as const,
-      },
-    ],
-    [t],
   );
 
   // Transform data for table display
@@ -290,7 +262,7 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
       <SortableDataTable
         headers={loading ? staticHeaders : processedData.headers}
         ariaLabel={t('VITAL_FLOW_SHEET_TABLE')}
-        rows={loading ? staticSkeletonRows : processedData.rows}
+        rows={processedData.rows}
         loading={loading}
         errorStateMessage={error?.message}
         emptyStateMessage={t('NO_VITAL_SIGNS_DATA')}
