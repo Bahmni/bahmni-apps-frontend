@@ -81,7 +81,6 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
         value={searchTerm}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
-        disabled={loading}
         className={styles.searchInput}
         aria-label={t('PATIENT_SEARCH_PLACEHOLDER')}
       />

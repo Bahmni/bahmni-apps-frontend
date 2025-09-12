@@ -101,21 +101,6 @@ describe('PatientSearch Component', () => {
     expect(button).toBeDisabled();
   });
 
-  it('should disable input and button when loading', () => {
-    mockedUsePatientSearch.mockReturnValue({
-      ...mockHookReturn,
-      loading: true,
-    });
-
-    render(<PatientSearch {...defaultProps} />);
-
-    const input = screen.getByTestId('patient-search-input');
-    const button = screen.getByTestId('patient-search-button');
-
-    expect(input).toBeDisabled();
-    expect(button).toBeDisabled();
-  });
-
   // eslint-disable-next-line jest/no-disabled-tests
   it.skip('should call onLoading prop when loading state changes', () => {
     const { rerender } = render(<PatientSearch {...defaultProps} />);
