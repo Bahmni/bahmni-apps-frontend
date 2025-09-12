@@ -22,9 +22,7 @@ export const usePatientSearch = (
   searchTerm: string,
 ): UsePatientSearchResult => {
   const { t } = useTranslation();
-  const [searchResults, setSearchResults] = useState<PatientSearchResult[]>(
-    [],
-  );
+  const [searchResults, setSearchResults] = useState<PatientSearchResult[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);

@@ -24,9 +24,7 @@ import styles from './styles/PatientSearch.module.scss';
 const PatientSearch: React.FC = () => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
-  const [searchResults, setSearchResults] = useState<
-    PatientSearchResult[]
-  >([]);
+  const [searchResults, setSearchResults] = useState<PatientSearchResult[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [hasSearched, setHasSearched] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
@@ -50,18 +48,15 @@ const PatientSearch: React.FC = () => {
     [t],
   );
 
-  const handleSearchResults = useCallback(
-    (results: PatientSearchResult[]) => {
-      setSearchResults(results);
-      setHasSearched(true);
-      setError(false);
-      dispatchAuditEvent({
-        eventType: AUDIT_LOG_EVENT_DETAILS.REGISTRATION_PATIENT_SEARCHED
-          .eventType as AuditEventType,
-      });
-    },
-    [],
-  );
+  const handleSearchResults = useCallback((results: PatientSearchResult[]) => {
+    setSearchResults(results);
+    setHasSearched(true);
+    setError(false);
+    dispatchAuditEvent({
+      eventType: AUDIT_LOG_EVENT_DETAILS.REGISTRATION_PATIENT_SEARCHED
+        .eventType as AuditEventType,
+    });
+  }, []);
 
   const handleSearchError = useCallback(
     (errorMessage: string) => {

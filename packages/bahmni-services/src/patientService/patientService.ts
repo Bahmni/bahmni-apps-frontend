@@ -6,7 +6,7 @@ import { getCookieByName } from '../utils';
 import {
   PATIENT_RESOURCE_URL,
   PATIENT_SEARCH_BASE_URL,
-  PATIENT_SEARCH_CONFIG
+  PATIENT_SEARCH_CONFIG,
 } from './constants';
 import {
   FormattedPatientData,
@@ -229,7 +229,9 @@ async function searchPatientsInternal(
   );
 
   const url = `${PATIENT_SEARCH_BASE_URL}?${params.toString()}`;
-  return get<{ totalCount: number; pageOfResults: PatientSearchApiResult[] }>(url);
+  return get<{ totalCount: number; pageOfResults: PatientSearchApiResult[] }>(
+    url,
+  );
 }
 
 function convertToPatientSearchResult(
@@ -239,11 +241,18 @@ function convertToPatientSearchResult(
   return {
     id: apiResult.uuid,
     patientId: apiResult.identifier,
-    fullName: joinNameParts(apiResult.givenName, apiResult.middleName, apiResult.familyName),
+    fullName: joinNameParts(
+      apiResult.givenName,
+      apiResult.middleName,
+      apiResult.familyName,
+    ),
     gender: apiResult.gender,
     age: apiResult.age,
     phoneNumber: extractFromJsonAttr(apiResult.customAttribute, 'phoneNumber'),
-    alternatePhoneNumber: extractFromJsonAttr(apiResult.customAttribute, 'alternatePhoneNumber'),
+    alternatePhoneNumber: extractFromJsonAttr(
+      apiResult.customAttribute,
+      'alternatePhoneNumber',
+    ),
     registrationDate: formatTimestamp(apiResult.dateCreated, t),
   };
 }
@@ -260,8 +269,10 @@ export async function getPatientSearchResults(
 ): Promise<{ results: PatientSearchResult[]; totalCount: number }> {
   const response = await searchPatientsInternal(searchTerm);
   const sorted = sortBy(response.pageOfResults, (p) => p.identifier);
-  const formattedResults = sorted.map((p) => convertToPatientSearchResult(p, t));
-  
+  const formattedResults = sorted.map((p) =>
+    convertToPatientSearchResult(p, t),
+  );
+
   return {
     results: formattedResults,
     totalCount: response.totalCount,
