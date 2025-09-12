@@ -14,19 +14,6 @@ export const getSortedObservationTimes = (
   return [];
 };
 
-export const getSeverityDisplayName = (severity: string): string => {
-  switch (severity?.toLowerCase()) {
-    case 'mild':
-      return 'SEVERITY_MILD';
-    case 'moderate':
-      return 'SEVERITY_MODERATE';
-    case 'severe':
-      return 'SEVERITY_SEVERE';
-    default:
-      return 'SEVERITY_MILD'; // fallback
-  }
-};
-
 export const getTranslatedConceptName = (conceptName: string): string => {
   switch (conceptName) {
     case 'Pulse':
@@ -214,7 +201,7 @@ export const CONCEPT_GROUPS = {
         (diastolicValue > (diastolicConcept.hiNormal ?? Infinity) ||
           diastolicValue < (diastolicConcept.lowNormal ?? 0));
 
-      const isAbnormal = Boolean(isSystolicAbnormal ?? isDiastolicAbnormal);
+      const isAbnormal = Boolean(isSystolicAbnormal || isDiastolicAbnormal);
 
       return {
         value: 'COMPLEX_DISPLAY', // Special marker for complex rendering

@@ -63,6 +63,49 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
     groupBy: groupBy ?? 'obstime',
   });
 
+  // Static headers for skeleton loading state
+  const staticHeaders = useMemo(
+    () => [
+      {
+        key: 'vitalSign',
+        header: t('VITAL_SIGN'),
+      },
+      // Create placeholder headers for skeleton
+      ...Array.from({ length: latestCount }, (_, index) => ({
+        key: `obs_${index}`,
+        header: `${t('DATE')}\n${t('TIME')}`,
+      })),
+    ],
+    [t, latestCount],
+  );
+
+  // Static skeleton rows for loading state
+  const staticSkeletonRows = useMemo(
+    () => [
+      {
+        id: 'skeleton-blood-pressure',
+        vitalSign: t('VITAL_SIGNS_BLOOD_PRESSURE'),
+        type: 'group' as const,
+      },
+      {
+        id: 'skeleton-pulse',
+        vitalSign: t('VITAL_SIGNS_PULSE'),
+        type: 'concept' as const,
+      },
+      {
+        id: 'skeleton-temperature',
+        vitalSign: t('VITAL_SIGNS_TEMPERATURE'),
+        type: 'concept' as const,
+      },
+      {
+        id: 'skeleton-respiratory-rate',
+        vitalSign: t('VITAL_SIGNS_RESPIRATORY_RATE'),
+        type: 'concept' as const,
+      },
+    ],
+    [t],
+  );
+
   // Transform data for table display
   const processedData = useMemo(() => {
     // Check if we have valid data to process
@@ -245,9 +288,9 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
   return (
     <div className={styles.vitalFlowSheetTable}>
       <SortableDataTable
-        headers={processedData.headers}
+        headers={loading ? staticHeaders : processedData.headers}
         ariaLabel={t('VITAL_FLOW_SHEET_TABLE')}
-        rows={processedData.rows}
+        rows={loading ? staticSkeletonRows : processedData.rows}
         loading={loading}
         errorStateMessage={error?.message}
         emptyStateMessage={t('NO_VITAL_SIGNS_DATA')}
