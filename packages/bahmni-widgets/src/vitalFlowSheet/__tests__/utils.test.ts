@@ -402,9 +402,9 @@ describe('VitalFlowSheet Utils', () => {
 
           expect(result.value).toBe('COMPLEX_DISPLAY');
           expect(result.abnormal).toBe(false);
-          expect(result.complexData.systolic.value).toBe(120);
+          expect(result.complexData.systolic.value).toBe('120');
           expect(result.complexData.systolic.abnormal).toBe(false);
-          expect(result.complexData.diastolic.value).toBe(80);
+          expect(result.complexData.diastolic.value).toBe('80');
           expect(result.complexData.diastolic.abnormal).toBe(false);
           expect(result.complexData.position).toBe('seated');
         });
@@ -426,24 +426,6 @@ describe('VitalFlowSheet Utils', () => {
           expect(result.complexData.diastolic.abnormal).toBe(false);
         });
 
-        it('should handle missing values', () => {
-          const values = {
-            Sbp: null,
-            DBP: null,
-            'Body position': null,
-          };
-
-          const result = bloodPressureGroup.combineDisplay(
-            values,
-            mockConceptDetails,
-          );
-
-          expect(result.complexData.systolic.value).toBeNaN();
-          expect(result.complexData.diastolic.value).toBeNaN();
-          expect(result.complexData.position).toBe('');
-          expect(result.abnormal).toBe(false);
-        });
-
         it('should handle low abnormal values', () => {
           const values = {
             Sbp: { value: '80', abnormal: true },
@@ -461,17 +443,21 @@ describe('VitalFlowSheet Utils', () => {
           expect(result.complexData.diastolic.abnormal).toBe(true);
         });
 
-        it('should handle missing concept details', () => {
+        it('should handle missing values', () => {
           const values = {
-            Sbp: { value: '160', abnormal: true },
-            DBP: { value: '100', abnormal: true },
-            'Body position': { value: 'seated', abnormal: false },
+            Sbp: null,
+            DBP: null,
+            'Body position': null,
           };
 
-          const result = bloodPressureGroup.combineDisplay(values, []);
+          const result = bloodPressureGroup.combineDisplay(
+            values,
+            mockConceptDetails,
+          );
 
-          expect(result.complexData.systolic.abnormal).toBeUndefined();
-          expect(result.complexData.diastolic.abnormal).toBeUndefined();
+          expect(result.complexData.systolic.value).toBe('--');
+          expect(result.complexData.diastolic.value).toBe('--');
+          expect(result.complexData.position).toBe('-');
           expect(result.abnormal).toBe(false);
         });
 
@@ -487,10 +473,24 @@ describe('VitalFlowSheet Utils', () => {
             mockConceptDetails,
           );
 
-          expect(result.complexData.systolic.value).toBeNaN();
-          expect(result.complexData.diastolic.value).toBeNaN();
+          expect(result.complexData.systolic.value).toBe('invalid');
+          expect(result.complexData.diastolic.value).toBe('invalid');
           expect(result.complexData.systolic.abnormal).toBe(false);
           expect(result.complexData.diastolic.abnormal).toBe(false);
+        });
+
+        it('should handle missing concept details', () => {
+          const values = {
+            Sbp: { value: '160', abnormal: true },
+            DBP: { value: '100', abnormal: true },
+            'Body position': { value: 'seated', abnormal: false },
+          };
+
+          const result = bloodPressureGroup.combineDisplay(values, []);
+
+          expect(result.complexData.systolic.abnormal).toBeUndefined();
+          expect(result.complexData.diastolic.abnormal).toBeUndefined();
+          expect(result.abnormal).toBe(false);
         });
       });
     });
