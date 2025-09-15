@@ -93,7 +93,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
           id="search-patient-search-button"
           testId="search-patient-search-button"
           onClick={handleClick}
-          disabled={isLoading ?? searchInput.trim().length === 0}
+          disabled={isLoading || searchInput.trim().length === 0}
           className={styles.searchButton}
         >
           {buttonTitle}
