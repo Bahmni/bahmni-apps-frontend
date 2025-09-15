@@ -171,7 +171,6 @@
   "LOCATION": "Ubicación",
   "MEDICATIONS_DISPLAY_CONTROL_HEADING": "Medicamentos",
   "MEDICATIONS_DOSAGE": "Dosificación",
-
   "MEDICATIONS_ERROR_FETCHING": "Error al obtener medicamentos",
   "MEDICATIONS_INSTRUCTIONS": "Instrucciones",
   "MEDICATIONS_MEDICINE_NAME": "Medicina",
@@ -248,7 +247,7 @@
   "REGISTRATION_PATIENT_SEARCH_BREADCRUMB_HOME": "Hogar",
   "REGISTRATION_PATIENT_SEARCH_BREADCRUMB_CURRENT": "Buscar Paciente",
   "REGISTRATION_PATIENT_SEARCH_BUTTON_TITLE": "Buscar",
-  "REGISTRATION_PATIENT_SEARCH_EMPTY_MESSAGE": "No se pudo encontrar un paciente con el identificador/nombre '{{searchTerm}}'. Verifique el ID o el nombre del paciente e inténtelo nuevamente, o cree un nuevo registro de paciente.",
+  "REGISTRATION_PATIENT_SEARCH_EMPTY_MESSAGE": "No se encontró el paciente con el identificador/nombre '{{searchTerm}}'. Verifique el ID o el nombre del paciente ingresado o cree un nuevo registro.",
   "REGISTRATION_PATIENT_SEARCH_ERROR_MESSAGE": "Ocurrió un error inesperado durante la búsqueda. Por favor, inténtelo de nuevo más tarde.",
   "REGISTRATION_PATIENT_SEARCH_HEADER_AGE": "Edad",
   "REGISTRATION_PATIENT_SEARCH_HEADER_ALTERNATE_PHONE_NUMBER": "Número de teléfono alternativo",
