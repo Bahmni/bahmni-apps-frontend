@@ -16,7 +16,7 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
   ...jest.requireActual('@bahmni-frontend/bahmni-services'),
   dispatchAuditEvent: jest.fn(),
   useTranslation: jest.fn().mockImplementation(() => ({
-    t: (key: string) => {
+    t: (key: string, options?: { term?: string }) => {
       const translations: Record<string, string> = {
         PATIENT_SEARCH_RESULTS: 'Patient results',
         PATIENT_ID: 'Patient ID',
@@ -29,9 +29,13 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
         ERROR_SEARCHING_PATIENTS: 'Error searching for patients',
         PATIENT_SEARCH_RESULTS_TABLE: 'Patient search results table',
         PATIENT_SEARCH_NO_RESULTS:
-          'Could not find patient with the entered identifier/name. Please verify the patient ID or name entered or create a new patient record.',
+          'Could not find patient with the entered identifier/name {{term}}. Please verify the patient ID or name entered or create a new patient record.',
       };
-      return translations[key] || key;
+      let translation = translations[key] || key;
+      if (options?.term && translation.includes('{{term}}')) {
+        translation = translation.replace('{{term}}', options.term);
+      }
+      return translation;
     },
   })),
 }));
@@ -82,7 +86,7 @@ describe('PatientSearch Page', () => {
         <div data-testid="patient-search-widget">
           <button
             data-testid="trigger-search-results"
-            onClick={() => onSearchResults(mockSearchResults)}
+            onClick={() => onSearchResults(mockSearchResults, 'ABC00001')}
           >
             Trigger Search Results
           </button>
@@ -160,7 +164,7 @@ describe('PatientSearch Page', () => {
         <div data-testid="patient-search-widget">
           <button
             data-testid="trigger-empty-results"
-            onClick={() => onSearchResults([])}
+            onClick={() => onSearchResults([], '')}
           >
             Trigger Empty Results
           </button>
@@ -270,6 +274,33 @@ describe('PatientSearch Page', () => {
         '[class*="resultsContainer"]',
       );
       expect(resultsContainer).toBeInTheDocument();
+    });
+  });
+
+  describe('Search Term in No Results Message', () => {
+    it('should display search term ABC20001 in no results message', async () => {
+      mockPatientSearchWidget.mockImplementation(({ onSearchResults }) => (
+        <div data-testid="patient-search-widget">
+          <button
+            data-testid="trigger-no-results-abc20001"
+            onClick={() => onSearchResults([], 'ABC20001')}
+          >
+            Trigger No Results with ABC20001
+          </button>
+        </div>
+      ));
+
+      render(<PatientSearch />);
+
+      await act(async () => {
+        screen.getByTestId('trigger-no-results-abc20001').click();
+      });
+
+      expect(
+        screen.getByText(
+          'Could not find patient with the entered identifier/name ABC20001. Please verify the patient ID or name entered or create a new patient record.',
+        ),
+      ).toBeInTheDocument();
     });
   });
 });

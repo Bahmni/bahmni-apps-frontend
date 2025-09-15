@@ -8,7 +8,7 @@ import styles from './styles/PatientSearch.module.scss';
 import { usePatientSearch } from './usePatientSearch';
 
 interface PatientSearchProps {
-  onSearchResults: (results: PatientSearchResult[]) => void;
+  onSearchResults: (results: PatientSearchResult[], searchTerm: string) => void;
   onError: (error: string) => void;
   onLoading: (loading: boolean) => void;
 }
@@ -36,9 +36,15 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
 
   React.useEffect(() => {
     if (hasPerformedSearch && !error) {
-      onSearchResults(searchResults);
+      onSearchResults(searchResults, activeSearchTerm);
     }
-  }, [searchResults, onSearchResults, hasPerformedSearch, error]);
+  }, [
+    searchResults,
+    onSearchResults,
+    hasPerformedSearch,
+    error,
+    activeSearchTerm,
+  ]);
 
   const handleSearch = useCallback(() => {
     if (!searchTerm.trim()) {

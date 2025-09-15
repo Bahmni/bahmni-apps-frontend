@@ -34,6 +34,7 @@ const PatientSearch: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [hasSearched, setHasSearched] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
+  const [lastSearchTerm, setLastSearchTerm] = useState<string>('');
   const auditEventDispatched = useRef<boolean>(false);
 
   useEffect(() => {
@@ -60,11 +61,15 @@ const PatientSearch: React.FC = () => {
     [t],
   );
 
-  const handleSearchResults = useCallback((results: PatientSearchResult[]) => {
-    setSearchResults(results);
-    setHasSearched(true);
-    setError(false);
-  }, []);
+  const handleSearchResults = useCallback(
+    (results: PatientSearchResult[], searchTerm: string) => {
+      setSearchResults(results);
+      setHasSearched(true);
+      setError(false);
+      setLastSearchTerm(searchTerm);
+    },
+    [],
+  );
 
   const handleSearchError = useCallback(
     (errorMessage: string) => {
@@ -102,7 +107,9 @@ const PatientSearch: React.FC = () => {
           headers={tableHeaders}
           rows={searchResults}
           ariaLabel={t('PATIENT_SEARCH_RESULTS_TABLE')}
-          emptyStateMessage={t('PATIENT_SEARCH_NO_RESULTS')}
+          emptyStateMessage={t('PATIENT_SEARCH_NO_RESULTS', {
+            term: lastSearchTerm,
+          })}
           loading={loading}
           className={styles.patientSearchResultsTable}
         />

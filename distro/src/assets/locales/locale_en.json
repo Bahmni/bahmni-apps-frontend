@@ -265,7 +265,7 @@
   "PATIENT_SEARCH_PLACEHOLDER": "Search by name or patient ID",
   "PATIENT_SEARCH_BUTTON": "Search",
   "PATIENT_SEARCH_LOADING": "Searching for patients...",
-  "PATIENT_SEARCH_NO_RESULTS": "Could not find patient with the entered identifier/name. Please verify the patient ID or name entered or create a new patient record.",
+  "PATIENT_SEARCH_NO_RESULTS": "Could not find patient with the entered identifier/name {{term}}. Please verify the patient ID or name entered or create a new patient record.",
   "PATIENT_SEARCH_RESULTS": "Patient results",
   "PATIENT_SEARCH_RESULTS_TABLE": "Patient search results table",
   "ERROR_SEARCHING_PATIENTS": "Error searching for patients",

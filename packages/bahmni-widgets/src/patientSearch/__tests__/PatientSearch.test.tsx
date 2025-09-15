@@ -165,7 +165,7 @@ describe('PatientSearch Component', () => {
 
     rerender(<PatientSearch {...defaultProps} />);
 
-    expect(mockOnSearchResults).toHaveBeenCalledWith(mockResults);
+    expect(mockOnSearchResults).toHaveBeenCalledWith(mockResults, 'John');
   });
 
   it('should trigger search when Enter key is pressed', () => {
