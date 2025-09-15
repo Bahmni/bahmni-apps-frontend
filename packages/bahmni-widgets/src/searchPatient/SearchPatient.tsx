@@ -4,7 +4,7 @@ import {
   PatientSearchResultBundle,
   useTranslation,
 } from '@bahmni-frontend/bahmni-services';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../notification';
 import styles from './styles/SearchPatient.module.scss';
@@ -29,11 +29,13 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
   const [searchInput, setSearchInput] = useState('');
   const { addNotification } = useNotification();
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['patientSearch', searchTerm],
     queryFn: () => searchPatientByNameOrId(encodeURI(searchTerm)),
     enabled: !!searchTerm,
     staleTime: 0,
+    gcTime: 0,
   });
 
   const handleChange = (searchInput: string) => {
@@ -41,7 +43,9 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
   };
 
   const handleClick = () => {
-    if (!searchInput) return;
+    if (!searchInput.trim()) return;
+    queryClient.invalidateQueries({ queryKey: ['patientSearch'] });
+    setSearchInput(searchInput.trim());
     setSearchTerm(searchInput.trim());
   };
 
