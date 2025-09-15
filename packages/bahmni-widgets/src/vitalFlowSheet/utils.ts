@@ -181,25 +181,25 @@ export const CONCEPT_GROUPS = {
       values: Record<string, { value: string; abnormal: boolean } | null>,
       conceptDetails?: VitalFlowSheetConceptDetail[],
     ) => {
-      const systolicValue = parseInt(values['Sbp']?.value ?? '-');
-      const diastolicValue = parseInt(values['DBP']?.value ?? '-');
-      const position = values['Body position']?.value ?? '';
+      const systolicValue = values['Sbp']?.value ?? '--';
+      const diastolicValue = values['DBP']?.value ?? '--';
+      const position = values['Body position']?.value ?? '-';
 
       // Find concept details for abnormal range checking
       const systolicConcept = conceptDetails?.find((c) => c.name === 'Sbp');
       const diastolicConcept = conceptDetails?.find((c) => c.name === 'DBP');
 
       const isSystolicAbnormal =
-        !isNaN(systolicValue) &&
+        systolicValue !== '--' &&
         systolicConcept &&
-        (systolicValue > (systolicConcept.hiNormal ?? Infinity) ||
-          systolicValue < (systolicConcept.lowNormal ?? 0));
+        (parseInt(systolicValue) > (systolicConcept.hiNormal ?? Infinity) ||
+          parseInt(systolicValue) < (systolicConcept.lowNormal ?? 0));
 
       const isDiastolicAbnormal =
-        !isNaN(diastolicValue) &&
+        diastolicValue !== '--' &&
         diastolicConcept &&
-        (diastolicValue > (diastolicConcept.hiNormal ?? Infinity) ||
-          diastolicValue < (diastolicConcept.lowNormal ?? 0));
+        (parseInt(diastolicValue) > (diastolicConcept.hiNormal ?? Infinity) ||
+          parseInt(diastolicValue) < (diastolicConcept.lowNormal ?? 0));
 
       const isAbnormal = Boolean(isSystolicAbnormal ?? isDiastolicAbnormal);
 

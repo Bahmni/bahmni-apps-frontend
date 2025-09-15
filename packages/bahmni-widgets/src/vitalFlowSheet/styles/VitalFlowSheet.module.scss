@@ -3,20 +3,17 @@
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
 
-.vitalFlowSheetTable {
-  // Multi-line headers support
-  th {
-    white-space: pre-line;
-  }
 
   .vitalFlowSheetDataTable {
+   th {
+    white-space: pre-line;
+    }
     table th:nth-child(2),
     table td:nth-child(2) {
       background-color: $green-10 !important;
       border-left: 3px solid $support-success !important;
     }
   }
-}
 
 .vitalSignCell {
   display: flex;
@@ -26,38 +23,11 @@
 
 .vitalSignName {
   @include type-style("body-compact-01");
-  color: $text-primary;
-  font-weight: 600; // Regular for concept name
-}
-
-.vitalSignUnits {
-  @include type-style("body-compact-01");
-  color: $text-primary;
-  font-weight: 400; // Regular for units
-}
-
-.vitalSignGroupName {
-  @include type-style("body-compact-01");
-  color: $text-primary;
-  font-weight: 600; // Bold for group names
-}
-
-.vitalSignSubRow {
-  padding-left: $spacing-05; // Indent sub-rows
-
-  .vitalSignName {
-    font-weight: 400; // Regular weight for sub-row concept names
-    color: $text-secondary; // Slightly muted color for sub-rows
-  }
-
-  .vitalSignUnits {
-    color: $text-secondary; // Muted color for sub-row units
-  }
+  font-weight: 600; 
 }
 
 .obsValueCell {
   @include type-style("body-compact-01");
-  color: $text-primary;
   text-align: center;
   padding: $spacing-02;
   border-radius: 2px;
@@ -65,15 +35,6 @@
   &.abnormalValue {
     color: $support-error;
     font-weight: 600;
-  }
-
-  &.latestValue {
-    font-weight: 400; // Keep regular weight for latest values
-  }
-
-  &.abnormalValue.latestValue {
-    color: $support-error;
-    font-weight: 600; // Keep regular weight even for abnormal latest values
   }
 }
 
@@ -84,26 +45,4 @@
   justify-content: flex-start;
   gap: 2px;
   line-height: 1.2;
-}
-
-.emptyCell {
-  @include type-style("body-compact-01");
-  color: $text-disabled;
-  text-align: center;
-  font-style: italic;
-}
-
-// Responsive design
-@media (max-width: 768px) {
-  .vitalFlowSheetTable {
-    overflow-x: auto;
-
-    .vitalFlowSheetDataTable {
-      min-width: 600px;
-    }
-  }
-
-  .title {
-    @include type-style("heading-compact-01");
-  }
 }

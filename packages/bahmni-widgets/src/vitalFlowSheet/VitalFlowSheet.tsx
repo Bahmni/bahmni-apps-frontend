@@ -189,7 +189,7 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
       } | null;
 
       if (!obsValue) {
-        return <span className={styles.emptyCell}>—</span>;
+        return <span>—</span>;
       }
 
       const isLatest = cellId === 'obs_0'; // First column is latest
@@ -207,7 +207,7 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
       const displayValue =
         obsValue.value === 'COMPLEX_DISPLAY' && complexObsValue.complexData ? (
           <div className={styles.complexDisplayValue}>
-            <div className={styles.complexDisplaySystolic}>
+            <div>
               <span
                 className={
                   complexObsValue.complexData.systolic.abnormal
@@ -258,7 +258,7 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
   };
 
   return (
-    <div className={styles.vitalFlowSheetTable}>
+    <div className={styles.vitalFlowSheetDataTable}>
       <SortableDataTable
         headers={loading ? staticHeaders : processedData.headers}
         ariaLabel={t('VITAL_FLOW_SHEET_TABLE')}
