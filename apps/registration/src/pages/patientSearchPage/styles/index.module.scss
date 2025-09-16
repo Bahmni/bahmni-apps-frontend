@@ -21,7 +21,14 @@
 }
 
 .patientSearchTableBody {
+  th,
   td {
-    width: 15%;
+    &:nth-child(2) {
+      max-width: 25%;
+    }
+
+    &:nth-child(6) {
+      min-width: 15%;
+    }
   }
 }
