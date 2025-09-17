@@ -1,12 +1,15 @@
 import {
   Loading,
   Icon,
-  HeaderWSideNav,
+  Header,
   ICON_SIZE,
   useSidebarNavigation,
-  ClinicalLayout,
+  ActionAreaLayout,
 } from '@bahmni-frontend/bahmni-design-system';
-import { useTranslation } from '@bahmni-frontend/bahmni-services';
+import {
+  useTranslation,
+  BAHMNI_HOME_PATH,
+} from '@bahmni-frontend/bahmni-services';
 import {
   useNotification,
   useUserPrivilege,
@@ -15,7 +18,7 @@ import React, { Suspense, useMemo, useState } from 'react';
 import ConsultationPad from '../components/consultationPad/ConsultationPad';
 import DashboardContainer from '../components/dashboardContainer/DashboardContainer';
 import PatientHeader from '../components/patientHeader/PatientHeader';
-import { BAHMNI_CLINICAL_PATH, BAHMNI_HOME_PATH } from '../constants/app';
+import { BAHMNI_CLINICAL_PATH } from '../constants/app';
 import { useClinicalConfig } from '../hooks/useClinicalConfig';
 import { useDashboardConfig } from '../hooks/useDashboardConfig';
 import {
@@ -109,9 +112,9 @@ const ConsultationPage: React.FC = () => {
   }
 
   return (
-    <ClinicalLayout
+    <ActionAreaLayout
       headerWSideNav={
-        <HeaderWSideNav
+        <Header
           breadcrumbItems={breadcrumbItems}
           globalActions={globalActions}
           sideNavItems={sidebarItems}

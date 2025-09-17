@@ -33,14 +33,14 @@ export interface HeaderGlobalAction {
 }
 
 /**
- * Props for the HeaderWSideNav component
+ * Props for the Header component
  */
-export interface HeaderWSideNavProps {
+export interface HeaderProps {
   breadcrumbItems?: HeaderBreadcrumbItem[];
   globalActions?: HeaderGlobalAction[];
-  sideNavItems: HeaderSideNavItem[];
+  sideNavItems?: HeaderSideNavItem[];
   activeSideNavItemId?: string | null;
-  onSideNavItemClick: (itemId: string) => void;
+  onSideNavItemClick?: (itemId: string) => void;
   isRail?: boolean;
   ariaLabel?: string;
 }

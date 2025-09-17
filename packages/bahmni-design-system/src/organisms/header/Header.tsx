@@ -1,6 +1,6 @@
 import {
   HeaderContainer,
-  Header,
+  Header as CarbonHeader,
   HeaderGlobalBar,
   HeaderGlobalAction,
   SideNav,
@@ -11,28 +11,28 @@ import {
 } from '@carbon/react';
 import React from 'react';
 import { Icon, ICON_SIZE } from '../../molecules/icon';
-import { HeaderWSideNavProps } from './models';
-import styles from './styles/HeaderWSideNav.module.scss';
+import { HeaderProps } from './models';
+import styles from './styles/Header.module.scss';
 import { useHeaderSideNav } from './useHeaderSideNav';
 import { isMobile } from './utils';
 
 /**
- * HeaderWSideNav component combines a header with side navigation, breadcrumbs, and global actions.
+ * Header component combines a header with side navigation, breadcrumbs, and global actions.
  * It provides a consistent navigation experience for the application.
  *
  * @component
- * @param {HeaderWSideNavProps} props - The component props
+ * @param {HeaderProps} props - The component props
  * @returns {React.ReactElement} The rendered component
  */
-export const HeaderWSideNav: React.FC<HeaderWSideNavProps> = React.memo(
+export const Header: React.FC<HeaderProps> = React.memo(
   ({
     breadcrumbItems = [],
     globalActions = [],
-    sideNavItems,
+    sideNavItems = [],
     activeSideNavItemId = null,
-    onSideNavItemClick,
+    onSideNavItemClick = () => {},
     isRail = false,
-    ariaLabel = 'HeaderWSideNav',
+    ariaLabel = 'Header',
   }) => {
     const { isSideNavExpanded, handleSideNavItemClick } =
       useHeaderSideNav(onSideNavItemClick);
@@ -80,6 +80,8 @@ export const HeaderWSideNav: React.FC<HeaderWSideNavProps> = React.memo(
     };
 
     const renderSideNav = () => {
+      if (sideNavItems.length === 0) return null;
+
       return (
         <SideNav
           aria-label={'SIDE_NAVIGATION'}
@@ -117,15 +119,16 @@ export const HeaderWSideNav: React.FC<HeaderWSideNavProps> = React.memo(
     return (
       <HeaderContainer
         render={() => (
-          <Header aria-label={ariaLabel} data-testid="header">
+          <CarbonHeader aria-label={ariaLabel} data-testid="header">
             {renderBreadcrumbs()}
             {renderGlobalActions()}
             {renderSideNav()}
-          </Header>
+          </CarbonHeader>
         )}
       />
     );
   },
 );
 
-HeaderWSideNav.displayName = 'HeaderWSideNav';
+Header.displayName = 'Header';
+export default Header;

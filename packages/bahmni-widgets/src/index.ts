@@ -7,6 +7,7 @@ export { DiagnosesTable } from './diagnoses';
 export { MedicationsTable } from './medications';
 export { RadiologyInvestigationTable } from './radiologyInvestigation';
 export { LabInvestigation } from './labinvestigation';
+export { SearchPatient } from './searchPatient';
 export {
   useNotification,
   NotificationProvider,
