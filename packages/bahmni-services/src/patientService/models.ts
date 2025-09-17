@@ -14,3 +14,27 @@ export interface FormattedPatientData {
   identifiers: Map<string, string>;
   age: Age | null;
 }
+
+export interface PatientSearchResult {
+  uuid: string;
+  birthDate: Date;
+  extraIdentifiers: string | null;
+  personId: number;
+  deathDate: Date | null;
+  identifier: string;
+  addressFieldValue: string | null;
+  givenName: string;
+  middleName: string;
+  familyName: string;
+  gender: string;
+  dateCreated: Date;
+  activeVisitUuid: string;
+  customAttribute: string;
+  hasBeenAdmitted: boolean;
+  age: string;
+}
+
+export interface PatientSearchResultBundle {
+  totalCount: number;
+  pageOfResults: PatientSearchResult[];
+}

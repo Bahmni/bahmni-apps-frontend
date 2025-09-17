@@ -1,5 +1,4 @@
 import { render, screen, act, waitFor } from '@testing-library/react';
-import '@testing-library/jest-dom';
 import { NotificationProvider } from '../NotificationProvider';
 import { useNotification } from '../useNotification';
 

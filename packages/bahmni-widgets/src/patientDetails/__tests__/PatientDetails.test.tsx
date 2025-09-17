@@ -4,7 +4,6 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import { useTranslation } from 'react-i18next';
 import PatientDetails from '../PatientDetails';
 import { usePatient } from '../usePatient';
-import '@testing-library/jest-dom';
 
 expect.extend(toHaveNoViolations);
 

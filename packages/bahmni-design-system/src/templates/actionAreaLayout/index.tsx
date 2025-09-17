@@ -1,8 +1,8 @@
 import classNames from 'classnames';
 import React, { ReactNode } from 'react';
-import styles from './styles/ClinicalLayout.module.scss';
+import styles from './styles/index.module.scss';
 
-interface ClinicalLayoutProps {
+interface ActionAreaLayoutProps {
   headerWSideNav: ReactNode;
   patientHeader: ReactNode;
   mainDisplay: ReactNode;
@@ -11,20 +11,20 @@ interface ClinicalLayoutProps {
 }
 
 /**
- * Clinical Layout component that provides the main layout structure
- * for clinical pages with four distinct sections:
+ * ActionArea Layout provides the layout structure for pages with four distinct sections:
  * 1. HeaderWSideNav - at the top of the screen, full width along with the left side navigation
  * 2. Patient Details - below header, spans full width
  * 3. Main Display - right side, scrollable content area
+ * 4. Action Area - right side, conditionally displayed
  *
  * @param {ReactNode} headerWSideNav - The header component
  * @param {ReactNode} patientHeader - The patient header component
  * @param {ReactNode} mainDisplay - The main content to display
  * @param {ReactNode} actionArea - The action area component
  * @param {boolean} isActionAreaVisible - Flag to control visibility of the action area
- * @returns {React.ReactElement} The ClinicalLayout component
+ * @returns {React.ReactElement} The ActionAreaLayout component
  */
-export const ClinicalLayout: React.FC<ClinicalLayoutProps> = ({
+const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
   headerWSideNav,
   patientHeader,
   mainDisplay,
@@ -63,3 +63,5 @@ export const ClinicalLayout: React.FC<ClinicalLayoutProps> = ({
     </div>
   );
 };
+
+export default ActionAreaLayout;

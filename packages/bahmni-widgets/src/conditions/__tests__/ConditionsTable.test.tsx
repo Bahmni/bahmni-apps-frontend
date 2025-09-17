@@ -5,7 +5,6 @@ import {
   useTranslation,
 } from '@bahmni-frontend/bahmni-services';
 import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import ConditionsTable from '../ConditionsTable';
 import { useConditions } from '../useConditions';

@@ -5,7 +5,6 @@ import {
   Diagnosis,
 } from '@bahmni-frontend/bahmni-services';
 import { render, screen, waitFor } from '@testing-library/react';
-import '@testing-library/jest-dom';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import DiagnosesTable from '../DiagnosesTable';
 

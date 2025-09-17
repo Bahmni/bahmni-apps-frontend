@@ -9,7 +9,6 @@ import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import DiagnosesTable from '../DiagnosesTable';
 import { useDiagnoses } from '../useDiagnoses';
-import '@testing-library/jest-dom';
 
 expect.extend(toHaveNoViolations);
 

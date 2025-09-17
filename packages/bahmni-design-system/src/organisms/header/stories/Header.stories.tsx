@@ -1,6 +1,6 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import HeaderWSideNav from '../HeaderWSideNav';
+import Header from '../Header';
 import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
 
 // Create a decorator for better layout in Storybook
@@ -10,16 +10,16 @@ const HeaderDecorator = (Story: React.ComponentType) => (
   </div>
 );
 
-const meta: Meta<typeof HeaderWSideNav> = {
-  title: 'Components/Common/HeaderWSideNav',
-  component: HeaderWSideNav,
+const meta: Meta<typeof Header> = {
+  title: 'Components/Common/Header',
+  component: Header,
   parameters: {
     layout: 'fullscreen',
     docs: {
       description: {
         component: `
 
-The HeaderWSideNav component combines a header with side navigation, breadcrumbs, and global actions. It serves as the primary navigation interface for the Bahmni Clinical application.
+The Header component combines a header with side navigation, breadcrumbs, and global actions. It serves as the primary navigation interface for the Bahmni Clinical application.
 
 ## Features
 
@@ -93,14 +93,14 @@ This component is typically used in layout components like \`ClinicalLayout\` to
       control: 'text',
       table: {
         type: { summary: 'string' },
-        defaultValue: { summary: '"HeaderWSideNav"' },
+        defaultValue: { summary: '"Header"' },
       },
     },
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof HeaderWSideNav>;
+type Story = StoryObj<typeof Header>;
 
 /**
  * This is the basic configuration with minimal props.
@@ -133,7 +133,6 @@ export const Default: Story = {
  */
 export const WithBreadcrumbs: Story = {
   args: {
-    ...Default.args,
     breadcrumbItems: [
       { id: 'home', label: 'Home', href: '#' },
       { id: 'patients', label: 'Patients', href: '#' },
@@ -437,7 +436,7 @@ export const AccessibilityFeatures: Story = {
     docs: {
       description: {
         story: `
-This example highlights the accessibility features of the HeaderWSideNav component:
+This example highlights the accessibility features of the Header component:
 
 - **ARIA Labels**: The header has an ARIA label for screen readers
 - **Keyboard Navigation**: All navigation items and actions are keyboard accessible
@@ -471,7 +470,7 @@ export const MobileView: Story = {
     docs: {
       description: {
         story: `
-This example demonstrates how the HeaderWSideNav component adapts to mobile screens:
+This example demonstrates how the Header component adapts to mobile screens:
 
 - Side navigation collapses to a rail view on mobile devices
 - Breadcrumbs adapt to show only the current page on smaller screens
@@ -502,7 +501,7 @@ export const InternationalizationSupport: Story = {
     docs: {
       description: {
         story: `
-This example demonstrates the internationalization features of the HeaderWSideNav component:
+This example demonstrates the internationalization features of the Header component:
 
 - All text content uses translation keys
 - Navigation labels are translated using the i18next system
@@ -578,7 +577,7 @@ export const ClinicalWorkflowExample: Story = {
     docs: {
       description: {
         story: `
-This example demonstrates a comprehensive real-world usage of the HeaderWSideNav component in a clinical workflow:
+This example demonstrates a comprehensive real-world usage of the Header component in a clinical workflow:
 
 1. **Context**: An outpatient visit for patient John Smith
 2. **Breadcrumb Trail**: Shows the navigation path from home to the current visit
@@ -612,7 +611,7 @@ export const ImplementationGuidance: Story = {
 
 \`\`\`tsx
 import React from 'react';
-import HeaderWSideNav from '@components/common/headerWSideNav/HeaderWSideNav';
+import Header from '@components/common/header/Header';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const MyLayout: React.FC = ({ children }) => {
@@ -650,7 +649,7 @@ const MyLayout: React.FC = ({ children }) => {
 
   return (
     <div className="layout">
-      <HeaderWSideNav
+      <Header
         sideNavItems={sideNavItems}
         activeSideNavItemId={getActiveItemId()}
         onSideNavItemClick={handleSideNavItemClick}
