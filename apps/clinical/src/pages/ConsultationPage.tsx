@@ -7,7 +7,10 @@ import {
   ClinicalLayout,
 } from '@bahmni-frontend/bahmni-design-system';
 import { useTranslation } from '@bahmni-frontend/bahmni-services';
-import { useNotification } from '@bahmni-frontend/bahmni-widgets';
+import {
+  useNotification,
+  useUserPrivilege,
+} from '@bahmni-frontend/bahmni-widgets';
 import React, { Suspense, useMemo, useState } from 'react';
 import ConsultationPad from '../components/consultationPad/ConsultationPad';
 import DashboardContainer from '../components/dashboardContainer/DashboardContainer';
@@ -65,6 +68,7 @@ const globalActions = [
 const ConsultationPage: React.FC = () => {
   const { t } = useTranslation();
   const { clinicalConfig } = useClinicalConfig();
+  const { userPrivileges } = useUserPrivilege();
   const { addNotification } = useNotification();
   const [isActionAreaVisible, setIsActionAreaVisible] = useState(false);
 
@@ -86,7 +90,9 @@ const ConsultationPage: React.FC = () => {
   if (!clinicalConfig) {
     return <Loading description={t('LOADING_CLINICAL_CONFIG')} role="status" />;
   }
-
+  if (!userPrivileges) {
+    return <Loading description={t('LOADING_USER_PRIVILEGES')} role="status" />;
+  }
   if (!currentDashboard) {
     addNotification({
       title: t('ERROR_DEFAULT_TITLE'),
