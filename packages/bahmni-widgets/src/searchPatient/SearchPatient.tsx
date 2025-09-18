@@ -74,7 +74,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
     <div
       data-testid="search-patient-tile"
       id="search-patient-tile"
-      className={styles.searchPatientTile}
+      className={styles.searchPatientContainer}
     >
       <div
         className={styles.searchPatient}

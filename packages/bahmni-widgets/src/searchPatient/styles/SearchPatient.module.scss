@@ -2,8 +2,9 @@
 @use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/breakpoint" as *;
 
-.searchPatientTile {
+.searchPatientContainer {
   display: flex;
   align-items: center;
   background: $layer-02;
@@ -25,7 +26,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  align-self: stretch;
   justify-content: center;
 
   &::before {
@@ -52,4 +52,29 @@
 
 .searchTypeDropdown {
   min-width: auto;
+}
+
+@include breakpoint-down(lg) {
+  .searchPatientContainer {
+    flex-direction: column;
+  }
+
+  .searchPatient {
+    width: 100%;
+  }
+
+  .orDivider {
+    flex-direction: row;
+    width: 50%;
+
+    &::before {
+      height: 1px;
+      flex: 1;
+    }
+
+    &::after {
+      height: 1px;
+      flex: 1;
+    }
+  }
 }

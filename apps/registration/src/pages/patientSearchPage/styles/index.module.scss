@@ -1,29 +1,32 @@
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/breakpoint" as *;
 
 .main {
-  display: flex;
-  gap: $spacing-08;
   background-color: $layer-02;
-  padding-inline: calc($spacing-12 + $spacing-02);
-  padding-top: $spacing-12;
+  padding: $spacing-06 $spacing-12;
 }
 
 .patientSearchResult {
-  padding: $spacing-05 0 0 !important;
   box-shadow: 0 2px 6px 0 $shadow;
-  margin-bottom: $spacing-08;
+  margin-top: $spacing-08;
 }
 
-.title {
-  @include type-style("heading-02");
-  padding-left: $spacing-05;
-  padding-bottom: $spacing-05;
+.resultsTitle {
+  min-block-size: fit-content !important;
+  @include type-style("heading-compact-02");
+  color: $text-primary;
 }
 
 .patientSearchTableBody {
   td {
     width: 15%;
+  }
+}
+
+@include breakpoint-down(lg) {
+  .main {
+    padding: $spacing-06 $spacing-08;
   }
 }

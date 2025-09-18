@@ -89,17 +89,17 @@ const PatientSearchPage: React.FC = () => {
       return <SkeletonText testId="patient-search-title-loading" />;
     } else if (isError) {
       return (
-        <p className={styles.title} data-testid="patient-search-title-error">
+        <span data-testid="patient-search-title-error">
           {t('ERROR_DEFAULT_TITLE')}
-        </p>
+        </span>
       );
     } else {
       return (
-        <p className={styles.title} data-testid="patient-search-title">
+        <span data-testid="patient-search-title">
           {t('REGISTRATION_PATIENT_SEARCH_TABLE_TITLE', {
             count: dataLength,
           })}
-        </p>
+        </span>
       );
     }
   };
@@ -122,16 +122,18 @@ const PatientSearchPage: React.FC = () => {
             onSearch={handleOnSearch}
           />
           {searchTerm !== '' && (
-            <Tile
-              id="patient-search-result"
-              aria-label="patient-search-result"
-              className={styles.patientSearchResult}
-            >
-              {renderTitle(
-                isLoading,
-                isError,
-                patientSearchData?.totalCount ?? 0,
-              )}
+            <div className={styles.patientSearchResult}>
+              <Tile
+                id="patient-search-result"
+                aria-label="patient-search-result"
+                className={styles.resultsTitle}
+              >
+                {renderTitle(
+                  isLoading,
+                  isError,
+                  patientSearchData?.totalCount ?? 0,
+                )}
+              </Tile>
               <SortableDataTable
                 headers={headers}
                 ariaLabel="patient-search-sortable-data-table"
@@ -150,7 +152,7 @@ const PatientSearchPage: React.FC = () => {
                     : undefined
                 }
               />
-            </Tile>
+            </div>
           )}
         </div>
       }
