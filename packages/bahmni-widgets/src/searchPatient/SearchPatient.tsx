@@ -66,7 +66,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
         setTimeout(() => setPhoneInputError(''), 3000);
       }
 
-      if (searchTerm && inputValue.trim() !== searchTerm) {
+      if (searchTerm && numericValue.trim() !== searchTerm) {
         setSearchTerm('');
       }
     } else {
