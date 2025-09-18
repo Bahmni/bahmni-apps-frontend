@@ -1,4 +1,9 @@
-import { Search, Button } from '@bahmni-frontend/bahmni-design-system';
+import {
+  Search,
+  Button,
+  Dropdown,
+  Tag,
+} from '@bahmni-frontend/bahmni-design-system';
 import {
   searchPatientByNameOrId,
   PatientSearchResultBundle,
@@ -79,7 +84,6 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
         <Search
           id="search-patient-searchbar"
           testId="search-patient-searchbar"
-          size="lg"
           placeholder={searchBarPlaceholder}
           labelText="Search"
           value={searchInput}
@@ -94,7 +98,45 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
         <Button
           id="search-patient-search-button"
           testId="search-patient-search-button"
+          size="md"
           onClick={handleClick}
+          disabled={isLoading || searchInput.trim().length === 0}
+          className={styles.searchButton}
+        >
+          {buttonTitle}
+        </Button>
+      </div>
+
+      <div className={styles.orDivider}>
+        <Tag type="cool-gray">{t('OR')}</Tag>
+      </div>
+
+      <div className={styles.searchPatient}>
+        <div className={styles.phoneSearchContainer}>
+          <Search
+            id="phone-search-input"
+            testId="phone-search-input"
+            labelText=""
+            placeholder={t('SEARCH_BY_PHONE_NUMBER')}
+            aria-label={t('SEARCH_BY_PHONE_NUMBER')}
+          />
+          <Dropdown
+            id="search-type-dropdown"
+            testId="search-type-dropdown"
+            titleText=""
+            label="Phone number"
+            onChange={({ selectedItem }) => {
+              if (selectedItem) {
+              }
+            }}
+            className={styles.searchTypeDropdown}
+            size="md"
+            items={[]}
+          />
+        </div>
+        <Button
+          size="md"
+          testId="phone-search-button"
           disabled={isLoading || searchInput.trim().length === 0}
           className={styles.searchButton}
         >

@@ -3,6 +3,8 @@
 @use "@carbon/react/scss/type" as *;
 
 .main {
+  display: flex;
+  gap: $spacing-08;
   background-color: $layer-02;
   padding-inline: calc($spacing-12 + $spacing-02);
   padding-top: $spacing-12;
