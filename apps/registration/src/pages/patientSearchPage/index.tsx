@@ -1,6 +1,7 @@
 import {
   BaseLayout,
   Header,
+  Link,
   SkeletonText,
   SortableDataTable,
   Tile,
@@ -12,11 +13,12 @@ import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
+  PatientSearchResult,
 } from '@bahmni-frontend/bahmni-services';
 import { SearchPatient } from '@bahmni-frontend/bahmni-widgets';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import styles from './styles/index.module.scss';
-import { formatPatientSearchResult } from './utils';
+import { formatPatientSearchResult, PatientSearchViewModel } from './utils';
 
 /**
  * PatientSearchPage
@@ -104,6 +106,31 @@ const PatientSearchPage: React.FC = () => {
     }
   };
 
+  const handleRowClick = (row: PatientSearchViewModel<PatientSearchResult>) => {
+    if (row.uuid) {
+      window.location.href = `/bahmni/registration/index.html#/patient/${row.uuid}`;
+    }
+  };
+
+  const renderCell = useCallback(
+    (row: PatientSearchViewModel<PatientSearchResult>, cellId: string) => {
+      if (cellId === 'identifier') {
+        return (
+          <Link href={`/bahmni/registration/index.html#/patient/${row.uuid}`}>
+            {row.identifier}
+          </Link>
+        );
+      }
+      const cellValue =
+        row[cellId as keyof PatientSearchViewModel<PatientSearchResult>];
+      if (cellValue instanceof Date) {
+        return cellValue.toLocaleDateString();
+      }
+      return cellValue;
+    },
+    [],
+  );
+
   return (
     <BaseLayout
       header={
@@ -139,6 +166,7 @@ const PatientSearchPage: React.FC = () => {
                 ariaLabel="patient-search-sortable-data-table"
                 loading={isLoading}
                 rows={formatPatientSearchResult(patientSearchData)}
+                renderCell={renderCell}
                 emptyStateMessage={t(
                   'REGISTRATION_PATIENT_SEARCH_EMPTY_MESSAGE',
                   {
@@ -151,6 +179,7 @@ const PatientSearchPage: React.FC = () => {
                     ? t('REGISTRATION_PATIENT_SEARCH_ERROR_MESSAGE')
                     : undefined
                 }
+                onRowClick={handleRowClick}
               />
             </div>
           )}
