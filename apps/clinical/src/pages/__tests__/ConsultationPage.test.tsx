@@ -2,7 +2,7 @@ import { useSidebarNavigation } from '@bahmni-frontend/bahmni-design-system';
 import { useNotification } from '@bahmni-frontend/bahmni-widgets';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 import {
   validFullClinicalConfig,
   validDashboardConfig,
@@ -58,7 +58,7 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
       {children}
     </button>
   )),
-  ClinicalLayout: jest.fn(
+  ActionAreaLayout: jest.fn(
     ({
       headerWSideNav,
       patientHeader,
@@ -78,7 +78,7 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
       </div>
     ),
   ),
-  HeaderWSideNav: jest.fn(({ sideNavItems, activeSideNavItemId }) => (
+  Header: jest.fn(({ sideNavItems, activeSideNavItemId }) => (
     <div data-testid="mocked-header-component">
       {sideNavItems.map(
         (item: {

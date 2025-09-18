@@ -1,12 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import React from 'react';
-import { ClinicalLayout } from '../ClinicalLayout';
+import ActionAreaLayout from '../index';
 
 expect.extend(toHaveNoViolations);
 
 // Mock the CSS module
-jest.mock('../styles/ClinicalLayout.module.scss', () => ({
+jest.mock('../styles/ActionAreaLayout.module.scss', () => ({
   layout: 'layout',
   body: 'body',
   patientHeader: 'patientHeader',
@@ -18,7 +17,7 @@ jest.mock('../styles/ClinicalLayout.module.scss', () => ({
   collapsedMainDisplay: 'collapsedMainDisplay',
 }));
 
-describe('ClinicalLayout Component', () => {
+describe('ActionAreaLayout', () => {
   // Mock components for each section
   const MockHeader = () => <div data-testid="mock-header">Mock Header</div>;
   const MockPatientHeader = () => (
@@ -39,7 +38,7 @@ describe('ClinicalLayout Component', () => {
   // Happy Path Tests
   describe('Happy Path', () => {
     test('renders all four sections when all props are provided', () => {
-      render(<ClinicalLayout {...defaultProps} />);
+      render(<ActionAreaLayout {...defaultProps} />);
 
       // Check if all sections are rendered
       expect(screen.getByTestId('mock-header')).toBeInTheDocument();
@@ -48,7 +47,7 @@ describe('ClinicalLayout Component', () => {
     });
 
     test('applies correct CSS classes to each section', () => {
-      const { container } = render(<ClinicalLayout {...defaultProps} />);
+      const { container } = render(<ActionAreaLayout {...defaultProps} />);
 
       // Check for layout structure classes
       expect(container.querySelector('[class*="layout"]')).toBeInTheDocument();
@@ -73,7 +72,7 @@ describe('ClinicalLayout Component', () => {
         isActionAreaVisible: false,
       };
 
-      render(<ClinicalLayout {...emptyProps} />);
+      render(<ActionAreaLayout {...emptyProps} />);
 
       // Check if empty sections are rendered
       expect(screen.getByTestId('empty-header')).toBeInTheDocument();
@@ -103,7 +102,7 @@ describe('ClinicalLayout Component', () => {
         ),
       };
 
-      render(<ClinicalLayout {...complexProps} />);
+      render(<ActionAreaLayout {...complexProps} />);
 
       // Check if deeply nested content renders
       expect(screen.getByTestId('complex-content')).toBeInTheDocument();
@@ -121,7 +120,7 @@ describe('ClinicalLayout Component', () => {
         isActionAreaVisible: true,
       };
 
-      render(<ClinicalLayout {...visibleActionAreaProps} />);
+      render(<ActionAreaLayout {...visibleActionAreaProps} />);
 
       // Check if action area is rendered when isActionAreaVisible is true
       expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
@@ -133,7 +132,7 @@ describe('ClinicalLayout Component', () => {
         isActionAreaVisible: false,
       };
 
-      render(<ClinicalLayout {...hiddenActionAreaProps} />);
+      render(<ActionAreaLayout {...hiddenActionAreaProps} />);
 
       // Check if action area is not rendered when isActionAreaVisible is false
       expect(screen.queryByTestId('mock-action-area')).not.toBeInTheDocument();
@@ -146,7 +145,7 @@ describe('ClinicalLayout Component', () => {
       };
 
       const { container } = render(
-        <ClinicalLayout {...visibleActionAreaProps} />,
+        <ActionAreaLayout {...visibleActionAreaProps} />,
       );
 
       // Check if body div has collapse class when isActionAreaVisible is true
@@ -161,7 +160,7 @@ describe('ClinicalLayout Component', () => {
       };
 
       const { container } = render(
-        <ClinicalLayout {...hiddenActionAreaProps} />,
+        <ActionAreaLayout {...hiddenActionAreaProps} />,
       );
 
       // Check if body div does not have collapse class when isActionAreaVisible is false
@@ -174,7 +173,7 @@ describe('ClinicalLayout Component', () => {
   // Accessibility Tests
   describe('Accessibility', () => {
     test('has no accessibility violations', async () => {
-      const { container } = render(<ClinicalLayout {...defaultProps} />);
+      const { container } = render(<ActionAreaLayout {...defaultProps} />);
 
       const results = await axe(container);
       expect(results).toHaveNoViolations();

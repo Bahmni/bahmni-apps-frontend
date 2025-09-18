@@ -10,7 +10,6 @@ import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import MedicationsTable from '../MedicationsTable';
 import { useMedicationRequest } from '../useMedicationRequest';
-import '@testing-library/jest-dom';
 import {
   formatMedicationRequest,
   sortMedicationsByDateDistance,
