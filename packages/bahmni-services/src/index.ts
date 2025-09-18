@@ -4,6 +4,7 @@ export {
   getPatientById,
   getFormattedPatientById,
   searchPatientByNameOrId,
+  searchPatientByCustomAttribute,
   type FormattedPatientData,
   type PatientSearchResult,
   type PatientSearchResultBundle,

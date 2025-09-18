@@ -6,6 +6,7 @@ import {
 } from '@bahmni-frontend/bahmni-design-system';
 import {
   searchPatientByNameOrId,
+  searchPatientByCustomAttribute,
   PatientSearchResultBundle,
   useTranslation,
 } from '@bahmni-frontend/bahmni-services';
@@ -32,28 +33,59 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  const [phoneSearchInput, setPhoneSearchInput] = useState('');
   const { addNotification } = useNotification();
   const { t } = useTranslation();
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['patientSearch', searchTerm],
-    queryFn: () => searchPatientByNameOrId(encodeURI(searchTerm)),
+    queryKey: [
+      'patientSearch',
+      searchTerm,
+      phoneSearchInput === searchTerm ? 'phone' : 'name',
+    ],
+    queryFn: () => {
+      const isPhoneSearch = phoneSearchInput.trim() === searchTerm;
+      if (isPhoneSearch) {
+        return searchPatientByCustomAttribute(encodeURI(searchTerm), t);
+      } else {
+        return searchPatientByNameOrId(encodeURI(searchTerm));
+      }
+    },
     enabled: !!searchTerm,
     staleTime: 0,
     gcTime: 0,
   });
 
-  const handleChange = (searchInput: string) => {
-    setSearchInput(searchInput);
+  const handleChange = (inputValue: string, type: 'name' | 'phone') => {
+    if (type === 'phone') {
+      setPhoneSearchInput(inputValue);
+      if (searchTerm && inputValue.trim() !== searchTerm) {
+        setSearchTerm('');
+      }
+    } else {
+      setSearchInput(inputValue);
+      if (searchTerm && inputValue.trim() !== searchTerm) {
+        setSearchTerm('');
+      }
+    }
   };
 
-  const handleClick = () => {
-    if (!searchInput.trim()) return;
-    setSearchInput(searchInput.trim());
-    setSearchTerm(searchInput.trim());
+  const handleClick = (type: 'name' | 'phone') => {
+    const inputValue = type === 'phone' ? phoneSearchInput : searchInput;
+    if (!inputValue.trim()) return;
+    setSearchTerm(inputValue.trim());
+    if (type === 'phone') {
+      setPhoneSearchInput(inputValue.trim());
+    } else {
+      setSearchInput(inputValue.trim());
+    }
   };
 
-  const handleOnClear = () => {
-    setSearchInput('');
+  const handleOnClear = (type: 'name' | 'phone') => {
+    if (type === 'phone') {
+      setPhoneSearchInput('');
+    } else {
+      setSearchInput('');
+    }
     setSearchTerm('');
   };
 
@@ -87,19 +119,19 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
           placeholder={searchBarPlaceholder}
           labelText="Search"
           value={searchInput}
-          onChange={(e) => handleChange(e.target.value)}
+          onChange={(e) => handleChange(e.target.value, 'name')}
           onKeyDown={(e) => {
             if (e.code === 'Enter') {
-              handleClick();
+              handleClick('name');
             }
           }}
-          onClear={handleOnClear}
+          onClear={() => handleOnClear('name')}
         />
         <Button
           id="search-patient-search-button"
           testId="search-patient-search-button"
           size="md"
-          onClick={handleClick}
+          onClick={() => handleClick('name')}
           disabled={isLoading || searchInput.trim().length === 0}
           className={styles.searchButton}
         >
@@ -116,29 +148,35 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
           <Search
             id="phone-search-input"
             testId="phone-search-input"
-            labelText=""
+            labelText="Phone Search"
             placeholder={t('SEARCH_BY_PHONE_NUMBER')}
-            aria-label={t('SEARCH_BY_PHONE_NUMBER')}
+            value={phoneSearchInput}
+            onChange={(e) => handleChange(e.target.value, 'phone')}
+            onKeyDown={(e) => {
+              if (e.code === 'Enter') {
+                handleClick('phone');
+              }
+            }}
+            onClear={() => handleOnClear('phone')}
           />
           <Dropdown
             id="search-type-dropdown"
             testId="search-type-dropdown"
             titleText=""
-            label="Phone number"
-            onChange={({ selectedItem }) => {
-              if (selectedItem) {
-              }
-            }}
+            label={t('PHONE_NUMBER')}
             className={styles.searchTypeDropdown}
             size="md"
-            items={[]}
+            items={[t('PHONE_NUMBER')]}
+            selectedItem={t('PHONE_NUMBER')}
           />
         </div>
         <Button
           size="md"
+          id="phone-search-button"
           testId="phone-search-button"
-          disabled={isLoading || searchInput.trim().length === 0}
+          disabled={isLoading || phoneSearchInput.trim().length === 0}
           className={styles.searchButton}
+          onClick={() => handleClick('phone')}
         >
           {buttonTitle}
         </Button>
