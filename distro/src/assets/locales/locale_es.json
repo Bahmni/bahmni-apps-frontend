@@ -240,6 +240,7 @@
   "PATIENT_HEADER_LABEL": "Cabecera del Paciente",
   "PATIENT_HEADER_SHOW_ACTION_AREA": "Nueva Consulta",
   "PHONE_NUMBER": "Número de teléfono",
+  "PHONE_NUMBER_VALIDATION_ERROR": "No se deben permitir caracteres especiales ni alfabetos.",
   "RADIOLOGY_INVESTIGATION_HEADING": "Investigación de Radiología",
   "RADIOLOGY_ORDERED_BY": "Ordenado por",
   "RADIOLOGY_PRIORITY_URGENT": "Urgente",

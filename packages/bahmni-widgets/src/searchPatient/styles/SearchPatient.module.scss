@@ -50,6 +50,22 @@
   min-width: 0;
 }
 
+.phoneInputWrapper {
+  display: flex;
+  flex: 1 1 auto;
+  position: relative;
+}
+
+.errorMessage {
+  position: absolute;
+  top: 100%;
+  color: $support-error;
+  font-size: 0.875rem;
+  line-height: 1.125rem;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
 .searchTypeDropdown {
   min-width: auto;
 }

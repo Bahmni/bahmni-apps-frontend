@@ -34,6 +34,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [phoneSearchInput, setPhoneSearchInput] = useState('');
+  const [phoneInputError, setPhoneInputError] = useState('');
   const { addNotification } = useNotification();
   const { t } = useTranslation();
   const { data, isLoading, isError, error } = useQuery({
@@ -57,7 +58,14 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
 
   const handleChange = (inputValue: string, type: 'name' | 'phone') => {
     if (type === 'phone') {
-      setPhoneSearchInput(inputValue);
+      const numericValue = inputValue.replace(/[^0-9]/g, '');
+      setPhoneSearchInput(numericValue);
+
+      if (inputValue !== numericValue && inputValue.length > 0) {
+        setPhoneInputError(t('PHONE_NUMBER_VALIDATION_ERROR'));
+        setTimeout(() => setPhoneInputError(''), 3000);
+      }
+
       if (searchTerm && inputValue.trim() !== searchTerm) {
         setSearchTerm('');
       }
@@ -83,6 +91,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
   const handleOnClear = (type: 'name' | 'phone') => {
     if (type === 'phone') {
       setPhoneSearchInput('');
+      setPhoneInputError('');
     } else {
       setSearchInput('');
     }
@@ -145,20 +154,31 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
 
       <div className={styles.searchPatient}>
         <div className={styles.phoneSearchContainer}>
-          <Search
-            id="phone-search-input"
-            testId="phone-search-input"
-            labelText="Phone Search"
-            placeholder={t('SEARCH_BY_PHONE_NUMBER')}
-            value={phoneSearchInput}
-            onChange={(e) => handleChange(e.target.value, 'phone')}
-            onKeyDown={(e) => {
-              if (e.code === 'Enter') {
-                handleClick('phone');
-              }
-            }}
-            onClear={() => handleOnClear('phone')}
-          />
+          <div className={styles.phoneInputWrapper}>
+            <Search
+              id="phone-search-input"
+              testId="phone-search-input"
+              labelText="Phone Search"
+              placeholder={t('SEARCH_BY_PHONE_NUMBER')}
+              value={phoneSearchInput}
+              onChange={(e) => handleChange(e.target.value, 'phone')}
+              onKeyDown={(e) => {
+                if (e.code === 'Enter') {
+                  handleClick('phone');
+                }
+              }}
+              onClear={() => handleOnClear('phone')}
+              inputMode="numeric"
+            />
+            {phoneInputError && (
+              <div
+                className={styles.errorMessage}
+                data-testid="phone-validation-error"
+              >
+                {phoneInputError}
+              </div>
+            )}
+          </div>
           <Dropdown
             id="search-type-dropdown"
             testId="search-type-dropdown"

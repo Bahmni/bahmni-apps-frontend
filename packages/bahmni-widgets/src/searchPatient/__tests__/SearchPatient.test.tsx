@@ -112,6 +112,8 @@ describe('SearchPatient', () => {
       t: ((key: string) => {
         const translations: Record<string, string> = {
           ERROR_DEFAULT_TITLE: 'Error',
+          PHONE_NUMBER_VALIDATION_ERROR:
+            'Special characters and alphabets should not be allowed',
         };
         return translations[key] || key;
       }) as any,
@@ -618,6 +620,59 @@ describe('SearchPatient', () => {
         true,
       ),
     );
+  });
+
+  it('should render phone validation error message when invalid characters are entered', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SearchPatient
+          buttonTitle={buttonTitle}
+          searchBarPlaceholder={searchBarPlaceholder}
+          onSearch={mockOnSearch}
+        />
+      </QueryClientProvider>,
+    );
+
+    const phoneSearchInput = screen.getByTestId('phone-search-input');
+
+    expect(
+      screen.queryByTestId('phone-validation-error'),
+    ).not.toBeInTheDocument();
+
+    await waitFor(() => {
+      fireEvent.input(phoneSearchInput, { target: { value: '123a' } });
+    });
+
+    expect(screen.getByTestId('phone-validation-error')).toBeInTheDocument();
+    expect(screen.getByTestId('phone-validation-error')).toHaveTextContent(
+      'Special characters and alphabets should not be allowed',
+    );
+
+    expect(phoneSearchInput).toHaveValue('123');
+  });
+
+  it('should not render phone validation error message when only numeric characters are entered', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SearchPatient
+          buttonTitle={buttonTitle}
+          searchBarPlaceholder={searchBarPlaceholder}
+          onSearch={mockOnSearch}
+        />
+      </QueryClientProvider>,
+    );
+
+    const phoneSearchInput = screen.getByTestId('phone-search-input');
+
+    await waitFor(() => {
+      fireEvent.input(phoneSearchInput, { target: { value: '1234567890' } });
+    });
+
+    expect(
+      screen.queryByTestId('phone-validation-error'),
+    ).not.toBeInTheDocument();
+
+    expect(phoneSearchInput).toHaveValue('1234567890');
   });
 
   it('should have no accessibility violations', async () => {
