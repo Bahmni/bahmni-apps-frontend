@@ -4,9 +4,9 @@ import {
 } from '@bahmni-frontend/bahmni-services';
 
 export const getSortedObservationTimes = (
-  vitalsData: VitalFlowSheetData | [],
-) => {
-  if (!Array.isArray(vitalsData)) {
+  vitalsData: VitalFlowSheetData | null | undefined,
+): string[] => {
+  if (vitalsData?.tabularData) {
     return Object.keys(vitalsData.tabularData).sort(
       (a, b) => new Date(b).getTime() - new Date(a).getTime(),
     );

@@ -79,6 +79,15 @@ describe('useVitalFlowSheet hook', () => {
     mockedUseNotification.mockReturnValue({
       addNotification: mockAddNotification,
     } as any);
+
+    // Add small delay to mocks to better simulate real async behavior
+    mockedGetVitalFlowSheetData.mockImplementation(
+      (patientUUID, latestCount, obsConcepts, groupBy) => {
+        return new Promise((resolve) => {
+          setTimeout(() => resolve(mockVitalFlowSheetData), 0);
+        });
+      },
+    );
   });
 
   it('initializes with default values', () => {

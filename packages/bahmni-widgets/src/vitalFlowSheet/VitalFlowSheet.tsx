@@ -258,18 +258,16 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
   };
 
   return (
-    <div className={styles.vitalFlowSheetDataTable}>
-      <SortableDataTable
-        headers={loading ? staticHeaders : processedData.headers}
-        ariaLabel={t('VITAL_FLOW_SHEET_TABLE')}
-        rows={processedData.rows}
-        loading={loading}
-        errorStateMessage={error?.message}
-        emptyStateMessage={t('NO_VITAL_SIGNS_DATA')}
-        renderCell={renderCell}
-        className={styles.vitalFlowSheetDataTable}
-      />
-    </div>
+    <SortableDataTable
+      headers={loading ? staticHeaders : processedData.headers}
+      ariaLabel={t('VITAL_FLOW_SHEET_TABLE')}
+      rows={processedData.rows}
+      loading={loading}
+      errorStateMessage={error?.message}
+      emptyStateMessage={t('NO_VITAL_SIGNS_DATA')}
+      renderCell={renderCell}
+      className={styles.vitalFlowSheetDataTable}
+    />
   );
 };
 
