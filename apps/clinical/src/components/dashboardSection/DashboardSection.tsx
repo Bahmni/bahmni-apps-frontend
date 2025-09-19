@@ -10,6 +10,7 @@ import {
   LabInvestigation,
   MedicationsTable,
   RadiologyInvestigationTable,
+  VitalFlowSheet,
 } from '@bahmni-frontend/bahmni-widgets';
 import React from 'react';
 import styles from './styles/DashboardSection.module.scss';
@@ -38,6 +39,20 @@ const renderSectionContent = (section: DashboardSectionConfig) => {
       return <RadiologyInvestigationTable />;
     case 'Medications':
       return <MedicationsTable />;
+    case 'Flowsheet':
+      return (
+        <VitalFlowSheet
+          latestCount={5}
+          groupBy="obstime"
+          obsConcepts={[
+            'Temperature',
+            'Pulse',
+            'Respiratory rate',
+            'Blood Pressure',
+            'Body Position',
+          ]}
+        />
+      );
     default:
       return null;
   }
