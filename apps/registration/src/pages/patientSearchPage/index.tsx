@@ -154,9 +154,7 @@ const PatientSearchPage: React.FC = () => {
                   {t('REGISTRATION_PATIENT_SEARCH_BREADCRUMB_HOME')}
                 </a>
                 <span className={styles.breadcrumbSeparator}>/</span>
-                <span className={styles.breadcrumbCurrent}>
-                  Search patient
-                </span>
+                <span className={styles.breadcrumbCurrent}>Search patient</span>
               </nav>
             </div>
             <div className={styles.rightActions}>
@@ -170,7 +168,7 @@ const PatientSearchPage: React.FC = () => {
                 Create new patient
               </Button>
               <div className={styles.profileSection}>
-                <div className={styles.userAvatar}></div>
+                <div className={styles.userAvatar} />
                 <span className={styles.profileText}>Hi, Profile name</span>
               </div>
             </div>
