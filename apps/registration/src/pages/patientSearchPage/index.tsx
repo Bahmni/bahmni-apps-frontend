@@ -36,19 +36,11 @@ const PatientSearchPage: React.FC = () => {
   const [isPhoneSearch, setIsPhoneSearch] = useState<boolean>(false);
   const [isNavigating, setIsNavigating] = useState<boolean>(false);
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
-  const breadcrumbItems = [
-    {
-      id: 'home',
-      label: t('REGISTRATION_PATIENT_SEARCH_BREADCRUMB_HOME'),
-      href: BAHMNI_HOME_PATH,
-    },
-    {
-      id: 'current',
-      label: t('REGISTRATION_PATIENT_SEARCH_BREADCRUMB_CURRENT'),
-      isCurrentPage: true,
-    },
-  ];
+  const handleCreateNewPatient = () => {
+    navigate('/new');
+  };
 
   useEffect(() => {
     dispatchAuditEvent({
@@ -154,10 +146,36 @@ const PatientSearchPage: React.FC = () => {
   return (
     <BaseLayout
       header={
-        <Header
-          breadcrumbItems={breadcrumbItems}
-          ariaLabel="registration-search-page-header"
-        />
+        <div className={styles.customHeader}>
+          <div className={styles.headerContent}>
+            <div className={styles.breadcrumbSection}>
+              <nav className={styles.breadcrumb}>
+                <a href={BAHMNI_HOME_PATH} className={styles.breadcrumbLink}>
+                  {t('REGISTRATION_PATIENT_SEARCH_BREADCRUMB_HOME')}
+                </a>
+                <span className={styles.breadcrumbSeparator}>/</span>
+                <span className={styles.breadcrumbCurrent}>
+                  Search patient
+                </span>
+              </nav>
+            </div>
+            <div className={styles.rightActions}>
+              <Button
+                kind="primary"
+                size="sm"
+                onClick={handleCreateNewPatient}
+                testId="create-new-patient-button"
+                className={styles.createPatientButton}
+              >
+                Create new patient
+              </Button>
+              <div className={styles.profileSection}>
+                <div className={styles.userAvatar}></div>
+                <span className={styles.profileText}>Hi, Profile name</span>
+              </div>
+            </div>
+          </div>
+        </div>
       }
       main={
         <div className={styles.main}>
