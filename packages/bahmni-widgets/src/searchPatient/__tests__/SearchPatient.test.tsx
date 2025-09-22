@@ -331,11 +331,13 @@ describe('SearchPatient', () => {
         'new value',
         true,
         false,
+        false,
       );
       expect(mockOnSearch).toHaveBeenCalledTimes(2);
       expect(mockOnSearch).toHaveBeenCalledWith(
         mockSearchPatientData,
         'new value',
+        false,
         false,
         false,
       );
@@ -490,6 +492,7 @@ describe('SearchPatient', () => {
         'new value',
         false,
         true,
+        false,
       );
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
@@ -538,6 +541,7 @@ describe('SearchPatient', () => {
         'new value',
         false,
         true,
+        false,
       );
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
@@ -559,6 +563,7 @@ describe('SearchPatient', () => {
         'new value',
         false,
         true,
+        false,
       ),
     );
   });
@@ -597,6 +602,7 @@ describe('SearchPatient', () => {
         '1234567890',
         false,
         true,
+        true,
       );
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
@@ -617,6 +623,7 @@ describe('SearchPatient', () => {
         undefined,
         '1234567890',
         false,
+        true,
         true,
       ),
     );

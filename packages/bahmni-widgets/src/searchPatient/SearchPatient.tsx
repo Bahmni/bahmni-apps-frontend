@@ -23,6 +23,7 @@ interface SearchPatientProps {
     searchTerm: string,
     isLoading: boolean,
     isError: boolean,
+    isPhoneSearch: boolean,
   ) => void;
 }
 
@@ -37,14 +38,10 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
   const [phoneInputError, setPhoneInputError] = useState('');
   const { addNotification } = useNotification();
   const { t } = useTranslation();
+  const [isPhoneSearch, setIsPhoneSearch] = useState<boolean>(false);
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: [
-      'patientSearch',
-      searchTerm,
-      phoneSearchInput === searchTerm ? 'phone' : 'name',
-    ],
+    queryKey: ['patientSearch', searchTerm, isPhoneSearch],
     queryFn: () => {
-      const isPhoneSearch = phoneSearchInput.trim() === searchTerm;
       if (isPhoneSearch) {
         return searchPatientByCustomAttribute(encodeURI(searchTerm), t);
       } else {
@@ -60,7 +57,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
     if (type === 'phone') {
       const numericValue = inputValue.replace(/[^0-9]/g, '');
       setPhoneSearchInput(numericValue);
-
+      setSearchInput('');
       if (inputValue !== numericValue && inputValue.length > 0) {
         setPhoneInputError(t('PHONE_NUMBER_VALIDATION_ERROR'));
         setTimeout(() => setPhoneInputError(''), 3000);
@@ -83,8 +80,10 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
     setSearchTerm(inputValue.trim());
     if (type === 'phone') {
       setPhoneSearchInput(inputValue.trim());
+      setIsPhoneSearch(true);
     } else {
       setSearchInput(inputValue.trim());
+      setIsPhoneSearch(false);
     }
   };
 
@@ -100,7 +99,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
 
   useEffect(() => {
     if (isError && searchTerm) {
-      onSearch(data, searchTerm, isLoading, isError);
+      onSearch(data, searchTerm, isLoading, isError, isPhoneSearch);
       addNotification({
         title: t('ERROR_DEFAULT_TITLE'),
         message: error.message,
@@ -108,7 +107,8 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
         timeout: 5000,
       });
     }
-    if (searchTerm) onSearch(data, searchTerm, isLoading, isError);
+    if (searchTerm)
+      onSearch(data, searchTerm, isLoading, isError, isPhoneSearch);
   }, [searchTerm, isLoading, isError]);
 
   return (
