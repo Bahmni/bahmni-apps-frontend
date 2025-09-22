@@ -649,13 +649,14 @@ describe('SearchPatient', () => {
     await waitFor(() => {
       fireEvent.input(phoneSearchInput, { target: { value: '123a' } });
     });
+    fireEvent.click(screen.getByTestId('phone-search-button'));
 
     expect(screen.getByTestId('phone-validation-error')).toBeInTheDocument();
     expect(screen.getByTestId('phone-validation-error')).toHaveTextContent(
       'Special characters and alphabets should not be allowed',
     );
 
-    expect(phoneSearchInput).toHaveValue('123');
+    expect(phoneSearchInput).toHaveValue('123a');
   });
 
   it('should not render phone validation error message when only numeric characters are entered', async () => {

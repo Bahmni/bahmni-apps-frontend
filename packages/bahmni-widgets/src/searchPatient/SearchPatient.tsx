@@ -55,16 +55,15 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
 
   const handleChange = (inputValue: string, type: 'name' | 'phone') => {
     if (type === 'phone') {
-      const numericValue = inputValue.replace(/[^0-9]/g, '');
-      setPhoneSearchInput(numericValue);
+      setPhoneSearchInput(inputValue);
       setSearchInput('');
-      if (inputValue !== numericValue && inputValue.length > 0) {
-        setPhoneInputError(t('PHONE_NUMBER_VALIDATION_ERROR'));
-        setTimeout(() => setPhoneInputError(''), 3000);
-      }
-
-      if (searchTerm && numericValue.trim() !== searchTerm) {
-        setSearchTerm('');
+      if (phoneInputError != '') {
+        const numericValue = inputValue.replace(/[^0-9]/g, '');
+        if (inputValue !== numericValue && inputValue.length > 0) {
+          setPhoneInputError(t('PHONE_NUMBER_VALIDATION_ERROR'));
+        } else {
+          setPhoneInputError('');
+        }
       }
     } else {
       setSearchInput(inputValue);
@@ -77,14 +76,25 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
   const handleClick = (type: 'name' | 'phone') => {
     const inputValue = type === 'phone' ? phoneSearchInput : searchInput;
     if (!inputValue.trim()) return;
-    setSearchTerm(inputValue.trim());
+
+    const trimmedValue = inputValue.trim();
+
     if (type === 'phone') {
-      setPhoneSearchInput(inputValue.trim());
-      setIsPhoneSearch(true);
+      const numericValue = inputValue.replace(/[^0-9]/g, '');
+      const hasInvalidChars =
+        inputValue !== numericValue && inputValue.length > 0;
+
+      setPhoneInputError(
+        hasInvalidChars ? t('PHONE_NUMBER_VALIDATION_ERROR') : '',
+      );
+      setSearchTerm(hasInvalidChars ? '' : trimmedValue);
+      setPhoneSearchInput(trimmedValue);
     } else {
-      setSearchInput(inputValue.trim());
-      setIsPhoneSearch(false);
+      setSearchInput(trimmedValue);
+      setSearchTerm(trimmedValue);
     }
+
+    setIsPhoneSearch(type === 'phone');
   };
 
   const handleOnClear = (type: 'name' | 'phone') => {
