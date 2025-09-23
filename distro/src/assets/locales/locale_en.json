@@ -238,7 +238,7 @@
   "PATIENT_HEADER_ACTION_AREA_IN_PROGRESS": "Consultation in progress",
   "PATIENT_HEADER_LABEL": "Patient Header",
   "PHONE_NUMBER": "Phone Number",
-  "PHONE_NUMBER_VALIDATION_ERROR": "Special characters and alphabets should not be allowed",
+  "PHONE_NUMBER_VALIDATION_ERROR": "Please enter only numbers.",
   "RADIOLOGY_INVESTIGATION_HEADING": "Radiology Investigations",
   "RADIOLOGY_ORDERED_BY": "Ordered By",
   "RADIOLOGY_PRIORITY_URGENT": "Urgent",

@@ -57,19 +57,15 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
     if (type === 'phone') {
       setPhoneSearchInput(inputValue);
       setSearchInput('');
-      if (phoneInputError != '') {
-        const numericValue = inputValue.replace(/[^0-9]/g, '');
-        if (inputValue !== numericValue && inputValue.length > 0) {
-          setPhoneInputError(t('PHONE_NUMBER_VALIDATION_ERROR'));
-        } else {
-          setPhoneInputError('');
-        }
-      }
+      const numericValue = inputValue.replace(/[^0-9]/g, '');
+      setPhoneInputError(
+        phoneInputError && inputValue !== numericValue
+          ? t('PHONE_NUMBER_VALIDATION_ERROR')
+          : '',
+      );
     } else {
+      setPhoneSearchInput('');
       setSearchInput(inputValue);
-      if (searchTerm && inputValue.trim() !== searchTerm) {
-        setSearchTerm('');
-      }
     }
   };
 
