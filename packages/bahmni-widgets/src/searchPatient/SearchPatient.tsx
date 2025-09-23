@@ -64,6 +64,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
           : '',
       );
     } else {
+      setPhoneInputError('');
       setPhoneSearchInput('');
       setSearchInput(inputValue);
     }
