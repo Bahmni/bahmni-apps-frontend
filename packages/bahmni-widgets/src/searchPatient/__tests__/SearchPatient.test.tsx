@@ -498,7 +498,6 @@ describe('SearchPatient', () => {
         type: 'error',
         title: 'Error',
         message: 'Login location is missing or invalid. Please reauthenticate.',
-        timeout: 5000,
       });
     });
   });
@@ -547,7 +546,6 @@ describe('SearchPatient', () => {
         type: 'error',
         title: 'Error',
         message: 'Login location is missing or invalid. Please reauthenticate.',
-        timeout: 5000,
       });
     });
 
@@ -608,7 +606,6 @@ describe('SearchPatient', () => {
         type: 'error',
         title: 'Error',
         message: 'Login location is missing or invalid. Please reauthenticate.',
-        timeout: 5000,
       });
     });
 
