@@ -229,9 +229,9 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
               </span>
             </div>
             {complexObsValue.complexData.position && (
-              <div>
+              <span>
                 {t(translateBodyPosition(complexObsValue.complexData.position))}
-              </div>
+              </span>
             )}
           </div>
         ) : obsValue.value.includes('\n') ? (
