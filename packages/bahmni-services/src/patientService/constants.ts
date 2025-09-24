@@ -9,3 +9,35 @@ export const PATIENT_LUCENE_SEARCH_URL = (
 ) =>
   OPENMRS_REST_V1 +
   `/bahmni/search/patient/lucene?filterOnAllIdentifiers=false&identifier=${searchTerm}&q=${searchTerm}&loginLocationUuid=${loginLocationUuid}&patientSearchResultsConfig=phoneNumber&patientSearchResultsConfig=alternatePhoneNumber&s=byIdOrName`;
+
+export const PATIENT_SEARCH_CONFIG = {
+  PHONE_NUMBER: 'phoneNumber',
+  ALTERNATE_PHONE_NUMBER: 'alternatePhoneNumber',
+} as const;
+
+export const PATIENT_PHONE_NUMBER_SEARCH_URL = (
+  searchTerm: string,
+  loginLocationUuid: string,
+) => {
+  const trimmedSearchTerm = searchTerm.trim();
+
+  const params = new URLSearchParams({
+    customAttribute: trimmedSearchTerm,
+    loginLocationUuid,
+    startIndex: '0',
+  });
+  params.append('patientAttributes', PATIENT_SEARCH_CONFIG.PHONE_NUMBER);
+  params.append(
+    'patientAttributes',
+    PATIENT_SEARCH_CONFIG.ALTERNATE_PHONE_NUMBER,
+  );
+  params.append(
+    'patientSearchResultsConfig',
+    PATIENT_SEARCH_CONFIG.PHONE_NUMBER,
+  );
+  params.append(
+    'patientSearchResultsConfig',
+    PATIENT_SEARCH_CONFIG.ALTERNATE_PHONE_NUMBER,
+  );
+  return OPENMRS_REST_V1 + `/bahmni/search/patient?${params.toString()}`;
+};
