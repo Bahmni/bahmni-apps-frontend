@@ -1,4 +1,5 @@
 {
+  "ABNORMAL_VALUE": "Valor Anormal",
   "ADD_ALLERGY_NOTE": "Agregar Nota",
   "ADD_ALLERGY_NOTE_PLACEHOLDER": "Agregar notas para la alergia",
   "ALLERGEN": "Alérgeno",
@@ -23,6 +24,12 @@
   "ALLERGY_TYPE_ENVIRONMENT": "Ambiental",
   "ALLERGY_TYPE_FOOD": "Alimento",
   "AUDIT_LOG_ERROR_UNKNOWN_EVENT_TYPE": "Tipo de evento de auditoría desconocido: {{eventType}}",
+  "BODY_POSITION_SITTING": "sentado",
+  "BODY_POSITION_RECUMBENT": "decúbito",
+  "BODY_POSITION_UNKNOWN": "Desconocido",
+  "BODY_POSITION_OTHER": "Otro",
+  "BODY_POSITION_STANDING": "de pie",
+  "BODY_POSITION_FOWLERS_POSITION": "Posición de Fowler",
   "CERTAINITY_CONFIRMED": "Confirmado",
   "CERTAINITY_PROVISIONAL": "Provisorio",
   "CLINICAL_DAYS_TRANSLATION_KEY_one": "día",
@@ -224,6 +231,7 @@
   "NO_RADIOLOGY_INVESTIGATIONS": "No se encontraron investigaciones de radiología",
   "NO_MATCHING_INVESTIGATIONS_FOUND": "No se encontraron investigaciones coincidentes",
   "NO_MATCHING_MEDICATIONS_FOUND": "No se encontraron medicamentos coincidentes",
+  "NO_VITAL_SIGNS_DATA": "No se encontraron datos de signos vitales",
   "OBSERVATION_FORMS_SECTION_TITLE": "Formularios de Observación",
   "OBSERVATION_FORMS_SEARCH_PLACEHOLDER": "Buscar para agregar formulario de observación",
   "OBSERVATION_FORMS_SEARCH_ARIA_LABEL": "Buscar formularios de observación",
@@ -279,5 +287,15 @@
   "TABLE_EXPAND_COLUMN_ARIA_LABEL": "Expandir o contraer fila",
   "UNEXPECTED_ERROR": "Se produjo un error inesperado",
   "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "El usuario {{username}} accedió a la pantalla de búsqueda de pacientes en la aplicación de registro",
-  "VISIT_TYPE": "Tipo de visita"
+  "VISIT_TYPE": "Tipo de visita",
+  "VITAL_SIGN": "Signo Vital",
+  "VITAL_FLOW_SHEET_TABLE": "Tabla de Signos Vitales",
+  "VITAL_SIGNS_BLOOD_PRESSURE": "Presión arterial",
+  "VITAL_SIGNS_PULSE": "Pulso",
+  "VITAL_SIGNS_RESPIRATORY_RATE": "Frecuencia respiratoria",
+  "VITAL_SIGNS_TEMPERATURE": "Temperatura",
+  "VITAL_SIGNS_SYSTOLIC_BLOOD_PRESSURE": "Presión arterial sistólica",
+  "VITAL_SIGNS_DIASTOLIC_BLOOD_PRESSURE": "Presión arterial diastólica",
+  "VITAL_SIGNS_BODY_POSITION": "Posición del cuerpo",
+  "VITAL_SIGNS_HEART_RATE": "Frecuencia cardíaca"
 }

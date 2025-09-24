@@ -1,0 +1,47 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/theme" as *;
+
+
+  .vitalFlowSheetDataTable {
+   th {
+    white-space: pre-line;
+    }
+    table th:nth-child(2) * ,
+    table td:nth-child(2) {
+      background-color: $green-10 !important;
+    }
+  }
+
+.vitalSignCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.vitalSignName {
+  @include type-style("body-compact-01");
+  font-weight: 600; 
+}
+
+.obsValueCell {
+  @include type-style("body-compact-01");
+  text-align: center;
+  padding: $spacing-02;
+  border-radius: 2px;
+
+  &.abnormalValue {
+    color: $support-error;
+    font-weight: 600;
+  }
+}
+
+.complexDisplayValue {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 2px;
+  line-height: 1.2;
+}

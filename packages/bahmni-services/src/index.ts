@@ -149,3 +149,9 @@ export {
   type FormPrivilege,
   type ApiFormPrivilege,
 } from './observationFormsService';
+
+export {
+  getVitalFlowSheetData,
+  type VitalFlowSheetData,
+  type VitalFlowSheetConceptDetail,
+} from './vitalFlowSheetService';
