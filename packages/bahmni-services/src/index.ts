@@ -44,13 +44,7 @@ export {
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
 } from './allergyService';
-export {
-  getConditions,
-  getFormattedConditions,
-  type FormattedCondition,
-  type ConditionInputEntry,
-  ConditionStatus,
-} from './conditionService';
+export { getConditions, type ConditionInputEntry } from './conditionService';
 export {
   getPatientDiagnoses,
   type Diagnosis,
