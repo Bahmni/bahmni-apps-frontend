@@ -189,7 +189,7 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
       } | null;
 
       if (!obsValue) {
-        return <span>—</span>;
+        return '\u2014'; // Em dash for no data
       }
 
       const isLatest = cellId === 'obs_0'; // First column is latest
