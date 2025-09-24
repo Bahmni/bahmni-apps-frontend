@@ -273,5 +273,6 @@
   "SIDE_NAVIGATION": "Side navigation",
   "TABLE_EXPAND_COLUMN_ARIA_LABEL": "Expand or collapse row",
   "UNEXPECTED_ERROR": "An unexpected error occurred",
+  "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "User {{username}} accessed patient search screen in registration app",
   "VISIT_TYPE": "Visit Type"
 }

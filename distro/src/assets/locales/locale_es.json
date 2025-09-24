@@ -22,6 +22,7 @@
   "ALLERGY_TYPE_DRUG": "Droga",
   "ALLERGY_TYPE_ENVIRONMENT": "Ambiental",
   "ALLERGY_TYPE_FOOD": "Alimento",
+  "AUDIT_LOG_ERROR_UNKNOWN_EVENT_TYPE": "Tipo de evento de auditoría desconocido: {{eventType}}",
   "CERTAINITY_CONFIRMED": "Confirmado",
   "CERTAINITY_PROVISIONAL": "Provisorio",
   "CLINICAL_DAYS_TRANSLATION_KEY_one": "día",
@@ -214,6 +215,7 @@
   "NETWORK_ERROR": "Se produjo un error de red",
   "NO_ACTIVE_MEDICATIONS": "No hay medicamentos activos",
   "NO_ALLERGIES": "No hay alergias registradas para este paciente",
+  "NO_DASHBOARD_SECTIONS": "No hay secciones del panel configuradas",
   "NO_DIAGNOSES": "No hay diagnósticos registrados",
   "NO_MATCHING_ALLERGEN_FOUND": "No se encontró ningún alérgeno coincidente",
   "NO_MATCHING_DIAGNOSIS_FOUND": "No se encontraron diagnósticos coincidentes",
@@ -276,7 +278,6 @@
   "SIDE_NAVIGATION": "Navegación lateral",
   "TABLE_EXPAND_COLUMN_ARIA_LABEL": "Expandir o contraer fila",
   "UNEXPECTED_ERROR": "Se produjo un error inesperado",
-  "VISIT_TYPE": "Tipo de visita",
-  "AUDIT_LOG_ERROR_UNKNOWN_EVENT_TYPE": "Tipo de evento de auditoría desconocido: {{eventType}}",
-  "NO_DASHBOARD_SECTIONS": "No hay secciones del panel configuradas"
+  "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "El usuario {{username}} accedió a la pantalla de búsqueda de pacientes en la aplicación de registro",
+  "VISIT_TYPE": "Tipo de visita"
 }
