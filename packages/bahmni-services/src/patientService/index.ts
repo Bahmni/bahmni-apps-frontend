@@ -2,6 +2,7 @@ export {
   getPatientById,
   getFormattedPatientById,
   searchPatientByNameOrId,
+  searchPatientByCustomAttribute,
 } from './patientService';
 export {
   type FormattedPatientData,

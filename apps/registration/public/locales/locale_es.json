@@ -22,6 +22,7 @@
   "ALLERGY_TYPE_DRUG": "Droga",
   "ALLERGY_TYPE_ENVIRONMENT": "Ambiental",
   "ALLERGY_TYPE_FOOD": "Alimento",
+  "AUDIT_LOG_ERROR_UNKNOWN_EVENT_TYPE": "Tipo de evento de auditoría desconocido: {{eventType}}",
   "CERTAINITY_CONFIRMED": "Confirmado",
   "CERTAINITY_PROVISIONAL": "Provisorio",
   "CLINICAL_DAYS_TRANSLATION_KEY_one": "día",
@@ -170,7 +171,6 @@
   "LOCATION": "Ubicación",
   "MEDICATIONS_DISPLAY_CONTROL_HEADING": "Medicamentos",
   "MEDICATIONS_DOSAGE": "Dosificación",
-
   "MEDICATIONS_ERROR_FETCHING": "Error al obtener medicamentos",
   "MEDICATIONS_INSTRUCTIONS": "Instrucciones",
   "MEDICATIONS_MEDICINE_NAME": "Medicina",
@@ -213,6 +213,7 @@
   "NETWORK_ERROR": "Se produjo un error de red",
   "NO_ACTIVE_MEDICATIONS": "No hay medicamentos activos",
   "NO_ALLERGIES": "No hay alergias registradas para este paciente",
+  "NO_DASHBOARD_SECTIONS": "No hay secciones del panel configuradas",
   "NO_DIAGNOSES": "No hay diagnósticos registrados",
   "NO_MATCHING_ALLERGEN_FOUND": "No se encontró ningún alérgeno coincidente",
   "NO_MATCHING_DIAGNOSIS_FOUND": "No se encontraron diagnósticos coincidentes",
@@ -228,6 +229,8 @@
   "PATIENT_HEADER_ACTION_AREA_IN_PROGRESS": "Consulta en progreso",
   "PATIENT_HEADER_LABEL": "Cabecera del Paciente",
   "PATIENT_HEADER_SHOW_ACTION_AREA": "Nueva Consulta",
+  "PHONE_NUMBER": "Número de teléfono",
+  "PHONE_NUMBER_VALIDATION_ERROR": "Por favor, introduzca sólo números.",
   "RADIOLOGY_INVESTIGATION_HEADING": "Investigación de Radiología",
   "RADIOLOGY_ORDERED_BY": "Ordenado por",
   "RADIOLOGY_PRIORITY_URGENT": "Urgente",
@@ -247,6 +250,7 @@
   "REGISTRATION_PATIENT_SEARCH_INPUT_PLACEHOLDER": "Buscar por nombre o ID del paciente",
   "REGISTRATION_PATIENT_SEARCH_TABLE_TITLE": "Resultados de pacientes ({{count}})",
   "REACTIONS": "Reacción(es)",
+  "SEARCH_BY_PHONE_NUMBER": "Buscar por número de teléfono",
   "SELECT_ENCOUNTER_TYPE": "Seleccionar tipo de encuentro",
   "SELECT_LOCATION": "Seleccionar ubicación",
   "SELECT_PRACTITIONER": "Seleccionar profesional médico",
@@ -260,7 +264,6 @@
   "SIDE_NAVIGATION": "Navegación lateral",
   "TABLE_EXPAND_COLUMN_ARIA_LABEL": "Expandir o contraer fila",
   "UNEXPECTED_ERROR": "Se produjo un error inesperado",
-  "VISIT_TYPE": "Tipo de visita",
-  "AUDIT_LOG_ERROR_UNKNOWN_EVENT_TYPE": "Tipo de evento de auditoría desconocido: {{eventType}}",
-  "NO_DASHBOARD_SECTIONS": "No hay secciones del panel configuradas"
+  "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "El usuario {{username}} accedió a la pantalla de búsqueda de pacientes en la aplicación de registro",
+  "VISIT_TYPE": "Tipo de visita"
 }

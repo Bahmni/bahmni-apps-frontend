@@ -174,6 +174,7 @@
   "LOADING_DASHBOARD_CONTENT": "Loading dashboard content...",
   "LOADING_LOCATIONS": "Loading locations...",
   "LOADING_MEDICATIONS": "Loading medications...",
+  "LOADING_PATIENT_DETAILS": "Navigating to patient details...",
   "LOADING_USER_PRIVILEGES": "Loading user privileges...",
   "LOCATION": "Location",
   "MEDICATIONS_ADDED_MEDICATIONS": "Added medicines",
@@ -244,6 +245,8 @@
   "PARTICIPANT": "Participant(s)",
   "PATIENT_HEADER_ACTION_AREA_IN_PROGRESS": "Consultation in progress",
   "PATIENT_HEADER_LABEL": "Patient Header",
+  "PHONE_NUMBER": "Phone Number",
+  "PHONE_NUMBER_VALIDATION_ERROR": "Please enter only numbers.",
   "RADIOLOGY_INVESTIGATION_HEADING": "Radiology Investigations",
   "RADIOLOGY_ORDERED_BY": "Ordered By",
   "RADIOLOGY_PRIORITY_URGENT": "Urgent",
@@ -262,7 +265,9 @@
   "REGISTRATION_PATIENT_SEARCH_HEADER_NAME": "Patient Name",
   "REGISTRATION_PATIENT_SEARCH_HEADER_PHONE_NUMBER": "Phone Number",
   "REGISTRATION_PATIENT_SEARCH_INPUT_PLACEHOLDER": "Search by name or patient ID",
+  "REGISTRATION_PATIENT_SEARCH_PHONE_EMPTY_MESSAGE": "No patients found with '{{searchTerm}}'. Please verify the number or try a different search.",
   "REGISTRATION_PATIENT_SEARCH_TABLE_TITLE": "Patient results ({{count}})",
+  "SEARCH_BY_PHONE_NUMBER": "Search by phone number",
   "SELECTED_ITEM_CLOSE": "Close",
   "SELECTED_ITEM_CLOSE_ARIA_LABEL": "Close Selected Item",
   "SELECT_ENCOUNTER_TYPE": "Select encounter type",
@@ -276,6 +281,7 @@
   "SIDE_NAVIGATION": "Side navigation",
   "TABLE_EXPAND_COLUMN_ARIA_LABEL": "Expand or collapse row",
   "UNEXPECTED_ERROR": "An unexpected error occurred",
+  "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "User {{username}} accessed patient search screen in registration app",
   "VISIT_TYPE": "Visit Type",
   "VITAL_SIGN": "Vital Sign",
   "VITAL_FLOW_SHEET_TABLE": "Vital Flow Sheet Table",
@@ -286,7 +292,5 @@
   "VITAL_SIGNS_SYSTOLIC_BLOOD_PRESSURE": "Systolic blood pressure",
   "VITAL_SIGNS_DIASTOLIC_BLOOD_PRESSURE": "Diastolic blood pressure",
   "VITAL_SIGNS_BODY_POSITION": "Body position",
-  "VITAL_SIGNS_HEART_RATE": "Heart rate",
-  "AUDIT_LOG_ERROR_UNKNOWN_EVENT_TYPE": "Unknown audit event type: {{eventType}}",
-  "NO_DASHBOARD_SECTIONS": "No dashboard sections configured"
+  "VITAL_SIGNS_HEART_RATE": "Heart rate"
 }
