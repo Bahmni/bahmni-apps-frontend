@@ -109,7 +109,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       onSearch(data, searchTerm, isLoading, isError, isPhoneSearch);
       addNotification({
         title: t('ERROR_DEFAULT_TITLE'),
-        message: error as unknown as string,
+        message: error instanceof Error ? error.message : String(error),
         type: 'error',
       });
     }
