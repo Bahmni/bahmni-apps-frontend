@@ -284,6 +284,66 @@ describe('PatientSearchPage', () => {
     expect(results).toHaveNoViolations();
   });
 
+  it('should show phone-specific empty message when phone search returns no results', async () => {
+    (useQuery as jest.Mock).mockReturnValue({
+      data: {
+        totalCount: 0,
+        pageOfResults: [],
+      },
+      error: null,
+      isLoading: false,
+    });
+
+    render(
+      <NotificationProvider>
+        <QueryClientProvider client={queryClient}>
+          <PatientSearchPage />
+        </QueryClientProvider>
+      </NotificationProvider>,
+    );
+
+    const phoneSearchInput = screen.getByTestId('phone-search-input');
+    fireEvent.input(phoneSearchInput, { target: { value: '1234567890' } });
+    fireEvent.click(screen.getByTestId('phone-search-button'));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('REGISTRATION_PATIENT_SEARCH_PHONE_EMPTY_MESSAGE'),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it('should show name-specific empty message when name search returns no results', async () => {
+    (useQuery as jest.Mock).mockReturnValue({
+      data: {
+        totalCount: 0,
+        pageOfResults: [],
+      },
+      error: null,
+      isLoading: false,
+    });
+
+    render(
+      <NotificationProvider>
+        <QueryClientProvider client={queryClient}>
+          <PatientSearchPage />
+        </QueryClientProvider>
+      </NotificationProvider>,
+    );
+
+    const searchInput = screen.getByPlaceholderText(
+      'Search by name or patient ID',
+    );
+    fireEvent.input(searchInput, { target: { value: 'John Doe' } });
+    fireEvent.click(screen.getByTestId('search-patient-search-button'));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Could not find patient with identifier\/name/),
+      ).toBeInTheDocument();
+    });
+  });
+
   describe('Patient ID Link Navigation', () => {
     it('should render patient ID as a clickable link with correct href', async () => {
       (useQuery as jest.Mock).mockReturnValue({
@@ -378,6 +438,50 @@ describe('PatientSearchPage', () => {
           '/bahmni/registration/index.html#/patient/02f47490-d657-48ee-98e7-4c9133ea168b',
         );
       });
+    });
+
+    it('should show loading state when navigating to patient details', async () => {
+      delete (window as any).location;
+      window.location = { href: '' } as any;
+
+      (useQuery as jest.Mock).mockReturnValue({
+        data: {
+          totalCount: mockSearchPatientData.length,
+          pageOfResults: mockSearchPatientData,
+        },
+        error: null,
+        isLoading: false,
+      });
+
+      const { rerender } = render(
+        <NotificationProvider>
+          <QueryClientProvider client={queryClient}>
+            <PatientSearchPage />
+          </QueryClientProvider>
+        </NotificationProvider>,
+      );
+
+      const searchInput = screen.getByPlaceholderText(
+        'Search by name or patient ID',
+      );
+      fireEvent.input(searchInput, { target: { value: 'test search' } });
+      fireEvent.click(screen.getByTestId('search-patient-search-button'));
+
+      await waitFor(() => {
+        const patientLink = screen.getByRole('link', { name: 'ABC200001' });
+        fireEvent.click(patientLink);
+      });
+
+      rerender(
+        <NotificationProvider>
+          <QueryClientProvider client={queryClient}>
+            <PatientSearchPage />
+          </QueryClientProvider>
+        </NotificationProvider>,
+      );
+
+      expect(screen.getByText('LOADING_PATIENT_DETAILS')).toBeInTheDocument();
+      expect(screen.getByRole('status')).toBeInTheDocument();
     });
   });
 });
