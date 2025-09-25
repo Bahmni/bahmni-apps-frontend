@@ -9,6 +9,8 @@ import {
   searchPatientByCustomAttribute,
   PatientSearchResultBundle,
   useTranslation,
+  getRegistrationConfig,
+  PatientSearchField,
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
@@ -39,6 +41,20 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
   const { addNotification } = useNotification();
   const { t } = useTranslation();
   const [isPhoneSearch, setIsPhoneSearch] = useState<boolean>(false);
+  const [dropdownItems, setDropdownItems] = useState<string[]>([]);
+  const [selectedDropdownItem, setSelectedDropdownItem] = useState<string>('');
+
+  const {
+    data: configData,
+    isError: configIsError,
+    error: configError,
+  } = useQuery({
+    queryKey: ['registrationConfig'],
+    queryFn: () => getRegistrationConfig(),
+    staleTime: 0,
+    gcTime: 0,
+  });
+
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['patientSearch', searchTerm, isPhoneSearch],
     queryFn: () => {
@@ -108,6 +124,36 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
     }
     setSearchTerm('');
   };
+
+  useEffect(() => {
+    if (configIsError) {
+      const errorMessage =
+        configError instanceof Error
+          ? configError.message
+          : 'Failed to fetch patient search configuration';
+      addNotification({
+        title: t('CONFIG_ERROR_TITLE') || 'Configuration Error',
+        message: errorMessage,
+        type: 'error',
+      });
+      setDropdownItems([]);
+      setSelectedDropdownItem('');
+    } else if (configData?.patientSearch?.customAttributes) {
+      const labels = configData.patientSearch.customAttributes.map(
+        (field: PatientSearchField) => field.label,
+      );
+      setDropdownItems(labels);
+      setSelectedDropdownItem(labels[0] || '');
+    } else if (configData) {
+      addNotification({
+        title: t('CONFIG_ERROR_TITLE') || 'Configuration Error',
+        message: 'No patient search configuration found',
+        type: 'error',
+      });
+      setDropdownItems([]);
+      setSelectedDropdownItem('');
+    }
+  }, [configData, configIsError, configError]);
 
   useEffect(() => {
     if (isError && searchTerm) {
@@ -194,11 +240,14 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
             id="search-type-dropdown"
             testId="search-type-dropdown"
             titleText=""
-            label={t('PHONE_NUMBER')}
+            label={selectedDropdownItem}
             className={styles.searchTypeDropdown}
             size="md"
-            items={[t('PHONE_NUMBER')]}
-            selectedItem={t('PHONE_NUMBER')}
+            items={dropdownItems}
+            selectedItem={selectedDropdownItem}
+            onChange={(event) => {
+              setSelectedDropdownItem(event.selectedItem || '');
+            }}
           />
         </div>
         <Button

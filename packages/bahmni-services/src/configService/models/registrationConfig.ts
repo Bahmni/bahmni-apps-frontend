@@ -1,9 +1,7 @@
 export interface PatientSearchField {
   label: string;
-  placeholder?: string;
   fields: string[];
-  type?: 'person' | 'address' | 'program';
-  default?: boolean;
+  type: 'person' | 'address' | 'program';
 }
 
 export interface PatientSearchConfig {
@@ -11,5 +9,5 @@ export interface PatientSearchConfig {
 }
 
 export interface RegistrationConfig {
-  patientSearch?: PatientSearchConfig;
+  patientSearch: PatientSearchConfig;
 }

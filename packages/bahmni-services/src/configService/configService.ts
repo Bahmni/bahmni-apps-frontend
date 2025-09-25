@@ -85,28 +85,13 @@ export const getMedicationConfig =
  * @returns Validated registration configuration object or null if invalid/error
  * @throws Error if fetch fails or validation fails
  */
-export const getRegistrationConfig = async <
-  T extends RegistrationConfig,
->(): Promise<T | null> => {
-  const rawConfig = await getConfig<Record<string, unknown>>(
-    REGISTRATION_CONFIG_URL,
-    {},
-  );
-  if (!rawConfig) return null;
-
-  const config = (rawConfig as { config?: T }).config ?? (rawConfig as T);
-
-  const isValid = await validateConfig(config, registrationConfigSchema);
-  if (!isValid) {
-    notificationService.showError(
-      i18next.t(ERROR_TITLES.VALIDATION_ERROR),
-      i18next.t(ERROR_MESSAGES.VALIDATION_FAILED),
+export const getRegistrationConfig =
+  async (): Promise<RegistrationConfig | null> => {
+    return getConfig<RegistrationConfig>(
+      REGISTRATION_CONFIG_URL,
+      registrationConfigSchema,
     );
-    return null;
-  }
-
-  return config;
-};
+  };
 
 /**
  * Fetches and validates configuration from the server
