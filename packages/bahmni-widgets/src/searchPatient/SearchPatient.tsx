@@ -57,9 +57,11 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
     if (type === 'phone') {
       setPhoneSearchInput(inputValue);
       setSearchInput('');
+      const hasPlusAtStart = inputValue.length > 0 && inputValue[0] === '+';
       const numericValue = inputValue.replace(/[^0-9]/g, '');
+      const formattedValue = hasPlusAtStart ? '+' + numericValue : numericValue;
       setPhoneInputError(
-        phoneInputError && inputValue !== numericValue
+        phoneInputError && inputValue !== formattedValue
           ? t('PHONE_NUMBER_VALIDATION_ERROR')
           : '',
       );
@@ -77,14 +79,17 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
     const trimmedValue = inputValue.trim();
 
     if (type === 'phone') {
+      const hasPlusAtStart = inputValue.length > 0 && inputValue[0] === '+';
       const numericValue = inputValue.replace(/[^0-9]/g, '');
+      const formattedValue = hasPlusAtStart ? '+' + numericValue : numericValue;
+
       const hasInvalidChars =
-        inputValue !== numericValue && inputValue.length > 0;
+        inputValue !== formattedValue && inputValue.length > 0;
 
       setPhoneInputError(
         hasInvalidChars ? t('PHONE_NUMBER_VALIDATION_ERROR') : '',
       );
-      setSearchTerm(hasInvalidChars ? '' : trimmedValue);
+      setSearchTerm(hasInvalidChars ? '' : formattedValue);
       setPhoneSearchInput(trimmedValue);
     } else {
       setSearchInput(trimmedValue);

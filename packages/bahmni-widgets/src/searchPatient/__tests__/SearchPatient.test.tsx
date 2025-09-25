@@ -186,6 +186,15 @@ describe('SearchPatient', () => {
     expect(searchPatientByNameOrId).toHaveBeenCalledWith(
       encodeURI('new value'),
     );
+    await waitFor(() => {
+      expect(mockOnSearch).toHaveBeenCalledWith(
+        expect.anything(),
+        'new value',
+        expect.any(Boolean),
+        expect.any(Boolean),
+        false,
+      );
+    });
   });
 
   it('should search for patient when search input has a valid text and hits enter', async () => {
@@ -255,6 +264,15 @@ describe('SearchPatient', () => {
       encodeURI('1234567890'),
       expect.any(Function),
     );
+    await waitFor(() => {
+      expect(mockOnSearch).toHaveBeenCalledWith(
+        expect.anything(),
+        '1234567890',
+        expect.any(Boolean),
+        expect.any(Boolean),
+        true,
+      );
+    });
   });
 
   it('should search for patient when phone search input has a valid text and hits enter', async () => {
@@ -288,6 +306,13 @@ describe('SearchPatient', () => {
       expect(searchPatientByCustomAttribute).toHaveBeenCalledWith(
         encodeURI('1234567890'),
         expect.any(Function),
+      );
+      expect(mockOnSearch).toHaveBeenCalledWith(
+        expect.anything(),
+        '1234567890',
+        expect.any(Boolean),
+        expect.any(Boolean),
+        true,
       );
     });
   });
@@ -654,6 +679,7 @@ describe('SearchPatient', () => {
     );
 
     expect(phoneSearchInput).toHaveValue('123a');
+    expect(searchPatientByCustomAttribute).not.toHaveBeenCalled();
   });
 
   it('should not render phone validation error message when only numeric characters are entered', async () => {
@@ -678,6 +704,99 @@ describe('SearchPatient', () => {
     ).not.toBeInTheDocument();
 
     expect(phoneSearchInput).toHaveValue('1234567890');
+  });
+
+  it('should not render phone validation error message when entered with country code', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SearchPatient
+          buttonTitle={buttonTitle}
+          searchBarPlaceholder={searchBarPlaceholder}
+          onSearch={mockOnSearch}
+        />
+      </QueryClientProvider>,
+    );
+
+    const phoneSearchInput = screen.getByTestId('phone-search-input');
+
+    await waitFor(() => {
+      fireEvent.input(phoneSearchInput, { target: { value: '+911234567890' } });
+    });
+
+    expect(
+      screen.queryByTestId('phone-validation-error'),
+    ).not.toBeInTheDocument();
+
+    expect(phoneSearchInput).toHaveValue('+911234567890');
+  });
+
+  it('should clear phone input when typing in name field', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SearchPatient
+          buttonTitle={buttonTitle}
+          searchBarPlaceholder={searchBarPlaceholder}
+          onSearch={mockOnSearch}
+        />
+      </QueryClientProvider>,
+    );
+
+    const phoneSearchInput = screen.getByTestId('phone-search-input');
+    const nameSearchInput = screen.getByTestId('search-patient-searchbar');
+
+    fireEvent.input(phoneSearchInput, { target: { value: '1234567890' } });
+    expect(phoneSearchInput).toHaveValue('1234567890');
+
+    fireEvent.input(nameSearchInput, { target: { value: 'John Doe' } });
+    expect(phoneSearchInput).toHaveValue('');
+    expect(nameSearchInput).toHaveValue('John Doe');
+  });
+
+  it('should clear name input when typing in phone field', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SearchPatient
+          buttonTitle={buttonTitle}
+          searchBarPlaceholder={searchBarPlaceholder}
+          onSearch={mockOnSearch}
+        />
+      </QueryClientProvider>,
+    );
+
+    const phoneSearchInput = screen.getByTestId('phone-search-input');
+    const nameSearchInput = screen.getByTestId('search-patient-searchbar');
+
+    fireEvent.input(nameSearchInput, { target: { value: 'John Doe' } });
+    expect(nameSearchInput).toHaveValue('John Doe');
+
+    fireEvent.input(phoneSearchInput, { target: { value: '1234567890' } });
+    expect(nameSearchInput).toHaveValue('');
+    expect(phoneSearchInput).toHaveValue('1234567890');
+  });
+
+  it('should clear phone validation error when typing in name field', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SearchPatient
+          buttonTitle={buttonTitle}
+          searchBarPlaceholder={searchBarPlaceholder}
+          onSearch={mockOnSearch}
+        />
+      </QueryClientProvider>,
+    );
+
+    const phoneSearchInput = screen.getByTestId('phone-search-input');
+    const nameSearchInput = screen.getByTestId('search-patient-searchbar');
+
+    fireEvent.input(phoneSearchInput, { target: { value: '123a' } });
+    fireEvent.click(screen.getByTestId('phone-search-button'));
+
+    expect(screen.getByTestId('phone-validation-error')).toBeInTheDocument();
+
+    fireEvent.input(nameSearchInput, { target: { value: 'John Doe' } });
+    expect(
+      screen.queryByTestId('phone-validation-error'),
+    ).not.toBeInTheDocument();
   });
 
   it('should have no accessibility violations', async () => {
