@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Registration Configuration Schema",
+  "description": "Schema for validating registration app configuration",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "patientSearch": {
+      "type": "object",
+      "description": "Patient search configuration",
+      "additionalProperties": true,
+      "properties": {
+        "customAttributes": {
+          "type": "array",
+          "description": "Array of available search fields",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["label", "fields"],
+            "properties": {
+              "label": {
+                "type": "string",
+                "description": "Display label for the field"
+              },
+              "fields": {
+                "type": "array",
+                "description": "Array of field names to search against",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "default": {
+                "type": "boolean",
+                "description": "Whether this field should be selected by default"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
