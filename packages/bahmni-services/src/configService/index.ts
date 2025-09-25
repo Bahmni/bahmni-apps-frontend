@@ -2,6 +2,7 @@ export {
   getClinicalConfig,
   getDashboardConfig,
   getMedicationConfig,
+  getRegistrationConfig,
 } from './configService';
 export {
   type ClinicalConfig,
@@ -10,4 +11,7 @@ export {
   type DashboardSectionConfig,
   type Dashboard,
   type Frequency,
+  type RegistrationConfig,
+  type PatientSearchConfig,
+  type PatientSearchField,
 } from './models';
