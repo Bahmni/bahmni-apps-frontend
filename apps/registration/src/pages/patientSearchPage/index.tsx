@@ -15,6 +15,8 @@ import {
   AuditEventType,
   dispatchAuditEvent,
   PatientSearchResult,
+  getRegistrationConfig,
+  PatientSearchField,
 } from '@bahmni-frontend/bahmni-services';
 import { SearchPatient } from '@bahmni-frontend/bahmni-widgets';
 import { useCallback, useEffect, useState } from 'react';
@@ -35,7 +37,18 @@ const PatientSearchPage: React.FC = () => {
   const [isError, setIsError] = useState<boolean>(false);
   const [isPhoneSearch, setIsPhoneSearch] = useState<boolean>(false);
   const [isNavigating, setIsNavigating] = useState<boolean>(false);
+  const [searchFields, setSearchFields] = useState<PatientSearchField[]>([]);
   const { t } = useTranslation();
+
+  useEffect(() => {
+    const loadSearchConfig = async () => {
+      const config = await getRegistrationConfig();
+      if (config?.patientSearch?.customAttributes) {
+        setSearchFields(config.patientSearch.customAttributes);
+      }
+    };
+    loadSearchConfig();
+  }, []);
 
   const breadcrumbItems = [
     {
@@ -166,6 +179,7 @@ const PatientSearchPage: React.FC = () => {
             searchBarPlaceholder={t(
               'REGISTRATION_PATIENT_SEARCH_INPUT_PLACEHOLDER',
             )}
+            searchFields={searchFields.length > 0 ? searchFields : undefined}
             onSearch={handleOnSearch}
           />
           {searchTerm !== '' && (
