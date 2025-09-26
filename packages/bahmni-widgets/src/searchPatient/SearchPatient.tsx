@@ -138,8 +138,8 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       });
       setDropdownItems([]);
       setSelectedDropdownItem('');
-    } else if (configData?.patientSearch?.customAttributes) {
-      const labels = configData.patientSearch.customAttributes.map(
+    } else if (configData?.config?.patientSearch?.customAttributes) {
+      const labels = configData.config.patientSearch.customAttributes.map(
         (field: PatientSearchField) => field.label,
       );
       setDropdownItems(labels);
