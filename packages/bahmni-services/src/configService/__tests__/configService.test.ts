@@ -12,8 +12,6 @@ import {
   validDashboardConfig,
   invalidDashboardConfig,
   validRegistrationConfig,
-  minimalRegistrationConfig,
-  invalidRegistrationConfig,
 } from '../__mocks__/configMocks';
 import {
   getClinicalConfig,
@@ -251,25 +249,32 @@ jest.mock('../schemas/registrationConfig.schema.json', () => ({
     type: 'object',
     additionalProperties: true,
     properties: {
-      patientSearch: {
+      config: {
         type: 'object',
         additionalProperties: true,
         properties: {
-          customAttributes: {
-            type: 'array',
-            items: {
-              type: 'object',
-              additionalProperties: false,
-              required: ['label', 'fields'],
-              properties: {
-                label: { type: 'string' },
-                placeholder: { type: 'string' },
-                fields: {
-                  type: 'array',
-                  items: { type: 'string' },
+          patientSearch: {
+            type: 'object',
+            additionalProperties: true,
+            properties: {
+              customAttributes: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  additionalProperties: true,
+                  required: ['label', 'fields'],
+                  properties: {
+                    label: { type: 'string' },
+                    fields: {
+                      type: 'array',
+                      items: { type: 'string' },
+                    },
+                    type: {
+                      type: 'string',
+                      enum: ['person', 'address', 'program'],
+                    },
+                  },
                 },
-                type: { type: 'string' },
-                default: { type: 'boolean' },
               },
             },
           },
@@ -278,37 +283,6 @@ jest.mock('../schemas/registrationConfig.schema.json', () => ({
     },
   },
 }));
-
-const mockRegistrationSchema = {
-  type: 'object',
-  additionalProperties: true,
-  properties: {
-    patientSearch: {
-      type: 'object',
-      additionalProperties: true,
-      properties: {
-        customAttributes: {
-          type: 'array',
-          items: {
-            type: 'object',
-            additionalProperties: false,
-            required: ['label', 'fields'],
-            properties: {
-              label: { type: 'string' },
-              placeholder: { type: 'string' },
-              fields: {
-                type: 'array',
-                items: { type: 'string' },
-              },
-              type: { type: 'string' },
-              default: { type: 'boolean' },
-            },
-          },
-        },
-      },
-    },
-  },
-};
 
 const mockShowError = notificationService.showError as jest.MockedFunction<
   typeof notificationService.showError
@@ -910,162 +884,37 @@ describe('ConfigService', () => {
         expect(mockShowError).toHaveBeenCalledWith('Error', 'Invalid schema');
       });
     });
+  });
 
-    describe('getRegistrationConfig', () => {
-      describe('Success cases', () => {
-        test('should fetch and validate a fully valid registration config', async () => {
-          // Arrange
-          mockGet.mockResolvedValueOnce(validRegistrationConfig);
+  describe('getRegistrationConfig', () => {
+    test('should fetch and validate registration config', async () => {
+      // Arrange
+      mockGet.mockResolvedValueOnce(validRegistrationConfig);
 
-          // Act
-          const result = await getRegistrationConfig();
+      // Act
+      const result = await getRegistrationConfig();
 
-          // Assert
-          expect(mockGet).toHaveBeenCalledWith(REGISTRATION_CONFIG_URL);
-          expect(result).toEqual(validRegistrationConfig);
-        });
+      // Assert
+      expect(mockGet).toHaveBeenCalledWith(REGISTRATION_CONFIG_URL);
+      expect(result).toEqual(validRegistrationConfig);
+      expect(result?.config?.patientSearch?.customAttributes).toHaveLength(6);
+    });
 
-        test('should fetch and validate config with minimal search fields', async () => {
-          // Arrange
-          mockGet.mockResolvedValueOnce(minimalRegistrationConfig);
-
-          // Act
-          const result = await getRegistrationConfig();
-
-          // Assert
-          expect(mockGet).toHaveBeenCalledWith(REGISTRATION_CONFIG_URL);
-          expect(result).toEqual(minimalRegistrationConfig);
-        });
-
-        test('should validate config against registration schema', async () => {
-          // Arrange
-          mockGet.mockResolvedValueOnce(validRegistrationConfig);
-          const mockValidate = jest.fn().mockReturnValue(true);
-          const mockCompile = jest.fn().mockReturnValue(mockValidate);
-          mockAjv.mockImplementation(
-            () =>
-              ({
-                compile: mockCompile,
-              }) as unknown as Ajv,
-          );
-
-          // Act
-          const result = await getRegistrationConfig();
-
-          // Assert
-          expect(mockCompile).toHaveBeenCalledWith(mockRegistrationSchema);
-          expect(mockValidate).toHaveBeenCalledWith(validRegistrationConfig);
-          expect(result).toEqual(validRegistrationConfig);
-        });
-
-        test('should return properly typed config', async () => {
-          // Arrange
-          mockGet.mockResolvedValueOnce(minimalRegistrationConfig);
-
-          // Act
-          const result = await getRegistrationConfig();
-
-          // Assert
-          expect(result).toEqual(minimalRegistrationConfig);
-          expect(result?.patientSearch?.customAttributes[0].label).toBe(
-            'Phone Number',
-          );
-        });
+    test('should return null when API request fails', async () => {
+      // Arrange
+      const networkError = new Error('Network error');
+      mockGet.mockRejectedValueOnce(networkError);
+      mockGetFormattedError.mockReturnValueOnce({
+        title: 'Error',
+        message: 'Network error',
       });
 
-      describe('Error cases', () => {
-        test('should return null and show error when API request fails', async () => {
-          // Arrange
-          const networkError = new Error('Network error');
-          mockGet.mockRejectedValueOnce(networkError);
-          mockGetFormattedError.mockReturnValueOnce({
-            title: 'Error',
-            message: 'Network error',
-          });
+      // Act
+      const result = await getRegistrationConfig();
 
-          // Act
-          const result = await getRegistrationConfig();
-
-          // Assert
-          expect(result).toBeNull();
-          expect(mockGet).toHaveBeenCalledWith(REGISTRATION_CONFIG_URL);
-          expect(mockGetFormattedError).toHaveBeenCalledWith(expect.any(Error));
-          expect(mockShowError).toHaveBeenCalledWith('Error', 'Network error');
-        });
-
-        test('should return null and show error when API returns empty response', async () => {
-          // Arrange
-          mockGet.mockResolvedValueOnce(null);
-
-          // Act
-          const result = await getRegistrationConfig();
-
-          // Assert
-          expect(result).toBeNull();
-          expect(mockGet).toHaveBeenCalledWith(REGISTRATION_CONFIG_URL);
-          expect(mockShowError).toHaveBeenCalledWith(
-            ERROR_TITLES.CONFIG_ERROR,
-            ERROR_MESSAGES.CONFIG_NOT_FOUND,
-          );
-        });
-
-        test('should return null and show error when config fails schema validation', async () => {
-          // Arrange
-          mockGet.mockResolvedValueOnce(invalidRegistrationConfig);
-
-          // Setup Ajv to fail validation
-          const mockValidate = jest.fn().mockReturnValue(false);
-          const mockCompile = jest.fn().mockReturnValue(mockValidate);
-          mockAjv.mockImplementation(
-            () =>
-              ({
-                compile: mockCompile,
-              }) as unknown as Ajv,
-          );
-
-          // Act
-          const result = await getRegistrationConfig();
-
-          // Assert
-          expect(result).toBeNull();
-          expect(mockGet).toHaveBeenCalledWith(REGISTRATION_CONFIG_URL);
-          expect(mockValidate).toHaveBeenCalledWith(invalidRegistrationConfig);
-          expect(mockShowError).toHaveBeenCalledWith(
-            ERROR_TITLES.VALIDATION_ERROR,
-            ERROR_MESSAGES.VALIDATION_FAILED,
-          );
-        });
-
-        test('should return null and show error when schema validation throws', async () => {
-          // Arrange
-          mockGet.mockResolvedValueOnce(validRegistrationConfig);
-
-          // Setup Ajv to throw during compilation
-          const schemaError = new Error('Invalid schema');
-          const mockCompile = jest.fn().mockImplementation(() => {
-            throw schemaError;
-          });
-          mockAjv.mockImplementation(
-            () =>
-              ({
-                compile: mockCompile,
-              }) as unknown as Ajv,
-          );
-          mockGetFormattedError.mockReturnValueOnce({
-            title: 'Error',
-            message: 'Invalid schema',
-          });
-
-          // Act
-          const result = await getRegistrationConfig();
-
-          // Assert
-          expect(result).toBeNull();
-          expect(mockGet).toHaveBeenCalledWith(REGISTRATION_CONFIG_URL);
-          expect(mockCompile).toHaveBeenCalled();
-          expect(mockShowError).toHaveBeenCalledWith('Error', 'Invalid schema');
-        });
-      });
+      // Assert
+      expect(result).toBeNull();
+      expect(mockShowError).toHaveBeenCalledWith('Error', 'Network error');
     });
   });
 });

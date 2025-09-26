@@ -254,72 +254,41 @@ export const validDashboardConfig: DashboardConfig = {
 };
 
 export const validRegistrationConfig = {
-  patientSearch: {
-    customAttributes: [
-      {
-        label: 'Phone Number',
-        placeholder: 'Search by phone number',
-        fields: ['phoneNumber', 'alternatePhoneNumber'],
-        type: 'text',
-        default: true,
-      },
-      {
-        label: 'Email',
-        placeholder: 'Search by email address',
-        fields: ['email'],
-        type: 'email',
-      },
-      {
-        label: 'Village',
-        placeholder: 'Search by village name',
-        fields: ['village'],
-        type: 'text',
-      },
-      {
-        label: 'Locality',
-        placeholder: 'Search by locality',
-        fields: ['locality'],
-        type: 'text',
-      },
-      {
-        label: 'Program Name',
-        placeholder: 'Search by program name',
-        fields: ['programName'],
-        type: 'text',
-      },
-      {
-        label: 'Program Registration ID',
-        placeholder: 'Search by program registration ID',
-        fields: ['programRegistrationId'],
-        type: 'text',
-      },
-    ],
-  },
-};
-
-export const minimalRegistrationConfig = {
-  patientSearch: {
-    customAttributes: [
-      {
-        label: 'Phone Number',
-        placeholder: 'Search by phone number',
-        fields: ['phoneNumber'],
-        type: 'text',
-        default: true,
-      },
-    ],
-  },
-};
-
-export const invalidRegistrationConfig = {
-  patientSearch: {
-    customAttributes: [
-      {
-        placeholder: 'Search by phone number',
-        fields: ['phoneNumber'],
-        type: 'text',
-      },
-    ],
+  config: {
+    patientSearch: {
+      customAttributes: [
+        {
+          label: 'Phone Number',
+          fields: ['phoneNumber', 'alternatePhoneNumber'],
+          type: 'person',
+        },
+        {
+          label: 'Email',
+          fields: ['email'],
+          type: 'person',
+        },
+        {
+          label: 'Village',
+          fields: ['village'],
+          type: 'address',
+        },
+        {
+          label: 'Locality',
+          fields: ['locality'],
+          type: 'address',
+        },
+        {
+          label: 'Program Name',
+          fields: ['programName'],
+          type: 'program',
+        },
+        {
+          label: 'Program Registration ID',
+          fields: ['programRegistrationId'],
+          type: 'program',
+        },
+      ],
+    },
   },
 };
 

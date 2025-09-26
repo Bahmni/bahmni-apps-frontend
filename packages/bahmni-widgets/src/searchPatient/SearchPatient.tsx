@@ -246,7 +246,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
             items={dropdownItems}
             selectedItem={selectedDropdownItem}
             onChange={(event) => {
-              setSelectedDropdownItem(event.selectedItem || '');
+              setSelectedDropdownItem(event.selectedItem ?? '');
             }}
           />
         </div>
