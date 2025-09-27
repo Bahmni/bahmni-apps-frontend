@@ -31,19 +31,19 @@ export const SortableDataTable = <T extends { id: string }>({
   ariaLabel,
   sortable = headers.map((header) => ({ key: header.key, sortable: true })),
   loading = false,
-  errorStateMessage: error = null,
+  errorStateMessage = null,
   emptyStateMessage = 'No data available.',
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   renderCell = (row, cellId) => (row as any)[cellId],
   className = 'sortable-data-table',
 }: SortableDataTableProps<T>) => {
-  if (error) {
+  if (errorStateMessage) {
     return (
       <p
         data-testid="sortable-table-error"
         className={styles.sortableDataTableBodyEmpty}
       >
-        {error}
+        {errorStateMessage}
       </p>
     );
   }

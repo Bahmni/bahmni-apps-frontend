@@ -4,24 +4,52 @@ import {
   Tile,
 } from '@bahmni-frontend/bahmni-design-system';
 import {
+  getConditions,
   useTranslation,
-  ConditionStatus,
   FormatDateResult,
-  FormattedCondition,
   formatDateDistance,
 } from '@bahmni-frontend/bahmni-services';
-import React, { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useNotification } from '../notification';
+import { ConditionViewModel, ConditionStatus } from './models';
 import styles from './styles/ConditionsTable.module.scss';
-import { useConditions } from './useConditions';
+import { createConditionViewModels } from './utils';
+
+interface ConditionsTableProps {
+  patientUUID: string;
+}
+
+const fetchConditions = async (
+  patientUUID: string,
+): Promise<ConditionViewModel[]> => {
+  const response = await getConditions(patientUUID!);
+  return createConditionViewModels(response);
+};
 
 /**
  * Component to display patient conditions using SortableDataTable
  */
-const ConditionsTable: React.FC = () => {
+const ConditionsTable: React.FC<ConditionsTableProps> = ({ patientUUID }) => {
+  const [conditions, setConditions] = useState<ConditionViewModel[]>([]);
   const { t } = useTranslation();
-  const { conditions, loading, error } = useConditions();
+  const { addNotification } = useNotification();
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ['conditions', patientUUID],
+    enabled: !!patientUUID,
+    queryFn: () => fetchConditions(patientUUID!),
+  });
 
-  // Define table headers
+  useEffect(() => {
+    if (isError)
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: error.message,
+        type: 'error',
+      });
+    if (data) setConditions(data);
+  }, [data, isLoading, isError, error]);
+
   const headers = useMemo(
     () => [
       { key: 'display', header: t('CONDITION_LIST_CONDITION') },
@@ -32,8 +60,7 @@ const ConditionsTable: React.FC = () => {
     [t],
   );
 
-  // Function to render cell content based on the cell ID
-  const renderCell = (condition: FormattedCondition, cellId: string) => {
+  const renderCell = (condition: ConditionViewModel, cellId: string) => {
     switch (cellId) {
       case 'display':
         return (
@@ -69,8 +96,6 @@ const ConditionsTable: React.FC = () => {
       }
       case 'recorder':
         return condition.recorder;
-      default:
-        return null;
     }
   };
 
@@ -89,8 +114,8 @@ const ConditionsTable: React.FC = () => {
           headers={headers}
           ariaLabel={t('CONDITION_LIST_DISPLAY_CONTROL_TITLE')}
           rows={conditions}
-          loading={loading}
-          errorStateMessage={error?.message}
+          loading={isLoading}
+          errorStateMessage={isError ? error.message : null}
           emptyStateMessage={t('CONDITION_LIST_NO_CONDITIONS')}
           renderCell={renderCell}
           className={styles.conditionsTableBody}
