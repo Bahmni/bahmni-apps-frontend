@@ -3,18 +3,22 @@ import {
   type DiagnosisInputEntry,
   getConditions,
 } from '@bahmni-frontend/bahmni-services';
-import { render, screen, fireEvent, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { Condition } from 'fhir/r4';
-import { axe, toHaveNoViolations } from 'jest-axe';
-import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
-import { CERTAINITY_CONCEPTS } from '../../../../constants/diagnosis';
-import { useConceptSearch } from '../../../../hooks/useConceptSearch';
 import {
   useNotification,
   usePatientUUID,
   conditionsQueryKeys,
 } from '@bahmni-frontend/bahmni-widgets';
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from '@tanstack/react-query';
+import { render, screen, fireEvent, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { Condition } from 'fhir/r4';
+import { axe, toHaveNoViolations } from 'jest-axe';
+import { CERTAINITY_CONCEPTS } from '../../../../constants/diagnosis';
+import { useConceptSearch } from '../../../../hooks/useConceptSearch';
 import { ConceptSearch } from '../../../../models/concepts';
 import { useConditionsAndDiagnosesStore } from '../../../../stores/conditionsAndDiagnosesStore';
 import ConditionsAndDiagnoses from '../ConditionsAndDiagnoses';
@@ -215,7 +219,11 @@ describe('ConditionsAndDiagnoses', () => {
       isFetching: false,
       isRefetching: false,
       isPending: existingConditionsLoading,
-      status: existingConditionsError ? 'error' : existingConditionsLoading ? 'pending' : 'success',
+      status: existingConditionsError
+        ? 'error'
+        : existingConditionsLoading
+          ? 'pending'
+          : 'success',
       fetchStatus: 'idle',
     } as any);
 

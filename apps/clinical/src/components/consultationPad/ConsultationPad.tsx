@@ -11,7 +11,11 @@ import {
   useTranslation,
   ObservationForm,
 } from '@bahmni-frontend/bahmni-services';
-import { useNotification } from '@bahmni-frontend/bahmni-widgets';
+import {
+  conditionsQueryKeys,
+  useNotification,
+} from '@bahmni-frontend/bahmni-widgets';
+import { useQueryClient } from '@tanstack/react-query';
 import React, { useEffect } from 'react';
 import { useEncounterSession } from '../../../src/hooks/useEncounterSession';
 import useAllergyStore from '../../../src/stores/allergyStore';
@@ -54,6 +58,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   const [selectedForms, setSelectedForms] = React.useState<ObservationForm[]>(
     [],
   );
+  const queryClient = useQueryClient();
   const { t } = useTranslation();
   const { addNotification } = useNotification();
 
@@ -263,6 +268,20 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         resetEncounterDetails();
         resetServiceRequests();
         resetMedications();
+
+        if (selectedConditions.length > 0) {
+          await queryClient.cancelQueries({
+            queryKey: conditionsQueryKeys.all(patientUUID),
+          });
+          queryClient.removeQueries({
+            queryKey: conditionsQueryKeys.all(patientUUID),
+          });
+          await queryClient.invalidateQueries({
+            queryKey: conditionsQueryKeys.all(patientUUID),
+            exact: true,
+          });
+        }
+
         addNotification({
           title: t('CONSULTATION_SUBMITTED_SUCCESS_TITLE'),
           message: t('CONSULTATION_SUBMITTED_SUCCESS_MESSAGE'),
