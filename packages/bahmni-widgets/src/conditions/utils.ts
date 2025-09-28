@@ -1,4 +1,5 @@
 import { Condition } from 'fhir/r4';
+import i18next from 'i18next';
 import { ConditionViewModel, ConditionStatus } from './models';
 
 // Constants for better maintainability
@@ -43,16 +44,14 @@ export function createConditionViewModels(
 ): ConditionViewModel[] {
   return conditions.map((condition) => {
     if (!isValidFhirCondition(condition)) {
-      throw new Error(
-        'Incomplete condition data: missing required fields (id, code, or recordedDate)',
-      );
+      throw new Error(i18next.t('ERROR_CONDITION_MISSING_REQUIRED_FIELDS'));
     }
 
     const status = mapFhirStatusToEnum(condition);
     const coding = condition.code?.coding?.[0];
 
     if (!coding) {
-      throw new Error('Missing required condition coding information');
+      throw new Error(i18next.t('ERROR_CONDITION_MISSING_CODING_INFORMATION'));
     }
 
     return {

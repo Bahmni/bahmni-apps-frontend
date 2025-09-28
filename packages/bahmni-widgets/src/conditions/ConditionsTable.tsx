@@ -28,6 +28,7 @@ const fetchConditions = async (
   return createConditionViewModels(response);
 };
 
+// TODO: Take UUID As A Prop
 /**
  * Component to display patient conditions using SortableDataTable
  */

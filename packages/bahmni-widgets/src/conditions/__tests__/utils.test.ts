@@ -1,5 +1,18 @@
 import { Condition } from 'fhir/r4';
+import i18next from 'i18next';
 import { createConditionViewModels } from '../utils';
+
+jest.mock('i18next', () => ({
+  t: jest.fn((key: string) => {
+    const translations: { [key: string]: string } = {
+      ERROR_CONDITION_MISSING_REQUIRED_FIELDS:
+        'Missing required fields in condition data',
+      ERROR_CONDITION_MISSING_CODING_INFORMATION:
+        'Missing required condition coding information',
+    };
+    return translations[key] || key;
+  }),
+}));
 
 const mockConditionsWithoutOptionalFields: Condition[] = [
   {
@@ -238,9 +251,7 @@ describe('utils', () => {
   it('should throw error when a condition is missing required fields (id, code, recordedDate)', () => {
     expect(() =>
       createConditionViewModels(mockConditionsWithoutOptionalFields),
-    ).toThrow(
-      'Incomplete condition data: missing required fields (id, code, or recordedDate)',
-    );
+    ).toThrow('Missing required fields in condition data');
   });
 
   it('should throw error when a condition lacks coding information in the code field', () => {
