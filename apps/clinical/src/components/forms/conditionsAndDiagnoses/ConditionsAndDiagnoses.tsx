@@ -7,10 +7,16 @@ import {
 import {
   useTranslation,
   type ConceptSearch,
+  getConditions,
 } from '@bahmni-frontend/bahmni-services';
-import React, { useState, useMemo } from 'react';
+import {
+  conditionsQueryKeys,
+  useNotification,
+  usePatientUUID,
+} from '@bahmni-frontend/bahmni-widgets';
+import { useQuery } from '@tanstack/react-query';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useConceptSearch } from '../../../hooks/useConceptSearch';
-import useConditions from '../../../hooks/useConditions';
 import { useConditionsAndDiagnosesStore } from '../../../stores/conditionsAndDiagnosesStore';
 import SelectedConditionItem from './SelectedConditionItem';
 import SelectedDiagnosisItem from './SelectedDiagnosisItem';
@@ -24,6 +30,8 @@ import styles from './styles/ConditionsAndDiagnoses.module.scss';
  */
 const ConditionsAndDiagnoses: React.FC = React.memo(() => {
   const { t } = useTranslation();
+  const patientUUID = usePatientUUID();
+  const { addNotification } = useNotification();
   const [searchDiagnosesTerm, setSearchDiagnosesTerm] = useState('');
 
   // Use Zustand store
@@ -46,10 +54,24 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
   } = useConceptSearch(searchDiagnosesTerm);
 
   const {
-    conditions: existingConditions,
-    loading: existingConditionsLoading,
+    data: existingConditions,
+    isLoading: existingConditionsLoading,
     error: existingConditionsError,
-  } = useConditions();
+  } = useQuery({
+    queryKey: conditionsQueryKeys.all(patientUUID!),
+    enabled: !!patientUUID,
+    queryFn: () => getConditions(patientUUID!),
+  });
+
+  useEffect(() => {
+    if (existingConditionsError) {
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: existingConditionsError.message,
+        type: 'error',
+      });
+    }
+  }, [existingConditionsLoading, existingConditionsError]);
 
   const handleSearch = (searchTerm: string) => {
     setSearchDiagnosesTerm(searchTerm);
@@ -64,7 +86,7 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
   };
 
   const isConditionDuplicate = (diagnosisId: string): boolean => {
-    const isExistingCondition = existingConditions.some(
+    const isExistingCondition = existingConditions!.some(
       (d) => d.code === diagnosisId,
     );
     const isSelectedConditions =
