@@ -8,6 +8,9 @@ import { useNotification } from '../../notification';
 import ConditionsTable from '../ConditionsTable';
 
 jest.mock('../../notification');
+jest.mock('../../hooks/usePatientUUID', () => ({
+  usePatientUUID: jest.fn(() => 'test-patient-uuid'),
+}));
 jest.mock('@tanstack/react-query', () => ({
   ...jest.requireActual('@tanstack/react-query'),
   useQuery: jest.fn(),
@@ -38,7 +41,7 @@ describe('ConditionsTable', () => {
 
   const wrapper = (
     <QueryClientProvider client={queryClient}>
-      <ConditionsTable patientUUID="02c2f5fa-c42e-4435-b0bf-7a412896e8d8" />
+      <ConditionsTable />
     </QueryClientProvider>
   );
   it('should show loading state when data is loading', () => {

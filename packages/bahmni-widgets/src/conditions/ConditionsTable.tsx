@@ -11,14 +11,15 @@ import {
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useEffect, useMemo, useState } from 'react';
+import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { ConditionViewModel, ConditionStatus } from './models';
 import styles from './styles/ConditionsTable.module.scss';
 import { createConditionViewModels } from './utils';
 
-interface ConditionsTableProps {
-  patientUUID: string;
-}
+export const conditionsQueryKeys = {
+  all: (patientUUID: string) => ['conditions', patientUUID] as const,
+};
 
 const fetchConditions = async (
   patientUUID: string,
@@ -30,12 +31,13 @@ const fetchConditions = async (
 /**
  * Component to display patient conditions using SortableDataTable
  */
-const ConditionsTable: React.FC<ConditionsTableProps> = ({ patientUUID }) => {
+const ConditionsTable: React.FC = () => {
   const [conditions, setConditions] = useState<ConditionViewModel[]>([]);
+  const patientUUID = usePatientUUID();
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['conditions', patientUUID],
+    queryKey: conditionsQueryKeys.all(patientUUID!),
     enabled: !!patientUUID,
     queryFn: () => fetchConditions(patientUUID!),
   });

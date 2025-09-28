@@ -10,6 +10,9 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
   ...jest.requireActual('@bahmni-frontend/bahmni-services'),
   getConditions: jest.fn(),
 }));
+jest.mock('../../hooks/usePatientUUID', () => ({
+  usePatientUUID: jest.fn(() => 'test-patient-uuid'),
+}));
 const mockAddNotification = jest.fn();
 
 const mockValidConditions: Condition[] = [
@@ -81,7 +84,7 @@ describe('ConditionsTable', () => {
 
   const wrapper = (
     <QueryClientProvider client={queryClient}>
-      <ConditionsTable patientUUID="02c2f5fa-c42e-4435-b0bf-7a412896e8d8" />
+      <ConditionsTable />
     </QueryClientProvider>
   );
   it('should show conditions table when an there patient has conditions marked', async () => {

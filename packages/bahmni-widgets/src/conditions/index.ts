@@ -1,1 +1,4 @@
-export { default as ConditionsTable } from './ConditionsTable';
+export {
+  default as ConditionsTable,
+  conditionsQueryKeys,
+} from './ConditionsTable';
