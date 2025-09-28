@@ -1,5 +1,4 @@
 import { Condition } from 'fhir/r4';
-import i18next from 'i18next';
 import { createConditionViewModels } from '../utils';
 
 jest.mock('i18next', () => ({
