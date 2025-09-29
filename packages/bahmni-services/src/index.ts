@@ -3,7 +3,10 @@ export { initAppI18n, useTranslation } from './i18n';
 export {
   getPatientById,
   getFormattedPatientById,
+  searchPatientByNameOrId,
   type FormattedPatientData,
+  type PatientSearchResult,
+  type PatientSearchResultBundle,
 } from './patientService';
 export { getFormattedError } from './errorHandling';
 export {
@@ -128,7 +131,11 @@ export {
   FHIR_ENCOUNTER_TYPE_CODE_SYSTEM,
 } from './constants/fhir';
 
-export { OPENMRS_REST_V1, OPENMRS_FHIR_R4 } from './constants/app';
+export {
+  OPENMRS_REST_V1,
+  OPENMRS_FHIR_R4,
+  BAHMNI_HOME_PATH,
+} from './constants/app';
 export {
   getCurrentUserPrivileges,
   hasPrivilege,
@@ -142,3 +149,9 @@ export {
   type FormPrivilege,
   type ApiFormPrivilege,
 } from './observationFormsService';
+
+export {
+  getVitalFlowSheetData,
+  type VitalFlowSheetData,
+  type VitalFlowSheetConceptDetail,
+} from './vitalFlowSheetService';

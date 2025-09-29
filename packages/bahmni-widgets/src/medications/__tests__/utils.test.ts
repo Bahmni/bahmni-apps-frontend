@@ -14,7 +14,6 @@ import {
   sortMedicationsByDateDistance,
   MEDICATION_STATUS_PRIORITY_ORDER,
 } from '../utils';
-import '@testing-library/jest-dom';
 
 // Mock date-fns functions for consistent testing
 jest.mock('date-fns', () => ({

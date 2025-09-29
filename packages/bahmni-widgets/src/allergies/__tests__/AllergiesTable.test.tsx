@@ -5,7 +5,6 @@ import {
 } from '@bahmni-frontend/bahmni-services';
 import { render, screen, act } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import '@testing-library/jest-dom';
 import AllergiesTable from '../AllergiesTable';
 import { useAllergies } from '../useAllergies';
 

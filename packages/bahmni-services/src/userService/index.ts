@@ -1,2 +1,2 @@
-export { getCurrentUser } from './userService';
-export { type User } from './models';
+export { getCurrentUser, getUserLoginLocation } from './userService';
+export { type User, type UserLocation } from './models';

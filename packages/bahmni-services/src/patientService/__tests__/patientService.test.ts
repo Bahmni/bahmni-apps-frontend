@@ -1,20 +1,26 @@
 import { Patient } from 'fhir/r4';
 import { get } from '../../api';
-import { PATIENT_RESOURCE_URL } from '../constants';
+import { getUserLoginLocation } from '../../userService';
+import { PATIENT_RESOURCE_URL, PATIENT_LUCENE_SEARCH_URL } from '../constants';
 import {
   getPatientById,
   formatPatientName,
   formatPatientAddress,
   formatPatientContact,
   formatPatientData,
+  searchPatientByNameOrId,
 } from '../patientService';
 
 // Mock the api module
 jest.mock('../../api');
 const mockedGet = get as jest.MockedFunction<typeof get>;
+jest.mock('../../userService');
+const mockGetUserLoginLocation = getUserLoginLocation as jest.MockedFunction<
+  typeof getUserLoginLocation
+>;
 
 describe('Patient Service', () => {
-  afterEach(() => {
+  beforeEach(() => {
     jest.clearAllMocks();
   });
 
@@ -42,6 +48,52 @@ describe('Patient Service', () => {
       // Act & Assert
       await expect(getPatientById(patientUUID)).rejects.toThrow('API Error');
       expect(mockedGet).toHaveBeenCalledWith(PATIENT_RESOURCE_URL(patientUUID));
+    });
+  });
+
+  describe('searchPatientByNameOrId', () => {
+    it('should call get with the correct patient URL', async () => {
+      const searchTerm = 'ABC200003';
+      const mockLocationDetails = {
+        name: 'Emergency',
+        uuid: 'b5da9afd-b29a-4cbf-91c9-ccf2aa5f799e',
+      };
+      const mockPatientSearchResultBundle = {
+        totalCount: 1,
+        pageOfResults: [
+          {
+            uuid: '3e991686-4cab-443e-a03d-ffa40756a965',
+            birthDate: -59184000000,
+            extraIdentifiers: null,
+            personId: 13,
+            deathDate: null,
+            identifier: 'ABC200003',
+            addressFieldValue: null,
+            givenName: 'Jake',
+            middleName: 'Charlie',
+            familyName: 'Smith',
+            gender: 'M',
+            dateCreated: 1744775604000,
+            activeVisitUuid: null,
+            customAttribute:
+              '{"phoneNumber" : "8645973159","alternatePhoneNumber" : "7548621593"}',
+            patientProgramAttributeValue: null,
+            hasBeenAdmitted: false,
+            age: '57',
+          },
+        ],
+      };
+      mockedGet.mockResolvedValueOnce(mockPatientSearchResultBundle);
+      mockGetUserLoginLocation.mockReturnValue(mockLocationDetails);
+      const result = await searchPatientByNameOrId(searchTerm);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        PATIENT_LUCENE_SEARCH_URL(
+          searchTerm,
+          'b5da9afd-b29a-4cbf-91c9-ccf2aa5f799e',
+        ),
+      );
+      expect(result).toEqual(mockPatientSearchResultBundle);
     });
   });
 
