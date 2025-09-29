@@ -13,10 +13,10 @@ import {
   PatientSearchField,
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery } from '@tanstack/react-query';
+import { set } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../notification';
 import styles from './styles/SearchPatient.module.scss';
-import { set } from 'date-fns';
 
 interface SearchPatientProps {
   buttonTitle: string;
