@@ -4,7 +4,6 @@ import {
   AllergySeverity,
 } from '@bahmni-frontend/bahmni-services';
 import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
 import AllergiesTable from '../AllergiesTable';
 import { useAllergies } from '../useAllergies';
 

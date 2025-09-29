@@ -5,7 +5,6 @@ import {
   useTranslation,
 } from '@bahmni-frontend/bahmni-services';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import '@testing-library/jest-dom';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import {
   mockPatientUUID,

@@ -16,6 +16,7 @@ export {
   type AccordionProps,
   type AccordionItemProps,
 } from './atoms/accordion';
+export { Search, type SearchProps } from './atoms/search';
 export {
   Tabs,
   TabList,
@@ -58,15 +59,16 @@ export {
   type DatePickerInputProps,
 } from './atoms/datePicker';
 
-export { ClinicalLayout } from './templates/ClinicalLayout';
+export { default as ActionAreaLayout } from './templates/actionAreaLayout';
+export { default as BaseLayout } from './templates/baseLayout';
 
 export { Section, type SectionProps } from './atoms/section';
 
 export {
-  HeaderWSideNav,
+  Header,
   useSidebarNavigation,
   type HeaderSideNavItem,
-} from './organisms/headerWSideNav';
+} from './organisms/header';
 
 export { Content } from './atoms/content';
 

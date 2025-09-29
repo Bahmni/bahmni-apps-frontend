@@ -1,8 +1,8 @@
 import { get } from '../../api';
 import { BAHMNI_USER_COOKIE_NAME } from '../../constants/app';
 import { getCookieByName } from '../../utils';
-import { USER_RESOURCE_URL } from '../constants';
-import { getCurrentUser } from '../userService';
+import { USER_RESOURCE_URL, BAHMNI_USER_LOCATION_COOKIE } from '../constants';
+import { getCurrentUser, getUserLoginLocation } from '../userService';
 
 // Mock dependencies
 jest.mock('../../api');
@@ -241,5 +241,55 @@ describe('userService', () => {
       // Assert
       expect(result).toEqual(multipleResults.results[0]);
     });
+  });
+});
+
+const mockEncodedUserLocationCookie =
+  '%7B%22name%22%3A%22Emergency%22%2C%22uuid%22%3A%22b5da9afd-b29a-4cbf-91c9-ccf2aa5f799e%22%7D';
+const mockUserLocation = {
+  name: 'Emergency',
+  uuid: 'b5da9afd-b29a-4cbf-91c9-ccf2aa5f799e',
+};
+
+describe('getUserLocation', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (getCookieByName as jest.Mock).mockReset();
+  });
+  it('should fetch user log in location successfully when cookie exists', async () => {
+    (getCookieByName as jest.Mock).mockReturnValue(
+      mockEncodedUserLocationCookie,
+    );
+    const result = await getUserLoginLocation();
+    expect(getCookieByName).toHaveBeenCalledWith(BAHMNI_USER_LOCATION_COOKIE);
+    expect(result).toEqual(mockUserLocation);
+  });
+
+  it('should throw error when cookie does not exists', async () => {
+    (getCookieByName as jest.Mock).mockReturnValue(null);
+    await expect(() => getUserLoginLocation()).toThrow(
+      'ERROR_FETCHING_USER_LOCATION_DETAILS',
+    );
+  });
+
+  it('should throw errors when login location uuid is missing', async () => {
+    const mockEncodedUserLocationCookie = '%7B%22name%22%3A%22OPD-1%22%7D';
+    (getCookieByName as jest.Mock).mockReturnValue(
+      mockEncodedUserLocationCookie,
+    );
+    await expect(() => getUserLoginLocation()).toThrow(
+      'ERROR_FETCHING_USER_LOCATION_DETAILS',
+    );
+  });
+
+  it('should throw errors when login location name is missing', async () => {
+    const mockEncodedUserLocationCookie =
+      '%7B%22uuid%22%3A%225e232c47-8ff5-4c5c-8057-7e39a64fefa5%22%7D';
+    (getCookieByName as jest.Mock).mockReturnValue(
+      mockEncodedUserLocationCookie,
+    );
+    await expect(() => getUserLoginLocation()).toThrow(
+      'ERROR_FETCHING_USER_LOCATION_DETAILS',
+    );
   });
 });
