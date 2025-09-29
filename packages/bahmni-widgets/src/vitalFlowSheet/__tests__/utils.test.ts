@@ -455,9 +455,9 @@ describe('VitalFlowSheet Utils', () => {
             mockConceptDetails,
           );
 
-          expect(result.complexData.systolic.value).toBe('--');
-          expect(result.complexData.diastolic.value).toBe('--');
-          expect(result.complexData.position).toBe('-');
+          expect(result.complexData.systolic.value).toBe('\u2014');
+          expect(result.complexData.diastolic.value).toBe('\u2014');
+          expect(result.complexData.position).toBe('\u2014');
           expect(result.abnormal).toBe(false);
         });
 

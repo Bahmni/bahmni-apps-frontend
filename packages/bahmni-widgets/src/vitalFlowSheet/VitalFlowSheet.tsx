@@ -189,7 +189,7 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
       } | null;
 
       if (!obsValue) {
-        return <span>—</span>;
+        return '\u2014'; // Em dash for no data
       }
 
       const isLatest = cellId === 'obs_0'; // First column is latest
@@ -229,9 +229,9 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
               </span>
             </div>
             {complexObsValue.complexData.position && (
-              <div>
+              <span>
                 {t(translateBodyPosition(complexObsValue.complexData.position))}
-              </div>
+              </span>
             )}
           </div>
         ) : obsValue.value.includes('\n') ? (
