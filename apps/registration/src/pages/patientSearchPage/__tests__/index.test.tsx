@@ -479,9 +479,7 @@ describe('PatientSearchPage', () => {
           </QueryClientProvider>
         </NotificationProvider>,
       );
-
-      expect(screen.getByText('LOADING_PATIENT_DETAILS')).toBeInTheDocument();
-      expect(screen.getByRole('status')).toBeInTheDocument();
+      expect(screen.getByTitle('LOADING_PATIENT_DETAILS')).toBeInTheDocument();
     });
   });
 });

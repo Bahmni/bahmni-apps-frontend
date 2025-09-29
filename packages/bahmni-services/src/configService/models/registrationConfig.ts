@@ -1,5 +1,5 @@
 export interface PatientSearchField {
-  label: string;
+  translationKey: string;
   fields: string[];
   type: 'person' | 'address' | 'program';
 }

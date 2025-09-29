@@ -140,7 +140,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       setSelectedDropdownItem('');
     } else if (configData?.config?.patientSearch?.customAttributes) {
       const labels = configData.config.patientSearch.customAttributes.map(
-        (field: PatientSearchField) => field.label,
+        (field: PatientSearchField) => t(field.translationKey),
       );
       setDropdownItems(labels);
       setSelectedDropdownItem(labels[0] || '');
@@ -153,7 +153,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       setDropdownItems([]);
       setSelectedDropdownItem('');
     }
-  }, [configData, configIsError, configError]);
+  }, [configData, configIsError, configError, addNotification, t]);
 
   useEffect(() => {
     if (isError && searchTerm) {
@@ -166,7 +166,17 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
     }
     if (searchTerm)
       onSearch(data, searchTerm, isLoading, isError, isPhoneSearch);
-  }, [searchTerm, isLoading, isError]);
+  }, [
+    searchTerm,
+    isLoading,
+    isError,
+    onSearch,
+    data,
+    isPhoneSearch,
+    addNotification,
+    t,
+    error,
+  ]);
 
   return (
     <div
@@ -248,6 +258,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
             onChange={(event) => {
               setSelectedDropdownItem(event.selectedItem ?? '');
             }}
+            aria-label={t('PATIENT_SEARCH_ATTRIBUTE_SELECTOR')}
           />
         </div>
         <Button

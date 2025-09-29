@@ -21,11 +21,11 @@
               "items": {
                 "type": "object",
                 "additionalProperties": true,
-                "required": ["label", "fields"],
+                "required": ["translationKey", "fields"],
                 "properties": {
-                  "label": {
+                  "translationKey": {
                     "type": "string",
-                    "description": "Display label for the field"
+                    "description": "Translation key for the field label"
                   },
                   "fields": {
                     "type": "array",

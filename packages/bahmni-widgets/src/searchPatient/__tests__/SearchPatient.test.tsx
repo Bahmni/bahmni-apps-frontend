@@ -3,11 +3,13 @@ import {
   searchPatientByNameOrId,
   searchPatientByCustomAttribute,
   useTranslation,
+  getRegistrationConfig,
 } from '@bahmni-frontend/bahmni-services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import { validRegistrationConfig } from '../../../../bahmni-services/src/configService/__mocks__/configMocks';
 import { useNotification } from '../../notification';
 import SearchPatient from '../SearchPatient';
 
@@ -17,6 +19,7 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
   searchPatientByNameOrId: jest.fn(),
   searchPatientByCustomAttribute: jest.fn(),
   useTranslation: jest.fn(),
+  getRegistrationConfig: jest.fn(),
 }));
 jest.mock('../../notification');
 const mockOnSearch = jest.fn();
@@ -24,6 +27,9 @@ const mockOnSearch = jest.fn();
 const mockAddNotification = jest.fn();
 const mockUseTranslation = useTranslation as jest.MockedFunction<
   typeof useTranslation
+>;
+const mockGetRegistrationConfig = getRegistrationConfig as jest.MockedFunction<
+  typeof getRegistrationConfig
 >;
 const mockSearchPatientData: PatientSearchResult[] = [
   {
@@ -114,10 +120,17 @@ describe('SearchPatient', () => {
           ERROR_DEFAULT_TITLE: 'Error',
           PHONE_NUMBER_VALIDATION_ERROR:
             'Special characters and alphabets should not be allowed',
+          SEARCH_BY_PHONE_NUMBER: 'Search by phone number',
+          REGISTRATION_PATIENT_SEARCH_DROPDOWN_PHONE_NUMBER: 'Phone Number',
+          REGISTRATION_PATIENT_SEARCH_DROPDOWN_EMAIL: 'Email',
+          SEARCH_TYPE: 'Search Type',
+          OR: 'OR',
+          PATIENT_SEARCH_ATTRIBUTE_SELECTOR: 'Select search attribute',
         };
         return translations[key] || key;
       }) as any,
-    });
+    } as any);
+    mockGetRegistrationConfig.mockResolvedValue(validRegistrationConfig as any);
   });
 
   afterEach(() => {

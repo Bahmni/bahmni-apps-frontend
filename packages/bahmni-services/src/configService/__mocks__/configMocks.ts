@@ -258,32 +258,33 @@ export const validRegistrationConfig = {
     patientSearch: {
       customAttributes: [
         {
-          label: 'Phone Number',
+          translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_PHONE_NUMBER',
           fields: ['phoneNumber', 'alternatePhoneNumber'],
           type: 'person',
         },
         {
-          label: 'Email',
+          translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_EMAIL',
           fields: ['email'],
           type: 'person',
         },
         {
-          label: 'Village',
+          translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_VILLAGE',
           fields: ['village'],
           type: 'address',
         },
         {
-          label: 'Locality',
+          translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_LOCALITY',
           fields: ['locality'],
           type: 'address',
         },
         {
-          label: 'Program Name',
+          translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_PROGRAM_NAME',
           fields: ['programName'],
           type: 'program',
         },
         {
-          label: 'Program Registration ID',
+          translationKey:
+            'REGISTRATION_PATIENT_SEARCH_DROPDOWN_PROGRAM_REGISTRATION_ID',
           fields: ['programRegistrationId'],
           type: 'program',
         },
