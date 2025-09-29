@@ -59,7 +59,11 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
     queryKey: ['patientSearch', searchTerm, isPhoneSearch],
     queryFn: () => {
       if (isPhoneSearch) {
-        return searchPatientByCustomAttribute(encodeURI(searchTerm), t);
+        return searchPatientByCustomAttribute(
+          encodeURI(searchTerm),
+          ['email'],
+          t,
+        );
       } else {
         return searchPatientByNameOrId(encodeURI(searchTerm));
       }

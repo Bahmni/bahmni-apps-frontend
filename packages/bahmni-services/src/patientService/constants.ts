@@ -10,13 +10,9 @@ export const PATIENT_LUCENE_SEARCH_URL = (
   OPENMRS_REST_V1 +
   `/bahmni/search/patient/lucene?filterOnAllIdentifiers=false&identifier=${searchTerm}&q=${searchTerm}&loginLocationUuid=${loginLocationUuid}&patientSearchResultsConfig=phoneNumber&patientSearchResultsConfig=alternatePhoneNumber&s=byIdOrName`;
 
-export const PATIENT_SEARCH_CONFIG = {
-  PHONE_NUMBER: 'phoneNumber',
-  ALTERNATE_PHONE_NUMBER: 'alternatePhoneNumber',
-} as const;
-
-export const PATIENT_PHONE_NUMBER_SEARCH_URL = (
+export const PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL = (
   searchTerm: string,
+  searchFields: string[],
   loginLocationUuid: string,
 ) => {
   const trimmedSearchTerm = searchTerm.trim();
@@ -26,18 +22,11 @@ export const PATIENT_PHONE_NUMBER_SEARCH_URL = (
     loginLocationUuid,
     startIndex: '0',
   });
-  params.append('patientAttributes', PATIENT_SEARCH_CONFIG.PHONE_NUMBER);
-  params.append(
-    'patientAttributes',
-    PATIENT_SEARCH_CONFIG.ALTERNATE_PHONE_NUMBER,
-  );
-  params.append(
-    'patientSearchResultsConfig',
-    PATIENT_SEARCH_CONFIG.PHONE_NUMBER,
-  );
-  params.append(
-    'patientSearchResultsConfig',
-    PATIENT_SEARCH_CONFIG.ALTERNATE_PHONE_NUMBER,
-  );
+
+  searchFields.forEach((field) => {
+    params.append('patientAttributes', field);
+    params.append('patientSearchResultsConfig', field);
+  });
+
   return OPENMRS_REST_V1 + `/bahmni/search/patient?${params.toString()}`;
 };
