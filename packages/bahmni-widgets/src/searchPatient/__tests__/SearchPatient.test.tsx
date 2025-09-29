@@ -120,7 +120,7 @@ describe('SearchPatient', () => {
           ERROR_DEFAULT_TITLE: 'Error',
           PHONE_NUMBER_VALIDATION_ERROR:
             'Special characters and alphabets should not be allowed',
-          SEARCH_BY_PHONE_NUMBER: 'Search by phone number',
+          SEARCH_BY_CUSTOM_ATTRIBUTE: 'Search by phone number',
           REGISTRATION_PATIENT_SEARCH_DROPDOWN_PHONE_NUMBER: 'Phone Number',
           REGISTRATION_PATIENT_SEARCH_DROPDOWN_EMAIL: 'Email',
           SEARCH_TYPE: 'Search Type',

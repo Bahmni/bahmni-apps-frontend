@@ -230,7 +230,9 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
               id="phone-search-input"
               testId="phone-search-input"
               labelText="Phone Search"
-              placeholder={t('SEARCH_BY_PHONE_NUMBER')}
+              placeholder={t('SEARCH_BY_CUSTOM_ATTRIBUTE', {
+                attribute: selectedDropdownItem,
+              })}
               value={phoneSearchInput}
               onChange={(e) => handleChange(e.target.value, 'phone')}
               onKeyDown={(e) => {
