@@ -2,7 +2,11 @@ import { Patient } from 'fhir/r4';
 import { get } from '../api';
 import { calculateAge } from '../date';
 import { getUserLoginLocation } from '../userService';
-import { PATIENT_LUCENE_SEARCH_URL, PATIENT_RESOURCE_URL } from './constants';
+import {
+  PATIENT_LUCENE_SEARCH_URL,
+  PATIENT_RESOURCE_URL,
+  PATIENT_PHONE_NUMBER_SEARCH_URL,
+} from './constants';
 import { FormattedPatientData, PatientSearchResultBundle } from './models';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
@@ -158,9 +162,25 @@ export const getFormattedPatientById = async (
 export const searchPatientByNameOrId = async (
   searchTerm: string,
 ): Promise<PatientSearchResultBundle> => {
-  const loginLocationUuid = getUserLoginLocation();
+  const loginLocation = getUserLoginLocation();
   const searchResultsBundle = await get<PatientSearchResultBundle>(
-    PATIENT_LUCENE_SEARCH_URL(searchTerm, loginLocationUuid.uuid),
+    PATIENT_LUCENE_SEARCH_URL(searchTerm, loginLocation.uuid),
   );
   return searchResultsBundle;
 };
+
+/**
+ * Search patient by PhoneNumber
+ * @param phoneNumber - The Phone Number of the patient
+ * @returns A formatted patient search bundle object
+ */
+export async function searchPatientByCustomAttribute(
+  phoneNumber: string,
+  t: (key: string) => string,
+): Promise<PatientSearchResultBundle> {
+  const loginLocation = getUserLoginLocation();
+  const searchResultsBundle = await get<PatientSearchResultBundle>(
+    PATIENT_PHONE_NUMBER_SEARCH_URL(phoneNumber, loginLocation.uuid),
+  );
+  return searchResultsBundle;
+}
