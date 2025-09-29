@@ -98,7 +98,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
 
     const trimmedValue = inputValue.trim();
 
-    if (type === 'phone') {
+    if (type === 'phone' && selectedDropdownItem === dropdownItems[0]) {
       const hasPlusAtStart = inputValue.length > 0 && inputValue[0] === '+';
       const numericValue = inputValue.replace(/[^0-9]/g, '');
       const formattedValue = hasPlusAtStart ? '+' + numericValue : numericValue;
