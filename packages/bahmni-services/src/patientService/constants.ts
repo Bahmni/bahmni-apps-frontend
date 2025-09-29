@@ -13,6 +13,7 @@ export const PATIENT_LUCENE_SEARCH_URL = (
 export const PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL = (
   searchTerm: string,
   searchFields: string[],
+  resultFields: string[],
   loginLocationUuid: string,
 ) => {
   const trimmedSearchTerm = searchTerm.trim();
@@ -25,6 +26,8 @@ export const PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL = (
 
   searchFields.forEach((field) => {
     params.append('patientAttributes', field);
+  });
+  resultFields.forEach((field) => {
     params.append('patientSearchResultsConfig', field);
   });
 

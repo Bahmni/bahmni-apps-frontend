@@ -173,12 +173,14 @@ export const searchPatientByNameOrId = async (
  * Search patient by Custom Attributes (phone, address, program fields)
  * @param searchTerm - The search value entered by user
  * @param searchFields - Array of field names to search in (from PatientSearchField.fields)
+ * @param allCustomFields - Array of all custom field names to return in results
  * @param t - Translation function
  * @returns A formatted patient search bundle object
  */
 export const searchPatientByCustomAttribute = async (
   searchTerm: string,
   searchFields: string[],
+  allCustomFields: string[],
   t: (key: string) => string,
 ): Promise<PatientSearchResultBundle> => {
   const loginLocation = getUserLoginLocation();
@@ -186,6 +188,7 @@ export const searchPatientByCustomAttribute = async (
     PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL(
       searchTerm,
       searchFields,
+      allCustomFields,
       loginLocation.uuid,
     ),
   );

@@ -43,8 +43,8 @@ const PatientSearchPage: React.FC = () => {
   useEffect(() => {
     const loadSearchConfig = async () => {
       const config = await getRegistrationConfig();
-      if (config?.patientSearch?.customAttributes) {
-        setSearchFields(config.patientSearch.customAttributes);
+      if (config?.config?.patientSearch?.customAttributes) {
+        setSearchFields(config.config.patientSearch.customAttributes);
       }
     };
     loadSearchConfig();
@@ -90,14 +90,16 @@ const PatientSearchPage: React.FC = () => {
     { key: 'name', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_NAME') },
     { key: 'gender', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_GENDER') },
     { key: 'age', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_AGE') },
-    {
-      key: 'phoneNumber',
-      header: t('REGISTRATION_PATIENT_SEARCH_HEADER_PHONE_NUMBER'),
-    },
-    {
-      key: 'alternatePhoneNumber',
-      header: t('REGISTRATION_PATIENT_SEARCH_HEADER_ALTERNATE_PHONE_NUMBER'),
-    },
+    ...(searchFields.length > 0
+      ? searchFields.flatMap((field) =>
+          field.fields.map((fieldName, index) => ({
+            key: fieldName,
+            header: field.columnTranslationKeys?.[index]
+              ? t(field.columnTranslationKeys[index])
+              : fieldName,
+          })),
+        )
+      : []),
   ];
 
   const renderTitle = (
@@ -136,7 +138,10 @@ const PatientSearchPage: React.FC = () => {
   };
 
   const renderCell = useCallback(
-    (row: PatientSearchViewModel<PatientSearchResult>, cellId: string) => {
+    (
+      row: PatientSearchViewModel<PatientSearchResult>,
+      cellId: string,
+    ): React.ReactNode => {
       if (cellId === 'identifier') {
         return (
           <Link
@@ -155,7 +160,7 @@ const PatientSearchPage: React.FC = () => {
       if (cellValue instanceof Date) {
         return cellValue.toLocaleDateString();
       }
-      return cellValue;
+      return String(cellValue ?? '');
     },
     [navigateToPatient],
   );
@@ -179,7 +184,6 @@ const PatientSearchPage: React.FC = () => {
             searchBarPlaceholder={t(
               'REGISTRATION_PATIENT_SEARCH_INPUT_PLACEHOLDER',
             )}
-            searchFields={searchFields.length > 0 ? searchFields : undefined}
             onSearch={handleOnSearch}
           />
           {searchTerm !== '' && (
@@ -199,7 +203,10 @@ const PatientSearchPage: React.FC = () => {
                 headers={headers}
                 ariaLabel="patient-search-sortable-data-table"
                 loading={isLoading}
-                rows={formatPatientSearchResult(patientSearchData)}
+                rows={formatPatientSearchResult(
+                  patientSearchData,
+                  searchFields,
+                )}
                 renderCell={renderCell}
                 emptyStateMessage={
                   isPhoneSearch

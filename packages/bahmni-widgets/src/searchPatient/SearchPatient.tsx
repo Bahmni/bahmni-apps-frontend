@@ -16,6 +16,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../notification';
 import styles from './styles/SearchPatient.module.scss';
+import { set } from 'date-fns';
 
 interface SearchPatientProps {
   buttonTitle: string;
@@ -43,6 +44,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
   const [isPhoneSearch, setIsPhoneSearch] = useState<boolean>(false);
   const [dropdownItems, setDropdownItems] = useState<string[]>([]);
   const [selectedDropdownItem, setSelectedDropdownItem] = useState<string>('');
+  const [searchFields, setSearchFields] = useState<PatientSearchField[]>([]);
 
   const {
     data: configData,
@@ -56,12 +58,25 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
   });
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['patientSearch', searchTerm, isPhoneSearch],
+    queryKey: [
+      'patientSearch',
+      searchTerm,
+      isPhoneSearch,
+      selectedDropdownItem,
+    ],
     queryFn: () => {
       if (isPhoneSearch) {
+        const selectedField = searchFields.find(
+          (field) => t(field.translationKey) === selectedDropdownItem,
+        );
+        const fieldsToSearch = selectedField ? selectedField.fields : [];
+
+        const allCustomFields = searchFields.flatMap((field) => field.fields);
+
         return searchPatientByCustomAttribute(
           encodeURI(searchTerm),
-          ['email'],
+          fieldsToSearch,
+          allCustomFields,
           t,
         );
       } else {
@@ -75,16 +90,24 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
 
   const handleChange = (inputValue: string, type: 'name' | 'phone') => {
     if (type === 'phone') {
-      setPhoneSearchInput(inputValue);
-      setSearchInput('');
-      const hasPlusAtStart = inputValue.length > 0 && inputValue[0] === '+';
-      const numericValue = inputValue.replace(/[^0-9]/g, '');
-      const formattedValue = hasPlusAtStart ? '+' + numericValue : numericValue;
-      setPhoneInputError(
-        phoneInputError && inputValue !== formattedValue
-          ? t('PHONE_NUMBER_VALIDATION_ERROR')
-          : '',
-      );
+      if (selectedDropdownItem === dropdownItems[0]) {
+        setPhoneSearchInput(inputValue);
+        setSearchInput('');
+        const hasPlusAtStart = inputValue.length > 0 && inputValue[0] === '+';
+        const numericValue = inputValue.replace(/[^0-9]/g, '');
+        const formattedValue = hasPlusAtStart
+          ? '+' + numericValue
+          : numericValue;
+        setPhoneInputError(
+          phoneInputError && inputValue !== formattedValue
+            ? t('PHONE_NUMBER_VALIDATION_ERROR')
+            : '',
+        );
+      } else {
+        setPhoneInputError('');
+        setPhoneSearchInput(inputValue);
+        setSearchInput('');
+      }
     } else {
       setPhoneInputError('');
       setPhoneSearchInput('');
@@ -98,19 +121,27 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
 
     const trimmedValue = inputValue.trim();
 
-    if (type === 'phone' && selectedDropdownItem === dropdownItems[0]) {
-      const hasPlusAtStart = inputValue.length > 0 && inputValue[0] === '+';
-      const numericValue = inputValue.replace(/[^0-9]/g, '');
-      const formattedValue = hasPlusAtStart ? '+' + numericValue : numericValue;
+    if (type === 'phone') {
+      if (selectedDropdownItem === dropdownItems[0]) {
+        const hasPlusAtStart = inputValue.length > 0 && inputValue[0] === '+';
+        const numericValue = inputValue.replace(/[^0-9]/g, '');
+        const formattedValue = hasPlusAtStart
+          ? '+' + numericValue
+          : numericValue;
 
-      const hasInvalidChars =
-        inputValue !== formattedValue && inputValue.length > 0;
+        const hasInvalidChars =
+          inputValue !== formattedValue && inputValue.length > 0;
 
-      setPhoneInputError(
-        hasInvalidChars ? t('PHONE_NUMBER_VALIDATION_ERROR') : '',
-      );
-      setSearchTerm(hasInvalidChars ? '' : formattedValue);
-      setPhoneSearchInput(trimmedValue);
+        setPhoneInputError(
+          hasInvalidChars ? t('PHONE_NUMBER_VALIDATION_ERROR') : '',
+        );
+        setSearchTerm(hasInvalidChars ? '' : formattedValue);
+        setPhoneSearchInput(trimmedValue);
+      } else {
+        setPhoneInputError('');
+        setPhoneSearchInput(trimmedValue);
+        setSearchTerm(trimmedValue);
+      }
     } else {
       setSearchInput(trimmedValue);
       setSearchTerm(trimmedValue);
@@ -143,8 +174,10 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       setDropdownItems([]);
       setSelectedDropdownItem('');
     } else if (configData?.config?.patientSearch?.customAttributes) {
-      const labels = configData.config.patientSearch.customAttributes.map(
-        (field: PatientSearchField) => t(field.translationKey),
+      const customAttributes = configData.config.patientSearch.customAttributes;
+      setSearchFields(customAttributes);
+      const labels = customAttributes.map((field: PatientSearchField) =>
+        t(field.translationKey),
       );
       setDropdownItems(labels);
       setSelectedDropdownItem(labels[0] || '');
