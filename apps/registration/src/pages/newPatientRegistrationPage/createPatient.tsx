@@ -11,8 +11,12 @@ import {
   Column,
   CheckboxGroup,
 } from '@bahmni-frontend/bahmni-design-system';
-import { BAHMNI_HOME_PATH } from '@bahmni-frontend/bahmni-services';
-import React, { useState, useCallback } from 'react';
+import {
+  BAHMNI_HOME_PATH,
+  getIdentifierPrefixes,
+} from '@bahmni-frontend/bahmni-services';
+import { useQuery } from '@tanstack/react-query';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Header } from '../../components/Header';
@@ -25,17 +29,24 @@ import {
 } from '../../utils/ageUtils';
 import styles from './styles/index.module.scss';
 
-//TODO: add service for reading bahmni configuration for patient id formats
-// Formatted Ientifier types
-const PATIENT_ID_FORMATS = ['ABC', 'XYZ'];
 const GENDERS = ['Male', 'Female', 'Other'];
 
 const CreatePatient: React.FC = () => {
   const navigate = useNavigate();
   const [dobEstimated, setDobEstimated] = useState(false);
 
+  // Fetch identifier prefixes using TanStack Query
+  const { data: identifierPrefixes = [] } = useQuery({
+    queryKey: ['identifierPrefixes'],
+    queryFn: getIdentifierPrefixes,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  });
+
   const [formData, setFormData] = useState({
-    patientIdFormat: 'ABC',
+    patientIdFormat: '',
     enterManually: false,
     firstName: '',
     middleName: '',
@@ -49,6 +60,16 @@ const CreatePatient: React.FC = () => {
   });
 
   const [birthTime, setBirthTime] = useState('09:00 AM');
+
+  // Set the first prefix as default when data is loaded
+  useEffect(() => {
+    if (identifierPrefixes.length > 0 && !formData.patientIdFormat) {
+      setFormData((prev) => ({
+        ...prev,
+        patientIdFormat: identifierPrefixes[0],
+      }));
+    }
+  }, [identifierPrefixes, formData.patientIdFormat]);
 
   const onFieldChange = (field: string, value: string | number | boolean) =>
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -90,13 +111,8 @@ const CreatePatient: React.FC = () => {
         };
 
         if (age.years > 0 || age.months > 0 || age.days > 0) {
-          try {
-            // Calculate DOB based on age
-            const birthISO = AgeUtils.calculateBirthDate(age); // yyyy-mm-dd
-            updated.dateOfBirth = birthISO;
-          } catch (err) {
-            console.error('Error calculating DOB from age:', err);
-          }
+          const birthISO = AgeUtils.calculateBirthDate(age); // yyyy-mm-dd
+          updated.dateOfBirth = birthISO;
         } else {
           updated.dateOfBirth = '';
         }
@@ -154,8 +170,10 @@ const CreatePatient: React.FC = () => {
                 <Dropdown
                   id="patient-id-format"
                   titleText="Patient ID format"
-                  label="Select format"
-                  items={PATIENT_ID_FORMATS}
+                  label={
+                    formData.patientIdFormat || identifierPrefixes[0] || ''
+                  }
+                  items={identifierPrefixes}
                   selectedItem={formData.patientIdFormat}
                   onChange={({ selectedItem }) =>
                     onFieldChange('patientIdFormat', selectedItem)

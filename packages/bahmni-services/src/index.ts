@@ -5,9 +5,14 @@ export {
   getFormattedPatientById,
   searchPatientByNameOrId,
   searchPatientByCustomAttribute,
+  getIdentifierTypes,
+  getIdentifierPrefixes,
   type FormattedPatientData,
   type PatientSearchResult,
   type PatientSearchResultBundle,
+  type IdentifierSource,
+  type IdentifierType,
+  type IdentifierTypesResponse,
 } from './patientService';
 export { getFormattedError } from './errorHandling';
 export {

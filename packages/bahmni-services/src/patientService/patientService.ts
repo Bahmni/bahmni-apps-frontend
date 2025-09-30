@@ -6,8 +6,13 @@ import {
   PATIENT_LUCENE_SEARCH_URL,
   PATIENT_RESOURCE_URL,
   PATIENT_PHONE_NUMBER_SEARCH_URL,
+  IDENTIFIER_TYPES_URL,
 } from './constants';
-import { FormattedPatientData, PatientSearchResultBundle } from './models';
+import {
+  FormattedPatientData,
+  PatientSearchResultBundle,
+  IdentifierTypesResponse,
+} from './models';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
   return get<Patient>(PATIENT_RESOURCE_URL(patientUUID));
@@ -184,3 +189,31 @@ export async function searchPatientByCustomAttribute(
   );
   return searchResultsBundle;
 }
+
+/**
+ * Get identifier types with their sources and prefixes
+ * @returns A list of identifier types with their identifier sources
+ */
+export const getIdentifierTypes =
+  async (): Promise<IdentifierTypesResponse> => {
+    return get<IdentifierTypesResponse>(IDENTIFIER_TYPES_URL);
+  };
+
+/**
+ * Get identifier prefixes for dropdown population
+ * @returns Array of unique prefix strings
+ */
+export const getIdentifierPrefixes = async (): Promise<string[]> => {
+  const identifierTypes = await getIdentifierTypes();
+  const prefixes = new Set<string>();
+
+  identifierTypes.forEach((identifierType) => {
+    identifierType.identifierSources.forEach((source) => {
+      if (source.prefix) {
+        prefixes.add(source.prefix);
+      }
+    });
+  });
+
+  return Array.from(prefixes).sort();
+};
