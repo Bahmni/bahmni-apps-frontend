@@ -13,7 +13,6 @@ import {
   PatientSearchField,
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery } from '@tanstack/react-query';
-import { set } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../notification';
 import styles from './styles/SearchPatient.module.scss';
@@ -83,7 +82,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
         return searchPatientByNameOrId(encodeURI(searchTerm));
       }
     },
-    enabled: !!searchTerm && !!selectedDropdownItem,
+    enabled: !!searchTerm,
     staleTime: 0,
     gcTime: 0,
   });
@@ -132,11 +131,14 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
         const hasInvalidChars =
           inputValue !== formattedValue && inputValue.length > 0;
 
-        setPhoneInputError(
-          hasInvalidChars ? t('PHONE_NUMBER_VALIDATION_ERROR') : '',
-        );
-        setSearchTerm(hasInvalidChars ? '' : formattedValue);
-        setPhoneSearchInput(trimmedValue);
+        if (hasInvalidChars) {
+          setPhoneInputError(t('PHONE_NUMBER_VALIDATION_ERROR'));
+          return;
+        } else {
+          setPhoneInputError('');
+          setSearchTerm(formattedValue);
+          setPhoneSearchInput(trimmedValue);
+        }
       } else {
         setPhoneInputError('');
         setPhoneSearchInput(trimmedValue);
@@ -180,7 +182,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       );
       setDropdownItems(labels);
       setSelectedDropdownItem(labels[0] || '');
-    } else {
+    } else if (configData && dropdownItems.length === 0) {
       addNotification({
         title: t('CONFIG_ERROR_NOT_FOUND'),
         message: 'No patient search configuration found',
@@ -263,7 +265,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
               testId="phone-search-input"
               labelText="Phone Search"
               placeholder={t('SEARCH_BY_CUSTOM_ATTRIBUTE', {
-                attribute: selectedDropdownItem,
+                attribute: String(selectedDropdownItem),
               })}
               value={phoneSearchInput}
               onChange={(e) => handleChange(e.target.value, 'phone')}

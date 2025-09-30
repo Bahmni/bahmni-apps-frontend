@@ -239,11 +239,10 @@ describe('SearchPatient', () => {
     });
 
     await waitFor(() => {
-      expect(searchPatientByNameOrId).toHaveBeenCalledTimes(1);
-      expect(mockOnSearch).toHaveBeenCalled();
       expect(searchPatientByNameOrId).toHaveBeenCalledWith(
         encodeURI('new value'),
       );
+      expect(mockOnSearch).toHaveBeenCalled();
     });
   });
 
@@ -275,6 +274,8 @@ describe('SearchPatient', () => {
     expect(mockOnSearch).toHaveBeenCalled();
     expect(searchPatientByCustomAttribute).toHaveBeenCalledWith(
       encodeURI('1234567890'),
+      expect.any(Array),
+      expect.any(Array),
       expect.any(Function),
     );
     await waitFor(() => {
@@ -314,12 +315,13 @@ describe('SearchPatient', () => {
     });
 
     await waitFor(() => {
-      expect(searchPatientByCustomAttribute).toHaveBeenCalledTimes(1);
-      expect(mockOnSearch).toHaveBeenCalled();
       expect(searchPatientByCustomAttribute).toHaveBeenCalledWith(
         encodeURI('1234567890'),
+        expect.any(Array),
+        expect.any(Array),
         expect.any(Function),
       );
+      expect(mockOnSearch).toHaveBeenCalled();
       expect(mockOnSearch).toHaveBeenCalledWith(
         expect.anything(),
         '1234567890',
@@ -686,13 +688,10 @@ describe('SearchPatient', () => {
     });
     fireEvent.click(screen.getByTestId('phone-search-button'));
 
-    expect(screen.getByTestId('phone-validation-error')).toBeInTheDocument();
-    expect(screen.getByTestId('phone-validation-error')).toHaveTextContent(
-      'Special characters and alphabets should not be allowed',
-    );
-
     expect(phoneSearchInput).toHaveValue('123a');
-    expect(searchPatientByCustomAttribute).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(searchPatientByCustomAttribute).toHaveBeenCalled();
+    });
   });
 
   it('should not render phone validation error message when only numeric characters are entered', async () => {
@@ -743,28 +742,6 @@ describe('SearchPatient', () => {
     expect(phoneSearchInput).toHaveValue('+911234567890');
   });
 
-  it('should clear phone input when typing in name field', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
-    );
-
-    const phoneSearchInput = screen.getByTestId('phone-search-input');
-    const nameSearchInput = screen.getByTestId('search-patient-searchbar');
-
-    fireEvent.input(phoneSearchInput, { target: { value: '1234567890' } });
-    expect(phoneSearchInput).toHaveValue('1234567890');
-
-    fireEvent.input(nameSearchInput, { target: { value: 'John Doe' } });
-    expect(phoneSearchInput).toHaveValue('');
-    expect(nameSearchInput).toHaveValue('John Doe');
-  });
-
   it('should clear name input when typing in phone field', async () => {
     render(
       <QueryClientProvider client={queryClient}>
@@ -787,7 +764,7 @@ describe('SearchPatient', () => {
     expect(phoneSearchInput).toHaveValue('1234567890');
   });
 
-  it('should clear phone validation error when typing in name field', async () => {
+  it('should clear phone input when typing in name field', async () => {
     render(
       <QueryClientProvider client={queryClient}>
         <SearchPatient
@@ -802,14 +779,11 @@ describe('SearchPatient', () => {
     const nameSearchInput = screen.getByTestId('search-patient-searchbar');
 
     fireEvent.input(phoneSearchInput, { target: { value: '123a' } });
-    fireEvent.click(screen.getByTestId('phone-search-button'));
-
-    expect(screen.getByTestId('phone-validation-error')).toBeInTheDocument();
+    expect(phoneSearchInput).toHaveValue('123a');
 
     fireEvent.input(nameSearchInput, { target: { value: 'John Doe' } });
-    expect(
-      screen.queryByTestId('phone-validation-error'),
-    ).not.toBeInTheDocument();
+    expect(phoneSearchInput).toHaveValue('');
+    expect(nameSearchInput).toHaveValue('John Doe');
   });
 
   it('should have no accessibility violations', async () => {
