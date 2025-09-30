@@ -13,8 +13,11 @@ import {
   TimePicker,
   TimePickerSelect,
 } from '@bahmni-frontend/bahmni-design-system';
+import { BAHMNI_HOME_PATH } from '@bahmni-frontend/bahmni-services';
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+import { Header } from '../../components/Header';
 import {
   AgeUtils,
   formatToDisplay,
@@ -49,8 +52,6 @@ const CreatePatient: React.FC = () => {
   const onFieldChange = (field: string, value: string | number | boolean) =>
     setFormData((prev) => ({ ...prev, [field]: value }));
 
-  // Handle date of birth change and automatically calculate age
-  // Handle DatePicker change → populate age fields
   const handleDateOfBirthChange = useCallback((selectedDates: Date[] = []) => {
     if (!selectedDates || selectedDates.length === 0) return;
 
@@ -111,26 +112,30 @@ const CreatePatient: React.FC = () => {
     // console.log('Form data:', formData);
   };
 
+  const breadcrumbs = [
+    {
+      label: 'Home',
+      href: BAHMNI_HOME_PATH,
+    },
+    {
+      label: 'Search Patient',
+      onClick: () => navigate('/registration/search'),
+    },
+    {
+      label: 'Create New Patient',
+    },
+  ];
+
   return (
     <BaseLayout
       header={
-        //TODO: header needs to be replaced with actual header component
-        <div className={styles.customHeader}>
-          <div className={styles.headerContent}>
-            <div className={styles.breadcrumbSection}>
-              <nav className={styles.breadcrumb}>
-                <span className={styles.breadcrumbSeparator}>/</span>
-                <span className={styles.breadcrumbCurrent}>Search patient</span>
-              </nav>
-            </div>
-            <div className={styles.rightActions}>
-              <div className={styles.profileSection}>
-                <div className={styles.userAvatar} />
-                <span className={styles.profileText}>Hi, Profile name</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Header
+          breadcrumbs={breadcrumbs}
+          showButton
+          buttonText="Create new patient"
+          buttonTestId="create-new-patient-button"
+          buttonDisabled
+        />
       }
       main={
         <div className={styles.main}>
