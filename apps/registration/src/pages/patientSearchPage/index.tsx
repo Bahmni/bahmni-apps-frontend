@@ -210,9 +210,12 @@ const PatientSearchPage: React.FC = () => {
                 renderCell={renderCell}
                 emptyStateMessage={
                   isPhoneSearch
-                    ? t('REGISTRATION_PATIENT_SEARCH_PHONE_EMPTY_MESSAGE', {
-                        searchTerm: searchTerm,
-                      })
+                    ? t(
+                        'REGISTRATION_PATIENT_SEARCH_CUSTOM_ATTRIBUTE_EMPTY_MESSAGE',
+                        {
+                          searchTerm: searchTerm,
+                        },
+                      )
                     : t('REGISTRATION_PATIENT_SEARCH_EMPTY_MESSAGE', {
                         searchTerm: searchTerm,
                       })
