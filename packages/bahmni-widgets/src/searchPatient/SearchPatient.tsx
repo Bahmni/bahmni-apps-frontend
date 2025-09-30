@@ -83,7 +83,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
         return searchPatientByNameOrId(encodeURI(searchTerm));
       }
     },
-    enabled: !!searchTerm,
+    enabled: !!searchTerm && !!selectedDropdownItem,
     staleTime: 0,
     gcTime: 0,
   });
@@ -296,6 +296,10 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
             selectedItem={selectedDropdownItem}
             onChange={(event) => {
               setSelectedDropdownItem(event.selectedItem ?? '');
+              setPhoneSearchInput('');
+              setSearchInput('');
+              setSearchTerm('');
+              setPhoneInputError('');
             }}
             aria-label={t('PATIENT_SEARCH_ATTRIBUTE_SELECTOR')}
           />
