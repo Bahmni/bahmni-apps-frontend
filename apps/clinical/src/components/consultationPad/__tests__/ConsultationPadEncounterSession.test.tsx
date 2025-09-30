@@ -113,12 +113,6 @@ jest.mock('../../../services/consultationBundleService', () => ({
   createMedicationRequestEntries: jest.fn(() => []),
 }));
 
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
-  getCurrentUserPrivileges: jest.fn(),
-  findActiveEncounterInSession: jest.fn().mockResolvedValue(null),
-}));
-
 // Mock utilities
 jest.mock('../../../utils/fhir/encounterResourceCreator', () => ({
   createEncounterResource: jest.fn(() => ({
