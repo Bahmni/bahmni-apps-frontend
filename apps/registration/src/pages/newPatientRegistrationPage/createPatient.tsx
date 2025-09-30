@@ -10,14 +10,13 @@ import {
   Grid,
   Column,
   CheckboxGroup,
-  TimePicker,
-  TimePickerSelect,
 } from '@bahmni-frontend/bahmni-design-system';
 import { BAHMNI_HOME_PATH } from '@bahmni-frontend/bahmni-services';
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Header } from '../../components/Header';
+import { TimeSelector } from '../../components/TimeSelector/TimeSelector';
 import {
   AgeUtils,
   formatToDisplay,
@@ -48,6 +47,8 @@ const CreatePatient: React.FC = () => {
     dateOfBirth: '',
     birthTime: '',
   });
+
+  const [birthTime, setBirthTime] = useState('09:00 AM');
 
   const onFieldChange = (field: string, value: string | number | boolean) =>
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -149,7 +150,6 @@ const CreatePatient: React.FC = () => {
                 <span>Basic Information</span>
               </Column>
 
-              {/* Row 1: Photo + ID */}
               <Column sm={2} md={4} lg={6} xlg={8}>
                 <Dropdown
                   id="patient-id-format"
@@ -291,21 +291,12 @@ const CreatePatient: React.FC = () => {
                   />
                 </CheckboxGroup>
               </Column>
-              <Column lg={4} md={2} sm={2}>
-                <TimePicker
-                  id="birth-time"
-                  labelText="Birth time"
-                  value={formData.birthTime}
-                  maxLength={4}
-                  warningText="12-hour format (hh:mm AM/PM)"
-                  pattern="^(0[0-9]|1[0-2]):[0-5][0-9]$"
-                  onChange={(e) => onFieldChange('birthTime', e.target.value)}
-                >
-                  <TimePickerSelect id="time-suffix">
-                    <option value="AM">AM</option>
-                    <option value="PM">PM</option>
-                  </TimePickerSelect>
-                </TimePicker>
+              <Column lg={6} md={4} sm={2}>
+                <TimeSelector
+                  labelText="Birth Time"
+                  value={birthTime}
+                  onChange={setBirthTime}
+                />
               </Column>
             </Grid>
 
