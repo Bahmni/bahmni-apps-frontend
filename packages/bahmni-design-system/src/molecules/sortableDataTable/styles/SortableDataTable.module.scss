@@ -20,6 +20,18 @@
   th {
     border-block: 1px solid $border-subtle !important;
   }
+
+  .interactiveRow {
+    cursor: pointer;
+
+    &:hover {
+      background-color: $layer-hover !important;
+
+      td {
+        background-color: $layer-hover !important;
+      }
+    }
+  }
 }
 
 .sortableDataTableSkeleton {
@@ -35,8 +47,4 @@
   padding: $spacing-06 $spacing-05;
   text-align: center;
   border-top: 1px solid $border-subtle-02;
-}
-
-.interactiveRow {
-  cursor: pointer;
 }
