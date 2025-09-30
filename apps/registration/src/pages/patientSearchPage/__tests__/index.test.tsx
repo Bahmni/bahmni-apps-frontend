@@ -85,6 +85,20 @@ jest.mock('@tanstack/react-query', () => ({
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
   ...jest.requireActual('@bahmni-frontend/bahmni-services'),
   dispatchAuditEvent: jest.fn(),
+  getRegistrationConfig: jest.fn().mockResolvedValue({
+    config: {
+      patientSearch: {
+        customAttributes: [],
+      },
+    },
+  }),
+  notificationService: {
+    register: jest.fn(),
+    showError: jest.fn(),
+    showSuccess: jest.fn(),
+    showWarning: jest.fn(),
+    showInfo: jest.fn(),
+  },
 }));
 
 describe('PatientSearchPage', () => {
