@@ -6,6 +6,7 @@ import React, { useState, useCallback } from 'react';
 
 export type TimePickerProps = CarbonTimePickerProps & {
   testId?: string;
+  pattern?: string;
 };
 
 export const TimePicker: React.FC<TimePickerProps> = ({
@@ -112,6 +113,8 @@ export const TimePicker: React.FC<TimePickerProps> = ({
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       const char = event.key;
       const currentValue = (event.target as HTMLInputElement).value;
+      const cursorPosition =
+        (event.target as HTMLInputElement).selectionStart ?? 0;
 
       // Allow control keys (backspace, delete, tab, escape, enter, arrows, etc.)
       if (
@@ -143,6 +146,29 @@ export const TimePicker: React.FC<TimePickerProps> = ({
       if (digitsCount >= 4) {
         event.preventDefault();
         return;
+      }
+
+      // Additional validation for minutes position
+      const digitsOnly = currentValue.replace(/\D/g, '');
+      const newDigit = parseInt(char, 10);
+
+      // If we're typing the first digit of minutes (position after colon)
+      if (digitsOnly.length === 2 && newDigit > 5) {
+        event.preventDefault();
+        return;
+      }
+
+      // If we're typing the second digit of minutes
+      if (digitsOnly.length === 3) {
+        const firstMinuteDigit = parseInt(digitsOnly[2], 10);
+        if (firstMinuteDigit === 5 && newDigit > 9) {
+          event.preventDefault();
+          return;
+        }
+        if (firstMinuteDigit > 5) {
+          event.preventDefault();
+          return;
+        }
       }
     },
     [],

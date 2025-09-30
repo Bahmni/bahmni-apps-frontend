@@ -5,7 +5,6 @@ import {
   TextInput,
   Dropdown,
   Checkbox,
-  NumberInput,
   DatePicker,
   DatePickerInput,
   Grid,
@@ -14,15 +13,22 @@ import {
   TimePicker,
   TimePickerSelect,
 } from '@bahmni-frontend/bahmni-design-system';
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  AgeUtils,
+  formatToDisplay,
+  formatToISO,
+  parseDateStringToDate,
+} from '../../utils/ageUtils';
 import styles from './styles/index.module.scss';
 
 //TODO: add service for reading bahmni configuration for patient id formats
+// Formatted Ientifier types
 const PATIENT_ID_FORMATS = ['ABC', 'XYZ'];
 const GENDERS = ['Male', 'Female', 'Other'];
 
-const NewPatientRegistrationPage: React.FC = () => {
+const CreatePatient: React.FC = () => {
   const navigate = useNavigate();
   const [dobEstimated, setDobEstimated] = useState(false);
 
@@ -42,6 +48,62 @@ const NewPatientRegistrationPage: React.FC = () => {
 
   const onFieldChange = (field: string, value: string | number | boolean) =>
     setFormData((prev) => ({ ...prev, [field]: value }));
+
+  // Handle date of birth change and automatically calculate age
+  // Handle DatePicker change → populate age fields
+  const handleDateOfBirthChange = useCallback((selectedDates: Date[] = []) => {
+    if (!selectedDates || selectedDates.length === 0) return;
+
+    const selectedDate = selectedDates[0];
+    if (!selectedDate) return;
+
+    // Convert Date to ISO for internal state
+    const isoDate = formatToISO(selectedDate);
+
+    // Calculate age using cleaned AgeUtils
+    const calculatedAge = AgeUtils.diffInYearsMonthsDays(
+      selectedDate,
+      new Date(),
+    );
+
+    setFormData((prev) => ({
+      ...prev,
+      dateOfBirth: isoDate, // yyyy-mm-dd
+      ageYears: Number(calculatedAge.years) || 0,
+      ageMonths: Number(calculatedAge.months) || 0,
+      ageDays: Number(calculatedAge.days) || 0,
+    }));
+  }, []);
+
+  // Handle NumberInput changes → back-calculate DOB
+  const handleAgeChange = useCallback(
+    (field: 'ageYears' | 'ageMonths' | 'ageDays', value: number) => {
+      setFormData((prev) => {
+        const updated = { ...prev, [field]: value || 0 };
+
+        const age = {
+          years: updated.ageYears,
+          months: updated.ageMonths,
+          days: updated.ageDays,
+        };
+
+        if (age.years > 0 || age.months > 0 || age.days > 0) {
+          try {
+            // Calculate DOB based on age
+            const birthISO = AgeUtils.calculateBirthDate(age); // yyyy-mm-dd
+            updated.dateOfBirth = birthISO;
+          } catch (err) {
+            console.error('Error calculating DOB from age:', err);
+          }
+        } else {
+          updated.dateOfBirth = '';
+        }
+
+        return updated;
+      });
+    },
+    [],
+  );
 
   const handleGoBack = () => navigate('/');
   const handleSave = () => {
@@ -149,54 +211,68 @@ const NewPatientRegistrationPage: React.FC = () => {
                   }
                 />
               </Column>
-              <Column sm={1} md={2} lg={2} xlg={4}>
-                <NumberInput
+              <Column sm={2} md={3} lg={2} xlg={3}>
+                <TextInput
                   id="age-years"
-                  label="Age (Years)"
+                  labelText="Age (Years)"
+                  type="number"
                   min={0}
                   max={120}
                   value={formData.ageYears}
                   onChange={(e) =>
-                    onFieldChange('ageYears', e.imaginaryTarget.value)
+                    handleAgeChange('ageYears', Number(e.target.value) || 0)
                   }
                 />
               </Column>
-              <Column sm={1} md={2} lg={2} xlg={4}>
-                <NumberInput
+
+              <Column sm={1} md={3} lg={2} xlg={3}>
+                <TextInput
                   id="age-months"
-                  label="Age (Months)"
+                  labelText="Age (Months)"
+                  type="number"
                   min={0}
-                  max={11}
+                  max={12}
                   value={formData.ageMonths}
                   onChange={(e) =>
-                    onFieldChange('ageMonths', e.imaginaryTarget.value)
+                    handleAgeChange('ageMonths', Number(e.target.value) || 0)
                   }
                 />
               </Column>
-              <Column sm={1} md={2} lg={2} xlg={4}>
-                <NumberInput
+
+              <Column sm={1} md={3} lg={2} xlg={3}>
+                <TextInput
                   id="age-days"
-                  label="Age (Days)"
+                  labelText="Age (Days)"
+                  type="number"
                   min={0}
                   max={31}
                   value={formData.ageDays}
                   onChange={(e) =>
-                    onFieldChange('ageDays', e.imaginaryTarget.value)
+                    handleAgeChange('ageDays', Number(e.target.value) || 0)
                   }
                 />
               </Column>
 
               {/* Row 4: DOB + Estimated + Birth time */}
               <Column lg={4} md={4} sm={1}>
-                <DatePicker dateFormat="d/m/Y" datePickerType="single">
+                <DatePicker
+                  dateFormat="d/m/Y" // Display format
+                  datePickerType="single"
+                  value={
+                    formData.dateOfBirth
+                      ? [
+                          parseDateStringToDate(
+                            formatToDisplay(formData.dateOfBirth),
+                          ),
+                        ] // convert ISO → Date
+                      : []
+                  }
+                  onChange={handleDateOfBirthChange}
+                >
                   <DatePickerInput
                     id="dob"
-                    labelText="Date of birth"
+                    labelText="Date of Birth"
                     placeholder="dd/mm/yyyy"
-                    value={formData.dateOfBirth}
-                    onChange={(e) =>
-                      onFieldChange('dateOfBirth', e.target.value)
-                    }
                   />
                 </DatePicker>
               </Column>
@@ -215,6 +291,9 @@ const NewPatientRegistrationPage: React.FC = () => {
                   id="birth-time"
                   labelText="Birth time"
                   value={formData.birthTime}
+                  maxLength={4}
+                  warningText="12-hour format (hh:mm AM/PM)"
+                  pattern="^(0[0-9]|1[0-2]):[0-5][0-9]$"
                   onChange={(e) => onFieldChange('birthTime', e.target.value)}
                 >
                   <TimePickerSelect id="time-suffix">
@@ -240,4 +319,4 @@ const NewPatientRegistrationPage: React.FC = () => {
   );
 };
 
-export default NewPatientRegistrationPage;
+export default CreatePatient;
