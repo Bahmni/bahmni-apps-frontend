@@ -162,13 +162,12 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
 
   useEffect(() => {
     if (configIsError) {
-      const errorMessage =
-        configError instanceof Error
-          ? configError.message
-          : 'Failed to fetch patient search configuration';
       addNotification({
-        title: t('CONFIG_ERROR_TITLE') || 'Configuration Error',
-        message: errorMessage,
+        title: t('CONFIG_ERROR_SCHEMA_VALIDATION_FAILED'),
+        message:
+          configError instanceof Error
+            ? configError.message
+            : String(configError),
         type: 'error',
       });
       setDropdownItems([]);
@@ -181,9 +180,9 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       );
       setDropdownItems(labels);
       setSelectedDropdownItem(labels[0] || '');
-    } else if (configData) {
+    } else {
       addNotification({
-        title: t('CONFIG_ERROR_TITLE') || 'Configuration Error',
+        title: t('CONFIG_ERROR_NOT_FOUND'),
         message: 'No patient search configuration found',
         type: 'error',
       });
