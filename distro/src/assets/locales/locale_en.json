@@ -265,7 +265,7 @@
   "REGISTRATION_PATIENT_SEARCH_HEADER_NAME": "Patient Name",
   "REGISTRATION_PATIENT_SEARCH_HEADER_PHONE_NUMBER": "Phone Number",
   "REGISTRATION_PATIENT_SEARCH_INPUT_PLACEHOLDER": "Search by name or patient ID",
-  "REGISTRATION_PATIENT_SEARCH_PHONE_EMPTY_MESSAGE": "No patients found with '{{searchTerm}}'. Please verify the number or try a different search.",
+  "REGISTRATION_PATIENT_SEARCH_PHONE_EMPTY_MESSAGE": "No matching {{searchTerm}}. Try adjusting your search parameters.",
   "REGISTRATION_PATIENT_SEARCH_TABLE_TITLE": "Patient results ({{count}})",
   "SEARCH_BY_CUSTOM_ATTRIBUTE": "Search by {{attribute}}",
   "SELECTED_ITEM_CLOSE": "Close",

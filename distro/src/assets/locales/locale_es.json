@@ -269,7 +269,7 @@
   "REGISTRATION_PATIENT_SEARCH_HEADER_NAME": "Nombre del paciente",
   "REGISTRATION_PATIENT_SEARCH_HEADER_PHONE_NUMBER": "Número de teléfono",
   "REGISTRATION_PATIENT_SEARCH_INPUT_PLACEHOLDER": "Buscar por nombre o ID del paciente",
-  "REGISTRATION_PATIENT_SEARCH_PHONE_EMPTY_MESSAGE": "No se encontraron pacientes con '{{searchTerm}}'. Verifique el número o intente una búsqueda diferente.",
+  "REGISTRATION_PATIENT_SEARCH_PHONE_EMPTY_MESSAGE": "No hay resultados para {{searchTerm}}. Intenta ajustar tus parámetros de búsqueda.",
   "REGISTRATION_PATIENT_SEARCH_TABLE_TITLE": "Resultados de pacientes ({{count}})",
   "REACTIONS": "Reacción(es)",
   "SEARCH_BY_CUSTOM_ATTRIBUTE": "Buscar por {{attribute}}",
