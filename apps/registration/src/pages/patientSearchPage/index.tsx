@@ -1,6 +1,5 @@
 import {
   BaseLayout,
-  Button,
   Link,
   Loading,
   SkeletonText,
@@ -19,6 +18,8 @@ import {
 import { SearchPatient } from '@bahmni-frontend/bahmni-widgets';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+import { Header } from '../../components/Header';
 import styles from './styles/index.module.scss';
 import { formatPatientSearchResult, PatientSearchViewModel } from './utils';
 
@@ -144,37 +145,26 @@ const PatientSearchPage: React.FC = () => {
     return <Loading description={t('LOADING_PATIENT_DETAILS')} role="status" />;
   }
 
+  const breadcrumbs = [
+    {
+      label: t('REGISTRATION_PATIENT_SEARCH_BREADCRUMB_HOME'),
+      href: BAHMNI_HOME_PATH,
+    },
+    {
+      label: 'Search Patient',
+    },
+  ];
+
   return (
     <BaseLayout
       header={
-        <div className={styles.customHeader}>
-          <div className={styles.headerContent}>
-            <div className={styles.breadcrumbSection}>
-              <nav className={styles.breadcrumb}>
-                <a href={BAHMNI_HOME_PATH} className={styles.breadcrumbLink}>
-                  {t('REGISTRATION_PATIENT_SEARCH_BREADCRUMB_HOME')}
-                </a>
-                <span className={styles.breadcrumbSeparator}>/</span>
-                <span className={styles.breadcrumbCurrent}>Search patient</span>
-              </nav>
-            </div>
-            <div className={styles.rightActions}>
-              <Button
-                kind="primary"
-                size="sm"
-                onClick={handleCreateNewPatient}
-                testId="create-new-patient-button"
-                className={styles.createPatientButton}
-              >
-                Create new patient
-              </Button>
-              <div className={styles.profileSection}>
-                <div className={styles.userAvatar} />
-                <span className={styles.profileText}>Hi, Profile name</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Header
+          breadcrumbs={breadcrumbs}
+          showButton
+          buttonText="Create new patient"
+          onButtonClick={handleCreateNewPatient}
+          buttonTestId="create-new-patient-button"
+        />
       }
       main={
         <div className={styles.main}>

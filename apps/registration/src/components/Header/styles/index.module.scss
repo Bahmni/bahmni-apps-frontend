@@ -1,0 +1,158 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/breakpoint" as *;
+
+.customHeader {
+  background-color: #007D79;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  padding: 0 $spacing-05;
+}
+
+.breadcrumbSection {
+  display: flex;
+  align-items: center;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: $spacing-02;
+}
+
+.breadcrumbLink {
+  color: #FFFFFF;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 400;
+  cursor: pointer;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+  
+  &:focus {
+    outline: 2px solid #FFFFFF;
+    outline-offset: 2px;
+  }
+}
+
+.breadcrumbSeparator {
+  color: #FFFFFF;
+  font-size: 0.875rem;
+  margin: 0 $spacing-02;
+}
+
+.breadcrumbCurrent {
+  color: #FFFFFF;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.rightActions {
+  display: flex;
+  align-items: center;
+  gap: $spacing-05;
+}
+
+.actionButton {
+  flex-shrink: 0;
+  height: 32px;
+  padding: 0 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  
+  // Make button green with white text
+  background-color: #198038 !important;
+  color: #FFFFFF !important;
+  border: 1px solid #198038 !important;
+  
+  &:hover:not(:disabled) {
+    background-color: #0e6027 !important;
+    color: #FFFFFF !important;
+  }
+  
+  &:focus {
+    outline: 2px solid #FFFFFF;
+    outline-offset: 2px;
+  }
+  
+  &:disabled {
+    background-color: #6f6f6f !important;
+    color: #c6c6c6 !important;
+    border: 1px solid #6f6f6f !important;
+    cursor: not-allowed;
+  }
+  
+  // Center align text and remove extra padding/spacing
+  span {
+    padding: 0 !important;
+    margin: 0 !important;
+    text-align: center !important;
+    width: 100% !important;
+  }
+}
+
+.profileSection {
+  display: flex;
+  align-items: center;
+  gap: $spacing-02;
+}
+
+.userAvatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #FFFFFF;
+  opacity: 0.8;
+}
+
+.profileText {
+  color: #FFFFFF;
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+@include breakpoint-down(lg) {
+  .headerContent {
+    padding: 0 $spacing-03;
+  }
+  
+  .rightActions {
+    gap: $spacing-03;
+  }
+  
+  .actionButton {
+    padding: 0 8px !important;
+    font-size: 0.75rem;
+  }
+}
+
+@include breakpoint-down(md) {
+  .profileText {
+    display: none;
+  }
+  
+  .rightActions {
+    gap: $spacing-02;
+  }
+}
