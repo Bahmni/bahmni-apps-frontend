@@ -786,6 +786,95 @@ describe('SearchPatient', () => {
     expect(nameSearchInput).toHaveValue('John Doe');
   });
 
+  it('should clear inputs when dropdown selection changes', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SearchPatient
+          buttonTitle={buttonTitle}
+          searchBarPlaceholder={searchBarPlaceholder}
+          onSearch={mockOnSearch}
+        />
+      </QueryClientProvider>,
+    );
+
+    const phoneSearchInput = screen.getByTestId('phone-search-input');
+    const nameSearchInput = screen.getByTestId('search-patient-searchbar');
+    const dropdown = screen.getByTestId('search-type-dropdown');
+
+    fireEvent.input(phoneSearchInput, { target: { value: '1234567890' } });
+    fireEvent.input(nameSearchInput, { target: { value: 'John Doe' } });
+
+    expect(phoneSearchInput).toHaveValue('1234567890');
+    expect(nameSearchInput).toHaveValue('John Doe');
+
+    fireEvent.click(dropdown);
+
+    await waitFor(() => {
+      const dropdownOptions = screen.getAllByRole('option');
+      if (dropdownOptions.length > 1) {
+        fireEvent.click(dropdownOptions[1]);
+      }
+    });
+
+    await waitFor(() => {
+      expect(phoneSearchInput).toHaveValue('');
+      expect(nameSearchInput).toHaveValue('');
+    });
+  });
+
+  it('should show notification when config validation fails', async () => {
+    const configError = new Error('Schema validation failed');
+    mockGetRegistrationConfig.mockRejectedValue(configError);
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SearchPatient
+          buttonTitle={buttonTitle}
+          searchBarPlaceholder={searchBarPlaceholder}
+          onSearch={mockOnSearch}
+        />
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => {
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        type: 'error',
+        title: 'CONFIG_ERROR_SCHEMA_VALIDATION_FAILED',
+        message: 'Schema validation failed',
+      });
+    });
+  });
+
+  it('should show notification when config has no patient search fields', async () => {
+    const configWithoutSearchFields = {
+      config: {
+        patientSearch: {},
+      },
+    };
+
+    mockGetRegistrationConfig.mockResolvedValue(
+      configWithoutSearchFields as any,
+    );
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SearchPatient
+          buttonTitle={buttonTitle}
+          searchBarPlaceholder={searchBarPlaceholder}
+          onSearch={mockOnSearch}
+        />
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => {
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        type: 'error',
+        title: 'CONFIG_ERROR_NOT_FOUND',
+        message: 'No patient search configuration found',
+      });
+    });
+  });
+
   it('should have no accessibility violations', async () => {
     const { container } = render(
       <QueryClientProvider client={queryClient}>
