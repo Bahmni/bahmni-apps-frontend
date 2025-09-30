@@ -1,6 +1,6 @@
 import {
   BaseLayout,
-  Header,
+  Button,
   Link,
   Loading,
   SkeletonText,
@@ -18,6 +18,7 @@ import {
 } from '@bahmni-frontend/bahmni-services';
 import { SearchPatient } from '@bahmni-frontend/bahmni-widgets';
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from './styles/index.module.scss';
 import { formatPatientSearchResult, PatientSearchViewModel } from './utils';
 
