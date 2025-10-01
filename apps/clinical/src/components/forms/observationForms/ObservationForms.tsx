@@ -9,6 +9,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_FORM_API_NAMES } from '../../../constants/forms';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
+import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationForms';
 import styles from './styles/ObservationForms.module.scss';
 
 interface ObservationFormsProps {
@@ -35,13 +36,8 @@ interface ObservationFormsProps {
  * - Error handling and loading states
  */
 const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
-  ({
-    onFormSelect,
-    selectedForms = [],
-    onRemoveForm,
-    pinnedForms = [],
-    onUnpinForm,
-  }) => {
+  ({ onFormSelect, selectedForms = [], onRemoveForm }) => {
+    const { pinnedForms, updatePinnedForms } = usePinnedObservationForms();
     const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -241,7 +237,12 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
                     : undefined
                 }
                 onOpen={() => onFormSelect?.(form)}
-                onActionClick={() => onUnpinForm?.(form.uuid)}
+                onActionClick={() => {
+                  const newPinnedForms = pinnedForms.filter(
+                    (f) => f.uuid !== form.uuid,
+                  );
+                  updatePinnedForms(newPinnedForms);
+                }}
                 dataTestId={`pinned-form-${form.uuid}`}
                 ariaLabel={`Open ${form.name} form`}
               />
