@@ -38,3 +38,21 @@ export interface PatientSearchResultBundle {
   totalCount: number;
   pageOfResults: PatientSearchResult[];
 }
+
+export interface IdentifierSource {
+  uuid: string;
+  name: string;
+  prefix: string;
+}
+
+export interface IdentifierType {
+  uuid: string;
+  name: string;
+  description: string;
+  format: string | null;
+  required: boolean;
+  primary: boolean;
+  identifierSources: IdentifierSource[];
+}
+
+export type IdentifierTypesResponse = IdentifierType[];
