@@ -87,6 +87,8 @@
   "DATE_ERROR_INVALID_FORMAT": "Formato de fecha no válido",
   "DATE_ERROR_NULL_OR_UNDEFINED": "La fecha es nula o no está definida",
   "DATE_ERROR_PARSE": "Error al analizar la fecha",
+  "DEFAULT_AND_PINNED_FORMS_TITLE": "Formularios predeterminados y fijados",
+  "DEFAULT_AND_PINNED_FORMS_NO_FORMS_FOUND": "No se encontraron formularios predeterminados o fijados",
   "DIAGNOSES_ADDED_DIAGNOSES": "Diagnósticos Agregados",
   "DIAGNOSES_ALREADY_ADDED_AS_CONDITION": "Ya agregado como condición",
   "DIAGNOSES_CERTAINTY_ARIA_LABEL": "Certeza del Diagnóstico",
