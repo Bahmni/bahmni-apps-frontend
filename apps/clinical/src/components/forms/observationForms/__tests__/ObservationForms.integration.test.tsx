@@ -33,6 +33,12 @@ jest.mock('../../../../hooks/useObservationFormsSearch', () => ({
   default: jest.fn(),
 }));
 
+// Mock usePinnedObservationForms hook
+jest.mock('../../../../hooks/usePinnedObservationForms', () => ({
+  __esModule: true,
+  usePinnedObservationForms: jest.fn(),
+}));
+
 describe('ObservationForms Integration Tests', () => {
   const mockAvailableForms: ObservationForm[] = [
     {
@@ -65,8 +71,6 @@ describe('ObservationForms Integration Tests', () => {
     onFormSelect: jest.fn(),
     selectedForms: [],
     onRemoveForm: jest.fn(),
-    pinnedForms: [],
-    onUnpinForm: jest.fn(),
   };
 
   beforeEach(() => {
@@ -77,6 +81,16 @@ describe('ObservationForms Integration Tests', () => {
     ).default;
     mockUseObservationFormsSearch.mockReturnValue({
       forms: mockAvailableForms,
+      isLoading: false,
+      error: null,
+    });
+
+    const mockUsePinnedObservationForms = jest.requireMock(
+      '../../../../hooks/usePinnedObservationForms',
+    ).usePinnedObservationForms;
+    mockUsePinnedObservationForms.mockReturnValue({
+      pinnedForms: [],
+      updatePinnedForms: jest.fn(),
       isLoading: false,
       error: null,
     });
@@ -125,9 +139,17 @@ describe('ObservationForms Integration Tests', () => {
     it('should persist default forms display even when database has user pinned forms', async () => {
       const userPinnedForms = [mockAvailableForms[2]]; // Custom Form 1
 
-      renderComponent(
-        <ObservationForms {...defaultProps} pinnedForms={userPinnedForms} />,
-      );
+      const mockUsePinnedObservationForms = jest.requireMock(
+        '../../../../hooks/usePinnedObservationForms',
+      ).usePinnedObservationForms;
+      mockUsePinnedObservationForms.mockReturnValue({
+        pinnedForms: userPinnedForms,
+        updatePinnedForms: jest.fn(),
+        isLoading: false,
+        error: null,
+      });
+
+      renderComponent(<ObservationForms {...defaultProps} />);
 
       await waitFor(() => {
         expect(
@@ -156,16 +178,20 @@ describe('ObservationForms Integration Tests', () => {
 
   describe('User Pin/Unpin Persistence Workflow', () => {
     it('should complete full pin workflow with database persistence', async () => {
-      const mockOnUnpinForm = jest.fn();
+      const mockUpdatePinnedForms = jest.fn();
       const userPinnedForms = [mockAvailableForms[2]]; // Custom Form 1 is already pinned
 
-      renderComponent(
-        <ObservationForms
-          {...defaultProps}
-          pinnedForms={userPinnedForms}
-          onUnpinForm={mockOnUnpinForm}
-        />,
-      );
+      const mockUsePinnedObservationForms = jest.requireMock(
+        '../../../../hooks/usePinnedObservationForms',
+      ).usePinnedObservationForms;
+      mockUsePinnedObservationForms.mockReturnValue({
+        pinnedForms: userPinnedForms,
+        updatePinnedForms: mockUpdatePinnedForms,
+        isLoading: false,
+        error: null,
+      });
+
+      renderComponent(<ObservationForms {...defaultProps} />);
       await waitFor(() => {
         expect(
           screen.getByTestId('pinned-form-custom-form-1-uuid'),
@@ -184,16 +210,20 @@ describe('ObservationForms Integration Tests', () => {
 
     it('should handle unpin workflow with database persistence', async () => {
       const user = userEvent.setup();
-      const mockOnUnpinForm = jest.fn();
+      const mockUpdatePinnedForms = jest.fn();
       const userPinnedForms = [mockAvailableForms[2]]; // Custom Form 1 is pinned
 
-      renderComponent(
-        <ObservationForms
-          {...defaultProps}
-          pinnedForms={userPinnedForms}
-          onUnpinForm={mockOnUnpinForm}
-        />,
-      );
+      const mockUsePinnedObservationForms = jest.requireMock(
+        '../../../../hooks/usePinnedObservationForms',
+      ).usePinnedObservationForms;
+      mockUsePinnedObservationForms.mockReturnValue({
+        pinnedForms: userPinnedForms,
+        updatePinnedForms: mockUpdatePinnedForms,
+        isLoading: false,
+        error: null,
+      });
+
+      renderComponent(<ObservationForms {...defaultProps} />);
 
       await waitFor(() => {
         expect(
@@ -212,8 +242,8 @@ describe('ObservationForms Integration Tests', () => {
       expect(actionContainer).toBeInTheDocument();
       await user.click(actionContainer!);
 
-      // Verify unpin callback is called
-      expect(mockOnUnpinForm).toHaveBeenCalledWith('custom-form-1-uuid');
+      // Verify updatePinnedForms is called with the updated array (without the unpinned form)
+      expect(mockUpdatePinnedForms).toHaveBeenCalledWith([]);
     });
   });
 
@@ -221,9 +251,19 @@ describe('ObservationForms Integration Tests', () => {
     it('should persist pinned forms across component remounts (session simulation)', async () => {
       const userPinnedForms = [mockAvailableForms[2]]; // Custom Form 1
 
+      const mockUsePinnedObservationForms = jest.requireMock(
+        '../../../../hooks/usePinnedObservationForms',
+      ).usePinnedObservationForms;
+      mockUsePinnedObservationForms.mockReturnValue({
+        pinnedForms: userPinnedForms,
+        updatePinnedForms: jest.fn(),
+        isLoading: false,
+        error: null,
+      });
+
       // First mount - simulate session 1
       const { unmount } = renderComponent(
-        <ObservationForms {...defaultProps} pinnedForms={userPinnedForms} />,
+        <ObservationForms {...defaultProps} />,
       );
 
       await waitFor(() => {
@@ -235,9 +275,7 @@ describe('ObservationForms Integration Tests', () => {
       unmount();
 
       // Second mount - simulate session 2 (component remount)
-      renderComponent(
-        <ObservationForms {...defaultProps} pinnedForms={userPinnedForms} />,
-      );
+      renderComponent(<ObservationForms {...defaultProps} />);
 
       // Verify forms persist across sessions
       await waitFor(() => {
@@ -275,16 +313,20 @@ describe('ObservationForms Integration Tests', () => {
   describe('Error Handling and Edge Cases', () => {
     it('should handle database save errors gracefully in unpin operations', async () => {
       const user = userEvent.setup();
-      const mockOnUnpinForm = jest.fn();
+      const mockUpdatePinnedForms = jest.fn();
       const userPinnedForms = [mockAvailableForms[2]]; // Custom Form 1
 
-      renderComponent(
-        <ObservationForms
-          {...defaultProps}
-          pinnedForms={userPinnedForms}
-          onUnpinForm={mockOnUnpinForm}
-        />,
-      );
+      const mockUsePinnedObservationForms = jest.requireMock(
+        '../../../../hooks/usePinnedObservationForms',
+      ).usePinnedObservationForms;
+      mockUsePinnedObservationForms.mockReturnValue({
+        pinnedForms: userPinnedForms,
+        updatePinnedForms: mockUpdatePinnedForms,
+        isLoading: false,
+        error: null,
+      });
+
+      renderComponent(<ObservationForms {...defaultProps} />);
 
       await waitFor(() => {
         expect(
@@ -300,11 +342,11 @@ describe('ObservationForms Integration Tests', () => {
       await user.click(actionContainer!);
 
       // Verify the callback is called (error handling is managed by the container)
-      expect(mockOnUnpinForm).toHaveBeenCalledWith('custom-form-1-uuid');
+      expect(mockUpdatePinnedForms).toHaveBeenCalledWith([]);
     });
 
     it('should handle empty database state correctly', async () => {
-      renderComponent(<ObservationForms {...defaultProps} pinnedForms={[]} />);
+      renderComponent(<ObservationForms {...defaultProps} />);
 
       // Should only show default forms when no user pinned forms
       await waitFor(() => {
@@ -330,8 +372,18 @@ describe('ObservationForms Integration Tests', () => {
     it('should maintain accessibility across pin/unpin workflows', async () => {
       const userPinnedForms = [mockAvailableForms[2]]; // Custom Form 1
 
+      const mockUsePinnedObservationForms = jest.requireMock(
+        '../../../../hooks/usePinnedObservationForms',
+      ).usePinnedObservationForms;
+      mockUsePinnedObservationForms.mockReturnValue({
+        pinnedForms: userPinnedForms,
+        updatePinnedForms: jest.fn(),
+        isLoading: false,
+        error: null,
+      });
+
       const { container } = renderComponent(
-        <ObservationForms {...defaultProps} pinnedForms={userPinnedForms} />,
+        <ObservationForms {...defaultProps} />,
       );
 
       await waitFor(() => {
@@ -402,17 +454,21 @@ describe('ObservationForms Integration Tests', () => {
 
     it('should handle rapid successive unpin operations without race conditions', async () => {
       const user = userEvent.setup();
-      const mockOnUnpinForm = jest.fn();
+      const mockUpdatePinnedForms = jest.fn();
 
       const userPinnedForms = [mockAvailableForms[2]]; // Custom Form 1
 
-      renderComponent(
-        <ObservationForms
-          {...defaultProps}
-          pinnedForms={userPinnedForms}
-          onUnpinForm={mockOnUnpinForm}
-        />,
-      );
+      const mockUsePinnedObservationForms = jest.requireMock(
+        '../../../../hooks/usePinnedObservationForms',
+      ).usePinnedObservationForms;
+      mockUsePinnedObservationForms.mockReturnValue({
+        pinnedForms: userPinnedForms,
+        updatePinnedForms: mockUpdatePinnedForms,
+        isLoading: false,
+        error: null,
+      });
+
+      renderComponent(<ObservationForms {...defaultProps} />);
 
       await waitFor(() => {
         expect(
@@ -429,7 +485,7 @@ describe('ObservationForms Integration Tests', () => {
       await user.click(actionContainer!);
 
       // Should handle gracefully
-      expect(mockOnUnpinForm).toHaveBeenCalledWith('custom-form-1-uuid');
+      expect(mockUpdatePinnedForms).toHaveBeenCalledWith([]);
     });
   });
 
@@ -586,7 +642,7 @@ describe('ObservationForms Integration Tests', () => {
       it('should handle database connection failures during pin/unpin operations', async () => {
         const user = userEvent.setup();
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-        const mockOnUnpinForm = jest.fn();
+        const mockUpdatePinnedForms = jest.fn();
 
         // Mock database failure
         mockedSavePinnedForms.mockRejectedValue(
@@ -595,13 +651,17 @@ describe('ObservationForms Integration Tests', () => {
 
         const userPinnedForms = [mockAvailableForms[2]]; // Custom Form 1
 
-        renderComponent(
-          <ObservationForms
-            {...defaultProps}
-            pinnedForms={userPinnedForms}
-            onUnpinForm={mockOnUnpinForm}
-          />,
-        );
+        const mockUsePinnedObservationForms = jest.requireMock(
+          '../../../../hooks/usePinnedObservationForms',
+        ).usePinnedObservationForms;
+        mockUsePinnedObservationForms.mockReturnValue({
+          pinnedForms: userPinnedForms,
+          updatePinnedForms: mockUpdatePinnedForms,
+          isLoading: false,
+          error: null,
+        });
+
+        renderComponent(<ObservationForms {...defaultProps} />);
 
         await waitFor(() => {
           expect(
@@ -617,7 +677,7 @@ describe('ObservationForms Integration Tests', () => {
         await user.click(actionContainer!);
 
         // Component should handle database failure gracefully
-        expect(mockOnUnpinForm).toHaveBeenCalledWith('custom-form-1-uuid');
+        expect(mockUpdatePinnedForms).toHaveBeenCalledWith([]);
 
         consoleSpy.mockRestore();
       });
@@ -648,20 +708,24 @@ describe('ObservationForms Integration Tests', () => {
       it('should handle save operation timeouts', async () => {
         const user = userEvent.setup();
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-        const mockOnUnpinForm = jest.fn();
+        const mockUpdatePinnedForms = jest.fn();
 
         // Mock timeout error
         mockedSavePinnedForms.mockRejectedValue(new Error('Operation timeout'));
 
         const userPinnedForms = [mockAvailableForms[2]];
 
-        renderComponent(
-          <ObservationForms
-            {...defaultProps}
-            pinnedForms={userPinnedForms}
-            onUnpinForm={mockOnUnpinForm}
-          />,
-        );
+        const mockUsePinnedObservationForms = jest.requireMock(
+          '../../../../hooks/usePinnedObservationForms',
+        ).usePinnedObservationForms;
+        mockUsePinnedObservationForms.mockReturnValue({
+          pinnedForms: userPinnedForms,
+          updatePinnedForms: mockUpdatePinnedForms,
+          isLoading: false,
+          error: null,
+        });
+
+        renderComponent(<ObservationForms {...defaultProps} />);
 
         await waitFor(() => {
           expect(
@@ -676,7 +740,7 @@ describe('ObservationForms Integration Tests', () => {
 
         await user.click(actionContainer!);
 
-        expect(mockOnUnpinForm).toHaveBeenCalledWith('custom-form-1-uuid');
+        expect(mockUpdatePinnedForms).toHaveBeenCalledWith([]);
 
         consoleSpy.mockRestore();
       });
@@ -684,7 +748,7 @@ describe('ObservationForms Integration Tests', () => {
       it('should handle concurrent modification conflicts', async () => {
         const user = userEvent.setup();
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-        const mockOnUnpinForm = jest.fn();
+        const mockUpdatePinnedForms = jest.fn();
 
         // Mock conflict error
         mockedSavePinnedForms.mockRejectedValue(
@@ -693,13 +757,17 @@ describe('ObservationForms Integration Tests', () => {
 
         const userPinnedForms = [mockAvailableForms[2], mockAvailableForms[3]];
 
-        renderComponent(
-          <ObservationForms
-            {...defaultProps}
-            pinnedForms={userPinnedForms}
-            onUnpinForm={mockOnUnpinForm}
-          />,
-        );
+        const mockUsePinnedObservationForms = jest.requireMock(
+          '../../../../hooks/usePinnedObservationForms',
+        ).usePinnedObservationForms;
+        mockUsePinnedObservationForms.mockReturnValue({
+          pinnedForms: userPinnedForms,
+          updatePinnedForms: mockUpdatePinnedForms,
+          isLoading: false,
+          error: null,
+        });
+
+        renderComponent(<ObservationForms {...defaultProps} />);
 
         await waitFor(() => {
           expect(
@@ -724,7 +792,7 @@ describe('ObservationForms Integration Tests', () => {
         await user.click(action1!);
         await user.click(action2!);
 
-        expect(mockOnUnpinForm).toHaveBeenCalledTimes(2);
+        expect(mockUpdatePinnedForms).toHaveBeenCalledTimes(2);
 
         consoleSpy.mockRestore();
       });
@@ -744,12 +812,17 @@ describe('ObservationForms Integration Tests', () => {
           },
         ];
 
-        renderComponent(
-          <ObservationForms
-            {...defaultProps}
-            pinnedForms={orphanedPinnedForms}
-          />,
-        );
+        const mockUsePinnedObservationForms = jest.requireMock(
+          '../../../../hooks/usePinnedObservationForms',
+        ).usePinnedObservationForms;
+        mockUsePinnedObservationForms.mockReturnValue({
+          pinnedForms: orphanedPinnedForms,
+          updatePinnedForms: jest.fn(),
+          isLoading: false,
+          error: null,
+        });
+
+        renderComponent(<ObservationForms {...defaultProps} />);
 
         // Should still render default forms
         await waitFor(() => {
