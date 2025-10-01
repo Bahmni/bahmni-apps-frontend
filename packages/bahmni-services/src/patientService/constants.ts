@@ -41,3 +41,5 @@ export const PATIENT_PHONE_NUMBER_SEARCH_URL = (
   );
   return OPENMRS_REST_V1 + `/bahmni/search/patient?${params.toString()}`;
 };
+
+export const IDENTIFIER_TYPES_URL = OPENMRS_REST_V1 + '/idgen/identifiertype';

@@ -199,10 +199,6 @@ export const getIdentifierTypes =
     return get<IdentifierTypesResponse>(IDENTIFIER_TYPES_URL);
   };
 
-/**
- * Get identifier prefixes for dropdown population
- * @returns Array of unique prefix strings
- */
 export const getIdentifierPrefixes = async (): Promise<string[]> => {
   const identifierTypes = await getIdentifierTypes();
   const prefixes = new Set<string>();
