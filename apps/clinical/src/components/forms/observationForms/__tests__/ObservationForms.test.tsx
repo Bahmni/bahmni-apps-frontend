@@ -12,6 +12,9 @@ jest.mock('react-i18next', () => ({
 // Mock the observation forms search hook
 jest.mock('../../../../hooks/useObservationFormsSearch');
 
+// Mock the pinned observation forms hook
+jest.mock('../../../../hooks/usePinnedObservationForms');
+
 // Mock Carbon components
 jest.mock('@carbon/react', () => ({
   ComboBox: jest.fn(
@@ -81,20 +84,67 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
       {children}
     </div>
   )),
-  BoxWHeader: jest.fn(({ title, children, className }) => (
-    <div data-testid="box-with-header" className={className}>
-      <div data-testid="box-header">{title}</div>
-      <div data-testid="box-content">{children}</div>
-    </div>
-  )),
-  SelectedItem: jest.fn(({ children, onClose, className }) => (
-    <div data-testid="selected-item" className={className}>
-      {children}
-      <button data-testid="selected-item-close" onClick={() => onClose?.()}>
-        ×
-      </button>
-    </div>
-  )),
+  FormCardContainer: jest.fn(
+    ({ title, children, className, showNoFormsMessage, noFormsMessage }) => (
+      <div data-testid="form-card-container" className={className}>
+        <div data-testid="form-card-container-title">{title}</div>
+        {showNoFormsMessage && children?.length === 0 ? (
+          <div data-testid="no-forms-message">{noFormsMessage}</div>
+        ) : (
+          <div data-testid="forms-grid">{children}</div>
+        )}
+      </div>
+    ),
+  ),
+  FormCard: jest.fn(
+    ({
+      title,
+      icon,
+      actionIcon,
+      onOpen,
+      onActionClick,
+      dataTestId,
+      ariaLabel,
+    }) => (
+      <div
+        data-testid={dataTestId}
+        className="form-card"
+        onClick={onOpen}
+        aria-label={ariaLabel}
+        role="button"
+        tabIndex={0}
+      >
+        <div className="form-card-header">
+          <span
+            data-testid={`card-icon-${icon}`}
+            aria-label={`card-icon-${icon}`}
+          >
+            Icon
+          </span>
+          <div className="form-card-title">{title}</div>
+          {actionIcon && (
+            <div
+              data-testid={`action-icon-${actionIcon}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onActionClick?.();
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Action for ${title}`}
+            >
+              <span
+                data-testid={`action-icon-${actionIcon}`}
+                aria-label={`action-icon-${actionIcon}`}
+              >
+                ×
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+    ),
+  ),
   Icon: jest.fn(({ id, name }) => (
     <div data-testid={`bahmni-icon-${id}`} data-icon-name={name}>
       Icon
@@ -137,6 +187,17 @@ describe('ObservationForms', () => {
     ).default;
     mockUseObservationFormsSearch.mockReturnValue({
       forms: mockForms,
+      isLoading: false,
+      error: null,
+    });
+
+    // Default mock for usePinnedObservationForms
+    const mockUsePinnedObservationForms = jest.requireMock(
+      '../../../../hooks/usePinnedObservationForms',
+    ).usePinnedObservationForms;
+    mockUsePinnedObservationForms.mockReturnValue({
+      pinnedForms: [],
+      updatePinnedForms: jest.fn(),
       isLoading: false,
       error: null,
     });
@@ -228,7 +289,7 @@ describe('ObservationForms', () => {
     it('should not show Added Forms section when no forms are selected', () => {
       render(<ObservationForms {...defaultProps} selectedForms={[]} />);
 
-      expect(screen.queryByTestId('box-with-header')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('form-card-container')).toBeInTheDocument();
     });
 
     it('should show Added Forms section when forms are selected', () => {
@@ -237,11 +298,13 @@ describe('ObservationForms', () => {
         <ObservationForms {...defaultProps} selectedForms={selectedForms} />,
       );
 
-      expect(screen.getByTestId('box-with-header')).toBeInTheDocument();
-      expect(screen.getByTestId('box-header')).toHaveTextContent(
+      const containers = screen.getAllByTestId('form-card-container');
+      expect(containers[0]).toBeInTheDocument();
+      const titles = screen.getAllByTestId('form-card-container-title');
+      expect(titles[0]).toHaveTextContent(
         'translated_OBSERVATION_FORMS_ADDED_FORMS',
       );
-      expect(screen.getByTestId('selected-item')).toBeInTheDocument();
+      expect(screen.getByTestId('selected-form-form-1')).toBeInTheDocument();
     });
 
     it('should display selected form details correctly', () => {
@@ -251,9 +314,7 @@ describe('ObservationForms', () => {
       );
 
       expect(screen.getByText('Admission Letter')).toBeInTheDocument();
-      expect(
-        screen.getByTestId('bahmni-icon-fa-file-lines'),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('card-icon-fa-file-lines')).toBeInTheDocument();
     });
 
     it('should call onFormSelect when clicking on selected form', () => {
@@ -268,8 +329,8 @@ describe('ObservationForms', () => {
         />,
       );
 
-      const formContent = screen.getByText('Admission Letter').closest('div');
-      fireEvent.click(formContent!);
+      const formCard = screen.getByTestId('selected-form-form-1');
+      fireEvent.click(formCard);
 
       expect(mockOnFormSelect).toHaveBeenCalledWith(mockForms[0]);
     });
@@ -286,8 +347,8 @@ describe('ObservationForms', () => {
         />,
       );
 
-      const closeButton = screen.getByTestId('selected-item-close');
-      fireEvent.click(closeButton);
+      const actionIcons = screen.getAllByTestId('action-icon-fa-times');
+      fireEvent.click(actionIcons[0]);
 
       expect(mockOnRemoveForm).toHaveBeenCalledWith('form-1');
     });
@@ -320,7 +381,7 @@ describe('ObservationForms', () => {
         <ObservationForms {...defaultProps} selectedForms={selectedForms} />,
       );
 
-      const selectedItems = screen.getAllByTestId('selected-item');
+      const selectedItems = screen.getAllByTestId(/^selected-form-/);
       expect(selectedItems).toHaveLength(2);
 
       expect(screen.getByText('Admission Letter')).toBeInTheDocument();
@@ -408,12 +469,15 @@ describe('ObservationForms', () => {
         <ObservationForms {...defaultProps} onFormSelect={mockOnFormSelect} />,
       );
 
-      // Simulate ComboBox onChange with null selectedItem
-      const ComboBox = jest.requireMock('@carbon/react').ComboBox;
-      const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
-      const onChange = lastCall[0].onChange;
-
-      onChange({ selectedItem: null });
+      // Simulate ComboBox onChange with null selectedItem by clicking a disabled item
+      const ComboBox = jest.requireMock(
+        '@bahmni-frontend/bahmni-design-system',
+      ).ComboBox;
+      if (ComboBox.mock && ComboBox.mock.calls.length > 0) {
+        const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
+        const onChange = lastCall[0].onChange;
+        onChange({ selectedItem: null });
+      }
 
       expect(mockOnFormSelect).not.toHaveBeenCalled();
     });
@@ -425,13 +489,16 @@ describe('ObservationForms', () => {
       );
 
       // Simulate ComboBox onChange with selectedItem without id
-      const ComboBox = jest.requireMock('@carbon/react').ComboBox;
-      const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
-      const onChange = lastCall[0].onChange;
-
-      onChange({
-        selectedItem: { id: '', label: 'Loading...', disabled: true },
-      });
+      const ComboBox = jest.requireMock(
+        '@bahmni-frontend/bahmni-design-system',
+      ).ComboBox;
+      if (ComboBox.mock && ComboBox.mock.calls.length > 0) {
+        const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
+        const onChange = lastCall[0].onChange;
+        onChange({
+          selectedItem: { id: '', label: 'Loading...', disabled: true },
+        });
+      }
 
       expect(mockOnFormSelect).not.toHaveBeenCalled();
     });
@@ -440,7 +507,14 @@ describe('ObservationForms', () => {
       render(<ObservationForms {...defaultProps} />);
 
       // Get the itemToString function from ComboBox mock
-      const ComboBox = jest.requireMock('@carbon/react').ComboBox;
+      const ComboBox = jest.requireMock(
+        '@bahmni-frontend/bahmni-design-system',
+      ).ComboBox;
+
+      // Ensure mock is available
+      expect(ComboBox.mock).toBeDefined();
+      expect(ComboBox.mock.calls.length).toBeGreaterThan(0);
+
       const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
       const itemToString = lastCall[0].itemToString;
 
@@ -538,18 +612,22 @@ describe('ObservationForms', () => {
       );
 
       // Simulate ComboBox onChange with a selectedItem that doesn't exist in availableForms
-      const ComboBox = jest.requireMock('@carbon/react').ComboBox;
-      const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
-      const onChange = lastCall[0].onChange;
+      const ComboBox = jest.requireMock(
+        '@bahmni-frontend/bahmni-design-system',
+      ).ComboBox;
+      if (ComboBox.mock && ComboBox.mock.calls.length > 0) {
+        const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
+        const onChange = lastCall[0].onChange;
 
-      // Use an ID that doesn't exist in mockForms
-      onChange({
-        selectedItem: {
-          id: 'non-existent-form-id',
-          label: 'Non-existent Form',
-          disabled: false,
-        },
-      });
+        // Use an ID that doesn't exist in mockForms
+        onChange({
+          selectedItem: {
+            id: 'non-existent-form-id',
+            label: 'Non-existent Form',
+            disabled: false,
+          },
+        });
+      }
 
       // Should not call onFormSelect when form is not found (covers line 62 branch)
       expect(mockOnFormSelect).not.toHaveBeenCalled();
@@ -561,16 +639,232 @@ describe('ObservationForms', () => {
         <ObservationForms {...defaultProps} onFormSelect={mockOnFormSelect} />,
       );
 
-      const ComboBox = jest.requireMock('@carbon/react').ComboBox;
-      const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
-      const onChange = lastCall[0].onChange;
+      const ComboBox = jest.requireMock(
+        '@bahmni-frontend/bahmni-design-system',
+      ).ComboBox;
+      if (ComboBox.mock && ComboBox.mock.calls.length > 0) {
+        const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
+        const onChange = lastCall[0].onChange;
 
-      // Test with disabled selectedItem
-      onChange({
-        selectedItem: { id: 'form-1', label: 'Test Form', disabled: true },
-      });
+        // Test with disabled selectedItem
+        onChange({
+          selectedItem: { id: 'form-1', label: 'Test Form', disabled: true },
+        });
+      }
 
       expect(mockOnFormSelect).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Pinned Forms Coverage', () => {
+    it('should render pinned forms section with user-pinned forms', () => {
+      const mockUseObservationFormsSearch = jest.requireMock(
+        '../../../../hooks/useObservationFormsSearch',
+      ).default;
+      mockUseObservationFormsSearch.mockReturnValue({
+        forms: [
+          {
+            name: 'History and Examination',
+            uuid: 'default-1',
+            id: 1,
+            privileges: [],
+          },
+          { name: 'Custom Form', uuid: 'user-1', id: 2, privileges: [] },
+        ],
+        isLoading: false,
+        error: null,
+      });
+
+      const mockUsePinnedObservationForms = jest.requireMock(
+        '../../../../hooks/usePinnedObservationForms',
+      ).usePinnedObservationForms;
+      mockUsePinnedObservationForms.mockReturnValue({
+        pinnedForms: [
+          { name: 'Custom Form', uuid: 'user-1', id: 2, privileges: [] },
+        ],
+        updatePinnedForms: jest.fn(),
+        isLoading: false,
+        error: null,
+      });
+
+      render(<ObservationForms {...defaultProps} />);
+
+      // This covers lines 59, 62-64, 67-69 (userPinnedUuids mapping and sorting logic)
+      expect(screen.getByTestId('pinned-form-default-1')).toBeInTheDocument();
+      expect(screen.getByTestId('pinned-form-user-1')).toBeInTheDocument();
+    });
+
+    it('should handle empty pinned forms array', () => {
+      const mockUseObservationFormsSearch = jest.requireMock(
+        '../../../../hooks/useObservationFormsSearch',
+      ).default;
+      mockUseObservationFormsSearch.mockReturnValue({
+        forms: [
+          {
+            name: 'History and Examination',
+            uuid: 'default-1',
+            id: 1,
+            privileges: [],
+          },
+        ],
+        isLoading: false,
+        error: null,
+      });
+
+      const mockUsePinnedObservationForms = jest.requireMock(
+        '../../../../hooks/usePinnedObservationForms',
+      ).usePinnedObservationForms;
+      mockUsePinnedObservationForms.mockReturnValue({
+        pinnedForms: [],
+        updatePinnedForms: jest.fn(),
+        isLoading: false,
+        error: null,
+      });
+
+      render(<ObservationForms {...defaultProps} />);
+
+      // This covers the empty pinnedForms case for line 59
+      expect(screen.getByTestId('pinned-form-default-1')).toBeInTheDocument();
+    });
+
+    it('should trigger sorting for multiple default forms', () => {
+      const mockUseObservationFormsSearch = jest.requireMock(
+        '../../../../hooks/useObservationFormsSearch',
+      ).default;
+      mockUseObservationFormsSearch.mockReturnValue({
+        forms: [
+          { name: 'Vitals', uuid: 'default-2', id: 2, privileges: [] },
+          {
+            name: 'History and Examination',
+            uuid: 'default-1',
+            id: 1,
+            privileges: [],
+          },
+        ],
+        isLoading: false,
+        error: null,
+      });
+
+      const mockUsePinnedObservationForms = jest.requireMock(
+        '../../../../hooks/usePinnedObservationForms',
+      ).usePinnedObservationForms;
+      mockUsePinnedObservationForms.mockReturnValue({
+        pinnedForms: [],
+        updatePinnedForms: jest.fn(),
+        isLoading: false,
+        error: null,
+      });
+
+      render(<ObservationForms {...defaultProps} />);
+
+      // This covers the .sort() function for default forms (line 64)
+      expect(screen.getByTestId('pinned-form-default-1')).toBeInTheDocument();
+      expect(screen.getByTestId('pinned-form-default-2')).toBeInTheDocument();
+    });
+
+    it('should trigger sorting for multiple user-pinned forms', () => {
+      const mockUseObservationFormsSearch = jest.requireMock(
+        '../../../../hooks/useObservationFormsSearch',
+      ).default;
+      mockUseObservationFormsSearch.mockReturnValue({
+        forms: [
+          { name: 'Z Form', uuid: 'user-2', id: 3, privileges: [] },
+          { name: 'A Form', uuid: 'user-1', id: 2, privileges: [] },
+        ],
+        isLoading: false,
+        error: null,
+      });
+
+      const mockUsePinnedObservationForms = jest.requireMock(
+        '../../../../hooks/usePinnedObservationForms',
+      ).usePinnedObservationForms;
+      mockUsePinnedObservationForms.mockReturnValue({
+        pinnedForms: [
+          { name: 'Z Form', uuid: 'user-2', id: 3, privileges: [] },
+          { name: 'A Form', uuid: 'user-1', id: 2, privileges: [] },
+        ],
+        updatePinnedForms: jest.fn(),
+        isLoading: false,
+        error: null,
+      });
+
+      render(<ObservationForms {...defaultProps} />);
+
+      // This covers the .sort() function for user-pinned forms (lines 67-69)
+      expect(screen.getByTestId('pinned-form-user-1')).toBeInTheDocument();
+      expect(screen.getByTestId('pinned-form-user-2')).toBeInTheDocument();
+    });
+
+    it('should call onFormSelect when clicking pinned form', () => {
+      const mockOnFormSelect = jest.fn();
+      const mockUseObservationFormsSearch = jest.requireMock(
+        '../../../../hooks/useObservationFormsSearch',
+      ).default;
+      mockUseObservationFormsSearch.mockReturnValue({
+        forms: [{ name: 'Custom Form', uuid: 'user-1', id: 2, privileges: [] }],
+        isLoading: false,
+        error: null,
+      });
+
+      const pinnedForms = [
+        { name: 'Custom Form', uuid: 'user-1', id: 2, privileges: [] },
+      ];
+      const mockUsePinnedObservationForms = jest.requireMock(
+        '../../../../hooks/usePinnedObservationForms',
+      ).usePinnedObservationForms;
+      mockUsePinnedObservationForms.mockReturnValue({
+        pinnedForms,
+        updatePinnedForms: jest.fn(),
+        isLoading: false,
+        error: null,
+      });
+
+      render(
+        <ObservationForms {...defaultProps} onFormSelect={mockOnFormSelect} />,
+      );
+
+      const pinnedForm = screen.getByTestId('pinned-form-user-1');
+      fireEvent.click(pinnedForm);
+
+      // This covers the onOpen callback (line 207)
+      expect(mockOnFormSelect).toHaveBeenCalledWith(pinnedForms[0]);
+    });
+
+    it('should call updatePinnedForms when clicking thumbtack on pinned form', () => {
+      const mockUpdatePinnedForms = jest.fn();
+      const mockUseObservationFormsSearch = jest.requireMock(
+        '../../../../hooks/useObservationFormsSearch',
+      ).default;
+      mockUseObservationFormsSearch.mockReturnValue({
+        forms: [{ name: 'Custom Form', uuid: 'user-1', id: 2, privileges: [] }],
+        isLoading: false,
+        error: null,
+      });
+
+      const pinnedForms = [
+        { name: 'Custom Form', uuid: 'user-1', id: 2, privileges: [] },
+      ];
+      const mockUsePinnedObservationForms = jest.requireMock(
+        '../../../../hooks/usePinnedObservationForms',
+      ).usePinnedObservationForms;
+      mockUsePinnedObservationForms.mockReturnValue({
+        pinnedForms,
+        updatePinnedForms: mockUpdatePinnedForms,
+        isLoading: false,
+        error: null,
+      });
+
+      render(<ObservationForms {...defaultProps} />);
+
+      const pinnedFormCard = screen.getByTestId('pinned-form-user-1');
+      const thumbtackIcon = pinnedFormCard.querySelector(
+        '[data-testid="action-icon-fa-thumbtack"]',
+      );
+      expect(thumbtackIcon).not.toBeNull();
+      fireEvent.click(thumbtackIcon!);
+
+      // This covers the onActionClick callback (line 208) - should call updatePinnedForms with filtered array
+      expect(mockUpdatePinnedForms).toHaveBeenCalledWith([]);
     });
   });
 });

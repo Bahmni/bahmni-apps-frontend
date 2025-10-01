@@ -1,0 +1,30 @@
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.formCardContainer {
+  margin-top: $spacing-06;
+  margin-bottom: $spacing-05;
+}
+
+.title {
+  margin: $spacing-01;
+  margin-bottom: $spacing-05;
+  margin-top: $spacing-07;
+}
+
+.formsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  gap: $spacing-05;
+  margin-bottom: $spacing-05;
+}
+
+.noFormsMessage {
+  @include type-style("body-01");
+  color: $text-secondary;
+  text-align: center;
+  padding: $spacing-07;
+  font-style: italic;
+}
