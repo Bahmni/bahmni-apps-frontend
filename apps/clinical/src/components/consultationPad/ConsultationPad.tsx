@@ -10,12 +10,10 @@ import {
   dispatchAuditEvent,
   useTranslation,
   ObservationForm,
-  getFormattedError,
 } from '@bahmni-frontend/bahmni-services';
 import { useNotification } from '@bahmni-frontend/bahmni-widgets';
 import React, { useEffect } from 'react';
 import { useEncounterSession } from '../../../src/hooks/useEncounterSession';
-import useObservationFormsSearch from '../../../src/hooks/useObservationFormsSearch';
 import useAllergyStore from '../../../src/stores/allergyStore';
 import { useConditionsAndDiagnosesStore } from '../../../src/stores/conditionsAndDiagnosesStore';
 import { useEncounterDetailsStore } from '../../../src/stores/encounterDetailsStore';
@@ -33,10 +31,6 @@ import {
   createEncounterBundleEntry,
   getEncounterReference,
 } from '../../services/consultationBundleService';
-import {
-  loadPinnedForms,
-  savePinnedForms,
-} from '../../services/pinnedFormsService';
 import { createConsultationBundle } from '../../utils/fhir/consultationBundleCreator';
 import { createEncounterResource } from '../../utils/fhir/encounterResourceCreator';
 import AllergiesForm from '../forms/allergies/AllergiesForm';
@@ -60,7 +54,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   const [selectedForms, setSelectedForms] = React.useState<ObservationForm[]>(
     [],
   );
-  const [pinnedForms, setPinnedForms] = React.useState<ObservationForm[]>([]);
   const { t } = useTranslation();
   const { addNotification } = useNotification();
 
@@ -102,32 +95,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
 
   // Get encounter session state
   const { activeEncounter } = useEncounterSession();
-
-  // Get available observation forms
-  const { forms: availableForms } = useObservationFormsSearch('');
-
-  // Load pinned forms on component mount when available forms are loaded
-  useEffect(() => {
-    const initializePinnedForms = async () => {
-      if (availableForms.length === 0) return; // Wait for forms to load
-
-      try {
-        const pinnedFormNames = await loadPinnedForms();
-
-        // Match pinned form names with available forms
-        const matchedForms = availableForms.filter((form) =>
-          pinnedFormNames.includes(form.name),
-        );
-
-        setPinnedForms(matchedForms);
-      } catch (error) {
-        const formattedError = getFormattedError(error);
-        throw formattedError.message;
-      }
-    };
-
-    initializePinnedForms();
-  }, [availableForms]);
 
   // Clean up on unmount
   useEffect(() => {
@@ -171,54 +138,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     handleViewingFormChange(form);
   };
 
-  const handlePinToggle = async (form: ObservationForm) => {
-    const newPinnedForms = pinnedForms.some((f) => f.uuid === form.uuid)
-      ? pinnedForms.filter((f) => f.uuid !== form.uuid) // Unpin
-      : [...pinnedForms, form]; // Pin
-
-    setPinnedForms(newPinnedForms);
-
-    // Save to server
-    try {
-      const formNames = newPinnedForms.map((f) => f.name);
-      await savePinnedForms(formNames);
-    } catch (error) {
-      addNotification({
-        title: t('ERROR_SAVING_PINNED_FORMS'),
-        message:
-          typeof error === 'string'
-            ? t(error)
-            : t('ERROR_SAVING_PINNED_FORMS_MESSAGE'),
-        type: 'error',
-        timeout: 3000,
-      });
-      // Revert the state change if save failed
-      setPinnedForms(pinnedForms);
-    }
-  };
-
-  const handleUnpinForm = async (formUuid: string) => {
-    const newPinnedForms = pinnedForms.filter((f) => f.uuid !== formUuid);
-    setPinnedForms(newPinnedForms);
-
-    // Save to server
-    try {
-      const formNames = newPinnedForms.map((f) => f.name);
-      await savePinnedForms(formNames);
-    } catch (error) {
-      addNotification({
-        title: t('ERROR_SAVING_PINNED_FORMS'),
-        message:
-          typeof error === 'string'
-            ? t(error)
-            : t('ERROR_SAVING_PINNED_FORMS_MESSAGE'),
-        type: 'error',
-        timeout: 3000,
-      });
-      // Revert the state change if save failed
-      setPinnedForms(pinnedForms);
-    }
-  };
   // Data validation check for consultation submission
   const canSubmitConsultation = !!(
     patientUUID &&
@@ -362,7 +281,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
           type: 'error',
           timeout: 5000,
         });
-        return null;
       }
     }
   };
@@ -390,9 +308,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         onFormSelect={handleFormSelection}
         selectedForms={selectedForms}
         onRemoveForm={removeFormFromSelected}
-        pinnedForms={pinnedForms}
-        onPinToggle={handlePinToggle}
-        onUnpinForm={handleUnpinForm}
       />
       <MenuItemDivider />
     </>
@@ -405,15 +320,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         onViewingFormChange={handleViewingFormChange}
         viewingForm={viewingForm}
         onRemoveForm={removeFormFromSelected}
-        pinnedForms={pinnedForms.map((form) => form.uuid)}
-        onPinToggle={(formUuid: string) => {
-          const form = [...selectedForms, ...pinnedForms].find(
-            (f) => f.uuid === formUuid,
-          );
-          if (form) {
-            handlePinToggle(form);
-          }
-        }}
       />
     );
   }

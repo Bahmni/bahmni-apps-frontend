@@ -7,6 +7,7 @@ import { ObservationForm } from '@bahmni-frontend/bahmni-services';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_FORM_API_NAMES } from '../../../constants/forms';
+import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationForms';
 import styles from './styles/ObservationFormsContainer.module.scss';
 
 interface ObservationFormsContainerProps {
@@ -16,10 +17,6 @@ interface ObservationFormsContainerProps {
   viewingForm?: ObservationForm | null;
   // Callback to remove form from selected forms list
   onRemoveForm?: (formUuid: string) => void;
-  // Callback to handle pin/unpin actions
-  onPinToggle?: (formUuid: string, isPinned: boolean) => void;
-  // List of pinned form UUIDs
-  pinnedForms?: string[];
 }
 
 /**
@@ -36,36 +33,31 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   onViewingFormChange,
   viewingForm: externalViewingForm,
   onRemoveForm,
-  onPinToggle,
-  pinnedForms = [],
 }) => {
   const { t } = useTranslation();
-  const [localPinState, setLocalPinState] = React.useState<boolean>(false);
+  const { pinnedForms, updatePinnedForms } = usePinnedObservationForms();
 
   // Use the external viewingForm from parent
   const viewingForm = externalViewingForm;
 
-  // Check if current form is pinned (use local state if no external state provided)
+  // Check if current form is pinned
   const isCurrentFormPinned = viewingForm
-    ? pinnedForms.length > 0
-      ? pinnedForms.includes(viewingForm.uuid)
-      : localPinState
+    ? pinnedForms.some((form) => form.uuid === viewingForm.uuid)
     : false;
 
   const handlePinToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
     if (viewingForm) {
-      const newPinState = !isCurrentFormPinned;
-
-      // Update local state immediately for visual feedback
-      setLocalPinState(newPinState);
-
-      // Call parent callback if provided
-      if (onPinToggle) {
-        onPinToggle(viewingForm.uuid, newPinState);
+      let newPinnedForms;
+      if (isCurrentFormPinned) {
+        newPinnedForms = pinnedForms.filter(
+          (form) => form.uuid !== viewingForm.uuid,
+        );
+      } else {
+        newPinnedForms = [...pinnedForms, viewingForm];
       }
+      updatePinnedForms(newPinnedForms);
     }
   };
 
