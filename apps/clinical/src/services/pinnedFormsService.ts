@@ -7,23 +7,7 @@ import {
 } from '@bahmni-frontend/bahmni-services';
 import { PINNED_FORMS_ERROR_MESSAGES } from '../constants/errors';
 import { PINNED_FORMS_DELIMITER } from '../constants/forms';
-
-interface UserProperties {
-  defaultLocale?: string;
-  favouriteObsTemplates?: string;
-  pinnedObsTemplates?: string;
-  favouriteWards?: string;
-  loginAttempts?: string;
-  recentlyViewedPatients?: string;
-  [key: string]: unknown;
-}
-
-interface UserData {
-  uuid: string;
-  username: string;
-  userProperties?: UserProperties;
-  [key: string]: unknown;
-}
+import { UserProperties, UserData } from '../models/observationForms';
 
 /**
  * Load pinned observation form names from user preferences
@@ -55,7 +39,7 @@ export const loadPinnedForms = async (): Promise<string[]> => {
       : [];
   } catch (error) {
     const formattedError = getFormattedError(error);
-    throw new Error(formattedError.message);
+    throw new Error(formattedError.message ?? 'Unknown error');
   }
 };
 
@@ -96,6 +80,6 @@ export const savePinnedForms = async (formNames: string[]): Promise<void> => {
     });
   } catch (error) {
     const formattedError = getFormattedError(error);
-    throw new Error(formattedError.message);
+    throw new Error(formattedError.message ?? 'Unknown error');
   }
 };
