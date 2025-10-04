@@ -5,7 +5,6 @@ export {
   getFormattedPatientById,
   searchPatientByNameOrId,
   searchPatientByCustomAttribute,
-  getIdentifierTypes,
   getIdentifierPrefixes,
   type FormattedPatientData,
   type PatientSearchResult,

@@ -7,11 +7,14 @@ import {
   PATIENT_RESOURCE_URL,
   PATIENT_PHONE_NUMBER_SEARCH_URL,
   IDENTIFIER_TYPES_URL,
+  APP_SETTINGS_URL,
+  PRIMARY_IDENTIFIER_TYPE_PROPERTY,
 } from './constants';
 import {
   FormattedPatientData,
   PatientSearchResultBundle,
   IdentifierTypesResponse,
+  AppSettingsResponse,
 } from './models';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
@@ -190,26 +193,42 @@ export async function searchPatientByCustomAttribute(
   return searchResultsBundle;
 }
 
-/**
- * Get identifier types with their sources and prefixes
- * @returns A list of identifier types with their identifier sources
- */
-export const getIdentifierTypes =
-  async (): Promise<IdentifierTypesResponse> => {
-    return get<IdentifierTypesResponse>(IDENTIFIER_TYPES_URL);
-  };
-
 export const getIdentifierPrefixes = async (): Promise<string[]> => {
-  const identifierTypes = await getIdentifierTypes();
-  const prefixes = new Set<string>();
+  const [identifierTypes, primaryIdentifierTypeUuid] = await Promise.all([
+    get<IdentifierTypesResponse>(IDENTIFIER_TYPES_URL),
+    getPrimaryIdentifierType(),
+  ]);
+  if (!primaryIdentifierTypeUuid) {
+    return [];
+  }
 
-  identifierTypes.forEach((identifierType) => {
-    identifierType.identifierSources.forEach((source) => {
-      if (source.prefix) {
-        prefixes.add(source.prefix);
-      }
-    });
+  const primaryIdentifierType = identifierTypes.find(
+    (identifierType) => identifierType.uuid === primaryIdentifierTypeUuid,
+  );
+
+  if (!primaryIdentifierType) {
+    return [];
+  }
+
+  // Extract prefixes from identifier sources of the primary identifier type
+  const prefixes = new Set<string>();
+  primaryIdentifierType.identifierSources.forEach((source) => {
+    if (source.prefix) {
+      prefixes.add(source.prefix);
+    }
   });
 
   return Array.from(prefixes).sort();
+};
+
+/**
+ * Get primary identifier type from Bahmni app settings
+ * @returns Promise<string | null> - The primary identifier type UUID or null if not found
+ */
+export const getPrimaryIdentifierType = async (): Promise<string | null> => {
+  const settings = await get<AppSettingsResponse>(APP_SETTINGS_URL('core'));
+  const primaryIdentifierTypes = settings.find(
+    (setting) => setting.property === PRIMARY_IDENTIFIER_TYPE_PROPERTY,
+  );
+  return primaryIdentifierTypes?.value ?? null;
 };

@@ -3,8 +3,8 @@ export {
   getFormattedPatientById,
   searchPatientByNameOrId,
   searchPatientByCustomAttribute,
-  getIdentifierTypes,
   getIdentifierPrefixes,
+  getPrimaryIdentifierType,
 } from './patientService';
 export {
   type FormattedPatientData,

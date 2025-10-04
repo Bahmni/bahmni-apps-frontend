@@ -43,3 +43,8 @@ export const PATIENT_PHONE_NUMBER_SEARCH_URL = (
 };
 
 export const IDENTIFIER_TYPES_URL = OPENMRS_REST_V1 + '/idgen/identifiertype';
+
+export const APP_SETTINGS_URL = (module: string) =>
+  OPENMRS_REST_V1 + `/bahmni/app/setting?module=${module}`;
+
+export const PRIMARY_IDENTIFIER_TYPE_PROPERTY = 'bahmni.primaryIdentifierType';
