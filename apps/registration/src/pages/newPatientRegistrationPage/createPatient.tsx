@@ -14,6 +14,7 @@ import {
 import {
   BAHMNI_HOME_PATH,
   getIdentifierPrefixes,
+  useTranslation,
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useCallback, useEffect } from 'react';
@@ -26,6 +27,7 @@ const GENDERS = ['Male', 'Female', 'Other'];
 
 const NewPatientRegistration = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [dobEstimated, setDobEstimated] = useState(false);
 
   // Fetch identifier prefixes using TanStack Query
@@ -127,15 +129,15 @@ const NewPatientRegistration = () => {
 
   const breadcrumbs = [
     {
-      label: 'Home',
+      label: t('CREATE_PATIENT_BREADCRUMB_HOME'),
       href: BAHMNI_HOME_PATH,
     },
     {
-      label: 'Search Patient',
+      label: t('CREATE_PATIENT_BREADCRUMB_SEARCH'),
       onClick: () => navigate('/registration/search'),
     },
     {
-      label: 'Create New Patient',
+      label: t('CREATE_PATIENT_BREADCRUMB_CURRENT'),
     },
   ];
 
@@ -145,7 +147,7 @@ const NewPatientRegistration = () => {
         <Header
           breadcrumbs={breadcrumbs}
           showButton
-          buttonText="Create new patient"
+          buttonText={t('CREATE_PATIENT_BUTTON_TEXT')}
           buttonTestId="create-new-patient-button"
           buttonDisabled
         />
@@ -153,12 +155,14 @@ const NewPatientRegistration = () => {
       main={
         <div>
           <Tile className={styles.patientDetailsHeader}>
-            <h3>Patient details</h3>
+            <h3>{t('CREATE_PATIENT_HEADER_TITLE')}</h3>
           </Tile>
           <div className={styles.formContainer}>
             {/* Basic Information */}
             <div className={styles.formSection}>
-              <h4 className={styles.sectionTitle}>Basic information</h4>
+              <h4 className={styles.sectionTitle}>
+                {t('CREATE_PATIENT_SECTION_BASIC_INFO')}
+              </h4>
               <Grid>
                 <Column sm={4} md={2} lg={3}>
                   <div className={styles.photoUploadSection}>
@@ -167,14 +171,14 @@ const NewPatientRegistration = () => {
                       size="sm"
                       className={styles.wrapButton}
                     >
-                      Upload photo
+                      {t('CREATE_PATIENT_UPLOAD_PHOTO')}
                     </Button>
                     <Button
                       kind="tertiary"
                       size="sm"
                       className={styles.wrapButton}
                     >
-                      Capture photo
+                      {t('CREATE_PATIENT_CAPTURE_PHOTO')}
                     </Button>
                   </div>
                 </Column>
@@ -183,11 +187,11 @@ const NewPatientRegistration = () => {
                     <Column sm={2} md={4} lg={4}>
                       <Dropdown
                         id="patient-id-format"
-                        titleText="Patient ID format"
+                        titleText={t('CREATE_PATIENT_PATIENT_ID_FORMAT')}
                         label={
                           formData.patientIdFormat ||
                           identifierPrefixes[0] ||
-                          'Select'
+                          t('CREATE_PATIENT_SELECT')
                         }
                         items={identifierPrefixes}
                         selectedItem={formData.patientIdFormat}
@@ -200,9 +204,11 @@ const NewPatientRegistration = () => {
                       />
                     </Column>
                     <Column sm={2} md={4} lg={4}>
-                      <CheckboxGroup legendText="Entry type">
+                      <CheckboxGroup
+                        legendText={t('CREATE_PATIENT_ENTRY_TYPE')}
+                      >
                         <Checkbox
-                          labelText="Enter manually"
+                          labelText={t('CREATE_PATIENT_ENTER_MANUALLY')}
                           id="entry-type"
                           checked={formData.entryType}
                           onChange={(event) =>
@@ -217,8 +223,8 @@ const NewPatientRegistration = () => {
                     <Column sm={4} md={2} lg={3}>
                       <TextInput
                         id="first-name"
-                        labelText="First name*"
-                        placeholder="First name"
+                        labelText={t('CREATE_PATIENT_FIRST_NAME')}
+                        placeholder={t('CREATE_PATIENT_FIRST_NAME_PLACEHOLDER')}
                         value={formData.firstName}
                         required
                         onChange={(e) =>
@@ -229,8 +235,10 @@ const NewPatientRegistration = () => {
                     <Column sm={4} md={2} lg={3}>
                       <TextInput
                         id="middle-name"
-                        labelText="Middle name"
-                        placeholder="Middle name"
+                        labelText={t('CREATE_PATIENT_MIDDLE_NAME')}
+                        placeholder={t(
+                          'CREATE_PATIENT_MIDDLE_NAME_PLACEHOLDER',
+                        )}
                         value={formData.middleName}
                         onChange={(e) =>
                           handleInputChange('middleName', e.target.value)
@@ -240,8 +248,8 @@ const NewPatientRegistration = () => {
                     <Column sm={4} md={2} lg={3}>
                       <TextInput
                         id="last-name"
-                        labelText="Last name*"
-                        placeholder="Last name"
+                        labelText={t('CREATE_PATIENT_LAST_NAME')}
+                        placeholder={t('CREATE_PATIENT_LAST_NAME_PLACEHOLDER')}
                         required
                         value={formData.lastName}
                         onChange={(e) =>
@@ -255,8 +263,8 @@ const NewPatientRegistration = () => {
                     <Column sm={2} md={2} lg={2}>
                       <Dropdown
                         id="gender"
-                        titleText="Gender"
-                        label="Select"
+                        titleText={t('CREATE_PATIENT_GENDER')}
+                        label={t('CREATE_PATIENT_SELECT')}
                         items={GENDERS}
                         selectedItem={formData.gender}
                         onChange={({ selectedItem }) =>
@@ -267,9 +275,9 @@ const NewPatientRegistration = () => {
 
                     <div className={styles.ageInputs}>
                       <TextInput
-                        placeholder="Years"
+                        placeholder={t('CREATE_PATIENT_AGE_YEARS_PLACEHOLDER')}
                         id="age-years"
-                        labelText="Age"
+                        labelText={t('CREATE_PATIENT_AGE')}
                         size="md"
                         type="number"
                         min={0}
@@ -282,8 +290,8 @@ const NewPatientRegistration = () => {
                     </div>
                     <div className={styles.ageInputs}>
                       <TextInput
-                        placeholder="Months"
-                        labelText="Months"
+                        placeholder={t('CREATE_PATIENT_AGE_MONTHS_PLACEHOLDER')}
+                        labelText={t('CREATE_PATIENT_AGE_MONTHS')}
                         id="age-months"
                         type="number"
                         min={0}
@@ -296,9 +304,9 @@ const NewPatientRegistration = () => {
                     </div>
                     <div className={styles.ageInputs}>
                       <TextInput
-                        placeholder="days"
+                        placeholder={t('CREATE_PATIENT_AGE_DAYS_PLACEHOLDER')}
                         id="age-days"
-                        labelText="Days"
+                        labelText={t('CREATE_PATIENT_AGE_DAYS')}
                         type="number"
                         min={0}
                         max={31}
@@ -324,15 +332,17 @@ const NewPatientRegistration = () => {
                       >
                         <DatePickerInput
                           id="date-of-birth"
-                          placeholder="dd/mm/yyyy"
-                          labelText="Date of birth"
+                          placeholder={t(
+                            'CREATE_PATIENT_DATE_OF_BIRTH_PLACEHOLDER',
+                          )}
+                          labelText={t('CREATE_PATIENT_DATE_OF_BIRTH')}
                         />
                       </DatePicker>
                     </Column>
                     <Column sm={3} md={3} lg={4}>
-                      <CheckboxGroup legendText="Accuracy">
+                      <CheckboxGroup legendText={t('CREATE_PATIENT_ACCURACY')}>
                         <Checkbox
-                          labelText="Estimated"
+                          labelText={t('CREATE_PATIENT_ESTIMATED')}
                           id="accuracy"
                           checked={dobEstimated}
                           onChange={() => setDobEstimated(!dobEstimated)}
@@ -347,7 +357,7 @@ const NewPatientRegistration = () => {
                         onChange={(e) =>
                           handleInputChange('birthTime', e.target.value)
                         }
-                        labelText="Birth time"
+                        labelText={t('CREATE_PATIENT_BIRTH_TIME')}
                       />
                     </Column>
                   </Grid>
@@ -357,13 +367,15 @@ const NewPatientRegistration = () => {
 
             {/* Address Information */}
             <div className={styles.formSection}>
-              <h4 className={styles.sectionTitle}>Address information</h4>
+              <h4 className={styles.sectionTitle}>
+                {t('CREATE_PATIENT_SECTION_ADDRESS_INFO')}
+              </h4>
               <Grid>
                 <Column sm={4} md={4} lg={8}>
                   <TextInput
                     id="house-number"
-                    labelText="House number/ Flat number"
-                    placeholder="Address line"
+                    labelText={t('CREATE_PATIENT_HOUSE_NUMBER')}
+                    placeholder={t('CREATE_PATIENT_ADDRESS_LINE_PLACEHOLDER')}
                     value={formData.houseNumber}
                     onChange={(e) =>
                       handleInputChange('houseNumber', e.target.value)
@@ -373,8 +385,8 @@ const NewPatientRegistration = () => {
                 <Column sm={4} md={4} lg={8}>
                   <TextInput
                     id="locality"
-                    labelText="Locality/Sector"
-                    placeholder="Address line 2"
+                    labelText={t('CREATE_PATIENT_LOCALITY')}
+                    placeholder={t('CREATE_PATIENT_ADDRESS_LINE2_PLACEHOLDER')}
                     value={formData.locality}
                     onChange={(e) =>
                       handleInputChange('locality', e.target.value)
@@ -386,8 +398,8 @@ const NewPatientRegistration = () => {
                 <Column sm={4} md={2} lg={4}>
                   <TextInput
                     id="district"
-                    labelText="District"
-                    placeholder="District"
+                    labelText={t('CREATE_PATIENT_DISTRICT')}
+                    placeholder={t('CREATE_PATIENT_DISTRICT_PLACEHOLDER')}
                     value={formData.district}
                     onChange={(e) =>
                       handleInputChange('district', e.target.value)
@@ -397,8 +409,8 @@ const NewPatientRegistration = () => {
                 <Column sm={4} md={2} lg={4}>
                   <TextInput
                     id="city"
-                    labelText="City/Village"
-                    placeholder="District"
+                    labelText={t('CREATE_PATIENT_CITY')}
+                    placeholder={t('CREATE_PATIENT_DISTRICT_PLACEHOLDER')}
                     value={formData.city}
                     onChange={(e) => handleInputChange('city', e.target.value)}
                   />
@@ -406,8 +418,8 @@ const NewPatientRegistration = () => {
                 <Column sm={4} md={2} lg={4}>
                   <TextInput
                     id="state"
-                    labelText="State"
-                    placeholder="District"
+                    labelText={t('CREATE_PATIENT_STATE')}
+                    placeholder={t('CREATE_PATIENT_DISTRICT_PLACEHOLDER')}
                     value={formData.state}
                     onChange={(e) => handleInputChange('state', e.target.value)}
                   />
@@ -415,8 +427,8 @@ const NewPatientRegistration = () => {
                 <Column sm={4} md={2} lg={4}>
                   <TextInput
                     id="pincode"
-                    labelText="Pincode"
-                    placeholder="District"
+                    labelText={t('CREATE_PATIENT_PINCODE')}
+                    placeholder={t('CREATE_PATIENT_DISTRICT_PLACEHOLDER')}
                     value={formData.pincode}
                     onChange={(e) =>
                       handleInputChange('pincode', e.target.value)
@@ -428,13 +440,15 @@ const NewPatientRegistration = () => {
 
             {/* Contact Information */}
             <div className={styles.formSection}>
-              <h4 className={styles.sectionTitle}>Contact information</h4>
+              <h4 className={styles.sectionTitle}>
+                {t('CREATE_PATIENT_SECTION_CONTACT_INFO')}
+              </h4>
               <Grid>
                 <Column sm={4} md={4} lg={8}>
                   <TextInput
                     id="phone-number"
-                    labelText="Phone number"
-                    placeholder="Phone number"
+                    labelText={t('CREATE_PATIENT_PHONE_NUMBER')}
+                    placeholder={t('CREATE_PATIENT_PHONE_NUMBER_PLACEHOLDER')}
                     value={formData.phoneNumber}
                     onChange={(e) =>
                       handleInputChange('phoneNumber', e.target.value)
@@ -444,8 +458,8 @@ const NewPatientRegistration = () => {
                 <Column sm={4} md={4} lg={8}>
                   <TextInput
                     id="alt-phone-number"
-                    labelText="Alternative phone number"
-                    placeholder="Phone number"
+                    labelText={t('CREATE_PATIENT_ALT_PHONE_NUMBER')}
+                    placeholder={t('CREATE_PATIENT_PHONE_NUMBER_PLACEHOLDER')}
                     value={formData.altPhoneNumber}
                     onChange={(e) =>
                       handleInputChange('altPhoneNumber', e.target.value)
@@ -457,13 +471,15 @@ const NewPatientRegistration = () => {
 
             {/* Additional Information */}
             <div className={styles.formSection}>
-              <h4 className={styles.sectionTitle}>Additional information</h4>
+              <h4 className={styles.sectionTitle}>
+                {t('CREATE_PATIENT_SECTION_ADDITIONAL_INFO')}
+              </h4>
               <Grid>
                 <Column sm={4} md={4} lg={8}>
                   <TextInput
                     id="email"
-                    labelText="Email Id"
-                    placeholder="Email id"
+                    labelText={t('CREATE_PATIENT_EMAIL')}
+                    placeholder={t('CREATE_PATIENT_EMAIL_PLACEHOLDER')}
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
                   />
@@ -474,11 +490,17 @@ const NewPatientRegistration = () => {
 
           {/* Footer Actions */}
           <div className={styles.formActions}>
-            <Button kind="tertiary">Back to search patient</Button>
+            <Button kind="tertiary">
+              {t('CREATE_PATIENT_BACK_TO_SEARCH')}
+            </Button>
             <div className={styles.actionButtons}>
-              <Button kind="tertiary">Save</Button>
-              <Button kind="tertiary">Print reg card</Button>
-              <Button kind="primary">Start OPD visit</Button>
+              <Button kind="tertiary">{t('CREATE_PATIENT_SAVE')}</Button>
+              <Button kind="tertiary">
+                {t('CREATE_PATIENT_PRINT_REG_CARD')}
+              </Button>
+              <Button kind="primary">
+                {t('CREATE_PATIENT_START_OPD_VISIT')}
+              </Button>
             </div>
           </div>
         </div>
