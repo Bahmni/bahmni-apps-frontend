@@ -56,3 +56,9 @@ export interface IdentifierType {
 }
 
 export type IdentifierTypesResponse = IdentifierType[];
+
+export interface AppSetting {
+  property: string;
+  value: string;
+}
+export type AppSettingsResponse = AppSetting[];

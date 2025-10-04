@@ -342,7 +342,7 @@ const NewPatientRegistration = () => {
                     <Column sm={3} md={3} lg={4}>
                       <CheckboxGroup legendText={t('CREATE_PATIENT_ACCURACY')}>
                         <Checkbox
-                          labelText={t('CREATE_PATIENT_ESTIMATED')}
+                          labelText={t('CREATE_PATIENT_ACCURACY')}
                           id="accuracy"
                           checked={dobEstimated}
                           onChange={() => setDobEstimated(!dobEstimated)}
