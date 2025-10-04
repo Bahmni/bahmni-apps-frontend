@@ -2,165 +2,93 @@
 @use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/type" as *;
 
-.main {
-  background-color: $layer-02;
-  padding-inline: calc($spacing-12 + $spacing-02);
-  padding-top: calc(48px + $spacing-12);
-  margin-top: 0;
-}
+  // Patient Details Header
+  .patientDetailsHeader {
+    margin: 24px 88px 0;
+    max-width: 1240px;
+    height: 54px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    padding: 16px;
 
-.registrationForm {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-06;
-}
-
-.formSection {
-  padding: $spacing-06 !important;
-  box-shadow: 0 2px 6px 0 $shadow;
-  margin-bottom: 0 !important;
-}
-
-.sectionTitle {
-  @include type-style("heading-02");
-  margin-bottom: $spacing-05;
-  color: $text-primary;
-}
-
-.photoSection {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: $spacing-03;
-  padding: $spacing-03;
-  background-color: $layer-01;
-  border-radius: 4px;
-  height: fit-content;
-}
-
-.photoPlaceholder {
-  width: 80px;
-  height: 80px;
-  background-color: $layer-02;
-  border: 2px dashed $border-subtle;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.entryTypeSection {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-02;
-}
-
-.fieldLabel {
-  @include type-style("label-01");
-  color: $text-secondary;
-  margin-bottom: $spacing-02;
-}
-
-.ageSection {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-03;
-}
-
-.ageInputs {
-  display: flex;
-  gap: $spacing-03;
-  align-items: flex-end;
-}
-
-.ageInput {
-  flex: 1;
-  min-width: 60px;
-}
-
-.accuracySection {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-02;
-  align-items: flex-start;
-  padding-top: $spacing-03;
-}
-
-.actionButtons {
-  display: flex;
-  gap: $spacing-04;
-  justify-content: flex-end;
-  padding: $spacing-06 0;
-  border-top: 1px solid $border-subtle;
-  margin-top: $spacing-06;
-}
-
-// Responsive adjustments
-@media (max-width: 768px) {
-  .main {
-    padding-inline: $spacing-05;
+     h3 {
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 22px;
+     }
   }
-  
-  .ageInputs {
+
+  // Form Container
+  .formContainer {
+    margin: 0 88px;
+    width: calc(100% - 176px);
+    max-width: 1240px;
+    padding: 24px;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    display: flex;
     flex-direction: column;
-    gap: $spacing-03;
+    gap: 48px;
+
+    .formSection {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .sectionTitle {
+      font-size: 16px;
+      font-weight: 400;
+    }
+
+    // Photo Upload Section
+    .photoUploadSection {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      width: 144px;
+      height: 176px;
+      background: #f4f4f4;
+      display: flex;
+      align-items: center;
+      justify-content: center;     
+    }
+
+    .wrapButton {
+     white-space: normal;   
+     text-align: center;    
+     word-break: break-word;
+     border-radius: 2px !important;
+     padding-right: $spacing-05 !important;
+    }
+    
+    .ageInputs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .nameFields,.demographicsFields,.birthInfo{
+      margin-top: 16px;
+    }
   }
-  
-  .actionButtons {
-    flex-direction: column;
-    align-items: stretch;
+
+  .formActions {
+    width: calc(100% - 176px);
+    max-width: 1240px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 87px;
+    margin-top: auto;
+
+    .actionButtons {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
   }
-}
 
-// Override Carbon styles for better alignment
-:global(.cds--form-item) {
-  margin-bottom: $spacing-05;
-}
-
-:global(.cds--text-input__field-wrapper) {
-  margin-bottom: 0;
-}
-
-:global(.cds--dropdown) {
-  margin-bottom: 0;
-}
-
-:global(.cds--number-input) {
-  margin-bottom: 0;
-}
-
-:global(.cds--date-picker) {
-  margin-bottom: 0;
-}
-
-:global(.cds--checkbox-wrapper) {
-  margin-bottom: 0;
-}
-
-
-
-.photo-placeholder {
-  aspect-ratio: 1 / 1;       /* keeps it square */
-  width: 100%;
-  min-height: 220px;            /* controls visual size on desktop */
-  background: #f6f6f6;
-  border: 1px dashed #d6d6d6;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #8d8d8d;
-  font-size: 0.95rem;
-}
-
-.photo-actions {
-  margin-top: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* tighten spacing between nested grid rows if needed */
-.basic-info .cds--grid {
-  gap: 12px;
-}
