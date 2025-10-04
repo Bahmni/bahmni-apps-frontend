@@ -1,37 +1,30 @@
 import {
-  BaseLayout,
+  Grid,
+  Column,
   Button,
-  Tile,
   TextInput,
   Dropdown,
   Checkbox,
   DatePicker,
   DatePickerInput,
-  Grid,
-  Column,
+  Tile,
   CheckboxGroup,
+  BaseLayout,
 } from '@bahmni-frontend/bahmni-design-system';
 import {
   BAHMNI_HOME_PATH,
   getIdentifierPrefixes,
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery } from '@tanstack/react-query';
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import { Header } from '../../components/Header';
-import { TimeSelector } from '../../components/TimeSelector/TimeSelector';
-import {
-  AgeUtils,
-  formatToDisplay,
-  formatToISO,
-  parseDateStringToDate,
-} from '../../utils/ageUtils';
+import { AgeUtils, formatToDisplay, formatToISO } from '../../utils/ageUtils';
 import styles from './styles/index.module.scss';
 
 const GENDERS = ['Male', 'Female', 'Other'];
 
-const CreatePatient: React.FC = () => {
+const NewPatientRegistration = () => {
   const navigate = useNavigate();
   const [dobEstimated, setDobEstimated] = useState(false);
 
@@ -47,7 +40,7 @@ const CreatePatient: React.FC = () => {
 
   const [formData, setFormData] = useState({
     patientIdFormat: '',
-    enterManually: false,
+    entryType: false,
     firstName: '',
     middleName: '',
     lastName: '',
@@ -56,10 +49,17 @@ const CreatePatient: React.FC = () => {
     ageMonths: 0,
     ageDays: 0,
     dateOfBirth: '',
-    birthTime: '',
+    birthTime: '09:00 AM',
+    houseNumber: '',
+    locality: '',
+    district: '',
+    city: '',
+    state: '',
+    pincode: '',
+    phoneNumber: '',
+    altPhoneNumber: '',
+    email: '',
   });
-
-  const [birthTime, setBirthTime] = useState('09:00 AM');
 
   // Set the first prefix as default when data is loaded
   useEffect(() => {
@@ -71,8 +71,12 @@ const CreatePatient: React.FC = () => {
     }
   }, [identifierPrefixes, formData.patientIdFormat]);
 
-  const onFieldChange = (field: string, value: string | number | boolean) =>
+  const handleInputChange = (
+    field: string,
+    value: string | number | boolean,
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleDateOfBirthChange = useCallback((selectedDates: Date[] = []) => {
     if (!selectedDates || selectedDates.length === 0) return;
@@ -83,7 +87,7 @@ const CreatePatient: React.FC = () => {
     // Convert Date to ISO for internal state
     const isoDate = formatToISO(selectedDate);
 
-    // Calculate age using cleaned AgeUtils
+    // Calculate age using AgeUtils
     const calculatedAge = AgeUtils.diffInYearsMonthsDays(
       selectedDate,
       new Date(),
@@ -98,7 +102,7 @@ const CreatePatient: React.FC = () => {
     }));
   }, []);
 
-  // Handle NumberInput changes → back-calculate DOB
+  // Handle TextInput changes → back-calculate DOB
   const handleAgeChange = useCallback(
     (field: 'ageYears' | 'ageMonths' | 'ageDays', value: number) => {
       setFormData((prev) => {
@@ -109,25 +113,17 @@ const CreatePatient: React.FC = () => {
           months: updated.ageMonths,
           days: updated.ageDays,
         };
-
         if (age.years > 0 || age.months > 0 || age.days > 0) {
           const birthISO = AgeUtils.calculateBirthDate(age); // yyyy-mm-dd
           updated.dateOfBirth = birthISO;
         } else {
           updated.dateOfBirth = '';
         }
-
         return updated;
       });
     },
     [],
   );
-
-  const handleGoBack = () => navigate('/');
-  const handleSave = () => {
-    // TODO: implement save
-    // console.log('Form data:', formData);
-  };
 
   const breadcrumbs = [
     {
@@ -155,182 +151,340 @@ const CreatePatient: React.FC = () => {
         />
       }
       main={
-        <div className={styles.main}>
-          <form className={styles.registrationForm}>
-            <Tile className={styles.formSection}>
-              <h2 className={styles.sectionTitle}>Patient Details</h2>
-            </Tile>
+        <div>
+          <Tile className={styles.patientDetailsHeader}>
+            <h3>Patient details</h3>
+          </Tile>
+          <div className={styles.formContainer}>
+            {/* Basic Information */}
+            <div className={styles.formSection}>
+              <h4 className={styles.sectionTitle}>Basic information</h4>
+              <Grid>
+                <Column sm={4} md={2} lg={3}>
+                  <div className={styles.photoUploadSection}>
+                    <Button
+                      kind="tertiary"
+                      size="sm"
+                      className={styles.wrapButton}
+                    >
+                      Upload photo
+                    </Button>
+                    <Button
+                      kind="tertiary"
+                      size="sm"
+                      className={styles.wrapButton}
+                    >
+                      Capture photo
+                    </Button>
+                  </div>
+                </Column>
+                <Column sm={4} md={6} lg={13}>
+                  <Grid>
+                    <Column sm={2} md={4} lg={4}>
+                      <Dropdown
+                        id="patient-id-format"
+                        titleText="Patient ID format"
+                        label={
+                          formData.patientIdFormat ||
+                          identifierPrefixes[0] ||
+                          'Select'
+                        }
+                        items={identifierPrefixes}
+                        selectedItem={formData.patientIdFormat}
+                        onChange={({ selectedItem }) =>
+                          handleInputChange(
+                            'patientIdFormat',
+                            selectedItem ?? '',
+                          )
+                        }
+                      />
+                    </Column>
+                    <Column sm={2} md={4} lg={4}>
+                      <CheckboxGroup legendText="Entry type">
+                        <Checkbox
+                          labelText="Enter manually"
+                          id="entry-type"
+                          checked={formData.entryType}
+                          onChange={(event) =>
+                            handleInputChange('entryType', event.target.checked)
+                          }
+                        />
+                      </CheckboxGroup>
+                    </Column>
+                  </Grid>
 
-            <Grid>
-              <Column sm={4} md={8} lg={12} xlg={16}>
-                <span>Basic Information</span>
-              </Column>
+                  <Grid className={styles.nameFields}>
+                    <Column sm={4} md={2} lg={3}>
+                      <TextInput
+                        id="first-name"
+                        labelText="First name*"
+                        placeholder="First name"
+                        value={formData.firstName}
+                        required
+                        onChange={(e) =>
+                          handleInputChange('firstName', e.target.value)
+                        }
+                      />
+                    </Column>
+                    <Column sm={4} md={2} lg={3}>
+                      <TextInput
+                        id="middle-name"
+                        labelText="Middle name"
+                        placeholder="Middle name"
+                        value={formData.middleName}
+                        onChange={(e) =>
+                          handleInputChange('middleName', e.target.value)
+                        }
+                      />
+                    </Column>
+                    <Column sm={4} md={2} lg={3}>
+                      <TextInput
+                        id="last-name"
+                        labelText="Last name*"
+                        placeholder="Last name"
+                        required
+                        value={formData.lastName}
+                        onChange={(e) =>
+                          handleInputChange('lastName', e.target.value)
+                        }
+                      />
+                    </Column>
+                  </Grid>
 
-              <Column sm={2} md={4} lg={6} xlg={8}>
-                <Dropdown
-                  id="patient-id-format"
-                  titleText="Patient ID format"
-                  label={
-                    formData.patientIdFormat || identifierPrefixes[0] || ''
-                  }
-                  items={identifierPrefixes}
-                  selectedItem={formData.patientIdFormat}
-                  onChange={({ selectedItem }) =>
-                    onFieldChange('patientIdFormat', selectedItem)
-                  }
-                />
-              </Column>
-              <Column sm={2} md={4} lg={6} xlg={8}>
-                <CheckboxGroup legendText="Entry Type">
-                  <Checkbox
-                    id="enter-manually"
-                    labelText="Enter Manually"
-                    checked={formData.enterManually}
-                    onChange={() =>
-                      onFieldChange('enterManually', !formData.enterManually)
+                  <Grid className={styles.demographicsFields}>
+                    <Column sm={2} md={2} lg={2}>
+                      <Dropdown
+                        id="gender"
+                        titleText="Gender"
+                        label="Select"
+                        items={GENDERS}
+                        selectedItem={formData.gender}
+                        onChange={({ selectedItem }) =>
+                          handleInputChange('gender', selectedItem ?? '')
+                        }
+                      />
+                    </Column>
+
+                    <div className={styles.ageInputs}>
+                      <TextInput
+                        placeholder="Years"
+                        id="age-years"
+                        labelText="Age"
+                        size="md"
+                        type="number"
+                        min={0}
+                        max={150}
+                        value={formData.ageYears}
+                        onChange={(e) =>
+                          handleAgeChange('ageYears', Number(e.target.value))
+                        }
+                      />
+                    </div>
+                    <div className={styles.ageInputs}>
+                      <TextInput
+                        placeholder="Months"
+                        labelText="Months"
+                        id="age-months"
+                        type="number"
+                        min={0}
+                        max={11}
+                        value={formData.ageMonths}
+                        onChange={(e) =>
+                          handleAgeChange('ageMonths', Number(e.target.value))
+                        }
+                      />
+                    </div>
+                    <div className={styles.ageInputs}>
+                      <TextInput
+                        placeholder="days"
+                        id="age-days"
+                        labelText="Days"
+                        type="number"
+                        min={0}
+                        max={31}
+                        value={formData.ageDays}
+                        onChange={(e) =>
+                          handleAgeChange('ageDays', Number(e.target.value))
+                        }
+                      />
+                    </div>
+                  </Grid>
+
+                  <Grid>
+                    <Column sm={3} md={2} lg={5}>
+                      <DatePicker
+                        dateFormat="d/m/Y"
+                        datePickerType="single"
+                        value={
+                          formData.dateOfBirth
+                            ? formatToDisplay(formData.dateOfBirth)
+                            : ''
+                        }
+                        onChange={handleDateOfBirthChange}
+                      >
+                        <DatePickerInput
+                          id="date-of-birth"
+                          placeholder="dd/mm/yyyy"
+                          labelText="Date of birth"
+                        />
+                      </DatePicker>
+                    </Column>
+                    <Column sm={3} md={3} lg={4}>
+                      <CheckboxGroup legendText="Accuracy">
+                        <Checkbox
+                          labelText="Estimated"
+                          id="accuracy"
+                          checked={dobEstimated}
+                          onChange={() => setDobEstimated(!dobEstimated)}
+                        />
+                      </CheckboxGroup>
+                    </Column>
+                    <Column sm={4} md={2} lg={3}>
+                      <TextInput
+                        id="birth time"
+                        type="time"
+                        value={formData.birthTime}
+                        onChange={(e) =>
+                          handleInputChange('birthTime', e.target.value)
+                        }
+                        labelText="Birth time"
+                      />
+                    </Column>
+                  </Grid>
+                </Column>
+              </Grid>
+            </div>
+
+            {/* Address Information */}
+            <div className={styles.formSection}>
+              <h4 className={styles.sectionTitle}>Address information</h4>
+              <Grid>
+                <Column sm={4} md={4} lg={8}>
+                  <TextInput
+                    id="house-number"
+                    labelText="House number/ Flat number"
+                    placeholder="Address line"
+                    value={formData.houseNumber}
+                    onChange={(e) =>
+                      handleInputChange('houseNumber', e.target.value)
                     }
                   />
-                </CheckboxGroup>
-              </Column>
-
-              {/* Row 2: Names */}
-              <Column sm={2} md={3} lg={4} xlg={6}>
-                <TextInput
-                  id="first-name"
-                  labelText="First name *"
-                  required
-                  value={formData.firstName}
-                  onChange={(e) => onFieldChange('firstName', e.target.value)}
-                />
-              </Column>
-              <Column sm={1} md={2} lg={4} xlg={6}>
-                <TextInput
-                  id="middle-name"
-                  labelText="Middle name"
-                  value={formData.middleName}
-                  onChange={(e) => onFieldChange('middleName', e.target.value)}
-                />
-              </Column>
-              <Column sm={1} md={3} lg={4} xlg={4}>
-                <TextInput
-                  id="last-name"
-                  labelText="Last name *"
-                  required
-                  value={formData.lastName}
-                  onChange={(e) => onFieldChange('lastName', e.target.value)}
-                />
-              </Column>
-
-              {/* Row 3: Gender + Age */}
-              <Column sm={1} md={2} lg={2} xlg={4}>
-                <Dropdown
-                  id="gender"
-                  titleText="Gender"
-                  label="Select"
-                  items={GENDERS}
-                  selectedItem={formData.gender}
-                  onChange={({ selectedItem }) =>
-                    onFieldChange('gender', selectedItem)
-                  }
-                />
-              </Column>
-              <Column sm={2} md={3} lg={2} xlg={3}>
-                <TextInput
-                  id="age-years"
-                  labelText="Age (Years)"
-                  type="number"
-                  min={0}
-                  max={120}
-                  value={formData.ageYears}
-                  onChange={(e) =>
-                    handleAgeChange('ageYears', Number(e.target.value) || 0)
-                  }
-                />
-              </Column>
-
-              <Column sm={1} md={3} lg={2} xlg={3}>
-                <TextInput
-                  id="age-months"
-                  labelText="Age (Months)"
-                  type="number"
-                  min={0}
-                  max={12}
-                  value={formData.ageMonths}
-                  onChange={(e) =>
-                    handleAgeChange('ageMonths', Number(e.target.value) || 0)
-                  }
-                />
-              </Column>
-
-              <Column sm={1} md={3} lg={2} xlg={3}>
-                <TextInput
-                  id="age-days"
-                  labelText="Age (Days)"
-                  type="number"
-                  min={0}
-                  max={31}
-                  value={formData.ageDays}
-                  onChange={(e) =>
-                    handleAgeChange('ageDays', Number(e.target.value) || 0)
-                  }
-                />
-              </Column>
-
-              {/* Row 4: DOB + Estimated + Birth time */}
-              <Column lg={4} md={4} sm={1}>
-                <DatePicker
-                  dateFormat="d/m/Y" // Display format
-                  datePickerType="single"
-                  value={
-                    formData.dateOfBirth
-                      ? [
-                          parseDateStringToDate(
-                            formatToDisplay(formData.dateOfBirth),
-                          ),
-                        ] // convert ISO → Date
-                      : []
-                  }
-                  onChange={handleDateOfBirthChange}
-                >
-                  <DatePickerInput
-                    id="dob"
-                    labelText="Date of Birth"
-                    placeholder="dd/mm/yyyy"
+                </Column>
+                <Column sm={4} md={4} lg={8}>
+                  <TextInput
+                    id="locality"
+                    labelText="Locality/Sector"
+                    placeholder="Address line 2"
+                    value={formData.locality}
+                    onChange={(e) =>
+                      handleInputChange('locality', e.target.value)
+                    }
                   />
-                </DatePicker>
-              </Column>
-              <Column lg={4} md={2} sm={1}>
-                <CheckboxGroup legendText="Accuracy">
-                  <Checkbox
-                    id="dob-estimated"
-                    labelText="Estimated"
-                    checked={dobEstimated}
-                    onChange={() => setDobEstimated(!dobEstimated)}
+                </Column>
+              </Grid>
+              <Grid>
+                <Column sm={4} md={2} lg={4}>
+                  <TextInput
+                    id="district"
+                    labelText="District"
+                    placeholder="District"
+                    value={formData.district}
+                    onChange={(e) =>
+                      handleInputChange('district', e.target.value)
+                    }
                   />
-                </CheckboxGroup>
-              </Column>
-              <Column lg={6} md={4} sm={2}>
-                <TimeSelector
-                  labelText="Birth Time"
-                  value={birthTime}
-                  onChange={setBirthTime}
-                />
-              </Column>
-            </Grid>
-
-            <div className={styles.actionButtons}>
-              <Button kind="secondary" onClick={handleGoBack}>
-                Cancel
-              </Button>
-              <Button kind="primary" onClick={handleSave}>
-                Save
-              </Button>
+                </Column>
+                <Column sm={4} md={2} lg={4}>
+                  <TextInput
+                    id="city"
+                    labelText="City/Village"
+                    placeholder="District"
+                    value={formData.city}
+                    onChange={(e) => handleInputChange('city', e.target.value)}
+                  />
+                </Column>
+                <Column sm={4} md={2} lg={4}>
+                  <TextInput
+                    id="state"
+                    labelText="State"
+                    placeholder="District"
+                    value={formData.state}
+                    onChange={(e) => handleInputChange('state', e.target.value)}
+                  />
+                </Column>
+                <Column sm={4} md={2} lg={4}>
+                  <TextInput
+                    id="pincode"
+                    labelText="Pincode"
+                    placeholder="District"
+                    value={formData.pincode}
+                    onChange={(e) =>
+                      handleInputChange('pincode', e.target.value)
+                    }
+                  />
+                </Column>
+              </Grid>
             </div>
-          </form>
+
+            {/* Contact Information */}
+            <div className={styles.formSection}>
+              <h4 className={styles.sectionTitle}>Contact information</h4>
+              <Grid>
+                <Column sm={4} md={4} lg={8}>
+                  <TextInput
+                    id="phone-number"
+                    labelText="Phone number"
+                    placeholder="Phone number"
+                    value={formData.phoneNumber}
+                    onChange={(e) =>
+                      handleInputChange('phoneNumber', e.target.value)
+                    }
+                  />
+                </Column>
+                <Column sm={4} md={4} lg={8}>
+                  <TextInput
+                    id="alt-phone-number"
+                    labelText="Alternative phone number"
+                    placeholder="Phone number"
+                    value={formData.altPhoneNumber}
+                    onChange={(e) =>
+                      handleInputChange('altPhoneNumber', e.target.value)
+                    }
+                  />
+                </Column>
+              </Grid>
+            </div>
+
+            {/* Additional Information */}
+            <div className={styles.formSection}>
+              <h4 className={styles.sectionTitle}>Additional information</h4>
+              <Grid>
+                <Column sm={4} md={4} lg={8}>
+                  <TextInput
+                    id="email"
+                    labelText="Email Id"
+                    placeholder="Email id"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                  />
+                </Column>
+              </Grid>
+            </div>
+          </div>
+
+          {/* Footer Actions */}
+          <div className={styles.formActions}>
+            <Button kind="tertiary">Back to search patient</Button>
+            <div className={styles.actionButtons}>
+              <Button kind="tertiary">Save</Button>
+              <Button kind="tertiary">Print reg card</Button>
+              <Button kind="primary">Start OPD visit</Button>
+            </div>
+          </div>
         </div>
       }
     />
   );
 };
 
-export default CreatePatient;
+export default NewPatientRegistration;
