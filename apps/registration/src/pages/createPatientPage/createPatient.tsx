@@ -13,11 +13,16 @@ import {
 } from '@bahmni-frontend/bahmni-design-system';
 import {
   BAHMNI_HOME_PATH,
-  getIdentifierPrefixes,
   useTranslation,
+  createPatient,
+  notificationService,
+  getIdentifierData,
+  type CreatePatientRequest,
+  type PatientAttribute,
+  PatientAddress,
 } from '@bahmni-frontend/bahmni-services';
-import { useQuery } from '@tanstack/react-query';
-import { useState, useCallback, useEffect } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../../components/Header';
 import { AgeUtils, formatToDisplay, formatToISO } from '../../utils/ageUtils';
@@ -30,14 +35,53 @@ const NewPatientRegistration = () => {
   const { t } = useTranslation();
   const [dobEstimated, setDobEstimated] = useState(false);
 
-  // Fetch identifier prefixes using TanStack Query
-  const { data: identifierPrefixes = [] } = useQuery({
-    queryKey: ['identifierPrefixes'],
-    queryFn: getIdentifierPrefixes,
+  // Fetch all identifier type data in a single optimized query
+  const { data: identifierData } = useQuery({
+    queryKey: ['identifierData'],
+    queryFn: getIdentifierData,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  });
+
+  const identifierPrefixes = useMemo(
+    () => identifierData?.prefixes ?? [],
+    [identifierData?.prefixes],
+  );
+  const identifierSources = useMemo(
+    () => identifierData?.sourcesByPrefix,
+    [identifierData?.sourcesByPrefix],
+  );
+  const primaryIdentifierType = useMemo(
+    () => identifierData?.primaryIdentifierTypeUuid,
+    [identifierData?.primaryIdentifierTypeUuid],
+  );
+
+  // Mutation for creating a patient
+  const createPatientMutation = useMutation({
+    mutationFn: createPatient,
+    onSuccess: (response) => {
+      notificationService.showSuccess(
+        'Success',
+        'Patient saved successfully',
+        5000,
+      );
+      // Navigate to patient details page with patient information
+      if (response?.patient?.uuid) {
+        navigate(`/registration/patient/${response.patient.uuid}`, {
+          state: {
+            patientDisplay: response.patient.display,
+            patientUuid: response.patient.uuid,
+          },
+        });
+      } else {
+        navigate('/registration/search');
+      }
+    },
+    onError: () => {
+      notificationService.showError('Error', 'Failed to save patient', 5000);
+    },
   });
 
   const [formData, setFormData] = useState({
@@ -51,7 +95,7 @@ const NewPatientRegistration = () => {
     ageMonths: 0,
     ageDays: 0,
     dateOfBirth: '',
-    birthTime: '09:00 AM',
+    birthTime: '',
     houseNumber: '',
     locality: '',
     district: '',
@@ -126,6 +170,134 @@ const NewPatientRegistration = () => {
     },
     [],
   );
+
+  // Handle save patient
+  const handleSave = () => {
+    // Basic validation
+    if (!formData.firstName || !formData.lastName) {
+      notificationService.showError(
+        'Validation Error',
+        'First name and last name are required',
+        5000,
+      );
+      return;
+    }
+
+    if (!formData.gender) {
+      notificationService.showError(
+        'Validation Error',
+        'Gender is required',
+        5000,
+      );
+      return;
+    }
+
+    if (!formData.dateOfBirth) {
+      notificationService.showError(
+        'Validation Error',
+        'Date of birth is required',
+        5000,
+      );
+      return;
+    }
+
+    if (!primaryIdentifierType) {
+      notificationService.showError(
+        'Error',
+        'Unable to determine identifier type',
+        5000,
+      );
+      return;
+    }
+
+    // Build patient request matching Bahmni API structure
+    const addresses: PatientAddress[] = [];
+    if (
+      formData.houseNumber ||
+      formData.locality ||
+      formData.city ||
+      formData.district ||
+      formData.state ||
+      formData.pincode
+    ) {
+      addresses.push({
+        ...(formData.houseNumber && { address1: formData.houseNumber }),
+        ...(formData.locality && { address2: formData.locality }),
+        ...(formData.city && { cityVillage: formData.city }),
+        ...(formData.district && { countyDistrict: formData.district }),
+        ...(formData.state && { stateProvince: formData.state }),
+        ...(formData.pincode && { postalCode: formData.pincode }),
+      });
+    } else {
+      addresses.push({}); // Empty address object as per API requirement
+    }
+
+    const attributes: PatientAttribute[] = [];
+    // Note: You would need to get the actual attribute type UUIDs from your system
+    // For now, marking as voided:true since we don't have the UUIDs
+    if (formData.phoneNumber) {
+      attributes.push({
+        attributeType: { uuid: 'phoneNumber-uuid' }, // Replace with actual UUID
+        value: formData.phoneNumber,
+        voided: false,
+      });
+    }
+    if (formData.altPhoneNumber) {
+      attributes.push({
+        attributeType: { uuid: 'alternatePhoneNumber-uuid' }, // Replace with actual UUID
+        value: formData.altPhoneNumber,
+        voided: false,
+      });
+    }
+    if (formData.email) {
+      attributes.push({
+        attributeType: { uuid: 'email-uuid' }, // Replace with actual UUID
+        value: formData.email,
+        voided: false,
+      });
+    }
+
+    // Get identifier source UUID for the selected prefix
+    const identifierSourceUuid = identifierSources?.get(
+      formData.patientIdFormat,
+    );
+
+    const patientRequest: CreatePatientRequest = {
+      patient: {
+        person: {
+          names: [
+            {
+              givenName: formData.firstName,
+              ...(formData.middleName && { middleName: formData.middleName }),
+              familyName: formData.lastName,
+              display: `${formData.firstName}${formData.middleName ? ' ' + formData.middleName : ''} ${formData.lastName}`,
+              preferred: false,
+            },
+          ],
+          addresses,
+          birthdate: formData.dateOfBirth,
+          gender: formData.gender.charAt(0).toUpperCase(), // M, F, O
+          birthtime: null,
+          attributes,
+          deathDate: null,
+          causeOfDeath: '',
+        },
+        identifiers: [
+          {
+            ...(identifierSourceUuid && { identifierSourceUuid }),
+            identifierPrefix: formData.patientIdFormat,
+            identifierType: primaryIdentifierType,
+            preferred: true,
+            voided: false,
+          },
+        ],
+      },
+      relationships: [],
+    };
+
+    // Call mutation
+    createPatientMutation.mutate(patientRequest);
+  };
 
   const breadcrumbs = [
     {
@@ -319,7 +491,7 @@ const NewPatientRegistration = () => {
                   </Grid>
 
                   <Grid>
-                    <Column sm={3} md={2} lg={5}>
+                    <Column sm={2} md={2} lg={5}>
                       <DatePicker
                         dateFormat="d/m/Y"
                         datePickerType="single"
@@ -339,7 +511,7 @@ const NewPatientRegistration = () => {
                         />
                       </DatePicker>
                     </Column>
-                    <Column sm={3} md={3} lg={4}>
+                    <Column sm={1} md={3} lg={4}>
                       <CheckboxGroup legendText={t('CREATE_PATIENT_ACCURACY')}>
                         <Checkbox
                           labelText={t('CREATE_PATIENT_ACCURACY')}
@@ -349,7 +521,7 @@ const NewPatientRegistration = () => {
                         />
                       </CheckboxGroup>
                     </Column>
-                    <Column sm={4} md={2} lg={3}>
+                    <Column sm={1} md={2} lg={3}>
                       <TextInput
                         id="birth time"
                         type="time"
@@ -494,7 +666,15 @@ const NewPatientRegistration = () => {
               {t('CREATE_PATIENT_BACK_TO_SEARCH')}
             </Button>
             <div className={styles.actionButtons}>
-              <Button kind="tertiary">{t('CREATE_PATIENT_SAVE')}</Button>
+              <Button
+                kind="tertiary"
+                onClick={handleSave}
+                disabled={createPatientMutation.isPending}
+              >
+                {createPatientMutation.isPending
+                  ? 'Saving...'
+                  : t('CREATE_PATIENT_SAVE')}
+              </Button>
               <Button kind="tertiary">
                 {t('CREATE_PATIENT_PRINT_REG_CARD')}
               </Button>
