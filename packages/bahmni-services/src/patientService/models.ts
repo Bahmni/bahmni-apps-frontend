@@ -62,3 +62,71 @@ export interface AppSetting {
   value: string;
 }
 export type AppSettingsResponse = AppSetting[];
+
+// Patient Creation Models
+export interface PatientName {
+  givenName: string;
+  middleName?: string;
+  familyName: string;
+  display?: string;
+  preferred?: boolean;
+}
+
+export interface PatientAddress {
+  address1?: string;
+  address2?: string;
+  cityVillage?: string;
+  stateProvince?: string;
+  postalCode?: string;
+  countyDistrict?: string;
+}
+
+export interface PatientIdentifier {
+  identifierSourceUuid?: string;
+  identifierPrefix?: string;
+  identifierType: string;
+  preferred: boolean;
+  voided?: boolean;
+}
+
+export interface PatientAttribute {
+  attributeType: {
+    uuid: string;
+  };
+  voided?: boolean;
+  value?: string;
+}
+
+export interface CreatePatientRequest {
+  patient: {
+    person: {
+      names: PatientName[];
+      gender: string;
+      birthdate: string;
+      birthdateEstimated?: boolean;
+      birthtime?: string | null;
+      addresses?: PatientAddress[];
+      attributes?: PatientAttribute[];
+      deathDate?: string | null;
+      causeOfDeath?: string;
+    };
+    identifiers: PatientIdentifier[];
+  };
+  relationships?: unknown[];
+}
+
+export interface CreatePatientResponse {
+  patient: {
+    uuid: string;
+    display: string;
+    person: {
+      uuid: string;
+      names: Array<{
+        display: string;
+      }>;
+    };
+    identifiers: Array<{
+      identifier: string;
+    }>;
+  };
+}
