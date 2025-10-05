@@ -41,7 +41,7 @@ const PatientSearchPage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleCreateNewPatient = () => {
-    navigate('/new');
+    navigate('/registration/new');
   };
 
   useEffect(() => {
