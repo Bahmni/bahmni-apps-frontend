@@ -1,5 +1,5 @@
 import { Patient } from 'fhir/r4';
-import { get } from '../api';
+import { get, post } from '../api';
 import { calculateAge } from '../date';
 import { getUserLoginLocation } from '../userService';
 import {
@@ -9,12 +9,15 @@ import {
   IDENTIFIER_TYPES_URL,
   APP_SETTINGS_URL,
   PRIMARY_IDENTIFIER_TYPE_PROPERTY,
+  CREATE_PATIENT_URL,
 } from './constants';
 import {
   FormattedPatientData,
   PatientSearchResultBundle,
   IdentifierTypesResponse,
   AppSettingsResponse,
+  CreatePatientRequest,
+  CreatePatientResponse,
 } from './models';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
@@ -193,34 +196,6 @@ export async function searchPatientByCustomAttribute(
   return searchResultsBundle;
 }
 
-export const getIdentifierPrefixes = async (): Promise<string[]> => {
-  const [identifierTypes, primaryIdentifierTypeUuid] = await Promise.all([
-    get<IdentifierTypesResponse>(IDENTIFIER_TYPES_URL),
-    getPrimaryIdentifierType(),
-  ]);
-  if (!primaryIdentifierTypeUuid) {
-    return [];
-  }
-
-  const primaryIdentifierType = identifierTypes.find(
-    (identifierType) => identifierType.uuid === primaryIdentifierTypeUuid,
-  );
-
-  if (!primaryIdentifierType) {
-    return [];
-  }
-
-  // Extract prefixes from identifier sources of the primary identifier type
-  const prefixes = new Set<string>();
-  primaryIdentifierType.identifierSources.forEach((source) => {
-    if (source.prefix) {
-      prefixes.add(source.prefix);
-    }
-  });
-
-  return Array.from(prefixes).sort();
-};
-
 /**
  * Get primary identifier type from Bahmni app settings
  * @returns Promise<string | null> - The primary identifier type UUID or null if not found
@@ -231,4 +206,61 @@ export const getPrimaryIdentifierType = async (): Promise<string | null> => {
     (setting) => setting.property === PRIMARY_IDENTIFIER_TYPE_PROPERTY,
   );
   return primaryIdentifierTypes?.value ?? null;
+};
+
+/**
+ * Get all identifier data in a single call (prefixes, sources, and primary type)
+ * @returns Promise with prefixes array, sources map, and primary identifier type UUID
+ */
+export const getIdentifierData = async (): Promise<{
+  prefixes: string[];
+  sourcesByPrefix: Map<string, string>;
+  primaryIdentifierTypeUuid: string | null;
+}> => {
+  const [identifierTypes, primaryIdentifierTypeUuid] = await Promise.all([
+    get<IdentifierTypesResponse>(IDENTIFIER_TYPES_URL),
+    getPrimaryIdentifierType(),
+  ]);
+
+  const prefixes: string[] = [];
+  const sourcesByPrefix = new Map<string, string>();
+
+  if (!primaryIdentifierTypeUuid) {
+    return { prefixes, sourcesByPrefix, primaryIdentifierTypeUuid: null };
+  }
+
+  const primaryIdentifierType = identifierTypes.find(
+    (identifierType) => identifierType.uuid === primaryIdentifierTypeUuid,
+  );
+
+  if (!primaryIdentifierType) {
+    return { prefixes, sourcesByPrefix, primaryIdentifierTypeUuid };
+  }
+
+  // Extract prefixes and map sources
+  primaryIdentifierType.identifierSources.forEach((source) => {
+    if (source.prefix) {
+      prefixes.push(source.prefix);
+      if (source.uuid) {
+        sourcesByPrefix.set(source.prefix, source.uuid);
+      }
+    }
+  });
+
+  return {
+    prefixes: prefixes.sort(),
+    sourcesByPrefix,
+    primaryIdentifierTypeUuid,
+  };
+};
+
+/**
+ * Create a new patient
+ * @param patientData - The patient data to create
+ * @returns Promise<CreatePatientResponse> - The created patient response
+ */
+export const createPatient = async (
+  patientData: CreatePatientRequest,
+): Promise<CreatePatientResponse> => {
+  return post<CreatePatientResponse>(CREATE_PATIENT_URL, patientData);
 };

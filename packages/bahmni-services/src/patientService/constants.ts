@@ -48,3 +48,6 @@ export const APP_SETTINGS_URL = (module: string) =>
   OPENMRS_REST_V1 + `/bahmni/app/setting?module=${module}`;
 
 export const PRIMARY_IDENTIFIER_TYPE_PROPERTY = 'bahmni.primaryIdentifierType';
+
+export const CREATE_PATIENT_URL =
+  OPENMRS_REST_V1 + '/bahmnicore/patientprofile';
