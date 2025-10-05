@@ -5,13 +5,21 @@ export {
   getFormattedPatientById,
   searchPatientByNameOrId,
   searchPatientByCustomAttribute,
-  getIdentifierPrefixes,
+  getPrimaryIdentifierType,
+  createPatient,
+  getIdentifierData,
   type FormattedPatientData,
   type PatientSearchResult,
   type PatientSearchResultBundle,
   type IdentifierSource,
   type IdentifierType,
   type IdentifierTypesResponse,
+  type CreatePatientRequest,
+  type CreatePatientResponse,
+  type PatientName,
+  type PatientAddress,
+  type PatientIdentifier,
+  type PatientAttribute,
 } from './patientService';
 export { getFormattedError } from './errorHandling';
 export {

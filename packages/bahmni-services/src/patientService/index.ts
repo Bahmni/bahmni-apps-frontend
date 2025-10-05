@@ -3,8 +3,9 @@ export {
   getFormattedPatientById,
   searchPatientByNameOrId,
   searchPatientByCustomAttribute,
-  getIdentifierPrefixes,
   getPrimaryIdentifierType,
+  createPatient,
+  getIdentifierData,
 } from './patientService';
 export {
   type FormattedPatientData,
@@ -13,4 +14,10 @@ export {
   type IdentifierSource,
   type IdentifierType,
   type IdentifierTypesResponse,
+  type CreatePatientRequest,
+  type CreatePatientResponse,
+  type PatientName,
+  type PatientAddress,
+  type PatientIdentifier,
+  type PatientAttribute,
 } from './models';
