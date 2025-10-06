@@ -6,4 +6,5 @@ export {
   getPriorityByOrder,
   groupByDate,
   filterReplacementEntries,
+  refreshQueriesConditionally,
 } from './utils';

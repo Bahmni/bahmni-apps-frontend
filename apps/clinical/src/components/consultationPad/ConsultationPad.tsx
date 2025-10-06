@@ -10,6 +10,7 @@ import {
   dispatchAuditEvent,
   useTranslation,
   ObservationForm,
+  refreshQueriesConditionally,
 } from '@bahmni-frontend/bahmni-services';
 import {
   conditionsQueryKeys,
@@ -269,18 +270,11 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         resetServiceRequests();
         resetMedications();
 
-        if (selectedConditions.length > 0) {
-          await queryClient.cancelQueries({
-            queryKey: conditionsQueryKeys.all(patientUUID),
-          });
-          queryClient.removeQueries({
-            queryKey: conditionsQueryKeys.all(patientUUID),
-          });
-          await queryClient.invalidateQueries({
-            queryKey: conditionsQueryKeys.all(patientUUID),
-            exact: true,
-          });
-        }
+        await refreshQueriesConditionally(
+          queryClient,
+          selectedConditions.length > 0,
+          conditionsQueryKeys.all(patientUUID),
+        );
 
         addNotification({
           title: t('CONSULTATION_SUBMITTED_SUCCESS_TITLE'),
