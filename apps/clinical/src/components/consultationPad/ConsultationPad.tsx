@@ -143,6 +143,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     // Open form view
     handleViewingFormChange(form);
   };
+
   // Data validation check for consultation submission
   const canSubmitConsultation = !!(
     patientUUID &&
@@ -293,7 +294,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
           type: 'error',
           timeout: 5000,
         });
-        return null;
       }
     }
   };

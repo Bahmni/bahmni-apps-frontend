@@ -1,6 +1,8 @@
 import {
   BaseLayout,
   Header,
+  Link,
+  Loading,
   SkeletonText,
   SortableDataTable,
   Tile,
@@ -12,11 +14,12 @@ import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
+  PatientSearchResult,
 } from '@bahmni-frontend/bahmni-services';
 import { SearchPatient } from '@bahmni-frontend/bahmni-widgets';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import styles from './styles/index.module.scss';
-import { formatPatientSearchResult } from './utils';
+import { formatPatientSearchResult, PatientSearchViewModel } from './utils';
 
 /**
  * PatientSearchPage
@@ -30,6 +33,8 @@ const PatientSearchPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
+  const [isPhoneSearch, setIsPhoneSearch] = useState<boolean>(false);
+  const [isNavigating, setIsNavigating] = useState<boolean>(false);
   const { t } = useTranslation();
 
   const breadcrumbItems = [
@@ -58,11 +63,13 @@ const PatientSearchPage: React.FC = () => {
     searchTerm: string,
     isLoading: boolean,
     isError: boolean,
+    isPhoneSearch: boolean,
   ) => {
     setPatientSearchData(data ?? undefined);
     setSearchTerm(searchTerm);
     setIsLoading(isLoading);
     setIsError(isError);
+    setIsPhoneSearch(isPhoneSearch);
   };
 
   const headers = [
@@ -89,20 +96,60 @@ const PatientSearchPage: React.FC = () => {
       return <SkeletonText testId="patient-search-title-loading" />;
     } else if (isError) {
       return (
-        <p className={styles.title} data-testid="patient-search-title-error">
+        <span data-testid="patient-search-title-error">
           {t('ERROR_DEFAULT_TITLE')}
-        </p>
+        </span>
       );
     } else {
       return (
-        <p className={styles.title} data-testid="patient-search-title">
+        <span data-testid="patient-search-title">
           {t('REGISTRATION_PATIENT_SEARCH_TABLE_TITLE', {
             count: dataLength,
           })}
-        </p>
+        </span>
       );
     }
   };
+
+  const navigateToPatient = (patientUuid: string) => {
+    setIsNavigating(true);
+    window.location.href = `/bahmni/registration/index.html#/patient/${patientUuid}`;
+  };
+
+  const handleRowClick = (row: PatientSearchViewModel<PatientSearchResult>) => {
+    if (row.uuid) {
+      navigateToPatient(row.uuid);
+    }
+  };
+
+  const renderCell = useCallback(
+    (row: PatientSearchViewModel<PatientSearchResult>, cellId: string) => {
+      if (cellId === 'identifier') {
+        return (
+          <Link
+            href={`/bahmni/registration/index.html#/patient/${row.uuid}`}
+            onClick={(e) => {
+              e.preventDefault();
+              navigateToPatient(row.uuid);
+            }}
+          >
+            {row.identifier}
+          </Link>
+        );
+      }
+      const cellValue =
+        row[cellId as keyof PatientSearchViewModel<PatientSearchResult>];
+      if (cellValue instanceof Date) {
+        return cellValue.toLocaleDateString();
+      }
+      return cellValue;
+    },
+    [navigateToPatient],
+  );
+
+  if (isNavigating) {
+    return <Loading description={t('LOADING_PATIENT_DETAILS')} role="status" />;
+  }
 
   return (
     <BaseLayout
@@ -122,35 +169,42 @@ const PatientSearchPage: React.FC = () => {
             onSearch={handleOnSearch}
           />
           {searchTerm !== '' && (
-            <Tile
-              id="patient-search-result"
-              aria-label="patient-search-result"
-              className={styles.patientSearchResult}
-            >
-              {renderTitle(
-                isLoading,
-                isError,
-                patientSearchData?.totalCount ?? 0,
-              )}
+            <div className={styles.patientSearchResult}>
+              <Tile
+                id="patient-search-result"
+                aria-label="patient-search-result"
+                className={styles.resultsTitle}
+              >
+                {renderTitle(
+                  isLoading,
+                  isError,
+                  patientSearchData?.totalCount ?? 0,
+                )}
+              </Tile>
               <SortableDataTable
                 headers={headers}
                 ariaLabel="patient-search-sortable-data-table"
                 loading={isLoading}
                 rows={formatPatientSearchResult(patientSearchData)}
-                emptyStateMessage={t(
-                  'REGISTRATION_PATIENT_SEARCH_EMPTY_MESSAGE',
-                  {
-                    searchTerm: searchTerm,
-                  },
-                )}
+                renderCell={renderCell}
+                emptyStateMessage={
+                  isPhoneSearch
+                    ? t('REGISTRATION_PATIENT_SEARCH_PHONE_EMPTY_MESSAGE', {
+                        searchTerm: searchTerm,
+                      })
+                    : t('REGISTRATION_PATIENT_SEARCH_EMPTY_MESSAGE', {
+                        searchTerm: searchTerm,
+                      })
+                }
                 className={styles.patientSearchTableBody}
                 errorStateMessage={
                   isError
                     ? t('REGISTRATION_PATIENT_SEARCH_ERROR_MESSAGE')
                     : undefined
                 }
+                onRowClick={handleRowClick}
               />
-            </Tile>
+            </div>
           )}
         </div>
       }

@@ -11,13 +11,17 @@ import {
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BundleEntry } from 'fhir/r4';
+import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
 import * as consultationBundleService from '../../../services/consultationBundleService';
+import * as pinnedFormsService from '../../../services/pinnedFormsService';
 import useAllergyStore from '../../../stores/allergyStore';
 import { useConditionsAndDiagnosesStore } from '../../../stores/conditionsAndDiagnosesStore';
 import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore';
 import { useMedicationStore } from '../../../stores/medicationsStore';
 import useServiceRequestStore from '../../../stores/serviceRequestStore';
 import ConsultationPad from '../ConsultationPad';
+
+// Import the mocked service to get access to the mock function
 
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
   ...jest.requireActual('@bahmni-frontend/bahmni-services'),
@@ -160,12 +164,34 @@ jest.mock('@tanstack/react-query', () => ({
   ),
 }));
 
+// Mock pinned forms service
+jest.mock('../../../services/pinnedFormsService', () => ({
+  savePinnedForms: jest.fn(),
+  loadPinnedForms: jest.fn(() => Promise.resolve([])),
+}));
+
+const mockSavePinnedForms =
+  pinnedFormsService.savePinnedForms as jest.MockedFunction<
+    typeof pinnedFormsService.savePinnedForms
+  >;
+const mockLoadPinnedForms =
+  pinnedFormsService.loadPinnedForms as jest.MockedFunction<
+    typeof pinnedFormsService.loadPinnedForms
+  >;
+const mockUseObservationFormsSearch =
+  useObservationFormsSearch as jest.MockedFunction<
+    typeof useObservationFormsSearch
+  >;
+
 // Mock hooks
 const mockAddNotification = jest.fn();
 
 jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
   useNotification: jest.fn(() => ({
     addNotification: mockAddNotification,
+  })),
+  useUserPrivilege: jest.fn(() => ({
+    userPrivileges: ['VIEW_PATIENTS', 'EDIT_ENCOUNTERS'],
   })),
   conditionsQueryKeys: jest.fn((patientUUID: string) => [
     'conditions',
@@ -202,6 +228,16 @@ jest.mock('../../../hooks/useEncounterSession', () => ({
   __esModule: true,
   useEncounterSession: () => mockUseEncounterSession(),
 }));
+
+// Mock observation forms search hook
+jest.mock('../../../hooks/useObservationFormsSearch', () => ({
+  __esModule: true,
+  default: jest.fn(() => ({
+    forms: [] as any[],
+    isLoading: false,
+    error: null,
+  })),
+}));
 jest.mock('../../forms/observationForms/ObservationForms', () => ({
   __esModule: true,
   default: ({ onFormSelect, selectedForms, onRemoveForm }: any) => (
@@ -223,6 +259,7 @@ jest.mock('../../forms/observationForms/ObservationForms', () => ({
       <div data-testid="selected-forms-count">
         Selected: {selectedForms?.length ?? 0}
       </div>
+      <div data-testid="pinned-forms-count">Pinned: 0</div>
       {selectedForms?.map((form: { uuid: string; name: string }) => (
         <div
           key={form.uuid}
@@ -397,6 +434,18 @@ describe('ConsultationPad', () => {
 
     // Reset audit event dispatcher mocks
     mockDispatchAuditEvent.mockClear();
+
+    // Reset pinned forms service mocks
+    mockSavePinnedForms.mockClear();
+    mockLoadPinnedForms.mockClear();
+    mockLoadPinnedForms.mockResolvedValue([]);
+
+    // Reset observation forms search hook
+    mockUseObservationFormsSearch.mockReturnValue({
+      forms: [] as any[],
+      isLoading: false,
+      error: null,
+    });
   });
 
   describe('Rendering', () => {

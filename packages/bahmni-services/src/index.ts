@@ -4,6 +4,7 @@ export {
   getPatientById,
   getFormattedPatientById,
   searchPatientByNameOrId,
+  searchPatientByCustomAttribute,
   type FormattedPatientData,
   type PatientSearchResult,
   type PatientSearchResultBundle,
@@ -99,6 +100,7 @@ export {
 } from './configService';
 
 export { getCurrentUser, type User } from './userService';
+export { USER_PINNED_PREFERENCE_URL } from './constants/app';
 export {
   getCurrentProvider,
   type Provider,

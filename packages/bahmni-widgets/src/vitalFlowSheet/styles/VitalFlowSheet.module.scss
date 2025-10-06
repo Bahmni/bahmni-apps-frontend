@@ -8,10 +8,9 @@
    th {
     white-space: pre-line;
     }
-    table th:nth-child(2),
+    table th:nth-child(2) * ,
     table td:nth-child(2) {
       background-color: $green-10 !important;
-      border-left: 3px solid $support-success !important;
     }
   }
 

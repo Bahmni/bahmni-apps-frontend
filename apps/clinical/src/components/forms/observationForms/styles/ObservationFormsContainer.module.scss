@@ -28,3 +28,31 @@
     }
   }
 }
+
+// Pin icon styling
+.formTitleContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.pinIconContainer {
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  user-select: none;
+
+  &:hover {
+    background-color: #f0f0f0;
+  }
+
+  &.pinned {
+    color: #000000;
+  }
+
+  &.unpinned {
+    color: #6c757d;
+  }
+}
