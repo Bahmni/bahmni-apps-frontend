@@ -9,10 +9,6 @@ export interface PatientSearchConfig {
   customAttributes: PatientSearchField[];
 }
 
-export interface RegistrationAppConfig {
-  patientSearch: PatientSearchConfig;
-}
-
 export interface RegistrationConfig {
-  config: RegistrationAppConfig;
+  patientSearch: PatientSearchConfig;
 }

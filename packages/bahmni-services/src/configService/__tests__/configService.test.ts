@@ -249,31 +249,29 @@ jest.mock('../schemas/registrationConfig.schema.json', () => ({
     type: 'object',
     additionalProperties: true,
     properties: {
-      config: {
+      patientSearch: {
         type: 'object',
         additionalProperties: true,
         properties: {
-          patientSearch: {
-            type: 'object',
-            additionalProperties: true,
-            properties: {
-              customAttributes: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  additionalProperties: true,
-                  required: ['label', 'fields'],
-                  properties: {
-                    label: { type: 'string' },
-                    fields: {
-                      type: 'array',
-                      items: { type: 'string' },
-                    },
-                    type: {
-                      type: 'string',
-                      enum: ['person', 'address', 'program'],
-                    },
-                  },
+          customAttributes: {
+            type: 'array',
+            items: {
+              type: 'object',
+              additionalProperties: true,
+              required: ['translationKey', 'fields'],
+              properties: {
+                translationKey: { type: 'string' },
+                fields: {
+                  type: 'array',
+                  items: { type: 'string' },
+                },
+                columnTranslationKeys: {
+                  type: 'array',
+                  items: { type: 'string' },
+                },
+                type: {
+                  type: 'string',
+                  enum: ['person', 'address', 'program'],
                 },
               },
             },
@@ -897,7 +895,7 @@ describe('ConfigService', () => {
       // Assert
       expect(mockGet).toHaveBeenCalledWith(REGISTRATION_CONFIG_URL);
       expect(result).toEqual(validRegistrationConfig);
-      expect(result?.config?.patientSearch?.customAttributes).toHaveLength(6);
+      expect(result?.patientSearch?.customAttributes).toHaveLength(6);
     });
 
     test('should return null when API request fails', async () => {

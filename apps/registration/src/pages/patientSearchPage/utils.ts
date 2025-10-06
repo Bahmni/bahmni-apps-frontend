@@ -20,34 +20,70 @@ export type PatientSearchViewModel<T> = T & {
 export const formatPatientSearchResult = (
   patientSearchResultBundle: PatientSearchResultBundle | undefined,
   patientSearchFields: PatientSearchField[] = [],
+  searchedField?: PatientSearchField,
 ): PatientSearchViewModel<PatientSearchResult>[] => {
   return patientSearchResultBundle
-    ? patientSearchResultBundle.pageOfResults!.map((patient) => {
-        const customAttributes = patient.customAttribute
-          ? JSON.parse(patient.customAttribute)
-          : {};
+    ? patientSearchResultBundle
+        .pageOfResults!.filter((patient) => {
+          if (!searchedField) return true;
 
-        const dynamicFields: {
-          [key: string]: object;
-        } = {};
-        patientSearchFields.forEach((searchField) => {
-          searchField.fields.forEach((fieldName) => {
-            if (customAttributes[fieldName] !== undefined) {
-              dynamicFields[fieldName] = customAttributes[fieldName];
-            }
+          const customAttributes = patient.customAttribute
+            ? JSON.parse(patient.customAttribute)
+            : {};
+          const addressAttributes = patient.addressFieldValue
+            ? JSON.parse(patient.addressFieldValue)
+            : {};
+          const programAttributes = patient.patientProgramAttributeValue
+            ? JSON.parse(patient.patientProgramAttributeValue)
+            : {};
+
+          return searchedField.fields.some((fieldName) => {
+            const value =
+              customAttributes[fieldName] ??
+              addressAttributes[fieldName] ??
+              programAttributes[fieldName];
+            return value !== undefined && value !== null && value !== '';
           });
-        });
+        })
+        .map((patient) => {
+          const customAttributes = patient.customAttribute
+            ? JSON.parse(patient.customAttribute)
+            : {};
 
-        return {
-          ...patient,
-          id: patient.identifier,
-          name: [
-            patient.givenName,
-            patient.middleName,
-            patient.familyName,
-          ].join(' '),
-          ...dynamicFields,
-        };
-      })
+          const addressAttributes = patient.addressFieldValue
+            ? JSON.parse(patient.addressFieldValue)
+            : {};
+
+          const programAttributes = patient.patientProgramAttributeValue
+            ? JSON.parse(patient.patientProgramAttributeValue)
+            : {};
+
+          const dynamicFields: {
+            [key: string]: object;
+          } = {};
+
+          patientSearchFields.forEach((searchField) => {
+            searchField.fields.forEach((fieldName) => {
+              if (customAttributes[fieldName] !== undefined) {
+                dynamicFields[fieldName] = customAttributes[fieldName];
+              } else if (addressAttributes[fieldName] !== undefined) {
+                dynamicFields[fieldName] = addressAttributes[fieldName];
+              } else if (programAttributes[fieldName] !== undefined) {
+                dynamicFields[fieldName] = programAttributes[fieldName];
+              }
+            });
+          });
+
+          return {
+            ...patient,
+            id: patient.identifier,
+            name: [
+              patient.givenName,
+              patient.middleName,
+              patient.familyName,
+            ].join(' '),
+            ...dynamicFields,
+          };
+        })
     : [];
 };

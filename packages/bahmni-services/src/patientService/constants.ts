@@ -1,3 +1,4 @@
+import { PatientSearchField } from '../configService/models/registrationConfig';
 import { OPENMRS_FHIR_R4, OPENMRS_REST_V1 } from '../constants/app';
 
 export const PATIENT_RESOURCE_URL = (patientUUID: string) =>
@@ -12,23 +13,54 @@ export const PATIENT_LUCENE_SEARCH_URL = (
 
 export const PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL = (
   searchTerm: string,
-  searchFields: string[],
-  resultFields: string[],
+  fieldType: string,
+  fieldsToSearch: string[],
+  allSearchFields: PatientSearchField[],
   loginLocationUuid: string,
 ) => {
   const trimmedSearchTerm = searchTerm.trim();
 
   const params = new URLSearchParams({
-    customAttribute: trimmedSearchTerm,
     loginLocationUuid,
     startIndex: '0',
+    s: 'byIdOrNameOrVillage',
+    filterOnAllIdentifiers: 'false',
   });
 
-  searchFields.forEach((field) => {
-    params.append('patientAttributes', field);
-  });
-  resultFields.forEach((field) => {
-    params.append('patientSearchResultsConfig', field);
+  const fieldTypeConfig = {
+    person: {
+      searchParam: 'customAttribute',
+      searchFieldParam: 'patientAttributes',
+      resultParam: 'patientSearchResultsConfig',
+    },
+    address: {
+      searchParam: 'addressFieldValue',
+      searchFieldParam: 'addressFieldName',
+      resultParam: 'addressSearchResultsConfig',
+    },
+    program: {
+      searchParam: 'programAttributeFieldValue',
+      searchFieldParam: 'programAttributeFieldName',
+      resultParam: 'programAttributeFieldName',
+    },
+  };
+
+  const config = fieldTypeConfig[fieldType as keyof typeof fieldTypeConfig];
+  if (config) {
+    params.set(config.searchParam, trimmedSearchTerm);
+    fieldsToSearch.forEach((field) => {
+      params.append(config.searchFieldParam, field);
+    });
+  }
+
+  allSearchFields.forEach((field) => {
+    const typeConfig =
+      fieldTypeConfig[field.type as keyof typeof fieldTypeConfig];
+    if (typeConfig) {
+      field.fields.forEach((fieldName) => {
+        params.append(typeConfig.resultParam, fieldName);
+      });
+    }
   });
 
   return OPENMRS_REST_V1 + `/bahmni/search/patient?${params.toString()}`;

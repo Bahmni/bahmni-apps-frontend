@@ -35,16 +35,19 @@ const PatientSearchPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
-  const [isPhoneSearch, setIsPhoneSearch] = useState<boolean>(false);
+  const [isAdvancedSearch, setIsAdvancedSearch] = useState<boolean>(false);
   const [isNavigating, setIsNavigating] = useState<boolean>(false);
   const [searchFields, setSearchFields] = useState<PatientSearchField[]>([]);
+  const [searchedField, setSearchedField] = useState<
+    PatientSearchField | undefined
+  >();
   const { t } = useTranslation();
 
   useEffect(() => {
     const loadSearchConfig = async () => {
       const config = await getRegistrationConfig();
-      if (config?.config?.patientSearch?.customAttributes) {
-        setSearchFields(config.config.patientSearch.customAttributes);
+      if (config?.patientSearch?.customAttributes) {
+        setSearchFields(config.patientSearch.customAttributes);
       }
     };
     loadSearchConfig();
@@ -76,13 +79,15 @@ const PatientSearchPage: React.FC = () => {
     searchTerm: string,
     isLoading: boolean,
     isError: boolean,
-    isPhoneSearch: boolean,
+    isAdvancedSearch: boolean,
+    searchedField?: PatientSearchField,
   ) => {
     setPatientSearchData(data ?? undefined);
     setSearchTerm(searchTerm);
     setIsLoading(isLoading);
     setIsError(isError);
-    setIsPhoneSearch(isPhoneSearch);
+    setIsAdvancedSearch(isAdvancedSearch);
+    setSearchedField(searchedField);
   };
 
   const headers = [
@@ -206,10 +211,11 @@ const PatientSearchPage: React.FC = () => {
                 rows={formatPatientSearchResult(
                   patientSearchData,
                   searchFields,
+                  searchedField,
                 )}
                 renderCell={renderCell}
                 emptyStateMessage={
-                  isPhoneSearch
+                  isAdvancedSearch
                     ? t(
                         'REGISTRATION_PATIENT_SEARCH_CUSTOM_ATTRIBUTE_EMPTY_MESSAGE',
                         {

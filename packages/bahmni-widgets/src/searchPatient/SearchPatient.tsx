@@ -25,7 +25,8 @@ interface SearchPatientProps {
     searchTerm: string,
     isLoading: boolean,
     isError: boolean,
-    isPhoneSearch: boolean,
+    isAdvancedSearch: boolean,
+    searchedField?: PatientSearchField,
   ) => void;
 }
 
@@ -40,7 +41,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
   const [phoneInputError, setPhoneInputError] = useState('');
   const { addNotification } = useNotification();
   const { t } = useTranslation();
-  const [isPhoneSearch, setIsPhoneSearch] = useState<boolean>(false);
+  const [isAdvancedSearch, setIsAdvancedSearch] = useState<boolean>(false);
   const [dropdownItems, setDropdownItems] = useState<string[]>([]);
   const [selectedDropdownItem, setSelectedDropdownItem] = useState<string>('');
   const [searchFields, setSearchFields] = useState<PatientSearchField[]>([]);
@@ -60,22 +61,23 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
     queryKey: [
       'patientSearch',
       searchTerm,
-      isPhoneSearch,
+      isAdvancedSearch,
       selectedDropdownItem,
     ],
     queryFn: () => {
-      if (isPhoneSearch) {
+      if (isAdvancedSearch) {
         const selectedField = searchFields.find(
           (field) => t(field.translationKey) === selectedDropdownItem,
         );
-        const fieldsToSearch = selectedField ? selectedField.fields : [];
 
-        const allCustomFields = searchFields.flatMap((field) => field.fields);
+        const fieldType = selectedField?.type ?? '';
+        const fieldsToSearch = selectedField ? selectedField.fields : [];
 
         return searchPatientByCustomAttribute(
           encodeURI(searchTerm),
+          fieldType,
           fieldsToSearch,
-          allCustomFields,
+          searchFields,
           t,
         );
       } else {
@@ -149,7 +151,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       setSearchTerm(trimmedValue);
     }
 
-    setIsPhoneSearch(type === 'phone');
+    setIsAdvancedSearch(type === 'phone');
   };
 
   const handleOnClear = (type: 'name' | 'phone') => {
@@ -174,8 +176,8 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       });
       setDropdownItems([]);
       setSelectedDropdownItem('');
-    } else if (configData?.config?.patientSearch?.customAttributes) {
-      const customAttributes = configData.config.patientSearch.customAttributes;
+    } else if (configData?.patientSearch?.customAttributes) {
+      const customAttributes = configData.patientSearch.customAttributes;
       setSearchFields(customAttributes);
       const labels = customAttributes.map((field: PatientSearchField) =>
         t(field.translationKey),
@@ -194,8 +196,21 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
   }, [configData, configIsError, configError, addNotification, t]);
 
   useEffect(() => {
+    const selectedField = isAdvancedSearch
+      ? searchFields.find(
+          (field) => t(field.translationKey) === selectedDropdownItem,
+        )
+      : undefined;
+
     if (isError && searchTerm) {
-      onSearch(data, searchTerm, isLoading, isError, isPhoneSearch);
+      onSearch(
+        data,
+        searchTerm,
+        isLoading,
+        isError,
+        isAdvancedSearch,
+        selectedField,
+      );
       addNotification({
         title: t('ERROR_DEFAULT_TITLE'),
         message: error instanceof Error ? error.message : String(error),
@@ -203,14 +218,23 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       });
     }
     if (searchTerm)
-      onSearch(data, searchTerm, isLoading, isError, isPhoneSearch);
+      onSearch(
+        data,
+        searchTerm,
+        isLoading,
+        isError,
+        isAdvancedSearch,
+        selectedField,
+      );
   }, [
     searchTerm,
     isLoading,
     isError,
     onSearch,
     data,
-    isPhoneSearch,
+    isAdvancedSearch,
+    selectedDropdownItem,
+    searchFields,
     addNotification,
     t,
     error,

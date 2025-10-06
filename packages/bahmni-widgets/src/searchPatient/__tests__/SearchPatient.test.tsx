@@ -104,6 +104,7 @@ describe('SearchPatient', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    Element.prototype.scrollIntoView = jest.fn();
     queryClient = new QueryClient({
       defaultOptions: {
         queries: {
@@ -206,6 +207,7 @@ describe('SearchPatient', () => {
         expect.any(Boolean),
         expect.any(Boolean),
         false,
+        undefined,
       );
     });
   });
@@ -274,6 +276,7 @@ describe('SearchPatient', () => {
     expect(mockOnSearch).toHaveBeenCalled();
     expect(searchPatientByCustomAttribute).toHaveBeenCalledWith(
       encodeURI('1234567890'),
+      expect.any(String),
       expect.any(Array),
       expect.any(Array),
       expect.any(Function),
@@ -285,6 +288,7 @@ describe('SearchPatient', () => {
         expect.any(Boolean),
         expect.any(Boolean),
         true,
+        expect.any(Object),
       );
     });
   });
@@ -317,6 +321,7 @@ describe('SearchPatient', () => {
     await waitFor(() => {
       expect(searchPatientByCustomAttribute).toHaveBeenCalledWith(
         encodeURI('1234567890'),
+        expect.any(String),
         expect.any(Array),
         expect.any(Array),
         expect.any(Function),
@@ -328,6 +333,7 @@ describe('SearchPatient', () => {
         expect.any(Boolean),
         expect.any(Boolean),
         true,
+        expect.any(Object),
       );
     });
   });
@@ -372,6 +378,7 @@ describe('SearchPatient', () => {
         true,
         false,
         false,
+        undefined,
       );
       expect(mockOnSearch).toHaveBeenCalledTimes(2);
       expect(mockOnSearch).toHaveBeenCalledWith(
@@ -380,6 +387,7 @@ describe('SearchPatient', () => {
         false,
         false,
         false,
+        undefined,
       );
     });
   });
@@ -533,6 +541,7 @@ describe('SearchPatient', () => {
         false,
         true,
         false,
+        undefined,
       );
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
@@ -581,6 +590,7 @@ describe('SearchPatient', () => {
         false,
         true,
         false,
+        undefined,
       );
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
@@ -602,6 +612,7 @@ describe('SearchPatient', () => {
         false,
         true,
         false,
+        undefined,
       ),
     );
   });
@@ -641,6 +652,7 @@ describe('SearchPatient', () => {
         false,
         true,
         true,
+        undefined,
       );
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
@@ -662,6 +674,7 @@ describe('SearchPatient', () => {
         false,
         true,
         true,
+        undefined,
       ),
     );
   });
@@ -837,6 +850,45 @@ describe('SearchPatient', () => {
         message: 'No patient search configuration found',
       });
     });
+  });
+
+  it('should search by email when email is selected from dropdown', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SearchPatient
+          buttonTitle={buttonTitle}
+          searchBarPlaceholder={searchBarPlaceholder}
+          onSearch={mockOnSearch}
+        />
+      </QueryClientProvider>,
+    );
+
+    const dropdownButton = screen.getByRole('combobox', {
+      name: /select search attribute/i,
+    });
+
+    await userEvent.click(dropdownButton);
+
+    const emailOption = await screen.findByText('Email');
+    await userEvent.click(emailOption);
+
+    const customSearchInput = screen.getByTestId('phone-search-input');
+    await userEvent.type(customSearchInput, 'test@example.com');
+
+    (searchPatientByCustomAttribute as jest.Mock).mockReturnValue({});
+
+    const customSearchButton = screen.getByTestId('phone-search-button');
+    await userEvent.click(customSearchButton);
+
+    expect(searchPatientByCustomAttribute).toHaveBeenCalledTimes(1);
+    expect(mockOnSearch).toHaveBeenCalled();
+    expect(searchPatientByCustomAttribute).toHaveBeenCalledWith(
+      encodeURI('test@example.com'),
+      'person',
+      ['email'],
+      expect.any(Array),
+      expect.any(Function),
+    );
   });
 
   it('should have no accessibility violations', async () => {

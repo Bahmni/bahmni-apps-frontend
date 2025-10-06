@@ -938,9 +938,18 @@ describe('Patient Service', () => {
     const mockLoginLocationUuid = 'b5da9afd-b29a-4cbf-91c9-ccf2aa5f799e';
     const mockSearchFields = ['phoneNumber'];
     const mockAllCustomFields = [
-      'phoneNumber',
-      'alternatePhoneNumber',
-      'email',
+      {
+        translationKey: 'PHONE_NUMBER',
+        fields: ['phoneNumber', 'alternatePhoneNumber'],
+        columnTranslationKeys: ['PHONE', 'ALT_PHONE'],
+        type: 'person' as const,
+      },
+      {
+        translationKey: 'EMAIL',
+        fields: ['email'],
+        columnTranslationKeys: ['EMAIL'],
+        type: 'person' as const,
+      },
     ];
     const t = (k: string) => k;
 
@@ -983,6 +992,7 @@ describe('Patient Service', () => {
 
       const result = await searchPatientByCustomAttribute(
         mockSearchTerm,
+        'person',
         mockSearchFields,
         mockAllCustomFields,
         t,
@@ -992,6 +1002,7 @@ describe('Patient Service', () => {
       expect(mockedGet).toHaveBeenCalledWith(
         PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL(
           mockSearchTerm,
+          'person',
           mockSearchFields,
           mockAllCustomFields,
           mockLoginLocationUuid,
@@ -1003,10 +1014,24 @@ describe('Patient Service', () => {
     it('builds URL with separate search and result fields', async () => {
       mockedGet.mockResolvedValueOnce(mockPatientSearchResponse);
       const searchFields = ['phoneNumber'];
-      const resultFields = ['phoneNumber', 'alternatePhoneNumber', 'email'];
+      const resultFields = [
+        {
+          translationKey: 'PHONE_NUMBER',
+          fields: ['phoneNumber', 'alternatePhoneNumber'],
+          columnTranslationKeys: ['PHONE', 'ALT_PHONE'],
+          type: 'person' as const,
+        },
+        {
+          translationKey: 'EMAIL',
+          fields: ['email'],
+          columnTranslationKeys: ['EMAIL'],
+          type: 'person' as const,
+        },
+      ];
 
       await searchPatientByCustomAttribute(
         mockSearchTerm,
+        'person',
         searchFields,
         resultFields,
         t,
@@ -1014,6 +1039,7 @@ describe('Patient Service', () => {
 
       const expectedUrl = PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL(
         mockSearchTerm,
+        'person',
         searchFields,
         resultFields,
         mockLoginLocationUuid,
@@ -1027,6 +1053,7 @@ describe('Patient Service', () => {
 
       await searchPatientByCustomAttribute(
         searchTermWithSpaces,
+        'person',
         mockSearchFields,
         mockAllCustomFields,
         t,
@@ -1036,6 +1063,7 @@ describe('Patient Service', () => {
       // as trimming is handled inside the URL builder function
       const expectedUrl = PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL(
         searchTermWithSpaces,
+        'person',
         mockSearchFields,
         mockAllCustomFields,
         mockLoginLocationUuid,

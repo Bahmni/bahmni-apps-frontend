@@ -1,5 +1,6 @@
 import { Patient } from 'fhir/r4';
 import { get } from '../api';
+import { PatientSearchField } from '../configService/models/registrationConfig';
 import { calculateAge } from '../date';
 import { getUserLoginLocation } from '../userService';
 import {
@@ -173,22 +174,25 @@ export const searchPatientByNameOrId = async (
  * Search patient by Custom Attributes (phone, address, program fields)
  * @param searchTerm - The search value entered by user
  * @param searchFields - Array of field names to search in (from PatientSearchField.fields)
- * @param allCustomFields - Array of all custom field names to return in results
+ * @param patientSearchFields - Array of PatientSearchField objects to extract result fields from
  * @param t - Translation function
  * @returns A formatted patient search bundle object
  */
 export const searchPatientByCustomAttribute = async (
   searchTerm: string,
-  searchFields: string[],
-  allCustomFields: string[],
+  fieldType: string,
+  fieldsToSearch: string[],
+  allSearchFields: PatientSearchField[],
   t: (key: string) => string,
 ): Promise<PatientSearchResultBundle> => {
   const loginLocation = getUserLoginLocation();
+
   const searchResultsBundle = await get<PatientSearchResultBundle>(
     PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL(
       searchTerm,
-      searchFields,
-      allCustomFields,
+      fieldType,
+      fieldsToSearch,
+      allSearchFields,
       loginLocation.uuid,
     ),
   );
