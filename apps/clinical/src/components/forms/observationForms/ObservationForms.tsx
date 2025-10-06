@@ -38,11 +38,7 @@ interface ObservationFormsProps {
  */
 const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
   ({ onFormSelect, selectedForms = [], onRemoveForm }) => {
-    const {
-      pinnedForms,
-      updatePinnedForms,
-      isLoading: isPinnedFormsLoading,
-    } = usePinnedObservationForms();
+    const { pinnedForms, updatePinnedForms } = usePinnedObservationForms();
     const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -227,13 +223,11 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
         <div data-testid="pinned-forms-section">
           <FormCardContainer
             title={t('DEFAULT_AND_PINNED_FORMS_TITLE')}
-            showNoFormsMessage={
-              !isLoading && !isPinnedFormsLoading && allPinnedForms.length === 0
-            }
+            showNoFormsMessage={!isLoading && allPinnedForms.length === 0}
             noFormsMessage={t('DEFAULT_AND_PINNED_FORMS_NO_FORMS_FOUND')}
             dataTestId="pinned-forms-container"
           >
-            {isLoading || isPinnedFormsLoading ? (
+            {isLoading ? (
               <SkeletonText width="100%" lineCount={3} />
             ) : (
               allPinnedForms.map((form: ObservationForm) => (
