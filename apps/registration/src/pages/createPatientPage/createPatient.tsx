@@ -107,6 +107,12 @@ const NewPatientRegistration = () => {
     email: '',
   });
 
+  const [nameErrors, setNameErrors] = useState({
+    firstName: '',
+    middleName: '',
+    lastName: '',
+  });
+
   // Set the first prefix as default when data is loaded
   useEffect(() => {
     if (identifierPrefixes.length > 0 && !formData.patientIdFormat) {
@@ -122,6 +128,21 @@ const NewPatientRegistration = () => {
     value: string | number | boolean,
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleNameChange = (field: string, value: string) => {
+    const nameRegex = /^[a-zA-Z\s]*$/;
+
+    if (nameRegex.test(value)) {
+      handleInputChange(field, value);
+      setNameErrors((prev) => ({ ...prev, [field]: '' }));
+    } else {
+      setNameErrors((prev) => ({
+        ...prev,
+        [field]:
+          'Name should only contain alphabets.Numbers and special characters are not allowed.',
+      }));
+    }
   };
 
   const handleDateOfBirthChange = useCallback((selectedDates: Date[] = []) => {
@@ -402,8 +423,10 @@ const NewPatientRegistration = () => {
                         placeholder={t('CREATE_PATIENT_FIRST_NAME_PLACEHOLDER')}
                         value={formData.firstName}
                         required
+                        invalid={!!nameErrors.firstName}
+                        invalidText={nameErrors.firstName}
                         onChange={(e) =>
-                          handleInputChange('firstName', e.target.value)
+                          handleNameChange('firstName', e.target.value)
                         }
                       />
                     </Column>
@@ -415,8 +438,10 @@ const NewPatientRegistration = () => {
                           'CREATE_PATIENT_MIDDLE_NAME_PLACEHOLDER',
                         )}
                         value={formData.middleName}
+                        invalid={!!nameErrors.middleName}
+                        invalidText={nameErrors.middleName}
                         onChange={(e) =>
-                          handleInputChange('middleName', e.target.value)
+                          handleNameChange('middleName', e.target.value)
                         }
                       />
                     </Column>
@@ -427,8 +452,10 @@ const NewPatientRegistration = () => {
                         placeholder={t('CREATE_PATIENT_LAST_NAME_PLACEHOLDER')}
                         required
                         value={formData.lastName}
+                        invalid={!!nameErrors.lastName}
+                        invalidText={nameErrors.lastName}
                         onChange={(e) =>
-                          handleInputChange('lastName', e.target.value)
+                          handleNameChange('lastName', e.target.value)
                         }
                       />
                     </Column>
