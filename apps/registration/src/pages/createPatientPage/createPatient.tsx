@@ -146,6 +146,7 @@ const NewPatientRegistration = () => {
       ageMonths: Number(calculatedAge.months) || 0,
       ageDays: Number(calculatedAge.days) || 0,
     }));
+    setDobEstimated(false);
   }, []);
 
   // Handle TextInput changes → back-calculate DOB
@@ -162,8 +163,10 @@ const NewPatientRegistration = () => {
         if (age.years > 0 || age.months > 0 || age.days > 0) {
           const birthISO = AgeUtils.calculateBirthDate(age); // yyyy-mm-dd
           updated.dateOfBirth = birthISO;
+          setDobEstimated(true);
         } else {
           updated.dateOfBirth = '';
+          setDobEstimated(false);
         }
         return updated;
       });
@@ -438,6 +441,7 @@ const NewPatientRegistration = () => {
                         titleText={t('CREATE_PATIENT_GENDER')}
                         label={t('CREATE_PATIENT_SELECT')}
                         items={GENDERS}
+                        aria-required="true"
                         selectedItem={formData.gender}
                         onChange={({ selectedItem }) =>
                           handleInputChange('gender', selectedItem ?? '')
@@ -450,6 +454,7 @@ const NewPatientRegistration = () => {
                         placeholder={t('CREATE_PATIENT_AGE_YEARS_PLACEHOLDER')}
                         id="age-years"
                         labelText={t('CREATE_PATIENT_AGE')}
+                        required
                         size="md"
                         type="number"
                         min={0}
@@ -466,6 +471,7 @@ const NewPatientRegistration = () => {
                         labelText={t('CREATE_PATIENT_AGE_MONTHS')}
                         id="age-months"
                         type="number"
+                        required
                         min={0}
                         max={11}
                         value={formData.ageMonths}
@@ -525,6 +531,7 @@ const NewPatientRegistration = () => {
                       <TextInput
                         id="birth time"
                         type="time"
+                        required
                         value={formData.birthTime}
                         onChange={(e) =>
                           handleInputChange('birthTime', e.target.value)
