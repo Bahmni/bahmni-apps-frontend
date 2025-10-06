@@ -17,9 +17,9 @@ import { ConditionViewModel, ConditionStatus } from './models';
 import styles from './styles/ConditionsTable.module.scss';
 import { createConditionViewModels } from './utils';
 
-export const conditionsQueryKeys = {
-  all: (patientUUID: string) => ['conditions', patientUUID] as const,
-};
+//TODO: Figure out a better place to create Query Keys
+export const conditionsQueryKeys = (patientUUID: string) =>
+  ['conditions', patientUUID] as const;
 
 const fetchConditions = async (
   patientUUID: string,
@@ -38,7 +38,7 @@ const ConditionsTable: React.FC = () => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: conditionsQueryKeys.all(patientUUID!),
+    queryKey: conditionsQueryKeys(patientUUID!),
     enabled: !!patientUUID,
     queryFn: () => fetchConditions(patientUUID!),
   });

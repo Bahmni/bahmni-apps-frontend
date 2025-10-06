@@ -35,9 +35,7 @@ jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
   ...jest.requireActual('@bahmni-frontend/bahmni-widgets'),
   useNotification: jest.fn(),
   usePatientUUID: jest.fn(),
-  conditionsQueryKeys: {
-    all: jest.fn(),
-  },
+  conditionsQueryKeys: jest.fn(),
 }));
 
 jest.mock('@tanstack/react-query', () => ({
@@ -60,7 +58,7 @@ const mockedUseNotification = useNotification as jest.MockedFunction<
 const mockedUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
 >;
-const mockedConditionsQueryKeys = conditionsQueryKeys as jest.Mocked<
+const mockedConditionsQueryKeys = conditionsQueryKeys as jest.MockedFunction<
   typeof conditionsQueryKeys
 >;
 const mockedUseConditionsAndDiagnosesStore =
@@ -203,7 +201,7 @@ describe('ConditionsAndDiagnoses', () => {
       removeNotification: jest.fn(),
       clearAllNotifications: jest.fn(),
     });
-    mockedConditionsQueryKeys.all.mockReturnValue([
+    mockedConditionsQueryKeys.mockReturnValue([
       'conditions',
       'test-patient-uuid',
     ]);

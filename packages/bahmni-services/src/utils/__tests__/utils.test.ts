@@ -776,7 +776,7 @@ describe('common utility functions', () => {
   describe('refreshQueriesConditionally', () => {
     let queryClient: QueryClient;
     let cancelQueriesSpy: jest.SpyInstance;
-    let resetQueriesSpy: jest.SpyInstance;
+    let removeQueriesSpy: jest.SpyInstance;
     let invalidateQueriesSpy: jest.SpyInstance;
     let refetchQueriesSpy: jest.SpyInstance;
 
@@ -791,8 +791,8 @@ describe('common utility functions', () => {
       cancelQueriesSpy = jest
         .spyOn(queryClient, 'cancelQueries')
         .mockResolvedValue();
-      resetQueriesSpy = jest
-        .spyOn(queryClient, 'resetQueries')
+      removeQueriesSpy = jest
+        .spyOn(queryClient, 'removeQueries')
         .mockResolvedValue();
       invalidateQueriesSpy = jest
         .spyOn(queryClient, 'invalidateQueries')
@@ -821,7 +821,7 @@ describe('common utility functions', () => {
         exact: true,
         type: 'active',
       });
-      expect(resetQueriesSpy).not.toHaveBeenCalled();
+      expect(removeQueriesSpy).toHaveBeenCalled();
     });
 
     it('should not perform any operations when condition is false', async () => {
@@ -830,7 +830,7 @@ describe('common utility functions', () => {
       await refreshQueriesConditionally(queryClient, false, queryKey);
 
       expect(cancelQueriesSpy).not.toHaveBeenCalled();
-      expect(resetQueriesSpy).not.toHaveBeenCalled();
+      expect(removeQueriesSpy).not.toHaveBeenCalled();
       expect(invalidateQueriesSpy).not.toHaveBeenCalled();
       expect(refetchQueriesSpy).not.toHaveBeenCalled();
     });
@@ -845,16 +845,6 @@ describe('common utility functions', () => {
       expect(cancelQueriesSpy).toHaveBeenCalled();
       expect(invalidateQueriesSpy).toHaveBeenCalled();
       expect(refetchQueriesSpy).toHaveBeenCalled();
-    });
-
-    it('should use hardReset when option is true', async () => {
-      const queryKey = ['conditions', 'patient-123'];
-
-      await refreshQueriesConditionally(queryClient, true, queryKey, {
-        hardReset: true,
-      });
-
-      expect(resetQueriesSpy).toHaveBeenCalledWith({ queryKey, exact: true });
     });
   });
 });

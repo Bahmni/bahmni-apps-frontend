@@ -2,7 +2,7 @@ import { QueryClient, QueryKey } from '@tanstack/react-query';
 
 /**
  * Conditionally refreshes React Query cache with advanced options
- * Performs cache operations (cancel, reset/invalidate, refetch) when condition is true
+ * Performs cache operations (cancel, removes, refetch) when condition is true
  *
  * @param queryClient - The React Query client instance
  * @param condition - Boolean condition or function that returns boolean/Promise<boolean> to determine if refresh should occur
@@ -10,7 +10,6 @@ import { QueryClient, QueryKey } from '@tanstack/react-query';
  * @param opts - Optional configuration for cache refresh behavior
  * @param opts.exact - Whether to match query key exactly (default: true)
  * @param opts.refetchActiveNow - Whether to immediately refetch active queries (default: true)
- * @param opts.hardReset - Whether to use resetQueries instead of invalidate for complete state reset (default: false)
  * @returns Promise that resolves when all operations complete
  */
 export const refreshQueriesConditionally = async (
@@ -20,24 +19,15 @@ export const refreshQueriesConditionally = async (
   opts?: {
     exact?: boolean;
     refetchActiveNow?: boolean;
-    hardReset?: boolean;
   },
 ): Promise<void> => {
-  const {
-    exact = true,
-    refetchActiveNow = true,
-    hardReset = false,
-  } = opts ?? {};
+  const { exact = true, refetchActiveNow = true } = opts ?? {};
   const shouldRefresh =
     typeof condition === 'function' ? await condition() : condition;
   if (!shouldRefresh) return;
 
   await queryClient.cancelQueries({ queryKey, exact });
-
-  if (hardReset) {
-    await queryClient.resetQueries({ queryKey, exact });
-  }
-
+  await queryClient.removeQueries({ queryKey, exact });
   await queryClient.invalidateQueries({ queryKey, exact });
 
   if (refetchActiveNow) {

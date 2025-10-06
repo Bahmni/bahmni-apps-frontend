@@ -273,7 +273,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         await refreshQueriesConditionally(
           queryClient,
           selectedConditions.length > 0,
-          conditionsQueryKeys.all(patientUUID),
+          conditionsQueryKeys(patientUUID),
         );
 
         addNotification({

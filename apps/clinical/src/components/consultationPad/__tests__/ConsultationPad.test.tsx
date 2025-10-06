@@ -167,9 +167,10 @@ jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
   useNotification: jest.fn(() => ({
     addNotification: mockAddNotification,
   })),
-  conditionsQueryKeys: {
-    all: jest.fn((patientUUID: string) => ['conditions', patientUUID]),
-  },
+  conditionsQueryKeys: jest.fn((patientUUID: string) => [
+    'conditions',
+    patientUUID,
+  ]),
   __esModule: true,
 }));
 

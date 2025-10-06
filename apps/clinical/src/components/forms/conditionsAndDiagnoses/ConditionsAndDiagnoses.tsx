@@ -58,7 +58,7 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
     isLoading: existingConditionsLoading,
     error: existingConditionsError,
   } = useQuery({
-    queryKey: conditionsQueryKeys.all(patientUUID!),
+    queryKey: conditionsQueryKeys(patientUUID!),
     enabled: !!patientUUID,
     queryFn: () => getConditions(patientUUID!),
   });

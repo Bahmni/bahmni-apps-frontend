@@ -37,9 +37,10 @@ jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
   useNotification: jest.fn(() => ({
     addNotification: jest.fn(),
   })),
-  conditionsQueryKeys: {
-    all: jest.fn((patientUUID: string) => ['conditions', patientUUID]),
-  },
+  conditionsQueryKeys: jest.fn((patientUUID: string) => [
+    'conditions',
+    patientUUID,
+  ]),
   UserPrivilegeProvider: ({ children }: { children: React.ReactNode }) => (
     <div>{children}</div>
   ),

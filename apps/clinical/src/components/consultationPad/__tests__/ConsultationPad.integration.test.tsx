@@ -70,9 +70,10 @@ jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
   useUserPrivilege: jest.fn(() => ({
     userPrivileges: ['Get Patients', 'Add Patients'],
   })),
-  conditionsQueryKeys: {
-    all: jest.fn((patientUUID: string) => ['conditions', patientUUID]),
-  },
+  conditionsQueryKeys: jest.fn((patientUUID: string) => [
+    'conditions',
+    patientUUID,
+  ]),
 }));
 
 // Create mock user
