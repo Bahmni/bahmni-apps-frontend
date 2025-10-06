@@ -3,6 +3,7 @@ import {
   Tile,
   FormCard,
   FormCardContainer,
+  SkeletonText,
 } from '@bahmni-frontend/bahmni-design-system';
 import { ObservationForm } from '@bahmni-frontend/bahmni-services';
 import React, { useState, useMemo, useCallback } from 'react';
@@ -222,31 +223,35 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
         <div data-testid="pinned-forms-section">
           <FormCardContainer
             title={t('DEFAULT_AND_PINNED_FORMS_TITLE')}
-            showNoFormsMessage={allPinnedForms.length === 0}
+            showNoFormsMessage={!isLoading && allPinnedForms.length === 0}
             noFormsMessage={t('DEFAULT_AND_PINNED_FORMS_NO_FORMS_FOUND')}
             dataTestId="pinned-forms-container"
           >
-            {allPinnedForms.map((form: ObservationForm) => (
-              <FormCard
-                key={form.uuid}
-                title={form.name}
-                icon="fa-file-lines"
-                actionIcon={
-                  !DEFAULT_FORM_API_NAMES.includes(form.name)
-                    ? 'fa-thumbtack'
-                    : undefined
-                }
-                onOpen={() => onFormSelect?.(form)}
-                onActionClick={() => {
-                  const newPinnedForms = pinnedForms.filter(
-                    (f) => f.uuid !== form.uuid,
-                  );
-                  updatePinnedForms(newPinnedForms);
-                }}
-                dataTestId={`pinned-form-${form.uuid}`}
-                ariaLabel={`Open ${form.name} form`}
-              />
-            ))}
+            {isLoading ? (
+              <SkeletonText width="100%" lineCount={3} />
+            ) : (
+              allPinnedForms.map((form: ObservationForm) => (
+                <FormCard
+                  key={form.uuid}
+                  title={form.name}
+                  icon="fa-file-lines"
+                  actionIcon={
+                    !DEFAULT_FORM_API_NAMES.includes(form.name)
+                      ? 'fa-thumbtack'
+                      : undefined
+                  }
+                  onOpen={() => onFormSelect?.(form)}
+                  onActionClick={() => {
+                    const newPinnedForms = pinnedForms.filter(
+                      (f) => f.uuid !== form.uuid,
+                    );
+                    updatePinnedForms(newPinnedForms);
+                  }}
+                  dataTestId={`pinned-form-${form.uuid}`}
+                  ariaLabel={`Open ${form.name} form`}
+                />
+              ))
+            )}
           </FormCardContainer>
         </div>
       </Tile>
