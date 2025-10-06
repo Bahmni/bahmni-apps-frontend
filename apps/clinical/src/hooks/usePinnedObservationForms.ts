@@ -10,36 +10,51 @@ import {
 import useObservationFormsSearch from './useObservationFormsSearch';
 
 export function usePinnedObservationForms() {
-  const { forms: availableForms } = useObservationFormsSearch('');
+  const { forms: availableForms, isLoading: isFormsLoading } =
+    useObservationFormsSearch('');
   const [pinnedForms, setPinnedForms] = useState<ObservationForm[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [pinnedFormNames, setPinnedFormNames] = useState<string[] | null>(null);
+  const [isPinnedNamesLoading, setIsPinnedNamesLoading] = useState(true);
   const [error, setError] = useState<{ title: string; message: string } | null>(
     null,
   );
 
+  // Load pinned form names immediately (parallel to forms loading)
   useEffect(() => {
-    const initializePinnedForms = async () => {
-      setIsLoading(true);
+    const loadPinnedFormNames = async () => {
+      setIsPinnedNamesLoading(true);
       setError(null);
-      if (availableForms.length === 0) {
-        setIsLoading(false);
-        return;
-      }
       try {
-        const pinnedFormNames = await loadPinnedForms();
+        const names = await loadPinnedForms();
+        setPinnedFormNames(names);
+      } catch (err) {
+        const formattedError = getFormattedError(err);
+        setError(formattedError);
+        setPinnedFormNames([]); // Set empty array on error to avoid infinite loading
+      } finally {
+        setIsPinnedNamesLoading(false);
+      }
+    };
+    loadPinnedFormNames();
+  }, []);
+
+  // Match pinned form names with available forms when both are ready
+  useEffect(() => {
+    if (availableForms.length > 0 && pinnedFormNames !== null) {
+      if (pinnedFormNames.length > 0) {
         const matchedForms = availableForms.filter((form) =>
           pinnedFormNames.includes(form.name),
         );
         setPinnedForms(matchedForms);
-      } catch (err) {
-        const formattedError = getFormattedError(err);
-        setError(formattedError);
-      } finally {
-        setIsLoading(false);
+      } else {
+        // If no pinned forms, set empty array
+        setPinnedForms([]);
       }
-    };
-    initializePinnedForms();
-  }, [availableForms]);
+    }
+  }, [availableForms, pinnedFormNames]);
+
+  // Overall loading state: true if either source is still loading
+  const isLoading = isPinnedNamesLoading || isFormsLoading;
 
   const updatePinnedForms = async (newPinnedForms: ObservationForm[]) => {
     setPinnedForms(newPinnedForms);
