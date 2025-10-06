@@ -234,7 +234,11 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
             dataTestId="pinned-forms-container"
           >
             {isLoading || isPinnedFormsLoading ? (
-              <SkeletonText width="100%" lineCount={3} />
+              <SkeletonText
+                width="100%"
+                lineCount={3}
+                testId="pinned-forms-skeleton"
+              />
             ) : (
               allPinnedForms.map((form: ObservationForm) => (
                 <FormCard
