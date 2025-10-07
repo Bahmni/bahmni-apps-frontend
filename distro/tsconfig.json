@@ -3,6 +3,9 @@
   "include": [],
   "references": [
     {
+      "path": "../apps/sample-app-module"
+    },
+    {
       "path": "../apps/registration"
     },
     {
