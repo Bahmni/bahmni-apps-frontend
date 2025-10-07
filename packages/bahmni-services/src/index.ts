@@ -8,6 +8,7 @@ export {
   getPrimaryIdentifierType,
   createPatient,
   getIdentifierData,
+  getGenders,
   type FormattedPatientData,
   type PatientSearchResult,
   type PatientSearchResultBundle,

@@ -1,5 +1,6 @@
 import { Patient } from 'fhir/r4';
 import { get, post } from '../api';
+import { APP_PROPERTY_URL } from '../applicationConfigService/constants';
 import { calculateAge } from '../date';
 import { getUserLoginLocation } from '../userService';
 import {
@@ -263,4 +264,15 @@ export const createPatient = async (
   patientData: CreatePatientRequest,
 ): Promise<CreatePatientResponse> => {
   return post<CreatePatientResponse>(CREATE_PATIENT_URL, patientData);
+};
+
+/**
+ * Get genders from global property
+ * @returns Promise<string[]> - Array of gender display names
+ */
+export const getGenders = async (): Promise<string[]> => {
+  const genders = await get<Record<string, string>>(
+    APP_PROPERTY_URL('mrs.genders'),
+  );
+  return Object.values(genders);
 };
