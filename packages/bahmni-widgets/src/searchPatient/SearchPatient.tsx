@@ -57,6 +57,27 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
     gcTime: 0,
   });
 
+  const getPatientSearchQuery = () => {
+    if (isAdvancedSearch) {
+      const selectedField = searchFields.find(
+        (field) => t(field.translationKey) === selectedDropdownItem,
+      );
+
+      const fieldType = selectedField?.type ?? '';
+      const fieldsToSearch = selectedField ? selectedField.fields : [];
+
+      return searchPatientByCustomAttribute(
+        encodeURI(searchTerm),
+        fieldType,
+        fieldsToSearch,
+        searchFields,
+        t,
+      );
+    } else {
+      return searchPatientByNameOrId(encodeURI(searchTerm));
+    }
+  };
+
   const { data, isLoading, isError, error } = useQuery({
     queryKey: [
       'patientSearch',
@@ -64,26 +85,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       isAdvancedSearch,
       selectedDropdownItem,
     ],
-    queryFn: () => {
-      if (isAdvancedSearch) {
-        const selectedField = searchFields.find(
-          (field) => t(field.translationKey) === selectedDropdownItem,
-        );
-
-        const fieldType = selectedField?.type ?? '';
-        const fieldsToSearch = selectedField ? selectedField.fields : [];
-
-        return searchPatientByCustomAttribute(
-          encodeURI(searchTerm),
-          fieldType,
-          fieldsToSearch,
-          searchFields,
-          t,
-        );
-      } else {
-        return searchPatientByNameOrId(encodeURI(searchTerm));
-      }
-    },
+    queryFn: getPatientSearchQuery,
     enabled: !!searchTerm,
     staleTime: 0,
     gcTime: 0,
