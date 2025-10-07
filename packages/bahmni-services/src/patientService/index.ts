@@ -6,6 +6,7 @@ export {
   getPrimaryIdentifierType,
   createPatient,
   getIdentifierData,
+  getGenders,
 } from './patientService';
 export {
   type FormattedPatientData,
