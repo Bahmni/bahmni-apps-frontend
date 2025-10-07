@@ -26,7 +26,6 @@ interface SearchPatientProps {
     isLoading: boolean,
     isError: boolean,
     isAdvancedSearch: boolean,
-    searchedField?: PatientSearchField,
   ) => void;
 }
 
