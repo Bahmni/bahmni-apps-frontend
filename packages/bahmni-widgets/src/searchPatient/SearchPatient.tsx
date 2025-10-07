@@ -37,7 +37,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchInput, setSearchInput] = useState('');
-  const [phoneSearchInput, setPhoneSearchInput] = useState('');
+  const [advanceSearchInput, setAdvanceSearchInput] = useState('');
   const [phoneInputError, setPhoneInputError] = useState('');
   const { addNotification } = useNotification();
   const { t } = useTranslation();
@@ -90,11 +90,22 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
     staleTime: 0,
     gcTime: 0,
   });
+  const isPhoneSearch = () => {
+    const selectedField = searchFields.find(
+      (field) => t(field.translationKey) === selectedDropdownItem,
+    );
+    return (
+      selectedField?.fields.some(
+        (fieldName) =>
+          fieldName === 'phoneNumber' || fieldName === 'alternatePhoneNumber',
+      ) ?? false
+    );
+  };
 
-  const handleChange = (inputValue: string, type: 'name' | 'phone') => {
-    if (type === 'phone') {
-      if (selectedDropdownItem === dropdownItems[0]) {
-        setPhoneSearchInput(inputValue);
+  const handleChange = (inputValue: string, type: 'name' | 'advance') => {
+    if (type === 'advance') {
+      if (isPhoneSearch()) {
+        setAdvanceSearchInput(inputValue);
         setSearchInput('');
         const hasPlusAtStart = inputValue.length > 0 && inputValue[0] === '+';
         const numericValue = inputValue.replace(/[^0-9]/g, '');
@@ -108,24 +119,24 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
         );
       } else {
         setPhoneInputError('');
-        setPhoneSearchInput(inputValue);
+        setAdvanceSearchInput(inputValue);
         setSearchInput('');
       }
     } else {
       setPhoneInputError('');
-      setPhoneSearchInput('');
+      setAdvanceSearchInput('');
       setSearchInput(inputValue);
     }
   };
 
-  const handleClick = (type: 'name' | 'phone') => {
-    const inputValue = type === 'phone' ? phoneSearchInput : searchInput;
+  const handleClick = (type: 'name' | 'advance') => {
+    const inputValue = type === 'advance' ? advanceSearchInput : searchInput;
     if (!inputValue.trim()) return;
 
     const trimmedValue = inputValue.trim();
 
-    if (type === 'phone') {
-      if (selectedDropdownItem === dropdownItems[0]) {
+    if (type === 'advance') {
+      if (isPhoneSearch()) {
         const hasPlusAtStart = inputValue.length > 0 && inputValue[0] === '+';
         const numericValue = inputValue.replace(/[^0-9]/g, '');
         const formattedValue = hasPlusAtStart
@@ -141,11 +152,11 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
         } else {
           setPhoneInputError('');
           setSearchTerm(formattedValue);
-          setPhoneSearchInput(trimmedValue);
+          setAdvanceSearchInput(trimmedValue);
         }
       } else {
         setPhoneInputError('');
-        setPhoneSearchInput(trimmedValue);
+        setAdvanceSearchInput(trimmedValue);
         setSearchTerm(trimmedValue);
       }
     } else {
@@ -153,12 +164,12 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       setSearchTerm(trimmedValue);
     }
 
-    setIsAdvancedSearch(type === 'phone');
+    setIsAdvancedSearch(type === 'advance');
   };
 
-  const handleOnClear = (type: 'name' | 'phone') => {
-    if (type === 'phone') {
-      setPhoneSearchInput('');
+  const handleOnClear = (type: 'name' | 'advance') => {
+    if (type === 'advance') {
+      setAdvanceSearchInput('');
       setPhoneInputError('');
     } else {
       setSearchInput('');
@@ -284,23 +295,23 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       </div>
 
       <div className={styles.searchPatient}>
-        <div className={styles.phoneSearchContainer}>
-          <div className={styles.phoneInputWrapper}>
+        <div className={styles.advanceSearchContainer}>
+          <div className={styles.advanceInputWrapper}>
             <Search
-              id="phone-search-input"
-              testId="phone-search-input"
-              labelText="Phone Search"
+              id="advance-search-input"
+              testId="advance-search-input"
+              labelText="Advance Search"
               placeholder={t('SEARCH_BY_CUSTOM_ATTRIBUTE', {
                 attribute: String(selectedDropdownItem),
               })}
-              value={phoneSearchInput}
-              onChange={(e) => handleChange(e.target.value, 'phone')}
+              value={advanceSearchInput}
+              onChange={(e) => handleChange(e.target.value, 'advance')}
               onKeyDown={(e) => {
                 if (e.code === 'Enter') {
-                  handleClick('phone');
+                  handleClick('advance');
                 }
               }}
-              onClear={() => handleOnClear('phone')}
+              onClear={() => handleOnClear('advance')}
               inputMode="numeric"
             />
             {phoneInputError && (
@@ -323,7 +334,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
             selectedItem={selectedDropdownItem}
             onChange={(event) => {
               setSelectedDropdownItem(event.selectedItem ?? '');
-              setPhoneSearchInput('');
+              setAdvanceSearchInput('');
               setSearchInput('');
               setSearchTerm('');
               setPhoneInputError('');
@@ -333,11 +344,11 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
         </div>
         <Button
           size="md"
-          id="phone-search-button"
-          testId="phone-search-button"
-          disabled={isLoading || phoneSearchInput.trim().length === 0}
+          id="advance-search-button"
+          testId="advance-search-button"
+          disabled={isLoading || advanceSearchInput.trim().length === 0}
           className={styles.searchButton}
-          onClick={() => handleClick('phone')}
+          onClick={() => handleClick('advance')}
         >
           {buttonTitle}
         </Button>

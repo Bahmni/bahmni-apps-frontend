@@ -27,6 +27,13 @@ export const PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL = (
     filterOnAllIdentifiers: 'false',
   });
 
+  /**
+   * Configuration mapping for different field types.
+   * Each type uses different query parameter names:
+   * - searchParam: Parameter for the search value (e.g., customAttribute=searchTerm)
+   * - searchFieldParam: Parameter for field names to search (e.g., patientAttributes=phoneNumber)
+   * - resultParam: Parameter for fields to include in results other than searchFieldParams (e.g., patientSearchResultsConfig=email)
+   */
   const fieldTypeConfig = {
     person: {
       searchParam: 'customAttribute',
