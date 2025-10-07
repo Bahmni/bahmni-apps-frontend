@@ -7,7 +7,7 @@ import {
   getPriorityByOrder,
   groupByDate,
   filterReplacementEntries,
-  refreshQueriesConditionally,
+  refreshQueries,
 } from '../utils';
 
 describe('common utility functions', () => {
@@ -773,7 +773,7 @@ describe('common utility functions', () => {
     });
   });
 
-  describe('refreshQueriesConditionally', () => {
+  describe('refreshQueries', () => {
     let queryClient: QueryClient;
     let cancelQueriesSpy: jest.SpyInstance;
     let removeQueriesSpy: jest.SpyInstance;
@@ -806,12 +806,13 @@ describe('common utility functions', () => {
       jest.clearAllMocks();
     });
 
-    it('should perform all operations when condition is true', async () => {
+    it('should perform all query operations with default options', async () => {
       const queryKey = ['conditions', 'patient-123'];
 
-      await refreshQueriesConditionally(queryClient, true, queryKey);
+      await refreshQueries(queryClient, queryKey);
 
       expect(cancelQueriesSpy).toHaveBeenCalledWith({ queryKey, exact: true });
+      expect(removeQueriesSpy).toHaveBeenCalledWith({ queryKey, exact: true });
       expect(invalidateQueriesSpy).toHaveBeenCalledWith({
         queryKey,
         exact: true,
@@ -821,30 +822,38 @@ describe('common utility functions', () => {
         exact: true,
         type: 'active',
       });
-      expect(removeQueriesSpy).toHaveBeenCalled();
     });
 
-    it('should not perform any operations when condition is false', async () => {
+    it('should respect exact option when set to false', async () => {
       const queryKey = ['conditions', 'patient-123'];
 
-      await refreshQueriesConditionally(queryClient, false, queryKey);
+      await refreshQueries(queryClient, queryKey, { exact: false });
 
-      expect(cancelQueriesSpy).not.toHaveBeenCalled();
-      expect(removeQueriesSpy).not.toHaveBeenCalled();
-      expect(invalidateQueriesSpy).not.toHaveBeenCalled();
+      expect(cancelQueriesSpy).toHaveBeenCalledWith({ queryKey, exact: false });
+      expect(removeQueriesSpy).toHaveBeenCalledWith({ queryKey, exact: false });
+      expect(invalidateQueriesSpy).toHaveBeenCalledWith({
+        queryKey,
+        exact: false,
+      });
+      expect(refetchQueriesSpy).toHaveBeenCalledWith({
+        queryKey,
+        exact: false,
+        type: 'active',
+      });
+    });
+
+    it('should skip refetch when refetchActiveNow is false', async () => {
+      const queryKey = ['conditions', 'patient-123'];
+
+      await refreshQueries(queryClient, queryKey, { refetchActiveNow: false });
+
+      expect(cancelQueriesSpy).toHaveBeenCalledWith({ queryKey, exact: true });
+      expect(removeQueriesSpy).toHaveBeenCalledWith({ queryKey, exact: true });
+      expect(invalidateQueriesSpy).toHaveBeenCalledWith({
+        queryKey,
+        exact: true,
+      });
       expect(refetchQueriesSpy).not.toHaveBeenCalled();
-    });
-
-    it('should support async function condition', async () => {
-      const queryKey = ['conditions', 'patient-123'];
-      const conditionFn = jest.fn().mockResolvedValue(true);
-
-      await refreshQueriesConditionally(queryClient, conditionFn, queryKey);
-
-      expect(conditionFn).toHaveBeenCalled();
-      expect(cancelQueriesSpy).toHaveBeenCalled();
-      expect(invalidateQueriesSpy).toHaveBeenCalled();
-      expect(refetchQueriesSpy).toHaveBeenCalled();
     });
   });
 });

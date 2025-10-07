@@ -18,7 +18,7 @@ export {
   getPriorityByOrder,
   groupByDate,
   filterReplacementEntries,
-  refreshQueriesConditionally,
+  refreshQueries,
 } from './utils';
 export {
   type FormatDateResult,
