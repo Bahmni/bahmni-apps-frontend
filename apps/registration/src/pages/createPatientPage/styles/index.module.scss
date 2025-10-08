@@ -177,3 +177,38 @@
   min-width: 0;
 }
 
+// Address hierarchy suggestions styles
+.suggestionsList {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.suggestionItem {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  
+  &:hover {
+    background-color: #f5f5f5;
+  }
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+.suggestionParent {
+  font-size: 0.875rem;
+  color: #525252;
+  margin-top: 2px;
+}
+
+.addresssuggestion{
+  position:relative;
+}
