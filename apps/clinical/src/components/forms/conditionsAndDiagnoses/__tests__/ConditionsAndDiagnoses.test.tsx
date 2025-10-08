@@ -1,41 +1,72 @@
 import {
   type ConditionInputEntry,
   type DiagnosisInputEntry,
+  getConditions,
 } from '@bahmni-frontend/bahmni-services';
+import {
+  useNotification,
+  usePatientUUID,
+  conditionsQueryKeys,
+} from '@bahmni-frontend/bahmni-widgets';
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from '@tanstack/react-query';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Condition } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { CERTAINITY_CONCEPTS } from '../../../../constants/diagnosis';
 import { useConceptSearch } from '../../../../hooks/useConceptSearch';
-import useConditions from '../../../../hooks/useConditions';
 import { ConceptSearch } from '../../../../models/concepts';
 import { useConditionsAndDiagnosesStore } from '../../../../stores/conditionsAndDiagnosesStore';
 import ConditionsAndDiagnoses from '../ConditionsAndDiagnoses';
 
 expect.extend(toHaveNoViolations);
 
-// Mock the hooks
 jest.mock('../../../../hooks/useConceptSearch');
-jest.mock('../../../../hooks/useConditions');
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+  getConditions: jest.fn(),
+}));
+
+jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-widgets'),
+  useNotification: jest.fn(),
+  usePatientUUID: jest.fn(),
+  conditionsQueryKeys: jest.fn(),
+}));
+
+jest.mock('@tanstack/react-query', () => ({
+  ...jest.requireActual('@tanstack/react-query'),
+  useQuery: jest.fn(),
+}));
 
 // Mock the Zustand store
 jest.mock('../../../../stores/conditionsAndDiagnosesStore');
 
-// Typed mock functions
 const mockedUseConceptSearch = useConceptSearch as jest.MockedFunction<
   typeof useConceptSearch
 >;
-const mockedUseConditions = useConditions as jest.MockedFunction<
-  typeof useConditions
+const mockedGetConditions = getConditions as jest.MockedFunction<
+  typeof getConditions
+>;
+const mockedUseNotification = useNotification as jest.MockedFunction<
+  typeof useNotification
+>;
+const mockedUsePatientUUID = usePatientUUID as jest.MockedFunction<
+  typeof usePatientUUID
+>;
+const mockedConditionsQueryKeys = conditionsQueryKeys as jest.MockedFunction<
+  typeof conditionsQueryKeys
 >;
 const mockedUseConditionsAndDiagnosesStore =
   useConditionsAndDiagnosesStore as jest.MockedFunction<
     typeof useConditionsAndDiagnosesStore
   >;
+const mockedUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
 
-// Mock data
-// Mock data factories
 const createMockConcept = (
   overrides?: Partial<ConceptSearch>,
 ): ConceptSearch => ({
@@ -163,12 +194,42 @@ describe('ConditionsAndDiagnoses', () => {
       error: conceptSearchError,
     });
 
-    mockedUseConditions.mockReturnValue({
-      conditions: existingConditions,
-      loading: existingConditionsLoading,
-      error: existingConditionsError,
-      refetch: jest.fn(),
+    mockedUsePatientUUID.mockReturnValue('test-patient-uuid');
+    mockedUseNotification.mockReturnValue({
+      addNotification: jest.fn(),
+      notifications: [],
+      removeNotification: jest.fn(),
+      clearAllNotifications: jest.fn(),
     });
+    mockedConditionsQueryKeys.mockReturnValue([
+      'conditions',
+      'test-patient-uuid',
+    ]);
+
+    // Mock useQuery to return the appropriate structure
+    mockedUseQuery.mockReturnValue({
+      data: existingConditions,
+      isLoading: existingConditionsLoading,
+      error: existingConditionsError,
+      isError: !!existingConditionsError,
+      isSuccess: !existingConditionsLoading && !existingConditionsError,
+      refetch: jest.fn(),
+      isFetching: false,
+      isRefetching: false,
+      isPending: existingConditionsLoading,
+      status: existingConditionsError
+        ? 'error'
+        : existingConditionsLoading
+          ? 'pending'
+          : 'success',
+      fetchStatus: 'idle',
+    } as any);
+
+    if (existingConditionsError) {
+      mockedGetConditions.mockRejectedValue(existingConditionsError);
+    } else {
+      mockedGetConditions.mockResolvedValue(existingConditions);
+    }
 
     addDiagnosisMock = jest.fn();
     removeDiagnosisMock = jest.fn();
@@ -194,7 +255,19 @@ describe('ConditionsAndDiagnoses', () => {
       updateConditionDuration: updateConditionDurationMock,
     });
 
-    return render(<ConditionsAndDiagnoses />);
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+        },
+      },
+    });
+
+    return render(
+      <QueryClientProvider client={queryClient}>
+        <ConditionsAndDiagnoses />
+      </QueryClientProvider>,
+    );
   };
 
   beforeEach(() => {
@@ -213,7 +286,7 @@ describe('ConditionsAndDiagnoses', () => {
     });
 
     test('should not render selected diagnoses section when no diagnoses are selected', () => {
-      renderComponent([], mockConditionEntries); // Pass empty selectedDiagnoses
+      renderComponent([], mockConditionEntries);
       expect(screen.queryByText('Added Diagnoses')).not.toBeInTheDocument();
     });
 
@@ -224,7 +297,7 @@ describe('ConditionsAndDiagnoses', () => {
     });
 
     test('should not render conditions section when no conditions are selected', () => {
-      renderComponent(mockDiagnosisEntries, []); // Pass empty selectedConditions
+      renderComponent(mockDiagnosisEntries, []);
       expect(screen.queryByText('Added Conditions')).not.toBeInTheDocument();
     });
 
@@ -258,8 +331,6 @@ describe('ConditionsAndDiagnoses', () => {
       await user.type(searchInput, 'hyper');
       await user.click(screen.getByText('Hypertension'));
 
-      // Assert on visible result (assuming addDiagnosis updates the store and component re-renders)
-      // For this test, we need to mock the store's state change after addDiagnosis is called
       mockedUseConditionsAndDiagnosesStore.mockReturnValue({
         ...mockedUseConditionsAndDiagnosesStore(),
         selectedDiagnoses: [
@@ -318,7 +389,6 @@ describe('ConditionsAndDiagnoses', () => {
       const disabledListItem = disabledOption.closest('li');
       expect(disabledListItem).toHaveAttribute('disabled');
 
-      // Attempt to click the disabled item
       await user.click(disabledOption);
 
       expect(addDiagnosisMock).not.toHaveBeenCalled();
@@ -356,7 +426,7 @@ describe('ConditionsAndDiagnoses', () => {
 
     test('should clear search results when search term is empty', async () => {
       const user = userEvent.setup();
-      renderComponent([], [], [], true); // Initially loading search results
+      renderComponent([], [], [], true);
 
       const searchInput = screen.getByPlaceholderText(
         'Search to add new diagnosis',
@@ -373,7 +443,7 @@ describe('ConditionsAndDiagnoses', () => {
 
     test('should show loading state while searching', async () => {
       const user = userEvent.setup();
-      renderComponent([], [], [], true); // Set loading to true
+      renderComponent([], [], [], true);
 
       const searchInput = screen.getByPlaceholderText(
         'Search to add new diagnosis',
@@ -399,7 +469,7 @@ describe('ConditionsAndDiagnoses', () => {
 
     test('should display no results message when search returns empty', async () => {
       const user = userEvent.setup();
-      renderComponent([], [], []); // Empty search results
+      renderComponent([], [], []);
 
       const searchInput = screen.getByPlaceholderText(
         'Search to add new diagnosis',

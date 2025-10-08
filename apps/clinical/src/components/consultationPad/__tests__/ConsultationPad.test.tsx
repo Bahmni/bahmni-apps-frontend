@@ -147,6 +147,23 @@ jest.mock('../../../services/consultationBundleService', () => ({
   getEncounterReference: jest.fn(() => 'urn:uuid:mock-encounter-uuid'),
 }));
 
+// Mock TanStack Query
+const mockCancelQueries = jest.fn();
+const mockRemoveQueries = jest.fn();
+const mockInvalidateQueries = jest.fn();
+
+jest.mock('@tanstack/react-query', () => ({
+  useQueryClient: jest.fn(() => ({
+    cancelQueries: mockCancelQueries,
+    removeQueries: mockRemoveQueries,
+    invalidateQueries: mockInvalidateQueries,
+  })),
+  QueryClient: jest.fn(),
+  QueryClientProvider: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+}));
+
 // Mock pinned forms service
 jest.mock('../../../services/pinnedFormsService', () => ({
   savePinnedForms: jest.fn(),
@@ -168,6 +185,7 @@ const mockUseObservationFormsSearch =
 
 // Mock hooks
 const mockAddNotification = jest.fn();
+
 jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
   useNotification: jest.fn(() => ({
     addNotification: mockAddNotification,
@@ -175,6 +193,10 @@ jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
   useUserPrivilege: jest.fn(() => ({
     userPrivileges: ['VIEW_PATIENTS', 'EDIT_ENCOUNTERS'],
   })),
+  conditionsQueryKeys: jest.fn((patientUUID: string) => [
+    'conditions',
+    patientUUID,
+  ]),
   __esModule: true,
 }));
 

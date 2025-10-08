@@ -2,7 +2,7 @@ import '@bahmni-frontend/bahmni-design-system/styles';
 
 export { PatientDetails } from './patientDetails';
 export { AllergiesTable } from './allergies';
-export { ConditionsTable } from './conditions';
+export { ConditionsTable, conditionsQueryKeys } from './conditions';
 export { DiagnosesTable } from './diagnoses';
 export { MedicationsTable } from './medications';
 export { RadiologyInvestigationTable } from './radiologyInvestigation';
