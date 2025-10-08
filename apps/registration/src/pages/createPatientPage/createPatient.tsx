@@ -1,6 +1,4 @@
 import {
-  Grid,
-  Column,
   Button,
   TextInput,
   Dropdown,
@@ -38,8 +36,8 @@ const NewPatientRegistration = () => {
   const { data: identifierData } = useQuery({
     queryKey: ['identifierData'],
     queryFn: getIdentifierData,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
@@ -54,7 +52,6 @@ const NewPatientRegistration = () => {
   // Map genders to their translated values
   const genders = useMemo(() => {
     return gendersFromApi.map((gender) => {
-      // Map API gender values to translation keys
       const genderKey = `CREATE_PATIENT_GENDER_${gender.toUpperCase()}`;
       return t(genderKey);
     });
@@ -82,7 +79,6 @@ const NewPatientRegistration = () => {
         'Patient saved successfully',
         5000,
       );
-      // Navigate to patient details page with patient information
       if (response?.patient?.uuid) {
         navigate(`/registration/patient/${response.patient.uuid}`, {
           state: {
@@ -135,7 +131,6 @@ const NewPatientRegistration = () => {
     dateOfBirth: '',
   });
 
-  // Set the first prefix as default when data is loaded
   useEffect(() => {
     if (identifierPrefixes.length > 0 && !formData.patientIdFormat) {
       setFormData((prev) => ({
@@ -154,7 +149,6 @@ const NewPatientRegistration = () => {
 
   const handleNameChange = (field: string, value: string) => {
     const nameRegex = /^[a-zA-Z\s]*$/;
-
     if (nameRegex.test(value)) {
       handleInputChange(field, value);
       setNameErrors((prev) => ({ ...prev, [field]: '' }));
@@ -169,14 +163,10 @@ const NewPatientRegistration = () => {
 
   const handleDateOfBirthChange = useCallback((selectedDates: Date[] = []) => {
     if (!selectedDates || selectedDates.length === 0) return;
-
     const selectedDate = selectedDates[0];
     if (!selectedDate) return;
 
-    // Convert Date to ISO for internal state
     const isoDate = formatToISO(selectedDate);
-
-    // Calculate age using AgeUtils
     const calculatedAge = AgeUtils.diffInYearsMonthsDays(
       selectedDate,
       new Date(),
@@ -184,7 +174,7 @@ const NewPatientRegistration = () => {
 
     setFormData((prev) => ({
       ...prev,
-      dateOfBirth: isoDate, // yyyy-mm-dd
+      dateOfBirth: isoDate,
       ageYears: Number(calculatedAge.years) || 0,
       ageMonths: Number(calculatedAge.months) || 0,
       ageDays: Number(calculatedAge.days) || 0,
@@ -193,19 +183,17 @@ const NewPatientRegistration = () => {
     setValidationErrors((prev) => ({ ...prev, dateOfBirth: '' }));
   }, []);
 
-  // Handle TextInput changes → back-calculate DOB
   const handleAgeChange = useCallback(
     (field: 'ageYears' | 'ageMonths' | 'ageDays', value: number) => {
       setFormData((prev) => {
         const updated = { ...prev, [field]: value || 0 };
-
         const age = {
           years: updated.ageYears,
           months: updated.ageMonths,
           days: updated.ageDays,
         };
         if (age.years > 0 || age.months > 0 || age.days > 0) {
-          const birthISO = AgeUtils.calculateBirthDate(age); // yyyy-mm-dd
+          const birthISO = AgeUtils.calculateBirthDate(age);
           updated.dateOfBirth = birthISO;
           setDobEstimated(true);
         } else {
@@ -218,42 +206,29 @@ const NewPatientRegistration = () => {
     [],
   );
 
-  // Handle save patient
   const handleSave = () => {
-    const errors = {
-      firstName: '',
-      lastName: '',
-      gender: '',
-      dateOfBirth: '',
-    };
-
+    const errors = { firstName: '', lastName: '', gender: '', dateOfBirth: '' };
     let hasErrors = false;
 
-    if (!formData.firstName || formData.firstName.trim() === '') {
+    if (!formData.firstName.trim()) {
       errors.firstName = 'First name is required';
       hasErrors = true;
     }
-
-    if (!formData.lastName || formData.lastName.trim() === '') {
+    if (!formData.lastName.trim()) {
       errors.lastName = 'Last name is required';
       hasErrors = true;
     }
-
     if (!formData.gender) {
       errors.gender = 'Gender is required';
       hasErrors = true;
     }
-
     if (!formData.dateOfBirth) {
       errors.dateOfBirth = 'Date of birth is required';
       hasErrors = true;
     }
 
     setValidationErrors(errors);
-
-    if (hasErrors) {
-      return;
-    }
+    if (hasErrors) return;
 
     if (!primaryIdentifierType) {
       notificationService.showError(
@@ -264,7 +239,6 @@ const NewPatientRegistration = () => {
       return;
     }
 
-    // Build patient request matching Bahmni API structure
     const addresses: PatientAddress[] = [];
     if (
       formData.houseNumber ||
@@ -283,35 +257,32 @@ const NewPatientRegistration = () => {
         ...(formData.pincode && { postalCode: formData.pincode }),
       });
     } else {
-      addresses.push({}); // Empty address object as per API requirement
+      addresses.push({});
     }
 
     const attributes: PatientAttribute[] = [];
-    // Note: You would need to get the actual attribute type UUIDs from your system
-    // For now, marking as voided:true since we don't have the UUIDs
     if (formData.phoneNumber) {
       attributes.push({
-        attributeType: { uuid: 'phoneNumber-uuid' }, // Replace with actual UUID
+        attributeType: { uuid: 'phoneNumber-uuid' },
         value: formData.phoneNumber,
         voided: false,
       });
     }
     if (formData.altPhoneNumber) {
       attributes.push({
-        attributeType: { uuid: 'alternatePhoneNumber-uuid' }, // Replace with actual UUID
+        attributeType: { uuid: 'alternatePhoneNumber-uuid' },
         value: formData.altPhoneNumber,
         voided: false,
       });
     }
     if (formData.email) {
       attributes.push({
-        attributeType: { uuid: 'email-uuid' }, // Replace with actual UUID
+        attributeType: { uuid: 'email-uuid' },
         value: formData.email,
         voided: false,
       });
     }
 
-    // Get identifier source UUID for the selected prefix
     const identifierSourceUuid = identifierSources?.get(
       formData.patientIdFormat,
     );
@@ -349,22 +320,16 @@ const NewPatientRegistration = () => {
       relationships: [],
     };
 
-    // Call mutation
     createPatientMutation.mutate(patientRequest);
   };
 
   const breadcrumbs = [
-    {
-      label: t('CREATE_PATIENT_BREADCRUMB_HOME'),
-      href: BAHMNI_HOME_PATH,
-    },
+    { label: t('CREATE_PATIENT_BREADCRUMB_HOME'), href: BAHMNI_HOME_PATH },
     {
       label: t('CREATE_PATIENT_BREADCRUMB_SEARCH'),
       onClick: () => navigate('/registration/search'),
     },
-    {
-      label: t('CREATE_PATIENT_BREADCRUMB_CURRENT'),
-    },
+    { label: t('CREATE_PATIENT_BREADCRUMB_CURRENT') },
   ];
 
   return (
@@ -383,14 +348,15 @@ const NewPatientRegistration = () => {
           <Tile className={styles.patientDetailsHeader}>
             <h3>{t('CREATE_PATIENT_HEADER_TITLE')}</h3>
           </Tile>
+
           <div className={styles.formContainer}>
             {/* Basic Information */}
             <div className={styles.formSection}>
               <h4 className={styles.sectionTitle}>
                 {t('CREATE_PATIENT_SECTION_BASIC_INFO')}
               </h4>
-              <Grid>
-                <Column sm={4} md={2} lg={3}>
+              <div className={styles.row}>
+                <div className={styles.photocol}>
                   <div className={styles.photoUploadSection}>
                     <Button
                       kind="tertiary"
@@ -407,10 +373,11 @@ const NewPatientRegistration = () => {
                       {t('CREATE_PATIENT_CAPTURE_PHOTO')}
                     </Button>
                   </div>
-                </Column>
-                <Column sm={4} md={6} lg={13}>
-                  <Grid>
-                    <Column sm={2} md={4} lg={4}>
+                </div>
+
+                <div className={styles.col}>
+                  <div className={styles.row}>
+                    <div className={styles.col}>
                       <Dropdown
                         id="patient-id-format"
                         titleText={t('CREATE_PATIENT_PATIENT_ID_FORMAT')}
@@ -428,8 +395,8 @@ const NewPatientRegistration = () => {
                           )
                         }
                       />
-                    </Column>
-                    <Column sm={2} md={4} lg={4}>
+                    </div>
+                    <div className={styles.col}>
                       <CheckboxGroup
                         legendText={t('CREATE_PATIENT_ENTRY_TYPE')}
                       >
@@ -437,16 +404,16 @@ const NewPatientRegistration = () => {
                           labelText={t('CREATE_PATIENT_ENTER_MANUALLY')}
                           id="entry-type"
                           checked={formData.entryType}
-                          onChange={(event) =>
-                            handleInputChange('entryType', event.target.checked)
+                          onChange={(e) =>
+                            handleInputChange('entryType', e.target.checked)
                           }
                         />
                       </CheckboxGroup>
-                    </Column>
-                  </Grid>
+                    </div>
+                  </div>
 
-                  <Grid className={styles.nameFields}>
-                    <Column sm={4} md={2} lg={4}>
+                  <div className={`${styles.row} ${styles.nameFields}`}>
+                    <div className={styles.col}>
                       <TextInput
                         id="first-name"
                         labelText={t('CREATE_PATIENT_FIRST_NAME')}
@@ -463,8 +430,8 @@ const NewPatientRegistration = () => {
                           handleNameChange('firstName', e.target.value)
                         }
                       />
-                    </Column>
-                    <Column sm={4} md={2} lg={4}>
+                    </div>
+                    <div className={styles.col}>
                       <TextInput
                         id="middle-name"
                         labelText={t('CREATE_PATIENT_MIDDLE_NAME')}
@@ -478,8 +445,8 @@ const NewPatientRegistration = () => {
                           handleNameChange('middleName', e.target.value)
                         }
                       />
-                    </Column>
-                    <Column sm={4} md={2} lg={4}>
+                    </div>
+                    <div className={styles.col}>
                       <TextInput
                         id="last-name"
                         labelText={t('CREATE_PATIENT_LAST_NAME')}
@@ -496,45 +463,36 @@ const NewPatientRegistration = () => {
                           handleNameChange('lastName', e.target.value)
                         }
                       />
-                    </Column>
-                  </Grid>
+                    </div>
+                  </div>
 
-                  <Grid className={styles.demographicsFields}>
-                    <Column sm={4} md={3} lg={5}>
-                      <Dropdown
-                        id="gender"
-                        titleText={t('CREATE_PATIENT_GENDER')}
-                        label={t('CREATE_PATIENT_SELECT')}
-                        items={genders}
-                        aria-required="true"
-                        selectedItem={formData.gender}
-                        invalid={!!validationErrors.gender}
-                        invalidText={validationErrors.gender}
-                        onChange={({ selectedItem }) => {
-                          handleInputChange('gender', selectedItem ?? '');
-                          // Clear validation error when user selects gender
-                          setValidationErrors((prev) => ({
-                            ...prev,
-                            gender: '',
-                          }));
-                        }}
-                      />
-                    </Column>
+                  <div className={`${styles.row} ${styles.demographicsFields}`}>
+                    <Dropdown
+                      id="gender"
+                      titleText={t('CREATE_PATIENT_GENDER')}
+                      label={t('CREATE_PATIENT_SELECT')}
+                      items={genders}
+                      aria-required="true"
+                      selectedItem={formData.gender}
+                      invalid={!!validationErrors.gender}
+                      invalidText={validationErrors.gender}
+                      onChange={({ selectedItem }) => {
+                        handleInputChange('gender', selectedItem ?? '');
+                        setValidationErrors((prev) => ({
+                          ...prev,
+                          gender: '',
+                        }));
+                      }}
+                    />
 
-                    <Column sm={2} md={5} lg={7} className={styles.ageColumn}>
+                    <div className={styles.col}>
                       <div className={styles.ageFieldsWrapper}>
                         <div className={styles.ageInputs}>
                           <TextInput
-                            placeholder={t(
-                              'CREATE_PATIENT_AGE_YEARS_PLACEHOLDER',
-                            )}
                             id="age-years"
-                            labelText={t(
-                              'CREATE_PATIENT_AGE_YEARS_PLACEHOLDER',
-                            )}
-                            required
-                            size="md"
+                            labelText={t('CREATE_PATIENT_AGE_YEARS')}
                             type="number"
+                            required
                             min={0}
                             max={150}
                             value={formData.ageYears}
@@ -548,11 +506,8 @@ const NewPatientRegistration = () => {
                         </div>
                         <div className={styles.ageInputs}>
                           <TextInput
-                            placeholder={t(
-                              'CREATE_PATIENT_AGE_MONTHS_PLACEHOLDER',
-                            )}
-                            labelText={t('CREATE_PATIENT_AGE_MONTHS')}
                             id="age-months"
+                            labelText={t('CREATE_PATIENT_AGE_MONTHS')}
                             type="number"
                             required
                             min={0}
@@ -568,9 +523,6 @@ const NewPatientRegistration = () => {
                         </div>
                         <div className={styles.ageInputs}>
                           <TextInput
-                            placeholder={t(
-                              'CREATE_PATIENT_AGE_DAYS_PLACEHOLDER',
-                            )}
                             id="age-days"
                             labelText={t('CREATE_PATIENT_AGE_DAYS')}
                             type="number"
@@ -583,11 +535,11 @@ const NewPatientRegistration = () => {
                           />
                         </div>
                       </div>
-                    </Column>
-                  </Grid>
+                    </div>
+                  </div>
 
-                  <Grid className={styles.birthInfoFields}>
-                    <Column sm={4} md={3} lg={5}>
+                  <div className={`${styles.row} ${styles.birthInfoFields}`}>
+                    <div className={styles.col}>
                       <DatePicker
                         dateFormat="d/m/Y"
                         datePickerType="single"
@@ -608,8 +560,8 @@ const NewPatientRegistration = () => {
                           invalidText={validationErrors.dateOfBirth}
                         />
                       </DatePicker>
-                    </Column>
-                    <Column sm={2} md={2} lg={3}>
+                    </div>
+                    <div className={styles.col}>
                       <CheckboxGroup legendText={t('CREATE_PATIENT_ACCURACY')}>
                         <Checkbox
                           labelText={t('CREATE_PATIENT_ESTIMATED')}
@@ -618,8 +570,8 @@ const NewPatientRegistration = () => {
                           onChange={() => setDobEstimated(!dobEstimated)}
                         />
                       </CheckboxGroup>
-                    </Column>
-                    <Column sm={2} md={3} lg={4}>
+                    </div>
+                    <div className={styles.col}>
                       <TextInput
                         id="birth-time"
                         type="time"
@@ -630,10 +582,10 @@ const NewPatientRegistration = () => {
                         }
                         labelText={t('CREATE_PATIENT_BIRTH_TIME')}
                       />
-                    </Column>
-                  </Grid>
-                </Column>
-              </Grid>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Address Information */}
@@ -641,8 +593,8 @@ const NewPatientRegistration = () => {
               <h4 className={styles.sectionTitle}>
                 {t('CREATE_PATIENT_SECTION_ADDRESS_INFO')}
               </h4>
-              <Grid>
-                <Column sm={4} md={4} lg={8}>
+              <div className={styles.row}>
+                <div className={styles.col}>
                   <TextInput
                     id="house-number"
                     labelText={t('CREATE_PATIENT_HOUSE_NUMBER')}
@@ -652,8 +604,8 @@ const NewPatientRegistration = () => {
                       handleInputChange('houseNumber', e.target.value)
                     }
                   />
-                </Column>
-                <Column sm={4} md={4} lg={8}>
+                </div>
+                <div className={styles.col}>
                   <TextInput
                     id="locality"
                     labelText={t('CREATE_PATIENT_LOCALITY')}
@@ -663,10 +615,11 @@ const NewPatientRegistration = () => {
                       handleInputChange('locality', e.target.value)
                     }
                   />
-                </Column>
-              </Grid>
-              <Grid>
-                <Column sm={4} md={2} lg={4}>
+                </div>
+              </div>
+
+              <div className={styles.row}>
+                <div className={styles.col}>
                   <TextInput
                     id="district"
                     labelText={t('CREATE_PATIENT_DISTRICT')}
@@ -676,8 +629,8 @@ const NewPatientRegistration = () => {
                       handleInputChange('district', e.target.value)
                     }
                   />
-                </Column>
-                <Column sm={4} md={2} lg={4}>
+                </div>
+                <div className={styles.col}>
                   <TextInput
                     id="city"
                     labelText={t('CREATE_PATIENT_CITY')}
@@ -685,8 +638,8 @@ const NewPatientRegistration = () => {
                     value={formData.city}
                     onChange={(e) => handleInputChange('city', e.target.value)}
                   />
-                </Column>
-                <Column sm={4} md={2} lg={4}>
+                </div>
+                <div className={styles.col}>
                   <TextInput
                     id="state"
                     labelText={t('CREATE_PATIENT_STATE')}
@@ -694,8 +647,8 @@ const NewPatientRegistration = () => {
                     value={formData.state}
                     onChange={(e) => handleInputChange('state', e.target.value)}
                   />
-                </Column>
-                <Column sm={4} md={2} lg={4}>
+                </div>
+                <div className={styles.col}>
                   <TextInput
                     id="pincode"
                     labelText={t('CREATE_PATIENT_PINCODE')}
@@ -705,8 +658,8 @@ const NewPatientRegistration = () => {
                       handleInputChange('pincode', e.target.value)
                     }
                   />
-                </Column>
-              </Grid>
+                </div>
+              </div>
             </div>
 
             {/* Contact Information */}
@@ -714,8 +667,8 @@ const NewPatientRegistration = () => {
               <h4 className={styles.sectionTitle}>
                 {t('CREATE_PATIENT_SECTION_CONTACT_INFO')}
               </h4>
-              <Grid>
-                <Column sm={4} md={4} lg={8}>
+              <div className={styles.row}>
+                <div className={styles.col}>
                   <TextInput
                     id="phone-number"
                     labelText={t('CREATE_PATIENT_PHONE_NUMBER')}
@@ -725,8 +678,8 @@ const NewPatientRegistration = () => {
                       handleInputChange('phoneNumber', e.target.value)
                     }
                   />
-                </Column>
-                <Column sm={4} md={4} lg={8}>
+                </div>
+                <div className={styles.col}>
                   <TextInput
                     id="alt-phone-number"
                     labelText={t('CREATE_PATIENT_ALT_PHONE_NUMBER')}
@@ -736,8 +689,8 @@ const NewPatientRegistration = () => {
                       handleInputChange('altPhoneNumber', e.target.value)
                     }
                   />
-                </Column>
-              </Grid>
+                </div>
+              </div>
             </div>
 
             {/* Additional Information */}
@@ -745,8 +698,8 @@ const NewPatientRegistration = () => {
               <h4 className={styles.sectionTitle}>
                 {t('CREATE_PATIENT_SECTION_ADDITIONAL_INFO')}
               </h4>
-              <Grid>
-                <Column sm={4} md={4} lg={8}>
+              <div className={styles.row}>
+                <div className={styles.col}>
                   <TextInput
                     id="email"
                     labelText={t('CREATE_PATIENT_EMAIL')}
@@ -754,8 +707,8 @@ const NewPatientRegistration = () => {
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
                   />
-                </Column>
-              </Grid>
+                </div>
+              </div>
             </div>
           </div>
 
