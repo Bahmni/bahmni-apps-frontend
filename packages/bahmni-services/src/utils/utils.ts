@@ -1,3 +1,35 @@
+import { QueryClient, QueryKey } from '@tanstack/react-query';
+
+/**
+ * Refreshes React Query cache with advanced options
+ * Performs cache operations: cancel, remove, invalidate, and optionally refetch
+ *
+ * @param queryClient - The React Query client instance
+ * @param queryKey - The query key to refresh
+ * @param opts - Optional configuration for cache refresh behavior
+ * @param opts.exact - Whether to match query key exactly (default: true)
+ * @param opts.refetchActiveNow - Whether to immediately refetch active queries (default: true)
+ * @returns Promise that resolves when all operations complete
+ */
+export const refreshQueries = async (
+  queryClient: QueryClient,
+  queryKey: QueryKey,
+  opts?: {
+    exact?: boolean;
+    refetchActiveNow?: boolean;
+  },
+): Promise<void> => {
+  const { exact = true, refetchActiveNow = true } = opts ?? {};
+
+  await queryClient.cancelQueries({ queryKey, exact });
+  await queryClient.removeQueries({ queryKey, exact });
+  await queryClient.invalidateQueries({ queryKey, exact });
+
+  if (refetchActiveNow) {
+    await queryClient.refetchQueries({ queryKey, exact, type: 'active' });
+  }
+};
+
 /**
  * Generates a random ID
  * @returns {string} A random ID
