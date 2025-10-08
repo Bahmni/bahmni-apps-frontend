@@ -130,3 +130,14 @@ export interface CreatePatientResponse {
     }>;
   };
 }
+
+export interface AddressHierarchyEntry {
+  name: string;
+  userGeneratedId: string;
+  level: string;
+  parent?: AddressHierarchyEntry;
+}
+
+export interface AddressHierarchyResponse {
+  results: AddressHierarchyEntry[];
+}

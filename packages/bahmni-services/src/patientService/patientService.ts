@@ -11,6 +11,7 @@ import {
   APP_SETTINGS_URL,
   PRIMARY_IDENTIFIER_TYPE_PROPERTY,
   CREATE_PATIENT_URL,
+  ADDRESS_HIERARCHY_URL,
 } from './constants';
 import {
   FormattedPatientData,
@@ -19,6 +20,7 @@ import {
   AppSettingsResponse,
   CreatePatientRequest,
   CreatePatientResponse,
+  AddressHierarchyEntry,
 } from './models';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
@@ -275,4 +277,29 @@ export const getGenders = async (): Promise<string[]> => {
     APP_PROPERTY_URL('mrs.genders'),
   );
   return Object.values(genders);
+};
+
+/**
+ * Get address hierarchy entries based on search string
+ * @param addressField - The address field type (e.g., 'countyDistrict', 'stateProvince', 'postalCode')
+ * @param searchString - The search term
+ * @param limit - Maximum number of results (default: 20)
+ * @returns Promise<AddressHierarchyEntry[]> - Array of address hierarchy entries with parent information
+ */
+export const getAddressHierarchyEntries = async (
+  addressField: string,
+  searchString: string,
+  limit: number = 20,
+): Promise<AddressHierarchyEntry[]> => {
+  if (!searchString || searchString.length < 2) {
+    return [];
+  }
+
+  try {
+    return await get<AddressHierarchyEntry[]>(
+      ADDRESS_HIERARCHY_URL(addressField, searchString, limit),
+    );
+  } catch {
+    return [];
+  }
 };

@@ -51,3 +51,10 @@ export const PRIMARY_IDENTIFIER_TYPE_PROPERTY = 'bahmni.primaryIdentifierType';
 
 export const CREATE_PATIENT_URL =
   OPENMRS_REST_V1 + '/bahmnicore/patientprofile';
+
+export const ADDRESS_HIERARCHY_URL = (
+  addressField: string,
+  searchString: string,
+  limit: number = 20,
+) =>
+  `/openmrs/module/addresshierarchy/ajax/getPossibleAddressHierarchyEntriesWithParents.form?addressField=${addressField}&limit=${limit}&searchString=${encodeURIComponent(searchString)}`;
