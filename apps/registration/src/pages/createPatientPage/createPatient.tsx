@@ -17,6 +17,7 @@ import {
   createPatient,
   notificationService,
   getIdentifierData,
+  getGenders,
   type CreatePatientRequest,
   type PatientAttribute,
   PatientAddress,
@@ -27,8 +28,6 @@ import { useNavigate } from 'react-router-dom';
 import { Header } from '../../components/Header';
 import { AgeUtils, formatToDisplay, formatToISO } from '../../utils/ageUtils';
 import styles from './styles/index.module.scss';
-
-const GENDERS = ['Male', 'Female', 'Other'];
 
 const NewPatientRegistration = () => {
   const navigate = useNavigate();
@@ -44,6 +43,22 @@ const NewPatientRegistration = () => {
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
+
+  const { data: gendersFromApi = [] } = useQuery({
+    queryKey: ['genders'],
+    queryFn: getGenders,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  // Map genders to their translated values
+  const genders = useMemo(() => {
+    return gendersFromApi.map((gender) => {
+      // Map API gender values to translation keys
+      const genderKey = `CREATE_PATIENT_GENDER_${gender.toUpperCase()}`;
+      return t(genderKey);
+    });
+  }, [gendersFromApi, t]);
 
   const identifierPrefixes = useMemo(
     () => identifierData?.prefixes ?? [],
@@ -113,6 +128,13 @@ const NewPatientRegistration = () => {
     lastName: '',
   });
 
+  const [validationErrors, setValidationErrors] = useState({
+    firstName: '',
+    lastName: '',
+    gender: '',
+    dateOfBirth: '',
+  });
+
   // Set the first prefix as default when data is loaded
   useEffect(() => {
     if (identifierPrefixes.length > 0 && !formData.patientIdFormat) {
@@ -136,11 +158,11 @@ const NewPatientRegistration = () => {
     if (nameRegex.test(value)) {
       handleInputChange(field, value);
       setNameErrors((prev) => ({ ...prev, [field]: '' }));
+      setValidationErrors((prev) => ({ ...prev, [field]: '' }));
     } else {
       setNameErrors((prev) => ({
         ...prev,
-        [field]:
-          'Name should only contain alphabets.Numbers and special characters are not allowed.',
+        [field]: 'Numbers and special characters are not allowed.',
       }));
     }
   };
@@ -168,6 +190,7 @@ const NewPatientRegistration = () => {
       ageDays: Number(calculatedAge.days) || 0,
     }));
     setDobEstimated(false);
+    setValidationErrors((prev) => ({ ...prev, dateOfBirth: '' }));
   }, []);
 
   // Handle TextInput changes → back-calculate DOB
@@ -197,31 +220,38 @@ const NewPatientRegistration = () => {
 
   // Handle save patient
   const handleSave = () => {
-    // Basic validation
-    if (!formData.firstName || !formData.lastName) {
-      notificationService.showError(
-        'Validation Error',
-        'First name and last name are required',
-        5000,
-      );
-      return;
+    const errors = {
+      firstName: '',
+      lastName: '',
+      gender: '',
+      dateOfBirth: '',
+    };
+
+    let hasErrors = false;
+
+    if (!formData.firstName || formData.firstName.trim() === '') {
+      errors.firstName = 'First name is required';
+      hasErrors = true;
+    }
+
+    if (!formData.lastName || formData.lastName.trim() === '') {
+      errors.lastName = 'Last name is required';
+      hasErrors = true;
     }
 
     if (!formData.gender) {
-      notificationService.showError(
-        'Validation Error',
-        'Gender is required',
-        5000,
-      );
-      return;
+      errors.gender = 'Gender is required';
+      hasErrors = true;
     }
 
     if (!formData.dateOfBirth) {
-      notificationService.showError(
-        'Validation Error',
-        'Date of birth is required',
-        5000,
-      );
+      errors.dateOfBirth = 'Date of birth is required';
+      hasErrors = true;
+    }
+
+    setValidationErrors(errors);
+
+    if (hasErrors) {
       return;
     }
 
@@ -300,7 +330,7 @@ const NewPatientRegistration = () => {
           ],
           addresses,
           birthdate: formData.dateOfBirth,
-          gender: formData.gender.charAt(0).toUpperCase(), // M, F, O
+          gender: formData.gender.charAt(0).toUpperCase(),
           birthtime: null,
           attributes,
           deathDate: null,
@@ -416,21 +446,25 @@ const NewPatientRegistration = () => {
                   </Grid>
 
                   <Grid className={styles.nameFields}>
-                    <Column sm={4} md={2} lg={3}>
+                    <Column sm={4} md={2} lg={4}>
                       <TextInput
                         id="first-name"
                         labelText={t('CREATE_PATIENT_FIRST_NAME')}
                         placeholder={t('CREATE_PATIENT_FIRST_NAME_PLACEHOLDER')}
                         value={formData.firstName}
                         required
-                        invalid={!!nameErrors.firstName}
-                        invalidText={nameErrors.firstName}
+                        invalid={
+                          !!nameErrors.firstName || !!validationErrors.firstName
+                        }
+                        invalidText={
+                          nameErrors.firstName || validationErrors.firstName
+                        }
                         onChange={(e) =>
                           handleNameChange('firstName', e.target.value)
                         }
                       />
                     </Column>
-                    <Column sm={4} md={2} lg={3}>
+                    <Column sm={4} md={2} lg={4}>
                       <TextInput
                         id="middle-name"
                         labelText={t('CREATE_PATIENT_MIDDLE_NAME')}
@@ -445,15 +479,19 @@ const NewPatientRegistration = () => {
                         }
                       />
                     </Column>
-                    <Column sm={4} md={2} lg={3}>
+                    <Column sm={4} md={2} lg={4}>
                       <TextInput
                         id="last-name"
                         labelText={t('CREATE_PATIENT_LAST_NAME')}
                         placeholder={t('CREATE_PATIENT_LAST_NAME_PLACEHOLDER')}
                         required
                         value={formData.lastName}
-                        invalid={!!nameErrors.lastName}
-                        invalidText={nameErrors.lastName}
+                        invalid={
+                          !!nameErrors.lastName || !!validationErrors.lastName
+                        }
+                        invalidText={
+                          nameErrors.lastName || validationErrors.lastName
+                        }
                         onChange={(e) =>
                           handleNameChange('lastName', e.target.value)
                         }
@@ -462,69 +500,94 @@ const NewPatientRegistration = () => {
                   </Grid>
 
                   <Grid className={styles.demographicsFields}>
-                    <Column sm={2} md={2} lg={2}>
+                    <Column sm={4} md={3} lg={5}>
                       <Dropdown
                         id="gender"
                         titleText={t('CREATE_PATIENT_GENDER')}
                         label={t('CREATE_PATIENT_SELECT')}
-                        items={GENDERS}
+                        items={genders}
                         aria-required="true"
                         selectedItem={formData.gender}
-                        onChange={({ selectedItem }) =>
-                          handleInputChange('gender', selectedItem ?? '')
-                        }
+                        invalid={!!validationErrors.gender}
+                        invalidText={validationErrors.gender}
+                        onChange={({ selectedItem }) => {
+                          handleInputChange('gender', selectedItem ?? '');
+                          // Clear validation error when user selects gender
+                          setValidationErrors((prev) => ({
+                            ...prev,
+                            gender: '',
+                          }));
+                        }}
                       />
                     </Column>
 
-                    <div className={styles.ageInputs}>
-                      <TextInput
-                        placeholder={t('CREATE_PATIENT_AGE_YEARS_PLACEHOLDER')}
-                        id="age-years"
-                        labelText={t('CREATE_PATIENT_AGE')}
-                        required
-                        size="md"
-                        type="number"
-                        min={0}
-                        max={150}
-                        value={formData.ageYears}
-                        onChange={(e) =>
-                          handleAgeChange('ageYears', Number(e.target.value))
-                        }
-                      />
-                    </div>
-                    <div className={styles.ageInputs}>
-                      <TextInput
-                        placeholder={t('CREATE_PATIENT_AGE_MONTHS_PLACEHOLDER')}
-                        labelText={t('CREATE_PATIENT_AGE_MONTHS')}
-                        id="age-months"
-                        type="number"
-                        required
-                        min={0}
-                        max={11}
-                        value={formData.ageMonths}
-                        onChange={(e) =>
-                          handleAgeChange('ageMonths', Number(e.target.value))
-                        }
-                      />
-                    </div>
-                    <div className={styles.ageInputs}>
-                      <TextInput
-                        placeholder={t('CREATE_PATIENT_AGE_DAYS_PLACEHOLDER')}
-                        id="age-days"
-                        labelText={t('CREATE_PATIENT_AGE_DAYS')}
-                        type="number"
-                        min={0}
-                        max={31}
-                        value={formData.ageDays}
-                        onChange={(e) =>
-                          handleAgeChange('ageDays', Number(e.target.value))
-                        }
-                      />
-                    </div>
+                    <Column sm={2} md={5} lg={7} className={styles.ageColumn}>
+                      <div className={styles.ageFieldsWrapper}>
+                        <div className={styles.ageInputs}>
+                          <TextInput
+                            placeholder={t(
+                              'CREATE_PATIENT_AGE_YEARS_PLACEHOLDER',
+                            )}
+                            id="age-years"
+                            labelText={t(
+                              'CREATE_PATIENT_AGE_YEARS_PLACEHOLDER',
+                            )}
+                            required
+                            size="md"
+                            type="number"
+                            min={0}
+                            max={150}
+                            value={formData.ageYears}
+                            onChange={(e) =>
+                              handleAgeChange(
+                                'ageYears',
+                                Number(e.target.value),
+                              )
+                            }
+                          />
+                        </div>
+                        <div className={styles.ageInputs}>
+                          <TextInput
+                            placeholder={t(
+                              'CREATE_PATIENT_AGE_MONTHS_PLACEHOLDER',
+                            )}
+                            labelText={t('CREATE_PATIENT_AGE_MONTHS')}
+                            id="age-months"
+                            type="number"
+                            required
+                            min={0}
+                            max={11}
+                            value={formData.ageMonths}
+                            onChange={(e) =>
+                              handleAgeChange(
+                                'ageMonths',
+                                Number(e.target.value),
+                              )
+                            }
+                          />
+                        </div>
+                        <div className={styles.ageInputs}>
+                          <TextInput
+                            placeholder={t(
+                              'CREATE_PATIENT_AGE_DAYS_PLACEHOLDER',
+                            )}
+                            id="age-days"
+                            labelText={t('CREATE_PATIENT_AGE_DAYS')}
+                            type="number"
+                            min={0}
+                            max={31}
+                            value={formData.ageDays}
+                            onChange={(e) =>
+                              handleAgeChange('ageDays', Number(e.target.value))
+                            }
+                          />
+                        </div>
+                      </div>
+                    </Column>
                   </Grid>
 
-                  <Grid>
-                    <Column sm={2} md={2} lg={5}>
+                  <Grid className={styles.birthInfoFields}>
+                    <Column sm={4} md={3} lg={5}>
                       <DatePicker
                         dateFormat="d/m/Y"
                         datePickerType="single"
@@ -541,22 +604,24 @@ const NewPatientRegistration = () => {
                             'CREATE_PATIENT_DATE_OF_BIRTH_PLACEHOLDER',
                           )}
                           labelText={t('CREATE_PATIENT_DATE_OF_BIRTH')}
+                          invalid={!!validationErrors.dateOfBirth}
+                          invalidText={validationErrors.dateOfBirth}
                         />
                       </DatePicker>
                     </Column>
-                    <Column sm={1} md={3} lg={4}>
+                    <Column sm={2} md={2} lg={3}>
                       <CheckboxGroup legendText={t('CREATE_PATIENT_ACCURACY')}>
                         <Checkbox
-                          labelText={t('CREATE_PATIENT_ACCURACY')}
+                          labelText={t('CREATE_PATIENT_ESTIMATED')}
                           id="accuracy"
                           checked={dobEstimated}
                           onChange={() => setDobEstimated(!dobEstimated)}
                         />
                       </CheckboxGroup>
                     </Column>
-                    <Column sm={1} md={2} lg={3}>
+                    <Column sm={2} md={3} lg={4}>
                       <TextInput
-                        id="birth time"
+                        id="birth-time"
                         type="time"
                         required
                         value={formData.birthTime}

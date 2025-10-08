@@ -71,11 +71,56 @@
       margin-bottom: 16px;
     }
 
-    .nameFields,.demographicsFields,.birthInfo{
+    .ageColumn {
+      display: flex;
+      align-items: flex-end;
+    }
+
+    .ageFieldsWrapper {
+      display: flex;
+      flex-direction: row;
+      gap: 16px;
+      width: 100%;
+      align-items: flex-end;
+
+      .ageInputs {
+        flex: 1;
+      }
+    }
+
+    .nameFields,.demographicsFields,.birthInfo,.birthInfoFields{
       margin-top: 16px;
     }
-  }
 
+   .nameFields :global(.cds--form-item),
+   .demographicsFields :global(.cds--form-item),
+   .birthInfoFields :global(.cds--form-item) {
+   margin-bottom: 2rem; // keeps spacing consistent for error text
+   position: relative;
+   }
+
+    // Responsive Date Picker styling
+    :global(.cds--date-picker) {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+
+    :global(.cds--date-picker-container) {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+
+    :global(.cds--date-picker-input__wrapper) {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+
+    :global(.cds--date-picker__input) {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+  }
+   
   .formActions {
     width: calc(100% - 176px);
     max-width: 1240px;
@@ -91,4 +136,3 @@
       gap: 16px;
     }
   }
-
