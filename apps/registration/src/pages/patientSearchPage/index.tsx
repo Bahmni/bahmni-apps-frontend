@@ -38,9 +38,6 @@ const PatientSearchPage: React.FC = () => {
   const [isAdvancedSearch, setIsAdvancedSearch] = useState<boolean>(false);
   const [isNavigating, setIsNavigating] = useState<boolean>(false);
   const [searchFields, setSearchFields] = useState<PatientSearchField[]>([]);
-  const [searchedField, setSearchedField] = useState<
-    PatientSearchField | undefined
-  >();
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -80,14 +77,12 @@ const PatientSearchPage: React.FC = () => {
     isLoading: boolean,
     isError: boolean,
     isAdvancedSearch: boolean,
-    searchedField?: PatientSearchField,
   ) => {
     setPatientSearchData(data ?? undefined);
     setSearchTerm(searchTerm);
     setIsLoading(isLoading);
     setIsError(isError);
     setIsAdvancedSearch(isAdvancedSearch);
-    setSearchedField(searchedField);
   };
 
   const headers = [
@@ -211,7 +206,6 @@ const PatientSearchPage: React.FC = () => {
                 rows={formatPatientSearchResult(
                   patientSearchData,
                   searchFields,
-                  searchedField,
                 )}
                 renderCell={renderCell}
                 emptyStateMessage={

@@ -39,54 +39,38 @@ const parsePatientAttributes = (patient: PatientSearchResult) => {
 export const formatPatientSearchResult = (
   patientSearchResultBundle: PatientSearchResultBundle | undefined,
   patientSearchFields: PatientSearchField[] = [],
-  searchedField?: PatientSearchField,
 ): PatientSearchViewModel<PatientSearchResult>[] => {
   return patientSearchResultBundle
-    ? patientSearchResultBundle
-        .pageOfResults!.filter((patient) => {
-          if (!searchedField) return true;
+    ? patientSearchResultBundle.pageOfResults!.map((patient) => {
+        const { customAttributes, addressAttributes, programAttributes } =
+          parsePatientAttributes(patient);
 
-          const { customAttributes, addressAttributes, programAttributes } =
-            parsePatientAttributes(patient);
+        const dynamicFields: {
+          [key: string]: object;
+        } = {};
 
-          return searchedField.fields.some((fieldName) => {
-            const value =
-              customAttributes[fieldName] ??
-              addressAttributes[fieldName] ??
-              programAttributes[fieldName];
-            return value !== undefined && value !== null && value !== '';
+        patientSearchFields.forEach((searchField) => {
+          searchField.fields.forEach((fieldName) => {
+            if (customAttributes[fieldName] !== undefined) {
+              dynamicFields[fieldName] = customAttributes[fieldName];
+            } else if (addressAttributes[fieldName] !== undefined) {
+              dynamicFields[fieldName] = addressAttributes[fieldName];
+            } else if (programAttributes[fieldName] !== undefined) {
+              dynamicFields[fieldName] = programAttributes[fieldName];
+            }
           });
-        })
-        .map((patient) => {
-          const { customAttributes, addressAttributes, programAttributes } =
-            parsePatientAttributes(patient);
+        });
 
-          const dynamicFields: {
-            [key: string]: object;
-          } = {};
-
-          patientSearchFields.forEach((searchField) => {
-            searchField.fields.forEach((fieldName) => {
-              if (customAttributes[fieldName] !== undefined) {
-                dynamicFields[fieldName] = customAttributes[fieldName];
-              } else if (addressAttributes[fieldName] !== undefined) {
-                dynamicFields[fieldName] = addressAttributes[fieldName];
-              } else if (programAttributes[fieldName] !== undefined) {
-                dynamicFields[fieldName] = programAttributes[fieldName];
-              }
-            });
-          });
-
-          return {
-            ...patient,
-            id: patient.identifier,
-            name: [
-              patient.givenName,
-              patient.middleName,
-              patient.familyName,
-            ].join(' '),
-            ...dynamicFields,
-          };
-        })
+        return {
+          ...patient,
+          id: patient.identifier,
+          name: [
+            patient.givenName,
+            patient.middleName,
+            patient.familyName,
+          ].join(' '),
+          ...dynamicFields,
+        };
+      })
     : [];
 };

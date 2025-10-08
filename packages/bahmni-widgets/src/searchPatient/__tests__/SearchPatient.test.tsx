@@ -207,7 +207,6 @@ describe('SearchPatient', () => {
         expect.any(Boolean),
         expect.any(Boolean),
         false,
-        undefined,
       );
     });
   });
@@ -288,7 +287,6 @@ describe('SearchPatient', () => {
         expect.any(Boolean),
         expect.any(Boolean),
         true,
-        expect.any(Object),
       );
     });
   });
@@ -333,7 +331,6 @@ describe('SearchPatient', () => {
         expect.any(Boolean),
         expect.any(Boolean),
         true,
-        expect.any(Object),
       );
     });
   });
@@ -378,7 +375,6 @@ describe('SearchPatient', () => {
         true,
         false,
         false,
-        undefined,
       );
       expect(mockOnSearch).toHaveBeenCalledTimes(2);
       expect(mockOnSearch).toHaveBeenCalledWith(
@@ -387,7 +383,6 @@ describe('SearchPatient', () => {
         false,
         false,
         false,
-        undefined,
       );
     });
   });
@@ -541,7 +536,6 @@ describe('SearchPatient', () => {
         false,
         true,
         false,
-        undefined,
       );
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
@@ -590,7 +584,6 @@ describe('SearchPatient', () => {
         false,
         true,
         false,
-        undefined,
       );
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
@@ -612,7 +605,6 @@ describe('SearchPatient', () => {
         false,
         true,
         false,
-        undefined,
       ),
     );
   });
@@ -652,7 +644,6 @@ describe('SearchPatient', () => {
         false,
         true,
         true,
-        undefined,
       );
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
@@ -674,7 +665,6 @@ describe('SearchPatient', () => {
         false,
         true,
         true,
-        undefined,
       ),
     );
   });

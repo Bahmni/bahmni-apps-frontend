@@ -26,7 +26,6 @@ interface SearchPatientProps {
     isLoading: boolean,
     isError: boolean,
     isAdvancedSearch: boolean,
-    searchedField?: PatientSearchField,
   ) => void;
 }
 
@@ -209,21 +208,8 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
   }, [configData, configIsError, configError, addNotification, t]);
 
   useEffect(() => {
-    const selectedField = isAdvancedSearch
-      ? searchFields.find(
-          (field) => t(field.translationKey) === selectedDropdownItem,
-        )
-      : undefined;
-
     if (isError && searchTerm) {
-      onSearch(
-        data,
-        searchTerm,
-        isLoading,
-        isError,
-        isAdvancedSearch,
-        selectedField,
-      );
+      onSearch(data, searchTerm, isLoading, isError, isAdvancedSearch);
       addNotification({
         title: t('ERROR_DEFAULT_TITLE'),
         message: error instanceof Error ? error.message : String(error),
@@ -231,14 +217,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       });
     }
     if (searchTerm)
-      onSearch(
-        data,
-        searchTerm,
-        isLoading,
-        isError,
-        isAdvancedSearch,
-        selectedField,
-      );
+      onSearch(data, searchTerm, isLoading, isError, isAdvancedSearch);
   }, [
     searchTerm,
     isLoading,
