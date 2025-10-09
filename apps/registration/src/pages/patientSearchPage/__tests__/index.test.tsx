@@ -144,7 +144,7 @@ describe('PatientSearchPage', () => {
       </MemoryRouter>,
     );
     expect(screen.getByText('Home')).toBeInTheDocument();
-    expect(screen.getByText('Search patient')).toBeInTheDocument();
+    expect(screen.getByText('Search Patient')).toBeInTheDocument();
     expect(screen.getByText('Create new patient')).toBeInTheDocument();
     expect(screen.getByText('Hi, Profile name')).toBeInTheDocument();
     expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
@@ -309,11 +309,13 @@ describe('PatientSearchPage', () => {
     });
 
     render(
-      <NotificationProvider>
-        <QueryClientProvider client={queryClient}>
-          <PatientSearchPage />
-        </QueryClientProvider>
-      </NotificationProvider>,
+      <MemoryRouter>
+        <NotificationProvider>
+          <QueryClientProvider client={queryClient}>
+            <PatientSearchPage />
+          </QueryClientProvider>
+        </NotificationProvider>
+      </MemoryRouter>,
     );
 
     const phoneSearchInput = screen.getByTestId('phone-search-input');
@@ -338,11 +340,13 @@ describe('PatientSearchPage', () => {
     });
 
     render(
-      <NotificationProvider>
-        <QueryClientProvider client={queryClient}>
-          <PatientSearchPage />
-        </QueryClientProvider>
-      </NotificationProvider>,
+      <MemoryRouter>
+        <NotificationProvider>
+          <QueryClientProvider client={queryClient}>
+            <PatientSearchPage />
+          </QueryClientProvider>
+        </NotificationProvider>
+      </MemoryRouter>,
     );
 
     const searchInput = screen.getByPlaceholderText(
@@ -370,11 +374,13 @@ describe('PatientSearchPage', () => {
       });
 
       render(
-        <NotificationProvider>
-          <QueryClientProvider client={queryClient}>
-            <PatientSearchPage />
-          </QueryClientProvider>
-        </NotificationProvider>,
+        <MemoryRouter>
+          <NotificationProvider>
+            <QueryClientProvider client={queryClient}>
+              <PatientSearchPage />
+            </QueryClientProvider>
+          </NotificationProvider>
+        </MemoryRouter>,
       );
 
       const searchInput = screen.getByPlaceholderText(
@@ -429,11 +435,13 @@ describe('PatientSearchPage', () => {
       });
 
       render(
-        <NotificationProvider>
-          <QueryClientProvider client={queryClient}>
-            <PatientSearchPage />
-          </QueryClientProvider>
-        </NotificationProvider>,
+        <MemoryRouter>
+          <NotificationProvider>
+            <QueryClientProvider client={queryClient}>
+              <PatientSearchPage />
+            </QueryClientProvider>
+          </NotificationProvider>
+        </MemoryRouter>,
       );
 
       const searchInput = screen.getByPlaceholderText(
@@ -468,11 +476,13 @@ describe('PatientSearchPage', () => {
       });
 
       const { rerender } = render(
-        <NotificationProvider>
-          <QueryClientProvider client={queryClient}>
-            <PatientSearchPage />
-          </QueryClientProvider>
-        </NotificationProvider>,
+        <MemoryRouter>
+          <NotificationProvider>
+            <QueryClientProvider client={queryClient}>
+              <PatientSearchPage />
+            </QueryClientProvider>
+          </NotificationProvider>
+        </MemoryRouter>,
       );
 
       const searchInput = screen.getByPlaceholderText(
@@ -487,11 +497,13 @@ describe('PatientSearchPage', () => {
       });
 
       rerender(
-        <NotificationProvider>
-          <QueryClientProvider client={queryClient}>
-            <PatientSearchPage />
-          </QueryClientProvider>
-        </NotificationProvider>,
+        <MemoryRouter>
+          <NotificationProvider>
+            <QueryClientProvider client={queryClient}>
+              <PatientSearchPage />
+            </QueryClientProvider>
+          </NotificationProvider>
+        </MemoryRouter>,
       );
 
       expect(screen.getByText('LOADING_PATIENT_DETAILS')).toBeInTheDocument();
