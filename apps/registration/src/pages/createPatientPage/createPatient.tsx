@@ -176,6 +176,13 @@ const NewPatientRegistration = () => {
     }
   };
 
+  const handlePhoneChange = (field: string, value: string) => {
+    const numericRegex = /^[0-9]*$/;
+    if (numericRegex.test(value)) {
+      handleInputChange(field, value);
+    }
+  };
+
   const handleDateOfBirthChange = useCallback((selectedDates: Date[] = []) => {
     if (!selectedDates || selectedDates.length === 0) return;
     const selectedDate = selectedDates[0];
@@ -899,7 +906,7 @@ const NewPatientRegistration = () => {
                     placeholder={t('CREATE_PATIENT_PHONE_NUMBER_PLACEHOLDER')}
                     value={formData.phoneNumber}
                     onChange={(e) =>
-                      handleInputChange('phoneNumber', e.target.value)
+                      handlePhoneChange('phoneNumber', e.target.value)
                     }
                   />
                 </div>
@@ -910,7 +917,7 @@ const NewPatientRegistration = () => {
                     placeholder={t('CREATE_PATIENT_PHONE_NUMBER_PLACEHOLDER')}
                     value={formData.altPhoneNumber}
                     onChange={(e) =>
-                      handleInputChange('altPhoneNumber', e.target.value)
+                      handlePhoneChange('altPhoneNumber', e.target.value)
                     }
                   />
                 </div>
