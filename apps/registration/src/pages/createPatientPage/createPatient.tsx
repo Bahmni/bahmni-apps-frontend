@@ -155,12 +155,12 @@ const NewPatientRegistration = () => {
     }
   }, [identifierPrefixes, formData.patientIdFormat]);
 
-  const handleInputChange = (
-    field: string,
-    value: string | number | boolean,
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+  const handleInputChange = useCallback(
+    (field: string, value: string | number | boolean) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    },
+    [],
+  );
 
   const handleNameChange = (field: string, value: string) => {
     const nameRegex = /^[a-zA-Z\s]*$/;
@@ -256,31 +256,42 @@ const NewPatientRegistration = () => {
       handleInputChange(field, value);
       debouncedSearchAddress(field, value, addressField);
     },
-    [debouncedSearchAddress],
+    [handleInputChange, debouncedSearchAddress],
   );
 
   const handleSuggestionSelect = useCallback(
     (field: string, entry: AddressHierarchyEntry) => {
       handleInputChange(field, entry.name);
+      const parents: AddressHierarchyEntry[] = [];
       let currentParent = entry.parent;
       while (currentParent) {
-        switch (currentParent.level) {
-          case 'stateProvince':
-            handleInputChange('state', currentParent.name);
-            break;
-          case 'countyDistrict':
-            handleInputChange('district', currentParent.name);
-            break;
-          case 'postalCode':
-            handleInputChange('pincode', currentParent.name);
-            break;
-        }
+        parents.push(currentParent);
         currentParent = currentParent.parent;
       }
+
+      // Auto-populate parent fields based on the selected field and hierarchy
+      if (parents.length > 0) {
+        if (field === 'pincode') {
+          // When pincode is selected, first parent is district
+          if (parents[0]) {
+            handleInputChange('district', parents[0].name);
+          }
+          // Second parent is state
+          if (parents.length > 1 && parents[1]) {
+            handleInputChange('state', parents[1].name);
+          }
+        } else if (field === 'district') {
+          // When district is selected, first parent is state
+          if (parents[0]) {
+            handleInputChange('state', parents[0].name);
+          }
+        }
+      }
+
       setShowSuggestions((prev) => ({ ...prev, [field]: false }));
       setSuggestions((prev) => ({ ...prev, [field]: [] }));
     },
-    [],
+    [handleInputChange],
   );
 
   const handleSave = () => {
@@ -696,63 +707,61 @@ const NewPatientRegistration = () => {
               </div>
 
               <div className={styles.row}>
-                <div className={'${styles.col}'}>
-                  <TextInput
-                    id="district"
-                    labelText={t('CREATE_PATIENT_DISTRICT')}
-                    placeholder={t('CREATE_PATIENT_DISTRICT')}
-                    value={formData.district}
-                    onChange={(e) =>
-                      handleAddressInputChange(
-                        'district',
-                        e.target.value,
-                        'countyDistrict',
-                      )
-                    }
-                    onBlur={() => {
-                      setTimeout(() => {
-                        setShowSuggestions((prev) => ({
-                          ...prev,
-                          district: false,
-                        }));
-                      }, 200);
-                    }}
-                    onFocus={() => {
-                      if (suggestions.district.length > 0) {
-                        setShowSuggestions((prev) => ({
-                          ...prev,
-                          district: true,
-                        }));
+                <div className={styles.col}>
+                  <div className={styles.addressFieldWrapper}>
+                    <TextInput
+                      id="district"
+                      labelText={t('CREATE_PATIENT_DISTRICT')}
+                      placeholder={t('CREATE_PATIENT_DISTRICT')}
+                      value={formData.district}
+                      onChange={(e) =>
+                        handleAddressInputChange(
+                          'district',
+                          e.target.value,
+                          'countyDistrict',
+                        )
                       }
-                    }}
-                  />
-                  {showSuggestions.district &&
-                    suggestions.district.length > 0 && (
-                      <div
-                        className={
-                          '${styles.suggestionsList}${styles.addresssuggestion}'
+                      onBlur={() => {
+                        setTimeout(() => {
+                          setShowSuggestions((prev) => ({
+                            ...prev,
+                            district: false,
+                          }));
+                        }, 200);
+                      }}
+                      onFocus={() => {
+                        if (suggestions.district.length > 0) {
+                          setShowSuggestions((prev) => ({
+                            ...prev,
+                            district: true,
+                          }));
                         }
-                      >
-                        {suggestions.district.map((entry) => (
-                          <div
-                            key={entry.userGeneratedId}
-                            className={styles.suggestionItem}
-                            onClick={() =>
-                              handleSuggestionSelect('district', entry)
-                            }
-                          >
-                            <div className={styles.suggestionName}>
-                              {entry.name}
-                            </div>
-                            {entry.parent && (
-                              <div className={styles.suggestionParent}>
-                                {entry.parent.name}
+                      }}
+                    />
+                    {showSuggestions.district &&
+                      suggestions.district.length > 0 && (
+                        <div className={styles.suggestionsList}>
+                          {suggestions.district.map((entry) => (
+                            <div
+                              key={entry.userGeneratedId ?? entry.uuid}
+                              className={styles.suggestionItem}
+                              onClick={() =>
+                                handleSuggestionSelect('district', entry)
+                              }
+                            >
+                              <div className={styles.suggestionName}>
+                                {entry.name}
                               </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                              {entry.parent && (
+                                <div className={styles.suggestionParent}>
+                                  {entry.parent.name}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                  </div>
                 </div>
                 <div className={styles.col}>
                   <TextInput
@@ -763,96 +772,45 @@ const NewPatientRegistration = () => {
                     onChange={(e) => handleInputChange('city', e.target.value)}
                   />
                 </div>
-                <div className={'${styles.col}'}>
-                  <TextInput
-                    id="state"
-                    labelText={t('CREATE_PATIENT_STATE')}
-                    placeholder={t('CREATE_PATIENT_DISTRICT_PLACEHOLDER')}
-                    value={formData.state}
-                    onChange={(e) =>
-                      handleAddressInputChange(
-                        'state',
-                        e.target.value,
-                        'stateProvince',
-                      )
-                    }
-                    onBlur={() => {
-                      setTimeout(() => {
-                        setShowSuggestions((prev) => ({
-                          ...prev,
-                          state: false,
-                        }));
-                      }, 200);
-                    }}
-                    onFocus={() => {
-                      if (suggestions.state.length > 0) {
-                        setShowSuggestions((prev) => ({
-                          ...prev,
-                          state: true,
-                        }));
+                <div className={styles.col}>
+                  <div className={styles.addressFieldWrapper}>
+                    <TextInput
+                      id="state"
+                      labelText={t('CREATE_PATIENT_STATE')}
+                      placeholder={t('CREATE_PATIENT_STATE')}
+                      value={formData.state}
+                      onChange={(e) =>
+                        handleAddressInputChange(
+                          'state',
+                          e.target.value,
+                          'stateProvince',
+                        )
                       }
-                    }}
-                  />
-                  {showSuggestions.state && suggestions.state.length > 0 && (
-                    <div className="${styles.suggestionsList}${styles.addresssuggestion}">
-                      {suggestions.state.map((entry) => (
-                        <div
-                          key={entry.userGeneratedId}
-                          className={styles.suggestionItem}
-                          onClick={() => handleSuggestionSelect('state', entry)}
-                        >
-                          <div className={styles.suggestionName}>
-                            {entry.name}
-                          </div>
-                          {entry.parent && (
-                            <div className={styles.suggestionParent}>
-                              {entry.parent.name}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <div className={'${styles.col}'}>
-                  <TextInput
-                    id="pincode"
-                    labelText={t('CREATE_PATIENT_PINCODE')}
-                    placeholder={t('CREATE_PATIENT_PINCODE')}
-                    value={formData.pincode}
-                    onChange={(e) =>
-                      handleAddressInputChange(
-                        'pincode',
-                        e.target.value,
-                        'postalCode',
-                      )
-                    }
-                    onBlur={() => {
-                      setTimeout(() => {
-                        setShowSuggestions((prev) => ({
-                          ...prev,
-                          pincode: false,
-                        }));
-                      }, 200);
-                    }}
-                    onFocus={() => {
-                      if (suggestions.pincode.length > 0) {
-                        setShowSuggestions((prev) => ({
-                          ...prev,
-                          pincode: true,
-                        }));
-                      }
-                    }}
-                  />
-                  {showSuggestions.pincode &&
-                    suggestions.pincode.length > 0 && (
-                      <div className="${styles.addresssuggestion} ${styles.suggestionsList} ">
-                        {suggestions.pincode.map((entry) => (
+                      onBlur={() => {
+                        setTimeout(() => {
+                          setShowSuggestions((prev) => ({
+                            ...prev,
+                            state: false,
+                          }));
+                        }, 200);
+                      }}
+                      onFocus={() => {
+                        if (suggestions.state.length > 0) {
+                          setShowSuggestions((prev) => ({
+                            ...prev,
+                            state: true,
+                          }));
+                        }
+                      }}
+                    />
+                    {showSuggestions.state && suggestions.state.length > 0 && (
+                      <div className={styles.suggestionsList}>
+                        {suggestions.state.map((entry) => (
                           <div
-                            key={entry.userGeneratedId}
+                            key={entry.userGeneratedId ?? entry.uuid}
                             className={styles.suggestionItem}
                             onClick={() =>
-                              handleSuggestionSelect('pincode', entry)
+                              handleSuggestionSelect('state', entry)
                             }
                           >
                             <div className={styles.suggestionName}>
@@ -867,6 +825,63 @@ const NewPatientRegistration = () => {
                         ))}
                       </div>
                     )}
+                  </div>
+                </div>
+                <div className={styles.col}>
+                  <div className={styles.addressFieldWrapper}>
+                    <TextInput
+                      id="pincode"
+                      labelText={t('CREATE_PATIENT_PINCODE')}
+                      placeholder={t('CREATE_PATIENT_PINCODE')}
+                      value={formData.pincode}
+                      onChange={(e) =>
+                        handleAddressInputChange(
+                          'pincode',
+                          e.target.value,
+                          'postalCode',
+                        )
+                      }
+                      onBlur={() => {
+                        setTimeout(() => {
+                          setShowSuggestions((prev) => ({
+                            ...prev,
+                            pincode: false,
+                          }));
+                        }, 200);
+                      }}
+                      onFocus={() => {
+                        if (suggestions.pincode.length > 0) {
+                          setShowSuggestions((prev) => ({
+                            ...prev,
+                            pincode: true,
+                          }));
+                        }
+                      }}
+                    />
+                    {showSuggestions.pincode &&
+                      suggestions.pincode.length > 0 && (
+                        <div className={styles.suggestionsList}>
+                          {suggestions.pincode.map((entry) => (
+                            <div
+                              key={entry.userGeneratedId ?? entry.uuid}
+                              className={styles.suggestionItem}
+                              onClick={() =>
+                                handleSuggestionSelect('pincode', entry)
+                              }
+                            >
+                              <div className={styles.suggestionName}>
+                                {entry.name}
+                              </div>
+                              {entry.parent && (
+                                <div className={styles.suggestionParent}>
+                                  {entry.parent.name}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                  </div>
                 </div>
               </div>
             </div>
