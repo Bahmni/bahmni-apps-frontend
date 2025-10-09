@@ -7,7 +7,7 @@ import {
 } from '@bahmni-frontend/bahmni-services';
 import { PINNED_FORMS_ERROR_MESSAGES } from '../constants/errors';
 import { PINNED_FORMS_DELIMITER } from '../constants/forms';
-import { UserProperties, UserData } from '../models/observationForms';
+import { UserData } from '../models/observationForms';
 
 /**
  * Load pinned observation form names from user preferences
@@ -63,20 +63,12 @@ export const savePinnedForms = async (formNames: string[]): Promise<void> => {
       throw new Error(PINNED_FORMS_ERROR_MESSAGES.USER_NOT_FOUND);
     }
 
-    const userData = await get<UserData>(USER_PINNED_PREFERENCE_URL(user.uuid));
-
-    // Validate userData structure
-    if (!userData || typeof userData !== 'object') {
-      throw new Error('Invalid user data structure');
-    }
-
-    const updatedUserProperties: UserProperties = {
-      ...userData.userProperties,
-      pinnedObsTemplates: validFormNames.join(PINNED_FORMS_DELIMITER),
-    };
-
+    // Directly POST the pinned forms without fetching existing user data
+    // The backend will merge with existing userProperties
     await post(USER_PINNED_PREFERENCE_URL(user.uuid), {
-      userProperties: updatedUserProperties,
+      userProperties: {
+        pinnedObsTemplates: validFormNames.join(PINNED_FORMS_DELIMITER),
+      },
     });
   } catch (error) {
     const formattedError = getFormattedError(error);
