@@ -146,6 +146,21 @@ const NewPatientRegistration = () => {
     pincode: false,
   });
 
+  // Track if address fields were selected from dropdown
+  const [addressSelectedFromDropdown, setAddressSelectedFromDropdown] =
+    useState({
+      district: false,
+      state: false,
+      pincode: false,
+    });
+
+  // Address validation errors
+  const [addressErrors, setAddressErrors] = useState({
+    district: '',
+    state: '',
+    pincode: '',
+  });
+
   useEffect(() => {
     if (identifierPrefixes.length > 0 && !formData.patientIdFormat) {
       setFormData((prev) => ({
@@ -171,7 +186,7 @@ const NewPatientRegistration = () => {
     } else {
       setNameErrors((prev) => ({
         ...prev,
-        [field]: 'Numbers and special characters are not allowed.',
+        [field]: t('CREATE_PATIENT_VALIDATION_NAME_INVALID'),
       }));
     }
   };
@@ -262,6 +277,21 @@ const NewPatientRegistration = () => {
     (field: string, value: string, addressField: string) => {
       handleInputChange(field, value);
       debouncedSearchAddress(field, value, addressField);
+
+      // Mark field as not selected from dropdown when manually typed
+      if (field === 'district' || field === 'state' || field === 'pincode') {
+        setAddressSelectedFromDropdown((prev) => ({
+          ...prev,
+          [field]: false,
+        }));
+        // Clear error when field is empty
+        if (!value) {
+          setAddressErrors((prev) => ({
+            ...prev,
+            [field]: '',
+          }));
+        }
+      }
     },
     [handleInputChange, debouncedSearchAddress],
   );
@@ -276,21 +306,57 @@ const NewPatientRegistration = () => {
         currentParent = currentParent.parent;
       }
 
+      // Mark field as selected from dropdown
+      if (field === 'district' || field === 'state' || field === 'pincode') {
+        setAddressSelectedFromDropdown((prev) => ({
+          ...prev,
+          [field]: true,
+        }));
+        setAddressErrors((prev) => ({
+          ...prev,
+          [field]: '',
+        }));
+      }
+
       // Auto-populate parent fields based on the selected field and hierarchy
       if (parents.length > 0) {
         if (field === 'pincode') {
           // When pincode is selected, first parent is district
           if (parents[0]) {
             handleInputChange('district', parents[0].name);
+            setAddressSelectedFromDropdown((prev) => ({
+              ...prev,
+              district: true,
+            }));
+            setAddressErrors((prev) => ({
+              ...prev,
+              district: '',
+            }));
           }
           // Second parent is state
           if (parents.length > 1 && parents[1]) {
             handleInputChange('state', parents[1].name);
+            setAddressSelectedFromDropdown((prev) => ({
+              ...prev,
+              state: true,
+            }));
+            setAddressErrors((prev) => ({
+              ...prev,
+              state: '',
+            }));
           }
         } else if (field === 'district') {
           // When district is selected, first parent is state
           if (parents[0]) {
             handleInputChange('state', parents[0].name);
+            setAddressSelectedFromDropdown((prev) => ({
+              ...prev,
+              state: true,
+            }));
+            setAddressErrors((prev) => ({
+              ...prev,
+              state: '',
+            }));
           }
         }
       }
@@ -303,26 +369,44 @@ const NewPatientRegistration = () => {
 
   const handleSave = () => {
     const errors = { firstName: '', lastName: '', gender: '', dateOfBirth: '' };
+    const addrErrors = { district: '', state: '', pincode: '' };
     let hasErrors = false;
 
     if (!formData.firstName.trim()) {
-      errors.firstName = 'First name is required';
+      errors.firstName = t('CREATE_PATIENT_VALIDATION_FIRST_NAME_REQUIRED');
       hasErrors = true;
     }
     if (!formData.lastName.trim()) {
-      errors.lastName = 'Last name is required';
+      errors.lastName = t('CREATE_PATIENT_VALIDATION_LAST_NAME_REQUIRED');
       hasErrors = true;
     }
     if (!formData.gender) {
-      errors.gender = 'Gender is required';
+      errors.gender = t('CREATE_PATIENT_VALIDATION_GENDER_REQUIRED');
       hasErrors = true;
     }
     if (!formData.dateOfBirth) {
-      errors.dateOfBirth = 'Date of birth is required';
+      errors.dateOfBirth = t(
+        'CREATE_PATIENT_VALIDATION_DATE_OF_BIRTH_REQUIRED',
+      );
+      hasErrors = true;
+    }
+
+    // Validate address fields - if they have a value, it must be from dropdown
+    if (formData.district && !addressSelectedFromDropdown.district) {
+      addrErrors.district = t('CREATE_PATIENT_VALIDATION_SELECT_FROM_DROPDOWN');
+      hasErrors = true;
+    }
+    if (formData.state && !addressSelectedFromDropdown.state) {
+      addrErrors.state = t('CREATE_PATIENT_VALIDATION_SELECT_FROM_DROPDOWN');
+      hasErrors = true;
+    }
+    if (formData.pincode && !addressSelectedFromDropdown.pincode) {
+      addrErrors.pincode = t('CREATE_PATIENT_VALIDATION_SELECT_FROM_DROPDOWN');
       hasErrors = true;
     }
 
     setValidationErrors(errors);
+    setAddressErrors(addrErrors);
     if (hasErrors) return;
 
     if (!primaryIdentifierType) {
@@ -721,6 +805,8 @@ const NewPatientRegistration = () => {
                       labelText={t('CREATE_PATIENT_DISTRICT')}
                       placeholder={t('CREATE_PATIENT_DISTRICT')}
                       value={formData.district}
+                      invalid={!!addressErrors.district}
+                      invalidText={addressErrors.district}
                       onChange={(e) =>
                         handleAddressInputChange(
                           'district',
@@ -786,6 +872,8 @@ const NewPatientRegistration = () => {
                       labelText={t('CREATE_PATIENT_STATE')}
                       placeholder={t('CREATE_PATIENT_STATE')}
                       value={formData.state}
+                      invalid={!!addressErrors.state}
+                      invalidText={addressErrors.state}
                       onChange={(e) =>
                         handleAddressInputChange(
                           'state',
@@ -841,6 +929,8 @@ const NewPatientRegistration = () => {
                       labelText={t('CREATE_PATIENT_PINCODE')}
                       placeholder={t('CREATE_PATIENT_PINCODE')}
                       value={formData.pincode}
+                      invalid={!!addressErrors.pincode}
+                      invalidText={addressErrors.pincode}
                       onChange={(e) =>
                         handleAddressInputChange(
                           'pincode',
