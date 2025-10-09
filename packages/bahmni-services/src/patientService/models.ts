@@ -133,8 +133,9 @@ export interface CreatePatientResponse {
 
 export interface AddressHierarchyEntry {
   name: string;
-  userGeneratedId: string;
-  level: string;
+  uuid: string;
+  userGeneratedId: string | null;
+  level?: string;
   parent?: AddressHierarchyEntry;
 }
 

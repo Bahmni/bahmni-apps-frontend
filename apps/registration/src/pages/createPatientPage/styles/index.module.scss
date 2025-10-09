@@ -178,6 +178,11 @@
 }
 
 // Address hierarchy suggestions styles
+.addressFieldWrapper {
+  position: relative;
+  width: 100%;
+}
+
 .suggestionsList {
   position: absolute;
   top: 100%;
@@ -188,6 +193,9 @@
   overflow-y: auto;
   z-index: 1000;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+  border-top: none;
+  margin-top: -1px;
 }
 
 .suggestionItem {
@@ -203,12 +211,14 @@
     border-bottom: none;
   }
 }
-.suggestionParent {
+
+.suggestionName {
   font-size: 0.875rem;
-  color: #525252;
-  margin-top: 2px;
+  font-weight: 500;
 }
 
-.addresssuggestion{
-  position:relative;
+.suggestionParent {
+  font-size: 0.75rem;
+  color: #525252;
+  margin-top: 2px;
 }
