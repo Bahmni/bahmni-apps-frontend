@@ -256,7 +256,7 @@
   "REGISTRATION_PATIENT_SEARCH_BREADCRUMB_HOME": "Home",
   "REGISTRATION_PATIENT_SEARCH_BREADCRUMB_CURRENT": "Search Patient",
   "REGISTRATION_PATIENT_SEARCH_BUTTON_TITLE": "Search",
-  "REGISTRATION_PATIENT_SEARCH_CUSTOM_ATTRIBUTE_EMPTY_MESSAGE": "No matching {{searchTerm}}. Try adjusting your search parameters.",
+  "REGISTRATION_PATIENT_SEARCH_CUSTOM_ATTRIBUTE_EMPTY_MESSAGE": "No matching search results for {{searchTerm}}. Try adjusting your search parameters.",
   "REGISTRATION_PATIENT_SEARCH_EMPTY_MESSAGE": "Could not find patient with identifier/name '{{searchTerm}}'. Please verify the patient ID or name entered or create a new patient record.",
   "REGISTRATION_PATIENT_SEARCH_ERROR_MESSAGE": "An unexpected error occurred during search. Please try again later.",
   "REGISTRATION_PATIENT_SEARCH_HEADER_AGE": "Age",
