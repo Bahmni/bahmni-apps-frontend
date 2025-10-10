@@ -1232,9 +1232,18 @@ const NewPatientRegistration = () => {
               <Button kind="tertiary">
                 {t('CREATE_PATIENT_PRINT_REG_CARD')}
               </Button>
-              <Button kind="primary">
-                {t('CREATE_PATIENT_START_OPD_VISIT')}
-              </Button>
+              <div className={styles.opdVisitGroup}>
+                <Button kind="primary">
+                  {t('CREATE_PATIENT_START_OPD_VISIT')}
+                </Button>
+                <Dropdown
+                  id="opd-visit-dropdown"
+                  items={[]}
+                  label=""
+                  size="lg"
+                  titleText={undefined}
+                />
+              </div>
             </div>
           </div>
         </div>

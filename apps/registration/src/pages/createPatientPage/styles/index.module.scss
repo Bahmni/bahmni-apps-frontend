@@ -2,147 +2,160 @@
 @use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/type" as *;
 
-  // Patient Details Header
-  .patientDetailsHeader {
-    margin: 24px 88px 0;
-    max-width: 1240px;
-    height: 54px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-    display: flex;
-    align-items: center;
-    padding: 16px;
-  }
+// Patient Details Header
+.patientDetailsHeader {
+  margin: 24px 88px 0;
+  max-width: 1240px;
+  height: 54px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  padding: 16px;
 
-  // Form Container
-  .formContainer {
-    margin: 0 88px;
-    width: calc(100% - 176px);
-    max-width: 1240px;
-    padding: 24px;
-    background: #fff;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 22px;
+  }
+}
+
+// Form Container
+.formContainer {
+  margin: 0 88px;
+  width: calc(100% - 176px);
+  max-width: 1240px;
+  padding: 24px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+
+  .formSection {
     display: flex;
     flex-direction: column;
-    gap: 48px;
-
-    .formSection {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .sectionTitle {
-       @include type-style("heading-compact-02");
-      font-size: 16px;
-      font-weight: 400;
-    }
-
-    .formSectionTitle {
-      @include type-style("body-compact-02");
-    }
-      
-    // Photo Upload Section
-    .photoUploadSection {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-      width: 144px;
-      height: 176px;
-      background: #f4f4f4;
-      display: flex;
-      align-items: center;
-      justify-content: center;     
-    }
-
-    .wrapButton {
-     white-space: normal;   
-     text-align: center;    
-     word-break: break-word;
-     border-radius: 2px !important;
-     padding-right: $spacing-05 !important;
-    }
-    
-    .ageFieldsWrapper,
-    .nameFields,
-    .demographicsFields,
-    .birthInfoFields {
-      > * {
-        position: relative;
-        
-        div[class*="cds--form-requirement"] {
-          position: absolute;
-          top: 100%;
-          left: 0;
-          margin-top: 2px;
-          z-index: 1;
-        }
-      }
-    }
-
-    .ageFieldsWrapper {
-      display: flex;
-      flex-direction: row;
-      gap: 16px;
-      width: 100%;
-      align-items: flex-start;
-      padding-bottom: 10px;
-
-      .ageInputs {
-        flex: 1;
-      }
-    }
-
-    .nameFields {
-      margin-top: 16px;
-      padding-bottom: 10px;
-      
-      > * {
-        flex: 1 1 0;
-        min-width: 0;
-      }
-    }
-
-    .demographicsFields,
-    .birthInfo,
-    .birthInfoFields {
-      margin-top: 16px;
-    }
-
-    .demographicsFields {
-      padding-bottom: 10px;
-    }
-
-    .dropdownField {
-      width: 188px;
-      margin-bottom: -1px;
-    }
-    .checkboxField {
-      margin-top: 0.5rem;
-    }
-
-    .emailField,.phoneNumberField{
-      width: 288px;
-    }
+    gap: 16px;
   }
-   
-  .formActions {
-    width: calc(100% - 176px);
-    max-width: 1240px;
+
+  .sectionTitle {
+    font-size: 16px;
+    font-weight: 400;
+  }
+
+  // Photo Upload Section
+  .photoUploadSection {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-    padding: 24px 87px;
-    margin-top: auto;
+    gap: 16px;
+    width: 144px;
+    height: 176px;
+    background: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-    .actionButtons {
-      display: flex;
-      align-items: center;
-      gap: 16px;
+  .wrapButton {
+    white-space: normal;
+    text-align: center;
+    word-break: break-word;
+    border-radius: 2px !important;
+    padding-right: $spacing-05 !important;
+  }
+
+  .ageInputs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  // .ageColumn {
+  //   display: flex;
+  //   align-items: flex-end;
+  // }
+
+  .ageFieldsWrapper {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    width: 100%;
+    align-items: flex-end;
+
+    .ageInputs {
+      flex: 1;
     }
   }
 
-  .row {
+  .nameFields,
+  .demographicsFields,
+  .birthInfo,
+  .birthInfoFields {
+    margin-top: 16px;
+  }
+
+  .nameFields :global(.cds--form-item),
+  .demographicsFields :global(.cds--form-item),
+  .birthInfoFields :global(.cds--form-item) {
+    margin-bottom: 2rem; // keeps spacing consistent for error text
+    //position: relative;
+  }
+
+  // Responsive Date Picker styling
+  :global(.cds--date-picker) {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  :global(.cds--date-picker-container) {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  :global(.cds--date-picker-input__wrapper) {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  :global(.cds--date-picker__input) {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+.formActions {
+  width: calc(100% - 176px);
+  max-width: 1240px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 87px;
+  margin-top: auto;
+
+  .actionButtons {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .opdVisitGroup {
+    display: flex;
+    align-items: center;
+
+    :global(.cds--btn--primary) {
+      background: var(--button-button-primary, #007d79);
+      height: 40px;
+    }
+
+    :global(.cds--list-box) {
+      background: var(--button-button-primary, #007d79);
+      min-height: 40px;
+    }
+  }
+}
+
+.row {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
@@ -173,11 +186,11 @@
 }
 
 .photoCol {
-  flex: 0 0 200px; 
+  flex: 0 0 200px;
 }
 
 .formCol {
-  flex: 1; 
+  flex: 1;
   min-width: 0;
 }
 
@@ -205,11 +218,11 @@
   padding: 8px 12px;
   cursor: pointer;
   border-bottom: 1px solid #f0f0f0;
-  
+
   &:hover {
     background-color: #f5f5f5;
   }
-  
+
   &:last-child {
     border-bottom: none;
   }
