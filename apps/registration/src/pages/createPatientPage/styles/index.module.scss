@@ -11,12 +11,6 @@
     display: flex;
     align-items: center;
     padding: 16px;
-
-     h3 {
-      font-size: 16px;
-      font-weight: 600;
-      line-height: 22px;
-     }
   }
 
   // Form Container
@@ -38,10 +32,15 @@
     }
 
     .sectionTitle {
+       @include type-style("heading-compact-02");
       font-size: 16px;
       font-weight: 400;
     }
 
+    .formSectionTitle {
+      @include type-style("body-compact-02");
+    }
+      
     // Photo Upload Section
     .photoUploadSection {
       display: flex;
@@ -64,10 +63,6 @@
      padding-right: $spacing-05 !important;
     }
     
-    // .ageColumn {
-    //   display: flex;
-    //   align-items: flex-end;
-    // }
 
     .ageFieldsWrapper {
       display: flex;
