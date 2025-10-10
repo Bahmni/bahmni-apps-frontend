@@ -73,6 +73,9 @@ describe('ObservationForms Integration Tests', () => {
     onFormSelect: jest.fn(),
     selectedForms: [],
     onRemoveForm: jest.fn(),
+    pinnedForms: [],
+    updatePinnedForms: jest.fn(),
+    isPinnedFormsLoading: false,
   };
 
   // Mock factories for consistent test data
@@ -107,7 +110,15 @@ describe('ObservationForms Integration Tests', () => {
   });
 
   const renderComponent = (component: React.ReactElement) => {
-    return render(component);
+    // Get the mocked values and inject them as props
+    const mockedValues = mockUsePinnedObservationForms();
+    const componentWithProps = React.cloneElement(component, {
+      ...(component.props || {}), // Start with existing props
+      pinnedForms: mockedValues.pinnedForms,
+      updatePinnedForms: mockedValues.updatePinnedForms,
+      isPinnedFormsLoading: mockedValues.isLoading,
+    } as any);
+    return render(componentWithProps);
   };
 
   describe('Default Forms Persistence', () => {
