@@ -64,13 +64,6 @@
      padding-right: $spacing-05 !important;
     }
     
-    .ageInputs {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-
     // .ageColumn {
     //   display: flex;
     //   align-items: flex-end;
@@ -92,32 +85,16 @@
       margin-top: 16px;
     }
 
-   .nameFields :global(.cds--form-item),
-   .demographicsFields :global(.cds--form-item),
-   .birthInfoFields :global(.cds--form-item) {
-   margin-bottom: 2rem; // keeps spacing consistent for error text
-   //position: relative;
-   }
-
-    // Responsive Date Picker styling
-    :global(.cds--date-picker) {
-      width: 100% !important;
-      max-width: 100% !important;
+    .dropdownField {
+      width: 188px;
+      margin-bottom: -1px;
+    }
+    .checkboxField {
+      margin-top: 0.5rem;
     }
 
-    :global(.cds--date-picker-container) {
-      width: 100% !important;
-      max-width: 100% !important;
-    }
-
-    :global(.cds--date-picker-input__wrapper) {
-      width: 100% !important;
-      max-width: 100% !important;
-    }
-
-    :global(.cds--date-picker__input) {
-      width: 100% !important;
-      max-width: 100% !important;
+    .emailField,.phoneNumberField{
+      width: 288px;
     }
   }
    
@@ -145,7 +122,6 @@
 
 .col {
   flex: 1 1;
-  //min-width: 250px;
 }
 
 .ageFieldsWrapper {
@@ -177,7 +153,6 @@
   min-width: 0;
 }
 
-// Address hierarchy suggestions styles
 .addressFieldWrapper {
   position: relative;
   width: 100%;
