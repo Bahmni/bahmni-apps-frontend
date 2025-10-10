@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Registration Configuration Schema",
+  "description": "Schema for validating registration app configuration",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "patientSearch": {
+      "type": "object",
+      "description": "Patient search configuration",
+      "additionalProperties": true,
+      "properties": {
+        "customAttributes": {
+          "type": "array",
+          "description": "Array of available search fields",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "required": ["translationKey", "fields"],
+            "properties": {
+              "translationKey": {
+                "type": "string",
+                "description": "Translation key for the field label"
+              },
+              "fields": {
+                "type": "array",
+                "description": "Array of field names to search against",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "columnTranslationKeys": {
+                "type": "array",
+                "description": "Array of translation keys for column headers",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "type": {
+                "type": "string",
+                "enum": ["person", "address", "program"],
+                "description": "Type of the search field (person, address, program)"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -15,6 +15,8 @@ import {
   AuditEventType,
   dispatchAuditEvent,
   PatientSearchResult,
+  getRegistrationConfig,
+  PatientSearchField,
 } from '@bahmni-frontend/bahmni-services';
 import { SearchPatient } from '@bahmni-frontend/bahmni-widgets';
 import { useCallback, useEffect, useState } from 'react';
@@ -33,9 +35,20 @@ const PatientSearchPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
-  const [isPhoneSearch, setIsPhoneSearch] = useState<boolean>(false);
+  const [isAdvancedSearch, setIsAdvancedSearch] = useState<boolean>(false);
   const [isNavigating, setIsNavigating] = useState<boolean>(false);
+  const [searchFields, setSearchFields] = useState<PatientSearchField[]>([]);
   const { t } = useTranslation();
+
+  useEffect(() => {
+    const loadSearchConfig = async () => {
+      const config = await getRegistrationConfig();
+      if (config?.patientSearch?.customAttributes) {
+        setSearchFields(config.patientSearch.customAttributes);
+      }
+    };
+    loadSearchConfig();
+  }, []);
 
   const breadcrumbItems = [
     {
@@ -63,13 +76,13 @@ const PatientSearchPage: React.FC = () => {
     searchTerm: string,
     isLoading: boolean,
     isError: boolean,
-    isPhoneSearch: boolean,
+    isAdvancedSearch: boolean,
   ) => {
     setPatientSearchData(data ?? undefined);
     setSearchTerm(searchTerm);
     setIsLoading(isLoading);
     setIsError(isError);
-    setIsPhoneSearch(isPhoneSearch);
+    setIsAdvancedSearch(isAdvancedSearch);
   };
 
   const headers = [
@@ -77,14 +90,16 @@ const PatientSearchPage: React.FC = () => {
     { key: 'name', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_NAME') },
     { key: 'gender', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_GENDER') },
     { key: 'age', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_AGE') },
-    {
-      key: 'phoneNumber',
-      header: t('REGISTRATION_PATIENT_SEARCH_HEADER_PHONE_NUMBER'),
-    },
-    {
-      key: 'alternatePhoneNumber',
-      header: t('REGISTRATION_PATIENT_SEARCH_HEADER_ALTERNATE_PHONE_NUMBER'),
-    },
+    ...(searchFields.length > 0
+      ? searchFields.flatMap((field) =>
+          field.fields.map((fieldName, index) => ({
+            key: fieldName,
+            header: field.columnTranslationKeys?.[index]
+              ? t(field.columnTranslationKeys[index])
+              : fieldName,
+          })),
+        )
+      : []),
   ];
 
   const renderTitle = (
@@ -123,7 +138,10 @@ const PatientSearchPage: React.FC = () => {
   };
 
   const renderCell = useCallback(
-    (row: PatientSearchViewModel<PatientSearchResult>, cellId: string) => {
+    (
+      row: PatientSearchViewModel<PatientSearchResult>,
+      cellId: string,
+    ): React.ReactNode => {
       if (cellId === 'identifier') {
         return (
           <Link
@@ -142,7 +160,7 @@ const PatientSearchPage: React.FC = () => {
       if (cellValue instanceof Date) {
         return cellValue.toLocaleDateString();
       }
-      return cellValue;
+      return String(cellValue ?? '');
     },
     [navigateToPatient],
   );
@@ -185,13 +203,19 @@ const PatientSearchPage: React.FC = () => {
                 headers={headers}
                 ariaLabel="patient-search-sortable-data-table"
                 loading={isLoading}
-                rows={formatPatientSearchResult(patientSearchData)}
+                rows={formatPatientSearchResult(
+                  patientSearchData,
+                  searchFields,
+                )}
                 renderCell={renderCell}
                 emptyStateMessage={
-                  isPhoneSearch
-                    ? t('REGISTRATION_PATIENT_SEARCH_PHONE_EMPTY_MESSAGE', {
-                        searchTerm: searchTerm,
-                      })
+                  isAdvancedSearch
+                    ? t(
+                        'REGISTRATION_PATIENT_SEARCH_CUSTOM_ATTRIBUTE_EMPTY_MESSAGE',
+                        {
+                          searchTerm: searchTerm,
+                        },
+                      )
                     : t('REGISTRATION_PATIENT_SEARCH_EMPTY_MESSAGE', {
                         searchTerm: searchTerm,
                       })

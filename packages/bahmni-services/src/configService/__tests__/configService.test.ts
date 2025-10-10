@@ -11,16 +11,19 @@ import {
   allOptionalFieldsConfig,
   validDashboardConfig,
   invalidDashboardConfig,
+  validRegistrationConfig,
 } from '../__mocks__/configMocks';
 import {
   getClinicalConfig,
   getDashboardConfig,
   getMedicationConfig,
+  getRegistrationConfig,
 } from '../configService';
 import {
   CLINICAL_CONFIG_URL,
   DASHBOARD_CONFIG_URL,
   MEDICATIONS_CONFIG_URL,
+  REGISTRATION_CONFIG_URL,
   ERROR_MESSAGES,
   ERROR_TITLES,
 } from '../constants';
@@ -239,6 +242,45 @@ const mockMedicationSchema = {
     },
   },
 };
+
+jest.mock('../schemas/registrationConfig.schema.json', () => ({
+  __esModule: true,
+  default: {
+    type: 'object',
+    additionalProperties: true,
+    properties: {
+      patientSearch: {
+        type: 'object',
+        additionalProperties: true,
+        properties: {
+          customAttributes: {
+            type: 'array',
+            items: {
+              type: 'object',
+              additionalProperties: true,
+              required: ['translationKey', 'fields'],
+              properties: {
+                translationKey: { type: 'string' },
+                fields: {
+                  type: 'array',
+                  items: { type: 'string' },
+                },
+                columnTranslationKeys: {
+                  type: 'array',
+                  items: { type: 'string' },
+                },
+                type: {
+                  type: 'string',
+                  enum: ['person', 'address', 'program'],
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+}));
 
 const mockShowError = notificationService.showError as jest.MockedFunction<
   typeof notificationService.showError
@@ -839,6 +881,38 @@ describe('ConfigService', () => {
         expect(mockCompile).toHaveBeenCalled();
         expect(mockShowError).toHaveBeenCalledWith('Error', 'Invalid schema');
       });
+    });
+  });
+
+  describe('getRegistrationConfig', () => {
+    test('should fetch and validate registration config', async () => {
+      // Arrange
+      mockGet.mockResolvedValueOnce(validRegistrationConfig);
+
+      // Act
+      const result = await getRegistrationConfig();
+
+      // Assert
+      expect(mockGet).toHaveBeenCalledWith(REGISTRATION_CONFIG_URL);
+      expect(result).toEqual(validRegistrationConfig);
+      expect(result?.patientSearch?.customAttributes).toHaveLength(6);
+    });
+
+    test('should return null when API request fails', async () => {
+      // Arrange
+      const networkError = new Error('Network error');
+      mockGet.mockRejectedValueOnce(networkError);
+      mockGetFormattedError.mockReturnValueOnce({
+        title: 'Error',
+        message: 'Network error',
+      });
+
+      // Act
+      const result = await getRegistrationConfig();
+
+      // Assert
+      expect(result).toBeNull();
+      expect(mockShowError).toHaveBeenCalledWith('Error', 'Network error');
     });
   });
 });

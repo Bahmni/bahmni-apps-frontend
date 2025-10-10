@@ -7,3 +7,8 @@ export {
   type MedicationJSONConfig,
   type Frequency,
 } from './models/medicationConfig';
+export {
+  type RegistrationConfig,
+  type PatientSearchConfig,
+  type PatientSearchField,
+} from './models/registrationConfig';

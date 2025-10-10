@@ -119,7 +119,7 @@ export const SortableDataTable = <T extends { id: string }>({
                     onClick={
                       onRowClick ? () => onRowClick(originalRow) : undefined
                     }
-                    className={styles.interactiveRow}
+                    className={onRowClick ? styles.interactiveRow : ''}
                   >
                     {row.cells.map((cell) => (
                       <TableCell key={cell.id}>
