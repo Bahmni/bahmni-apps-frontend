@@ -20,6 +20,7 @@ import { useEncounterDetailsStore } from '../../../src/stores/encounterDetailsSt
 import { useMedicationStore } from '../../../src/stores/medicationsStore';
 import useServiceRequestStore from '../../../src/stores/serviceRequestStore';
 import { ERROR_TITLES } from '../../constants/errors';
+import { usePinnedObservationForms } from '../../hooks/usePinnedObservationForms';
 import { ConsultationBundle } from '../../models/consultationBundle';
 import {
   postConsultationBundle,
@@ -56,6 +57,13 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   );
   const { t } = useTranslation();
   const { addNotification } = useNotification();
+
+  // Lift pinned forms state to parent - shared by both ObservationForms and ObservationFormsContainer
+  const {
+    pinnedForms,
+    updatePinnedForms,
+    isLoading: isPinnedFormsLoading,
+  } = usePinnedObservationForms();
 
   // Use the diagnosis store
   const {
@@ -308,6 +316,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         onFormSelect={handleFormSelection}
         selectedForms={selectedForms}
         onRemoveForm={removeFormFromSelected}
+        pinnedForms={pinnedForms}
+        updatePinnedForms={updatePinnedForms}
+        isPinnedFormsLoading={isPinnedFormsLoading}
       />
       <MenuItemDivider />
     </>
@@ -320,6 +331,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         onViewingFormChange={handleViewingFormChange}
         viewingForm={viewingForm}
         onRemoveForm={removeFormFromSelected}
+        pinnedForms={pinnedForms}
+        updatePinnedForms={updatePinnedForms}
       />
     );
   }

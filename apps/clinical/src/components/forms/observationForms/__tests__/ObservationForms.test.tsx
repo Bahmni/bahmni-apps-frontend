@@ -176,6 +176,9 @@ describe('ObservationForms', () => {
     onFormSelect: jest.fn(),
     selectedForms: [],
     onRemoveForm: jest.fn(),
+    pinnedForms: [],
+    updatePinnedForms: jest.fn(),
+    isPinnedFormsLoading: false,
   };
 
   beforeEach(() => {
@@ -532,7 +535,7 @@ describe('ObservationForms', () => {
     });
 
     it('should handle optional callbacks gracefully', () => {
-      render(<ObservationForms />);
+      render(<ObservationForms {...defaultProps} />);
 
       // Should not throw when callbacks are not provided
       const formButton = screen.getByTestId('combobox-item-form-1');
@@ -541,7 +544,7 @@ describe('ObservationForms', () => {
 
     it('should handle onFormSelect being undefined', () => {
       // Test the branch where onFormSelect is undefined (line 59)
-      render(<ObservationForms onFormSelect={undefined} />);
+      render(<ObservationForms {...defaultProps} onFormSelect={undefined} />);
 
       const formButton = screen.getByTestId('combobox-item-form-1');
       expect(() => fireEvent.click(formButton)).not.toThrow();
@@ -675,19 +678,13 @@ describe('ObservationForms', () => {
         error: null,
       });
 
-      const mockUsePinnedObservationForms = jest.requireMock(
-        '../../../../hooks/usePinnedObservationForms',
-      ).usePinnedObservationForms;
-      mockUsePinnedObservationForms.mockReturnValue({
-        pinnedForms: [
-          { name: 'Custom Form', uuid: 'user-1', id: 2, privileges: [] },
-        ],
-        updatePinnedForms: jest.fn(),
-        isLoading: false,
-        error: null,
-      });
+      const userPinnedForms = [
+        { name: 'Custom Form', uuid: 'user-1', id: 2, privileges: [] },
+      ];
 
-      render(<ObservationForms {...defaultProps} />);
+      render(
+        <ObservationForms {...defaultProps} pinnedForms={userPinnedForms} />,
+      );
 
       // This covers lines 59, 62-64, 67-69 (userPinnedUuids mapping and sorting logic)
       expect(screen.getByTestId('pinned-form-default-1')).toBeInTheDocument();
@@ -775,20 +772,14 @@ describe('ObservationForms', () => {
         error: null,
       });
 
-      const mockUsePinnedObservationForms = jest.requireMock(
-        '../../../../hooks/usePinnedObservationForms',
-      ).usePinnedObservationForms;
-      mockUsePinnedObservationForms.mockReturnValue({
-        pinnedForms: [
-          { name: 'Z Form', uuid: 'user-2', id: 3, privileges: [] },
-          { name: 'A Form', uuid: 'user-1', id: 2, privileges: [] },
-        ],
-        updatePinnedForms: jest.fn(),
-        isLoading: false,
-        error: null,
-      });
+      const userPinnedForms = [
+        { name: 'Z Form', uuid: 'user-2', id: 3, privileges: [] },
+        { name: 'A Form', uuid: 'user-1', id: 2, privileges: [] },
+      ];
 
-      render(<ObservationForms {...defaultProps} />);
+      render(
+        <ObservationForms {...defaultProps} pinnedForms={userPinnedForms} />,
+      );
 
       // This covers the .sort() function for user-pinned forms (lines 67-69)
       expect(screen.getByTestId('pinned-form-user-1')).toBeInTheDocument();
@@ -809,18 +800,13 @@ describe('ObservationForms', () => {
       const pinnedForms = [
         { name: 'Custom Form', uuid: 'user-1', id: 2, privileges: [] },
       ];
-      const mockUsePinnedObservationForms = jest.requireMock(
-        '../../../../hooks/usePinnedObservationForms',
-      ).usePinnedObservationForms;
-      mockUsePinnedObservationForms.mockReturnValue({
-        pinnedForms,
-        updatePinnedForms: jest.fn(),
-        isLoading: false,
-        error: null,
-      });
 
       render(
-        <ObservationForms {...defaultProps} onFormSelect={mockOnFormSelect} />,
+        <ObservationForms
+          {...defaultProps}
+          onFormSelect={mockOnFormSelect}
+          pinnedForms={pinnedForms}
+        />,
       );
 
       const pinnedForm = screen.getByTestId('pinned-form-user-1');
@@ -844,17 +830,14 @@ describe('ObservationForms', () => {
       const pinnedForms = [
         { name: 'Custom Form', uuid: 'user-1', id: 2, privileges: [] },
       ];
-      const mockUsePinnedObservationForms = jest.requireMock(
-        '../../../../hooks/usePinnedObservationForms',
-      ).usePinnedObservationForms;
-      mockUsePinnedObservationForms.mockReturnValue({
-        pinnedForms,
-        updatePinnedForms: mockUpdatePinnedForms,
-        isLoading: false,
-        error: null,
-      });
 
-      render(<ObservationForms {...defaultProps} />);
+      render(
+        <ObservationForms
+          {...defaultProps}
+          pinnedForms={pinnedForms}
+          updatePinnedForms={mockUpdatePinnedForms}
+        />,
+      );
 
       const pinnedFormCard = screen.getByTestId('pinned-form-user-1');
       const thumbtackIcon = pinnedFormCard.querySelector(
