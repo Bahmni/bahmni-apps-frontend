@@ -198,7 +198,7 @@ const NewPatientRegistration = () => {
   };
 
   const handlePhoneChange = (field: string, value: string) => {
-    const numericRegex = /^[0-9]*$/;
+    const numericRegex = /^\+?[0-9]*$/;
     if (numericRegex.test(value)) {
       handleInputChange(field, value);
     }
@@ -553,15 +553,17 @@ const NewPatientRegistration = () => {
       main={
         <div>
           <Tile className={styles.patientDetailsHeader}>
-            <h3>{t('CREATE_PATIENT_HEADER_TITLE')}</h3>
+            <span className={styles.sectionTitle}>
+              {t('CREATE_PATIENT_HEADER_TITLE')}
+            </span>
           </Tile>
 
           <div className={styles.formContainer}>
             {/* Basic Information */}
             <div className={styles.formSection}>
-              <h4 className={styles.sectionTitle}>
+              <span className={styles.formSectionTitle}>
                 {t('CREATE_PATIENT_SECTION_BASIC_INFO')}
-              </h4>
+              </span>
               <div className={styles.row}>
                 <div className={styles.photocol}>
                   <div className={styles.photoUploadSection}>
@@ -796,9 +798,9 @@ const NewPatientRegistration = () => {
 
             {/* Address Information */}
             <div className={styles.formSection}>
-              <h4 className={styles.sectionTitle}>
+              <span className={styles.sectionTitle}>
                 {t('CREATE_PATIENT_SECTION_ADDRESS_INFO')}
-              </h4>
+              </span>
               <div className={styles.row}>
                 <div className={styles.col}>
                   <TextInput
@@ -1012,9 +1014,9 @@ const NewPatientRegistration = () => {
 
             {/* Contact Information */}
             <div className={styles.formSection}>
-              <h4 className={styles.sectionTitle}>
+              <span className={styles.formSectionTitle}>
                 {t('CREATE_PATIENT_SECTION_CONTACT_INFO')}
-              </h4>
+              </span>
               <div className={styles.row}>
                 <div className={styles.phoneNumberField}>
                   <TextInput
@@ -1043,9 +1045,9 @@ const NewPatientRegistration = () => {
 
             {/* Additional Information */}
             <div className={styles.formSection}>
-              <h4 className={styles.sectionTitle}>
+              <span className={styles.formSectionTitle}>
                 {t('CREATE_PATIENT_SECTION_ADDITIONAL_INFO')}
-              </h4>
+              </span>
               <div className={styles.row}>
                 <div className={styles.emailField}>
                   <TextInput
