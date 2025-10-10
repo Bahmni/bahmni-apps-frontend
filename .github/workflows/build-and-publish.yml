@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: ghcr.io/bahnew/clinical-frontend
+  IMAGE_NAME: bahmni/bahmni-apps-frontend
   NODE_VERSION: "22"
 
 jobs:
@@ -77,9 +77,8 @@ jobs:
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
       # Build and push to a temporary tag for scanning
       - name: Build and push multi-arch image (temp)
@@ -113,24 +112,13 @@ jobs:
             --tag ${{ env.IMAGE_NAME }}:v${{ steps.package-version.outputs.version }}-${{github.run_number}} \
             ${{ env.IMAGE_NAME }}:scan-${{ github.sha }}
 
-      # This step dispatches an event to the utils repo to trigger downstream deployments
-      - name: Repository Dispatch
-        if: success()
-        run: |
-          # Using GitHub's built-in REST API for repository dispatch
-          curl -X POST \
-            -H "Authorization: token ${{ secrets.INFRA_GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/bahnew/utils/dispatches \
-            -d '{"event_type":"clinical-frontend-publish","client_payload":{"version":"v${{ steps.package-version.outputs.version }}","sha":"${{ github.sha }}"}}'
-
-      # Cleanup the older Docker images from GitHub Container Registry
-      - name: Cleanup temporary Docker tags
-        if: always() # This ensures the step runs even if previous steps fail
-        uses: actions/delete-package-versions@v5
-        with:
-          owner: "bahnew"
-          package-name: "clinical-frontend"
-          package-type: "container"
-          min-versions-to-keep: 6
-          token: ${{ secrets.GITHUB_TOKEN }}
+      # # This step dispatches an event to the utils repo to trigger downstream deployments
+      # - name: Repository Dispatch
+      #   if: success()
+      #   run: |
+      #     # Using GitHub's built-in REST API for repository dispatch
+      #     curl -X POST \
+      #       -H "Authorization: token ${{ secrets.INFRA_GITHUB_TOKEN }}" \
+      #       -H "Accept: application/vnd.github.v3+json" \
+      #       https://api.github.com/repos/bahnew/utils/dispatches \
+      #       -d '{"event_type":"clinical-frontend-publish","client_payload":{"version":"v${{ steps.package-version.outputs.version }}","sha":"${{ github.sha }}"}}'
