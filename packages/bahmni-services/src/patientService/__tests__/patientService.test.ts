@@ -4,7 +4,7 @@ import { getUserLoginLocation } from '../../userService';
 import {
   PATIENT_RESOURCE_URL,
   PATIENT_LUCENE_SEARCH_URL,
-  PATIENT_PHONE_NUMBER_SEARCH_URL,
+  PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL,
 } from '../constants';
 import {
   getPatientById,
@@ -936,6 +936,21 @@ describe('Patient Service', () => {
   describe('searchPatientByCustomAttribute', () => {
     const mockSearchTerm = '1234567890';
     const mockLoginLocationUuid = 'b5da9afd-b29a-4cbf-91c9-ccf2aa5f799e';
+    const mockSearchFields = ['phoneNumber'];
+    const mockAllCustomFields = [
+      {
+        translationKey: 'PHONE_NUMBER',
+        fields: ['phoneNumber', 'alternatePhoneNumber'],
+        columnTranslationKeys: ['PHONE', 'ALT_PHONE'],
+        type: 'person' as const,
+      },
+      {
+        translationKey: 'EMAIL',
+        fields: ['email'],
+        columnTranslationKeys: ['EMAIL'],
+        type: 'person' as const,
+      },
+    ];
     const t = (k: string) => k;
 
     const mockPatientSearchResponse = {
@@ -972,40 +987,88 @@ describe('Patient Service', () => {
       });
     });
 
-    it('searches by phone using the helper URL', async () => {
+    it('searches by custom attributes using the correct URL', async () => {
       mockedGet.mockResolvedValueOnce(mockPatientSearchResponse);
 
-      const result = await searchPatientByCustomAttribute(mockSearchTerm, t);
+      const result = await searchPatientByCustomAttribute(
+        mockSearchTerm,
+        'person',
+        mockSearchFields,
+        mockAllCustomFields,
+        t,
+      );
 
       expect(mockGetUserLoginLocation).toHaveBeenCalled();
       expect(mockedGet).toHaveBeenCalledWith(
-        PATIENT_PHONE_NUMBER_SEARCH_URL(mockSearchTerm, mockLoginLocationUuid),
+        PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL(
+          mockSearchTerm,
+          'person',
+          mockSearchFields,
+          mockAllCustomFields,
+          mockLoginLocationUuid,
+        ),
       );
       expect(result).toEqual(mockPatientSearchResponse);
     });
 
-    it('builds URL with phone and alternate phone params via helper', async () => {
+    it('builds URL with separate search and result fields', async () => {
       mockedGet.mockResolvedValueOnce(mockPatientSearchResponse);
+      const searchFields = ['phoneNumber'];
+      const resultFields = [
+        {
+          translationKey: 'PHONE_NUMBER',
+          fields: ['phoneNumber', 'alternatePhoneNumber'],
+          columnTranslationKeys: ['PHONE', 'ALT_PHONE'],
+          type: 'person' as const,
+        },
+        {
+          translationKey: 'EMAIL',
+          fields: ['email'],
+          columnTranslationKeys: ['EMAIL'],
+          type: 'person' as const,
+        },
+      ];
 
-      await searchPatientByCustomAttribute(mockSearchTerm, t);
-
-      const expected = PATIENT_PHONE_NUMBER_SEARCH_URL(
+      await searchPatientByCustomAttribute(
         mockSearchTerm,
+        'person',
+        searchFields,
+        resultFields,
+        t,
+      );
+
+      const expectedUrl = PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL(
+        mockSearchTerm,
+        'person',
+        searchFields,
+        resultFields,
         mockLoginLocationUuid,
       );
-      expect(mockedGet).toHaveBeenCalledWith(expected);
+      expect(mockedGet).toHaveBeenCalledWith(expectedUrl);
     });
 
-    it('trims search term before building URL', async () => {
+    it('passes trimmed search term to URL builder', async () => {
       mockedGet.mockResolvedValueOnce(mockPatientSearchResponse);
+      const searchTermWithSpaces = `  ${mockSearchTerm}  `;
 
-      await searchPatientByCustomAttribute(`  ${mockSearchTerm}  `, t);
+      await searchPatientByCustomAttribute(
+        searchTermWithSpaces,
+        'person',
+        mockSearchFields,
+        mockAllCustomFields,
+        t,
+      );
 
-      const expected = PATIENT_PHONE_NUMBER_SEARCH_URL(
-        mockSearchTerm,
+      // The URL builder should receive the original term with spaces,
+      // as trimming is handled inside the URL builder function
+      const expectedUrl = PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL(
+        searchTermWithSpaces,
+        'person',
+        mockSearchFields,
+        mockAllCustomFields,
         mockLoginLocationUuid,
       );
-      expect(mockedGet).toHaveBeenCalledWith(expected);
+      expect(mockedGet).toHaveBeenCalledWith(expectedUrl);
     });
   });
 });

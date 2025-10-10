@@ -23,6 +23,7 @@ export interface PatientSearchResult {
   deathDate: Date | null;
   identifier: string;
   addressFieldValue: string | null;
+  patientProgramAttributeValue: string | null;
   givenName: string;
   middleName: string;
   familyName: string;

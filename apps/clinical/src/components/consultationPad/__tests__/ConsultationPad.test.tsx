@@ -26,6 +26,7 @@ import ConsultationPad from '../ConsultationPad';
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
   ...jest.requireActual('@bahmni-frontend/bahmni-services'),
   dispatchAuditEvent: jest.fn(),
+  findActiveEncounterInSession: jest.fn().mockResolvedValue(null),
   __esModule: true,
   useTranslation: () => ({
     t: (key: string) => {

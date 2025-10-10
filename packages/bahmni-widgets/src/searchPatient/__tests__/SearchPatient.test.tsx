@@ -3,11 +3,13 @@ import {
   searchPatientByNameOrId,
   searchPatientByCustomAttribute,
   useTranslation,
+  getRegistrationConfig,
 } from '@bahmni-frontend/bahmni-services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import { validRegistrationConfig } from '../../../../bahmni-services/src/configService/__mocks__/configMocks';
 import { useNotification } from '../../notification';
 import SearchPatient from '../SearchPatient';
 
@@ -17,6 +19,7 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
   searchPatientByNameOrId: jest.fn(),
   searchPatientByCustomAttribute: jest.fn(),
   useTranslation: jest.fn(),
+  getRegistrationConfig: jest.fn(),
 }));
 jest.mock('../../notification');
 const mockOnSearch = jest.fn();
@@ -24,6 +27,9 @@ const mockOnSearch = jest.fn();
 const mockAddNotification = jest.fn();
 const mockUseTranslation = useTranslation as jest.MockedFunction<
   typeof useTranslation
+>;
+const mockGetRegistrationConfig = getRegistrationConfig as jest.MockedFunction<
+  typeof getRegistrationConfig
 >;
 const mockSearchPatientData: PatientSearchResult[] = [
   {
@@ -98,6 +104,7 @@ describe('SearchPatient', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    Element.prototype.scrollIntoView = jest.fn();
     queryClient = new QueryClient({
       defaultOptions: {
         queries: {
@@ -114,10 +121,17 @@ describe('SearchPatient', () => {
           ERROR_DEFAULT_TITLE: 'Error',
           PHONE_NUMBER_VALIDATION_ERROR:
             'Special characters and alphabets should not be allowed',
+          SEARCH_BY_CUSTOM_ATTRIBUTE: 'Search by phone number',
+          REGISTRATION_PATIENT_SEARCH_DROPDOWN_PHONE_NUMBER: 'Phone Number',
+          REGISTRATION_PATIENT_SEARCH_DROPDOWN_EMAIL: 'Email',
+          SEARCH_TYPE: 'Search Type',
+          OR: 'OR',
+          PATIENT_SEARCH_ATTRIBUTE_SELECTOR: 'Select search attribute',
         };
         return translations[key] || key;
       }) as any,
-    });
+    } as any);
+    mockGetRegistrationConfig.mockResolvedValue(validRegistrationConfig as any);
   });
 
   afterEach(() => {
@@ -146,10 +160,10 @@ describe('SearchPatient', () => {
     expect(
       screen.getByTestId('search-patient-search-button'),
     ).toHaveTextContent(buttonTitle);
-    expect(screen.getByTestId('phone-search-input')).toBeInTheDocument();
+    expect(screen.getByTestId('advance-search-input')).toBeInTheDocument();
     expect(screen.getByTestId('search-type-dropdown')).toBeInTheDocument();
-    expect(screen.getByTestId('phone-search-button')).toBeInTheDocument();
-    expect(screen.getByTestId('phone-search-button')).toHaveTextContent(
+    expect(screen.getByTestId('advance-search-button')).toBeInTheDocument();
+    expect(screen.getByTestId('advance-search-button')).toHaveTextContent(
       buttonTitle,
     );
   });
@@ -226,11 +240,10 @@ describe('SearchPatient', () => {
     });
 
     await waitFor(() => {
-      expect(searchPatientByNameOrId).toHaveBeenCalledTimes(1);
-      expect(mockOnSearch).toHaveBeenCalled();
       expect(searchPatientByNameOrId).toHaveBeenCalledWith(
         encodeURI('new value'),
       );
+      expect(mockOnSearch).toHaveBeenCalled();
     });
   });
 
@@ -246,22 +259,25 @@ describe('SearchPatient', () => {
     );
 
     expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
-    expect(screen.getByTestId('phone-search-input')).toBeInTheDocument();
-    expect(screen.getByTestId('phone-search-button')).toBeInTheDocument();
+    expect(screen.getByTestId('advance-search-input')).toBeInTheDocument();
+    expect(screen.getByTestId('advance-search-button')).toBeInTheDocument();
 
-    const phoneSearchInput = screen.getByTestId('phone-search-input');
+    const phoneSearchInput = screen.getByTestId('advance-search-input');
 
     (searchPatientByCustomAttribute as jest.Mock).mockReturnValue({});
 
     await waitFor(() => {
       fireEvent.input(phoneSearchInput, { target: { value: '1234567890' } });
-      fireEvent.click(screen.getByTestId('phone-search-button'));
+      fireEvent.click(screen.getByTestId('advance-search-button'));
     });
 
     expect(searchPatientByCustomAttribute).toHaveBeenCalledTimes(1);
     expect(mockOnSearch).toHaveBeenCalled();
     expect(searchPatientByCustomAttribute).toHaveBeenCalledWith(
       encodeURI('1234567890'),
+      expect.any(String),
+      expect.any(Array),
+      expect.any(Array),
       expect.any(Function),
     );
     await waitFor(() => {
@@ -287,10 +303,10 @@ describe('SearchPatient', () => {
     );
 
     expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
-    expect(screen.getByTestId('phone-search-input')).toBeInTheDocument();
-    expect(screen.getByTestId('phone-search-button')).toBeInTheDocument();
+    expect(screen.getByTestId('advance-search-input')).toBeInTheDocument();
+    expect(screen.getByTestId('advance-search-button')).toBeInTheDocument();
 
-    const phoneSearchInput = screen.getByTestId('phone-search-input');
+    const phoneSearchInput = screen.getByTestId('advance-search-input');
 
     (searchPatientByCustomAttribute as jest.Mock).mockReturnValue({});
 
@@ -301,12 +317,14 @@ describe('SearchPatient', () => {
     });
 
     await waitFor(() => {
-      expect(searchPatientByCustomAttribute).toHaveBeenCalledTimes(1);
-      expect(mockOnSearch).toHaveBeenCalled();
       expect(searchPatientByCustomAttribute).toHaveBeenCalledWith(
         encodeURI('1234567890'),
+        expect.any(String),
+        expect.any(Array),
+        expect.any(Array),
         expect.any(Function),
       );
+      expect(mockOnSearch).toHaveBeenCalled();
       expect(mockOnSearch).toHaveBeenCalledWith(
         expect.anything(),
         '1234567890',
@@ -406,11 +424,11 @@ describe('SearchPatient', () => {
     );
 
     expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
-    expect(screen.getByTestId('phone-search-input')).toBeInTheDocument();
-    expect(screen.getByTestId('phone-search-button')).toBeInTheDocument();
+    expect(screen.getByTestId('advance-search-input')).toBeInTheDocument();
+    expect(screen.getByTestId('advance-search-button')).toBeInTheDocument();
 
     await waitFor(() => {
-      fireEvent.click(screen.getByTestId('phone-search-button'));
+      fireEvent.click(screen.getByTestId('advance-search-button'));
     });
 
     expect(searchPatientByCustomAttribute).not.toHaveBeenCalled();
@@ -463,20 +481,20 @@ describe('SearchPatient', () => {
       </QueryClientProvider>,
     );
 
-    expect(screen.getByTestId('phone-search-button')).toBeInTheDocument();
-    expect(screen.getByTestId('phone-search-input')).toBeInTheDocument();
-    const phoneSearchInput = screen.getByTestId('phone-search-input');
+    expect(screen.getByTestId('advance-search-button')).toBeInTheDocument();
+    expect(screen.getByTestId('advance-search-input')).toBeInTheDocument();
+    const phoneSearchInput = screen.getByTestId('advance-search-input');
 
     (searchPatientByCustomAttribute as jest.Mock).mockReturnValue([]);
 
     await waitFor(() => {
       fireEvent.input(phoneSearchInput, { target: { value: '1234567890' } });
-      fireEvent.click(screen.getByTestId('phone-search-button'));
-      expect(screen.getByTestId('phone-search-button')).toBeDisabled();
+      fireEvent.click(screen.getByTestId('advance-search-button'));
+      expect(screen.getByTestId('advance-search-button')).toBeDisabled();
     });
 
     await waitFor(() => {
-      expect(screen.getByTestId('phone-search-button')).not.toBeDisabled();
+      expect(screen.getByTestId('advance-search-button')).not.toBeDisabled();
     });
   });
 
@@ -603,10 +621,10 @@ describe('SearchPatient', () => {
     );
 
     expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
-    expect(screen.getByTestId('phone-search-input')).toBeInTheDocument();
-    expect(screen.getByTestId('phone-search-button')).toBeInTheDocument();
+    expect(screen.getByTestId('advance-search-input')).toBeInTheDocument();
+    expect(screen.getByTestId('advance-search-button')).toBeInTheDocument();
 
-    const phoneSearchInput = screen.getByTestId('phone-search-input');
+    const phoneSearchInput = screen.getByTestId('advance-search-input');
 
     const error = new Error(
       'Login location is missing or invalid. Please reauthenticate.',
@@ -616,7 +634,7 @@ describe('SearchPatient', () => {
 
     await waitFor(() => {
       fireEvent.input(phoneSearchInput, { target: { value: '1234567890' } });
-      fireEvent.click(screen.getByTestId('phone-search-button'));
+      fireEvent.click(screen.getByTestId('advance-search-button'));
     });
 
     await waitFor(() => {
@@ -662,7 +680,7 @@ describe('SearchPatient', () => {
       </QueryClientProvider>,
     );
 
-    const phoneSearchInput = screen.getByTestId('phone-search-input');
+    const phoneSearchInput = screen.getByTestId('advance-search-input');
 
     expect(
       screen.queryByTestId('phone-validation-error'),
@@ -671,15 +689,12 @@ describe('SearchPatient', () => {
     await waitFor(() => {
       fireEvent.input(phoneSearchInput, { target: { value: '123a' } });
     });
-    fireEvent.click(screen.getByTestId('phone-search-button'));
-
-    expect(screen.getByTestId('phone-validation-error')).toBeInTheDocument();
-    expect(screen.getByTestId('phone-validation-error')).toHaveTextContent(
-      'Special characters and alphabets should not be allowed',
-    );
+    fireEvent.click(screen.getByTestId('advance-search-button'));
 
     expect(phoneSearchInput).toHaveValue('123a');
-    expect(searchPatientByCustomAttribute).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(searchPatientByCustomAttribute).toHaveBeenCalled();
+    });
   });
 
   it('should not render phone validation error message when only numeric characters are entered', async () => {
@@ -693,7 +708,7 @@ describe('SearchPatient', () => {
       </QueryClientProvider>,
     );
 
-    const phoneSearchInput = screen.getByTestId('phone-search-input');
+    const phoneSearchInput = screen.getByTestId('advance-search-input');
 
     await waitFor(() => {
       fireEvent.input(phoneSearchInput, { target: { value: '1234567890' } });
@@ -717,7 +732,7 @@ describe('SearchPatient', () => {
       </QueryClientProvider>,
     );
 
-    const phoneSearchInput = screen.getByTestId('phone-search-input');
+    const phoneSearchInput = screen.getByTestId('advance-search-input');
 
     await waitFor(() => {
       fireEvent.input(phoneSearchInput, { target: { value: '+911234567890' } });
@@ -728,28 +743,6 @@ describe('SearchPatient', () => {
     ).not.toBeInTheDocument();
 
     expect(phoneSearchInput).toHaveValue('+911234567890');
-  });
-
-  it('should clear phone input when typing in name field', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
-    );
-
-    const phoneSearchInput = screen.getByTestId('phone-search-input');
-    const nameSearchInput = screen.getByTestId('search-patient-searchbar');
-
-    fireEvent.input(phoneSearchInput, { target: { value: '1234567890' } });
-    expect(phoneSearchInput).toHaveValue('1234567890');
-
-    fireEvent.input(nameSearchInput, { target: { value: 'John Doe' } });
-    expect(phoneSearchInput).toHaveValue('');
-    expect(nameSearchInput).toHaveValue('John Doe');
   });
 
   it('should clear name input when typing in phone field', async () => {
@@ -763,7 +756,7 @@ describe('SearchPatient', () => {
       </QueryClientProvider>,
     );
 
-    const phoneSearchInput = screen.getByTestId('phone-search-input');
+    const phoneSearchInput = screen.getByTestId('advance-search-input');
     const nameSearchInput = screen.getByTestId('search-patient-searchbar');
 
     fireEvent.input(nameSearchInput, { target: { value: 'John Doe' } });
@@ -774,7 +767,7 @@ describe('SearchPatient', () => {
     expect(phoneSearchInput).toHaveValue('1234567890');
   });
 
-  it('should clear phone validation error when typing in name field', async () => {
+  it('should clear phone input when typing in name field', async () => {
     render(
       <QueryClientProvider client={queryClient}>
         <SearchPatient
@@ -785,18 +778,107 @@ describe('SearchPatient', () => {
       </QueryClientProvider>,
     );
 
-    const phoneSearchInput = screen.getByTestId('phone-search-input');
+    const phoneSearchInput = screen.getByTestId('advance-search-input');
     const nameSearchInput = screen.getByTestId('search-patient-searchbar');
 
     fireEvent.input(phoneSearchInput, { target: { value: '123a' } });
-    fireEvent.click(screen.getByTestId('phone-search-button'));
-
-    expect(screen.getByTestId('phone-validation-error')).toBeInTheDocument();
+    expect(phoneSearchInput).toHaveValue('123a');
 
     fireEvent.input(nameSearchInput, { target: { value: 'John Doe' } });
-    expect(
-      screen.queryByTestId('phone-validation-error'),
-    ).not.toBeInTheDocument();
+    expect(phoneSearchInput).toHaveValue('');
+    expect(nameSearchInput).toHaveValue('John Doe');
+  });
+
+  it('should show notification when config validation fails', async () => {
+    const configError = new Error('Schema validation failed');
+    mockGetRegistrationConfig.mockRejectedValue(configError);
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SearchPatient
+          buttonTitle={buttonTitle}
+          searchBarPlaceholder={searchBarPlaceholder}
+          onSearch={mockOnSearch}
+        />
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => {
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        type: 'error',
+        title: 'CONFIG_ERROR_SCHEMA_VALIDATION_FAILED',
+        message: 'Schema validation failed',
+      });
+    });
+  });
+
+  it('should show notification when config has no patient search fields', async () => {
+    const configWithoutSearchFields = {
+      config: {
+        patientSearch: {},
+      },
+    };
+
+    mockGetRegistrationConfig.mockResolvedValue(
+      configWithoutSearchFields as any,
+    );
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SearchPatient
+          buttonTitle={buttonTitle}
+          searchBarPlaceholder={searchBarPlaceholder}
+          onSearch={mockOnSearch}
+        />
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => {
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        type: 'error',
+        title: 'CONFIG_ERROR_NOT_FOUND',
+        message: 'No patient search configuration found',
+      });
+    });
+  });
+
+  it('should search by email when email is selected from dropdown', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SearchPatient
+          buttonTitle={buttonTitle}
+          searchBarPlaceholder={searchBarPlaceholder}
+          onSearch={mockOnSearch}
+        />
+      </QueryClientProvider>,
+    );
+
+    const dropdownButton = screen.getByRole('combobox', {
+      name: /select search attribute/i,
+    });
+
+    await userEvent.click(dropdownButton);
+
+    const emailOption = await screen.findByText('Email');
+    await userEvent.click(emailOption);
+
+    const customSearchInput = screen.getByTestId('advance-search-input');
+    await userEvent.type(customSearchInput, 'test@example.com');
+
+    (searchPatientByCustomAttribute as jest.Mock).mockReturnValue({});
+
+    const customSearchButton = screen.getByTestId('advance-search-button');
+    await userEvent.click(customSearchButton);
+
+    expect(searchPatientByCustomAttribute).toHaveBeenCalledTimes(1);
+    expect(mockOnSearch).toHaveBeenCalled();
+    expect(searchPatientByCustomAttribute).toHaveBeenCalledWith(
+      encodeURI('test@example.com'),
+      'person',
+      ['email'],
+      expect.any(Array),
+      expect.any(Function),
+    );
   });
 
   it('should have no accessibility violations', async () => {

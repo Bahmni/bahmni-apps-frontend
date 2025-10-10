@@ -91,12 +91,16 @@ export {
   getClinicalConfig,
   getDashboardConfig,
   getMedicationConfig,
+  getRegistrationConfig,
   type ClinicalConfig,
   type DashboardConfig,
   type MedicationJSONConfig,
   type DashboardSectionConfig,
   type Dashboard,
   type Frequency,
+  type RegistrationConfig,
+  type PatientSearchConfig,
+  type PatientSearchField,
 } from './configService';
 
 export { getCurrentUser, type User } from './userService';
