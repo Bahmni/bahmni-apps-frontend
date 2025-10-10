@@ -104,9 +104,9 @@ const NewPatientRegistration = () => {
     middleName: '',
     lastName: '',
     gender: '',
-    ageYears: 0,
-    ageMonths: 0,
-    ageDays: 0,
+    ageYears: '',
+    ageMonths: '',
+    ageDays: '',
     dateOfBirth: '',
     birthTime: '',
     houseNumber: '',
@@ -131,6 +131,12 @@ const NewPatientRegistration = () => {
     lastName: '',
     gender: '',
     dateOfBirth: '',
+  });
+
+  const [ageErrors, setAgeErrors] = useState({
+    ageYears: '',
+    ageMonths: '',
+    ageDays: '',
   });
 
   // Address hierarchy state (only for district, state, and pincode)
@@ -212,35 +218,57 @@ const NewPatientRegistration = () => {
     setFormData((prev) => ({
       ...prev,
       dateOfBirth: isoDate,
-      ageYears: Number(calculatedAge.years) || 0,
-      ageMonths: Number(calculatedAge.months) || 0,
-      ageDays: Number(calculatedAge.days) || 0,
+      ageYears: String(calculatedAge.years ?? 0),
+      ageMonths: String(calculatedAge.months ?? 0),
+      ageDays: String(calculatedAge.days ?? 0),
     }));
     setDobEstimated(false);
     setValidationErrors((prev) => ({ ...prev, dateOfBirth: '' }));
   }, []);
 
   const handleAgeChange = useCallback(
-    (field: 'ageYears' | 'ageMonths' | 'ageDays', value: number) => {
-      setFormData((prev) => {
-        const updated = { ...prev, [field]: value || 0 };
-        const age = {
-          years: updated.ageYears,
-          months: updated.ageMonths,
-          days: updated.ageDays,
-        };
-        if (age.years > 0 || age.months > 0 || age.days > 0) {
-          const birthISO = AgeUtils.calculateBirthDate(age);
-          updated.dateOfBirth = birthISO;
-          setDobEstimated(true);
-        } else {
-          updated.dateOfBirth = '';
-          setDobEstimated(false);
+    (field: 'ageYears' | 'ageMonths' | 'ageDays', value: string) => {
+      const numValue = Number(value);
+      let error = '';
+
+      // Validate based on field
+      if (value && !isNaN(numValue)) {
+        if (field === 'ageYears' && numValue > 120) {
+          error = t('CREATE_PATIENT_VALIDATION_AGE_YEARS_MAX');
+        } else if (field === 'ageMonths' && numValue > 11) {
+          error = t('CREATE_PATIENT_VALIDATION_AGE_MONTHS_MAX');
+        } else if (field === 'ageDays' && numValue > 31) {
+          error = t('CREATE_PATIENT_VALIDATION_AGE_DAYS_MAX');
         }
-        return updated;
-      });
+      }
+
+      setAgeErrors((prev) => ({ ...prev, [field]: error }));
+
+      // Only update formData if there's no error
+      if (!error) {
+        setFormData((prev) => {
+          const updated = { ...prev, [field]: value };
+          const age = {
+            years: Number(updated.ageYears) || 0,
+            months: Number(updated.ageMonths) || 0,
+            days: Number(updated.ageDays) || 0,
+          };
+          if (age.years > 0 || age.months > 0 || age.days > 0) {
+            const birthISO = AgeUtils.calculateBirthDate(age);
+            updated.dateOfBirth = birthISO;
+            setDobEstimated(true);
+          } else {
+            updated.dateOfBirth = '';
+            setDobEstimated(false);
+          }
+          return updated;
+        });
+      } else {
+        // Still update the value even if there's an error, so user can see their input
+        setFormData((prev) => ({ ...prev, [field]: value }));
+      }
     },
-    [],
+    [t],
   );
 
   const debouncedSearchAddress = useCallback(
@@ -556,7 +584,7 @@ const NewPatientRegistration = () => {
 
                 <div className={styles.col}>
                   <div className={styles.row}>
-                    <div className={styles.col}>
+                    <div className={styles.dropdownField}>
                       <Dropdown
                         id="patient-id-format"
                         titleText={t('CREATE_PATIENT_PATIENT_ID_FORMAT')}
@@ -579,90 +607,87 @@ const NewPatientRegistration = () => {
                       <CheckboxGroup
                         legendText={t('CREATE_PATIENT_ENTRY_TYPE')}
                       >
-                        <Checkbox
-                          labelText={t('CREATE_PATIENT_ENTER_MANUALLY')}
-                          id="entry-type"
-                          checked={formData.entryType}
-                          onChange={(e) =>
-                            handleInputChange('entryType', e.target.checked)
-                          }
-                        />
+                        <div className={styles.checkboxField}>
+                          <Checkbox
+                            labelText={t('CREATE_PATIENT_ENTER_MANUALLY')}
+                            id="entry-type"
+                            checked={formData.entryType}
+                            onChange={(e) =>
+                              handleInputChange('entryType', e.target.checked)
+                            }
+                          />
+                        </div>
                       </CheckboxGroup>
                     </div>
                   </div>
 
                   <div className={`${styles.row} ${styles.nameFields}`}>
-                    <div className={styles.col}>
-                      <TextInput
-                        id="first-name"
-                        labelText={t('CREATE_PATIENT_FIRST_NAME')}
-                        placeholder={t('CREATE_PATIENT_FIRST_NAME_PLACEHOLDER')}
-                        value={formData.firstName}
-                        required
-                        invalid={
-                          !!nameErrors.firstName || !!validationErrors.firstName
-                        }
-                        invalidText={
-                          nameErrors.firstName || validationErrors.firstName
-                        }
-                        onChange={(e) =>
-                          handleNameChange('firstName', e.target.value)
-                        }
-                      />
-                    </div>
-                    <div className={styles.col}>
-                      <TextInput
-                        id="middle-name"
-                        labelText={t('CREATE_PATIENT_MIDDLE_NAME')}
-                        placeholder={t(
-                          'CREATE_PATIENT_MIDDLE_NAME_PLACEHOLDER',
-                        )}
-                        value={formData.middleName}
-                        invalid={!!nameErrors.middleName}
-                        invalidText={nameErrors.middleName}
-                        onChange={(e) =>
-                          handleNameChange('middleName', e.target.value)
-                        }
-                      />
-                    </div>
-                    <div className={styles.col}>
-                      <TextInput
-                        id="last-name"
-                        labelText={t('CREATE_PATIENT_LAST_NAME')}
-                        placeholder={t('CREATE_PATIENT_LAST_NAME_PLACEHOLDER')}
-                        required
-                        value={formData.lastName}
-                        invalid={
-                          !!nameErrors.lastName || !!validationErrors.lastName
-                        }
-                        invalidText={
-                          nameErrors.lastName || validationErrors.lastName
-                        }
-                        onChange={(e) =>
-                          handleNameChange('lastName', e.target.value)
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className={`${styles.row} ${styles.demographicsFields}`}>
-                    <Dropdown
-                      id="gender"
-                      titleText={t('CREATE_PATIENT_GENDER')}
-                      label={t('CREATE_PATIENT_SELECT')}
-                      items={genders}
-                      aria-required="true"
-                      selectedItem={formData.gender}
-                      invalid={!!validationErrors.gender}
-                      invalidText={validationErrors.gender}
-                      onChange={({ selectedItem }) => {
-                        handleInputChange('gender', selectedItem ?? '');
-                        setValidationErrors((prev) => ({
-                          ...prev,
-                          gender: '',
-                        }));
-                      }}
+                    <TextInput
+                      id="first-name"
+                      labelText={t('CREATE_PATIENT_FIRST_NAME')}
+                      placeholder={t('CREATE_PATIENT_FIRST_NAME_PLACEHOLDER')}
+                      value={formData.firstName}
+                      required
+                      invalid={
+                        !!nameErrors.firstName || !!validationErrors.firstName
+                      }
+                      invalidText={
+                        nameErrors.firstName || validationErrors.firstName
+                      }
+                      onChange={(e) =>
+                        handleNameChange('firstName', e.target.value)
+                      }
                     />
+
+                    <TextInput
+                      id="middle-name"
+                      labelText={t('CREATE_PATIENT_MIDDLE_NAME')}
+                      placeholder={t('CREATE_PATIENT_MIDDLE_NAME_PLACEHOLDER')}
+                      value={formData.middleName}
+                      invalid={!!nameErrors.middleName}
+                      invalidText={nameErrors.middleName}
+                      onChange={(e) =>
+                        handleNameChange('middleName', e.target.value)
+                      }
+                    />
+
+                    <TextInput
+                      id="last-name"
+                      labelText={t('CREATE_PATIENT_LAST_NAME')}
+                      placeholder={t('CREATE_PATIENT_LAST_NAME_PLACEHOLDER')}
+                      required
+                      value={formData.lastName}
+                      invalid={
+                        !!nameErrors.lastName || !!validationErrors.lastName
+                      }
+                      invalidText={
+                        nameErrors.lastName || validationErrors.lastName
+                      }
+                      onChange={(e) =>
+                        handleNameChange('lastName', e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className={`${styles.row} ${styles.demographicsFields}`}>
+                    <div className={styles.dropdownField}>
+                      <Dropdown
+                        id="gender"
+                        titleText={t('CREATE_PATIENT_GENDER')}
+                        label={t('CREATE_PATIENT_SELECT')}
+                        items={genders}
+                        aria-required="true"
+                        selectedItem={formData.gender}
+                        invalid={!!validationErrors.gender}
+                        invalidText={validationErrors.gender}
+                        onChange={({ selectedItem }) => {
+                          handleInputChange('gender', selectedItem ?? '');
+                          setValidationErrors((prev) => ({
+                            ...prev,
+                            gender: '',
+                          }));
+                        }}
+                      />
+                    </div>
 
                     <div className={styles.col}>
                       <div className={styles.ageFieldsWrapper}>
@@ -673,16 +698,16 @@ const NewPatientRegistration = () => {
                             type="number"
                             required
                             min={0}
-                            max={150}
+                            max={120}
                             value={formData.ageYears}
+                            invalid={!!ageErrors.ageYears}
+                            invalidText={ageErrors.ageYears}
                             onChange={(e) =>
-                              handleAgeChange(
-                                'ageYears',
-                                Number(e.target.value),
-                              )
+                              handleAgeChange('ageYears', e.target.value)
                             }
                           />
                         </div>
+
                         <div className={styles.ageInputs}>
                           <TextInput
                             id="age-months"
@@ -692,11 +717,10 @@ const NewPatientRegistration = () => {
                             min={0}
                             max={11}
                             value={formData.ageMonths}
+                            invalid={!!ageErrors.ageMonths}
+                            invalidText={ageErrors.ageMonths}
                             onChange={(e) =>
-                              handleAgeChange(
-                                'ageMonths',
-                                Number(e.target.value),
-                              )
+                              handleAgeChange('ageMonths', e.target.value)
                             }
                           />
                         </div>
@@ -708,8 +732,10 @@ const NewPatientRegistration = () => {
                             min={0}
                             max={31}
                             value={formData.ageDays}
+                            invalid={!!ageErrors.ageDays}
+                            invalidText={ageErrors.ageDays}
                             onChange={(e) =>
-                              handleAgeChange('ageDays', Number(e.target.value))
+                              handleAgeChange('ageDays', e.target.value)
                             }
                           />
                         </div>
@@ -718,7 +744,7 @@ const NewPatientRegistration = () => {
                   </div>
 
                   <div className={`${styles.row} ${styles.birthInfoFields}`}>
-                    <div className={styles.col}>
+                    <div>
                       <DatePicker
                         dateFormat="d/m/Y"
                         datePickerType="single"
@@ -740,17 +766,18 @@ const NewPatientRegistration = () => {
                         />
                       </DatePicker>
                     </div>
-                    <div className={styles.col}>
-                      <CheckboxGroup legendText={t('CREATE_PATIENT_ACCURACY')}>
+
+                    <CheckboxGroup legendText={t('CREATE_PATIENT_ACCURACY')}>
+                      <div className={styles.checkboxField}>
                         <Checkbox
                           labelText={t('CREATE_PATIENT_ESTIMATED')}
                           id="accuracy"
                           checked={dobEstimated}
                           onChange={() => setDobEstimated(!dobEstimated)}
                         />
-                      </CheckboxGroup>
-                    </div>
-                    <div className={styles.col}>
+                      </div>
+                    </CheckboxGroup>
+                    <div>
                       <TextInput
                         id="birth-time"
                         type="time"
@@ -989,7 +1016,7 @@ const NewPatientRegistration = () => {
                 {t('CREATE_PATIENT_SECTION_CONTACT_INFO')}
               </h4>
               <div className={styles.row}>
-                <div className={styles.col}>
+                <div className={styles.phoneNumberField}>
                   <TextInput
                     id="phone-number"
                     labelText={t('CREATE_PATIENT_PHONE_NUMBER')}
@@ -1000,11 +1027,11 @@ const NewPatientRegistration = () => {
                     }
                   />
                 </div>
-                <div className={styles.col}>
+                <div className={styles.phoneNumberField}>
                   <TextInput
                     id="alt-phone-number"
                     labelText={t('CREATE_PATIENT_ALT_PHONE_NUMBER')}
-                    placeholder={t('CREATE_PATIENT_PHONE_NUMBER_PLACEHOLDER')}
+                    placeholder={t('CREATE_PATIENT_ALT_PHONE_NUMBER')}
                     value={formData.altPhoneNumber}
                     onChange={(e) =>
                       handlePhoneChange('altPhoneNumber', e.target.value)
@@ -1020,7 +1047,7 @@ const NewPatientRegistration = () => {
                 {t('CREATE_PATIENT_SECTION_ADDITIONAL_INFO')}
               </h4>
               <div className={styles.row}>
-                <div className={styles.col}>
+                <div className={styles.emailField}>
                   <TextInput
                     id="email"
                     labelText={t('CREATE_PATIENT_EMAIL')}
