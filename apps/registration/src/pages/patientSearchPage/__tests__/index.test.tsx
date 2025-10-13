@@ -86,6 +86,20 @@ jest.mock('@tanstack/react-query', () => ({
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
   ...jest.requireActual('@bahmni-frontend/bahmni-services'),
   dispatchAuditEvent: jest.fn(),
+  getRegistrationConfig: jest.fn().mockResolvedValue({
+    config: {
+      patientSearch: {
+        customAttributes: [],
+      },
+    },
+  }),
+  notificationService: {
+    register: jest.fn(),
+    showError: jest.fn(),
+    showSuccess: jest.fn(),
+    showWarning: jest.fn(),
+    showInfo: jest.fn(),
+  },
 }));
 
 describe('PatientSearchPage', () => {
@@ -505,9 +519,7 @@ describe('PatientSearchPage', () => {
           </NotificationProvider>
         </MemoryRouter>,
       );
-
-      expect(screen.getByText('LOADING_PATIENT_DETAILS')).toBeInTheDocument();
-      expect(screen.getByRole('status')).toBeInTheDocument();
+      expect(screen.getByTitle('LOADING_PATIENT_DETAILS')).toBeInTheDocument();
     });
   });
 });

@@ -4,11 +4,13 @@ import {
   logAuditEvent,
   getFormattedError,
   notificationService,
+  getConditions,
 } from '@bahmni-frontend/bahmni-services';
 import {
   NotificationProvider,
   useActivePractitioner,
 } from '@bahmni-frontend/bahmni-widgets';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
@@ -43,6 +45,7 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
   getFormattedError: jest.fn(),
   getActiveVisit: jest.fn(),
   logAuditEvent: jest.fn(),
+  getConditions: jest.fn(),
 }));
 
 jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
@@ -56,6 +59,7 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
   getActiveVisit: jest.fn(),
   logAuditEvent: jest.fn(),
   getCurrentUserPrivileges: jest.fn(),
+  getConditions: jest.fn(),
 }));
 
 // Mock useUserPrivilege hook
@@ -66,6 +70,10 @@ jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
   useUserPrivilege: jest.fn(() => ({
     userPrivileges: ['Get Patients', 'Add Patients'],
   })),
+  conditionsQueryKeys: jest.fn((patientUUID: string) => [
+    'conditions',
+    patientUUID,
+  ]),
 }));
 
 // Create mock user
@@ -92,19 +100,36 @@ global.crypto = {
 };
 
 // Test wrapper component with all required providers
-const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <I18nextProvider i18n={i18n}>
-    <NotificationProvider>
-      <ClinicalConfigProvider>
-        <MemoryRouter initialEntries={['/patient/patient-1']}>
-          <Routes>
-            <Route path="/patient/:patientUuid" element={children} />
-          </Routes>
-        </MemoryRouter>
-      </ClinicalConfigProvider>
-    </NotificationProvider>
-  </I18nextProvider>
-);
+const TestWrapper = ({ children }: { children: React.ReactNode }) => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        staleTime: 0,
+        gcTime: 0,
+      },
+      mutations: {
+        retry: false,
+      },
+    },
+  });
+
+  return (
+    <I18nextProvider i18n={i18n}>
+      <QueryClientProvider client={queryClient}>
+        <NotificationProvider>
+          <ClinicalConfigProvider>
+            <MemoryRouter initialEntries={['/patient/patient-1']}>
+              <Routes>
+                <Route path="/patient/:patientUuid" element={children} />
+              </Routes>
+            </MemoryRouter>
+          </ClinicalConfigProvider>
+        </NotificationProvider>
+      </QueryClientProvider>
+    </I18nextProvider>
+  );
+};
 
 // Create a proper FhirEncounter object
 const fullMockActiveVisit: FhirEncounter = {
@@ -167,6 +192,7 @@ describe('ConsultationPad Integration', () => {
       title: error.title ?? 'unknown title',
       message: error.message ?? 'Unknown error',
     }));
+    (getConditions as jest.Mock).mockResolvedValue([]);
 
     (useActivePractitioner as jest.Mock).mockReturnValue({
       practitioner: mockProvider,

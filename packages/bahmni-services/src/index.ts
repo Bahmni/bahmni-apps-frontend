@@ -33,6 +33,7 @@ export {
   getPriorityByOrder,
   groupByDate,
   filterReplacementEntries,
+  refreshQueries,
 } from './utils';
 export {
   type FormatDateResult,
@@ -60,13 +61,7 @@ export {
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
 } from './allergyService';
-export {
-  getConditions,
-  getFormattedConditions,
-  type FormattedCondition,
-  type ConditionInputEntry,
-  ConditionStatus,
-} from './conditionService';
+export { getConditions, type ConditionInputEntry } from './conditionService';
 export {
   getPatientDiagnoses,
   type Diagnosis,
@@ -111,12 +106,16 @@ export {
   getClinicalConfig,
   getDashboardConfig,
   getMedicationConfig,
+  getRegistrationConfig,
   type ClinicalConfig,
   type DashboardConfig,
   type MedicationJSONConfig,
   type DashboardSectionConfig,
   type Dashboard,
   type Frequency,
+  type RegistrationConfig,
+  type PatientSearchConfig,
+  type PatientSearchField,
 } from './configService';
 
 export { getCurrentUser, type User } from './userService';

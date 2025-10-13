@@ -1,9 +1,11 @@
 import { Patient } from 'fhir/r4';
 import { get, post } from '../api';
 import { APP_PROPERTY_URL } from '../applicationConfigService/constants';
+import { PatientSearchField } from '../configService/models/registrationConfig';
 import { calculateAge } from '../date';
 import { getUserLoginLocation } from '../userService';
 import {
+  PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL,
   PATIENT_LUCENE_SEARCH_URL,
   PATIENT_RESOURCE_URL,
   PATIENT_PHONE_NUMBER_SEARCH_URL,
@@ -184,17 +186,30 @@ export const searchPatientByNameOrId = async (
 };
 
 /**
- * Search patient by PhoneNumber
- * @param phoneNumber - The Phone Number of the patient
+ * Search patient by Custom Attributes (phone, address, program fields)
+ * @param searchTerm - The search value entered by user
+ * @param searchFields - Array of field names to search in (from PatientSearchField.fields)
+ * @param patientSearchFields - Array of PatientSearchField objects to extract result fields from
+ * @param t - Translation function
  * @returns A formatted patient search bundle object
  */
-export async function searchPatientByCustomAttribute(
-  phoneNumber: string,
+export const searchPatientByCustomAttribute = async (
+  searchTerm: string,
+  fieldType: string,
+  fieldsToSearch: string[],
+  allSearchFields: PatientSearchField[],
   t: (key: string) => string,
-): Promise<PatientSearchResultBundle> {
+): Promise<PatientSearchResultBundle> => {
   const loginLocation = getUserLoginLocation();
+
   const searchResultsBundle = await get<PatientSearchResultBundle>(
-    PATIENT_PHONE_NUMBER_SEARCH_URL(phoneNumber, loginLocation.uuid),
+    PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL(
+      searchTerm,
+      fieldType,
+      fieldsToSearch,
+      allSearchFields,
+      loginLocation.uuid,
+    ),
   );
   return searchResultsBundle;
 }

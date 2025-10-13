@@ -1,4 +1,5 @@
 import { UserPrivilegeProvider } from '@bahmni-frontend/bahmni-widgets';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { I18nextProvider } from 'react-i18next';
@@ -10,6 +11,23 @@ const mockUseEncounterSession = jest.fn();
 jest.mock('../../../hooks/useEncounterSession', () => ({
   useEncounterSession: () => mockUseEncounterSession(),
 }));
+// Mock TanStack Query
+jest.mock('@tanstack/react-query', () => ({
+  useQueryClient: jest.fn(() => ({
+    cancelQueries: jest.fn(),
+    removeQueries: jest.fn(),
+    invalidateQueries: jest.fn(),
+  })),
+  QueryClient: jest.fn().mockImplementation(() => ({
+    cancelQueries: jest.fn(),
+    removeQueries: jest.fn(),
+    invalidateQueries: jest.fn(),
+  })),
+  QueryClientProvider: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+}));
+
 // Mock useUserPrivilege hook
 jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
   ...jest.requireActual('@bahmni-frontend/bahmni-widgets'),
@@ -19,6 +37,10 @@ jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
   useNotification: jest.fn(() => ({
     addNotification: jest.fn(),
   })),
+  conditionsQueryKeys: jest.fn((patientUUID: string) => [
+    'conditions',
+    patientUUID,
+  ]),
   UserPrivilegeProvider: ({ children }: { children: React.ReactNode }) => (
     <div>{children}</div>
   ),
@@ -111,6 +133,12 @@ jest.mock('../../../services/consultationBundleService', () => ({
   createConditionsBundleEntries: jest.fn(() => []),
   createServiceRequestBundleEntries: jest.fn(() => []),
   createMedicationRequestEntries: jest.fn(() => []),
+}));
+
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+  getCurrentUserPrivileges: jest.fn(),
+  findActiveEncounterInSession: jest.fn().mockResolvedValue(null),
 }));
 
 // Mock utilities
@@ -219,9 +247,24 @@ Object.defineProperty(global, 'crypto', {
 });
 
 const renderWithProviders = (ui: React.ReactElement) => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        staleTime: 0,
+        gcTime: 0,
+      },
+      mutations: {
+        retry: false,
+      },
+    },
+  });
+
   return render(
     <I18nextProvider i18n={i18n}>
-      <UserPrivilegeProvider>{ui}</UserPrivilegeProvider>
+      <QueryClientProvider client={queryClient}>
+        <UserPrivilegeProvider>{ui}</UserPrivilegeProvider>
+      </QueryClientProvider>
     </I18nextProvider>,
   );
 };

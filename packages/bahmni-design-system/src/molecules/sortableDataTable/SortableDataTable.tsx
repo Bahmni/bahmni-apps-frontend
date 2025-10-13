@@ -32,20 +32,20 @@ export const SortableDataTable = <T extends { id: string }>({
   ariaLabel,
   sortable = headers.map((header) => ({ key: header.key, sortable: true })),
   loading = false,
-  errorStateMessage: error = null,
+  errorStateMessage = null,
   emptyStateMessage = 'No data available.',
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   renderCell = (row, cellId) => (row as any)[cellId],
   className = 'sortable-data-table',
   onRowClick,
 }: SortableDataTableProps<T>) => {
-  if (error) {
+  if (errorStateMessage) {
     return (
       <p
         data-testid="sortable-table-error"
         className={styles.sortableDataTableBodyEmpty}
       >
-        {error}
+        {errorStateMessage}
       </p>
     );
   }
@@ -119,7 +119,7 @@ export const SortableDataTable = <T extends { id: string }>({
                     onClick={
                       onRowClick ? () => onRowClick(originalRow) : undefined
                     }
-                    className={styles.interactiveRow}
+                    className={onRowClick ? styles.interactiveRow : ''}
                   >
                     {row.cells.map((cell) => (
                       <TableCell key={cell.id}>

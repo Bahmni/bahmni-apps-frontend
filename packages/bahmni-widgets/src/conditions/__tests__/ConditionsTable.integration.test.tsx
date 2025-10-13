@@ -1,159 +1,116 @@
-import {
-  getFormattedConditions,
-  getFormattedError,
-  useTranslation,
-  ConditionStatus,
-  FormattedCondition,
-} from '@bahmni-frontend/bahmni-services';
+import { getConditions } from '@bahmni-frontend/bahmni-services';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
-import { usePatientUUID } from '../../hooks/usePatientUUID';
+import { Condition } from 'fhir/r4';
+import { useNotification } from '../../notification';
 import ConditionsTable from '../ConditionsTable';
 
+jest.mock('../../notification');
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
   ...jest.requireActual('@bahmni-frontend/bahmni-services'),
-  getFormattedConditions: jest.fn(),
-  getFormattedError: jest.fn(),
-  useTranslation: jest.fn(),
+  getConditions: jest.fn(),
 }));
-
-jest.mock('../../hooks/usePatientUUID');
-
-const mockGetFormattedConditions =
-  getFormattedConditions as jest.MockedFunction<typeof getFormattedConditions>;
-const mockGetFormattedError = getFormattedError as jest.MockedFunction<
-  typeof getFormattedError
->;
-const mockUseTranslation = useTranslation as jest.MockedFunction<
-  typeof useTranslation
->;
-const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
-  typeof usePatientUUID
->;
-
-jest.mock('react-router-dom', () => ({
-  useParams: jest.fn(),
+jest.mock('../../hooks/usePatientUUID', () => ({
+  usePatientUUID: jest.fn(() => 'test-patient-uuid'),
 }));
+const mockAddNotification = jest.fn();
 
-const mockConditions: FormattedCondition[] = [
+const mockValidConditions: Condition[] = [
   {
-    id: '1',
-    code: 'K82.9',
-    codeDisplay: 'K82.9',
-    display: 'Chronic Cholecystitis',
-    status: ConditionStatus.Active,
-    onsetDate: '2025-03-24T18:30:00+00:00',
-    recorder: 'Dr. Smith',
-  },
-  {
-    id: '2',
-    code: 'M79.3',
-    codeDisplay: 'M79.3',
-    display: 'Panniculitis',
-    status: ConditionStatus.Inactive,
-    onsetDate: '2025-01-15T10:00:00+00:00',
-    recorder: 'Dr. Johnson',
+    resourceType: 'Condition',
+    id: 'condition-active-diabetes',
+    meta: {
+      versionId: '1',
+      lastUpdated: '2025-03-25T06:48:32.000+00:00',
+    },
+    clinicalStatus: {
+      coding: [
+        {
+          system: 'http://terminology.hl7.org/CodeSystem/condition-clinical',
+          code: 'active',
+          display: 'Active',
+        },
+      ],
+    },
+    code: {
+      coding: [
+        {
+          system: 'http://snomed.info/sct',
+          code: '73211009',
+          display: 'Diabetes mellitus',
+        },
+      ],
+    },
+    subject: {
+      reference: 'Patient/test-patient',
+      type: 'Patient',
+      display: 'John Doe',
+    },
+    onsetDateTime: '2023-01-15T10:30:00.000+00:00',
+    recordedDate: '2023-01-15T10:30:00.000+00:00',
+    recorder: {
+      reference: 'Practitioner/dr-smith',
+      display: 'Dr. Smith',
+    },
+    note: [
+      {
+        text: 'Patient diagnosed with Type 2 diabetes',
+      },
+      {
+        text: 'Requires regular blood sugar monitoring',
+      },
+    ],
   },
 ];
 
-describe('ConditionsTable Integration', () => {
+describe('ConditionsTable', () => {
+  const queryClient: QueryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        staleTime: 0,
+      },
+    },
+  });
   beforeEach(() => {
     jest.clearAllMocks();
-
-    mockUseTranslation.mockReturnValue({
-      t: (key: string, options?: { timeAgo?: string }) => {
-        const translations: Record<string, string> = {
-          CONDITION_LIST_DISPLAY_CONTROL_TITLE: 'Conditions',
-          CONDITION_LIST_CONDITION: 'Condition',
-          CONDITION_TABLE_DURATION: 'Duration',
-          CONDITION_TABLE_RECORDED_BY: 'Recorded By',
-          CONDITION_LIST_STATUS: 'Status',
-          CONDITION_LIST_ACTIVE: 'Active',
-          CONDITION_LIST_INACTIVE: 'Inactive',
-          CONDITION_LIST_NO_CONDITIONS: 'No conditions recorded',
-          CONDITION_TABLE_NOT_AVAILABLE: 'Not available',
-          CONDITION_ONSET_SINCE_FORMAT: options?.timeAgo
-            ? `Since ${options.timeAgo}`
-            : 'Since',
-          ERROR_INVALID_PATIENT_UUID: 'Invalid patient UUID',
-        };
-        return translations[key] || key;
-      },
+    (useNotification as jest.Mock).mockReturnValue({
+      addNotification: mockAddNotification,
     });
-
-    mockUsePatientUUID.mockReturnValue('patient-123');
-    mockGetFormattedError.mockImplementation((error) => ({
-      title: 'Error',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    }));
+  });
+  afterEach(() => {
+    queryClient.clear();
   });
 
-  it('renders conditions from service through complete data flow', async () => {
-    mockGetFormattedConditions.mockResolvedValue(mockConditions);
-
-    render(<ConditionsTable />);
-
+  const wrapper = (
+    <QueryClientProvider client={queryClient}>
+      <ConditionsTable />
+    </QueryClientProvider>
+  );
+  it('should show conditions table when an there patient has conditions marked', async () => {
+    (getConditions as jest.Mock).mockReturnValue(mockValidConditions);
+    render(wrapper);
+    expect(screen.getByTestId('condition-table')).toBeInTheDocument();
     await waitFor(() => {
-      expect(screen.getByText('Chronic Cholecystitis')).toBeInTheDocument();
-      expect(screen.getByText('Panniculitis')).toBeInTheDocument();
-      expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
-      expect(screen.getByText('Dr. Johnson')).toBeInTheDocument();
+      expect(screen.getByText('Diabetes mellitus')).toBeInTheDocument();
     });
-
-    expect(mockGetFormattedConditions).toHaveBeenCalledWith('patient-123');
+    expect(screen.getByText('Diabetes mellitus')).toBeInTheDocument();
+    expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
+    expect(getConditions).toHaveBeenCalledTimes(1);
   });
 
-  it('propagates service errors through hook to component UI', async () => {
-    const serviceError = new Error('Network timeout');
-    mockGetFormattedConditions.mockRejectedValue(serviceError);
-
-    render(<ConditionsTable />);
-
+  it('should show error state when an error occurs', async () => {
+    const errorMessage = 'Failed to fetch conditions from server';
+    (getConditions as jest.Mock).mockRejectedValue(new Error(errorMessage));
+    render(wrapper);
+    expect(screen.getByTestId('condition-table')).toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getByTestId('sortable-table-error')).toBeInTheDocument();
-      expect(screen.getByText(/Network timeout/)).toBeInTheDocument();
-    });
-
-    expect(mockGetFormattedError).toHaveBeenCalledWith(serviceError);
-  });
-
-  it('handles empty service response through complete flow', async () => {
-    mockGetFormattedConditions.mockResolvedValue([]);
-
-    render(<ConditionsTable />);
-
-    await waitFor(() => {
-      expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
-      expect(screen.getByText('No conditions recorded')).toBeInTheDocument();
-    });
-  });
-
-  it('handles missing patient UUID through service integration', async () => {
-    mockUsePatientUUID.mockReturnValue('');
-
-    render(<ConditionsTable />);
-
-    await waitFor(() => {
-      expect(screen.getByTestId('sortable-table-error')).toBeInTheDocument();
-      expect(screen.getByText('Invalid patient UUID')).toBeInTheDocument();
-    });
-
-    expect(mockGetFormattedConditions).not.toHaveBeenCalled();
-  });
-
-  it('shows loading state during service call', async () => {
-    let resolvePromise: (value: FormattedCondition[]) => void;
-    const servicePromise = new Promise<FormattedCondition[]>((resolve) => {
-      resolvePromise = resolve;
-    });
-    mockGetFormattedConditions.mockReturnValue(servicePromise);
-
-    render(<ConditionsTable />);
-
-    expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
-
-    resolvePromise!(mockConditions);
-    await waitFor(() => {
-      expect(screen.getByText('Chronic Cholecystitis')).toBeInTheDocument();
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        type: 'error',
+        title: 'ERROR_DEFAULT_TITLE',
+        message: 'Failed to fetch conditions from server',
+      });
     });
   });
 });

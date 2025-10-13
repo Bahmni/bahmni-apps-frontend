@@ -253,10 +253,60 @@ export const validDashboardConfig: DashboardConfig = {
   ],
 };
 
+export const validRegistrationConfig = {
+  patientSearch: {
+    customAttributes: [
+      {
+        translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_PHONE_NUMBER',
+        fields: ['phoneNumber', 'alternatePhoneNumber'],
+        columnTranslationKeys: [
+          'REGISTRATION_PATIENT_SEARCH_HEADER_PHONE_NUMBER',
+          'REGISTRATION_PATIENT_SEARCH_HEADER_ALTERNATE_PHONE_NUMBER',
+        ],
+        type: 'person',
+      },
+      {
+        translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_EMAIL',
+        fields: ['email'],
+        columnTranslationKeys: ['REGISTRATION_PATIENT_SEARCH_HEADER_EMAIL'],
+        type: 'person',
+      },
+      {
+        translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_VILLAGE',
+        fields: ['village'],
+        columnTranslationKeys: ['REGISTRATION_PATIENT_SEARCH_HEADER_VILLAGE'],
+        type: 'address',
+      },
+      {
+        translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_LOCALITY',
+        fields: ['locality'],
+        columnTranslationKeys: ['REGISTRATION_PATIENT_SEARCH_HEADER_LOCALITY'],
+        type: 'address',
+      },
+      {
+        translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_PROGRAM_NAME',
+        fields: ['programName'],
+        columnTranslationKeys: [
+          'REGISTRATION_PATIENT_SEARCH_HEADER_PROGRAM_NAME',
+        ],
+        type: 'program',
+      },
+      {
+        translationKey:
+          'REGISTRATION_PATIENT_SEARCH_DROPDOWN_PROGRAM_REGISTRATION_ID',
+        fields: ['programRegistrationId'],
+        columnTranslationKeys: [
+          'REGISTRATION_PATIENT_SEARCH_HEADER_PROGRAM_REGISTRATION_ID',
+        ],
+        type: 'program',
+      },
+    ],
+  },
+};
+
 export const invalidDashboardConfig = {
   sections: [
     {
-      //Missing required name parameter
       id: 'vitals',
       icon: 'heartbeat',
       translationKey: 'DASHBOARD_VITALS_KEY',

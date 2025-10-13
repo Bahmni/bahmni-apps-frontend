@@ -1,5 +1,4 @@
 import { Condition, Bundle } from 'fhir/r4';
-import { ConditionStatus, FormattedCondition } from '../models';
 
 export const mockPatientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
 export const mockCondition: Condition = {
@@ -51,32 +50,6 @@ export const mockCondition: Condition = {
 };
 
 export const mockConditions: Condition[] = [mockCondition];
-
-export const mockFormattedConditions: FormattedCondition[] = [
-  {
-    id: '21fc9270-5e82-4073-9468-0bc3c1a105a5',
-    display: 'Cyst of Gallbladder',
-    status: ConditionStatus.Active,
-    onsetDate: '2025-03-24T18:30:00+00:00',
-    recordedDate: '2025-03-25T06:48:32+00:00',
-    recorder: 'Super Man',
-    code: '143017AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-    codeDisplay: 'Cyst of Gallbladder',
-  },
-];
-
-export const mockFormattedConditionsWithoutNotes: FormattedCondition[] = [
-  {
-    id: '21fc9270-5e82-4073-9468-0bc3c1a105a5',
-    display: 'Cyst of Gallbladder',
-    status: ConditionStatus.Active,
-    onsetDate: '2025-03-24T18:30:00+00:00',
-    recordedDate: '2025-03-25T06:48:32+00:00',
-    recorder: 'Super Man',
-    code: '143017AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-    codeDisplay: 'Cyst of Gallbladder',
-  },
-];
 
 export const mockConditionBundle: Bundle = {
   resourceType: 'Bundle',
@@ -136,69 +109,4 @@ export const mockMalformedBundle = {
       },
     },
   ],
-};
-
-export const mockConditionWithoutOptionalFields: Condition = {
-  resourceType: 'Condition',
-  id: 'condition-without-optionals',
-  meta: {
-    versionId: '1',
-    lastUpdated: '2025-03-25T06:48:32.000+00:00',
-  },
-  code: {
-    coding: [
-      {
-        code: 'test-code',
-        display: 'Test Condition',
-      },
-    ],
-    text: 'Test Condition',
-  },
-  subject: {
-    reference: 'Patient/test-patient',
-    type: 'Patient',
-    display: 'Test Patient',
-  },
-};
-
-export const mockConditionBundleWithoutOptionals: Bundle = {
-  resourceType: 'Bundle',
-  id: 'bundle-without-optionals',
-  meta: {
-    lastUpdated: '2025-03-25T11:37:34.743+00:00',
-  },
-  type: 'searchset',
-  total: 1,
-  link: [
-    {
-      relation: 'self',
-      url: 'http://localhost/openmrs/ws/fhir2/R4/Condition?patient=test-patient',
-    },
-  ],
-  entry: [
-    {
-      fullUrl:
-        'http://localhost/openmrs/ws/fhir2/R4/Condition/condition-without-optionals',
-      resource: mockConditionWithoutOptionalFields,
-    },
-  ],
-};
-
-export const mockApiErrors = {
-  notFound: {
-    status: 404,
-    message: 'Patient not found',
-  },
-  unauthorized: {
-    status: 401,
-    message: 'Unauthorized access',
-  },
-  serverError: {
-    status: 500,
-    message: 'Internal server error',
-  },
-  malformedJson: {
-    status: 200,
-    body: 'Invalid JSON',
-  },
 };

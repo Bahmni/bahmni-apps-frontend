@@ -1,3 +1,4 @@
+import { QueryClient } from '@tanstack/react-query';
 import {
   capitalize,
   generateId,
@@ -6,6 +7,7 @@ import {
   getPriorityByOrder,
   groupByDate,
   filterReplacementEntries,
+  refreshQueries,
 } from '../utils';
 
 describe('common utility functions', () => {
@@ -768,6 +770,90 @@ describe('common utility functions', () => {
       // Assert
       expect(result.length).toBeLessThan(largeDataset.length);
       expect(endTime - startTime).toBeLessThan(100); // Should complete in reasonable time
+    });
+  });
+
+  describe('refreshQueries', () => {
+    let queryClient: QueryClient;
+    let cancelQueriesSpy: jest.SpyInstance;
+    let removeQueriesSpy: jest.SpyInstance;
+    let invalidateQueriesSpy: jest.SpyInstance;
+    let refetchQueriesSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      queryClient = new QueryClient({
+        defaultOptions: {
+          queries: { retry: false },
+          mutations: { retry: false },
+        },
+      });
+
+      cancelQueriesSpy = jest
+        .spyOn(queryClient, 'cancelQueries')
+        .mockResolvedValue();
+      removeQueriesSpy = jest
+        .spyOn(queryClient, 'removeQueries')
+        .mockResolvedValue();
+      invalidateQueriesSpy = jest
+        .spyOn(queryClient, 'invalidateQueries')
+        .mockResolvedValue();
+      refetchQueriesSpy = jest
+        .spyOn(queryClient, 'refetchQueries')
+        .mockResolvedValue();
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should perform all query operations with default options', async () => {
+      const queryKey = ['conditions', 'patient-123'];
+
+      await refreshQueries(queryClient, queryKey);
+
+      expect(cancelQueriesSpy).toHaveBeenCalledWith({ queryKey, exact: true });
+      expect(removeQueriesSpy).toHaveBeenCalledWith({ queryKey, exact: true });
+      expect(invalidateQueriesSpy).toHaveBeenCalledWith({
+        queryKey,
+        exact: true,
+      });
+      expect(refetchQueriesSpy).toHaveBeenCalledWith({
+        queryKey,
+        exact: true,
+        type: 'active',
+      });
+    });
+
+    it('should respect exact option when set to false', async () => {
+      const queryKey = ['conditions', 'patient-123'];
+
+      await refreshQueries(queryClient, queryKey, { exact: false });
+
+      expect(cancelQueriesSpy).toHaveBeenCalledWith({ queryKey, exact: false });
+      expect(removeQueriesSpy).toHaveBeenCalledWith({ queryKey, exact: false });
+      expect(invalidateQueriesSpy).toHaveBeenCalledWith({
+        queryKey,
+        exact: false,
+      });
+      expect(refetchQueriesSpy).toHaveBeenCalledWith({
+        queryKey,
+        exact: false,
+        type: 'active',
+      });
+    });
+
+    it('should skip refetch when refetchActiveNow is false', async () => {
+      const queryKey = ['conditions', 'patient-123'];
+
+      await refreshQueries(queryClient, queryKey, { refetchActiveNow: false });
+
+      expect(cancelQueriesSpy).toHaveBeenCalledWith({ queryKey, exact: true });
+      expect(removeQueriesSpy).toHaveBeenCalledWith({ queryKey, exact: true });
+      expect(invalidateQueriesSpy).toHaveBeenCalledWith({
+        queryKey,
+        exact: true,
+      });
+      expect(refetchQueriesSpy).not.toHaveBeenCalled();
     });
   });
 });
