@@ -139,20 +139,6 @@
     gap: 16px;
   }
 
-  .opdVisitGroup {
-    display: flex;
-    align-items: center;
-
-    :global(.cds--btn--primary) {
-      background: var(--button-button-primary, #007d79);
-      height: 40px;
-    }
-
-    :global(.cds--list-box) {
-      background: var(--button-button-primary, #007d79);
-      min-height: 40px;
-    }
-  }
 }
 
 .row {
