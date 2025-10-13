@@ -92,6 +92,8 @@ describe('ObservationFormsContainer', () => {
     onViewingFormChange: jest.fn(),
     viewingForm: null,
     onRemoveForm: jest.fn(),
+    pinnedForms: [],
+    updatePinnedForms: jest.fn(),
   };
 
   beforeEach(() => {
@@ -286,21 +288,11 @@ describe('ObservationFormsContainer', () => {
     };
 
     it('should show pinned state when form is in pinnedForms array', () => {
-      // Mock the hook to return the form as pinned
-      const mockUsePinnedObservationForms = jest.requireMock(
-        '../../../../hooks/usePinnedObservationForms',
-      ).usePinnedObservationForms;
-      mockUsePinnedObservationForms.mockReturnValue({
-        pinnedForms: [nonDefaultForm],
-        updatePinnedForms: jest.fn(),
-        isLoading: false,
-        error: null,
-      });
-
       render(
         <ObservationFormsContainer
           {...defaultProps}
           viewingForm={nonDefaultForm}
+          pinnedForms={[nonDefaultForm]}
         />,
       );
 
@@ -312,21 +304,11 @@ describe('ObservationFormsContainer', () => {
     });
 
     it('should show unpinned state when form is not in pinnedForms array', () => {
-      // Mock the hook to return empty pinned forms
-      const mockUsePinnedObservationForms = jest.requireMock(
-        '../../../../hooks/usePinnedObservationForms',
-      ).usePinnedObservationForms;
-      mockUsePinnedObservationForms.mockReturnValue({
-        pinnedForms: [],
-        updatePinnedForms: jest.fn(),
-        isLoading: false,
-        error: null,
-      });
-
       render(
         <ObservationFormsContainer
           {...defaultProps}
           viewingForm={nonDefaultForm}
+          pinnedForms={[]}
         />,
       );
 
@@ -339,20 +321,13 @@ describe('ObservationFormsContainer', () => {
 
     it('should call updatePinnedForms when pin icon is clicked', () => {
       const mockUpdatePinnedForms = jest.fn();
-      const mockUsePinnedObservationForms = jest.requireMock(
-        '../../../../hooks/usePinnedObservationForms',
-      ).usePinnedObservationForms;
-      mockUsePinnedObservationForms.mockReturnValue({
-        pinnedForms: [nonDefaultForm],
-        updatePinnedForms: mockUpdatePinnedForms,
-        isLoading: false,
-        error: null,
-      });
 
       render(
         <ObservationFormsContainer
           {...defaultProps}
           viewingForm={nonDefaultForm}
+          pinnedForms={[nonDefaultForm]}
+          updatePinnedForms={mockUpdatePinnedForms}
         />,
       );
 
@@ -365,20 +340,11 @@ describe('ObservationFormsContainer', () => {
     });
 
     it('should handle pin toggle gracefully', () => {
-      const mockUsePinnedObservationForms = jest.requireMock(
-        '../../../../hooks/usePinnedObservationForms',
-      ).usePinnedObservationForms;
-      mockUsePinnedObservationForms.mockReturnValue({
-        pinnedForms: [nonDefaultForm],
-        updatePinnedForms: jest.fn(),
-        isLoading: false,
-        error: null,
-      });
-
       render(
         <ObservationFormsContainer
           {...defaultProps}
           viewingForm={nonDefaultForm}
+          pinnedForms={[nonDefaultForm]}
         />,
       );
 

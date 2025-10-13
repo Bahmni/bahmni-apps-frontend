@@ -7,7 +7,6 @@ import { ObservationForm } from '@bahmni-frontend/bahmni-services';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_FORM_API_NAMES } from '../../../constants/forms';
-import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationForms';
 import styles from './styles/ObservationFormsContainer.module.scss';
 
 interface ObservationFormsContainerProps {
@@ -17,6 +16,9 @@ interface ObservationFormsContainerProps {
   viewingForm?: ObservationForm | null;
   // Callback to remove form from selected forms list
   onRemoveForm?: (formUuid: string) => void;
+  // Pinned forms state passed from parent (required)
+  pinnedForms: ObservationForm[];
+  updatePinnedForms: (newPinnedForms: ObservationForm[]) => Promise<void>;
 }
 
 /**
@@ -33,9 +35,10 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   onViewingFormChange,
   viewingForm: externalViewingForm,
   onRemoveForm,
+  pinnedForms,
+  updatePinnedForms,
 }) => {
   const { t } = useTranslation();
-  const { pinnedForms, updatePinnedForms } = usePinnedObservationForms();
 
   // Use the external viewingForm from parent
   const viewingForm = externalViewingForm;

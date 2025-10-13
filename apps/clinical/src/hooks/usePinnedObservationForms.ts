@@ -2,7 +2,7 @@ import {
   getFormattedError,
   ObservationForm,
 } from '@bahmni-frontend/bahmni-services';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   loadPinnedForms,
   savePinnedForms,
@@ -13,58 +13,62 @@ export function usePinnedObservationForms() {
   const { forms: availableForms, isLoading: isFormsLoading } =
     useObservationFormsSearch('');
   const [pinnedForms, setPinnedForms] = useState<ObservationForm[]>([]);
-  const [pinnedFormNames, setPinnedFormNames] = useState<string[] | null>(null);
-  const [isPinnedNamesLoading, setIsPinnedNamesLoading] = useState(true);
+  const [isInitialLoadComplete, setIsInitialLoadComplete] = useState(false);
   const [error, setError] = useState<{ title: string; message: string } | null>(
     null,
   );
+  const availableFormsRef = useRef<ObservationForm[]>([]);
 
-  // Load pinned form names immediately (parallel to forms loading)
+  // Keep ref updated with latest forms
   useEffect(() => {
-    const loadPinnedFormNames = async () => {
-      setIsPinnedNamesLoading(true);
+    availableFormsRef.current = availableForms;
+  }, [availableForms]);
+
+  // Load pinned forms on mount - single source of truth
+  // Only runs ONCE when forms finish loading
+  useEffect(() => {
+    const loadPinnedFormsData = async () => {
       setError(null);
       try {
         const names = await loadPinnedForms();
-        setPinnedFormNames(names);
+        const currentForms = availableFormsRef.current;
+        if (names.length > 0 && currentForms.length > 0) {
+          const matchedForms = currentForms.filter((form) =>
+            names.includes(form.name),
+          );
+          setPinnedForms(matchedForms);
+        } else {
+          setPinnedForms([]);
+        }
       } catch (err) {
         const formattedError = getFormattedError(err);
         setError(formattedError);
-        setPinnedFormNames([]); // Set empty array on error to avoid infinite loading
+        setPinnedForms([]);
       } finally {
-        setIsPinnedNamesLoading(false);
+        setIsInitialLoadComplete(true);
       }
     };
-    loadPinnedFormNames();
-  }, []);
 
-  // Match pinned form names with available forms when both are ready
-  useEffect(() => {
-    if (availableForms.length > 0 && pinnedFormNames !== null) {
-      if (pinnedFormNames.length > 0) {
-        const matchedForms = availableForms.filter((form) =>
-          pinnedFormNames.includes(form.name),
-        );
-        setPinnedForms(matchedForms);
-      } else {
-        // If no pinned forms, set empty array
-        setPinnedForms([]);
-      }
+    // Only load ONCE when forms finish loading
+    if (!isFormsLoading && !isInitialLoadComplete) {
+      loadPinnedFormsData();
     }
-  }, [availableForms, pinnedFormNames]);
-
-  // Overall loading state: true if either source is still loading
-  const isLoading = isPinnedNamesLoading || isFormsLoading;
+  }, [isFormsLoading, isInitialLoadComplete]);
 
   const updatePinnedForms = async (newPinnedForms: ObservationForm[]) => {
+    // Update local state immediately (optimistic UI)
     setPinnedForms(newPinnedForms);
     try {
+      // Save to backend asynchronously
       await savePinnedForms(newPinnedForms.map((f) => f.name));
     } catch (err) {
       const formattedError = getFormattedError(err);
       setError(formattedError);
+      // Could optionally revert the optimistic update here on error
     }
   };
+
+  const isLoading = isFormsLoading || !isInitialLoadComplete;
 
   return { pinnedForms, updatePinnedForms, isLoading, error };
 }
