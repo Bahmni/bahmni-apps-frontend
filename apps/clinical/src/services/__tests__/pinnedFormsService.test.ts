@@ -107,20 +107,17 @@ describe('pinnedFormsService', () => {
       const formNames = ['New Form A', 'New Form B'];
 
       (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
-      (get as jest.Mock).mockResolvedValue(mockUserData);
       (post as jest.Mock).mockResolvedValue({});
 
       await savePinnedForms(formNames);
 
       expect(getCurrentUser).toHaveBeenCalled();
-      expect(get).toHaveBeenCalledWith(
-        '/openmrs/ws/rest/v1/user/user-uuid-123',
-      );
+      // Should NOT call get - directly POST the new values
+      expect(get).not.toHaveBeenCalled();
       expect(post).toHaveBeenCalledWith(
         '/openmrs/ws/rest/v1/user/user-uuid-123',
         {
           userProperties: {
-            ...mockUserData.userProperties,
             pinnedObsTemplates: 'New Form A###New Form B',
           },
         },
