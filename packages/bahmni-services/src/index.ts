@@ -10,6 +10,7 @@ export {
   getIdentifierData,
   getGenders,
   getAddressHierarchyEntries,
+  getVisitTypes,
   type FormattedPatientData,
   type PatientSearchResult,
   type PatientSearchResultBundle,
@@ -23,6 +24,7 @@ export {
   type PatientIdentifier,
   type PatientAttribute,
   type AddressHierarchyEntry,
+  type VisitType,
 } from './patientService';
 export { getFormattedError } from './errorHandling';
 export {
