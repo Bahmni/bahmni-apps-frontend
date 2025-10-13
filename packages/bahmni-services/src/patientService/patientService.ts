@@ -13,7 +13,6 @@ import {
   PRIMARY_IDENTIFIER_TYPE_PROPERTY,
   CREATE_PATIENT_URL,
   ADDRESS_HIERARCHY_URL,
-  PATIENT_PHONE_NUMBER_SEARCH_URL,
 } from './constants';
 import {
   FormattedPatientData,
@@ -212,7 +211,7 @@ export const searchPatientByCustomAttribute = async (
     ),
   );
   return searchResultsBundle;
-}
+};
 
 /**
  * Get primary identifier type from Bahmni app settings

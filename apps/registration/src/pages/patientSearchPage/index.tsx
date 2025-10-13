@@ -56,19 +56,6 @@ const PatientSearchPage: React.FC = () => {
     loadSearchConfig();
   }, []);
 
-  const breadcrumbItems = [
-    {
-      id: 'home',
-      label: t('REGISTRATION_PATIENT_SEARCH_BREADCRUMB_HOME'),
-      href: BAHMNI_HOME_PATH,
-    },
-    {
-      id: 'current',
-      label: t('REGISTRATION_PATIENT_SEARCH_BREADCRUMB_CURRENT'),
-      isCurrentPage: true,
-    },
-  ];
-
   useEffect(() => {
     dispatchAuditEvent({
       eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_REGISTRATION_PATIENT_SEARCH
