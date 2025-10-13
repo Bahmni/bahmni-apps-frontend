@@ -17,6 +17,7 @@ import {
   getIdentifierData,
   getGenders,
   getAddressHierarchyEntries,
+  getVisitTypes,
   type CreatePatientRequest,
   type PatientAttribute,
   type AddressHierarchyEntry,
@@ -33,6 +34,9 @@ const NewPatientRegistration = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [dobEstimated, setDobEstimated] = useState(false);
+  const [selectedVisitType, setSelectedVisitType] = useState<string | null>(
+    null,
+  );
 
   // Fetch all identifier type data in a single optimized query
   const { data: identifierData } = useQuery({
@@ -51,6 +55,14 @@ const NewPatientRegistration = () => {
     gcTime: 10 * 60 * 1000,
   });
 
+  const { data: visitTypesFromApi = [], isLoading: isLoadingVisitTypes } =
+    useQuery({
+      queryKey: ['visitTypes'],
+      queryFn: getVisitTypes,
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+    });
+
   // Map genders to their translated values
   const genders = useMemo(() => {
     return gendersFromApi.map((gender) => {
@@ -58,6 +70,20 @@ const NewPatientRegistration = () => {
       return t(genderKey);
     });
   }, [gendersFromApi, t]);
+
+  const visitTypes = useMemo(() => {
+    if (!Array.isArray(visitTypesFromApi)) {
+      return [];
+    }
+    return visitTypesFromApi.map((visitType) => visitType.name);
+  }, [visitTypesFromApi]);
+
+  useEffect(() => {
+    if (visitTypes.length > 0 && !selectedVisitType) {
+      const opdType = visitTypes.find((type) => type === 'OPD');
+      setSelectedVisitType(opdType ?? visitTypes[0]);
+    }
+  }, [visitTypes, selectedVisitType]);
 
   const identifierPrefixes = useMemo(
     () => identifierData?.prefixes ?? [],
@@ -81,6 +107,7 @@ const NewPatientRegistration = () => {
         'Patient saved successfully',
         5000,
       );
+
       if (response?.patient?.uuid) {
         navigate(`/registration/patient/${response.patient.uuid}`, {
           state: {
@@ -395,7 +422,7 @@ const NewPatientRegistration = () => {
     [handleInputChange],
   );
 
-  const handleSave = () => {
+  const validateAndPreparePatientData = () => {
     const errors = { firstName: '', lastName: '', gender: '', dateOfBirth: '' };
     const addrErrors = { district: '', state: '', pincode: '' };
     let hasErrors = false;
@@ -527,7 +554,14 @@ const NewPatientRegistration = () => {
       relationships: [],
     };
 
-    createPatientMutation.mutate(patientRequest);
+    return patientRequest;
+  };
+
+  const handleSave = () => {
+    const patientRequest = validateAndPreparePatientData();
+    if (patientRequest) {
+      createPatientMutation.mutate(patientRequest);
+    }
   };
 
   const breadcrumbs = [
@@ -1081,15 +1115,28 @@ const NewPatientRegistration = () => {
                 {t('CREATE_PATIENT_PRINT_REG_CARD')}
               </Button>
               <div className={styles.opdVisitGroup}>
-                <Button kind="primary">
-                  {t('CREATE_PATIENT_START_OPD_VISIT')}
+                <Button
+                  kind="primary"
+                  disabled={isLoadingVisitTypes || visitTypes.length === 0}
+                >
+                  {selectedVisitType
+                    ? `Start ${selectedVisitType} visit`
+                    : t('CREATE_PATIENT_START_OPD_VISIT')}
                 </Button>
                 <Dropdown
                   id="opd-visit-dropdown"
-                  items={[]}
+                  items={visitTypes}
+                  onChange={({ selectedItem }) => {
+                    if (selectedItem) {
+                      setSelectedVisitType(selectedItem);
+                    }
+                  }}
                   label=""
+                  type="inline"
                   size="lg"
-                  titleText={undefined}
+                  disabled={isLoadingVisitTypes || visitTypes.length === 0}
+                  titleText=""
+                  selectedItem={null}
                 />
               </div>
             </div>
