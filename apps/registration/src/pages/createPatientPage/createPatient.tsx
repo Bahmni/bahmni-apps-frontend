@@ -17,7 +17,6 @@ import {
   getIdentifierData,
   getGenders,
   getAddressHierarchyEntries,
-  getVisitTypes,
   type CreatePatientRequest,
   type PatientAttribute,
   type AddressHierarchyEntry,
@@ -28,15 +27,13 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../../components/Header';
 import { AgeUtils, formatToDisplay, formatToISO } from '../../utils/ageUtils';
+import { VisitTypeSelector } from './components/VisitTypeSelector';
 import styles from './styles/index.module.scss';
 
 const NewPatientRegistration = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [dobEstimated, setDobEstimated] = useState(false);
-  const [selectedVisitType, setSelectedVisitType] = useState<string | null>(
-    null,
-  );
 
   // Fetch all identifier type data in a single optimized query
   const { data: identifierData } = useQuery({
@@ -55,14 +52,6 @@ const NewPatientRegistration = () => {
     gcTime: 10 * 60 * 1000,
   });
 
-  const { data: visitTypesFromApi = [], isLoading: isLoadingVisitTypes } =
-    useQuery({
-      queryKey: ['visitTypes'],
-      queryFn: getVisitTypes,
-      staleTime: 5 * 60 * 1000,
-      gcTime: 10 * 60 * 1000,
-    });
-
   // Map genders to their translated values
   const genders = useMemo(() => {
     return gendersFromApi.map((gender) => {
@@ -70,20 +59,6 @@ const NewPatientRegistration = () => {
       return t(genderKey);
     });
   }, [gendersFromApi, t]);
-
-  const visitTypes = useMemo(() => {
-    if (!Array.isArray(visitTypesFromApi)) {
-      return [];
-    }
-    return visitTypesFromApi.map((visitType) => visitType.name);
-  }, [visitTypesFromApi]);
-
-  useEffect(() => {
-    if (visitTypes.length > 0 && !selectedVisitType) {
-      const opdType = visitTypes.find((type) => type === 'OPD');
-      setSelectedVisitType(opdType ?? visitTypes[0]);
-    }
-  }, [visitTypes, selectedVisitType]);
 
   const identifierPrefixes = useMemo(
     () => identifierData?.prefixes ?? [],
@@ -1114,31 +1089,7 @@ const NewPatientRegistration = () => {
               <Button kind="tertiary">
                 {t('CREATE_PATIENT_PRINT_REG_CARD')}
               </Button>
-              <div className={styles.opdVisitGroup}>
-                <Button
-                  kind="primary"
-                  disabled={isLoadingVisitTypes || visitTypes.length === 0}
-                >
-                  {selectedVisitType
-                    ? `Start ${selectedVisitType} visit`
-                    : t('CREATE_PATIENT_START_OPD_VISIT')}
-                </Button>
-                <Dropdown
-                  id="opd-visit-dropdown"
-                  items={visitTypes}
-                  onChange={({ selectedItem }) => {
-                    if (selectedItem) {
-                      setSelectedVisitType(selectedItem);
-                    }
-                  }}
-                  label=""
-                  type="inline"
-                  size="lg"
-                  disabled={isLoadingVisitTypes || visitTypes.length === 0}
-                  titleText=""
-                  selectedItem={null}
-                />
-              </div>
+              <VisitTypeSelector />
             </div>
           </div>
         </div>
