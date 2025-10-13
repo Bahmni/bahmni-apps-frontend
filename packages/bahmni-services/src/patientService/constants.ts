@@ -104,3 +104,8 @@ export const PHONE_NUMBER_UUID = 'a384873b-847a-4a86-b869-28fb601162dd';
 export const ALTERNATE_PHONE_NUMBER_UUID =
   '27fa84ff-fdd6-4895-9c77-254b60555f39';
 export const EMAIL_UUID = 'e3123cba-5e07-11ef-8f7c-0242ac120002';
+
+
+export const VISIT_TYPES_URL = () =>
+  OPENMRS_REST_V1 +
+  `/bahmnicore/config/bahmniencounter?callerContext=REGISTRATION_CONCEPTS`;
