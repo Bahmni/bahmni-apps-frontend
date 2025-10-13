@@ -113,7 +113,7 @@ describe('ObservationForms Integration Tests', () => {
     // Get the mocked values and inject them as props
     const mockedValues = mockUsePinnedObservationForms();
     const componentWithProps = React.cloneElement(component, {
-      ...(component.props || {}), // Start with existing props
+      ...(component.props ?? {}), // Start with existing props
       pinnedForms: mockedValues.pinnedForms,
       updatePinnedForms: mockedValues.updatePinnedForms,
       isPinnedFormsLoading: mockedValues.isLoading,
