@@ -8,6 +8,7 @@ import {
   CLINICAL_CONFIG_URL,
   DASHBOARD_CONFIG_URL,
   MEDICATIONS_CONFIG_URL,
+  REGISTRATION_CONFIG_URL,
   ERROR_MESSAGES,
   ERROR_TITLES,
 } from './constants';
@@ -15,10 +16,12 @@ import {
   ClinicalConfig,
   DashboardConfig,
   MedicationJSONConfig,
+  RegistrationConfig,
 } from './models';
 import clinicalConfigSchema from './schemas/clinicalConfig.schema.json';
 import dashboardConfigSchema from './schemas/dashboardConfig.schema.json';
 import medicationConfigSchema from './schemas/medicationConfig.schema.json';
+import registrationConfigSchema from './schemas/registrationConfig.schema.json';
 
 /**
  * Fetches and validates clinical app configuration from the server
@@ -77,6 +80,20 @@ export const getMedicationConfig =
   };
 
 /**
+ * Fetches and validates registration configuration from the server
+ *
+ * @returns Validated registration configuration object or null if invalid/error
+ * @throws Error if fetch fails or validation fails
+ */
+export const getRegistrationConfig =
+  async (): Promise<RegistrationConfig | null> => {
+    return getConfig<RegistrationConfig>(
+      REGISTRATION_CONFIG_URL,
+      registrationConfigSchema,
+    );
+  };
+
+/**
  * Fetches and validates configuration from the server
  *
  * @param configPath - URL path to fetch the configuration
@@ -85,7 +102,11 @@ export const getMedicationConfig =
  * @throws Error if fetch fails or validation fails
  */
 const getConfig = async <
-  T extends ClinicalConfig | DashboardConfig | MedicationJSONConfig,
+  T extends
+    | ClinicalConfig
+    | DashboardConfig
+    | MedicationJSONConfig
+    | RegistrationConfig,
 >(
   configPath: string,
   configSchema: Record<string, unknown>,

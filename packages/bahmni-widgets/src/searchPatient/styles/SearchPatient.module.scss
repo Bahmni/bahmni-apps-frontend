@@ -43,14 +43,14 @@
   }
 }
 
-.phoneSearchContainer {
+.advanceSearchContainer {
   display: flex;
   align-items: center;
   flex: 1 1 auto;
   min-width: 0;
 }
 
-.phoneInputWrapper {
+.advanceInputWrapper {
   display: flex;
   flex: 1 1 auto;
   position: relative;
@@ -67,7 +67,7 @@
 }
 
 .searchTypeDropdown {
-  min-width: auto;
+  width: 10rem;
 }
 
 @include breakpoint-down(lg) {

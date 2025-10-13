@@ -11,10 +11,15 @@ import {
   NotificationServiceComponent,
   UserPrivilegeProvider,
 } from '@bahmni-frontend/bahmni-widgets';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import React, { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
+import { queryClientConfig } from './config/tanstackQuery';
 import ConsultationPage from './pages/ConsultationPage';
 import { ClinicalConfigProvider } from './providers/ClinicalConfigProvider';
+
+const queryClient = new QueryClient(queryClientConfig);
 
 const ClinicalApp: React.FC = () => {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -44,13 +49,16 @@ const ClinicalApp: React.FC = () => {
     <Content>
       <NotificationProvider>
         <NotificationServiceComponent />
-        <ClinicalConfigProvider>
-          <UserPrivilegeProvider>
-            <Routes>
-              <Route path=":patientUuid" element={<ConsultationPage />} />
-            </Routes>
-          </UserPrivilegeProvider>
-        </ClinicalConfigProvider>
+        <QueryClientProvider client={queryClient}>
+          <ClinicalConfigProvider>
+            <UserPrivilegeProvider>
+              <Routes>
+                <Route path=":patientUuid" element={<ConsultationPage />} />
+              </Routes>
+              <ReactQueryDevtools initialIsOpen={false} />
+            </UserPrivilegeProvider>
+          </ClinicalConfigProvider>
+        </QueryClientProvider>
       </NotificationProvider>
     </Content>
   );

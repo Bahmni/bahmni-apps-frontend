@@ -1,6 +1,7 @@
 import {
   PatientSearchResult,
   PatientSearchResultBundle,
+  PatientSearchField,
 } from '@bahmni-frontend/bahmni-services';
 import {
   formatPatientSearchResult,
@@ -34,6 +35,15 @@ const mockPatientSearchResultBundle: PatientSearchResultBundle = {
   ],
 };
 
+const mockPatientSearchFields: PatientSearchField[] = [
+  {
+    translationKey: 'PHONE_SEARCH',
+    fields: ['phoneNumber', 'alternatePhoneNumber'],
+    columnTranslationKeys: ['PHONE_NUMBER', 'ALTERNATE_PHONE_NUMBER'],
+    type: 'person',
+  },
+];
+
 describe('formatPatientSearchResult', () => {
   it('convert patient search results bundle to view model if patient search bundle has results', () => {
     const patientSearchResult: PatientSearchViewModel<PatientSearchResult>[] = [
@@ -64,11 +74,14 @@ describe('formatPatientSearchResult', () => {
       },
     ];
     expect(
-      formatPatientSearchResult(mockPatientSearchResultBundle),
+      formatPatientSearchResult(
+        mockPatientSearchResultBundle,
+        mockPatientSearchFields,
+      ),
     ).toStrictEqual(patientSearchResult);
   });
 
-  it('return empty array if patient search bundle has results', () => {
+  it('return empty array if patient search bundle is undefined', () => {
     const mockPatientSearchResultBundle = undefined;
     expect(
       formatPatientSearchResult(mockPatientSearchResultBundle),

@@ -4,6 +4,7 @@ import {
   LOCALE_STORAGE_KEY,
   DEFAULT_LOCALE,
   CONFIG_TRANSLATIONS_URL_TEMPLATE,
+  REGISTRATION_CONFIG_TRANSLATIONS_URL_TEMPLATE,
 } from './constants';
 
 /**
@@ -55,6 +56,7 @@ const getMergedTranslations = async (
 ): Promise<Record<string, string>> => {
   let bundledTranslations: Record<string, string> = {};
   let configTranslations: Record<string, string> = {};
+  let registrationConfigTranslations: Record<string, string> = {};
 
   bundledTranslations = await getTranslationFile(
     BUNDLED_TRANSLATIONS_URL_TEMPLATE(lang),
@@ -64,7 +66,15 @@ const getMergedTranslations = async (
     CONFIG_TRANSLATIONS_URL_TEMPLATE(lang),
   );
 
-  return { ...bundledTranslations, ...configTranslations };
+  registrationConfigTranslations = await getTranslationFile(
+    REGISTRATION_CONFIG_TRANSLATIONS_URL_TEMPLATE(lang),
+  );
+
+  return {
+    ...bundledTranslations,
+    ...configTranslations,
+    ...registrationConfigTranslations,
+  };
 };
 
 /**
