@@ -1,3 +1,5 @@
+import { UUID } from 'crypto';
+
 export interface Age {
   years: number;
   months: number;
@@ -142,4 +144,9 @@ export interface AddressHierarchyEntry {
 
 export interface AddressHierarchyResponse {
   results: AddressHierarchyEntry[];
+}
+
+export interface VisitType {
+  name: string;
+  uuid: string;
 }

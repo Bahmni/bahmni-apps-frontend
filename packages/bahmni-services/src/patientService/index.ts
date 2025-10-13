@@ -8,6 +8,7 @@ export {
   getIdentifierData,
   getGenders,
   getAddressHierarchyEntries,
+  getVisitTypes,
 } from './patientService';
 export {
   type FormattedPatientData,
@@ -23,4 +24,5 @@ export {
   type PatientIdentifier,
   type PatientAttribute,
   type AddressHierarchyEntry,
+  type VisitType,
 } from './models';
