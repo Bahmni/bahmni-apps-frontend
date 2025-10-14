@@ -1,20 +1,49 @@
 .opdVisitGroup {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  overflow: visible;
+  position: relative;
+
   :global(#opd-visit-button) {
     background: var(--button-button-primary, #007d79) !important;
-    overflow-y: visible;
+    height: 40px !important;
+    max-height: 40px !important;
+    min-height: 40px !important;
+    width: 16.5rem !important;
   }
 
   :global(#opd-visit-dropdown) {
     background: var(--button-button-primary, #007d79) !important;
-    overflow: visible;
+    height: 40px !important;
+    max-height: 40px !important;
+    min-height: 40px !important;
   }
 
-  :global(.cds--list-box__menu) {
+  :global(#opd-visit-dropdown .cds--list-box__field) {
+    background: var(--button-button-primary, #007d79) !important;
+    height: 40px !important;
+    max-height: 40px !important;
+    min-height: 40px !important;
+  }
+
+  :global(#opd-visit-dropdown .cds--list-box__menu) {
     background: #ffffff !important;
-    overflow: visible;
-    left:auto !important;
+    position: absolute !important;
+    top: calc(100% + 0.5rem) !important;
+    left: 0 !important;
+    width: auto !important;
+    min-width: 16.5rem !important;
+    z-index: 1000 !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  :global(#opd-visit-dropdown .cds--list-box__menu-item) {
+    background: #ffffff !important;
+    color: #161616 !important;
+    padding: 0.75rem 1rem !important;
+
+    &:hover {
+      background: #e0e0e0 !important;
+    }
   }
 }
