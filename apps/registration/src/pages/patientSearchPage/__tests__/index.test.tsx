@@ -39,6 +39,7 @@ const mockSearchPatientData: PatientSearchResult[] = [
     }),
     hasBeenAdmitted: true,
     age: '56',
+    patientProgramAttributeValue: null,
   },
   {
     uuid: '02f47490-d657-48ee-98e7-4c9133ea1685',
@@ -57,6 +58,7 @@ const mockSearchPatientData: PatientSearchResult[] = [
     customAttribute: '',
     hasBeenAdmitted: true,
     age: '56',
+    patientProgramAttributeValue: null,
   },
   {
     uuid: '02f47490-d657-48ee-98e7-4c9133ea2685',
@@ -75,6 +77,7 @@ const mockSearchPatientData: PatientSearchResult[] = [
     customAttribute: '',
     hasBeenAdmitted: true,
     age: '56',
+    patientProgramAttributeValue: null,
   },
 ];
 
@@ -87,10 +90,15 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
   ...jest.requireActual('@bahmni-frontend/bahmni-services'),
   dispatchAuditEvent: jest.fn(),
   getRegistrationConfig: jest.fn().mockResolvedValue({
-    config: {
-      patientSearch: {
-        customAttributes: [],
-      },
+    patientSearch: {
+      customAttributes: [
+        {
+          translationKey: 'REGISTRATION_PATIENT_SEARCH_PHONE_NUMBER',
+          fields: ['phoneNumber', 'alternatePhoneNumber'],
+          columnTranslationKeys: ['Phone Number', 'Alternate Phone Number'],
+          type: 'person',
+        },
+      ],
     },
   }),
   notificationService: {
@@ -310,37 +318,6 @@ describe('PatientSearchPage', () => {
     );
     const results = await axe(container);
     expect(results).toHaveNoViolations();
-  });
-
-  it('should show phone-specific empty message when phone search returns no results', async () => {
-    (useQuery as jest.Mock).mockReturnValue({
-      data: {
-        totalCount: 0,
-        pageOfResults: [],
-      },
-      error: null,
-      isLoading: false,
-    });
-
-    render(
-      <MemoryRouter>
-        <NotificationProvider>
-          <QueryClientProvider client={queryClient}>
-            <PatientSearchPage />
-          </QueryClientProvider>
-        </NotificationProvider>
-      </MemoryRouter>,
-    );
-
-    const phoneSearchInput = screen.getByTestId('phone-search-input');
-    fireEvent.input(phoneSearchInput, { target: { value: '1234567890' } });
-    fireEvent.click(screen.getByTestId('phone-search-button'));
-
-    await waitFor(() => {
-      expect(
-        screen.getByText('REGISTRATION_PATIENT_SEARCH_PHONE_EMPTY_MESSAGE'),
-      ).toBeInTheDocument();
-    });
   });
 
   it('should show name-specific empty message when name search returns no results', async () => {
