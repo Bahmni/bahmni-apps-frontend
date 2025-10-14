@@ -1,13 +1,12 @@
 .opdVisitGroup {
   display: flex;
-  align-items: center;
-
+  align-items: center;  
   :global(#opd-visit-button) {
     background: var(--button-button-primary, #007d79) !important;
   }
-
   :global(#opd-visit-dropdown) {
     background: var(--button-button-primary, #007d79) !important;
+    min-height: 48px !important; 
   }
 
   :global(.cds--list-box__menu) {
