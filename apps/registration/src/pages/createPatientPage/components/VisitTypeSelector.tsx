@@ -10,11 +10,15 @@ import styles from './styles/VisitTypeSelector.module.scss';
 interface VisitTypeSelectorProps {
   onVisitTypeChange?: (visitType: string) => void;
   disabled?: boolean;
+  buttonText?: string;
+  className?: string;
 }
 
 export const VisitTypeSelector = ({
   onVisitTypeChange,
   disabled = false,
+  buttonText,
+  className,
 }: VisitTypeSelectorProps) => {
   const { t } = useTranslation();
   const [selectedVisitType, setSelectedVisitType] = useState<string | null>(
@@ -52,22 +56,25 @@ export const VisitTypeSelector = ({
     }
   };
 
+  const displayButtonText =
+    buttonText ??
+    (selectedVisitType
+      ? `Start ${selectedVisitType} visit`
+      : t('CREATE_PATIENT_START_OPD_VISIT'));
+
   return (
-    <div className={styles.opdVisitGroup}>
+    <div className={`${styles.opdVisitGroup} ${className ?? ''}`}>
       <Button
         id="opd-visit-button"
         kind="primary"
         disabled={disabled || isLoadingVisitTypes || visitTypes.length === 0}
       >
-        {selectedVisitType
-          ? `Start ${selectedVisitType} visit`
-          : t('CREATE_PATIENT_START_OPD_VISIT')}
+        {displayButtonText}
       </Button>
       <Dropdown
         id="opd-visit-dropdown"
         items={visitTypes}
         onChange={({ selectedItem }) => handleVisitTypeChange(selectedItem)}
-        className={styles.dropdown}
         label=""
         type="inline"
         disabled={disabled ?? isLoadingVisitTypes ?? visitTypes.length === 0}
