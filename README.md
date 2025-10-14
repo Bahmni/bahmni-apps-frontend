@@ -40,15 +40,6 @@ For a comprehensive setup guide including development environments, Docker confi
 - [Sortable Data Table Guide](docs/sortable-data-table-guide.md) - Usage of the sortable data table component
 - [Global Notification Guide](docs/global-notification-guide.md) - Using the notification system
 
-### Development
-
-```bash
-# Start the development server
-yarn nx serve distro
-```
-
-This will start the development server at [http://localhost:3000](http://localhost:3000).
-
 ### Building for Production
 
 ```bash
@@ -57,6 +48,15 @@ yarn nx build distro
 ```
 
 The build artifacts will be stored in the `dist/` directory.
+
+### Development
+
+```bash
+# Start the development server
+yarn nx serve distro
+```
+
+This will start the development server at [http://localhost:3000](http://localhost:3000).
 
 ### Linting
 

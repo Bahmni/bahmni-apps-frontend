@@ -10,16 +10,16 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_FORM_API_NAMES } from '../../../constants/forms';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
-import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationForms';
 import styles from './styles/ObservationForms.module.scss';
 
 interface ObservationFormsProps {
   onFormSelect?: (form: ObservationForm) => void;
   selectedForms?: ObservationForm[];
   onRemoveForm?: (formUuid: string) => void;
-  pinnedForms?: ObservationForm[];
-  onPinToggle?: (form: ObservationForm) => void;
-  onUnpinForm?: (formUuid: string) => void;
+  // Pinned forms state passed from parent (required)
+  pinnedForms: ObservationForm[];
+  updatePinnedForms: (newPinnedForms: ObservationForm[]) => Promise<void>;
+  isPinnedFormsLoading: boolean;
 }
 
 /**
@@ -37,31 +37,36 @@ interface ObservationFormsProps {
  * - Error handling and loading states
  */
 const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
-  ({ onFormSelect, selectedForms = [], onRemoveForm }) => {
-    const {
-      pinnedForms,
-      updatePinnedForms,
-      isLoading: isPinnedFormsLoading,
-    } = usePinnedObservationForms();
+  ({
+    onFormSelect,
+    selectedForms = [],
+    onRemoveForm,
+    pinnedForms,
+    updatePinnedForms,
+    isPinnedFormsLoading,
+  }) => {
     const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
 
+    const { forms: allForms, isLoading: isAllFormsLoading } =
+      useObservationFormsSearch();
+
     const {
       forms: availableForms,
-      isLoading,
-      error,
+      isLoading: isSearchLoading,
+      error: searchError,
     } = useObservationFormsSearch(searchTerm);
 
     // Validate and filter available forms - handle malformed data
     const validatedAvailableForms = useMemo(() => {
-      return availableForms.filter((form) => {
+      return allForms.filter((form) => {
         // Check required properties
         if (!form || typeof form !== 'object') return false;
         if (!form.uuid || typeof form.uuid !== 'string') return false;
         if (!form.name || typeof form.name !== 'string') return false;
         return true;
       });
-    }, [availableForms]);
+    }, [allForms]);
 
     // Use API names for filtering (these match the actual form names from backend)
     const defaultPinnedForms = validatedAvailableForms.filter((form) =>
@@ -116,7 +121,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
     );
 
     const searchResults = useMemo(() => {
-      if (isLoading) {
+      if (isSearchLoading) {
         return [
           {
             id: '',
@@ -126,7 +131,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
         ];
       }
 
-      if (error) {
+      if (searchError) {
         return [
           {
             id: '',
@@ -172,7 +177,14 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
       });
 
       return results;
-    }, [isLoading, error, searchTerm, availableForms, selectedForms, t]);
+    }, [
+      isSearchLoading,
+      searchError,
+      searchTerm,
+      availableForms,
+      selectedForms,
+      t,
+    ]);
 
     return (
       <Tile
@@ -196,7 +208,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
             onInputChange={handleSearch}
             size="md"
             autoAlign
-            disabled={isLoading}
+            disabled={isSearchLoading}
             aria-label={t('OBSERVATION_FORMS_SEARCH_ARIA_LABEL')}
             data-testid="observation-forms-search-combobox"
           />
@@ -227,11 +239,15 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
         <div data-testid="pinned-forms-section">
           <FormCardContainer
             title={t('DEFAULT_AND_PINNED_FORMS_TITLE')}
-            showNoFormsMessage={!isLoading && allPinnedForms.length === 0}
+            showNoFormsMessage={
+              !isAllFormsLoading &&
+              allPinnedForms.length === 0 &&
+              defaultPinnedForms.length === 0
+            }
             noFormsMessage={t('DEFAULT_AND_PINNED_FORMS_NO_FORMS_FOUND')}
             dataTestId="pinned-forms-container"
           >
-            {isLoading || isPinnedFormsLoading ? (
+            {isAllFormsLoading || isPinnedFormsLoading ? (
               <SkeletonText
                 width="100%"
                 lineCount={3}
