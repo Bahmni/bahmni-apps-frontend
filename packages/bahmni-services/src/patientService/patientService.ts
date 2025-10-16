@@ -12,6 +12,7 @@ import {
   APP_SETTINGS_URL,
   PRIMARY_IDENTIFIER_TYPE_PROPERTY,
   CREATE_PATIENT_URL,
+  CREATE_VISIT_URL,
   ADDRESS_HIERARCHY_URL,
   ADDRESS_HIERARCHY_DEFAULT_LIMIT,
   ADDRESS_HIERARCHY_MIN_SEARCH_LENGTH,
@@ -27,6 +28,7 @@ import {
   CreatePatientResponse,
   AddressHierarchyEntry,
   VisitType,
+  CreateVisitRequest,
 } from './models';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
@@ -356,4 +358,10 @@ export const getVisitTypes = async (): Promise<VisitType[]> => {
   } catch {
     return [];
   }
+};
+
+export const createVisit = async (
+  visitData: CreateVisitRequest,
+): Promise<unknown> => {
+  return post<unknown>(CREATE_VISIT_URL, visitData);
 };

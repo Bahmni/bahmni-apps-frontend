@@ -23,7 +23,7 @@ import {
   PatientAddress,
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, use } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../../components/Header';
 import { AgeUtils, formatToDisplay, formatToISO } from '../../utils/ageUtils';
@@ -34,6 +34,7 @@ const NewPatientRegistration = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [dobEstimated, setDobEstimated] = useState(false);
+  const [patientUuid, setPatientUuid] = useState<string>('');
 
   // Fetch all identifier type data in a single optimized query
   const { data: identifierData } = useQuery({
@@ -84,6 +85,8 @@ const NewPatientRegistration = () => {
       );
 
       if (response?.patient?.uuid) {
+        setPatientUuid(response.patient.uuid);
+        console.log('patientUuid', response.patient.uuid);
         navigate(`/registration/patient/${response.patient.uuid}`, {
           state: {
             patientDisplay: response.patient.display,
@@ -536,7 +539,9 @@ const NewPatientRegistration = () => {
     const patientRequest = validateAndPreparePatientData();
     if (patientRequest) {
       createPatientMutation.mutate(patientRequest);
+      return true;
     }
+    return false;
   };
 
   const breadcrumbs = [
@@ -1089,7 +1094,10 @@ const NewPatientRegistration = () => {
               <Button kind="tertiary">
                 {t('CREATE_PATIENT_PRINT_REG_CARD')}
               </Button>
-              <VisitTypeSelector />
+              <VisitTypeSelector
+                onVisitSave={() => handleSave()}
+                patientUuid={patientUuid}
+              />
             </div>
           </div>
         </div>
