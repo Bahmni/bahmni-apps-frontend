@@ -11,6 +11,8 @@ import {
   PRIMARY_IDENTIFIER_TYPE_PROPERTY,
   CREATE_PATIENT_URL,
   ADDRESS_HIERARCHY_URL,
+  VISIT_TYPES_URL,
+  CREATE_VISIT_URL,
 } from '../constants';
 import {
   getPatientById,
@@ -26,6 +28,8 @@ import {
   createPatient,
   getGenders,
   getAddressHierarchyEntries,
+  getVisitTypes,
+  createVisit,
 } from '../patientService';
 
 // Mock the api module
@@ -1662,6 +1666,43 @@ describe('Patient Service', () => {
         ADDRESS_HIERARCHY_URL('cityVillage', 'Bo', 20),
       );
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('getVisitTypes', () => {
+    it('should fetch and transform visit types correctly', async () => {
+      const mockResponse = {
+        visitTypes: {
+          OPD: 'c22a5000-3f10-11e4-adec-0800271c1b75',
+          IPD: 'd22a5000-3f10-11e4-adec-0800271c1b76',
+        },
+      };
+      mockedGet.mockResolvedValueOnce(mockResponse);
+
+      const result = await getVisitTypes();
+
+      expect(mockedGet).toHaveBeenCalledWith(VISIT_TYPES_URL());
+      expect(result).toEqual([
+        { name: 'OPD', uuid: 'c22a5000-3f10-11e4-adec-0800271c1b75' },
+        { name: 'IPD', uuid: 'd22a5000-3f10-11e4-adec-0800271c1b76' },
+      ]);
+    });
+  });
+
+  describe('createVisit', () => {
+    it('should create a visit with correct data', async () => {
+      const visitData = {
+        patient: 'c22a5000-3f10-11e4-adec-0800271c1b75',
+        visitType: 'd22a5000-3f10-11e4-adec-0800271c1b76',
+        location: 'd22a5000-3f10-11e4-adec-0800271c1b79',
+      };
+      const mockResponse = { uuid: 'd22a5000-3f10-11e4-adec-0800271c1b76' };
+      mockedPost.mockResolvedValueOnce(mockResponse);
+
+      const result = await createVisit(visitData);
+
+      expect(mockedPost).toHaveBeenCalledWith(CREATE_VISIT_URL, visitData);
+      expect(result).toEqual(mockResponse);
     });
   });
 });
