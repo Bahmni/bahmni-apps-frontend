@@ -1,16 +1,30 @@
 .opdVisitGroup {
   display: flex;
-  align-items: center;  
+  align-items: center;
   :global(#opd-visit-button) {
     background: var(--button-button-primary, #007d79) !important;
+    min-width: 250px !important;
   }
   :global(#opd-visit-dropdown) {
     background: var(--button-button-primary, #007d79) !important;
-    min-height: 48px !important; 
+    min-height: 48px !important;
   }
 
   :global(.cds--list-box__menu) {
-    background: #ffffff !important;
+    background: #007d79 !important;
     left: auto !important;
+    min-width: 250px !important;
+    right: +4rem !important;
+  }
+  :global(.cds--list-box__menu-item) {
+    color: white !important;
+
+    &:hover {
+      color: white !important;
+      background: rgba(255, 255, 255, 0.15) !important;
+    }
+  }
+  :global(.cds--list-box__menu-item__option) {
+    color: white !important;
   }
 }
