@@ -103,7 +103,6 @@ export const MAX_PAGE_SIZE = 100;
 export const MAX_PATIENT_AGE_YEARS = 150;
 export const UUID_PATTERN = /^[a-f0-9-]{36}$/i;
 
-
 export const VISIT_TYPES_URL = () =>
   OPENMRS_REST_V1 +
   `/bahmnicore/config/bahmniencounter?callerContext=REGISTRATION_CONCEPTS`;
