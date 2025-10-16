@@ -347,17 +347,13 @@ export const getAddressHierarchyEntries = async (
  * @returns Promise<VisitType[]> - Array of visit types
  */
 export const getVisitTypes = async (): Promise<VisitType[]> => {
-  try {
-    const response = await get<{ visitTypes: Record<string, string> }>(
-      VISIT_TYPES_URL(),
-    );
-    return Object.entries(response.visitTypes).map(([name, uuid]) => ({
-      name,
-      uuid,
-    }));
-  } catch {
-    return [];
-  }
+  const response = await get<{ visitTypes: Record<string, string> }>(
+    VISIT_TYPES_URL(),
+  );
+  return Object.entries(response.visitTypes).map(([name, uuid]) => ({
+    name,
+    uuid,
+  }));
 };
 
 export const createVisit = async (
