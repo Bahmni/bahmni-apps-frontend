@@ -23,7 +23,7 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
   const { t } = useTranslation();
   const [visitPayload, setVisitPayload] = useState<CreateVisitRequest>();
   const [isNavigating, setIsNavigating] = useState<boolean>(false);
-  
+
   const {
     data: visitTypesFromApi = [],
     isLoading: isLoadingVisitTypes,
