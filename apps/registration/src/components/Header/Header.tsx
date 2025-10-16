@@ -1,4 +1,5 @@
 import { Button } from '@bahmni-frontend/bahmni-design-system';
+import { Breadcrumb, BreadcrumbItem } from '@carbon/react';
 import React from 'react';
 
 import styles from './styles/index.module.scss';
@@ -31,49 +32,18 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <div className={`${styles.customHeader} ${className ?? ''}`}>
       <div className={styles.headerContent}>
-        <div className={styles.breadcrumbSection}>
-          <nav className={styles.breadcrumb}>
-            {breadcrumbs.map((item, index) => (
-              <React.Fragment key={`breadcrumb-${item.label}`}>
-                {index > 0 && (
-                  <span className={styles.breadcrumbSeparator}>/</span>
-                )}
-                {item.href ? (
-                  <a
-                    href={item.href}
-                    className={styles.breadcrumbLink}
-                    onClick={item.onClick}
-                  >
-                    {item.label}
-                  </a>
-                ) : (
-                  <span
-                    className={
-                      index === breadcrumbs.length - 1
-                        ? styles.breadcrumbCurrent
-                        : styles.breadcrumbLink
-                    }
-                    onClick={item.onClick}
-                    role={item.onClick ? 'button' : undefined}
-                    tabIndex={item.onClick ? 0 : undefined}
-                    onKeyDown={
-                      item.onClick
-                        ? (e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault();
-                              item.onClick?.();
-                            }
-                          }
-                        : undefined
-                    }
-                  >
-                    {item.label}
-                  </span>
-                )}
-              </React.Fragment>
-            ))}
-          </nav>
-        </div>
+        <Breadcrumb noTrailingSlash className={styles.carbonBreadcrumb}>
+          {breadcrumbs.map((item, index) => (
+            <BreadcrumbItem
+              key={`breadcrumb-${item.label}`}
+              href={item.href}
+              onClick={item.onClick}
+              isCurrentPage={index === breadcrumbs.length - 1}
+            >
+              {item.label}
+            </BreadcrumbItem>
+          ))}
+        </Breadcrumb>
         <div className={styles.rightActions}>
           {showButton && buttonText && (
             <Button

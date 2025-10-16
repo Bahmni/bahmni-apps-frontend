@@ -89,3 +89,14 @@ export const ADDRESS_HIERARCHY_URL = (
   limit: number = 20,
 ) =>
   `/openmrs/module/addresshierarchy/ajax/getPossibleAddressHierarchyEntriesWithParents.form?addressField=${addressField}&limit=${limit}&searchString=${encodeURIComponent(searchString)}`;
+
+// Search and pagination constants
+export const ADDRESS_HIERARCHY_DEFAULT_LIMIT = 20;
+export const ADDRESS_HIERARCHY_MIN_SEARCH_LENGTH = 2;
+export const PATIENT_SEARCH_MIN_LENGTH = 2;
+export const DEFAULT_PAGE_SIZE = 20;
+export const MAX_PAGE_SIZE = 100;
+
+// Validation constants
+export const MAX_PATIENT_AGE_YEARS = 150;
+export const UUID_PATTERN = /^[a-f0-9-]{36}$/i;
