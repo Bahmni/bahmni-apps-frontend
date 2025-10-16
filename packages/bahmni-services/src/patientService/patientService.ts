@@ -13,6 +13,9 @@ import {
   PRIMARY_IDENTIFIER_TYPE_PROPERTY,
   CREATE_PATIENT_URL,
   ADDRESS_HIERARCHY_URL,
+  ADDRESS_HIERARCHY_DEFAULT_LIMIT,
+  ADDRESS_HIERARCHY_MIN_SEARCH_LENGTH,
+  UUID_PATTERN,
 } from './constants';
 import {
   FormattedPatientData,
@@ -25,6 +28,14 @@ import {
 } from './models';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
+  if (!patientUUID || patientUUID.trim() === '') {
+    throw new Error('Invalid patient UUID: UUID cannot be empty');
+  }
+
+  if (!UUID_PATTERN.test(patientUUID)) {
+    throw new Error(`Invalid patient UUID format: ${patientUUID}`);
+  }
+
   return get<Patient>(PATIENT_RESOURCE_URL(patientUUID));
 };
 
@@ -303,9 +314,12 @@ export const getGenders = async (): Promise<string[]> => {
 export const getAddressHierarchyEntries = async (
   addressField: string,
   searchString: string,
-  limit: number = 20,
+  limit: number = ADDRESS_HIERARCHY_DEFAULT_LIMIT,
 ): Promise<AddressHierarchyEntry[]> => {
-  if (!searchString || searchString.length < 2) {
+  if (
+    !searchString ||
+    searchString.length < ADDRESS_HIERARCHY_MIN_SEARCH_LENGTH
+  ) {
     return [];
   }
 
@@ -313,7 +327,13 @@ export const getAddressHierarchyEntries = async (
     return await get<AddressHierarchyEntry[]>(
       ADDRESS_HIERARCHY_URL(addressField, searchString, limit),
     );
-  } catch {
-    return [];
+  } catch (error) {
+    // Log error for debugging
+    // console.error('Error fetching address hierarchy entries:', error);
+    throw new Error(
+      `Failed to fetch address hierarchy for field "${addressField}": ${
+        error instanceof Error ? error.message : 'Unknown error'
+      }`,
+    );
   }
 };

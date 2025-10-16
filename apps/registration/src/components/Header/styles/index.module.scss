@@ -1,11 +1,12 @@
 @use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/breakpoint" as *;
 
 .customHeader {
   background-color: #007D79;
-  height: 48px;
+  height: $spacing-09;
   display: flex;
   align-items: center;
   width: 100vw;
@@ -31,39 +32,62 @@
   align-items: center;
 }
 
-.breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: $spacing-02;
-}
+// Carbon Breadcrumb styling to match current design
+.carbonBreadcrumb {
+  // Override Carbon's default styles
+  :global(.cds--breadcrumb) {
+    display: flex;
+    align-items: center;
+  }
 
-.breadcrumbLink {
-  color: #FFFFFF;
-  text-decoration: none;
-  font-size: 0.875rem;
-  font-weight: 400;
-  cursor: pointer;
-  
-  &:hover {
-    text-decoration: underline;
+  // Style breadcrumb items
+  :global(.cds--breadcrumb-item) {
+    display: flex;
+    align-items: center;
+
+    a, button, span {
+      color: $text-on-color;
+      @include type-style("body-compact-01");
+      text-decoration: none;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      
+      &:hover {
+        text-decoration: underline;
+      }
+      
+      &:focus {
+        outline: 2px solid $focus;
+        outline-offset: $spacing-01;
+      }
+    }
   }
   
-  &:focus {
-    outline: 2px solid #FFFFFF;
-    outline-offset: 2px;
+  // Current page styling (last item)
+  :global(.cds--breadcrumb-item--current) {
+    span {
+      font-weight: 600;
+      cursor: default;
+      
+      &:hover {
+        text-decoration: none;
+      }
+    }
   }
-}
-
-.breadcrumbSeparator {
-  color: #FFFFFF;
-  font-size: 0.875rem;
-  margin: 0 $spacing-02;
-}
-
-.breadcrumbCurrent {
-  color: #FFFFFF;
-  font-size: 0.875rem;
-  font-weight: 600;
+  
+  // Separator styling (the "/" between items)
+  :global(.cds--breadcrumb-item::after) {
+    color: $text-on-color;
+    content: "/";
+    margin: 0 $spacing-02;
+  }
+  
+  // Remove separator after last item
+  :global(.cds--breadcrumb-item:last-child::after) {
+    display: none;
+  }
 }
 
 .rightActions {
@@ -72,64 +96,27 @@
   gap: $spacing-05;
 }
 
-.actionButton {
-  flex-shrink: 0;
-  height: 32px;
-  padding: 0 12px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  text-align: center !important;
-  
-  // Make button green with white text
-  background-color: #198038 !important;
-  color: #FFFFFF !important;
-  border: 1px solid #198038 !important;
-  
-  &:hover:not(:disabled) {
-    background-color: #0e6027 !important;
-    color: #FFFFFF !important;
-  }
-  
-  &:focus {
-    outline: 2px solid #FFFFFF;
-    outline-offset: 2px;
-  }
-  
-  &:disabled {
-    background-color: #6f6f6f !important;
-    color: #c6c6c6 !important;
-    border: 1px solid #6f6f6f !important;
-    cursor: not-allowed;
-  }
-  
-  // Center align text and remove extra padding/spacing
-  span {
-    padding: 0 !important;
-    margin: 0 !important;
-    text-align: center !important;
-    width: 100% !important;
-  }
-}
-
 .profileSection {
   display: flex;
   align-items: center;
-  gap: $spacing-02;
+  gap: $spacing-03;
 }
 
 .userAvatar {
-  width: 20px;
-  height: 20px;
+  width: $spacing-06;
+  height: $spacing-06;
   border-radius: 50%;
-  background-color: #FFFFFF;
-  opacity: 0.8;
+  background-color: $background-inverse;
 }
 
 .profileText {
-  color: #FFFFFF;
-  font-size: 0.875rem;
-  font-weight: 400;
+  color: $text-on-color;
+  @include type-style("body-compact-01");
+}
+
+.actionButton {
+  // Ensure proper padding for the button
+  min-height: auto;
 }
 
 @include breakpoint-down(lg) {
@@ -142,8 +129,7 @@
   }
   
   .actionButton {
-    padding: 0 8px !important;
-    font-size: 0.75rem;
+    @include type-style("label-01");
   }
 }
 

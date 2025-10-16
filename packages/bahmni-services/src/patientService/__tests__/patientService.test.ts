@@ -32,7 +32,7 @@ describe('Patient Service', () => {
   describe('getPatientById', () => {
     it('should call get with the correct patient URL', async () => {
       // Arrange
-      const patientUUID = '123-456';
+      const patientUUID = '12345678-1234-1234-1234-123456789abc';
       const mockPatient = { resourceType: 'Patient', id: patientUUID };
       mockedGet.mockResolvedValueOnce(mockPatient);
 
@@ -46,13 +46,79 @@ describe('Patient Service', () => {
 
     it('should propagate errors from the API', async () => {
       // Arrange
-      const patientUUID = '123-456';
+      const patientUUID = '12345678-1234-1234-1234-123456789abc';
       const mockError = new Error('API Error');
       mockedGet.mockRejectedValueOnce(mockError);
 
       // Act & Assert
       await expect(getPatientById(patientUUID)).rejects.toThrow('API Error');
       expect(mockedGet).toHaveBeenCalledWith(PATIENT_RESOURCE_URL(patientUUID));
+    });
+
+    it('should throw error for empty UUID', async () => {
+      // Act & Assert
+      await expect(getPatientById('')).rejects.toThrow(
+        'Invalid patient UUID: UUID cannot be empty',
+      );
+      expect(mockedGet).not.toHaveBeenCalled();
+    });
+
+    it('should throw error for whitespace-only UUID', async () => {
+      // Act & Assert
+      await expect(getPatientById('   ')).rejects.toThrow(
+        'Invalid patient UUID: UUID cannot be empty',
+      );
+      expect(mockedGet).not.toHaveBeenCalled();
+    });
+
+    it('should throw error for invalid UUID format', async () => {
+      // Arrange
+      const invalidUUID = 'not-a-valid-uuid';
+
+      // Act & Assert
+      await expect(getPatientById(invalidUUID)).rejects.toThrow(
+        'Invalid patient UUID format: not-a-valid-uuid',
+      );
+      expect(mockedGet).not.toHaveBeenCalled();
+    });
+
+    it('should throw error for UUID with invalid characters', async () => {
+      // Arrange
+      const invalidUUID = '12345678-1234-1234-1234-12345678ZZZZ';
+
+      // Act & Assert
+      await expect(getPatientById(invalidUUID)).rejects.toThrow(
+        'Invalid patient UUID format',
+      );
+      expect(mockedGet).not.toHaveBeenCalled();
+    });
+
+    it('should accept valid UUID with uppercase letters', async () => {
+      // Arrange
+      const patientUUID = '12345678-1234-1234-1234-123456789ABC';
+      const mockPatient = { resourceType: 'Patient', id: patientUUID };
+      mockedGet.mockResolvedValueOnce(mockPatient);
+
+      // Act
+      const result = await getPatientById(patientUUID);
+
+      // Assert
+      expect(mockedGet).toHaveBeenCalledWith(PATIENT_RESOURCE_URL(patientUUID));
+      expect(result).toEqual(mockPatient);
+    });
+
+    it('should accept valid UUID with lowercase letters', async () => {
+      // Arrange
+      const patientUUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+      const mockPatient = { resourceType: 'Patient', id: patientUUID };
+      mockedGet.mockResolvedValueOnce(mockPatient);
+
+      // Act
+      const result = await getPatientById(patientUUID);
+
+      // Assert
+      expect(mockedGet).toHaveBeenCalledWith(PATIENT_RESOURCE_URL(patientUUID));
+      expect(result).toEqual(mockPatient);
     });
   });
 

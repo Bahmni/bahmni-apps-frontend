@@ -101,6 +101,117 @@ describe('calculateAge', () => {
     expect(calculateAge('1990-05')).toBeNull();
     expect(calculateAge('199O-05-15')).toBeNull();
   });
+
+  describe('Month Boundary and Complex Date Scenarios', () => {
+    it('should correctly calculate age when born on last day of month', () => {
+      // Set current date to March 1, 2024
+      jest.setSystemTime(new Date(2024, 2, 1));
+
+      const result = calculateAge('2024-01-31'); // Born Jan 31, 2024
+
+      expect(result).not.toBeNull();
+      expect(result?.years).toBe(0);
+      expect(result?.months).toBe(1);
+      expect(result?.days).toBe(1); // Feb has 29 days in 2024 (leap year)
+    });
+
+    it('should handle births on May 31 when current date is July 30', () => {
+      // Set current date to July 30, 2024
+      jest.setSystemTime(new Date(2024, 6, 30));
+
+      const result = calculateAge('2024-05-31'); // Born May 31, 2024
+
+      expect(result).not.toBeNull();
+      expect(result?.years).toBe(0);
+      expect(result?.months).toBe(1);
+      expect(result?.days).toBe(30); // June has 30 days
+    });
+
+    it('should handle leap year births crossing into non-leap year', () => {
+      // Set current date to March 1, 2021
+      jest.setSystemTime(new Date(2021, 2, 1));
+
+      const result = calculateAge('2020-02-29'); // Born Feb 29, 2020 (leap year)
+
+      expect(result).not.toBeNull();
+      expect(result?.years).toBe(1);
+      expect(result?.months).toBe(0);
+      // Days should be calculated correctly across leap/non-leap year boundary
+      expect(result?.days).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should use correct reference month for day calculation', () => {
+      // Set current date to March 1, 2024
+      jest.setSystemTime(new Date(2024, 2, 1));
+
+      const result = calculateAge('2024-01-31');
+
+      expect(result).not.toBeNull();
+      // Should use February (the previous month from March) for calculating remaining days
+      expect(result?.months).toBe(1);
+      expect(result?.days).toBe(1);
+    });
+
+    it('should handle end of month births crossing to shorter months', () => {
+      // Set current date to June 30, 2024
+      jest.setSystemTime(new Date(2024, 5, 30));
+
+      const result = calculateAge('2024-01-31'); // Born Jan 31, 2024
+
+      expect(result).not.toBeNull();
+      expect(result?.years).toBe(0);
+      expect(result?.months).toBe(4);
+      expect(result?.days).toBeGreaterThanOrEqual(28);
+    });
+
+    it('should handle ISO date strings consistently regardless of timezone', () => {
+      // Set current date to March 1, 2024 at 00:00:00
+      jest.setSystemTime(new Date(2024, 2, 1, 0, 0, 0));
+
+      // ISO string without time component (should be treated as local date)
+      const result = calculateAge('2024-01-15');
+
+      expect(result).not.toBeNull();
+      expect(result?.years).toBe(0);
+      expect(result?.months).toBe(1);
+      expect(result?.days).toBeGreaterThanOrEqual(14);
+    });
+
+    it('should produce consistent results regardless of time of day', () => {
+      // Test at different times of the day to ensure date-only calculation
+      const birthDate = '2024-01-15';
+
+      // Morning
+      jest.setSystemTime(new Date(2024, 2, 1, 6, 0, 0));
+      const morningResult = calculateAge(birthDate);
+
+      // Evening
+      jest.setSystemTime(new Date(2024, 2, 1, 18, 0, 0));
+      const eveningResult = calculateAge(birthDate);
+
+      expect(morningResult).toEqual(eveningResult);
+    });
+
+    it('should never return negative values in any age component', () => {
+      // Test various month-end scenarios that previously could cause negative days
+      const testCases = [
+        { current: new Date(2024, 2, 1), birth: '2024-01-31' }, // Jan 31 to March 1
+        { current: new Date(2024, 6, 30), birth: '2024-05-31' }, // May 31 to July 30
+        { current: new Date(2024, 3, 30), birth: '2024-02-29' }, // Feb 29 to April 30
+        { current: new Date(2023, 2, 1), birth: '2023-01-31' }, // Non-leap year variant
+      ];
+
+      testCases.forEach(({ current, birth }) => {
+        jest.setSystemTime(current);
+        const result = calculateAge(birth);
+
+        expect(result).not.toBeNull();
+        expect(result?.years).toBeGreaterThanOrEqual(0);
+        expect(result?.months).toBeGreaterThanOrEqual(0);
+        expect(result?.days).toBeGreaterThanOrEqual(0);
+      });
+    });
+  });
 });
 
 describe('calculateOnsetDate', () => {

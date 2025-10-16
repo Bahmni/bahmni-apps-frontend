@@ -3,10 +3,15 @@ import {
   TimePickerProps as CarbonTimePickerProps,
 } from '@carbon/react';
 import React, { useState, useCallback } from 'react';
+import {
+  TIME_PICKER_24H_PATTERN,
+  TIME_PICKER_PLACEHOLDER_24H,
+} from './constants';
 
 export type TimePickerProps = CarbonTimePickerProps & {
   testId?: string;
   pattern?: string;
+  use24HourFormat?: boolean;
 };
 
 export const TimePicker: React.FC<TimePickerProps> = ({
@@ -14,8 +19,15 @@ export const TimePicker: React.FC<TimePickerProps> = ({
   onChange,
   onBlur,
   value,
+  pattern,
+  use24HourFormat = true,
+  placeholder,
   ...carbonProps
 }) => {
+  // Use provided pattern or default based on format
+  const validationPattern =
+    pattern ?? (use24HourFormat ? TIME_PICKER_24H_PATTERN : undefined);
+  const placeholderText = placeholder ?? TIME_PICKER_PLACEHOLDER_24H;
   const [internalValue, setInternalValue] = useState(value ?? '');
 
   const formatTimeInput = (input: string): string => {
@@ -218,7 +230,8 @@ export const TimePicker: React.FC<TimePickerProps> = ({
       onChange={handleInputChange}
       onKeyDown={handleKeyDown}
       onBlur={handleBlur}
-      placeholder="HH:MM"
+      placeholder={placeholderText}
+      pattern={validationPattern}
       maxLength={5} // HH:MM format
     />
   );
