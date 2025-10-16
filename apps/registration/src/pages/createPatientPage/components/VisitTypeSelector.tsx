@@ -6,9 +6,10 @@ import {
 import {
   getVisitTypes,
   useTranslation,
+  notificationService,
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CreateVisitRequest } from '../../../../../../packages/bahmni-services/src/patientService/models';
 import { createVisit } from '../../../../../../packages/bahmni-services/src/patientService/patientService';
 import { getUserLoginLocation } from '../../../../../../packages/bahmni-services/src/userService';
@@ -22,21 +23,36 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
   const { t } = useTranslation();
   const [visitPayload, setVisitPayload] = useState<CreateVisitRequest>();
   const [isNavigating, setIsNavigating] = useState<boolean>(false);
-  const { data: visitTypesFromApi = [], isLoading: isLoadingVisitTypes } =
-    useQuery({
-      queryKey: ['visitTypes'],
-      queryFn: getVisitTypes,
-      staleTime: 5 * 60 * 1000,
-      gcTime: 10 * 60 * 1000,
-    });
+  
+  const {
+    data: visitTypesFromApi = [],
+    isLoading: isLoadingVisitTypes,
+    error: visitTypesError,
+  } = useQuery({
+    queryKey: ['visitTypes'],
+    queryFn: getVisitTypes,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
 
-  useQuery({
+  const { error: createVisitError } = useQuery({
     queryKey: ['createVisit', visitPayload],
     queryFn: () => createVisit(visitPayload!),
     enabled: Boolean(visitPayload),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
+
+  const error = visitTypesError ?? createVisitError;
+
+  useEffect(() => {
+    if (error) {
+      notificationService.showError(
+        t('ERROR_DEFAULT_TITLE'),
+        error instanceof Error ? error.message : 'An error occurred',
+      );
+    }
+  }, [error, t]);
 
   if (isNavigating) {
     return <Loading description={t('LOADING_PATIENT_DETAILS')} role="status" />;
