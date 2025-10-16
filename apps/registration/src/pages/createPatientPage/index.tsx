@@ -23,7 +23,7 @@ import {
   PatientAddress,
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { useState, useCallback, useEffect, useMemo, use } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ALTERNATE_PHONE_NUMBER_UUID,
@@ -40,7 +40,6 @@ const NewPatientRegistration = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [dobEstimated, setDobEstimated] = useState(false);
-  const [patientUuid, setPatientUuid] = useState<string>('');
 
   // Fetch all identifier type data in a single optimized query
   const { data: identifierData } = useQuery({
@@ -91,8 +90,6 @@ const NewPatientRegistration = () => {
       );
 
       if (response?.patient?.uuid) {
-        setPatientUuid(response.patient.uuid);
-        console.log('patientUuid', response.patient.uuid);
         navigate(`/registration/patient/${response.patient.uuid}`, {
           state: {
             patientDisplay: response.patient.display,
@@ -672,13 +669,24 @@ const NewPatientRegistration = () => {
     return patientRequest;
   };
 
-  const handleSave = () => {
+  const handleSave = async (): Promise<string | null> => {
     const patientRequest = validateAndPreparePatientData();
     if (patientRequest) {
-      createPatientMutation.mutate(patientRequest);
-      return true;
+      try {
+        const response =
+          await createPatientMutation.mutateAsync(patientRequest);
+        if (response?.patient?.uuid) {
+          return response.patient.uuid;
+        }
+      } catch (error) {
+        notificationService.showError(
+          t('ERROR_DEFAULT_TITLE'),
+          error instanceof Error ? error.message : String(error),
+        );
+        return null;
+      }
     }
-    return false;
+    return null;
   };
 
   const breadcrumbs = [
@@ -1246,10 +1254,7 @@ const NewPatientRegistration = () => {
               <Button kind="tertiary">
                 {t('CREATE_PATIENT_PRINT_REG_CARD')}
               </Button>
-              <VisitTypeSelector
-                onVisitSave={() => handleSave()}
-                patientUuid={patientUuid}
-              />
+              <VisitTypeSelector onVisitSave={() => handleSave()} />
             </div>
           </div>
         </div>
