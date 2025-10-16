@@ -15,18 +15,13 @@ import { getUserLoginLocation } from '../../../../../../packages/bahmni-services
 import styles from './styles/VisitTypeSelector.module.scss';
 
 interface VisitTypeSelectorProps {
-  patientUuid: string;
-  onVisitSave: () => boolean;
+  onVisitSave: () => Promise<string | null>;
 }
 
-export const VisitTypeSelector = ({
-  patientUuid,
-  onVisitSave,
-}: VisitTypeSelectorProps) => {
-  useTranslation();
+export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
+  const { t } = useTranslation();
   const [visitPayload, setVisitPayload] = useState<CreateVisitRequest>();
   const [isNavigating, setIsNavigating] = useState<boolean>(false);
-  console.log('patientUuid', patientUuid);
   const { data: visitTypesFromApi = [], isLoading: isLoadingVisitTypes } =
     useQuery({
       queryKey: ['visitTypes'],
@@ -47,14 +42,14 @@ export const VisitTypeSelector = ({
     return <Loading description={t('LOADING_PATIENT_DETAILS')} role="status" />;
   }
 
-  const handleVisitTypeChange = (
+  const handleVisitTypeChange = async (
     selectedItem: { name: string; uuid: string } | null,
   ) => {
     if (!selectedItem) return;
 
-    if (onVisitSave()) {
+    const patientUuid = await onVisitSave();
+    if (patientUuid) {
       const loginLocation = getUserLoginLocation();
-      console.log('patientUuid', patientUuid);
       setVisitPayload({
         patient: patientUuid,
         visitType: selectedItem.uuid,
@@ -83,7 +78,6 @@ export const VisitTypeSelector = ({
         items={visitTypesFromApi.filter((_, index) => index !== 1)}
         itemToString={(item) => (item ? `Start ${item.name} visit` : '')}
         onChange={({ selectedItem }) => handleVisitTypeChange(selectedItem)}
-        className={styles.dropdown}
         label=""
         type="inline"
         disabled={isLoadingVisitTypes || visitTypesFromApi.length === 0}
