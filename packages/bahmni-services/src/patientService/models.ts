@@ -1,5 +1,3 @@
-import { UUID } from 'crypto';
-
 export interface Age {
   years: number;
   months: number;
@@ -149,4 +147,10 @@ export interface AddressHierarchyResponse {
 export interface VisitType {
   name: string;
   uuid: string;
+}
+
+export interface CreateVisitRequest {
+  patient: string;
+  visitType: string;
+  location: string;
 }
