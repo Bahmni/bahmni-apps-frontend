@@ -7,6 +7,7 @@ export {
   searchPatientByCustomAttribute,
   getPrimaryIdentifierType,
   createPatient,
+  createVisit,
   getIdentifierData,
   getGenders,
   getAddressHierarchyEntries,
@@ -19,6 +20,7 @@ export {
   type IdentifierTypesResponse,
   type CreatePatientRequest,
   type CreatePatientResponse,
+  type CreateVisitRequest,
   type PatientName,
   type PatientAddress,
   type PatientIdentifier,
@@ -120,7 +122,7 @@ export {
   type PatientSearchField,
 } from './configService';
 
-export { getCurrentUser, type User } from './userService';
+export { getCurrentUser, getUserLoginLocation, type User } from './userService';
 export { USER_PINNED_PREFERENCE_URL } from './constants/app';
 export {
   getCurrentProvider,

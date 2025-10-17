@@ -27,8 +27,8 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../../components/Header';
 import { AgeUtils, formatToDisplay, formatToISO } from '../../utils/ageUtils';
-import { VisitTypeSelector } from './components/VisitTypeSelector';
 import styles from './styles/index.module.scss';
+import { VisitTypeSelector } from './visitTypeSelector';
 
 const NewPatientRegistration = () => {
   const navigate = useNavigate();
