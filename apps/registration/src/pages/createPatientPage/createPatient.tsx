@@ -34,6 +34,7 @@ const NewPatientRegistration = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [dobEstimated, setDobEstimated] = useState(false);
+  const [isSaveButtonClicked, setIsSaveButtonClicked] = useState(false);
 
   // Fetch all identifier type data in a single optimized query
   const { data: identifierData } = useQuery({
@@ -83,19 +84,23 @@ const NewPatientRegistration = () => {
         5000,
       );
 
-      if (response?.patient?.uuid) {
-        navigate(`/registration/patient/${response.patient.uuid}`, {
-          state: {
-            patientDisplay: response.patient.display,
-            patientUuid: response.patient.uuid,
-          },
-        });
-      } else {
-        navigate('/registration/search');
+      if (isSaveButtonClicked) {
+        if (response?.patient?.uuid) {
+          navigate(`/registration/patient/${response.patient.uuid}`, {
+            state: {
+              patientDisplay: response.patient.display,
+              patientUuid: response.patient.uuid,
+            },
+          });
+        } else {
+          navigate('/registration/search');
+        }
       }
+      setIsSaveButtonClicked(false);
     },
     onError: () => {
       notificationService.showError('Error', 'Failed to save patient', 5000);
+      setIsSaveButtonClicked(false);
     },
   });
 
@@ -1092,7 +1097,10 @@ const NewPatientRegistration = () => {
             <div className={styles.actionButtons}>
               <Button
                 kind="tertiary"
-                onClick={handleSave}
+                onClick={() => {
+                  setIsSaveButtonClicked(true);
+                  handleSave();
+                }}
                 disabled={createPatientMutation.isPending}
               >
                 {createPatientMutation.isPending
@@ -1102,7 +1110,7 @@ const NewPatientRegistration = () => {
               <Button kind="tertiary">
                 {t('CREATE_PATIENT_PRINT_REG_CARD')}
               </Button>
-              <VisitTypeSelector onVisitSave={() => handleSave()} />
+              <VisitTypeSelector onVisitSave={handleSave} />
             </div>
           </div>
         </div>
