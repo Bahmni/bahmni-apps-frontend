@@ -350,6 +350,7 @@
   "SEVERITY_MODERATE": "Moderado",
   "SEVERITY_SEVERE": "Grave",
   "SIDE_NAVIGATION": "Navegación lateral",
+  "START_VISIT_TYPE": "Empezar visita {{visitType}}",
   "TABLE_EXPAND_COLUMN_ARIA_LABEL": "Expandir o contraer fila",
   "UNEXPECTED_ERROR": "Se produjo un error inesperado",
   "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "El usuario {{username}} accedió a la pantalla de búsqueda de pacientes en la aplicación de registro",
