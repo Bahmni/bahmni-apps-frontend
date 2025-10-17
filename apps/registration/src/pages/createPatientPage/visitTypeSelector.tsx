@@ -35,7 +35,7 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
     gcTime: 10 * 60 * 1000,
   });
 
-  const { error: createVisitError } = useQuery({
+  const { error: createVisitError, isSuccess: isVisitCreated } = useQuery({
     queryKey: ['createVisit', visitPayload],
     queryFn: () => createVisit(visitPayload!),
     enabled: Boolean(visitPayload),
@@ -52,7 +52,11 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
         error instanceof Error ? error.message : 'An error occurred',
       );
     }
-  }, [error, t]);
+    if (isVisitCreated && visitPayload) {
+      setIsNavigating(false);
+      window.location.href = `/bahmni/registration/index.html#/patient/${visitPayload.patient}/visit`;
+    }
+  }, [error, isVisitCreated, visitPayload, t]);
 
   const handleVisitTypeChange = async (
     selectedItem: { name: string; uuid: string } | null,
@@ -62,13 +66,12 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
     const patientUuid = await onVisitSave();
     if (patientUuid) {
       const loginLocation = getUserLoginLocation();
+      setIsNavigating(true);
       setVisitPayload({
         patient: patientUuid,
         visitType: selectedItem.uuid,
         location: loginLocation.uuid,
       });
-      setIsNavigating(true);
-      window.location.href = `/bahmni/registration/index.html#/patient/${patientUuid}/visit`;
     }
   };
 
