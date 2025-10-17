@@ -33,8 +33,8 @@ import {
 } from '../../../../../packages/bahmni-services/src/patientService/constants';
 import { Header } from '../../components/Header';
 import { AgeUtils, formatToDisplay, formatToISO } from '../../utils/ageUtils';
-import { VisitTypeSelector } from './components/VisitTypeSelector';
 import styles from './styles/index.module.scss';
+import { VisitTypeSelector } from './visitTypeSelector';
 
 const NewPatientRegistration = () => {
   const navigate = useNavigate();
