@@ -1,11 +1,11 @@
 .opdVisitGroup {
   display: flex;
   align-items: center;
-  :global(#opd-visit-button) {
+  :global(#visit-button) {
     background: var(--button-button-primary, #007d79) !important;
     min-width: 250px !important;
   }
-  :global(#opd-visit-dropdown) {
+  :global(#visit-dropdown) {
     background: var(--button-button-primary, #007d79) !important;
     min-height: 48px !important;
   }
