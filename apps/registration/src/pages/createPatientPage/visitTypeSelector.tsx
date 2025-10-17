@@ -88,14 +88,16 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
         onClick={() => handleVisitTypeChange(visitTypesFromApi[1])}
       >
         {!isLoadingVisitTypes && visitTypesFromApi.length > 1
-          ? `Start ${visitTypesFromApi[1].name} visit`
-          : 'Loading...'}
+          ? t('START_VISIT_TYPE', { visitType: visitTypesFromApi[1].name })
+          : ''}
       </Button>
 
       <Dropdown
         id="visit-dropdown"
         items={visitTypesFromApi.filter((_, index) => index !== 1)}
-        itemToString={(item) => (item ? `Start ${item.name} visit` : '')}
+        itemToString={(item) =>
+          item ? t('START_VISIT_TYPE', { visitType: item.name }) : ''
+        }
         onChange={({ selectedItem }) => handleVisitTypeChange(selectedItem)}
         label=""
         type="inline"
