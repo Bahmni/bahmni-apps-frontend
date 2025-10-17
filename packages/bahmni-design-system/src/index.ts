@@ -1,6 +1,7 @@
 import '@carbon/styles/css/styles.css';
 
 export { Button, type ButtonProps } from './atoms/button';
+export { Breadcrumb, type BreadcrumbProps } from './atoms/breadcrumb';
 export { Tile, type TileProps } from './atoms/tile';
 export { Tag, type TagProps } from './atoms/tag';
 export {

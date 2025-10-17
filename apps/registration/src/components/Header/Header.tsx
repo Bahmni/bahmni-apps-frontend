@@ -1,5 +1,4 @@
-import { Button } from '@bahmni-frontend/bahmni-design-system';
-import { Breadcrumb, BreadcrumbItem } from '@carbon/react';
+import { Breadcrumb, Button } from '@bahmni-frontend/bahmni-design-system';
 import React from 'react';
 
 import styles from './styles/index.module.scss';
@@ -32,18 +31,14 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <div className={`${styles.customHeader} ${className ?? ''}`}>
       <div className={styles.headerContent}>
-        <Breadcrumb noTrailingSlash className={styles.carbonBreadcrumb}>
-          {breadcrumbs.map((item, index) => (
-            <BreadcrumbItem
-              key={`breadcrumb-${item.label}`}
-              href={item.href}
-              onClick={item.onClick}
-              isCurrentPage={index === breadcrumbs.length - 1}
-            >
-              {item.label}
-            </BreadcrumbItem>
-          ))}
-        </Breadcrumb>
+        <Breadcrumb
+          items={breadcrumbs.map((item, index) => ({
+            label: item.label,
+            href: item.href,
+            isCurrentPage: index === breadcrumbs.length - 1,
+          }))}
+          className={styles.carbonBreadcrumb}
+        />
         <div className={styles.rightActions}>
           {showButton && buttonText && (
             <Button
