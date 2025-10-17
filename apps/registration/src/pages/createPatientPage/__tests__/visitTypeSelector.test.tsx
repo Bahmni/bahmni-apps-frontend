@@ -22,7 +22,12 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
     return mockNotificationService;
   },
   useTranslation: () => ({
-    t: (key: string) => key,
+    t: (key: string, params?: Record<string, any>) => {
+      if (key === 'START_VISIT_TYPE' && params?.visitType) {
+        return `Start ${params.visitType} visit`;
+      }
+      return key;
+    },
   }),
 }));
 
