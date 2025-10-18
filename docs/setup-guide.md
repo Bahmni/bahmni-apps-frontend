@@ -10,7 +10,7 @@ Bahmni Clinical Frontend is a React TypeScript application for the Bahmni Clinic
 
 Before you begin, ensure you have the following installed:
 
-- **Node.js** (v22.x or later recommended)
+- **Node.js** (v22.x or later recommended, v18.x minimum)
 
   - [Download Node.js](https://nodejs.org/en/download/)
   - Verify installation: `node --version`
@@ -22,8 +22,21 @@ Before you begin, ensure you have the following installed:
 
 - **Docker** and **Docker Compose**
 
-  - [Install Docker](https://docs.docker.com/get-docker/)
-  - [Install Docker Compose](https://docs.docker.com/compose/install/)
+  **Option 1: Docker Desktop**
+
+  - [Install Docker Desktop](https://docs.docker.com/get-docker/)
+  - Verify installation: `docker --version` and `docker compose --version`
+
+  **Option 2: Rancher Desktop (Alternative)**
+
+  - [Install Rancher Desktop](https://rancherdesktop.io/)
+  - Install via Homebrew on macOS: `brew install --cask rancher`
+  - After installation, open Rancher Desktop and select **dockerd (moby)** as the container runtime
+  - Create symlinks or add to PATH:
+    ```bash
+    # Add to ~/.zshrc or ~/.bashrc
+    export PATH="/Applications/Rancher Desktop.app/Contents/Resources/resources/darwin/bin:$PATH"
+    ```
   - Verify installation: `docker --version` and `docker compose --version`
 
 - **Git**
@@ -43,21 +56,38 @@ You'll need a GitHub Personal Access Token to access the GitHub Container Regist
 5. Click "Generate token"
 6. **Important**: Copy and save your token immediately as it won't be shown again
 
+## Quick Start (TL;DR)
+
+If you're familiar with the setup process, here's the quick version:
+
+```bash
+# 1. Install dependencies
+yarn
+
+# 2. Build all workspace packages (required first time)
+yarn nx run-many -t build --exclude=distro
+
+# 3. Start dev server
+yarn nx serve distro
+```
+
+For the complete setup with Docker backend, see the [Detailed Setup Guide](#environment-setup) below.
+
 ## Environment Setup
 
 ### 1. Clone Required Repositories
 
 ```bash
 # Clone the Bahmni Docker repository
-git clone git@github.com:bahnew/bahmni-docker.git
-# If you want to clone using the web URL
-# Clone Bahmni-docker from Bahnew repository(https://github.com/bahnew/bahmni-docker)
-# git clone https://github.com/bahnew/bahmni-docker.git
+git clone https://github.com/Bahmni/bahmni-docker.git
 cd bahmni-docker
 
-# Clone the Bahmni Clinical Frontend repository (in a separate terminal)
-# Clone from Bahnew(https://github.com/bahnew/bahmni-clinical-frontend/tree/main)
-git clone https://github.com/bahnew/bahmni-clinical-frontend.git
+# Note: If you have access to the bahnew organization repository, you can use:
+# git clone https://github.com/bahnew/bahmni-docker.git
+
+# Clone the Bahmni Clinical Frontend repository (in a separate terminal/directory)
+git clone https://github.com/Bahmni/bahmni-apps-frontend.git
+cd bahmni-apps-frontend
 ```
 
 ### 2. Authenticate with GitHub Container Registry
@@ -68,7 +98,7 @@ export GITHUB_PAT=<your-token-here>
 echo $GITHUB_PAT | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
 ```
 
-Replace `GITHUB_PAT` with your GitHub Personal Access Token and `YOUR_GITHUB_USERNAME` with your GitHub username.
+Replace `<your-token-here>` with your GitHub Personal Access Token and `YOUR_GITHUB_USERNAME` with your GitHub username.
 
 ### 3. Bring Up EMR Components
 
@@ -88,7 +118,7 @@ This command will pull the latest images for all EMR components and start them i
 docker ps
 ```
 
-Wait for all services to start up completely. Open your browser and navigate to the Bahmni EMR URL and open any Active patient (typically start from <http://localhost/bahmni/home>). After login, register a patient and start a visit. Now navigate to the clinical module, and go to New - Active queue. You will see the new dashboard being rendered. 
+Wait for all services to start up completely. Open your browser and navigate to the Bahmni EMR URL and open any Active patient (typically start from <http://localhost/bahmni/home>). After login, register a patient and start a visit. Now navigate to the clinical module, and go to New - Active queue. You will see the new dashboard being rendered.
 
 ## Development Setup Options
 
@@ -100,14 +130,14 @@ This method allows you to build the application locally and mount it into the Do
 
 1. **Update Environment Variables**:
 
-   In the `bahmni-docker` directory, edit the `.env.dev` file to point to your local bahmni-clinical-frontend repository:
+   In the `bahmni-docker` directory, edit the `.env.dev` file to point to your local bahmni-apps-frontend repository:
 
    ```bash
    # Open the .env.dev file
    nano .env.dev
 
    # Update the BAHMNI_CLINICAL_FRONTEND_PATH variable
-   BAHMNI_CLINICAL_FRONTEND_PATH=/path/to/your/bahmni-clinical-frontend
+   BAHMNI_CLINICAL_FRONTEND_PATH=/path/to/your/bahmni-apps-frontend
    ```
 
 2. **Uncomment Volumes in Docker Compose**:
@@ -116,13 +146,16 @@ This method allows you to build the application locally and mount it into the Do
 
 3. **Build the Application**:
 
-   In your bahmni-clinical-frontend directory:
+   In your bahmni-apps-frontend directory:
 
    ```bash
    # Install dependencies
    yarn
 
-   # Build the application
+   # Build all workspace packages first
+   yarn nx run-many -t build --exclude=distro
+
+   # Build the distro application
    yarn nx build distro
    ```
 
@@ -148,31 +181,49 @@ This method allows you to build the application locally and mount it into the Do
 
 ### Method 2: Using Hot Reload (Local Development Server)
 
-This method provides a faster development experience with hot reloading:
+This method provides a faster development experience with hot reloading.
+
+#### Prerequisites
+
+Before starting the dev server, ensure all workspace packages are built:
+
+```bash
+# In your bahmni-apps-frontend directory
+# Install dependencies
+yarn
+
+# Build all workspace packages (required first time only)
+yarn nx run-many -t build --exclude=distro
+```
+
+**Why is this step required?**
+
+The distro application depends on built packages (`@bahmni-frontend/clinical`, `@bahmni-frontend/registration`, `@bahmni-frontend/bahmni-widgets`, etc.). Each package exports styles and components from their `dist/` directories. Without building packages first, you'll encounter errors like:
+- `Can't find stylesheet to import`
+- `Module not found: Error: Can't resolve '@bahmni-frontend/clinical/styles'`
+
+#### Starting the Development Server
 
 1. **Start the Development Server**:
 
-   In your bahmni-clinical-frontend directory:
+   In your bahmni-apps-frontend directory:
 
    ```bash
-   # Install dependencies (if not already done)
-   yarn
-
    # Start the development server
    yarn nx serve distro
    ```
 
-   This will start the development server and automatically open your browser at [http://localhost:3000](http://localhost:3000).
+   This will start the development server at [http://localhost:3000](http://localhost:3000).
 
 2. **Set Up Authentication**:
 
    To authorize API requests to the backend:
 
-   a. Login to Bahmni EMR in another browser tab (typically <https://localhost/bahmni/home>)
+   a. Login to Bahmni EMR in another browser tab (typically <http://localhost/bahmni/home>)
 
    b. After successful login, open browser developer tools (F12 or right-click > Inspect)
 
-   c. Go to the Application tab > Cookies
+   c. Go to the **Application** tab > **Cookies**
 
    d. Find and copy the value of the `JSESSIONID` cookie
 
@@ -180,17 +231,35 @@ This method provides a faster development experience with hot reloading:
 
    - Name: `JSESSIONID`
    - Value: (paste the copied value)
+   - Domain: `localhost`
+   - Path: `/`
 
 3. **Development Workflow**:
 
-   With this setup, any changes you make to the source code will be immediately reflected in the browser.
+   With this setup, any changes you make to the source code in the `distro` app or any imported files will be immediately reflected in the browser with hot module replacement (HMR).
+
+   **Note**: If you modify code directly in workspace packages (like `@bahmni-frontend/clinical` or `@bahmni-frontend/bahmni-widgets`), you'll need to rebuild those packages for changes to take effect:
+
+   ```bash
+   # Rebuild a specific package
+   yarn nx build clinical
+
+   # Or rebuild all packages
+   yarn nx run-many -t build --exclude=distro
+
+   # Then restart the dev server if needed
+   yarn nx serve distro
+   ```
 
 ## Additional Commands
 
 ### Building for Production
 
 ```bash
-# Build the application for production
+# Build all packages first
+yarn nx run-many -t build --exclude=distro
+
+# Build the distro application for production
 yarn nx build distro
 ```
 
@@ -253,12 +322,13 @@ This configuration ensures consistent code formatting across the project, with r
 ### Testing
 
 ```bash
-# Run tests all tests
-yarn nx run-many -t test 
+# Run all tests
+yarn nx run-many -t test
 
 # Run specific module test
 yarn nx test <module/packagename>
 
+# Example: Run clinical module tests
 yarn nx test clinical
 
 # Run tests in watch mode
@@ -285,7 +355,7 @@ The Storybook development server will run on [http://localhost:6006](http://loca
 
 1. **Authentication Failures with GitHub Container Registry**:
 
-   - Ensure your Personal Access Token has the correct scopes
+   - Ensure your Personal Access Token has the correct scopes (`repo` and `read:packages`)
    - Check that your token hasn't expired
    - Verify you're using the correct username
 
@@ -293,17 +363,54 @@ The Storybook development server will run on [http://localhost:6006](http://loca
 
    - Ensure all required environment variables are set in `.env.dev`
    - Check for port conflicts with other running services
+   - If using Rancher Desktop, ensure it's running and configured with dockerd (moby)
 
 3. **API Authorization Issues**:
-   - Verify the JSESSIONID cookie is correctly set
-   - Ensure the Bahmni backend services are running
+
+   - Verify the JSESSIONID cookie is correctly set with the right domain (`localhost`) and path (`/`)
+   - Ensure the Bahmni backend services are running (`docker ps` should show all containers as "Up")
+   - Clear browser cache and cookies, then try again
+
+4. **Stylesheet Import Errors**:
+
+   If you see errors like `Can't find stylesheet to import` or `Module not found: Error: Can't resolve '@bahmni-frontend/clinical/styles'`:
+
+   - This means the workspace packages haven't been built yet
+   - Run: `yarn nx run-many -t build --exclude=distro`
+   - Wait for all packages to build successfully (should take 20-30 seconds)
+   - Restart the dev server: `yarn nx serve distro`
+
+5. **Docker Command Not Found (Rancher Desktop)**:
+
+   If you're using Rancher Desktop and see `docker: command not found`:
+
+   - Ensure Rancher Desktop is running (check menu bar)
+   - Add Docker binaries to your PATH in your shell profile:
+     ```bash
+     # Add to ~/.zshrc or ~/.bashrc
+     export PATH="/Applications/Rancher Desktop.app/Contents/Resources/resources/darwin/bin:$PATH"
+     ```
+   - Reload your shell: `source ~/.zshrc` (or `source ~/.bashrc`)
+   - Or use the full path in commands:
+     ```bash
+     PATH="/Applications/Rancher Desktop.app/Contents/Resources/resources/darwin/bin:$PATH" docker compose --env-file .env.dev up -d
+     ```
+
+6. **Port Already in Use**:
+
+   If port 3000 is already in use:
+
+   - Check what's using the port: `lsof -i :3000`
+   - Kill the process or change the port in webpack configuration
+   - Or specify a different port: `PORT=3001 yarn nx serve distro`
 
 ### Getting Help
 
 If you encounter issues not covered in this guide:
 
-- Check the [GitHub repository issues](https://github.com/bahnew/bahmni-clinical-frontend/issues)
+- Check the [GitHub repository issues](https://github.com/Bahmni/bahmni-apps-frontend/issues)
 - Consult the [Bahmni community forums](https://talk.openmrs.org/c/software/bahmni/35)
+- Review the [Bahmni Documentation](https://bahmni.atlassian.net/wiki/spaces/BAH/overview)
 
 ## Additional Resources
 
