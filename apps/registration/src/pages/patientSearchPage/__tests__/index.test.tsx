@@ -12,6 +12,7 @@ import {
 } from '@tanstack/react-query';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import { MemoryRouter } from 'react-router-dom';
 import PatientSearchPage from '..';
 import i18n from '../../../../setupTests.i18n';
 
@@ -38,6 +39,7 @@ const mockSearchPatientData: PatientSearchResult[] = [
     }),
     hasBeenAdmitted: true,
     age: '56',
+    patientProgramAttributeValue: null,
   },
   {
     uuid: '02f47490-d657-48ee-98e7-4c9133ea1685',
@@ -56,6 +58,7 @@ const mockSearchPatientData: PatientSearchResult[] = [
     customAttribute: '',
     hasBeenAdmitted: true,
     age: '56',
+    patientProgramAttributeValue: null,
   },
   {
     uuid: '02f47490-d657-48ee-98e7-4c9133ea2685',
@@ -74,6 +77,7 @@ const mockSearchPatientData: PatientSearchResult[] = [
     customAttribute: '',
     hasBeenAdmitted: true,
     age: '56',
+    patientProgramAttributeValue: null,
   },
 ];
 
@@ -86,10 +90,15 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
   ...jest.requireActual('@bahmni-frontend/bahmni-services'),
   dispatchAuditEvent: jest.fn(),
   getRegistrationConfig: jest.fn().mockResolvedValue({
-    config: {
-      patientSearch: {
-        customAttributes: [],
-      },
+    patientSearch: {
+      customAttributes: [
+        {
+          translationKey: 'REGISTRATION_PATIENT_SEARCH_PHONE_NUMBER',
+          fields: ['phoneNumber', 'alternatePhoneNumber'],
+          columnTranslationKeys: ['Phone Number', 'Alternate Phone Number'],
+          type: 'person',
+        },
+      ],
     },
   }),
   notificationService: {
@@ -131,11 +140,13 @@ describe('PatientSearchPage', () => {
 
   it("should log the user's visit to page", () => {
     render(
-      <NotificationProvider>
-        <QueryClientProvider client={queryClient}>
-          <PatientSearchPage />
-        </QueryClientProvider>
-      </NotificationProvider>,
+      <MemoryRouter>
+        <NotificationProvider>
+          <QueryClientProvider client={queryClient}>
+            <PatientSearchPage />
+          </QueryClientProvider>
+        </NotificationProvider>
+      </MemoryRouter>,
     );
     expect(dispatchAuditEvent).toHaveBeenCalledWith({
       eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_REGISTRATION_PATIENT_SEARCH
@@ -146,17 +157,18 @@ describe('PatientSearchPage', () => {
 
   it('should render the Header with Breadcrumbs component', () => {
     render(
-      <NotificationProvider>
-        <QueryClientProvider client={queryClient}>
-          <PatientSearchPage />
-        </QueryClientProvider>
-      </NotificationProvider>,
+      <MemoryRouter>
+        <NotificationProvider>
+          <QueryClientProvider client={queryClient}>
+            <PatientSearchPage />
+          </QueryClientProvider>
+        </NotificationProvider>
+      </MemoryRouter>,
     );
-    expect(
-      screen.getByRole('banner', { name: 'registration-search-page-header' }),
-    ).toBeInTheDocument();
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Search Patient')).toBeInTheDocument();
+    expect(screen.getByText('Create new patient')).toBeInTheDocument();
+    expect(screen.getByText('Hi, Profile name')).toBeInTheDocument();
     expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
     expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
     expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
@@ -167,11 +179,13 @@ describe('PatientSearchPage', () => {
 
   it('should render only search patient widget on mount', async () => {
     render(
-      <NotificationProvider>
-        <QueryClientProvider client={queryClient}>
-          <PatientSearchPage />
-        </QueryClientProvider>
-      </NotificationProvider>,
+      <MemoryRouter>
+        <NotificationProvider>
+          <QueryClientProvider client={queryClient}>
+            <PatientSearchPage />
+          </QueryClientProvider>
+        </NotificationProvider>
+      </MemoryRouter>,
     );
 
     expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
@@ -192,11 +206,13 @@ describe('PatientSearchPage', () => {
     });
 
     render(
-      <NotificationProvider>
-        <QueryClientProvider client={queryClient}>
-          <PatientSearchPage />
-        </QueryClientProvider>
-      </NotificationProvider>,
+      <MemoryRouter>
+        <NotificationProvider>
+          <QueryClientProvider client={queryClient}>
+            <PatientSearchPage />
+          </QueryClientProvider>
+        </NotificationProvider>
+      </MemoryRouter>,
     );
 
     expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
@@ -228,11 +244,13 @@ describe('PatientSearchPage', () => {
     });
 
     render(
-      <NotificationProvider>
-        <QueryClientProvider client={queryClient}>
-          <PatientSearchPage />
-        </QueryClientProvider>
-      </NotificationProvider>,
+      <MemoryRouter>
+        <NotificationProvider>
+          <QueryClientProvider client={queryClient}>
+            <PatientSearchPage />
+          </QueryClientProvider>
+        </NotificationProvider>
+      </MemoryRouter>,
     );
 
     expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
@@ -266,11 +284,13 @@ describe('PatientSearchPage', () => {
     });
 
     render(
-      <NotificationProvider>
-        <QueryClientProvider client={queryClient}>
-          <PatientSearchPage />
-        </QueryClientProvider>
-      </NotificationProvider>,
+      <MemoryRouter>
+        <NotificationProvider>
+          <QueryClientProvider client={queryClient}>
+            <PatientSearchPage />
+          </QueryClientProvider>
+        </NotificationProvider>
+      </MemoryRouter>,
     );
 
     const searchInput = screen.getByPlaceholderText(
@@ -288,11 +308,13 @@ describe('PatientSearchPage', () => {
 
   it('should have no accessibility violations', async () => {
     const { container } = render(
-      <NotificationProvider>
-        <QueryClientProvider client={queryClient}>
-          <PatientSearchPage />
-        </QueryClientProvider>
-      </NotificationProvider>,
+      <MemoryRouter>
+        <NotificationProvider>
+          <QueryClientProvider client={queryClient}>
+            <PatientSearchPage />
+          </QueryClientProvider>
+        </NotificationProvider>
+      </MemoryRouter>,
     );
     const results = await axe(container);
     expect(results).toHaveNoViolations();
@@ -309,11 +331,13 @@ describe('PatientSearchPage', () => {
     });
 
     render(
-      <NotificationProvider>
-        <QueryClientProvider client={queryClient}>
-          <PatientSearchPage />
-        </QueryClientProvider>
-      </NotificationProvider>,
+      <MemoryRouter>
+        <NotificationProvider>
+          <QueryClientProvider client={queryClient}>
+            <PatientSearchPage />
+          </QueryClientProvider>
+        </NotificationProvider>
+      </MemoryRouter>,
     );
 
     const searchInput = screen.getByPlaceholderText(
@@ -330,6 +354,64 @@ describe('PatientSearchPage', () => {
   });
 
   describe('Patient ID Link Navigation', () => {
+    it('should render patient ID as a clickable link with correct href', async () => {
+      (useQuery as jest.Mock).mockReturnValue({
+        data: {
+          totalCount: mockSearchPatientData.length,
+          pageOfResults: mockSearchPatientData,
+        },
+        error: null,
+        isLoading: false,
+      });
+
+      render(
+        <MemoryRouter>
+          <NotificationProvider>
+            <QueryClientProvider client={queryClient}>
+              <PatientSearchPage />
+            </QueryClientProvider>
+          </NotificationProvider>
+        </MemoryRouter>,
+      );
+
+      const searchInput = screen.getByPlaceholderText(
+        'Search by name or patient ID',
+      );
+      fireEvent.input(searchInput, { target: { value: 'test search' } });
+      fireEvent.click(screen.getByTestId('search-patient-search-button'));
+
+      await waitFor(() => {
+        const patientLink1 = screen.getByRole('link', { name: 'ABC200001' });
+        const patientLink2 = screen.getByRole('link', { name: 'ABC200002' });
+
+        expect(patientLink1).toBeInTheDocument();
+        expect(patientLink2).toBeInTheDocument();
+
+        expect(patientLink1).toHaveAttribute(
+          'href',
+          '/bahmni/registration/index.html#/patient/02f47490-d657-48ee-98e7-4c9133ea168b',
+        );
+        expect(patientLink2).toHaveAttribute(
+          'href',
+          '/bahmni/registration/index.html#/patient/02f47490-d657-48ee-98e7-4c9133ea1685',
+        );
+
+        const patientName1 = screen.getByText('Steffi Maria Graf');
+        const patientName2 = screen.getByText('John Doe');
+        const phoneNumber = screen.getByText('864579392');
+        const genderElements = screen.getAllByText('F');
+
+        expect(patientName1).toBeInTheDocument();
+        expect(patientName2).toBeInTheDocument();
+        expect(phoneNumber).toBeInTheDocument();
+        expect(genderElements.length).toBeGreaterThan(0);
+        expect(patientName1.tagName).not.toBe('A');
+        expect(patientName2.tagName).not.toBe('A');
+        expect(phoneNumber.tagName).not.toBe('A');
+        expect(genderElements[0].tagName).not.toBe('A');
+      });
+    });
+
     it('should navigate to patient details when row is clicked', async () => {
       delete (window as any).location;
       window.location = { href: '' } as any;
@@ -344,11 +426,13 @@ describe('PatientSearchPage', () => {
       });
 
       render(
-        <NotificationProvider>
-          <QueryClientProvider client={queryClient}>
-            <PatientSearchPage />
-          </QueryClientProvider>
-        </NotificationProvider>,
+        <MemoryRouter>
+          <NotificationProvider>
+            <QueryClientProvider client={queryClient}>
+              <PatientSearchPage />
+            </QueryClientProvider>
+          </NotificationProvider>
+        </MemoryRouter>,
       );
 
       const searchInput = screen.getByPlaceholderText(
@@ -383,11 +467,13 @@ describe('PatientSearchPage', () => {
       });
 
       const { rerender } = render(
-        <NotificationProvider>
-          <QueryClientProvider client={queryClient}>
-            <PatientSearchPage />
-          </QueryClientProvider>
-        </NotificationProvider>,
+        <MemoryRouter>
+          <NotificationProvider>
+            <QueryClientProvider client={queryClient}>
+              <PatientSearchPage />
+            </QueryClientProvider>
+          </NotificationProvider>
+        </MemoryRouter>,
       );
 
       const searchInput = screen.getByPlaceholderText(
@@ -402,11 +488,13 @@ describe('PatientSearchPage', () => {
       });
 
       rerender(
-        <NotificationProvider>
-          <QueryClientProvider client={queryClient}>
-            <PatientSearchPage />
-          </QueryClientProvider>
-        </NotificationProvider>,
+        <MemoryRouter>
+          <NotificationProvider>
+            <QueryClientProvider client={queryClient}>
+              <PatientSearchPage />
+            </QueryClientProvider>
+          </NotificationProvider>
+        </MemoryRouter>,
       );
       expect(screen.getByTitle('LOADING_PATIENT_DETAILS')).toBeInTheDocument();
     });
