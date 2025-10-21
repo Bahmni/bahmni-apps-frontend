@@ -1,6 +1,5 @@
 import {
   BaseLayout,
-  Header,
   Link,
   Loading,
   SkeletonText,
@@ -20,6 +19,9 @@ import {
 } from '@bahmni-frontend/bahmni-services';
 import { SearchPatient } from '@bahmni-frontend/bahmni-widgets';
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import { Header } from '../../components/Header';
 import styles from './styles/index.module.scss';
 import { formatPatientSearchResult, PatientSearchViewModel } from './utils';
 
@@ -39,7 +41,11 @@ const PatientSearchPage: React.FC = () => {
   const [isNavigating, setIsNavigating] = useState<boolean>(false);
   const [searchFields, setSearchFields] = useState<PatientSearchField[]>([]);
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
+  const handleCreateNewPatient = () => {
+    navigate('/registration/new');
+  };
   useEffect(() => {
     const loadSearchConfig = async () => {
       const config = await getRegistrationConfig();
@@ -49,19 +55,6 @@ const PatientSearchPage: React.FC = () => {
     };
     loadSearchConfig();
   }, []);
-
-  const breadcrumbItems = [
-    {
-      id: 'home',
-      label: t('REGISTRATION_PATIENT_SEARCH_BREADCRUMB_HOME'),
-      href: BAHMNI_HOME_PATH,
-    },
-    {
-      id: 'current',
-      label: t('REGISTRATION_PATIENT_SEARCH_BREADCRUMB_CURRENT'),
-      isCurrentPage: true,
-    },
-  ];
 
   useEffect(() => {
     dispatchAuditEvent({
@@ -169,12 +162,25 @@ const PatientSearchPage: React.FC = () => {
     return <Loading description={t('LOADING_PATIENT_DETAILS')} role="status" />;
   }
 
+  const breadcrumbs = [
+    {
+      label: t('REGISTRATION_PATIENT_SEARCH_BREADCRUMB_HOME'),
+      href: BAHMNI_HOME_PATH,
+    },
+    {
+      label: 'Search Patient',
+    },
+  ];
+
   return (
     <BaseLayout
       header={
         <Header
-          breadcrumbItems={breadcrumbItems}
-          ariaLabel="registration-search-page-header"
+          breadcrumbs={breadcrumbs}
+          showButton
+          buttonText="Create new patient"
+          onButtonClick={handleCreateNewPatient}
+          buttonTestId="create-new-patient-button"
         />
       }
       main={

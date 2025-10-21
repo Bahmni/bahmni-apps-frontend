@@ -6,6 +6,9 @@
 .main {
   background-color: $layer-02;
   padding: $spacing-06 $spacing-12;
+  padding-inline: calc($spacing-12 + $spacing-02);
+  padding-top: calc(48px + $spacing-12);
+  margin-top: 0;
 }
 
 .patientSearchResult {

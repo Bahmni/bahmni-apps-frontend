@@ -39,3 +39,107 @@ export interface PatientSearchResultBundle {
   totalCount: number;
   pageOfResults: PatientSearchResult[];
 }
+
+export interface IdentifierSource {
+  uuid: string;
+  name: string;
+  prefix: string;
+}
+
+export interface IdentifierType {
+  uuid: string;
+  name: string;
+  description: string;
+  format: string | null;
+  required: boolean;
+  primary: boolean;
+  identifierSources: IdentifierSource[];
+}
+
+export type IdentifierTypesResponse = IdentifierType[];
+
+export interface AppSetting {
+  property: string;
+  value: string;
+}
+export type AppSettingsResponse = AppSetting[];
+
+// Patient Creation Models
+export interface PatientName {
+  givenName: string;
+  middleName?: string;
+  familyName: string;
+  display?: string;
+  preferred?: boolean;
+}
+
+export interface PatientAddress {
+  address1?: string;
+  address2?: string;
+  cityVillage?: string;
+  stateProvince?: string;
+  postalCode?: string;
+  countyDistrict?: string;
+}
+
+export interface PatientIdentifier {
+  identifierSourceUuid?: string;
+  identifierPrefix?: string;
+  identifierType: string;
+  preferred: boolean;
+  voided?: boolean;
+}
+
+export interface PatientAttribute {
+  attributeType: {
+    uuid: string;
+  };
+  voided?: boolean;
+  value?: string;
+}
+
+export interface CreatePatientRequest {
+  patient: {
+    person: {
+      names: PatientName[];
+      gender: string;
+      birthdate: string;
+      birthdateEstimated?: boolean;
+      birthtime?: string | null;
+      addresses?: PatientAddress[];
+      attributes?: PatientAttribute[];
+      deathDate?: string | null;
+      causeOfDeath?: string;
+    };
+    identifiers: PatientIdentifier[];
+  };
+  relationships?: unknown[];
+}
+
+export interface CreatePatientResponse {
+  patient: {
+    uuid: string;
+    display: string;
+    person: {
+      uuid: string;
+      names: Array<{
+        display: string;
+      }>;
+    };
+    identifiers: Array<{
+      identifier: string;
+    }>;
+  };
+}
+
+export interface AddressHierarchyEntry {
+  name: string;
+  uuid: string;
+  userGeneratedId: string | null;
+  level?: string;
+  parent?: AddressHierarchyEntry;
+}
+
+export interface AddressHierarchyResponse {
+  results: AddressHierarchyEntry[];
+}

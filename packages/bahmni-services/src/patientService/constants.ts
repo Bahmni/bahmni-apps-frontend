@@ -72,3 +72,31 @@ export const PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL = (
 
   return OPENMRS_REST_V1 + `/bahmni/search/patient?${params.toString()}`;
 };
+
+export const IDENTIFIER_TYPES_URL = OPENMRS_REST_V1 + '/idgen/identifiertype';
+
+export const APP_SETTINGS_URL = (module: string) =>
+  OPENMRS_REST_V1 + `/bahmni/app/setting?module=${module}`;
+
+export const PRIMARY_IDENTIFIER_TYPE_PROPERTY = 'bahmni.primaryIdentifierType';
+
+export const CREATE_PATIENT_URL =
+  OPENMRS_REST_V1 + '/bahmnicore/patientprofile';
+
+export const ADDRESS_HIERARCHY_URL = (
+  addressField: string,
+  searchString: string,
+  limit: number = 20,
+) =>
+  `/openmrs/module/addresshierarchy/ajax/getPossibleAddressHierarchyEntriesWithParents.form?addressField=${addressField}&limit=${limit}&searchString=${encodeURIComponent(searchString)}`;
+
+// Search and pagination constants
+export const ADDRESS_HIERARCHY_DEFAULT_LIMIT = 20;
+export const ADDRESS_HIERARCHY_MIN_SEARCH_LENGTH = 2;
+export const PATIENT_SEARCH_MIN_LENGTH = 2;
+export const DEFAULT_PAGE_SIZE = 20;
+export const MAX_PAGE_SIZE = 100;
+
+// Validation constants
+export const MAX_PATIENT_AGE_YEARS = 150;
+export const UUID_PATTERN = /^[a-f0-9-]{36}$/i;
