@@ -87,6 +87,14 @@ const NewPatientRegistration = () => {
         5000,
       );
 
+      if (response?.patient?.uuid) {
+        dispatchAuditEvent({
+          eventType: AUDIT_LOG_EVENT_DETAILS.REGISTER_NEW_PATIENT
+            .eventType as AuditEventType,
+          patientUuid: response.patient.uuid,
+        });
+      }
+
       if (isSaveButtonClicked) {
         if (response?.patient?.uuid) {
           navigate(`/registration/patient/${response.patient.uuid}`, {
