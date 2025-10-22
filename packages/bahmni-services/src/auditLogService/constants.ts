@@ -31,6 +31,11 @@ export const AUDIT_LOG_EVENT_DETAILS = {
     message: 'REGISTER_NEW_PATIENT_MESSAGE',
     module: MODULE_LABELS.REGISTRATION,
   },
+  OPEN_VISIT: {
+    eventType: 'OPEN_VISIT',
+    message: 'OPEN_VISIT_MESSAGE',
+    module: MODULE_LABELS.REGISTRATION,
+  },
 };
 
 export const AUDIT_LOG_URL = OPENMRS_REST_V1 + '/auditlog';

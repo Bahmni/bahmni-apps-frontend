@@ -10,6 +10,9 @@ import {
   createVisit,
   getUserLoginLocation,
   type CreateVisitRequest,
+  AUDIT_LOG_EVENT_DETAILS,
+  AuditEventType,
+  dispatchAuditEvent,
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
@@ -22,6 +25,7 @@ interface VisitTypeSelectorProps {
 export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
   const { t } = useTranslation();
   const [visitPayload, setVisitPayload] = useState<CreateVisitRequest>();
+  const [visitTypeName, setVisitTypeName] = useState<string>('');
   const [isNavigating, setIsNavigating] = useState<boolean>(false);
 
   const {
@@ -53,10 +57,17 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
       );
     }
     if (isVisitCreated && visitPayload) {
+      dispatchAuditEvent({
+        eventType: AUDIT_LOG_EVENT_DETAILS.OPEN_VISIT
+          .eventType as AuditEventType,
+        patientUuid: visitPayload.patient,
+        messageParams: { visitType: visitTypeName },
+      });
+
       setIsNavigating(false);
       window.location.href = `/bahmni/registration/index.html#/patient/${visitPayload.patient}/visit`;
     }
-  }, [error, isVisitCreated, visitPayload, t]);
+  }, [error, isVisitCreated, visitPayload, visitTypeName, t]);
 
   const handleVisitTypeChange = async (
     selectedItem: { name: string; uuid: string } | null,
@@ -67,6 +78,7 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
     if (patientUuid) {
       const loginLocation = getUserLoginLocation();
       setIsNavigating(true);
+      setVisitTypeName(selectedItem.name);
       setVisitPayload({
         patient: patientUuid,
         visitType: selectedItem.uuid,
