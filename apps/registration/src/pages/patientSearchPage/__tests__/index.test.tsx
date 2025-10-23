@@ -103,7 +103,7 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
             {
               field: 'alternatePhoneNumber',
               translationKey: 'Alternate Phone Number',
-            }
+            },
           ],
           type: 'person',
         },
