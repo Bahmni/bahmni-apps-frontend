@@ -5,9 +5,11 @@ export {
   searchPatientByCustomAttribute,
   getPrimaryIdentifierType,
   createPatient,
+  createVisit,
   getIdentifierData,
   getGenders,
   getAddressHierarchyEntries,
+  getVisitTypes,
 } from './patientService';
 export {
   type FormattedPatientData,
@@ -18,9 +20,11 @@ export {
   type IdentifierTypesResponse,
   type CreatePatientRequest,
   type CreatePatientResponse,
+  type CreateVisitRequest,
   type PatientName,
   type PatientAddress,
   type PatientIdentifier,
   type PatientAttribute,
   type AddressHierarchyEntry,
+  type VisitType,
 } from './models';

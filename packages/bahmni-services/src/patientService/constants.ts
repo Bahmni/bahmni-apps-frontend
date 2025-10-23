@@ -83,6 +83,8 @@ export const PRIMARY_IDENTIFIER_TYPE_PROPERTY = 'bahmni.primaryIdentifierType';
 export const CREATE_PATIENT_URL =
   OPENMRS_REST_V1 + '/bahmnicore/patientprofile';
 
+export const CREATE_VISIT_URL = OPENMRS_REST_V1 + '/visit';
+
 export const ADDRESS_HIERARCHY_URL = (
   addressField: string,
   searchString: string,
@@ -100,3 +102,7 @@ export const MAX_PAGE_SIZE = 100;
 // Validation constants
 export const MAX_PATIENT_AGE_YEARS = 150;
 export const UUID_PATTERN = /^[a-f0-9-]{36}$/i;
+
+export const VISIT_TYPES_URL = () =>
+  OPENMRS_REST_V1 +
+  `/bahmnicore/config/bahmniencounter?callerContext=REGISTRATION_CONCEPTS`;
