@@ -208,20 +208,52 @@ const NewPatientRegistration = () => {
     }
   };
 
+  // Helper function to clear all errors
+  const clearAllErrors = useCallback(() => {
+    setDateErrors({ dateOfBirth: '' });
+    setValidationErrors((prev) => ({ ...prev, dateOfBirth: '' }));
+    setAgeErrors({ ageYears: '', ageMonths: '', ageDays: '' });
+  }, []);
+
+  // Helper function to clear form age data
+  const clearAgeData = useCallback(() => {
+    setFormData((prev) => ({
+      ...prev,
+      dateOfBirth: '',
+      ageYears: '',
+      ageMonths: '',
+      ageDays: '',
+    }));
+    setDobEstimated(false);
+  }, []);
+
+  // Helper function to update form with calculated age
+  const updateFormWithAge = useCallback(
+    (date: Date) => {
+      const isoDate = formatToISO(date);
+      const calculatedAge = AgeUtils.diffInYearsMonthsDays(date, new Date());
+
+      setFormData((prev) => ({
+        ...prev,
+        dateOfBirth: isoDate,
+        ageYears: String(calculatedAge.years ?? 0),
+        ageMonths: String(calculatedAge.months ?? 0),
+        ageDays: String(calculatedAge.days ?? 0),
+      }));
+      setDobEstimated(false);
+      clearAllErrors();
+    },
+    [clearAllErrors],
+  );
+
   const handleDateInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const input = e.target.value.replace(/\D/g, ''); // Remove non-digits
+      const input = e.target.value.replace(/\D/g, '');
       const inputElement = e.target;
 
       if (input.length === 0) {
         inputElement.value = '';
-        setFormData((prev) => ({
-          ...prev,
-          dateOfBirth: '',
-          ageYears: '',
-          ageMonths: '',
-          ageDays: '',
-        }));
+        clearAgeData();
         setDateErrors({ dateOfBirth: '' });
         setValidationErrors((prev) => ({ ...prev, dateOfBirth: '' }));
         return;
@@ -237,7 +269,6 @@ const NewPatientRegistration = () => {
         formatted = `${input.slice(0, 2)}/${input.slice(2, 4)}/${input.slice(4, 8)}`;
       }
 
-      // Update the input field value with formatted string
       inputElement.value = formatted;
 
       // If complete date (8 digits), parse and validate
@@ -245,20 +276,11 @@ const NewPatientRegistration = () => {
         const day = parseInt(input.slice(0, 2), 10);
         const month = parseInt(input.slice(2, 4), 10);
         const year = parseInt(input.slice(4, 8), 10);
-        let error = '';
 
         // Check for invalid day or month ranges
         if (day < 1 || day > 31 || month < 1 || month > 12) {
-          error = t('DATE_ERROR_INVALID_FORMAT');
-          setDateErrors({ dateOfBirth: error });
-          setFormData((prev) => ({
-            ...prev,
-            dateOfBirth: '',
-            ageYears: '',
-            ageMonths: '',
-            ageDays: '',
-          }));
-          setDobEstimated(false);
+          setDateErrors({ dateOfBirth: t('DATE_ERROR_INVALID_FORMAT') });
+          clearAgeData();
           return;
         }
 
@@ -270,31 +292,19 @@ const NewPatientRegistration = () => {
           parsedDate.getMonth() !== month - 1 ||
           parsedDate.getFullYear() !== year
         ) {
-          error = t('DATE_ERROR_INVALID_FORMAT');
-          setDateErrors({ dateOfBirth: error });
-          setFormData((prev) => ({
-            ...prev,
-            dateOfBirth: '',
-            ageYears: '',
-            ageMonths: '',
-            ageDays: '',
-          }));
-          setDobEstimated(false);
+          setDateErrors({ dateOfBirth: t('DATE_ERROR_INVALID_FORMAT') });
+          clearAgeData();
           return;
         }
 
         // Check if date is in future
         if (parsedDate > new Date()) {
-          error = t('DATE_ERROR_INVALID_FORMAT');
-          setDateErrors({ dateOfBirth: error });
-          setFormData((prev) => ({
-            ...prev,
-            dateOfBirth: '',
-            ageYears: '',
-            ageMonths: '',
-            ageDays: '',
-          }));
-          setDobEstimated(false);
+          const today = new Date();
+          const todayFormatted = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+          setDateErrors({
+            dateOfBirth: t('DATE_ERROR_FUTURE_DATE', { date: todayFormatted }),
+          });
+          clearAgeData();
           return;
         }
 
@@ -304,61 +314,32 @@ const NewPatientRegistration = () => {
           new Date(),
         );
 
-        // Check if calculated age exceeds 120 years (generic validation)
+        // Check if calculated age exceeds 120 years
         if (calculatedAge.years && calculatedAge.years > 120) {
-          error = t('CREATE_PATIENT_VALIDATION_AGE_YEARS_MAX');
-          setDateErrors({ dateOfBirth: error });
-          setFormData((prev) => ({
-            ...prev,
-            dateOfBirth: '',
-            ageYears: '',
-            ageMonths: '',
-            ageDays: '',
-          }));
-          setDobEstimated(false);
+          setDateErrors({
+            dateOfBirth: t('CREATE_PATIENT_VALIDATION_AGE_YEARS_MAX'),
+          });
+          clearAgeData();
           return;
         }
 
-        // If no errors, clear error state and update form data
-        setDateErrors({ dateOfBirth: '' });
-        const isoDate = formatToISO(parsedDate);
-
-        setFormData((prev) => ({
-          ...prev,
-          dateOfBirth: isoDate,
-          ageYears: String(calculatedAge.years ?? 0),
-          ageMonths: String(calculatedAge.months ?? 0),
-          ageDays: String(calculatedAge.days ?? 0),
-        }));
-        setDobEstimated(false);
-        setValidationErrors((prev) => ({ ...prev, dateOfBirth: '' }));
+        // If no errors, update form data
+        updateFormWithAge(parsedDate);
       }
     },
-    [t],
+    [t, clearAgeData, updateFormWithAge],
   );
 
-  const handleDateOfBirthChange = useCallback((selectedDates: Date[] = []) => {
-    if (!selectedDates || selectedDates.length === 0) return;
-    const selectedDate = selectedDates[0];
-    if (!selectedDate) return;
+  const handleDateOfBirthChange = useCallback(
+    (selectedDates: Date[] = []) => {
+      if (!selectedDates || selectedDates.length === 0) return;
+      const selectedDate = selectedDates[0];
+      if (!selectedDate) return;
 
-    const isoDate = formatToISO(selectedDate);
-    const calculatedAge = AgeUtils.diffInYearsMonthsDays(
-      selectedDate,
-      new Date(),
-    );
-
-    setFormData((prev) => ({
-      ...prev,
-      dateOfBirth: isoDate,
-      ageYears: String(calculatedAge.years ?? 0),
-      ageMonths: String(calculatedAge.months ?? 0),
-      ageDays: String(calculatedAge.days ?? 0),
-    }));
-    setDobEstimated(false);
-    setValidationErrors((prev) => ({ ...prev, dateOfBirth: '' }));
-    setAgeErrors({ ageYears: '', ageMonths: '', ageDays: '' });
-  }, []);
+      updateFormWithAge(selectedDate);
+    },
+    [updateFormWithAge],
+  );
 
   const handleAgeChange = useCallback(
     (field: 'ageYears' | 'ageMonths' | 'ageDays', value: string) => {
