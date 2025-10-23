@@ -139,6 +139,10 @@ const NewPatientRegistration = () => {
     ageDays: '',
   });
 
+  const [dateErrors, setDateErrors] = useState({
+    dateOfBirth: '',
+  });
+
   // Address hierarchy state (only for district, state, and pincode)
   const [suggestions, setSuggestions] = useState({
     district: [] as AddressHierarchyEntry[],
@@ -204,6 +208,135 @@ const NewPatientRegistration = () => {
     }
   };
 
+  const handleDateInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const input = e.target.value.replace(/\D/g, ''); // Remove non-digits
+      const inputElement = e.target;
+
+      if (input.length === 0) {
+        inputElement.value = '';
+        setFormData((prev) => ({
+          ...prev,
+          dateOfBirth: '',
+          ageYears: '',
+          ageMonths: '',
+          ageDays: '',
+        }));
+        setDateErrors({ dateOfBirth: '' });
+        setValidationErrors((prev) => ({ ...prev, dateOfBirth: '' }));
+        return;
+      }
+
+      // Format as DD/MM/YYYY while typing
+      let formatted = '';
+      if (input.length <= 2) {
+        formatted = input;
+      } else if (input.length <= 4) {
+        formatted = `${input.slice(0, 2)}/${input.slice(2)}`;
+      } else {
+        formatted = `${input.slice(0, 2)}/${input.slice(2, 4)}/${input.slice(4, 8)}`;
+      }
+
+      // Update the input field value with formatted string
+      inputElement.value = formatted;
+
+      // If complete date (8 digits), parse and validate
+      if (input.length === 8) {
+        const day = parseInt(input.slice(0, 2), 10);
+        const month = parseInt(input.slice(2, 4), 10);
+        const year = parseInt(input.slice(4, 8), 10);
+        let error = '';
+
+        // Check for invalid day or month ranges
+        if (day < 1 || day > 31 || month < 1 || month > 12) {
+          error = t('DATE_ERROR_INVALID_FORMAT');
+          setDateErrors({ dateOfBirth: error });
+          setFormData((prev) => ({
+            ...prev,
+            dateOfBirth: '',
+            ageYears: '',
+            ageMonths: '',
+            ageDays: '',
+          }));
+          setDobEstimated(false);
+          return;
+        }
+
+        const parsedDate = new Date(year, month - 1, day);
+
+        // Check if date is valid (e.g., not 31st Feb)
+        if (
+          parsedDate.getDate() !== day ||
+          parsedDate.getMonth() !== month - 1 ||
+          parsedDate.getFullYear() !== year
+        ) {
+          error = t('DATE_ERROR_INVALID_FORMAT');
+          setDateErrors({ dateOfBirth: error });
+          setFormData((prev) => ({
+            ...prev,
+            dateOfBirth: '',
+            ageYears: '',
+            ageMonths: '',
+            ageDays: '',
+          }));
+          setDobEstimated(false);
+          return;
+        }
+
+        // Check if date is in future
+        if (parsedDate > new Date()) {
+          error = t('DATE_ERROR_INVALID_FORMAT');
+          setDateErrors({ dateOfBirth: error });
+          setFormData((prev) => ({
+            ...prev,
+            dateOfBirth: '',
+            ageYears: '',
+            ageMonths: '',
+            ageDays: '',
+          }));
+          setDobEstimated(false);
+          return;
+        }
+
+        // Calculate age to validate it's within acceptable range
+        const calculatedAge = AgeUtils.diffInYearsMonthsDays(
+          parsedDate,
+          new Date(),
+        );
+
+        // Check if calculated age exceeds 120 years (generic validation)
+        if (calculatedAge.years && calculatedAge.years > 120) {
+          error = t('CREATE_PATIENT_VALIDATION_AGE_YEARS_MAX');
+          setDateErrors({ dateOfBirth: error });
+          setFormData((prev) => ({
+            ...prev,
+            dateOfBirth: '',
+            ageYears: '',
+            ageMonths: '',
+            ageDays: '',
+          }));
+          setDobEstimated(false);
+          return;
+        }
+
+        // If no errors, clear error state and update form data
+        setDateErrors({ dateOfBirth: '' });
+        const isoDate = formatToISO(parsedDate);
+
+        setFormData((prev) => ({
+          ...prev,
+          dateOfBirth: isoDate,
+          ageYears: String(calculatedAge.years ?? 0),
+          ageMonths: String(calculatedAge.months ?? 0),
+          ageDays: String(calculatedAge.days ?? 0),
+        }));
+        setDobEstimated(false);
+        setValidationErrors((prev) => ({ ...prev, dateOfBirth: '' }));
+      }
+    },
+    [t],
+  );
+
   const handleDateOfBirthChange = useCallback((selectedDates: Date[] = []) => {
     if (!selectedDates || selectedDates.length === 0) return;
     const selectedDate = selectedDates[0];
@@ -224,6 +357,7 @@ const NewPatientRegistration = () => {
     }));
     setDobEstimated(false);
     setValidationErrors((prev) => ({ ...prev, dateOfBirth: '' }));
+    setAgeErrors({ ageYears: '', ageMonths: '', ageDays: '' });
   }, []);
 
   const handleAgeChange = useCallback(
@@ -235,6 +369,15 @@ const NewPatientRegistration = () => {
       if (value && !isNaN(numValue)) {
         if (field === 'ageYears' && numValue > 120) {
           error = t('CREATE_PATIENT_VALIDATION_AGE_YEARS_MAX');
+          // Set DOB to today's date when age exceeds 120
+          setFormData((prev) => ({
+            ...prev,
+            [field]: value,
+            dateOfBirth: formatToISO(new Date()),
+          }));
+          setAgeErrors((prev) => ({ ...prev, [field]: error }));
+          setDobEstimated(true);
+          return;
         } else if (field === 'ageMonths' && numValue > 11) {
           error = t('CREATE_PATIENT_VALIDATION_AGE_MONTHS_MAX');
         } else if (field === 'ageDays' && numValue > 31) {
@@ -750,6 +893,7 @@ const NewPatientRegistration = () => {
                       <DatePicker
                         dateFormat="d/m/Y"
                         datePickerType="single"
+                        maxDate={new Date()}
                         value={
                           formData.dateOfBirth
                             ? formatToDisplay(formData.dateOfBirth)
@@ -763,8 +907,15 @@ const NewPatientRegistration = () => {
                             'CREATE_PATIENT_DATE_OF_BIRTH_PLACEHOLDER',
                           )}
                           labelText={t('CREATE_PATIENT_DATE_OF_BIRTH')}
-                          invalid={!!validationErrors.dateOfBirth}
-                          invalidText={validationErrors.dateOfBirth}
+                          invalid={
+                            !!dateErrors.dateOfBirth ||
+                            !!validationErrors.dateOfBirth
+                          }
+                          invalidText={
+                            dateErrors.dateOfBirth ||
+                            validationErrors.dateOfBirth
+                          }
+                          onInput={handleDateInputChange}
                         />
                       </DatePicker>
                     </div>
