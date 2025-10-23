@@ -95,7 +95,16 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
         {
           translationKey: 'REGISTRATION_PATIENT_SEARCH_PHONE_NUMBER',
           fields: ['phoneNumber', 'alternatePhoneNumber'],
-          columnTranslationKeys: ['Phone Number', 'Alternate Phone Number'],
+          expectedFields: [
+            {
+              field: 'phoneNumber',
+              translationKey: 'Phone Number',
+            },
+            {
+              field: 'alternatePhoneNumber',
+              translationKey: 'Alternate Phone Number',
+            },
+          ],
           type: 'person',
         },
       ],
