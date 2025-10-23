@@ -1760,6 +1760,7 @@ describe('NewPatientRegistration', () => {
 
       expect(dispatchAuditEvent).toHaveBeenCalledWith({
         eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_NEW_PATIENT_PAGE.eventType,
+        module: AUDIT_LOG_EVENT_DETAILS.VIEWED_NEW_PATIENT_PAGE.module,
       });
     });
 
@@ -1805,6 +1806,7 @@ describe('NewPatientRegistration', () => {
         expect(dispatchAuditEvent).toHaveBeenCalledWith({
           eventType: AUDIT_LOG_EVENT_DETAILS.REGISTER_NEW_PATIENT.eventType,
           patientUuid: 'test-patient-uuid',
+          module: AUDIT_LOG_EVENT_DETAILS.REGISTER_NEW_PATIENT.module,
         });
       });
     });

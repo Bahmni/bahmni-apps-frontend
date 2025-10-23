@@ -223,6 +223,7 @@ describe('VisitTypeSelector', () => {
         eventType: AUDIT_LOG_EVENT_DETAILS.OPEN_VISIT.eventType,
         patientUuid,
         messageParams: { visitType: 'OPD' },
+        module: AUDIT_LOG_EVENT_DETAILS.OPEN_VISIT.module,
       });
     });
   });

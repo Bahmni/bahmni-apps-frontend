@@ -92,6 +92,7 @@ const NewPatientRegistration = () => {
           eventType: AUDIT_LOG_EVENT_DETAILS.REGISTER_NEW_PATIENT
             .eventType as AuditEventType,
           patientUuid: response.patient.uuid,
+          module: AUDIT_LOG_EVENT_DETAILS.REGISTER_NEW_PATIENT.module,
         });
       }
 
@@ -198,6 +199,7 @@ const NewPatientRegistration = () => {
     dispatchAuditEvent({
       eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_NEW_PATIENT_PAGE
         .eventType as AuditEventType,
+      module: AUDIT_LOG_EVENT_DETAILS.VIEWED_NEW_PATIENT_PAGE.module,
     });
   }, []);
 

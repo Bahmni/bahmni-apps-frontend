@@ -62,6 +62,7 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
           .eventType as AuditEventType,
         patientUuid: visitPayload.patient,
         messageParams: { visitType: visitTypeName },
+        module: AUDIT_LOG_EVENT_DETAILS.OPEN_VISIT.module,
       });
 
       setIsNavigating(false);
