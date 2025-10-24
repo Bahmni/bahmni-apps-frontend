@@ -798,6 +798,9 @@ describe('NewPatientRegistration', () => {
       };
       (createPatient as jest.Mock).mockResolvedValue(mockResponse);
 
+      // Mock window.history.replaceState
+      const replaceStateSpy = jest.spyOn(window.history, 'replaceState');
+
       renderComponent();
 
       await waitFor(() => {
@@ -829,16 +832,17 @@ describe('NewPatientRegistration', () => {
           'Patient saved successfully',
           5000,
         );
-        expect(mockNavigate).toHaveBeenCalledWith(
-          '/registration/patient/new-patient-uuid',
+        expect(replaceStateSpy).toHaveBeenCalledWith(
           {
-            state: {
-              patientDisplay: 'John Doe',
-              patientUuid: 'new-patient-uuid',
-            },
+            patientDisplay: 'John Doe',
+            patientUuid: 'new-patient-uuid',
           },
+          '',
+          '/registration/patient/new-patient-uuid',
         );
       });
+
+      replaceStateSpy.mockRestore();
     });
 
     it('should navigate to search page on successful patient creation without UUID', async () => {
@@ -916,6 +920,124 @@ describe('NewPatientRegistration', () => {
           'Failed to save patient',
           5000,
         );
+      });
+    });
+  });
+
+  describe('Date of Birth Validation', () => {
+    it('should show error for invalid day (day < 1)', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        expect(
+          screen.getByLabelText(/CREATE_PATIENT_DATE_OF_BIRTH/),
+        ).toBeInTheDocument();
+      });
+
+      const dobInput = screen.getByLabelText(/CREATE_PATIENT_DATE_OF_BIRTH/);
+      fireEvent.input(dobInput, { target: { value: '00011990' } });
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/DATE_ERROR_INVALID_FORMAT/),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it('should show error for invalid month (month > 12)', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        expect(
+          screen.getByLabelText(/CREATE_PATIENT_DATE_OF_BIRTH/),
+        ).toBeInTheDocument();
+      });
+
+      const dobInput = screen.getByLabelText(/CREATE_PATIENT_DATE_OF_BIRTH/);
+      fireEvent.input(dobInput, { target: { value: '15131990' } });
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/DATE_ERROR_INVALID_FORMAT/),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it('should show error for invalid month (month < 1)', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        expect(
+          screen.getByLabelText(/CREATE_PATIENT_DATE_OF_BIRTH/),
+        ).toBeInTheDocument();
+      });
+
+      const dobInput = screen.getByLabelText(/CREATE_PATIENT_DATE_OF_BIRTH/);
+      fireEvent.input(dobInput, { target: { value: '15001990' } });
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/DATE_ERROR_INVALID_FORMAT/),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it('should accept valid date and calculate age correctly', async () => {
+      (AgeUtils.diffInYearsMonthsDays as jest.Mock).mockReturnValue({
+        years: 25,
+        months: 6,
+        days: 15,
+      });
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(
+          screen.getByLabelText(/CREATE_PATIENT_DATE_OF_BIRTH/),
+        ).toBeInTheDocument();
+      });
+
+      const dobInput = screen.getByLabelText(/CREATE_PATIENT_DATE_OF_BIRTH/);
+      fireEvent.input(dobInput, { target: { value: '15061998' } });
+
+      await waitFor(() => {
+        expect(AgeUtils.diffInYearsMonthsDays).toHaveBeenCalled();
+        // Should not show any error
+        expect(
+          screen.queryByText(/DATE_ERROR_INVALID_FORMAT/),
+        ).not.toBeInTheDocument();
+        expect(
+          screen.queryByText(/DATE_ERROR_FUTURE_DATE/),
+        ).not.toBeInTheDocument();
+        expect(
+          screen.queryByText(/CREATE_PATIENT_VALIDATION_AGE_YEARS_MAX/),
+        ).not.toBeInTheDocument();
+      });
+    });
+
+    it('should clear errors and data when input is completely cleared', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        expect(
+          screen.getByLabelText(/CREATE_PATIENT_DATE_OF_BIRTH/),
+        ).toBeInTheDocument();
+      });
+
+      const dobInput = screen.getByLabelText(/CREATE_PATIENT_DATE_OF_BIRTH/);
+
+      // First enter a valid date
+      fireEvent.input(dobInput, { target: { value: '15061998' } });
+
+      // Then clear it
+      fireEvent.input(dobInput, { target: { value: '' } });
+
+      await waitFor(() => {
+        expect((dobInput as HTMLInputElement).value).toBe('');
+        // No errors should be shown
+        expect(
+          screen.queryByText(/DATE_ERROR_INVALID_FORMAT/),
+        ).not.toBeInTheDocument();
       });
     });
   });
