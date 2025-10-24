@@ -878,7 +878,7 @@ const NewPatientRegistration = () => {
                         datePickerType="single"
                         minDate={(() => {
                           const date = new Date();
-                          date.setFullYear(date.getFullYear() - 120);
+                          date.setFullYear(date.getFullYear() - 121);
                           date.setHours(0, 0, 0, 0);
                           return date;
                         })()}
