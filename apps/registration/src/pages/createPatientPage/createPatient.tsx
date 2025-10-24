@@ -82,12 +82,14 @@ const NewPatientRegistration = () => {
         5000,
       );
       if (response?.patient?.uuid) {
-        navigate(`/registration/patient/${response.patient.uuid}`, {
-          state: {
+        window.history.replaceState(
+          {
             patientDisplay: response.patient.display,
             patientUuid: response.patient.uuid,
           },
-        });
+          '',
+          `/registration/patient/${response.patient.uuid}`,
+        );
       } else {
         navigate('/registration/search');
       }
@@ -632,6 +634,7 @@ const NewPatientRegistration = () => {
           ],
           addresses,
           birthdate: formData.dateOfBirth,
+          birthdateEstimated: dobEstimated,
           gender: formData.gender.charAt(0).toUpperCase(),
           birthtime: null,
           attributes,
@@ -715,8 +718,7 @@ const NewPatientRegistration = () => {
                         id="patient-id-format"
                         titleText={t('CREATE_PATIENT_PATIENT_ID_FORMAT')}
                         label={
-                          formData.patientIdFormat ||
-                          identifierPrefixes[0] ||
+                          (formData.patientIdFormat || identifierPrefixes[0]) ??
                           t('CREATE_PATIENT_SELECT')
                         }
                         items={identifierPrefixes}
@@ -874,6 +876,13 @@ const NewPatientRegistration = () => {
                       <DatePicker
                         dateFormat="d/m/Y"
                         datePickerType="single"
+                        minDate={
+                          new Date(
+                            new Date().setFullYear(
+                              new Date().getFullYear() - 120,
+                            ),
+                          )
+                        }
                         maxDate={new Date()}
                         value={
                           formData.dateOfBirth
