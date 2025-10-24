@@ -63,21 +63,54 @@
      padding-right: $spacing-05 !important;
     }
     
+    .ageFieldsWrapper,
+    .nameFields,
+    .demographicsFields,
+    .birthInfoFields {
+      > * {
+        position: relative;
+        
+        div[class*="cds--form-requirement"] {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          margin-top: 2px;
+          z-index: 1;
+        }
+      }
+    }
 
     .ageFieldsWrapper {
       display: flex;
       flex-direction: row;
       gap: 16px;
       width: 100%;
-      align-items: flex-end;
+      align-items: flex-start;
+      padding-bottom: 10px;
 
       .ageInputs {
         flex: 1;
       }
     }
 
-    .nameFields,.demographicsFields,.birthInfo,.birthInfoFields{
+    .nameFields {
       margin-top: 16px;
+      padding-bottom: 10px;
+      
+      > * {
+        flex: 1 1 0;
+        min-width: 0;
+      }
+    }
+
+    .demographicsFields,
+    .birthInfo,
+    .birthInfoFields {
+      margin-top: 16px;
+    }
+
+    .demographicsFields {
+      padding-bottom: 10px;
     }
 
     .dropdownField {
@@ -112,7 +145,7 @@
   .row {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .col {
