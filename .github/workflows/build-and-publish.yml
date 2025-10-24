@@ -14,6 +14,8 @@ env:
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
+    env:
+      HELM_CHART_PATH: helm/
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -54,6 +56,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set env.ARTIFACT_VERSION
+        run: |
+          wget -q https://raw.githubusercontent.com/Bahmni/bahmni-infra-utils/main/setArtifactVersion.sh && chmod +x setArtifactVersion.sh
+          ./setArtifactVersion.sh
+          rm setArtifactVersion.sh  
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -122,3 +130,37 @@ jobs:
       #       -H "Accept: application/vnd.github.v3+json" \
       #       https://api.github.com/repos/bahnew/utils/dispatches \
       #       -d '{"event_type":"clinical-frontend-publish","client_payload":{"version":"v${{ steps.package-version.outputs.version }}","sha":"${{ github.sha }}"}}'
+
+      - name: Update Version and Image Tag
+        run: |
+          yq --inplace '.image.tag = "${{ env.ARTIFACT_VERSION }}"' $HELM_CHART_PATH/values.yaml
+          yq --inplace '.version = "${{ env.ARTIFACT_VERSION }}"' $HELM_CHART_PATH/Chart.yaml
+      - name: Helm Lint
+        run: helm lint $HELM_CHART_PATH
+
+      - name: Helm Package
+        run: helm package $HELM_CHART_PATH
+
+      - name: Checkout Charts Repository
+        uses: actions/checkout@v2
+        with:
+          repository: Bahmni/helm-charts
+          ref: gh-pages
+          path: helm-charts
+          persist-credentials: false
+
+      - name: Copy Helm Archive
+        run: cp bahmni-apps-frontend-${{ env.ARTIFACT_VERSION }}.tgz helm-charts/bahmni-apps-frontend/
+
+      - name: Helm Index
+        working-directory: helm-charts/
+        run: helm repo index --merge index.yaml --url https://bahmni.github.io/helm-charts/  .
+
+      - name: Commit and Push Chart Repository
+        working-directory: helm-charts/
+        run: |
+          git config user.name ${{ secrets.BAHMNI_USERNAME}}
+          git config user.email ${{ secrets.BAHMNI_EMAIL}}
+          git add .
+          git commit -m "Release of bahmni-apps-frontend-${{ env.ARTIFACT_VERSION }}"
+          git push 'https://${{ secrets.BAHMNI_USERNAME}}:${{ secrets.BAHMNI_PAT}}@github.com/bahmni/helm-charts.git' gh-pages
