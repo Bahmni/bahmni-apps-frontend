@@ -876,13 +876,12 @@ const NewPatientRegistration = () => {
                       <DatePicker
                         dateFormat="d/m/Y"
                         datePickerType="single"
-                        minDate={
-                          new Date(
-                            new Date().setFullYear(
-                              new Date().getFullYear() - 120,
-                            ),
-                          )
-                        }
+                        minDate={(() => {
+                          const date = new Date();
+                          date.setFullYear(date.getFullYear() - 120);
+                          date.setHours(0, 0, 0, 0);
+                          return date;
+                        })()}
                         maxDate={new Date()}
                         value={
                           formData.dateOfBirth
