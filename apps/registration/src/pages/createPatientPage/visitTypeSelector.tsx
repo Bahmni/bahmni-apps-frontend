@@ -8,7 +8,6 @@ import {
   useTranslation,
   notificationService,
   createVisit,
-  getUserLoginLocation,
   type CreateVisitRequest,
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery } from '@tanstack/react-query';
@@ -65,12 +64,11 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
 
     const patientUuid = await onVisitSave();
     if (patientUuid) {
-      const loginLocation = getUserLoginLocation();
       setIsNavigating(true);
       setVisitPayload({
         patient: patientUuid,
         visitType: selectedItem.uuid,
-        location: loginLocation.uuid,
+        location: '72636eba-29bf-4d6c-97c4-4b04d87a95b5',
       });
     }
   };
