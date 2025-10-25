@@ -7,9 +7,11 @@ export {
   searchPatientByCustomAttribute,
   getPrimaryIdentifierType,
   createPatient,
+  createVisit,
   getIdentifierData,
   getGenders,
   getAddressHierarchyEntries,
+  getVisitTypes,
   type FormattedPatientData,
   type PatientSearchResult,
   type PatientSearchResultBundle,
@@ -18,11 +20,13 @@ export {
   type IdentifierTypesResponse,
   type CreatePatientRequest,
   type CreatePatientResponse,
+  type CreateVisitRequest,
   type PatientName,
   type PatientAddress,
   type PatientIdentifier,
   type PatientAttribute,
   type AddressHierarchyEntry,
+  type VisitType,
 } from './patientService';
 export { getFormattedError } from './errorHandling';
 export {
@@ -118,7 +122,7 @@ export {
   type PatientSearchField,
 } from './configService';
 
-export { getCurrentUser, type User } from './userService';
+export { getCurrentUser, getUserLoginLocation, type User } from './userService';
 export { USER_PINNED_PREFERENCE_URL } from './constants/app';
 export {
   getCurrentProvider,

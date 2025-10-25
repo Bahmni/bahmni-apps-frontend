@@ -12,10 +12,12 @@ import {
   APP_SETTINGS_URL,
   PRIMARY_IDENTIFIER_TYPE_PROPERTY,
   CREATE_PATIENT_URL,
+  CREATE_VISIT_URL,
   ADDRESS_HIERARCHY_URL,
   ADDRESS_HIERARCHY_DEFAULT_LIMIT,
   ADDRESS_HIERARCHY_MIN_SEARCH_LENGTH,
   UUID_PATTERN,
+  VISIT_TYPES_URL,
 } from './constants';
 import {
   FormattedPatientData,
@@ -25,6 +27,8 @@ import {
   CreatePatientRequest,
   CreatePatientResponse,
   AddressHierarchyEntry,
+  VisitType,
+  CreateVisitRequest,
 } from './models';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
@@ -336,4 +340,24 @@ export const getAddressHierarchyEntries = async (
       }`,
     );
   }
+};
+
+/**
+ * Fetches visit types from Bahmni configuration
+ * @returns Promise<VisitType[]> - Array of visit types
+ */
+export const getVisitTypes = async (): Promise<VisitType[]> => {
+  const response = await get<{ visitTypes: Record<string, string> }>(
+    VISIT_TYPES_URL(),
+  );
+  return Object.entries(response.visitTypes).map(([name, uuid]) => ({
+    name,
+    uuid,
+  }));
+};
+
+export const createVisit = async (
+  visitData: CreateVisitRequest,
+): Promise<unknown> => {
+  return post<unknown>(CREATE_VISIT_URL, visitData);
 };

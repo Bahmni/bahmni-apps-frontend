@@ -143,3 +143,14 @@ export interface AddressHierarchyEntry {
 export interface AddressHierarchyResponse {
   results: AddressHierarchyEntry[];
 }
+
+export interface VisitType {
+  name: string;
+  uuid: string;
+}
+
+export interface CreateVisitRequest {
+  patient: string;
+  visitType: string;
+  location: string;
+}
