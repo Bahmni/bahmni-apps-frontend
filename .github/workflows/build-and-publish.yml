@@ -72,10 +72,6 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Extract version
-        id: package-version
-        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
-
       - name: Build
         run: npx nx build distro
 
@@ -117,7 +113,7 @@ jobs:
           # Tag the scanned image with final tags
           docker buildx imagetools create \
             --tag ${{ env.IMAGE_NAME }}:latest \
-            --tag ${{ env.IMAGE_NAME }}:v${{ steps.package-version.outputs.version }}-${{github.run_number}} \
+            --tag ${{ env.IMAGE_NAME }}:${{ env.ARTIFACT_VERSION }} \
             ${{ env.IMAGE_NAME }}:scan-${{ github.sha }}
 
       # # This step dispatches an event to the utils repo to trigger downstream deployments
