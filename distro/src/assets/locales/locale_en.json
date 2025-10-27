@@ -146,7 +146,7 @@
   "DATE_ERROR_EMPTY_OR_INVALID": "Date string is empty or invalid",
   "DATE_ERROR_FORMAT": "Date Format Error",
   "DATE_ERROR_INVALID_FORMAT": "Invalid date format",
-  "DATE_ERROR_FUTURE_DATE": "Date must be {{date}} or earlier",
+  "DATE_ERROR_FUTURE_DATE": "Date must be today or earlier",
   "DATE_ERROR_NULL_OR_UNDEFINED": "Date is null or undefined",
   "DATE_ERROR_PARSE": "Date Parse Error",
   "DEFAULT_AND_PINNED_FORMS_TITLE": "Default and Pinned Forms",
