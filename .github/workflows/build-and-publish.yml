@@ -135,7 +135,7 @@ jobs:
           persist-credentials: false
 
       - name: Copy Helm Archive
-        run: cp bahmni-apps-frontend-${{ env.ARTIFACT_VERSION }}.tgz helm-charts/bahmni-apps-frontend/
+        run: mkdir -p helm-charts/bahmni-apps-frontend/ && cp bahmni-apps-frontend-${{ env.ARTIFACT_VERSION }}.tgz helm-charts/bahmni-apps-frontend/
 
       - name: Helm Index
         working-directory: helm-charts/
