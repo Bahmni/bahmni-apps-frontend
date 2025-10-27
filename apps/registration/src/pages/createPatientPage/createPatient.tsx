@@ -28,6 +28,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   ALTERNATE_PHONE_NUMBER_UUID,
   EMAIL_UUID,
+  MAX_PATIENT_AGE_YEARS,
   PHONE_NUMBER_UUID,
 } from '../../../../../packages/bahmni-services/src/patientService/constants';
 import { Header } from '../../components/Header';
@@ -322,7 +323,10 @@ const NewPatientRegistration = () => {
         );
 
         // Check if calculated age exceeds 120 years
-        if (calculatedAge.years && calculatedAge.years > 120) {
+        if (
+          calculatedAge.years &&
+          calculatedAge.years > MAX_PATIENT_AGE_YEARS
+        ) {
           setDateErrors({
             dateOfBirth: t('CREATE_PATIENT_VALIDATION_AGE_YEARS_MAX'),
           });
@@ -355,7 +359,7 @@ const NewPatientRegistration = () => {
 
       // Validate based on field
       if (value && !isNaN(numValue)) {
-        if (field === 'ageYears' && numValue > 120) {
+        if (field === 'ageYears' && numValue > MAX_PATIENT_AGE_YEARS) {
           error = t('CREATE_PATIENT_VALIDATION_AGE_YEARS_MAX');
           // Set DOB to today's date when age exceeds 120
           setFormData((prev) => ({
@@ -388,6 +392,8 @@ const NewPatientRegistration = () => {
             const birthISO = AgeUtils.calculateBirthDate(age);
             updated.dateOfBirth = birthISO;
             setDobEstimated(true);
+            setDateErrors({ dateOfBirth: '' });
+            setValidationErrors((prev) => ({ ...prev, dateOfBirth: '' }));
           } else {
             updated.dateOfBirth = '';
             setDobEstimated(false);
@@ -831,7 +837,7 @@ const NewPatientRegistration = () => {
                             type="number"
                             required
                             min={0}
-                            max={120}
+                            max={MAX_PATIENT_AGE_YEARS}
                             value={formData.ageYears}
                             invalid={!!ageErrors.ageYears}
                             invalidText={ageErrors.ageYears}
@@ -883,7 +889,9 @@ const NewPatientRegistration = () => {
                         datePickerType="single"
                         minDate={(() => {
                           const date = new Date();
-                          date.setFullYear(date.getFullYear() - 121);
+                          date.setFullYear(
+                            date.getFullYear() - MAX_PATIENT_AGE_YEARS + 1,
+                          );
                           date.setHours(0, 0, 0, 0);
                           return date;
                         })()}
