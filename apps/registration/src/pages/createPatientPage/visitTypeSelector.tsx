@@ -6,6 +6,9 @@ import {
   createVisit,
   getActiveVisitByPatient,
   type CreateVisitRequest,
+  dispatchAuditEvent,
+  AUDIT_LOG_EVENT_DETAILS,
+  type AuditEventType,
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
@@ -30,9 +33,30 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
     gcTime: 10 * 60 * 1000,
   });
 
+  const createVisitAndLogAudit = async () => {
+    const result = await createVisit(visitPayload!);
+
+    if (visitPayload) {
+      const visitType = visitTypesFromApi.find(
+        (vt) => vt.uuid === visitPayload.visitType,
+      );
+      if (visitType) {
+        dispatchAuditEvent({
+          eventType: AUDIT_LOG_EVENT_DETAILS.OPEN_VISIT
+            .eventType as AuditEventType,
+          patientUuid: visitPayload.patient,
+          messageParams: { visitType: visitType.name },
+          module: AUDIT_LOG_EVENT_DETAILS.OPEN_VISIT.module,
+        });
+      }
+    }
+
+    return result;
+  };
+
   const { error: createVisitError, isSuccess: isVisitCreated } = useQuery({
     queryKey: ['createVisit', visitPayload],
-    queryFn: () => createVisit(visitPayload!),
+    queryFn: createVisitAndLogAudit,
     enabled: Boolean(visitPayload),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -66,13 +90,26 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
   ) => {
     if (!selectedItem) return;
 
-    const patientUuid = await onVisitSave();
-    if (patientUuid) {
+    const path = window.location.pathname;
+    const parts = path.split('/');
+    const patientIndex = parts.indexOf('patient');
+    const uuidFromUrl = patientIndex !== -1 ? parts[patientIndex + 1] : null;
+
+    if (uuidFromUrl) {
       setVisitPayload({
-        patient: patientUuid,
+        patient: uuidFromUrl,
         visitType: selectedItem.uuid,
         location: '72636eba-29bf-4d6c-97c4-4b04d87a95b5',
       });
+    } else {
+      const newPatientUuid = await onVisitSave();
+      if (newPatientUuid) {
+        setVisitPayload({
+          patient: newPatientUuid,
+          visitType: selectedItem.uuid,
+          location: '72636eba-29bf-4d6c-97c4-4b04d87a95b5',
+        });
+      }
     }
   };
 
@@ -110,6 +147,7 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
         }
         titleText=""
         selectedItem={null}
+        style={{ display: hasActiveVisit ? 'none' : 'block' }}
       />
     </div>
   );
