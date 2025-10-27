@@ -307,10 +307,8 @@ const NewPatientRegistration = () => {
 
         // Check if date is in future
         if (parsedDate > new Date()) {
-          const today = new Date();
-          const todayFormatted = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
           setDateErrors({
-            dateOfBirth: t('DATE_ERROR_FUTURE_DATE', { date: todayFormatted }),
+            dateOfBirth: t('DATE_ERROR_FUTURE_DATE'),
           });
           clearAgeData();
           return;
@@ -536,6 +534,7 @@ const NewPatientRegistration = () => {
     const errors = { firstName: '', lastName: '', gender: '', dateOfBirth: '' };
     const addrErrors = { district: '', state: '', pincode: '' };
     let hasErrors = false;
+    setNameErrors({ firstName: '', middleName: '', lastName: '' });
 
     if (!formData.firstName.trim()) {
       errors.firstName = t('CREATE_PATIENT_VALIDATION_FIRST_NAME_REQUIRED');
