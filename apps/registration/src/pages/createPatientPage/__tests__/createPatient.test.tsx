@@ -73,6 +73,7 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
     t: (key: string) => key,
   }),
   BAHMNI_HOME_PATH: '/home',
+  dispatchAuditEvent: jest.fn(),
 }));
 
 jest.mock('react-router-dom', () => ({
@@ -1867,6 +1868,68 @@ describe('NewPatientRegistration', () => {
           /CREATE_PATIENT_VALIDATION_SELECT_FROM_DROPDOWN/,
         );
         expect(errorMessages.length).toBeGreaterThan(0);
+      });
+    });
+  });
+
+  describe('Audit Logs', () => {
+    it("should log the user's visit to new patient page", () => {
+      const { dispatchAuditEvent, AUDIT_LOG_EVENT_DETAILS } = jest.requireMock(
+        '@bahmni-frontend/bahmni-services',
+      );
+
+      renderComponent();
+
+      expect(dispatchAuditEvent).toHaveBeenCalledWith({
+        eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_NEW_PATIENT_PAGE.eventType,
+        module: AUDIT_LOG_EVENT_DETAILS.VIEWED_NEW_PATIENT_PAGE.module,
+      });
+    });
+
+    it('should log REGISTER_NEW_PATIENT on save', async () => {
+      const { dispatchAuditEvent, AUDIT_LOG_EVENT_DETAILS } = jest.requireMock(
+        '@bahmni-frontend/bahmni-services',
+      );
+
+      const mockResponse = {
+        patient: {
+          uuid: 'test-patient-uuid',
+          display: 'John Doe',
+        },
+      };
+      (createPatient as jest.Mock).mockResolvedValue(mockResponse);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(
+          screen.getByLabelText(/CREATE_PATIENT_FIRST_NAME/),
+        ).toBeInTheDocument();
+      });
+
+      const firstNameInput = screen.getByLabelText(/CREATE_PATIENT_FIRST_NAME/);
+      const lastNameInput = screen.getByLabelText(/CREATE_PATIENT_LAST_NAME/);
+      const ageYearsInput = screen.getByLabelText(/CREATE_PATIENT_AGE_YEARS/);
+      const genderSelect = screen.getByLabelText(
+        /CREATE_PATIENT_GENDER/,
+      ) as HTMLSelectElement;
+
+      fireEvent.change(firstNameInput, { target: { value: 'John' } });
+      fireEvent.change(lastNameInput, { target: { value: 'Doe' } });
+      fireEvent.change(ageYearsInput, { target: { value: '30' } });
+      fireEvent.change(genderSelect, {
+        target: { value: 'CREATE_PATIENT_GENDER_MALE' },
+      });
+
+      const saveButton = screen.getByText(/CREATE_PATIENT_SAVE/);
+      fireEvent.click(saveButton);
+
+      await waitFor(() => {
+        expect(dispatchAuditEvent).toHaveBeenCalledWith({
+          eventType: AUDIT_LOG_EVENT_DETAILS.REGISTER_NEW_PATIENT.eventType,
+          patientUuid: 'test-patient-uuid',
+          module: AUDIT_LOG_EVENT_DETAILS.REGISTER_NEW_PATIENT.module,
+        });
       });
     });
   });

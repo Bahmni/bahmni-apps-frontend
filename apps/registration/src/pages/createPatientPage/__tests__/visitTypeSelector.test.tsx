@@ -32,6 +32,7 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
       return key;
     },
   }),
+  dispatchAuditEvent: jest.fn(),
 }));
 
 const mockVisitTypes = [
@@ -167,7 +168,7 @@ describe('VisitTypeSelector', () => {
     mockCreateVisit.mockRejectedValue(error);
 
     delete (window as any).location;
-    window.location = { href: '' } as any;
+    window.location = { href: '', pathname: '' } as any;
 
     renderComponent();
     const user = userEvent.setup();
@@ -184,5 +185,45 @@ describe('VisitTypeSelector', () => {
         error.message,
       );
     });
+  });
+
+  it('should log audit event when visit is successfully created', async () => {
+    const { dispatchAuditEvent, AUDIT_LOG_EVENT_DETAILS } = jest.requireMock(
+      '@bahmni-frontend/bahmni-services',
+    );
+
+    const patientUuid = '9891a8b4-7404-4c05-a207-5ec9d34fc719';
+    mockOnVisitSave.mockResolvedValue(patientUuid);
+
+    delete (window as any).location;
+    window.location = { href: '', pathname: '' } as any;
+
+    renderComponent();
+    const user = userEvent.setup();
+
+    await waitFor(() => expect(mockGetVisitTypes).toHaveBeenCalled());
+
+    const button = screen.getByRole('button');
+    await user.click(button);
+
+    await waitFor(() => {
+      expect(mockOnVisitSave).toHaveBeenCalled();
+    });
+
+    await waitFor(() => {
+      expect(mockCreateVisit).toHaveBeenCalled();
+    });
+
+    await waitFor(
+      () => {
+        expect(dispatchAuditEvent).toHaveBeenCalledWith({
+          eventType: AUDIT_LOG_EVENT_DETAILS.OPEN_VISIT.eventType,
+          patientUuid,
+          messageParams: { visitType: 'OPD' },
+          module: AUDIT_LOG_EVENT_DETAILS.OPEN_VISIT.module,
+        });
+      },
+      { timeout: 3000 },
+    );
   });
 });

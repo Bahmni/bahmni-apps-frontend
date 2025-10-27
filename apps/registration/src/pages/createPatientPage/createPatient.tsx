@@ -21,6 +21,9 @@ import {
   type PatientAttribute,
   type AddressHierarchyEntry,
   PatientAddress,
+  AUDIT_LOG_EVENT_DETAILS,
+  AuditEventType,
+  dispatchAuditEvent,
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useState, useCallback, useEffect, useMemo } from 'react';
@@ -84,6 +87,13 @@ const NewPatientRegistration = () => {
       );
 
       if (response?.patient?.uuid) {
+        dispatchAuditEvent({
+          eventType: AUDIT_LOG_EVENT_DETAILS.REGISTER_NEW_PATIENT
+            .eventType as AuditEventType,
+          patientUuid: response.patient.uuid,
+          module: AUDIT_LOG_EVENT_DETAILS.REGISTER_NEW_PATIENT.module,
+        });
+
         window.history.replaceState(
           {
             patientDisplay: response.patient.display,
@@ -183,6 +193,14 @@ const NewPatientRegistration = () => {
       }));
     }
   }, [identifierPrefixes, formData.patientIdFormat]);
+
+  useEffect(() => {
+    dispatchAuditEvent({
+      eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_NEW_PATIENT_PAGE
+        .eventType as AuditEventType,
+      module: AUDIT_LOG_EVENT_DETAILS.VIEWED_NEW_PATIENT_PAGE.module,
+    });
+  }, []);
 
   const handleInputChange = useCallback(
     (field: string, value: string | number | boolean) => {
