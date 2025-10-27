@@ -8,6 +8,7 @@ export {
   getPrimaryIdentifierType,
   createPatient,
   createVisit,
+  getActiveVisitByPatient,
   getIdentifierData,
   getGenders,
   getAddressHierarchyEntries,

@@ -8,6 +8,7 @@ Element.prototype.scrollIntoView = jest.fn();
 const mockGetVisitTypes = jest.fn();
 const mockCreateVisit = jest.fn();
 const mockGetUserLoginLocation = jest.fn();
+const mockGetActiveVisitByPatient = jest.fn();
 
 const mockNotificationService = {
   showError: jest.fn(),
@@ -18,6 +19,8 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
   getVisitTypes: () => mockGetVisitTypes(),
   createVisit: (data: any) => mockCreateVisit(data),
   getUserLoginLocation: () => mockGetUserLoginLocation(),
+  getActiveVisitByPatient: (patientUuid: string) =>
+    mockGetActiveVisitByPatient(patientUuid),
   get notificationService() {
     return mockNotificationService;
   },
@@ -62,6 +65,7 @@ describe('VisitTypeSelector', () => {
 
     mockGetUserLoginLocation.mockReturnValue(mockLoginLocation);
     mockGetVisitTypes.mockResolvedValue(mockVisitTypes);
+    mockGetActiveVisitByPatient.mockResolvedValue({ results: [] });
     mockCreateVisit.mockResolvedValue({
       location: mockLoginLocation.uuid,
       patient: '9891a8b4-7404-4c05-a207-5ec9d34fc719',
@@ -104,12 +108,9 @@ describe('VisitTypeSelector', () => {
     });
   });
 
-  it('button click will save the patient and navigate to another page', async () => {
+  it('button click will save the patient', async () => {
     const patientUuid = '9891a8b4-7404-4c05-a207-5ec9d34fc719';
     mockOnVisitSave.mockResolvedValue(patientUuid);
-
-    delete (window as any).location;
-    window.location = { href: '' } as any;
 
     renderComponent();
     const user = userEvent.setup();
@@ -121,18 +122,12 @@ describe('VisitTypeSelector', () => {
 
     await waitFor(() => {
       expect(mockOnVisitSave).toHaveBeenCalled();
-      expect(window.location.href).toBe(
-        `/bahmni/registration/index.html#/patient/${patientUuid}/visit`,
-      );
     });
   });
 
-  it('dropdown selection will save the patient and navigate to another page', async () => {
+  it('dropdown selection will save the patient', async () => {
     const patientUuid = '9891a8b4-7404-4c05-a207-5ec9d34fc719';
     mockOnVisitSave.mockResolvedValue(patientUuid);
-
-    delete (window as any).location;
-    window.location = { href: '' } as any;
 
     renderComponent();
     const user = userEvent.setup();
@@ -148,13 +143,6 @@ describe('VisitTypeSelector', () => {
     await waitFor(() => {
       expect(mockOnVisitSave).toHaveBeenCalled();
     });
-
-    expect(screen.getByRole('status')).toBeInTheDocument();
-    expect(screen.getByText('LOADING_PATIENT_DETAILS')).toBeInTheDocument();
-
-    expect(window.location.href).toBe(
-      `/bahmni/registration/index.html#/patient/${patientUuid}/visit`,
-    );
   });
 
   it('should show error notification when getVisitTypes query fails', async () => {

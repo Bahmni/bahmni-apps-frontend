@@ -40,7 +40,6 @@ const NewPatientRegistration = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [dobEstimated, setDobEstimated] = useState(false);
-  const [isSaveButtonClicked, setIsSaveButtonClicked] = useState(false);
 
   // Fetch all identifier type data in a single optimized query
   const { data: identifierData } = useQuery({
@@ -90,25 +89,21 @@ const NewPatientRegistration = () => {
         5000,
       );
 
-      if (isSaveButtonClicked) {
-        if (response?.patient?.uuid) {
-          navigate(`/registration/patient/${response.patient.uuid}`, {
-            state: {
-              patientDisplay: response.patient.display,
-              patientUuid: response.patient.uuid,
-            },
-            '',
+      if (response?.patient?.uuid) {
+        window.history.replaceState(
+          {
+            patientDisplay: response.patient.display,
+            patientUuid: response.patient.uuid,
+          },
+          '',
           `/registration/patient/${response.patient.uuid}`,
         );
-        } else {
-          navigate('/registration/search');
-        }
+      } else {
+        navigate('/registration/search');
       }
-      setIsSaveButtonClicked(false);
     },
     onError: () => {
       notificationService.showError('Error', 'Failed to save patient', 5000);
-      setIsSaveButtonClicked(false);
     },
   });
 
@@ -1249,10 +1244,7 @@ const NewPatientRegistration = () => {
             <div className={styles.actionButtons}>
               <Button
                 kind="tertiary"
-                onClick={() => {
-                  setIsSaveButtonClicked(true);
-                  handleSave();
-                }}
+                onClick={handleSave}
                 disabled={createPatientMutation.isPending}
               >
                 {createPatientMutation.isPending

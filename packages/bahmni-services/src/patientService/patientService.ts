@@ -13,6 +13,7 @@ import {
   PRIMARY_IDENTIFIER_TYPE_PROPERTY,
   CREATE_PATIENT_URL,
   CREATE_VISIT_URL,
+  GET_ACTIVE_VISIT_URL,
   ADDRESS_HIERARCHY_URL,
   ADDRESS_HIERARCHY_DEFAULT_LIMIT,
   ADDRESS_HIERARCHY_MIN_SEARCH_LENGTH,
@@ -360,4 +361,15 @@ export const createVisit = async (
   visitData: CreateVisitRequest,
 ): Promise<unknown> => {
   return post<unknown>(CREATE_VISIT_URL, visitData);
+};
+
+/**
+ * Get active visits for a patient
+ * @param patientUuid - The UUID of the patient
+ * @returns Promise<unknown> - The active visit data
+ */
+export const getActiveVisitByPatient = async (
+  patientUuid: string,
+): Promise<unknown> => {
+  return get<unknown>(GET_ACTIVE_VISIT_URL(patientUuid));
 };
