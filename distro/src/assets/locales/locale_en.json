@@ -172,6 +172,7 @@
   "DURATION_UNIT_YEARS": "Years",
   "ENCOUNTER_DATE": "Encounter Date",
   "ENCOUNTER_TYPE": "Encounter Type",
+  "ENTER VISIT DETAILS": "Enter Visit Details",
   "ERROR_ALLERGY_CONCEPT_MAP_NOT_FOUND": "Allergy concept map configuration not found",
   "ERROR_BAD_REQUEST_MESSAGE": "Invalid input parameters. Please check your request and try again.",
   "ERROR_BAD_REQUEST_TITLE": "Bad Request",

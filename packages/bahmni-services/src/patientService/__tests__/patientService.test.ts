@@ -30,6 +30,7 @@ import {
   getAddressHierarchyEntries,
   getVisitTypes,
   createVisit,
+  getActiveVisitByPatient,
 } from '../patientService';
 
 // Mock the api module
@@ -1702,6 +1703,23 @@ describe('Patient Service', () => {
       const result = await createVisit(visitData);
 
       expect(mockedPost).toHaveBeenCalledWith(CREATE_VISIT_URL, visitData);
+      expect(result).toEqual(mockResponse);
+    });
+  });
+
+  describe('getActiveVisitByPatient', () => {
+    it('should fetch active visits for a patient', async () => {
+      const patientUuid = 'c22a5000-3f10-11e4-adec-0800271c1b75';
+      const mockResponse = { results: [] };
+      mockedGet.mockResolvedValueOnce(mockResponse);
+
+      const result = await getActiveVisitByPatient(patientUuid);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        expect.stringContaining(
+          `/ws/rest/v1/visit?includeInactive=false&patient=${patientUuid}`,
+        ),
+      );
       expect(result).toEqual(mockResponse);
     });
   });

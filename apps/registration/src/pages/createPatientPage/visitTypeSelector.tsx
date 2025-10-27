@@ -1,13 +1,10 @@
-import {
-  Button,
-  Dropdown,
-  Loading,
-} from '@bahmni-frontend/bahmni-design-system';
+import { Button, Dropdown } from '@bahmni-frontend/bahmni-design-system';
 import {
   getVisitTypes,
   useTranslation,
   notificationService,
   createVisit,
+  getActiveVisitByPatient,
   type CreateVisitRequest,
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery } from '@tanstack/react-query';
@@ -21,7 +18,6 @@ interface VisitTypeSelectorProps {
 export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
   const { t } = useTranslation();
   const [visitPayload, setVisitPayload] = useState<CreateVisitRequest>();
-  const [isNavigating, setIsNavigating] = useState<boolean>(false);
 
   const {
     data: visitTypesFromApi = [],
@@ -42,7 +38,19 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
     gcTime: 10 * 60 * 1000,
   });
 
-  const error = visitTypesError ?? createVisitError;
+  const { data: visitStarted, error: getVisitError } = useQuery({
+    queryKey: [
+      'getActiveVisitByPatient',
+      visitPayload?.patient,
+      isVisitCreated,
+    ],
+    queryFn: () => getActiveVisitByPatient(visitPayload!.patient),
+    enabled: Boolean(visitPayload?.patient) && isVisitCreated,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  const error = visitTypesError ?? createVisitError ?? getVisitError;
 
   useEffect(() => {
     if (error) {
@@ -51,11 +59,7 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
         error instanceof Error ? error.message : 'An error occurred',
       );
     }
-    if (isVisitCreated && visitPayload) {
-      setIsNavigating(false);
-      window.location.href = `/bahmni/registration/index.html#/patient/${visitPayload.patient}/visit`;
-    }
-  }, [error, isVisitCreated, visitPayload, t]);
+  }, [error, t]);
 
   const handleVisitTypeChange = async (
     selectedItem: { name: string; uuid: string } | null,
@@ -64,7 +68,6 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
 
     const patientUuid = await onVisitSave();
     if (patientUuid) {
-      setIsNavigating(true);
       setVisitPayload({
         patient: patientUuid,
         visitType: selectedItem.uuid,
@@ -73,9 +76,8 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
     }
   };
 
-  if (isNavigating) {
-    return <Loading description={t('LOADING_PATIENT_DETAILS')} role="status" />;
-  }
+  const hasActiveVisit =
+    visitStarted?.results && visitStarted.results.length > 0;
 
   return (
     <div className={styles.opdVisitGroup}>
@@ -86,7 +88,9 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
         onClick={() => handleVisitTypeChange(visitTypesFromApi[1])}
       >
         {!isLoadingVisitTypes && visitTypesFromApi.length > 1
-          ? t('START_VISIT_TYPE', { visitType: visitTypesFromApi[1].name })
+          ? hasActiveVisit
+            ? t('ENTER VISIT DETAILS')
+            : t('START_VISIT_TYPE', { visitType: visitTypesFromApi[1].name })
           : ''}
       </Button>
 
@@ -99,7 +103,11 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
         onChange={({ selectedItem }) => handleVisitTypeChange(selectedItem)}
         label=""
         type="inline"
-        disabled={isLoadingVisitTypes || visitTypesFromApi.length === 0}
+        disabled={
+          isLoadingVisitTypes ||
+          visitTypesFromApi.length === 0 ||
+          hasActiveVisit
+        }
         titleText=""
         selectedItem={null}
       />

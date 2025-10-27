@@ -85,6 +85,10 @@ export const CREATE_PATIENT_URL =
 
 export const CREATE_VISIT_URL = OPENMRS_REST_V1 + '/visit';
 
+export const GET_ACTIVE_VISIT_URL = (patientUuid: string) =>
+  OPENMRS_REST_V1 +
+  `/visit?includeInactive=false&patient=${patientUuid}&v=custom:(uuid,visitType,location:(uuid))`;
+
 export const ADDRESS_HIERARCHY_URL = (
   addressField: string,
   searchString: string,
