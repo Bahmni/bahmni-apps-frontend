@@ -28,6 +28,12 @@ import {
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  ALTERNATE_PHONE_NUMBER_UUID,
+  EMAIL_UUID,
+  MAX_PATIENT_AGE_YEARS,
+  PHONE_NUMBER_UUID,
+} from '../../../../../packages/bahmni-services/src/patientService/constants';
 import { Header } from '../../components/Header';
 import { AgeUtils, formatToDisplay, formatToISO } from '../../utils/ageUtils';
 import styles from './styles/index.module.scss';
@@ -321,10 +327,8 @@ const NewPatientRegistration = () => {
 
         // Check if date is in future
         if (parsedDate > new Date()) {
-          const today = new Date();
-          const todayFormatted = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
           setDateErrors({
-            dateOfBirth: t('DATE_ERROR_FUTURE_DATE', { date: todayFormatted }),
+            dateOfBirth: t('DATE_ERROR_FUTURE_DATE'),
           });
           clearAgeData();
           return;
@@ -337,7 +341,10 @@ const NewPatientRegistration = () => {
         );
 
         // Check if calculated age exceeds 120 years
-        if (calculatedAge.years && calculatedAge.years > 120) {
+        if (
+          calculatedAge.years &&
+          calculatedAge.years > MAX_PATIENT_AGE_YEARS
+        ) {
           setDateErrors({
             dateOfBirth: t('CREATE_PATIENT_VALIDATION_AGE_YEARS_MAX'),
           });
@@ -370,7 +377,7 @@ const NewPatientRegistration = () => {
 
       // Validate based on field
       if (value && !isNaN(numValue)) {
-        if (field === 'ageYears' && numValue > 120) {
+        if (field === 'ageYears' && numValue > MAX_PATIENT_AGE_YEARS) {
           error = t('CREATE_PATIENT_VALIDATION_AGE_YEARS_MAX');
           // Set DOB to today's date when age exceeds 120
           setFormData((prev) => ({
@@ -403,6 +410,8 @@ const NewPatientRegistration = () => {
             const birthISO = AgeUtils.calculateBirthDate(age);
             updated.dateOfBirth = birthISO;
             setDobEstimated(true);
+            setDateErrors({ dateOfBirth: '' });
+            setValidationErrors((prev) => ({ ...prev, dateOfBirth: '' }));
           } else {
             updated.dateOfBirth = '';
             setDobEstimated(false);
@@ -545,6 +554,7 @@ const NewPatientRegistration = () => {
     const errors = { firstName: '', lastName: '', gender: '', dateOfBirth: '' };
     const addrErrors = { district: '', state: '', pincode: '' };
     let hasErrors = false;
+    setNameErrors({ firstName: '', middleName: '', lastName: '' });
 
     if (!formData.firstName.trim()) {
       errors.firstName = t('CREATE_PATIENT_VALIDATION_FIRST_NAME_REQUIRED');
@@ -616,21 +626,21 @@ const NewPatientRegistration = () => {
     const attributes: PatientAttribute[] = [];
     if (formData.phoneNumber) {
       attributes.push({
-        attributeType: { uuid: 'phoneNumber-uuid' },
+        attributeType: { uuid: PHONE_NUMBER_UUID },
         value: formData.phoneNumber,
         voided: false,
       });
     }
     if (formData.altPhoneNumber) {
       attributes.push({
-        attributeType: { uuid: 'alternatePhoneNumber-uuid' },
+        attributeType: { uuid: ALTERNATE_PHONE_NUMBER_UUID },
         value: formData.altPhoneNumber,
         voided: false,
       });
     }
     if (formData.email) {
       attributes.push({
-        attributeType: { uuid: 'email-uuid' },
+        attributeType: { uuid: EMAIL_UUID },
         value: formData.email,
         voided: false,
       });
@@ -866,7 +876,7 @@ const NewPatientRegistration = () => {
                             type="number"
                             required
                             min={0}
-                            max={120}
+                            max={MAX_PATIENT_AGE_YEARS}
                             value={formData.ageYears}
                             invalid={!!ageErrors.ageYears}
                             invalidText={ageErrors.ageYears}
@@ -918,7 +928,9 @@ const NewPatientRegistration = () => {
                         datePickerType="single"
                         minDate={(() => {
                           const date = new Date();
-                          date.setFullYear(date.getFullYear() - 121);
+                          date.setFullYear(
+                            date.getFullYear() - MAX_PATIENT_AGE_YEARS + 1,
+                          );
                           date.setHours(0, 0, 0, 0);
                           return date;
                         })()}
