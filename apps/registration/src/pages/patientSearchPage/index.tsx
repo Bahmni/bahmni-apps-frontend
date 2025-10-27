@@ -84,14 +84,16 @@ const PatientSearchPage: React.FC = () => {
     { key: 'gender', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_GENDER') },
     { key: 'age', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_AGE') },
     ...(searchFields.length > 0
-      ? searchFields.flatMap((field) =>
-          field.fields.map((fieldName, index) => ({
-            key: fieldName,
-            header: field.columnTranslationKeys?.[index]
-              ? t(field.columnTranslationKeys[index])
-              : fieldName,
-          })),
-        )
+      ? searchFields
+          .flatMap((field) =>
+            field.expectedFields?.map((expectedField) => ({
+              key: expectedField.field,
+              header: expectedField.translationKey
+                ? t(expectedField.translationKey)
+                : expectedField.field,
+            })),
+          )
+          .filter((header) => header !== undefined)
       : []),
   ];
 
