@@ -20,6 +20,7 @@ import {
   UUID_PATTERN,
   VISIT_TYPES_URL,
   GET_VISIT_LOCATION,
+  APPOINTMENTS_SEARCH_URL,
 } from './constants';
 import {
   FormattedPatientData,
@@ -33,6 +34,8 @@ import {
   VisitData,
   VisitLocationResponse,
   ActiveVisit,
+  Appointment,
+  Reason,
 } from './models';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
@@ -219,7 +222,6 @@ export const searchPatientByCustomAttribute = async (
   t: (key: string) => string,
 ): Promise<PatientSearchResultBundle> => {
   const loginLocation = getUserLoginLocation();
-
   const searchResultsBundle = await get<PatientSearchResultBundle>(
     PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL(
       searchTerm,
@@ -231,6 +233,98 @@ export const searchPatientByCustomAttribute = async (
   );
   return searchResultsBundle;
 };
+export const searchAppointmentsByAttribute = async (
+  searchTerm: string,
+  fieldsToSearch: string[],
+): Promise<PatientSearchResultBundle> => {
+  const requestBody: Record<string, string> = {};
+  if (fieldsToSearch.length > 0) {
+    requestBody[fieldsToSearch[0]] = searchTerm.trim();
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const oneYearFromToday = new Date();
+  oneYearFromToday.setFullYear(oneYearFromToday.getFullYear() - 1);
+  oneYearFromToday.setHours(23, 59, 59, 999);
+
+  requestBody.startDate = oneYearFromToday.toISOString();
+  const appointments = await post<Appointment>(
+    APPOINTMENTS_SEARCH_URL,
+    requestBody,
+  );
+
+  return transformAppointmentsToPatientBundle(appointments);
+};
+
+const transformAppointmentsToPatientBundle = (
+  appointmentsData: Appointment,
+): PatientSearchResultBundle => {
+  return {
+    pageOfResults: appointmentsData.map((appt: Appointment) => ({
+      identifier: appt.patient.identifier,
+      givenName: appt.patient.name,
+      gender: appt.patient.gender,
+      birthDate: formatDate(appt.patient.birthDate),
+      age: calculateAgeinYearsAndMonths(appt.patient.birthDate),
+      // appointment-specific fields
+      appointmentNumber: appt?.appointmentNumber,
+      appointmentDate: formatDate(appt?.startDateTime),
+      appointmentReason: getAppointmentReasons(appt),
+      appointmentStatus: appt?.status,
+    })),
+    totalCount: appointmentsData.length,
+  };
+};
+const getAppointmentReasons = (appt: Appointment) => {
+  if (Array.isArray(appt?.reasons) && appt.reasons.length > 0) {
+    // join all reason names with commas
+    return appt.reasons
+      .map((reason: Reason) => reason?.name)
+      .filter(Boolean)
+      .join(', ');
+  }
+  return '';
+};
+function formatDate(date: number) {
+  const d = new Date(date);
+
+  const day = String(d.getDate()).padStart(2, '0');
+  const year = d.getFullYear(); // YYYY
+  const monthNames = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  const month = monthNames[d.getMonth()];
+
+  return `${day} ${month} ${year}`;
+}
+function calculateAgeinYearsAndMonths(birthDateMillis: number) {
+  const birthDate = new Date(birthDateMillis);
+  const today = new Date();
+
+  let years = today.getFullYear() - birthDate.getFullYear();
+  let months = today.getMonth() - birthDate.getMonth();
+
+  // Adjust if the current month/day hasn't been reached yet
+  if (months < 0 || (months === 0 && today.getDate() < birthDate.getDate())) {
+    years--;
+    months += 12;
+  }
+
+  return `${years} years ${months} months`;
+}
 
 /**
  * Get primary identifier type from Bahmni app settings

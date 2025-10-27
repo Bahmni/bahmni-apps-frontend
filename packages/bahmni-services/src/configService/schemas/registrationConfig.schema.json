@@ -48,8 +48,130 @@
               },
               "type": {
                 "type": "string",
-                "enum": ["person", "address", "program"],
-                "description": "Type of the search field"
+                "enum": ["person", "address", "program", "appointment"],
+                "description": "Type of the search field (person, address, program, appointment)"
+              }
+            }
+          }
+        },
+        "appointment": {
+          "type": "array",
+          "description": "Array of available search fields for appointments",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "required": ["translationKey", "fields"],
+            "properties": {
+              "translationKey": {
+                "type": "string",
+                "description": "Translation key for the field label"
+              },
+              "fields": {
+                "type": "array",
+                "description": "Array of field names to search against",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "expectedFields": {
+                "type": "array",
+                "description": "Array of expected fields with optional types",
+                "items": {
+                  "type": "object",
+                  "required": ["field", "translationKey"],
+                  "properties": {
+                    "field": {
+                      "type": "string",
+                      "description": "The field name (e.g., apptNumber, apptDate)"
+                    },
+                    "translationKey": {
+                      "type": "string",
+                      "description": "Translation key for the field's display label"
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "Optional field type (e.g., date, string)"
+                    }
+                  }
+                }
+              },
+              "type": {
+                "type": "string",
+                "enum": ["appointment"],
+                "description": "Type of the search field (appointment)"
+              },
+              "actions": {
+                "type": "array",
+                "description": "Array of actions allowed on this search field",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "translationKey",
+                    "type",
+                    "enabledEule",
+                    "onAction"
+                  ],
+                  "properties": {
+                    "translationKey": {
+                      "type": "string",
+                      "description": "Translation key for the action button label"
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": ["changeStatus", "navigate"],
+                      "description": "Type of action to perform"
+                    },
+                    "enabledEule": {
+                      "type": "array",
+                      "description": "Conditions to enable this action (rules)",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "privilegeCheck",
+                              "statusCheck",
+                              "appDateCheck"
+                            ],
+                            "description": "Type of rule to evaluate"
+                          },
+                          "values": {
+                            "type": "array",
+                            "items": { "type": "string" },
+                            "description": "Values to check against for the rule"
+                          }
+                        }
+                      }
+                    },
+                    "onAction": {
+                      "type": "object",
+                      "description": "What happens when action is triggered",
+                      "additionalProperties": true,
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "description": "Status to set (for changeStatus type)"
+                        },
+                        "navigation": {
+                          "type": "string",
+                          "description": "URL path to navigate to (for navigate type)"
+                        }
+                      }
+                    },
+                    "onSuccess": {
+                      "type": "object",
+                      "description": "Notification or other success response",
+                      "additionalProperties": true,
+                      "properties": {
+                        "notification": {
+                          "type": "string",
+                          "description": "Translation key for success notification message"
+                        }
+                      }
+                    }
+                  }
+                }
               }
             }
           }
