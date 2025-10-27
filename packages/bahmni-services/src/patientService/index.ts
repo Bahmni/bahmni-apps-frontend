@@ -3,6 +3,7 @@ export {
   getFormattedPatientById,
   searchPatientByNameOrId,
   searchPatientByCustomAttribute,
+  searchAppointmentsByAttribute,
   getPrimaryIdentifierType,
   createPatient,
   createVisit,

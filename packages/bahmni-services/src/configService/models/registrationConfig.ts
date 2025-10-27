@@ -21,9 +21,10 @@ export interface SearchActionConfig {
 export interface PatientSearchField {
   translationKey: string;
   fields: string[];
+  actions?: SearchActionConfig[];
   columnTranslationKeys: string[];
   expectedFields?: ExpectedFieldConfig[];
-  type: 'person' | 'address' | 'program';
+  type: 'person' | 'address' | 'program' | 'appointment';
 }
 
 export interface AppointmentSearchField extends PatientSearchField {
