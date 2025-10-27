@@ -25,6 +25,11 @@ import {
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  ALTERNATE_PHONE_NUMBER_UUID,
+  EMAIL_UUID,
+  PHONE_NUMBER_UUID,
+} from '../../../../../packages/bahmni-services/src/patientService/constants';
 import { Header } from '../../components/Header';
 import { AgeUtils, formatToDisplay, formatToISO } from '../../utils/ageUtils';
 import styles from './styles/index.module.scss';
@@ -596,21 +601,21 @@ const NewPatientRegistration = () => {
     const attributes: PatientAttribute[] = [];
     if (formData.phoneNumber) {
       attributes.push({
-        attributeType: { uuid: 'phoneNumber-uuid' },
+        attributeType: { uuid: PHONE_NUMBER_UUID },
         value: formData.phoneNumber,
         voided: false,
       });
     }
     if (formData.altPhoneNumber) {
       attributes.push({
-        attributeType: { uuid: 'alternatePhoneNumber-uuid' },
+        attributeType: { uuid: ALTERNATE_PHONE_NUMBER_UUID },
         value: formData.altPhoneNumber,
         voided: false,
       });
     }
     if (formData.email) {
       attributes.push({
-        attributeType: { uuid: 'email-uuid' },
+        attributeType: { uuid: EMAIL_UUID },
         value: formData.email,
         voided: false,
       });
