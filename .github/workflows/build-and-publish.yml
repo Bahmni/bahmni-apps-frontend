@@ -13,9 +13,7 @@ env:
 
 jobs:
   lint-and-test:
-    runs-on: ubuntu-latest
-    env:
-      HELM_CHART_PATH: helm/
+    runs-on: ubuntu-latest  
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -53,6 +51,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    env:
+      HELM_CHART_PATH: helm/
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -60,7 +60,7 @@ jobs:
       - name: Set env.ARTIFACT_VERSION
         run: |
           wget -q https://raw.githubusercontent.com/Bahmni/bahmni-infra-utils/main/setArtifactVersion.sh && chmod +x setArtifactVersion.sh
-          ./setArtifactVersion.sh
+          ./setArtifactVersion.sh .appversion
           rm setArtifactVersion.sh  
 
       - name: Set up Node.js
