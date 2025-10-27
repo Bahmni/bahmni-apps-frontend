@@ -21,7 +21,7 @@ interface VisitTypeSelectorProps {
 export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
   const { t } = useTranslation();
   const [visitPayload, setVisitPayload] = useState<CreateVisitRequest>();
-
+  const [patientUUID, setPatientUUID] = useState<string | null>(null);
   const {
     data: visitTypesFromApi = [],
     isLoading: isLoadingVisitTypes,
@@ -95,20 +95,24 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
     const patientIndex = parts.indexOf('patient');
     const uuidFromUrl = patientIndex !== -1 ? parts[patientIndex + 1] : null;
 
-    if (uuidFromUrl) {
-      setVisitPayload({
-        patient: uuidFromUrl,
-        visitType: selectedItem.uuid,
-        location: '72636eba-29bf-4d6c-97c4-4b04d87a95b5',
-      });
-    } else {
-      const newPatientUuid = await onVisitSave();
-      if (newPatientUuid) {
+    if (!patientUUID) {
+      if (uuidFromUrl) {
         setVisitPayload({
-          patient: newPatientUuid,
+          patient: uuidFromUrl,
           visitType: selectedItem.uuid,
           location: '72636eba-29bf-4d6c-97c4-4b04d87a95b5',
         });
+        setPatientUUID(uuidFromUrl);
+      } else {
+        const newPatientUuid = await onVisitSave();
+        if (newPatientUuid) {
+          setVisitPayload({
+            patient: newPatientUuid,
+            visitType: selectedItem.uuid,
+            location: '72636eba-29bf-4d6c-97c4-4b04d87a95b5',
+          });
+        }
+        setPatientUUID(newPatientUuid);
       }
     }
   };
