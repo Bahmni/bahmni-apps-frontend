@@ -11,6 +11,7 @@ import {
   useTranslation,
   getRegistrationConfig,
   PatientSearchField,
+  searchAppointmentsByAttribute,
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
@@ -55,13 +56,25 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
     staleTime: 0,
     gcTime: 0,
   });
+  const getSearchQuery = () => {
+    if (isAdvancedSearch) {
+      const selectedField = searchFields.find(
+        (field) => t(field.translationKey) === selectedDropdownItem,
+      );
+      const fieldType = selectedField?.type ?? '';
+
+      if (fieldType === 'appointment') {
+        return getAppointmentSearchQuery();
+      }
+    }
+    return getPatientSearchQuery();
+  };
 
   const getPatientSearchQuery = () => {
     if (isAdvancedSearch) {
       const selectedField = searchFields.find(
         (field) => t(field.translationKey) === selectedDropdownItem,
       );
-
       const fieldType = selectedField?.type ?? '';
       const fieldsToSearch = selectedField ? selectedField.fields : [];
 
@@ -76,6 +89,14 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       return searchPatientByNameOrId(encodeURI(searchTerm));
     }
   };
+  const getAppointmentSearchQuery = () => {
+    const selectedField = searchFields.find(
+      (field) => t(field.translationKey) === selectedDropdownItem,
+    );
+    const fieldsToSearch = selectedField ? selectedField.fields : [];
+
+    return searchAppointmentsByAttribute(searchTerm, fieldsToSearch);
+  };
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: [
@@ -84,11 +105,12 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       isAdvancedSearch,
       selectedDropdownItem,
     ],
-    queryFn: getPatientSearchQuery,
+    queryFn: getSearchQuery,
     enabled: !!searchTerm,
     staleTime: 0,
     gcTime: 0,
   });
+
   const isPhoneSearch = () => {
     const selectedField = searchFields.find(
       (field) => t(field.translationKey) === selectedDropdownItem,
@@ -189,9 +211,13 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       setDropdownItems([]);
       setSelectedDropdownItem('');
     } else if (configData?.patientSearch?.customAttributes) {
-      const customAttributes = configData.patientSearch.customAttributes;
-      setSearchFields(customAttributes);
-      const labels = customAttributes.map((field: PatientSearchField) =>
+      const combinedFields = [
+        ...(configData.patientSearch.customAttributes || []),
+        ...(configData.patientSearch.appointment || []),
+      ];
+      setSearchFields(combinedFields);
+
+      const labels = combinedFields.map((field: PatientSearchField) =>
         t(field.translationKey),
       );
       setDropdownItems(labels);
