@@ -24,3 +24,9 @@ export {
   type PatientAttribute,
   type AddressHierarchyEntry,
 } from './models';
+export {
+  MAX_PATIENT_AGE_YEARS,
+  PHONE_NUMBER_UUID,
+  EMAIL_UUID,
+  ALTERNATE_PHONE_NUMBER_UUID,
+} from './constants';

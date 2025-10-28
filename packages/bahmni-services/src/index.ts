@@ -23,6 +23,10 @@ export {
   type PatientIdentifier,
   type PatientAttribute,
   type AddressHierarchyEntry,
+  MAX_PATIENT_AGE_YEARS,
+  PHONE_NUMBER_UUID,
+  EMAIL_UUID,
+  ALTERNATE_PHONE_NUMBER_UUID,
 } from './patientService';
 export { getFormattedError } from './errorHandling';
 export {
