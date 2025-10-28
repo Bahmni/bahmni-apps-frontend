@@ -394,3 +394,5 @@ export const PatientAddressInformation: React.FC<AddressInformationProps> = ({
     </div>
   );
 };
+
+export default PatientAddressInformation;
