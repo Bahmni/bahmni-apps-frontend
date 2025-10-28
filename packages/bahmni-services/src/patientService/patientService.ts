@@ -266,11 +266,11 @@ const transformAppointmentsToPatientBundle = (
       identifier: appt.patient.identifier,
       givenName: appt.patient.name,
       gender: appt.patient.gender,
-      birthDate: formatDate(appt.patient.birthDate),
+      birthDate: formatDate(appt.patient.birthDate, false),
       age: calculateAgeinYearsAndMonths(appt.patient.birthDate),
       // appointment-specific fields
       appointmentNumber: appt?.appointmentNumber,
-      appointmentDate: formatDate(appt?.startDateTime),
+      appointmentDate: formatDate(appt?.startDateTime, true),
       appointmentReason: getAppointmentReasons(appt),
       appointmentStatus: appt?.status,
     })),
@@ -287,11 +287,11 @@ const getAppointmentReasons = (appt: Appointment) => {
   }
   return '';
 };
-function formatDate(date: number) {
+function formatDate(date: number, includeTime: boolean): string {
   const d = new Date(date);
 
   const day = String(d.getDate()).padStart(2, '0');
-  const year = d.getFullYear(); // YYYY
+  const year = d.getFullYear();
   const monthNames = [
     'Jan',
     'Feb',
@@ -308,8 +308,20 @@ function formatDate(date: number) {
   ];
   const month = monthNames[d.getMonth()];
 
-  return `${day} ${month} ${year}`;
+  let formattedDate = `${day} ${month} ${year}`;
+
+  if (includeTime) {
+    let hours = d.getHours();
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    const formattedTime = `${hours}:${minutes} ${ampm}`;
+    formattedDate += ` ${formattedTime}`;
+  }
+
+  return formattedDate;
 }
+
 function calculateAgeinYearsAndMonths(birthDateMillis: number) {
   const birthDate = new Date(birthDateMillis);
   const today = new Date();
