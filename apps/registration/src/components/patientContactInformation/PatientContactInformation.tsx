@@ -56,3 +56,5 @@ export const PatientContactInformation: React.FC<ContactInformationProps> = ({
     </div>
   );
 };
+
+export default PatientContactInformation;

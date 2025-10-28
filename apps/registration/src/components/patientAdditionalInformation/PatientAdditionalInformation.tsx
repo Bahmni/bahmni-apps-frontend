@@ -35,3 +35,5 @@ export const PatientAdditionalInformation: React.FC<
     </div>
   );
 };
+
+export default PatientAdditionalInformation;

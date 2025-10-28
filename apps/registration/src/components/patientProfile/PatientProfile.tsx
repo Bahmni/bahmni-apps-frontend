@@ -406,3 +406,5 @@ export const PatientProfile: React.FC<BasicInformationProps> = ({
     </div>
   );
 };
+
+export default PatientProfile;
