@@ -44,16 +44,17 @@
   color: #0043ce !important; // Dark blue text for good contrast
 }
 
-// Arrived - Green
+// Arrived - yellow
 .arrivedStatus {
-  background: #a7f0ba !important;
-  color: #0e6027 !important; // Dark green text for good contrast
+  background: var(--Tag-Yellow-tag-background, #FDDC69);
+  color: #7A5E00 !important; // Dark yellow text for good contrast
 }
+
 
 // Checked In - Green (same as Arrived)
 .checkedInStatus {
-  background: #a7f0ba !important;
-  color: #0e6027 !important; // Dark green text for good contrast
+  background: var(--Tag-Green-tag-background, #A7F0BA);
+  color: #044317; /* dark green for readable contrast */
 }
 
 @include breakpoint-down(lg) {

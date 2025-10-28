@@ -85,7 +85,7 @@ const PatientSearchPage: React.FC = () => {
   const headers = [
     { key: 'identifier', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_ID') },
     { key: 'name', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_NAME') },
-    { key: 'gender', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_GENDER') },
+    { key: 'gender', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_SEX') },
     { key: 'age', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_AGE') },
     {
       key: 'birthDate',
