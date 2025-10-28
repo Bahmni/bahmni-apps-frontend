@@ -91,6 +91,14 @@ const PatientSearchPage: React.FC = () => {
       key: 'birthDate',
       header: t('REGISTRATION_PATIENT_SEARCH_HEADER_BIRTH_DATE'),
     },
+    {
+      key: 'relationships',
+      header: t('REGISTRATION_PATIENT_SEARCH_HEADER_RELATIONSHIP'),
+    },
+    {
+      key: 'programme',
+      header: t('REGISTRATION_PATIENT_SEARCH_HEADER_PROGRAMME'),
+    },
     ...(searchFields.length > 0
       ? searchFields
           .flatMap((field) =>
