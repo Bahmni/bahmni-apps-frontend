@@ -203,7 +203,19 @@ export const searchPatientByNameOrId = async (
   const searchResultsBundle = await get<PatientSearchResultBundle>(
     PATIENT_LUCENE_SEARCH_URL(searchTerm, loginLocation.uuid),
   );
-  return searchResultsBundle;
+
+  return {
+    ...searchResultsBundle,
+    pageOfResults: searchResultsBundle.pageOfResults.map((patient) => ({
+      ...patient,
+      birthDate: patient.birthDate
+        ? formatDate(new Date(patient.birthDate).getTime(), false)
+        : patient.birthDate,
+      age: patient.birthDate
+        ? calculateAgeinYearsAndMonths(new Date(patient.birthDate).getTime())
+        : patient.age,
+    })),
+  };
 };
 
 /**
