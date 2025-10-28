@@ -153,7 +153,6 @@ describe('Patient Service', () => {
         pageOfResults: [
           {
             uuid: '3e991686-4cab-443e-a03d-ffa40756a965',
-            birthDate: -59184000000,
             extraIdentifiers: null,
             personId: 13,
             deathDate: null,
@@ -169,7 +168,8 @@ describe('Patient Service', () => {
               '{"phoneNumber" : "8645973159","alternatePhoneNumber" : "7548621593"}',
             patientProgramAttributeValue: null,
             hasBeenAdmitted: false,
-            age: '57',
+            age: '57 years 8 months',
+            birthDate: '16 Feb 1968',
           },
         ],
       };
