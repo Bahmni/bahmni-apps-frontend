@@ -9,6 +9,7 @@ import {
   getVisitLocationUUID,
   dispatchAuditEvent,
   AUDIT_LOG_EVENT_DETAILS,
+  getRegistrationConfig,
   type CreateVisitRequest,
   type AuditEventType,
 } from '@bahmni-frontend/bahmni-services';
@@ -51,6 +52,18 @@ export const VisitTypeSelector = ({
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
+
+  const { data: registrationConfig } = useQuery({
+    queryKey: ['registrationConfig'],
+    queryFn: getRegistrationConfig,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  const defaultVisitType =
+    visitTypesFromApi.find(
+      (vt) => vt.name === registrationConfig?.defaultVisitType,
+    ) ?? visitTypesFromApi[0];
 
   const createVisitAndLogAudit = async () => {
     const result = await createVisit(visitPayload!);
@@ -134,18 +147,20 @@ export const VisitTypeSelector = ({
         id="visit-button"
         kind="primary"
         disabled={isLoadingVisitTypes || visitTypesFromApi.length === 0}
-        onClick={() => handleVisitTypeChange(visitTypesFromApi[1])}
+        onClick={() => handleVisitTypeChange(defaultVisitType)}
       >
-        {!isLoadingVisitTypes && visitTypesFromApi.length > 1
+        {!isLoadingVisitTypes && defaultVisitType
           ? hasActiveVisit
             ? t('ENTER VISIT DETAILS')
-            : t('START_VISIT_TYPE', { visitType: visitTypesFromApi[1].name })
+            : t('START_VISIT_TYPE', { visitType: defaultVisitType.name })
           : ''}
       </Button>
       {!hasActiveVisit && (
         <Dropdown
           id="visit-dropdown"
-          items={visitTypesFromApi.filter((_, index) => index !== 1)}
+          items={visitTypesFromApi.filter(
+            (vt) => vt.uuid !== defaultVisitType?.uuid,
+          )}
           itemToString={(item) =>
             item ? t('START_VISIT_TYPE', { visitType: item.name }) : ''
           }
