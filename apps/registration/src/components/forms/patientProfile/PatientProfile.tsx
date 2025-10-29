@@ -9,8 +9,8 @@ import {
 } from '@bahmni-frontend/bahmni-design-system';
 import { useTranslation } from '@bahmni-frontend/bahmni-services';
 import { useState } from 'react';
-import styles from '../../pages/createPatientPage/styles/index.module.scss';
-import { createDateAgeHandlers } from '../../pages/createPatientPage/utils/dateAgeUtils';
+import styles from '../../../pages/createPatientPage/styles/index.module.scss';
+import { createDateAgeHandlers } from '../../../pages/createPatientPage/utils/dateAgeUtils';
 
 export interface BasicInfoData {
   patientIdFormat: string;
