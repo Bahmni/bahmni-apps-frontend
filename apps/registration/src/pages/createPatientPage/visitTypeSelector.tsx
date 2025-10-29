@@ -18,12 +18,22 @@ import styles from './styles/VisitTypeSelector.module.scss';
 
 interface VisitTypeSelectorProps {
   onVisitSave: () => Promise<string | null>;
+  patientUuid?: string | null;
 }
 
-export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
+export const VisitTypeSelector = ({
+  onVisitSave,
+  patientUuid,
+}: VisitTypeSelectorProps) => {
   const { t } = useTranslation();
   const [visitPayload, setVisitPayload] = useState<CreateVisitRequest>();
   const [patientUUID, setPatientUUID] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (patientUuid && !patientUUID) {
+      setPatientUUID(patientUuid);
+    }
+  }, [patientUuid, patientUUID]);
   const {
     data: visitTypesFromApi = [],
     isLoading: isLoadingVisitTypes,
@@ -99,30 +109,19 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
   ) => {
     if (!selectedItem) return;
 
-    const path = window.location.pathname;
-    const parts = path.split('/');
-    const patientIndex = parts.indexOf('patient');
-    const uuidFromUrl = patientIndex !== -1 ? parts[patientIndex + 1] : null;
+    let currentPatientUUID = patientUUID;
 
-    if (!patientUUID && visitLocationUUID) {
-      if (uuidFromUrl) {
-        setVisitPayload({
-          patient: uuidFromUrl,
-          visitType: selectedItem.uuid,
-          location: visitLocationUUID.uuid,
-        });
-        setPatientUUID(uuidFromUrl);
-      } else {
-        const newPatientUuid = await onVisitSave();
-        if (newPatientUuid && visitLocationUUID) {
-          setVisitPayload({
-            patient: newPatientUuid,
-            visitType: selectedItem.uuid,
-            location: visitLocationUUID.uuid,
-          });
-        }
-        setPatientUUID(newPatientUuid);
-      }
+    if (!currentPatientUUID) {
+      currentPatientUUID = await onVisitSave();
+      setPatientUUID(currentPatientUUID);
+    }
+
+    if (currentPatientUUID && visitLocationUUID) {
+      setVisitPayload({
+        patient: currentPatientUUID,
+        visitType: selectedItem.uuid,
+        location: visitLocationUUID.uuid,
+      });
     }
   };
 
