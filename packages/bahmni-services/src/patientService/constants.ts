@@ -1,5 +1,9 @@
 import { PatientSearchField } from '../configService/models/registrationConfig';
-import { OPENMRS_FHIR_R4, OPENMRS_REST_V1 } from '../constants/app';
+import {
+  OPENMRS_FHIR_R4,
+  OPENMRS_REST_V1,
+  VISIT_LOCATION_UUID,
+} from '../constants/app';
 
 export const PATIENT_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 + `/Patient/${patientUUID}`;
@@ -89,6 +93,8 @@ export const GET_ACTIVE_VISIT_URL = (patientUuid: string) =>
   OPENMRS_REST_V1 +
   `/visit?includeInactive=false&patient=${patientUuid}&v=custom:(uuid,visitType,location:(uuid))`;
 
+export const GET_VISIT_LOCATION = (loginLocation: string) =>
+  VISIT_LOCATION_UUID + `${loginLocation}`;
 export const ADDRESS_HIERARCHY_URL = (
   addressField: string,
   searchString: string,

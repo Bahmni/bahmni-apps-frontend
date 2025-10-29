@@ -13,6 +13,7 @@ export {
   getGenders,
   getAddressHierarchyEntries,
   getVisitTypes,
+  getVisitLocationUUID,
   type FormattedPatientData,
   type PatientSearchResult,
   type PatientSearchResultBundle,
@@ -28,6 +29,7 @@ export {
   type PatientAttribute,
   type AddressHierarchyEntry,
   type VisitType,
+  type VisitLocationResponse,
 } from './patientService';
 export { getFormattedError } from './errorHandling';
 export {

@@ -19,6 +19,7 @@ import {
   ADDRESS_HIERARCHY_MIN_SEARCH_LENGTH,
   UUID_PATTERN,
   VISIT_TYPES_URL,
+  GET_VISIT_LOCATION,
 } from './constants';
 import {
   FormattedPatientData,
@@ -30,6 +31,7 @@ import {
   AddressHierarchyEntry,
   VisitType,
   CreateVisitRequest,
+  VisitLocationResponse,
 } from './models';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
@@ -372,4 +374,10 @@ export const getActiveVisitByPatient = async (
   patientUuid: string,
 ): Promise<unknown> => {
   return get<unknown>(GET_ACTIVE_VISIT_URL(patientUuid));
+};
+
+export const getVisitLocationUUID = async (
+  loginLocation: string,
+): Promise<VisitLocationResponse> => {
+  return get<VisitLocationResponse>(GET_VISIT_LOCATION(loginLocation));
 };
