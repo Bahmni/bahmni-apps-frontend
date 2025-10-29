@@ -134,25 +134,25 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
             : t('START_VISIT_TYPE', { visitType: visitTypesFromApi[1].name })
           : ''}
       </Button>
-
-      <Dropdown
-        id="visit-dropdown"
-        items={visitTypesFromApi.filter((_, index) => index !== 1)}
-        itemToString={(item) =>
-          item ? t('START_VISIT_TYPE', { visitType: item.name }) : ''
-        }
-        onChange={({ selectedItem }) => handleVisitTypeChange(selectedItem)}
-        label=""
-        type="inline"
-        disabled={
-          isLoadingVisitTypes ||
-          visitTypesFromApi.length === 0 ||
-          hasActiveVisit
-        }
-        titleText=""
-        selectedItem={null}
-        style={{ display: hasActiveVisit ? 'none' : 'block' }}
-      />
+      {!hasActiveVisit && (
+        <Dropdown
+          id="visit-dropdown"
+          items={visitTypesFromApi.filter((_, index) => index !== 1)}
+          itemToString={(item) =>
+            item ? t('START_VISIT_TYPE', { visitType: item.name }) : ''
+          }
+          onChange={({ selectedItem }) => handleVisitTypeChange(selectedItem)}
+          label=""
+          type="inline"
+          disabled={
+            isLoadingVisitTypes ||
+            visitTypesFromApi.length === 0 ||
+            hasActiveVisit
+          }
+          titleText=""
+          selectedItem={null}
+        />
+      )}
     </div>
   );
 };
