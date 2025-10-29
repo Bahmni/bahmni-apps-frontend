@@ -30,4 +30,5 @@ export {
   type AddressHierarchyEntry,
   type VisitType,
   type VisitLocationResponse,
+  type ActiveVisit,
 } from './models';

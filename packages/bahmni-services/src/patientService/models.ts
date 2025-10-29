@@ -158,3 +158,7 @@ export interface CreateVisitRequest {
 export interface VisitLocationResponse {
   uuid: string;
 }
+
+export interface ActiveVisit {
+  results: unknown[];
+}

@@ -30,6 +30,7 @@ export {
   type AddressHierarchyEntry,
   type VisitType,
   type VisitLocationResponse,
+  type ActiveVisit,
 } from './patientService';
 export { getFormattedError } from './errorHandling';
 export {
