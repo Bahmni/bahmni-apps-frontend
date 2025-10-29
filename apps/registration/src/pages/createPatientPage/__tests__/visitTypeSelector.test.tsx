@@ -10,6 +10,7 @@ const mockCreateVisit = jest.fn();
 const mockGetUserLoginLocation = jest.fn();
 const mockGetActiveVisitByPatient = jest.fn();
 const mockGetVisitLocationUUID = jest.fn();
+const mockGetRegistrationConfig = jest.fn();
 
 const mockNotificationService = {
   showError: jest.fn(),
@@ -24,6 +25,7 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
     mockGetActiveVisitByPatient(patientUuid),
   getVisitLocationUUID: (loginLocation: string) =>
     mockGetVisitLocationUUID(loginLocation),
+  getRegistrationConfig: () => mockGetRegistrationConfig(),
   get notificationService() {
     return mockNotificationService;
   },
@@ -72,6 +74,10 @@ describe('VisitTypeSelector', () => {
     mockGetActiveVisitByPatient.mockResolvedValue({ results: [] });
     mockGetVisitLocationUUID.mockResolvedValue({
       uuid: '72636eba-29bf-4d6c-97c4-4b04d87a95b5',
+    });
+    mockGetRegistrationConfig.mockResolvedValue({
+      patientSearch: { customAttributes: [], appointment: [] },
+      defaultVisitType: 'OPD',
     });
     mockCreateVisit.mockResolvedValue({
       location: mockLoginLocation.uuid,

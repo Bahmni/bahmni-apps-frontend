@@ -37,4 +37,5 @@ export interface PatientSearchConfig {
 
 export interface RegistrationConfig {
   patientSearch: PatientSearchConfig;
+  defaultVisitType?: string;
 }
