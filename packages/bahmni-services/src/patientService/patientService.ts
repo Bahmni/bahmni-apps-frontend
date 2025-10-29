@@ -32,6 +32,7 @@ import {
   VisitType,
   CreateVisitRequest,
   VisitLocationResponse,
+  ActiveVisit,
 } from './models';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
@@ -359,6 +360,11 @@ export const getVisitTypes = async (): Promise<VisitType[]> => {
   }));
 };
 
+/**
+ * Create a new visit for a patient
+ * @param visitData - The visit data including patient UUID, visit type, and location
+ * @returns Promise<unknown> - The created visit object
+ */
 export const createVisit = async (
   visitData: CreateVisitRequest,
 ): Promise<unknown> => {
@@ -368,14 +374,19 @@ export const createVisit = async (
 /**
  * Get active visits for a patient
  * @param patientUuid - The UUID of the patient
- * @returns Promise<unknown> - The active visit data
+ * @returns Promise<ActiveVisit> - The active visit data
  */
 export const getActiveVisitByPatient = async (
   patientUuid: string,
-): Promise<unknown> => {
-  return get<unknown>(GET_ACTIVE_VISIT_URL(patientUuid));
+): Promise<ActiveVisit> => {
+  return get<ActiveVisit>(GET_ACTIVE_VISIT_URL(patientUuid));
 };
 
+/**
+ * Get visit location UUID for a given login location
+ * @param loginLocation - The login location UUID
+ * @returns Promise<VisitLocationResponse> - The visit location details including UUID
+ */
 export const getVisitLocationUUID = async (
   loginLocation: string,
 ): Promise<VisitLocationResponse> => {

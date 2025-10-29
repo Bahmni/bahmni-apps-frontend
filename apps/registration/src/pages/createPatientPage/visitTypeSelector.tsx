@@ -36,7 +36,7 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
   });
 
   const { data: visitLocationUUID } = useQuery({
-    queryKey: ['visitLocationUUID'],
+    queryKey: ['visitLocationUUID', getUserLoginLocation().uuid],
     queryFn: () => getVisitLocationUUID(getUserLoginLocation().uuid),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

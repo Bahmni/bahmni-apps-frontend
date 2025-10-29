@@ -65,6 +65,16 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
   getGenders: jest.fn(),
   createPatient: jest.fn(),
   getAddressHierarchyEntries: jest.fn(),
+  getUserLoginLocation: jest.fn(() => ({
+    uuid: 'test-location-uuid',
+    name: 'Test Location',
+  })),
+  getVisitLocationUUID: jest.fn(() =>
+    Promise.resolve({ uuid: '72636eba-29bf-4d6c-97c4-4b04d87a95b5' }),
+  ),
+  getVisitTypes: jest.fn(() => Promise.resolve([])),
+  getActiveVisitByPatient: jest.fn(() => Promise.resolve({ results: [] })),
+  createVisit: jest.fn(() => Promise.resolve({})),
   notificationService: {
     showSuccess: jest.fn(),
     showError: jest.fn(),
