@@ -11,6 +11,7 @@ export {
   getGenders,
   getAddressHierarchyEntries,
   getVisitTypes,
+  getVisitLocationUUID,
 } from './patientService';
 export {
   type FormattedPatientData,
@@ -28,4 +29,5 @@ export {
   type PatientAttribute,
   type AddressHierarchyEntry,
   type VisitType,
+  type VisitLocationResponse,
 } from './models';

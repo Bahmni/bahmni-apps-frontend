@@ -5,9 +5,11 @@ import {
   notificationService,
   createVisit,
   getActiveVisitByPatient,
-  type CreateVisitRequest,
+  getUserLoginLocation,
+  getVisitLocationUUID,
   dispatchAuditEvent,
   AUDIT_LOG_EVENT_DETAILS,
+  type CreateVisitRequest,
   type AuditEventType,
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery } from '@tanstack/react-query';
@@ -29,6 +31,13 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
   } = useQuery({
     queryKey: ['visitTypes'],
     queryFn: getVisitTypes,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  const { data: visitLocationUUID } = useQuery({
+    queryKey: ['visitLocationUUID'],
+    queryFn: () => getVisitLocationUUID(getUserLoginLocation().uuid),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
@@ -95,21 +104,21 @@ export const VisitTypeSelector = ({ onVisitSave }: VisitTypeSelectorProps) => {
     const patientIndex = parts.indexOf('patient');
     const uuidFromUrl = patientIndex !== -1 ? parts[patientIndex + 1] : null;
 
-    if (!patientUUID) {
+    if (!patientUUID && visitLocationUUID) {
       if (uuidFromUrl) {
         setVisitPayload({
           patient: uuidFromUrl,
           visitType: selectedItem.uuid,
-          location: '72636eba-29bf-4d6c-97c4-4b04d87a95b5',
+          location: visitLocationUUID.uuid,
         });
         setPatientUUID(uuidFromUrl);
       } else {
         const newPatientUuid = await onVisitSave();
-        if (newPatientUuid) {
+        if (newPatientUuid && visitLocationUUID) {
           setVisitPayload({
             patient: newPatientUuid,
             visitType: selectedItem.uuid,
-            location: '72636eba-29bf-4d6c-97c4-4b04d87a95b5',
+            location: visitLocationUUID.uuid,
           });
         }
         setPatientUUID(newPatientUuid);

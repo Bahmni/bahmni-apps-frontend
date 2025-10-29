@@ -31,6 +31,7 @@ import {
   getVisitTypes,
   createVisit,
   getActiveVisitByPatient,
+  getVisitLocationUUID,
 } from '../patientService';
 
 // Mock the api module
@@ -1718,6 +1719,22 @@ describe('Patient Service', () => {
       expect(mockedGet).toHaveBeenCalledWith(
         expect.stringContaining(
           `/ws/rest/v1/visit?includeInactive=false&patient=${patientUuid}`,
+        ),
+      );
+      expect(result).toEqual(mockResponse);
+    });
+  });
+  describe('getVisitLocationUUID', () => {
+    it('should fetch visit location from login location', async () => {
+      const loginLocation = 'c22a5000-3f10-11e4-adec-0800271c1b75';
+      const mockResponse = { uuid: '72636eba-29bf-4d6c-97c4-4b04d87a95b5' };
+      mockedGet.mockResolvedValueOnce(mockResponse);
+
+      const result = await getVisitLocationUUID(loginLocation);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        expect.stringContaining(
+          `/ws/rest/v1/bahmnicore/visitLocation/${loginLocation}`,
         ),
       );
       expect(result).toEqual(mockResponse);

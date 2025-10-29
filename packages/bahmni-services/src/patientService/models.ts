@@ -154,3 +154,7 @@ export interface CreateVisitRequest {
   visitType: string;
   location: string;
 }
+
+export interface VisitLocationResponse {
+  uuid: string;
+}
