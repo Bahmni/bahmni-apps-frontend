@@ -5,7 +5,7 @@ import {
   type AddressHierarchyEntry,
 } from '@bahmni-frontend/bahmni-services';
 import { useState, useCallback } from 'react';
-import styles from '../../pages/createPatientPage/styles/index.module.scss';
+import styles from '../../../pages/createPatientPage/styles/index.module.scss';
 
 export interface AddressData {
   houseNumber: string;

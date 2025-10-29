@@ -13,11 +13,11 @@ import {
 import { useMutation } from '@tanstack/react-query';
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PatientAdditionalInformation } from '../../components/forms/patientAdditionalInformation/PatientAdditionalInformation';
+import { PatientAddressInformation } from '../../components/forms/patientAddressInformation/PatientAddressInformation';
+import { PatientContactInformation } from '../../components/forms/patientContactInformation/PatientContactInformation';
+import { PatientProfile } from '../../components/forms/patientProfile/PatientProfile';
 import { Header } from '../../components/Header';
-import { PatientAdditionalInformation } from '../../components/patientAdditionalInformation/PatientAdditionalInformation';
-import { PatientAddressInformation } from '../../components/patientAddressInformation/PatientAddressInformation';
-import { PatientContactInformation } from '../../components/patientContactInformation/PatientContactInformation';
-import { PatientProfile } from '../../components/patientProfile/PatientProfile';
 import styles from './styles/index.module.scss';
 import { formatToDisplay } from './utils/dateAgeUtils';
 import {
