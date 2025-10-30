@@ -264,7 +264,9 @@ describe('SearchPatient', () => {
         />
       </QueryClientProvider>,
     );
-
+    expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
+    expect(screen.getByTestId('advance-search-input')).toBeInTheDocument();
+    expect(screen.getByTestId('advance-search-button')).toBeInTheDocument();
     const phoneSearchInput = screen.getByTestId('advance-search-input');
 
     (searchPatientByCustomAttribute as jest.Mock).mockResolvedValue({
@@ -275,7 +277,8 @@ describe('SearchPatient', () => {
       fireEvent.input(phoneSearchInput, { target: { value: '1234567890' } });
       fireEvent.click(screen.getByTestId('advance-search-button'));
     });
-
+    expect(searchPatientByCustomAttribute).toHaveBeenCalledTimes(1);
+    expect(mockOnSearch).toHaveBeenCalled();
     await waitFor(() => {
       expect(searchPatientByCustomAttribute).toHaveBeenCalledWith(
         encodeURI('1234567890'),
@@ -310,7 +313,9 @@ describe('SearchPatient', () => {
         />
       </QueryClientProvider>,
     );
-
+    expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
+    expect(screen.getByTestId('advance-search-input')).toBeInTheDocument();
+    expect(screen.getByTestId('advance-search-button')).toBeInTheDocument();
     const phoneSearchInput = screen.getByTestId('advance-search-input');
 
     (searchPatientByCustomAttribute as jest.Mock).mockResolvedValue({
@@ -359,7 +364,12 @@ describe('SearchPatient', () => {
         />
       </QueryClientProvider>,
     );
-
+    expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
+    expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
+    expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
+      'placeholder',
+      searchBarPlaceholder,
+    );
     const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
     (searchPatientByNameOrId as jest.Mock).mockResolvedValue({
       pageOfResults: mockSearchPatientData,
