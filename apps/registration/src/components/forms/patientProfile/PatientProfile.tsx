@@ -16,8 +16,45 @@ import type {
   AgeErrors,
   DateErrors,
 } from '../../../models/validation';
-import styles from '../../../pages/createPatientPage/styles/index.module.scss';
-import { createDateAgeHandlers } from '../../../pages/createPatientPage/utils/dateAgeUtils';
+import { createDateAgeHandlers } from './dateAgeUtils';
+import styles from './styles/index.module.scss';
+
+export interface BasicInfoData {
+  patientIdFormat: string;
+  entryType: boolean;
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  gender: string;
+  ageYears: string;
+  ageMonths: string;
+  ageDays: string;
+  dateOfBirth: string;
+  birthTime: string;
+}
+
+export interface BasicInfoErrors {
+  firstName: string;
+  middleName: string;
+  lastName: string;
+}
+
+export interface ValidationErrors {
+  firstName: string;
+  lastName: string;
+  gender: string;
+  dateOfBirth: string;
+}
+
+export interface AgeErrors {
+  ageYears: string;
+  ageMonths: string;
+  ageDays: string;
+}
+
+export interface DateErrors {
+  dateOfBirth: string;
+}
 
 interface BasicInformationProps {
   formData: BasicInfoData;

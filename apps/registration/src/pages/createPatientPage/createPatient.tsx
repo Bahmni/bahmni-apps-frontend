@@ -16,14 +16,14 @@ import { useNavigate } from 'react-router-dom';
 import { PatientAdditionalInformation } from '../../components/forms/patientAdditionalInformation/PatientAdditionalInformation';
 import { PatientAddressInformation } from '../../components/forms/patientAddressInformation/PatientAddressInformation';
 import { PatientContactInformation } from '../../components/forms/patientContactInformation/PatientContactInformation';
+import { formatToDisplay } from '../../components/forms/patientProfile/dateAgeUtils';
 import { PatientProfile } from '../../components/forms/patientProfile/PatientProfile';
 import { Header } from '../../components/Header';
-import styles from './styles/index.module.scss';
-import { formatToDisplay } from './utils/dateAgeUtils';
 import {
   useGenderData,
   useIdentifierData,
-} from './utils/identifierGenderUtils';
+} from '../../utils/identifierGenderUtils';
+import styles from './styles/index.module.scss';
 import { createPatientSaveHandler } from './utils/patientSaveUtils';
 
 const NewPatientRegistration = () => {
@@ -200,6 +200,7 @@ const NewPatientRegistration = () => {
               dobEstimated={dobEstimated}
               identifierPrefixes={identifierPrefixes}
               genders={genders}
+              //TODO : Read MAX_AGE from config
               maxPatientAgeYears={MAX_PATIENT_AGE_YEARS}
               onInputChange={handleInputChange}
               onDobEstimatedChange={setDobEstimated}
