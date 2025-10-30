@@ -17,6 +17,7 @@ import { Route, Routes } from 'react-router-dom';
 import { queryClientConfig } from './config/tanstackQuery';
 import Registration from './pages/createPatientPage';
 import PatientSearchPage from './pages/patientSearchPage';
+import { RegistrationConfigProvider } from './providers/RegistrationConfigProvider';
 
 const queryClient = new QueryClient(queryClientConfig);
 
@@ -49,10 +50,12 @@ const RegistrationApp: React.FC = () => {
       <NotificationProvider>
         <NotificationServiceComponent />
         <QueryClientProvider client={queryClient}>
-          <Routes>
-            <Route path="/search" element={<PatientSearchPage />} />
-            <Route path="/new" element={<Registration />} />
-          </Routes>
+          <RegistrationConfigProvider>
+            <Routes>
+              <Route path="/search" element={<PatientSearchPage />} />
+              <Route path="/new" element={<Registration />} />
+            </Routes>
+          </RegistrationConfigProvider>
           <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
       </NotificationProvider>
