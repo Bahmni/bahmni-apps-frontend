@@ -50,10 +50,7 @@ const PatientSearchPage: React.FC = () => {
   useEffect(() => {
     const loadSearchConfig = async () => {
       const config = await getRegistrationConfig();
-      const searchFields = [
-        ...(config?.patientSearch?.customAttributes ?? []),
-        ...(config?.patientSearch?.appointment ?? []),
-      ];
+      const searchFields = [...(config?.patientSearch?.appointment ?? [])];
       setSearchFields(searchFields);
     };
     loadSearchConfig();
