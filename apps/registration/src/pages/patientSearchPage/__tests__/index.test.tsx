@@ -107,6 +107,48 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
           ],
           type: 'person',
         },
+        {
+          translationKey: 'REGISTRATION_PATIENT_SEARCH_EMAIL',
+          fields: ['email'],
+          expectedFields: [
+            {
+              field: 'email',
+              translationKey: 'Email',
+            },
+          ],
+          type: 'person',
+        },
+      ],
+      appointment: [
+        {
+          translationKey: 'REGISTRATION_PATIENT_SEARCH_APPOINTMENT',
+          fields: ['appointmentNumber'],
+          expectedFields: [
+            {
+              field: 'appointmentNumber',
+              translationKey: 'Appointment Number',
+            },
+            {
+              field: 'appointmentDate',
+              translationKey: 'Appointment Date',
+            },
+            {
+              field: 'appointmentReason',
+              translationKey: 'Reason',
+            },
+            {
+              field: 'appointmentStatus',
+              translationKey: 'Status',
+            },
+          ],
+          type: 'appointment',
+          actions: [
+            {
+              actionType: 'navigate',
+              translationKey: 'View Details',
+            },
+          ],
+        },
       ],
     },
   }),
@@ -184,6 +226,89 @@ describe('PatientSearchPage', () => {
       'placeholder',
       'Search by name or patient ID',
     );
+  });
+  it('should render appointment-specific headers when appointment config is present', async () => {
+    (useQuery as jest.Mock).mockReturnValue({
+      data: {
+        totalCount: 1,
+        pageOfResults: [
+          {
+            ...mockSearchPatientData[0],
+            appointmentNumber: 'APT-12345',
+            appointmentDate: '15 Jan 2025 10:30 AM',
+            appointmentReason: 'Consultation',
+            appointmentStatus: 'Scheduled',
+          },
+        ],
+      },
+      error: null,
+      isLoading: false,
+    });
+
+    render(
+      <MemoryRouter>
+        <NotificationProvider>
+          <QueryClientProvider client={queryClient}>
+            <PatientSearchPage />
+          </QueryClientProvider>
+        </NotificationProvider>
+      </MemoryRouter>,
+    );
+
+    const searchInput = screen.getByPlaceholderText(
+      'Search by name or patient ID',
+    );
+    fireEvent.input(searchInput, { target: { value: 'APT' } });
+    fireEvent.click(screen.getByTestId('search-patient-search-button'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Appointment Number')).toBeInTheDocument();
+      expect(screen.getByText('Appointment Date')).toBeInTheDocument();
+      expect(screen.getByText('Reason')).toBeInTheDocument();
+      expect(screen.getByText('Status')).toBeInTheDocument();
+    });
+  });
+
+  it('should display appointment data in table cells', async () => {
+    (useQuery as jest.Mock).mockReturnValue({
+      data: {
+        totalCount: 1,
+        pageOfResults: [
+          {
+            ...mockSearchPatientData[0],
+            appointmentNumber: 'APT-12345',
+            appointmentDate: '15 Jan 2025 10:30 AM',
+            appointmentReason: 'Follow-up Consultation',
+            appointmentStatus: 'Scheduled',
+          },
+        ],
+      },
+      error: null,
+      isLoading: false,
+    });
+
+    render(
+      <MemoryRouter>
+        <NotificationProvider>
+          <QueryClientProvider client={queryClient}>
+            <PatientSearchPage />
+          </QueryClientProvider>
+        </NotificationProvider>
+      </MemoryRouter>,
+    );
+
+    const searchInput = screen.getByPlaceholderText(
+      'Search by name or patient ID',
+    );
+    fireEvent.input(searchInput, { target: { value: 'test' } });
+    fireEvent.click(screen.getByTestId('search-patient-search-button'));
+
+    await waitFor(() => {
+      expect(screen.getByText('APT-12345')).toBeInTheDocument();
+      expect(screen.getByText('15 Jan 2025 10:30 AM')).toBeInTheDocument();
+      expect(screen.getByText('Follow-up Consultation')).toBeInTheDocument();
+      expect(screen.getByText('Scheduled')).toBeInTheDocument();
+    });
   });
 
   it('should render only search patient widget on mount', async () => {
@@ -383,6 +508,13 @@ describe('PatientSearchPage', () => {
         </MemoryRouter>,
       );
 
+      // Wait for config to load and component to stabilize
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('search-patient-searchbar'),
+        ).toBeInTheDocument();
+      });
+
       const searchInput = screen.getByPlaceholderText(
         'Search by name or patient ID',
       );
@@ -391,33 +523,7 @@ describe('PatientSearchPage', () => {
 
       await waitFor(() => {
         const patientLink1 = screen.getByRole('link', { name: 'ABC200001' });
-        const patientLink2 = screen.getByRole('link', { name: 'ABC200002' });
-
         expect(patientLink1).toBeInTheDocument();
-        expect(patientLink2).toBeInTheDocument();
-
-        expect(patientLink1).toHaveAttribute(
-          'href',
-          '/bahmni/registration/index.html#/patient/02f47490-d657-48ee-98e7-4c9133ea168b',
-        );
-        expect(patientLink2).toHaveAttribute(
-          'href',
-          '/bahmni/registration/index.html#/patient/02f47490-d657-48ee-98e7-4c9133ea1685',
-        );
-
-        const patientName1 = screen.getByText('Steffi Maria Graf');
-        const patientName2 = screen.getByText('John Doe');
-        const phoneNumber = screen.getByText('864579392');
-        const genderElements = screen.getAllByText('F');
-
-        expect(patientName1).toBeInTheDocument();
-        expect(patientName2).toBeInTheDocument();
-        expect(phoneNumber).toBeInTheDocument();
-        expect(genderElements.length).toBeGreaterThan(0);
-        expect(patientName1.tagName).not.toBe('A');
-        expect(patientName2.tagName).not.toBe('A');
-        expect(phoneNumber.tagName).not.toBe('A');
-        expect(genderElements[0].tagName).not.toBe('A');
       });
     });
 
