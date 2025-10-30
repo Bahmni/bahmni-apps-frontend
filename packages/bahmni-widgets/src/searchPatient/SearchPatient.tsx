@@ -16,16 +16,12 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import {
-  Appointment,
-  AppointmentSearchResult,
-  Reason,
-} from '../../../bahmni-services/src/appointmentService/models';
-import {
   calculateAgeinYearsAndMonths,
   formatDateAndTime,
 } from '../../../bahmni-services/src/date/date';
 import { useNotification } from '../notification';
 import styles from './styles/SearchPatient.module.scss';
+import { Reason,Appointment ,AppointmentSearchResult} from '../../../bahmni-services/src/AppointmentService/models';
 
 interface SearchPatientProps {
   buttonTitle: string;
@@ -159,7 +155,6 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
 
   const getAppointmentReasons = (appt: Appointment) => {
     if (Array.isArray(appt?.reasons) && appt.reasons.length > 0) {
-      // join all reason names with commas
       return appt.reasons
         .map((reason: Reason) => reason?.name)
         .filter(Boolean)
