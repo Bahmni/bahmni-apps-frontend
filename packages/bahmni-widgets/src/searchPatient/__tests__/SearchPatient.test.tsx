@@ -254,7 +254,52 @@ describe('SearchPatient', () => {
       expect(mockOnSearch).toHaveBeenCalled();
     });
   });
+  it('should search for patient when phone search input has a valid text', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SearchPatient
+          buttonTitle={buttonTitle}
+          searchBarPlaceholder={searchBarPlaceholder}
+          onSearch={mockOnSearch}
+        />
+      </QueryClientProvider>,
+    );
 
+    const phoneSearchInput = screen.getByTestId('advance-search-input');
+
+    (searchPatientByCustomAttribute as jest.Mock).mockResolvedValue({
+      pageOfResults: [],
+      totalCount: 0,
+    });
+    await waitFor(() => {
+      fireEvent.input(phoneSearchInput, { target: { value: '1234567890' } });
+      fireEvent.click(screen.getByTestId('advance-search-button'));
+    });
+
+    await waitFor(() => {
+      expect(searchPatientByCustomAttribute).toHaveBeenCalledWith(
+        encodeURI('1234567890'),
+        expect.any(String),
+        expect.any(Array),
+        expect.any(Array),
+        expect.any(Function),
+      );
+    });
+
+    await waitFor(() => {
+      expect(mockOnSearch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          pageOfResults: expect.any(Array),
+          totalCount: expect.any(Number),
+        }),
+        '1234567890',
+        false,
+        false,
+        true,
+        expect.any(String),
+      );
+    });
+  });
   it('should search for patient when phone search input has a valid text and hits enter', async () => {
     render(
       <QueryClientProvider client={queryClient}>
