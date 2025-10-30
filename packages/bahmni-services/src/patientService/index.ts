@@ -22,7 +22,7 @@ export {
   type IdentifierTypesResponse,
   type CreatePatientRequest,
   type CreatePatientResponse,
-  type NewVisitData,
+  type VisitData,
   type PatientName,
   type PatientAddress,
   type PatientIdentifier,

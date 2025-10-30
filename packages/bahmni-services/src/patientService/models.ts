@@ -148,7 +148,7 @@ export interface VisitType {
   visitTypes: Record<string, string>;
 }
 
-export interface NewVisitData {
+export interface VisitData {
   patient: string;
   visitType: string;
   location: string;
