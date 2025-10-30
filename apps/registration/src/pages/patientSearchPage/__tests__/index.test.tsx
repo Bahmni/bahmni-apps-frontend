@@ -508,13 +508,6 @@ describe('PatientSearchPage', () => {
         </MemoryRouter>,
       );
 
-      // Wait for config to load and component to stabilize
-      await waitFor(() => {
-        expect(
-          screen.getByTestId('search-patient-searchbar'),
-        ).toBeInTheDocument();
-      });
-
       const searchInput = screen.getByPlaceholderText(
         'Search by name or patient ID',
       );
@@ -523,7 +516,33 @@ describe('PatientSearchPage', () => {
 
       await waitFor(() => {
         const patientLink1 = screen.getByRole('link', { name: 'ABC200001' });
+        const patientLink2 = screen.getByRole('link', { name: 'ABC200002' });
+
         expect(patientLink1).toBeInTheDocument();
+        expect(patientLink2).toBeInTheDocument();
+
+        expect(patientLink1).toHaveAttribute(
+          'href',
+          '/bahmni/registration/index.html#/patient/02f47490-d657-48ee-98e7-4c9133ea168b',
+        );
+        expect(patientLink2).toHaveAttribute(
+          'href',
+          '/bahmni/registration/index.html#/patient/02f47490-d657-48ee-98e7-4c9133ea1685',
+        );
+
+        const patientName1 = screen.getByText('Steffi Maria Graf');
+        const patientName2 = screen.getByText('John Doe');
+        const phoneNumber = screen.getByText('864579392');
+        const genderElements = screen.getAllByText('F');
+
+        expect(patientName1).toBeInTheDocument();
+        expect(patientName2).toBeInTheDocument();
+        expect(phoneNumber).toBeInTheDocument();
+        expect(genderElements.length).toBeGreaterThan(0);
+        expect(patientName1.tagName).not.toBe('A');
+        expect(patientName2.tagName).not.toBe('A');
+        expect(phoneNumber.tagName).not.toBe('A');
+        expect(genderElements[0].tagName).not.toBe('A');
       });
     });
 
