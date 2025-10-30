@@ -30,7 +30,7 @@ import {
   CreatePatientResponse,
   AddressHierarchyEntry,
   VisitType,
-  NewVisitData,
+  VisitData,
   VisitLocationResponse,
   ActiveVisit,
 } from './models';
@@ -359,7 +359,7 @@ export const getVisitTypes = async (): Promise<VisitType> => {
  * @param visitData - The visit data including patient UUID, visit type, and location
  * @returns Promise<unknown> - The created visit object
  */
-export const createVisit = async (visitData: NewVisitData): Promise<string> => {
+export const createVisit = async (visitData: VisitData): Promise<string> => {
   return post<string>(CREATE_VISIT_URL, visitData);
 };
 

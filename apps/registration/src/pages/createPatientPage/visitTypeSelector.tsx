@@ -10,7 +10,7 @@ import {
   dispatchAuditEvent,
   AUDIT_LOG_EVENT_DETAILS,
   getRegistrationConfig,
-  type NewVisitData,
+  type VisitData,
   type AuditEventType,
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery } from '@tanstack/react-query';
@@ -27,14 +27,8 @@ export const VisitTypeSelector = ({
   patientUuid,
 }: VisitTypeSelectorProps) => {
   const { t } = useTranslation();
-  const [visitPayload, setVisitPayload] = useState<NewVisitData>();
-  const [patientUUID, setPatientUUID] = useState<string | null>(null);
+  const [visitPayload, setVisitPayload] = useState<VisitData>();
 
-  useEffect(() => {
-    if (patientUuid && !patientUUID) {
-      setPatientUUID(patientUuid);
-    }
-  }, [patientUuid, patientUUID]);
   const {
     data: visitTypes,
     isLoading: isLoadingVisitTypes,
@@ -129,12 +123,7 @@ export const VisitTypeSelector = ({
   ) => {
     if (!selectedItem) return;
 
-    let currentPatientUUID = patientUUID;
-
-    if (!currentPatientUUID) {
-      currentPatientUUID = await onVisitSave();
-      setPatientUUID(currentPatientUUID);
-    }
+    const currentPatientUUID = patientUuid ?? (await onVisitSave());
 
     if (currentPatientUUID && visitLocationUUID) {
       setVisitPayload({
