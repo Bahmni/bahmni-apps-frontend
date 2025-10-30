@@ -1672,7 +1672,7 @@ describe('Patient Service', () => {
   });
 
   describe('getVisitTypes', () => {
-    it('should fetch and transform visit types correctly', async () => {
+    it('should fetch visit types correctly', async () => {
       const mockResponse = {
         visitTypes: {
           OPD: 'c22a5000-3f10-11e4-adec-0800271c1b75',
@@ -1684,10 +1684,12 @@ describe('Patient Service', () => {
       const result = await getVisitTypes();
 
       expect(mockedGet).toHaveBeenCalledWith(VISIT_TYPES_URL());
-      expect(result).toEqual([
-        { name: 'OPD', uuid: 'c22a5000-3f10-11e4-adec-0800271c1b75' },
-        { name: 'IPD', uuid: 'd22a5000-3f10-11e4-adec-0800271c1b76' },
-      ]);
+      expect(result).toEqual({
+        visitTypes: {
+          OPD: 'c22a5000-3f10-11e4-adec-0800271c1b75',
+          IPD: 'd22a5000-3f10-11e4-adec-0800271c1b76',
+        },
+      });
     });
   });
 

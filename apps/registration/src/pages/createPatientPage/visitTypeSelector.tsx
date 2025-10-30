@@ -10,7 +10,7 @@ import {
   dispatchAuditEvent,
   AUDIT_LOG_EVENT_DETAILS,
   getRegistrationConfig,
-  type CreateVisitRequest,
+  type NewVisitData,
   type AuditEventType,
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery } from '@tanstack/react-query';
@@ -27,7 +27,7 @@ export const VisitTypeSelector = ({
   patientUuid,
 }: VisitTypeSelectorProps) => {
   const { t } = useTranslation();
-  const [visitPayload, setVisitPayload] = useState<CreateVisitRequest>();
+  const [visitPayload, setVisitPayload] = useState<NewVisitData>();
   const [patientUUID, setPatientUUID] = useState<string | null>(null);
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export const VisitTypeSelector = ({
     }
   }, [patientUuid, patientUUID]);
   const {
-    data: visitTypesFromApi = [],
+    data: visitTypes,
     isLoading: isLoadingVisitTypes,
     error: visitTypesError,
   } = useQuery({
@@ -60,16 +60,23 @@ export const VisitTypeSelector = ({
     gcTime: 10 * 60 * 1000,
   });
 
+  const visitTypesArray = visitTypes?.visitTypes
+    ? Object.entries(visitTypes.visitTypes).map(([name, uuid]) => ({
+        name,
+        uuid,
+      }))
+    : [];
+
   const defaultVisitType =
-    visitTypesFromApi.find(
+    visitTypesArray.find(
       (vt) => vt.name === registrationConfig?.defaultVisitType,
-    ) ?? visitTypesFromApi[0];
+    ) ?? visitTypesArray[0];
 
   const createVisitAndLogAudit = async () => {
     const result = await createVisit(visitPayload!);
 
     if (visitPayload) {
-      const visitType = visitTypesFromApi.find(
+      const visitType = visitTypesArray.find(
         (vt) => vt.uuid === visitPayload.visitType,
       );
       if (visitType) {
@@ -94,7 +101,7 @@ export const VisitTypeSelector = ({
     gcTime: 10 * 60 * 1000,
   });
 
-  const { data: visitStarted, error: getVisitError } = useQuery({
+  const { data: activeVisit, error: getVisitError } = useQuery({
     queryKey: [
       'getActiveVisitByPatient',
       visitPayload?.patient,
@@ -138,15 +145,14 @@ export const VisitTypeSelector = ({
     }
   };
 
-  const hasActiveVisit =
-    visitStarted?.results && visitStarted.results.length > 0;
+  const hasActiveVisit = activeVisit?.results && activeVisit.results.length > 0;
 
   return (
     <div className={styles.opdVisitGroup}>
       <Button
         id="visit-button"
         kind="primary"
-        disabled={isLoadingVisitTypes || visitTypesFromApi.length === 0}
+        disabled={isLoadingVisitTypes || visitTypesArray.length === 0}
         onClick={() => handleVisitTypeChange(defaultVisitType)}
       >
         {!isLoadingVisitTypes && defaultVisitType
@@ -158,7 +164,7 @@ export const VisitTypeSelector = ({
       {!hasActiveVisit && (
         <Dropdown
           id="visit-dropdown"
-          items={visitTypesFromApi.filter(
+          items={visitTypesArray.filter(
             (vt) => vt.uuid !== defaultVisitType?.uuid,
           )}
           itemToString={(item) =>
@@ -169,7 +175,7 @@ export const VisitTypeSelector = ({
           type="inline"
           disabled={
             isLoadingVisitTypes ||
-            visitTypesFromApi.length === 0 ||
+            visitTypesArray.length === 0 ||
             hasActiveVisit
           }
           titleText=""

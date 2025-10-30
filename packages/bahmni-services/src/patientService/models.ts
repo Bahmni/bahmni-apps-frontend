@@ -145,11 +145,10 @@ export interface AddressHierarchyResponse {
 }
 
 export interface VisitType {
-  name: string;
-  uuid: string;
+  visitTypes: Record<string, string>;
 }
 
-export interface CreateVisitRequest {
+export interface NewVisitData {
   patient: string;
   visitType: string;
   location: string;
@@ -160,5 +159,5 @@ export interface VisitLocationResponse {
 }
 
 export interface ActiveVisit {
-  results: unknown[];
+  results: string[];
 }
