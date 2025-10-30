@@ -1,7 +1,7 @@
 import { TextInput } from '@bahmni-frontend/bahmni-design-system';
 import { useTranslation } from '@bahmni-frontend/bahmni-services';
 import type { ContactData } from '../../../models/patient';
-import styles from '../../../pages/createPatientPage/styles/index.module.scss';
+import styles from './styles/index.module.scss';
 
 interface ContactInformationProps {
   formData: ContactData;

@@ -7,7 +7,7 @@ import {
 import { useState, useCallback } from 'react';
 import type { AddressData } from '../../../models/patient';
 import type { AddressErrors } from '../../../models/validation';
-import styles from '../../../pages/createPatientPage/styles/index.module.scss';
+import styles from './styles/index.module.scss';
 
 interface AddressInformationProps {
   formData: AddressData;
