@@ -5,7 +5,6 @@ export {
   getFormattedPatientById,
   searchPatientByNameOrId,
   searchPatientByCustomAttribute,
-  searchAppointmentsByAttribute,
   getPrimaryIdentifierType,
   createPatient,
   createVisit,
@@ -30,6 +29,14 @@ export {
   type PatientAttribute,
   type AddressHierarchyEntry,
 } from './patientService';
+export { searchAppointmentsByAttribute } from './AppointmentService/appointmmetService';
+export {
+  type Appointment,
+  type AppointmentSearchResult,
+  type Patient,
+  type AppointmentService,
+  type Location,
+} from './AppointmentService/models';
 export { getFormattedError } from './errorHandling';
 export {
   capitalize,
