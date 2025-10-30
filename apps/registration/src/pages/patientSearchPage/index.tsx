@@ -43,6 +43,7 @@ const PatientSearchPage: React.FC = () => {
   const [searchFields, setSearchFields] = useState<PatientSearchField[]>([]);
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [selectedFieldType, setSelectedFieldType] = useState<string>('');
 
   const handleCreateNewPatient = () => {
     navigate('/registration/new');
@@ -50,11 +51,18 @@ const PatientSearchPage: React.FC = () => {
   useEffect(() => {
     const loadSearchConfig = async () => {
       const config = await getRegistrationConfig();
-      const searchFields = [...(config?.patientSearch?.appointment ?? [])];
-      setSearchFields(searchFields);
+      let fields: PatientSearchField[] = [];
+
+      if (selectedFieldType === 'appointment') {
+        fields = [...(config?.patientSearch?.appointment ?? [])];
+      } else {
+        fields = [...(config?.patientSearch?.customAttributes ?? [])];
+      }
+
+      setSearchFields(fields);
     };
     loadSearchConfig();
-  }, []);
+  }, [selectedFieldType]);
 
   useEffect(() => {
     dispatchAuditEvent({
@@ -70,12 +78,16 @@ const PatientSearchPage: React.FC = () => {
     isLoading: boolean,
     isError: boolean,
     isAdvancedSearch: boolean,
+    selectedFieldType?: string,
   ) => {
     setPatientSearchData(data ?? undefined);
     setSearchTerm(searchTerm);
     setIsLoading(isLoading);
     setIsError(isError);
     setIsAdvancedSearch(isAdvancedSearch);
+    if (selectedFieldType) {
+      setSelectedFieldType(selectedFieldType);
+    }
   };
 
   const headers = [

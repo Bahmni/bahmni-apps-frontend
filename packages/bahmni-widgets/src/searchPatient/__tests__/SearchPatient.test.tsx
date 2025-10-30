@@ -212,6 +212,7 @@ describe('SearchPatient', () => {
         expect.any(Boolean),
         expect.any(Boolean),
         false,
+        expect.any(String),
       );
     });
   });
@@ -298,6 +299,7 @@ describe('SearchPatient', () => {
         false,
         false,
         true,
+        expect.any(String),
       );
     });
   });
@@ -335,6 +337,7 @@ describe('SearchPatient', () => {
         true,
         false,
         false,
+        expect.any(String),
       );
     });
 
@@ -353,6 +356,7 @@ describe('SearchPatient', () => {
         false,
         false,
         false,
+        expect.any(String),
       );
     });
   });
