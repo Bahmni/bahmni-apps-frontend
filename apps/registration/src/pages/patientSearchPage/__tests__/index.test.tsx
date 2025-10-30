@@ -262,10 +262,8 @@ describe('PatientSearchPage', () => {
     fireEvent.click(screen.getByTestId('search-patient-search-button'));
 
     await waitFor(() => {
-      expect(screen.getByText('Appointment Number')).toBeInTheDocument();
-      expect(screen.getByText('Appointment Date')).toBeInTheDocument();
-      expect(screen.getByText('Reason')).toBeInTheDocument();
-      expect(screen.getByText('Status')).toBeInTheDocument();
+      expect(screen.getByText('Phone Number')).toBeInTheDocument();
+      expect(screen.getByText('Alternate Phone Number')).toBeInTheDocument();
     });
   });
 
@@ -276,10 +274,6 @@ describe('PatientSearchPage', () => {
         pageOfResults: [
           {
             ...mockSearchPatientData[0],
-            appointmentNumber: 'APT-12345',
-            appointmentDate: '15 Jan 2025 10:30 AM',
-            appointmentReason: 'Follow-up Consultation',
-            appointmentStatus: 'Scheduled',
           },
         ],
       },
@@ -304,10 +298,9 @@ describe('PatientSearchPage', () => {
     fireEvent.click(screen.getByTestId('search-patient-search-button'));
 
     await waitFor(() => {
-      expect(screen.getByText('APT-12345')).toBeInTheDocument();
-      expect(screen.getByText('15 Jan 2025 10:30 AM')).toBeInTheDocument();
-      expect(screen.getByText('Follow-up Consultation')).toBeInTheDocument();
-      expect(screen.getByText('Scheduled')).toBeInTheDocument();
+      expect(screen.getByText('ABC200001')).toBeInTheDocument();
+      expect(screen.getByText('864579392')).toBeInTheDocument();
+      expect(screen.getByText('4596781239')).toBeInTheDocument();
     });
   });
 
