@@ -204,20 +204,8 @@ export const searchPatientByNameOrId = async (
     PATIENT_LUCENE_SEARCH_URL(searchTerm, loginLocation.uuid),
   );
 
-  return {
-    ...searchResultsBundle,
-    pageOfResults: searchResultsBundle.pageOfResults.map((patient) => ({
-      ...patient,
-      birthDate: patient.birthDate
-        ? formatDate(new Date(patient.birthDate).getTime(), false)
-        : patient.birthDate,
-      age: patient.birthDate
-        ? calculateAgeinYearsAndMonths(new Date(patient.birthDate).getTime())
-        : patient.age,
-    })),
-  };
+  return searchResultsBundle;
 };
-
 /**
  * Search patient by Custom Attributes (phone, address, program fields)
  * @param searchTerm - The search value entered by user
@@ -246,109 +234,15 @@ export const searchPatientByCustomAttribute = async (
   return searchResultsBundle;
 };
 export const searchAppointmentsByAttribute = async (
-  searchTerm: string,
+  searchTerm: Record<string, string>,
   fieldsToSearch: string[],
-): Promise<PatientSearchResultBundle> => {
-  const requestBody: Record<string, string> = {};
-  if (fieldsToSearch.length > 0) {
-    requestBody[fieldsToSearch[0]] = searchTerm.trim();
-  }
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const oneYearFromToday = new Date();
-  oneYearFromToday.setFullYear(oneYearFromToday.getFullYear() - 1);
-  oneYearFromToday.setHours(23, 59, 59, 999);
-
-  requestBody.startDate = oneYearFromToday.toISOString();
-  const appointments = await post<Appointment>(
+): Promise<Appointment[]> => {
+  const appointments = await post<Appointment[]>(
     APPOINTMENTS_SEARCH_URL,
-    requestBody,
+    searchTerm,
   );
-
-  return transformAppointmentsToPatientBundle(appointments);
+  return appointments;
 };
-
-const transformAppointmentsToPatientBundle = (
-  appointmentsData: Appointment,
-): PatientSearchResultBundle => {
-  return {
-    pageOfResults: appointmentsData.map((appt: Appointment) => ({
-      identifier: appt.patient.identifier,
-      givenName: appt.patient.name,
-      gender: appt.patient.gender,
-      birthDate: formatDate(appt.patient.birthDate, false),
-      age: calculateAgeinYearsAndMonths(appt.patient.birthDate),
-      // appointment-specific fields
-      appointmentNumber: appt?.appointmentNumber,
-      appointmentDate: formatDate(appt?.startDateTime, true),
-      appointmentReason: getAppointmentReasons(appt),
-      appointmentStatus: appt?.status,
-    })),
-    totalCount: appointmentsData.length,
-  };
-};
-const getAppointmentReasons = (appt: Appointment) => {
-  if (Array.isArray(appt?.reasons) && appt.reasons.length > 0) {
-    // join all reason names with commas
-    return appt.reasons
-      .map((reason: Reason) => reason?.name)
-      .filter(Boolean)
-      .join(', ');
-  }
-  return '';
-};
-function formatDate(date: number, includeTime: boolean): string {
-  const d = new Date(date);
-
-  const day = String(d.getDate()).padStart(2, '0');
-  const year = d.getFullYear();
-  const monthNames = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-  const month = monthNames[d.getMonth()];
-
-  let formattedDate = `${day} ${month} ${year}`;
-
-  if (includeTime) {
-    let hours = d.getHours();
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12 || 12;
-    const formattedTime = `${hours}:${minutes} ${ampm}`;
-    formattedDate += ` ${formattedTime}`;
-  }
-
-  return formattedDate;
-}
-
-function calculateAgeinYearsAndMonths(birthDateMillis: number) {
-  const birthDate = new Date(birthDateMillis);
-  const today = new Date();
-
-  let years = today.getFullYear() - birthDate.getFullYear();
-  let months = today.getMonth() - birthDate.getMonth();
-
-  // Adjust if the current month/day hasn't been reached yet
-  if (months < 0 || (months === 0 && today.getDate() < birthDate.getDate())) {
-    years--;
-    months += 12;
-  }
-
-  return `${years} years ${months} months`;
-}
 
 /**
  * Get primary identifier type from Bahmni app settings
@@ -454,8 +348,6 @@ export const getAddressHierarchyEntries = async (
       ADDRESS_HIERARCHY_URL(addressField, searchString, limit),
     );
   } catch (error) {
-    // Log error for debugging
-    // console.error('Error fetching address hierarchy entries:', error);
     throw new Error(
       `Failed to fetch address hierarchy for field "${addressField}": ${
         error instanceof Error ? error.message : 'Unknown error'

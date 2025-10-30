@@ -15,6 +15,15 @@ import {
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
+import {
+  calculateAgeinYearsAndMonths,
+  formatDateAndTime,
+} from '../../../bahmni-services/src/date/date';
+import {
+  Appointment,
+  AppointmentSearchResult,
+  Reason,
+} from '../../../bahmni-services/src/patientService/models';
 import { useNotification } from '../notification';
 import styles from './styles/SearchPatient.module.scss';
 
@@ -57,20 +66,17 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
     gcTime: 0,
   });
   const getSearchQuery = () => {
-    if (isAdvancedSearch) {
-      const selectedField = searchFields.find(
-        (field) => t(field.translationKey) === selectedDropdownItem,
-      );
-      const fieldType = selectedField?.type ?? '';
+    const selectedField = searchFields.find(
+      (field) => t(field.translationKey) === selectedDropdownItem,
+    );
+    const fieldType = isAdvancedSearch ? (selectedField?.type ?? '') : '';
 
-      if (fieldType === 'appointment') {
-        return getAppointmentSearchQuery();
-      }
-    }
-    return getPatientSearchQuery();
+    return fieldType === 'appointment'
+      ? getAppointmentSearchQuery()
+      : getPatientSearchQuery();
   };
 
-  const getPatientSearchQuery = () => {
+  const getPatientSearchQuery = async () => {
     if (isAdvancedSearch) {
       const selectedField = searchFields.find(
         (field) => t(field.translationKey) === selectedDropdownItem,
@@ -78,26 +84,89 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       const fieldType = selectedField?.type ?? '';
       const fieldsToSearch = selectedField ? selectedField.fields : [];
 
-      return searchPatientByCustomAttribute(
+      const rawResults = await searchPatientByCustomAttribute(
         encodeURI(searchTerm),
         fieldType,
         fieldsToSearch,
         searchFields,
         t,
       );
+      return formatPatientDob(rawResults);
     } else {
-      return searchPatientByNameOrId(encodeURI(searchTerm));
+      const rawResults = await searchPatientByNameOrId(encodeURI(searchTerm));
+      return formatPatientDob(rawResults);
     }
   };
-  const getAppointmentSearchQuery = () => {
+  const getAppointmentSearchQuery = async () => {
     const selectedField = searchFields.find(
       (field) => t(field.translationKey) === selectedDropdownItem,
     );
     const fieldsToSearch = selectedField ? selectedField.fields : [];
+    const requestBody: Record<string, string> = {};
+    if (fieldsToSearch.length > 0) {
+      requestBody[fieldsToSearch[0]] = searchTerm.trim();
+    }
+    const formattedRequest = formatAppointmentSearchRequest(requestBody);
+    const rawResults = searchAppointmentsByAttribute(
+      formattedRequest,
+      fieldsToSearch,
+    );
+    return transformAppointmentsToPatientBundle(await rawResults);
+  };
+  const formatAppointmentSearchRequest = (
+    requestBody: Record<string, string>,
+  ): Record<string, string> => {
+    const oneYearFromToday = new Date();
+    oneYearFromToday.setFullYear(oneYearFromToday.getFullYear() - 1);
+    oneYearFromToday.setHours(23, 59, 59, 999);
+    requestBody.startDate = oneYearFromToday.toISOString();
+    return requestBody;
+  };
+  const transformAppointmentsToPatientBundle = (
+    appointmentsData: Appointment[],
+  ): { totalCount: number; pageOfResults: AppointmentSearchResult[] } => {
+    return {
+      pageOfResults: appointmentsData.map(
+        (appt: Appointment): AppointmentSearchResult => ({
+          uuid: appt.patient.uuid,
+          identifier: appt.patient.identifier,
+          givenName: appt.patient.name,
+          middleName: '',
+          familyName: '',
+          gender: appt.patient.gender,
+          birthDate: formatDateAndTime(appt.patient.birthDate, false),
+          age: calculateAgeinYearsAndMonths(appt.patient.birthDate),
+          extraIdentifiers: null,
+          personId: 0,
+          deathDate: null,
+          addressFieldValue: null,
+          patientProgramAttributeValue: null,
+          dateCreated: new Date(appt.dateCreated),
+          activeVisitUuid: '',
+          customAttribute: '',
+          hasBeenAdmitted: false,
 
-    return searchAppointmentsByAttribute(searchTerm, fieldsToSearch);
+          // appointment-specific fields
+          appointmentNumber: appt.appointmentNumber,
+          appointmentDate: formatDateAndTime(appt.startDateTime, true),
+          appointmentReason: getAppointmentReasons(appt),
+          appointmentStatus: appt.status,
+        }),
+      ),
+      totalCount: appointmentsData.length,
+    };
   };
 
+  const getAppointmentReasons = (appt: Appointment) => {
+    if (Array.isArray(appt?.reasons) && appt.reasons.length > 0) {
+      // join all reason names with commas
+      return appt.reasons
+        .map((reason: Reason) => reason?.name)
+        .filter(Boolean)
+        .join(', ');
+    }
+    return '';
+  };
   const { data, isLoading, isError, error } = useQuery({
     queryKey: [
       'patientSearch',
@@ -148,6 +217,22 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       setAdvanceSearchInput('');
       setSearchInput(inputValue);
     }
+  };
+  const formatPatientDob: (
+    searchResultsBundle: PatientSearchResultBundle,
+  ) => PatientSearchResultBundle = (searchResultsBundle) => {
+    return {
+      ...searchResultsBundle,
+      pageOfResults: searchResultsBundle.pageOfResults.map((patient) => ({
+        ...patient,
+        birthDate: patient.birthDate
+          ? formatDateAndTime(new Date(patient.birthDate).getTime(), false)
+          : patient.birthDate,
+        age: patient.birthDate
+          ? calculateAgeinYearsAndMonths(new Date(patient.birthDate).getTime())
+          : patient.age,
+      })),
+    };
   };
 
   const handleClick = (type: 'name' | 'advance') => {
