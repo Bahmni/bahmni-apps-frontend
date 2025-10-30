@@ -1,10 +1,7 @@
 import { TextInput } from '@bahmni-frontend/bahmni-design-system';
 import { useTranslation } from '@bahmni-frontend/bahmni-services';
+import type { AdditionalData } from '../../../models/patient';
 import styles from '../../../pages/createPatientPage/styles/index.module.scss';
-
-export interface AdditionalData {
-  email: string;
-}
 
 interface AdditionalInformationProps {
   formData: AdditionalData;

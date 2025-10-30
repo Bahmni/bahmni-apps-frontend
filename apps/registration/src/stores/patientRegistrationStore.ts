@@ -1,35 +1,16 @@
 import { create } from 'zustand';
-import type { AdditionalData } from '../components/forms/patientAdditionalInformation/PatientAdditionalInformation';
 import type {
+  AdditionalData,
   AddressData,
+  BasicInfoData,
+  ContactData,
+} from '../models/patient';
+import type {
   AddressErrors,
-} from '../components/forms/patientAddressInformation/PatientAddressInformation';
-import type { ContactData } from '../components/forms/patientContactInformation/PatientContactInformation';
-import type { BasicInfoData } from '../components/forms/patientProfile/PatientProfile';
-
-// Validation error types
-export interface ProfileValidationErrors {
-  firstName: string;
-  middleName: string;
-  lastName: string;
-  gender: string;
-  dateOfBirth: string;
-}
-
-export interface AgeValidationErrors {
-  ageYears: string;
-  ageMonths: string;
-  ageDays: string;
-}
-
-export interface ValidationResult {
-  isValid: boolean;
-  errors: {
-    profile: ProfileValidationErrors;
-    age: AgeValidationErrors;
-    address: AddressErrors;
-  };
-}
+  AgeValidationErrors,
+  ProfileValidationErrors,
+  ValidationResult,
+} from '../models/validation';
 
 // Combined state interface
 interface PatientRegistrationState {

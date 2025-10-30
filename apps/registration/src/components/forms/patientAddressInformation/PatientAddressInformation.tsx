@@ -5,22 +5,9 @@ import {
   type AddressHierarchyEntry,
 } from '@bahmni-frontend/bahmni-services';
 import { useState, useCallback } from 'react';
+import type { AddressData } from '../../../models/patient';
+import type { AddressErrors } from '../../../models/validation';
 import styles from '../../../pages/createPatientPage/styles/index.module.scss';
-
-export interface AddressData {
-  houseNumber: string;
-  locality: string;
-  district: string;
-  city: string;
-  state: string;
-  pincode: string;
-}
-
-export interface AddressErrors {
-  district: string;
-  state: string;
-  pincode: string;
-}
 
 interface AddressInformationProps {
   formData: AddressData;
