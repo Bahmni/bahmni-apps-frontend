@@ -7,8 +7,11 @@ import {
   DatePickerInput,
   CheckboxGroup,
 } from '@bahmni-frontend/bahmni-design-system';
-import { useTranslation } from '@bahmni-frontend/bahmni-services';
-import { useState } from 'react';
+import {
+  useTranslation,
+  MAX_PATIENT_AGE_YEARS,
+} from '@bahmni-frontend/bahmni-services';
+import { useState, forwardRef, useImperativeHandle } from 'react';
 import type { BasicInfoData } from '../../../models/patient';
 import type {
   BasicInfoErrors,
@@ -16,80 +19,57 @@ import type {
   AgeErrors,
   DateErrors,
 } from '../../../models/validation';
-import { createDateAgeHandlers } from './dateAgeUtils';
-import styles from './styles/index.module.scss';
-
-export interface BasicInfoData {
-  patientIdFormat: string;
-  entryType: boolean;
-  firstName: string;
-  middleName: string;
-  lastName: string;
-  gender: string;
-  ageYears: string;
-  ageMonths: string;
-  ageDays: string;
-  dateOfBirth: string;
-  birthTime: string;
-}
-
-export interface BasicInfoErrors {
-  firstName: string;
-  middleName: string;
-  lastName: string;
-}
-
-export interface ValidationErrors {
-  firstName: string;
-  lastName: string;
-  gender: string;
-  dateOfBirth: string;
-}
-
-export interface AgeErrors {
-  ageYears: string;
-  ageMonths: string;
-  ageDays: string;
-}
-
-export interface DateErrors {
-  dateOfBirth: string;
-}
-
-interface BasicInformationProps {
-  formData: BasicInfoData;
-  dobEstimated: boolean;
-  identifierPrefixes: string[];
-  genders: string[];
-  maxPatientAgeYears: number;
-  onInputChange: (field: string, value: string | number | boolean) => void;
-  onDobEstimatedChange: (value: boolean) => void;
-  setFormData: React.Dispatch<React.SetStateAction<BasicInfoData>>;
-  formatToDisplay: (isoDate: string) => string;
-  getValidationErrors?: () => {
-    validationErrors: ValidationErrors;
-    ageErrors: AgeErrors;
-    dateErrors: DateErrors;
-  };
-  onValidate?: (callback: () => boolean) => void;
-}
-
-export const PatientProfile: React.FC<BasicInformationProps> = ({
-  formData,
-  dobEstimated,
-  identifierPrefixes,
-  genders,
-  maxPatientAgeYears,
-  onInputChange,
-  onDobEstimatedChange,
-  setFormData,
+import styles from '../../../pages/createPatientPage/styles/index.module.scss';
+import {
+  useGenderData,
+  useIdentifierData,
+} from '../../../utils/identifierGenderUtils';
+import {
+  createDateAgeHandlers,
   formatToDisplay,
-  getValidationErrors,
-  onValidate,
-}) => {
+} from '../../forms/patientProfile/dateAgeUtils';
+
+export interface PatientProfileRef {
+  getData: () => BasicInfoData & { dobEstimated: boolean };
+  validate: () => boolean;
+  clearData: () => void;
+  setCustomError: (field: keyof BasicInfoData, message: string) => void;
+}
+
+interface PatientProfileProps {
+  initialData?: BasicInfoData;
+  initialDobEstimated?: boolean;
+}
+
+export const PatientProfile = forwardRef<
+  PatientProfileRef,
+  PatientProfileProps
+>(({ initialData, initialDobEstimated = false }, ref) => {
   const { t } = useTranslation();
 
-  // Manage all error states internally
+  // Use utility hooks for identifier and gender data
+  const { identifierPrefixes } = useIdentifierData();
+  const { genders } = useGenderData(t);
+
+  // Component owns ALL its state
+  const [formData, setFormData] = useState<BasicInfoData>({
+    patientIdFormat:
+      initialData?.patientIdFormat || identifierPrefixes[0] || '',
+    entryType: initialData?.entryType || false,
+    firstName: initialData?.firstName || '',
+    middleName: initialData?.middleName || '',
+    lastName: initialData?.lastName || '',
+    gender: initialData?.gender || '',
+    ageYears: initialData?.ageYears || '',
+    ageMonths: initialData?.ageMonths || '',
+    ageDays: initialData?.ageDays || '',
+    dateOfBirth: initialData?.dateOfBirth || '',
+    birthTime: initialData?.birthTime || '',
+  });
+
+  const [dobEstimated, setDobEstimated] = useState(initialDobEstimated);
+
+  // Component owns ALL its error states
   const [nameErrors, setNameErrors] = useState<BasicInfoErrors>({
     firstName: '',
     middleName: '',
@@ -113,59 +93,21 @@ export const PatientProfile: React.FC<BasicInformationProps> = ({
     dateOfBirth: '',
   });
 
-  // Expose errors to parent for validation
-  if (getValidationErrors) {
-    Object.assign(getValidationErrors, () => ({
-      validationErrors,
-      ageErrors,
-      dateErrors,
-    }));
-  }
-
-  // Validation function to be called from parent
-  const validateFields = (): boolean => {
-    let isValid = true;
-    const newValidationErrors = { ...validationErrors };
-
-    if (!formData.firstName.trim()) {
-      newValidationErrors.firstName = 'First name is required';
-      isValid = false;
-    }
-
-    if (!formData.lastName.trim()) {
-      newValidationErrors.lastName = 'Last name is required';
-      isValid = false;
-    }
-
-    if (!formData.gender) {
-      newValidationErrors.gender = 'Gender is required';
-      isValid = false;
-    }
-
-    if (!formData.dateOfBirth) {
-      newValidationErrors.dateOfBirth = 'Date of birth is required';
-      isValid = false;
-    }
-
-    setValidationErrors(newValidationErrors);
-    return isValid;
+  // Internal input change handler
+  const handleInputChange = (
+    field: string,
+    value: string | number | boolean,
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Expose validate function to parent
-  if (onValidate) {
-    onValidate(validateFields);
-  }
-
-  // Handle name changes with validation
+  // Real-time name validation (as user types)
   const handleNameChange = (field: string, value: string) => {
     const nameRegex = /^[a-zA-Z\s]*$/;
     if (nameRegex.test(value)) {
-      onInputChange(field, value);
+      handleInputChange(field, value);
       setNameErrors((prev) => ({ ...prev, [field]: '' }));
-      setValidationErrors((prev) => ({
-        ...prev,
-        [field]: '',
-      }));
+      setValidationErrors((prev) => ({ ...prev, [field]: '' }));
     } else {
       setNameErrors((prev) => ({
         ...prev,
@@ -174,28 +116,105 @@ export const PatientProfile: React.FC<BasicInformationProps> = ({
     }
   };
 
-  // Use date/age utility handlers - need to wrap onDobEstimatedChange
-  const [internalDobEstimated, setInternalDobEstimated] =
-    useState(dobEstimated);
-
+  // Date/Age handlers
   const { handleDateInputChange, handleDateOfBirthChange, handleAgeChange } =
     createDateAgeHandlers({
       setDateErrors,
       setValidationErrors,
       setAgeErrors,
-      setFormData: setFormData as React.Dispatch<
-        React.SetStateAction<BasicInfoData>
-      >,
-      setDobEstimated: (value) => {
-        setInternalDobEstimated(
-          typeof value === 'function' ? value(internalDobEstimated) : value,
-        );
-        onDobEstimatedChange(
-          typeof value === 'function' ? value(dobEstimated) : value,
-        );
-      },
+      setFormData,
+      setDobEstimated,
       t,
     });
+
+  // VALIDATION METHOD - Called by parent on submit
+  const validate = (): boolean => {
+    let isValid = true;
+    const newValidationErrors: ValidationErrors = {
+      firstName: '',
+      lastName: '',
+      gender: '',
+      dateOfBirth: '',
+    };
+
+    // Required field validations
+    if (!formData.firstName.trim()) {
+      newValidationErrors.firstName = t(
+        'CREATE_PATIENT_VALIDATION_FIRST_NAME_REQUIRED',
+      );
+      isValid = false;
+    }
+
+    if (!formData.lastName.trim()) {
+      newValidationErrors.lastName = t(
+        'CREATE_PATIENT_VALIDATION_LAST_NAME_REQUIRED',
+      );
+      isValid = false;
+    }
+
+    if (!formData.gender) {
+      newValidationErrors.gender = t(
+        'CREATE_PATIENT_VALIDATION_GENDER_REQUIRED',
+      );
+      isValid = false;
+    }
+
+    if (!formData.dateOfBirth) {
+      newValidationErrors.dateOfBirth = t(
+        'CREATE_PATIENT_VALIDATION_DOB_REQUIRED',
+      );
+      isValid = false;
+    }
+
+    // Check if there are any existing errors (name format, age, date)
+    const hasNameErrors = Object.values(nameErrors).some((err) => err !== '');
+    const hasAgeErrors = Object.values(ageErrors).some((err) => err !== '');
+    const hasDateErrors = Object.values(dateErrors).some((err) => err !== '');
+
+    if (hasNameErrors || hasAgeErrors || hasDateErrors) {
+      isValid = false;
+    }
+
+    setValidationErrors(newValidationErrors);
+    return isValid;
+  };
+
+  // Expose methods to parent via ref
+  useImperativeHandle(ref, () => ({
+    getData: () => ({
+      ...formData,
+      dobEstimated,
+    }),
+    validate,
+    clearData: () => {
+      setFormData({
+        patientIdFormat: identifierPrefixes[0] || '',
+        entryType: false,
+        firstName: '',
+        middleName: '',
+        lastName: '',
+        gender: '',
+        ageYears: '',
+        ageMonths: '',
+        ageDays: '',
+        dateOfBirth: '',
+        birthTime: '',
+      });
+      setDobEstimated(false);
+      setNameErrors({ firstName: '', middleName: '', lastName: '' });
+      setValidationErrors({
+        firstName: '',
+        lastName: '',
+        gender: '',
+        dateOfBirth: '',
+      });
+      setAgeErrors({ ageYears: '', ageMonths: '', ageDays: '' });
+      setDateErrors({ dateOfBirth: '' });
+    },
+    setCustomError: (field, message) => {
+      setValidationErrors((prev) => ({ ...prev, [field]: message }));
+    },
+  }));
 
   return (
     <div className={styles.formSection}>
@@ -227,7 +246,7 @@ export const PatientProfile: React.FC<BasicInformationProps> = ({
                 items={identifierPrefixes}
                 selectedItem={formData.patientIdFormat}
                 onChange={({ selectedItem }) =>
-                  onInputChange('patientIdFormat', selectedItem ?? '')
+                  handleInputChange('patientIdFormat', selectedItem ?? '')
                 }
               />
             </div>
@@ -239,7 +258,7 @@ export const PatientProfile: React.FC<BasicInformationProps> = ({
                     id="entry-type"
                     checked={formData.entryType}
                     onChange={(e) =>
-                      onInputChange('entryType', e.target.checked)
+                      handleInputChange('entryType', e.target.checked)
                     }
                   />
                 </div>
@@ -280,6 +299,7 @@ export const PatientProfile: React.FC<BasicInformationProps> = ({
               onChange={(e) => handleNameChange('lastName', e.target.value)}
             />
           </div>
+
           <div className={`${styles.row} ${styles.demographicsFields}`}>
             <div className={styles.dropdownField}>
               <Dropdown
@@ -292,11 +312,8 @@ export const PatientProfile: React.FC<BasicInformationProps> = ({
                 invalid={!!validationErrors.gender}
                 invalidText={validationErrors.gender}
                 onChange={({ selectedItem }) => {
-                  onInputChange('gender', selectedItem ?? '');
-                  setValidationErrors({
-                    ...validationErrors,
-                    gender: '',
-                  });
+                  handleInputChange('gender', selectedItem ?? '');
+                  setValidationErrors((prev) => ({ ...prev, gender: '' }));
                 }}
               />
             </div>
@@ -310,7 +327,7 @@ export const PatientProfile: React.FC<BasicInformationProps> = ({
                     type="number"
                     required
                     min={0}
-                    max={maxPatientAgeYears}
+                    max={MAX_PATIENT_AGE_YEARS}
                     value={formData.ageYears}
                     invalid={!!ageErrors.ageYears}
                     invalidText={ageErrors.ageYears}
@@ -336,6 +353,7 @@ export const PatientProfile: React.FC<BasicInformationProps> = ({
                     }
                   />
                 </div>
+
                 <div className={styles.ageInputs}>
                   <TextInput
                     id="age-days"
@@ -360,7 +378,9 @@ export const PatientProfile: React.FC<BasicInformationProps> = ({
                 datePickerType="single"
                 minDate={(() => {
                   const date = new Date();
-                  date.setFullYear(date.getFullYear() - maxPatientAgeYears + 1);
+                  date.setFullYear(
+                    date.getFullYear() - MAX_PATIENT_AGE_YEARS + 1,
+                  );
                   date.setHours(0, 0, 0, 0);
                   return date;
                 })()}
@@ -393,17 +413,18 @@ export const PatientProfile: React.FC<BasicInformationProps> = ({
                   labelText={t('CREATE_PATIENT_ESTIMATED')}
                   id="accuracy"
                   checked={dobEstimated}
-                  onChange={() => onDobEstimatedChange(!dobEstimated)}
+                  onChange={() => setDobEstimated(!dobEstimated)}
                 />
               </div>
             </CheckboxGroup>
+
             <div>
               <TextInput
                 id="birth-time"
                 type="time"
                 required
                 value={formData.birthTime}
-                onChange={(e) => onInputChange('birthTime', e.target.value)}
+                onChange={(e) => handleInputChange('birthTime', e.target.value)}
                 labelText={t('CREATE_PATIENT_BIRTH_TIME')}
               />
             </div>
@@ -412,6 +433,8 @@ export const PatientProfile: React.FC<BasicInformationProps> = ({
       </div>
     </div>
   );
-};
+});
+
+PatientProfile.displayName = 'PatientProfile';
 
 export default PatientProfile;

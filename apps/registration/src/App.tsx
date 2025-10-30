@@ -15,7 +15,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import React, { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { queryClientConfig } from './config/tanstackQuery';
-import CreatePatient from './pages/createPatientPage/createPatient';
+import Registration from './pages/createPatientPage';
 import PatientSearchPage from './pages/patientSearchPage';
 
 const queryClient = new QueryClient(queryClientConfig);
@@ -51,7 +51,7 @@ const RegistrationApp: React.FC = () => {
         <QueryClientProvider client={queryClient}>
           <Routes>
             <Route path="/search" element={<PatientSearchPage />} />
-            <Route path="/new" element={<CreatePatient />} />
+            <Route path="/new" element={<Registration />} />
           </Routes>
           <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
