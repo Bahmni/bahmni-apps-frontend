@@ -16,12 +16,16 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import {
+  Reason,
+  Appointment,
+  AppointmentSearchResult,
+} from '../../../bahmni-services/src/AppointmentService/models';
+import {
   calculateAgeinYearsAndMonths,
   formatDateAndTime,
 } from '../../../bahmni-services/src/date/date';
 import { useNotification } from '../notification';
 import styles from './styles/SearchPatient.module.scss';
-import { Reason,Appointment ,AppointmentSearchResult} from '../../../bahmni-services/src/AppointmentService/models';
 
 interface SearchPatientProps {
   buttonTitle: string;
@@ -103,10 +107,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       requestBody[fieldsToSearch[0]] = searchTerm.trim();
     }
     const formattedRequest = formatAppointmentSearchRequest(requestBody);
-    const rawResults = searchAppointmentsByAttribute(
-      formattedRequest,
-      fieldsToSearch,
-    );
+    const rawResults = searchAppointmentsByAttribute(formattedRequest);
     return transformAppointmentsToPatientBundle(await rawResults);
   };
   const formatAppointmentSearchRequest = (
