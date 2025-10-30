@@ -140,7 +140,8 @@ export const VisitTypeSelector = ({
     <div className={styles.opdVisitGroup}>
       <Button
         id="visit-button"
-        kind="primary"
+        className={styles.visitButton}
+        kind="tertiary"
         disabled={isLoadingVisitTypes || visitTypesArray.length === 0}
         onClick={() => handleVisitTypeChange(defaultVisitType)}
       >
@@ -162,6 +163,7 @@ export const VisitTypeSelector = ({
           onChange={({ selectedItem }) => handleVisitTypeChange(selectedItem)}
           label=""
           type="inline"
+          size="lg"
           disabled={
             isLoadingVisitTypes ||
             visitTypesArray.length === 0 ||
