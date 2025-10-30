@@ -30,7 +30,7 @@ import {
   CreatePatientResponse,
   AddressHierarchyEntry,
   VisitType,
-  CreateVisitRequest,
+  NewVisitData,
   VisitLocationResponse,
   ActiveVisit,
 } from './models';
@@ -348,16 +348,10 @@ export const getAddressHierarchyEntries = async (
 
 /**
  * Fetches visit types from Bahmni configuration
- * @returns Promise<VisitType[]> - Array of visit types
+ * @returns Promise<VisitType> - Visit types response
  */
-export const getVisitTypes = async (): Promise<VisitType[]> => {
-  const response = await get<{ visitTypes: Record<string, string> }>(
-    VISIT_TYPES_URL(),
-  );
-  return Object.entries(response.visitTypes).map(([name, uuid]) => ({
-    name,
-    uuid,
-  }));
+export const getVisitTypes = async (): Promise<VisitType> => {
+  return get<VisitType>(VISIT_TYPES_URL());
 };
 
 /**
@@ -365,10 +359,8 @@ export const getVisitTypes = async (): Promise<VisitType[]> => {
  * @param visitData - The visit data including patient UUID, visit type, and location
  * @returns Promise<unknown> - The created visit object
  */
-export const createVisit = async (
-  visitData: CreateVisitRequest,
-): Promise<unknown> => {
-  return post<unknown>(CREATE_VISIT_URL, visitData);
+export const createVisit = async (visitData: NewVisitData): Promise<string> => {
+  return post<string>(CREATE_VISIT_URL, visitData);
 };
 
 /**

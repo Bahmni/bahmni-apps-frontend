@@ -40,13 +40,13 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
   dispatchAuditEvent: jest.fn(),
 }));
 
-const mockVisitTypes = [
-  { name: 'EMERGENCY', uuid: '493ebb53-b2bd-4ced-b444-e0965804d771' },
-  { name: 'OPD', uuid: '54f43754-c6ce-4472-890e-0f28acaeaea6' },
-  { name: 'IPD', uuid: 'b7494a80-fdf9-49bb-bb40-396c47b40343' },
-  { name: 'Special OPD', uuid: 'f3185c75-2c8c-476a-bf95-c77e8bb42edd' },
-  { name: 'Follow Up', uuid: '9772f68d-9fc5-4470-9b87-2b6139011cad' },
-];
+const mockVisitTypes = {
+  visitTypes: {
+    EMERGENCY: '493ebb53-b2bd-4ced-b444-e0965804d771',
+    OPD: '54f43754-c6ce-4472-890e-0f28acaeaea6',
+    IPD: 'b7494a80-fdf9-49bb-bb40-396c47b40343',
+  },
+};
 
 const mockLoginLocation = {
   name: 'Support',
@@ -117,7 +117,7 @@ describe('VisitTypeSelector', () => {
 
     await waitFor(() => {
       const options = screen.getAllByRole('option');
-      expect(options).toHaveLength(4);
+      expect(options).toHaveLength(2);
     });
   });
 
