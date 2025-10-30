@@ -70,15 +70,11 @@ describe('Appointment Service', () => {
   describe('searchAppointmentsByAttribute', () => {
     it('should call post with the correct URL and search term', async () => {
       const searchTerm = { appointmentNumber: 'APT-12345' };
-      const fieldsToSearch = ['appointmentNumber'];
       const mockAppointments: Appointment[] = [mockAppointment];
 
       mockedPost.mockResolvedValue(mockAppointments);
 
-      const result = await searchAppointmentsByAttribute(
-        searchTerm,
-        fieldsToSearch,
-      );
+      const result = await searchAppointmentsByAttribute(searchTerm);
 
       expect(mockedPost).toHaveBeenCalledWith(
         APPOINTMENTS_SEARCH_URL,
@@ -92,15 +88,11 @@ describe('Appointment Service', () => {
         appointmentNumber: 'APT-12345',
         startDate: '2025-01-15T00:00:00.000Z',
       };
-      const fieldsToSearch = ['appointmentNumber', 'startDate'];
       const mockAppointments: Appointment[] = [mockAppointment];
 
       mockedPost.mockResolvedValue(mockAppointments);
 
-      const result = await searchAppointmentsByAttribute(
-        searchTerm,
-        fieldsToSearch,
-      );
+      const result = await searchAppointmentsByAttribute(searchTerm);
 
       expect(mockedPost).toHaveBeenCalledWith(
         APPOINTMENTS_SEARCH_URL,
@@ -111,15 +103,11 @@ describe('Appointment Service', () => {
 
     it('should return empty array when no appointments found', async () => {
       const searchTerm = { appointmentNumber: 'NON-EXISTENT' };
-      const fieldsToSearch = ['appointmentNumber'];
       const mockAppointments: Appointment[] = [];
 
       mockedPost.mockResolvedValue(mockAppointments);
 
-      const result = await searchAppointmentsByAttribute(
-        searchTerm,
-        fieldsToSearch,
-      );
+      const result = await searchAppointmentsByAttribute(searchTerm);
 
       expect(result).toEqual([]);
       expect(result).toHaveLength(0);
@@ -127,7 +115,6 @@ describe('Appointment Service', () => {
 
     it('should return multiple appointments when found', async () => {
       const searchTerm = { startDate: '2025-01-15T00:00:00.000Z' };
-      const fieldsToSearch = ['startDate'];
       const mockAppointment2: Appointment = {
         ...mockAppointment,
         uuid: 'appt-uuid-2',
@@ -149,10 +136,7 @@ describe('Appointment Service', () => {
 
       mockedPost.mockResolvedValue(mockAppointments);
 
-      const result = await searchAppointmentsByAttribute(
-        searchTerm,
-        fieldsToSearch,
-      );
+      const result = await searchAppointmentsByAttribute(searchTerm);
 
       expect(result).toEqual(mockAppointments);
       expect(result).toHaveLength(2);
@@ -160,14 +144,13 @@ describe('Appointment Service', () => {
 
     it('should propagate API errors', async () => {
       const searchTerm = { appointmentNumber: 'APT-12345' };
-      const fieldsToSearch = ['appointmentNumber'];
       const mockError = new Error('API Error: Network failure');
 
       mockedPost.mockRejectedValue(mockError);
 
-      await expect(
-        searchAppointmentsByAttribute(searchTerm, fieldsToSearch),
-      ).rejects.toThrow('API Error: Network failure');
+      await expect(searchAppointmentsByAttribute(searchTerm)).rejects.toThrow(
+        'API Error: Network failure',
+      );
       expect(mockedPost).toHaveBeenCalledWith(
         APPOINTMENTS_SEARCH_URL,
         searchTerm,
@@ -176,15 +159,11 @@ describe('Appointment Service', () => {
 
     it('should handle empty search term object', async () => {
       const searchTerm = {};
-      const fieldsToSearch: string[] = [];
       const mockAppointments: Appointment[] = [];
 
       mockedPost.mockResolvedValue(mockAppointments);
 
-      const result = await searchAppointmentsByAttribute(
-        searchTerm,
-        fieldsToSearch,
-      );
+      const result = await searchAppointmentsByAttribute(searchTerm);
 
       expect(mockedPost).toHaveBeenCalledWith(
         APPOINTMENTS_SEARCH_URL,

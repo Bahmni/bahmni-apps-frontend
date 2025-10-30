@@ -4,7 +4,6 @@ import { Appointment } from './models';
 
 export const searchAppointmentsByAttribute = async (
   searchTerm: Record<string, string>,
-  fieldsToSearch: string[],
 ): Promise<Appointment[]> => {
   const appointments = await post<Appointment[]>(
     APPOINTMENTS_SEARCH_URL,
