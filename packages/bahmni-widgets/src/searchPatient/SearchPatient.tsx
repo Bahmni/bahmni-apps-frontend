@@ -36,6 +36,7 @@ interface SearchPatientProps {
     isLoading: boolean,
     isError: boolean,
     isAdvancedSearch: boolean,
+    selectedFieldType?: string,
   ) => void;
 }
 
@@ -323,8 +324,17 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
         type: 'error',
       });
     }
-    if (searchTerm)
-      onSearch(data, searchTerm, isLoading, isError, isAdvancedSearch);
+    const selectedField = searchFields.find(
+      (field) => t(field.translationKey) === selectedDropdownItem,
+    );
+    onSearch(
+      data,
+      searchTerm,
+      isLoading,
+      isError,
+      isAdvancedSearch,
+      selectedField?.type,
+    );
   }, [
     searchTerm,
     isLoading,
