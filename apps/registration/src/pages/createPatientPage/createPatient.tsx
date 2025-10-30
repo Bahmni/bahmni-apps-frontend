@@ -200,7 +200,7 @@ const NewPatientRegistration = () => {
               dobEstimated={dobEstimated}
               identifierPrefixes={identifierPrefixes}
               genders={genders}
-              //TODO : Read MAX_AGE from config
+              //TODO : Read MAX_AGE from con
               maxPatientAgeYears={MAX_PATIENT_AGE_YEARS}
               onInputChange={handleInputChange}
               onDobEstimatedChange={setDobEstimated}
