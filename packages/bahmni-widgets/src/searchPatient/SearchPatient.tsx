@@ -16,14 +16,14 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import {
-  calculateAgeinYearsAndMonths,
-  formatDateAndTime,
-} from '../../../bahmni-services/src/date/date';
-import {
   Appointment,
   AppointmentSearchResult,
   Reason,
-} from '../../../bahmni-services/src/patientService/models';
+} from '../../../bahmni-services/src/appointmentService/models';
+import {
+  calculateAgeinYearsAndMonths,
+  formatDateAndTime,
+} from '../../../bahmni-services/src/date/date';
 import { useNotification } from '../notification';
 import styles from './styles/SearchPatient.module.scss';
 

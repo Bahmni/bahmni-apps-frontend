@@ -18,8 +18,6 @@ import {
   ADDRESS_HIERARCHY_DEFAULT_LIMIT,
   ADDRESS_HIERARCHY_MIN_SEARCH_LENGTH,
   UUID_PATTERN,
-  VISIT_TYPES_URL,
-  GET_VISIT_LOCATION,
   APPOINTMENTS_SEARCH_URL,
 } from './constants';
 import {
@@ -30,12 +28,6 @@ import {
   CreatePatientRequest,
   CreatePatientResponse,
   AddressHierarchyEntry,
-  VisitType,
-  VisitData,
-  VisitLocationResponse,
-  ActiveVisit,
-  Appointment,
-  Reason,
 } from './models';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
@@ -232,16 +224,6 @@ export const searchPatientByCustomAttribute = async (
     ),
   );
   return searchResultsBundle;
-};
-export const searchAppointmentsByAttribute = async (
-  searchTerm: Record<string, string>,
-  fieldsToSearch: string[],
-): Promise<Appointment[]> => {
-  const appointments = await post<Appointment[]>(
-    APPOINTMENTS_SEARCH_URL,
-    searchTerm,
-  );
-  return appointments;
 };
 
 /**
