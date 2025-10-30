@@ -17,7 +17,7 @@ export interface FormattedPatientData {
 
 export interface PatientSearchResult {
   uuid: string;
-  birthDate: Date;
+  birthDate: Date | string;
   extraIdentifiers: string | null;
   personId: number;
   deathDate: Date | null;
@@ -143,22 +143,14 @@ export interface AddressHierarchyEntry {
 export interface AddressHierarchyResponse {
   results: AddressHierarchyEntry[];
 }
-
+export interface AppointmentSearchResult extends PatientSearchResult {
+  appointmentNumber?: string;
+  appointmentDate?: string;
+  appointmentReason?: string;
+  appointmentStatus?: string;
+}
 export interface Appointment {
   length: number;
-  map(
-    arg0: (appt: Appointment) => {
-      identifier: string;
-      givenName: string;
-      gender: string;
-      birthDate: string;
-      age: string;
-      appointmentNumber: string;
-      appointmentDate: string;
-      appointmentReason: string;
-      appointmentStatus: string;
-    },
-  ): PatientSearchResult[];
   uuid: string;
   appointmentNumber: string;
   dateCreated: number;
@@ -176,12 +168,7 @@ export interface Appointment {
   additionalInfo: string | null;
   teleconsultation: string | null;
   providers: Provider[];
-  voided: boolean;
-  extensions: Extensions;
-  teleconsultationLink: string | null;
-  priority: string | null;
   reasons: Reason[];
-  recurring: boolean;
 }
 
 export interface Patient {
