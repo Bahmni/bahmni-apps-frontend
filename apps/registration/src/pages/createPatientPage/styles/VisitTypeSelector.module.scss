@@ -5,12 +5,12 @@
   align-items: center;
 
   .visitButton {
-    min-width: calc(#{$spacing-13} + #{$spacing-12});
+    min-width: $spacing-13 + $spacing-12;
   }
 
   .visitDropdown :global(.cds--list-box__menu) {
     left: auto;
-    min-width: calc(#{$spacing-13} + #{$spacing-12});
+    min-width: $spacing-13 + $spacing-12;
     right: $spacing-10;
     margin-top: $spacing-03;
   }
