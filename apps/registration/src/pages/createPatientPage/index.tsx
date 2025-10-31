@@ -43,9 +43,7 @@ const NewPatientRegistration = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [dobEstimated, setDobEstimated] = useState(false);
-  const [createdPatientUuid, setCreatedPatientUuid] = useState<string | null>(
-    null,
-  );
+  const [patientUuid, setPatientUuid] = useState<string | null>(null);
 
   // Fetch all identifier type data in a single optimized query
   const { data: identifierData } = useQuery({
@@ -96,7 +94,7 @@ const NewPatientRegistration = () => {
       );
 
       if (response?.patient?.uuid) {
-        setCreatedPatientUuid(response.patient.uuid);
+        setPatientUuid(response.patient.uuid);
         dispatchAuditEvent({
           eventType: AUDIT_LOG_EVENT_DETAILS.REGISTER_NEW_PATIENT
             .eventType as AuditEventType,
@@ -1278,7 +1276,7 @@ const NewPatientRegistration = () => {
               </Button>
               <VisitTypeSelector
                 onVisitSave={handleSave}
-                patientUuid={createdPatientUuid}
+                patientUuid={patientUuid}
               />
             </div>
           </div>
