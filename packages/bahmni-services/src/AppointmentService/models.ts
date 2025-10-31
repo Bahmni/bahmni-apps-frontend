@@ -1,11 +1,18 @@
 import { PatientSearchResult } from '../patientService/models';
 
 export interface AppointmentSearchResult extends PatientSearchResult {
+  appointmentUuid?: string;
   appointmentNumber?: string;
   appointmentDate?: string;
   appointmentReason?: string;
   appointmentStatus?: string;
 }
+
+export interface AppointmentSearchResultBundle {
+  totalCount: number;
+  pageOfResults: AppointmentSearchResult[];
+}
+
 export interface Appointment {
   length: number;
   uuid: string;

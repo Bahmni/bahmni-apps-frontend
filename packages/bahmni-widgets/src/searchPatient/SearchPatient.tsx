@@ -140,6 +140,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
           hasBeenAdmitted: false,
 
           // appointment-specific fields
+          appointmentUuid: appt.uuid,
           appointmentNumber: appt.appointmentNumber,
           appointmentDate: formatDateAndTime(appt.startDateTime, true),
           appointmentReason: getAppointmentReasons(appt),

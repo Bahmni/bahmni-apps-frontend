@@ -1,15 +1,16 @@
 import {
   BaseLayout,
+  Button,
   Link,
   Loading,
   SkeletonText,
   SortableDataTable,
+  Stack,
   Tag,
   Tile,
 } from '@bahmni-frontend/bahmni-design-system';
 import {
   BAHMNI_HOME_PATH,
-  PatientSearchResultBundle,
   useTranslation,
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
@@ -17,11 +18,25 @@ import {
   PatientSearchResult,
   getRegistrationConfig,
   PatientSearchField,
+  AppointmentSearchResult,
 } from '@bahmni-frontend/bahmni-services';
-import { SearchPatient } from '@bahmni-frontend/bahmni-widgets';
+import {
+  SearchPatient,
+  useUserPrivilege,
+} from '@bahmni-frontend/bahmni-widgets';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+import { updateAppointmentStatus } from '../../../../../packages/bahmni-services/src/AppointmentService/appointmmetService';
+import { AppointmentSearchResultBundle } from '../../../../../packages/bahmni-services/src/AppointmentService/models';
+import { SearchActionConfig } from '../../../../../packages/bahmni-services/src/configService/models/registrationConfig';
 import { Header } from '../../components/Header';
+import {
+  appDateValidator,
+  privilegeValidator,
+  statusValidator,
+} from '../../validator/patientSearchPageValidator';
 import styles from './styles/index.module.scss';
 import { formatPatientSearchResult, PatientSearchViewModel } from './utils';
 
@@ -32,7 +47,7 @@ import { formatPatientSearchResult, PatientSearchViewModel } from './utils';
  */
 const PatientSearchPage: React.FC = () => {
   const [patientSearchData, setPatientSearchData] = useState<
-    PatientSearchResultBundle | undefined
+    AppointmentSearchResultBundle | undefined
   >();
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -43,6 +58,8 @@ const PatientSearchPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [selectedFieldType, setSelectedFieldType] = useState<string>('');
+  const { userPrivileges } = useUserPrivilege();
+  const queryClient = useQueryClient();
 
   const handleCreateNewPatient = () => {
     navigate('/registration/new');
@@ -71,7 +88,7 @@ const PatientSearchPage: React.FC = () => {
   }, []);
 
   const handleOnSearch = (
-    data: PatientSearchResultBundle | undefined,
+    data: AppointmentSearchResultBundle | undefined,
     searchTerm: string,
     isLoading: boolean,
     isError: boolean,
@@ -170,9 +187,70 @@ const PatientSearchPage: React.FC = () => {
     }
   };
 
+  // function updateAppointmentStatusInResults(
+  //   appointmentPatientData: AppointmentSearchResult[],
+  //   responseUuid: string,
+  //   responseStatus: string,
+  // ): AppointmentSearchResult[] {
+  //   return appointmentPatientData.map((result) => {
+  //     return result.appointmentUuid === responseUuid
+  //       ? { ...result, appointmentStatus: responseStatus }
+  //       : result;
+  //   });
+  // }
+
+  const handleButtonClick = async (
+    type: string,
+    onAction: SearchActionConfig['onAction'],
+    uuid: unknown,
+    date: Date,
+  ) => {
+    if (type === 'changeStatus') {
+      await updateAppointmentStatus(
+        uuid as string,
+        onAction.status as string,
+        date,
+      ).then(() => {
+        queryClient.invalidateQueries({
+          queryKey: ['patientSearch'],
+        });
+        // if (patientSearchData) {
+        // const updatedPatientSearchData = {
+        //   ...patientSearchData,
+        //   pageOfResults: updateAppointmentStatusInResults(
+        //     patientSearchData.pageOfResults,
+        //     response.uuid,
+        //     response.status,
+        //   ),
+        // };
+        // setPatientSearchData(updatedPatientSearchData);
+        // }
+      });
+    } else if (type === 'navigate') {
+      //
+    }
+  };
+
+  const isButtonEnabled = (
+    enabledRules: SearchActionConfig['enabledRule'],
+    row: PatientSearchViewModel<AppointmentSearchResult>,
+  ): boolean => {
+    if (!enabledRules || enabledRules.length === 0) return true;
+
+    const ruleValidatorMap = {
+      privilegeCheck: privilegeValidator(userPrivileges ?? []),
+      statusCheck: statusValidator,
+      appDateCheck: appDateValidator,
+    };
+
+    return enabledRules.every((rule) =>
+      ruleValidatorMap[rule.type](rule.values, row),
+    );
+  };
+
   const renderCell = useCallback(
     (
-      row: PatientSearchViewModel<PatientSearchResult>,
+      row: PatientSearchViewModel<AppointmentSearchResult>,
       cellId: string,
     ): React.ReactNode => {
       if (cellId === 'identifier') {
@@ -200,9 +278,38 @@ const PatientSearchPage: React.FC = () => {
           </Tag>
         );
       }
+      if (cellId === 'actions') {
+        return (
+          <Stack gap={3} className={styles.actionButtonsContainer}>
+            {searchFields[0].actions?.map((action) => {
+              return (
+                <Button
+                  key={action.translationKey}
+                  className={styles.actionButton}
+                  kind="tertiary"
+                  size="sm"
+                  disabled={!isButtonEnabled(action.enabledRule, row)}
+                  onClick={(e) => {
+                    // e.preventDefault();
+                    e.stopPropagation();
+                    handleButtonClick(
+                      action.type,
+                      action.onAction,
+                      row.appointmentUuid,
+                      row.dateCreated,
+                    );
+                  }}
+                >
+                  {t(action.translationKey)}
+                </Button>
+              );
+            })}
+          </Stack>
+        );
+      }
 
       const cellValue =
-        row[cellId as keyof PatientSearchViewModel<PatientSearchResult>];
+        row[cellId as keyof PatientSearchViewModel<AppointmentSearchResult>];
       if (cellValue instanceof Date) {
         return cellValue.toLocaleDateString();
       }

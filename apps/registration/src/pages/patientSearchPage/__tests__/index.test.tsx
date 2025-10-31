@@ -4,7 +4,10 @@ import {
   AuditEventType,
   dispatchAuditEvent,
 } from '@bahmni-frontend/bahmni-services';
-import { NotificationProvider } from '@bahmni-frontend/bahmni-widgets';
+import {
+  NotificationProvider,
+  UserPrivilegeProvider,
+} from '@bahmni-frontend/bahmni-widgets';
 import {
   QueryClient,
   QueryClientProvider,
@@ -194,7 +197,9 @@ describe('PatientSearchPage', () => {
       <MemoryRouter>
         <NotificationProvider>
           <QueryClientProvider client={queryClient}>
-            <PatientSearchPage />
+            <UserPrivilegeProvider>
+              <PatientSearchPage />
+            </UserPrivilegeProvider>
           </QueryClientProvider>
         </NotificationProvider>
       </MemoryRouter>,
@@ -211,7 +216,9 @@ describe('PatientSearchPage', () => {
       <MemoryRouter>
         <NotificationProvider>
           <QueryClientProvider client={queryClient}>
-            <PatientSearchPage />
+            <UserPrivilegeProvider>
+              <PatientSearchPage />
+            </UserPrivilegeProvider>
           </QueryClientProvider>
         </NotificationProvider>
       </MemoryRouter>,
@@ -249,7 +256,9 @@ describe('PatientSearchPage', () => {
       <MemoryRouter>
         <NotificationProvider>
           <QueryClientProvider client={queryClient}>
-            <PatientSearchPage />
+            <UserPrivilegeProvider>
+              <PatientSearchPage />
+            </UserPrivilegeProvider>
           </QueryClientProvider>
         </NotificationProvider>
       </MemoryRouter>,
@@ -285,7 +294,9 @@ describe('PatientSearchPage', () => {
       <MemoryRouter>
         <NotificationProvider>
           <QueryClientProvider client={queryClient}>
-            <PatientSearchPage />
+            <UserPrivilegeProvider>
+              <PatientSearchPage />
+            </UserPrivilegeProvider>
           </QueryClientProvider>
         </NotificationProvider>
       </MemoryRouter>,
@@ -309,7 +320,9 @@ describe('PatientSearchPage', () => {
       <MemoryRouter>
         <NotificationProvider>
           <QueryClientProvider client={queryClient}>
-            <PatientSearchPage />
+            <UserPrivilegeProvider>
+              <PatientSearchPage />
+            </UserPrivilegeProvider>
           </QueryClientProvider>
         </NotificationProvider>
       </MemoryRouter>,
@@ -336,7 +349,9 @@ describe('PatientSearchPage', () => {
       <MemoryRouter>
         <NotificationProvider>
           <QueryClientProvider client={queryClient}>
-            <PatientSearchPage />
+            <UserPrivilegeProvider>
+              <PatientSearchPage />
+            </UserPrivilegeProvider>
           </QueryClientProvider>
         </NotificationProvider>
       </MemoryRouter>,
@@ -374,7 +389,9 @@ describe('PatientSearchPage', () => {
       <MemoryRouter>
         <NotificationProvider>
           <QueryClientProvider client={queryClient}>
-            <PatientSearchPage />
+            <UserPrivilegeProvider>
+              <PatientSearchPage />
+            </UserPrivilegeProvider>
           </QueryClientProvider>
         </NotificationProvider>
       </MemoryRouter>,
@@ -414,7 +431,9 @@ describe('PatientSearchPage', () => {
       <MemoryRouter>
         <NotificationProvider>
           <QueryClientProvider client={queryClient}>
-            <PatientSearchPage />
+            <UserPrivilegeProvider>
+              <PatientSearchPage />
+            </UserPrivilegeProvider>
           </QueryClientProvider>
         </NotificationProvider>
       </MemoryRouter>,
@@ -438,7 +457,9 @@ describe('PatientSearchPage', () => {
       <MemoryRouter>
         <NotificationProvider>
           <QueryClientProvider client={queryClient}>
-            <PatientSearchPage />
+            <UserPrivilegeProvider>
+              <PatientSearchPage />
+            </UserPrivilegeProvider>
           </QueryClientProvider>
         </NotificationProvider>
       </MemoryRouter>,
@@ -461,7 +482,9 @@ describe('PatientSearchPage', () => {
       <MemoryRouter>
         <NotificationProvider>
           <QueryClientProvider client={queryClient}>
-            <PatientSearchPage />
+            <UserPrivilegeProvider>
+              <PatientSearchPage />
+            </UserPrivilegeProvider>
           </QueryClientProvider>
         </NotificationProvider>
       </MemoryRouter>,
@@ -495,7 +518,9 @@ describe('PatientSearchPage', () => {
         <MemoryRouter>
           <NotificationProvider>
             <QueryClientProvider client={queryClient}>
-              <PatientSearchPage />
+              <UserPrivilegeProvider>
+                <PatientSearchPage />
+              </UserPrivilegeProvider>
             </QueryClientProvider>
           </NotificationProvider>
         </MemoryRouter>,
@@ -556,7 +581,9 @@ describe('PatientSearchPage', () => {
         <MemoryRouter>
           <NotificationProvider>
             <QueryClientProvider client={queryClient}>
-              <PatientSearchPage />
+              <UserPrivilegeProvider>
+                <PatientSearchPage />
+              </UserPrivilegeProvider>
             </QueryClientProvider>
           </NotificationProvider>
         </MemoryRouter>,
@@ -597,7 +624,9 @@ describe('PatientSearchPage', () => {
         <MemoryRouter>
           <NotificationProvider>
             <QueryClientProvider client={queryClient}>
-              <PatientSearchPage />
+              <UserPrivilegeProvider>
+                <PatientSearchPage />
+              </UserPrivilegeProvider>
             </QueryClientProvider>
           </NotificationProvider>
         </MemoryRouter>,
@@ -618,7 +647,9 @@ describe('PatientSearchPage', () => {
         <MemoryRouter>
           <NotificationProvider>
             <QueryClientProvider client={queryClient}>
-              <PatientSearchPage />
+              <UserPrivilegeProvider>
+                <PatientSearchPage />
+              </UserPrivilegeProvider>
             </QueryClientProvider>
           </NotificationProvider>
         </MemoryRouter>,
