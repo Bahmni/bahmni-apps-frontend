@@ -1,5 +1,9 @@
 import { PatientSearchField } from '../configService/models/registrationConfig';
-import { OPENMRS_FHIR_R4, OPENMRS_REST_V1 } from '../constants/app';
+import {
+  OPENMRS_FHIR_R4,
+  OPENMRS_REST_V1,
+  VISIT_LOCATION_UUID,
+} from '../constants/app';
 
 export const PATIENT_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 + `/Patient/${patientUUID}`;
@@ -83,6 +87,14 @@ export const PRIMARY_IDENTIFIER_TYPE_PROPERTY = 'bahmni.primaryIdentifierType';
 export const CREATE_PATIENT_URL =
   OPENMRS_REST_V1 + '/bahmnicore/patientprofile';
 
+export const CREATE_VISIT_URL = OPENMRS_REST_V1 + '/visit';
+
+export const GET_ACTIVE_VISIT_URL = (patientUuid: string) =>
+  OPENMRS_REST_V1 +
+  `/visit?includeInactive=false&patient=${patientUuid}&v=custom:(uuid,visitType,location:(uuid))`;
+
+export const GET_VISIT_LOCATION = (loginLocation: string) =>
+  VISIT_LOCATION_UUID + `${loginLocation}`;
 export const ADDRESS_HIERARCHY_URL = (
   addressField: string,
   searchString: string,
@@ -100,6 +112,10 @@ export const MAX_PAGE_SIZE = 100;
 // Validation constants
 export const MAX_PATIENT_AGE_YEARS = 120;
 export const UUID_PATTERN = /^[a-f0-9-]{36}$/i;
+
+export const VISIT_TYPES_URL = () =>
+  OPENMRS_REST_V1 +
+  `/bahmnicore/config/bahmniencounter?callerContext=REGISTRATION_CONCEPTS`;
 export const PHONE_NUMBER_UUID = 'a384873b-847a-4a86-b869-28fb601162dd';
 export const ALTERNATE_PHONE_NUMBER_UUID =
   '27fa84ff-fdd6-4895-9c77-254b60555f39';

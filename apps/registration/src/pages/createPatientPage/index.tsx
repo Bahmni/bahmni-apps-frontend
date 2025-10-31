@@ -21,6 +21,9 @@ import {
   type PatientAttribute,
   type AddressHierarchyEntry,
   PatientAddress,
+  AUDIT_LOG_EVENT_DETAILS,
+  AuditEventType,
+  dispatchAuditEvent,
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useState, useCallback, useEffect, useMemo } from 'react';
@@ -34,11 +37,13 @@ import {
 import { Header } from '../../components/Header';
 import { AgeUtils, formatToDisplay, formatToISO } from '../../utils/ageUtils';
 import styles from './styles/index.module.scss';
+import { VisitTypeSelector } from './visitTypeSelector';
 
 const NewPatientRegistration = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [dobEstimated, setDobEstimated] = useState(false);
+  const [patientUuid, setPatientUuid] = useState<string | null>(null);
 
   // Fetch all identifier type data in a single optimized query
   const { data: identifierData } = useQuery({
@@ -87,7 +92,16 @@ const NewPatientRegistration = () => {
         'Patient saved successfully',
         5000,
       );
+
       if (response?.patient?.uuid) {
+        setPatientUuid(response.patient.uuid);
+        dispatchAuditEvent({
+          eventType: AUDIT_LOG_EVENT_DETAILS.REGISTER_NEW_PATIENT
+            .eventType as AuditEventType,
+          patientUuid: response.patient.uuid,
+          module: AUDIT_LOG_EVENT_DETAILS.REGISTER_NEW_PATIENT.module,
+        });
+
         window.history.replaceState(
           {
             patientDisplay: response.patient.display,
@@ -187,6 +201,14 @@ const NewPatientRegistration = () => {
       }));
     }
   }, [identifierPrefixes, formData.patientIdFormat]);
+
+  useEffect(() => {
+    dispatchAuditEvent({
+      eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_NEW_PATIENT_PAGE
+        .eventType as AuditEventType,
+      module: AUDIT_LOG_EVENT_DETAILS.VIEWED_NEW_PATIENT_PAGE.module,
+    });
+  }, []);
 
   const handleInputChange = useCallback(
     (field: string, value: string | number | boolean) => {
@@ -530,7 +552,7 @@ const NewPatientRegistration = () => {
     [handleInputChange],
   );
 
-  const handleSave = () => {
+  const validateAndPreparePatientData = () => {
     const errors = { firstName: '', lastName: '', gender: '', dateOfBirth: '' };
     const addrErrors = { district: '', state: '', pincode: '' };
     let hasErrors = false;
@@ -664,7 +686,27 @@ const NewPatientRegistration = () => {
       relationships: [],
     };
 
-    createPatientMutation.mutate(patientRequest);
+    return patientRequest;
+  };
+
+  const handleSave = async (): Promise<string | null> => {
+    const patientRequest = validateAndPreparePatientData();
+    if (patientRequest) {
+      try {
+        const response =
+          await createPatientMutation.mutateAsync(patientRequest);
+        if (response?.patient?.uuid) {
+          return response.patient.uuid;
+        }
+      } catch (error) {
+        notificationService.showError(
+          t('ERROR_DEFAULT_TITLE'),
+          error instanceof Error ? error.message : String(error),
+        );
+        return null;
+      }
+    }
+    return null;
   };
 
   const breadcrumbs = [
@@ -1232,9 +1274,10 @@ const NewPatientRegistration = () => {
               <Button kind="tertiary">
                 {t('CREATE_PATIENT_PRINT_REG_CARD')}
               </Button>
-              <Button kind="primary">
-                {t('CREATE_PATIENT_START_OPD_VISIT')}
-              </Button>
+              <VisitTypeSelector
+                onVisitSave={handleSave}
+                patientUuid={patientUuid}
+              />
             </div>
           </div>
         </div>
