@@ -6,8 +6,7 @@
     min-width: 250px !important;
   }
 
-
-  :global(.cds--list-box__menu) {
+  .visitDropdown :global(.cds--list-box__menu) {
     left: auto !important;
     min-width: 250px !important;
     right: 4rem !important;

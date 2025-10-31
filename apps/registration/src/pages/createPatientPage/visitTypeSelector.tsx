@@ -154,6 +154,7 @@ export const VisitTypeSelector = ({
       {!hasActiveVisit && (
         <Dropdown
           id="visit-dropdown"
+          className={styles.visitDropdown}
           items={visitTypesArray.filter(
             (vt) => vt.uuid !== defaultVisitType?.uuid,
           )}
