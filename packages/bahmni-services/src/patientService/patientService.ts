@@ -192,9 +192,9 @@ export const searchPatientByNameOrId = async (
   const searchResultsBundle = await get<PatientSearchResultBundle>(
     PATIENT_LUCENE_SEARCH_URL(searchTerm, loginLocation.uuid),
   );
+
   return searchResultsBundle;
 };
-
 /**
  * Search patient by Custom Attributes (phone, address, program fields)
  * @param searchTerm - The search value entered by user
@@ -211,7 +211,6 @@ export const searchPatientByCustomAttribute = async (
   t: (key: string) => string,
 ): Promise<PatientSearchResultBundle> => {
   const loginLocation = getUserLoginLocation();
-
   const searchResultsBundle = await get<PatientSearchResultBundle>(
     PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL(
       searchTerm,
@@ -328,8 +327,6 @@ export const getAddressHierarchyEntries = async (
       ADDRESS_HIERARCHY_URL(addressField, searchString, limit),
     );
   } catch (error) {
-    // Log error for debugging
-    // console.error('Error fetching address hierarchy entries:', error);
     throw new Error(
       `Failed to fetch address hierarchy for field "${addressField}": ${
         error instanceof Error ? error.message : 'Unknown error'

@@ -4,6 +4,7 @@ import {
   Loading,
   SkeletonText,
   SortableDataTable,
+  Tag,
   Tile,
 } from '@bahmni-frontend/bahmni-design-system';
 import {
@@ -42,6 +43,7 @@ const PatientSearchPage: React.FC = () => {
   const [searchFields, setSearchFields] = useState<PatientSearchField[]>([]);
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [selectedFieldType, setSelectedFieldType] = useState<string>('');
 
   const handleCreateNewPatient = () => {
     navigate('/registration/new');
@@ -49,12 +51,18 @@ const PatientSearchPage: React.FC = () => {
   useEffect(() => {
     const loadSearchConfig = async () => {
       const config = await getRegistrationConfig();
-      if (config?.patientSearch?.customAttributes) {
-        setSearchFields(config.patientSearch.customAttributes);
+      let fields: PatientSearchField[] = [];
+
+      if (selectedFieldType === 'appointment') {
+        fields = [...(config?.patientSearch?.appointment ?? [])];
+      } else {
+        fields = [...(config?.patientSearch?.customAttributes ?? [])];
       }
+
+      setSearchFields(fields);
     };
     loadSearchConfig();
-  }, []);
+  }, [selectedFieldType]);
 
   useEffect(() => {
     dispatchAuditEvent({
@@ -70,12 +78,16 @@ const PatientSearchPage: React.FC = () => {
     isLoading: boolean,
     isError: boolean,
     isAdvancedSearch: boolean,
+    selectedFieldType?: string,
   ) => {
     setPatientSearchData(data ?? undefined);
     setSearchTerm(searchTerm);
     setIsLoading(isLoading);
     setIsError(isError);
     setIsAdvancedSearch(isAdvancedSearch);
+    if (selectedFieldType) {
+      setSelectedFieldType(selectedFieldType);
+    }
   };
 
   const headers = [
@@ -83,6 +95,10 @@ const PatientSearchPage: React.FC = () => {
     { key: 'name', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_NAME') },
     { key: 'gender', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_GENDER') },
     { key: 'age', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_AGE') },
+    {
+      key: 'birthDate',
+      header: t('REGISTRATION_PATIENT_SEARCH_HEADER_BIRTH_DATE'),
+    },
     ...(searchFields.length > 0
       ? searchFields
           .flatMap((field) =>
@@ -95,8 +111,32 @@ const PatientSearchPage: React.FC = () => {
           )
           .filter((header) => header !== undefined)
       : []),
+
+    ...(searchFields.some((field) => field.actions && field.actions.length > 0)
+      ? [
+          {
+            key: 'actions',
+            header: t('REGISTRATION_PATIENT_SEARCH_HEADER_ACTIONS'),
+          },
+        ]
+      : []),
   ];
 
+  const getAppointmentStatusClassName = (status: string): string => {
+    const baseClass = styles.appointmentStatusTag;
+
+    switch (status?.toLowerCase()) {
+      case 'scheduled':
+        return `${baseClass} ${styles.scheduledStatus}`;
+      case 'arrived':
+        return `${baseClass} ${styles.arrivedStatus}`;
+      case 'checkedin':
+      case 'checked in':
+        return `${baseClass} ${styles.checkedInStatus}`;
+      default:
+        return `${baseClass} ${styles.scheduledStatus}`;
+    }
+  };
   const renderTitle = (
     isLoading: boolean,
     isError: boolean,
@@ -150,6 +190,19 @@ const PatientSearchPage: React.FC = () => {
           </Link>
         );
       }
+      if (cellId === 'appointmentStatus') {
+        return (
+          <Tag
+            className={getAppointmentStatusClassName(
+              String(row.appointmentStatus ?? ''),
+            )}
+            data-testid={`appointment-status-${row.uuid}`}
+          >
+            {String(row.appointmentStatus ?? '')}
+          </Tag>
+        );
+      }
+
       const cellValue =
         row[cellId as keyof PatientSearchViewModel<PatientSearchResult>];
       if (cellValue instanceof Date) {

@@ -17,7 +17,7 @@ export interface FormattedPatientData {
 
 export interface PatientSearchResult {
   uuid: string;
-  birthDate: Date;
+  birthDate: Date | string;
   extraIdentifiers: string | null;
   personId: number;
   deathDate: Date | null;

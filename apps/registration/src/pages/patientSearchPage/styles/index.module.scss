@@ -28,6 +28,35 @@
   }
 }
 
+// Base style for all appointment status tags
+.appointmentStatusTag {
+  display: inline-flex !important;
+  padding: 0 0.5rem !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+  border-radius: 1.5rem !important;
+  border: none !important;
+}
+
+// Scheduled - Blue
+.scheduledStatus {
+  background: #d0e2ff !important;
+  color: #0043ce !important; // Dark blue text for good contrast
+}
+
+// Arrived - yellow
+.arrivedStatus {
+  background: var(--Tag-Yellow-tag-background, #FDDC69);
+  color: #7A5E00 !important; // Dark yellow text for good contrast
+}
+
+
+// Checked In - Green (same as Arrived)
+.checkedInStatus {
+  background: var(--Tag-Green-tag-background, #A7F0BA);
+  color: #044317; /* dark green for readable contrast */
+}
+
 @include breakpoint-down(lg) {
   .main {
     padding: $spacing-06 $spacing-08;
