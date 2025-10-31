@@ -1,15 +1,17 @@
+@use '@carbon/styles/scss/spacing' as *;
+
 .opdVisitGroup {
   display: flex;
   align-items: center;
 
   .visitButton {
-    min-width: 16rem;
+    min-width: calc(#{$spacing-13} + #{$spacing-12});
   }
 
   .visitDropdown :global(.cds--list-box__menu) {
-    left: auto !important;
-    min-width: 16rem;
-    right: 4rem;
-    margin-top: 0.5rem;
+    left: auto;
+    min-width: calc(#{$spacing-13} + #{$spacing-12});
+    right: $spacing-10;
+    margin-top: $spacing-03;
   }
 }
