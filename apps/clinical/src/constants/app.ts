@@ -27,3 +27,4 @@ export const CONSULTATION_BUNDLE_URL = OPENMRS_FHIR_R4 + '/ConsultationBundle';
 export const ENCOUNTER_SEARCH_URL = OPENMRS_FHIR_R4 + '/Encounter';
 export const OBSERVATION_FORMS_URL =
   OPENMRS_REST_V1 + '/bahmniie/form/latestPublishedForms';
+export const CLINICAL_NAMESPACE = 'clinical';
