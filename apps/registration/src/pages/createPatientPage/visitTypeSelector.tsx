@@ -96,17 +96,13 @@ export const VisitTypeSelector = ({
   });
 
   const { data: activeVisit, error: getVisitError } = useQuery({
-    queryKey: [
-      'getActiveVisitByPatient',
-      visitPayload?.patient,
-      isVisitCreated,
-    ],
-    queryFn: () => getActiveVisitByPatient(visitPayload!.patient),
-    enabled: Boolean(visitPayload?.patient) && isVisitCreated,
+    queryKey: ['getActiveVisitByPatient', patientUuid, isVisitCreated],
+    queryFn: () => getActiveVisitByPatient(patientUuid!),
+    enabled: Boolean(patientUuid) && isVisitCreated,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
-
+  const hasActiveVisit = activeVisit?.results && activeVisit.results.length > 0;
   const error = visitTypesError ?? createVisitError ?? getVisitError;
 
   useEffect(() => {
@@ -125,7 +121,7 @@ export const VisitTypeSelector = ({
 
     const currentPatientUUID = patientUuid ?? (await onVisitSave());
 
-    if (currentPatientUUID && visitLocationUUID) {
+    if (currentPatientUUID && visitLocationUUID && !hasActiveVisit) {
       setVisitPayload({
         patient: currentPatientUUID,
         visitType: selectedItem.uuid,
@@ -133,8 +129,6 @@ export const VisitTypeSelector = ({
       });
     }
   };
-
-  const hasActiveVisit = activeVisit?.results && activeVisit.results.length > 0;
 
   return (
     <div className={styles.opdVisitGroup}>
