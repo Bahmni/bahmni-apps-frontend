@@ -64,6 +64,7 @@
   "DATE_ERROR_INVALID_FORMAT": "Invalid date format",
   "DATE_ERROR_NULL_OR_UNDEFINED": "Date is null or undefined",
   "DATE_ERROR_PARSE": "Date Parse Error",
+  "ERROR_DEFAULT_TITLE": "Error",
   "LOADING_PATIENT_DETAILS": "Navigating to patient details...",
   "PHONE_NUMBER": "Phone Number",
   "PHONE_NUMBER_VALIDATION_ERROR": "Please enter only numbers.",

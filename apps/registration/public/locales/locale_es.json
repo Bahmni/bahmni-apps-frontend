@@ -64,6 +64,7 @@
   "DATE_ERROR_INVALID_FORMAT": "Formato de fecha no válido",
   "DATE_ERROR_NULL_OR_UNDEFINED": "La fecha es nula o no está definida",
   "DATE_ERROR_PARSE": "Error al analizar la fecha",
+  "ERROR_DEFAULT_TITLE": "Error",
   "LOADING_PATIENT_DETAILS": "Navegando a los detalles del paciente...",
   "PHONE_NUMBER": "Número de teléfono",
   "PHONE_NUMBER_VALIDATION_ERROR": "Por favor, introduzca sólo números.",
