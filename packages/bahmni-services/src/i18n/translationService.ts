@@ -4,7 +4,6 @@ import {
   LOCALE_STORAGE_KEY,
   DEFAULT_LOCALE,
   CONFIG_TRANSLATIONS_URL_TEMPLATE,
-  REGISTRATION_CONFIG_TRANSLATIONS_URL_TEMPLATE,
 } from './constants';
 
 /**
@@ -42,38 +41,34 @@ export const getTranslationFile = async (
   }
 };
 /**
- * Fetches and merges translations from standard and local config sources.
+ * Fetches and merges translations from bundled and namespace-specific config sources.
  * This function retrieves translations from both bundled and configuration sources,
  * then merges them with configuration translations taking precedence.
  * Either source can fail independently without affecting the other.
  *
+ * @param namespace - Namespace for the translations (e.g., 'clinical', 'registration')
  * @param lang - Language code to fetch translations for (e.g., 'en', 'es')
  * @returns A promise that resolves to a merged translations object where config translations override bundled ones
  * @throws Will not throw errors, but will log warnings for failed fetches
  */
 const getMergedTranslations = async (
+  namespace: string,
   lang: string,
 ): Promise<Record<string, string>> => {
   let bundledTranslations: Record<string, string> = {};
   let configTranslations: Record<string, string> = {};
-  let registrationConfigTranslations: Record<string, string> = {};
 
   bundledTranslations = await getTranslationFile(
-    BUNDLED_TRANSLATIONS_URL_TEMPLATE(lang),
+    BUNDLED_TRANSLATIONS_URL_TEMPLATE(namespace, lang),
   );
 
   configTranslations = await getTranslationFile(
-    CONFIG_TRANSLATIONS_URL_TEMPLATE(lang),
-  );
-
-  registrationConfigTranslations = await getTranslationFile(
-    REGISTRATION_CONFIG_TRANSLATIONS_URL_TEMPLATE(lang),
+    CONFIG_TRANSLATIONS_URL_TEMPLATE(namespace, lang),
   );
 
   return {
     ...bundledTranslations,
     ...configTranslations,
-    ...registrationConfigTranslations,
   };
 };
 
@@ -83,14 +78,9 @@ const getMergedTranslations = async (
  * organized by language code and namespace.
  *
  * @param lang - Language code to fetch translations for (e.g., 'en', 'es')
- * @param namespace - Namespace for the translations (e.g., 'clinical')
+ * @param namespace - Namespace for the translations (e.g., 'clinical', 'registration')
  * @returns Promise resolving to an object with translations keyed by language code
  * @throws Will not throw errors, but will return empty translations on failure
- * @example
- * // Returns { es: { clinical: {...translations} }, en: { clinical: {...fallback} } }
- * await getTranslations('es', 'clinical')
- * // Returns { en: { clinical: {...translations} } }
- * await getTranslations('en', 'clinical')
  */
 export const getTranslations = async (
   lang: string,
@@ -103,13 +93,13 @@ export const getTranslations = async (
 
   // Get translations for requested language
   translations[lang] = {
-    [namespace]: await getMergedTranslations(lang),
+    [namespace]: await getMergedTranslations(namespace, lang),
   };
 
   // Add English fallback for non-English languages
   if (lang !== 'en') {
     translations.en = {
-      [namespace]: await getMergedTranslations('en'),
+      [namespace]: await getMergedTranslations(namespace, 'en'),
     };
   }
 
