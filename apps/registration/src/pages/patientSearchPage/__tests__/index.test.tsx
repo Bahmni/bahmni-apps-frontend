@@ -505,7 +505,9 @@ describe('PatientSearchPage', () => {
           </NotificationProvider>
         </MemoryRouter>,
       );
-      expect(screen.getByTitle('LOADING_PATIENT_DETAILS')).toBeInTheDocument();
+      expect(
+        screen.getByTitle('Navigating to patient details...'),
+      ).toBeInTheDocument();
     });
   });
 });

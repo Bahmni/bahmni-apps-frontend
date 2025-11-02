@@ -16,6 +16,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import React, { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { queryClientConfig } from './config/tanstackQuery';
+import { CLINICAL_NAMESPACE } from './constants/app';
 import ConsultationPage from './pages/ConsultationPage';
 import { ClinicalConfigProvider } from './providers/ClinicalConfigProvider';
 
@@ -27,7 +28,7 @@ const ClinicalApp: React.FC = () => {
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        await initAppI18n();
+        await initAppI18n(CLINICAL_NAMESPACE);
         initFontAwesome();
         initializeAuditListener();
         setIsInitialized(true);

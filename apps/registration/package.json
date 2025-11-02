@@ -13,7 +13,8 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
-    "./styles": "./dist/index.css"
+    "./styles": "./dist/index.css",
+    "./locales/*": "./dist/locales/*"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

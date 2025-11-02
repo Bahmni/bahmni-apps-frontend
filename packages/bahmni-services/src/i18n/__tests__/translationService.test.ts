@@ -4,7 +4,6 @@ import {
   LOCALE_STORAGE_KEY,
   DEFAULT_LOCALE,
   CONFIG_TRANSLATIONS_URL_TEMPLATE,
-  REGISTRATION_CONFIG_TRANSLATIONS_URL_TEMPLATE,
 } from '../constants';
 import {
   getTranslations,
@@ -113,10 +112,8 @@ describe('Translation Service', () => {
     it('should fetch and merge translations for requested language', async () => {
       const language = 'en';
       const namespace = 'clinical';
-      const configUrl = CONFIG_TRANSLATIONS_URL_TEMPLATE(language);
-      const bundledUrl = BUNDLED_TRANSLATIONS_URL_TEMPLATE(language);
-      const registrationConfigUrl =
-        REGISTRATION_CONFIG_TRANSLATIONS_URL_TEMPLATE(language);
+      const configUrl = CONFIG_TRANSLATIONS_URL_TEMPLATE(namespace, language);
+      const bundledUrl = BUNDLED_TRANSLATIONS_URL_TEMPLATE(namespace, language);
 
       const configTranslations = {
         key1: 'Config Value 1',
@@ -128,18 +125,11 @@ describe('Translation Service', () => {
         key2: 'Bundled Value 2',
       };
 
-      const registrationConfigTranslations = {
-        key1: 'Registration Config Value 1',
-        key4: 'Registration Config Value 4',
-      };
-
       mockGet.mockImplementation((url: string) => {
         if (url === configUrl) {
           return Promise.resolve(configTranslations);
         } else if (url === bundledUrl) {
           return Promise.resolve(bundledTranslations);
-        } else if (url === registrationConfigUrl) {
-          return Promise.resolve(registrationConfigTranslations);
         }
         return Promise.reject(new Error('Unexpected URL'));
       });
@@ -148,56 +138,13 @@ describe('Translation Service', () => {
 
       expect(get).toHaveBeenCalledWith(configUrl);
       expect(get).toHaveBeenCalledWith(bundledUrl);
-      expect(get).toHaveBeenCalledWith(registrationConfigUrl);
-
-      expect(result).toEqual({
-        [language]: {
-          [namespace]: {
-            key1: 'Registration Config Value 1',
-            key2: 'Bundled Value 2',
-            key3: 'Config Value 3',
-            key4: 'Registration Config Value 4',
-          },
-        },
-      });
-    });
-
-    it('should handle registration config translations failure gracefully', async () => {
-      const language = 'en';
-      const namespace = 'clinical';
-      const configUrl = CONFIG_TRANSLATIONS_URL_TEMPLATE(language);
-      const bundledUrl = BUNDLED_TRANSLATIONS_URL_TEMPLATE(language);
-      const registrationConfigUrl =
-        REGISTRATION_CONFIG_TRANSLATIONS_URL_TEMPLATE(language);
-
-      const configTranslations = {
-        key1: 'Config Value 1',
-      };
-
-      const bundledTranslations = {
-        key2: 'Bundled Value 2',
-      };
-
-      mockGet.mockImplementation((url: string) => {
-        if (url === configUrl) {
-          return Promise.resolve(configTranslations);
-        } else if (url === bundledUrl) {
-          return Promise.resolve(bundledTranslations);
-        } else if (url === registrationConfigUrl) {
-          return Promise.reject(new Error('Registration config not found'));
-        }
-        return Promise.reject(new Error('Unexpected URL'));
-      });
-
-      const result = await getTranslations(language, namespace);
-
-      expect(get).toHaveBeenCalledWith(registrationConfigUrl);
 
       expect(result).toEqual({
         [language]: {
           [namespace]: {
             key1: 'Config Value 1',
             key2: 'Bundled Value 2',
+            key3: 'Config Value 3',
           },
         },
       });
@@ -206,14 +153,13 @@ describe('Translation Service', () => {
     it('should include English fallback for non-English languages', async () => {
       const language = 'es';
       const namespace = 'clinical';
-      const esConfigUrl = CONFIG_TRANSLATIONS_URL_TEMPLATE(language);
-      const esBundledUrl = BUNDLED_TRANSLATIONS_URL_TEMPLATE(language);
-      const esRegistrationConfigUrl =
-        REGISTRATION_CONFIG_TRANSLATIONS_URL_TEMPLATE(language);
-      const enConfigUrl = CONFIG_TRANSLATIONS_URL_TEMPLATE('en');
-      const enBundledUrl = BUNDLED_TRANSLATIONS_URL_TEMPLATE('en');
-      const enRegistrationConfigUrl =
-        REGISTRATION_CONFIG_TRANSLATIONS_URL_TEMPLATE('en');
+      const esConfigUrl = CONFIG_TRANSLATIONS_URL_TEMPLATE(namespace, language);
+      const esBundledUrl = BUNDLED_TRANSLATIONS_URL_TEMPLATE(
+        namespace,
+        language,
+      );
+      const enConfigUrl = CONFIG_TRANSLATIONS_URL_TEMPLATE(namespace, 'en');
+      const enBundledUrl = BUNDLED_TRANSLATIONS_URL_TEMPLATE(namespace, 'en');
 
       const esTranslations = { key1: 'Spanish Value' };
       const enTranslations = {
@@ -222,17 +168,9 @@ describe('Translation Service', () => {
       };
 
       mockGet.mockImplementation((url: string) => {
-        if (
-          url === esConfigUrl ||
-          url === esBundledUrl ||
-          url === esRegistrationConfigUrl
-        ) {
+        if (url === esConfigUrl || url === esBundledUrl) {
           return Promise.resolve(esTranslations);
-        } else if (
-          url === enConfigUrl ||
-          url === enBundledUrl ||
-          url === enRegistrationConfigUrl
-        ) {
+        } else if (url === enConfigUrl || url === enBundledUrl) {
           return Promise.resolve(enTranslations);
         }
         return Promise.reject(new Error('Unexpected URL'));

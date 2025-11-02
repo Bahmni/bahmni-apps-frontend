@@ -15,6 +15,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import React, { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { queryClientConfig } from './config/tanstackQuery';
+import { REGISTRATION_NAMESPACE } from './constants/app';
 import CreatePatient from './pages/createPatientPage';
 import PatientSearchPage from './pages/patientSearchPage';
 
@@ -26,7 +27,7 @@ const RegistrationApp: React.FC = () => {
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        await initAppI18n();
+        await initAppI18n(REGISTRATION_NAMESPACE);
         initFontAwesome();
         initializeAuditListener();
         setIsInitialized(true);
