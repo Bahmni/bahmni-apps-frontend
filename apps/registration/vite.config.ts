@@ -7,6 +7,7 @@ import * as path from 'path';
 export default defineConfig(() => ({
   root: __dirname,
   cacheDir: '../../node_modules/.vite/apps/registration',
+  publicDir: 'public',
   plugins: [
     react(),
     dts({
@@ -24,6 +25,7 @@ export default defineConfig(() => ({
     outDir: './dist',
     emptyOutDir: true,
     reportCompressedSize: true,
+    copyPublicDir: true,
     commonjsOptions: {
       transformMixedEsModules: true,
     },
@@ -39,9 +41,9 @@ export default defineConfig(() => ({
     rollupOptions: {
       // External packages that should not be bundled into your library.
       external: [
-        'react', 
-        'react-dom', 
-        'react/jsx-runtime', 
+        'react',
+        'react-dom',
+        'react/jsx-runtime',
         'react-router-dom',
         '@tanstack/react-query'
       ],
