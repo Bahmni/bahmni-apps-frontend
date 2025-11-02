@@ -1,26 +1,51 @@
 import { TextInput } from '@bahmni-frontend/bahmni-design-system';
 import { useTranslation } from '@bahmni-frontend/bahmni-services';
+import { forwardRef, useCallback, useImperativeHandle, useState } from 'react';
 import type { ContactData } from '../../../models/patient';
 import styles from './styles/index.module.scss';
 
-interface ContactInformationProps {
-  formData: ContactData;
-  onInputChange: (field: string, value: string) => void;
+export interface PatientContactInformationRef {
+  validate: () => boolean;
+  getData: () => ContactData;
 }
 
-export const PatientContactInformation: React.FC<ContactInformationProps> = ({
-  formData,
-  onInputChange,
-}) => {
+interface PatientContactInformationProps {
+  initialData?: ContactData;
+}
+
+export const PatientContactInformation = forwardRef<
+  PatientContactInformationRef,
+  PatientContactInformationProps
+>(({ initialData }, ref) => {
   const { t } = useTranslation();
 
-  // Handle phone change with numeric validation
-  const handlePhoneChange = (field: string, value: string) => {
-    const numericRegex = /^\+?[0-9]*$/;
-    if (numericRegex.test(value)) {
-      onInputChange(field, value);
-    }
-  };
+  const [formData, setFormData] = useState<ContactData>({
+    phoneNumber: initialData?.phoneNumber ?? '',
+    altPhoneNumber: initialData?.altPhoneNumber ?? '',
+  });
+
+  const handlePhoneChange = useCallback(
+    (field: keyof ContactData, value: string) => {
+      const numericRegex = /^\+?[0-9]*$/;
+      if (numericRegex.test(value)) {
+        setFormData((prev) => ({ ...prev, [field]: value }));
+      }
+    },
+    [],
+  );
+
+  const validate = useCallback((): boolean => {
+    return true;
+  }, []);
+
+  const getData = useCallback((): ContactData => {
+    return formData;
+  }, [formData]);
+
+  useImperativeHandle(ref, () => ({
+    validate,
+    getData,
+  }));
 
   return (
     <div className={styles.formSection}>
@@ -51,6 +76,8 @@ export const PatientContactInformation: React.FC<ContactInformationProps> = ({
       </div>
     </div>
   );
-};
+});
+
+PatientContactInformation.displayName = 'PatientContactInformation';
 
 export default PatientContactInformation;
