@@ -163,7 +163,7 @@ export const createDateAgeHandlers = <
       );
 
       // Check if calculated age exceeds 120 years
-      if (calculatedAge.years && calculatedAge.years >= MAX_PATIENT_AGE_YEARS) {
+      if (calculatedAge.years && calculatedAge.years > MAX_PATIENT_AGE_YEARS) {
         setDateErrors({
           dateOfBirth: t('CREATE_PATIENT_VALIDATION_AGE_YEARS_MAX'),
         });

@@ -8,29 +8,57 @@ import {
   createPatient,
   notificationService,
   useTranslation,
+  CreatePatientRequest,
+  PatientName,
+  PatientIdentifier,
 } from '@bahmni-frontend/bahmni-services';
 import { useMutation } from '@tanstack/react-query';
 import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  PatientAdditionalInformation,
+  PatientAdditionalInformationRef,
+} from '../../components/forms/patientAdditionalInformation/PatientAdditionalInformation';
+import {
+  PatientAddressInformation,
+  PatientAddressInformationRef,
+} from '../../components/forms/patientAddressInformation/PatientAddressInformation';
+import {
+  PatientContactInformation,
+  PatientContactInformationRef,
+} from '../../components/forms/patientContactInformation/PatientContactInformation';
+import {
   PatientProfile,
   PatientProfileRef,
 } from '../../components/forms/patientProfile/PatientProfile';
 import { Header } from '../../components/Header';
+import { useIdentifierData } from '../../utils/identifierGenderUtils';
 import styles from './styles/index.module.scss';
 
 const Registration = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  // Create ref for PatientProfile
   const patientProfileRef = useRef<PatientProfileRef>(null);
+  const patientAddressRef = useRef<PatientAddressInformationRef>(null);
+  const patientContactRef = useRef<PatientContactInformationRef>(null);
+  const patientAdditionalRef = useRef<PatientAdditionalInformationRef>(null);
+
+  const { primaryIdentifierType, identifierSources } = useIdentifierData();
 
   const handleSave = () => {
-    // Validate PatientProfile
+    // Validate all sections
     const isProfileValid = patientProfileRef.current?.validate();
+    const isAddressValid = patientAddressRef.current?.validate();
+    const isContactValid = patientContactRef.current?.validate();
+    const isAdditionalValid = patientAdditionalRef.current?.validate();
 
-    if (!isProfileValid) {
+    if (
+      !isProfileValid ||
+      !isAddressValid ||
+      !isContactValid ||
+      !isAdditionalValid
+    ) {
       notificationService.showError(
         'Error',
         'Please fix validation errors',
@@ -39,9 +67,7 @@ const Registration = () => {
       return;
     }
 
-    // Get data from PatientProfile
     const profileData = patientProfileRef.current?.getData();
-
     if (!profileData) {
       notificationService.showError(
         'Error',
@@ -51,41 +77,71 @@ const Registration = () => {
       return;
     }
 
-    // Continue with other validations (address, etc.)
-    // Then submit...
+    const addressData = patientAddressRef.current?.getData();
+    if (!addressData) {
+      notificationService.showError(
+        'Error',
+        'Unable to get patient address data',
+        5000,
+      );
+      return;
+    }
+
+    const contactData = patientContactRef.current?.getData();
+    if (!contactData) {
+      notificationService.showError(
+        'Error',
+        'Unable to get patient contact data',
+        5000,
+      );
+      return;
+    }
+
+    const additionalData = patientAdditionalRef.current?.getData();
+    if (!additionalData) {
+      notificationService.showError(
+        'Error',
+        'Unable to get patient additional data',
+        5000,
+      );
+      return;
+    }
 
     // Transform flat profile data into CreatePatientRequest structure
-    const patientPayload = {
+    const patientName: PatientName = {
+      givenName: profileData.firstName,
+      ...(profileData.middleName && { middleName: profileData.middleName }),
+      familyName: profileData.lastName,
+      display: `${profileData.firstName}${profileData.middleName ? ' ' + profileData.middleName : ''} ${profileData.lastName}`,
+      preferred: false,
+    };
+
+    const patientIdentifier: PatientIdentifier = {
+      ...(identifierSources && {
+        identifierSourceUuid: identifierSources.get(
+          profileData.patientIdFormat,
+        ),
+      }),
+      identifierPrefix: profileData.patientIdFormat,
+      identifierType: primaryIdentifierType ?? '',
+      preferred: true,
+      voided: false,
+    };
+
+    const patientPayload: CreatePatientRequest = {
       patient: {
         person: {
-          names: [
-            {
-              givenName: profileData.firstName,
-              ...(profileData.middleName && {
-                middleName: profileData.middleName,
-              }),
-              familyName: profileData.lastName,
-              display: `${profileData.firstName}${profileData.middleName ? ' ' + profileData.middleName : ''} ${profileData.lastName}`,
-              preferred: false,
-            },
-          ],
+          names: [patientName],
           gender: profileData.gender.charAt(0).toUpperCase(),
           birthdate: profileData.dateOfBirth,
           birthdateEstimated: profileData.dobEstimated,
           birthtime: profileData.birthTime || null,
-          addresses: [],
+          addresses: [addressData],
           attributes: [],
           deathDate: null,
           causeOfDeath: '',
         },
-        identifiers: [
-          {
-            identifierPrefix: profileData.patientIdFormat,
-            identifierType: '', // TODO: Get from identifier type config
-            preferred: true,
-            voided: false,
-          },
-        ],
+        identifiers: [patientIdentifier],
       },
       relationships: [],
     };
@@ -139,12 +195,12 @@ const Registration = () => {
             </span>
           </Tile>
           <div>
-            {/* No props needed except optional initialData */}
             <div className={styles.formContainer}>
               <PatientProfile ref={patientProfileRef} />
+              <PatientAddressInformation ref={patientAddressRef} />
+              <PatientContactInformation ref={patientContactRef} />
+              <PatientAdditionalInformation ref={patientAdditionalRef} />
             </div>
-
-            {/* Other form sections... */}
           </div>
 
           {/* Footer Actions */}

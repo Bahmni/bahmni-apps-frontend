@@ -11,7 +11,7 @@ import {
   useTranslation,
   MAX_PATIENT_AGE_YEARS,
 } from '@bahmni-frontend/bahmni-services';
-import { useState, forwardRef, useImperativeHandle } from 'react';
+import { useState, forwardRef, useImperativeHandle, useEffect } from 'react';
 import type { BasicInfoData } from '../../../models/patient';
 import type {
   BasicInfoErrors,
@@ -54,17 +54,17 @@ export const PatientProfile = forwardRef<
   // Component owns ALL its state
   const [formData, setFormData] = useState<BasicInfoData>({
     patientIdFormat:
-      initialData?.patientIdFormat || identifierPrefixes[0] || '',
-    entryType: initialData?.entryType || false,
-    firstName: initialData?.firstName || '',
-    middleName: initialData?.middleName || '',
-    lastName: initialData?.lastName || '',
-    gender: initialData?.gender || '',
-    ageYears: initialData?.ageYears || '',
-    ageMonths: initialData?.ageMonths || '',
-    ageDays: initialData?.ageDays || '',
-    dateOfBirth: initialData?.dateOfBirth || '',
-    birthTime: initialData?.birthTime || '',
+      (initialData?.patientIdFormat ?? identifierPrefixes[0]) || '',
+    entryType: initialData?.entryType ?? false,
+    firstName: initialData?.firstName ?? '',
+    middleName: initialData?.middleName ?? '',
+    lastName: initialData?.lastName ?? '',
+    gender: initialData?.gender ?? '',
+    ageYears: initialData?.ageYears ?? '',
+    ageMonths: initialData?.ageMonths ?? '',
+    ageDays: initialData?.ageDays ?? '',
+    dateOfBirth: initialData?.dateOfBirth ?? '',
+    birthTime: initialData?.birthTime ?? '',
   });
 
   const [dobEstimated, setDobEstimated] = useState(initialDobEstimated);
@@ -92,6 +92,16 @@ export const PatientProfile = forwardRef<
   const [dateErrors, setDateErrors] = useState<DateErrors>({
     dateOfBirth: '',
   });
+
+  // Update patientIdFormat when identifierPrefixes loads
+  useEffect(() => {
+    if (identifierPrefixes.length > 0 && !formData.patientIdFormat) {
+      setFormData((prev) => ({
+        ...prev,
+        patientIdFormat: identifierPrefixes[0],
+      }));
+    }
+  }, [identifierPrefixes, formData.patientIdFormat]);
 
   // Internal input change handler
   const handleInputChange = (
@@ -161,7 +171,7 @@ export const PatientProfile = forwardRef<
 
     if (!formData.dateOfBirth) {
       newValidationErrors.dateOfBirth = t(
-        'CREATE_PATIENT_VALIDATION_DOB_REQUIRED',
+        'CREATE_PATIENT_VALIDATION_DATE_OF_BIRTH_REQUIRED',
       );
       isValid = false;
     }

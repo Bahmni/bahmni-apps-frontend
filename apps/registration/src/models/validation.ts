@@ -37,7 +37,10 @@ export interface DateErrors {
  * Address validation errors
  */
 export interface AddressErrors {
+  houseNumber: string;
+  locality: string;
   district: string;
+  city: string;
   state: string;
   pincode: string;
 }

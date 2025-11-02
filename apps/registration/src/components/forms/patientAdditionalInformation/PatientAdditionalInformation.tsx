@@ -1,17 +1,66 @@
 import { TextInput } from '@bahmni-frontend/bahmni-design-system';
 import { useTranslation } from '@bahmni-frontend/bahmni-services';
+import { forwardRef, useCallback, useImperativeHandle, useState } from 'react';
 import type { AdditionalData } from '../../../models/patient';
 import styles from '../../../pages/createPatientPage/styles/index.module.scss';
 
-interface AdditionalInformationProps {
-  formData: AdditionalData;
-  onInputChange: (field: string, value: string) => void;
+export interface PatientAdditionalInformationRef {
+  validate: () => boolean;
+  getData: () => AdditionalData;
 }
 
-export const PatientAdditionalInformation: React.FC<
-  AdditionalInformationProps
-> = ({ formData, onInputChange }) => {
+interface PatientAdditionalInformationProps {
+  initialData?: AdditionalData;
+}
+
+export const PatientAdditionalInformation = forwardRef<
+  PatientAdditionalInformationRef,
+  PatientAdditionalInformationProps
+>(({ initialData }, ref) => {
   const { t } = useTranslation();
+
+  const [formData, setFormData] = useState<AdditionalData>({
+    email: initialData?.email ?? '',
+  });
+
+  const [emailError, setEmailError] = useState<string>('');
+
+  const handleEmailChange = useCallback(
+    (value: string) => {
+      setFormData((prev) => ({ ...prev, email: value }));
+
+      if (emailError) {
+        setEmailError('');
+      }
+    },
+    [emailError],
+  );
+
+  const validate = useCallback((): boolean => {
+    if (formData.email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        setEmailError(
+          t('CREATE_PATIENT_VALIDATION_EMAIL_INVALID') ??
+            'Invalid email format',
+        );
+        return false;
+      }
+    }
+
+    setEmailError('');
+    return true;
+  }, [formData.email, t]);
+
+  const getData = useCallback((): AdditionalData => {
+    return formData;
+  }, [formData]);
+
+  // Expose methods to parent via ref
+  useImperativeHandle(ref, () => ({
+    validate,
+    getData,
+  }));
 
   return (
     <div className={styles.formSection}>
@@ -25,12 +74,16 @@ export const PatientAdditionalInformation: React.FC<
             labelText={t('CREATE_PATIENT_EMAIL')}
             placeholder={t('CREATE_PATIENT_EMAIL_PLACEHOLDER')}
             value={formData.email}
-            onChange={(e) => onInputChange('email', e.target.value)}
+            invalid={!!emailError}
+            invalidText={emailError}
+            onChange={(e) => handleEmailChange(e.target.value)}
           />
         </div>
       </div>
     </div>
   );
-};
+});
+
+PatientAdditionalInformation.displayName = 'PatientAdditionalInformation';
 
 export default PatientAdditionalInformation;

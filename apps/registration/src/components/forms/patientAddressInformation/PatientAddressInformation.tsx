@@ -3,60 +3,52 @@ import {
   useTranslation,
   getAddressHierarchyEntries,
   type AddressHierarchyEntry,
+  type PatientAddress,
 } from '@bahmni-frontend/bahmni-services';
-import { useState, useCallback } from 'react';
-import type { AddressData } from '../../../models/patient';
+import {
+  forwardRef,
+  useCallback,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
+import { AddressData } from '../../../models/patient';
 import type { AddressErrors } from '../../../models/validation';
 import styles from './styles/index.module.scss';
 
-interface AddressInformationProps {
-  formData: AddressData;
-  addressErrors: AddressErrors;
-  onInputChange: (field: string, value: string) => void;
-  onAddressErrorsChange: (errors: AddressErrors) => void;
-  getAddressSelectedFromDropdown?: (
-    getter: () => {
-      district: boolean;
-      state: boolean;
-      pincode: boolean;
-    },
-  ) => void;
-}
+export type PatientAddressInformationRef = {
+  validate: () => boolean;
+  getData: () => PatientAddress;
+};
 
-export const PatientAddressInformation: React.FC<AddressInformationProps> = ({
-  formData,
-  addressErrors,
-  onInputChange,
-  onAddressErrorsChange,
-  getAddressSelectedFromDropdown,
-}) => {
+const initialFormData: AddressData = {
+  houseNumber: '',
+  locality: '',
+  district: '',
+  city: '',
+  state: '',
+  pincode: '',
+};
+
+const initialErrors: AddressErrors = {
+  houseNumber: '',
+  locality: '',
+  district: '',
+  city: '',
+  state: '',
+  pincode: '',
+};
+
+export const PatientAddressInformation = forwardRef<
+  PatientAddressInformationRef,
+  object
+>((_props, ref) => {
   const { t } = useTranslation();
 
-  // Track if address fields were selected from dropdown
-  const [addressSelectedFromDropdown, setAddressSelectedFromDropdown] =
-    useState({
-      district: false,
-      state: false,
-      pincode: false,
-    });
+  const [formData, setFormData] = useState<AddressData>(initialFormData);
+  const [addressErrors, setAddressErrors] =
+    useState<AddressErrors>(initialErrors);
 
-  // Expose getter function to parent for validation
-  if (getAddressSelectedFromDropdown) {
-    getAddressSelectedFromDropdown(() => addressSelectedFromDropdown);
-  }
-
-  // Handle dropdown selection tracking
-  const handleAddressSelectedFromDropdownChange = useCallback(
-    (field: string, value: boolean) => {
-      setAddressSelectedFromDropdown((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-    },
-    [],
-  );
-
-  // Address hierarchy state (only for district, state, and pincode)
   const [suggestions, setSuggestions] = useState({
     district: [] as AddressHierarchyEntry[],
     state: [] as AddressHierarchyEntry[],
@@ -69,9 +61,79 @@ export const PatientAddressInformation: React.FC<AddressInformationProps> = ({
     pincode: false,
   });
 
+  // Track if field value was selected from dropdown
+  const [selectedFromDropdown, setSelectedFromDropdown] = useState({
+    district: false,
+    state: false,
+    pincode: false,
+  });
+
+  // debounce timers per field
+  const debounceTimers = useRef<Record<string, number | null>>({
+    district: null,
+    state: null,
+    pincode: null,
+  });
+
+  const validate = useCallback(() => {
+    const nextErrors: AddressErrors = { ...initialErrors };
+
+    // Address fields are optional, but if they have a value, it must be from dropdown
+    if (formData.district && !selectedFromDropdown.district) {
+      nextErrors.district =
+        t('CREATE_PATIENT_VALIDATION_SELECT_FROM_DROPDOWN') ??
+        'Select input from dropdown';
+    }
+
+    if (formData.state && !selectedFromDropdown.state) {
+      nextErrors.state =
+        t('CREATE_PATIENT_VALIDATION_SELECT_FROM_DROPDOWN') ??
+        'Select input from dropdown';
+    }
+
+    if (formData.pincode && !selectedFromDropdown.pincode) {
+      nextErrors.pincode =
+        t('CREATE_PATIENT_VALIDATION_SELECT_FROM_DROPDOWN') ??
+        'Select input from dropdown';
+    }
+
+    setAddressErrors(nextErrors);
+    return Object.values(nextErrors).every((v) => !v);
+  }, [formData, t, selectedFromDropdown]);
+
+  const getData = useCallback((): PatientAddress => {
+    // Map form field names to API field names
+    return {
+      ...(formData.houseNumber && { address1: formData.houseNumber }),
+      ...(formData.locality && { address2: formData.locality }),
+      ...(formData.city && { cityVillage: formData.city }),
+      ...(formData.district && { countyDistrict: formData.district }),
+      ...(formData.state && { stateProvince: formData.state }),
+      ...(formData.pincode && { postalCode: formData.pincode }),
+    };
+  }, [formData]);
+
+  useImperativeHandle(ref, () => ({
+    validate,
+    getData,
+  }));
+
+  const onInputChange = useCallback(
+    (field: keyof AddressData, value: string) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    },
+    [],
+  );
+
   const debouncedSearchAddress = useCallback(
     (field: string, searchText: string, addressField: string) => {
-      const timeoutId = setTimeout(async () => {
+      // clear existing timer
+      const existing = debounceTimers.current[field];
+      if (existing) {
+        window.clearTimeout(existing);
+      }
+
+      const id = window.setTimeout(async () => {
         if (!searchText || searchText.length < 2) {
           setSuggestions((prev) => ({ ...prev, [field]: [] }));
           setShowSuggestions((prev) => ({ ...prev, [field]: false }));
@@ -94,92 +156,68 @@ export const PatientAddressInformation: React.FC<AddressInformationProps> = ({
         }
       }, 300);
 
-      return () => clearTimeout(timeoutId);
+      debounceTimers.current[field] = id;
     },
     [],
   );
 
   const handleAddressInputChange = useCallback(
-    (field: string, value: string, addressField: string) => {
+    (field: keyof AddressData, value: string, addressField: string) => {
       onInputChange(field, value);
-      debouncedSearchAddress(field, value, addressField);
-
-      // Mark field as not selected from dropdown when manually typed
       if (field === 'district' || field === 'state' || field === 'pincode') {
-        handleAddressSelectedFromDropdownChange(field, false);
-        // Clear error when field is empty
+        // Mark as not selected from dropdown when user types
+        setSelectedFromDropdown((prev) => ({ ...prev, [field]: false }));
+        debouncedSearchAddress(field, value, addressField);
         if (!value) {
-          onAddressErrorsChange({
-            ...addressErrors,
-            [field]: '',
-          });
+          setAddressErrors((prev) => ({ ...prev, [field]: '' }));
         }
       }
     },
-    [
-      onInputChange,
-      debouncedSearchAddress,
-      handleAddressSelectedFromDropdownChange,
-      addressErrors,
-      onAddressErrorsChange,
-    ],
+    [onInputChange, debouncedSearchAddress],
   );
 
   const handleSuggestionSelect = useCallback(
-    (field: string, entry: AddressHierarchyEntry) => {
+    (field: keyof AddressData, entry: AddressHierarchyEntry) => {
       onInputChange(field, entry.name);
+
       const parents: AddressHierarchyEntry[] = [];
-      let currentParent = entry.parent;
-      while (currentParent) {
-        parents.push(currentParent);
-        currentParent = currentParent.parent;
+      let current = entry.parent;
+      while (current) {
+        parents.push(current);
+        current = current.parent;
       }
 
-      // Mark field as selected from dropdown
-      if (field === 'district' || field === 'state' || field === 'pincode') {
-        handleAddressSelectedFromDropdownChange(field, true);
-      }
+      const nextErrors = { ...addressErrors, [field]: '' };
+      const nextSelectedFromDropdown = {
+        ...selectedFromDropdown,
+        [field]: true,
+      };
 
-      // Prepare new errors object to clear all affected fields at once
-      const newErrors = { ...addressErrors, [field]: '' };
-
-      // Auto-populate parent fields based on the selected field and hierarchy
-      if (parents.length > 0) {
-        if (field === 'pincode') {
-          // When pincode is selected, first parent is district
-          if (parents[0]) {
-            onInputChange('district', parents[0].name);
-            handleAddressSelectedFromDropdownChange('district', true);
-            newErrors.district = '';
-          }
-          // Second parent is state
-          if (parents.length > 1 && parents[1]) {
-            onInputChange('state', parents[1].name);
-            handleAddressSelectedFromDropdownChange('state', true);
-            newErrors.state = '';
-          }
-        } else if (field === 'district') {
-          // When district is selected, first parent is state
-          if (parents[0]) {
-            onInputChange('state', parents[0].name);
-            handleAddressSelectedFromDropdownChange('state', true);
-            newErrors.state = '';
-          }
+      if (field === 'pincode') {
+        if (parents[0]) {
+          onInputChange('district', parents[0].name);
+          nextErrors.district = '';
+          nextSelectedFromDropdown.district = true;
+        }
+        if (parents[1]) {
+          onInputChange('state', parents[1].name);
+          nextErrors.state = '';
+          nextSelectedFromDropdown.state = true;
+        }
+      } else if (field === 'district') {
+        if (parents[0]) {
+          onInputChange('state', parents[0].name);
+          nextErrors.state = '';
+          nextSelectedFromDropdown.state = true;
         }
       }
 
-      // Clear all errors at once
-      onAddressErrorsChange(newErrors);
-
+      setSelectedFromDropdown(nextSelectedFromDropdown);
+      setAddressErrors(nextErrors);
       setShowSuggestions((prev) => ({ ...prev, [field]: false }));
       setSuggestions((prev) => ({ ...prev, [field]: [] }));
     },
-    [
-      onInputChange,
-      handleAddressSelectedFromDropdownChange,
-      addressErrors,
-      onAddressErrorsChange,
-    ],
+    [onInputChange, addressErrors, selectedFromDropdown],
   );
 
   return (
@@ -187,6 +225,7 @@ export const PatientAddressInformation: React.FC<AddressInformationProps> = ({
       <span className={styles.sectionTitle}>
         {t('CREATE_PATIENT_SECTION_ADDRESS_INFO')}
       </span>
+
       <div className={styles.row}>
         <div className={styles.col}>
           <TextInput
@@ -197,6 +236,7 @@ export const PatientAddressInformation: React.FC<AddressInformationProps> = ({
             onChange={(e) => onInputChange('houseNumber', e.target.value)}
           />
         </div>
+
         <div className={styles.col}>
           <TextInput
             id="locality"
@@ -227,21 +267,16 @@ export const PatientAddressInformation: React.FC<AddressInformationProps> = ({
               }
               onBlur={() => {
                 setTimeout(() => {
-                  setShowSuggestions((prev) => ({
-                    ...prev,
-                    district: false,
-                  }));
+                  setShowSuggestions((prev) => ({ ...prev, district: false }));
                 }, 200);
               }}
               onFocus={() => {
                 if (suggestions.district.length > 0) {
-                  setShowSuggestions((prev) => ({
-                    ...prev,
-                    district: true,
-                  }));
+                  setShowSuggestions((prev) => ({ ...prev, district: true }));
                 }
               }}
             />
+
             {showSuggestions.district && suggestions.district.length > 0 && (
               <div className={styles.suggestionsList}>
                 {suggestions.district.map((entry) => (
@@ -262,6 +297,7 @@ export const PatientAddressInformation: React.FC<AddressInformationProps> = ({
             )}
           </div>
         </div>
+
         <div className={styles.col}>
           <TextInput
             id="city"
@@ -271,6 +307,7 @@ export const PatientAddressInformation: React.FC<AddressInformationProps> = ({
             onChange={(e) => onInputChange('city', e.target.value)}
           />
         </div>
+
         <div className={styles.col}>
           <div className={styles.addressFieldWrapper}>
             <TextInput
@@ -289,21 +326,16 @@ export const PatientAddressInformation: React.FC<AddressInformationProps> = ({
               }
               onBlur={() => {
                 setTimeout(() => {
-                  setShowSuggestions((prev) => ({
-                    ...prev,
-                    state: false,
-                  }));
+                  setShowSuggestions((prev) => ({ ...prev, state: false }));
                 }, 200);
               }}
               onFocus={() => {
                 if (suggestions.state.length > 0) {
-                  setShowSuggestions((prev) => ({
-                    ...prev,
-                    state: true,
-                  }));
+                  setShowSuggestions((prev) => ({ ...prev, state: true }));
                 }
               }}
             />
+
             {showSuggestions.state && suggestions.state.length > 0 && (
               <div className={styles.suggestionsList}>
                 {suggestions.state.map((entry) => (
@@ -324,6 +356,7 @@ export const PatientAddressInformation: React.FC<AddressInformationProps> = ({
             )}
           </div>
         </div>
+
         <div className={styles.col}>
           <div className={styles.addressFieldWrapper}>
             <TextInput
@@ -342,21 +375,16 @@ export const PatientAddressInformation: React.FC<AddressInformationProps> = ({
               }
               onBlur={() => {
                 setTimeout(() => {
-                  setShowSuggestions((prev) => ({
-                    ...prev,
-                    pincode: false,
-                  }));
+                  setShowSuggestions((prev) => ({ ...prev, pincode: false }));
                 }, 200);
               }}
               onFocus={() => {
                 if (suggestions.pincode.length > 0) {
-                  setShowSuggestions((prev) => ({
-                    ...prev,
-                    pincode: true,
-                  }));
+                  setShowSuggestions((prev) => ({ ...prev, pincode: true }));
                 }
               }}
             />
+
             {showSuggestions.pincode && suggestions.pincode.length > 0 && (
               <div className={styles.suggestionsList}>
                 {suggestions.pincode.map((entry) => (
@@ -380,6 +408,8 @@ export const PatientAddressInformation: React.FC<AddressInformationProps> = ({
       </div>
     </div>
   );
-};
+});
+
+PatientAddressInformation.displayName = 'PatientAddressInformation';
 
 export default PatientAddressInformation;
