@@ -21,7 +21,6 @@ import {
 import { SearchPatient } from '@bahmni-frontend/bahmni-widgets';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import { Header } from '../../components/Header';
 import styles from './styles/index.module.scss';
 import { formatPatientSearchResult, PatientSearchViewModel } from './utils';
@@ -52,7 +51,6 @@ const PatientSearchPage: React.FC = () => {
     const loadSearchConfig = async () => {
       const config = await getRegistrationConfig();
       let fields: PatientSearchField[] = [];
-
       if (selectedFieldType === 'appointment') {
         fields = [...(config?.patientSearch?.appointment ?? [])];
       } else {
@@ -85,9 +83,7 @@ const PatientSearchPage: React.FC = () => {
     setIsLoading(isLoading);
     setIsError(isError);
     setIsAdvancedSearch(isAdvancedSearch);
-    if (selectedFieldType) {
-      setSelectedFieldType(selectedFieldType);
-    }
+    setSelectedFieldType(isAdvancedSearch ? (selectedFieldType ?? '') : '');
   };
 
   const headers = [
@@ -95,10 +91,14 @@ const PatientSearchPage: React.FC = () => {
     { key: 'name', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_NAME') },
     { key: 'gender', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_GENDER') },
     { key: 'age', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_AGE') },
-    {
-      key: 'birthDate',
-      header: t('REGISTRATION_PATIENT_SEARCH_HEADER_BIRTH_DATE'),
-    },
+    ...(selectedFieldType == 'appointment'
+      ? [
+          {
+            key: 'birthDate',
+            header: t('REGISTRATION_PATIENT_SEARCH_HEADER_BIRTH_DATE'),
+          },
+        ]
+      : []),
     ...(searchFields.length > 0
       ? searchFields
           .flatMap((field) =>
@@ -123,18 +123,16 @@ const PatientSearchPage: React.FC = () => {
   ];
 
   const getAppointmentStatusClassName = (status: string): string => {
-    const baseClass = styles.appointmentStatusTag;
-
     switch (status?.toLowerCase()) {
       case 'scheduled':
-        return `${baseClass} ${styles.scheduledStatus}`;
+        return ` ${styles.scheduledStatus}`;
       case 'arrived':
-        return `${baseClass} ${styles.arrivedStatus}`;
+        return ` ${styles.arrivedStatus}`;
       case 'checkedin':
       case 'checked in':
-        return `${baseClass} ${styles.checkedInStatus}`;
+        return ` ${styles.checkedInStatus}`;
       default:
-        return `${baseClass} ${styles.scheduledStatus}`;
+        return ` ${styles.scheduledStatus}`;
     }
   };
   const renderTitle = (
