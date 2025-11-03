@@ -141,7 +141,7 @@ export const VisitTypeSelector = ({
       >
         {!isLoadingVisitTypes && defaultVisitType
           ? hasActiveVisit
-            ? t('ENTER VISIT DETAILS')
+            ? t('ENTER_VISIT_DETAILS')
             : t('START_VISIT_TYPE', { visitType: defaultVisitType.name })
           : ''}
       </Button>
