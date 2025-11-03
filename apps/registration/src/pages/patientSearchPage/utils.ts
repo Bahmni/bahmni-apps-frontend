@@ -2,6 +2,10 @@ import {
   PatientSearchResult,
   PatientSearchResultBundle,
   PatientSearchField,
+  AppointmentSearchResult,
+  UserPrivilege,
+  hasPrivilege,
+  dateComparator,
 } from '@bahmni-frontend/bahmni-services';
 
 export type PatientSearchViewModel<T> = T & {
@@ -73,4 +77,26 @@ export const formatPatientSearchResult = (
         };
       })
     : [];
+};
+
+export const privilegeValidator =
+  (userPrivileges: UserPrivilege[]) => (rules: string[]) => {
+    return rules.some((privilege) => hasPrivilege(userPrivileges, privilege));
+  };
+
+export const statusValidator = (
+  rules: string[],
+  row: PatientSearchViewModel<AppointmentSearchResult>,
+) => {
+  const appointmentStatus = String(row.appointmentStatus ?? '');
+  return rules.includes(appointmentStatus);
+};
+
+export const appDateValidator = (
+  rules: string[],
+  row: PatientSearchViewModel<AppointmentSearchResult>,
+) => {
+  return rules.some((ruleValue) =>
+    dateComparator(row.appointmentDate as string, ruleValue),
+  );
 };

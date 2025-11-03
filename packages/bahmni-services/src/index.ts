@@ -29,7 +29,10 @@ export {
   type PatientAttribute,
   type AddressHierarchyEntry,
 } from './patientService';
-export { searchAppointmentsByAttribute } from './AppointmentService/appointmmetService';
+export {
+  searchAppointmentsByAttribute,
+  updateAppointmentStatus,
+} from './AppointmentService/appointmmetService';
 export {
   type Appointment,
   type AppointmentSearchResult,
@@ -37,6 +40,7 @@ export {
   type AppointmentService,
   type Location,
   type Reason,
+  type AppointmentSearchResultBundle,
 } from './AppointmentService/models';
 export { getFormattedError } from './errorHandling';
 export {
@@ -65,6 +69,7 @@ export {
   getTodayDate,
   calculateAgeinYearsAndMonths,
   formatDateAndTime,
+  dateComparator,
 } from './date';
 export { type Notification, notificationService } from './notification';
 export {
@@ -132,6 +137,7 @@ export {
   type RegistrationConfig,
   type PatientSearchConfig,
   type PatientSearchField,
+  type SearchActionConfig,
 } from './configService';
 
 export { getCurrentUser, getUserLoginLocation, type User } from './userService';

@@ -315,6 +315,62 @@ describe('PatientSearchPage', () => {
     });
   });
 
+  it.skip('should display appointment data in table cells with actions buttons', async () => {
+    (useQuery as jest.Mock).mockReturnValue({
+      data: {
+        totalCount: 1,
+        pageOfResults: [
+          {
+            ...mockSearchPatientData[0],
+            appointmentNumber: 'APT-12345',
+            appointmentDate: '15 Jan 2025 10:30 AM',
+            appointmentReason: 'Consultation',
+            appointmentStatus: 'Scheduled',
+          },
+        ],
+      },
+      error: null,
+      isLoading: false,
+    });
+
+    render(
+      <MemoryRouter>
+        <NotificationProvider>
+          <QueryClientProvider client={queryClient}>
+            <UserPrivilegeProvider>
+              <PatientSearchPage />
+            </UserPrivilegeProvider>
+          </QueryClientProvider>
+        </NotificationProvider>
+      </MemoryRouter>,
+    );
+
+    const dropdownSelector = screen.getByTestId('search-type-dropdown');
+    fireEvent.click(dropdownSelector);
+    // const options = screen.queryAllByRole('option');
+    // console.log("options **** ", options);
+    // expect(container).toMatchSnapshot();
+    await waitFor(() => {
+      expect(screen.getByText(/appointment/i)).toBeInTheDocument();
+    });
+    const appointmentOption = screen.getByText(/appointment/i);
+    fireEvent.click(appointmentOption);
+
+    const searchInput = screen.getByPlaceholderText(
+      'Search by Appointment Number',
+    );
+
+    fireEvent.input(searchInput, { target: { value: 'test' } });
+    fireEvent.click(screen.getByTestId('search-patient-search-button'));
+
+    await waitFor(() => {
+      expect(screen.getByText('ABC200001')).toBeInTheDocument();
+      expect(screen.getByText('864579392')).toBeInTheDocument();
+      expect(screen.getByText('4596781239')).toBeInTheDocument();
+      expect(screen.getByText('Scheduled')).toBeInTheDocument();
+    });
+  });
+
   it('should render only search patient widget on mount', async () => {
     render(
       <MemoryRouter>

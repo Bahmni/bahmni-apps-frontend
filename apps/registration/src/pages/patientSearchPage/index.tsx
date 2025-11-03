@@ -19,26 +19,25 @@ import {
   getRegistrationConfig,
   PatientSearchField,
   AppointmentSearchResult,
+  updateAppointmentStatus,
+  AppointmentSearchResultBundle,
+  SearchActionConfig,
 } from '@bahmni-frontend/bahmni-services';
 import {
   SearchPatient,
   useUserPrivilege,
 } from '@bahmni-frontend/bahmni-widgets';
-import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-import { updateAppointmentStatus } from '../../../../../packages/bahmni-services/src/AppointmentService/appointmmetService';
-import { AppointmentSearchResultBundle } from '../../../../../packages/bahmni-services/src/AppointmentService/models';
-import { SearchActionConfig } from '../../../../../packages/bahmni-services/src/configService/models/registrationConfig';
 import { Header } from '../../components/Header';
+import styles from './styles/index.module.scss';
 import {
   appDateValidator,
+  formatPatientSearchResult,
+  PatientSearchViewModel,
   privilegeValidator,
   statusValidator,
-} from '../../validator/patientSearchPageValidator';
-import styles from './styles/index.module.scss';
-import { formatPatientSearchResult, PatientSearchViewModel } from './utils';
+} from './utils';
 
 /**
  * PatientSearchPage
@@ -59,7 +58,6 @@ const PatientSearchPage: React.FC = () => {
   const navigate = useNavigate();
   const [selectedFieldType, setSelectedFieldType] = useState<string>('');
   const { userPrivileges } = useUserPrivilege();
-  const queryClient = useQueryClient();
 
   const handleCreateNewPatient = () => {
     navigate('/registration/new');
@@ -68,6 +66,7 @@ const PatientSearchPage: React.FC = () => {
     const loadSearchConfig = async () => {
       const config = await getRegistrationConfig();
       let fields: PatientSearchField[] = [];
+
       if (selectedFieldType === 'appointment') {
         fields = [...(config?.patientSearch?.appointment ?? [])];
       } else {
@@ -182,52 +181,62 @@ const PatientSearchPage: React.FC = () => {
   };
 
   const handleRowClick = (row: PatientSearchViewModel<PatientSearchResult>) => {
+    if (selectedFieldType === 'appointment') return;
     if (row.uuid) {
       navigateToPatient(row.uuid);
     }
   };
 
-  // function updateAppointmentStatusInResults(
-  //   appointmentPatientData: AppointmentSearchResult[],
-  //   responseUuid: string,
-  //   responseStatus: string,
-  // ): AppointmentSearchResult[] {
-  //   return appointmentPatientData.map((result) => {
-  //     return result.appointmentUuid === responseUuid
-  //       ? { ...result, appointmentStatus: responseStatus }
-  //       : result;
-  //   });
-  // }
+  const handleActionNavigation = (
+    navigationUrl: string,
+    patientUuid: string,
+  ) => {
+    if (!navigationUrl) return;
+
+    const url = navigationUrl?.replace('{{patientUuid}}', String(patientUuid));
+    if (url.startsWith('#')) {
+      window.location.href = url.slice(1);
+    } else {
+      navigate(url);
+    }
+  };
+
+  function updateAppointmentStatusInResults(
+    appointmentPatientData: AppointmentSearchResult[],
+    responseUuid: string,
+    responseStatus: string,
+  ): AppointmentSearchResult[] {
+    return appointmentPatientData.map((result) => {
+      if (result.appointmentUuid === responseUuid) {
+        result.appointmentStatus = responseStatus;
+      }
+      return result;
+    });
+  }
 
   const handleButtonClick = async (
-    type: string,
-    onAction: SearchActionConfig['onAction'],
-    uuid: unknown,
-    date: Date,
+    action: SearchActionConfig,
+    row: PatientSearchViewModel<AppointmentSearchResult>,
   ) => {
-    if (type === 'changeStatus') {
+    const { status, navigation } = action.onAction;
+
+    if (action.type === 'changeStatus') {
       await updateAppointmentStatus(
-        uuid as string,
-        onAction.status as string,
-        date,
-      ).then(() => {
-        queryClient.invalidateQueries({
-          queryKey: ['patientSearch'],
-        });
-        // if (patientSearchData) {
-        // const updatedPatientSearchData = {
-        //   ...patientSearchData,
-        //   pageOfResults: updateAppointmentStatusInResults(
-        //     patientSearchData.pageOfResults,
-        //     response.uuid,
-        //     response.status,
-        //   ),
-        // };
-        // setPatientSearchData(updatedPatientSearchData);
-        // }
+        row.appointmentUuid as string,
+        status as string,
+      ).then((response) => {
+        const updatedPatientSearchData = {
+          totalCount: patientSearchData!.totalCount,
+          pageOfResults: updateAppointmentStatusInResults(
+            patientSearchData!.pageOfResults,
+            response.uuid,
+            response.status,
+          ),
+        };
+        setPatientSearchData(updatedPatientSearchData);
       });
-    } else if (type === 'navigate') {
-      //
+    } else if (action.type === 'navigate') {
+      handleActionNavigation(navigation ?? '', String(row.uuid));
     }
   };
 
@@ -253,59 +262,53 @@ const PatientSearchPage: React.FC = () => {
       row: PatientSearchViewModel<AppointmentSearchResult>,
       cellId: string,
     ): React.ReactNode => {
-      if (cellId === 'identifier') {
-        return (
-          <Link
-            href={`/bahmni/registration/index.html#/patient/${row.uuid}`}
-            onClick={(e) => {
-              e.preventDefault();
-              navigateToPatient(row.uuid);
-            }}
-          >
-            {row.identifier}
-          </Link>
-        );
-      }
-      if (cellId === 'appointmentStatus') {
-        return (
-          <Tag
-            className={getAppointmentStatusClassName(
-              String(row.appointmentStatus ?? ''),
-            )}
-            data-testid={`appointment-status-${row.uuid}`}
-          >
-            {String(row.appointmentStatus ?? '')}
-          </Tag>
-        );
-      }
-      if (cellId === 'actions') {
-        return (
-          <Stack gap={3} className={styles.actionButtonsContainer}>
-            {searchFields[0].actions?.map((action) => {
-              return (
-                <Button
-                  key={action.translationKey}
-                  className={styles.actionButton}
-                  kind="tertiary"
-                  size="sm"
-                  disabled={!isButtonEnabled(action.enabledRule, row)}
-                  onClick={(e) => {
-                    // e.preventDefault();
-                    e.stopPropagation();
-                    handleButtonClick(
-                      action.type,
-                      action.onAction,
-                      row.appointmentUuid,
-                      row.dateCreated,
-                    );
-                  }}
-                >
-                  {t(action.translationKey)}
-                </Button>
-              );
-            })}
-          </Stack>
-        );
+      switch (cellId) {
+        case 'identifier':
+          return (
+            <Link
+              href={`/bahmni/registration/index.html#/patient/${row.uuid}`}
+              onClick={(e) => {
+                e.preventDefault();
+                navigateToPatient(row.uuid);
+              }}
+            >
+              {row.identifier}
+            </Link>
+          );
+
+        case 'appointmentStatus':
+          return (
+            <Tag
+              className={getAppointmentStatusClassName(
+                String(row.appointmentStatus ?? ''),
+              )}
+              data-testid={`appointment-status-${row.uuid}`}
+            >
+              {String(row.appointmentStatus ?? '')}
+            </Tag>
+          );
+
+        case 'actions':
+          return (
+            <Stack gap={3} className={styles.actionButtonsContainer}>
+              {searchFields.map((field) =>
+                field.actions?.map((action) => {
+                  return (
+                    <Button
+                      key={action.translationKey}
+                      className={styles.actionButton}
+                      kind="tertiary"
+                      size="sm"
+                      disabled={!isButtonEnabled(action.enabledRule, row)}
+                      onClick={() => handleButtonClick(action, row)}
+                    >
+                      {t(action.translationKey)}
+                    </Button>
+                  );
+                }),
+              )}
+            </Stack>
+          );
       }
 
       const cellValue =
