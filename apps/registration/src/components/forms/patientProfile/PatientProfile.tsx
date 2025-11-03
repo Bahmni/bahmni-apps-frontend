@@ -10,6 +10,7 @@ import {
 import {
   useTranslation,
   MAX_PATIENT_AGE_YEARS,
+  PatientIdentifier,
 } from '@bahmni-frontend/bahmni-services';
 import { useState, forwardRef, useImperativeHandle, useEffect } from 'react';
 import type { BasicInfoData } from '../../../models/patient';
@@ -30,7 +31,10 @@ import {
 } from '../../forms/patientProfile/dateAgeUtils';
 
 export interface PatientProfileRef {
-  getData: () => BasicInfoData & { dobEstimated: boolean };
+  getData: () => BasicInfoData & {
+    dobEstimated: boolean;
+    patientIdentifier: PatientIdentifier;
+  };
   validate: () => boolean;
   clearData: () => void;
   setCustomError: (field: keyof BasicInfoData, message: string) => void;
@@ -48,7 +52,8 @@ export const PatientProfile = forwardRef<
   const { t } = useTranslation();
 
   // Use utility hooks for identifier and gender data
-  const { identifierPrefixes } = useIdentifierData();
+  const { identifierPrefixes, primaryIdentifierType, identifierSources } =
+    useIdentifierData();
   const { genders } = useGenderData(t);
 
   // Component owns ALL its state
@@ -191,10 +196,24 @@ export const PatientProfile = forwardRef<
 
   // Expose methods to parent via ref
   useImperativeHandle(ref, () => ({
-    getData: () => ({
-      ...formData,
-      dobEstimated,
-    }),
+    getData: () => {
+      // Transform flat profile data into PatientIdentifier structure
+      const patientIdentifier: PatientIdentifier = {
+        ...(identifierSources && {
+          identifierSourceUuid: identifierSources.get(formData.patientIdFormat),
+        }),
+        identifierPrefix: formData.patientIdFormat,
+        identifierType: primaryIdentifierType ?? '',
+        preferred: true,
+        voided: false,
+      };
+
+      return {
+        ...formData,
+        dobEstimated,
+        patientIdentifier,
+      };
+    },
     validate,
     clearData: () => {
       setFormData({

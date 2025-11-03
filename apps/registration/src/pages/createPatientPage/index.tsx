@@ -10,7 +10,6 @@ import {
   useTranslation,
   CreatePatientRequest,
   PatientName,
-  PatientIdentifier,
 } from '@bahmni-frontend/bahmni-services';
 import { useMutation } from '@tanstack/react-query';
 import { useRef } from 'react';
@@ -32,7 +31,6 @@ import {
   PatientProfileRef,
 } from '../../components/forms/patientProfile/PatientProfile';
 import { Header } from '../../components/Header';
-import { useIdentifierData } from '../../utils/identifierGenderUtils';
 import styles from './styles/index.module.scss';
 
 const Registration = () => {
@@ -43,8 +41,6 @@ const Registration = () => {
   const patientAddressRef = useRef<PatientAddressInformationRef>(null);
   const patientContactRef = useRef<PatientContactInformationRef>(null);
   const patientAdditionalRef = useRef<PatientAdditionalInformationRef>(null);
-
-  const { primaryIdentifierType, identifierSources } = useIdentifierData();
 
   const handleSave = () => {
     // Validate all sections
@@ -116,18 +112,6 @@ const Registration = () => {
       preferred: false,
     };
 
-    const patientIdentifier: PatientIdentifier = {
-      ...(identifierSources && {
-        identifierSourceUuid: identifierSources.get(
-          profileData.patientIdFormat,
-        ),
-      }),
-      identifierPrefix: profileData.patientIdFormat,
-      identifierType: primaryIdentifierType ?? '',
-      preferred: true,
-      voided: false,
-    };
-
     const patientPayload: CreatePatientRequest = {
       patient: {
         person: {
@@ -141,7 +125,7 @@ const Registration = () => {
           deathDate: null,
           causeOfDeath: '',
         },
-        identifiers: [patientIdentifier],
+        identifiers: [profileData.patientIdentifier],
       },
       relationships: [],
     };
