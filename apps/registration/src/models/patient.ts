@@ -19,12 +19,12 @@ export interface BasicInfoData {
  * Patient Address Information Data
  */
 export interface AddressData {
-  houseNumber: string;
-  locality: string;
-  district: string;
-  city: string;
-  state: string;
-  pincode: string;
+  address1: string;
+  address2: string;
+  countyDistrict: string;
+  cityVillage: string;
+  stateProvince: string;
+  postalCode: string;
 }
 
 /**
