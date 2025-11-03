@@ -6,7 +6,7 @@ export interface ExpectedFieldConfig {
 export interface SearchActionConfig {
   translationKey: string;
   type: 'navigate' | 'changeStatus';
-  enabledEule?: Array<{
+  enabledRule?: Array<{
     type: 'privilegeCheck' | 'statusCheck' | 'appDateCheck';
     values: string[];
   }>;

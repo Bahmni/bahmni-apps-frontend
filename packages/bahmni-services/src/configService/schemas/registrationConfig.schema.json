@@ -108,7 +108,7 @@
                   "required": [
                     "translationKey",
                     "type",
-                    "enabledEule",
+                    "enabledRule",
                     "onAction"
                   ],
                   "properties": {
@@ -121,7 +121,7 @@
                       "enum": ["changeStatus", "navigate"],
                       "description": "Type of action to perform"
                     },
-                    "enabledEule": {
+                    "enabledRule": {
                       "type": "array",
                       "description": "Conditions to enable this action (rules)",
                       "items": {

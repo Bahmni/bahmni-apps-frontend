@@ -71,7 +71,6 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       (field) => t(field.translationKey) === selectedDropdownItem,
     );
     const fieldType = isAdvancedSearch ? (selectedField?.type ?? '') : '';
-
     return fieldType === 'appointment'
       ? getAppointmentSearchQuery()
       : getPatientSearchQuery();

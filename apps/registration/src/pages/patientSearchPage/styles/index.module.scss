@@ -1,7 +1,10 @@
 @use "@carbon/react/scss/spacing" as *;
-@use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/breakpoint" as *;
+
+
 
 .main {
   background-color: $layer-02;
@@ -28,35 +31,26 @@
   }
 }
 
-// Base style for all appointment status tags
-.appointmentStatusTag {
-  display: inline-flex !important;
-  padding: 0 0.5rem !important;
-  align-items: center !important;
-  gap: 0.25rem !important;
-  border-radius: 1.5rem !important;
-  border: none !important;
-}
 
 // Scheduled - Blue
 .scheduledStatus {
-  background: #d0e2ff !important;
-  color: #0043ce !important; // Dark blue text for good contrast
+  background-color: $blue-20 !important;
+  color: $blue-70 !important;
 }
 
-// Arrived - yellow
+// Arrived - Yellow
 .arrivedStatus {
-  background: var(--Tag-Yellow-tag-background, #FDDC69);
-  color: #7A5E00 !important; // Dark yellow text for good contrast
+  background-color: $yellow-20 !important;
+  color: $yellow-70 !important;
 }
 
-
-// Checked In - Green (same as Arrived)
+// Checked In - Green
 .checkedInStatus {
-  background: var(--Tag-Green-tag-background, #A7F0BA);
-  color: #044317; /* dark green for readable contrast */
+  background-color: $green-20 !important;
+  color: $green-70 !important;
 }
 
+// Responsive adjustments
 @include breakpoint-down(lg) {
   .main {
     padding: $spacing-06 $spacing-08;
