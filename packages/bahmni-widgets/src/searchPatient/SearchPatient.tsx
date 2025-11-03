@@ -15,13 +15,11 @@ import {
   Reason,
   Appointment,
   AppointmentSearchResult,
+  calculateAgeinYearsAndMonths,
+  formatDateAndTime,
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import {
-  calculateAgeinYearsAndMonths,
-  formatDateAndTime,
-} from '../../../bahmni-services/src/date/date';
 import { useNotification } from '../notification';
 import styles from './styles/SearchPatient.module.scss';
 
