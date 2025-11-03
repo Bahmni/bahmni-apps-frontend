@@ -18,7 +18,8 @@ import {
   ADDRESS_HIERARCHY_DEFAULT_LIMIT,
   ADDRESS_HIERARCHY_MIN_SEARCH_LENGTH,
   UUID_PATTERN,
-  APPOINTMENTS_SEARCH_URL,
+  VISIT_TYPES_URL,
+  GET_VISIT_LOCATION,
 } from './constants';
 import {
   FormattedPatientData,
@@ -28,6 +29,10 @@ import {
   CreatePatientRequest,
   CreatePatientResponse,
   AddressHierarchyEntry,
+  VisitLocationResponse,
+  ActiveVisit,
+  VisitData,
+  VisitType,
 } from './models';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
