@@ -5,13 +5,8 @@ import {
 } from '@bahmni-frontend/bahmni-design-system';
 import {
   BAHMNI_HOME_PATH,
-  createPatient,
-  notificationService,
   useTranslation,
-  CreatePatientRequest,
-  PatientName,
 } from '@bahmni-frontend/bahmni-services';
-import { useMutation } from '@tanstack/react-query';
 import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -31,6 +26,11 @@ import {
   PatientProfileRef,
 } from '../../components/forms/patientProfile/PatientProfile';
 import { Header } from '../../components/Header';
+import { useCreatePatient } from '../../hooks/useCreatePatient';
+import {
+  validateAllSections,
+  collectFormData,
+} from '../../services/patientFormService';
 import styles from './styles/index.module.scss';
 
 const Registration = () => {
@@ -42,122 +42,37 @@ const Registration = () => {
   const patientContactRef = useRef<PatientContactInformationRef>(null);
   const patientAdditionalRef = useRef<PatientAdditionalInformationRef>(null);
 
+  // Use the custom hook for patient creation
+  const createPatientMutation = useCreatePatient();
+
   const handleSave = () => {
-    // Validate all sections
-    const isProfileValid = patientProfileRef.current?.validate();
-    const isAddressValid = patientAddressRef.current?.validate();
-    const isContactValid = patientContactRef.current?.validate();
-    const isAdditionalValid = patientAdditionalRef.current?.validate();
+    // Validate all form sections
+    const isValid = validateAllSections({
+      profileRef: patientProfileRef,
+      addressRef: patientAddressRef,
+      contactRef: patientContactRef,
+      additionalRef: patientAdditionalRef,
+    });
 
-    if (
-      !isProfileValid ||
-      !isAddressValid ||
-      !isContactValid ||
-      !isAdditionalValid
-    ) {
-      notificationService.showError(
-        'Error',
-        'Please fix validation errors',
-        5000,
-      );
+    if (!isValid) {
       return;
     }
 
-    const profileData = patientProfileRef.current?.getData();
-    if (!profileData) {
-      notificationService.showError(
-        'Error',
-        'Unable to get patient data',
-        5000,
-      );
+    // Collect data from all form sections
+    const formData = collectFormData({
+      profileRef: patientProfileRef,
+      addressRef: patientAddressRef,
+      contactRef: patientContactRef,
+      additionalRef: patientAdditionalRef,
+    });
+
+    if (!formData) {
       return;
     }
 
-    const addressData = patientAddressRef.current?.getData();
-    if (!addressData) {
-      notificationService.showError(
-        'Error',
-        'Unable to get patient address data',
-        5000,
-      );
-      return;
-    }
-
-    const contactData = patientContactRef.current?.getData();
-    if (!contactData) {
-      notificationService.showError(
-        'Error',
-        'Unable to get patient contact data',
-        5000,
-      );
-      return;
-    }
-
-    const additionalData = patientAdditionalRef.current?.getData();
-    if (!additionalData) {
-      notificationService.showError(
-        'Error',
-        'Unable to get patient additional data',
-        5000,
-      );
-      return;
-    }
-
-    // Transform flat profile data into CreatePatientRequest structure
-    const patientName: PatientName = {
-      givenName: profileData.firstName,
-      ...(profileData.middleName && { middleName: profileData.middleName }),
-      familyName: profileData.lastName,
-      display: `${profileData.firstName}${profileData.middleName ? ' ' + profileData.middleName : ''} ${profileData.lastName}`,
-      preferred: false,
-    };
-
-    const patientPayload: CreatePatientRequest = {
-      patient: {
-        person: {
-          names: [patientName],
-          gender: profileData.gender.charAt(0).toUpperCase(),
-          birthdate: profileData.dateOfBirth,
-          birthdateEstimated: profileData.dobEstimated,
-          birthtime: profileData.birthTime || null,
-          addresses: [addressData],
-          attributes: [],
-          deathDate: null,
-          causeOfDeath: '',
-        },
-        identifiers: [profileData.patientIdentifier],
-      },
-      relationships: [],
-    };
-
-    createPatientMutation.mutate(patientPayload);
+    // Trigger mutation with collected data
+    createPatientMutation.mutate(formData);
   };
-
-  const createPatientMutation = useMutation({
-    mutationFn: createPatient,
-    onSuccess: (response) => {
-      notificationService.showSuccess(
-        'Success',
-        'Patient saved successfully',
-        5000,
-      );
-      if (response?.patient?.uuid) {
-        window.history.replaceState(
-          {
-            patientDisplay: response.patient.display,
-            patientUuid: response.patient.uuid,
-          },
-          '',
-          `/registration/patient/${response.patient.uuid}`,
-        );
-      } else {
-        navigate('/registration/search');
-      }
-    },
-    onError: () => {
-      notificationService.showError('Error', 'Failed to save patient', 5000);
-    },
-  });
 
   const breadcrumbs = [
     { label: t('CREATE_PATIENT_BREADCRUMB_HOME'), href: BAHMNI_HOME_PATH },
