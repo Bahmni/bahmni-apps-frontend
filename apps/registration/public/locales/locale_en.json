@@ -64,6 +64,7 @@
   "DATE_ERROR_INVALID_FORMAT": "Invalid date format",
   "DATE_ERROR_NULL_OR_UNDEFINED": "Date is null or undefined",
   "DATE_ERROR_PARSE": "Date Parse Error",
+  "ENTER_VISIT_DETAILS": "Enter Visit Details",
   "ERROR_DEFAULT_TITLE": "Error",
   "LOADING_PATIENT_DETAILS": "Navigating to patient details...",
   "PHONE_NUMBER": "Phone Number",
@@ -82,5 +83,6 @@
   "REGISTRATION_PATIENT_SEARCH_INPUT_PLACEHOLDER": "Search by name or patient ID",
   "REGISTRATION_PATIENT_SEARCH_TABLE_TITLE": "Patient results ({{count}})",
   "SEARCH_BY_CUSTOM_ATTRIBUTE": "Search by {{attribute}}",
+  "START_VISIT_TYPE": "Start {{visitType}} visit",
   "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "User {{username}} accessed patient search screen in registration app"
 }

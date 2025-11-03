@@ -3,24 +3,23 @@
   "title": "Registration Configuration Schema",
   "description": "Schema for validating registration app configuration",
   "type": "object",
-  "additionalProperties": true,
+  "additionalProperties": false,
   "properties": {
     "patientSearch": {
       "type": "object",
       "description": "Patient search configuration",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "properties": {
         "customAttributes": {
           "type": "array",
           "description": "Array of available search fields",
           "items": {
             "type": "object",
-            "additionalProperties": true,
-            "required": ["translationKey", "fields"],
+            "additionalProperties": false,
             "properties": {
               "translationKey": {
                 "type": "string",
-                "description": "Translation key for the field label"
+                "description": "Translation key for the dropdown label"
               },
               "fields": {
                 "type": "array",
@@ -29,22 +28,37 @@
                   "type": "string"
                 }
               },
-              "columnTranslationKeys": {
+              "expectedFields": {
                 "type": "array",
-                "description": "Array of translation keys for column headers",
+                "description": "Array of fields configurations with translation keys to display on table headers",
                 "items": {
-                  "type": "string"
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "field": {
+                      "type": "string",
+                      "description": "field corresponding to table header"
+                    },
+                    "translationKey": {
+                      "type": "string",
+                      "description": "Translation key for the table header"
+                    }
+                  }
                 }
               },
               "type": {
                 "type": "string",
                 "enum": ["person", "address", "program"],
-                "description": "Type of the search field (person, address, program)"
+                "description": "Type of the search field"
               }
             }
           }
         }
       }
+    },
+    "defaultVisitType": {
+      "type": "string",
+      "description": "Default visit type for patient registration"
     }
   }
 }
