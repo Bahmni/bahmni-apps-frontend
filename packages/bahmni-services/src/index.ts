@@ -36,6 +36,7 @@ export {
   type Patient,
   type AppointmentService,
   type Location,
+  type Reason,
 } from './AppointmentService/models';
 export { getFormattedError } from './errorHandling';
 export {
@@ -62,6 +63,8 @@ export {
   ISO_DATE_FORMAT,
   FULL_MONTH_DATE_FORMAT,
   getTodayDate,
+  calculateAgeinYearsAndMonths,
+  formatDateAndTime,
 } from './date';
 export { type Notification, notificationService } from './notification';
 export {

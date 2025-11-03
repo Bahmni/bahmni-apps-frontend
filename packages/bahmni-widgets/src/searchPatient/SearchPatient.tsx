@@ -12,14 +12,12 @@ import {
   getRegistrationConfig,
   PatientSearchField,
   searchAppointmentsByAttribute,
-} from '@bahmni-frontend/bahmni-services';
-import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
-import {
   Reason,
   Appointment,
   AppointmentSearchResult,
-} from '../../../bahmni-services/src/AppointmentService/models';
+} from '@bahmni-frontend/bahmni-services';
+import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import {
   calculateAgeinYearsAndMonths,
   formatDateAndTime,
