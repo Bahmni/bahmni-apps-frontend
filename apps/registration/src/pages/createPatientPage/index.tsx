@@ -1265,7 +1265,9 @@ const NewPatientRegistration = () => {
               <Button
                 kind="tertiary"
                 onClick={handleSave}
-                disabled={createPatientMutation.isPending}
+                disabled={
+                  createPatientMutation.isPending || patientUuid != null
+                }
               >
                 {createPatientMutation.isPending
                   ? 'Saving...'
