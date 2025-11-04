@@ -5,6 +5,9 @@ import {
   PatientName,
   PatientIdentifier,
   PatientAddress,
+  AUDIT_LOG_EVENT_DETAILS,
+  AuditEventType,
+  dispatchAuditEvent,
 } from '@bahmni-frontend/bahmni-services';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -48,6 +51,14 @@ export const useCreatePatient = () => {
       );
 
       if (response?.patient?.uuid) {
+        // Dispatch audit event for patient registration
+        dispatchAuditEvent({
+          eventType: AUDIT_LOG_EVENT_DETAILS.REGISTER_NEW_PATIENT
+            .eventType as AuditEventType,
+          patientUuid: response.patient.uuid,
+          module: AUDIT_LOG_EVENT_DETAILS.REGISTER_NEW_PATIENT.module,
+        });
+
         // Update browser history with patient details
         window.history.replaceState(
           {

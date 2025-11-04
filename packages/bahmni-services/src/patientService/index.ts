@@ -5,9 +5,13 @@ export {
   searchPatientByCustomAttribute,
   getPrimaryIdentifierType,
   createPatient,
+  createVisit,
+  getActiveVisitByPatient,
   getIdentifierData,
   getGenders,
   getAddressHierarchyEntries,
+  getVisitTypes,
+  getVisitLocationUUID,
 } from './patientService';
 export {
   type FormattedPatientData,
@@ -18,11 +22,15 @@ export {
   type IdentifierTypesResponse,
   type CreatePatientRequest,
   type CreatePatientResponse,
+  type VisitData,
   type PatientName,
   type PatientAddress,
   type PatientIdentifier,
   type PatientAttribute,
   type AddressHierarchyEntry,
+  type VisitType,
+  type VisitLocationResponse,
+  type ActiveVisit,
 } from './models';
 export {
   MAX_PATIENT_AGE_YEARS,

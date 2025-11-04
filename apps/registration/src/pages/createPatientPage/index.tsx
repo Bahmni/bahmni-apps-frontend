@@ -6,8 +6,11 @@ import {
 import {
   BAHMNI_HOME_PATH,
   useTranslation,
+  AUDIT_LOG_EVENT_DETAILS,
+  AuditEventType,
+  dispatchAuditEvent,
 } from '@bahmni-frontend/bahmni-services';
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   PatientAdditionalInformation,
@@ -29,10 +32,12 @@ import { Header } from '../../components/Header';
 import { useCreatePatient } from '../../hooks/useCreatePatient';
 import { validateAllSections, collectFormData } from './patientFormService';
 import styles from './styles/index.module.scss';
+import { VisitTypeSelector } from './visitTypeSelector';
 
-const Registration = () => {
+const CreatePatient = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [patientUuid, setPatientUuid] = useState<string | null>(null);
 
   const patientProfileRef = useRef<PatientProfileRef>(null);
   const patientAddressRef = useRef<PatientAddressInformationRef>(null);
@@ -42,7 +47,26 @@ const Registration = () => {
   // Use the custom hook for patient creation
   const createPatientMutation = useCreatePatient();
 
-  const handleSave = () => {
+  // Dispatch audit event when page is viewed
+  useEffect(() => {
+    dispatchAuditEvent({
+      eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_NEW_PATIENT_PAGE
+        .eventType as AuditEventType,
+      module: AUDIT_LOG_EVENT_DETAILS.VIEWED_NEW_PATIENT_PAGE.module,
+    });
+  }, []);
+
+  // Track patient UUID after successful creation
+  useEffect(() => {
+    if (createPatientMutation.isSuccess && createPatientMutation.data) {
+      const response = createPatientMutation.data;
+      if (response?.patient?.uuid) {
+        setPatientUuid(response.patient.uuid);
+      }
+    }
+  }, [createPatientMutation.isSuccess, createPatientMutation.data]);
+
+  const handleSave = async (): Promise<string | null> => {
     // Validate all form sections
     const isValid = validateAllSections({
       profileRef: patientProfileRef,
@@ -52,7 +76,7 @@ const Registration = () => {
     });
 
     if (!isValid) {
-      return;
+      return null;
     }
 
     // Collect data from all form sections
@@ -64,11 +88,19 @@ const Registration = () => {
     });
 
     if (!formData) {
-      return;
+      return null;
     }
 
     // Trigger mutation with collected data
-    createPatientMutation.mutate(formData);
+    try {
+      const response = await createPatientMutation.mutateAsync(formData);
+      if (response?.patient?.uuid) {
+        return response.patient.uuid;
+      }
+      return null;
+    } catch {
+      return null;
+    }
   };
 
   const breadcrumbs = [
@@ -116,9 +148,10 @@ const Registration = () => {
               <Button kind="tertiary">
                 {t('CREATE_PATIENT_PRINT_REG_CARD')}
               </Button>
-              <Button kind="primary">
-                {t('CREATE_PATIENT_START_OPD_VISIT')}
-              </Button>
+              <VisitTypeSelector
+                onVisitSave={handleSave}
+                patientUuid={patientUuid}
+              />
             </div>
           </div>
         </div>
@@ -126,5 +159,4 @@ const Registration = () => {
     />
   );
 };
-
-export default Registration;
+export default CreatePatient;
