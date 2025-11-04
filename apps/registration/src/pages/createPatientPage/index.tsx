@@ -27,10 +27,7 @@ import {
 } from '../../components/forms/patientProfile/PatientProfile';
 import { Header } from '../../components/Header';
 import { useCreatePatient } from '../../hooks/useCreatePatient';
-import {
-  validateAllSections,
-  collectFormData,
-} from '../../services/patientFormService';
+import { validateAllSections, collectFormData } from './patientFormService';
 import styles from './styles/index.module.scss';
 
 const Registration = () => {

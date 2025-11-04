@@ -1,8 +1,8 @@
 import { notificationService } from '@bahmni-frontend/bahmni-services';
-import type { PatientAdditionalInformationRef } from '../components/forms/patientAdditionalInformation/PatientAdditionalInformation';
-import type { PatientAddressInformationRef } from '../components/forms/patientAddressInformation/PatientAddressInformation';
-import type { PatientContactInformationRef } from '../components/forms/patientContactInformation/PatientContactInformation';
-import type { PatientProfileRef } from '../components/forms/patientProfile/PatientProfile';
+import type { PatientAdditionalInformationRef } from '../../components/forms/patientAdditionalInformation/PatientAdditionalInformation';
+import type { PatientAddressInformationRef } from '../../components/forms/patientAddressInformation/PatientAddressInformation';
+import type { PatientContactInformationRef } from '../../components/forms/patientContactInformation/PatientContactInformation';
+import type { PatientProfileRef } from '../../components/forms/patientProfile/PatientProfile';
 
 /**
  * Form references interface for all patient registration sections
