@@ -31,26 +31,21 @@
   }
 }
 
-
-// Scheduled - Blue
 .scheduledStatus {
   background-color: $blue-20 !important;
   color: $blue-70 !important;
 }
 
-// Arrived - Yellow
 .arrivedStatus {
   background-color: $yellow-20 !important;
   color: $yellow-70 !important;
 }
 
-// Checked In - Green
 .checkedInStatus {
   background-color: $green-20 !important;
   color: $green-70 !important;
 }
 
-// Responsive adjustments
 @include breakpoint-down(lg) {
   .main {
     padding: $spacing-06 $spacing-08;
