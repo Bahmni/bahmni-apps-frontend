@@ -526,15 +526,16 @@ describe('PatientSearchPage', () => {
         const patientName1 = screen.getByText('Steffi Maria Graf');
         const patientName2 = screen.getByText('John Doe');
         const phoneNumber = screen.getByText('864579392');
+        const genderElements = screen.getAllByText('F');
 
         expect(patientName1).toBeInTheDocument();
         expect(patientName2).toBeInTheDocument();
         expect(phoneNumber).toBeInTheDocument();
-        // expect(genderElements.length).toBeGreaterThan(0);
+        expect(genderElements.length).toBeGreaterThan(0);
         expect(patientName1.tagName).not.toBe('A');
         expect(patientName2.tagName).not.toBe('A');
         expect(phoneNumber.tagName).not.toBe('A');
-        // expect(genderElements[0].tagName).not.toBe('A');
+        expect(genderElements[0].tagName).not.toBe('A');
       });
     });
 
