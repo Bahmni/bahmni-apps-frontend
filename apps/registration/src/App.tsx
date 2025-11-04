@@ -15,7 +15,8 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import React, { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { queryClientConfig } from './config/tanstackQuery';
-import Registration from './pages/createPatientPage';
+import { REGISTRATION_NAMESPACE } from './constants/app';
+import CreatePatient from './pages/createPatientPage';
 import PatientSearchPage from './pages/patientSearchPage';
 import { RegistrationConfigProvider } from './providers/RegistrationConfigProvider';
 
@@ -27,7 +28,7 @@ const RegistrationApp: React.FC = () => {
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        await initAppI18n();
+        await initAppI18n(REGISTRATION_NAMESPACE);
         initFontAwesome();
         initializeAuditListener();
         setIsInitialized(true);
@@ -53,7 +54,7 @@ const RegistrationApp: React.FC = () => {
           <RegistrationConfigProvider>
             <Routes>
               <Route path="/search" element={<PatientSearchPage />} />
-              <Route path="/new" element={<Registration />} />
+              <Route path="/new" element={<CreatePatient />} />
             </Routes>
           </RegistrationConfigProvider>
           <ReactQueryDevtools initialIsOpen={false} />

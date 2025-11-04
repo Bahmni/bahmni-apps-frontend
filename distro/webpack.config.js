@@ -38,7 +38,11 @@ module.exports = (env, argv) => {
         main: './src/main.tsx',
         index: './src/index.html',
         baseHref: publicPath,
-        assets: ['./src/assets'],
+        assets: [
+          './src/assets',
+          { input: '../apps/clinical/dist/locales', glob: '**/*', output: 'clinical/locales' },
+          { input: '../apps/registration/dist/locales', glob: '**/*', output: 'registration/locales' }
+        ],
         styles: ['./src/styles.scss'],
         outputHashing:
           process.env['NODE_ENV'] === 'production' ? 'all' : 'none',

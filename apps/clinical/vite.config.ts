@@ -7,6 +7,7 @@ import * as path from 'path';
 export default defineConfig(() => ({
   root: __dirname,
   cacheDir: '../../node_modules/.vite/apps/clinical',
+  publicDir: 'public',
   plugins: [
     react(),
     dts({
@@ -24,6 +25,7 @@ export default defineConfig(() => ({
     outDir: './dist',
     emptyOutDir: true,
     reportCompressedSize: true,
+    copyPublicDir: true,
     commonjsOptions: {
       transformMixedEsModules: true,
     },
