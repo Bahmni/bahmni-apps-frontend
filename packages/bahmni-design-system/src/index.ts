@@ -35,6 +35,10 @@ export { ComboBox, type ComboBoxProps } from './atoms/comboBox';
 export { TextInput, type TextInputProps } from './atoms/textInput';
 export { NotificationContainer } from './molecules/notification';
 export { SortableDataTable } from './molecules/sortableDataTable';
+export {
+  SimpleDataTable,
+  type SimpleDataTableProps,
+} from './molecules/simpleDataTable';
 export { TooltipIcon, type TooltipIconProps } from './molecules/tooltipIcon';
 export { StatusTag, type StatusTagProps } from './molecules/statusTag';
 export { SkeletonText, type SkeletonTextProps } from './atoms/skeletonText';

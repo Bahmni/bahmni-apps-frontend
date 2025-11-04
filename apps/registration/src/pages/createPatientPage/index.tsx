@@ -25,6 +25,10 @@ import {
   PatientProfile,
   PatientProfileRef,
 } from '../../components/forms/patientProfile/PatientProfile';
+import {
+  PatientRelationships,
+  PatientRelationshipsRef,
+} from '../../components/forms/patientRelationships/PatientRelationships';
 import { Header } from '../../components/Header';
 import { useCreatePatient } from '../../hooks/useCreatePatient';
 import { validateAllSections, collectFormData } from './patientFormService';
@@ -38,6 +42,7 @@ const Registration = () => {
   const patientAddressRef = useRef<PatientAddressInformationRef>(null);
   const patientContactRef = useRef<PatientContactInformationRef>(null);
   const patientAdditionalRef = useRef<PatientAdditionalInformationRef>(null);
+  const patientRelationshipsRef = useRef<PatientRelationshipsRef>(null);
 
   // Use the custom hook for patient creation
   const createPatientMutation = useCreatePatient();
@@ -97,6 +102,8 @@ const Registration = () => {
             <PatientContactInformation ref={patientContactRef} />
             <PatientAdditionalInformation ref={patientAdditionalRef} />
           </div>
+
+          <PatientRelationships ref={patientRelationshipsRef} />
 
           {/* Footer Actions */}
           <div className={styles.formActions}>
