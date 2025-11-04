@@ -93,13 +93,12 @@ const Registration = () => {
               {t('CREATE_PATIENT_HEADER_TITLE')}
             </span>
           </Tile>
-          <div>
-            <div className={styles.formContainer}>
-              <PatientProfile ref={patientProfileRef} />
-              <PatientAddressInformation ref={patientAddressRef} />
-              <PatientContactInformation ref={patientContactRef} />
-              <PatientAdditionalInformation ref={patientAdditionalRef} />
-            </div>
+
+          <div className={styles.formContainer}>
+            <PatientProfile ref={patientProfileRef} />
+            <PatientAddressInformation ref={patientAddressRef} />
+            <PatientContactInformation ref={patientContactRef} />
+            <PatientAdditionalInformation ref={patientAdditionalRef} />
           </div>
 
           {/* Footer Actions */}
