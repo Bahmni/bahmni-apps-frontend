@@ -4,7 +4,7 @@ import {
   FileUploader,
 } from '@bahmni-frontend/bahmni-design-system';
 import { useTranslation } from '@bahmni-frontend/bahmni-services';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import styles from './styles.module.scss';
 
 export const PatientPhotoUpload: React.FC = () => {
@@ -12,14 +12,6 @@ export const PatientPhotoUpload: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File>();
   const [previewUrl, setPreviewUrl] = useState<string>();
-
-  useEffect(() => {
-    return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
-    };
-  }, [previewUrl]);
 
   const handleUploadClick = () => {
     setIsModalOpen(true);
