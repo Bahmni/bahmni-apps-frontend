@@ -16,6 +16,7 @@ import {
   ADDRESS_HIERARCHY_DEFAULT_LIMIT,
   ADDRESS_HIERARCHY_MIN_SEARCH_LENGTH,
   UUID_PATTERN,
+  RELATIONSHIP_TYPES_URL,
 } from './constants';
 import {
   FormattedPatientData,
@@ -25,6 +26,7 @@ import {
   CreatePatientRequest,
   CreatePatientResponse,
   AddressHierarchyEntry,
+  RelationshipTypesResponse,
 } from './models';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
@@ -332,6 +334,27 @@ export const getAddressHierarchyEntries = async (
     // console.error('Error fetching address hierarchy entries:', error);
     throw new Error(
       `Failed to fetch address hierarchy for field "${addressField}": ${
+        error instanceof Error ? error.message : 'Unknown error'
+      }`,
+    );
+  }
+};
+
+/**
+ * Get relationship types from OpenMRS
+ * @returns Promise<string[]> - Array of relationship type display names
+ */
+export const getRelationshipTypes = async (): Promise<string[]> => {
+  try {
+    const response = await get<RelationshipTypesResponse>(
+      RELATIONSHIP_TYPES_URL,
+    );
+    return response.results
+      .filter((type) => !type.retired)
+      .map((type) => type.aIsToB);
+  } catch (error) {
+    throw new Error(
+      `Failed to fetch relationship types: ${
         error instanceof Error ? error.message : 'Unknown error'
       }`,
     );

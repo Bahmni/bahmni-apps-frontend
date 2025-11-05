@@ -10,6 +10,7 @@ import {
   useTranslation,
   searchPatientByNameOrId,
   PatientSearchResult,
+  getRelationshipTypes,
 } from '@bahmni-frontend/bahmni-services';
 import { Close } from '@carbon/icons-react';
 import { Tile } from '@carbon/react';
@@ -43,20 +44,18 @@ interface PatientSuggestion {
   name: string;
 }
 
-const RELATIONSHIP_TYPES = [
-  'Parent',
-  'Sibling',
-  'Spouse',
-  'Child',
-  'Guardian',
-  'Other',
-];
-
 export const PatientRelationships = forwardRef<
   PatientRelationshipsRef,
   PatientRelationshipsProps
 >(({ initialData }, ref) => {
   const { t } = useTranslation();
+
+  // Fetch relationship types from API
+  const { data: relationshipTypes = [] } = useQuery({
+    queryKey: ['relationshipTypes'],
+    queryFn: getRelationshipTypes,
+    staleTime: Infinity, // Cache indefinitely since relationship types rarely change
+  });
 
   const [relationships, setRelationships] = useState<RelationshipData[]>(
     initialData?.length
@@ -189,7 +188,7 @@ export const PatientRelationships = forwardRef<
           id={`relationship-type-${rel.id}`}
           titleText=""
           label={t('SELECT') ?? 'Select'}
-          items={RELATIONSHIP_TYPES}
+          items={relationshipTypes}
           selectedItem={rel.relationshipType}
           onChange={({ selectedItem }) =>
             updateRelationship(rel.id, 'relationshipType', selectedItem ?? '')
@@ -210,7 +209,7 @@ export const PatientRelationships = forwardRef<
             handlePatientSearch(rel.id, inputValue ?? '')
           }
           onChange={({ selectedItem }) =>
-            handlePatientSelect(rel.id, selectedItem)
+            handlePatientSelect(rel.id, selectedItem ?? null)
           }
         />
       ),
@@ -267,7 +266,11 @@ export const PatientRelationships = forwardRef<
       </div>
 
       <div className={styles.addButtonContainer}>
-        <Button kind="tertiary" size="sm" onClick={addRelationship}>
+        <Button
+          kind="tertiary"
+          className={styles.wrapButton}
+          onClick={addRelationship}
+        >
           {t('ADD_RELATIONSHIP') ?? 'Add another'}
         </Button>
       </div>

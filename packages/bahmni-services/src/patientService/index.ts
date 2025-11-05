@@ -8,6 +8,7 @@ export {
   getIdentifierData,
   getGenders,
   getAddressHierarchyEntries,
+  getRelationshipTypes,
 } from './patientService';
 export {
   type FormattedPatientData,

@@ -143,3 +143,16 @@ export interface AddressHierarchyEntry {
 export interface AddressHierarchyResponse {
   results: AddressHierarchyEntry[];
 }
+
+export interface RelationshipType {
+  uuid: string;
+  display: string;
+  aIsToB: string;
+  bIsToA: string;
+  description?: string;
+  retired: boolean;
+}
+
+export interface RelationshipTypesResponse {
+  results: RelationshipType[];
+}

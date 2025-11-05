@@ -10,6 +10,7 @@ export {
   getIdentifierData,
   getGenders,
   getAddressHierarchyEntries,
+  getRelationshipTypes,
   type FormattedPatientData,
   type PatientSearchResult,
   type PatientSearchResultBundle,
