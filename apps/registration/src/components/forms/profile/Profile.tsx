@@ -26,6 +26,7 @@ import {
   useIdentifierData,
 } from '../../../utils/identifierGenderUtils';
 import { createDateAgeHandlers, formatToDisplay } from './dateAgeUtils';
+import { PatientPhotoUpload } from '../../PatientPhotoUpload/PatientPhotoUpload';
 
 export interface ProfileRef {
   getData: () => BasicInfoData & {
@@ -250,16 +251,7 @@ export const Profile = ({
         {t('CREATE_PATIENT_SECTION_BASIC_INFO')}
       </span>
       <div className={styles.row}>
-        <div className={styles.photocol}>
-          <div className={styles.photoUploadSection}>
-            <Button kind="tertiary" size="sm" className={styles.wrapButton}>
-              {t('CREATE_PATIENT_UPLOAD_PHOTO')}
-            </Button>
-            <Button kind="tertiary" size="sm" className={styles.wrapButton}>
-              {t('CREATE_PATIENT_CAPTURE_PHOTO')}
-            </Button>
-          </div>
-        </div>
+        <PatientPhotoUpload />
 
         <div className={styles.col}>
           <div className={styles.row}>
