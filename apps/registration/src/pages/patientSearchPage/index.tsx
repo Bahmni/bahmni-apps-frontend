@@ -10,18 +10,18 @@ import {
   Tile,
 } from '@bahmni-frontend/bahmni-design-system';
 import {
-  BAHMNI_HOME_PATH,
-  useTranslation,
+  AppointmentSearchResult,
+  AppointmentSearchResultBundle,
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
+  BAHMNI_HOME_PATH,
   dispatchAuditEvent,
-  PatientSearchResult,
   getRegistrationConfig,
   PatientSearchField,
-  AppointmentSearchResult,
-  updateAppointmentStatus,
-  AppointmentSearchResultBundle,
+  PatientSearchResult,
   SearchActionConfig,
+  updateAppointmentStatus,
+  useTranslation,
 } from '@bahmni-frontend/bahmni-services';
 import {
   SearchPatient,
@@ -257,6 +257,16 @@ const PatientSearchPage: React.FC = () => {
     );
   };
 
+  const shouldRenderButton = (action: SearchActionConfig): boolean => {
+    const privilegeRules =
+      action.enabledRule
+        ?.filter((rule) => rule.type === 'privilegeCheck')
+        .map((rule) => rule.values)
+        .flat() ?? [];
+
+    return privilegeValidator(userPrivileges ?? [])(privilegeRules);
+  };
+
   const renderCell = useCallback(
     (
       row: PatientSearchViewModel<AppointmentSearchResult>,
@@ -293,6 +303,7 @@ const PatientSearchPage: React.FC = () => {
             <Stack gap={3} className={styles.actionButtonsContainer}>
               {searchFields.map((field) =>
                 field.actions?.map((action) => {
+                  if (!shouldRenderButton(action)) return null;
                   return (
                     <Button
                       key={action.translationKey}
