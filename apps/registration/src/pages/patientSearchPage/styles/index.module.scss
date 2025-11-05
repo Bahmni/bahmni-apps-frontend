@@ -1,7 +1,10 @@
 @use "@carbon/react/scss/spacing" as *;
-@use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/breakpoint" as *;
+
+
 
 .main {
   background-color: $layer-02;
@@ -26,6 +29,21 @@
   td {
     width: 15%;
   }
+}
+
+.scheduledStatus {
+  background-color: $blue-20 !important;
+  color: $blue-70 !important;
+}
+
+.arrivedStatus {
+  background-color: $yellow-20 !important;
+  color: $yellow-70 !important;
+}
+
+.checkedInStatus {
+  background-color: $green-20 !important;
+  color: $green-70 !important;
 }
 
 @include breakpoint-down(lg) {
