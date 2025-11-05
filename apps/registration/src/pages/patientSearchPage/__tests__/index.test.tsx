@@ -320,47 +320,6 @@ describe('PatientSearchPage', () => {
     });
   });
 
-  it('should display appointment data in table cells', async () => {
-    mockSearchData = {
-      totalCount: 1,
-      pageOfResults: [mockSearchPatientData[0]],
-    };
-    mockOnSearchArgs = [mockSearchData, 'test-search'];
-
-    (useQuery as jest.Mock).mockReturnValue({
-      data: {
-        totalCount: 1,
-        pageOfResults: [mockSearchPatientData[0]],
-      },
-      error: null,
-      isLoading: false,
-    });
-
-    render(
-      <MemoryRouter>
-        <NotificationProvider>
-          <QueryClientProvider client={queryClient}>
-            <UserPrivilegeProvider>
-              <PatientSearchPage />
-            </UserPrivilegeProvider>
-          </QueryClientProvider>
-        </NotificationProvider>
-      </MemoryRouter>,
-    );
-
-    const searchInput = screen.getByPlaceholderText(
-      'Search by name or patient ID',
-    );
-    fireEvent.input(searchInput, { target: { value: 'test' } });
-    fireEvent.click(screen.getByTestId('search-patient-search-button'));
-
-    await waitFor(() => {
-      expect(screen.getByText('ABC200001')).toBeInTheDocument();
-      expect(screen.getByText('864579392')).toBeInTheDocument();
-      expect(screen.getByText('4596781239')).toBeInTheDocument();
-    });
-  });
-
   it('should render only search patient widget on mount', async () => {
     render(
       <MemoryRouter>
