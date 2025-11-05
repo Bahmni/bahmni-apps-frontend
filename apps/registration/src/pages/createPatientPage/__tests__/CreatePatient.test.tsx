@@ -1,17 +1,10 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { dispatchAuditEvent } from '@bahmni-frontend/bahmni-services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import {
-  notificationService,
-  dispatchAuditEvent,
-  AUDIT_LOG_EVENT_DETAILS,
-} from '@bahmni-frontend/bahmni-services';
-import CreatePatient from '../index';
 import { useCreatePatient } from '../../../hooks/useCreatePatient';
-import {
-  validateAllSections,
-  collectFormData,
-} from '../patientFormService';
+import CreatePatient from '../index';
+import { validateAllSections, collectFormData } from '../patientFormService';
 
 // Mock the dependencies
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
@@ -54,31 +47,28 @@ jest.mock('../../../components/Header', () => ({
   ),
 }));
 
-jest.mock(
-  '../../../components/forms/patientProfile/PatientProfile',
-  () => ({
-    PatientProfile: jest.forwardRef((props, ref: any) => {
-      // Expose imperative methods via ref
-      if (ref) {
-        ref.current = {
-          validate: jest.fn(() => true),
-          getData: jest.fn(() => ({
-            firstName: 'John',
-            lastName: 'Doe',
-            gender: 'male',
-            dateOfBirth: '1990-01-01',
-          })),
-        };
-      }
-      return <div data-testid="patient-profile">Patient Profile</div>;
-    }),
-  }),
-);
+jest.mock('../../../components/forms/patientProfile/PatientProfile', () => ({
+  PatientProfile: ({ ref }: any) => {
+    // Expose imperative methods via ref
+    if (ref) {
+      ref.current = {
+        validate: jest.fn(() => true),
+        getData: jest.fn(() => ({
+          firstName: 'John',
+          lastName: 'Doe',
+          gender: 'male',
+          dateOfBirth: '1990-01-01',
+        })),
+      };
+    }
+    return <div data-testid="patient-profile">Patient Profile</div>;
+  },
+}));
 
 jest.mock(
   '../../../components/forms/patientAddressInformation/PatientAddressInformation',
   () => ({
-    PatientAddressInformation: jest.forwardRef((props, ref: any) => {
+    PatientAddressInformation: ({ ref }: any) => {
       if (ref) {
         ref.current = {
           validate: jest.fn(() => true),
@@ -91,14 +81,14 @@ jest.mock(
       return (
         <div data-testid="patient-address">Patient Address Information</div>
       );
-    }),
+    },
   }),
 );
 
 jest.mock(
   '../../../components/forms/patientContactInformation/PatientContactInformation',
   () => ({
-    PatientContactInformation: jest.forwardRef((props, ref: any) => {
+    PatientContactInformation: ({ ref }: any) => {
       if (ref) {
         ref.current = {
           validate: jest.fn(() => true),
@@ -110,14 +100,14 @@ jest.mock(
       return (
         <div data-testid="patient-contact">Patient Contact Information</div>
       );
-    }),
+    },
   }),
 );
 
 jest.mock(
   '../../../components/forms/patientAdditionalInformation/PatientAdditionalInformation',
   () => ({
-    PatientAdditionalInformation: jest.forwardRef((props, ref: any) => {
+    PatientAdditionalInformation: ({ ref }: any) => {
       if (ref) {
         ref.current = {
           validate: jest.fn(() => true),
@@ -131,7 +121,7 @@ jest.mock(
           Patient Additional Information
         </div>
       );
-    }),
+    },
   }),
 );
 
@@ -567,9 +557,7 @@ describe('CreatePatient', () => {
       renderComponent();
 
       const homeBreadcrumb = screen.getByTestId('breadcrumb-0');
-      expect(homeBreadcrumb.textContent).toBe(
-        'CREATE_PATIENT_BREADCRUMB_HOME',
-      );
+      expect(homeBreadcrumb.textContent).toBe('CREATE_PATIENT_BREADCRUMB_HOME');
     });
 
     it('should have search breadcrumb with correct label', () => {

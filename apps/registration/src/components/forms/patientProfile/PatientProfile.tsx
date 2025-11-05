@@ -12,7 +12,7 @@ import {
   MAX_PATIENT_AGE_YEARS,
   PatientIdentifier,
 } from '@bahmni-frontend/bahmni-services';
-import { useState, forwardRef, useImperativeHandle, useEffect } from 'react';
+import { useState, useImperativeHandle, useEffect } from 'react';
 import type { BasicInfoData } from '../../../models/patient';
 import type {
   BasicInfoErrors,
@@ -43,12 +43,14 @@ export interface PatientProfileRef {
 interface PatientProfileProps {
   initialData?: BasicInfoData;
   initialDobEstimated?: boolean;
+  ref?: React.Ref<PatientProfileRef>;
 }
 
-export const PatientProfile = forwardRef<
-  PatientProfileRef,
-  PatientProfileProps
->(({ initialData, initialDobEstimated = false }, ref) => {
+export const PatientProfile = ({
+  initialData,
+  initialDobEstimated = false,
+  ref,
+}: PatientProfileProps) => {
   const { t } = useTranslation();
 
   // Use utility hooks for identifier and gender data
@@ -462,7 +464,7 @@ export const PatientProfile = forwardRef<
       </div>
     </div>
   );
-});
+};
 
 PatientProfile.displayName = 'PatientProfile';
 

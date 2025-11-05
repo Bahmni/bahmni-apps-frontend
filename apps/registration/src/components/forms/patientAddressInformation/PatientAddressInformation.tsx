@@ -6,7 +6,6 @@ import {
   type PatientAddress,
 } from '@bahmni-frontend/bahmni-services';
 import {
-  forwardRef,
   useCallback,
   useImperativeHandle,
   useRef,
@@ -39,10 +38,13 @@ const initialErrors: AddressErrors = {
   postalCode: '',
 };
 
-export const PatientAddressInformation = forwardRef<
-  PatientAddressInformationRef,
-  object
->((_props, ref) => {
+interface PatientAddressInformationProps {
+  ref?: React.Ref<PatientAddressInformationRef>;
+}
+
+export const PatientAddressInformation = ({
+  ref,
+}: PatientAddressInformationProps) => {
   const { t } = useTranslation();
 
   const [formData, setFormData] = useState<AddressData>(initialFormData);
@@ -438,7 +440,7 @@ export const PatientAddressInformation = forwardRef<
       </div>
     </div>
   );
-});
+};
 
 PatientAddressInformation.displayName = 'PatientAddressInformation';
 
