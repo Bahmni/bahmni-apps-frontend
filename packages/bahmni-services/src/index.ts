@@ -33,6 +33,15 @@ export {
   EMAIL_UUID,
   ALTERNATE_PHONE_NUMBER_UUID,
 } from './patientService';
+export { searchAppointmentsByAttribute } from './AppointmentService/appointmmetService';
+export {
+  type Appointment,
+  type AppointmentSearchResult,
+  type Patient,
+  type AppointmentService,
+  type Location,
+  type Reason,
+} from './AppointmentService/models';
 export { getFormattedError } from './errorHandling';
 export {
   capitalize,
@@ -58,6 +67,8 @@ export {
   ISO_DATE_FORMAT,
   FULL_MONTH_DATE_FORMAT,
   getTodayDate,
+  calculateAgeinYearsAndMonths,
+  formatDateAndTime,
 } from './date';
 export { type Notification, notificationService } from './notification';
 export {

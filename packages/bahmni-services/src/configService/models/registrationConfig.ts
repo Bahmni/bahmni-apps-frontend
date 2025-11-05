@@ -6,7 +6,7 @@ export interface ExpectedFieldConfig {
 export interface SearchActionConfig {
   translationKey: string;
   type: 'navigate' | 'changeStatus';
-  enabledEule?: Array<{
+  enabledRule?: Array<{
     type: 'privilegeCheck' | 'statusCheck' | 'appDateCheck';
     values: string[];
   }>;
@@ -21,9 +21,10 @@ export interface SearchActionConfig {
 export interface PatientSearchField {
   translationKey: string;
   fields: string[];
+  actions?: SearchActionConfig[];
   columnTranslationKeys: string[];
   expectedFields?: ExpectedFieldConfig[];
-  type: 'person' | 'address' | 'program';
+  type: 'person' | 'address' | 'program' | 'appointment';
 }
 
 export interface AppointmentSearchField extends PatientSearchField {
