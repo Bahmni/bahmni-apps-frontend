@@ -1,6 +1,6 @@
 import { TextInput } from '@bahmni-frontend/bahmni-design-system';
 import { useTranslation } from '@bahmni-frontend/bahmni-services';
-import { forwardRef, useCallback, useImperativeHandle, useState } from 'react';
+import { useCallback, useImperativeHandle, useState } from 'react';
 import type { ContactData } from '../../../models/patient';
 import styles from './styles/index.module.scss';
 
@@ -11,12 +11,13 @@ export interface PatientContactInformationRef {
 
 interface PatientContactInformationProps {
   initialData?: ContactData;
+  ref?: React.Ref<PatientContactInformationRef>;
 }
 
-export const PatientContactInformation = forwardRef<
-  PatientContactInformationRef,
-  PatientContactInformationProps
->(({ initialData }, ref) => {
+export const PatientContactInformation = ({
+  initialData,
+  ref,
+}: PatientContactInformationProps) => {
   const { t } = useTranslation();
 
   const [formData, setFormData] = useState<ContactData>({
@@ -76,7 +77,7 @@ export const PatientContactInformation = forwardRef<
       </div>
     </div>
   );
-});
+};
 
 PatientContactInformation.displayName = 'PatientContactInformation';
 
