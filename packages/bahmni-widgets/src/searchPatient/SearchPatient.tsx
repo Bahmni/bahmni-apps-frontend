@@ -11,6 +11,12 @@ import {
   useTranslation,
   getRegistrationConfig,
   PatientSearchField,
+  searchAppointmentsByAttribute,
+  Reason,
+  Appointment,
+  AppointmentSearchResult,
+  calculateAgeinYearsAndMonths,
+  formatDateAndTime,
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
@@ -26,6 +32,7 @@ interface SearchPatientProps {
     isLoading: boolean,
     isError: boolean,
     isAdvancedSearch: boolean,
+    selectedFieldType?: string,
   ) => void;
 }
 
@@ -55,28 +62,103 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
     staleTime: 0,
     gcTime: 0,
   });
+  const getSearchQuery = () => {
+    const selectedField = searchFields.find(
+      (field) => t(field.translationKey) === selectedDropdownItem,
+    );
+    const fieldType = isAdvancedSearch ? (selectedField?.type ?? '') : '';
+    return fieldType === 'appointment'
+      ? getAppointmentSearchQuery()
+      : getPatientSearchQuery();
+  };
 
-  const getPatientSearchQuery = () => {
+  const getPatientSearchQuery = async () => {
     if (isAdvancedSearch) {
       const selectedField = searchFields.find(
         (field) => t(field.translationKey) === selectedDropdownItem,
       );
-
       const fieldType = selectedField?.type ?? '';
       const fieldsToSearch = selectedField ? selectedField.fields : [];
 
-      return searchPatientByCustomAttribute(
+      const rawResults = await searchPatientByCustomAttribute(
         encodeURI(searchTerm),
         fieldType,
         fieldsToSearch,
         searchFields,
         t,
       );
+      return formatPatientDob(rawResults);
     } else {
-      return searchPatientByNameOrId(encodeURI(searchTerm));
+      const rawResults = await searchPatientByNameOrId(encodeURI(searchTerm));
+      return formatPatientDob(rawResults);
     }
   };
+  const getAppointmentSearchQuery = async () => {
+    const selectedField = searchFields.find(
+      (field) => t(field.translationKey) === selectedDropdownItem,
+    );
+    const fieldsToSearch = selectedField ? selectedField.fields : [];
+    const requestBody: Record<string, string> = {};
+    if (fieldsToSearch.length > 0) {
+      requestBody[fieldsToSearch[0]] = searchTerm.trim();
+    }
+    const formattedRequest = formatAppointmentSearchRequest(requestBody);
+    const rawResults = searchAppointmentsByAttribute(formattedRequest);
+    return transformAppointmentsToPatientBundle(await rawResults);
+  };
+  const formatAppointmentSearchRequest = (
+    requestBody: Record<string, string>,
+  ): Record<string, string> => {
+    const oneYearFromToday = new Date();
+    oneYearFromToday.setFullYear(oneYearFromToday.getFullYear() - 1);
+    oneYearFromToday.setHours(23, 59, 59, 999);
+    requestBody.startDate = oneYearFromToday.toISOString();
+    return requestBody;
+  };
+  const transformAppointmentsToPatientBundle = (
+    appointmentsData: Appointment[],
+  ): { totalCount: number; pageOfResults: AppointmentSearchResult[] } => {
+    return {
+      pageOfResults: appointmentsData.map(
+        (appt: Appointment): AppointmentSearchResult => ({
+          uuid: appt.patient.uuid,
+          identifier: appt.patient.identifier,
+          givenName: appt.patient.name,
+          middleName: '',
+          familyName: '',
+          gender: appt.patient.gender,
+          birthDate: formatDateAndTime(appt.patient.birthDate, false),
+          age: calculateAgeinYearsAndMonths(appt.patient.birthDate),
+          extraIdentifiers: null,
+          personId: 0,
+          deathDate: null,
+          addressFieldValue: null,
+          patientProgramAttributeValue: null,
+          dateCreated: new Date(appt.dateCreated),
+          activeVisitUuid: '',
+          customAttribute: '',
+          hasBeenAdmitted: false,
 
+          // appointment-specific fields
+          appointmentNumber: appt.appointmentNumber,
+          appointmentDate: formatDateAndTime(appt.startDateTime, true),
+          appointmentReason: getAppointmentReasons(appt),
+          appointmentStatus: appt.status,
+        }),
+      ),
+      totalCount: appointmentsData.length,
+    };
+  };
+
+  const getAppointmentReasons = (appt: Appointment) => {
+    if (Array.isArray(appt?.reasons) && appt.reasons.length > 0) {
+      return appt.reasons
+        .map((reason: Reason) => reason?.name)
+        .filter(Boolean)
+        .join(', ');
+    }
+    return '';
+  };
   const { data, isLoading, isError, error } = useQuery({
     queryKey: [
       'patientSearch',
@@ -84,11 +166,12 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       isAdvancedSearch,
       selectedDropdownItem,
     ],
-    queryFn: getPatientSearchQuery,
+    queryFn: getSearchQuery,
     enabled: !!searchTerm,
     staleTime: 0,
     gcTime: 0,
   });
+
   const isPhoneSearch = () => {
     const selectedField = searchFields.find(
       (field) => t(field.translationKey) === selectedDropdownItem,
@@ -126,6 +209,22 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       setAdvanceSearchInput('');
       setSearchInput(inputValue);
     }
+  };
+  const formatPatientDob: (
+    searchResultsBundle: PatientSearchResultBundle,
+  ) => PatientSearchResultBundle = (searchResultsBundle) => {
+    return {
+      ...searchResultsBundle,
+      pageOfResults: searchResultsBundle.pageOfResults.map((patient) => ({
+        ...patient,
+        birthDate: patient.birthDate
+          ? formatDateAndTime(new Date(patient.birthDate).getTime(), false)
+          : patient.birthDate,
+        age: patient.birthDate
+          ? calculateAgeinYearsAndMonths(new Date(patient.birthDate).getTime())
+          : patient.age,
+      })),
+    };
   };
 
   const handleClick = (type: 'name' | 'advance') => {
@@ -189,9 +288,13 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       setDropdownItems([]);
       setSelectedDropdownItem('');
     } else if (configData?.patientSearch?.customAttributes) {
-      const customAttributes = configData.patientSearch.customAttributes;
-      setSearchFields(customAttributes);
-      const labels = customAttributes.map((field: PatientSearchField) =>
+      const combinedFields = [
+        ...(configData.patientSearch.customAttributes || []),
+        ...(configData.patientSearch.appointment || []),
+      ];
+      setSearchFields(combinedFields);
+
+      const labels = combinedFields.map((field: PatientSearchField) =>
         t(field.translationKey),
       );
       setDropdownItems(labels);
@@ -216,8 +319,17 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
         type: 'error',
       });
     }
-    if (searchTerm)
-      onSearch(data, searchTerm, isLoading, isError, isAdvancedSearch);
+    const selectedField = searchFields.find(
+      (field) => t(field.translationKey) === selectedDropdownItem,
+    );
+    onSearch(
+      data,
+      searchTerm,
+      isLoading,
+      isError,
+      isAdvancedSearch,
+      selectedField?.type,
+    );
   }, [
     searchTerm,
     isLoading,
