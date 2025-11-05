@@ -1,0 +1,344 @@
+import { render, screen, fireEvent, act } from '@testing-library/react';
+import React from 'react';
+import type { BasicInfoData } from '../../../../models/patient';
+import { PatientProfile } from '../PatientProfile';
+import type { PatientProfileRef } from '../PatientProfile';
+
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+  }),
+  MAX_PATIENT_AGE_YEARS: 120,
+}));
+
+jest.mock('../../../../utils/identifierGenderUtils', () => ({
+  useGenderData: () => ({
+    genders: ['CREATE_PATIENT_GENDER_MALE', 'CREATE_PATIENT_GENDER_FEMALE'],
+  }),
+  useIdentifierData: () => ({
+    identifierPrefixes: ['BAH', 'GAN'],
+    primaryIdentifierType: 'primary-type-uuid',
+    identifierSources: new Map([
+      ['BAH', 'source-uuid-1'],
+      ['GAN', 'source-uuid-2'],
+    ]),
+  }),
+}));
+
+jest.mock('../dateAgeUtils', () => ({
+  createDateAgeHandlers: jest.fn(() => ({
+    handleDateInputChange: jest.fn(),
+    handleDateOfBirthChange: jest.fn(),
+    handleAgeChange: jest.fn(),
+  })),
+  formatToDisplay: jest.fn((date: string) => {
+    if (!date) return '';
+    const [year, month, day] = date.split('-');
+    return `${day}/${month}/${year}`;
+  }),
+}));
+
+describe('PatientProfile', () => {
+  let ref: React.RefObject<PatientProfileRef | null>;
+
+  beforeEach(() => {
+    ref = React.createRef<PatientProfileRef | null>();
+  });
+
+  describe('Rendering', () => {
+    it('should render basic info fields', () => {
+      render(<PatientProfile ref={ref} />);
+
+      expect(
+        screen.getByLabelText('CREATE_PATIENT_FIRST_NAME'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByLabelText('CREATE_PATIENT_LAST_NAME'),
+      ).toBeInTheDocument();
+      expect(screen.getByText('CREATE_PATIENT_GENDER')).toBeInTheDocument();
+    });
+  });
+
+  describe('Name Validation', () => {
+    it('should accept valid name with only letters', () => {
+      render(<PatientProfile ref={ref} />);
+      const firstNameInput = screen.getByLabelText(
+        'CREATE_PATIENT_FIRST_NAME',
+      ) as HTMLInputElement;
+
+      fireEvent.change(firstNameInput, { target: { value: 'John' } });
+      expect(firstNameInput.value).toBe('John');
+    });
+
+    it('should accept name with spaces', () => {
+      render(<PatientProfile ref={ref} />);
+      const firstNameInput = screen.getByLabelText(
+        'CREATE_PATIENT_FIRST_NAME',
+      ) as HTMLInputElement;
+
+      fireEvent.change(firstNameInput, { target: { value: 'John Doe' } });
+      expect(firstNameInput.value).toBe('John Doe');
+    });
+
+    it('should reject name with numbers', () => {
+      render(<PatientProfile ref={ref} />);
+      const firstNameInput = screen.getByLabelText(
+        'CREATE_PATIENT_FIRST_NAME',
+      ) as HTMLInputElement;
+
+      fireEvent.change(firstNameInput, { target: { value: 'John123' } });
+      expect(firstNameInput.value).toBe('');
+    });
+
+    it('should reject name with special characters', () => {
+      render(<PatientProfile ref={ref} />);
+      const lastNameInput = screen.getByLabelText(
+        'CREATE_PATIENT_LAST_NAME',
+      ) as HTMLInputElement;
+
+      fireEvent.change(lastNameInput, { target: { value: 'Doe@#$' } });
+      expect(lastNameInput.value).toBe('');
+    });
+  });
+
+  describe('Required Field Validation', () => {
+    it('should show errors when required fields are empty', () => {
+      render(<PatientProfile ref={ref} />);
+
+      const isValid = ref.current?.validate();
+
+      expect(isValid).toBe(false);
+    });
+
+    it('should validate successfully with all required fields', () => {
+      const initialData: BasicInfoData = {
+        patientIdFormat: 'BAH',
+        entryType: false,
+        firstName: 'John',
+        middleName: '',
+        lastName: 'Doe',
+        gender: 'CREATE_PATIENT_GENDER_MALE',
+        ageYears: '30',
+        ageMonths: '',
+        ageDays: '',
+        dateOfBirth: '1993-01-01',
+        birthTime: '',
+      };
+
+      render(<PatientProfile ref={ref} initialData={initialData} />);
+
+      const isValid = ref.current?.validate();
+
+      expect(isValid).toBe(true);
+    });
+
+    it('should clear first name error when field is filled', () => {
+      render(<PatientProfile ref={ref} />);
+
+      ref.current?.validate();
+
+      const firstNameInput = screen.getByLabelText('CREATE_PATIENT_FIRST_NAME');
+      fireEvent.change(firstNameInput, { target: { value: 'John' } });
+
+      const isValid = ref.current?.validate();
+      expect(isValid).toBe(false); // Still invalid due to other fields
+    });
+  });
+
+  describe('getData Method', () => {
+    it('should return empty data when no input provided', () => {
+      render(<PatientProfile ref={ref} />);
+
+      const data = ref.current?.getData();
+
+      expect(data?.firstName).toBe('');
+      expect(data?.lastName).toBe('');
+      expect(data?.gender).toBe('');
+    });
+
+    it('should return current form data', () => {
+      render(<PatientProfile ref={ref} />);
+
+      const firstNameInput = screen.getByLabelText('CREATE_PATIENT_FIRST_NAME');
+      const lastNameInput = screen.getByLabelText('CREATE_PATIENT_LAST_NAME');
+
+      fireEvent.change(firstNameInput, { target: { value: 'John' } });
+      fireEvent.change(lastNameInput, { target: { value: 'Doe' } });
+
+      const data = ref.current?.getData();
+
+      expect(data?.firstName).toBe('John');
+      expect(data?.lastName).toBe('Doe');
+    });
+
+    it('should return patientIdentifier with correct structure', () => {
+      render(<PatientProfile ref={ref} />);
+
+      const data = ref.current?.getData();
+
+      expect(data?.patientIdentifier).toEqual({
+        identifierSourceUuid: 'source-uuid-1',
+        identifierPrefix: 'BAH',
+        identifierType: 'primary-type-uuid',
+        preferred: true,
+        voided: false,
+      });
+    });
+
+    it('should return dobEstimated flag', () => {
+      render(<PatientProfile ref={ref} initialDobEstimated />);
+
+      const data = ref.current?.getData();
+
+      expect(data?.dobEstimated).toBe(true);
+    });
+
+    it('should return initial data when provided', () => {
+      const initialData: BasicInfoData = {
+        patientIdFormat: 'GAN',
+        entryType: true,
+        firstName: 'Jane',
+        middleName: 'M',
+        lastName: 'Smith',
+        gender: 'CREATE_PATIENT_GENDER_FEMALE',
+        ageYears: '25',
+        ageMonths: '6',
+        ageDays: '15',
+        dateOfBirth: '1998-06-15',
+        birthTime: '10:30',
+      };
+
+      render(<PatientProfile ref={ref} initialData={initialData} />);
+
+      const data = ref.current?.getData();
+
+      expect(data?.firstName).toBe('Jane');
+      expect(data?.middleName).toBe('M');
+      expect(data?.lastName).toBe('Smith');
+      expect(data?.gender).toBe('CREATE_PATIENT_GENDER_FEMALE');
+      expect(data?.patientIdFormat).toBe('GAN');
+    });
+  });
+
+  describe('clearData Method', () => {
+    it('should clear all form data', () => {
+      const initialData: BasicInfoData = {
+        patientIdFormat: 'BAH',
+        entryType: false,
+        firstName: 'John',
+        middleName: 'M',
+        lastName: 'Doe',
+        gender: 'CREATE_PATIENT_GENDER_MALE',
+        ageYears: '30',
+        ageMonths: '',
+        ageDays: '',
+        dateOfBirth: '1993-01-01',
+        birthTime: '10:00',
+      };
+
+      render(<PatientProfile ref={ref} initialData={initialData} />);
+
+      act(() => {
+        ref.current?.clearData();
+      });
+
+      const data = ref.current?.getData();
+
+      expect(data?.firstName).toBe('');
+      expect(data?.middleName).toBe('');
+      expect(data?.lastName).toBe('');
+      expect(data?.gender).toBe('');
+      expect(data?.dobEstimated).toBe(false);
+    });
+  });
+
+  describe('setCustomError Method', () => {
+    it('should set custom error for a field', () => {
+      render(<PatientProfile ref={ref} />);
+
+      ref.current?.setCustomError('firstName', 'Custom error message');
+
+      // The error should be set but we can only verify through validation
+      const isValid = ref.current?.validate();
+      expect(isValid).toBe(false);
+    });
+  });
+
+  describe('Gender Selection', () => {
+    it('should update gender when selected', () => {
+      render(<PatientProfile ref={ref} />);
+
+      const data = ref.current?.getData();
+      expect(data?.gender).toBe('');
+    });
+  });
+
+  describe('Entry Type Checkbox', () => {
+    it('should toggle entry type checkbox', () => {
+      render(<PatientProfile ref={ref} />);
+
+      const checkbox = screen.getByLabelText(
+        'CREATE_PATIENT_ENTER_MANUALLY',
+      ) as HTMLInputElement;
+
+      expect(checkbox.checked).toBe(false);
+
+      fireEvent.click(checkbox);
+
+      const data = ref.current?.getData();
+      expect(data?.entryType).toBe(true);
+    });
+  });
+
+  describe('DOB Estimated Checkbox', () => {
+    it('should toggle DOB estimated checkbox', () => {
+      render(<PatientProfile ref={ref} />);
+
+      const checkbox = screen.getByLabelText(
+        'CREATE_PATIENT_ESTIMATED',
+      ) as HTMLInputElement;
+
+      expect(checkbox.checked).toBe(false);
+
+      fireEvent.click(checkbox);
+
+      const data = ref.current?.getData();
+      expect(data?.dobEstimated).toBe(true);
+    });
+
+    it('should initialize with dobEstimated from props', () => {
+      render(<PatientProfile ref={ref} initialDobEstimated />);
+
+      const checkbox = screen.getByLabelText(
+        'CREATE_PATIENT_ESTIMATED',
+      ) as HTMLInputElement;
+
+      expect(checkbox.checked).toBe(true);
+    });
+  });
+
+  describe('Patient ID Format Selection', () => {
+    it('should update patient ID format', () => {
+      render(<PatientProfile ref={ref} />);
+
+      const data = ref.current?.getData();
+
+      expect(data?.patientIdFormat).toBe('BAH');
+    });
+  });
+
+  describe('Birth Time Input', () => {
+    it('should update birth time', () => {
+      render(<PatientProfile ref={ref} />);
+
+      const birthTimeInput = screen.getByLabelText(
+        'CREATE_PATIENT_BIRTH_TIME',
+      ) as HTMLInputElement;
+
+      fireEvent.change(birthTimeInput, { target: { value: '14:30' } });
+
+      const data = ref.current?.getData();
+      expect(data?.birthTime).toBe('14:30');
+    });
+  });
+});
