@@ -7,6 +7,8 @@ export {
   calculateOnsetDate,
   sortByDate,
   getTodayDate,
+  calculateAgeinYearsAndMonths,
+  formatDateAndTime,
 } from './date';
 export {
   DATE_FORMAT,

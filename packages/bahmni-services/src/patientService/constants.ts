@@ -108,6 +108,7 @@ export const ADDRESS_HIERARCHY_MIN_SEARCH_LENGTH = 2;
 export const PATIENT_SEARCH_MIN_LENGTH = 2;
 export const DEFAULT_PAGE_SIZE = 20;
 export const MAX_PAGE_SIZE = 100;
+export const APPOINTMENTS_SEARCH_URL = OPENMRS_REST_V1 + '/appointments/search';
 
 // Validation constants
 export const MAX_PATIENT_AGE_YEARS = 120;
