@@ -5,12 +5,7 @@ import {
   type AddressHierarchyEntry,
   type PatientAddress,
 } from '@bahmni-frontend/bahmni-services';
-import {
-  useCallback,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useImperativeHandle, useRef, useState } from 'react';
 import { AddressData } from '../../../models/patient';
 import type { AddressErrors } from '../../../models/validation';
 import styles from './styles/index.module.scss';
