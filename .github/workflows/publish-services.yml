@@ -1,105 +1,60 @@
-name: Publish bahmni-services
+name: CI & Publish bahmni-services
 
 on:
   push:
-    tags:
-      - 'services-v*'
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to publish (e.g., 0.0.2)'
-        required: true
-        type: string
-
+    branches:
+      - main
+   
 env:
   NODE_VERSION: "22"
   PACKAGE_PATH: "packages/bahmni-services"
 
 jobs:
-  lint-and-test:
+  lint-test-build-publish:
     runs-on: ubuntu-latest
+    environment: npm-publish
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "yarn"
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'yarn'
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Lint package
+      - name: Lint
         run: npx nx lint bahmni-services
 
-      - name: Run tests
+      - name: Test
         run: npx nx test bahmni-services
 
-  build-and-publish:
-    needs: lint-and-test
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "yarn"
-          registry-url: 'https://registry.npmjs.org'
-
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: Extract version from tag
-        id: extract-version
-        run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
-          else
-            VERSION=${GITHUB_REF#refs/tags/services-v}
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Update package version
-        working-directory: ${{ env.PACKAGE_PATH }}
-        run: |
-          npm version ${{ steps.extract-version.outputs.version }} --no-git-tag-version
-
-      - name: Build package
+      - name: Build
         run: npx nx build bahmni-services
 
-      - name: Publish to npm
+      - name: Publish dev build to npm
         working-directory: ${{ env.PACKAGE_PATH }}
-        run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          # Base version from package.json
+          BASE_VERSION=$(node -p "require('./package.json').version")
+          BUILD_NUM=${{ github.run_number }}
+          SHORT_SHA=${GITHUB_SHA:0:7}
 
-      - name: Create GitHub Release
-        if: github.event_name != 'workflow_dispatch'
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: bahmni-services v${{ steps.extract-version.outputs.version }}
-          body: |
-            Published @bahmni-frontend/bahmni-services@${{ steps.extract-version.outputs.version }} to npm.
+          # Generate unique dev version (e.g., 1.2.3-dev.42.a1b2c3d)
+          DEV_VERSION="${BASE_VERSION}-dev.${BUILD_NUM}.${SHORT_SHA}"
+          echo "📦 Publishing @bahmni-frontend/bahmni-services@$DEV_VERSION"
 
-            Install with:
-            ```
-            npm install @bahmni-frontend/bahmni-services@${{ steps.extract-version.outputs.version }}
-            ```
-            or
-            ```
-            yarn add @bahmni-frontend/bahmni-services@${{ steps.extract-version.outputs.version }}
-            ```
-          draft: false
-          prerelease: false
+          # Update package version and publish in one workflow
+          npm version "$DEV_VERSION" --no-git-tag-version
+          npm publish --access public --tag dev
+          
+          # Output information
+          echo "::notice title=Package Published::Published @bahmni-frontend/bahmni-services@$DEV_VERSION"
+          echo "::notice title=Install Command::npm install @bahmni-frontend/bahmni-services@dev"
+          echo "::notice title=Build Info::Build #${BUILD_NUM} from commit ${SHORT_SHA}"
