@@ -454,10 +454,6 @@ describe('useCreatePatient', () => {
       };
 
       mockCreatePatient.mockResolvedValue(responseWithoutUuid);
-      const mockNavigate = jest.fn();
-      jest
-        .spyOn(require('react-router-dom'), 'useNavigate')
-        .mockReturnValue(mockNavigate);
 
       const { result } = renderHook(() => useCreatePatient(), {
         wrapper: createWrapper(),
