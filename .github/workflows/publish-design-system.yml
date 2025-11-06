@@ -45,7 +45,7 @@ jobs:
           BASE_VERSION=$(node -p "require('./package.json').version")
           BUILD_NUM=${{ github.run_number }}
 
-          # Generate unique dev version (e.g., 1.2.3-dev.42.a1b2c3d)
+          # Generate unique dev version (e.g., 1.2.3-dev.42)
           DEV_VERSION="${BASE_VERSION}-dev.${BUILD_NUM}"
           echo "📦 Publishing bahmni-design-system@$DEV_VERSION"
 

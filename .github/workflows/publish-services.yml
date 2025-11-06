@@ -3,7 +3,7 @@ name: CI & Publish bahmni-services
 on:
   push:
     branches:
-      - main
+      - BN-177
    
 env:
   NODE_VERSION: "22"
@@ -13,6 +13,8 @@ jobs:
   lint-test-build-publish:
     runs-on: ubuntu-latest
     environment: npm-publish
+    env:
+      NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -38,23 +40,20 @@ jobs:
 
       - name: Publish dev build to npm
         working-directory: ${{ env.PACKAGE_PATH }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           # Base version from package.json
           BASE_VERSION=$(node -p "require('./package.json').version")
           BUILD_NUM=${{ github.run_number }}
-          SHORT_SHA=${GITHUB_SHA:0:7}
 
-          # Generate unique dev version (e.g., 1.2.3-dev.42.a1b2c3d)
-          DEV_VERSION="${BASE_VERSION}-dev.${BUILD_NUM}.${SHORT_SHA}"
-          echo "📦 Publishing @bahmni-frontend/bahmni-services@$DEV_VERSION"
+          # Generate unique dev version (e.g., 1.2.3-dev.42)
+          DEV_VERSION="${BASE_VERSION}-dev.${BUILD_NUM}"
+          echo "📦 Publishing bahmni-services@$DEV_VERSION"
 
           # Update package version and publish in one workflow
           npm version "$DEV_VERSION" --no-git-tag-version
-          npm publish --access public --tag dev
+          #npm publish --access public --tag dev
           
           # Output information
-          echo "::notice title=Package Published::Published @bahmni-frontend/bahmni-services@$DEV_VERSION"
-          echo "::notice title=Install Command::npm install @bahmni-frontend/bahmni-services@dev"
-          echo "::notice title=Build Info::Build #${BUILD_NUM} from commit ${SHORT_SHA}"
+          echo "::notice title=Package Published::Published bahmni-services@$DEV_VERSION"
+          echo "::notice title=Install Command::npm install bahmni-services@dev"
+          echo "::notice title=Build Info::Build #${BUILD_NUM}"

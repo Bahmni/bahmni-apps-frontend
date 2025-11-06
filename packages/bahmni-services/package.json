@@ -1,5 +1,5 @@
 {
-  "name": "@bahmni-frontend/bahmni-services",
+  "name": "bahmni-services",
   "version": "0.0.1",
   "type": "module",
   "main": "./dist/index.js",
@@ -18,7 +18,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Bahmni/bahmni-apps-frontend.git",
-    "directory": "bahmni-frontend/packages/bahmni-services"
+    "directory": "bahmni-apps-frontend/packages/bahmni-services"
   },
   "scripts": {
     "build": "vite build",
