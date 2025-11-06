@@ -19,7 +19,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Bahmni/bahmni-apps-frontend.git",
-    "directory": "bahmni-frontend/packages/bahmni-design-system"
+    "directory": "bahmni-apps-frontend/packages/bahmni-design-system"
   },
   "scripts": {
     "build": "vite build",
