@@ -17,7 +17,7 @@
   "license": "MPLv2",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Bahmni/bahmni-apps-frontend.git",
+    "url": "git+https://github.com/Bahmni/bahmni-apps-frontend.git",
     "directory": "bahmni-frontend/packages/bahmni-services"
   },
   "scripts": {
