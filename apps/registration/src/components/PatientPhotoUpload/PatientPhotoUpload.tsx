@@ -41,6 +41,9 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
   const [confirmedUrl, setConfirmedUrl] = useState<string | undefined>(
     undefined,
   );
+  const [fileSizeError, setFileSizeError] = useState<string>('');
+
+  const MAX_FILE_SIZE = 500 * 1024;
 
   const { videoRef, start, stop, capture } = useCamera();
 
@@ -54,11 +57,13 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
     setIsModalOpen(true);
     setMode('capture');
     handlePreview();
+    setFileSizeError('');
   };
 
   const handleModalClose = useCallback(() => {
     stop();
     setIsModalOpen(false);
+    setFileSizeError('');
     setMode('idle');
     if (!previewUrl) {
       setConfirmedUrl(undefined);
@@ -77,8 +82,18 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files?.[0]) return;
+
+    const file = files[0];
+    if (file.size > MAX_FILE_SIZE) {
+      setFileSizeError(t('CREATE_PATIENT_UPLOAD_PHOTO_FILE_SIZE_ERROR'));
+      setPreviewUrl(undefined);
+      return;
+    }
+
+    setFileSizeError('');
+
     revokeObjectUrl(previewUrl);
-    const url = fileToObjectUrl(files[0]);
+    const url = fileToObjectUrl(file);
     setPreviewUrl(url);
   };
 
@@ -127,7 +142,7 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
             <img src={confirmedUrl} alt="Patient" />
             <IconButton
               kind="ghost"
-              label="Remove photo"
+              label={t('CREATE_PATIENT_UPLOAD_PHOTO_REMOVE')}
               size="sm"
               onClick={handleRemoveConfirmed}
               className={styles.removeButton}
@@ -161,7 +176,7 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
         open={isModalOpen}
         onRequestClose={handleModalClose}
         passiveModal
-        modalHeading="Upload Patient's Photo"
+        modalHeading={t('CREATE_PATIENT_UPLOAD_PHOTO_MODAL_HEADING')}
       >
         <Modal.Body>
           {mode === 'capture' && (
@@ -187,17 +202,23 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
           )}
 
           {mode === 'upload' && (
-            <FileUploader
-              labelTitle=""
-              key={isModalOpen ? 'open' : 'closed'}
-              labelDescription="Maximum file size: 500KB"
-              buttonLabel="Choose file"
-              buttonKind="primary"
-              accept={['image/*']}
-              onChange={handleFileChange}
-              onDelete={handleFileDelete}
-              filenameStatus="edit"
-            />
+            <>
+              <div>{t('CREATE_PATIENT_UPLOAD_PHOTO_FILE_SIZE_LIMIT')}</div>
+              <FileUploader
+                labelTitle=""
+                key={isModalOpen ? 'open' : 'closed'}
+                labelDescription=""
+                buttonLabel="Choose file"
+                buttonKind="primary"
+                accept={['image/*']}
+                onChange={handleFileChange}
+                onDelete={handleFileDelete}
+                filenameStatus="edit"
+              />
+              {fileSizeError && (
+                <div className={styles.errorMessage}>{fileSizeError}</div>
+              )}
+            </>
           )}
 
           {previewUrl && (
@@ -210,7 +231,7 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
                 onClick={handleConfirm}
                 className={styles.confirmButton}
               >
-                Confirm
+                {t('CREATE_PATIENT_UPLOAD_PHOTO_CONFIRM')}
               </Button>
               {mode === 'capture' && (
                 <Button
