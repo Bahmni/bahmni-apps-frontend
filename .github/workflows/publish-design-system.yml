@@ -3,7 +3,7 @@ name: CI & Publish bahmni-design-system
 on:
   push:
     branches:
-      - BN-177
+      - main
 
 env:
   NODE_VERSION: "22"
@@ -13,6 +13,8 @@ jobs:
   lint-test-build-publish:
     runs-on: ubuntu-latest
     environment: npm-publish
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -37,9 +39,7 @@ jobs:
         run: npx nx build bahmni-design-system
 
       - name: Publish dev build to npm
-        working-directory: ${{ env.PACKAGE_PATH }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        working-directory: ${{env.PACKAGE_PATH}}
         run: |
           # Base version from package.json
           BASE_VERSION=$(node -p "require('./package.json').version")
