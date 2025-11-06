@@ -41,5 +41,8 @@
     "dist",
     "README.md",
     "LICENSE"
-  ]
+  ],
+  "devDependencies": {
+    "@types/carbon__layout": "^0.0.3"
+  }
 }

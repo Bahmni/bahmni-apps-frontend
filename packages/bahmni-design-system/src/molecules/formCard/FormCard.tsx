@@ -97,7 +97,7 @@ const CardHeader: React.FC<CardHeaderProps> = ({
       {actionIcon && onActionClick && (
         <ActionIcon
           icon={actionIcon}
-          onClick={onActionClick}
+          onClick={(e) => onActionClick(e as React.MouseEvent)}
           disabled={disabled}
           ariaLabel={`Action for ${title}`}
         />
