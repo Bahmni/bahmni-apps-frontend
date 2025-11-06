@@ -1,4 +1,4 @@
-# @bahmni-frontend/bahmni-services
+# bahmni-services
 
 ## Bundler Configuration
 
@@ -14,27 +14,6 @@ export default defineConfig({
     'process.env.PUBLIC_URL': '"/bahmni/"'
   }
 });
-```
-
-**Webpack:**
-```javascript
-// webpack.config.js
-plugins: [
-  new webpack.DefinePlugin({
-    'process.env.PUBLIC_URL': '"/bahmni/"'
-  })
-]
-```
-
-**Rollup:**
-```javascript
-// rollup.config.js
-plugins: [
-  replace({
-    'process.env.PUBLIC_URL': '"/bahmni/"',
-    preventAssignment: true
-  })
-]
 ```
 
 Replace `"/bahmni/"` with your actual Bahmni installation path.
