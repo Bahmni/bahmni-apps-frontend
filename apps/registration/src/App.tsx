@@ -16,7 +16,7 @@ import React, { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { queryClientConfig } from './config/tanstackQuery';
 import { REGISTRATION_NAMESPACE } from './constants/app';
-import CreatePatient from './pages/createPatientPage';
+import CreatePatient from './pages/createPatientPage/CreatePatient';
 import PatientSearchPage from './pages/patientSearchPage';
 import { RegistrationConfigProvider } from './providers/RegistrationConfigProvider';
 

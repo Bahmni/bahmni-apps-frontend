@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { useCreatePatient } from '../../../hooks/useCreatePatient';
-import CreatePatient from '../index';
+import CreatePatient from '../CreatePatient';
 import { validateAllSections, collectFormData } from '../patientFormService';
 
 // Mock the dependencies
@@ -35,11 +35,17 @@ jest.mock('../../../hooks/useCreatePatient');
 jest.mock('../patientFormService');
 
 // Mock child components
+interface Breadcrumb {
+  label: string;
+  href?: string;
+  onClick?: () => void;
+}
+
 jest.mock('../../../components/Header', () => ({
-  Header: ({ breadcrumbs }: any) => (
+  Header: ({ breadcrumbs }: { breadcrumbs: Breadcrumb[] }) => (
     <div data-testid="header">
-      {breadcrumbs.map((bc: any, idx: number) => (
-        <span key={idx} data-testid={`breadcrumb-${idx}`}>
+      {breadcrumbs.map((bc, idx: number) => (
+        <span key={`breadcrumb-${bc.label}`} data-testid={`breadcrumb-${idx}`}>
           {bc.label}
         </span>
       ))}
@@ -48,9 +54,9 @@ jest.mock('../../../components/Header', () => ({
 }));
 
 jest.mock('../../../components/forms/patientProfile/PatientProfile', () => ({
-  PatientProfile: ({ ref }: any) => {
+  PatientProfile: ({ ref }: { ref?: React.Ref<unknown> }) => {
     // Expose imperative methods via ref
-    if (ref) {
+    if (ref && typeof ref === 'object' && 'current' in ref) {
       ref.current = {
         validate: jest.fn(() => true),
         getData: jest.fn(() => ({
@@ -68,8 +74,8 @@ jest.mock('../../../components/forms/patientProfile/PatientProfile', () => ({
 jest.mock(
   '../../../components/forms/patientAddressInformation/PatientAddressInformation',
   () => ({
-    PatientAddressInformation: ({ ref }: any) => {
-      if (ref) {
+    PatientAddressInformation: ({ ref }: { ref?: React.Ref<unknown> }) => {
+      if (ref && typeof ref === 'object' && 'current' in ref) {
         ref.current = {
           validate: jest.fn(() => true),
           getData: jest.fn(() => ({
@@ -88,8 +94,8 @@ jest.mock(
 jest.mock(
   '../../../components/forms/patientContactInformation/PatientContactInformation',
   () => ({
-    PatientContactInformation: ({ ref }: any) => {
-      if (ref) {
+    PatientContactInformation: ({ ref }: { ref?: React.Ref<unknown> }) => {
+      if (ref && typeof ref === 'object' && 'current' in ref) {
         ref.current = {
           validate: jest.fn(() => true),
           getData: jest.fn(() => ({
@@ -107,8 +113,8 @@ jest.mock(
 jest.mock(
   '../../../components/forms/patientAdditionalInformation/PatientAdditionalInformation',
   () => ({
-    PatientAdditionalInformation: ({ ref }: any) => {
-      if (ref) {
+    PatientAdditionalInformation: ({ ref }: { ref?: React.Ref<unknown> }) => {
+      if (ref && typeof ref === 'object' && 'current' in ref) {
         ref.current = {
           validate: jest.fn(() => true),
           getData: jest.fn(() => ({
@@ -141,7 +147,7 @@ jest.mock('../visitTypeSelector', () => ({
       >
         Start Visit
       </button>
-      <span data-testid="patient-uuid-display">{patientUuid || 'none'}</span>
+      <span data-testid="patient-uuid-display">{patientUuid ?? 'none'}</span>
     </div>
   ),
 }));
@@ -422,7 +428,7 @@ describe('CreatePatient', () => {
       expect(screen.getByText('Saving...')).toBeInTheDocument();
     });
 
-    it('should disable save button when patient is already created', () => {
+    it('should disable save button when patient is already created', async () => {
       (useCreatePatient as jest.Mock).mockReturnValue({
         mutateAsync: mockMutateAsync,
         isPending: false,
@@ -441,7 +447,7 @@ describe('CreatePatient', () => {
         </QueryClientProvider>,
       );
 
-      waitFor(() => {
+      await waitFor(() => {
         const saveButton = screen.getByText('CREATE_PATIENT_SAVE');
         expect(saveButton).toBeDisabled();
       });
