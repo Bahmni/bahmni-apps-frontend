@@ -1,6 +1,7 @@
 @use "@carbon/react/scss/spacing" as *;
 
 .photoUploadSection {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -9,26 +10,57 @@
   height: 176px;
   background: #f4f4f4;
   justify-content: center;
+
+  img {
+    width: 100%;
+    height: 100%;
+    padding: 4px;
+    padding-top: 32px;
+    object-fit: contain;
+    display: block;
+  }
+}
+
+.photoContainer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.removeButton {
+  position: absolute !important;
+  top: 0px !important;
+  right: 4px !important;
+  bottom: auto !important;
+  left: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  z-index: 10 !important;
+  min-height: auto !important;
+  width: auto !important;
+  height: auto !important;
+  transform: none !important;
 }
 
 .wrapButton {
-    padding-right: $spacing-05;
+  padding-right: $spacing-05;
 }
 
 .imagePreviewContainer {
   display: flex;
-  width: 400px;
-  height: 300px;
+  width: 600px;
+  height: 400px;
   margin: 0 auto;
   img {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    border-radius: 4px;
   }
 }
 
 .confirmButton {
   display: block;
-  margin: auto;
+  margin: $spacing-05 auto 0;
 }
