@@ -32,6 +32,7 @@ export interface ProfileRef {
   getData: () => BasicInfoData & {
     dobEstimated: boolean;
     patientIdentifier: PatientIdentifier;
+    image?: string;
   };
   validate: () => boolean;
   clearData: () => void;
@@ -73,6 +74,7 @@ export const Profile = ({
   });
 
   const [dobEstimated, setDobEstimated] = useState(initialDobEstimated);
+  const [patientImage, setPatientImage] = useState<string>('');
 
   // Component owns ALL its error states
   const [nameErrors, setNameErrors] = useState<BasicInfoErrors>({
@@ -212,6 +214,7 @@ export const Profile = ({
         ...formData,
         dobEstimated,
         patientIdentifier,
+        ...(patientImage && { image: patientImage }),
       };
     },
     validate,
@@ -230,6 +233,7 @@ export const Profile = ({
         birthTime: '',
       });
       setDobEstimated(false);
+      setPatientImage('');
       setNameErrors({ firstName: '', middleName: '', lastName: '' });
       setValidationErrors({
         firstName: '',
@@ -251,7 +255,7 @@ export const Profile = ({
         {t('CREATE_PATIENT_SECTION_BASIC_INFO')}
       </span>
       <div className={styles.row}>
-        <PatientPhotoUpload />
+        <PatientPhotoUpload onPhotoConfirm={setPatientImage} />
 
         <div className={styles.col}>
           <div className={styles.row}>
