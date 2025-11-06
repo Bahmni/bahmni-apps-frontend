@@ -3,7 +3,7 @@ name: CI & Publish bahmni-design-system
 on:
   push:
     branches:
-      - main
+      - BN-177
 
 env:
   NODE_VERSION: "22"
