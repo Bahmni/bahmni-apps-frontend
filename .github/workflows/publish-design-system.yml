@@ -3,7 +3,7 @@ name: CI & Publish bahmni-design-system
 on:
   push:
     branches:
-      - main
+      - BN-177
 
 env:
   NODE_VERSION: "22"
@@ -52,7 +52,7 @@ jobs:
 
           # Update package version and publish in one workflow
           npm version "$DEV_VERSION" --no-git-tag-version
-          npm publish --access public --tag dev
+          # npm publish --access public --tag dev
           
           # Output information
           echo "::notice title=Package Published::Published @bahmni-frontend/bahmni-design-system@$DEV_VERSION"
