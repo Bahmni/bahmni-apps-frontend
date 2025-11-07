@@ -6,17 +6,16 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  width: 144px;
-  height: 176px;
+  gap: $spacing-05;
+  width: $spacing-05 * 9;
+  height: $spacing-05 * 11;
   background: #f4f4f4;
   justify-content: center;
 
   img {
     width: 100%;
     height: 100%;
-    padding: 4px;
-    padding-top: 32px;
+    padding: $spacing-03;
     object-fit: contain;
     display: block;
   }
@@ -24,8 +23,8 @@
 
 .removeButton {
   position: absolute !important;
-  top: 0px !important;
-  right: 0px !important;
+  top: 0 !important;
+  right: 0 !important;
   padding: 0 !important;
   z-index: 10 !important;
   min-height: auto !important;
@@ -36,25 +35,29 @@
 }
 
 .imagePreviewContainer {
-  width: 600px;
-  height: 400px;
+  width: $spacing-13 * 3.75;
+  height: $spacing-13 * 2.5;
   margin: 0 auto;
-  img {
+  
+  img,
+  video {
     width: 100%;
     height: 100%;
     object-fit: contain;
   }
 }
 
-.confirmButton {
-  display: block;
-  margin: $spacing-05 auto 0;
+.buttonGroup {
+  display: flex;
+  justify-content: center;
+  gap: $spacing-05;
+  margin-top: $spacing-05;
 }
 
 .errorMessage {
   color: $support-error;
-  font-size: 0.875rem;
-  line-height: 1.125rem;
+  font-size: $spacing-04;
+  line-height: $spacing-05;
   font-weight: 400;
-  margin-top: 0.5rem;
+  margin-top: $spacing-03;
 }

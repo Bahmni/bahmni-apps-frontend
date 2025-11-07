@@ -56,7 +56,7 @@
   "CREATE_PATIENT_UPLOAD_PHOTO_CONFIRM": "Confirm Photo",
   "CREATE_PATIENT_UPLOAD_PHOTO_REMOVE": "Remove photo",
   "CREATE_PATIENT_UPLOAD_PHOTO_RETAKE": "Retake",
-  "CREATE_PATIENT_UPLOAD_PHOTO_FILE_SIZE_ERROR": "File size exceeds 500KB. Please choose a smaller file.",
+  "CREATE_PATIENT_UPLOAD_PHOTO_FILE_SIZE_ERROR": "File size is {{fileSize}} which exceeds the 500KB limit",
   "CREATE_PATIENT_VALIDATION_AGE_DAYS_MAX": "Days cannot be more than 31",
   "CREATE_PATIENT_VALIDATION_AGE_MONTHS_MAX": "Months cannot be more than 11",
   "CREATE_PATIENT_VALIDATION_AGE_YEARS_MAX": "Age cannot be more than 120 years",
