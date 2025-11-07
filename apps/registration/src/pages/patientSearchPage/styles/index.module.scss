@@ -60,15 +60,10 @@
 
 .actionButton {
   @include type-style('body-compact-01');
-  border: 1px solid var(--button-button-tertiary, $teal-60);
-  color : $teal-60;
+  border: 1px solid;
   display: flex;
-  width: 8.8rem;
-  padding: 0.4375rem $spacing-05;
+  width: 8.8rem !important;
+  padding: 0.4375rem $spacing-05 !important;
   align-items: center;
   gap: $spacing-07;
-}
-
-.actionButton:hover {
-  background-color: $teal-60;
 }
