@@ -19,8 +19,6 @@ import {
   getRegistrationConfig,
   PatientSearchField,
   PatientSearchResult,
-  SearchActionConfig,
-  updateAppointmentStatus,
   useTranslation,
 } from '@bahmni-frontend/bahmni-services';
 import {
@@ -30,14 +28,14 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../../components/Header';
-import styles from './styles/index.module.scss';
 import {
-  appDateValidator,
-  formatPatientSearchResult,
-  PatientSearchViewModel,
-  privilegeValidator,
-  statusValidator,
-} from './utils';
+  getAppointmentStatusClassName,
+  handleButtonClick,
+  isButtonEnabled,
+  shouldRenderButton,
+} from './appointmentSearchHandler';
+import styles from './styles/index.module.scss';
+import { formatPatientSearchResult, PatientSearchViewModel } from './utils';
 
 /**
  * PatientSearchPage
@@ -138,19 +136,6 @@ const PatientSearchPage: React.FC = () => {
       : []),
   ];
 
-  const getAppointmentStatusClassName = (status: string): string => {
-    switch (status?.toLowerCase()) {
-      case 'scheduled':
-        return ` ${styles.scheduledStatus}`;
-      case 'arrived':
-        return ` ${styles.arrivedStatus}`;
-      case 'checkedin':
-      case 'checked in':
-        return ` ${styles.checkedInStatus}`;
-      default:
-        return ` ${styles.scheduledStatus}`;
-    }
-  };
   const renderTitle = (
     isLoading: boolean,
     isError: boolean,
@@ -187,86 +172,6 @@ const PatientSearchPage: React.FC = () => {
     }
   };
 
-  const handleActionNavigation = (
-    navigationUrl: string,
-    patientUuid: string,
-  ) => {
-    if (!navigationUrl) return;
-
-    const url = navigationUrl?.replace('{{patientUuid}}', String(patientUuid));
-    if (url.startsWith('#')) {
-      window.location.href = url.slice(1);
-    } else {
-      navigate(url);
-    }
-  };
-
-  function updateAppointmentStatusInResults(
-    appointmentPatientData: AppointmentSearchResult[],
-    responseUuid: string,
-    responseStatus: string,
-  ): AppointmentSearchResult[] {
-    return appointmentPatientData.map((result) => {
-      if (result.appointmentUuid === responseUuid) {
-        result.appointmentStatus = responseStatus;
-      }
-      return result;
-    });
-  }
-
-  const handleButtonClick = async (
-    action: SearchActionConfig,
-    row: PatientSearchViewModel<AppointmentSearchResult>,
-  ) => {
-    const { status, navigation } = action.onAction;
-
-    if (action.type === 'changeStatus') {
-      await updateAppointmentStatus(
-        row.appointmentUuid as string,
-        status as string,
-      ).then((response) => {
-        const updatedPatientSearchData = {
-          totalCount: patientSearchData!.totalCount,
-          pageOfResults: updateAppointmentStatusInResults(
-            patientSearchData!.pageOfResults,
-            response.uuid,
-            response.status,
-          ),
-        };
-        setPatientSearchData(updatedPatientSearchData);
-      });
-    } else if (action.type === 'navigate') {
-      handleActionNavigation(navigation ?? '', String(row.uuid));
-    }
-  };
-
-  const isButtonEnabled = (
-    enabledRules: SearchActionConfig['enabledRule'],
-    row: PatientSearchViewModel<AppointmentSearchResult>,
-  ): boolean => {
-    if (!enabledRules || enabledRules.length === 0) return true;
-
-    const ruleValidatorMap = {
-      privilegeCheck: privilegeValidator(userPrivileges ?? []),
-      statusCheck: statusValidator,
-      appDateCheck: appDateValidator,
-    };
-
-    return enabledRules.every((rule) =>
-      ruleValidatorMap[rule.type](rule.values, row),
-    );
-  };
-
-  const shouldRenderButton = (action: SearchActionConfig): boolean => {
-    const privilegeRules =
-      action.enabledRule
-        ?.filter((rule) => rule.type === 'privilegeCheck')
-        .map((rule) => rule.values)
-        .flat() ?? [];
-
-    return privilegeValidator(userPrivileges ?? [])(privilegeRules);
-  };
-
   const renderCell = useCallback(
     (
       row: PatientSearchViewModel<AppointmentSearchResult>,
@@ -289,9 +194,13 @@ const PatientSearchPage: React.FC = () => {
         case 'appointmentStatus':
           return (
             <Tag
-              className={getAppointmentStatusClassName(
-                String(row.appointmentStatus ?? ''),
-              )}
+              className={`${
+                styles[
+                  getAppointmentStatusClassName(
+                    String(row.appointmentStatus ?? ''),
+                  )
+                ]
+              }`}
               data-testid={`appointment-status-${row.uuid}`}
             >
               {String(row.appointmentStatus ?? '')}
@@ -303,15 +212,30 @@ const PatientSearchPage: React.FC = () => {
             <Stack gap={3} className={styles.actionButtonsContainer}>
               {searchFields.map((field) =>
                 field.actions?.map((action) => {
-                  if (!shouldRenderButton(action)) return null;
+                  if (!shouldRenderButton(action, userPrivileges ?? []))
+                    return null;
                   return (
                     <Button
                       key={action.translationKey}
                       className={styles.actionButton}
                       kind="tertiary"
                       size="sm"
-                      disabled={!isButtonEnabled(action.enabledRule, row)}
-                      onClick={() => handleButtonClick(action, row)}
+                      disabled={
+                        !isButtonEnabled(
+                          action.enabledRule,
+                          row,
+                          userPrivileges ?? [],
+                        )
+                      }
+                      onClick={() =>
+                        handleButtonClick(
+                          action,
+                          row,
+                          patientSearchData!,
+                          setPatientSearchData,
+                          navigate,
+                        )
+                      }
                     >
                       {t(action.translationKey)}
                     </Button>

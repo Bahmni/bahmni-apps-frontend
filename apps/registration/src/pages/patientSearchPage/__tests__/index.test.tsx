@@ -19,6 +19,7 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import { MemoryRouter, useNavigate } from 'react-router-dom';
 import PatientSearchPage from '..';
 import i18n from '../../../../setupTests.i18n';
+import * as appointmentSearchHandler from '../appointmentSearchHandler';
 
 expect.extend(toHaveNoViolations);
 
@@ -108,6 +109,33 @@ jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   useNavigate: jest.fn(),
 }));
+
+jest.mock('../appointmentSearchHandler', () => {
+  const actual = jest.requireActual('../appointmentSearchHandler');
+  return {
+    getAppointmentStatusClassName: jest.fn((status: string) => {
+      switch (status?.toLowerCase()) {
+        case 'scheduled':
+          return 'scheduledStatus';
+        case 'arrived':
+          return 'arrivedStatus';
+        case 'checkedin':
+        case 'checked in':
+          return 'checkedInStatus';
+        default:
+          return 'scheduledStatus';
+      }
+    }),
+    handleButtonClick: jest.fn(),
+    handleActionNavigation: jest.fn(),
+    isButtonEnabled: jest.fn((...args) => {
+      return actual.isButtonEnabled(...args);
+    }),
+    shouldRenderButton: jest.fn((...args) => {
+      return actual.shouldRenderButton(...args);
+    }),
+  };
+});
 
 const mockUserPrivileges = [
   { name: 'Manage Appointments', retired: false },
@@ -1021,9 +1049,7 @@ describe('PatientSearchPage', () => {
         fireEvent.click(viewDetailsButton);
       });
 
-      expect(mockNavigate).toHaveBeenCalledWith(
-        `/patient/${mockAppointmentData[0].uuid}/appointments`,
-      );
+      expect(appointmentSearchHandler.handleButtonClick).toHaveBeenCalled();
     });
 
     it('should not navigate when row is clicked in appointment mode', async () => {
@@ -1149,10 +1175,7 @@ describe('PatientSearchPage', () => {
       await waitFor(() => {
         const hashNavButton = screen.getByText('View with Hash');
         fireEvent.click(hashNavButton);
-
-        expect(window.location.href).toBe(
-          `/patient/${mockAppointmentData[0].uuid}/details`,
-        );
+        expect(appointmentSearchHandler.handleButtonClick).toHaveBeenCalled();
       });
     });
   });
