@@ -4,9 +4,8 @@ import {
   FileUploader,
   IconButton,
 } from '@bahmni-frontend/bahmni-design-system';
-import { useTranslation } from '@bahmni-frontend/bahmni-services';
+import { useTranslation, useCamera } from '@bahmni-frontend/bahmni-services';
 import React, { useState, useCallback } from 'react';
-import { useCamera } from '../../utils/useCamera';
 import styles from './styles.module.scss';
 
 interface PatientPhotoUploadProps {
