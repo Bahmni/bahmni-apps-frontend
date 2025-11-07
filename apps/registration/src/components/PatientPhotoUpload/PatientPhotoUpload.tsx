@@ -176,7 +176,11 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
         open={isModalOpen}
         onRequestClose={handleModalClose}
         passiveModal
-        modalHeading={t('CREATE_PATIENT_UPLOAD_PHOTO_MODAL_HEADING')}
+        modalHeading={
+          mode == 'upload'
+            ? t('CREATE_PATIENT_UPLOAD_PHOTO_MODAL_HEADING')
+            : t('CREATE_PATIENT_CAPTURE_PHOTO_MODAL_HEADING')
+        }
       >
         <Modal.Body>
           {mode === 'capture' && (
@@ -203,11 +207,10 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
 
           {mode === 'upload' && (
             <>
-              <div>{t('CREATE_PATIENT_UPLOAD_PHOTO_FILE_SIZE_LIMIT')}</div>
               <FileUploader
                 labelTitle=""
                 key={isModalOpen ? 'open' : 'closed'}
-                labelDescription=""
+                labelDescription="t('CREATE_PATIENT_UPLOAD_PHOTO_FILE_SIZE_LIMIT')"
                 buttonLabel="Choose file"
                 buttonKind="primary"
                 accept={['image/*']}
