@@ -1,17 +1,17 @@
 import { notificationService } from '@bahmni-frontend/bahmni-services';
-import type { PatientAdditionalInformationRef } from '../../components/forms/patientAdditionalInformation/PatientAdditionalInformation';
-import type { PatientAddressInformationRef } from '../../components/forms/patientAddressInformation/PatientAddressInformation';
-import type { PatientContactInformationRef } from '../../components/forms/patientContactInformation/PatientContactInformation';
-import type { PatientProfileRef } from '../../components/forms/patientProfile/PatientProfile';
+import type { AdditionalInfoRef } from '../../components/forms/additionalInfo/AdditionalInfo';
+import type { AddressInfoRef } from '../../components/forms/addressInfo/AddressInfo';
+import type { ContactInfoRef } from '../../components/forms/contactInfo/ContactInfo';
+import type { ProfileRef } from '../../components/forms/profile/Profile';
 
 /**
  * Form references interface for all patient registration sections
  */
 export interface PatientFormRefs {
-  profileRef: React.RefObject<PatientProfileRef | null>;
-  addressRef: React.RefObject<PatientAddressInformationRef | null>;
-  contactRef: React.RefObject<PatientContactInformationRef | null>;
-  additionalRef: React.RefObject<PatientAdditionalInformationRef | null>;
+  profileRef: React.RefObject<ProfileRef | null>;
+  addressRef: React.RefObject<AddressInfoRef | null>;
+  contactRef: React.RefObject<ContactInfoRef | null>;
+  additionalRef: React.RefObject<AdditionalInfoRef | null>;
 }
 
 /**

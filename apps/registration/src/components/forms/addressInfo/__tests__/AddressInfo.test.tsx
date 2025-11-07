@@ -3,13 +3,16 @@ import {
   getAddressHierarchyEntries,
   type AddressHierarchyEntry,
 } from '@bahmni-frontend/bahmni-services';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from '@testing-library/react';
 import { createRef } from 'react';
 import '@testing-library/jest-dom';
-import {
-  PatientAddressInformation,
-  PatientAddressInformationRef,
-} from '../PatientAddressInformation';
+import { AddressInfo, AddressInfoRef } from '../AddressInfo';
 
 // Mock translation and address service
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
@@ -25,7 +28,7 @@ const mockGetAddressHierarchyEntries =
     typeof getAddressHierarchyEntries
   >;
 
-describe('PatientAddressInformation', () => {
+describe('AddressInfo', () => {
   const mockT = jest.fn((key: string) => key) as any;
 
   beforeEach(() => {
@@ -42,7 +45,7 @@ describe('PatientAddressInformation', () => {
 
   describe('Rendering', () => {
     it('renders all address input fields correctly', () => {
-      render(<PatientAddressInformation />);
+      render(<AddressInfo />);
 
       expect(
         screen.getByLabelText(/CREATE_PATIENT_HOUSE_NUMBER/),
@@ -61,7 +64,7 @@ describe('PatientAddressInformation', () => {
     });
 
     it('renders section title', () => {
-      render(<PatientAddressInformation />);
+      render(<AddressInfo />);
 
       expect(mockT).toHaveBeenCalledWith('CREATE_PATIENT_SECTION_ADDRESS_INFO');
     });
@@ -69,8 +72,8 @@ describe('PatientAddressInformation', () => {
 
   describe('Input Handling', () => {
     it('updates simple text fields without validation', () => {
-      const ref = createRef<PatientAddressInformationRef>();
-      render(<PatientAddressInformation ref={ref} />);
+      const ref = createRef<AddressInfoRef>();
+      render(<AddressInfo ref={ref} />);
 
       const houseNumberInput = screen.getByLabelText(
         /CREATE_PATIENT_HOUSE_NUMBER/,
@@ -87,12 +90,15 @@ describe('PatientAddressInformation', () => {
       expect(cityInput).toHaveValue('Mumbai');
 
       // Simple fields should not trigger validation errors
-      const isValid = ref.current?.validate();
+      let isValid: boolean | undefined;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
       expect(isValid).toBe(true);
     });
 
     it('allows clearing field values', () => {
-      render(<PatientAddressInformation />);
+      render(<AddressInfo />);
 
       const cityInput = screen.getByLabelText(/CREATE_PATIENT_CITY/);
       fireEvent.change(cityInput, { target: { value: 'Mumbai' } });
@@ -105,21 +111,24 @@ describe('PatientAddressInformation', () => {
 
   describe('Validation', () => {
     it('validates that dropdown fields require selection from dropdown', () => {
-      const ref = createRef<PatientAddressInformationRef>();
-      render(<PatientAddressInformation ref={ref} />);
+      const ref = createRef<AddressInfoRef>();
+      render(<AddressInfo ref={ref} />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
       fireEvent.change(districtInput, {
         target: { value: 'Invalid District' },
       });
 
-      const isValid = ref.current?.validate();
+      let isValid: boolean | undefined;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
       expect(isValid).toBe(false);
     });
 
     it('validates all three dropdown fields (district, state, pincode)', () => {
-      const ref = createRef<PatientAddressInformationRef>();
-      render(<PatientAddressInformation ref={ref} />);
+      const ref = createRef<AddressInfoRef>();
+      render(<AddressInfo ref={ref} />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
       const stateInput = screen.getByLabelText(/CREATE_PATIENT_STATE/);
@@ -129,32 +138,43 @@ describe('PatientAddressInformation', () => {
       fireEvent.change(stateInput, { target: { value: 'Invalid' } });
       fireEvent.change(pincodeInput, { target: { value: 'Invalid' } });
 
-      const isValid = ref.current?.validate();
+      let isValid: boolean | undefined;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
       expect(isValid).toBe(false);
     });
 
     it('returns true when dropdown fields are empty', () => {
-      const ref = createRef<PatientAddressInformationRef>();
-      render(<PatientAddressInformation ref={ref} />);
+      const ref = createRef<AddressInfoRef>();
+      render(<AddressInfo ref={ref} />);
 
-      const isValid = ref.current?.validate();
+      let isValid: boolean | undefined;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
       expect(isValid).toBe(true);
     });
 
     it('validates correctly after clearing a dropdown field', () => {
-      const ref = createRef<PatientAddressInformationRef>();
-      render(<PatientAddressInformation ref={ref} />);
+      const ref = createRef<AddressInfoRef>();
+      render(<AddressInfo ref={ref} />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
 
       // Enter invalid value
       fireEvent.change(districtInput, { target: { value: 'Invalid' } });
-      let isValid = ref.current?.validate();
+      let isValid: boolean | undefined;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
       expect(isValid).toBe(false);
 
       // Clear the field
       fireEvent.change(districtInput, { target: { value: '' } });
-      isValid = ref.current?.validate();
+      act(() => {
+        isValid = ref.current?.validate();
+      });
       expect(isValid).toBe(true);
     });
   });
@@ -171,7 +191,7 @@ describe('PatientAddressInformation', () => {
       ];
       mockGetAddressHierarchyEntries.mockResolvedValue(mockSuggestions);
 
-      render(<PatientAddressInformation />);
+      render(<AddressInfo />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
       fireEvent.change(districtInput, { target: { value: 'Test' } });
@@ -191,7 +211,7 @@ describe('PatientAddressInformation', () => {
     });
 
     it('does not fetch suggestions for short search terms (< 2 chars)', async () => {
-      render(<PatientAddressInformation />);
+      render(<AddressInfo />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
       fireEvent.change(districtInput, { target: { value: 'T' } });
@@ -214,7 +234,7 @@ describe('PatientAddressInformation', () => {
       ];
       mockGetAddressHierarchyEntries.mockResolvedValue(mockSuggestions);
 
-      render(<PatientAddressInformation />);
+      render(<AddressInfo />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
 
@@ -262,7 +282,7 @@ describe('PatientAddressInformation', () => {
       ];
       mockGetAddressHierarchyEntries.mockResolvedValue(mockSuggestions);
 
-      render(<PatientAddressInformation />);
+      render(<AddressInfo />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
       fireEvent.change(districtInput, { target: { value: 'District' } });
@@ -280,7 +300,7 @@ describe('PatientAddressInformation', () => {
     it('handles API errors gracefully', async () => {
       mockGetAddressHierarchyEntries.mockRejectedValue(new Error('API Error'));
 
-      render(<PatientAddressInformation />);
+      render(<AddressInfo />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
       fireEvent.change(districtInput, { target: { value: 'Test' } });
@@ -306,7 +326,7 @@ describe('PatientAddressInformation', () => {
       ];
       mockGetAddressHierarchyEntries.mockResolvedValue(mockSuggestions);
 
-      render(<PatientAddressInformation />);
+      render(<AddressInfo />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
       fireEvent.change(districtInput, { target: { value: 'Test' } });
@@ -338,7 +358,7 @@ describe('PatientAddressInformation', () => {
       ];
       mockGetAddressHierarchyEntries.mockResolvedValue(mockSuggestions);
 
-      render(<PatientAddressInformation />);
+      render(<AddressInfo />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
 
@@ -382,8 +402,8 @@ describe('PatientAddressInformation', () => {
       };
       mockGetAddressHierarchyEntries.mockResolvedValue([mockEntry]);
 
-      const ref = createRef<PatientAddressInformationRef>();
-      render(<PatientAddressInformation ref={ref} />);
+      const ref = createRef<AddressInfoRef>();
+      render(<AddressInfo ref={ref} />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
       fireEvent.change(districtInput, { target: { value: 'Test' } });
@@ -402,7 +422,10 @@ describe('PatientAddressInformation', () => {
       );
 
       // Should pass validation after selection from dropdown
-      const isValid = ref.current?.validate();
+      let isValid: boolean | undefined;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
       expect(isValid).toBe(true);
     });
 
@@ -425,8 +448,8 @@ describe('PatientAddressInformation', () => {
       };
       mockGetAddressHierarchyEntries.mockResolvedValue([mockEntry]);
 
-      const ref = createRef<PatientAddressInformationRef>();
-      render(<PatientAddressInformation ref={ref} />);
+      const ref = createRef<AddressInfoRef>();
+      render(<AddressInfo ref={ref} />);
 
       const postalInput = screen.getByLabelText(/CREATE_PATIENT_PINCODE/);
       fireEvent.change(postalInput, { target: { value: '400' } });
@@ -448,7 +471,10 @@ describe('PatientAddressInformation', () => {
       );
 
       // All fields should pass validation
-      const isValid = ref.current?.validate();
+      let isValid: boolean | undefined;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
       expect(isValid).toBe(true);
     });
 
@@ -461,8 +487,8 @@ describe('PatientAddressInformation', () => {
       };
       mockGetAddressHierarchyEntries.mockResolvedValue([mockEntry]);
 
-      const ref = createRef<PatientAddressInformationRef>();
-      render(<PatientAddressInformation ref={ref} />);
+      const ref = createRef<AddressInfoRef>();
+      render(<AddressInfo ref={ref} />);
 
       const stateInput = screen.getByLabelText(/CREATE_PATIENT_STATE/);
       fireEvent.change(stateInput, { target: { value: 'Maha' } });
@@ -481,7 +507,10 @@ describe('PatientAddressInformation', () => {
       expect(screen.getByLabelText(/CREATE_PATIENT_DISTRICT/)).toHaveValue('');
       expect(screen.getByLabelText(/CREATE_PATIENT_PINCODE/)).toHaveValue('');
 
-      const isValid = ref.current?.validate();
+      let isValid: boolean | undefined;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
       expect(isValid).toBe(true);
     });
 
@@ -494,7 +523,7 @@ describe('PatientAddressInformation', () => {
       };
       mockGetAddressHierarchyEntries.mockResolvedValue([mockEntry]);
 
-      render(<PatientAddressInformation />);
+      render(<AddressInfo />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
       fireEvent.change(districtInput, { target: { value: 'Test' } });
@@ -519,14 +548,17 @@ describe('PatientAddressInformation', () => {
       };
       mockGetAddressHierarchyEntries.mockResolvedValue([mockEntry]);
 
-      const ref = createRef<PatientAddressInformationRef>();
-      render(<PatientAddressInformation ref={ref} />);
+      const ref = createRef<AddressInfoRef>();
+      render(<AddressInfo ref={ref} />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
 
       // Type invalid value and validate
       fireEvent.change(districtInput, { target: { value: 'Invalid' } });
-      let isValid = ref.current?.validate();
+      let isValid: boolean | undefined;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
       expect(isValid).toBe(false);
 
       // Now select from dropdown
@@ -540,23 +572,25 @@ describe('PatientAddressInformation', () => {
       fireEvent.click(screen.getByText('Valid District'));
 
       // Validation should pass after selection
-      isValid = ref.current?.validate();
+      act(() => {
+        isValid = ref.current?.validate();
+      });
       expect(isValid).toBe(true);
     });
   });
 
   describe('getData Method', () => {
     it('returns empty object when no fields are filled', () => {
-      const ref = createRef<PatientAddressInformationRef>();
-      render(<PatientAddressInformation ref={ref} />);
+      const ref = createRef<AddressInfoRef>();
+      render(<AddressInfo ref={ref} />);
 
       const data = ref.current?.getData();
       expect(data).toEqual({});
     });
 
     it('returns only filled fields', () => {
-      const ref = createRef<PatientAddressInformationRef>();
-      render(<PatientAddressInformation ref={ref} />);
+      const ref = createRef<AddressInfoRef>();
+      render(<AddressInfo ref={ref} />);
 
       const cityInput = screen.getByLabelText(/CREATE_PATIENT_CITY/);
       fireEvent.change(cityInput, { target: { value: 'Mumbai' } });
@@ -566,8 +600,8 @@ describe('PatientAddressInformation', () => {
     });
 
     it('returns all filled fields with correct property names', () => {
-      const ref = createRef<PatientAddressInformationRef>();
-      render(<PatientAddressInformation ref={ref} />);
+      const ref = createRef<AddressInfoRef>();
+      render(<AddressInfo ref={ref} />);
 
       fireEvent.change(screen.getByLabelText(/CREATE_PATIENT_HOUSE_NUMBER/), {
         target: { value: '123' },
@@ -611,7 +645,7 @@ describe('PatientAddressInformation', () => {
         },
       ]);
 
-      render(<PatientAddressInformation />);
+      render(<AddressInfo />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
 

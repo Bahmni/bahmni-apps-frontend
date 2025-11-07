@@ -13,21 +13,18 @@ import {
 import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  PatientAdditionalInformation,
-  PatientAdditionalInformationRef,
-} from '../../components/forms/patientAdditionalInformation/PatientAdditionalInformation';
+  AdditionalInfo,
+  AdditionalInfoRef,
+} from '../../components/forms/additionalInfo/AdditionalInfo';
 import {
-  PatientAddressInformation,
-  PatientAddressInformationRef,
-} from '../../components/forms/patientAddressInformation/PatientAddressInformation';
+  AddressInfo,
+  AddressInfoRef,
+} from '../../components/forms/addressInfo/AddressInfo';
 import {
-  PatientContactInformation,
-  PatientContactInformationRef,
-} from '../../components/forms/patientContactInformation/PatientContactInformation';
-import {
-  PatientProfile,
-  PatientProfileRef,
-} from '../../components/forms/patientProfile/PatientProfile';
+  ContactInfo,
+  ContactInfoRef,
+} from '../../components/forms/contactInfo/ContactInfo';
+import { Profile, ProfileRef } from '../../components/forms/profile/Profile';
 import { Header } from '../../components/Header';
 import { useCreatePatient } from '../../hooks/useCreatePatient';
 import { validateAllSections, collectFormData } from './patientFormService';
@@ -39,10 +36,10 @@ const CreatePatient = () => {
   const navigate = useNavigate();
   const [patientUuid, setPatientUuid] = useState<string | null>(null);
 
-  const patientProfileRef = useRef<PatientProfileRef>(null);
-  const patientAddressRef = useRef<PatientAddressInformationRef>(null);
-  const patientContactRef = useRef<PatientContactInformationRef>(null);
-  const patientAdditionalRef = useRef<PatientAdditionalInformationRef>(null);
+  const patientProfileRef = useRef<ProfileRef>(null);
+  const patientAddressRef = useRef<AddressInfoRef>(null);
+  const patientContactRef = useRef<ContactInfoRef>(null);
+  const patientAdditionalRef = useRef<AdditionalInfoRef>(null);
 
   // Use the custom hook for patient creation
   const createPatientMutation = useCreatePatient();
@@ -124,10 +121,10 @@ const CreatePatient = () => {
           </Tile>
 
           <div className={styles.formContainer}>
-            <PatientProfile ref={patientProfileRef} />
-            <PatientAddressInformation ref={patientAddressRef} />
-            <PatientContactInformation ref={patientContactRef} />
-            <PatientAdditionalInformation ref={patientAdditionalRef} />
+            <Profile ref={patientProfileRef} />
+            <AddressInfo ref={patientAddressRef} />
+            <ContactInfo ref={patientContactRef} />
+            <AdditionalInfo ref={patientAdditionalRef} />
           </div>
 
           {/* Footer Actions */}

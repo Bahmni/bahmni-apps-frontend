@@ -25,12 +25,9 @@ import {
   useGenderData,
   useIdentifierData,
 } from '../../../utils/identifierGenderUtils';
-import {
-  createDateAgeHandlers,
-  formatToDisplay,
-} from '../../forms/patientProfile/dateAgeUtils';
+import { createDateAgeHandlers, formatToDisplay } from './dateAgeUtils';
 
-export interface PatientProfileRef {
+export interface ProfileRef {
   getData: () => BasicInfoData & {
     dobEstimated: boolean;
     patientIdentifier: PatientIdentifier;
@@ -40,17 +37,17 @@ export interface PatientProfileRef {
   setCustomError: (field: keyof BasicInfoData, message: string) => void;
 }
 
-interface PatientProfileProps {
+interface ProfileProps {
   initialData?: BasicInfoData;
   initialDobEstimated?: boolean;
-  ref?: React.Ref<PatientProfileRef>;
+  ref?: React.Ref<ProfileRef>;
 }
 
-export const PatientProfile = ({
+export const Profile = ({
   initialData,
   initialDobEstimated = false,
   ref,
-}: PatientProfileProps) => {
+}: ProfileProps) => {
   const { t } = useTranslation();
 
   // Use utility hooks for identifier and gender data
@@ -466,6 +463,6 @@ export const PatientProfile = ({
   );
 };
 
-PatientProfile.displayName = 'PatientProfile';
+Profile.displayName = 'Profile';
 
-export default PatientProfile;
+export default Profile;
