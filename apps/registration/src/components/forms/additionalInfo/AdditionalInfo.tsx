@@ -14,10 +14,7 @@ interface AdditionalInfoProps {
   ref?: React.Ref<AdditionalInfoRef>;
 }
 
-export const AdditionalInfo = ({
-  initialData,
-  ref,
-}: AdditionalInfoProps) => {
+export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
   const { t } = useTranslation();
 
   const [formData, setFormData] = useState<AdditionalData>({
