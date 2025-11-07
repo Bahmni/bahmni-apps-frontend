@@ -53,8 +53,8 @@ jest.mock('../../../components/Header', () => ({
   ),
 }));
 
-jest.mock('../../../components/forms/patientProfile/PatientProfile', () => ({
-  PatientProfile: ({ ref }: { ref?: React.Ref<unknown> }) => {
+jest.mock('../../../components/forms/profile/Profile', () => ({
+  Profile: ({ ref }: { ref?: React.Ref<unknown> }) => {
     // Expose imperative methods via ref
     if (ref && typeof ref === 'object' && 'current' in ref) {
       ref.current = {
@@ -71,65 +71,50 @@ jest.mock('../../../components/forms/patientProfile/PatientProfile', () => ({
   },
 }));
 
-jest.mock(
-  '../../../components/forms/patientAddressInformation/PatientAddressInformation',
-  () => ({
-    PatientAddressInformation: ({ ref }: { ref?: React.Ref<unknown> }) => {
-      if (ref && typeof ref === 'object' && 'current' in ref) {
-        ref.current = {
-          validate: jest.fn(() => true),
-          getData: jest.fn(() => ({
-            address1: '123 Main St',
-            cityVillage: 'New York',
-          })),
-        };
-      }
-      return (
-        <div data-testid="patient-address">Patient Address Information</div>
-      );
-    },
-  }),
-);
+jest.mock('../../../components/forms/addressInfo/AddressInfo', () => ({
+  AddressInfo: ({ ref }: { ref?: React.Ref<unknown> }) => {
+    if (ref && typeof ref === 'object' && 'current' in ref) {
+      ref.current = {
+        validate: jest.fn(() => true),
+        getData: jest.fn(() => ({
+          address1: '123 Main St',
+          cityVillage: 'New York',
+        })),
+      };
+    }
+    return <div data-testid="patient-address">Patient Address Information</div>;
+  },
+}));
 
-jest.mock(
-  '../../../components/forms/patientContactInformation/PatientContactInformation',
-  () => ({
-    PatientContactInformation: ({ ref }: { ref?: React.Ref<unknown> }) => {
-      if (ref && typeof ref === 'object' && 'current' in ref) {
-        ref.current = {
-          validate: jest.fn(() => true),
-          getData: jest.fn(() => ({
-            phoneNumber: '1234567890',
-          })),
-        };
-      }
-      return (
-        <div data-testid="patient-contact">Patient Contact Information</div>
-      );
-    },
-  }),
-);
+jest.mock('../../../components/forms/contactInfo/ContactInfo', () => ({
+  ContactInfo: ({ ref }: { ref?: React.Ref<unknown> }) => {
+    if (ref && typeof ref === 'object' && 'current' in ref) {
+      ref.current = {
+        validate: jest.fn(() => true),
+        getData: jest.fn(() => ({
+          phoneNumber: '1234567890',
+        })),
+      };
+    }
+    return <div data-testid="patient-contact">Patient Contact Information</div>;
+  },
+}));
 
-jest.mock(
-  '../../../components/forms/patientAdditionalInformation/PatientAdditionalInformation',
-  () => ({
-    PatientAdditionalInformation: ({ ref }: { ref?: React.Ref<unknown> }) => {
-      if (ref && typeof ref === 'object' && 'current' in ref) {
-        ref.current = {
-          validate: jest.fn(() => true),
-          getData: jest.fn(() => ({
-            occupation: 'Engineer',
-          })),
-        };
-      }
-      return (
-        <div data-testid="patient-additional">
-          Patient Additional Information
-        </div>
-      );
-    },
-  }),
-);
+jest.mock('../../../components/forms/additionalInfo/AdditionalInfo', () => ({
+  AdditionalInfo: ({ ref }: { ref?: React.Ref<unknown> }) => {
+    if (ref && typeof ref === 'object' && 'current' in ref) {
+      ref.current = {
+        validate: jest.fn(() => true),
+        getData: jest.fn(() => ({
+          occupation: 'Engineer',
+        })),
+      };
+    }
+    return (
+      <div data-testid="patient-additional">Patient Additional Information</div>
+    );
+  },
+}));
 
 jest.mock('../visitTypeSelector', () => ({
   VisitTypeSelector: ({

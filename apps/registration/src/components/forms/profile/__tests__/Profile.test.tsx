@@ -1,8 +1,8 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import React from 'react';
 import type { BasicInfoData } from '../../../../models/patient';
-import { PatientProfile } from '../PatientProfile';
-import type { PatientProfileRef } from '../PatientProfile';
+import { Profile } from '../Profile';
+import type { ProfileRef } from '../Profile';
 
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
   useTranslation: () => ({
@@ -38,16 +38,16 @@ jest.mock('../dateAgeUtils', () => ({
   }),
 }));
 
-describe('PatientProfile', () => {
-  let ref: React.RefObject<PatientProfileRef | null>;
+describe('Profile', () => {
+  let ref: React.RefObject<ProfileRef | null>;
 
   beforeEach(() => {
-    ref = React.createRef<PatientProfileRef | null>();
+    ref = React.createRef<ProfileRef | null>();
   });
 
   describe('Rendering', () => {
     it('should render basic info fields', () => {
-      render(<PatientProfile ref={ref} />);
+      render(<Profile ref={ref} />);
 
       expect(
         screen.getByLabelText('CREATE_PATIENT_FIRST_NAME'),
@@ -61,7 +61,7 @@ describe('PatientProfile', () => {
 
   describe('Name Validation', () => {
     it('should accept valid name with only letters', () => {
-      render(<PatientProfile ref={ref} />);
+      render(<Profile ref={ref} />);
       const firstNameInput = screen.getByLabelText(
         'CREATE_PATIENT_FIRST_NAME',
       ) as HTMLInputElement;
@@ -71,7 +71,7 @@ describe('PatientProfile', () => {
     });
 
     it('should accept name with spaces', () => {
-      render(<PatientProfile ref={ref} />);
+      render(<Profile ref={ref} />);
       const firstNameInput = screen.getByLabelText(
         'CREATE_PATIENT_FIRST_NAME',
       ) as HTMLInputElement;
@@ -81,7 +81,7 @@ describe('PatientProfile', () => {
     });
 
     it('should reject name with numbers', () => {
-      render(<PatientProfile ref={ref} />);
+      render(<Profile ref={ref} />);
       const firstNameInput = screen.getByLabelText(
         'CREATE_PATIENT_FIRST_NAME',
       ) as HTMLInputElement;
@@ -91,7 +91,7 @@ describe('PatientProfile', () => {
     });
 
     it('should reject name with special characters', () => {
-      render(<PatientProfile ref={ref} />);
+      render(<Profile ref={ref} />);
       const lastNameInput = screen.getByLabelText(
         'CREATE_PATIENT_LAST_NAME',
       ) as HTMLInputElement;
@@ -103,9 +103,12 @@ describe('PatientProfile', () => {
 
   describe('Required Field Validation', () => {
     it('should show errors when required fields are empty', () => {
-      render(<PatientProfile ref={ref} />);
+      render(<Profile ref={ref} />);
 
-      const isValid = ref.current?.validate();
+      let isValid: boolean | undefined;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
 
       expect(isValid).toBe(false);
     });
@@ -125,29 +128,37 @@ describe('PatientProfile', () => {
         birthTime: '',
       };
 
-      render(<PatientProfile ref={ref} initialData={initialData} />);
+      render(<Profile ref={ref} initialData={initialData} />);
 
-      const isValid = ref.current?.validate();
+      let isValid: boolean | undefined;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
 
       expect(isValid).toBe(true);
     });
 
     it('should clear first name error when field is filled', () => {
-      render(<PatientProfile ref={ref} />);
+      render(<Profile ref={ref} />);
 
-      ref.current?.validate();
+      act(() => {
+        ref.current?.validate();
+      });
 
       const firstNameInput = screen.getByLabelText('CREATE_PATIENT_FIRST_NAME');
       fireEvent.change(firstNameInput, { target: { value: 'John' } });
 
-      const isValid = ref.current?.validate();
+      let isValid: boolean | undefined;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
       expect(isValid).toBe(false); // Still invalid due to other fields
     });
   });
 
   describe('getData Method', () => {
     it('should return empty data when no input provided', () => {
-      render(<PatientProfile ref={ref} />);
+      render(<Profile ref={ref} />);
 
       const data = ref.current?.getData();
 
@@ -157,7 +168,7 @@ describe('PatientProfile', () => {
     });
 
     it('should return current form data', () => {
-      render(<PatientProfile ref={ref} />);
+      render(<Profile ref={ref} />);
 
       const firstNameInput = screen.getByLabelText('CREATE_PATIENT_FIRST_NAME');
       const lastNameInput = screen.getByLabelText('CREATE_PATIENT_LAST_NAME');
@@ -172,7 +183,7 @@ describe('PatientProfile', () => {
     });
 
     it('should return patientIdentifier with correct structure', () => {
-      render(<PatientProfile ref={ref} />);
+      render(<Profile ref={ref} />);
 
       const data = ref.current?.getData();
 
@@ -186,7 +197,7 @@ describe('PatientProfile', () => {
     });
 
     it('should return dobEstimated flag', () => {
-      render(<PatientProfile ref={ref} initialDobEstimated />);
+      render(<Profile ref={ref} initialDobEstimated />);
 
       const data = ref.current?.getData();
 
@@ -208,7 +219,7 @@ describe('PatientProfile', () => {
         birthTime: '10:30',
       };
 
-      render(<PatientProfile ref={ref} initialData={initialData} />);
+      render(<Profile ref={ref} initialData={initialData} />);
 
       const data = ref.current?.getData();
 
@@ -236,7 +247,7 @@ describe('PatientProfile', () => {
         birthTime: '10:00',
       };
 
-      render(<PatientProfile ref={ref} initialData={initialData} />);
+      render(<Profile ref={ref} initialData={initialData} />);
 
       act(() => {
         ref.current?.clearData();
@@ -254,19 +265,24 @@ describe('PatientProfile', () => {
 
   describe('setCustomError Method', () => {
     it('should set custom error for a field', () => {
-      render(<PatientProfile ref={ref} />);
+      render(<Profile ref={ref} />);
 
-      ref.current?.setCustomError('firstName', 'Custom error message');
+      act(() => {
+        ref.current?.setCustomError('firstName', 'Custom error message');
+      });
 
       // The error should be set but we can only verify through validation
-      const isValid = ref.current?.validate();
+      let isValid: boolean | undefined;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
       expect(isValid).toBe(false);
     });
   });
 
   describe('Gender Selection', () => {
     it('should update gender when selected', () => {
-      render(<PatientProfile ref={ref} />);
+      render(<Profile ref={ref} />);
 
       const data = ref.current?.getData();
       expect(data?.gender).toBe('');
@@ -275,7 +291,7 @@ describe('PatientProfile', () => {
 
   describe('Entry Type Checkbox', () => {
     it('should toggle entry type checkbox', () => {
-      render(<PatientProfile ref={ref} />);
+      render(<Profile ref={ref} />);
 
       const checkbox = screen.getByLabelText(
         'CREATE_PATIENT_ENTER_MANUALLY',
@@ -292,7 +308,7 @@ describe('PatientProfile', () => {
 
   describe('DOB Estimated Checkbox', () => {
     it('should toggle DOB estimated checkbox', () => {
-      render(<PatientProfile ref={ref} />);
+      render(<Profile ref={ref} />);
 
       const checkbox = screen.getByLabelText(
         'CREATE_PATIENT_ESTIMATED',
@@ -307,7 +323,7 @@ describe('PatientProfile', () => {
     });
 
     it('should initialize with dobEstimated from props', () => {
-      render(<PatientProfile ref={ref} initialDobEstimated />);
+      render(<Profile ref={ref} initialDobEstimated />);
 
       const checkbox = screen.getByLabelText(
         'CREATE_PATIENT_ESTIMATED',
@@ -319,7 +335,7 @@ describe('PatientProfile', () => {
 
   describe('Patient ID Format Selection', () => {
     it('should update patient ID format', () => {
-      render(<PatientProfile ref={ref} />);
+      render(<Profile ref={ref} />);
 
       const data = ref.current?.getData();
 
@@ -329,7 +345,7 @@ describe('PatientProfile', () => {
 
   describe('Birth Time Input', () => {
     it('should update birth time', () => {
-      render(<PatientProfile ref={ref} />);
+      render(<Profile ref={ref} />);
 
       const birthTimeInput = screen.getByLabelText(
         'CREATE_PATIENT_BIRTH_TIME',

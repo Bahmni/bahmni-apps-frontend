@@ -10,7 +10,7 @@ import { AddressData } from '../../../models/patient';
 import type { AddressErrors } from '../../../models/validation';
 import styles from './styles/index.module.scss';
 
-export type PatientAddressInformationRef = {
+export type AddressInfoRef = {
   validate: () => boolean;
   getData: () => PatientAddress;
 };
@@ -33,13 +33,11 @@ const initialErrors: AddressErrors = {
   postalCode: '',
 };
 
-interface PatientAddressInformationProps {
-  ref?: React.Ref<PatientAddressInformationRef>;
+interface AddressInfoProps {
+  ref?: React.Ref<AddressInfoRef>;
 }
 
-export const PatientAddressInformation = ({
-  ref,
-}: PatientAddressInformationProps) => {
+export const AddressInfo = ({ ref }: AddressInfoProps) => {
   const { t } = useTranslation();
 
   const [formData, setFormData] = useState<AddressData>(initialFormData);
@@ -437,6 +435,6 @@ export const PatientAddressInformation = ({
   );
 };
 
-PatientAddressInformation.displayName = 'PatientAddressInformation';
+AddressInfo.displayName = 'AddressInfo';
 
-export default PatientAddressInformation;
+export default AddressInfo;

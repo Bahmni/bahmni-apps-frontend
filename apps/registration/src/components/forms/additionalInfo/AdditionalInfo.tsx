@@ -4,20 +4,20 @@ import { useCallback, useImperativeHandle, useState } from 'react';
 import type { AdditionalData } from '../../../models/patient';
 import styles from '../../../pages/createPatientPage/styles/index.module.scss';
 
-export interface PatientAdditionalInformationRef {
+export interface AdditionalInfoRef {
   validate: () => boolean;
   getData: () => AdditionalData;
 }
 
-interface PatientAdditionalInformationProps {
+interface AdditionalInfoProps {
   initialData?: AdditionalData;
-  ref?: React.Ref<PatientAdditionalInformationRef>;
+  ref?: React.Ref<AdditionalInfoRef>;
 }
 
-export const PatientAdditionalInformation = ({
+export const AdditionalInfo = ({
   initialData,
   ref,
-}: PatientAdditionalInformationProps) => {
+}: AdditionalInfoProps) => {
   const { t } = useTranslation();
 
   const [formData, setFormData] = useState<AdditionalData>({
@@ -85,6 +85,6 @@ export const PatientAdditionalInformation = ({
   );
 };
 
-PatientAdditionalInformation.displayName = 'PatientAdditionalInformation';
+AdditionalInfo.displayName = 'AdditionalInfo';
 
-export default PatientAdditionalInformation;
+export default AdditionalInfo;

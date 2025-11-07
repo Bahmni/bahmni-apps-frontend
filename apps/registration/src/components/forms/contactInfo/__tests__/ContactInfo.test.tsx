@@ -1,8 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import type { ContactData } from '../../../../models/patient';
-import { PatientContactInformation } from '../PatientContactInformation';
-import type { PatientContactInformationRef } from '../PatientContactInformation';
+import { ContactInfo } from '../ContactInfo';
+import type { ContactInfoRef } from '../ContactInfo';
 
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
   useTranslation: () => ({
@@ -10,16 +10,16 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
   }),
 }));
 
-describe('PatientContactInformation', () => {
-  let ref: React.RefObject<PatientContactInformationRef | null>;
+describe('ContactInfo', () => {
+  let ref: React.RefObject<ContactInfoRef | null>;
 
   beforeEach(() => {
-    ref = React.createRef<PatientContactInformationRef | null>();
+    ref = React.createRef<ContactInfoRef | null>();
   });
 
   describe('Rendering', () => {
     it('should render contact information fields', () => {
-      render(<PatientContactInformation ref={ref} />);
+      render(<ContactInfo ref={ref} />);
 
       expect(
         screen.getByLabelText('CREATE_PATIENT_PHONE_NUMBER'),
@@ -32,7 +32,7 @@ describe('PatientContactInformation', () => {
 
   describe('Phone Number Validation', () => {
     it('should accept valid numeric phone numbers', () => {
-      render(<PatientContactInformation ref={ref} />);
+      render(<ContactInfo ref={ref} />);
       const phoneInput = screen.getByLabelText(
         'CREATE_PATIENT_PHONE_NUMBER',
       ) as HTMLInputElement;
@@ -42,7 +42,7 @@ describe('PatientContactInformation', () => {
     });
 
     it('should accept plus sign at the beginning', () => {
-      render(<PatientContactInformation ref={ref} />);
+      render(<ContactInfo ref={ref} />);
       const phoneInput = screen.getByLabelText(
         'CREATE_PATIENT_PHONE_NUMBER',
       ) as HTMLInputElement;
@@ -52,7 +52,7 @@ describe('PatientContactInformation', () => {
     });
 
     it('should reject letters', () => {
-      render(<PatientContactInformation ref={ref} />);
+      render(<ContactInfo ref={ref} />);
       const phoneInput = screen.getByLabelText(
         'CREATE_PATIENT_PHONE_NUMBER',
       ) as HTMLInputElement;
@@ -62,7 +62,7 @@ describe('PatientContactInformation', () => {
     });
 
     it('should reject spaces', () => {
-      render(<PatientContactInformation ref={ref} />);
+      render(<ContactInfo ref={ref} />);
       const phoneInput = screen.getByLabelText(
         'CREATE_PATIENT_PHONE_NUMBER',
       ) as HTMLInputElement;
@@ -72,7 +72,7 @@ describe('PatientContactInformation', () => {
     });
 
     it('should reject special characters except plus', () => {
-      render(<PatientContactInformation ref={ref} />);
+      render(<ContactInfo ref={ref} />);
       const phoneInput = screen.getByLabelText(
         'CREATE_PATIENT_PHONE_NUMBER',
       ) as HTMLInputElement;
@@ -82,7 +82,7 @@ describe('PatientContactInformation', () => {
     });
 
     it('should reject multiple plus signs', () => {
-      render(<PatientContactInformation ref={ref} />);
+      render(<ContactInfo ref={ref} />);
       const phoneInput = screen.getByLabelText(
         'CREATE_PATIENT_PHONE_NUMBER',
       ) as HTMLInputElement;
@@ -92,7 +92,7 @@ describe('PatientContactInformation', () => {
     });
 
     it('should reject plus sign in the middle', () => {
-      render(<PatientContactInformation ref={ref} />);
+      render(<ContactInfo ref={ref} />);
       const phoneInput = screen.getByLabelText(
         'CREATE_PATIENT_PHONE_NUMBER',
       ) as HTMLInputElement;
@@ -104,7 +104,7 @@ describe('PatientContactInformation', () => {
 
   describe('getData Method', () => {
     it('should return empty data when no input provided', () => {
-      render(<PatientContactInformation ref={ref} />);
+      render(<ContactInfo ref={ref} />);
 
       const data = ref.current?.getData();
 
@@ -115,7 +115,7 @@ describe('PatientContactInformation', () => {
     });
 
     it('should return current phone number', () => {
-      render(<PatientContactInformation ref={ref} />);
+      render(<ContactInfo ref={ref} />);
 
       const phoneInput = screen.getByLabelText('CREATE_PATIENT_PHONE_NUMBER');
       fireEvent.change(phoneInput, { target: { value: '1234567890' } });
@@ -129,7 +129,7 @@ describe('PatientContactInformation', () => {
     });
 
     it('should return both phone numbers', () => {
-      render(<PatientContactInformation ref={ref} />);
+      render(<ContactInfo ref={ref} />);
 
       const phoneInput = screen.getByLabelText('CREATE_PATIENT_PHONE_NUMBER');
       const altPhoneInput = screen.getByLabelText(
@@ -153,7 +153,7 @@ describe('PatientContactInformation', () => {
         altPhoneNumber: '0987654321',
       };
 
-      render(<PatientContactInformation ref={ref} initialData={initialData} />);
+      render(<ContactInfo ref={ref} initialData={initialData} />);
 
       const data = ref.current?.getData();
 
@@ -161,7 +161,7 @@ describe('PatientContactInformation', () => {
     });
 
     it('should return updated data after changes', () => {
-      render(<PatientContactInformation ref={ref} />);
+      render(<ContactInfo ref={ref} />);
 
       const phoneInput = screen.getByLabelText('CREATE_PATIENT_PHONE_NUMBER');
 

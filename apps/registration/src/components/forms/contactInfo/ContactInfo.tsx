@@ -4,20 +4,17 @@ import { useCallback, useImperativeHandle, useState } from 'react';
 import type { ContactData } from '../../../models/patient';
 import styles from './styles/index.module.scss';
 
-export interface PatientContactInformationRef {
+export interface ContactInfoRef {
   validate: () => boolean;
   getData: () => ContactData;
 }
 
-interface PatientContactInformationProps {
+interface ContactInfoProps {
   initialData?: ContactData;
-  ref?: React.Ref<PatientContactInformationRef>;
+  ref?: React.Ref<ContactInfoRef>;
 }
 
-export const PatientContactInformation = ({
-  initialData,
-  ref,
-}: PatientContactInformationProps) => {
+export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
   const { t } = useTranslation();
 
   const [formData, setFormData] = useState<ContactData>({
@@ -79,6 +76,6 @@ export const PatientContactInformation = ({
   );
 };
 
-PatientContactInformation.displayName = 'PatientContactInformation';
+ContactInfo.displayName = 'ContactInfo';
 
-export default PatientContactInformation;
+export default ContactInfo;

@@ -3,17 +3,14 @@ import { render, fireEvent, screen } from '@testing-library/react';
 import { createRef } from 'react';
 import '@testing-library/jest-dom';
 import { AdditionalData } from '../../../../models/patient';
-import {
-  PatientAdditionalInformation,
-  PatientAdditionalInformationRef,
-} from '../PatientAdditionalInformation';
+import { AdditionalInfo, AdditionalInfoRef } from '../AdditionalInfo';
 
 // Mock the translation hook to return the key
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
   useTranslation: jest.fn(),
 }));
 
-describe('PatientAdditionalInformation', () => {
+describe('AdditionalInfo', () => {
   const mockT = jest.fn((key: string) => key);
 
   beforeEach(() => {
@@ -22,7 +19,7 @@ describe('PatientAdditionalInformation', () => {
 
   it('renders correctly with initial data', () => {
     const initialData: AdditionalData = { email: 'test@example.com' };
-    render(<PatientAdditionalInformation initialData={initialData} />);
+    render(<AdditionalInfo initialData={initialData} />);
 
     const emailInput = screen.getByLabelText(
       'CREATE_PATIENT_EMAIL',
@@ -32,7 +29,7 @@ describe('PatientAdditionalInformation', () => {
   });
 
   it('updates email field on change and clears error', () => {
-    render(<PatientAdditionalInformation />);
+    render(<AdditionalInfo />);
     const emailInput = screen.getByLabelText(
       'CREATE_PATIENT_EMAIL',
     ) as HTMLInputElement;
@@ -42,8 +39,8 @@ describe('PatientAdditionalInformation', () => {
   });
 
   it('returns true for valid or empty email and no error shown', () => {
-    const ref = createRef<PatientAdditionalInformationRef>();
-    render(<PatientAdditionalInformation ref={ref} />);
+    const ref = createRef<AdditionalInfoRef>();
+    render(<AdditionalInfo ref={ref} />);
 
     const emailInput = screen.getByLabelText(
       'CREATE_PATIENT_EMAIL',
@@ -58,8 +55,8 @@ describe('PatientAdditionalInformation', () => {
   });
 
   it('exposes getData ref method to return current form data', () => {
-    const ref = createRef<PatientAdditionalInformationRef>();
-    render(<PatientAdditionalInformation ref={ref} />);
+    const ref = createRef<AdditionalInfoRef>();
+    render(<AdditionalInfo ref={ref} />);
 
     const emailInput = screen.getByLabelText(
       'CREATE_PATIENT_EMAIL',
