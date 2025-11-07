@@ -13,6 +13,7 @@
   "CREATE_PATIENT_BREADCRUMB_SEARCH": "Buscar paciente",
   "CREATE_PATIENT_BUTTON_TEXT": "Crear nuevo paciente",
   "CREATE_PATIENT_CAPTURE_PHOTO": "Capturar foto",
+  "CREATE_PATIENT_CAPTURE_PHOTO_MODAL_HEADING": "Tomar foto del paciente",
   "CREATE_PATIENT_CITY": "Ciudad/Pueblo",
   "CREATE_PATIENT_DATE_OF_BIRTH": "Fecha de nacimiento",
   "CREATE_PATIENT_DATE_OF_BIRTH_PLACEHOLDER": "dd/mm/aaaa",
