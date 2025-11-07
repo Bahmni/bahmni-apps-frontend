@@ -198,7 +198,7 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
                     onClick={handleCaptureClick}
                     className={styles.confirmButton}
                   >
-                    Capture Photo
+                    {t('CREATE_PATIENT_CAPTURE_PHOTO')}
                   </Button>
                 </>
               )}
@@ -210,8 +210,10 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
               <FileUploader
                 labelTitle=""
                 key={isModalOpen ? 'open' : 'closed'}
-                labelDescription="t('CREATE_PATIENT_UPLOAD_PHOTO_FILE_SIZE_LIMIT')"
-                buttonLabel="Choose file"
+                labelDescription={t(
+                  'CREATE_PATIENT_UPLOAD_PHOTO_FILE_SIZE_LIMIT',
+                )}
+                buttonLabel={t('CREATE_PATIENT_UPLOAD_PHOTO_CHOOSE_FILE')}
                 buttonKind="primary"
                 accept={['image/*']}
                 onChange={handleFileChange}
@@ -242,7 +244,7 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
                   className={styles.confirmButton}
                   onClick={handlePreview}
                 >
-                  Retake
+                  {t('CREATE_PATIENT_UPLOAD_PHOTO_RETAKE')}
                 </Button>
               )}
             </>
