@@ -75,6 +75,7 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
 
   const handleFileDelete = () => {
     setPreviewUrl(undefined);
+    setFileSizeError('');
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -83,7 +84,12 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
 
     const file = files[0];
     if (file.size > MAX_FILE_SIZE) {
-      setFileSizeError(t('CREATE_PATIENT_UPLOAD_PHOTO_FILE_SIZE_ERROR'));
+      const fileSizeKB = Math.round(file.size / 1024);
+      setFileSizeError(
+        t('CREATE_PATIENT_UPLOAD_PHOTO_FILE_SIZE_ERROR', {
+          fileSize: `${fileSizeKB}KB`,
+        }),
+      );
       setPreviewUrl(undefined);
       return;
     }
@@ -182,22 +188,17 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
       >
         <Modal.Body>
           {mode === 'capture' && (
-            <div className={styles.cameraContainer}>
+            <div>
               {!previewUrl && (
                 <>
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    className={styles.imagePreviewContainer}
-                  />
-                  <Button
-                    kind="primary"
-                    onClick={handleCaptureClick}
-                    className={styles.confirmButton}
-                  >
-                    {t('CREATE_PATIENT_CAPTURE_PHOTO')}
-                  </Button>
+                  <div className={styles.imagePreviewContainer}>
+                    <video ref={videoRef} autoPlay playsInline />
+                  </div>
+                  <div className={styles.buttonGroup}>
+                    <Button kind="primary" onClick={handleCaptureClick}>
+                      {t('CREATE_PATIENT_CAPTURE_PHOTO')}
+                    </Button>
+                  </div>
                 </>
               )}
             </div>
@@ -229,22 +230,16 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
               <div className={styles.imagePreviewContainer}>
                 <img src={previewUrl} alt="Preview" />
               </div>
-              <Button
-                kind="primary"
-                onClick={handleConfirm}
-                className={styles.confirmButton}
-              >
-                {t('CREATE_PATIENT_UPLOAD_PHOTO_CONFIRM')}
-              </Button>
-              {mode === 'capture' && (
-                <Button
-                  kind="primary"
-                  className={styles.confirmButton}
-                  onClick={handlePreview}
-                >
-                  {t('CREATE_PATIENT_UPLOAD_PHOTO_RETAKE')}
+              <div className={styles.buttonGroup}>
+                <Button kind="primary" onClick={handleConfirm}>
+                  {t('CREATE_PATIENT_UPLOAD_PHOTO_CONFIRM')}
                 </Button>
-              )}
+                {mode === 'capture' && (
+                  <Button kind="primary" onClick={handlePreview}>
+                    {t('CREATE_PATIENT_UPLOAD_PHOTO_RETAKE')}
+                  </Button>
+                )}
+              </div>
             </>
           )}
         </Modal.Body>
