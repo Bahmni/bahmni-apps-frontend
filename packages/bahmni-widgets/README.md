@@ -10,11 +10,16 @@ npm install bahmni-widgets
 
 ## Peer Dependencies
 
-This package requires the following peer dependencies:
+This package requires the following peer dependencies to be installed in your application:
 
 ```bash
-npm install react@>=18.0.0 react-dom@>=18.0.0 @tanstack/react-query@^5.85.5
+npm install react@>=18.0.0 react-dom@>=18.0.0
+npm install @tanstack/react-query@^5.85.5
+npm install bahmni-design-system@^0.0.1
+npm install bahmni-services@^0.0.1
 ```
+
+**Note:** Peer dependencies are **not automatically installed**. You must install them manually in your consuming application.
 
 ## Available Components
 

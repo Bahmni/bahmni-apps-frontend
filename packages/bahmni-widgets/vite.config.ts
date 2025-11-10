@@ -39,12 +39,15 @@ export default defineConfig(() => ({
     rollupOptions: {
       // External packages that should not be bundled into your library.
       external: [
-        'react', 
-        'react-dom', 
-        'react/jsx-runtime', 
-        'react-router-dom', 
+        'react',
+        'react-dom',
+        'react/jsx-runtime',
+        'react-router-dom',
         'react-i18next',
-        '@tanstack/react-query'
+        '@tanstack/react-query',
+        'bahmni-design-system',
+        'bahmni-design-system/styles',
+        'bahmni-services'
       ],
     },
   },

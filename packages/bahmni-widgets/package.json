@@ -1,6 +1,6 @@
 {
   "name": "bahmni-widgets",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -21,12 +21,13 @@
     "url": "git+https://github.com/Bahmni/bahmni-apps-frontend.git",
     "directory": "bahmni-apps-frontend/packages/bahmni-widgets"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
-    "@tanstack/react-query": "^5.85.5"
+    "@tanstack/react-query": "^5.85.5",
+    "bahmni-design-system": "^0.0.1",
+    "bahmni-services": "^0.0.1"
   },
   "description": "Reusable React display controls and components extracted for sharing across Bahmni modules. Includes common clinical widgets and notification provider to avoid duplication across different Bahmni applications.",
   "files": [
