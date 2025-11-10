@@ -21,6 +21,10 @@
     "url": "git+https://github.com/Bahmni/bahmni-apps-frontend.git",
     "directory": "bahmni-apps-frontend/packages/bahmni-widgets"
   },
+ "scripts": {
+    "build": "vite build",
+    "prepublishOnly": "yarn run build"
+  },
   "dependencies": {},
   "peerDependencies": {
     "react": ">=18.0.0",
