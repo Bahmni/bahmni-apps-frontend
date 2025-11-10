@@ -12,6 +12,7 @@
   "CREATE_PATIENT_BREADCRUMB_HOME": "Inicio",
   "CREATE_PATIENT_BREADCRUMB_SEARCH": "Buscar paciente",
   "CREATE_PATIENT_BUTTON_TEXT": "Crear nuevo paciente",
+  "CREATE_PATIENT_CAMERA_ACCESS_ERROR": "Por favor, permita el acceso a la cámara web y espere a que se abra el cuadro de diálogo de captura de fotos.",
   "CREATE_PATIENT_CAPTURE_PHOTO": "Capturar foto",
   "CREATE_PATIENT_CAPTURE_PHOTO_MODAL_HEADING": "Tomar foto del paciente",
   "CREATE_PATIENT_CITY": "Ciudad/Pueblo",

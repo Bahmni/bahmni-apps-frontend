@@ -52,7 +52,6 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
   };
 
   const openCapture = () => {
-    setIsModalOpen(true);
     setMode('capture');
     handlePreview();
     setFileSizeError('');
@@ -132,8 +131,9 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
     setPreviewUrl(undefined);
     try {
       await start();
+      setIsModalOpen(true);
     } catch {
-      alert('Unable to access camera. Please check permissions.');
+      alert(t('CREATE_PATIENT_CAMERA_ACCESS_ERROR'));
       handleModalClose();
     }
   };
