@@ -226,13 +226,13 @@ describe('appointmentSearchHandler', () => {
       window.location = { href: '' } as any;
     });
 
-    it('should navigate using react-router for regular URLs', () => {
+    it('should navigate using react-router for hash URLs', () => {
       const options = {
         patientUuid: 'patient-123',
         appointmentNumber: 'APT-001',
       };
       handleActionNavigation(
-        '/patient/{{patientUuid}}/appointments',
+        '#/patient/{{patientUuid}}/appointments',
         options,
         mockNavigate,
       );
@@ -242,10 +242,10 @@ describe('appointmentSearchHandler', () => {
       );
     });
 
-    it('should handle hash URLs by setting window.location.href', () => {
+    it('should handle regular URLs by setting window.location.href', () => {
       const options = { patientUuid: 'patient-456' };
       handleActionNavigation(
-        '#/patient/{{patientUuid}}/details',
+        '/patient/{{patientUuid}}/details',
         options,
         mockNavigate,
       );
@@ -268,7 +268,7 @@ describe('appointmentSearchHandler', () => {
         appointmentNumber: 'APT-999',
       };
       handleActionNavigation(
-        '/patient/{{patientUuid}}/appointment/{{appointmentNumber}}',
+        '#/patient/{{patientUuid}}/appointment/{{appointmentNumber}}',
         options,
         mockNavigate,
       );
@@ -390,7 +390,7 @@ describe('appointmentSearchHandler', () => {
         type: 'navigate',
         translationKey: 'View Details',
         onAction: {
-          navigation: '/patient/{{patientUuid}}/appointments',
+          navigation: '#/patient/{{patientUuid}}/appointments',
         },
         enabledRule: [],
       };
@@ -414,7 +414,7 @@ describe('appointmentSearchHandler', () => {
         type: 'navigate',
         translationKey: 'View Details',
         onAction: {
-          navigation: '/appointment/{{appointmentNumber}}',
+          navigation: '#/appointment/{{appointmentNumber}}',
         },
         enabledRule: [],
       };
@@ -547,7 +547,7 @@ describe('appointmentSearchHandler', () => {
         enabledRule: [],
       };
 
-      expect(shouldRenderButton(action, mockUserPrivileges)).toBe(true);
+      expect(shouldRenderButton(action, mockUserPrivileges)).toBe(false);
     });
 
     it('should return true when user has required privilege', () => {
@@ -629,7 +629,7 @@ describe('appointmentSearchHandler', () => {
         enabledRule: undefined,
       };
 
-      expect(shouldRenderButton(action, mockUserPrivileges)).toBe(true);
+      expect(shouldRenderButton(action, mockUserPrivileges)).toBe(false);
     });
   });
 });

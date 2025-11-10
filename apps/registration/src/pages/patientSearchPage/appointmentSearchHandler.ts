@@ -50,9 +50,9 @@ export const handleActionNavigation = (
 
   const url = formatUrl(navigationUrl, options, true);
   if (url.startsWith('#')) {
-    navigate(url);
+    navigate(url.slice(1));
   } else {
-    window.location.href = url.slice(1);
+    window.location.href = url;
   }
 };
 
