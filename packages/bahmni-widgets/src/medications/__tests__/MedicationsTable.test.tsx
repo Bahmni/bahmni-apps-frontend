@@ -1,12 +1,12 @@
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import {
   formatDate,
   groupByDate,
   MedicationRequest,
   MedicationStatus,
   useTranslation,
-} from '@bahmni-frontend/bahmni-services';
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+} from 'bahmni-services';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import MedicationsTable from '../MedicationsTable';
 import { useMedicationRequest } from '../useMedicationRequest';
@@ -20,8 +20,8 @@ import {
 expect.extend(toHaveNoViolations);
 
 jest.mock('../useMedicationRequest');
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('bahmni-services', () => ({
+  ...jest.requireActual('bahmni-services'),
   useTranslation: jest.fn(),
   formatDate: jest.fn(),
   groupByDate: jest.fn(),

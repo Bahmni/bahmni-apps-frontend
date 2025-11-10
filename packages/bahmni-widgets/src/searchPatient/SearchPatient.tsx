@@ -1,9 +1,5 @@
-import {
-  Search,
-  Button,
-  Dropdown,
-  Tag,
-} from '@bahmni-frontend/bahmni-design-system';
+import { useQuery } from '@tanstack/react-query';
+import { Search, Button, Dropdown, Tag } from 'bahmni-design-system';
 import {
   searchPatientByNameOrId,
   searchPatientByCustomAttribute,
@@ -11,8 +7,7 @@ import {
   useTranslation,
   getRegistrationConfig,
   PatientSearchField,
-} from '@bahmni-frontend/bahmni-services';
-import { useQuery } from '@tanstack/react-query';
+} from 'bahmni-services';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../notification';
 import styles from './styles/SearchPatient.module.scss';

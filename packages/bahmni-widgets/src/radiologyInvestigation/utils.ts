@@ -2,7 +2,7 @@ import {
   RadiologyInvestigation,
   getPriorityByOrder,
   filterReplacementEntries,
-} from '@bahmni-frontend/bahmni-services';
+} from 'bahmni-services';
 
 /**
  * Priority order for radiology investigation priorities (case insensitive)

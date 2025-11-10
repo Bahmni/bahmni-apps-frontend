@@ -1,9 +1,9 @@
+import { render, screen } from '@testing-library/react';
 import {
   FormattedAllergy,
   AllergyStatus,
   AllergySeverity,
-} from '@bahmni-frontend/bahmni-services';
-import { render, screen } from '@testing-library/react';
+} from 'bahmni-services';
 import AllergiesTable from '../AllergiesTable';
 import { useAllergies } from '../useAllergies';
 

@@ -1,3 +1,4 @@
+import { renderHook, act } from '@testing-library/react';
 import {
   getCurrentProvider,
   getCurrentUser,
@@ -6,12 +7,11 @@ import {
   User,
   getFormattedError,
   useTranslation,
-} from '@bahmni-frontend/bahmni-services';
-import { renderHook, act } from '@testing-library/react';
+} from 'bahmni-services';
 import { useActivePractitioner } from '../useActivePractitioner';
 
 // Mock dependencies
-jest.mock('@bahmni-frontend/bahmni-services');
+jest.mock('bahmni-services');
 
 // Type the mocked functions
 const mockedGetCurrentProvider = getCurrentProvider as jest.MockedFunction<

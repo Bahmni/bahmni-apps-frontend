@@ -1,5 +1,5 @@
-import { UserPrivilege } from '@bahmni-frontend/bahmni-services';
 import { renderHook } from '@testing-library/react';
+import { UserPrivilege } from 'bahmni-services';
 import React from 'react';
 import { UserPrivilegeContext } from '../UserPrivilegeContext';
 import { useUserPrivilege } from '../useUserPrivilege';

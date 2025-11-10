@@ -1,5 +1,5 @@
-import { NotificationContainer } from '@bahmni-frontend/bahmni-design-system';
-import { Notification, generateId } from '@bahmni-frontend/bahmni-services';
+import { NotificationContainer } from 'bahmni-design-system';
+import { Notification, generateId } from 'bahmni-services';
 import React, {
   useState,
   useEffect,

@@ -1,4 +1,5 @@
-import { SortableDataTable } from '@bahmni-frontend/bahmni-design-system';
+import { Tag, Accordion, AccordionItem } from '@carbon/react';
+import { SortableDataTable } from 'bahmni-design-system';
 import {
   RadiologyInvestigation,
   useTranslation,
@@ -6,8 +7,7 @@ import {
   formatDate,
   FULL_MONTH_DATE_FORMAT,
   ISO_DATE_FORMAT,
-} from '@bahmni-frontend/bahmni-services';
-import { Tag, Accordion, AccordionItem } from '@carbon/react';
+} from 'bahmni-services';
 import React, { useMemo, useCallback } from 'react';
 import styles from './styles/RadiologyInvestigationTable.module.scss';
 import { useRadiologyInvestigation } from './useRadiologyInvestigation';

@@ -1,7 +1,4 @@
-import {
-  FormattedAllergy,
-  AllergenType,
-} from '@bahmni-frontend/bahmni-services';
+import { FormattedAllergy, AllergenType } from 'bahmni-services';
 import {
   getCategoryDisplayName,
   getSeverityDisplayName,
