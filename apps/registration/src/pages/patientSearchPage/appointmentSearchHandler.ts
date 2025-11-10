@@ -50,9 +50,9 @@ export const handleActionNavigation = (
 
   const url = formatUrl(navigationUrl, options, true);
   if (url.startsWith('#')) {
-    window.location.href = url.slice(1);
-  } else {
     navigate(url);
+  } else {
+    window.location.href = url.slice(1);
   }
 };
 
@@ -117,7 +117,7 @@ export const shouldRenderButton = (
       .flat() ?? [];
 
   if (privilegeRules.length === 0) {
-    return true;
+    return false;
   }
 
   return privilegeValidator(userPrivileges)(privilegeRules);

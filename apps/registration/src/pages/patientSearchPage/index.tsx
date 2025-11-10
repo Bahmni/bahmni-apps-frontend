@@ -172,7 +172,7 @@ const PatientSearchPage: React.FC = () => {
     }
   };
 
-  const renderCell = useCallback(
+  const renderPatientSearchResult = useCallback(
     (
       row: PatientSearchViewModel<AppointmentSearchResult>,
       cellId: string,
@@ -213,7 +213,7 @@ const PatientSearchPage: React.FC = () => {
               {searchFields.map((field) =>
                 field.actions?.map((action) => {
                   if (!shouldRenderButton(action, userPrivileges ?? []))
-                    return null;
+                    return <></>;
                   return (
                     <Button
                       key={action.translationKey}
@@ -311,7 +311,7 @@ const PatientSearchPage: React.FC = () => {
                   patientSearchData,
                   searchFields,
                 )}
-                renderCell={renderCell}
+                renderCell={renderPatientSearchResult}
                 emptyStateMessage={
                   isAdvancedSearch
                     ? t(
