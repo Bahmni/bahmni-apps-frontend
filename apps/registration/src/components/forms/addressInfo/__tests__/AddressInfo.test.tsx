@@ -3,6 +3,7 @@ import {
   getAddressHierarchyEntries,
   type AddressHierarchyEntry,
 } from '@bahmni-frontend/bahmni-services';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   render,
   screen,
@@ -28,6 +29,20 @@ const mockGetAddressHierarchyEntries =
     typeof getAddressHierarchyEntries
   >;
 
+// Helper to render with QueryClient
+const renderWithQueryClient = (component: React.ReactElement) => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+  return render(
+    <QueryClientProvider client={queryClient}>{component}</QueryClientProvider>,
+  );
+};
+
 describe('AddressInfo', () => {
   const mockT = jest.fn((key: string) => key) as any;
 
@@ -38,14 +53,16 @@ describe('AddressInfo', () => {
   });
 
   afterEach(() => {
-    jest.runOnlyPendingTimers();
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
     jest.useRealTimers();
     jest.clearAllMocks();
   });
 
   describe('Rendering', () => {
     it('renders all address input fields correctly', () => {
-      render(<AddressInfo />);
+      renderWithQueryClient(<AddressInfo />);
 
       expect(
         screen.getByLabelText(/CREATE_PATIENT_HOUSE_NUMBER/),
@@ -64,7 +81,7 @@ describe('AddressInfo', () => {
     });
 
     it('renders section title', () => {
-      render(<AddressInfo />);
+      renderWithQueryClient(<AddressInfo />);
 
       expect(mockT).toHaveBeenCalledWith('CREATE_PATIENT_SECTION_ADDRESS_INFO');
     });
@@ -73,7 +90,7 @@ describe('AddressInfo', () => {
   describe('Input Handling', () => {
     it('updates simple text fields without validation', () => {
       const ref = createRef<AddressInfoRef>();
-      render(<AddressInfo ref={ref} />);
+      renderWithQueryClient(<AddressInfo ref={ref} />);
 
       const houseNumberInput = screen.getByLabelText(
         /CREATE_PATIENT_HOUSE_NUMBER/,
@@ -98,7 +115,7 @@ describe('AddressInfo', () => {
     });
 
     it('allows clearing field values', () => {
-      render(<AddressInfo />);
+      renderWithQueryClient(<AddressInfo />);
 
       const cityInput = screen.getByLabelText(/CREATE_PATIENT_CITY/);
       fireEvent.change(cityInput, { target: { value: 'Mumbai' } });
@@ -112,7 +129,7 @@ describe('AddressInfo', () => {
   describe('Validation', () => {
     it('validates that dropdown fields require selection from dropdown', () => {
       const ref = createRef<AddressInfoRef>();
-      render(<AddressInfo ref={ref} />);
+      renderWithQueryClient(<AddressInfo ref={ref} />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
       fireEvent.change(districtInput, {
@@ -128,7 +145,7 @@ describe('AddressInfo', () => {
 
     it('validates all three dropdown fields (district, state, pincode)', () => {
       const ref = createRef<AddressInfoRef>();
-      render(<AddressInfo ref={ref} />);
+      renderWithQueryClient(<AddressInfo ref={ref} />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
       const stateInput = screen.getByLabelText(/CREATE_PATIENT_STATE/);
@@ -147,7 +164,7 @@ describe('AddressInfo', () => {
 
     it('returns true when dropdown fields are empty', () => {
       const ref = createRef<AddressInfoRef>();
-      render(<AddressInfo ref={ref} />);
+      renderWithQueryClient(<AddressInfo ref={ref} />);
 
       let isValid: boolean | undefined;
       act(() => {
@@ -158,7 +175,7 @@ describe('AddressInfo', () => {
 
     it('validates correctly after clearing a dropdown field', () => {
       const ref = createRef<AddressInfoRef>();
-      render(<AddressInfo ref={ref} />);
+      renderWithQueryClient(<AddressInfo ref={ref} />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
 
@@ -191,7 +208,7 @@ describe('AddressInfo', () => {
       ];
       mockGetAddressHierarchyEntries.mockResolvedValue(mockSuggestions);
 
-      render(<AddressInfo />);
+      renderWithQueryClient(<AddressInfo />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
       fireEvent.change(districtInput, { target: { value: 'Test' } });
@@ -200,7 +217,9 @@ describe('AddressInfo', () => {
       expect(mockGetAddressHierarchyEntries).not.toHaveBeenCalled();
 
       // Advance timers by debounce delay
-      jest.advanceTimersByTime(300);
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
 
       await waitFor(() => {
         expect(mockGetAddressHierarchyEntries).toHaveBeenCalledWith(
@@ -211,12 +230,14 @@ describe('AddressInfo', () => {
     });
 
     it('does not fetch suggestions for short search terms (< 2 chars)', async () => {
-      render(<AddressInfo />);
+      renderWithQueryClient(<AddressInfo />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
       fireEvent.change(districtInput, { target: { value: 'T' } });
 
-      jest.advanceTimersByTime(300);
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
 
       await waitFor(() => {
         expect(mockGetAddressHierarchyEntries).not.toHaveBeenCalled();
@@ -234,13 +255,15 @@ describe('AddressInfo', () => {
       ];
       mockGetAddressHierarchyEntries.mockResolvedValue(mockSuggestions);
 
-      render(<AddressInfo />);
+      renderWithQueryClient(<AddressInfo />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
 
       // First, trigger suggestions
       fireEvent.change(districtInput, { target: { value: 'Test' } });
-      jest.advanceTimersByTime(300);
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
 
       await waitFor(() => {
         expect(screen.getByText('Test District')).toBeInTheDocument();
@@ -248,7 +271,9 @@ describe('AddressInfo', () => {
 
       // Clear input
       fireEvent.change(districtInput, { target: { value: '' } });
-      jest.advanceTimersByTime(300);
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
 
       await waitFor(() => {
         expect(screen.queryByText('Test District')).not.toBeInTheDocument();
@@ -282,12 +307,14 @@ describe('AddressInfo', () => {
       ];
       mockGetAddressHierarchyEntries.mockResolvedValue(mockSuggestions);
 
-      render(<AddressInfo />);
+      renderWithQueryClient(<AddressInfo />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
       fireEvent.change(districtInput, { target: { value: 'District' } });
 
-      jest.advanceTimersByTime(300);
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
 
       await waitFor(() => {
         expect(screen.getByText('District A')).toBeInTheDocument();
@@ -300,12 +327,14 @@ describe('AddressInfo', () => {
     it('handles API errors gracefully', async () => {
       mockGetAddressHierarchyEntries.mockRejectedValue(new Error('API Error'));
 
-      render(<AddressInfo />);
+      renderWithQueryClient(<AddressInfo />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
       fireEvent.change(districtInput, { target: { value: 'Test' } });
 
-      jest.advanceTimersByTime(300);
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
 
       await waitFor(() => {
         expect(mockGetAddressHierarchyEntries).toHaveBeenCalled();
@@ -326,12 +355,14 @@ describe('AddressInfo', () => {
       ];
       mockGetAddressHierarchyEntries.mockResolvedValue(mockSuggestions);
 
-      render(<AddressInfo />);
+      renderWithQueryClient(<AddressInfo />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
       fireEvent.change(districtInput, { target: { value: 'Test' } });
 
-      jest.advanceTimersByTime(300);
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
 
       await waitFor(() => {
         expect(screen.getByText('Test District')).toBeInTheDocument();
@@ -340,7 +371,9 @@ describe('AddressInfo', () => {
       fireEvent.blur(districtInput);
 
       // Advance by blur delay (200ms in component)
-      jest.advanceTimersByTime(200);
+      act(() => {
+        jest.advanceTimersByTime(200);
+      });
 
       await waitFor(() => {
         expect(screen.queryByText('Test District')).not.toBeInTheDocument();
@@ -358,13 +391,15 @@ describe('AddressInfo', () => {
       ];
       mockGetAddressHierarchyEntries.mockResolvedValue(mockSuggestions);
 
-      render(<AddressInfo />);
+      renderWithQueryClient(<AddressInfo />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
 
       // Trigger suggestions
       fireEvent.change(districtInput, { target: { value: 'Test' } });
-      jest.advanceTimersByTime(300);
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
 
       await waitFor(() => {
         expect(screen.getByText('Test District')).toBeInTheDocument();
@@ -372,7 +407,9 @@ describe('AddressInfo', () => {
 
       // Blur to hide
       fireEvent.blur(districtInput);
-      jest.advanceTimersByTime(200);
+      act(() => {
+        jest.advanceTimersByTime(200);
+      });
 
       await waitFor(() => {
         expect(screen.queryByText('Test District')).not.toBeInTheDocument();
@@ -403,12 +440,14 @@ describe('AddressInfo', () => {
       mockGetAddressHierarchyEntries.mockResolvedValue([mockEntry]);
 
       const ref = createRef<AddressInfoRef>();
-      render(<AddressInfo ref={ref} />);
+      renderWithQueryClient(<AddressInfo ref={ref} />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
       fireEvent.change(districtInput, { target: { value: 'Test' } });
 
-      jest.advanceTimersByTime(300);
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
 
       await waitFor(() => {
         expect(screen.getByText('Test District')).toBeInTheDocument();
@@ -449,12 +488,14 @@ describe('AddressInfo', () => {
       mockGetAddressHierarchyEntries.mockResolvedValue([mockEntry]);
 
       const ref = createRef<AddressInfoRef>();
-      render(<AddressInfo ref={ref} />);
+      renderWithQueryClient(<AddressInfo ref={ref} />);
 
       const postalInput = screen.getByLabelText(/CREATE_PATIENT_PINCODE/);
       fireEvent.change(postalInput, { target: { value: '400' } });
 
-      jest.advanceTimersByTime(300);
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
 
       await waitFor(() => {
         expect(screen.getByText('400001')).toBeInTheDocument();
@@ -488,12 +529,14 @@ describe('AddressInfo', () => {
       mockGetAddressHierarchyEntries.mockResolvedValue([mockEntry]);
 
       const ref = createRef<AddressInfoRef>();
-      render(<AddressInfo ref={ref} />);
+      renderWithQueryClient(<AddressInfo ref={ref} />);
 
       const stateInput = screen.getByLabelText(/CREATE_PATIENT_STATE/);
       fireEvent.change(stateInput, { target: { value: 'Maha' } });
 
-      jest.advanceTimersByTime(300);
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
 
       await waitFor(() => {
         expect(screen.getByText('Maharashtra')).toBeInTheDocument();
@@ -523,12 +566,14 @@ describe('AddressInfo', () => {
       };
       mockGetAddressHierarchyEntries.mockResolvedValue([mockEntry]);
 
-      render(<AddressInfo />);
+      renderWithQueryClient(<AddressInfo />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
       fireEvent.change(districtInput, { target: { value: 'Test' } });
 
-      jest.advanceTimersByTime(300);
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
 
       await waitFor(() => {
         expect(screen.getByText('Test District')).toBeInTheDocument();
@@ -549,7 +594,7 @@ describe('AddressInfo', () => {
       mockGetAddressHierarchyEntries.mockResolvedValue([mockEntry]);
 
       const ref = createRef<AddressInfoRef>();
-      render(<AddressInfo ref={ref} />);
+      renderWithQueryClient(<AddressInfo ref={ref} />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
 
@@ -563,7 +608,9 @@ describe('AddressInfo', () => {
 
       // Now select from dropdown
       fireEvent.change(districtInput, { target: { value: 'Valid' } });
-      jest.advanceTimersByTime(300);
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
 
       await waitFor(() => {
         expect(screen.getByText('Valid District')).toBeInTheDocument();
@@ -582,7 +629,7 @@ describe('AddressInfo', () => {
   describe('getData Method', () => {
     it('returns empty object when no fields are filled', () => {
       const ref = createRef<AddressInfoRef>();
-      render(<AddressInfo ref={ref} />);
+      renderWithQueryClient(<AddressInfo ref={ref} />);
 
       const data = ref.current?.getData();
       expect(data).toEqual({});
@@ -590,7 +637,7 @@ describe('AddressInfo', () => {
 
     it('returns only filled fields', () => {
       const ref = createRef<AddressInfoRef>();
-      render(<AddressInfo ref={ref} />);
+      renderWithQueryClient(<AddressInfo ref={ref} />);
 
       const cityInput = screen.getByLabelText(/CREATE_PATIENT_CITY/);
       fireEvent.change(cityInput, { target: { value: 'Mumbai' } });
@@ -601,7 +648,7 @@ describe('AddressInfo', () => {
 
     it('returns all filled fields with correct property names', () => {
       const ref = createRef<AddressInfoRef>();
-      render(<AddressInfo ref={ref} />);
+      renderWithQueryClient(<AddressInfo ref={ref} />);
 
       fireEvent.change(screen.getByLabelText(/CREATE_PATIENT_HOUSE_NUMBER/), {
         target: { value: '123' },
@@ -645,19 +692,25 @@ describe('AddressInfo', () => {
         },
       ]);
 
-      render(<AddressInfo />);
+      renderWithQueryClient(<AddressInfo />);
 
       const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
 
       // Type rapidly
       fireEvent.change(districtInput, { target: { value: 'T' } });
-      jest.advanceTimersByTime(100);
+      act(() => {
+        jest.advanceTimersByTime(100);
+      });
 
       fireEvent.change(districtInput, { target: { value: 'Te' } });
-      jest.advanceTimersByTime(100);
+      act(() => {
+        jest.advanceTimersByTime(100);
+      });
 
       fireEvent.change(districtInput, { target: { value: 'Test' } });
-      jest.advanceTimersByTime(300);
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
 
       // Should only call once with the final value
       await waitFor(() => {

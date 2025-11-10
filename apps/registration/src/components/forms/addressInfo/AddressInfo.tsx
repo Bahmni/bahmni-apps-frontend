@@ -5,7 +5,14 @@ import {
   type AddressHierarchyEntry,
   type PatientAddress,
 } from '@bahmni-frontend/bahmni-services';
-import { useCallback, useImperativeHandle, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import {
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
 import { AddressData } from '../../../models/patient';
 import type { AddressErrors } from '../../../models/validation';
 import styles from './styles/index.module.scss';
@@ -63,11 +70,54 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     postalCode: false,
   });
 
+  // Track search queries for each field
+  const [searchQueries, setSearchQueries] = useState({
+    countyDistrict: '',
+    stateProvince: '',
+    postalCode: '',
+  });
+
   // debounce timers per field
   const debounceTimers = useRef<Record<string, number | null>>({
     countyDistrict: null,
     stateProvince: null,
     postalCode: null,
+  });
+
+  // Use TanStack Query for address hierarchy entries
+  const { data: districtSuggestions } = useQuery({
+    queryKey: [
+      'addressHierarchy',
+      'countyDistrict',
+      searchQueries.countyDistrict,
+    ],
+    queryFn: () =>
+      getAddressHierarchyEntries(
+        'countyDistrict',
+        searchQueries.countyDistrict,
+      ),
+    enabled: searchQueries.countyDistrict.length >= 2,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const { data: stateSuggestions } = useQuery({
+    queryKey: [
+      'addressHierarchy',
+      'stateProvince',
+      searchQueries.stateProvince,
+    ],
+    queryFn: () =>
+      getAddressHierarchyEntries('stateProvince', searchQueries.stateProvince),
+    enabled: searchQueries.stateProvince.length >= 2,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: postalCodeSuggestions } = useQuery({
+    queryKey: ['addressHierarchy', 'postalCode', searchQueries.postalCode],
+    queryFn: () =>
+      getAddressHierarchyEntries('postalCode', searchQueries.postalCode),
+    enabled: searchQueries.postalCode.length >= 2,
+    staleTime: 5 * 60 * 1000,
   });
 
   const validate = useCallback(() => {
@@ -123,34 +173,23 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
   );
 
   const debouncedSearchAddress = useCallback(
-    (field: string, searchText: string, addressField: string) => {
+    (field: string, searchText: string) => {
       // clear existing timer
       const existing = debounceTimers.current[field];
       if (existing) {
         window.clearTimeout(existing);
       }
 
-      const id = window.setTimeout(async () => {
+      const id = window.setTimeout(() => {
         if (!searchText || searchText.length < 2) {
+          setSearchQueries((prev) => ({ ...prev, [field]: '' }));
           setSuggestions((prev) => ({ ...prev, [field]: [] }));
           setShowSuggestions((prev) => ({ ...prev, [field]: false }));
           return;
         }
 
-        try {
-          const results = await getAddressHierarchyEntries(
-            addressField,
-            searchText,
-          );
-          setSuggestions((prev) => ({ ...prev, [field]: results }));
-          setShowSuggestions((prev) => ({
-            ...prev,
-            [field]: results.length > 0,
-          }));
-        } catch {
-          setSuggestions((prev) => ({ ...prev, [field]: [] }));
-          setShowSuggestions((prev) => ({ ...prev, [field]: false }));
-        }
+        // Update search query to trigger TanStack Query
+        setSearchQueries((prev) => ({ ...prev, [field]: searchText }));
       }, 300);
 
       debounceTimers.current[field] = id;
@@ -158,8 +197,45 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     [],
   );
 
+  // Sync TanStack Query results with suggestions state
+  useEffect(() => {
+    if (districtSuggestions) {
+      setSuggestions((prev) => ({
+        ...prev,
+        countyDistrict: districtSuggestions,
+      }));
+      setShowSuggestions((prev) => ({
+        ...prev,
+        countyDistrict: districtSuggestions.length > 0,
+      }));
+    }
+  }, [districtSuggestions]);
+
+  useEffect(() => {
+    if (stateSuggestions) {
+      setSuggestions((prev) => ({ ...prev, stateProvince: stateSuggestions }));
+      setShowSuggestions((prev) => ({
+        ...prev,
+        stateProvince: stateSuggestions.length > 0,
+      }));
+    }
+  }, [stateSuggestions]);
+
+  useEffect(() => {
+    if (postalCodeSuggestions) {
+      setSuggestions((prev) => ({
+        ...prev,
+        postalCode: postalCodeSuggestions,
+      }));
+      setShowSuggestions((prev) => ({
+        ...prev,
+        postalCode: postalCodeSuggestions.length > 0,
+      }));
+    }
+  }, [postalCodeSuggestions]);
+
   const handleAddressInputChange = useCallback(
-    (field: keyof AddressData, value: string, addressField: string) => {
+    (field: keyof AddressData, value: string) => {
       onInputChange(field, value);
       if (
         field === 'countyDistrict' ||
@@ -168,7 +244,7 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       ) {
         // Mark as not selected from dropdown when user types
         setSelectedFromDropdown((prev) => ({ ...prev, [field]: false }));
-        debouncedSearchAddress(field, value, addressField);
+        debouncedSearchAddress(field, value);
         if (!value) {
           setAddressErrors((prev) => ({ ...prev, [field]: '' }));
         }
@@ -260,11 +336,7 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
               invalid={!!addressErrors.countyDistrict}
               invalidText={addressErrors.countyDistrict}
               onChange={(e) =>
-                handleAddressInputChange(
-                  'countyDistrict',
-                  e.target.value,
-                  'countyDistrict',
-                )
+                handleAddressInputChange('countyDistrict', e.target.value)
               }
               onBlur={() => {
                 setTimeout(() => {
@@ -328,11 +400,7 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
               invalid={!!addressErrors.stateProvince}
               invalidText={addressErrors.stateProvince}
               onChange={(e) =>
-                handleAddressInputChange(
-                  'stateProvince',
-                  e.target.value,
-                  'stateProvince',
-                )
+                handleAddressInputChange('stateProvince', e.target.value)
               }
               onBlur={() => {
                 setTimeout(() => {
@@ -386,11 +454,7 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
               invalid={!!addressErrors.postalCode}
               invalidText={addressErrors.postalCode}
               onChange={(e) =>
-                handleAddressInputChange(
-                  'postalCode',
-                  e.target.value,
-                  'postalCode',
-                )
+                handleAddressInputChange('postalCode', e.target.value)
               }
               onBlur={() => {
                 setTimeout(() => {
