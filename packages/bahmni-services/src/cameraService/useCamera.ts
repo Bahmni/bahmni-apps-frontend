@@ -10,7 +10,10 @@ export function useCamera() {
       streamRef.current = null;
     }
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'user' },
+      video: {
+        facingMode: 'user',
+        aspectRatio: 0.75,
+      },
     });
     streamRef.current = stream;
     if (videoRef.current) {

@@ -234,7 +234,7 @@ describe('PatientPhotoUpload', () => {
 
       await waitFor(() => {
         expect(global.alert).toHaveBeenCalledWith(
-          expect.stringContaining('Unable to access camera'),
+          'CREATE_PATIENT_CAMERA_ACCESS_ERROR',
         );
       });
     });
