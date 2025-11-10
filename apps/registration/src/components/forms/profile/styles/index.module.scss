@@ -4,18 +4,18 @@
 
   // Patient Details Header
   .patientDetailsHeader {
-    margin: 0 auto;
+    margin: 24px 88px 0;
     max-width: 1240px;
     height: 54px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     display: flex;
     align-items: center;
-    width: calc(100% - 176px);
+    padding: 16px;
   }
 
   // Form Container
   .formContainer {
-    margin: 0 auto;
+    margin: 0 88px;
     width: calc(100% - 176px);
     max-width: 1240px;
     padding: 24px;
@@ -127,15 +127,17 @@
   }
    
   .formActions {
-    margin: 0 auto;
     width: calc(100% - 176px);
     max-width: 1240px;
-    padding: 24px 0px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 24px 87px;
+    margin-top: auto;
+
     .actionButtons {
       display: flex;
+      align-items: center;
       gap: 16px;
     }
   }

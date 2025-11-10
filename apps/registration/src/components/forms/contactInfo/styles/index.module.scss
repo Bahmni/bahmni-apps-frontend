@@ -1,0 +1,31 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+
+  // Form Container
+  
+.formSection {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;}
+
+.sectionTitle {
+     @include type-style("heading-compact-02");
+     font-size: 16px;
+      font-weight: 400;
+    }
+
+    .formSectionTitle {
+      @include type-style("body-compact-02");
+    }
+ 
+  .row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+ }
+
+ .phoneNumberField{
+      width: 288px;
+    }
+
