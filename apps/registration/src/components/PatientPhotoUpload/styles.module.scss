@@ -22,12 +22,11 @@
 }
 
 .removeButton {
-  position: absolute !important;
-  top: 0 !important;
-  right: 0 !important;
-  padding: 0 !important;
-  z-index: 10 !important;
-  min-height: auto !important;
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0;
+  z-index: 10;
 }
 
 .wrapButton {
@@ -35,9 +34,9 @@
 }
 
 .imagePreviewContainer {
-  width: $spacing-13 * 3.75;
-  height: $spacing-13 * 2.5;
-  margin: 0 auto;
+  aspect-ratio: 3/4;
+  background: #d0d0d0;
+  display: flex;
   
   img,
   video {
@@ -57,7 +56,22 @@
 .errorMessage {
   color: $support-error;
   font-size: $spacing-04;
-  line-height: $spacing-05;
   font-weight: 400;
-  margin-top: $spacing-03;
+  margin-top: $spacing-01;
+  height: $spacing-06;
+}
+
+:global {
+  .cds--modal-container {
+    width: $spacing-05 * 25;
+  }
+  
+  .cds--modal-content {
+    padding: $spacing-05;
+  }
+
+  .cds--file__selected-file {
+    margin-top: $spacing-09 * -1.25;
+    margin-left: $spacing-05 * 9.375;
+  }
 }

@@ -219,13 +219,23 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
                 onDelete={handleFileDelete}
                 filenameStatus="edit"
               />
-              {fileSizeError && (
-                <div className={styles.errorMessage}>{fileSizeError}</div>
-              )}
+              <div className={styles.errorMessage}>{fileSizeError}</div>
+              <div className={styles.imagePreviewContainer}>
+                {previewUrl && <img src={previewUrl} alt="Preview" />}
+              </div>
+              <div className={styles.buttonGroup}>
+                <Button
+                  kind="primary"
+                  onClick={handleConfirm}
+                  disabled={!previewUrl}
+                >
+                  {t('CREATE_PATIENT_UPLOAD_PHOTO_CONFIRM')}
+                </Button>
+              </div>
             </>
           )}
 
-          {previewUrl && (
+          {previewUrl && mode === 'capture' && (
             <>
               <div className={styles.imagePreviewContainer}>
                 <img src={previewUrl} alt="Preview" />

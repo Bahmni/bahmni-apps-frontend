@@ -41,7 +41,7 @@ describe('useCamera', () => {
     });
 
     expect(mockGetUserMedia).toHaveBeenCalledWith({
-      video: { facingMode: 'user' },
+      video: { facingMode: 'user', aspectRatio: 0.75 },
     });
   });
 
