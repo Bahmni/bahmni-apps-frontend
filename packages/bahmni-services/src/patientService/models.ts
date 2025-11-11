@@ -77,9 +77,9 @@ export interface PatientAddress {
   address1?: string;
   address2?: string;
   cityVillage?: string;
+  countyDistrict?: string;
   stateProvince?: string;
   postalCode?: string;
-  countyDistrict?: string;
 }
 
 export interface PatientIdentifier {

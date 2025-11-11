@@ -1,0 +1,27 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+
+.formSection {
+ display: flex;
+ flex-direction: column;
+ gap: 16px;
+}
+
+.formSectionTitle {
+@include type-style("body-compact-02");
+}     
+  
+.emailField{
+  width: 288px;
+} 
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}    
+
+
+
+

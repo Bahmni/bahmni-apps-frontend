@@ -19,6 +19,7 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import { MemoryRouter, useNavigate } from 'react-router-dom';
 import PatientSearchPage from '..';
 import i18n from '../../../../setupTests.i18n';
+import { RegistrationConfigProvider } from '../../../providers/RegistrationConfigProvider';
 import * as appointmentSearchHandler from '../appointmentSearchHandler';
 
 expect.extend(toHaveNoViolations);
@@ -554,9 +555,11 @@ describe('PatientSearchPage', () => {
         <MemoryRouter>
           <NotificationProvider>
             <QueryClientProvider client={queryClient}>
-              <UserPrivilegeProvider>
-                <PatientSearchPage />
-              </UserPrivilegeProvider>
+              <RegistrationConfigProvider>
+                <UserPrivilegeProvider>
+                  <PatientSearchPage />
+                </UserPrivilegeProvider>
+              </RegistrationConfigProvider>
             </QueryClientProvider>
           </NotificationProvider>
         </MemoryRouter>,
