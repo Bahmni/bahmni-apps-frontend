@@ -11,7 +11,6 @@ import {
 } from '@bahmni-frontend/bahmni-design-system';
 import {
   AppointmentSearchResult,
-  AppointmentSearchResultBundle,
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   BAHMNI_HOME_PATH,
@@ -19,6 +18,7 @@ import {
   getRegistrationConfig,
   PatientSearchField,
   PatientSearchResult,
+  PatientSearchResultBundle,
   useTranslation,
 } from '@bahmni-frontend/bahmni-services';
 import {
@@ -44,7 +44,7 @@ import { formatPatientSearchResult, PatientSearchViewModel } from './utils';
  */
 const PatientSearchPage: React.FC = () => {
   const [patientSearchData, setPatientSearchData] = useState<
-    AppointmentSearchResultBundle | undefined
+    PatientSearchResultBundle | undefined
   >();
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -85,7 +85,7 @@ const PatientSearchPage: React.FC = () => {
   }, []);
 
   const handleOnSearch = (
-    data: AppointmentSearchResultBundle | undefined,
+    data: PatientSearchResultBundle | undefined,
     searchTerm: string,
     isLoading: boolean,
     isError: boolean,

@@ -1,10 +1,10 @@
 import {
   AppointmentSearchResult,
-  AppointmentSearchResultBundle,
   SearchActionConfig,
   updateAppointmentStatus,
   UserPrivilege,
   formatUrl,
+  PatientSearchResultBundle,
 } from '@bahmni-frontend/bahmni-services';
 import { NavigateFunction } from 'react-router-dom';
 import {
@@ -59,8 +59,8 @@ export const handleActionNavigation = (
 export const handleButtonClick = async (
   action: SearchActionConfig,
   row: PatientSearchViewModel<AppointmentSearchResult>,
-  patientSearchData: AppointmentSearchResultBundle,
-  setPatientSearchData: (data: AppointmentSearchResultBundle) => void,
+  patientSearchData: PatientSearchResultBundle,
+  setPatientSearchData: (data: PatientSearchResultBundle) => void,
   navigate: NavigateFunction,
 ) => {
   const { status, navigation } = action.onAction;

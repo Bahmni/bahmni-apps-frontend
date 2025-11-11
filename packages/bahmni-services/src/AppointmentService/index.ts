@@ -6,5 +6,4 @@ export {
   type Appointment,
   type AppointmentSearchResult,
   type Reason,
-  type AppointmentSearchResultBundle,
 } from './models';

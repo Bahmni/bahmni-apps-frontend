@@ -1,6 +1,6 @@
 import {
   AppointmentSearchResult,
-  AppointmentSearchResultBundle,
+  PatientSearchResultBundle,
   SearchActionConfig,
   updateAppointmentStatus,
   UserPrivilege,
@@ -310,7 +310,7 @@ describe('appointmentSearchHandler', () => {
       name: 'John Doe',
     };
 
-    const mockPatientSearchData: AppointmentSearchResultBundle = {
+    const mockPatientSearchData: PatientSearchResultBundle = {
       totalCount: 1,
       pageOfResults: [mockRow],
     };

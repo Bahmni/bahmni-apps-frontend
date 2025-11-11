@@ -44,7 +44,6 @@ export {
   type AppointmentService,
   type Location,
   type Reason,
-  type AppointmentSearchResultBundle,
 } from './AppointmentService/models';
 export { getFormattedError } from './errorHandling';
 export {

@@ -8,11 +8,6 @@ export interface AppointmentSearchResult extends PatientSearchResult {
   appointmentStatus?: string;
 }
 
-export interface AppointmentSearchResultBundle {
-  totalCount: number;
-  pageOfResults: AppointmentSearchResult[];
-}
-
 export interface Appointment {
   length: number;
   uuid: string;
