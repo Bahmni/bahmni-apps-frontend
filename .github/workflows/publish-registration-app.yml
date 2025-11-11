@@ -3,7 +3,7 @@ name: CI & Publish bahmni-registration-app
 on:
   push:
     branches:
-      - main
+      - BAH-4248
 
 env:
   NODE_VERSION: "22"
