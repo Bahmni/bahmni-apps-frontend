@@ -7,7 +7,7 @@ on:
 
 env:
   NODE_VERSION: "22"
-  PACKAGE_PATH: "apps/registration/bahmni-registration-app"
+  PACKAGE_PATH: "apps/registration"
 
 jobs:
   lint-test-build-publish:
