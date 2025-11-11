@@ -5,13 +5,13 @@ import {
 } from '@bahmni-frontend/bahmni-design-system';
 import {
   BAHMNI_HOME_PATH,
+  BAHMNI_REGISTRATION_SEARCH,
   useTranslation,
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
 } from '@bahmni-frontend/bahmni-services';
 import { useRef, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   AdditionalInfo,
   AdditionalInfoRef,
@@ -33,7 +33,6 @@ import { VisitTypeSelector } from './visitTypeSelector';
 
 const CreatePatient = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [patientUuid, setPatientUuid] = useState<string | null>(null);
 
   const patientProfileRef = useRef<ProfileRef>(null);
@@ -104,7 +103,7 @@ const CreatePatient = () => {
     { label: t('CREATE_PATIENT_BREADCRUMB_HOME'), href: BAHMNI_HOME_PATH },
     {
       label: t('CREATE_PATIENT_BREADCRUMB_SEARCH'),
-      onClick: () => navigate('/registration/search'),
+      href: BAHMNI_REGISTRATION_SEARCH,
     },
     { label: t('CREATE_PATIENT_BREADCRUMB_CURRENT') },
   ];
