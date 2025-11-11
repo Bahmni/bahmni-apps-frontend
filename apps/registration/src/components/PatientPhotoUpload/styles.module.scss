@@ -58,7 +58,7 @@
   font-size: $spacing-04;
   font-weight: 400;
   margin-top: $spacing-01;
-  height: $spacing-06;
+  height: $spacing-08;
 }
 
 :global {
@@ -72,6 +72,6 @@
 
   .cds--file__selected-file {
     margin-top: $spacing-09 * -1.25;
-    margin-left: $spacing-05 * 9.375;
+    margin-left: $spacing-05 * 10;
   }
 }
