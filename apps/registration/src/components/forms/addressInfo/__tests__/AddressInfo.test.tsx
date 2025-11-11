@@ -21,6 +21,25 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
   getAddressHierarchyEntries: jest.fn(),
 }));
 
+// Mock registration config hook
+jest.mock('../../../../hooks/useRegistrationConfig', () => ({
+  useRegistrationConfig: () => ({
+    registrationConfig: {
+      patientInformation: {
+        addressHierarchy: {
+          showAddressFieldsTopDown: false,
+        },
+      },
+    },
+    setRegistrationConfig: jest.fn(),
+    isLoading: false,
+    setIsLoading: jest.fn(),
+    error: null,
+    setError: jest.fn(),
+    refetch: jest.fn(),
+  }),
+}));
+
 const mockUseTranslation = useTranslation as jest.MockedFunction<
   typeof useTranslation
 >;

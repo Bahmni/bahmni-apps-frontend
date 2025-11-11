@@ -10,9 +10,11 @@ import {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from 'react';
+import { useRegistrationConfig } from '../../../hooks/useRegistrationConfig';
 import { AddressData } from '../../../models/patient';
 import type { AddressErrors } from '../../../models/validation';
 import styles from './styles/index.module.scss';
@@ -46,6 +48,11 @@ interface AddressInfoProps {
 
 export const AddressInfo = ({ ref }: AddressInfoProps) => {
   const { t } = useTranslation();
+
+  // Get registration config for address field ordering
+  const { registrationConfig } = useRegistrationConfig();
+  const addressConfig = registrationConfig?.patientInformation?.addressHierarchy;
+  const showTopDown = addressConfig?.showAddressFieldsTopDown ?? false;
 
   const [formData, setFormData] = useState<AddressData>(initialFormData);
   const [addressErrors, setAddressErrors] =
@@ -297,6 +304,267 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     [onInputChange, addressErrors, selectedFromDropdown],
   );
 
+  // Define field order based on configuration
+  const addressFieldsOrder = useMemo(() => {
+    if (showTopDown) {
+      // Top-down: State -> District -> City/Village -> Locality -> House Number -> Pincode
+      return [
+        'stateProvince',
+        'countyDistrict',
+        'cityVillage',
+        'address2',
+        'address1',
+        'postalCode',
+      ];
+    } else {
+      // Bottom-up (default): House Number -> Locality -> District -> City -> State -> Pincode
+      return [
+        'address1',
+        'address2',
+        'countyDistrict',
+        'cityVillage',
+        'stateProvince',
+        'postalCode',
+      ];
+    }
+  }, [showTopDown]);
+
+  // Render address field based on field type
+  const renderAddressField = useCallback(
+    (fieldKey: string) => {
+      switch (fieldKey) {
+        case 'address1':
+          return (
+            <div key="address1" className={styles.col}>
+              <TextInput
+                id="house-number"
+                labelText={t('CREATE_PATIENT_HOUSE_NUMBER')}
+                placeholder={t('CREATE_PATIENT_ADDRESS_LINE_PLACEHOLDER')}
+                value={formData.address1}
+                onChange={(e) => onInputChange('address1', e.target.value)}
+              />
+            </div>
+          );
+
+        case 'address2':
+          return (
+            <div key="address2" className={styles.col}>
+              <TextInput
+                id="locality"
+                labelText={t('CREATE_PATIENT_LOCALITY')}
+                placeholder={t('CREATE_PATIENT_LOCALITY')}
+                value={formData.address2}
+                onChange={(e) => onInputChange('address2', e.target.value)}
+              />
+            </div>
+          );
+
+        case 'countyDistrict':
+          return (
+            <div key="countyDistrict" className={styles.col}>
+              <div className={styles.addressFieldWrapper}>
+                <TextInput
+                  id="district"
+                  labelText={t('CREATE_PATIENT_DISTRICT')}
+                  placeholder={t('CREATE_PATIENT_DISTRICT')}
+                  value={formData.countyDistrict}
+                  invalid={!!addressErrors.countyDistrict}
+                  invalidText={addressErrors.countyDistrict}
+                  onChange={(e) =>
+                    handleAddressInputChange('countyDistrict', e.target.value)
+                  }
+                  onBlur={() => {
+                    setTimeout(() => {
+                      setShowSuggestions((prev) => ({
+                        ...prev,
+                        countyDistrict: false,
+                      }));
+                    }, 200);
+                  }}
+                  onFocus={() => {
+                    if (suggestions.countyDistrict.length > 0) {
+                      setShowSuggestions((prev) => ({
+                        ...prev,
+                        countyDistrict: true,
+                      }));
+                    }
+                  }}
+                />
+
+                {showSuggestions.countyDistrict &&
+                  suggestions.countyDistrict.length > 0 && (
+                    <div className={styles.suggestionsList}>
+                      {suggestions.countyDistrict.map((entry) => (
+                        <div
+                          key={entry.userGeneratedId ?? entry.uuid}
+                          className={styles.suggestionItem}
+                          onClick={() =>
+                            handleSuggestionSelect('countyDistrict', entry)
+                          }
+                        >
+                          <div className={styles.suggestionName}>
+                            {entry.name}
+                          </div>
+                          {entry.parent && (
+                            <div className={styles.suggestionParent}>
+                              {entry.parent.name}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+              </div>
+            </div>
+          );
+
+        case 'cityVillage':
+          return (
+            <div key="cityVillage" className={styles.col}>
+              <TextInput
+                id="city"
+                labelText={t('CREATE_PATIENT_CITY')}
+                placeholder={t('CREATE_PATIENT_CITY')}
+                value={formData.cityVillage}
+                onChange={(e) => onInputChange('cityVillage', e.target.value)}
+              />
+            </div>
+          );
+
+        case 'stateProvince':
+          return (
+            <div key="stateProvince" className={styles.col}>
+              <div className={styles.addressFieldWrapper}>
+                <TextInput
+                  id="state"
+                  labelText={t('CREATE_PATIENT_STATE')}
+                  placeholder={t('CREATE_PATIENT_STATE')}
+                  value={formData.stateProvince}
+                  invalid={!!addressErrors.stateProvince}
+                  invalidText={addressErrors.stateProvince}
+                  onChange={(e) =>
+                    handleAddressInputChange('stateProvince', e.target.value)
+                  }
+                  onBlur={() => {
+                    setTimeout(() => {
+                      setShowSuggestions((prev) => ({
+                        ...prev,
+                        stateProvince: false,
+                      }));
+                    }, 200);
+                  }}
+                  onFocus={() => {
+                    if (suggestions.stateProvince.length > 0) {
+                      setShowSuggestions((prev) => ({
+                        ...prev,
+                        stateProvince: true,
+                      }));
+                    }
+                  }}
+                />
+
+                {showSuggestions.stateProvince &&
+                  suggestions.stateProvince.length > 0 && (
+                    <div className={styles.suggestionsList}>
+                      {suggestions.stateProvince.map((entry) => (
+                        <div
+                          key={entry.userGeneratedId ?? entry.uuid}
+                          className={styles.suggestionItem}
+                          onClick={() =>
+                            handleSuggestionSelect('stateProvince', entry)
+                          }
+                        >
+                          <div className={styles.suggestionName}>
+                            {entry.name}
+                          </div>
+                          {entry.parent && (
+                            <div className={styles.suggestionParent}>
+                              {entry.parent.name}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+              </div>
+            </div>
+          );
+
+        case 'postalCode':
+          return (
+            <div key="postalCode" className={styles.col}>
+              <div className={styles.addressFieldWrapper}>
+                <TextInput
+                  id="pincode"
+                  labelText={t('CREATE_PATIENT_PINCODE')}
+                  placeholder={t('CREATE_PATIENT_PINCODE')}
+                  value={formData.postalCode}
+                  invalid={!!addressErrors.postalCode}
+                  invalidText={addressErrors.postalCode}
+                  onChange={(e) =>
+                    handleAddressInputChange('postalCode', e.target.value)
+                  }
+                  onBlur={() => {
+                    setTimeout(() => {
+                      setShowSuggestions((prev) => ({
+                        ...prev,
+                        postalCode: false,
+                      }));
+                    }, 200);
+                  }}
+                  onFocus={() => {
+                    if (suggestions.postalCode.length > 0) {
+                      setShowSuggestions((prev) => ({
+                        ...prev,
+                        postalCode: true,
+                      }));
+                    }
+                  }}
+                />
+
+                {showSuggestions.postalCode &&
+                  suggestions.postalCode.length > 0 && (
+                    <div className={styles.suggestionsList}>
+                      {suggestions.postalCode.map((entry) => (
+                        <div
+                          key={entry.userGeneratedId ?? entry.uuid}
+                          className={styles.suggestionItem}
+                          onClick={() =>
+                            handleSuggestionSelect('postalCode', entry)
+                          }
+                        >
+                          <div className={styles.suggestionName}>
+                            {entry.name}
+                          </div>
+                          {entry.parent && (
+                            <div className={styles.suggestionParent}>
+                              {entry.parent.name}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+              </div>
+            </div>
+          );
+
+        default:
+          return null;
+      }
+    },
+    [
+      formData,
+      addressErrors,
+      suggestions,
+      showSuggestions,
+      t,
+      onInputChange,
+      handleAddressInputChange,
+      handleSuggestionSelect,
+    ],
+  );
+
   return (
     <div className={styles.formSection}>
       <span className={styles.sectionTitle}>
@@ -304,196 +572,7 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       </span>
 
       <div className={styles.row}>
-        <div className={styles.col}>
-          <TextInput
-            id="house-number"
-            labelText={t('CREATE_PATIENT_HOUSE_NUMBER')}
-            placeholder={t('CREATE_PATIENT_ADDRESS_LINE_PLACEHOLDER')}
-            value={formData.address1}
-            onChange={(e) => onInputChange('address1', e.target.value)}
-          />
-        </div>
-
-        <div className={styles.col}>
-          <TextInput
-            id="locality"
-            labelText={t('CREATE_PATIENT_LOCALITY')}
-            placeholder={t('CREATE_PATIENT_LOCALITY')}
-            value={formData.address2}
-            onChange={(e) => onInputChange('address2', e.target.value)}
-          />
-        </div>
-      </div>
-
-      <div className={styles.row}>
-        <div className={styles.col}>
-          <div className={styles.addressFieldWrapper}>
-            <TextInput
-              id="district"
-              labelText={t('CREATE_PATIENT_DISTRICT')}
-              placeholder={t('CREATE_PATIENT_DISTRICT')}
-              value={formData.countyDistrict}
-              invalid={!!addressErrors.countyDistrict}
-              invalidText={addressErrors.countyDistrict}
-              onChange={(e) =>
-                handleAddressInputChange('countyDistrict', e.target.value)
-              }
-              onBlur={() => {
-                setTimeout(() => {
-                  setShowSuggestions((prev) => ({
-                    ...prev,
-                    countyDistrict: false,
-                  }));
-                }, 200);
-              }}
-              onFocus={() => {
-                if (suggestions.countyDistrict.length > 0) {
-                  setShowSuggestions((prev) => ({
-                    ...prev,
-                    countyDistrict: true,
-                  }));
-                }
-              }}
-            />
-
-            {showSuggestions.countyDistrict &&
-              suggestions.countyDistrict.length > 0 && (
-                <div className={styles.suggestionsList}>
-                  {suggestions.countyDistrict.map((entry) => (
-                    <div
-                      key={entry.userGeneratedId ?? entry.uuid}
-                      className={styles.suggestionItem}
-                      onClick={() =>
-                        handleSuggestionSelect('countyDistrict', entry)
-                      }
-                    >
-                      <div className={styles.suggestionName}>{entry.name}</div>
-                      {entry.parent && (
-                        <div className={styles.suggestionParent}>
-                          {entry.parent.name}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-          </div>
-        </div>
-
-        <div className={styles.col}>
-          <TextInput
-            id="city"
-            labelText={t('CREATE_PATIENT_CITY')}
-            placeholder={t('CREATE_PATIENT_CITY')}
-            value={formData.cityVillage}
-            onChange={(e) => onInputChange('cityVillage', e.target.value)}
-          />
-        </div>
-
-        <div className={styles.col}>
-          <div className={styles.addressFieldWrapper}>
-            <TextInput
-              id="state"
-              labelText={t('CREATE_PATIENT_STATE')}
-              placeholder={t('CREATE_PATIENT_STATE')}
-              value={formData.stateProvince}
-              invalid={!!addressErrors.stateProvince}
-              invalidText={addressErrors.stateProvince}
-              onChange={(e) =>
-                handleAddressInputChange('stateProvince', e.target.value)
-              }
-              onBlur={() => {
-                setTimeout(() => {
-                  setShowSuggestions((prev) => ({
-                    ...prev,
-                    stateProvince: false,
-                  }));
-                }, 200);
-              }}
-              onFocus={() => {
-                if (suggestions.stateProvince.length > 0) {
-                  setShowSuggestions((prev) => ({
-                    ...prev,
-                    stateProvince: true,
-                  }));
-                }
-              }}
-            />
-
-            {showSuggestions.stateProvince &&
-              suggestions.stateProvince.length > 0 && (
-                <div className={styles.suggestionsList}>
-                  {suggestions.stateProvince.map((entry) => (
-                    <div
-                      key={entry.userGeneratedId ?? entry.uuid}
-                      className={styles.suggestionItem}
-                      onClick={() =>
-                        handleSuggestionSelect('stateProvince', entry)
-                      }
-                    >
-                      <div className={styles.suggestionName}>{entry.name}</div>
-                      {entry.parent && (
-                        <div className={styles.suggestionParent}>
-                          {entry.parent.name}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-          </div>
-        </div>
-
-        <div className={styles.col}>
-          <div className={styles.addressFieldWrapper}>
-            <TextInput
-              id="pincode"
-              labelText={t('CREATE_PATIENT_PINCODE')}
-              placeholder={t('CREATE_PATIENT_PINCODE')}
-              value={formData.postalCode}
-              invalid={!!addressErrors.postalCode}
-              invalidText={addressErrors.postalCode}
-              onChange={(e) =>
-                handleAddressInputChange('postalCode', e.target.value)
-              }
-              onBlur={() => {
-                setTimeout(() => {
-                  setShowSuggestions((prev) => ({
-                    ...prev,
-                    postalCode: false,
-                  }));
-                }, 200);
-              }}
-              onFocus={() => {
-                if (suggestions.postalCode.length > 0) {
-                  setShowSuggestions((prev) => ({ ...prev, postalCode: true }));
-                }
-              }}
-            />
-
-            {showSuggestions.postalCode &&
-              suggestions.postalCode.length > 0 && (
-                <div className={styles.suggestionsList}>
-                  {suggestions.postalCode.map((entry) => (
-                    <div
-                      key={entry.userGeneratedId ?? entry.uuid}
-                      className={styles.suggestionItem}
-                      onClick={() =>
-                        handleSuggestionSelect('postalCode', entry)
-                      }
-                    >
-                      <div className={styles.suggestionName}>{entry.name}</div>
-                      {entry.parent && (
-                        <div className={styles.suggestionParent}>
-                          {entry.parent.name}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-          </div>
-        </div>
+        {addressFieldsOrder.map((field) => renderAddressField(field))}
       </div>
     </div>
   );

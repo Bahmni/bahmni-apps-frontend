@@ -189,7 +189,15 @@
       "properties": {
         "showMiddleName": { "type": "boolean" }, 
         "showLastName": { "type": "boolean" },
-        "isLastNameMandatory": { "type": "boolean" }
+        "isLastNameMandatory": { "type": "boolean" },
+        "addressHierarchy": {
+          "type": "object",
+          "description": "Address hierarchy levels to be displayed",
+          "properties": {
+             "showAddressFieldsTopDown": { "type": "boolean" },
+             "strictAutocompleteFromLevel": { "type": "string" }
+          }
+        }
       }
     }
   }

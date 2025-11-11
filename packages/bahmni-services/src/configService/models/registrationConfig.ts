@@ -40,6 +40,10 @@ export interface PatientInformationConfig {
   showMiddleName?: boolean;
   showLastName?: boolean;
   isLastNameMandatory?: boolean;
+  addressHierarchy?: {
+    showAddressFieldsTopDown?: boolean;
+    strictAutocompleteFromLevel?: string;
+  };
 }
 
 export interface RegistrationConfig {
