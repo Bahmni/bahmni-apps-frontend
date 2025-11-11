@@ -1,5 +1,4 @@
 import {
-  Button,
   TextInput,
   Dropdown,
   Checkbox,
@@ -25,8 +24,8 @@ import {
   useGenderData,
   useIdentifierData,
 } from '../../../utils/identifierGenderUtils';
-import { createDateAgeHandlers, formatToDisplay } from './dateAgeUtils';
 import { PatientPhotoUpload } from '../../PatientPhotoUpload/PatientPhotoUpload';
+import { createDateAgeHandlers, formatToDisplay } from './dateAgeUtils';
 
 export interface ProfileRef {
   getData: () => BasicInfoData & {
