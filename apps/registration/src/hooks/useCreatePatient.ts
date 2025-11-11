@@ -11,6 +11,7 @@ import {
 } from '@bahmni-frontend/bahmni-services';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { convertTimeToISODateTime } from '../components/forms/profile/dateAgeUtils';
 import { BasicInfoData, ContactData, AdditionalData } from '../models/patient';
 
 /**
@@ -80,19 +81,10 @@ export const useCreatePatient = () => {
   return mutation;
 };
 
-/**
- * Transform form data structure to API payload structure
- *
- * @param formData - Collected data from all form sections
- * @returns CreatePatientRequest payload for API
- */
 function transformFormDataToPayload(
   formData: CreatePatientFormData,
 ): CreatePatientRequest {
   const { profile, address } = formData;
-  // Note: contact and additional data are not yet integrated into the API payload
-  // TODO: Add these when backend support is added
-
   // Build patient name object
   const patientName: PatientName = {
     givenName: profile.firstName,
@@ -110,7 +102,10 @@ function transformFormDataToPayload(
         gender: profile.gender.charAt(0).toUpperCase(),
         birthdate: profile.dateOfBirth,
         birthdateEstimated: profile.dobEstimated,
-        birthtime: profile.birthTime || null,
+        birthtime: convertTimeToISODateTime(
+          profile.dateOfBirth,
+          profile.birthTime,
+        ),
         addresses: [address],
         attributes: [],
         deathDate: null,
