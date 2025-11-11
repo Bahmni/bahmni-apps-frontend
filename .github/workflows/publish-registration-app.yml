@@ -29,6 +29,12 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      - name: Build Package Dependencies
+        run: |
+          npx nx build bahmni-services
+          npx nx build bahmni-design-system
+          npx nx build bahmni-widgets
+
       - name: Lint
         run: npx nx lint bahmni-registration-app
 
