@@ -13,6 +13,7 @@ import {
   PatientIdentifier,
 } from '@bahmni-frontend/bahmni-services';
 import { useState, useImperativeHandle, useEffect } from 'react';
+import { useRegistrationConfig } from '../../../hooks/useRegistrationConfig';
 import type { BasicInfoData } from '../../../models/patient';
 import type {
   BasicInfoErrors,
@@ -54,6 +55,10 @@ export const Profile = ({
   const { identifierPrefixes, primaryIdentifierType, identifierSources } =
     useIdentifierData();
   const { genders } = useGenderData(t);
+
+  // Get registration config for patient information settings
+  const { registrationConfig } = useRegistrationConfig();
+  const patientInfoConfig = registrationConfig?.patientInformation;
 
   // Component owns ALL its state
   const [formData, setFormData] = useState<BasicInfoData>({
@@ -159,7 +164,9 @@ export const Profile = ({
       isValid = false;
     }
 
-    if (!formData.lastName.trim()) {
+    // Validate last name based on config
+    const isLastNameMandatory = patientInfoConfig?.isLastNameMandatory ?? true;
+    if (isLastNameMandatory && !formData.lastName.trim()) {
       newValidationErrors.lastName = t(
         'CREATE_PATIENT_VALIDATION_LAST_NAME_REQUIRED',
       );

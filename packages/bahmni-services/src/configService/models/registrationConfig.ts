@@ -36,7 +36,14 @@ export interface PatientSearchConfig {
   appointment: AppointmentSearchField[];
 }
 
+export interface PatientInformationConfig {
+  showMiddleName?: boolean;
+  showLastName?: boolean;
+  isLastNameMandatory?: boolean;
+}
+
 export interface RegistrationConfig {
   patientSearch: PatientSearchConfig;
   defaultVisitType?: string;
+  patientInformation?: PatientInformationConfig;
 }

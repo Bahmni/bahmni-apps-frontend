@@ -38,6 +38,24 @@ jest.mock('../dateAgeUtils', () => ({
   }),
 }));
 
+jest.mock('../../../../hooks/useRegistrationConfig', () => ({
+  useRegistrationConfig: () => ({
+    registrationConfig: {
+      patientInformation: {
+        showMiddleName: true,
+        showLastName: true,
+        isLastNameMandatory: true,
+      },
+    },
+    setRegistrationConfig: jest.fn(),
+    isLoading: false,
+    setIsLoading: jest.fn(),
+    error: null,
+    setError: jest.fn(),
+    refetch: jest.fn(),
+  }),
+}));
+
 describe('Profile', () => {
   let ref: React.RefObject<ProfileRef | null>;
 

@@ -181,6 +181,16 @@
     "defaultVisitType": {
       "type": "string",
       "description": "Default visit type for patient registration"
+    },
+    "patientInformation": {
+      "type": "object",
+      "description": "Patient name related fields configuration",
+      "additionalProperties": false,
+      "properties": {
+        "showMiddleName": { "type": "boolean" }, 
+        "showLastName": { "type": "boolean" },
+        "isLastNameMandatory": { "type": "boolean" }
+      }
     }
   }
 }
