@@ -12,6 +12,7 @@ export {
   getAddressHierarchyEntries,
   getVisitTypes,
   getVisitLocationUUID,
+  getRelationshipTypes,
 } from './patientService';
 export {
   type FormattedPatientData,

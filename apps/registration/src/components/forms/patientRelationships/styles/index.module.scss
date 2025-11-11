@@ -1,0 +1,82 @@
+@use "@carbon/react/scss/type" as *;
+
+.relationshipSection {
+  margin: 0 auto;
+  width: calc(100% - 176px);
+  max-width: 1240px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  margin-top: 40px;
+  overflow: visible;
+}
+
+.headerTile {
+  height: 54px;
+  display: flex;
+  align-items: center;
+  padding: 16px;
+}
+
+.headerTitle {
+  @include type-style("heading-compact-02");
+  font-weight: 600;
+}
+
+.tableContainer {
+  width: 100%;
+  overflow: visible;
+  padding-bottom: 250px;
+  margin-bottom: -250px;
+
+  // Ensure form elements maintain default colors inside table
+  :global(.cds--list-box),
+  :global(.cds--combo-box),
+  :global(.cds--date-picker__input),
+  :global(.cds--text-input) {
+    background-color: var(--cds-field, #ffffff) !important;
+  }
+
+  :global(.cds--list-box__menu-item) {
+    background-color: var(--cds-layer, #ffffff) !important;
+  }
+
+  :global(.cds--list-box__menu-item:hover) {
+    background-color: var(--cds-layer-hover, #e8e8e8) !important;
+  }
+
+  // Ensure dropdown menus appear above other content
+  :global(.cds--list-box__menu),
+  :global(.cds--date-picker__calendar) {
+    z-index: 9999 !important;
+  }
+
+  // Ensure table allows overflow for dropdowns
+  :global(.cds--data-table-container),
+  :global(.cds--data-table-content) {
+    overflow: visible !important;
+  }
+
+  // Fix ComboBox width to prevent resizing when typing
+  :global(.cds--combo-box) {
+    width: 100%;
+  }
+
+  :global(.cds--list-box__field) {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+.addButtonContainer {
+  padding: 24px;
+}
+
+.wrapButton {
+  white-space: normal;
+  text-align: center;
+  word-break: break-word;
+  border-radius: 2px !important;
+  padding-right: 1rem !important;
+}

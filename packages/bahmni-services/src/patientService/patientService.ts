@@ -20,6 +20,7 @@ import {
   UUID_PATTERN,
   VISIT_TYPES_URL,
   GET_VISIT_LOCATION,
+  RELATIONSHIP_TYPES_URL,
 } from './constants';
 import {
   FormattedPatientData,
@@ -33,6 +34,7 @@ import {
   ActiveVisit,
   VisitData,
   VisitType,
+  RelationshipTypesResponse,
 } from './models';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
@@ -380,4 +382,25 @@ export const getVisitLocationUUID = async (
   loginLocation: string,
 ): Promise<VisitLocationResponse> => {
   return get<VisitLocationResponse>(GET_VISIT_LOCATION(loginLocation));
+};
+
+/**
+ * Get relationship types from OpenMRS
+ * @returns Promise<string[]> - Array of relationship type display names
+ */
+export const getRelationshipTypes = async (): Promise<string[]> => {
+  try {
+    const response = await get<RelationshipTypesResponse>(
+      RELATIONSHIP_TYPES_URL,
+    );
+    return response.results
+      .filter((type) => !type.retired)
+      .map((type) => type.aIsToB);
+  } catch (error) {
+    throw new Error(
+      `Failed to fetch relationship types: ${
+        error instanceof Error ? error.message : 'Unknown error'
+      }`,
+    );
+  }
 };

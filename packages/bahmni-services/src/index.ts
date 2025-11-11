@@ -14,6 +14,7 @@ export {
   getAddressHierarchyEntries,
   getVisitTypes,
   getVisitLocationUUID,
+  getRelationshipTypes,
   type FormattedPatientData,
   type PatientSearchResult,
   type PatientSearchResultBundle,
