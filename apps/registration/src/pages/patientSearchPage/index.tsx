@@ -1,10 +1,10 @@
 import {
   BaseLayout,
-  Header,
   Link,
   Loading,
   SkeletonText,
   SortableDataTable,
+  Tag,
   Tile,
 } from '@bahmni-frontend/bahmni-design-system';
 import {
@@ -20,6 +20,8 @@ import {
 } from '@bahmni-frontend/bahmni-services';
 import { SearchPatient } from '@bahmni-frontend/bahmni-widgets';
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Header } from '../../components/Header';
 import styles from './styles/index.module.scss';
 import { formatPatientSearchResult, PatientSearchViewModel } from './utils';
 
@@ -39,29 +41,26 @@ const PatientSearchPage: React.FC = () => {
   const [isNavigating, setIsNavigating] = useState<boolean>(false);
   const [searchFields, setSearchFields] = useState<PatientSearchField[]>([]);
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [selectedFieldType, setSelectedFieldType] = useState<string>('');
 
+  const handleCreateNewPatient = () => {
+    navigate('/registration/new');
+  };
   useEffect(() => {
     const loadSearchConfig = async () => {
       const config = await getRegistrationConfig();
-      if (config?.patientSearch?.customAttributes) {
-        setSearchFields(config.patientSearch.customAttributes);
+      let fields: PatientSearchField[] = [];
+      if (selectedFieldType === 'appointment') {
+        fields = [...(config?.patientSearch?.appointment ?? [])];
+      } else {
+        fields = [...(config?.patientSearch?.customAttributes ?? [])];
       }
+
+      setSearchFields(fields);
     };
     loadSearchConfig();
-  }, []);
-
-  const breadcrumbItems = [
-    {
-      id: 'home',
-      label: t('REGISTRATION_PATIENT_SEARCH_BREADCRUMB_HOME'),
-      href: BAHMNI_HOME_PATH,
-    },
-    {
-      id: 'current',
-      label: t('REGISTRATION_PATIENT_SEARCH_BREADCRUMB_CURRENT'),
-      isCurrentPage: true,
-    },
-  ];
+  }, [selectedFieldType]);
 
   useEffect(() => {
     dispatchAuditEvent({
@@ -77,12 +76,14 @@ const PatientSearchPage: React.FC = () => {
     isLoading: boolean,
     isError: boolean,
     isAdvancedSearch: boolean,
+    selectedFieldType?: string,
   ) => {
     setPatientSearchData(data ?? undefined);
     setSearchTerm(searchTerm);
     setIsLoading(isLoading);
     setIsError(isError);
     setIsAdvancedSearch(isAdvancedSearch);
+    setSelectedFieldType(isAdvancedSearch ? (selectedFieldType ?? '') : '');
   };
 
   const headers = [
@@ -90,18 +91,50 @@ const PatientSearchPage: React.FC = () => {
     { key: 'name', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_NAME') },
     { key: 'gender', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_GENDER') },
     { key: 'age', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_AGE') },
+    ...(selectedFieldType == 'appointment'
+      ? [
+          {
+            key: 'birthDate',
+            header: t('REGISTRATION_PATIENT_SEARCH_HEADER_BIRTH_DATE'),
+          },
+        ]
+      : []),
     ...(searchFields.length > 0
-      ? searchFields.flatMap((field) =>
-          field.fields.map((fieldName, index) => ({
-            key: fieldName,
-            header: field.columnTranslationKeys?.[index]
-              ? t(field.columnTranslationKeys[index])
-              : fieldName,
-          })),
-        )
+      ? searchFields
+          .flatMap((field) =>
+            field.expectedFields?.map((expectedField) => ({
+              key: expectedField.field,
+              header: expectedField.translationKey
+                ? t(expectedField.translationKey)
+                : expectedField.field,
+            })),
+          )
+          .filter((header) => header !== undefined)
+      : []),
+
+    ...(searchFields.some((field) => field.actions && field.actions.length > 0)
+      ? [
+          {
+            key: 'actions',
+            header: t('REGISTRATION_PATIENT_SEARCH_HEADER_ACTIONS'),
+          },
+        ]
       : []),
   ];
 
+  const getAppointmentStatusClassName = (status: string): string => {
+    switch (status?.toLowerCase()) {
+      case 'scheduled':
+        return ` ${styles.scheduledStatus}`;
+      case 'arrived':
+        return ` ${styles.arrivedStatus}`;
+      case 'checkedin':
+      case 'checked in':
+        return ` ${styles.checkedInStatus}`;
+      default:
+        return ` ${styles.scheduledStatus}`;
+    }
+  };
   const renderTitle = (
     isLoading: boolean,
     isError: boolean,
@@ -155,6 +188,19 @@ const PatientSearchPage: React.FC = () => {
           </Link>
         );
       }
+      if (cellId === 'appointmentStatus') {
+        return (
+          <Tag
+            className={getAppointmentStatusClassName(
+              String(row.appointmentStatus ?? ''),
+            )}
+            data-testid={`appointment-status-${row.uuid}`}
+          >
+            {String(row.appointmentStatus ?? '')}
+          </Tag>
+        );
+      }
+
       const cellValue =
         row[cellId as keyof PatientSearchViewModel<PatientSearchResult>];
       if (cellValue instanceof Date) {
@@ -169,12 +215,25 @@ const PatientSearchPage: React.FC = () => {
     return <Loading description={t('LOADING_PATIENT_DETAILS')} role="status" />;
   }
 
+  const breadcrumbs = [
+    {
+      label: t('REGISTRATION_PATIENT_SEARCH_BREADCRUMB_HOME'),
+      href: BAHMNI_HOME_PATH,
+    },
+    {
+      label: 'Search Patient',
+    },
+  ];
+
   return (
     <BaseLayout
       header={
         <Header
-          breadcrumbItems={breadcrumbItems}
-          ariaLabel="registration-search-page-header"
+          breadcrumbs={breadcrumbs}
+          showButton
+          buttonText="Create new patient"
+          onButtonClick={handleCreateNewPatient}
+          buttonTestId="create-new-patient-button"
         />
       }
       main={

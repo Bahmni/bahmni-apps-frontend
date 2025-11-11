@@ -1,10 +1,18 @@
 import { Patient } from 'fhir/r4';
-import { get } from '../../api';
+import { get, post } from '../../api';
+import { APP_PROPERTY_URL } from '../../applicationConfigService/constants';
 import { getUserLoginLocation } from '../../userService';
 import {
   PATIENT_RESOURCE_URL,
   PATIENT_LUCENE_SEARCH_URL,
   PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL,
+  IDENTIFIER_TYPES_URL,
+  APP_SETTINGS_URL,
+  PRIMARY_IDENTIFIER_TYPE_PROPERTY,
+  CREATE_PATIENT_URL,
+  ADDRESS_HIERARCHY_URL,
+  VISIT_TYPES_URL,
+  CREATE_VISIT_URL,
 } from '../constants';
 import {
   getPatientById,
@@ -14,11 +22,22 @@ import {
   formatPatientData,
   searchPatientByNameOrId,
   searchPatientByCustomAttribute,
+  getFormattedPatientById,
+  getPrimaryIdentifierType,
+  getIdentifierData,
+  createPatient,
+  getGenders,
+  getAddressHierarchyEntries,
+  getVisitTypes,
+  createVisit,
+  getActiveVisitByPatient,
+  getVisitLocationUUID,
 } from '../patientService';
 
 // Mock the api module
 jest.mock('../../api');
 const mockedGet = get as jest.MockedFunction<typeof get>;
+const mockedPost = post as jest.MockedFunction<typeof post>;
 jest.mock('../../userService');
 const mockGetUserLoginLocation = getUserLoginLocation as jest.MockedFunction<
   typeof getUserLoginLocation
@@ -32,7 +51,7 @@ describe('Patient Service', () => {
   describe('getPatientById', () => {
     it('should call get with the correct patient URL', async () => {
       // Arrange
-      const patientUUID = '123-456';
+      const patientUUID = '12345678-1234-1234-1234-123456789abc';
       const mockPatient = { resourceType: 'Patient', id: patientUUID };
       mockedGet.mockResolvedValueOnce(mockPatient);
 
@@ -46,13 +65,79 @@ describe('Patient Service', () => {
 
     it('should propagate errors from the API', async () => {
       // Arrange
-      const patientUUID = '123-456';
+      const patientUUID = '12345678-1234-1234-1234-123456789abc';
       const mockError = new Error('API Error');
       mockedGet.mockRejectedValueOnce(mockError);
 
       // Act & Assert
       await expect(getPatientById(patientUUID)).rejects.toThrow('API Error');
       expect(mockedGet).toHaveBeenCalledWith(PATIENT_RESOURCE_URL(patientUUID));
+    });
+
+    it('should throw error for empty UUID', async () => {
+      // Act & Assert
+      await expect(getPatientById('')).rejects.toThrow(
+        'Invalid patient UUID: UUID cannot be empty',
+      );
+      expect(mockedGet).not.toHaveBeenCalled();
+    });
+
+    it('should throw error for whitespace-only UUID', async () => {
+      // Act & Assert
+      await expect(getPatientById('   ')).rejects.toThrow(
+        'Invalid patient UUID: UUID cannot be empty',
+      );
+      expect(mockedGet).not.toHaveBeenCalled();
+    });
+
+    it('should throw error for invalid UUID format', async () => {
+      // Arrange
+      const invalidUUID = 'not-a-valid-uuid';
+
+      // Act & Assert
+      await expect(getPatientById(invalidUUID)).rejects.toThrow(
+        'Invalid patient UUID format: not-a-valid-uuid',
+      );
+      expect(mockedGet).not.toHaveBeenCalled();
+    });
+
+    it('should throw error for UUID with invalid characters', async () => {
+      // Arrange
+      const invalidUUID = '12345678-1234-1234-1234-12345678ZZZZ';
+
+      // Act & Assert
+      await expect(getPatientById(invalidUUID)).rejects.toThrow(
+        'Invalid patient UUID format',
+      );
+      expect(mockedGet).not.toHaveBeenCalled();
+    });
+
+    it('should accept valid UUID with uppercase letters', async () => {
+      // Arrange
+      const patientUUID = '12345678-1234-1234-1234-123456789ABC';
+      const mockPatient = { resourceType: 'Patient', id: patientUUID };
+      mockedGet.mockResolvedValueOnce(mockPatient);
+
+      // Act
+      const result = await getPatientById(patientUUID);
+
+      // Assert
+      expect(mockedGet).toHaveBeenCalledWith(PATIENT_RESOURCE_URL(patientUUID));
+      expect(result).toEqual(mockPatient);
+    });
+
+    it('should accept valid UUID with lowercase letters', async () => {
+      // Arrange
+      const patientUUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+      const mockPatient = { resourceType: 'Patient', id: patientUUID };
+      mockedGet.mockResolvedValueOnce(mockPatient);
+
+      // Act
+      const result = await getPatientById(patientUUID);
+
+      // Assert
+      expect(mockedGet).toHaveBeenCalledWith(PATIENT_RESOURCE_URL(patientUUID));
+      expect(result).toEqual(mockPatient);
     });
   });
 
@@ -68,7 +153,6 @@ describe('Patient Service', () => {
         pageOfResults: [
           {
             uuid: '3e991686-4cab-443e-a03d-ffa40756a965',
-            birthDate: -59184000000,
             extraIdentifiers: null,
             personId: 13,
             deathDate: null,
@@ -84,7 +168,8 @@ describe('Patient Service', () => {
               '{"phoneNumber" : "8645973159","alternatePhoneNumber" : "7548621593"}',
             patientProgramAttributeValue: null,
             hasBeenAdmitted: false,
-            age: '57',
+            age: '57 years 8 months',
+            birthDate: '16 Feb 1968',
           },
         ],
       };
@@ -958,7 +1043,7 @@ describe('Patient Service', () => {
       pageOfResults: [
         {
           uuid: '3e991686-4cab-443e-a03d-ffa40756a965',
-          birthDate: -59184000000,
+          birthDate: '16 Feb 1968',
           extraIdentifiers: null,
           personId: 13,
           deathDate: null,
@@ -974,7 +1059,7 @@ describe('Patient Service', () => {
             '{"phoneNumber" : "8645973159","alternatePhoneNumber" : "7548621593"}',
           patientProgramAttributeValue: null,
           hasBeenAdmitted: false,
-          age: '57',
+          age: '57 years 1 months',
         },
       ],
     };
@@ -1069,6 +1154,592 @@ describe('Patient Service', () => {
         mockLoginLocationUuid,
       );
       expect(mockedGet).toHaveBeenCalledWith(expectedUrl);
+    });
+  });
+
+  describe('getFormattedPatientById', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      jest.useFakeTimers().setSystemTime(new Date('2025-03-24'));
+    });
+
+    it('should fetch patient by UUID and return formatted data', async () => {
+      // Arrange
+      const patientUUID = '12345678-1234-1234-1234-123456789abc';
+      const mockPatient: Patient = {
+        resourceType: 'Patient',
+        id: patientUUID,
+        name: [{ given: ['John'], family: 'Doe' }],
+        gender: 'male',
+        birthDate: '1990-01-01',
+        address: [
+          {
+            line: ['123 Main St'],
+            city: 'Boston',
+            state: 'MA',
+            postalCode: '02115',
+          },
+        ],
+        identifier: [
+          {
+            type: {
+              text: 'MRN',
+            },
+            value: '123456',
+          },
+        ],
+        telecom: [
+          {
+            system: 'phone',
+            value: '555-123-4567',
+          },
+        ],
+      };
+      mockedGet.mockResolvedValueOnce(mockPatient);
+
+      // Act
+      const result = await getFormattedPatientById(patientUUID);
+
+      // Assert
+      expect(mockedGet).toHaveBeenCalledWith(PATIENT_RESOURCE_URL(patientUUID));
+      expect(result).toEqual({
+        id: patientUUID,
+        fullName: 'John Doe',
+        gender: 'male',
+        birthDate: '1990-01-01',
+        formattedAddress: '123 Main St, Boston, MA 02115',
+        formattedContact: 'phone: 555-123-4567',
+        age: {
+          days: 23,
+          months: 2,
+          years: 35,
+        },
+        identifiers: new Map([['MRN', '123456']]),
+      });
+    });
+
+    it('should propagate errors from getPatientById', async () => {
+      // Arrange
+      const patientUUID = '12345678-1234-1234-1234-123456789abc';
+      const mockError = new Error('Patient not found');
+      mockedGet.mockRejectedValueOnce(mockError);
+
+      // Act & Assert
+      await expect(getFormattedPatientById(patientUUID)).rejects.toThrow(
+        'Patient not found',
+      );
+    });
+  });
+
+  describe('getPrimaryIdentifierType', () => {
+    it('should return primary identifier type UUID', async () => {
+      // Arrange
+      const mockSettings = [
+        {
+          property: PRIMARY_IDENTIFIER_TYPE_PROPERTY,
+          value: 'uuid-123-456',
+        },
+        {
+          property: 'other.property',
+          value: 'other-value',
+        },
+      ];
+      mockedGet.mockResolvedValueOnce(mockSettings);
+
+      // Act
+      const result = await getPrimaryIdentifierType();
+
+      // Assert
+      expect(mockedGet).toHaveBeenCalledWith(APP_SETTINGS_URL('core'));
+      expect(result).toBe('uuid-123-456');
+    });
+
+    it('should return null when primary identifier type not found', async () => {
+      // Arrange
+      const mockSettings = [
+        {
+          property: 'other.property',
+          value: 'other-value',
+        },
+      ];
+      mockedGet.mockResolvedValueOnce(mockSettings);
+
+      // Act
+      const result = await getPrimaryIdentifierType();
+
+      // Assert
+      expect(result).toBeNull();
+    });
+
+    it('should return null when settings array is empty', async () => {
+      // Arrange
+      mockedGet.mockResolvedValueOnce([]);
+
+      // Act
+      const result = await getPrimaryIdentifierType();
+
+      // Assert
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('getIdentifierData', () => {
+    it('should return identifier data with prefixes and sources', async () => {
+      // Arrange
+      const mockIdentifierTypes = [
+        {
+          uuid: 'primary-uuid',
+          name: 'Primary ID',
+          identifierSources: [
+            {
+              uuid: 'source-1',
+              prefix: 'ABC',
+            },
+            {
+              uuid: 'source-2',
+              prefix: 'XYZ',
+            },
+          ],
+        },
+        {
+          uuid: 'other-uuid',
+          name: 'Other ID',
+          identifierSources: [],
+        },
+      ];
+      const mockSettings = [
+        {
+          property: PRIMARY_IDENTIFIER_TYPE_PROPERTY,
+          value: 'primary-uuid',
+        },
+      ];
+
+      mockedGet.mockResolvedValueOnce(mockIdentifierTypes);
+      mockedGet.mockResolvedValueOnce(mockSettings);
+
+      // Act
+      const result = await getIdentifierData();
+
+      // Assert
+      expect(mockedGet).toHaveBeenNthCalledWith(1, IDENTIFIER_TYPES_URL);
+      expect(mockedGet).toHaveBeenNthCalledWith(2, APP_SETTINGS_URL('core'));
+      expect(result).toEqual({
+        prefixes: ['ABC', 'XYZ'],
+        sourcesByPrefix: new Map([
+          ['ABC', 'source-1'],
+          ['XYZ', 'source-2'],
+        ]),
+        primaryIdentifierTypeUuid: 'primary-uuid',
+      });
+    });
+
+    it('should return empty data when no primary identifier type found', async () => {
+      // Arrange
+      const mockIdentifierTypes: any[] = [];
+      const mockSettings: any[] = [];
+
+      mockedGet.mockResolvedValueOnce(mockIdentifierTypes);
+      mockedGet.mockResolvedValueOnce(mockSettings);
+
+      // Act
+      const result = await getIdentifierData();
+
+      // Assert
+      expect(result).toEqual({
+        prefixes: [],
+        sourcesByPrefix: new Map(),
+        primaryIdentifierTypeUuid: null,
+      });
+    });
+
+    it('should return primary UUID but empty prefixes when identifier type not found', async () => {
+      // Arrange
+      const mockIdentifierTypes = [
+        {
+          uuid: 'other-uuid',
+          name: 'Other ID',
+          identifierSources: [],
+        },
+      ];
+      const mockSettings = [
+        {
+          property: PRIMARY_IDENTIFIER_TYPE_PROPERTY,
+          value: 'primary-uuid',
+        },
+      ];
+
+      mockedGet.mockResolvedValueOnce(mockIdentifierTypes);
+      mockedGet.mockResolvedValueOnce(mockSettings);
+
+      // Act
+      const result = await getIdentifierData();
+
+      // Assert
+      expect(result).toEqual({
+        prefixes: [],
+        sourcesByPrefix: new Map(),
+        primaryIdentifierTypeUuid: 'primary-uuid',
+      });
+    });
+
+    it('should handle identifier sources without prefixes', async () => {
+      // Arrange
+      const mockIdentifierTypes = [
+        {
+          uuid: 'primary-uuid',
+          name: 'Primary ID',
+          identifierSources: [
+            {
+              uuid: 'source-1',
+              // No prefix
+            },
+            {
+              uuid: 'source-2',
+              prefix: 'XYZ',
+            },
+          ],
+        },
+      ];
+      const mockSettings = [
+        {
+          property: PRIMARY_IDENTIFIER_TYPE_PROPERTY,
+          value: 'primary-uuid',
+        },
+      ];
+
+      mockedGet.mockResolvedValueOnce(mockIdentifierTypes);
+      mockedGet.mockResolvedValueOnce(mockSettings);
+
+      // Act
+      const result = await getIdentifierData();
+
+      // Assert
+      expect(result).toEqual({
+        prefixes: ['XYZ'],
+        sourcesByPrefix: new Map([['XYZ', 'source-2']]),
+        primaryIdentifierTypeUuid: 'primary-uuid',
+      });
+    });
+
+    it('should handle identifier sources without UUIDs', async () => {
+      // Arrange
+      const mockIdentifierTypes = [
+        {
+          uuid: 'primary-uuid',
+          name: 'Primary ID',
+          identifierSources: [
+            {
+              // No uuid
+              prefix: 'ABC',
+            },
+          ],
+        },
+      ];
+      const mockSettings = [
+        {
+          property: PRIMARY_IDENTIFIER_TYPE_PROPERTY,
+          value: 'primary-uuid',
+        },
+      ];
+
+      mockedGet.mockResolvedValueOnce(mockIdentifierTypes);
+      mockedGet.mockResolvedValueOnce(mockSettings);
+
+      // Act
+      const result = await getIdentifierData();
+
+      // Assert
+      expect(result).toEqual({
+        prefixes: ['ABC'],
+        sourcesByPrefix: new Map(),
+        primaryIdentifierTypeUuid: 'primary-uuid',
+      });
+    });
+  });
+
+  describe('createPatient', () => {
+    it('should create a patient with valid data', async () => {
+      // Arrange
+      const mockPatientData = {
+        patient: {
+          person: {
+            names: [
+              {
+                givenName: 'John',
+                familyName: 'Doe',
+              },
+            ],
+            gender: 'M',
+            birthdate: '1990-01-01',
+            addresses: [
+              {
+                address1: '123 Main St',
+                cityVillage: 'Boston',
+                stateProvince: 'MA',
+                postalCode: '02115',
+              },
+            ],
+            attributes: [],
+          },
+          identifiers: [
+            {
+              identifier: 'ABC123',
+              identifierType: 'uuid-123',
+              preferred: true,
+            },
+          ],
+        },
+      };
+      const mockResponse = {
+        patient: {
+          uuid: 'new-patient-uuid',
+          person: mockPatientData.patient.person,
+          identifiers: mockPatientData.patient.identifiers,
+        },
+      };
+      mockedPost.mockResolvedValueOnce(mockResponse);
+
+      // Act
+      const result = await createPatient(mockPatientData);
+
+      // Assert
+      expect(mockedPost).toHaveBeenCalledWith(
+        CREATE_PATIENT_URL,
+        mockPatientData,
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('should propagate API errors', async () => {
+      // Arrange
+      const mockPatientData = {
+        patient: {
+          person: {
+            names: [],
+            gender: 'M',
+            birthdate: '1990-01-01',
+          },
+          identifiers: [],
+        },
+      };
+      const mockError = new Error('Invalid patient data');
+      mockedPost.mockRejectedValueOnce(mockError);
+
+      // Act & Assert
+      await expect(createPatient(mockPatientData)).rejects.toThrow(
+        'Invalid patient data',
+      );
+    });
+  });
+
+  describe('getGenders', () => {
+    it('should return array of gender display names', async () => {
+      // Arrange
+      const mockGenders = {
+        M: 'Male',
+        F: 'Female',
+        O: 'Other',
+      };
+      mockedGet.mockResolvedValueOnce(mockGenders);
+
+      // Act
+      const result = await getGenders();
+
+      // Assert
+      expect(mockedGet).toHaveBeenCalledWith(APP_PROPERTY_URL('mrs.genders'));
+      expect(result).toEqual(['Male', 'Female', 'Other']);
+    });
+
+    it('should return empty array when no genders configured', async () => {
+      // Arrange
+      mockedGet.mockResolvedValueOnce({});
+
+      // Act
+      const result = await getGenders();
+
+      // Assert
+      expect(result).toEqual([]);
+    });
+
+    it('should propagate API errors', async () => {
+      // Arrange
+      const mockError = new Error('Failed to fetch genders');
+      mockedGet.mockRejectedValueOnce(mockError);
+
+      // Act & Assert
+      await expect(getGenders()).rejects.toThrow('Failed to fetch genders');
+    });
+  });
+
+  describe('getAddressHierarchyEntries', () => {
+    it('should fetch address hierarchy entries', async () => {
+      // Arrange
+      const mockEntries = [
+        {
+          name: 'Boston',
+          parent: 'Massachusetts',
+          uuid: 'boston-uuid',
+        },
+        {
+          name: 'Cambridge',
+          parent: 'Massachusetts',
+          uuid: 'cambridge-uuid',
+        },
+      ];
+      mockedGet.mockResolvedValueOnce(mockEntries);
+
+      // Act
+      const result = await getAddressHierarchyEntries('cityVillage', 'Bos', 20);
+
+      // Assert
+      expect(mockedGet).toHaveBeenCalledWith(
+        ADDRESS_HIERARCHY_URL('cityVillage', 'Bos', 20),
+      );
+      expect(result).toEqual(mockEntries);
+    });
+
+    it('should return empty array when search string is too short', async () => {
+      // Act
+      const result = await getAddressHierarchyEntries('cityVillage', 'B', 20);
+
+      // Assert
+      expect(mockedGet).not.toHaveBeenCalled();
+      expect(result).toEqual([]);
+    });
+
+    it('should return empty array when search string is empty', async () => {
+      // Act
+      const result = await getAddressHierarchyEntries('cityVillage', '', 20);
+
+      // Assert
+      expect(mockedGet).not.toHaveBeenCalled();
+      expect(result).toEqual([]);
+    });
+
+    it('should use default limit when not provided', async () => {
+      // Arrange
+      const mockEntries: any[] = [];
+      mockedGet.mockResolvedValueOnce(mockEntries);
+
+      // Act
+      await getAddressHierarchyEntries('cityVillage', 'Boston');
+
+      // Assert
+      expect(mockedGet).toHaveBeenCalledWith(
+        ADDRESS_HIERARCHY_URL('cityVillage', 'Boston', 20),
+      );
+    });
+
+    it('should throw error with message when API call fails', async () => {
+      // Arrange
+      const mockError = new Error('Network error');
+      mockedGet.mockRejectedValueOnce(mockError);
+
+      // Act & Assert
+      await expect(
+        getAddressHierarchyEntries('cityVillage', 'Boston', 20),
+      ).rejects.toThrow(
+        'Failed to fetch address hierarchy for field "cityVillage": Network error',
+      );
+    });
+
+    it('should handle non-Error exceptions', async () => {
+      // Arrange
+      mockedGet.mockRejectedValueOnce('String error');
+
+      // Act & Assert
+      await expect(
+        getAddressHierarchyEntries('cityVillage', 'Boston', 20),
+      ).rejects.toThrow(
+        'Failed to fetch address hierarchy for field "cityVillage": Unknown error',
+      );
+    });
+
+    it('should handle minimum search length boundary', async () => {
+      // Arrange
+      const mockEntries: any[] = [];
+      mockedGet.mockResolvedValueOnce(mockEntries);
+
+      // Act - exactly at minimum length (2 characters)
+      const result = await getAddressHierarchyEntries('cityVillage', 'Bo', 20);
+
+      // Assert
+      expect(mockedGet).toHaveBeenCalledWith(
+        ADDRESS_HIERARCHY_URL('cityVillage', 'Bo', 20),
+      );
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('getVisitTypes', () => {
+    it('should fetch visit types correctly', async () => {
+      const mockResponse = {
+        visitTypes: {
+          OPD: 'c22a5000-3f10-11e4-adec-0800271c1b75',
+          IPD: 'd22a5000-3f10-11e4-adec-0800271c1b76',
+        },
+      };
+      mockedGet.mockResolvedValueOnce(mockResponse);
+
+      const result = await getVisitTypes();
+
+      expect(mockedGet).toHaveBeenCalledWith(VISIT_TYPES_URL());
+      expect(result).toEqual({
+        visitTypes: {
+          OPD: 'c22a5000-3f10-11e4-adec-0800271c1b75',
+          IPD: 'd22a5000-3f10-11e4-adec-0800271c1b76',
+        },
+      });
+    });
+  });
+
+  describe('createVisit', () => {
+    it('should create a visit with correct data', async () => {
+      const visitData = {
+        patient: 'c22a5000-3f10-11e4-adec-0800271c1b75',
+        visitType: 'd22a5000-3f10-11e4-adec-0800271c1b76',
+        location: 'd22a5000-3f10-11e4-adec-0800271c1b79',
+      };
+      const mockResponse = { uuid: 'd22a5000-3f10-11e4-adec-0800271c1b76' };
+      mockedPost.mockResolvedValueOnce(mockResponse);
+
+      const result = await createVisit(visitData);
+
+      expect(mockedPost).toHaveBeenCalledWith(CREATE_VISIT_URL, visitData);
+      expect(result).toEqual(mockResponse);
+    });
+  });
+
+  describe('getActiveVisitByPatient', () => {
+    it('should fetch active visits for a patient', async () => {
+      const patientUuid = 'c22a5000-3f10-11e4-adec-0800271c1b75';
+      const mockResponse = { results: [] };
+      mockedGet.mockResolvedValueOnce(mockResponse);
+
+      const result = await getActiveVisitByPatient(patientUuid);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        expect.stringContaining(
+          `/ws/rest/v1/visit?includeInactive=false&patient=${patientUuid}`,
+        ),
+      );
+      expect(result).toEqual(mockResponse);
+    });
+  });
+  describe('getVisitLocationUUID', () => {
+    it('should fetch visit location from login location', async () => {
+      const loginLocation = 'c22a5000-3f10-11e4-adec-0800271c1b75';
+      const mockResponse = { uuid: '72636eba-29bf-4d6c-97c4-4b04d87a95b5' };
+      mockedGet.mockResolvedValueOnce(mockResponse);
+
+      const result = await getVisitLocationUUID(loginLocation);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        expect.stringContaining(
+          `/ws/rest/v1/bahmnicore/visitLocation/${loginLocation}`,
+        ),
+      );
+      expect(result).toEqual(mockResponse);
     });
   });
 });

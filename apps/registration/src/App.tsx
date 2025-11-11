@@ -15,7 +15,10 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import React, { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { queryClientConfig } from './config/tanstackQuery';
+import { REGISTRATION_NAMESPACE } from './constants/app';
+import CreatePatient from './pages/createPatientPage/CreatePatient';
 import PatientSearchPage from './pages/patientSearchPage';
+import { RegistrationConfigProvider } from './providers/RegistrationConfigProvider';
 
 const queryClient = new QueryClient(queryClientConfig);
 
@@ -25,7 +28,7 @@ const RegistrationApp: React.FC = () => {
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        await initAppI18n();
+        await initAppI18n(REGISTRATION_NAMESPACE);
         initFontAwesome();
         initializeAuditListener();
         setIsInitialized(true);
@@ -48,9 +51,12 @@ const RegistrationApp: React.FC = () => {
       <NotificationProvider>
         <NotificationServiceComponent />
         <QueryClientProvider client={queryClient}>
-          <Routes>
-            <Route path="/search" element={<PatientSearchPage />} />
-          </Routes>
+          <RegistrationConfigProvider>
+            <Routes>
+              <Route path="/search" element={<PatientSearchPage />} />
+              <Route path="/new" element={<CreatePatient />} />
+            </Routes>
+          </RegistrationConfigProvider>
           <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
       </NotificationProvider>

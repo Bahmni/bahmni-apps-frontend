@@ -1,6 +1,8 @@
 import '@carbon/styles/css/styles.css';
 
 export { Button, type ButtonProps } from './atoms/button';
+export { IconButton, type IconButtonProps } from './atoms/iconButton';
+export { Breadcrumb, type BreadcrumbProps } from './atoms/breadcrumb';
 export { Tile, type TileProps } from './atoms/tile';
 export { Tag, type TagProps } from './atoms/tag';
 export {
@@ -43,6 +45,7 @@ export {
 } from './atoms/dropdownSkeleton';
 export { Dropdown, type DropdownProps } from './atoms/dropdown';
 export { Checkbox, type CheckboxProps } from './atoms/checkbox';
+export { CheckboxGroup, type CheckboxGroupProps } from './atoms/checkboxGroup';
 export {
   Grid,
   Row,
@@ -58,6 +61,11 @@ export {
   type DatePickerProps,
   type DatePickerInputProps,
 } from './atoms/datePicker';
+export { TimePicker, type TimePickerProps } from './atoms/timePicker';
+export {
+  TimePickerSelect,
+  type TimePickerSelectProps,
+} from './atoms/timePickerSelect';
 
 export { default as ActionAreaLayout } from './templates/actionAreaLayout';
 export { default as BaseLayout } from './templates/baseLayout';

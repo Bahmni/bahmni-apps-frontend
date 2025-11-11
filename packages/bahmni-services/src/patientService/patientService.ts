@@ -1,5 +1,6 @@
 import { Patient } from 'fhir/r4';
-import { get } from '../api';
+import { get, post } from '../api';
+import { APP_PROPERTY_URL } from '../applicationConfigService/constants';
 import { PatientSearchField } from '../configService/models/registrationConfig';
 import { calculateAge } from '../date';
 import { getUserLoginLocation } from '../userService';
@@ -7,10 +8,42 @@ import {
   PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL,
   PATIENT_LUCENE_SEARCH_URL,
   PATIENT_RESOURCE_URL,
+  IDENTIFIER_TYPES_URL,
+  APP_SETTINGS_URL,
+  PRIMARY_IDENTIFIER_TYPE_PROPERTY,
+  CREATE_PATIENT_URL,
+  CREATE_VISIT_URL,
+  GET_ACTIVE_VISIT_URL,
+  ADDRESS_HIERARCHY_URL,
+  ADDRESS_HIERARCHY_DEFAULT_LIMIT,
+  ADDRESS_HIERARCHY_MIN_SEARCH_LENGTH,
+  UUID_PATTERN,
+  VISIT_TYPES_URL,
+  GET_VISIT_LOCATION,
 } from './constants';
-import { FormattedPatientData, PatientSearchResultBundle } from './models';
+import {
+  FormattedPatientData,
+  PatientSearchResultBundle,
+  IdentifierTypesResponse,
+  AppSettingsResponse,
+  CreatePatientRequest,
+  CreatePatientResponse,
+  AddressHierarchyEntry,
+  VisitLocationResponse,
+  ActiveVisit,
+  VisitData,
+  VisitType,
+} from './models';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
+  if (!patientUUID || patientUUID.trim() === '') {
+    throw new Error('Invalid patient UUID: UUID cannot be empty');
+  }
+
+  if (!UUID_PATTERN.test(patientUUID)) {
+    throw new Error(`Invalid patient UUID format: ${patientUUID}`);
+  }
+
   return get<Patient>(PATIENT_RESOURCE_URL(patientUUID));
 };
 
@@ -167,9 +200,9 @@ export const searchPatientByNameOrId = async (
   const searchResultsBundle = await get<PatientSearchResultBundle>(
     PATIENT_LUCENE_SEARCH_URL(searchTerm, loginLocation.uuid),
   );
+
   return searchResultsBundle;
 };
-
 /**
  * Search patient by Custom Attributes (phone, address, program fields)
  * @param searchTerm - The search value entered by user
@@ -186,7 +219,6 @@ export const searchPatientByCustomAttribute = async (
   t: (key: string) => string,
 ): Promise<PatientSearchResultBundle> => {
   const loginLocation = getUserLoginLocation();
-
   const searchResultsBundle = await get<PatientSearchResultBundle>(
     PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL(
       searchTerm,
@@ -197,4 +229,155 @@ export const searchPatientByCustomAttribute = async (
     ),
   );
   return searchResultsBundle;
+};
+
+/**
+ * Get primary identifier type from Bahmni app settings
+ * @returns Promise<string | null> - The primary identifier type UUID or null if not found
+ */
+export const getPrimaryIdentifierType = async (): Promise<string | null> => {
+  const settings = await get<AppSettingsResponse>(APP_SETTINGS_URL('core'));
+  const primaryIdentifierTypes = settings.find(
+    (setting) => setting.property === PRIMARY_IDENTIFIER_TYPE_PROPERTY,
+  );
+  return primaryIdentifierTypes?.value ?? null;
+};
+
+/**
+ * Get all identifier data in a single call (prefixes, sources, and primary type)
+ * @returns Promise with prefixes array, sources map, and primary identifier type UUID
+ */
+export const getIdentifierData = async (): Promise<{
+  prefixes: string[];
+  sourcesByPrefix: Map<string, string>;
+  primaryIdentifierTypeUuid: string | null;
+}> => {
+  const [identifierTypes, primaryIdentifierTypeUuid] = await Promise.all([
+    get<IdentifierTypesResponse>(IDENTIFIER_TYPES_URL),
+    getPrimaryIdentifierType(),
+  ]);
+
+  const prefixes: string[] = [];
+  const sourcesByPrefix = new Map<string, string>();
+
+  if (!primaryIdentifierTypeUuid) {
+    return { prefixes, sourcesByPrefix, primaryIdentifierTypeUuid: null };
+  }
+
+  const primaryIdentifierType = identifierTypes.find(
+    (identifierType) => identifierType.uuid === primaryIdentifierTypeUuid,
+  );
+
+  if (!primaryIdentifierType) {
+    return { prefixes, sourcesByPrefix, primaryIdentifierTypeUuid };
+  }
+
+  // Extract prefixes and map sources
+  primaryIdentifierType.identifierSources.forEach((source) => {
+    if (source.prefix) {
+      prefixes.push(source.prefix);
+      if (source.uuid) {
+        sourcesByPrefix.set(source.prefix, source.uuid);
+      }
+    }
+  });
+
+  return {
+    prefixes: prefixes.sort(),
+    sourcesByPrefix,
+    primaryIdentifierTypeUuid,
+  };
+};
+
+/**
+ * Create a new patient
+ * @param patientData - The patient data to create
+ * @returns Promise<CreatePatientResponse> - The created patient response
+ */
+export const createPatient = async (
+  patientData: CreatePatientRequest,
+): Promise<CreatePatientResponse> => {
+  return post<CreatePatientResponse>(CREATE_PATIENT_URL, patientData);
+};
+
+/**
+ * Get genders from global property
+ * @returns Promise<string[]> - Array of gender display names
+ */
+export const getGenders = async (): Promise<string[]> => {
+  const genders = await get<Record<string, string>>(
+    APP_PROPERTY_URL('mrs.genders'),
+  );
+  return Object.values(genders);
+};
+
+/**
+ * Get address hierarchy entries based on search string
+ * @param addressField - The address field type (e.g., 'countyDistrict', 'stateProvince', 'postalCode')
+ * @param searchString - The search term
+ * @param limit - Maximum number of results (default: 20)
+ * @returns Promise<AddressHierarchyEntry[]> - Array of address hierarchy entries with parent information
+ */
+export const getAddressHierarchyEntries = async (
+  addressField: string,
+  searchString: string,
+  limit: number = ADDRESS_HIERARCHY_DEFAULT_LIMIT,
+): Promise<AddressHierarchyEntry[]> => {
+  if (
+    !searchString ||
+    searchString.length < ADDRESS_HIERARCHY_MIN_SEARCH_LENGTH
+  ) {
+    return [];
+  }
+
+  try {
+    return await get<AddressHierarchyEntry[]>(
+      ADDRESS_HIERARCHY_URL(addressField, searchString, limit),
+    );
+  } catch (error) {
+    throw new Error(
+      `Failed to fetch address hierarchy for field "${addressField}": ${
+        error instanceof Error ? error.message : 'Unknown error'
+      }`,
+    );
+  }
+};
+
+/**
+ * Fetches visit types from Bahmni configuration
+ * @returns Promise<VisitType> - Visit types response
+ */
+export const getVisitTypes = async (): Promise<VisitType> => {
+  return get<VisitType>(VISIT_TYPES_URL());
+};
+
+/**
+ * Create a new visit for a patient
+ * @param visitData - The visit data including patient UUID, visit type, and location
+ * @returns Promise<unknown> - The created visit object
+ */
+export const createVisit = async (visitData: VisitData): Promise<string> => {
+  return post<string>(CREATE_VISIT_URL, visitData);
+};
+
+/**
+ * Get active visits for a patient
+ * @param patientUuid - The UUID of the patient
+ * @returns Promise<ActiveVisit> - The active visit data
+ */
+export const getActiveVisitByPatient = async (
+  patientUuid: string,
+): Promise<ActiveVisit> => {
+  return get<ActiveVisit>(GET_ACTIVE_VISIT_URL(patientUuid));
+};
+
+/**
+ * Get visit location UUID for a given login location
+ * @param loginLocation - The login location UUID
+ * @returns Promise<VisitLocationResponse> - The visit location details including UUID
+ */
+export const getVisitLocationUUID = async (
+  loginLocation: string,
+): Promise<VisitLocationResponse> => {
+  return get<VisitLocationResponse>(GET_VISIT_LOCATION(loginLocation));
 };

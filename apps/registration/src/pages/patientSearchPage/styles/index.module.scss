@@ -1,11 +1,17 @@
 @use "@carbon/react/scss/spacing" as *;
-@use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/breakpoint" as *;
+
+
 
 .main {
   background-color: $layer-02;
   padding: $spacing-06 $spacing-12;
+  padding-inline: calc($spacing-12 + $spacing-02);
+  padding-top: calc(48px + $spacing-12);
+  margin-top: 0;
 }
 
 .patientSearchResult {
@@ -23,6 +29,21 @@
   td {
     width: 15%;
   }
+}
+
+.scheduledStatus {
+  background-color: $blue-20 !important;
+  color: $blue-70 !important;
+}
+
+.arrivedStatus {
+  background-color: $yellow-20 !important;
+  color: $yellow-70 !important;
+}
+
+.checkedInStatus {
+  background-color: $green-20 !important;
+  color: $green-70 !important;
 }
 
 @include breakpoint-down(lg) {

@@ -5,10 +5,43 @@ export {
   getFormattedPatientById,
   searchPatientByNameOrId,
   searchPatientByCustomAttribute,
+  getPrimaryIdentifierType,
+  createPatient,
+  createVisit,
+  getActiveVisitByPatient,
+  getIdentifierData,
+  getGenders,
+  getAddressHierarchyEntries,
+  getVisitTypes,
+  getVisitLocationUUID,
   type FormattedPatientData,
   type PatientSearchResult,
   type PatientSearchResultBundle,
+  type IdentifierSource,
+  type IdentifierType,
+  type IdentifierTypesResponse,
+  type CreatePatientRequest,
+  type CreatePatientResponse,
+  type VisitData,
+  type PatientName,
+  type PatientAddress,
+  type PatientIdentifier,
+  type PatientAttribute,
+  type AddressHierarchyEntry,
+  MAX_PATIENT_AGE_YEARS,
+  PHONE_NUMBER_UUID,
+  EMAIL_UUID,
+  ALTERNATE_PHONE_NUMBER_UUID,
 } from './patientService';
+export { searchAppointmentsByAttribute } from './AppointmentService/appointmmetService';
+export {
+  type Appointment,
+  type AppointmentSearchResult,
+  type Patient,
+  type AppointmentService,
+  type Location,
+  type Reason,
+} from './AppointmentService/models';
 export { getFormattedError } from './errorHandling';
 export {
   capitalize,
@@ -34,6 +67,8 @@ export {
   ISO_DATE_FORMAT,
   FULL_MONTH_DATE_FORMAT,
   getTodayDate,
+  calculateAgeinYearsAndMonths,
+  formatDateAndTime,
 } from './date';
 export { type Notification, notificationService } from './notification';
 export {
@@ -103,7 +138,7 @@ export {
   type PatientSearchField,
 } from './configService';
 
-export { getCurrentUser, type User } from './userService';
+export { getCurrentUser, getUserLoginLocation, type User } from './userService';
 export { USER_PINNED_PREFERENCE_URL } from './constants/app';
 export {
   getCurrentProvider,

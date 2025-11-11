@@ -1,0 +1,5 @@
+apiVersion: v2
+name: bahmni-apps-frontend
+description: Helm chart for bahmni-apps-frontend
+type: application
+version: 1.0.0

@@ -336,6 +336,53 @@ export const getTodayDate = (): Date => {
   return today;
 };
 
+export function formatDateAndTime(date: number, includeTime: boolean): string {
+  const d = new Date(date);
+
+  const day = String(d.getDate()).padStart(2, '0');
+  const year = d.getFullYear();
+  const monthNames = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  const month = monthNames[d.getMonth()];
+
+  let formattedDate = `${day} ${month} ${year}`;
+
+  if (includeTime) {
+    let hours = d.getHours();
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    const formattedTime = `${hours}:${minutes} ${ampm}`;
+    formattedDate += ` ${formattedTime}`;
+  }
+
+  return formattedDate;
+}
+export function calculateAgeinYearsAndMonths(birthDateMillis: number) {
+  const birthDate = new Date(birthDateMillis);
+  const today = new Date();
+
+  let years = today.getFullYear() - birthDate.getFullYear();
+  let months = today.getMonth() - birthDate.getMonth();
+  if (months < 0 || (months === 0 && today.getDate() < birthDate.getDate())) {
+    years--;
+    months += 12;
+  }
+
+  return `${years} years ${months} months`;
+}
 /**
  * Sorts an array of objects by a date field
  * @param array - Array of objects to sort
