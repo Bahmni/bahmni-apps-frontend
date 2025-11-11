@@ -104,8 +104,8 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
     const dataUrl = capture();
     if (dataUrl) {
       setPreviewUrl(dataUrl);
-      stop();
     }
+    stop();
   };
 
   const handleConfirm = () => {
@@ -127,7 +127,6 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
   };
 
   const handlePreview = async () => {
-    stop();
     setPreviewUrl(undefined);
     try {
       await start();
