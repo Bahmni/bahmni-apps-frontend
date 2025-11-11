@@ -36,6 +36,7 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mode, setMode] = useState<'idle' | 'capture' | 'upload'>('idle');
   const [previewUrl, setPreviewUrl] = useState<string | undefined>(undefined);
+  const [fileName, setFileName] = useState<string>('');
   const [confirmedUrl, setConfirmedUrl] = useState<string | undefined>(
     undefined,
   );
@@ -62,6 +63,7 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
     setIsModalOpen(false);
     setFileSizeError('');
     setMode('idle');
+    setFileName('');
     if (!previewUrl) {
       setConfirmedUrl(undefined);
     }
@@ -70,11 +72,13 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
   const handleRemoveConfirmed = () => {
     setConfirmedUrl(undefined);
     onPhotoConfirm('');
+    setFileName('');
   };
 
   const handleFileDelete = () => {
     setPreviewUrl(undefined);
     setFileSizeError('');
+    setFileName('');
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,6 +86,7 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
     if (!files?.[0]) return;
 
     const file = files[0];
+    setFileName(file.name);
     if (file.size > MAX_FILE_SIZE) {
       const fileSizeKB = Math.round(file.size / 1024);
       setFileSizeError(
@@ -207,6 +212,7 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
             <>
               <FileUploader
                 labelTitle=""
+                title={fileName}
                 key={isModalOpen ? 'open' : 'closed'}
                 labelDescription={t(
                   'CREATE_PATIENT_UPLOAD_PHOTO_FILE_SIZE_LIMIT',
