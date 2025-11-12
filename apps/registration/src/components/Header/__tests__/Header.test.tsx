@@ -1,8 +1,16 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { getCurrentUser } from '@bahmni-frontend/bahmni-services';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 
 import Header, { BreadcrumbItem, HeaderProps } from '../Header';
 
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  getCurrentUser: jest.fn(),
+}));
+
 describe('Header', () => {
+  let queryClient: QueryClient;
+
   const mockBreadcrumbs: BreadcrumbItem[] = [
     { label: 'Home', href: '/home' },
     { label: 'Current Page' },
@@ -12,40 +20,62 @@ describe('Header', () => {
     breadcrumbs: mockBreadcrumbs,
   };
 
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    (getCurrentUser as jest.Mock).mockResolvedValue({
+      username: 'testuser',
+      uuid: 'test-uuid',
+    });
+  });
+
+  const renderWithClient = (ui: React.ReactElement) => {
+    return render(
+      <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+    );
+  };
+
   it('should render breadcrumbs correctly', () => {
-    render(<Header {...defaultProps} />);
+    renderWithClient(<Header {...defaultProps} />);
 
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Current Page')).toBeInTheDocument();
   });
 
-  it('should render profile section', () => {
-    render(<Header {...defaultProps} />);
+  it('should render profile section', async () => {
+    renderWithClient(<Header {...defaultProps} />);
 
-    expect(screen.getByText('Hi, Profile name')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Hi, testuser')).toBeInTheDocument();
+    });
   });
 
   describe('Button rendering', () => {
     it('should not render button when showButton is false', () => {
-      render(<Header {...defaultProps} showButton={false} buttonText="Save" />);
+      renderWithClient(
+        <Header {...defaultProps} showButton={false} buttonText="Save" />,
+      );
 
       expect(screen.queryByText('Save')).not.toBeInTheDocument();
     });
 
     it('should not render button when showButton is true but buttonText is undefined', () => {
-      render(<Header {...defaultProps} showButton />);
+      renderWithClient(<Header {...defaultProps} showButton />);
 
       expect(screen.queryByRole('button')).not.toBeInTheDocument();
     });
 
     it('should not render button when showButton is true but buttonText is empty', () => {
-      render(<Header {...defaultProps} showButton buttonText="" />);
+      renderWithClient(<Header {...defaultProps} showButton buttonText="" />);
 
       expect(screen.queryByRole('button')).not.toBeInTheDocument();
     });
 
     it('should render button when showButton is true and buttonText is provided', () => {
-      render(<Header {...defaultProps} showButton buttonText="Save Patient" />);
+      renderWithClient(
+        <Header {...defaultProps} showButton buttonText="Save Patient" />,
+      );
 
       expect(screen.getByText('Save Patient')).toBeInTheDocument();
     });
@@ -53,7 +83,7 @@ describe('Header', () => {
     it('should call onButtonClick when button is clicked', () => {
       const mockOnButtonClick = jest.fn();
 
-      render(
+      renderWithClient(
         <Header
           {...defaultProps}
           showButton
@@ -69,7 +99,7 @@ describe('Header', () => {
     });
 
     it('should render disabled button when buttonDisabled is true', () => {
-      render(
+      renderWithClient(
         <Header
           {...defaultProps}
           showButton
@@ -83,7 +113,7 @@ describe('Header', () => {
     });
 
     it('should render enabled button when buttonDisabled is false', () => {
-      render(
+      renderWithClient(
         <Header
           {...defaultProps}
           showButton
@@ -97,7 +127,7 @@ describe('Header', () => {
     });
 
     it('should pass buttonTestId to button', () => {
-      render(
+      renderWithClient(
         <Header
           {...defaultProps}
           showButton
@@ -112,7 +142,7 @@ describe('Header', () => {
 
   describe('className prop', () => {
     it('should apply custom className when provided', () => {
-      const { container } = render(
+      const { container } = renderWithClient(
         <Header {...defaultProps} className="custom-class" />,
       );
 
@@ -121,7 +151,7 @@ describe('Header', () => {
     });
 
     it('should handle undefined className gracefully', () => {
-      const { container } = render(
+      const { container } = renderWithClient(
         <Header {...defaultProps} className={undefined} />,
       );
 
@@ -132,7 +162,7 @@ describe('Header', () => {
     });
 
     it('should handle null className gracefully', () => {
-      const { container } = render(
+      const { container } = renderWithClient(
         <Header {...defaultProps} className={null as any} />,
       );
 
@@ -151,7 +181,7 @@ describe('Header', () => {
         { label: 'Create Patient' },
       ];
 
-      render(<Header breadcrumbs={breadcrumbsWithClick} />);
+      renderWithClient(<Header breadcrumbs={breadcrumbsWithClick} />);
 
       expect(screen.getByText('Search')).toBeInTheDocument();
       expect(screen.getByText('Create Patient')).toBeInTheDocument();
@@ -160,14 +190,14 @@ describe('Header', () => {
     it('should render single breadcrumb item', () => {
       const singleBreadcrumb: BreadcrumbItem[] = [{ label: 'Dashboard' }];
 
-      render(<Header breadcrumbs={singleBreadcrumb} />);
+      renderWithClient(<Header breadcrumbs={singleBreadcrumb} />);
 
       expect(screen.getByText('Dashboard')).toBeInTheDocument();
     });
   });
 
   describe('Complex scenarios', () => {
-    it('should render with all props provided', () => {
+    it('should render with all props provided', async () => {
       const mockOnButtonClick = jest.fn();
       const fullProps: HeaderProps = {
         breadcrumbs: mockBreadcrumbs,
@@ -179,21 +209,25 @@ describe('Header', () => {
         className: 'full-props-class',
       };
 
-      render(<Header {...fullProps} />);
+      renderWithClient(<Header {...fullProps} />);
 
       expect(screen.getByText('Home')).toBeInTheDocument();
       expect(screen.getByText('Current Page')).toBeInTheDocument();
       expect(screen.getByText('Complete Action')).toBeInTheDocument();
-      expect(screen.getByText('Hi, Profile name')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText('Hi, testuser')).toBeInTheDocument();
+      });
       expect(screen.getByTestId('action-button')).toBeInTheDocument();
     });
 
-    it('should render with minimal props', () => {
-      render(<Header breadcrumbs={mockBreadcrumbs} />);
+    it('should render with minimal props', async () => {
+      renderWithClient(<Header breadcrumbs={mockBreadcrumbs} />);
 
       expect(screen.getByText('Home')).toBeInTheDocument();
       expect(screen.getByText('Current Page')).toBeInTheDocument();
-      expect(screen.getByText('Hi, Profile name')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText('Hi, testuser')).toBeInTheDocument();
+      });
     });
   });
 });
