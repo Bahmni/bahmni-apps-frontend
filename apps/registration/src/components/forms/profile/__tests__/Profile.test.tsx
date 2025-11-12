@@ -375,4 +375,133 @@ describe('Profile', () => {
       expect(data?.birthTime).toBe('14:30');
     });
   });
+
+  describe('Configuration-based Field Visibility', () => {
+    it('should show middle name and last name fields when configuration is true', () => {
+      render(<Profile ref={ref} />);
+
+      expect(
+        screen.getByLabelText('CREATE_PATIENT_FIRST_NAME'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByLabelText('CREATE_PATIENT_MIDDLE_NAME'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByLabelText('CREATE_PATIENT_LAST_NAME'),
+      ).toBeInTheDocument();
+    });
+
+    it('should mark last name as required when isLastNameMandatory is true', () => {
+      render(<Profile ref={ref} />);
+
+      const lastNameInput = screen.getByLabelText('CREATE_PATIENT_LAST_NAME');
+      expect(lastNameInput).toHaveAttribute('required');
+    });
+
+    it('should validate last name when isLastNameMandatory is true', () => {
+      render(<Profile ref={ref} />);
+
+      const firstNameInput = screen.getByLabelText(
+        'CREATE_PATIENT_FIRST_NAME',
+      ) as HTMLInputElement;
+      const genderDropdown = screen.getByText('CREATE_PATIENT_SELECT');
+      const dateInput = screen.getByLabelText('CREATE_PATIENT_DATE_OF_BIRTH');
+
+      // Fill required fields except last name
+      fireEvent.change(firstNameInput, { target: { value: 'John' } });
+      fireEvent.click(genderDropdown);
+      fireEvent.change(dateInput, { target: { value: '01/01/1990' } });
+
+      let isValid: boolean | undefined;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
+
+      // Should fail validation because last name is required but empty
+      expect(isValid).toBe(false);
+    });
+  });
+});
+
+describe('Profile - Hidden Fields Configuration', () => {
+  let ref: React.RefObject<ProfileRef | null>;
+
+  beforeEach(() => {
+    ref = React.createRef<ProfileRef | null>();
+  });
+
+  it('should hide middle name field when showMiddleName is false', () => {
+    // Override mock for this test
+    jest.resetModules();
+    jest.doMock('../../../../hooks/useRegistrationConfig', () => ({
+      useRegistrationConfig: () => ({
+        registrationConfig: {
+          patientInformation: {
+            showMiddleName: false,
+            showLastName: true,
+            isLastNameMandatory: true,
+          },
+        },
+      }),
+    }));
+
+    render(<Profile ref={ref} />);
+
+    expect(
+      screen.getByLabelText('CREATE_PATIENT_FIRST_NAME'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByLabelText('CREATE_PATIENT_MIDDLE_NAME'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByLabelText('CREATE_PATIENT_LAST_NAME'),
+    ).toBeInTheDocument();
+  });
+
+  it('should hide last name field when showLastName is false', () => {
+    jest.resetModules();
+    jest.doMock('../../../../hooks/useRegistrationConfig', () => ({
+      useRegistrationConfig: () => ({
+        registrationConfig: {
+          patientInformation: {
+            showMiddleName: true,
+            showLastName: false,
+            isLastNameMandatory: false,
+          },
+        },
+      }),
+    }));
+
+    render(<Profile ref={ref} />);
+
+    expect(
+      screen.getByLabelText('CREATE_PATIENT_FIRST_NAME'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText('CREATE_PATIENT_MIDDLE_NAME'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByLabelText('CREATE_PATIENT_LAST_NAME'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('should make last name optional when isLastNameMandatory is false', () => {
+    jest.resetModules();
+    jest.doMock('../../../../hooks/useRegistrationConfig', () => ({
+      useRegistrationConfig: () => ({
+        registrationConfig: {
+          patientInformation: {
+            showMiddleName: true,
+            showLastName: true,
+            isLastNameMandatory: false,
+          },
+        },
+      }),
+    }));
+
+    render(<Profile ref={ref} />);
+
+    const lastNameInput = screen.getByLabelText('CREATE_PATIENT_LAST_NAME');
+    expect(lastNameInput).not.toHaveAttribute('required');
+  });
 });

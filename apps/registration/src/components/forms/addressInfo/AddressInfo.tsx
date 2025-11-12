@@ -51,7 +51,8 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
 
   // Get registration config for address field ordering
   const { registrationConfig } = useRegistrationConfig();
-  const addressConfig = registrationConfig?.patientInformation?.addressHierarchy;
+  const addressConfig =
+    registrationConfig?.patientInformation?.addressHierarchy;
   const showTopDown = addressConfig?.showAddressFieldsTopDown ?? false;
 
   const [formData, setFormData] = useState<AddressData>(initialFormData);

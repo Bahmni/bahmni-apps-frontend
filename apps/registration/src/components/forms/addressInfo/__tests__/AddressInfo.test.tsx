@@ -741,4 +741,46 @@ describe('AddressInfo', () => {
       });
     });
   });
+
+  describe('Field Ordering Configuration', () => {
+    it('should render fields in bottom-up order by default', () => {
+      const ref = createRef<AddressInfoRef>();
+      renderWithQueryClient(<AddressInfo ref={ref} />);
+
+      const allInputs = screen.getAllByRole('textbox');
+      const inputIds = allInputs.map((input) => input.getAttribute('id'));
+
+      // Expected bottom-up order: house-number, locality, district, city, state, pincode
+      expect(inputIds).toEqual([
+        'house-number',
+        'locality',
+        'district',
+        'city',
+        'state',
+        'pincode',
+      ]);
+    });
+
+    it('should display all address fields regardless of order', () => {
+      const ref = createRef<AddressInfoRef>();
+      renderWithQueryClient(<AddressInfo ref={ref} />);
+
+      expect(
+        screen.getByLabelText('CREATE_PATIENT_HOUSE_NUMBER'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByLabelText('CREATE_PATIENT_LOCALITY'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByLabelText('CREATE_PATIENT_DISTRICT'),
+      ).toBeInTheDocument();
+      expect(screen.getByLabelText('CREATE_PATIENT_CITY')).toBeInTheDocument();
+      expect(
+        screen.getByLabelText('CREATE_PATIENT_STATE'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByLabelText('CREATE_PATIENT_PINCODE'),
+      ).toBeInTheDocument();
+    });
+  });
 });

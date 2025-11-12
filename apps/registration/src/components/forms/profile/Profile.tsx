@@ -313,26 +313,30 @@ export const Profile = ({
               onChange={(e) => handleNameChange('firstName', e.target.value)}
             />
 
-            <TextInput
-              id="middle-name"
-              labelText={t('CREATE_PATIENT_MIDDLE_NAME')}
-              placeholder={t('CREATE_PATIENT_MIDDLE_NAME_PLACEHOLDER')}
-              value={formData.middleName}
-              invalid={!!nameErrors.middleName}
-              invalidText={nameErrors.middleName}
-              onChange={(e) => handleNameChange('middleName', e.target.value)}
-            />
+            {(patientInfoConfig?.showMiddleName ?? true) && (
+              <TextInput
+                id="middle-name"
+                labelText={t('CREATE_PATIENT_MIDDLE_NAME')}
+                placeholder={t('CREATE_PATIENT_MIDDLE_NAME_PLACEHOLDER')}
+                value={formData.middleName}
+                invalid={!!nameErrors.middleName}
+                invalidText={nameErrors.middleName}
+                onChange={(e) => handleNameChange('middleName', e.target.value)}
+              />
+            )}
 
-            <TextInput
-              id="last-name"
-              labelText={t('CREATE_PATIENT_LAST_NAME')}
-              placeholder={t('CREATE_PATIENT_LAST_NAME_PLACEHOLDER')}
-              required
-              value={formData.lastName}
-              invalid={!!nameErrors.lastName || !!validationErrors.lastName}
-              invalidText={nameErrors.lastName || validationErrors.lastName}
-              onChange={(e) => handleNameChange('lastName', e.target.value)}
-            />
+            {(patientInfoConfig?.showLastName ?? true) && (
+              <TextInput
+                id="last-name"
+                labelText={t('CREATE_PATIENT_LAST_NAME')}
+                placeholder={t('CREATE_PATIENT_LAST_NAME_PLACEHOLDER')}
+                required={patientInfoConfig?.isLastNameMandatory ?? true}
+                value={formData.lastName}
+                invalid={!!nameErrors.lastName || !!validationErrors.lastName}
+                invalidText={nameErrors.lastName || validationErrors.lastName}
+                onChange={(e) => handleNameChange('lastName', e.target.value)}
+              />
+            )}
           </div>
 
           <div className={`${styles.row} ${styles.demographicsFields}`}>
