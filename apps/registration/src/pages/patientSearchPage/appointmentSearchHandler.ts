@@ -5,14 +5,11 @@ import {
   UserPrivilege,
   formatUrl,
   PatientSearchResultBundle,
+  hasPrivilege,
+  dateComparator,
 } from '@bahmni-frontend/bahmni-services';
 import { NavigateFunction } from 'react-router-dom';
-import {
-  PatientSearchViewModel,
-  privilegeValidator,
-  statusValidator,
-  appDateValidator,
-} from './utils';
+import { PatientSearchViewModel } from './utils';
 
 export const getAppointmentStatusClassName = (status: string): string => {
   switch (status?.toLowerCase()) {
@@ -121,4 +118,26 @@ export const shouldRenderButton = (
   }
 
   return privilegeValidator(userPrivileges)(privilegeRules);
+};
+
+export const privilegeValidator =
+  (userPrivileges: UserPrivilege[]) => (rules: string[]) => {
+    return rules.some((privilege) => hasPrivilege(userPrivileges, privilege));
+  };
+
+export const statusValidator = (
+  rules: string[],
+  row: PatientSearchViewModel<AppointmentSearchResult>,
+) => {
+  const appointmentStatus = String(row.appointmentStatus ?? '');
+  return rules.includes(appointmentStatus);
+};
+
+export const appDateValidator = (
+  rules: string[],
+  row: PatientSearchViewModel<AppointmentSearchResult>,
+) => {
+  return rules.some((ruleValue) =>
+    dateComparator(row.appointmentDate as string, ruleValue),
+  );
 };

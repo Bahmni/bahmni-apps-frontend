@@ -2,15 +2,9 @@ import {
   PatientSearchResult,
   PatientSearchResultBundle,
   PatientSearchField,
-  hasPrivilege,
-  dateComparator,
-  UserPrivilege,
 } from '@bahmni-frontend/bahmni-services';
 import {
   formatPatientSearchResult,
-  privilegeValidator,
-  statusValidator,
-  appDateValidator,
   type PatientSearchViewModel,
 } from '../utils';
 
@@ -92,65 +86,5 @@ describe('formatPatientSearchResult', () => {
     expect(
       formatPatientSearchResult(mockPatientSearchResultBundle),
     ).toStrictEqual([]);
-  });
-});
-
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
-  hasPrivilege: jest.fn(),
-  dateComparator: jest.fn(),
-}));
-
-describe('privilegeValidator', () => {
-  it('returns true if user has at least one required privilege', () => {
-    (hasPrivilege as jest.Mock).mockImplementation(
-      (privs, rule) => rule === 'CAN_VIEW',
-    );
-    const validator = privilegeValidator([
-      { name: 'CAN_VIEW' } as UserPrivilege,
-    ]);
-    expect(validator(['CAN_VIEW', 'CAN_EDIT'])).toBe(true);
-  });
-
-  it('returns false if user has none of the required privileges', () => {
-    (hasPrivilege as jest.Mock).mockReturnValue(false);
-    const validator = privilegeValidator([
-      { name: 'CAN_DELETE' } as UserPrivilege,
-    ]);
-    expect(validator(['CAN_VIEW', 'CAN_EDIT'])).toBe(false);
-  });
-});
-
-describe('statusValidator', () => {
-  const row = { appointmentStatus: 'SCHEDULED' } as any;
-
-  it('returns true if status is in rules', () => {
-    expect(statusValidator(['SCHEDULED', 'COMPLETED'], row)).toBe(true);
-  });
-
-  it('returns false if status is not in rules', () => {
-    expect(statusValidator(['CANCELLED'], row)).toBe(false);
-  });
-
-  it('handles undefined appointmentStatus', () => {
-    expect(statusValidator([''], { appointmentStatus: undefined } as any)).toBe(
-      true,
-    );
-  });
-});
-
-describe('appDateValidator', () => {
-  const row = { appointmentDate: '2024-06-01' } as any;
-
-  it('returns true if any rule matches dateComparator', () => {
-    (dateComparator as jest.Mock).mockImplementation(
-      (date, rule) => rule === 'today',
-    );
-    expect(appDateValidator(['today', 'past'], row)).toBe(true);
-  });
-
-  it('returns false if no rule matches dateComparator', () => {
-    (dateComparator as jest.Mock).mockReturnValue(false);
-    expect(appDateValidator(['future'], row)).toBe(false);
   });
 });

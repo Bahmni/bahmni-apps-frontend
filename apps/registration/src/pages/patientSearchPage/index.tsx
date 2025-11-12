@@ -174,7 +174,9 @@ const PatientSearchPage: React.FC = () => {
 
   const renderPatientSearchResult = useCallback(
     (
-      row: PatientSearchViewModel<AppointmentSearchResult>,
+      row: PatientSearchViewModel<
+        PatientSearchResult | AppointmentSearchResult
+      >,
       cellId: string,
     ): React.ReactNode => {
       switch (cellId) {
@@ -247,7 +249,11 @@ const PatientSearchPage: React.FC = () => {
       }
 
       const cellValue =
-        row[cellId as keyof PatientSearchViewModel<AppointmentSearchResult>];
+        row[
+          cellId as keyof PatientSearchViewModel<
+            PatientSearchResult | AppointmentSearchResult
+          >
+        ];
       if (cellValue instanceof Date) {
         return cellValue.toLocaleDateString();
       }
