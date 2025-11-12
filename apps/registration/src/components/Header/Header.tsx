@@ -1,4 +1,6 @@
 import { Breadcrumb, Button } from '@bahmni-frontend/bahmni-design-system';
+import { getCurrentUser } from '@bahmni-frontend/bahmni-services';
+import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 
 import styles from './styles/index.module.scss';
@@ -28,6 +30,12 @@ const Header: React.FC<HeaderProps> = ({
   buttonTestId,
   className,
 }) => {
+  const { data: user } = useQuery({
+    queryKey: ['registrationConfig'],
+    queryFn: getCurrentUser,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
   return (
     <div className={`${styles.customHeader} ${className ?? ''}`}>
       <div className={styles.headerContent}>
@@ -54,7 +62,7 @@ const Header: React.FC<HeaderProps> = ({
           )}
           <div className={styles.profileSection}>
             <div className={styles.userAvatar} />
-            <span className={styles.profileText}>Hi, Profile name</span>
+            <span className={styles.profileText}>Hi, {user?.username}</span>
           </div>
         </div>
       </div>
