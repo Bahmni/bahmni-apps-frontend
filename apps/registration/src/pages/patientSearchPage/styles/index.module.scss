@@ -45,6 +45,10 @@
   color: $green-70 !important;
 }
 
+.buttonWrapper {
+  margin-right: 2*$spacing-13 + $spacing-05;
+}
+
 @include breakpoint-down(lg) {
   .main {
     padding: $spacing-06 $spacing-08;

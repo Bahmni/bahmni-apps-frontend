@@ -231,27 +231,26 @@ const PatientSearchPage: React.FC = () => {
   ];
   const globalActions = [
     {
+      id: 'create-new-patient',
+      label: t('CREATE_PATIENT_BUTTON_TEXT'),
+      renderIcon: (
+        <div className={styles.buttonWrapper}>
+          <Button kind="tertiary">{t('CREATE_PATIENT_BUTTON_TEXT')}</Button>
+        </div>
+      ),
+      onClick: handleCreateNewPatient,
+    },
+    {
       id: 'user',
       label: 'user',
       renderIcon: <Icon id="user" name="fa-user" size={ICON_SIZE.SM} />,
       onClick: () => {},
     },
   ];
-  const handleClick = () => {
-    navigate('/registration/new');
-  };
   return (
     <BaseLayout
       header={
-        <Header
-          breadcrumbItems={breadcrumbs}
-          globalActions={globalActions}
-          button={
-            <Button kind="tertiary" onClick={handleClick}>
-              {t('CREATE_PATIENT_BUTTON_TEXT')}
-            </Button>
-          }
-        />
+        <Header breadcrumbItems={breadcrumbs} globalActions={globalActions} />
       }
       main={
         <div className={styles.main}>
