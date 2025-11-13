@@ -1,5 +1,5 @@
+import { Icon, ICON_SIZE } from '@bahmni-frontend/bahmni-design-system';
 import { SkeletonText } from '@carbon/react';
-import { Icon, ICON_SIZE } from 'bahmni-design-system';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './__styles__/PatientDetails.module.scss';

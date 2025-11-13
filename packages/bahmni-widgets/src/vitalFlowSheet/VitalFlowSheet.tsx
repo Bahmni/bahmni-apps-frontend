@@ -1,9 +1,9 @@
-import { SortableDataTable } from 'bahmni-design-system';
+import { SortableDataTable } from '@bahmni-frontend/bahmni-design-system';
 import {
   useTranslation,
   VitalFlowSheetConceptDetail,
   formatDate,
-} from 'bahmni-services';
+} from '@bahmni-frontend/bahmni-services';
 import React, { useMemo } from 'react';
 import styles from './styles/VitalFlowSheet.module.scss';
 import { useVitalFlowSheet } from './useVitalFlowSheet';

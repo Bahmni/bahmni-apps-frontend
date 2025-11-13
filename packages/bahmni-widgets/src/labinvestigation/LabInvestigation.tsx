@@ -1,9 +1,13 @@
-import { Accordion, AccordionItem, SkeletonText } from 'bahmni-design-system';
+import {
+  Accordion,
+  AccordionItem,
+  SkeletonText,
+} from '@bahmni-frontend/bahmni-design-system';
 import {
   groupLabTestsByDate,
   useTranslation,
   LabTestsByDate,
-} from 'bahmni-services';
+} from '@bahmni-frontend/bahmni-services';
 import React, { useMemo } from 'react';
 import LabInvestigationItem from './LabInvestigationItem';
 import styles from './styles/LabInvestigation.module.scss';

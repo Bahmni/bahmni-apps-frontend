@@ -1,18 +1,18 @@
 import '@testing-library/jest-dom';
-import { render, screen, waitFor } from '@testing-library/react';
 import {
   getVitalFlowSheetData,
   getFormattedError,
   useTranslation,
   VitalFlowSheetData,
-} from 'bahmni-services';
+} from '@bahmni-frontend/bahmni-services';
+import { render, screen, waitFor } from '@testing-library/react';
 import { useParams } from 'react-router-dom';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import VitalFlowSheet from '../VitalFlowSheet';
 
 // Mock the service directly for integration testing
-jest.mock('bahmni-services', () => ({
-  ...jest.requireActual('bahmni-services'),
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
   getVitalFlowSheetData: jest.fn(),
   getFormattedError: jest.fn(),
   useTranslation: jest.fn(),

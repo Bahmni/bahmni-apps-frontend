@@ -1,10 +1,10 @@
-import { renderHook, act, waitFor } from '@testing-library/react';
 import {
   getPatientRadiologyInvestigations,
   RadiologyInvestigation,
   getFormattedError,
   useTranslation,
-} from 'bahmni-services';
+} from '@bahmni-frontend/bahmni-services';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import {
   mockPatientUUID,
@@ -13,7 +13,7 @@ import {
 } from '../__mocks__/mocks';
 import { useRadiologyInvestigation } from '../useRadiologyInvestigation';
 
-jest.mock('bahmni-services');
+jest.mock('@bahmni-frontend/bahmni-services');
 jest.mock('../../hooks/usePatientUUID');
 jest.mock('react-router-dom', () => ({
   useParams: jest.fn(),

@@ -2,7 +2,7 @@ import {
   FormattedPatientData,
   getFormattedPatientById,
   getFormattedError,
-} from 'bahmni-services';
+} from '@bahmni-frontend/bahmni-services';
 import { useState, useEffect, useCallback } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 

@@ -1,4 +1,7 @@
-import { notificationService, Notification } from 'bahmni-services';
+import {
+  notificationService,
+  Notification,
+} from '@bahmni-frontend/bahmni-services';
 import React, { useEffect } from 'react';
 import { useNotification } from './useNotification';
 

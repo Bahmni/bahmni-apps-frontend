@@ -1,4 +1,4 @@
-import 'bahmni-design-system/styles';
+import '@bahmni-frontend/bahmni-design-system/styles';
 
 export { PatientDetails } from './patientDetails';
 export { AllergiesTable } from './allergies';

@@ -1,4 +1,4 @@
-import { Notification } from 'bahmni-services';
+import { Notification } from '@bahmni-frontend/bahmni-services';
 import { createContext } from 'react';
 
 export interface NotificationContextType {

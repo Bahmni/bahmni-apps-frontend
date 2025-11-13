@@ -1,5 +1,5 @@
+import { FormattedPatientData } from '@bahmni-frontend/bahmni-services';
 import { render, screen } from '@testing-library/react';
-import { FormattedPatientData } from 'bahmni-services';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { useTranslation } from 'react-i18next';
 import PatientDetails from '../PatientDetails';
@@ -14,7 +14,7 @@ jest.mock('react-router-dom', () => ({
   useParams: jest.fn(),
 }));
 
-jest.mock('bahmni-design-system', () => ({
+jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
   Icon: ({
     id,
     name,

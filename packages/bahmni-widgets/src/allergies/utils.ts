@@ -2,7 +2,7 @@ import {
   getPriorityByOrder,
   AllergenType,
   FormattedAllergy,
-} from 'bahmni-services';
+} from '@bahmni-frontend/bahmni-services';
 
 /**
  * Priority order for allergy severity levels (case insensitive)

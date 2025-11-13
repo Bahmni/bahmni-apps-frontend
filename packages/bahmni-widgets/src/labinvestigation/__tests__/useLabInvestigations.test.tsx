@@ -1,17 +1,19 @@
-import { renderHook, waitFor } from '@testing-library/react';
 import {
   getPatientLabInvestigations,
   FormattedLabTest,
   LabTestPriority,
   useTranslation,
-} from 'bahmni-services';
+} from '@bahmni-frontend/bahmni-services';
+import { renderHook, waitFor } from '@testing-library/react';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import useLabInvestigations from '../useLabInvestigations';
 
-jest.mock('bahmni-services', () => ({
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
   getPatientLabInvestigations: jest.fn(),
-  FormattedLabTest: jest.requireActual('bahmni-services').FormattedLabTest,
-  LabTestPriority: jest.requireActual('bahmni-services').LabTestPriority,
+  FormattedLabTest: jest.requireActual('@bahmni-frontend/bahmni-services')
+    .FormattedLabTest,
+  LabTestPriority: jest.requireActual('@bahmni-frontend/bahmni-services')
+    .LabTestPriority,
   useTranslation: jest.fn(),
 }));
 jest.mock('../../hooks/usePatientUUID');

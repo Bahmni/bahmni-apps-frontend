@@ -2,7 +2,7 @@ import {
   getPatientLabInvestigations,
   FormattedLabTest,
   useTranslation,
-} from 'bahmni-services';
+} from '@bahmni-frontend/bahmni-services';
 import { useState, useEffect } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 

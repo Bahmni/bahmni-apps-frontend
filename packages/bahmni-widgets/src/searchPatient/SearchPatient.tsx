@@ -1,5 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
-import { Search, Button, Dropdown, Tag } from 'bahmni-design-system';
+import {
+  Search,
+  Button,
+  Dropdown,
+  Tag,
+} from '@bahmni-frontend/bahmni-design-system';
 import {
   searchPatientByNameOrId,
   searchPatientByCustomAttribute,
@@ -13,7 +17,7 @@ import {
   AppointmentSearchResult,
   calculateAgeinYearsAndMonths,
   formatDateAndTime,
-} from 'bahmni-services';
+} from '@bahmni-frontend/bahmni-services';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../notification';

@@ -1,9 +1,9 @@
-import { Tag } from 'bahmni-design-system';
+import { Tag } from '@bahmni-frontend/bahmni-design-system';
 import {
   useTranslation,
   FormattedLabTest,
   LabTestPriority,
-} from 'bahmni-services';
+} from '@bahmni-frontend/bahmni-services';
 import React from 'react';
 import styles from './styles/LabInvestigation.module.scss';
 

@@ -1,4 +1,4 @@
-import { RadiologyInvestigation } from 'bahmni-services';
+import { RadiologyInvestigation } from '@bahmni-frontend/bahmni-services';
 import {
   createMockRadiologyInvestigation,
   mockRadiologyInvestigationsForFiltering,

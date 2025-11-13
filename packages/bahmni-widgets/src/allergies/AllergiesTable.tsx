@@ -3,12 +3,12 @@ import {
   TooltipIcon,
   StatusTag,
   SortableDataTable,
-} from 'bahmni-design-system';
+} from '@bahmni-frontend/bahmni-design-system';
 import {
   AllergySeverity,
   AllergyStatus,
   FormattedAllergy,
-} from 'bahmni-services';
+} from '@bahmni-frontend/bahmni-services';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './styles/AllergiesTable.module.scss';

@@ -1,13 +1,13 @@
-import { renderHook, waitFor, act } from '@testing-library/react';
 import {
   FormattedPatientData,
   getFormattedPatientById,
   getFormattedError,
-} from 'bahmni-services';
+} from '@bahmni-frontend/bahmni-services';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { usePatient } from '../usePatient';
 
-jest.mock('bahmni-services');
+jest.mock('@bahmni-frontend/bahmni-services');
 const mockedGetFormattedPatientById =
   getFormattedPatientById as jest.MockedFunction<
     typeof getFormattedPatientById

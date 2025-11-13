@@ -1,4 +1,4 @@
-import { RadiologyInvestigation } from 'bahmni-services';
+import { RadiologyInvestigation } from '@bahmni-frontend/bahmni-services';
 import { Bundle, ServiceRequest } from 'fhir/r4';
 
 // Mock patient UUID

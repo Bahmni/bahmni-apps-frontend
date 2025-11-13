@@ -1,11 +1,15 @@
-import { useQuery } from '@tanstack/react-query';
-import { SortableDataTable, StatusTag, Tile } from 'bahmni-design-system';
+import {
+  SortableDataTable,
+  StatusTag,
+  Tile,
+} from '@bahmni-frontend/bahmni-design-system';
 import {
   getConditions,
   useTranslation,
   FormatDateResult,
   formatDateDistance,
-} from 'bahmni-services';
+} from '@bahmni-frontend/bahmni-services';
+import { useQuery } from '@tanstack/react-query';
 import React, { useEffect, useMemo, useState } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';

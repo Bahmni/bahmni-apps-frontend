@@ -16,7 +16,7 @@ jest.mock('react-router-dom', () => ({
 }));
 
 // Mock the SortableDataTable component
-jest.mock('bahmni-design-system', () => ({
+jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
   SortableDataTable: ({
     emptyStateMessage,
     rows,
@@ -43,7 +43,7 @@ jest.mock('bahmni-design-system', () => ({
 }));
 
 // Mock translation service
-jest.mock('bahmni-services', () => ({
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const translations: Record<string, string> = {

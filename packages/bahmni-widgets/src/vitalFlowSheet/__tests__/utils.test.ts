@@ -1,7 +1,7 @@
 import {
   VitalFlowSheetData,
   VitalFlowSheetConceptDetail,
-} from 'bahmni-services';
+} from '@bahmni-frontend/bahmni-services';
 import {
   getSortedObservationTimes,
   getTranslatedConceptName,

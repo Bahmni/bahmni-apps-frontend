@@ -3,7 +3,7 @@ import {
   MedicationRequest,
   getFormattedError,
   useTranslation,
-} from 'bahmni-services';
+} from '@bahmni-frontend/bahmni-services';
 import { useState, useCallback, useEffect } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 

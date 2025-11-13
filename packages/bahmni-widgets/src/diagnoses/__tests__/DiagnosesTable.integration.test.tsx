@@ -1,15 +1,15 @@
-import { render, screen, waitFor } from '@testing-library/react';
 import {
   getPatientDiagnoses,
   getFormattedError,
   useTranslation,
   Diagnosis,
-} from 'bahmni-services';
+} from '@bahmni-frontend/bahmni-services';
+import { render, screen, waitFor } from '@testing-library/react';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import DiagnosesTable from '../DiagnosesTable';
 
-jest.mock('bahmni-services', () => ({
-  ...jest.requireActual('bahmni-services'),
+jest.mock('@bahmni-frontend/bahmni-services', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
   getPatientDiagnoses: jest.fn(),
   getFormattedError: jest.fn(),
   useTranslation: jest.fn(),
