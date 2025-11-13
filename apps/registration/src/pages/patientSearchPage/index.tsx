@@ -1,5 +1,6 @@
 import {
   BaseLayout,
+  Button,
   Header,
   Icon,
   ICON_SIZE,
@@ -236,11 +237,21 @@ const PatientSearchPage: React.FC = () => {
       onClick: () => {},
     },
   ];
-
+  const handleClick = () => {
+    navigate('/registration/new');
+  };
   return (
     <BaseLayout
       header={
-        <Header breadcrumbItems={breadcrumbs} globalActions={globalActions} />
+        <Header
+          breadcrumbItems={breadcrumbs}
+          globalActions={globalActions}
+          button={
+            <Button kind="tertiary" onClick={handleClick}>
+              {t('CREATE_PATIENT_BUTTON_TEXT')}
+            </Button>
+          }
+        />
       }
       main={
         <div className={styles.main}>
