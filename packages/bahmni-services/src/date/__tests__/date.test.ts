@@ -9,6 +9,8 @@ import {
   formatDateDistance,
   sortByDate,
   dateComparator,
+  formatDateAndTime,
+  calculateAgeinYearsAndMonths,
 } from '../date';
 
 const mockT = (key: string, options?: { count?: number }) => {
@@ -586,5 +588,59 @@ describe('dateComparator', () => {
     expect(dateComparator(todayString, 'future')).toBe(false);
     const yesterday = subDays(today, 1).toLocaleDateString();
     expect(dateComparator(yesterday, 'future')).toBe(false);
+  });
+});
+
+describe('formatDateAndTime', () => {
+  describe('Date formatting without time', () => {
+    it('should format date correctly without time', () => {
+      const date = new Date(2024, 2, 28, 14, 30);
+      const timestamp = date.getTime();
+      const result = formatDateAndTime(timestamp, false);
+      expect(result).toBe('28 Mar 2024');
+    });
+
+    it('should format leap year date correctly', () => {
+      const date = new Date(2024, 1, 29);
+      const timestamp = date.getTime();
+      const result = formatDateAndTime(timestamp, false);
+      expect(result).toBe('29 Feb 2024');
+    });
+  });
+
+  describe('Date and time formatting', () => {
+    it('should format date with time correctly', () => {
+      const date = new Date(2024, 2, 28, 14, 30);
+      const timestamp = date.getTime();
+      const result = formatDateAndTime(timestamp, true);
+      expect(result).toBe('28 Mar 2024 2:30 PM');
+    });
+  });
+});
+
+describe('calculateAgeinYearsAndMonths', () => {
+  const mockDate = new Date(2024, 2, 28);
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(mockDate);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('should calculate age correctly', () => {
+    const birthDate = new Date(2000, 2, 28);
+    const birthDateMillis = birthDate.getTime();
+    const result = calculateAgeinYearsAndMonths(birthDateMillis);
+    expect(result).toBe('24 years 0 months');
+  });
+
+  it('should calculate age correctly for someone born 5 years and 3 months ago', () => {
+    const birthDate = new Date(2018, 11, 28);
+    const birthDateMillis = birthDate.getTime();
+    const result = calculateAgeinYearsAndMonths(birthDateMillis);
+    expect(result).toBe('5 years 3 months');
   });
 });

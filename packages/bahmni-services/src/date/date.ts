@@ -342,24 +342,15 @@ export const getTodayDate = (): Date => {
 export function formatDateAndTime(date: number, includeTime: boolean): string {
   const d = new Date(date);
 
-  const day = String(d.getDate()).padStart(2, '0');
-  const year = d.getFullYear();
-  const monthNames = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-  const month = monthNames[d.getMonth()];
-
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+  const parts = formatter.formatToParts(d);
+  const day = parts.find((p) => p.type === 'day')?.value;
+  const month = parts.find((p) => p.type === 'month')?.value;
+  const year = parts.find((p) => p.type === 'year')?.value;
   let formattedDate = `${day} ${month} ${year}`;
 
   if (includeTime) {
