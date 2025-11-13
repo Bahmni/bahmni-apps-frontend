@@ -1,4 +1,4 @@
-name: CI & Publish bahmni-registration-app
+name: CI & Publish bahmni-widgets
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 env:
   NODE_VERSION: "22"
-  PACKAGE_PATH: "apps/registration"
+  PACKAGE_PATH: "packages/bahmni-widgets"
 
 jobs:
   lint-test-build-publish:
@@ -30,13 +30,13 @@ jobs:
         run: yarn install --frozen-lockfile
 
       - name: Lint
-        run: npx nx lint bahmni-registration-app
+        run: npx nx lint bahmni-widgets
 
       - name: Test
-        run: npx nx test bahmni-registration-app
+        run: npx nx test bahmni-widgets
 
       - name: Build
-        run: npx nx build bahmni-registration-app
+        run: npx nx build bahmni-widgets
 
       - name: Publish dev build to npm
         working-directory: ${{env.PACKAGE_PATH}}
@@ -47,13 +47,13 @@ jobs:
 
           # Generate unique dev version (e.g., 1.2.3-dev.42)
           DEV_VERSION="${BASE_VERSION}-dev.${BUILD_NUM}"
-          echo "📦 Publishing bahmni-registration-app@$DEV_VERSION"
+          echo "📦 Publishing bahmni-widgets@$DEV_VERSION"
 
           # Update package version and publish in one workflow
           npm version "$DEV_VERSION" --no-git-tag-version
-          #npm publish --access public --tag dev
+          npm publish --access public --tag dev
           
           # Output information
-          echo "::notice title=Package Published::Published bahmni-registration-app@$DEV_VERSION"
-          echo "::notice title=Install Command::npm install bahmni-registration-app@dev"
+          echo "::notice title=Package Published::Published bahmni-widgets@$DEV_VERSION"
+          echo "::notice title=Install Command::npm install bahmni-widgets@dev"
           echo "::notice title=Build Info::Build #${BUILD_NUM}"
