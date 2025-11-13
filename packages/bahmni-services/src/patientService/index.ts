@@ -12,6 +12,7 @@ export {
   getAddressHierarchyEntries,
   getVisitTypes,
   getVisitLocationUUID,
+  getOrderedAddressHierarchyLevels,
 } from './patientService';
 export {
   type FormattedPatientData,
@@ -31,6 +32,8 @@ export {
   type VisitType,
   type VisitLocationResponse,
   type ActiveVisit,
+  type OrderedAddressHierarchyLevel,
+  type OrderedAddressHierarchyLevels,
 } from './models';
 export {
   MAX_PATIENT_AGE_YEARS,

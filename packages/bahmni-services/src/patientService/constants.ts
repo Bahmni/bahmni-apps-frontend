@@ -102,6 +102,8 @@ export const ADDRESS_HIERARCHY_URL = (
 ) =>
   `/openmrs/module/addresshierarchy/ajax/getPossibleAddressHierarchyEntriesWithParents.form?addressField=${addressField}&limit=${limit}&searchString=${encodeURIComponent(searchString)}`;
 
+export const ORDERED_ADDRESS_HIERARCHY_URL = `/openmrs/module/addresshierarchy/ajax/getOrderedAddressHierarchyLevels.form`;
+
 // Search and pagination constants
 export const ADDRESS_HIERARCHY_DEFAULT_LIMIT = 20;
 export const ADDRESS_HIERARCHY_MIN_SEARCH_LENGTH = 2;
