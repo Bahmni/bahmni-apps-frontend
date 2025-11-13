@@ -3,7 +3,7 @@ name: CI & Publish bahmni-clinical-app
 on:
   push:
     branches:
-      - BAH-4249
+      - main
 
 env:
   NODE_VERSION: "22"
