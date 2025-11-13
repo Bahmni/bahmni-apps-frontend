@@ -4,21 +4,16 @@ import {
   SearchActionConfig,
   updateAppointmentStatus,
   UserPrivilege,
-  hasPrivilege,
-  dateComparator,
 } from '@bahmni-frontend/bahmni-services';
 import { NavigateFunction } from 'react-router-dom';
 import {
   getAppointmentStatusClassName,
   updateAppointmentStatusInResults,
   handleActionNavigation,
-  handleButtonClick,
-  isButtonEnabled,
-  shouldRenderButton,
-  appDateValidator,
-  statusValidator,
-  privilegeValidator,
-} from '../appointmentSearchHandler';
+  handleActionButtonClick,
+  isActionButtonEnabled,
+  shouldRenderActionButton,
+} from '../appointmentSearchResultActionHandler';
 import { PatientSearchViewModel } from '../utils';
 
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
@@ -43,7 +38,7 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
   }),
 }));
 
-describe('appointmentSearchHandler', () => {
+describe('appointmentSearchResultActionHandler', () => {
   describe('getAppointmentStatusClassName', () => {
     it('should return scheduledStatus for scheduled status', () => {
       expect(getAppointmentStatusClassName('Scheduled')).toBe(
@@ -284,7 +279,7 @@ describe('appointmentSearchHandler', () => {
     });
   });
 
-  describe('handleButtonClick', () => {
+  describe('handleActionButtonClick', () => {
     let mockNavigate: jest.MockedFunction<NavigateFunction>;
     let mockSetPatientSearchData: jest.Mock;
 
@@ -341,7 +336,7 @@ describe('appointmentSearchHandler', () => {
         status: 'Arrived',
       });
 
-      await handleButtonClick(
+      await handleActionButtonClick(
         action,
         mockRow,
         mockPatientSearchData,
@@ -371,7 +366,7 @@ describe('appointmentSearchHandler', () => {
         status: 'Arrived',
       });
 
-      await handleButtonClick(
+      await handleActionButtonClick(
         action,
         mockRow,
         mockPatientSearchData,
@@ -400,7 +395,7 @@ describe('appointmentSearchHandler', () => {
         enabledRule: [],
       };
 
-      await handleButtonClick(
+      await handleActionButtonClick(
         action,
         mockRow,
         mockPatientSearchData,
@@ -424,7 +419,7 @@ describe('appointmentSearchHandler', () => {
         enabledRule: [],
       };
 
-      await handleButtonClick(
+      await handleActionButtonClick(
         action,
         mockRow,
         mockPatientSearchData,
@@ -436,7 +431,7 @@ describe('appointmentSearchHandler', () => {
     });
   });
 
-  describe('isButtonEnabled', () => {
+  describe('isActionButtonEnabled', () => {
     const mockUserPrivileges: UserPrivilege[] = [
       { uuid: 'priv-1', name: 'Manage Appointments' },
       { uuid: 'priv-2', name: 'Edit Patient' },
@@ -470,10 +465,10 @@ describe('appointmentSearchHandler', () => {
     };
 
     it('should return true when no enabled rules are provided', () => {
-      expect(isButtonEnabled(undefined, mockRow, mockUserPrivileges)).toBe(
-        true,
-      );
-      expect(isButtonEnabled([], mockRow, mockUserPrivileges)).toBe(true);
+      expect(
+        isActionButtonEnabled(undefined, mockRow, mockUserPrivileges),
+      ).toBe(true);
+      expect(isActionButtonEnabled([], mockRow, mockUserPrivileges)).toBe(true);
     });
 
     it('should return true when all rules pass', () => {
@@ -483,7 +478,9 @@ describe('appointmentSearchHandler', () => {
         { type: 'appDateCheck', values: ['today'] },
       ];
 
-      expect(isButtonEnabled(rules, mockRow, mockUserPrivileges)).toBe(true);
+      expect(isActionButtonEnabled(rules, mockRow, mockUserPrivileges)).toBe(
+        true,
+      );
     });
 
     it('should return false when privilege check fails', () => {
@@ -491,7 +488,9 @@ describe('appointmentSearchHandler', () => {
         { type: 'privilegeCheck', values: ['Non-existent Privilege'] },
       ];
 
-      expect(isButtonEnabled(rules, mockRow, mockUserPrivileges)).toBe(false);
+      expect(isActionButtonEnabled(rules, mockRow, mockUserPrivileges)).toBe(
+        false,
+      );
     });
 
     it('should return false when status check fails', () => {
@@ -499,7 +498,9 @@ describe('appointmentSearchHandler', () => {
         { type: 'statusCheck', values: ['Arrived'] },
       ];
 
-      expect(isButtonEnabled(rules, mockRow, mockUserPrivileges)).toBe(false);
+      expect(isActionButtonEnabled(rules, mockRow, mockUserPrivileges)).toBe(
+        false,
+      );
     });
 
     it('should return false when date check fails', () => {
@@ -513,7 +514,7 @@ describe('appointmentSearchHandler', () => {
       ];
 
       expect(
-        isButtonEnabled(rules, rowWithFutureDate, mockUserPrivileges),
+        isActionButtonEnabled(rules, rowWithFutureDate, mockUserPrivileges),
       ).toBe(false);
     });
 
@@ -525,7 +526,9 @@ describe('appointmentSearchHandler', () => {
         },
       ];
 
-      expect(isButtonEnabled(rules, mockRow, mockUserPrivileges)).toBe(true);
+      expect(isActionButtonEnabled(rules, mockRow, mockUserPrivileges)).toBe(
+        true,
+      );
     });
 
     it('should return false when all rules do not pass', () => {
@@ -534,11 +537,13 @@ describe('appointmentSearchHandler', () => {
         { type: 'statusCheck', values: ['Arrived'] }, // This will fail
       ];
 
-      expect(isButtonEnabled(rules, mockRow, mockUserPrivileges)).toBe(false);
+      expect(isActionButtonEnabled(rules, mockRow, mockUserPrivileges)).toBe(
+        false,
+      );
     });
   });
 
-  describe('shouldRenderButton', () => {
+  describe('shouldRenderActionButton', () => {
     const mockUserPrivileges: UserPrivilege[] = [
       { uuid: 'priv-1', name: 'Manage Appointments' },
       { uuid: 'priv-2', name: 'Edit Patient' },
@@ -552,7 +557,7 @@ describe('appointmentSearchHandler', () => {
         enabledRule: [],
       };
 
-      expect(shouldRenderButton(action, mockUserPrivileges)).toBe(false);
+      expect(shouldRenderActionButton(action, mockUserPrivileges)).toBe(false);
     });
 
     it('should return true when user has required privilege', () => {
@@ -565,7 +570,7 @@ describe('appointmentSearchHandler', () => {
         ],
       };
 
-      expect(shouldRenderButton(action, mockUserPrivileges)).toBe(true);
+      expect(shouldRenderActionButton(action, mockUserPrivileges)).toBe(true);
     });
 
     it('should return false when user does not have required privilege', () => {
@@ -578,7 +583,7 @@ describe('appointmentSearchHandler', () => {
         ],
       };
 
-      expect(shouldRenderButton(action, mockUserPrivileges)).toBe(false);
+      expect(shouldRenderActionButton(action, mockUserPrivileges)).toBe(false);
     });
 
     it('should ignore non-privilege rules', () => {
@@ -593,7 +598,7 @@ describe('appointmentSearchHandler', () => {
         ],
       };
 
-      expect(shouldRenderButton(action, mockUserPrivileges)).toBe(true);
+      expect(shouldRenderActionButton(action, mockUserPrivileges)).toBe(true);
     });
 
     it('should return true when user has at least one of multiple required privileges', () => {
@@ -609,7 +614,7 @@ describe('appointmentSearchHandler', () => {
         ],
       };
 
-      expect(shouldRenderButton(action, mockUserPrivileges)).toBe(true);
+      expect(shouldRenderActionButton(action, mockUserPrivileges)).toBe(true);
     });
 
     it('should handle multiple privilege check rules', () => {
@@ -623,7 +628,7 @@ describe('appointmentSearchHandler', () => {
         ],
       };
 
-      expect(shouldRenderButton(action, mockUserPrivileges)).toBe(true);
+      expect(shouldRenderActionButton(action, mockUserPrivileges)).toBe(true);
     });
 
     it('should return true when enabledRule is undefined', () => {
@@ -634,61 +639,7 @@ describe('appointmentSearchHandler', () => {
         enabledRule: undefined,
       };
 
-      expect(shouldRenderButton(action, mockUserPrivileges)).toBe(false);
-    });
-  });
-
-  describe('privilegeValidator', () => {
-    it('returns true if user has at least one required privilege', () => {
-      (hasPrivilege as jest.Mock).mockImplementation(
-        (privs, rule) => rule === 'CAN_VIEW',
-      );
-      const validator = privilegeValidator([
-        { name: 'CAN_VIEW' } as UserPrivilege,
-      ]);
-      expect(validator(['CAN_VIEW', 'CAN_EDIT'])).toBe(true);
-    });
-
-    it('returns false if user has none of the required privileges', () => {
-      (hasPrivilege as jest.Mock).mockReturnValue(false);
-      const validator = privilegeValidator([
-        { name: 'CAN_DELETE' } as UserPrivilege,
-      ]);
-      expect(validator(['CAN_VIEW', 'CAN_EDIT'])).toBe(false);
-    });
-  });
-
-  describe('statusValidator', () => {
-    const row = { appointmentStatus: 'SCHEDULED' } as any;
-
-    it('returns true if status is in rules', () => {
-      expect(statusValidator(['SCHEDULED', 'COMPLETED'], row)).toBe(true);
-    });
-
-    it('returns false if status is not in rules', () => {
-      expect(statusValidator(['CANCELLED'], row)).toBe(false);
-    });
-
-    it('handles undefined appointmentStatus', () => {
-      expect(
-        statusValidator([''], { appointmentStatus: undefined } as any),
-      ).toBe(true);
-    });
-  });
-
-  describe('appDateValidator', () => {
-    const row = { appointmentDate: '2024-06-01' } as any;
-
-    it('returns true if any rule matches dateComparator', () => {
-      (dateComparator as jest.Mock).mockImplementation(
-        (date, rule) => rule === 'today',
-      );
-      expect(appDateValidator(['today', 'past'], row)).toBe(true);
-    });
-
-    it('returns false if no rule matches dateComparator', () => {
-      (dateComparator as jest.Mock).mockReturnValue(false);
-      expect(appDateValidator(['future'], row)).toBe(false);
+      expect(shouldRenderActionButton(action, mockUserPrivileges)).toBe(false);
     });
   });
 });

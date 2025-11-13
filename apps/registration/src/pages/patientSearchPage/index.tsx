@@ -30,10 +30,10 @@ import { useNavigate } from 'react-router-dom';
 import { Header } from '../../components/Header';
 import {
   getAppointmentStatusClassName,
-  handleButtonClick,
-  isButtonEnabled,
-  shouldRenderButton,
-} from './appointmentSearchHandler';
+  handleActionButtonClick,
+  isActionButtonEnabled,
+  shouldRenderActionButton,
+} from './appointmentSearchResultActionHandler';
 import styles from './styles/index.module.scss';
 import { formatPatientSearchResult, PatientSearchViewModel } from './utils';
 
@@ -214,7 +214,7 @@ const PatientSearchPage: React.FC = () => {
             <Stack gap={3} className={styles.actionButtonsContainer}>
               {searchFields.map((field) =>
                 field.actions?.map((action) => {
-                  if (!shouldRenderButton(action, userPrivileges ?? []))
+                  if (!shouldRenderActionButton(action, userPrivileges ?? []))
                     return <div key={action.translationKey} />;
                   return (
                     <Button
@@ -223,14 +223,14 @@ const PatientSearchPage: React.FC = () => {
                       kind="tertiary"
                       size="sm"
                       disabled={
-                        !isButtonEnabled(
+                        !isActionButtonEnabled(
                           action.enabledRule,
                           row,
                           userPrivileges ?? [],
                         )
                       }
                       onClick={() =>
-                        handleButtonClick(
+                        handleActionButtonClick(
                           action,
                           row,
                           patientSearchData!,

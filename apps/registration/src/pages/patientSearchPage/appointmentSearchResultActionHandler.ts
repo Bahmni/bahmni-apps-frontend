@@ -53,7 +53,7 @@ export const handleActionNavigation = (
   }
 };
 
-export const handleButtonClick = async (
+export const handleActionButtonClick = async (
   action: SearchActionConfig,
   row: PatientSearchViewModel<AppointmentSearchResult>,
   patientSearchData: PatientSearchResultBundle,
@@ -85,7 +85,7 @@ export const handleButtonClick = async (
   }
 };
 
-export const isButtonEnabled = (
+export const isActionButtonEnabled = (
   enabledRules: SearchActionConfig['enabledRule'],
   row: PatientSearchViewModel<AppointmentSearchResult>,
   userPrivileges: UserPrivilege[],
@@ -103,7 +103,7 @@ export const isButtonEnabled = (
   );
 };
 
-export const shouldRenderButton = (
+export const shouldRenderActionButton = (
   action: SearchActionConfig,
   userPrivileges: UserPrivilege[],
 ): boolean => {

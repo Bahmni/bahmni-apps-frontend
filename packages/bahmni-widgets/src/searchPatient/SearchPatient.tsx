@@ -5,22 +5,16 @@ import {
   Tag,
 } from '@bahmni-frontend/bahmni-design-system';
 import {
-  searchPatientByNameOrId,
-  searchPatientByCustomAttribute,
   PatientSearchResultBundle,
   useTranslation,
   getRegistrationConfig,
   PatientSearchField,
-  searchAppointmentsByAttribute,
-  Reason,
-  Appointment,
-  AppointmentSearchResult,
-  calculateAgeinYearsAndMonths,
-  formatDateAndTime,
 } from '@bahmni-frontend/bahmni-services';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../notification';
+import { PatientSearchType, SearchContext } from './SearchStrategy.interface';
+import searchStrategyRegistry from './strategies/SearchStrategyRegistry';
 import styles from './styles/SearchPatient.module.scss';
 
 interface SearchPatientProps {
@@ -62,104 +56,49 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
     staleTime: 0,
     gcTime: 0,
   });
-  const getSearchQuery = () => {
+
+  /**
+   * Execute search using the appropriate strategy
+   */
+  const getSearchQuery = async (): Promise<PatientSearchResultBundle> => {
     const selectedField = searchFields.find(
       (field) => t(field.translationKey) === selectedDropdownItem,
     );
-    const fieldType = isAdvancedSearch ? (selectedField?.type ?? '') : '';
-    return fieldType === 'appointment'
-      ? getAppointmentSearchQuery()
-      : getPatientSearchQuery();
-  };
 
-  const getPatientSearchQuery = async () => {
-    if (isAdvancedSearch) {
-      const selectedField = searchFields.find(
-        (field) => t(field.translationKey) === selectedDropdownItem,
-      );
-      const fieldType = selectedField?.type ?? '';
-      const fieldsToSearch = selectedField ? selectedField.fields : [];
+    // Determine which strategy to use
+    const searchType: PatientSearchType = isAdvancedSearch
+      ? selectedField?.type === 'appointment'
+        ? 'appointment'
+        : 'attributes'
+      : 'nameOrId';
 
-      const rawResults = await searchPatientByCustomAttribute(
-        encodeURI(searchTerm),
-        fieldType,
-        fieldsToSearch,
-        searchFields,
-        t,
-      );
-      return formatPatientDob(rawResults);
-    } else {
-      const rawResults = await searchPatientByNameOrId(encodeURI(searchTerm));
-      return formatPatientDob(rawResults);
-    }
-  };
-  const getAppointmentSearchQuery = async () => {
-    const selectedField = searchFields.find(
-      (field) => t(field.translationKey) === selectedDropdownItem,
-    );
-    const fieldsToSearch = selectedField ? selectedField.fields : [];
-    const requestBody: Record<string, string> = {};
-    if (fieldsToSearch.length > 0) {
-      requestBody[fieldsToSearch[0]] = searchTerm.trim();
-    }
-    const formattedRequest = formatAppointmentSearchRequest(requestBody);
-    const rawResults = searchAppointmentsByAttribute(formattedRequest);
-    return transformAppointmentsToPatientBundle(await rawResults);
-  };
-  const formatAppointmentSearchRequest = (
-    requestBody: Record<string, string>,
-  ): Record<string, string> => {
-    const oneYearFromToday = new Date();
-    oneYearFromToday.setFullYear(oneYearFromToday.getFullYear() - 1);
-    oneYearFromToday.setHours(23, 59, 59, 999);
-    requestBody.startDate = oneYearFromToday.toISOString();
-    return requestBody;
-  };
-  const transformAppointmentsToPatientBundle = (
-    appointmentsData: Appointment[],
-  ): { totalCount: number; pageOfResults: AppointmentSearchResult[] } => {
-    return {
-      pageOfResults: appointmentsData.map(
-        (appt: Appointment): AppointmentSearchResult => ({
-          uuid: appt.patient.uuid,
-          identifier: appt.patient.identifier,
-          givenName: appt.patient.name,
-          middleName: '',
-          familyName: '',
-          gender: appt.patient.gender,
-          birthDate: formatDateAndTime(appt.patient.birthDate, false),
-          age: calculateAgeinYearsAndMonths(appt.patient.birthDate),
-          extraIdentifiers: null,
-          personId: 0,
-          deathDate: null,
-          addressFieldValue: null,
-          patientProgramAttributeValue: null,
-          dateCreated: new Date(appt.dateCreated),
-          activeVisitUuid: '',
-          customAttribute: '',
-          hasBeenAdmitted: false,
+    // Get the appropriate strategy
+    const strategy = searchStrategyRegistry.getStrategy(searchType);
 
-          // appointment-specific fields
-          appointmentUuid: appt.uuid,
-          appointmentNumber: appt.appointmentNumber,
-          appointmentDate: formatDateAndTime(appt.startDateTime, true),
-          appointmentReason: getAppointmentReasons(appt),
-          appointmentStatus: appt.status,
-        }),
-      ),
-      totalCount: appointmentsData.length,
+    // Build context for the strategy
+    const context: SearchContext = {
+      selectedField,
+      searchFields,
+      translator: t,
     };
+
+    // Validate input if strategy supports it
+    if (strategy.validate) {
+      const validation = strategy.validate(searchTerm, context);
+      if (!validation.valid) {
+        throw new Error(validation.error);
+      }
+    }
+
+    // Format input if strategy supports it
+    const formattedTerm = strategy.formatInput
+      ? strategy.formatInput(searchTerm, context)
+      : searchTerm;
+
+    // Execute the search
+    return await strategy.execute(formattedTerm, context);
   };
 
-  const getAppointmentReasons = (appt: Appointment) => {
-    if (Array.isArray(appt?.reasons) && appt.reasons.length > 0) {
-      return appt.reasons
-        .map((reason: Reason) => reason?.name)
-        .filter(Boolean)
-        .join(', ');
-    }
-    return '';
-  };
   const { data, isLoading, isError, error } = useQuery({
     queryKey: [
       'patientSearch',
@@ -210,22 +149,6 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       setAdvanceSearchInput('');
       setSearchInput(inputValue);
     }
-  };
-  const formatPatientDob: (
-    searchResultsBundle: PatientSearchResultBundle,
-  ) => PatientSearchResultBundle = (searchResultsBundle) => {
-    return {
-      ...searchResultsBundle,
-      pageOfResults: searchResultsBundle.pageOfResults.map((patient) => ({
-        ...patient,
-        birthDate: patient.birthDate
-          ? formatDateAndTime(new Date(patient.birthDate).getTime(), false)
-          : patient.birthDate,
-        age: patient.birthDate
-          ? calculateAgeinYearsAndMonths(new Date(patient.birthDate).getTime())
-          : patient.age,
-      })),
-    };
   };
 
   const handleClick = (type: 'name' | 'advance') => {
@@ -347,14 +270,14 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
 
   return (
     <div
-      data-testid="search-patient-tile"
       id="search-patient-tile"
+      data-testid="search-patient-tile"
       className={styles.searchPatientContainer}
     >
       <div
+        id="search-patient-input"
         className={styles.searchPatient}
         data-testid="search-patient-input"
-        id="search-patient-input"
       >
         <Search
           id="search-patient-searchbar"
@@ -448,4 +371,5 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
     </div>
   );
 };
+
 export default SearchPatient;
