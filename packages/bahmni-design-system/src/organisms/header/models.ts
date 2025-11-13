@@ -43,4 +43,5 @@ export interface HeaderProps {
   onSideNavItemClick?: (itemId: string) => void;
   isRail?: boolean;
   ariaLabel?: string;
+  button?: ReactNode;
 }

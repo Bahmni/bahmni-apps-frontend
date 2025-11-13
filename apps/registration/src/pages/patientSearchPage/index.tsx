@@ -303,7 +303,9 @@ const PatientSearchPage: React.FC = () => {
       onClick: () => {},
     },
   ];
-
+  const handleClick = () => {
+    navigate('/registration/new');
+  };
   const emptyMessage = isAdvancedSearch
     ? t('REGISTRATION_PATIENT_SEARCH_CUSTOM_ATTRIBUTE_EMPTY_MESSAGE', {
         searchTerm: searchTerm,
@@ -315,7 +317,15 @@ const PatientSearchPage: React.FC = () => {
   return (
     <BaseLayout
       header={
-        <Header breadcrumbItems={breadcrumbs} globalActions={globalActions} />
+        <Header
+          breadcrumbItems={breadcrumbs}
+          globalActions={globalActions}
+          button={
+            <Button kind="tertiary" onClick={handleClick}>
+              {t('CREATE_PATIENT_BUTTON_TEXT')}
+            </Button>
+          }
+        />
       }
       main={
         <div className={styles.main}>

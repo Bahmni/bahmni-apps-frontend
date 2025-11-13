@@ -9,7 +9,9 @@ import {
   Breadcrumb,
   BreadcrumbItem,
 } from '@carbon/react';
+import { useQuery } from '@tanstack/react-query';
 import React from 'react';
+import { getCurrentUser } from '../../../../bahmni-services/src/userService';
 import { Icon, ICON_SIZE } from '../../molecules/icon';
 import { HeaderProps } from './models';
 import styles from './styles/Header.module.scss';
@@ -33,9 +35,17 @@ export const Header: React.FC<HeaderProps> = React.memo(
     onSideNavItemClick = () => {},
     isRail = false,
     ariaLabel = 'Header',
+    button,
   }) => {
     const { isSideNavExpanded, handleSideNavItemClick } =
       useHeaderSideNav(onSideNavItemClick);
+
+    const { data: user } = useQuery({
+      queryKey: ['userName'],
+      queryFn: getCurrentUser,
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+    });
 
     const renderBreadcrumbs = () => {
       if (breadcrumbItems.length === 0) return null;
@@ -116,13 +126,20 @@ export const Header: React.FC<HeaderProps> = React.memo(
       );
     };
 
+    const renderUserName = () => {
+      if (!user) return null;
+      return <div data-testid="header-username">Hi, {user.username}</div>;
+    };
+
     return (
       <HeaderContainer
         render={() => (
           <CarbonHeader aria-label={ariaLabel} data-testid="header">
             {renderBreadcrumbs()}
+            {button}
             {renderGlobalActions()}
             {renderSideNav()}
+            {renderUserName()}
           </CarbonHeader>
         )}
       />
