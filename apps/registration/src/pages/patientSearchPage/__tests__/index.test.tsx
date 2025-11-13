@@ -20,7 +20,7 @@ import { MemoryRouter, useNavigate } from 'react-router-dom';
 import PatientSearchPage from '..';
 import i18n from '../../../../setupTests.i18n';
 import { RegistrationConfigProvider } from '../../../providers/RegistrationConfigProvider';
-import * as appointmentSearchHandler from '../appointmentSearchHandler';
+import * as appointmentSearchResultActionHandler from '../appointmentSearchResultActionHandler';
 
 expect.extend(toHaveNoViolations);
 
@@ -111,8 +111,8 @@ jest.mock('react-router-dom', () => ({
   useNavigate: jest.fn(),
 }));
 
-jest.mock('../appointmentSearchHandler', () => {
-  const actual = jest.requireActual('../appointmentSearchHandler');
+jest.mock('../appointmentSearchResultActionHandler', () => {
+  const actual = jest.requireActual('../appointmentSearchResultActionHandler');
   return {
     getAppointmentStatusClassName: jest.fn((status: string) => {
       switch (status?.toLowerCase()) {
@@ -127,13 +127,13 @@ jest.mock('../appointmentSearchHandler', () => {
           return 'scheduledStatus';
       }
     }),
-    handleButtonClick: jest.fn(),
+    handleActionButtonClick: jest.fn(),
     handleActionNavigation: jest.fn(),
-    isButtonEnabled: jest.fn((...args) => {
-      return actual.isButtonEnabled(...args);
+    isActionButtonEnabled: jest.fn((...args) => {
+      return actual.isActionButtonEnabled(...args);
     }),
-    shouldRenderButton: jest.fn((...args) => {
-      return actual.shouldRenderButton(...args);
+    shouldRenderActionButton: jest.fn((...args) => {
+      return actual.shouldRenderActionButton(...args);
     }),
   };
 });
@@ -1052,7 +1052,7 @@ describe('PatientSearchPage', () => {
         fireEvent.click(viewDetailsButton);
       });
 
-      expect(appointmentSearchHandler.handleButtonClick).toHaveBeenCalled();
+      expect(appointmentSearchResultActionHandler.handleActionButtonClick).toHaveBeenCalled();
     });
 
     it('should not navigate when row is clicked in appointment mode', async () => {
@@ -1178,7 +1178,7 @@ describe('PatientSearchPage', () => {
       await waitFor(() => {
         const hashNavButton = screen.getByText('View with Hash');
         fireEvent.click(hashNavButton);
-        expect(appointmentSearchHandler.handleButtonClick).toHaveBeenCalled();
+        expect(appointmentSearchResultActionHandler.handleActionButtonClick).toHaveBeenCalled();
       });
     });
   });
