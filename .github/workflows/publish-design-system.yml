@@ -3,7 +3,7 @@ name: CI & Publish bahmni-design-system
 on:
   push:
     branches:
-      - BN-177
+      - main
   workflow_dispatch:
 
 env:
