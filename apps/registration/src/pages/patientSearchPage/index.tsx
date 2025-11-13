@@ -1,5 +1,8 @@
 import {
   BaseLayout,
+  Header,
+  Icon,
+  ICON_SIZE,
   Link,
   Loading,
   SkeletonText,
@@ -21,7 +24,6 @@ import {
 import { SearchPatient } from '@bahmni-frontend/bahmni-widgets';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Header } from '../../components/Header';
 import styles from './styles/index.module.scss';
 import { formatPatientSearchResult, PatientSearchViewModel } from './utils';
 
@@ -214,27 +216,31 @@ const PatientSearchPage: React.FC = () => {
   if (isNavigating) {
     return <Loading description={t('LOADING_PATIENT_DETAILS')} role="status" />;
   }
-
   const breadcrumbs = [
     {
-      label: t('REGISTRATION_PATIENT_SEARCH_BREADCRUMB_HOME'),
+      id: 'home',
+      label: t('CREATE_PATIENT_BREADCRUMB_HOME'),
       href: BAHMNI_HOME_PATH,
     },
     {
-      label: 'Search Patient',
+      id: 'search',
+      label: t('CREATE_PATIENT_BREADCRUMB_SEARCH'),
+      isCurrentPage: true,
+    },
+  ];
+  const globalActions = [
+    {
+      id: 'user',
+      label: 'user',
+      renderIcon: <Icon id="user" name="fa-user" size={ICON_SIZE.SM} />,
+      onClick: () => {},
     },
   ];
 
   return (
     <BaseLayout
       header={
-        <Header
-          breadcrumbs={breadcrumbs}
-          showButton
-          buttonText="Create new patient"
-          onButtonClick={handleCreateNewPatient}
-          buttonTestId="create-new-patient-button"
-        />
+        <Header breadcrumbItems={breadcrumbs} globalActions={globalActions} />
       }
       main={
         <div className={styles.main}>
