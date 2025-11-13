@@ -5,18 +5,16 @@ import {
   type AddressHierarchyEntry,
   type PatientAddress,
 } from '@bahmni-frontend/bahmni-services';
-import { useQuery } from '@tanstack/react-query';
+import { useQueries } from '@tanstack/react-query';
 import {
   useCallback,
-  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
   useState,
 } from 'react';
-import { useRegistrationConfig } from '../../../hooks/useRegistrationConfig';
-import { AddressData } from '../../../models/patient';
-import type { AddressErrors } from '../../../models/validation';
+import type { AddressHierarchyItem } from '../../../hooks/useAddressFields';
+import { useAddressFieldsWithConfig } from '../../../hooks/useAddressFieldsWithConfig';
 import styles from './styles/index.module.scss';
 
 export type AddressInfoRef = {
@@ -24,547 +22,360 @@ export type AddressInfoRef = {
   getData: () => PatientAddress;
 };
 
-const initialFormData: AddressData = {
-  address1: '',
-  address2: '',
-  countyDistrict: '',
-  cityVillage: '',
-  stateProvince: '',
-  postalCode: '',
-};
-
-const initialErrors: AddressErrors = {
-  address1: '',
-  address2: '',
-  countyDistrict: '',
-  cityVillage: '',
-  stateProvince: '',
-  postalCode: '',
-};
-
 interface AddressInfoProps {
   ref?: React.Ref<AddressInfoRef>;
 }
 
+// Fields that don't need autocomplete (free text fields)
+const FREE_TEXT_FIELDS = ['address1', 'address2', 'cityVillage'];
+
 export const AddressInfo = ({ ref }: AddressInfoProps) => {
   const { t } = useTranslation();
 
-  // Get registration config for address field ordering
-  const { registrationConfig } = useRegistrationConfig();
-  const addressConfig =
-    registrationConfig?.patientInformation?.addressHierarchy;
-  const showTopDown = addressConfig?.showAddressFieldsTopDown ?? false;
+  // Use the enhanced hook that fetches address levels dynamically
+  const {
+    address,
+    displayLevels,
+    handleFieldSelect,
+    handleFieldChange,
+    levelsWithStrictEntry,
+    isFieldReadOnly,
+    selectedMetadata,
+    isLoadingLevels,
+  } = useAddressFieldsWithConfig();
 
-  const [formData, setFormData] = useState<AddressData>(initialFormData);
-  const [addressErrors, setAddressErrors] =
-    useState<AddressErrors>(initialErrors);
+  // Track validation errors dynamically
+  const [addressErrors, setAddressErrors] = useState<Record<string, string>>(
+    {},
+  );
 
-  const [suggestions, setSuggestions] = useState({
-    countyDistrict: [] as AddressHierarchyEntry[],
-    stateProvince: [] as AddressHierarchyEntry[],
-    postalCode: [] as AddressHierarchyEntry[],
+  // Track search queries for autocomplete fields dynamically
+  const [searchQueries, setSearchQueries] = useState<Record<string, string>>(
+    {},
+  );
+
+  // Track which fields show suggestions dynamically
+  const [showSuggestions, setShowSuggestions] = useState<
+    Record<string, boolean>
+  >({});
+
+  // Debounce timers
+  const debounceTimers = useRef<Record<string, number | null>>({});
+
+  // Track which fields are currently focused
+  const focusedFields = useRef<Record<string, boolean>>({});
+
+  // Get list of fields that need autocomplete (not free text fields)
+  const autocompleteFields = useMemo(() => {
+    return levelsWithStrictEntry
+      .map((level) => level.addressField)
+      .filter((field) => !FREE_TEXT_FIELDS.includes(field));
+  }, [levelsWithStrictEntry]);
+
+  // Get parent field UUID for hierarchical filtering
+  // This is used to filter child field options based on parent selection
+  const getParentUuid = useCallback(
+    (fieldName: string): string | undefined => {
+      const fieldIndex = displayLevels.findIndex(
+        (level) => level.addressField === fieldName,
+      );
+      if (fieldIndex <= 0) return undefined; // No parent for first field
+
+      // Get the parent field (previous field in display order)
+      const parentField = displayLevels[fieldIndex - 1];
+      return selectedMetadata[parentField.addressField]?.uuid;
+    },
+    [displayLevels, selectedMetadata],
+  );
+
+  // Dynamic TanStack queries for all autocomplete fields
+  const suggestionQueries = useQueries({
+    queries: autocompleteFields.map((fieldName) => ({
+      queryKey: [
+        'addressHierarchy',
+        fieldName,
+        searchQueries[fieldName],
+        getParentUuid(fieldName), // Include parent UUID in query key
+      ],
+      queryFn: () =>
+        getAddressHierarchyEntries(
+          fieldName,
+          searchQueries[fieldName],
+          20, // default limit
+          getParentUuid(fieldName), // Pass parent UUID for hierarchical filtering
+        ),
+      enabled: (searchQueries[fieldName]?.length ?? 0) >= 2,
+      staleTime: 5 * 60 * 1000,
+    })),
   });
 
-  const [showSuggestions, setShowSuggestions] = useState({
-    countyDistrict: false,
-    stateProvince: false,
-    postalCode: false,
+  // Map query results to field names - using a ref to avoid dependency issues
+  const suggestionsRef = useRef<Record<string, AddressHierarchyEntry[]>>({});
+
+  // Update the ref without triggering re-renders
+  autocompleteFields.forEach((fieldName, index) => {
+    suggestionsRef.current[fieldName] = suggestionQueries[index]?.data ?? [];
   });
 
-  // Track if field value was selected from dropdown
-  const [selectedFromDropdown, setSelectedFromDropdown] = useState({
-    countyDistrict: false,
-    stateProvince: false,
-    postalCode: false,
-  });
+  // Also keep the memoized version for rendering
+  const suggestions = useMemo(() => {
+    const result: Record<string, AddressHierarchyEntry[]> = {};
+    autocompleteFields.forEach((fieldName, index) => {
+      result[fieldName] = suggestionQueries[index]?.data ?? [];
+    });
+    return result;
+  }, [autocompleteFields, suggestionQueries]);
 
-  // Track search queries for each field
-  const [searchQueries, setSearchQueries] = useState({
-    countyDistrict: '',
-    stateProvince: '',
-    postalCode: '',
-  });
+  // Debounced search handler
+  const debouncedSearchAddress = useCallback(
+    (field: string, searchText: string) => {
+      if (debounceTimers.current[field]) {
+        clearTimeout(debounceTimers.current[field]!);
+      }
 
-  // debounce timers per field
-  const debounceTimers = useRef<Record<string, number | null>>({
-    countyDistrict: null,
-    stateProvince: null,
-    postalCode: null,
-  });
+      debounceTimers.current[field] = window.setTimeout(() => {
+        setSearchQueries((prev) => ({ ...prev, [field]: searchText }));
+      }, 300);
+    },
+    [],
+  );
 
-  // Use TanStack Query for address hierarchy entries
-  const { data: districtSuggestions } = useQuery({
-    queryKey: [
-      'addressHierarchy',
-      'countyDistrict',
-      searchQueries.countyDistrict,
-    ],
-    queryFn: () =>
-      getAddressHierarchyEntries(
-        'countyDistrict',
-        searchQueries.countyDistrict,
-      ),
-    enabled: searchQueries.countyDistrict.length >= 2,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+  // Handle input change for autocomplete fields
+  const handleAddressInputChange = useCallback(
+    (field: string, value: string) => {
+      handleFieldChange(field, value);
 
-  const { data: stateSuggestions } = useQuery({
-    queryKey: [
-      'addressHierarchy',
-      'stateProvince',
-      searchQueries.stateProvince,
-    ],
-    queryFn: () =>
-      getAddressHierarchyEntries('stateProvince', searchQueries.stateProvince),
-    enabled: searchQueries.stateProvince.length >= 2,
-    staleTime: 5 * 60 * 1000,
-  });
+      // Only debounce search for autocomplete fields
+      if (autocompleteFields.includes(field)) {
+        debouncedSearchAddress(field, value);
 
-  const { data: postalCodeSuggestions } = useQuery({
-    queryKey: ['addressHierarchy', 'postalCode', searchQueries.postalCode],
-    queryFn: () =>
-      getAddressHierarchyEntries('postalCode', searchQueries.postalCode),
-    enabled: searchQueries.postalCode.length >= 2,
-    staleTime: 5 * 60 * 1000,
-  });
+        // Show suggestions if we have cached data and user is typing (use ref to avoid dependency)
+        if (value.length >= 2) {
+          // Check if we have suggestions using setTimeout to wait for query to complete
+          setTimeout(() => {
+            if (suggestionsRef.current[field]?.length > 0) {
+              setShowSuggestions((prev) => ({ ...prev, [field]: true }));
+            }
+          }, 350); // Slightly longer than debounce time
+        }
+      }
 
-  const validate = useCallback(() => {
-    const nextErrors: AddressErrors = { ...initialErrors };
+      // Clear validation error when typing
+      setAddressErrors((prev) => ({ ...prev, [field]: '' }));
 
-    // Address fields are optional, but if they have a value, it must be from dropdown
-    if (formData.countyDistrict && !selectedFromDropdown.countyDistrict) {
-      nextErrors.countyDistrict =
-        t('CREATE_PATIENT_VALIDATION_SELECT_FROM_DROPDOWN') ??
-        'Select input from dropdown';
-    }
+      // Hide suggestions if field is cleared
+      if (!value) {
+        setShowSuggestions((prev) => ({ ...prev, [field]: false }));
+      }
+    },
+    [handleFieldChange, debouncedSearchAddress, autocompleteFields],
+  );
 
-    if (formData.stateProvince && !selectedFromDropdown.stateProvince) {
-      nextErrors.stateProvince =
-        t('CREATE_PATIENT_VALIDATION_SELECT_FROM_DROPDOWN') ??
-        'Select input from dropdown';
-    }
+  // Handle suggestion selection
+  const handleSuggestionSelect = useCallback(
+    (field: string, entry: AddressHierarchyEntry) => {
+      // Convert AddressHierarchyEntry to AddressHierarchyItem recursively
+      const convertToItem = (
+        entry: AddressHierarchyEntry | null | undefined,
+      ): AddressHierarchyItem | undefined => {
+        if (!entry) return undefined;
 
-    if (formData.postalCode && !selectedFromDropdown.postalCode) {
-      nextErrors.postalCode =
-        t('CREATE_PATIENT_VALIDATION_SELECT_FROM_DROPDOWN') ??
-        'Select input from dropdown';
-    }
+        return {
+          name: entry.name,
+          uuid: entry.uuid,
+          userGeneratedId: entry.userGeneratedId ?? undefined,
+          parent: entry.parent ? convertToItem(entry.parent) : undefined,
+        };
+      };
 
-    setAddressErrors(nextErrors);
-    return Object.values(nextErrors).every((v) => !v);
-  }, [formData, t, selectedFromDropdown]);
+      const item = convertToItem(entry);
+      if (!item) return; // Safety check - should not happen with valid entry
 
+      handleFieldSelect(field, item);
+      setShowSuggestions((prev) => ({ ...prev, [field]: false }));
+      setAddressErrors((prev) => ({ ...prev, [field]: '' }));
+    },
+    [handleFieldSelect],
+  );
+
+  // Validate that strict entry fields were selected from dropdown
+  const validate = useCallback((): boolean => {
+    let isValid = true;
+    const newErrors: Record<string, string> = {};
+
+    levelsWithStrictEntry.forEach((level) => {
+      if (level.isStrictEntry && address[level.addressField]) {
+        const metadata = selectedMetadata[level.addressField];
+
+        // Check if value exists but wasn't selected from dropdown (no metadata)
+        if (!metadata?.uuid && !metadata?.userGeneratedId) {
+          newErrors[level.addressField] =
+            t('CREATE_PATIENT_VALIDATION_SELECT_FROM_DROPDOWN') ??
+            'Select input from dropdown';
+          isValid = false;
+        }
+      }
+    });
+
+    setAddressErrors(newErrors);
+    return isValid;
+  }, [levelsWithStrictEntry, address, selectedMetadata, t]);
+
+  // Get data for submission - dynamically build the address object
   const getData = useCallback((): PatientAddress => {
-    // Return PatientAddress directly with API field names
-    return {
-      ...(formData.address1 && { address1: formData.address1 }),
-      ...(formData.address2 && { address2: formData.address2 }),
-      ...(formData.cityVillage && { cityVillage: formData.cityVillage }),
-      ...(formData.countyDistrict && {
-        countyDistrict: formData.countyDistrict,
-      }),
-      ...(formData.stateProvince && { stateProvince: formData.stateProvince }),
-      ...(formData.postalCode && { postalCode: formData.postalCode }),
-    };
-  }, [formData]);
+    const result: PatientAddress = {};
 
+    // Add all fields dynamically from the address object
+    Object.keys(address).forEach((key) => {
+      if (address[key]) {
+        result[key as keyof PatientAddress] = address[key]!;
+      }
+    });
+
+    return result;
+  }, [address]);
+
+  // Expose methods via ref
   useImperativeHandle(ref, () => ({
     validate,
     getData,
   }));
 
-  const onInputChange = useCallback(
-    (field: keyof AddressData, value: string) => {
-      setFormData((prev) => ({ ...prev, [field]: value }));
-    },
-    [],
-  );
+  // Render autocomplete field with suggestions
+  const renderAutocompleteField = useCallback(
+    (fieldName: string) => {
+      const level = levelsWithStrictEntry.find(
+        (l) => l.addressField === fieldName,
+      );
+      if (!level) return null;
 
-  const debouncedSearchAddress = useCallback(
-    (field: string, searchText: string) => {
-      // clear existing timer
-      const existing = debounceTimers.current[field];
-      if (existing) {
-        window.clearTimeout(existing);
-      }
+      const isDisabled = isFieldReadOnly(level);
+      const fieldValue = address[fieldName] ?? '';
+      const error = addressErrors[fieldName];
+      const fieldSuggestions = suggestions[fieldName] ?? [];
 
-      const id = window.setTimeout(() => {
-        if (!searchText || searchText.length < 2) {
-          setSearchQueries((prev) => ({ ...prev, [field]: '' }));
-          setSuggestions((prev) => ({ ...prev, [field]: [] }));
-          setShowSuggestions((prev) => ({ ...prev, [field]: false }));
-          return;
-        }
+      return (
+        <div key={fieldName} className={styles.col}>
+          <div className={styles.addressFieldWrapper}>
+            <TextInput
+              id={fieldName}
+              labelText={level.name}
+              placeholder={level.name}
+              value={fieldValue}
+              invalid={!!error}
+              invalidText={error}
+              disabled={isDisabled}
+              onChange={(e) =>
+                handleAddressInputChange(fieldName, e.target.value)
+              }
+              onBlur={() => {
+                focusedFields.current[fieldName] = false;
+                setTimeout(() => {
+                  setShowSuggestions((prev) => ({
+                    ...prev,
+                    [fieldName]: false,
+                  }));
+                }, 200);
+              }}
+              onFocus={() => {
+                focusedFields.current[fieldName] = true;
+                if (fieldSuggestions.length > 0) {
+                  setShowSuggestions((prev) => ({
+                    ...prev,
+                    [fieldName]: true,
+                  }));
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape' || e.key === 'Enter') {
+                  setShowSuggestions((prev) => ({
+                    ...prev,
+                    [fieldName]: false,
+                  }));
+                }
+              }}
+            />
 
-        // Update search query to trigger TanStack Query
-        setSearchQueries((prev) => ({ ...prev, [field]: searchText }));
-      }, 300);
-
-      debounceTimers.current[field] = id;
-    },
-    [],
-  );
-
-  // Sync TanStack Query results with suggestions state
-  useEffect(() => {
-    if (districtSuggestions) {
-      setSuggestions((prev) => ({
-        ...prev,
-        countyDistrict: districtSuggestions,
-      }));
-      setShowSuggestions((prev) => ({
-        ...prev,
-        countyDistrict: districtSuggestions.length > 0,
-      }));
-    }
-  }, [districtSuggestions]);
-
-  useEffect(() => {
-    if (stateSuggestions) {
-      setSuggestions((prev) => ({ ...prev, stateProvince: stateSuggestions }));
-      setShowSuggestions((prev) => ({
-        ...prev,
-        stateProvince: stateSuggestions.length > 0,
-      }));
-    }
-  }, [stateSuggestions]);
-
-  useEffect(() => {
-    if (postalCodeSuggestions) {
-      setSuggestions((prev) => ({
-        ...prev,
-        postalCode: postalCodeSuggestions,
-      }));
-      setShowSuggestions((prev) => ({
-        ...prev,
-        postalCode: postalCodeSuggestions.length > 0,
-      }));
-    }
-  }, [postalCodeSuggestions]);
-
-  const handleAddressInputChange = useCallback(
-    (field: keyof AddressData, value: string) => {
-      onInputChange(field, value);
-      if (
-        field === 'countyDistrict' ||
-        field === 'stateProvince' ||
-        field === 'postalCode'
-      ) {
-        // Mark as not selected from dropdown when user types
-        setSelectedFromDropdown((prev) => ({ ...prev, [field]: false }));
-        debouncedSearchAddress(field, value);
-        if (!value) {
-          setAddressErrors((prev) => ({ ...prev, [field]: '' }));
-        }
-      }
-    },
-    [onInputChange, debouncedSearchAddress],
-  );
-
-  const handleSuggestionSelect = useCallback(
-    (field: keyof AddressData, entry: AddressHierarchyEntry) => {
-      onInputChange(field, entry.name);
-
-      const parents: AddressHierarchyEntry[] = [];
-      let current = entry.parent;
-      while (current) {
-        parents.push(current);
-        current = current.parent;
-      }
-
-      const nextErrors = { ...addressErrors, [field]: '' };
-      const nextSelectedFromDropdown = {
-        ...selectedFromDropdown,
-        [field]: true,
-      };
-
-      if (field === 'postalCode') {
-        if (parents[0]) {
-          onInputChange('countyDistrict', parents[0].name);
-          nextErrors.countyDistrict = '';
-          nextSelectedFromDropdown.countyDistrict = true;
-        }
-        if (parents[1]) {
-          onInputChange('stateProvince', parents[1].name);
-          nextErrors.stateProvince = '';
-          nextSelectedFromDropdown.stateProvince = true;
-        }
-      } else if (field === 'countyDistrict') {
-        if (parents[0]) {
-          onInputChange('stateProvince', parents[0].name);
-          nextErrors.stateProvince = '';
-          nextSelectedFromDropdown.stateProvince = true;
-        }
-      }
-
-      setSelectedFromDropdown(nextSelectedFromDropdown);
-      setAddressErrors(nextErrors);
-      setShowSuggestions((prev) => ({ ...prev, [field]: false }));
-      setSuggestions((prev) => ({ ...prev, [field]: [] }));
-    },
-    [onInputChange, addressErrors, selectedFromDropdown],
-  );
-
-  // Define field order based on configuration
-  const addressFieldsOrder = useMemo(() => {
-    if (showTopDown) {
-      // Top-down: State -> District -> City/Village -> Locality -> House Number -> Pincode
-      return [
-        'stateProvince',
-        'countyDistrict',
-        'cityVillage',
-        'address2',
-        'address1',
-        'postalCode',
-      ];
-    } else {
-      // Bottom-up (default): House Number -> Locality -> District -> City -> State -> Pincode
-      return [
-        'address1',
-        'address2',
-        'countyDistrict',
-        'cityVillage',
-        'stateProvince',
-        'postalCode',
-      ];
-    }
-  }, [showTopDown]);
-
-  // Render address field based on field type
-  const renderAddressField = useCallback(
-    (fieldKey: string) => {
-      switch (fieldKey) {
-        case 'address1':
-          return (
-            <div key="address1" className={styles.col}>
-              <TextInput
-                id="house-number"
-                labelText={t('CREATE_PATIENT_HOUSE_NUMBER')}
-                placeholder={t('CREATE_PATIENT_ADDRESS_LINE_PLACEHOLDER')}
-                value={formData.address1}
-                onChange={(e) => onInputChange('address1', e.target.value)}
-              />
-            </div>
-          );
-
-        case 'address2':
-          return (
-            <div key="address2" className={styles.col}>
-              <TextInput
-                id="locality"
-                labelText={t('CREATE_PATIENT_LOCALITY')}
-                placeholder={t('CREATE_PATIENT_LOCALITY')}
-                value={formData.address2}
-                onChange={(e) => onInputChange('address2', e.target.value)}
-              />
-            </div>
-          );
-
-        case 'countyDistrict':
-          return (
-            <div key="countyDistrict" className={styles.col}>
-              <div className={styles.addressFieldWrapper}>
-                <TextInput
-                  id="district"
-                  labelText={t('CREATE_PATIENT_DISTRICT')}
-                  placeholder={t('CREATE_PATIENT_DISTRICT')}
-                  value={formData.countyDistrict}
-                  invalid={!!addressErrors.countyDistrict}
-                  invalidText={addressErrors.countyDistrict}
-                  onChange={(e) =>
-                    handleAddressInputChange('countyDistrict', e.target.value)
-                  }
-                  onBlur={() => {
-                    setTimeout(() => {
-                      setShowSuggestions((prev) => ({
-                        ...prev,
-                        countyDistrict: false,
-                      }));
-                    }, 200);
-                  }}
-                  onFocus={() => {
-                    if (suggestions.countyDistrict.length > 0) {
-                      setShowSuggestions((prev) => ({
-                        ...prev,
-                        countyDistrict: true,
-                      }));
-                    }
-                  }}
-                />
-
-                {showSuggestions.countyDistrict &&
-                  suggestions.countyDistrict.length > 0 && (
-                    <div className={styles.suggestionsList}>
-                      {suggestions.countyDistrict.map((entry) => (
-                        <div
-                          key={entry.userGeneratedId ?? entry.uuid}
-                          className={styles.suggestionItem}
-                          onClick={() =>
-                            handleSuggestionSelect('countyDistrict', entry)
-                          }
-                        >
-                          <div className={styles.suggestionName}>
-                            {entry.name}
-                          </div>
-                          {entry.parent && (
-                            <div className={styles.suggestionParent}>
-                              {entry.parent.name}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
+            {showSuggestions[fieldName] && fieldSuggestions.length > 0 && (
+              <div
+                className={styles.suggestionsList}
+                onMouseDown={(e) => e.preventDefault()} // Prevent blur on clicking suggestions container
+              >
+                {fieldSuggestions.map((entry) => (
+                  <div
+                    key={entry.userGeneratedId ?? entry.uuid}
+                    className={styles.suggestionItem}
+                    onClick={() => {
+                      handleSuggestionSelect(fieldName, entry);
+                    }}
+                  >
+                    <div className={styles.suggestionName}>{entry.name}</div>
+                    {entry.parent && (
+                      <div className={styles.suggestionParent}>
+                        {entry.parent.name}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
-            </div>
-          );
-
-        case 'cityVillage':
-          return (
-            <div key="cityVillage" className={styles.col}>
-              <TextInput
-                id="city"
-                labelText={t('CREATE_PATIENT_CITY')}
-                placeholder={t('CREATE_PATIENT_CITY')}
-                value={formData.cityVillage}
-                onChange={(e) => onInputChange('cityVillage', e.target.value)}
-              />
-            </div>
-          );
-
-        case 'stateProvince':
-          return (
-            <div key="stateProvince" className={styles.col}>
-              <div className={styles.addressFieldWrapper}>
-                <TextInput
-                  id="state"
-                  labelText={t('CREATE_PATIENT_STATE')}
-                  placeholder={t('CREATE_PATIENT_STATE')}
-                  value={formData.stateProvince}
-                  invalid={!!addressErrors.stateProvince}
-                  invalidText={addressErrors.stateProvince}
-                  onChange={(e) =>
-                    handleAddressInputChange('stateProvince', e.target.value)
-                  }
-                  onBlur={() => {
-                    setTimeout(() => {
-                      setShowSuggestions((prev) => ({
-                        ...prev,
-                        stateProvince: false,
-                      }));
-                    }, 200);
-                  }}
-                  onFocus={() => {
-                    if (suggestions.stateProvince.length > 0) {
-                      setShowSuggestions((prev) => ({
-                        ...prev,
-                        stateProvince: true,
-                      }));
-                    }
-                  }}
-                />
-
-                {showSuggestions.stateProvince &&
-                  suggestions.stateProvince.length > 0 && (
-                    <div className={styles.suggestionsList}>
-                      {suggestions.stateProvince.map((entry) => (
-                        <div
-                          key={entry.userGeneratedId ?? entry.uuid}
-                          className={styles.suggestionItem}
-                          onClick={() =>
-                            handleSuggestionSelect('stateProvince', entry)
-                          }
-                        >
-                          <div className={styles.suggestionName}>
-                            {entry.name}
-                          </div>
-                          {entry.parent && (
-                            <div className={styles.suggestionParent}>
-                              {entry.parent.name}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-              </div>
-            </div>
-          );
-
-        case 'postalCode':
-          return (
-            <div key="postalCode" className={styles.col}>
-              <div className={styles.addressFieldWrapper}>
-                <TextInput
-                  id="pincode"
-                  labelText={t('CREATE_PATIENT_PINCODE')}
-                  placeholder={t('CREATE_PATIENT_PINCODE')}
-                  value={formData.postalCode}
-                  invalid={!!addressErrors.postalCode}
-                  invalidText={addressErrors.postalCode}
-                  onChange={(e) =>
-                    handleAddressInputChange('postalCode', e.target.value)
-                  }
-                  onBlur={() => {
-                    setTimeout(() => {
-                      setShowSuggestions((prev) => ({
-                        ...prev,
-                        postalCode: false,
-                      }));
-                    }, 200);
-                  }}
-                  onFocus={() => {
-                    if (suggestions.postalCode.length > 0) {
-                      setShowSuggestions((prev) => ({
-                        ...prev,
-                        postalCode: true,
-                      }));
-                    }
-                  }}
-                />
-
-                {showSuggestions.postalCode &&
-                  suggestions.postalCode.length > 0 && (
-                    <div className={styles.suggestionsList}>
-                      {suggestions.postalCode.map((entry) => (
-                        <div
-                          key={entry.userGeneratedId ?? entry.uuid}
-                          className={styles.suggestionItem}
-                          onClick={() =>
-                            handleSuggestionSelect('postalCode', entry)
-                          }
-                        >
-                          <div className={styles.suggestionName}>
-                            {entry.name}
-                          </div>
-                          {entry.parent && (
-                            <div className={styles.suggestionParent}>
-                              {entry.parent.name}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-              </div>
-            </div>
-          );
-
-        default:
-          return null;
-      }
+            )}
+          </div>
+        </div>
+      );
     },
     [
-      formData,
+      levelsWithStrictEntry,
+      isFieldReadOnly,
+      address,
       addressErrors,
       suggestions,
       showSuggestions,
-      t,
-      onInputChange,
       handleAddressInputChange,
       handleSuggestionSelect,
     ],
   );
+
+  // Render free text field (no autocomplete)
+  const renderFreeTextField = useCallback(
+    (fieldName: string) => {
+      const level = levelsWithStrictEntry.find(
+        (l) => l.addressField === fieldName,
+      );
+      if (!level) return null;
+
+      const isDisabled = isFieldReadOnly(level);
+      const fieldValue = address[fieldName] ?? '';
+
+      return (
+        <div key={fieldName} className={styles.col}>
+          <TextInput
+            id={fieldName}
+            labelText={level.name}
+            placeholder={level.name}
+            value={fieldValue}
+            disabled={isDisabled}
+            onChange={(e) => handleFieldChange(fieldName, e.target.value)}
+          />
+        </div>
+      );
+    },
+    [levelsWithStrictEntry, isFieldReadOnly, address, handleFieldChange],
+  );
+
+
+  // Show loading state while fetching address levels
+  if (isLoadingLevels) {
+    return (
+      <div className={styles.formSection}>
+        <span className={styles.sectionTitle}>
+          {t('CREATE_PATIENT_SECTION_ADDRESS_INFO')}
+        </span>
+        <div className={styles.row}>
+          <div className={styles.col}>Loading address fields...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.formSection}>
@@ -573,7 +384,17 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       </span>
 
       <div className={styles.row}>
-        {addressFieldsOrder.map((field) => renderAddressField(field))}
+        {/* Render all fields dynamically based on displayLevels from backend */}
+        {displayLevels.map((level) => {
+          const fieldName = level.addressField;
+
+          // Check if this field needs autocomplete or is free text
+          if (FREE_TEXT_FIELDS.includes(fieldName)) {
+            return renderFreeTextField(fieldName);
+          } else {
+            return renderAutocompleteField(fieldName);
+          }
+        })}
       </div>
     </div>
   );

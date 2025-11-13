@@ -318,12 +318,14 @@ export const getGenders = async (): Promise<string[]> => {
  * @param addressField - The address field type (e.g., 'countyDistrict', 'stateProvince', 'postalCode')
  * @param searchString - The search term
  * @param limit - Maximum number of results (default: 20)
+ * @param parentUuid - Optional parent UUID to filter results hierarchically (for top-down mode)
  * @returns Promise<AddressHierarchyEntry[]> - Array of address hierarchy entries with parent information
  */
 export const getAddressHierarchyEntries = async (
   addressField: string,
   searchString: string,
   limit: number = ADDRESS_HIERARCHY_DEFAULT_LIMIT,
+  parentUuid?: string,
 ): Promise<AddressHierarchyEntry[]> => {
   if (
     !searchString ||
@@ -334,7 +336,7 @@ export const getAddressHierarchyEntries = async (
 
   try {
     return await get<AddressHierarchyEntry[]>(
-      ADDRESS_HIERARCHY_URL(addressField, searchString, limit),
+      ADDRESS_HIERARCHY_URL(addressField, searchString, limit, parentUuid),
     );
   } catch (error) {
     throw new Error(

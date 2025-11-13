@@ -129,7 +129,10 @@ const CreatePatient = () => {
 
           {/* Footer Actions */}
           <div className={styles.formActions}>
-            <Button kind="tertiary">
+            <Button
+              kind="tertiary"
+              onClick={() => navigate('/registration/search')}
+            >
               {t('CREATE_PATIENT_BACK_TO_SEARCH')}
             </Button>
             <div className={styles.actionButtons}>
