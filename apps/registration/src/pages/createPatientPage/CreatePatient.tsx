@@ -1,4 +1,7 @@
-import { Button, Tile, BaseLayout } from '@bahmni/design-system';
+import { Button, Tile, BaseLayout   Header,
+  Icon,
+  ICON_SIZE,
+} from '@bahmni/design-system';
 import {
   BAHMNI_HOME_PATH,
   BAHMNI_REGISTRATION_SEARCH,
@@ -21,7 +24,7 @@ import {
   ContactInfoRef,
 } from '../../components/forms/contactInfo/ContactInfo';
 import { Profile, ProfileRef } from '../../components/forms/profile/Profile';
-import { Header } from '../../components/Header';
+
 import { useCreatePatient } from '../../hooks/useCreatePatient';
 import { validateAllSections, collectFormData } from './patientFormService';
 import styles from './styles/index.module.scss';
@@ -96,17 +99,36 @@ const CreatePatient = () => {
   };
 
   const breadcrumbs = [
-    { label: t('CREATE_PATIENT_BREADCRUMB_HOME'), href: BAHMNI_HOME_PATH },
     {
+      id: 'home',
+      label: t('CREATE_PATIENT_BREADCRUMB_HOME'),
+      href: BAHMNI_HOME_PATH,
+    },
+    {
+      id: 'search',
       label: t('CREATE_PATIENT_BREADCRUMB_SEARCH'),
       href: BAHMNI_REGISTRATION_SEARCH,
     },
-    { label: t('CREATE_PATIENT_BREADCRUMB_CURRENT') },
+    {
+      id: 'current',
+      label: t('CREATE_PATIENT_BREADCRUMB_CURRENT'),
+      isCurrentPage: true,
+    },
+  ];
+  const globalActions = [
+    {
+      id: 'user',
+      label: 'user',
+      renderIcon: <Icon id="user" name="fa-user" size={ICON_SIZE.SM} />,
+      onClick: () => {},
+    },
   ];
 
   return (
     <BaseLayout
-      header={<Header breadcrumbs={breadcrumbs} />}
+      header={
+        <Header breadcrumbItems={breadcrumbs} globalActions={globalActions} />
+      }
       main={
         <div>
           <Tile className={styles.patientDetailsHeader}>
