@@ -4,6 +4,7 @@ import {
   type AddressHierarchyEntry,
   type PatientAddress,
 } from '@bahmni/services';
+import { useQueries } from '@tanstack/react-query';
 import {
   useCallback,
   useImperativeHandle,
@@ -13,8 +14,6 @@ import {
 } from 'react';
 import type { AddressHierarchyItem } from '../../../hooks/useAddressFields';
 import { useAddressFieldsWithConfig } from '../../../hooks/useAddressFieldsWithConfig';
-import { useAddressSuggestions } from '../../../hooks/useAddressSuggestions';
-import { AddressAutocompleteField } from './AddressAutocompleteField';
 import styles from './styles/index.module.scss';
 
 export type AddressInfoRef = {
@@ -25,6 +24,9 @@ export type AddressInfoRef = {
 interface AddressInfoProps {
   ref?: React.Ref<AddressInfoRef>;
 }
+
+// Fields that don't need autocomplete (free text fields)
+const FREE_TEXT_FIELDS = ['address1', 'address2', 'cityVillage'];
 
 // Fields that don't need autocomplete (free text fields)
 const FREE_TEXT_FIELDS = ['address1', 'address2', 'cityVillage'];
@@ -49,8 +51,21 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     {},
   );
 
-  // Track which fields are being auto-populated to prevent infinite loops
-  const autoPopulatingFieldsRef = useRef<Set<string>>(new Set());
+  // Track search queries for autocomplete fields dynamically
+  const [searchQueries, setSearchQueries] = useState<Record<string, string>>(
+    {},
+  );
+
+  // Track which fields show suggestions dynamically
+  const [showSuggestions, setShowSuggestions] = useState<
+    Record<string, boolean>
+  >({});
+
+  // Debounce timers
+  const debounceTimers = useRef<Record<string, number | null>>({});
+
+  // Track which fields are currently focused
+  const focusedFields = useRef<Record<string, boolean>>({});
 
   // Get list of fields that need autocomplete (not free text fields)
   const autocompleteFields = useMemo(() => {
@@ -59,63 +74,109 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       .filter((field) => !FREE_TEXT_FIELDS.includes(field));
   }, [levelsWithStrictEntry]);
 
-  // Use custom hook for suggestion management
-  const {
-    suggestions,
-    selectedItems,
-    setSelectedItems,
-    debouncedSearchAddress,
-    clearChildSuggestions,
-    unmarkFieldAsCleared,
-  } = useAddressSuggestions(
-    autocompleteFields,
-    levelsWithStrictEntry,
-    selectedMetadata,
+  // Get parent field UUID for hierarchical filtering
+  // This is used to filter child field options based on parent selection
+  const getParentUuid = useCallback(
+    (fieldName: string): string | undefined => {
+      const fieldIndex = displayLevels.findIndex(
+        (level) => level.addressField === fieldName,
+      );
+      if (fieldIndex <= 0) return undefined; // No parent for first field
+
+      // Get the parent field (previous field in display order)
+      const parentField = displayLevels[fieldIndex - 1];
+      return selectedMetadata[parentField.addressField]?.uuid;
+    },
+    [displayLevels, selectedMetadata],
   );
 
-  // Handle input change for autocomplete fields (ComboBox typing)
-  const handleAddressInputChange = useCallback(
-    (field: string, value: string) => {
-      const level = levelsWithStrictEntry.find((l) => l.addressField === field);
+  // Dynamic TanStack queries for all autocomplete fields
+  const suggestionQueries = useQueries({
+    queries: autocompleteFields.map((fieldName) => ({
+      queryKey: [
+        'addressHierarchy',
+        fieldName,
+        searchQueries[fieldName],
+        getParentUuid(fieldName), // Include parent UUID in query key
+      ],
+      queryFn: () =>
+        getAddressHierarchyEntries(
+          fieldName,
+          searchQueries[fieldName],
+          20, // default limit
+          getParentUuid(fieldName), // Pass parent UUID for hierarchical filtering
+        ),
+      enabled: (searchQueries[fieldName]?.length ?? 0) >= 2,
+      staleTime: 5 * 60 * 1000,
+    })),
+  });
 
-      // For ComboBox fields, trigger search for suggestions
-      if (autocompleteFields.includes(field)) {
-        debouncedSearchAddress(field, value);
-        // Un-mark this field as cleared since user is typing fresh query
-        unmarkFieldAsCleared(field);
+  // Map query results to field names - using a ref to avoid dependency issues
+  const suggestionsRef = useRef<Record<string, AddressHierarchyEntry[]>>({});
+
+  // Update the ref without triggering re-renders
+  autocompleteFields.forEach((fieldName, index) => {
+    suggestionsRef.current[fieldName] = suggestionQueries[index]?.data ?? [];
+  });
+
+  // Also keep the memoized version for rendering
+  const suggestions = useMemo(() => {
+    const result: Record<string, AddressHierarchyEntry[]> = {};
+    autocompleteFields.forEach((fieldName, index) => {
+      result[fieldName] = suggestionQueries[index]?.data ?? [];
+    });
+    return result;
+  }, [autocompleteFields, suggestionQueries]);
+
+  // Debounced search handler
+  const debouncedSearchAddress = useCallback(
+    (field: string, searchText: string) => {
+      if (debounceTimers.current[field]) {
+        clearTimeout(debounceTimers.current[field]!);
       }
 
-      // For non-strict fields, allow free text entry - update address state immediately
-      if (level && !level.isStrictEntry) {
-        handleFieldChange(field, value);
+      debounceTimers.current[field] = window.setTimeout(() => {
+        setSearchQueries((prev) => ({ ...prev, [field]: searchText }));
+      }, 300);
+    },
+    [],
+  );
+
+  // Handle input change for autocomplete fields
+  const handleAddressInputChange = useCallback(
+    (field: string, value: string) => {
+      handleFieldChange(field, value);
+
+      // Only debounce search for autocomplete fields
+      if (autocompleteFields.includes(field)) {
+        debouncedSearchAddress(field, value);
+
+        // Show suggestions if we have cached data and user is typing (use ref to avoid dependency)
+        if (value.length >= 2) {
+          // Check if we have suggestions using setTimeout to wait for query to complete
+          setTimeout(() => {
+            if (suggestionsRef.current[field]?.length > 0) {
+              setShowSuggestions((prev) => ({ ...prev, [field]: true }));
+            }
+          }, 350); // Slightly longer than debounce time
+        }
       }
 
       // Clear validation error when typing
       setAddressErrors((prev) => ({ ...prev, [field]: '' }));
+
+      // Hide suggestions if field is cleared
+      if (!value) {
+        setShowSuggestions((prev) => ({ ...prev, [field]: false }));
+      }
     },
-    [
-      debouncedSearchAddress,
-      autocompleteFields,
-      unmarkFieldAsCleared,
-      levelsWithStrictEntry,
-      handleFieldChange,
-    ],
+    [handleFieldChange, debouncedSearchAddress, autocompleteFields],
   );
 
   // Handle suggestion selection
+  // Handle suggestion selection
   const handleSuggestionSelect = useCallback(
     (field: string, entry: AddressHierarchyEntry) => {
-      // eslint-disable-next-line no-console
-      console.log(`[AddressInfo] Selected ${field}:`, {
-        name: entry.name,
-        uuid: entry.uuid,
-        userGeneratedId: entry.userGeneratedId,
-        hasParent: !!entry.parent,
-        parentName: entry.parent?.name,
-        parentUuid: entry.parent?.uuid,
-        fullEntry: entry,
-      });
-
       // Convert AddressHierarchyEntry to AddressHierarchyItem recursively
       const convertToItem = (
         entry: AddressHierarchyEntry | null | undefined,
@@ -133,111 +194,11 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       const item = convertToItem(entry);
       if (!item) return; // Safety check - should not happen with valid entry
 
-      // eslint-disable-next-line no-console
-      console.log(`[AddressInfo] Converted item:`, item);
-
-      // eslint-disable-next-line no-console
-      console.log(`[AddressInfo] About to call handleFieldSelect`);
       handleFieldSelect(field, item);
-      // eslint-disable-next-line no-console
-      console.log(`[AddressInfo] Called handleFieldSelect successfully`);
-
-      // Update selectedItems for the current field and auto-populate parent fields
-      // Collect all entries first, then batch update to avoid race conditions
-      const entriesToUpdate: Record<string, AddressHierarchyEntry> = {
-        [field]: entry, // Always include the current field's selection
-      };
-
-      // Auto-populate parent fields if they exist
-      if (item.parent) {
-        // eslint-disable-next-line no-console
-        console.log('[AddressInfo] Auto-populating selectedItems for parents');
-
-        // Find the hierarchy of parent fields
-        const fieldIndex = levelsWithStrictEntry.findIndex(
-          (l) => l.addressField === field,
-        );
-        if (fieldIndex >= 0) {
-          // Walk up the parent chain and collect entries
-          let currentParent: AddressHierarchyItem | undefined = item.parent;
-          let currentFieldIndex = fieldIndex - 1;
-
-          while (currentParent && currentFieldIndex >= 0) {
-            const parentFieldName =
-              levelsWithStrictEntry[currentFieldIndex].addressField;
-
-            // Only process if parent has required uuid
-            if (!currentParent.uuid) {
-              // eslint-disable-next-line no-console
-              console.warn(
-                `[AddressInfo] Skipping ${parentFieldName} - no UUID available`,
-              );
-              currentParent = currentParent.parent;
-              currentFieldIndex--;
-              continue;
-            }
-
-            // Convert AddressHierarchyItem back to AddressHierarchyEntry for ComboBox
-            const parentEntry: AddressHierarchyEntry = {
-              uuid: currentParent.uuid,
-              name: currentParent.name,
-              userGeneratedId: currentParent.userGeneratedId ?? null,
-              parent: currentParent.parent?.uuid
-                ? {
-                    uuid: currentParent.parent.uuid,
-                    name: currentParent.parent.name,
-                    userGeneratedId:
-                      currentParent.parent.userGeneratedId ?? null,
-                    parent: undefined,
-                  }
-                : undefined,
-            };
-
-            // eslint-disable-next-line no-console
-            console.log(
-              `[AddressInfo] Collected selectedItem for ${parentFieldName}:`,
-              parentEntry,
-            );
-
-            entriesToUpdate[parentFieldName] = parentEntry;
-
-            // Mark this parent field as being auto-populated
-            autoPopulatingFieldsRef.current.add(parentFieldName);
-
-            currentParent = currentParent.parent;
-            currentFieldIndex--;
-          }
-        }
-      }
-
-      // Batch update all selectedItems at once (current field + parents)
-      setSelectedItems((prev) => ({
-        ...prev,
-        ...entriesToUpdate,
-      }));
-
-      // Clear the auto-populating fields set after ALL ComboBox onChange events have been processed
-      // Use a longer timeout to ensure all cascading onChange calls are skipped
-      if (item.parent) {
-        setTimeout(() => {
-          autoPopulatingFieldsRef.current.clear();
-          // eslint-disable-next-line no-console
-          console.log('[AddressInfo] Cleared auto-populating fields set');
-        }, 100);
-      }
-
+      setShowSuggestions((prev) => ({ ...prev, [field]: false }));
       setAddressErrors((prev) => ({ ...prev, [field]: '' }));
-
-      // Clear search queries and suggestions for child fields
-      // This ensures child field suggestions are filtered by the new parent selection
-      clearChildSuggestions(field);
     },
-    [
-      handleFieldSelect,
-      clearChildSuggestions,
-      setSelectedItems,
-      levelsWithStrictEntry,
-    ],
+    [handleFieldSelect],
   );
 
   // Validate that strict entry fields were selected from dropdown
@@ -283,40 +244,7 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     getData,
   }));
 
-  // Handle selection change for autocomplete fields
-  const handleSelectionChange = useCallback(
-    (field: string, entry: AddressHierarchyEntry | null) => {
-      // Skip if this field is being auto-populated (prevents infinite loops)
-      if (autoPopulatingFieldsRef.current.has(field)) {
-        // eslint-disable-next-line no-console
-        console.log(
-          `[AddressInfo] Skipping onChange for ${field} - being auto-populated`,
-        );
-        // Remove from set after skipping once
-        autoPopulatingFieldsRef.current.delete(field);
-        return;
-      }
-
-      if (entry) {
-        handleSuggestionSelect(field, entry);
-      } else {
-        // Clear selection if user clears the input
-        setSelectedItems((prev) => ({ ...prev, [field]: null }));
-        // Clear the field value and child fields
-        handleFieldChange(field, '');
-        // Clear child suggestions
-        clearChildSuggestions(field);
-      }
-    },
-    [
-      handleSuggestionSelect,
-      setSelectedItems,
-      handleFieldChange,
-      clearChildSuggestions,
-    ],
-  );
-
-  // Render autocomplete field with suggestions using ComboBox
+  // Render autocomplete field with suggestions
   const renderAutocompleteField = useCallback(
     (fieldName: string) => {
       const level = levelsWithStrictEntry.find(
@@ -325,37 +253,86 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       if (!level) return null;
 
       const isDisabled = isFieldReadOnly(level);
+      const fieldValue = address[fieldName] ?? '';
       const error = addressErrors[fieldName];
       const fieldSuggestions = suggestions[fieldName] ?? [];
 
-      // eslint-disable-next-line no-console
-      console.log(`[AddressInfo] Rendering ${fieldName}:`, {
-        suggestionsCount: fieldSuggestions.length,
-        suggestions: fieldSuggestions.map((s) => s.name),
-        isDisabled,
-      });
-
       return (
-        <AddressAutocompleteField
-          key={fieldName}
-          fieldName={fieldName}
-          level={level}
-          isDisabled={isDisabled}
-          error={error}
-          suggestions={fieldSuggestions}
-          selectedItem={selectedItems[fieldName] ?? null}
-          onSelectionChange={handleSelectionChange}
-          onInputChange={handleAddressInputChange}
-        />
+        <div key={fieldName} className={styles.col}>
+          <div className={styles.addressFieldWrapper}>
+            <TextInput
+              id={fieldName}
+              labelText={level.name}
+              placeholder={level.name}
+              value={fieldValue}
+              invalid={!!error}
+              invalidText={error}
+              disabled={isDisabled}
+              onChange={(e) =>
+                handleAddressInputChange(fieldName, e.target.value)
+              }
+              onBlur={() => {
+                focusedFields.current[fieldName] = false;
+                setTimeout(() => {
+                  setShowSuggestions((prev) => ({
+                    ...prev,
+                    [fieldName]: false,
+                  }));
+                }, 200);
+              }}
+              onFocus={() => {
+                focusedFields.current[fieldName] = true;
+                if (fieldSuggestions.length > 0) {
+                  setShowSuggestions((prev) => ({
+                    ...prev,
+                    [fieldName]: true,
+                  }));
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape' || e.key === 'Enter') {
+                  setShowSuggestions((prev) => ({
+                    ...prev,
+                    [fieldName]: false,
+                  }));
+                }
+              }}
+            />
+
+            {showSuggestions[fieldName] && fieldSuggestions.length > 0 && (
+              <div
+                className={styles.suggestionsList}
+                onMouseDown={(e) => e.preventDefault()} // Prevent blur on clicking suggestions container
+              >
+                {fieldSuggestions.map((entry) => (
+                  <div
+                    key={entry.userGeneratedId ?? entry.uuid}
+                    className={styles.suggestionItem}
+                    onClick={() => {
+                      handleSuggestionSelect(fieldName, entry);
+                    }}
+                  >
+                    <div className={styles.suggestionName}>{entry.name}</div>
+                    {entry.parent && (
+                      <div className={styles.suggestionParent}>
+                        {entry.parent.name}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       );
     },
     [
       levelsWithStrictEntry,
       isFieldReadOnly,
+      address,
       addressErrors,
       suggestions,
-      selectedItems,
-      handleSelectionChange,
+      showSuggestions,
       handleAddressInputChange,
     ],
   );
@@ -387,6 +364,34 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     [levelsWithStrictEntry, isFieldReadOnly, address, handleFieldChange],
   );
 
+  // Render free text field (no autocomplete)
+  const renderFreeTextField = useCallback(
+    (fieldName: string) => {
+      const level = levelsWithStrictEntry.find(
+        (l) => l.addressField === fieldName,
+      );
+      if (!level) return null;
+
+      const isDisabled = isFieldReadOnly(level);
+      const fieldValue = address[fieldName] ?? '';
+
+      return (
+        <div key={fieldName} className={styles.col}>
+          <TextInput
+            id={fieldName}
+            labelText={level.name}
+            placeholder={level.name}
+            value={fieldValue}
+            disabled={isDisabled}
+            onChange={(e) => handleFieldChange(fieldName, e.target.value)}
+          />
+        </div>
+      );
+    },
+    [levelsWithStrictEntry, isFieldReadOnly, address, handleFieldChange],
+  );
+
+
   // Show loading state while fetching address levels
   if (isLoadingLevels) {
     return (
@@ -408,6 +413,17 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       </span>
 
       <div className={styles.row}>
+        {/* Render all fields dynamically based on displayLevels from backend */}
+        {displayLevels.map((level) => {
+          const fieldName = level.addressField;
+
+          // Check if this field needs autocomplete or is free text
+          if (FREE_TEXT_FIELDS.includes(fieldName)) {
+            return renderFreeTextField(fieldName);
+          } else {
+            return renderAutocompleteField(fieldName);
+          }
+        })}
         {/* Render all fields dynamically based on displayLevels from backend */}
         {displayLevels.map((level) => {
           const fieldName = level.addressField;

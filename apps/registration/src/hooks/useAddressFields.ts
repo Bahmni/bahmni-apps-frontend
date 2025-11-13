@@ -86,39 +86,25 @@ export function useAddressFields(
   }, [addressLevels, config.showAddressFieldsTopDown]);
 
   /**
-   * Configure strict autocomplete levels using cascade algorithm from old Bahmni
-   *
-   * Cascade Algorithm:
-   * 1. Reverse array to iterate from most specific (child) to least specific (parent)
-   * 2. Once the configured level is found, mark it AND all parent levels as strict
-   * 3. Parent and ancestor levels require dropdown selection, child levels allow free text
-   *
-   * Purpose: Enforces data quality by requiring validated selections from broader categories
+   * Configure strict autocomplete levels
+   * Marks fields as requiring strict entry (selection from dropdown only)
+   * from the specified level downwards in the hierarchy
    */
   const levelsWithStrictEntry = useMemo(() => {
-    if (!config.strictAutocompleteFromLevel) {
-      // If no strict level configured, all fields are non-strict
-      return addressLevels.map((level) => ({
-        ...level,
-        isStrictEntry: false,
-      }));
-    }
-
-    const levels = [...addressLevels].reverse(); // Most specific to least specific
-    let foundConfiguredLevel = false;
+    const levels = [...addressLevels].reverse(); // Process in hierarchical order
+    let isStrictEntry = false;
 
     const processed = levels.map((level) => {
-      // Once we find the configured level, mark it and all subsequent (parent) levels as strict
       if (config.strictAutocompleteFromLevel === level.addressField) {
-        foundConfiguredLevel = true;
+        isStrictEntry = true;
       }
       return {
         ...level,
-        isStrictEntry: foundConfiguredLevel,
+        isStrictEntry: isStrictEntry,
       };
     });
 
-    return processed.reverse(); // Restore original order
+    return processed.reverse();
   }, [addressLevels, config.strictAutocompleteFromLevel]);
 
   /**
@@ -151,18 +137,11 @@ export function useAddressFields(
 
   /**
    * Check if field should be read-only
-   * In top-down mode, child autocomplete fields are read-only until parent is selected
-   * Free text fields are never read-only as they don't have hierarchical dependencies
+   * In top-down mode with strict entry, child fields are read-only until parent is selected
    */
   const isFieldReadOnly = useCallback(
     (level: AddressLevel): boolean => {
-      if (!config.showAddressFieldsTopDown) {
-        return false;
-      }
-
-      // Only apply read-only logic to fields that have strict entry (hierarchical fields)
-      // Free text fields should always be enabled
-      if (!level.isStrictEntry) {
+      if (!config.showAddressFieldsTopDown || !level.isStrictEntry) {
         return false;
       }
 
@@ -228,16 +207,8 @@ export function useAddressFields(
    */
   const handleFieldSelect = useCallback(
     (fieldName: string, selectedItem: AddressHierarchyItem) => {
-      // eslint-disable-next-line no-console
-      console.log('[useAddressFields] handleFieldSelect called:', {
-        fieldName,
-        selectedItem,
-      });
-
       // Update the selected field
-      // Use userGeneratedId if available (e.g., postal codes), otherwise use name
-      const fieldValue = selectedItem.userGeneratedId ?? selectedItem.name;
-      setAddress((prev) => ({ ...prev, [fieldName]: fieldValue }));
+      setAddress((prev) => ({ ...prev, [fieldName]: selectedItem.name }));
 
       // Store metadata for hierarchical searching
       setSelectedMetadata((prev) => ({
@@ -245,71 +216,33 @@ export function useAddressFields(
         [fieldName]: {
           uuid: selectedItem.uuid,
           userGeneratedId: selectedItem.userGeneratedId,
-          value: fieldValue,
+          value: selectedItem.name,
         },
       }));
 
-      // eslint-disable-next-line no-console
-      console.log('[useAddressFields] Checking for parent:', {
-        hasParent: !!selectedItem.parent,
-        parent: selectedItem.parent,
-      });
-
       // Auto-populate parent fields if provided in the selected item
       if (selectedItem.parent) {
-        // eslint-disable-next-line no-console
-        console.log('[useAddressFields] Starting auto-population');
         const descendingOrder = [...levelsWithStrictEntry].reverse();
         const names = descendingOrder.map((l) => l.addressField);
         const index = names.indexOf(fieldName);
         const parentFields = names.slice(index + 1);
 
-        // eslint-disable-next-line no-console
-        console.log('[useAddressFields] Hierarchy info:', {
-          descendingOrder: names,
-          fieldName,
-          index,
-          parentFields,
-        });
-
         let parent: AddressHierarchyItem | undefined = selectedItem.parent;
         parentFields.forEach((parentField) => {
-          // eslint-disable-next-line no-console
-          console.log('[useAddressFields] Processing parent field:', {
-            parentField,
-            hasParent: !!parent,
-            parentName: parent?.name,
-          });
-
           if (parent?.name) {
             const currentParent = parent; // Capture current parent before reassigning
-            // eslint-disable-next-line no-console
-            console.log(
-              `[useAddressFields] Populating ${parentField} with:`,
-              currentParent.name,
-            );
-
-            // Use userGeneratedId if available, otherwise use name
-            const parentValue =
-              currentParent.userGeneratedId ?? currentParent.name;
-
-            setAddress((prev) => ({
-              ...prev,
-              [parentField]: parentValue,
-            }));
+            setAddress((prev) => ({ ...prev, [parentField]: currentParent.name }));
             setSelectedMetadata((prev) => ({
               ...prev,
               [parentField]: {
                 uuid: currentParent.uuid,
                 userGeneratedId: currentParent.userGeneratedId,
-                value: parentValue,
+                value: currentParent.name,
               },
             }));
             parent = parent.parent;
           }
         });
-        // eslint-disable-next-line no-console
-        console.log('[useAddressFields] Auto-population complete');
       }
     },
     [levelsWithStrictEntry],
