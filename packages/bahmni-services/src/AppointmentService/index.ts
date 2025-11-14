@@ -1,4 +1,7 @@
-export { searchAppointmentsByAttribute } from './appointmmetService';
+export {
+  searchAppointmentsByAttribute,
+  updateAppointmentStatus,
+} from './appointmmetService';
 export {
   type Appointment,
   type AppointmentSearchResult,
