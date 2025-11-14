@@ -3,6 +3,7 @@
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/breakpoint" as *;
+@use '@carbon/react/scss/type' as *;
 
 
 
@@ -50,4 +51,19 @@
   .main {
     padding: $spacing-06 $spacing-08;
   }
+}
+
+.actionButtonsContainer{
+  margin-left: -$spacing-07;
+  margin-bottom: $spacing-04
+}
+
+.actionButton {
+  @include type-style('body-compact-01');
+  border: 1px solid;
+  display: flex;
+  width: 8.8rem !important;
+  padding: 0.4375rem $spacing-05 !important;
+  align-items: center;
+  gap: $spacing-07;
 }
