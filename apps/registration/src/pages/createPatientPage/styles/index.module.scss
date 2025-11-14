@@ -8,7 +8,7 @@
     margin-top:$spacing-08;
     max-width: 1460px;
     height: 54px;
-    box-shadow: 0 2px 6px $shadow;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     display: flex;
     align-items: center;
     width: calc(100% - 176px);
@@ -20,8 +20,8 @@
     width: calc(100% - 176px);
     max-width: 1460px;
     padding: 24px;
-    background: $background;
-    box-shadow: 0 2px 6px $shadow;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     display: flex;
     flex-direction: column;
     gap: 48px;
@@ -50,7 +50,7 @@
       gap: 16px;
       width: 144px;
       height: 176px;
-      background: $layer-01;
+      background: #f4f4f4;
       display: flex;
       align-items: center;
       justify-content: center;     
@@ -190,12 +190,12 @@
   top: 100%;
   left: 0;
   right: 0;
-  background: $background;
+  background: white;
   max-height: 200px;
   overflow-y: auto;
   z-index: 1000;
-  box-shadow: 0 4px 8px $shadow;
-  border: 1px solid $border-subtle-01;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
   border-top: none;
   margin-top: -1px;
 }
@@ -203,10 +203,10 @@
 .suggestionItem {
   padding: 8px 12px;
   cursor: pointer;
-  border-bottom: 1px solid $border-subtle-01;
+  border-bottom: 1px solid #f0f0f0;
   
   &:hover {
-    background-color: $layer-hover-01;
+    background-color: #f5f5f5;
   }
   
   &:last-child {
@@ -221,6 +221,6 @@
 
 .suggestionParent {
   font-size: 0.75rem;
-  color: $text-secondary;
+  color: #525252;
   margin-top: 2px;
 }
