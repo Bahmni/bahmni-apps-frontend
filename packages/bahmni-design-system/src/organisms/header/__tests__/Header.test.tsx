@@ -1,9 +1,4 @@
-import {
-  QueryClient,
-  QueryClientProvider,
-  useQuery,
-} from '@tanstack/react-query';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React from 'react';
 import { Header } from '../Header';
@@ -16,29 +11,6 @@ import {
 import '@testing-library/jest-dom';
 
 expect.extend(toHaveNoViolations);
-
-jest.mock('@tanstack/react-query', () => ({
-  ...jest.requireActual('@tanstack/react-query'),
-  useQuery: jest.fn(),
-}));
-
-const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
-
-const createTestQueryClient = () =>
-  new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: false,
-      },
-    },
-  });
-
-const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const queryClient = createTestQueryClient();
-  return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
-};
 
 // Mock window.matchMedia for Carbon components
 Object.defineProperty(global, 'matchMedia', {
@@ -148,16 +120,7 @@ describe('Header', () => {
     jest.clearAllMocks();
     mockIsMobile.mockReturnValue(false);
     resetSideNavMock(false);
-    mockUseQuery.mockReturnValue({
-      data: undefined,
-      error: null,
-      isLoading: false,
-    } as any);
   });
-
-  const renderWithProviders = (ui: React.ReactElement) => {
-    return render(ui, { wrapper: TestWrapper });
-  };
 
   describe('Rendering', () => {
     it('renders with just breadcrumbs', () => {
@@ -165,7 +128,7 @@ describe('Header', () => {
         breadcrumbItems: mockBreadcrumbItems,
       };
 
-      renderWithProviders(<Header {...minimalProps} />);
+      render(<Header {...minimalProps} />);
 
       expect(screen.getByTestId('header')).toBeInTheDocument();
       expect(screen.getByText('Home')).toBeInTheDocument();
@@ -173,7 +136,7 @@ describe('Header', () => {
     });
 
     it('renders all sections when fully configured', () => {
-      renderWithProviders(<Header {...defaultProps} />);
+      render(<Header {...defaultProps} />);
 
       expect(screen.getByTestId('header')).toBeInTheDocument();
       expect(screen.getByTestId('breadcrumb')).toBeInTheDocument();
@@ -182,7 +145,7 @@ describe('Header', () => {
     });
 
     it('uses correct aria-label on header', () => {
-      renderWithProviders(<Header {...defaultProps} />);
+      render(<Header {...defaultProps} />);
 
       expect(screen.getByTestId('header')).toHaveAttribute(
         'aria-label',
@@ -194,45 +157,18 @@ describe('Header', () => {
       const propsWithoutAriaLabel = { ...defaultProps };
       delete propsWithoutAriaLabel.ariaLabel;
 
-      renderWithProviders(<Header {...propsWithoutAriaLabel} />);
+      render(<Header {...propsWithoutAriaLabel} />);
 
       expect(screen.getByTestId('header')).toHaveAttribute(
         'aria-label',
         'Header',
       );
     });
-
-    it('displays username when user data is available from query', async () => {
-      mockUseQuery.mockReturnValue({
-        data: { username: 'testuser', uuid: 'test-uuid' },
-        error: null,
-        isLoading: false,
-      } as any);
-
-      renderWithProviders(<Header {...defaultProps} />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('header-username')).toBeInTheDocument();
-        expect(screen.getByText('Hi, testuser')).toBeInTheDocument();
-      });
-    });
-
-    it('does not display username when user data is not available', () => {
-      mockUseQuery.mockReturnValue({
-        data: undefined,
-        error: null,
-        isLoading: false,
-      } as any);
-
-      renderWithProviders(<Header {...defaultProps} />);
-
-      expect(screen.queryByTestId('header-username')).not.toBeInTheDocument();
-    });
   });
 
   describe('Breadcrumbs', () => {
     it('does not render breadcrumbs when array is empty', () => {
-      renderWithProviders(<Header {...defaultProps} breadcrumbItems={[]} />);
+      render(<Header {...defaultProps} breadcrumbItems={[]} />);
 
       expect(screen.queryByTestId('breadcrumb')).not.toBeInTheDocument();
     });
@@ -241,7 +177,7 @@ describe('Header', () => {
       const propsWithoutBreadcrumbs = { ...defaultProps };
       delete propsWithoutBreadcrumbs.breadcrumbItems;
 
-      renderWithProviders(<Header {...propsWithoutBreadcrumbs} />);
+      render(<Header {...propsWithoutBreadcrumbs} />);
 
       expect(screen.queryByTestId('breadcrumb')).not.toBeInTheDocument();
     });
@@ -249,7 +185,7 @@ describe('Header', () => {
 
   describe('Global Actions', () => {
     it('renders global actions with correct content', () => {
-      renderWithProviders(<Header {...defaultProps} />);
+      render(<Header {...defaultProps} />);
 
       expect(screen.getByTestId('global-action-search')).toBeInTheDocument();
       expect(
@@ -260,7 +196,7 @@ describe('Header', () => {
     });
 
     it('handles global action clicks', () => {
-      renderWithProviders(<Header {...defaultProps} />);
+      render(<Header {...defaultProps} />);
 
       fireEvent.click(screen.getByTestId('global-action-search'));
       expect(mockGlobalActions[0].onClick).toHaveBeenCalledTimes(1);
@@ -270,7 +206,7 @@ describe('Header', () => {
     });
 
     it('does not render global actions when array is empty', () => {
-      renderWithProviders(<Header {...defaultProps} globalActions={[]} />);
+      render(<Header {...defaultProps} globalActions={[]} />);
 
       expect(screen.queryByTestId('header-global-bar')).not.toBeInTheDocument();
     });
@@ -279,7 +215,7 @@ describe('Header', () => {
       const propsWithoutGlobalActions = { ...defaultProps };
       delete propsWithoutGlobalActions.globalActions;
 
-      renderWithProviders(<Header {...propsWithoutGlobalActions} />);
+      render(<Header {...propsWithoutGlobalActions} />);
 
       expect(screen.queryByTestId('header-global-bar')).not.toBeInTheDocument();
     });
@@ -287,7 +223,7 @@ describe('Header', () => {
 
   describe('Side Navigation', () => {
     it('renders side nav items with correct content and icons', () => {
-      renderWithProviders(<Header {...defaultProps} />);
+      render(<Header {...defaultProps} />);
 
       expect(screen.getByTestId('sidenav-item-dashboard')).toBeInTheDocument();
       expect(screen.getByTestId('sidenav-item-patients')).toBeInTheDocument();
@@ -297,7 +233,7 @@ describe('Header', () => {
     });
 
     it('handles item clicks correctly', () => {
-      renderWithProviders(<Header {...defaultProps} />);
+      render(<Header {...defaultProps} />);
 
       fireEvent.click(screen.getByTestId('sidenav-item-patients'));
 
@@ -309,7 +245,7 @@ describe('Header', () => {
     });
 
     it('uses href when provided, defaults to # when not', () => {
-      renderWithProviders(<Header {...defaultProps} />);
+      render(<Header {...defaultProps} />);
 
       expect(screen.getByTestId('sidenav-item-dashboard')).toHaveAttribute(
         'href',
@@ -322,7 +258,7 @@ describe('Header', () => {
     });
 
     it('passes correct props to Icon component', () => {
-      renderWithProviders(<Header {...defaultProps} />);
+      render(<Header {...defaultProps} />);
 
       const dashboardIcon = screen.getByTestId('sidebar-icon-dashboard');
       expect(dashboardIcon).toHaveAttribute('data-icon-name', 'fa-dashboard');
@@ -332,9 +268,7 @@ describe('Header', () => {
 
   describe('Props and Data Flow', () => {
     it('handles null activeSideNavItemId', () => {
-      renderWithProviders(
-        <Header {...defaultProps} activeSideNavItemId={null} />,
-      );
+      render(<Header {...defaultProps} activeSideNavItemId={null} />);
 
       expect(screen.getByTestId('sidenav-item-dashboard')).not.toHaveAttribute(
         'aria-current',
@@ -348,7 +282,7 @@ describe('Header', () => {
       const propsWithUndefinedActive = { ...defaultProps };
       delete propsWithUndefinedActive.activeSideNavItemId;
 
-      renderWithProviders(<Header {...propsWithUndefinedActive} />);
+      render(<Header {...propsWithUndefinedActive} />);
 
       expect(screen.getByTestId('sidenav-item-dashboard')).not.toHaveAttribute(
         'aria-current',
@@ -359,7 +293,7 @@ describe('Header', () => {
     });
 
     it('correctly integrates with useHeaderSideNav hook', () => {
-      renderWithProviders(<Header {...defaultProps} />);
+      render(<Header {...defaultProps} />);
 
       expect(mockHandleSideNavItemClick).not.toHaveBeenCalled();
 
@@ -378,9 +312,7 @@ describe('Header', () => {
         { id: 'no-icon', label: 'No Icon Item', icon: '' },
       ];
 
-      renderWithProviders(
-        <Header {...defaultProps} sideNavItems={itemsWithoutIcon} />,
-      );
+      render(<Header {...defaultProps} sideNavItems={itemsWithoutIcon} />);
 
       expect(screen.getByTestId('sidenav-item-no-icon')).toBeInTheDocument();
       expect(screen.getByTestId('sidebar-icon-no-icon')).toHaveAttribute(
@@ -396,9 +328,7 @@ describe('Header', () => {
         label: `Item ${i}`,
       }));
 
-      renderWithProviders(
-        <Header {...defaultProps} sideNavItems={longNavList} />,
-      );
+      render(<Header {...defaultProps} sideNavItems={longNavList} />);
 
       longNavList.forEach((item) => {
         expect(
@@ -410,7 +340,7 @@ describe('Header', () => {
     it('handles breadcrumb items without href', () => {
       const breadcrumbsWithoutHref = [{ id: 'no-href', label: 'No Href Item' }];
 
-      renderWithProviders(
+      render(
         <Header {...defaultProps} breadcrumbItems={breadcrumbsWithoutHref} />,
       );
 
@@ -422,7 +352,7 @@ describe('Header', () => {
 
   describe('Accessibility', () => {
     it('should have no accessibility violations', async () => {
-      const { container } = renderWithProviders(<Header {...defaultProps} />);
+      const { container } = render(<Header {...defaultProps} />);
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });
