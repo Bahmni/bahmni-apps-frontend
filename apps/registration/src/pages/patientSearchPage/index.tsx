@@ -298,7 +298,9 @@ const PatientSearchPage: React.FC = () => {
       label: t('CREATE_PATIENT_BUTTON_TEXT'),
       renderIcon: (
         <div className={styles.buttonWrapper}>
-          <Button kind="primary">{t('CREATE_PATIENT_BUTTON_TEXT')}</Button>
+          <Button kind="primary" size="md">
+            {t('CREATE_PATIENT_BUTTON_TEXT')}
+          </Button>
         </div>
       ),
       onClick: handleCreateNewPatient,
