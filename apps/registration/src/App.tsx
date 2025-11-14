@@ -19,6 +19,7 @@ import { REGISTRATION_NAMESPACE } from './constants/app';
 import CreatePatient from './pages/createPatientPage/CreatePatient';
 import PatientSearchPage from './pages/patientSearchPage';
 import { RegistrationConfigProvider } from './providers/RegistrationConfigProvider';
+import { UserProvider } from './providers/UserProvider';
 
 const queryClient = new QueryClient(queryClientConfig);
 
@@ -51,12 +52,14 @@ const RegistrationApp: React.FC = () => {
       <NotificationProvider>
         <NotificationServiceComponent />
         <QueryClientProvider client={queryClient}>
-          <RegistrationConfigProvider>
-            <Routes>
-              <Route path="/search" element={<PatientSearchPage />} />
-              <Route path="/new" element={<CreatePatient />} />
-            </Routes>
-          </RegistrationConfigProvider>
+          <UserProvider>
+            <RegistrationConfigProvider>
+              <Routes>
+                <Route path="/search" element={<PatientSearchPage />} />
+                <Route path="/new" element={<CreatePatient />} />
+              </Routes>
+            </RegistrationConfigProvider>
+          </UserProvider>
           <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
       </NotificationProvider>
