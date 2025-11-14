@@ -87,6 +87,29 @@ const mockSearchPatientData: PatientSearchResult[] = [
   },
 ];
 
+jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
+  ...jest.requireActual('@bahmni-frontend/bahmni-design-system'),
+  Header: ({ breadcrumbs, globalActions }: any) => (
+    <div data-testid="mocked-header">
+      {breadcrumbs?.map((bc: any) => (
+        <span key={bc.label} data-testid={`breadcrumb-${bc.label}`}>
+          {bc.label}
+        </span>
+      ))}
+      {globalActions?.map((action: any) => (
+        <div key={action.id} data-testid={`global-action-${action.id}`}>
+          {action.renderIcon}
+        </div>
+      ))}
+    </div>
+  ),
+  Icon: ({ id, name }: any) => (
+    <span data-testid={`icon-${id}`} role="img" aria-label={name}>
+      {name}
+    </span>
+  ),
+}));
+
 jest.mock('@tanstack/react-query', () => ({
   ...jest.requireActual('@tanstack/react-query'),
   useQuery: jest.fn(),
@@ -95,6 +118,10 @@ jest.mock('@tanstack/react-query', () => ({
 jest.mock('@bahmni-frontend/bahmni-services', () => ({
   ...jest.requireActual('@bahmni-frontend/bahmni-services'),
   dispatchAuditEvent: jest.fn(),
+  getCurrentUser: jest.fn().mockResolvedValue({
+    username: 'testuser',
+    uuid: 'test-uuid',
+  }),
   getRegistrationConfig: jest.fn(),
   updateAppointmentStatus: jest.fn(),
   notificationService: {
@@ -274,7 +301,7 @@ describe('PatientSearchPage', () => {
     });
   });
 
-  it('should render the Header with Breadcrumbs component', () => {
+  it('should render the Header with Breadcrumbs and globalActions', () => {
     render(
       <MemoryRouter>
         <NotificationProvider>
@@ -286,10 +313,11 @@ describe('PatientSearchPage', () => {
         </NotificationProvider>
       </MemoryRouter>,
     );
-    expect(screen.getByText('Home')).toBeInTheDocument();
-    expect(screen.getByText('Search Patient')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('global-action-create-new-patient'),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('global-action-user')).toBeInTheDocument();
     expect(screen.getByText('Create new patient')).toBeInTheDocument();
-    expect(screen.getByText('Hi, Profile name')).toBeInTheDocument();
     expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
     expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
     expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(

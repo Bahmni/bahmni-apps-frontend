@@ -1,6 +1,9 @@
 import {
   BaseLayout,
   Button,
+  Header,
+  Icon,
+  ICON_SIZE,
   Link,
   Loading,
   SkeletonText,
@@ -27,7 +30,6 @@ import {
 } from '@bahmni-frontend/bahmni-widgets';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Header } from '../../components/Header';
 import {
   getAppointmentStatusClassName,
   handleActionButtonClick,
@@ -281,17 +283,38 @@ const PatientSearchPage: React.FC = () => {
   if (isNavigating) {
     return <Loading description={t('LOADING_PATIENT_DETAILS')} role="status" />;
   }
-
   const breadcrumbs = [
     {
-      label: t('REGISTRATION_PATIENT_SEARCH_BREADCRUMB_HOME'),
+      id: 'home',
+      label: t('CREATE_PATIENT_BREADCRUMB_HOME'),
       href: BAHMNI_HOME_PATH,
     },
     {
-      label: 'Search Patient',
+      id: 'search',
+      label: t('CREATE_PATIENT_BREADCRUMB_SEARCH'),
+      isCurrentPage: true,
     },
   ];
-
+  const globalActions = [
+    {
+      id: 'create-new-patient',
+      label: t('CREATE_PATIENT_BUTTON_TEXT'),
+      renderIcon: (
+        <div className={styles.buttonWrapper}>
+          <Button kind="primary" size="md">
+            {t('CREATE_PATIENT_BUTTON_TEXT')}
+          </Button>
+        </div>
+      ),
+      onClick: handleCreateNewPatient,
+    },
+    {
+      id: 'user',
+      label: 'user',
+      renderIcon: <Icon id="user" name="fa-user" size={ICON_SIZE.LG} />,
+      onClick: () => {},
+    },
+  ];
   const emptyMessage = isAdvancedSearch
     ? t('REGISTRATION_PATIENT_SEARCH_CUSTOM_ATTRIBUTE_EMPTY_MESSAGE', {
         searchTerm: searchTerm,
@@ -303,13 +326,7 @@ const PatientSearchPage: React.FC = () => {
   return (
     <BaseLayout
       header={
-        <Header
-          breadcrumbs={breadcrumbs}
-          showButton
-          buttonText="Create new patient"
-          onButtonClick={handleCreateNewPatient}
-          buttonTestId="create-new-patient-button"
-        />
+        <Header breadcrumbItems={breadcrumbs} globalActions={globalActions} />
       }
       main={
         <div className={styles.main}>
