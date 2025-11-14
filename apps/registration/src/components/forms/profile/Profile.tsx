@@ -58,7 +58,7 @@ export const Profile = ({
   // Component owns ALL its state
   const [formData, setFormData] = useState<BasicInfoData>({
     patientIdFormat:
-      (initialData?.patientIdFormat ?? identifierPrefixes[0]) || '',
+      initialData?.patientIdFormat ?? identifierPrefixes[0] ?? '',
     entryType: initialData?.entryType ?? false,
     firstName: initialData?.firstName ?? '',
     middleName: initialData?.middleName ?? '',
@@ -216,7 +216,7 @@ export const Profile = ({
     validate,
     clearData: () => {
       setFormData({
-        patientIdFormat: identifierPrefixes[0] || '',
+        patientIdFormat: identifierPrefixes[0] ?? '',
         entryType: false,
         firstName: '',
         middleName: '',
