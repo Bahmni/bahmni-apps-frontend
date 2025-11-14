@@ -84,5 +84,6 @@
   "REGISTRATION_PATIENT_SEARCH_TABLE_TITLE": "Patient results ({{count}})",
   "SEARCH_BY_CUSTOM_ATTRIBUTE": "Search by {{attribute}}",
   "START_VISIT_TYPE": "Start {{visitType}} visit",
+  "USER_GREETING": "Hi, {{user.username}}",
   "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "User {{username}} accessed patient search screen in registration app"
 }
