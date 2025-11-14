@@ -1,4 +1,4 @@
-import { format, parseISO } from 'date-fns';
+import { addDays, format, parseISO, subDays } from 'date-fns';
 import { getUserPreferredLocale } from '../../i18n/translationService';
 import { DATE_TIME_FORMAT } from '../constants';
 import {
@@ -8,6 +8,9 @@ import {
   calculateOnsetDate,
   formatDateDistance,
   sortByDate,
+  dateComparator,
+  formatDateAndTime,
+  calculateAgeinYearsAndMonths,
 } from '../date';
 
 const mockT = (key: string, options?: { count?: number }) => {
@@ -549,5 +552,95 @@ describe('sortByDate', () => {
 
     const singleItem = [{ id: 1, date: '2025-01-15T10:00:00Z' }];
     expect(sortByDate(singleItem, 'date')).toEqual(singleItem);
+  });
+});
+
+describe('dateComparator', () => {
+  const today = new Date();
+  const todayString = today.toLocaleDateString();
+
+  it('should return true for today when dates match', () => {
+    expect(dateComparator(todayString, 'today')).toBe(true);
+  });
+
+  it('should return false for today when date is not today', () => {
+    const yesterday = subDays(today, 1).toLocaleDateString();
+    expect(dateComparator(yesterday, 'today')).toBe(false);
+  });
+
+  it('should return true for past when date is before today', () => {
+    const yesterday = subDays(today, 1).toLocaleDateString();
+    expect(dateComparator(yesterday, 'past')).toBe(true);
+  });
+
+  it('should return false for past when date is today or future', () => {
+    expect(dateComparator(todayString, 'past')).toBe(false);
+    const tomorrow = addDays(today, 1).toLocaleDateString();
+    expect(dateComparator(tomorrow, 'past')).toBe(false);
+  });
+
+  it('should return true for future when date is after today', () => {
+    const tomorrow = addDays(today, 1).toLocaleDateString();
+    expect(dateComparator(tomorrow, 'future')).toBe(true);
+  });
+
+  it('should return false for future when date is today or past', () => {
+    expect(dateComparator(todayString, 'future')).toBe(false);
+    const yesterday = subDays(today, 1).toLocaleDateString();
+    expect(dateComparator(yesterday, 'future')).toBe(false);
+  });
+});
+
+describe('formatDateAndTime', () => {
+  describe('Date formatting without time', () => {
+    it('should format date correctly without time', () => {
+      const date = new Date(2024, 2, 28, 14, 30);
+      const timestamp = date.getTime();
+      const result = formatDateAndTime(timestamp, false);
+      expect(result).toBe('28 Mar 2024');
+    });
+
+    it('should format leap year date correctly', () => {
+      const date = new Date(2024, 1, 29);
+      const timestamp = date.getTime();
+      const result = formatDateAndTime(timestamp, false);
+      expect(result).toBe('29 Feb 2024');
+    });
+  });
+
+  describe('Date and time formatting', () => {
+    it('should format date with time correctly', () => {
+      const date = new Date(2024, 2, 28, 14, 30);
+      const timestamp = date.getTime();
+      const result = formatDateAndTime(timestamp, true);
+      expect(result).toBe('28 Mar 2024 2:30 PM');
+    });
+  });
+});
+
+describe('calculateAgeinYearsAndMonths', () => {
+  const mockDate = new Date(2024, 2, 28);
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(mockDate);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('should calculate age correctly', () => {
+    const birthDate = new Date(2000, 2, 28);
+    const birthDateMillis = birthDate.getTime();
+    const result = calculateAgeinYearsAndMonths(birthDateMillis);
+    expect(result).toBe('24 years 0 months');
+  });
+
+  it('should calculate age correctly for someone born 5 years and 3 months ago', () => {
+    const birthDate = new Date(2018, 11, 28);
+    const birthDateMillis = birthDate.getTime();
+    const result = calculateAgeinYearsAndMonths(birthDateMillis);
+    expect(result).toBe('5 years 3 months');
   });
 });

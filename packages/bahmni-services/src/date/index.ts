@@ -9,6 +9,7 @@ export {
   getTodayDate,
   calculateAgeinYearsAndMonths,
   formatDateAndTime,
+  dateComparator,
 } from './date';
 export {
   DATE_FORMAT,

@@ -37,7 +37,7 @@ export interface PatientSearchResult {
 
 export interface PatientSearchResultBundle {
   totalCount: number;
-  pageOfResults: PatientSearchResult[];
+  pageOfResults: PatientSearchResult[] | AppointmentSearchResult[];
 }
 
 export interface IdentifierSource {

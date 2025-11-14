@@ -8,6 +8,8 @@ import {
   groupByDate,
   filterReplacementEntries,
   refreshQueries,
+  parseQueryParams,
+  formatUrl,
 } from '../utils';
 
 describe('common utility functions', () => {
@@ -854,6 +856,371 @@ describe('common utility functions', () => {
         exact: true,
       });
       expect(refetchQueriesSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('parseQueryParams', () => {
+    const originalLocation = window.location;
+
+    beforeEach(() => {
+      // Mock window.location.search
+      delete (window as any).location;
+      (window as any).location = { search: '' };
+    });
+
+    afterAll(() => {
+      window.location = originalLocation;
+    });
+
+    it('should parse basic query string', () => {
+      const result = parseQueryParams('key1=value1&key2=value2');
+
+      expect(result).toEqual({
+        key1: 'value1',
+        key2: 'value2',
+      });
+    });
+
+    it('should handle empty query string', () => {
+      const result = parseQueryParams('');
+
+      expect(result).toEqual({});
+    });
+
+    it('should handle undefined query string and use window.location.search', () => {
+      window.location.search = '?param1=test&param2=hello';
+
+      const result = parseQueryParams();
+
+      expect(result).toEqual({
+        param1: 'test',
+        param2: 'hello',
+      });
+    });
+
+    it('should decode URL encoded values', () => {
+      const result = parseQueryParams('name=John%20Doe&city=New%20York');
+
+      expect(result).toEqual({
+        name: 'John Doe',
+        city: 'New York',
+      });
+    });
+
+    it('should replace plus signs with spaces', () => {
+      const result = parseQueryParams('name=John+Doe&message=Hello+World');
+
+      expect(result).toEqual({
+        name: 'John Doe',
+        message: 'Hello World',
+      });
+    });
+
+    it('should handle parameters without values', () => {
+      const result = parseQueryParams('key1=&key2=value2&key3');
+
+      expect(result).toEqual({
+        key1: '',
+        key2: 'value2',
+        key3: '',
+      });
+    });
+
+    it('should handle special characters in keys and values', () => {
+      const result = parseQueryParams(
+        'email=test%40example.com&symbols=%21%40%23%24',
+      );
+
+      expect(result).toEqual({
+        email: 'test@example.com',
+        symbols: '!@#$',
+      });
+    });
+
+    it('should handle single parameter', () => {
+      const result = parseQueryParams('onlyParam=onlyValue');
+
+      expect(result).toEqual({
+        onlyParam: 'onlyValue',
+      });
+    });
+
+    it('should handle multiple parameters with same name (last one wins)', () => {
+      const result = parseQueryParams('key=value1&key=value2&key=value3');
+
+      expect(result).toEqual({
+        key: 'value3',
+      });
+    });
+
+    it('should handle query string with leading question mark', () => {
+      const result = parseQueryParams('?key1=value1&key2=value2');
+
+      expect(result).toEqual({
+        '?key1': 'value1',
+        key2: 'value2',
+      });
+    });
+
+    it('should handle mixed encoding and plus signs', () => {
+      const result = parseQueryParams(
+        'query=hello+world&name=John%20Doe&city=San+Francisco',
+      );
+
+      expect(result).toEqual({
+        query: 'hello world',
+        name: 'John Doe',
+        city: 'San Francisco',
+      });
+    });
+
+    it('should handle numeric values as strings', () => {
+      const result = parseQueryParams('page=1&limit=20&active=true');
+
+      expect(result).toEqual({
+        page: '1',
+        limit: '20',
+        active: 'true',
+      });
+    });
+
+    it('should handle empty values between ampersands', () => {
+      const result = parseQueryParams('key1=value1&&key2=value2');
+
+      expect(result).toEqual({
+        key1: 'value1',
+        key2: 'value2',
+      });
+    });
+
+    it('should handle complex real-world query string', () => {
+      const result = parseQueryParams(
+        'patientUuid=abc-123&visitType=OPD&provider=Dr.+Smith&date=2024-01-15',
+      );
+
+      expect(result).toEqual({
+        patientUuid: 'abc-123',
+        visitType: 'OPD',
+        provider: 'Dr. Smith',
+        date: '2024-01-15',
+      });
+    });
+
+    it('should handle Unicode characters', () => {
+      const result = parseQueryParams(
+        'name=%E4%B8%AD%E6%96%87&emoji=%F0%9F%98%80',
+      );
+
+      expect(result).toEqual({
+        name: '中文',
+        emoji: '😀',
+      });
+    });
+  });
+
+  describe('formatUrl', () => {
+    const originalLocation = window.location;
+
+    beforeEach(() => {
+      // Mock window.location.search
+      delete (window as any).location;
+      (window as any).location = { search: '' };
+    });
+
+    afterAll(() => {
+      window.location = originalLocation;
+    });
+
+    it('should replace single placeholder with value from options', () => {
+      const url = '/patient/{{patientId}}/details';
+      const options = { patientId: '12345' };
+
+      const result = formatUrl(url, options);
+
+      expect(result).toBe('/patient/12345/details');
+    });
+
+    it('should replace multiple placeholders', () => {
+      const url = '/patient/{{patientId}}/visit/{{visitId}}';
+      const options = { patientId: '12345', visitId: '67890' };
+
+      const result = formatUrl(url, options);
+
+      expect(result).toBe('/patient/12345/visit/67890');
+    });
+
+    it('should handle URL with no placeholders', () => {
+      const url = '/patient/details';
+      const options = { patientId: '12345' };
+
+      const result = formatUrl(url, options);
+
+      expect(result).toBe('/patient/details');
+    });
+
+    it('should replace placeholder with undefined when value not found', () => {
+      const url = '/patient/{{patientId}}/details';
+      const options = {};
+
+      const result = formatUrl(url, options);
+
+      expect(result).toBe('/patient/undefined/details');
+    });
+
+    it('should trim whitespace from result', () => {
+      const url = '  /patient/{{patientId}}/details  ';
+      const options = { patientId: '12345' };
+
+      const result = formatUrl(url, options);
+
+      expect(result).toBe('/patient/12345/details');
+    });
+
+    it('should fallback to query parameters when useQueryParams is true', () => {
+      window.location.search = '?patientId=query-123&visitId=visit-456';
+
+      const url = '/patient/{{patientId}}/visit/{{visitId}}';
+      const options = {};
+
+      const result = formatUrl(url, options, true);
+
+      expect(result).toBe('/patient/query-123/visit/visit-456');
+    });
+
+    it('should prefer options over query parameters', () => {
+      window.location.search = '?patientId=query-123';
+
+      const url = '/patient/{{patientId}}/details';
+      const options = { patientId: 'options-456' };
+
+      const result = formatUrl(url, options, true);
+
+      expect(result).toBe('/patient/options-456/details');
+    });
+
+    it('should not use query parameters when useQueryParams is false', () => {
+      window.location.search = '?patientId=query-123';
+
+      const url = '/patient/{{patientId}}/details';
+      const options = {};
+
+      const result = formatUrl(url, options, false);
+
+      expect(result).toBe('/patient/undefined/details');
+    });
+
+    it('should handle multiple placeholders with mixed sources', () => {
+      window.location.search = '?visitId=query-visit';
+
+      const url =
+        '/patient/{{patientId}}/visit/{{visitId}}/provider/{{providerId}}';
+      const options = { patientId: '12345', providerId: 'dr-001' };
+
+      const result = formatUrl(url, options, true);
+
+      expect(result).toBe('/patient/12345/visit/query-visit/provider/dr-001');
+    });
+
+    it('should handle duplicate placeholders', () => {
+      const url = '/patient/{{id}}/check/{{id}}/status';
+      const options = { id: '99999' };
+
+      const result = formatUrl(url, options);
+
+      expect(result).toBe('/patient/99999/check/99999/status');
+    });
+
+    it('should handle empty URL', () => {
+      const url = '';
+      const options = { patientId: '12345' };
+
+      const result = formatUrl(url, options);
+
+      expect(result).toBe('');
+    });
+
+    it('should handle placeholders with spaces in keys', () => {
+      const url = '/patient/{{patient id}}/details';
+      const options = { 'patient id': '12345' };
+
+      const result = formatUrl(url, options);
+
+      expect(result).toBe('/patient/12345/details');
+    });
+
+    it('should handle complex URL with query string', () => {
+      const url =
+        '/api/patient/{{patientId}}/records?type={{type}}&format={{format}}';
+      const options = { patientId: 'abc123', type: 'lab', format: 'json' };
+
+      const result = formatUrl(url, options);
+
+      expect(result).toBe('/api/patient/abc123/records?type=lab&format=json');
+    });
+
+    it('should handle nested placeholders in URL path', () => {
+      const url = '/{{resource}}/{{id}}/{{action}}';
+      const options = { resource: 'patient', id: '12345', action: 'edit' };
+
+      const result = formatUrl(url, options);
+
+      expect(result).toBe('/patient/12345/edit');
+    });
+
+    it('should replace partial placeholders when some values are missing', () => {
+      const url =
+        '/patient/{{patientId}}/visit/{{visitId}}/provider/{{providerId}}';
+      const options = { patientId: '12345', visitId: '67890' };
+
+      const result = formatUrl(url, options);
+
+      expect(result).toBe('/patient/12345/visit/67890/provider/undefined');
+    });
+
+    it('should handle special characters in placeholder values', () => {
+      const url = '/search/{{query}}';
+      const options = { query: 'test@example.com' };
+
+      const result = formatUrl(url, options);
+
+      expect(result).toBe('/search/test@example.com');
+    });
+
+    it('should handle query parameters with plus signs and URL encoding', () => {
+      window.location.search = '?name=John+Doe&city=New%20York';
+
+      const url = '/profile/{{name}}/location/{{city}}';
+      const options = {};
+
+      const result = formatUrl(url, options, true);
+
+      expect(result).toBe('/profile/John Doe/location/New York');
+    });
+
+    it('should handle useQueryParams undefined (default false)', () => {
+      window.location.search = '?patientId=query-123';
+
+      const url = '/patient/{{patientId}}/details';
+      const options = {};
+
+      const result = formatUrl(url, options);
+
+      expect(result).toBe('/patient/undefined/details');
+    });
+
+    it('should handle real-world Bahmni URL pattern', () => {
+      const url =
+        '/bahmni/clinical/#/default/patient/{{patientUuid}}/dashboard/visit/{{visitUuid}}';
+      const options = {
+        patientUuid: 'patient-abc-123',
+        visitUuid: 'visit-xyz-789',
+      };
+
+      const result = formatUrl(url, options);
+
+      expect(result).toBe(
+        '/bahmni/clinical/#/default/patient/patient-abc-123/dashboard/visit/visit-xyz-789',
+      );
     });
   });
 });

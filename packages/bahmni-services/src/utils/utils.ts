@@ -178,3 +178,62 @@ export function filterReplacementEntries<T>(
     return !isReplacing && !isReplaced;
   });
 }
+
+/**
+ * Parses URL query parameters from a query string
+ * @param locationSearchString - Optional query string to parse (defaults to window.location.search)
+ * @returns Object containing parsed query parameters as key-value pairs
+ */
+export function parseQueryParams(
+  locationSearchString?: string,
+): Record<string, string> {
+  const pl = /\+/g; // Regex for replacing addition symbol with a space
+  const search = /([^&=]+)=?([^&]*)/g;
+  const decode = (s: string) => decodeURIComponent(s.replace(pl, ' '));
+  const queryString =
+    locationSearchString ?? window.location.search.substring(1);
+
+  const urlParams: Record<string, string> = {};
+  let match: RegExpExecArray | null;
+
+  while ((match = search.exec(queryString)) !== null) {
+    urlParams[decode(match[1])] = decode(match[2]);
+  }
+
+  return urlParams;
+}
+
+/**
+ * Formats a URL by replacing template placeholders with actual values
+ * Template placeholders are in the format {{key}}
+ * @param url - The URL template string containing placeholders
+ * @param options - Object containing key-value pairs for placeholder replacement
+ * @param useQueryParams - Whether to fallback to query parameters if a value is not found in options
+ * @returns The formatted URL with all placeholders replaced
+ */
+export function formatUrl(
+  url: string,
+  options: Record<string, string>,
+  useQueryParams?: boolean,
+): string {
+  const pattern = /{{([^}]*)}}/g;
+  const matches = url.match(pattern);
+  let replacedString = url;
+  const checkQueryParams = useQueryParams ?? false;
+  const queryParameters = checkQueryParams ? parseQueryParams() : {};
+
+  if (matches) {
+    matches.forEach((placeholder) => {
+      const key = placeholder.replace('{{', '').replace('}}', '');
+      let value = options[key];
+
+      if (!value && checkQueryParams) {
+        value = queryParameters[key] || '';
+      }
+
+      replacedString = replacedString.replace(placeholder, value);
+    });
+  }
+
+  return replacedString.trim();
+}
