@@ -57,6 +57,16 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
     gcTime: 0,
   });
 
+  const getSearchType = (
+    searchField?: PatientSearchField,
+  ): PatientSearchType => {
+    return isAdvancedSearch
+      ? searchField?.type === 'appointment'
+        ? 'appointment'
+        : 'attributes'
+      : 'nameOrId';
+  };
+
   /**
    * Execute search using the appropriate strategy
    */
@@ -66,11 +76,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
     );
 
     // Determine which strategy to use
-    const searchType: PatientSearchType = isAdvancedSearch
-      ? selectedField?.type === 'appointment'
-        ? 'appointment'
-        : 'attributes'
-      : 'nameOrId';
+    const searchType: PatientSearchType = getSearchType(selectedField);
 
     // Get the appropriate strategy
     const strategy = searchStrategyRegistry.getStrategy(searchType);

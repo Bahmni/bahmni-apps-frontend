@@ -60,18 +60,23 @@ const PatientSearchPage: React.FC = () => {
   const handleCreateNewPatient = () => {
     navigate('/registration/new');
   };
+
+  const getSearchFieldsFromConfig = async (selectedType: string) => {
+    const config = await getRegistrationConfig();
+
+    const fields =
+      selectedType === 'appointment'
+        ? (config?.patientSearch?.appointment ?? [])
+        : (config?.patientSearch?.customAttributes ?? []);
+
+    return fields;
+  };
+
   useEffect(() => {
     const loadSearchConfig = async () => {
-      const config = await getRegistrationConfig();
-      let fields: PatientSearchField[] = [];
-
-      if (selectedFieldType === 'appointment') {
-        fields = [...(config?.patientSearch?.appointment ?? [])];
-      } else {
-        fields = [...(config?.patientSearch?.customAttributes ?? [])];
-      }
-
-      setSearchFields(fields);
+      getSearchFieldsFromConfig(selectedFieldType).then((fields) => {
+        setSearchFields(fields);
+      });
     };
     loadSearchConfig();
   }, [selectedFieldType]);
@@ -172,6 +177,72 @@ const PatientSearchPage: React.FC = () => {
     }
   };
 
+  const renderIdentifier = (uuid: string, identifier: string) => {
+    return (
+      <Link
+        href={`/bahmni/registration/index.html#/patient/${uuid}`}
+        onClick={(e) => {
+          e.preventDefault();
+          navigateToPatient(uuid);
+        }}
+      >
+        {identifier}
+      </Link>
+    );
+  };
+
+  const renderAppointmentStatus = (uuid: string, status: string) => {
+    return (
+      <Tag
+        className={`${styles[getAppointmentStatusClassName(String(status))]}`}
+        data-testid={`appointment-status-${uuid}`}
+      >
+        {String(status)}
+      </Tag>
+    );
+  };
+
+  const renderActions = (
+    row: PatientSearchViewModel<PatientSearchResult | AppointmentSearchResult>,
+  ) => {
+    return (
+      <Stack gap={3} className={styles.actionButtonsContainer}>
+        {searchFields.map((field) =>
+          field.actions?.map((action) => {
+            if (!shouldRenderActionButton(action, userPrivileges ?? []))
+              return <div key={action.translationKey} />;
+            return (
+              <Button
+                key={action.translationKey}
+                className={styles.actionButton}
+                kind="tertiary"
+                size="sm"
+                disabled={
+                  !isActionButtonEnabled(
+                    action.enabledRule,
+                    row,
+                    userPrivileges ?? [],
+                  )
+                }
+                onClick={() =>
+                  handleActionButtonClick(
+                    action,
+                    row,
+                    patientSearchData!,
+                    setPatientSearchData,
+                    navigate,
+                  )
+                }
+              >
+                {t(action.translationKey)}
+              </Button>
+            );
+          }),
+        )}
+      </Stack>
+    );
+  };
+
   const renderPatientSearchResult = useCallback(
     (
       row: PatientSearchViewModel<
@@ -181,71 +252,16 @@ const PatientSearchPage: React.FC = () => {
     ): React.ReactNode => {
       switch (cellId) {
         case 'identifier':
-          return (
-            <Link
-              href={`/bahmni/registration/index.html#/patient/${row.uuid}`}
-              onClick={(e) => {
-                e.preventDefault();
-                navigateToPatient(row.uuid);
-              }}
-            >
-              {row.identifier}
-            </Link>
-          );
+          return renderIdentifier(row.uuid ?? '', row.identifier ?? '');
 
         case 'appointmentStatus':
-          return (
-            <Tag
-              className={`${
-                styles[
-                  getAppointmentStatusClassName(
-                    String(row.appointmentStatus ?? ''),
-                  )
-                ]
-              }`}
-              data-testid={`appointment-status-${row.uuid}`}
-            >
-              {String(row.appointmentStatus ?? '')}
-            </Tag>
+          return renderAppointmentStatus(
+            row.uuid ?? '',
+            (row.appointmentStatus as string) ?? '',
           );
 
         case 'actions':
-          return (
-            <Stack gap={3} className={styles.actionButtonsContainer}>
-              {searchFields.map((field) =>
-                field.actions?.map((action) => {
-                  if (!shouldRenderActionButton(action, userPrivileges ?? []))
-                    return <div key={action.translationKey} />;
-                  return (
-                    <Button
-                      key={action.translationKey}
-                      className={styles.actionButton}
-                      kind="tertiary"
-                      size="sm"
-                      disabled={
-                        !isActionButtonEnabled(
-                          action.enabledRule,
-                          row,
-                          userPrivileges ?? [],
-                        )
-                      }
-                      onClick={() =>
-                        handleActionButtonClick(
-                          action,
-                          row,
-                          patientSearchData!,
-                          setPatientSearchData,
-                          navigate,
-                        )
-                      }
-                    >
-                      {t(action.translationKey)}
-                    </Button>
-                  );
-                }),
-              )}
-            </Stack>
-          );
+          return renderActions(row);
       }
 
       const cellValue =
@@ -275,6 +291,14 @@ const PatientSearchPage: React.FC = () => {
       label: 'Search Patient',
     },
   ];
+
+  const emptyMessage = isAdvancedSearch
+    ? t('REGISTRATION_PATIENT_SEARCH_CUSTOM_ATTRIBUTE_EMPTY_MESSAGE', {
+        searchTerm: searchTerm,
+      })
+    : t('REGISTRATION_PATIENT_SEARCH_EMPTY_MESSAGE', {
+        searchTerm: searchTerm,
+      });
 
   return (
     <BaseLayout
@@ -318,18 +342,7 @@ const PatientSearchPage: React.FC = () => {
                   searchFields,
                 )}
                 renderCell={renderPatientSearchResult}
-                emptyStateMessage={
-                  isAdvancedSearch
-                    ? t(
-                        'REGISTRATION_PATIENT_SEARCH_CUSTOM_ATTRIBUTE_EMPTY_MESSAGE',
-                        {
-                          searchTerm: searchTerm,
-                        },
-                      )
-                    : t('REGISTRATION_PATIENT_SEARCH_EMPTY_MESSAGE', {
-                        searchTerm: searchTerm,
-                      })
-                }
+                emptyStateMessage={emptyMessage}
                 className={styles.patientSearchTableBody}
                 errorStateMessage={
                   isError
