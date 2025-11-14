@@ -298,7 +298,7 @@ const PatientSearchPage: React.FC = () => {
       label: t('CREATE_PATIENT_BUTTON_TEXT'),
       renderIcon: (
         <div className={styles.buttonWrapper}>
-          <Button kind="tertiary">{t('CREATE_PATIENT_BUTTON_TEXT')}</Button>
+          <Button kind="primary">{t('CREATE_PATIENT_BUTTON_TEXT')}</Button>
         </div>
       ),
       onClick: handleCreateNewPatient,
@@ -306,7 +306,7 @@ const PatientSearchPage: React.FC = () => {
     {
       id: 'user',
       label: 'user',
-      renderIcon: <Icon id="user" name="fa-user" size={ICON_SIZE.SM} />,
+      renderIcon: <Icon id="user" name="fa-user" size={ICON_SIZE.LG} />,
       onClick: () => {},
     },
   ];

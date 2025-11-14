@@ -119,7 +119,7 @@ const CreatePatient = () => {
     {
       id: 'user',
       label: 'user',
-      renderIcon: <Icon id="user" name="fa-user" size={ICON_SIZE.SM} />,
+      renderIcon: <Icon id="user" name="fa-user" size={ICON_SIZE.LG} />,
       onClick: () => {},
     },
   ];

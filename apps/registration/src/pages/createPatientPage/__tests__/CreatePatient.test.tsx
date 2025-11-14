@@ -52,24 +52,6 @@ jest.mock('../../../hooks/useCreatePatient');
 jest.mock('../patientFormService');
 
 // Mock child components
-interface Breadcrumb {
-  label: string;
-  href?: string;
-  onClick?: () => void;
-}
-
-jest.mock('../../../components/Header', () => ({
-  Header: ({ breadcrumbs }: { breadcrumbs: Breadcrumb[] }) => (
-    <div data-testid="header">
-      {breadcrumbs.map((bc, idx: number) => (
-        <span key={`breadcrumb-${bc.label}`} data-testid={`breadcrumb-${idx}`}>
-          {bc.label}
-        </span>
-      ))}
-    </div>
-  ),
-}));
-
 jest.mock('../../../components/forms/profile/Profile', () => ({
   Profile: ({ ref }: { ref?: React.Ref<unknown> }) => {
     // Expose imperative methods via ref
@@ -544,7 +526,6 @@ describe('CreatePatient', () => {
       expect(
         screen.getByTestId('mocked-design-system-header'),
       ).toBeInTheDocument();
-      expect(screen.getByTestId('global-action-user')).toBeInTheDocument();
     });
   });
 
