@@ -14,6 +14,8 @@ import {
 } from 'react';
 import type { AddressHierarchyItem } from '../../../hooks/useAddressFields';
 import { useAddressFieldsWithConfig } from '../../../hooks/useAddressFieldsWithConfig';
+import { useAddressSuggestions } from '../../../hooks/useAddressSuggestions';
+import { AddressAutocompleteField } from './AddressAutocompleteField';
 import styles from './styles/index.module.scss';
 
 export type AddressInfoRef = {
@@ -51,22 +53,6 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     {},
   );
 
-  // Track search queries for autocomplete fields dynamically
-  const [searchQueries, setSearchQueries] = useState<Record<string, string>>(
-    {},
-  );
-
-  // Track which fields show suggestions dynamically
-  const [showSuggestions, setShowSuggestions] = useState<
-    Record<string, boolean>
-  >({});
-
-  // Debounce timers
-  const debounceTimers = useRef<Record<string, number | null>>({});
-
-  // Track which fields are currently focused
-  const focusedFields = useRef<Record<string, boolean>>({});
-
   // Get list of fields that need autocomplete (not free text fields)
   const autocompleteFields = useMemo(() => {
     return levelsWithStrictEntry
@@ -74,109 +60,44 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       .filter((field) => !FREE_TEXT_FIELDS.includes(field));
   }, [levelsWithStrictEntry]);
 
-  // Get parent field UUID for hierarchical filtering
-  // This is used to filter child field options based on parent selection
-  const getParentUuid = useCallback(
-    (fieldName: string): string | undefined => {
-      const fieldIndex = displayLevels.findIndex(
-        (level) => level.addressField === fieldName,
-      );
-      if (fieldIndex <= 0) return undefined; // No parent for first field
-
-      // Get the parent field (previous field in display order)
-      const parentField = displayLevels[fieldIndex - 1];
-      return selectedMetadata[parentField.addressField]?.uuid;
-    },
-    [displayLevels, selectedMetadata],
+  // Use custom hook for suggestion management
+  const {
+    suggestions,
+    selectedItems,
+    setSelectedItems,
+    debouncedSearchAddress,
+    clearChildSuggestions,
+    unmarkFieldAsCleared,
+  } = useAddressSuggestions(
+    autocompleteFields,
+    levelsWithStrictEntry,
+    selectedMetadata,
   );
 
-  // Dynamic TanStack queries for all autocomplete fields
-  const suggestionQueries = useQueries({
-    queries: autocompleteFields.map((fieldName) => ({
-      queryKey: [
-        'addressHierarchy',
-        fieldName,
-        searchQueries[fieldName],
-        getParentUuid(fieldName), // Include parent UUID in query key
-      ],
-      queryFn: () =>
-        getAddressHierarchyEntries(
-          fieldName,
-          searchQueries[fieldName],
-          20, // default limit
-          getParentUuid(fieldName), // Pass parent UUID for hierarchical filtering
-        ),
-      enabled: (searchQueries[fieldName]?.length ?? 0) >= 2,
-      staleTime: 5 * 60 * 1000,
-    })),
-  });
-
-  // Map query results to field names - using a ref to avoid dependency issues
-  const suggestionsRef = useRef<Record<string, AddressHierarchyEntry[]>>({});
-
-  // Update the ref without triggering re-renders
-  autocompleteFields.forEach((fieldName, index) => {
-    suggestionsRef.current[fieldName] = suggestionQueries[index]?.data ?? [];
-  });
-
-  // Also keep the memoized version for rendering
-  const suggestions = useMemo(() => {
-    const result: Record<string, AddressHierarchyEntry[]> = {};
-    autocompleteFields.forEach((fieldName, index) => {
-      result[fieldName] = suggestionQueries[index]?.data ?? [];
-    });
-    return result;
-  }, [autocompleteFields, suggestionQueries]);
-
-  // Debounced search handler
-  const debouncedSearchAddress = useCallback(
-    (field: string, searchText: string) => {
-      if (debounceTimers.current[field]) {
-        clearTimeout(debounceTimers.current[field]!);
-      }
-
-      debounceTimers.current[field] = window.setTimeout(() => {
-        setSearchQueries((prev) => ({ ...prev, [field]: searchText }));
-      }, 300);
-    },
-    [],
-  );
-
-  // Handle input change for autocomplete fields
+  // Handle input change for autocomplete fields (ComboBox typing)
   const handleAddressInputChange = useCallback(
     (field: string, value: string) => {
-      handleFieldChange(field, value);
-
-      // Only debounce search for autocomplete fields
+      // For ComboBox fields, only trigger search - don't update address state yet
+      // The address will be updated when user selects from dropdown via onChange
       if (autocompleteFields.includes(field)) {
         debouncedSearchAddress(field, value);
-
-        // Show suggestions if we have cached data and user is typing (use ref to avoid dependency)
-        if (value.length >= 2) {
-          // Check if we have suggestions using setTimeout to wait for query to complete
-          setTimeout(() => {
-            if (suggestionsRef.current[field]?.length > 0) {
-              setShowSuggestions((prev) => ({ ...prev, [field]: true }));
-            }
-          }, 350); // Slightly longer than debounce time
-        }
+        // Un-mark this field as cleared since user is typing fresh query
+        unmarkFieldAsCleared(field);
       }
 
       // Clear validation error when typing
       setAddressErrors((prev) => ({ ...prev, [field]: '' }));
-
-      // Hide suggestions if field is cleared
-      if (!value) {
-        setShowSuggestions((prev) => ({ ...prev, [field]: false }));
-      }
     },
-    [handleFieldChange, debouncedSearchAddress, autocompleteFields],
+    [debouncedSearchAddress, autocompleteFields, unmarkFieldAsCleared],
   );
 
   // Handle suggestion selection
   // Handle suggestion selection
   const handleSuggestionSelect = useCallback(
     (field: string, entry: AddressHierarchyEntry) => {
+      // Store the selected item for ComboBox
+      setSelectedItems((prev) => ({ ...prev, [field]: entry }));
+
       // Convert AddressHierarchyEntry to AddressHierarchyItem recursively
       const convertToItem = (
         entry: AddressHierarchyEntry | null | undefined,
@@ -195,10 +116,13 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       if (!item) return; // Safety check - should not happen with valid entry
 
       handleFieldSelect(field, item);
-      setShowSuggestions((prev) => ({ ...prev, [field]: false }));
       setAddressErrors((prev) => ({ ...prev, [field]: '' }));
+
+      // Clear search queries and suggestions for child fields
+      // This ensures child field suggestions are filtered by the new parent selection
+      clearChildSuggestions(field);
     },
-    [handleFieldSelect],
+    [handleFieldSelect, clearChildSuggestions],
   );
 
   // Validate that strict entry fields were selected from dropdown
@@ -244,7 +168,20 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     getData,
   }));
 
-  // Render autocomplete field with suggestions
+  // Handle selection change for autocomplete fields
+  const handleSelectionChange = useCallback(
+    (field: string, entry: AddressHierarchyEntry | null) => {
+      if (entry) {
+        handleSuggestionSelect(field, entry);
+      } else {
+        // Clear selection if user clears the input
+        setSelectedItems((prev) => ({ ...prev, [field]: null }));
+      }
+    },
+    [handleSuggestionSelect, setSelectedItems],
+  );
+
+  // Render autocomplete field with suggestions using ComboBox
   const renderAutocompleteField = useCallback(
     (fieldName: string) => {
       const level = levelsWithStrictEntry.find(
@@ -253,86 +190,30 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       if (!level) return null;
 
       const isDisabled = isFieldReadOnly(level);
-      const fieldValue = address[fieldName] ?? '';
       const error = addressErrors[fieldName];
       const fieldSuggestions = suggestions[fieldName] ?? [];
 
       return (
-        <div key={fieldName} className={styles.col}>
-          <div className={styles.addressFieldWrapper}>
-            <TextInput
-              id={fieldName}
-              labelText={level.name}
-              placeholder={level.name}
-              value={fieldValue}
-              invalid={!!error}
-              invalidText={error}
-              disabled={isDisabled}
-              onChange={(e) =>
-                handleAddressInputChange(fieldName, e.target.value)
-              }
-              onBlur={() => {
-                focusedFields.current[fieldName] = false;
-                setTimeout(() => {
-                  setShowSuggestions((prev) => ({
-                    ...prev,
-                    [fieldName]: false,
-                  }));
-                }, 200);
-              }}
-              onFocus={() => {
-                focusedFields.current[fieldName] = true;
-                if (fieldSuggestions.length > 0) {
-                  setShowSuggestions((prev) => ({
-                    ...prev,
-                    [fieldName]: true,
-                  }));
-                }
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Escape' || e.key === 'Enter') {
-                  setShowSuggestions((prev) => ({
-                    ...prev,
-                    [fieldName]: false,
-                  }));
-                }
-              }}
-            />
-
-            {showSuggestions[fieldName] && fieldSuggestions.length > 0 && (
-              <div
-                className={styles.suggestionsList}
-                onMouseDown={(e) => e.preventDefault()} // Prevent blur on clicking suggestions container
-              >
-                {fieldSuggestions.map((entry) => (
-                  <div
-                    key={entry.userGeneratedId ?? entry.uuid}
-                    className={styles.suggestionItem}
-                    onClick={() => {
-                      handleSuggestionSelect(fieldName, entry);
-                    }}
-                  >
-                    <div className={styles.suggestionName}>{entry.name}</div>
-                    {entry.parent && (
-                      <div className={styles.suggestionParent}>
-                        {entry.parent.name}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        <AddressAutocompleteField
+          key={fieldName}
+          fieldName={fieldName}
+          level={level}
+          isDisabled={isDisabled}
+          error={error}
+          suggestions={fieldSuggestions}
+          selectedItem={selectedItems[fieldName] ?? null}
+          onSelectionChange={handleSelectionChange}
+          onInputChange={handleAddressInputChange}
+        />
       );
     },
     [
       levelsWithStrictEntry,
       isFieldReadOnly,
-      address,
       addressErrors,
       suggestions,
-      showSuggestions,
+      selectedItems,
+      handleSelectionChange,
       handleAddressInputChange,
     ],
   );
@@ -390,7 +271,6 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     },
     [levelsWithStrictEntry, isFieldReadOnly, address, handleFieldChange],
   );
-
 
   // Show loading state while fetching address levels
   if (isLoadingLevels) {
