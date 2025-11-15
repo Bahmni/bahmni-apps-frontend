@@ -5,6 +5,7 @@ export {
   searchPatientByCustomAttribute,
   getPrimaryIdentifierType,
   createPatient,
+  updatePatient,
   createVisit,
   getActiveVisitByPatient,
   getIdentifierData,

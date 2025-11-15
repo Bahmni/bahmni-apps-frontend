@@ -12,6 +12,7 @@ import {
   APP_SETTINGS_URL,
   PRIMARY_IDENTIFIER_TYPE_PROPERTY,
   CREATE_PATIENT_URL,
+  UPDATE_PATIENT_URL,
   CREATE_VISIT_URL,
   GET_ACTIVE_VISIT_URL,
   ADDRESS_HIERARCHY_URL,
@@ -300,6 +301,22 @@ export const createPatient = async (
   patientData: CreatePatientRequest,
 ): Promise<CreatePatientResponse> => {
   return post<CreatePatientResponse>(CREATE_PATIENT_URL, patientData);
+};
+
+/**
+ * Update an existing patient
+ * @param patientUuid - The UUID of the patient to update
+ * @param patientData - The patient data to update
+ * @returns Promise<CreatePatientResponse> - The updated patient response
+ */
+export const updatePatient = async (
+  patientUuid: string,
+  patientData: CreatePatientRequest,
+): Promise<CreatePatientResponse> => {
+  return post<CreatePatientResponse>(
+    UPDATE_PATIENT_URL(patientUuid),
+    patientData,
+  );
 };
 
 /**

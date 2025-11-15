@@ -55,6 +55,7 @@ const RegistrationApp: React.FC = () => {
             <Routes>
               <Route path="/search" element={<PatientSearchPage />} />
               <Route path="/new" element={<CreatePatient />} />
+              <Route path="/edit/:patientUuid" element={<CreatePatient />} />
             </Routes>
           </RegistrationConfigProvider>
           <ReactQueryDevtools initialIsOpen={false} />

@@ -41,12 +41,14 @@ export interface ProfileRef {
 interface ProfileProps {
   initialData?: BasicInfoData;
   initialDobEstimated?: boolean;
+  patientIdentifier?: string | null;
   ref?: React.Ref<ProfileRef>;
 }
 
 export const Profile = ({
   initialData,
   initialDobEstimated = false,
+  patientIdentifier,
   ref,
 }: ProfileProps) => {
   const { t } = useTranslation();
@@ -254,7 +256,11 @@ export const Profile = ({
   return (
     <div className={styles.formSection}>
       <span className={styles.formSectionTitle}>
-        {t('CREATE_PATIENT_SECTION_BASIC_INFO')}
+        {patientIdentifier ? (
+          <span className={styles.patientUuid}>{patientIdentifier}</span>
+        ) : (
+          t('CREATE_PATIENT_SECTION_BASIC_INFO')
+        )}
       </span>
       <div className={styles.row}>
         <div className={styles.photocol}>

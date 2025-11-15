@@ -40,6 +40,11 @@
     .formSectionTitle {
       @include type-style("body-compact-02");
     }
+
+    .patientUuid {
+      margin-left: 1rem;
+      font-weight: 400;
+    }
       
     // Photo Upload Section
     .photoUploadSection {

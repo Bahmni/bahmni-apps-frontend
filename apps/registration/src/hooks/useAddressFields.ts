@@ -231,7 +231,10 @@ export function useAddressFields(
         parentFields.forEach((parentField) => {
           if (parent?.name) {
             const currentParent = parent; // Capture current parent before reassigning
-            setAddress((prev) => ({ ...prev, [parentField]: currentParent.name }));
+            setAddress((prev) => ({
+              ...prev,
+              [parentField]: currentParent.name,
+            }));
             setSelectedMetadata((prev) => ({
               ...prev,
               [parentField]: {

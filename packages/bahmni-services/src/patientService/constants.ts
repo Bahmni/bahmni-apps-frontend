@@ -87,6 +87,9 @@ export const PRIMARY_IDENTIFIER_TYPE_PROPERTY = 'bahmni.primaryIdentifierType';
 export const CREATE_PATIENT_URL =
   OPENMRS_REST_V1 + '/bahmnicore/patientprofile';
 
+export const UPDATE_PATIENT_URL = (patientUuid: string) =>
+  OPENMRS_REST_V1 + `/bahmnicore/patientprofile/${patientUuid}`;
+
 export const CREATE_VISIT_URL = OPENMRS_REST_V1 + '/visit';
 
 export const GET_ACTIVE_VISIT_URL = (patientUuid: string) =>
