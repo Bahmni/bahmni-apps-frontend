@@ -5,9 +5,13 @@ import {
   PatientName,
   PatientIdentifier,
   PatientAddress,
+  PatientAttribute,
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
+  PHONE_NUMBER_UUID,
+  ALTERNATE_PHONE_NUMBER_UUID,
+  EMAIL_UUID,
 } from '@bahmni-frontend/bahmni-services';
 import { useMutation } from '@tanstack/react-query';
 import { convertTimeToISODateTime } from '../components/forms/profile/dateAgeUtils';
@@ -69,7 +73,7 @@ export const useUpdatePatient = () => {
 function transformFormDataToPayload(
   formData: UpdatePatientFormData,
 ): CreatePatientRequest {
-  const { profile, address } = formData;
+  const { profile, address, contact, additional } = formData;
   // Build patient name object
   const patientName: PatientName = {
     givenName: profile.firstName,
@@ -78,6 +82,33 @@ function transformFormDataToPayload(
     display: `${profile.firstName}${profile.middleName ? ' ' + profile.middleName : ''} ${profile.lastName}`,
     preferred: false,
   };
+
+  // Build patient attributes (contact info and additional info)
+  const attributes: PatientAttribute[] = [];
+
+  // Add phone number if provided
+  if (contact.phoneNumber) {
+    attributes.push({
+      attributeType: { uuid: PHONE_NUMBER_UUID },
+      value: contact.phoneNumber,
+    });
+  }
+
+  // Add alternate phone number if provided
+  if (contact.altPhoneNumber) {
+    attributes.push({
+      attributeType: { uuid: ALTERNATE_PHONE_NUMBER_UUID },
+      value: contact.altPhoneNumber,
+    });
+  }
+
+  // Add email if provided
+  if (additional.email) {
+    attributes.push({
+      attributeType: { uuid: EMAIL_UUID },
+      value: additional.email,
+    });
+  }
 
   // Build the complete patient payload
   const payload: CreatePatientRequest = {
@@ -92,7 +123,7 @@ function transformFormDataToPayload(
           profile.birthTime,
         ),
         addresses: [address],
-        attributes: [],
+        attributes,
         deathDate: null,
         causeOfDeath: '',
       },

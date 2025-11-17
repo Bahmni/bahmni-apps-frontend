@@ -32,9 +32,33 @@ export const AddressAutocompleteField = ({
   onSelectionChange,
   onInputChange,
 }: AddressAutocompleteFieldProps) => {
-  // Memoize the itemToString function
+  // Memoize the itemToString function for input display
+  // Only show the main value (not parent) in the selected input field
   const itemToString = useMemo(
-    () => (item: AddressHierarchyEntry | null) => (item ? item.name : ''),
+    () => (item: AddressHierarchyEntry | null) => {
+      if (!item) return '';
+      // Use userGeneratedId if available (e.g., postal codes), otherwise use name
+      return item.userGeneratedId ?? item.name;
+    },
+    [],
+  );
+
+  // Memoize the itemToElement function for dropdown display
+  // Display format: "value, parent" (e.g., "110001, New Delhi" for postal codes)
+  const itemToElement = useMemo(
+    () => (item: AddressHierarchyEntry) => {
+      if (!item) return '';
+
+      // Use userGeneratedId if available (e.g., postal codes), otherwise use name
+      const mainValue = item.userGeneratedId ?? item.name;
+
+      // Append parent name if available for better context in dropdown
+      if (item.parent?.name) {
+        return `${mainValue}, ${item.parent.name}`;
+      }
+
+      return mainValue;
+    },
     [],
   );
 
@@ -42,14 +66,16 @@ export const AddressAutocompleteField = ({
     <div key={fieldName} className={styles.col}>
       <ComboBox
         id={fieldName}
-        titleText={level.name}
+        titleText={level.required ? `${level.name} *` : level.name}
         placeholder={level.name}
         items={suggestions}
         itemToString={itemToString}
+        itemToElement={itemToElement}
         selectedItem={selectedItem}
         disabled={isDisabled}
         invalid={!!error}
         invalidText={error}
+        allowCustomValue={!level.isStrictEntry}
         onChange={(data) => {
           if (data.selectedItem) {
             onSelectionChange(fieldName, data.selectedItem);

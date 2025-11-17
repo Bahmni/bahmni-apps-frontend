@@ -60,13 +60,15 @@ export function useAddressSuggestions(
         searchQueries[fieldName],
         getParentUuid(fieldName), // Include parent UUID in query key
       ],
-      queryFn: () =>
-        getAddressHierarchyEntries(
+      queryFn: () => {
+        const parentUuid = getParentUuid(fieldName);
+        return getAddressHierarchyEntries(
           fieldName,
           searchQueries[fieldName],
           20, // default limit
-          getParentUuid(fieldName), // Pass parent UUID for hierarchical filtering
-        ),
+          parentUuid, // Pass parent UUID for hierarchical filtering
+        );
+      },
       enabled: (searchQueries[fieldName]?.length ?? 0) >= 2,
       staleTime: 5 * 60 * 1000,
     })),
@@ -110,6 +112,13 @@ export function useAddressSuggestions(
                 receivedEntries: rawSuggestions.map((e) => ({
                   name: e.name,
                   parentUuid: e.parent?.uuid,
+                })),
+                filteredCount: filtered.length,
+                filteredEntries: filtered.map((e) => ({
+                  name: e.name,
+                  uuid: e.uuid,
+                  parent: e.parent,
+                  hasGrandparent: !!e.parent?.parent,
                 })),
               },
             );
@@ -181,9 +190,18 @@ export function useAddressSuggestions(
           childFieldsToClear.forEach((childField) => updated.add(childField));
           return updated;
         });
+
+        // Clear selectedItems for child fields to prevent controlled/uncontrolled warning
+        setSelectedItems((prev) => {
+          const updated = { ...prev };
+          childFieldsToClear.forEach((childField) => {
+            updated[childField] = null;
+          });
+          return updated;
+        });
       }
     },
-    [levelsWithStrictEntry, autocompleteFields],
+    [levelsWithStrictEntry, autocompleteFields, setSelectedItems],
   );
 
   /**

@@ -4,7 +4,13 @@ import {
   type AddressHierarchyEntry,
   type PatientAddress,
 } from '@bahmni-frontend/bahmni-services';
-import { useCallback, useImperativeHandle, useMemo, useState } from 'react';
+import {
+  useCallback,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import type { AddressHierarchyItem } from '../../../hooks/useAddressFields';
 import { useAddressFieldsWithConfig } from '../../../hooks/useAddressFieldsWithConfig';
 import { useAddressSuggestions } from '../../../hooks/useAddressSuggestions';
@@ -43,6 +49,9 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     {},
   );
 
+  // Track which fields are being auto-populated to prevent infinite loops
+  const autoPopulatingFieldsRef = useRef<Set<string>>(new Set());
+
   // Get list of fields that need autocomplete (not free text fields)
   const autocompleteFields = useMemo(() => {
     return levelsWithStrictEntry
@@ -67,25 +76,45 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
   // Handle input change for autocomplete fields (ComboBox typing)
   const handleAddressInputChange = useCallback(
     (field: string, value: string) => {
-      // For ComboBox fields, only trigger search - don't update address state yet
-      // The address will be updated when user selects from dropdown via onChange
+      const level = levelsWithStrictEntry.find((l) => l.addressField === field);
+
+      // For ComboBox fields, trigger search for suggestions
       if (autocompleteFields.includes(field)) {
         debouncedSearchAddress(field, value);
         // Un-mark this field as cleared since user is typing fresh query
         unmarkFieldAsCleared(field);
       }
 
+      // For non-strict fields, allow free text entry - update address state immediately
+      if (level && !level.isStrictEntry) {
+        handleFieldChange(field, value);
+      }
+
       // Clear validation error when typing
       setAddressErrors((prev) => ({ ...prev, [field]: '' }));
     },
-    [debouncedSearchAddress, autocompleteFields, unmarkFieldAsCleared],
+    [
+      debouncedSearchAddress,
+      autocompleteFields,
+      unmarkFieldAsCleared,
+      levelsWithStrictEntry,
+      handleFieldChange,
+    ],
   );
 
   // Handle suggestion selection
   const handleSuggestionSelect = useCallback(
     (field: string, entry: AddressHierarchyEntry) => {
-      // Store the selected item for ComboBox
-      setSelectedItems((prev) => ({ ...prev, [field]: entry }));
+      // eslint-disable-next-line no-console
+      console.log(`[AddressInfo] Selected ${field}:`, {
+        name: entry.name,
+        uuid: entry.uuid,
+        userGeneratedId: entry.userGeneratedId,
+        hasParent: !!entry.parent,
+        parentName: entry.parent?.name,
+        parentUuid: entry.parent?.uuid,
+        fullEntry: entry,
+      });
 
       // Convert AddressHierarchyEntry to AddressHierarchyItem recursively
       const convertToItem = (
@@ -104,14 +133,111 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       const item = convertToItem(entry);
       if (!item) return; // Safety check - should not happen with valid entry
 
+      // eslint-disable-next-line no-console
+      console.log(`[AddressInfo] Converted item:`, item);
+
+      // eslint-disable-next-line no-console
+      console.log(`[AddressInfo] About to call handleFieldSelect`);
       handleFieldSelect(field, item);
+      // eslint-disable-next-line no-console
+      console.log(`[AddressInfo] Called handleFieldSelect successfully`);
+
+      // Update selectedItems for the current field and auto-populate parent fields
+      // Collect all entries first, then batch update to avoid race conditions
+      const entriesToUpdate: Record<string, AddressHierarchyEntry> = {
+        [field]: entry, // Always include the current field's selection
+      };
+
+      // Auto-populate parent fields if they exist
+      if (item.parent) {
+        // eslint-disable-next-line no-console
+        console.log('[AddressInfo] Auto-populating selectedItems for parents');
+
+        // Find the hierarchy of parent fields
+        const fieldIndex = levelsWithStrictEntry.findIndex(
+          (l) => l.addressField === field,
+        );
+        if (fieldIndex >= 0) {
+          // Walk up the parent chain and collect entries
+          let currentParent: AddressHierarchyItem | undefined = item.parent;
+          let currentFieldIndex = fieldIndex - 1;
+
+          while (currentParent && currentFieldIndex >= 0) {
+            const parentFieldName =
+              levelsWithStrictEntry[currentFieldIndex].addressField;
+
+            // Only process if parent has required uuid
+            if (!currentParent.uuid) {
+              // eslint-disable-next-line no-console
+              console.warn(
+                `[AddressInfo] Skipping ${parentFieldName} - no UUID available`,
+              );
+              currentParent = currentParent.parent;
+              currentFieldIndex--;
+              continue;
+            }
+
+            // Convert AddressHierarchyItem back to AddressHierarchyEntry for ComboBox
+            const parentEntry: AddressHierarchyEntry = {
+              uuid: currentParent.uuid,
+              name: currentParent.name,
+              userGeneratedId: currentParent.userGeneratedId ?? null,
+              parent: currentParent.parent?.uuid
+                ? {
+                    uuid: currentParent.parent.uuid,
+                    name: currentParent.parent.name,
+                    userGeneratedId:
+                      currentParent.parent.userGeneratedId ?? null,
+                    parent: undefined,
+                  }
+                : undefined,
+            };
+
+            // eslint-disable-next-line no-console
+            console.log(
+              `[AddressInfo] Collected selectedItem for ${parentFieldName}:`,
+              parentEntry,
+            );
+
+            entriesToUpdate[parentFieldName] = parentEntry;
+
+            // Mark this parent field as being auto-populated
+            autoPopulatingFieldsRef.current.add(parentFieldName);
+
+            currentParent = currentParent.parent;
+            currentFieldIndex--;
+          }
+        }
+      }
+
+      // Batch update all selectedItems at once (current field + parents)
+      setSelectedItems((prev) => ({
+        ...prev,
+        ...entriesToUpdate,
+      }));
+
+      // Clear the auto-populating fields set after ALL ComboBox onChange events have been processed
+      // Use a longer timeout to ensure all cascading onChange calls are skipped
+      if (item.parent) {
+        setTimeout(() => {
+          autoPopulatingFieldsRef.current.clear();
+          // eslint-disable-next-line no-console
+          console.log('[AddressInfo] Cleared auto-populating fields set');
+        }, 100);
+      }
+
       setAddressErrors((prev) => ({ ...prev, [field]: '' }));
 
       // Clear search queries and suggestions for child fields
       // This ensures child field suggestions are filtered by the new parent selection
       clearChildSuggestions(field);
     },
-    [handleFieldSelect, clearChildSuggestions],
+    [
+      handleFieldSelect,
+      clearChildSuggestions,
+      setSelectedItems,
+      levelsWithStrictEntry,
+    ],
   );
 
   // Validate that strict entry fields were selected from dropdown
@@ -160,14 +286,34 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
   // Handle selection change for autocomplete fields
   const handleSelectionChange = useCallback(
     (field: string, entry: AddressHierarchyEntry | null) => {
+      // Skip if this field is being auto-populated (prevents infinite loops)
+      if (autoPopulatingFieldsRef.current.has(field)) {
+        // eslint-disable-next-line no-console
+        console.log(
+          `[AddressInfo] Skipping onChange for ${field} - being auto-populated`,
+        );
+        // Remove from set after skipping once
+        autoPopulatingFieldsRef.current.delete(field);
+        return;
+      }
+
       if (entry) {
         handleSuggestionSelect(field, entry);
       } else {
         // Clear selection if user clears the input
         setSelectedItems((prev) => ({ ...prev, [field]: null }));
+        // Clear the field value and child fields
+        handleFieldChange(field, '');
+        // Clear child suggestions
+        clearChildSuggestions(field);
       }
     },
-    [handleSuggestionSelect, setSelectedItems],
+    [
+      handleSuggestionSelect,
+      setSelectedItems,
+      handleFieldChange,
+      clearChildSuggestions,
+    ],
   );
 
   // Render autocomplete field with suggestions using ComboBox
@@ -181,6 +327,13 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       const isDisabled = isFieldReadOnly(level);
       const error = addressErrors[fieldName];
       const fieldSuggestions = suggestions[fieldName] ?? [];
+
+      // eslint-disable-next-line no-console
+      console.log(`[AddressInfo] Rendering ${fieldName}:`, {
+        suggestionsCount: fieldSuggestions.length,
+        suggestions: fieldSuggestions.map((s) => s.name),
+        isDisabled,
+      });
 
       return (
         <AddressAutocompleteField
@@ -222,7 +375,7 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
         <div key={fieldName} className={styles.col}>
           <TextInput
             id={fieldName}
-            labelText={level.name}
+            labelText={level.required ? `${level.name} *` : level.name}
             placeholder={level.name}
             value={fieldValue}
             disabled={isDisabled}
