@@ -3,7 +3,7 @@ name: CI & Publish @bahmni/clinical-app
 on:
   push:
     branches:
-      - main
+      - publish-packages
 
 env:
   NODE_VERSION: "22"
