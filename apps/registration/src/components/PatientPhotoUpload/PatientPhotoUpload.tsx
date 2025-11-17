@@ -2,8 +2,10 @@ import {
   Button,
   Modal,
   FileUploader,
+  IconButton,
 } from '@bahmni-frontend/bahmni-design-system';
 import { useTranslation, useCamera } from '@bahmni-frontend/bahmni-services';
+import { Close } from '@carbon/icons-react';
 import React, { useState, useCallback } from 'react';
 import styles from './styles.module.scss';
 
@@ -204,16 +206,16 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
       <div className={styles.photoUploadSection}>
         {confirmedUrl ? (
           <>
-            <img src={confirmedUrl} alt="Patient" />
-            <Button
+            <IconButton
               kind="ghost"
               size="sm"
               onClick={handleRemoveConfirmed}
-              title={t('CREATE_PATIENT_UPLOAD_PHOTO_REMOVE')}
+              label={t('CREATE_PATIENT_UPLOAD_PHOTO_REMOVE')}
               className={styles.removeButton}
             >
-              ×
-            </Button>
+              <Close />
+            </IconButton>
+            <img src={confirmedUrl} alt="Patient" />
           </>
         ) : (
           <>

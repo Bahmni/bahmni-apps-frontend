@@ -97,7 +97,9 @@ describe('PatientPhotoUpload', () => {
       await waitFor(() => {
         expect(screen.getByAltText('Patient')).toBeInTheDocument();
         expect(
-          screen.getByTitle('CREATE_PATIENT_UPLOAD_PHOTO_REMOVE'),
+          screen.getByRole('button', {
+            name: 'CREATE_PATIENT_UPLOAD_PHOTO_REMOVE',
+          }),
         ).toBeInTheDocument();
       });
     });
@@ -294,7 +296,9 @@ describe('PatientPhotoUpload', () => {
         expect(screen.getByAltText('Patient')).toBeInTheDocument();
       });
 
-      const removeBtn = screen.getByTitle('CREATE_PATIENT_UPLOAD_PHOTO_REMOVE');
+      const removeBtn = screen.getByRole('button', {
+        name: 'CREATE_PATIENT_UPLOAD_PHOTO_REMOVE',
+      });
       await user.click(removeBtn);
 
       expect(
