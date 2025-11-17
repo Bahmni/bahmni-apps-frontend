@@ -3,7 +3,7 @@ name: CI & Publish @bahmni/widgets
 on:
   push:
     branches:
-      - publish-packages
+      - main
 
 env:
   NODE_VERSION: "22"
