@@ -1,4 +1,4 @@
-import { type Provider, type User } from '@bahmni-frontend/bahmni-services';
+import { type Provider, type User } from '@bahmni/services';
 import { create } from 'zustand';
 import { FhirEncounter } from '../models/encounter';
 import { Concept } from '../models/encounterConcepts';

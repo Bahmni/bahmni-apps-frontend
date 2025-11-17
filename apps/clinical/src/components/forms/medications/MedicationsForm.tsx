@@ -4,8 +4,8 @@ import {
   ComboBox,
   DropdownSkeleton,
   Tile,
-} from '@bahmni-frontend/bahmni-design-system';
-import { useTranslation } from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/design-system';
+import { useTranslation } from '@bahmni/services';
 import React, { useState, useMemo, useRef } from 'react';
 import useMedicationConfig from '../../../hooks/useMedicationConfig';
 import { useMedicationSearch } from '../../../hooks/useMedicationSearch';

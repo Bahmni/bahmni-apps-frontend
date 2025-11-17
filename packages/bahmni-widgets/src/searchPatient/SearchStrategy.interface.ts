@@ -1,7 +1,7 @@
 import {
   PatientSearchResultBundle,
   PatientSearchField,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 
 /**
  * Type definition for different patient search types

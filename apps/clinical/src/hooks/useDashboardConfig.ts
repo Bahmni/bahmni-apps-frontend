@@ -3,7 +3,7 @@ import {
   notificationService,
   DashboardConfig,
   getFormattedError,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { useState, useEffect } from 'react';
 
 interface UseDashboardConfigResult {

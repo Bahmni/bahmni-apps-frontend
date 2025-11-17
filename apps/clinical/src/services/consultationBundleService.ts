@@ -3,7 +3,7 @@ import {
   DiagnosisInputEntry,
   calculateOnsetDate,
   post,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { BundleEntry, Reference, Encounter } from 'fhir/r4';
 import { CONSULTATION_BUNDLE_URL } from '../constants/app';
 import { CONSULTATION_ERROR_MESSAGES } from '../constants/errors';

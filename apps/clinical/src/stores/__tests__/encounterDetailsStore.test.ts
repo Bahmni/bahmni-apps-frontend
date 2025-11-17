@@ -1,4 +1,4 @@
-import { type Provider, type User } from '@bahmni-frontend/bahmni-services';
+import { type Provider, type User } from '@bahmni/services';
 import { renderHook, act } from '@testing-library/react';
 import { useEncounterDetailsStore } from '..//encounterDetailsStore';
 import { FhirEncounter } from '../../models/encounter';

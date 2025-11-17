@@ -1,5 +1,5 @@
 export default {
-  displayName: '@bahmni-frontend/bahmni-services',
+  displayName: '@bahmni/services',
   preset: '../../jest.preset.js',
   transform: {
     '^(?!.*\\.(js|jsx|ts|tsx|css|json)$)': '@nx/react/plugins/jest',

@@ -3,7 +3,7 @@ import {
   getFormattedError,
   getFlattenedInvestigations,
   type FlattenedInvestigations,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { useEffect, useState, useMemo } from 'react';
 import useDebounce from './useDebounce';
 

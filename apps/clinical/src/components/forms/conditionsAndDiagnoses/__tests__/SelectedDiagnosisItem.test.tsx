@@ -1,4 +1,4 @@
-import { type DiagnosisInputEntry } from '@bahmni-frontend/bahmni-services';
+import { type DiagnosisInputEntry } from '@bahmni/services';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Coding } from 'fhir/r4';

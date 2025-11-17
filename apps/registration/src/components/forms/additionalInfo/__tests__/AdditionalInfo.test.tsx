@@ -1,4 +1,4 @@
-import { useTranslation } from '@bahmni-frontend/bahmni-services';
+import { useTranslation } from '@bahmni/services';
 import { render, fireEvent, screen } from '@testing-library/react';
 import { createRef } from 'react';
 import '@testing-library/jest-dom';
@@ -6,7 +6,7 @@ import { AdditionalData } from '../../../../models/patient';
 import { AdditionalInfo, AdditionalInfoRef } from '../AdditionalInfo';
 
 // Mock the translation hook to return the key
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
+jest.mock('@bahmni/services', () => ({
   useTranslation: jest.fn(),
 }));
 

@@ -3,7 +3,7 @@ import {
   Grid,
   MenuItemDivider,
   ActionArea,
-} from '@bahmni-frontend/bahmni-design-system';
+} from '@bahmni/design-system';
 import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
@@ -11,11 +11,8 @@ import {
   useTranslation,
   ObservationForm,
   refreshQueries,
-} from '@bahmni-frontend/bahmni-services';
-import {
-  conditionsQueryKeys,
-  useNotification,
-} from '@bahmni-frontend/bahmni-widgets';
+} from '@bahmni/services';
+import { conditionsQueryKeys, useNotification } from '@bahmni/widgets';
 import { useQueryClient } from '@tanstack/react-query';
 import React, { useEffect } from 'react';
 import { useEncounterSession } from '../../../src/hooks/useEncounterSession';

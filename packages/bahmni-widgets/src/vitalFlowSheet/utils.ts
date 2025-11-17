@@ -1,7 +1,7 @@
 import {
   VitalFlowSheetConceptDetail,
   VitalFlowSheetData,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 
 export const getSortedObservationTimes = (
   vitalsData: VitalFlowSheetData | null | undefined,

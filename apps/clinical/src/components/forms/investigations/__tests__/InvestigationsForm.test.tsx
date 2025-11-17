@@ -20,8 +20,8 @@ jest.mock('../styles/InvestigationsForm.module.scss', () => ({
 jest.mock('../../../../hooks/useInvestigationsSearch');
 jest.mock('../../../../stores/serviceRequestStore');
 
-jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-design-system'),
+jest.mock('@bahmni/design-system', () => ({
+  ...jest.requireActual('@bahmni/design-system'),
   BoxHeader: ({ children, title, className }: any) => (
     <div className={className} data-testid="box-header">
       <h3>{title}</h3>

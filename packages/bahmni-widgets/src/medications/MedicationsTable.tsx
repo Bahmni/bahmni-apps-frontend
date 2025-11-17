@@ -9,7 +9,7 @@ import {
   Tabs,
   Tag,
   StatusTag,
-} from '@bahmni-frontend/bahmni-design-system';
+} from '@bahmni/design-system';
 import {
   useTranslation,
   groupByDate,
@@ -19,7 +19,7 @@ import {
   ISO_DATE_FORMAT,
   FormattedMedicationRequest,
   MedicationRequest,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import classNames from 'classnames';
 import React, { useMemo, useState, useCallback } from 'react';
 import styles from './styles/MedicationsTable.module.scss';

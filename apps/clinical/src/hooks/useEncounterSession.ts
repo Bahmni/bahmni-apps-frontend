@@ -1,8 +1,5 @@
-import { findActiveEncounterInSession } from '@bahmni-frontend/bahmni-services';
-import {
-  useActivePractitioner,
-  usePatientUUID,
-} from '@bahmni-frontend/bahmni-widgets';
+import { findActiveEncounterInSession } from '@bahmni/services';
+import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
 import { Encounter } from 'fhir/r4';
 import { useState, useEffect } from 'react';
 

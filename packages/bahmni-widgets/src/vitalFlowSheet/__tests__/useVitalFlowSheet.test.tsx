@@ -2,13 +2,13 @@ import {
   getVitalFlowSheetData,
   getFormattedError,
   VitalFlowSheetData,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { useNotification } from '../../notification';
 import { useVitalFlowSheet } from '../useVitalFlowSheet';
 
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
+jest.mock('@bahmni/services', () => ({
   getVitalFlowSheetData: jest.fn(),
   getFormattedError: jest.fn(),
   useTranslation: jest.fn(() => ({

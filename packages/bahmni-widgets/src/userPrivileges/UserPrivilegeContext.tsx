@@ -1,4 +1,4 @@
-import { UserPrivilege } from '@bahmni-frontend/bahmni-services';
+import { UserPrivilege } from '@bahmni/services';
 import { createContext } from 'react';
 
 export interface UserPrivilegeContextType {

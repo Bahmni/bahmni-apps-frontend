@@ -1,4 +1,4 @@
-import { MAX_PATIENT_AGE_YEARS } from '@bahmni-frontend/bahmni-services';
+import { MAX_PATIENT_AGE_YEARS } from '@bahmni/services';
 import {
   AgeUtils,
   formatToDisplay,

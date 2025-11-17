@@ -3,17 +3,17 @@ import {
   Tile,
   BoxWHeader,
   SelectedItem,
-} from '@bahmni-frontend/bahmni-design-system';
+} from '@bahmni/design-system';
 import {
   useTranslation,
   type ConceptSearch,
   getConditions,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import {
   conditionsQueryKeys,
   useNotification,
   usePatientUUID,
-} from '@bahmni-frontend/bahmni-widgets';
+} from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useMemo, useEffect } from 'react';
 import { useConceptSearch } from '../../../hooks/useConceptSearch';

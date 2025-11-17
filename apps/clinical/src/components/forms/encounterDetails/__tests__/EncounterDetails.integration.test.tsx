@@ -4,8 +4,8 @@ import {
   getActiveVisit,
   getCurrentUser,
   getCurrentProvider,
-} from '@bahmni-frontend/bahmni-services';
-import { useActivePractitioner } from '@bahmni-frontend/bahmni-widgets';
+} from '@bahmni/services';
+import { useActivePractitioner } from '@bahmni/widgets';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import { useActiveVisit } from '../../../../hooks/useActiveVisit';
 import { useEncounterConcepts } from '../../../../hooks/useEncounterConcepts';
@@ -15,8 +15,8 @@ import { getLocations } from '../../../../services/locationService';
 import { useEncounterDetailsStore } from '../../../../stores/encounterDetailsStore';
 import BasicForm from '../EncounterDetails';
 
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   getCookieByName: jest.fn(),
   getFormattedError: jest.fn(),
   getActiveVisit: jest.fn(),
@@ -70,8 +70,8 @@ jest.mock('../../../../hooks/useLocations', () => ({
   useLocations: jest.fn(),
 }));
 
-jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-widgets'),
+jest.mock('@bahmni/widgets', () => ({
+  ...jest.requireActual('@bahmni/widgets'),
   useActivePractitioner: jest.fn(),
   usePatientUUID: jest.fn(() => 'test-patient-uuid'),
 }));

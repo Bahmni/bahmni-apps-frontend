@@ -2,7 +2,7 @@ import {
   getCurrentUserPrivileges,
   UserPrivilege,
   getFormattedError,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { render, screen, waitFor } from '@testing-library/react';
 
 import '@testing-library/jest-dom';
@@ -11,7 +11,7 @@ import { UserPrivilegeProvider } from '../UserPrivilegeProvider';
 import { useUserPrivilege } from '../useUserPrivilege';
 
 // Mock the privilegeService
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
+jest.mock('@bahmni/services', () => ({
   getCurrentUserPrivileges: jest.fn(),
   getFormattedError: jest.fn(),
   notificationService: {

@@ -2,7 +2,7 @@ import {
   getClinicalConfig,
   notificationService,
   ClinicalConfig,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import {
   render,
   screen,
@@ -17,8 +17,8 @@ import { useClinicalConfig } from '../../hooks/useClinicalConfig';
 import { ClinicalConfigProvider } from '../ClinicalConfigProvider';
 
 // Mock the notificationService
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   getClinicalConfig: jest.fn(),
   notificationService: {
     showError: jest.fn(),

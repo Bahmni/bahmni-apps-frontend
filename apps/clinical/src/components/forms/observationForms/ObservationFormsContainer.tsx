@@ -1,9 +1,5 @@
-import {
-  ActionArea,
-  Icon,
-  ICON_SIZE,
-} from '@bahmni-frontend/bahmni-design-system';
-import { ObservationForm } from '@bahmni-frontend/bahmni-services';
+import { ActionArea, Icon, ICON_SIZE } from '@bahmni/design-system';
+import { ObservationForm } from '@bahmni/services';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_FORM_API_NAMES } from '../../../constants/forms';

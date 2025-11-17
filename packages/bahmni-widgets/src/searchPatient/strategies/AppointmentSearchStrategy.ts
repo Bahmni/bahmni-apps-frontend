@@ -6,7 +6,7 @@ import {
   calculateAgeinYearsAndMonths,
   AppointmentSearchResult,
   PatientSearchResultBundle,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import {
   SearchStrategy,
   SearchContext,

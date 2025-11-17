@@ -1,4 +1,4 @@
-import { RadiologyInvestigation } from '@bahmni-frontend/bahmni-services';
+import { RadiologyInvestigation } from '@bahmni/services';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import RadiologyInvestigationTable from '../RadiologyInvestigationTable';
@@ -15,8 +15,8 @@ jest.mock('react-router-dom', () => ({
   useParams: jest.fn(),
 }));
 
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   useTranslation: () => ({
     t: (key: string) => {
       const translations: Record<string, string> = {

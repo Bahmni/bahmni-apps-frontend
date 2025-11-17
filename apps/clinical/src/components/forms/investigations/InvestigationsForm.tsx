@@ -3,8 +3,8 @@ import {
   Tile,
   BoxWHeader,
   SelectedItem,
-} from '@bahmni-frontend/bahmni-design-system';
-import { useTranslation } from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/design-system';
+import { useTranslation } from '@bahmni/services';
 import React, { useMemo, useCallback } from 'react';
 import useInvestigationsSearch from '../../../hooks/useInvestigationsSearch';
 import type { FlattenedInvestigations } from '../../../models/investigations';

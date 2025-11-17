@@ -1,7 +1,7 @@
 import {
   type ConditionInputEntry,
   type DiagnosisInputEntry,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { renderHook } from '@testing-library/react';
 import { Coding } from 'fhir/r4';
 import { act } from 'react';

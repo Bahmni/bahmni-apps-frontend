@@ -1,12 +1,9 @@
-import {
-  getActiveVisit,
-  getFormattedError,
-} from '@bahmni-frontend/bahmni-services';
+import { getActiveVisit, getFormattedError } from '@bahmni/services';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useActiveVisit } from '../useActiveVisit';
 import { mockActiveVisit } from './__mocks__/encounterMocks';
 
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
+jest.mock('@bahmni/services', () => ({
   useTranslation: () => ({
     t: (key: string) => {
       switch (key) {

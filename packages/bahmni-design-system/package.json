@@ -1,5 +1,5 @@
 {
-  "name": "@bahmni-frontend/bahmni-design-system",
+  "name": "@bahmni/design-system",
   "version": "0.0.1",
   "type": "module",
   "main": "./dist/index.js",

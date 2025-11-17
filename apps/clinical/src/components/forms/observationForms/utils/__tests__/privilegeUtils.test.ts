@@ -1,7 +1,4 @@
-import {
-  ObservationForm,
-  UserPrivilege,
-} from '@bahmni-frontend/bahmni-services';
+import { ObservationForm, UserPrivilege } from '@bahmni/services';
 import {
   canUserAccessForm,
   filterFormsByUserPrivileges,

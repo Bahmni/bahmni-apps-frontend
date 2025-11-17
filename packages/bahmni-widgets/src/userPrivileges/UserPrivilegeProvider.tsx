@@ -3,7 +3,7 @@ import {
   getFormattedError,
   getCurrentUserPrivileges,
   type UserPrivilege,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import React, { ReactNode, useState, useMemo, useEffect } from 'react';
 import { UserPrivilegeContext } from './UserPrivilegeContext';
 

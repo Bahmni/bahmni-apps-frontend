@@ -5,7 +5,7 @@ import {
   User,
   getFormattedError,
   useTranslation,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { useState, useCallback, useEffect } from 'react';
 
 interface useActivePractitionerResult {

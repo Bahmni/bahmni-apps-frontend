@@ -1,5 +1,5 @@
 export default {
-  displayName: '@bahmni-frontend/sample-app-module',
+  displayName: '@bahmni/sample-app-module',
   preset: '../../jest.preset.js',
   testEnvironment: 'jsdom',
   transform: {

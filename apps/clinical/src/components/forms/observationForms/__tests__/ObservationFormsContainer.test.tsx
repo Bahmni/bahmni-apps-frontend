@@ -1,4 +1,4 @@
-import { ObservationForm } from '@bahmni-frontend/bahmni-services';
+import { ObservationForm } from '@bahmni/services';
 import { render, screen, fireEvent } from '@testing-library/react';
 import ObservationFormsContainer from '../ObservationFormsContainer';
 
@@ -19,7 +19,7 @@ jest.mock('react-i18next', () => ({
 }));
 
 // Mock ActionArea component
-jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
+jest.mock('@bahmni/design-system', () => ({
   ActionArea: jest.fn(
     ({
       className,

@@ -2,7 +2,7 @@ import {
   getVitalFlowSheetData,
   VitalFlowSheetData,
   getFormattedError,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';

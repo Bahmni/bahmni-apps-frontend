@@ -1,5 +1,5 @@
-import { HeaderSideNavItem } from '@bahmni-frontend/bahmni-design-system';
-import { Dashboard, DashboardConfig } from '@bahmni-frontend/bahmni-services';
+import { HeaderSideNavItem } from '@bahmni/design-system';
+import { Dashboard, DashboardConfig } from '@bahmni/services';
 
 /**
  * Gets the default dashboard from an array of dashboards

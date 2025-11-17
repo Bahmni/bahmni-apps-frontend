@@ -6,12 +6,12 @@ import {
   Checkbox,
   DatePicker,
   DatePickerInput,
-} from '@bahmni-frontend/bahmni-design-system';
+} from '@bahmni/design-system';
 import {
   useTranslation,
   getTodayDate,
   DATE_PICKER_INPUT_FORMAT,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import React, { useEffect, useCallback } from 'react';
 import { DURATION_UNIT_OPTIONS } from '../../../constants/medications';
 import { Concept } from '../../../models/encounterConcepts';

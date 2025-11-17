@@ -1,5 +1,5 @@
-import { Column, Grid, Checkbox } from '@bahmni-frontend/bahmni-design-system';
-import { useTranslation } from '@bahmni-frontend/bahmni-services';
+import { Column, Grid, Checkbox } from '@bahmni/design-system';
+import { useTranslation } from '@bahmni/services';
 import React from 'react';
 import {
   ServiceRequestInputEntry,

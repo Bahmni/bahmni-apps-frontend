@@ -4,7 +4,7 @@ import {
   HL7_CONDITION_CLINICAL_STATUS_CODE_SYSTEM,
   HL7_CONDITION_CATEGORY_CODE_SYSTEM,
   HL7_CONDITION_CATEGORY_DIAGNOSIS_CODE,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { Condition, Reference } from 'fhir/r4';
 import { createCodeableConcept, createCoding } from './codeableConceptCreator';
 

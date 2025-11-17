@@ -1,7 +1,4 @@
-import {
-  getGenders,
-  getIdentifierData,
-} from '@bahmni-frontend/bahmni-services';
+import { getGenders, getIdentifierData } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 

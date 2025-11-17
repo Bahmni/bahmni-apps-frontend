@@ -1,12 +1,12 @@
 import {
   getFlattenedInvestigations,
   getFormattedError,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { type FlattenedInvestigations } from '../../models/investigations';
 import useInvestigationsSearch from '../useInvestigationsSearch';
 
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
+jest.mock('@bahmni/services', () => ({
   getFlattenedInvestigations: jest.fn(),
   getFormattedError: jest.fn(),
   useTranslation: () => ({

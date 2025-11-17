@@ -1,4 +1,4 @@
-import { Dashboard, DashboardConfig } from '@bahmni-frontend/bahmni-services';
+import { Dashboard, DashboardConfig } from '@bahmni/services';
 import {
   validFullClinicalConfig,
   validDashboardConfig,

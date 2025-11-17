@@ -1,5 +1,5 @@
-import { useSidebarNavigation } from '@bahmni-frontend/bahmni-design-system';
-import { useNotification } from '@bahmni-frontend/bahmni-widgets';
+import { useSidebarNavigation } from '@bahmni/design-system';
+import { useNotification } from '@bahmni/widgets';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { ReactNode } from 'react';
@@ -41,8 +41,8 @@ jest.mock('react-i18next', () => ({
 }));
 
 // Mock Carbon components
-jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-design-system'),
+jest.mock('@bahmni/design-system', () => ({
+  ...jest.requireActual('@bahmni/design-system'),
   useSidebarNavigation: jest.fn(),
   Loading: jest.fn(({ description, role }) => (
     <div data-testid="carbon-loading" role={role}>
@@ -100,7 +100,7 @@ jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
   )),
 }));
 
-jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
+jest.mock('@bahmni/widgets', () => ({
   PatientDetails: jest.fn(() => (
     <div data-testid="mocked-patient-details">Mocked PatientDetails</div>
   )),
@@ -153,9 +153,7 @@ describe('ConsultationPage', () => {
       activeItemId: 'Vitals',
       handleItemClick: jest.fn(),
     });
-    const { useUserPrivilege } = jest.requireMock(
-      '@bahmni-frontend/bahmni-widgets',
-    );
+    const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
     (useUserPrivilege as jest.Mock).mockReturnValue({
       userPrivileges: ['Get Patients', 'Add Patients'],
     });
@@ -178,9 +176,7 @@ describe('ConsultationPage', () => {
         dashboardConfig: validDashboardConfig,
       });
       // Ensure userPrivileges are loaded for this test
-      const { useUserPrivilege } = jest.requireMock(
-        '@bahmni-frontend/bahmni-widgets',
-      );
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
       (useUserPrivilege as jest.Mock).mockReturnValue({
         userPrivileges: ['Get Patients', 'Add Patients'],
       });
@@ -212,9 +208,7 @@ describe('ConsultationPage', () => {
         dashboardConfig: validDashboardConfig,
       });
       // Ensure userPrivileges are loaded for this test
-      const { useUserPrivilege } = jest.requireMock(
-        '@bahmni-frontend/bahmni-widgets',
-      );
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
       (useUserPrivilege as jest.Mock).mockReturnValue({
         userPrivileges: ['Get Patients', 'Add Patients'],
       });
@@ -224,9 +218,7 @@ describe('ConsultationPage', () => {
     });
     it('should use translation keys for loading user privileges', () => {
       // Mock loading state for user privileges
-      const { useUserPrivilege } = jest.requireMock(
-        '@bahmni-frontend/bahmni-widgets',
-      );
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
       (useUserPrivilege as jest.Mock).mockReturnValue({
         userPrivileges: null,
       });
@@ -264,9 +256,7 @@ describe('ConsultationPage', () => {
         },
       });
       // Ensure userPrivileges are loaded for this test
-      const { useUserPrivilege } = jest.requireMock(
-        '@bahmni-frontend/bahmni-widgets',
-      );
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
       (useUserPrivilege as jest.Mock).mockReturnValue({
         userPrivileges: ['Get Patients', 'Add Patients'],
       });
@@ -298,9 +288,7 @@ describe('ConsultationPage', () => {
         },
       });
       // Ensure userPrivileges are loaded for this test
-      const { useUserPrivilege } = jest.requireMock(
-        '@bahmni-frontend/bahmni-widgets',
-      );
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
       (useUserPrivilege as jest.Mock).mockReturnValue({
         userPrivileges: ['Get Patients', 'Add Patients'],
       });
@@ -333,9 +321,7 @@ describe('ConsultationPage', () => {
       });
 
       // But useUserPrivilege returns null (still loading)
-      const { useUserPrivilege } = jest.requireMock(
-        '@bahmni-frontend/bahmni-widgets',
-      );
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
       (useUserPrivilege as jest.Mock).mockReturnValue({
         userPrivileges: null,
       });
@@ -366,9 +352,7 @@ describe('ConsultationPage', () => {
         clinicalConfig: validFullClinicalConfig,
       });
       // Ensure userPrivileges are loaded for this test
-      const { useUserPrivilege } = jest.requireMock(
-        '@bahmni-frontend/bahmni-widgets',
-      );
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
       (useUserPrivilege as jest.Mock).mockReturnValue({
         userPrivileges: ['Get Patients', 'Add Patients'],
       });
@@ -405,9 +389,7 @@ describe('ConsultationPage', () => {
         },
       });
       // Ensure userPrivileges are loaded for this test
-      const { useUserPrivilege } = jest.requireMock(
-        '@bahmni-frontend/bahmni-widgets',
-      );
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
       (useUserPrivilege as jest.Mock).mockReturnValue({
         userPrivileges: ['Get Patients', 'Add Patients'],
       });
@@ -446,9 +428,7 @@ describe('ConsultationPage', () => {
         },
       });
       // Ensure userPrivileges are loaded for this test
-      const { useUserPrivilege } = jest.requireMock(
-        '@bahmni-frontend/bahmni-widgets',
-      );
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
       (useUserPrivilege as jest.Mock).mockReturnValue({
         userPrivileges: ['Get Patients', 'Add Patients'],
       });
@@ -474,9 +454,7 @@ describe('ConsultationPage', () => {
     });
     it('should have no accessibility violations with null user privileges', async () => {
       // Mock null user privileges
-      const { useUserPrivilege } = jest.requireMock(
-        '@bahmni-frontend/bahmni-widgets',
-      );
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
       (useUserPrivilege as jest.Mock).mockReturnValue({
         userPrivileges: null,
       });
@@ -498,9 +476,7 @@ describe('ConsultationPage', () => {
         dashboardConfig: validDashboardConfig,
       });
       // Ensure userPrivileges are loaded for this test
-      const { useUserPrivilege } = jest.requireMock(
-        '@bahmni-frontend/bahmni-widgets',
-      );
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
       (useUserPrivilege as jest.Mock).mockReturnValue({
         userPrivileges: ['Get Patients', 'Add Patients'],
       });
@@ -536,9 +512,7 @@ describe('ConsultationPage', () => {
         dashboardConfig: validDashboardConfig,
       });
       // Ensure userPrivileges are loaded for this test
-      const { useUserPrivilege } = jest.requireMock(
-        '@bahmni-frontend/bahmni-widgets',
-      );
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
       (useUserPrivilege as jest.Mock).mockReturnValue({
         userPrivileges: ['Get Patients', 'Add Patients'],
       });

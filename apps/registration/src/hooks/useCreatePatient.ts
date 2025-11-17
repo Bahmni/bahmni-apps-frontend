@@ -8,7 +8,7 @@ import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { convertTimeToISODateTime } from '../components/forms/profile/dateAgeUtils';

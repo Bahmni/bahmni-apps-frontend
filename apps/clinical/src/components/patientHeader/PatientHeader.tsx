@@ -1,5 +1,5 @@
-import { useTranslation } from '@bahmni-frontend/bahmni-services';
-import { PatientDetails } from '@bahmni-frontend/bahmni-widgets';
+import { useTranslation } from '@bahmni/services';
+import { PatientDetails } from '@bahmni/widgets';
 import React from 'react';
 import ConsultationActionButton from './ConsultationActionButton';
 import styles from './styles/PatientHeader.module.scss';

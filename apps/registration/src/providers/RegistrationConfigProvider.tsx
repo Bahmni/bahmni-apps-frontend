@@ -3,7 +3,7 @@ import {
   notificationService,
   RegistrationConfig,
   getFormattedError,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import React, {
   ReactNode,
   useState,

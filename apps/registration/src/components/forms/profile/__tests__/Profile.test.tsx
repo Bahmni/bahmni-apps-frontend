@@ -4,7 +4,7 @@ import type { BasicInfoData } from '../../../../models/patient';
 import { Profile } from '../Profile';
 import type { ProfileRef } from '../Profile';
 
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
+jest.mock('@bahmni/services', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),

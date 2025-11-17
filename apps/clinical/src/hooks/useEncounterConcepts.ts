@@ -1,4 +1,4 @@
-import { getFormattedError } from '@bahmni-frontend/bahmni-services';
+import { getFormattedError } from '@bahmni/services';
 import { useState, useCallback, useEffect } from 'react';
 import { EncounterConcepts } from '../models/encounterConcepts';
 import { getEncounterConcepts } from '../services/encounterConceptsService';

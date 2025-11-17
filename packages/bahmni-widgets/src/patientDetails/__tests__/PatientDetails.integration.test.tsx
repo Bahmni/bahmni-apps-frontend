@@ -1,4 +1,4 @@
-import { FormattedPatientData } from '@bahmni-frontend/bahmni-services';
+import { FormattedPatientData } from '@bahmni/services';
 import { render, screen } from '@testing-library/react';
 import PatientDetails from '../PatientDetails';
 import { usePatient } from '../usePatient';
@@ -21,7 +21,7 @@ jest.mock('react-i18next', () => ({
   }),
 }));
 
-jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
+jest.mock('@bahmni/design-system', () => ({
   Icon: ({
     id,
     name,

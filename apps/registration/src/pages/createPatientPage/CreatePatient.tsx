@@ -1,15 +1,11 @@
-import {
-  Button,
-  Tile,
-  BaseLayout,
-} from '@bahmni-frontend/bahmni-design-system';
+import { Button, Tile, BaseLayout } from '@bahmni/design-system';
 import {
   BAHMNI_HOME_PATH,
   useTranslation,
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {

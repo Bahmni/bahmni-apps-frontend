@@ -3,13 +3,13 @@ import {
   getFormattedError,
   useTranslation,
   Diagnosis,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { render, screen, waitFor } from '@testing-library/react';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import DiagnosesTable from '../DiagnosesTable';
 
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   getPatientDiagnoses: jest.fn(),
   getFormattedError: jest.fn(),
   useTranslation: jest.fn(),

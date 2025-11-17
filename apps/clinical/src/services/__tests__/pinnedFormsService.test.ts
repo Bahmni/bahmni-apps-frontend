@@ -3,12 +3,12 @@ import {
   post,
   getCurrentUser,
   USER_PINNED_PREFERENCE_URL,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { PINNED_FORMS_ERROR_MESSAGES } from '../../constants/errors';
 import { loadPinnedForms, savePinnedForms } from '../pinnedFormsService';
 
 // Mock the bahmni-services module
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
+jest.mock('@bahmni/services', () => ({
   get: jest.fn(),
   post: jest.fn(),
   getCurrentUser: jest.fn(),

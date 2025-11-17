@@ -1,4 +1,4 @@
-import { getFormattedError } from '@bahmni-frontend/bahmni-services';
+import { getFormattedError } from '@bahmni/services';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { EncounterConcepts } from '../../models/encounterConcepts';
 import { getEncounterConcepts } from '../../services/encounterConceptsService';
@@ -6,7 +6,7 @@ import { useEncounterConcepts } from '../useEncounterConcepts';
 
 // Mock dependencies
 jest.mock('../../services/encounterConceptsService');
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
+jest.mock('@bahmni/services', () => ({
   getFormattedError: jest.fn(),
 }));
 

@@ -1,4 +1,4 @@
-import { RegistrationConfig } from '@bahmni-frontend/bahmni-services';
+import { RegistrationConfig } from '@bahmni/services';
 
 /**
  * Registration configuration context interface

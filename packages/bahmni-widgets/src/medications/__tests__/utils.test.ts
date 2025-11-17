@@ -2,7 +2,7 @@ import {
   MedicationRequest,
   MedicationStatus,
   FormattedMedicationRequest,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { differenceInDays, parseISO } from 'date-fns';
 import {
   formatMedicationRequest,

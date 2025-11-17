@@ -1,5 +1,5 @@
 {
-  "name": "@bahmni-frontend/bahmni-widgets",
+  "name": "@bahmni/widgets",
   "version": "0.0.1",
   "type": "module",
   "main": "./dist/index.js",
@@ -22,8 +22,7 @@
     "url": "https://github.com/bahnew/bahmni-clinical-frontend.git",
     "directory": "bahmni-frontend/packages/bahmni-widgets"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",

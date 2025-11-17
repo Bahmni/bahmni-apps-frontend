@@ -1,5 +1,5 @@
 export default {
-  displayName: '@bahmni-frontend/bahmni-design-system',
+  displayName: '@bahmni/design-system',
   preset: '../../jest.preset.js',
   setupFilesAfterEnv: ['<rootDir>/../../setupTests.ts'],
   testEnvironment: 'jsdom',

@@ -7,7 +7,7 @@ import {
   PatientSearchResultBundle,
   hasPrivilege,
   dateComparator,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { NavigateFunction } from 'react-router-dom';
 import { PatientSearchViewModel } from './utils';
 

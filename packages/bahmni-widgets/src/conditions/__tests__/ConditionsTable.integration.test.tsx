@@ -1,4 +1,4 @@
-import { getConditions } from '@bahmni-frontend/bahmni-services';
+import { getConditions } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import { Condition } from 'fhir/r4';
@@ -6,8 +6,8 @@ import { useNotification } from '../../notification';
 import ConditionsTable from '../ConditionsTable';
 
 jest.mock('../../notification');
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   getConditions: jest.fn(),
 }));
 jest.mock('../../hooks/usePatientUUID', () => ({

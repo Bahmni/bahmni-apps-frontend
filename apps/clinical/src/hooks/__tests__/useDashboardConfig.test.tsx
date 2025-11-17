@@ -1,10 +1,10 @@
-import { getDashboardConfig } from '@bahmni-frontend/bahmni-services';
+import { getDashboardConfig } from '@bahmni/services';
 import { renderHook, act } from '@testing-library/react';
 import { validDashboardConfig } from '../../__mocks__/configMocks';
 import { useDashboardConfig } from '../useDashboardConfig';
 
 // Mock notification service
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
+jest.mock('@bahmni/services', () => ({
   getDashboardConfig: jest.fn(),
   getFormattedError: jest.fn((error) => ({
     title: 'Error',

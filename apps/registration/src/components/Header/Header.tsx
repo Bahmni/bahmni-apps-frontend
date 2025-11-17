@@ -1,4 +1,4 @@
-import { Breadcrumb, Button } from '@bahmni-frontend/bahmni-design-system';
+import { Breadcrumb, Button } from '@bahmni/design-system';
 import React from 'react';
 
 import styles from './styles/index.module.scss';

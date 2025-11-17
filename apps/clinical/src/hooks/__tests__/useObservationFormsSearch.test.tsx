@@ -2,8 +2,8 @@ import {
   getFormattedError,
   getCurrentUserPrivileges,
   fetchObservationForms,
-} from '@bahmni-frontend/bahmni-services';
-import { UserPrivilegeProvider } from '@bahmni-frontend/bahmni-widgets';
+} from '@bahmni/services';
+import { UserPrivilegeProvider } from '@bahmni/widgets';
 import { renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { I18nextProvider } from 'react-i18next';
@@ -14,8 +14,8 @@ import { filterFormsByUserPrivileges } from '../../components/forms/observationF
 import useObservationFormsSearch from '../useObservationFormsSearch';
 
 // Mock the common utils
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   getFormattedError: jest.fn(),
   getCurrentUserPrivileges: jest.fn(),
   fetchObservationForms: jest.fn(),
@@ -30,8 +30,8 @@ jest.mock(
 );
 
 // Mock useUserPrivilege hook
-jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-widgets'),
+jest.mock('@bahmni/widgets', () => ({
+  ...jest.requireActual('@bahmni/widgets'),
   useUserPrivilege: jest.fn(() => ({
     userPrivileges: [
       { name: 'app:clinical:observationForms' },
@@ -157,9 +157,7 @@ describe('useObservationFormsSearch', () => {
   describe('privilege filtering', () => {
     it('should return empty array when user privileges are null (loading)', async () => {
       // Mock useUserPrivilege to return null privileges
-      const { useUserPrivilege } = jest.requireMock(
-        '@bahmni-frontend/bahmni-widgets',
-      );
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
       (useUserPrivilege as jest.Mock).mockReturnValue({
         userPrivileges: null,
       });
@@ -182,9 +180,7 @@ describe('useObservationFormsSearch', () => {
       const mockPrivileges = [{ name: 'app:clinical:observationForms' }];
 
       // Mock useUserPrivilege to return specific privileges
-      const { useUserPrivilege } = jest.requireMock(
-        '@bahmni-frontend/bahmni-widgets',
-      );
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
       (useUserPrivilege as jest.Mock).mockReturnValue({
         userPrivileges: mockPrivileges,
       });

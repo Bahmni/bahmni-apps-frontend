@@ -2,15 +2,15 @@ import {
   createPatient,
   notificationService,
   dispatchAuditEvent,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 import { ReactNode } from 'react';
 import { useCreatePatient } from '../useCreatePatient';
 
 // Mock dependencies
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   createPatient: jest.fn(),
   notificationService: {
     showSuccess: jest.fn(),

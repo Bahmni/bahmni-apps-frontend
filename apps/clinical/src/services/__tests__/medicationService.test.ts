@@ -1,4 +1,4 @@
-import { get } from '@bahmni-frontend/bahmni-services';
+import { get } from '@bahmni/services';
 import { Bundle, Medication } from 'fhir/r4';
 import {
   MEDICATION_ORDERS_METADATA_URL,
@@ -15,7 +15,7 @@ import {
   getMedicationDisplay,
 } from '../medicationService';
 
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
+jest.mock('@bahmni/services', () => ({
   get: jest.fn(),
 }));
 

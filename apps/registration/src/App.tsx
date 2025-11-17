@@ -1,16 +1,10 @@
-import {
-  Content,
-  initFontAwesome,
-} from '@bahmni-frontend/bahmni-design-system';
-import {
-  initAppI18n,
-  initializeAuditListener,
-} from '@bahmni-frontend/bahmni-services';
+import { Content, initFontAwesome } from '@bahmni/design-system';
+import { initAppI18n, initializeAuditListener } from '@bahmni/services';
 import {
   NotificationProvider,
   NotificationServiceComponent,
   UserPrivilegeProvider,
-} from '@bahmni-frontend/bahmni-widgets';
+} from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import React, { useEffect, useState } from 'react';

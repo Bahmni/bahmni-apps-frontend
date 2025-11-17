@@ -8,7 +8,7 @@ import {
   Stack,
   Tag,
   Tile,
-} from '@bahmni-frontend/bahmni-design-system';
+} from '@bahmni/design-system';
 import {
   AppointmentSearchResult,
   AUDIT_LOG_EVENT_DETAILS,
@@ -20,11 +20,8 @@ import {
   PatientSearchResult,
   PatientSearchResultBundle,
   useTranslation,
-} from '@bahmni-frontend/bahmni-services';
-import {
-  SearchPatient,
-  useUserPrivilege,
-} from '@bahmni-frontend/bahmni-widgets';
+} from '@bahmni/services';
+import { SearchPatient, useUserPrivilege } from '@bahmni/widgets';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../../components/Header';

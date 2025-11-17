@@ -1,8 +1,8 @@
-import { searchConcepts } from '@bahmni-frontend/bahmni-services';
+import { searchConcepts } from '@bahmni/services';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useConceptSearch } from '../useConceptSearch';
 
-jest.mock('@bahmni-frontend/bahmni-services');
+jest.mock('@bahmni/services');
 
 describe('useConceptSearch', () => {
   beforeEach(() => {

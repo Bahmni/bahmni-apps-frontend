@@ -1,5 +1,5 @@
 {
-  "name": "@bahmni-frontend/distro",
+  "name": "@bahmni/distro",
   "version": "0.0.1",
   "private": true
 }

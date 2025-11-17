@@ -2,7 +2,7 @@ import {
   type ConceptSearch,
   type ConditionInputEntry,
   type DiagnosisInputEntry,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { Coding } from 'fhir/r4';
 import { create } from 'zustand';
 

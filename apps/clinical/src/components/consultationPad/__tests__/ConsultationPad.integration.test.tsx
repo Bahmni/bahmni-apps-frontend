@@ -5,11 +5,8 @@ import {
   getFormattedError,
   notificationService,
   getConditions,
-} from '@bahmni-frontend/bahmni-services';
-import {
-  NotificationProvider,
-  useActivePractitioner,
-} from '@bahmni-frontend/bahmni-widgets';
+} from '@bahmni/services';
+import { NotificationProvider, useActivePractitioner } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -40,21 +37,21 @@ jest.mock('../../../services/consultationBundleService');
 jest.mock('../../../services/locationService');
 jest.mock('../../../services/encounterConceptsService');
 
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   getFormattedError: jest.fn(),
   getActiveVisit: jest.fn(),
   logAuditEvent: jest.fn(),
   getConditions: jest.fn(),
 }));
 
-jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-widgets'),
+jest.mock('@bahmni/widgets', () => ({
+  ...jest.requireActual('@bahmni/widgets'),
   useActivePractitioner: jest.fn(),
   usePatientUUID: jest.fn(() => 'patient-1'),
 }));
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   getFormattedError: jest.fn(),
   getActiveVisit: jest.fn(),
   logAuditEvent: jest.fn(),
@@ -63,8 +60,8 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
 }));
 
 // Mock useUserPrivilege hook
-jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-widgets'),
+jest.mock('@bahmni/widgets', () => ({
+  ...jest.requireActual('@bahmni/widgets'),
   useActivePractitioner: jest.fn(),
   usePatientUUID: jest.fn(() => 'patient-1'),
   useUserPrivilege: jest.fn(() => ({
@@ -177,9 +174,7 @@ describe('ConsultationPad Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Mock privilege service
-    const { getCurrentUserPrivileges } = jest.requireMock(
-      '@bahmni-frontend/bahmni-services',
-    );
+    const { getCurrentUserPrivileges } = jest.requireMock('@bahmni/services');
     (getCurrentUserPrivileges as jest.Mock).mockResolvedValue([
       { name: 'app:clinical:observationForms' },
       { name: 'app:clinical:locationpicker' },

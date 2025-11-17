@@ -1,4 +1,4 @@
-import { ClinicalConfig } from '@bahmni-frontend/bahmni-services';
+import { ClinicalConfig } from '@bahmni/services';
 
 /**
  * Configuration context interface

@@ -3,17 +3,15 @@ import {
   FormattedLabTest,
   LabTestPriority,
   useTranslation,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { renderHook, waitFor } from '@testing-library/react';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import useLabInvestigations from '../useLabInvestigations';
 
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
+jest.mock('@bahmni/services', () => ({
   getPatientLabInvestigations: jest.fn(),
-  FormattedLabTest: jest.requireActual('@bahmni-frontend/bahmni-services')
-    .FormattedLabTest,
-  LabTestPriority: jest.requireActual('@bahmni-frontend/bahmni-services')
-    .LabTestPriority,
+  FormattedLabTest: jest.requireActual('@bahmni/services').FormattedLabTest,
+  LabTestPriority: jest.requireActual('@bahmni/services').LabTestPriority,
   useTranslation: jest.fn(),
 }));
 jest.mock('../../hooks/usePatientUUID');

@@ -1,4 +1,4 @@
-import { get } from '@bahmni-frontend/bahmni-services';
+import { get } from '@bahmni/services';
 import i18n from '../../../setupTests.i18n';
 import { ENCOUNTER_CONCEPTS_URL } from '../../constants/app';
 import { COMMON_ERROR_MESSAGES } from '../../constants/errors';
@@ -9,7 +9,7 @@ import {
 import { getEncounterConcepts } from '../../services/encounterConceptsService';
 
 // Mock dependencies
-jest.mock('@bahmni-frontend/bahmni-services');
+jest.mock('@bahmni/services');
 
 // Type the mocked functions
 const mockedGet = get as jest.MockedFunction<typeof get>;

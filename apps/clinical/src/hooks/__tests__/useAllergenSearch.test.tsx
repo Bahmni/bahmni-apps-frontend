@@ -2,7 +2,7 @@ import {
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
   getFormattedError,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import React from 'react';
 import { ALLERGEN_TYPES } from '../../constants/allergy';
@@ -11,7 +11,7 @@ import { useClinicalConfig } from '../useClinicalConfig';
 
 // Mock hooks
 jest.mock('../useClinicalConfig');
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
+jest.mock('@bahmni/services', () => ({
   fetchAndFormatAllergenConcepts: jest.fn(),
   fetchReactionConcepts: jest.fn(),
   getFormattedError: jest.fn(),

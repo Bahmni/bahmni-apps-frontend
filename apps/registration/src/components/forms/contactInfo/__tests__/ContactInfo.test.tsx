@@ -4,7 +4,7 @@ import type { ContactData } from '../../../../models/patient';
 import { ContactInfo } from '../ContactInfo';
 import type { ContactInfoRef } from '../ContactInfo';
 
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
+jest.mock('@bahmni/services', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
