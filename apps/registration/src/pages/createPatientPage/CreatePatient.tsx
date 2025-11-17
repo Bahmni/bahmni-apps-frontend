@@ -4,7 +4,6 @@ import { Button, Tile, BaseLayout   Header,
 } from '@bahmni/design-system';
 import {
   BAHMNI_HOME_PATH,
-  BAHMNI_REGISTRATION_SEARCH,
   useTranslation,
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
@@ -24,6 +23,7 @@ import {
   ContactInfoRef,
 } from '../../components/forms/contactInfo/ContactInfo';
 import { Profile, ProfileRef } from '../../components/forms/profile/Profile';
+import { BAHMNI_REGISTRATION_SEARCH } from '../../constants/app';
 
 import { useCreatePatient } from '../../hooks/useCreatePatient';
 import { validateAllSections, collectFormData } from './patientFormService';
