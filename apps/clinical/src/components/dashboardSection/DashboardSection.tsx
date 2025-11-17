@@ -1,8 +1,5 @@
 import { Tile } from '@bahmni/design-system';
-import {
-  useTranslation,
-  DashboardSectionConfig,
-} from '@bahmni/services';
+import { useTranslation, DashboardSectionConfig } from '@bahmni/services';
 import {
   AllergiesTable,
   ConditionsTable,

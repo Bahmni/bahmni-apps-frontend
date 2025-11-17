@@ -1,7 +1,4 @@
-import {
-  AUDIT_LOG_EVENT_DETAILS,
-  dispatchAuditEvent,
-} from '@bahmni/services';
+import { AUDIT_LOG_EVENT_DETAILS, dispatchAuditEvent } from '@bahmni/services';
 import {
   render,
   screen,

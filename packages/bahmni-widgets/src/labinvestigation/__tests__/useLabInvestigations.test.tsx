@@ -10,10 +10,8 @@ import useLabInvestigations from '../useLabInvestigations';
 
 jest.mock('@bahmni/services', () => ({
   getPatientLabInvestigations: jest.fn(),
-  FormattedLabTest: jest.requireActual('@bahmni/services')
-    .FormattedLabTest,
-  LabTestPriority: jest.requireActual('@bahmni/services')
-    .LabTestPriority,
+  FormattedLabTest: jest.requireActual('@bahmni/services').FormattedLabTest,
+  LabTestPriority: jest.requireActual('@bahmni/services').LabTestPriority,
   useTranslation: jest.fn(),
 }));
 jest.mock('../../hooks/usePatientUUID');

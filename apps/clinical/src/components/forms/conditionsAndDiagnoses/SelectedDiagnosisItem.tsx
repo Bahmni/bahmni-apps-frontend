@@ -1,8 +1,5 @@
 import { Column, Grid, Dropdown, Link } from '@bahmni/design-system';
-import {
-  useTranslation,
-  type DiagnosisInputEntry,
-} from '@bahmni/services';
+import { useTranslation, type DiagnosisInputEntry } from '@bahmni/services';
 import { Coding } from 'fhir/r4';
 import React from 'react';
 import { CERTAINITY_CONCEPTS } from '../../../constants/diagnosis';

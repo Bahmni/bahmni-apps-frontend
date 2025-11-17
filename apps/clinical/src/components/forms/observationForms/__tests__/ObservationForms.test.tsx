@@ -473,9 +473,7 @@ describe('ObservationForms', () => {
       );
 
       // Simulate ComboBox onChange with null selectedItem by clicking a disabled item
-      const ComboBox = jest.requireMock(
-        '@bahmni/design-system',
-      ).ComboBox;
+      const ComboBox = jest.requireMock('@bahmni/design-system').ComboBox;
       if (ComboBox.mock && ComboBox.mock.calls.length > 0) {
         const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
         const onChange = lastCall[0].onChange;
@@ -492,9 +490,7 @@ describe('ObservationForms', () => {
       );
 
       // Simulate ComboBox onChange with selectedItem without id
-      const ComboBox = jest.requireMock(
-        '@bahmni/design-system',
-      ).ComboBox;
+      const ComboBox = jest.requireMock('@bahmni/design-system').ComboBox;
       if (ComboBox.mock && ComboBox.mock.calls.length > 0) {
         const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
         const onChange = lastCall[0].onChange;
@@ -510,9 +506,7 @@ describe('ObservationForms', () => {
       render(<ObservationForms {...defaultProps} />);
 
       // Get the itemToString function from ComboBox mock
-      const ComboBox = jest.requireMock(
-        '@bahmni/design-system',
-      ).ComboBox;
+      const ComboBox = jest.requireMock('@bahmni/design-system').ComboBox;
 
       // Ensure mock is available
       expect(ComboBox.mock).toBeDefined();
@@ -615,9 +609,7 @@ describe('ObservationForms', () => {
       );
 
       // Simulate ComboBox onChange with a selectedItem that doesn't exist in availableForms
-      const ComboBox = jest.requireMock(
-        '@bahmni/design-system',
-      ).ComboBox;
+      const ComboBox = jest.requireMock('@bahmni/design-system').ComboBox;
       if (ComboBox.mock && ComboBox.mock.calls.length > 0) {
         const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
         const onChange = lastCall[0].onChange;
@@ -642,9 +634,7 @@ describe('ObservationForms', () => {
         <ObservationForms {...defaultProps} onFormSelect={mockOnFormSelect} />,
       );
 
-      const ComboBox = jest.requireMock(
-        '@bahmni/design-system',
-      ).ComboBox;
+      const ComboBox = jest.requireMock('@bahmni/design-system').ComboBox;
       if (ComboBox.mock && ComboBox.mock.calls.length > 0) {
         const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
         const onChange = lastCall[0].onChange;

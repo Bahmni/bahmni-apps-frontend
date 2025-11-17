@@ -5,10 +5,7 @@ import {
   dispatchAuditEvent,
   getRegistrationConfig,
 } from '@bahmni/services';
-import {
-  NotificationProvider,
-  UserPrivilegeProvider,
-} from '@bahmni/widgets';
+import { NotificationProvider, UserPrivilegeProvider } from '@bahmni/widgets';
 import {
   QueryClient,
   QueryClientProvider,

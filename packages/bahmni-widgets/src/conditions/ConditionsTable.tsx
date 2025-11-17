@@ -1,8 +1,4 @@
-import {
-  SortableDataTable,
-  StatusTag,
-  Tile,
-} from '@bahmni/design-system';
+import { SortableDataTable, StatusTag, Tile } from '@bahmni/design-system';
 import {
   getConditions,
   useTranslation,

@@ -35,7 +35,7 @@ This document describes the namespace-based internationalization (i18n) system i
 
 ### System Components
 
-``` txt
+```txt
 ├── apps/
 │   ├── clinical/
 │   │   ├── public/
@@ -77,7 +77,7 @@ This document describes the namespace-based internationalization (i18n) system i
 Create or update `apps/<your-app>/src/constants/app.ts`:
 
 ```typescript
-export const YOUR_APP_NAMESPACE = 'your-app-name'; // e.g., 'clinical', 'registration'
+export const YOUR_APP_NAMESPACE = "your-app-name"; // e.g., 'clinical', 'registration'
 ```
 
 #### Step 2: Create Translation Files
@@ -131,40 +131,40 @@ Update `apps/<your-app>/package.json` to export locale files:
 Update `apps/<your-app>/vite.config.ts`:
 
 ```typescript
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import dts from 'vite-plugin-dts';
-import * as path from 'path';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import dts from "vite-plugin-dts";
+import * as path from "path";
 
 export default defineConfig(() => ({
   root: __dirname,
-  cacheDir: '../../node_modules/.vite/apps/<your-app>',
-  publicDir: 'public', // Enable public directory
+  cacheDir: "../../node_modules/.vite/apps/<your-app>",
+  publicDir: "public", // Enable public directory
   plugins: [
     react(),
     dts({
-      entryRoot: 'src',
-      tsconfigPath: path.join(__dirname, 'tsconfig.lib.json'),
+      entryRoot: "src",
+      tsconfigPath: path.join(__dirname, "tsconfig.lib.json"),
     }),
   ],
   build: {
-    outDir: './dist',
+    outDir: "./dist",
     emptyOutDir: true,
     reportCompressedSize: true,
     copyPublicDir: true, // Copy public directory to dist
     lib: {
-      entry: 'src/index.ts',
-      name: '<YourApp>',
-      fileName: 'index',
-      formats: ['es'],
+      entry: "src/index.ts",
+      name: "<YourApp>",
+      fileName: "index",
+      formats: ["es"],
     },
     rollupOptions: {
       external: [
-        'react',
-        'react-dom',
-        'react/jsx-runtime',
-        'react-router-dom',
-        '@tanstack/react-query',
+        "react",
+        "react-dom",
+        "react/jsx-runtime",
+        "react-router-dom",
+        "@tanstack/react-query",
       ],
     },
   },
@@ -219,15 +219,15 @@ module.exports = (env, argv) => {
   return {
     // ... other config
     entry: {
-      main: './src/main.tsx',
-      index: './src/index.html',
+      main: "./src/main.tsx",
+      index: "./src/index.html",
       baseHref: publicPath,
       assets: [
-        './src/assets',
+        "./src/assets",
         {
-          input: '../apps/<your-app>/dist/locales',
-          glob: '**/*',
-          output: '<your-app>/locales'
+          input: "../apps/<your-app>/dist/locales",
+          glob: "**/*",
+          output: "<your-app>/locales",
         },
         // Add for other apps as needed
       ],
@@ -313,7 +313,7 @@ const MyComponent: React.FC = () => {
 
 ### Translation Loading Flow
 
-``` txt
+```txt
 1. App Initialization
    └─> initAppI18n(namespace)
        └─> getUserPreferredLocale()
@@ -352,6 +352,7 @@ Initializes the i18n system with namespace-specific translations.
 **Location**: `packages/bahmni-services/src/i18n/i18n.ts:14`
 
 This function:
+
 - Detects the user's preferred locale
 - Fetches translations for the specified namespace
 - Configures i18next with the namespace and translations
@@ -365,6 +366,7 @@ Fetches and merges translations from all sources.
 **Location**: `packages/bahmni-services/src/i18n/translationService.ts:78`
 
 This function:
+
 - Loads merged translations for the requested language and namespace
 - Automatically includes English translations as fallback for non-English languages
 - Returns translations organized by language code and namespace
@@ -376,6 +378,7 @@ Merges bundled and config translations with config taking precedence.
 **Location**: `packages/bahmni-services/src/i18n/translationService.ts:41`
 
 This function:
+
 - Fetches bundled translations from the application build
 - Fetches config translations from the server
 - Merges both sources with config translations overriding bundled ones
@@ -530,7 +533,7 @@ Bahmni allows deployment-specific translation overrides via server-side configur
 
 ### Directory Structure
 
-``` txt
+```txt
 bahmni_config/
 └── openmrs/
     └── i18n/
@@ -655,7 +658,7 @@ If you have an existing app using global translations:
 1. **Identify your namespace**:
 
    ```typescript
-   export const YOUR_APP_NAMESPACE = 'your-app-name';
+   export const YOUR_APP_NAMESPACE = "your-app-name";
    ```
 
 2. **Move translation files**:
@@ -753,19 +756,19 @@ If two apps try to use the same translation keys:
 ### Accessing Translation Outside React Components
 
 ```typescript
-import i18n from 'i18next';
+import i18n from "i18next";
 
 // In utility functions or services
-const translatedText = i18n.t('TRANSLATION_KEY');
+const translatedText = i18n.t("TRANSLATION_KEY");
 ```
 
 ### Dynamic Namespace Loading
 
 ```typescript
-import { i18n } from 'i18next';
+import { i18n } from "i18next";
 
 // Load additional namespace at runtime
-await i18n.loadNamespaces('new-namespace');
+await i18n.loadNamespaces("new-namespace");
 ```
 
 ### Using Namespaces in Components
@@ -774,19 +777,19 @@ await i18n.loadNamespaces('new-namespace');
 const { t } = useTranslation();
 
 // Access translation from specific namespace
-t('key', { ns: 'yourNamespace' });
+t("key", { ns: "yourNamespace" });
 ```
 
 ### Custom Language Detector
 
 ```typescript
-import { LanguageDetector } from 'i18next-browser-languagedetector';
+import { LanguageDetector } from "i18next-browser-languagedetector";
 
 const customDetector = {
-  name: 'customDetector',
+  name: "customDetector",
   lookup() {
     // Custom logic to detect language
-    return 'en';
+    return "en";
   },
 };
 

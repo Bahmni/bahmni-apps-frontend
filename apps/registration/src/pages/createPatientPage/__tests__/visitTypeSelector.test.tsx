@@ -200,9 +200,8 @@ describe('VisitTypeSelector', () => {
   });
 
   it('should log audit event when visit is successfully created', async () => {
-    const { dispatchAuditEvent, AUDIT_LOG_EVENT_DETAILS } = jest.requireMock(
-      '@bahmni/services',
-    );
+    const { dispatchAuditEvent, AUDIT_LOG_EVENT_DETAILS } =
+      jest.requireMock('@bahmni/services');
 
     const patientUuid = '9891a8b4-7404-4c05-a207-5ec9d34fc719';
     mockOnVisitSave.mockResolvedValue(patientUuid);

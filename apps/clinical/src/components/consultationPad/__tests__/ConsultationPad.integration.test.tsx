@@ -6,10 +6,7 @@ import {
   notificationService,
   getConditions,
 } from '@bahmni/services';
-import {
-  NotificationProvider,
-  useActivePractitioner,
-} from '@bahmni/widgets';
+import { NotificationProvider, useActivePractitioner } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -177,9 +174,7 @@ describe('ConsultationPad Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Mock privilege service
-    const { getCurrentUserPrivileges } = jest.requireMock(
-      '@bahmni/services',
-    );
+    const { getCurrentUserPrivileges } = jest.requireMock('@bahmni/services');
     (getCurrentUserPrivileges as jest.Mock).mockResolvedValue([
       { name: 'app:clinical:observationForms' },
       { name: 'app:clinical:locationpicker' },

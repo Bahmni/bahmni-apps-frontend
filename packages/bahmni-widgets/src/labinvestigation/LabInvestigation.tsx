@@ -1,8 +1,4 @@
-import {
-  Accordion,
-  AccordionItem,
-  SkeletonText,
-} from '@bahmni/design-system';
+import { Accordion, AccordionItem, SkeletonText } from '@bahmni/design-system';
 import {
   groupLabTestsByDate,
   useTranslation,
