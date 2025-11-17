@@ -5,6 +5,17 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the registration configuration"
+    },
+    "contextModel": {
+      "type": "array",
+      "description": "Array of context model configurations",
+      "items": {
+        "type": "string"
+      }
+    },
     "patientSearch": {
       "type": "object",
       "description": "Patient search configuration",

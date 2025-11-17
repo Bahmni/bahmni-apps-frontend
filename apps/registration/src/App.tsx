@@ -9,6 +9,7 @@ import {
 import {
   NotificationProvider,
   NotificationServiceComponent,
+  UserPrivilegeProvider,
 } from '@bahmni-frontend/bahmni-widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -52,11 +53,13 @@ const RegistrationApp: React.FC = () => {
         <NotificationServiceComponent />
         <QueryClientProvider client={queryClient}>
           <RegistrationConfigProvider>
-            <Routes>
-              <Route path="/search" element={<PatientSearchPage />} />
-              <Route path="/new" element={<CreatePatient />} />
-              <Route path="/edit/:patientUuid" element={<CreatePatient />} />
-            </Routes>
+            <UserPrivilegeProvider>
+              <Routes>
+                <Route path="/search" element={<PatientSearchPage />} />
+                <Route path="/new" element={<CreatePatient />} />
+                <Route path="/edit/:patientUuid" element={<CreatePatient />} />
+              </Routes>
+            </UserPrivilegeProvider>
           </RegistrationConfigProvider>
           <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>

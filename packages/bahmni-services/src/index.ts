@@ -37,7 +37,10 @@ export {
   EMAIL_UUID,
   ALTERNATE_PHONE_NUMBER_UUID,
 } from './patientService';
-export { searchAppointmentsByAttribute } from './AppointmentService/appointmmetService';
+export {
+  searchAppointmentsByAttribute,
+  updateAppointmentStatus,
+} from './AppointmentService/appointmmetService';
 export {
   type Appointment,
   type AppointmentSearchResult,
@@ -56,6 +59,8 @@ export {
   groupByDate,
   filterReplacementEntries,
   refreshQueries,
+  parseQueryParams,
+  formatUrl,
 } from './utils';
 export {
   type FormatDateResult,
@@ -73,6 +78,7 @@ export {
   getTodayDate,
   calculateAgeinYearsAndMonths,
   formatDateAndTime,
+  dateComparator,
 } from './date';
 export { type Notification, notificationService } from './notification';
 export {
@@ -140,6 +146,7 @@ export {
   type RegistrationConfig,
   type PatientSearchConfig,
   type PatientSearchField,
+  type SearchActionConfig,
 } from './configService';
 
 export { getCurrentUser, getUserLoginLocation, type User } from './userService';

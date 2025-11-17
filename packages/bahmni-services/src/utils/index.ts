@@ -7,4 +7,6 @@ export {
   groupByDate,
   filterReplacementEntries,
   refreshQueries,
+  parseQueryParams,
+  formatUrl,
 } from './utils';
