@@ -142,6 +142,63 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
     }
   };
 
+  const renderCaptureContent = () => {
+    return !previewUrl ? (
+      <>
+        <div className={styles.imagePreviewContainer}>
+          <video ref={videoRef} autoPlay playsInline />
+        </div>
+        <div className={styles.buttonGroup}>
+          <Button kind="primary" onClick={handleCaptureClick}>
+            {t('CREATE_PATIENT_CAPTURE_PHOTO')}
+          </Button>
+        </div>
+      </>
+    ) : (
+      <>
+        <div className={styles.imagePreviewContainer}>
+          <img src={previewUrl} alt="Preview" />
+        </div>
+        <div className={styles.buttonGroup}>
+          <Button kind="primary" onClick={handleConfirm}>
+            {t('CREATE_PATIENT_UPLOAD_PHOTO_CONFIRM')}
+          </Button>
+          <Button kind="primary" onClick={handlePreview}>
+            {t('CREATE_PATIENT_UPLOAD_PHOTO_RETAKE')}
+          </Button>
+        </div>
+      </>
+    );
+  };
+
+  const renderUploadContent = () => {
+    return (
+      <>
+        <FileUploader
+          labelTitle=""
+          title={fileName}
+          key={isModalOpen ? 'open' : 'closed'}
+          labelDescription={t('CREATE_PATIENT_UPLOAD_PHOTO_FILE_SIZE_LIMIT')}
+          buttonLabel={t('CREATE_PATIENT_UPLOAD_PHOTO_CHOOSE_FILE')}
+          buttonKind="primary"
+          accept={['image/*']}
+          onChange={handleFileChange}
+          onDelete={handleFileDelete}
+          filenameStatus="edit"
+        />
+        <div className={styles.errorMessage}>{fileSizeError}</div>
+        <div className={styles.imagePreviewContainer}>
+          {previewUrl && <img src={previewUrl} alt="Preview" />}
+        </div>
+        <div className={styles.buttonGroup}>
+          <Button kind="primary" onClick={handleConfirm} disabled={!previewUrl}>
+            {t('CREATE_PATIENT_UPLOAD_PHOTO_CONFIRM')}
+          </Button>
+        </div>
+      </>
+    );
+  };
+
   return (
     <>
       <div className={styles.photoUploadSection}>
@@ -191,72 +248,8 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
         }
       >
         <Modal.Body>
-          {mode === 'capture' && (
-            <div>
-              {!previewUrl && (
-                <>
-                  <div className={styles.imagePreviewContainer}>
-                    <video ref={videoRef} autoPlay playsInline />
-                  </div>
-                  <div className={styles.buttonGroup}>
-                    <Button kind="primary" onClick={handleCaptureClick}>
-                      {t('CREATE_PATIENT_CAPTURE_PHOTO')}
-                    </Button>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-
-          {mode === 'upload' && (
-            <>
-              <FileUploader
-                labelTitle=""
-                title={fileName}
-                key={isModalOpen ? 'open' : 'closed'}
-                labelDescription={t(
-                  'CREATE_PATIENT_UPLOAD_PHOTO_FILE_SIZE_LIMIT',
-                )}
-                buttonLabel={t('CREATE_PATIENT_UPLOAD_PHOTO_CHOOSE_FILE')}
-                buttonKind="primary"
-                accept={['image/*']}
-                onChange={handleFileChange}
-                onDelete={handleFileDelete}
-                filenameStatus="edit"
-              />
-              <div className={styles.errorMessage}>{fileSizeError}</div>
-              <div className={styles.imagePreviewContainer}>
-                {previewUrl && <img src={previewUrl} alt="Preview" />}
-              </div>
-              <div className={styles.buttonGroup}>
-                <Button
-                  kind="primary"
-                  onClick={handleConfirm}
-                  disabled={!previewUrl}
-                >
-                  {t('CREATE_PATIENT_UPLOAD_PHOTO_CONFIRM')}
-                </Button>
-              </div>
-            </>
-          )}
-
-          {previewUrl && mode === 'capture' && (
-            <>
-              <div className={styles.imagePreviewContainer}>
-                <img src={previewUrl} alt="Preview" />
-              </div>
-              <div className={styles.buttonGroup}>
-                <Button kind="primary" onClick={handleConfirm}>
-                  {t('CREATE_PATIENT_UPLOAD_PHOTO_CONFIRM')}
-                </Button>
-                {mode === 'capture' && (
-                  <Button kind="primary" onClick={handlePreview}>
-                    {t('CREATE_PATIENT_UPLOAD_PHOTO_RETAKE')}
-                  </Button>
-                )}
-              </div>
-            </>
-          )}
+          {mode === 'capture' && renderCaptureContent()}
+          {mode === 'upload' && renderUploadContent()}
         </Modal.Body>
       </Modal>
     </>

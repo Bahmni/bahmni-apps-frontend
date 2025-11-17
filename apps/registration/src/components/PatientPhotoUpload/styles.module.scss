@@ -9,7 +9,7 @@
   gap: $spacing-05;
   width: $spacing-05 * 9;
   height: $spacing-05 * 11;
-  background: #f4f4f4;
+  background: $layer-01;
   justify-content: center;
 
   img {
@@ -35,9 +35,8 @@
 
 .imagePreviewContainer {
   aspect-ratio: 3/4;
-  background: #d0d0d0;
+  background: $layer-02;
   display: flex;
-  
   img,
   video {
     width: 100%;
@@ -65,7 +64,6 @@
   .cds--modal-container {
     width: $spacing-05 * 25;
   }
-  
   .cds--modal-content {
     padding: $spacing-05;
   }

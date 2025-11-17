@@ -24,7 +24,7 @@ import {
   useGenderData,
   useIdentifierData,
 } from '../../../utils/identifierGenderUtils';
-import { PatientPhotoUpload } from '../../PatientPhotoUpload/PatientPhotoUpload';
+import { PatientPhotoUpload } from '../../patientPhotoUpload/PatientPhotoUpload';
 import { createDateAgeHandlers, formatToDisplay } from './dateAgeUtils';
 
 export interface ProfileRef {
