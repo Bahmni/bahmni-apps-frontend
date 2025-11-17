@@ -46,10 +46,6 @@
   color: $green-70 !important;
 }
 
-.buttonWrapper {
-  margin-right: 2*$spacing-13 + $spacing-09;
-}
-
 @include breakpoint-down(lg) {
   .main {
     padding: $spacing-06 $spacing-08;
@@ -69,4 +65,12 @@
   padding: 0.4375rem $spacing-05 !important;
   align-items: center;
   gap: $spacing-07;
+}
+
+.headerButtonContainer {
+  position: fixed;
+  top: 0;
+  right: $spacing-09;
+  padding: $spacing-02;
+  z-index: 9999;
 }

@@ -294,18 +294,6 @@ const PatientSearchPage: React.FC = () => {
   ];
   const globalActions = [
     {
-      id: 'create-new-patient',
-      label: t('CREATE_PATIENT_BUTTON_TEXT'),
-      renderIcon: (
-        <div className={styles.buttonWrapper}>
-          <Button kind="primary" size="md">
-            {t('CREATE_PATIENT_BUTTON_TEXT')}
-          </Button>
-        </div>
-      ),
-      onClick: handleCreateNewPatient,
-    },
-    {
       id: 'user',
       label: 'user',
       renderIcon: <Icon id="user" name="fa-user" size={ICON_SIZE.LG} />,
@@ -323,7 +311,14 @@ const PatientSearchPage: React.FC = () => {
   return (
     <BaseLayout
       header={
-        <Header breadcrumbItems={breadcrumbs} globalActions={globalActions} />
+        <>
+          <Header breadcrumbItems={breadcrumbs} globalActions={globalActions} />
+          <div className={styles.headerButtonContainer}>
+            <Button kind="primary" onClick={handleCreateNewPatient} size="md">
+              {t('CREATE_PATIENT_BUTTON_TEXT')}
+            </Button>
+          </div>
+        </>
       }
       main={
         <div className={styles.main}>
