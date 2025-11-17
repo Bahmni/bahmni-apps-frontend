@@ -12,21 +12,20 @@
   background: $layer-01;
   justify-content: center;
 
+  .removeButtonWrapper {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 10;
+  }
+
   img {
     width: 100%;
     height: 100%;
-    padding: $spacing-03;
+    padding: $spacing-05;
     object-fit: contain;
     display: block;
   }
-}
-
-.removeButton {
-  position: absolute;
-  top: -$spacing-03;
-  right: -$spacing-11;
-  padding: 0;
-  z-index: 10;
 }
 
 .wrapButton {

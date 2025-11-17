@@ -206,15 +206,16 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
       <div className={styles.photoUploadSection}>
         {confirmedUrl ? (
           <>
-            <IconButton
-              kind="ghost"
-              size="sm"
-              onClick={handleRemoveConfirmed}
-              label={t('CREATE_PATIENT_UPLOAD_PHOTO_REMOVE')}
-              className={styles.removeButton}
-            >
-              <Close />
-            </IconButton>
+            <div className={styles.removeButtonWrapper}>
+              <IconButton
+                kind="ghost"
+                size="xs"
+                onClick={handleRemoveConfirmed}
+                label={t('CREATE_PATIENT_UPLOAD_PHOTO_REMOVE')}
+              >
+                <Close />
+              </IconButton>
+            </div>
             <img src={confirmedUrl} alt="Patient" />
           </>
         ) : (
