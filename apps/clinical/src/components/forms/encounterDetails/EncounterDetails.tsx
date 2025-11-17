@@ -5,17 +5,14 @@ import {
   Grid,
   Column,
   SkeletonText,
-} from '@bahmni-frontend/bahmni-design-system';
+} from '@bahmni/design-system';
 import {
   useTranslation,
   DATE_FORMAT,
   formatDate,
   type Provider,
-} from '@bahmni-frontend/bahmni-services';
-import {
-  usePatientUUID,
-  useActivePractitioner,
-} from '@bahmni-frontend/bahmni-widgets';
+} from '@bahmni/services';
+import { usePatientUUID, useActivePractitioner } from '@bahmni/widgets';
 import React, { useEffect, useMemo } from 'react';
 import { useActiveVisit } from '../../../hooks/useActiveVisit';
 import { useEncounterConcepts } from '../../../hooks/useEncounterConcepts';

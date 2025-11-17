@@ -1,4 +1,4 @@
-import { getMedicationConfig } from '@bahmni-frontend/bahmni-services';
+import { getMedicationConfig } from '@bahmni/services';
 import { useState, useEffect } from 'react';
 import { MedicationConfig } from '../models/medicationConfig';
 import { fetchMedicationOrdersMetadata } from '../services/medicationService';

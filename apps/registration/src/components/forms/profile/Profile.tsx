@@ -6,12 +6,12 @@ import {
   DatePicker,
   DatePickerInput,
   CheckboxGroup,
-} from '@bahmni-frontend/bahmni-design-system';
+} from '@bahmni/design-system';
 import {
   useTranslation,
   MAX_PATIENT_AGE_YEARS,
   PatientIdentifier,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { useState, useImperativeHandle, useEffect } from 'react';
 import { useRegistrationConfig } from '../../../hooks/useRegistrationConfig';
 import type { BasicInfoData } from '../../../models/patient';

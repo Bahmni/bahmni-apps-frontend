@@ -3,7 +3,7 @@ import {
   PatientSearchResultBundle,
   formatDateAndTime,
   calculateAgeinYearsAndMonths,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import {
   SearchStrategy,
   SearchContext,

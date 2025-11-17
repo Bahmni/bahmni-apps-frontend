@@ -1,8 +1,4 @@
-import {
-  Button,
-  Tile,
-  BaseLayout,
-} from '@bahmni-frontend/bahmni-design-system';
+import { Button, Tile, BaseLayout } from '@bahmni/design-system';
 import {
   BAHMNI_HOME_PATH,
   useTranslation,
@@ -11,7 +7,7 @@ import {
   dispatchAuditEvent,
   getPatientById,
   CreatePatientResponse,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { useRef, useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';

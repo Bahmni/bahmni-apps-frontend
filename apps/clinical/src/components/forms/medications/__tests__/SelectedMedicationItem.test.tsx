@@ -17,7 +17,7 @@ import SelectedMedicationItem, {
 // Extend Jest matchers
 expect.extend(toHaveNoViolations);
 
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
+jest.mock('@bahmni/services', () => ({
   getTodayDate: jest.fn().mockReturnValue(new Date('2025-01-01')),
   DATE_PICKER_INPUT_FORMAT: 'd/m/Y',
   useTranslation: () => ({

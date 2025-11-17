@@ -1,9 +1,9 @@
-import { TextInput } from '@bahmni-frontend/bahmni-design-system';
+import { TextInput } from '@bahmni/design-system';
 import {
   useTranslation,
   type AddressHierarchyEntry,
   type PatientAddress,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import {
   useCallback,
   useImperativeHandle,

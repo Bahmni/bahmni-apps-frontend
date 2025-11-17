@@ -3,8 +3,8 @@ import {
   Tile,
   BoxWHeader,
   SelectedItem,
-} from '@bahmni-frontend/bahmni-design-system';
-import { useTranslation } from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/design-system';
+import { useTranslation } from '@bahmni/services';
 import React, { useMemo, useState } from 'react';
 import useAllergenSearch from '../../../hooks/useAllergenSearch';
 import { AllergenConcept } from '../../../models/allergy';

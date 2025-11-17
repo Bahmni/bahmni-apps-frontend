@@ -1,9 +1,9 @@
-import { notificationService } from '@bahmni-frontend/bahmni-services';
+import { notificationService } from '@bahmni/services';
 import { validateAllSections, collectFormData } from '../patientFormService';
 import type { PatientFormRefs } from '../patientFormService';
 
 // Mock the notification service
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
+jest.mock('@bahmni/services', () => ({
   notificationService: {
     showError: jest.fn(),
   },

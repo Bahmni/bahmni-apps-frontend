@@ -2,12 +2,12 @@ import {
   type ConditionInputEntry,
   type DiagnosisInputEntry,
   getConditions,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import {
   useNotification,
   usePatientUUID,
   conditionsQueryKeys,
-} from '@bahmni-frontend/bahmni-widgets';
+} from '@bahmni/widgets';
 import {
   QueryClient,
   QueryClientProvider,
@@ -26,13 +26,13 @@ import ConditionsAndDiagnoses from '../ConditionsAndDiagnoses';
 expect.extend(toHaveNoViolations);
 
 jest.mock('../../../../hooks/useConceptSearch');
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   getConditions: jest.fn(),
 }));
 
-jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-widgets'),
+jest.mock('@bahmni/widgets', () => ({
+  ...jest.requireActual('@bahmni/widgets'),
   useNotification: jest.fn(),
   usePatientUUID: jest.fn(),
   conditionsQueryKeys: jest.fn(),

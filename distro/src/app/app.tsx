@@ -1,4 +1,4 @@
-import { Loading } from '@bahmni-frontend/bahmni-design-system';
+import { Loading } from '@bahmni/design-system';
 import { lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
 
@@ -9,12 +9,12 @@ const NotFoundPage = lazy(() =>
   import('./NotFoundPage').then((module) => ({ default: module.NotFoundPage })),
 );
 const ClinicalApp = lazy(() =>
-  import('@bahmni-frontend/clinical').then((module) => ({
+  import('@bahmni/clinical-app').then((module) => ({
     default: module.ClinicalApp,
   })),
 );
 const RegistrationApp = lazy(() =>
-  import('@bahmni-frontend/registration').then((module) => ({
+  import('@bahmni/registration-app').then((module) => ({
     default: module.RegistrationApp,
   })),
 );

@@ -12,7 +12,7 @@ import {
   PHONE_NUMBER_UUID,
   ALTERNATE_PHONE_NUMBER_UUID,
   EMAIL_UUID,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { convertTimeToISODateTime } from '../components/forms/profile/dateAgeUtils';

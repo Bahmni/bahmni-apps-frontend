@@ -1,15 +1,11 @@
-import {
-  SortableDataTable,
-  Tag,
-  Tile,
-} from '@bahmni-frontend/bahmni-design-system';
+import { SortableDataTable, Tag, Tile } from '@bahmni/design-system';
 import {
   formatDate,
   sortByDate,
   Diagnosis,
   DATE_FORMAT,
   useTranslation,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import React, { useMemo, useCallback } from 'react';
 import styles from './styles/DiagnosesTable.module.scss';
 import { useDiagnoses } from './useDiagnoses';

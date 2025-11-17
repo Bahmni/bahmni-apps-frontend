@@ -1,4 +1,4 @@
-import { DiagnosisInputEntry, post } from '@bahmni-frontend/bahmni-services';
+import { DiagnosisInputEntry, post } from '@bahmni/services';
 import {
   Reference,
   Condition,
@@ -27,8 +27,8 @@ import {
 // Mock crypto.randomUUID
 const mockUUID = '1d87ab20-8b86-4b41-a30d-984b2208d945';
 global.crypto.randomUUID = jest.fn().mockReturnValue(mockUUID);
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   post: jest.fn(),
 }));
 
