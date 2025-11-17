@@ -6,24 +6,6 @@ import { useCreatePatient } from '../../../hooks/useCreatePatient';
 import CreatePatient from '../CreatePatient';
 import { validateAllSections, collectFormData } from '../patientFormService';
 
-jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-design-system'),
-  Header: ({ breadcrumbs, globalActions }: any) => (
-    <div data-testid="mocked-design-system-header">
-      {breadcrumbs?.map((bc: any) => (
-        <span key={bc.label} data-testid={`breadcrumb-${bc.label}`}>
-          {bc.label}
-        </span>
-      ))}
-      {globalActions?.map((action: any) => (
-        <div key={action.id} data-testid={`global-action-${action.id}`}>
-          {action.renderIcon}
-        </div>
-      ))}
-    </div>
-  ),
-}));
-
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   notificationService: {
@@ -519,13 +501,11 @@ describe('CreatePatient', () => {
     });
   });
 
-  describe('Breadcrumb Navigation', () => {
-    it('should have correct breadcrumbs and globalActions', () => {
+  describe('Header Component', () => {
+    it('should render the header component', () => {
       renderComponent();
 
-      expect(
-        screen.getByTestId('mocked-design-system-header'),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('header')).toBeInTheDocument();
     });
   });
 
