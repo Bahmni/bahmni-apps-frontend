@@ -81,6 +81,7 @@ export const handleActionButtonClick = async (
     const options: Record<string, string> = {};
     options['patientUuid'] = row.uuid;
     options['appointmentNumber'] = row.appointmentNumber!;
+    options['appointmentUuid'] = row.appointmentUuid!;
     handleActionNavigation(navigation ?? '', options, navigate);
   }
 };
