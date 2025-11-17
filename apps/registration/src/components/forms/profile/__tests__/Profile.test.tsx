@@ -44,12 +44,6 @@ jest.mock('../dateAgeUtils', () => ({
   }),
 }));
 
-jest.mock('../../../patientPhotoUpload/PatientPhotoUpload', () => ({
-  PatientPhotoUpload: () => (
-    <div data-testid="patient-photo-upload">Mocked</div>
-  ),
-}));
-
 describe('Profile', () => {
   let ref: React.RefObject<ProfileRef | null>;
 
