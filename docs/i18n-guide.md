@@ -114,7 +114,7 @@ Update `apps/<your-app>/package.json` to export locale files:
 
 ```json
 {
-  "name": "@bahmni/clinical",
+  "name": "@bahmni/clinical-app",
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -176,7 +176,7 @@ export default defineConfig(() => ({
 Update `apps/<your-app>/src/App.tsx`:
 
 ```typescript
-import { initAppI18n } from '@bahmni/bahmni-services';
+import { initAppI18n } from '@bahmni/services';
 import React, { useEffect, useState } from 'react';
 import { YOUR_APP_NAMESPACE } from './constants/app';
 
@@ -591,7 +591,7 @@ The system detects user language preference in this order:
 
 ```typescript
 import { useTranslation } from 'react-i18next';
-import { LOCALE_STORAGE_KEY } from '@bahmni/bahmni-services';
+import { LOCALE_STORAGE_KEY } from '@bahmni/services';
 
 function LanguageSwitcher() {
   const { i18n } = useTranslation();

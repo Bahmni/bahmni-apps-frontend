@@ -1,5 +1,5 @@
 export default {
-  displayName: '@bahmni-frontend/clinical',
+  displayName: '@bahmni/clinical-app',
   preset: '../../jest.preset.js',
   testEnvironment: 'jsdom',
   transform: {

@@ -2,7 +2,7 @@ import {
   FormattedAllergy,
   AllergySeverity,
   AllergyStatus,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { render, screen, act } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import AllergiesTable from '../AllergiesTable';
@@ -22,8 +22,8 @@ jest.mock('react-i18next', () => ({
     },
   }),
 }));
-jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-design-system'),
+jest.mock('@bahmni/design-system', () => ({
+  ...jest.requireActual('@bahmni/design-system'),
   TooltipIcon: ({
     content,
     ariaLabel,

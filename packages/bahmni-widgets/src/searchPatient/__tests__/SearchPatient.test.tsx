@@ -4,7 +4,7 @@ import {
   searchPatientByCustomAttribute,
   useTranslation,
   getRegistrationConfig,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -15,8 +15,8 @@ import SearchPatient from '../SearchPatient';
 
 expect.extend(toHaveNoViolations);
 
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   searchPatientByNameOrId: jest.fn(),
   searchPatientByCustomAttribute: jest.fn(),
   useTranslation: jest.fn(),

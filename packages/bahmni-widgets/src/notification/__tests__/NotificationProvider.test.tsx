@@ -3,7 +3,7 @@ import { NotificationProvider } from '../NotificationProvider';
 import { useNotification } from '../useNotification';
 
 // Mock the generateId function to return predictable IDs for testing
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
+jest.mock('@bahmni/services', () => ({
   generateId: jest.fn().mockImplementation(() => 'test-id-123'),
 }));
 

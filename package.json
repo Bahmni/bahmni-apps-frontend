@@ -1,5 +1,5 @@
 {
-  "name": "@bahmni-frontend/source",
+  "name": "@bahmni/source",
   "version": "0.1.0",
   "license": "MIT",
   "scripts": {

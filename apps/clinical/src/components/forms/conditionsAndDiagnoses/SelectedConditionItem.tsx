@@ -3,11 +3,11 @@ import {
   Grid,
   Dropdown,
   TextInput,
-} from '@bahmni-frontend/bahmni-design-system';
+} from '@bahmni/design-system';
 import {
   useTranslation,
   type ConditionInputEntry,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import React from 'react';
 import { DURATION_UNITS } from '../../../constants/conditions';
 import styles from './styles/SelectedConditionItem.module.scss';

@@ -2,7 +2,7 @@ import {
   useTranslation,
   getAddressHierarchyEntries,
   type AddressHierarchyEntry,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   render,
@@ -16,7 +16,7 @@ import '@testing-library/jest-dom';
 import { AddressInfo, AddressInfoRef } from '../AddressInfo';
 
 // Mock translation and address service
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
+jest.mock('@bahmni/services', () => ({
   useTranslation: jest.fn(),
   getAddressHierarchyEntries: jest.fn(),
 }));

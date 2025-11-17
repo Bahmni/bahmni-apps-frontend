@@ -1,4 +1,4 @@
-import { ObservationForm } from '@bahmni-frontend/bahmni-services';
+import { ObservationForm } from '@bahmni/services';
 import { render, screen, fireEvent } from '@testing-library/react';
 import ObservationForms from '../ObservationForms';
 
@@ -51,8 +51,8 @@ jest.mock('@carbon/react', () => ({
 }));
 
 // Mock common components
-jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-design-system'),
+jest.mock('@bahmni/design-system', () => ({
+  ...jest.requireActual('@bahmni/design-system'),
   ComboBox: jest.fn(
     ({ items, onChange, onInputChange, disabled, placeholder }) => (
       <div data-testid="combobox">
@@ -474,7 +474,7 @@ describe('ObservationForms', () => {
 
       // Simulate ComboBox onChange with null selectedItem by clicking a disabled item
       const ComboBox = jest.requireMock(
-        '@bahmni-frontend/bahmni-design-system',
+        '@bahmni/design-system',
       ).ComboBox;
       if (ComboBox.mock && ComboBox.mock.calls.length > 0) {
         const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
@@ -493,7 +493,7 @@ describe('ObservationForms', () => {
 
       // Simulate ComboBox onChange with selectedItem without id
       const ComboBox = jest.requireMock(
-        '@bahmni-frontend/bahmni-design-system',
+        '@bahmni/design-system',
       ).ComboBox;
       if (ComboBox.mock && ComboBox.mock.calls.length > 0) {
         const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
@@ -511,7 +511,7 @@ describe('ObservationForms', () => {
 
       // Get the itemToString function from ComboBox mock
       const ComboBox = jest.requireMock(
-        '@bahmni-frontend/bahmni-design-system',
+        '@bahmni/design-system',
       ).ComboBox;
 
       // Ensure mock is available
@@ -616,7 +616,7 @@ describe('ObservationForms', () => {
 
       // Simulate ComboBox onChange with a selectedItem that doesn't exist in availableForms
       const ComboBox = jest.requireMock(
-        '@bahmni-frontend/bahmni-design-system',
+        '@bahmni/design-system',
       ).ComboBox;
       if (ComboBox.mock && ComboBox.mock.calls.length > 0) {
         const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
@@ -643,7 +643,7 @@ describe('ObservationForms', () => {
       );
 
       const ComboBox = jest.requireMock(
-        '@bahmni-frontend/bahmni-design-system',
+        '@bahmni/design-system',
       ).ComboBox;
       if (ComboBox.mock && ComboBox.mock.calls.length > 0) {
         const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];

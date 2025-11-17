@@ -4,11 +4,11 @@ import {
   AuditEventType,
   dispatchAuditEvent,
   getRegistrationConfig,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import {
   NotificationProvider,
   UserPrivilegeProvider,
-} from '@bahmni-frontend/bahmni-widgets';
+} from '@bahmni/widgets';
 import {
   QueryClient,
   QueryClientProvider,
@@ -92,8 +92,8 @@ jest.mock('@tanstack/react-query', () => ({
   useQuery: jest.fn(),
 }));
 
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   dispatchAuditEvent: jest.fn(),
   getRegistrationConfig: jest.fn(),
   updateAppointmentStatus: jest.fn(),
@@ -146,8 +146,8 @@ const mockUserPrivileges = [
 let mockSearchData: any = null;
 let mockOnSearchArgs: any[];
 
-jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-widgets'),
+jest.mock('@bahmni/widgets', () => ({
+  ...jest.requireActual('@bahmni/widgets'),
   useUserPrivilege: jest.fn(() => ({
     userPrivileges: mockUserPrivileges,
   })),

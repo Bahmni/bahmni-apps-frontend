@@ -16,8 +16,8 @@ const mockNotificationService = {
   showError: jest.fn(),
 };
 
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   getVisitTypes: () => mockGetVisitTypes(),
   createVisit: (data: any) => mockCreateVisit(data),
   getUserLoginLocation: () => mockGetUserLoginLocation(),
@@ -201,7 +201,7 @@ describe('VisitTypeSelector', () => {
 
   it('should log audit event when visit is successfully created', async () => {
     const { dispatchAuditEvent, AUDIT_LOG_EVENT_DETAILS } = jest.requireMock(
-      '@bahmni-frontend/bahmni-services',
+      '@bahmni/services',
     );
 
     const patientUuid = '9891a8b4-7404-4c05-a207-5ec9d34fc719';

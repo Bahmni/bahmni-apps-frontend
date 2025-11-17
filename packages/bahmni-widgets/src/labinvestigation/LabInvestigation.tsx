@@ -2,12 +2,12 @@ import {
   Accordion,
   AccordionItem,
   SkeletonText,
-} from '@bahmni-frontend/bahmni-design-system';
+} from '@bahmni/design-system';
 import {
   groupLabTestsByDate,
   useTranslation,
   LabTestsByDate,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import React, { useMemo } from 'react';
 import LabInvestigationItem from './LabInvestigationItem';
 import styles from './styles/LabInvestigation.module.scss';
