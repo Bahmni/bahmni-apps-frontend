@@ -1,4 +1,4 @@
-import { type ConditionInputEntry } from '@bahmni-frontend/bahmni-services';
+import { type ConditionInputEntry } from '@bahmni/services';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -11,7 +11,7 @@ import SelectedConditionItem, {
 expect.extend(toHaveNoViolations);
 
 // Mock Carbon Design System components
-jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
+jest.mock('@bahmni/design-system', () => ({
   Column: ({ children, className, ...props }: any) => (
     <div data-testid="carbon-column" className={className} {...props}>
       {children}

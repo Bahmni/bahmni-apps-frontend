@@ -1,4 +1,4 @@
-import { UserPrivilegeProvider } from '@bahmni-frontend/bahmni-widgets';
+import { UserPrivilegeProvider } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
@@ -29,8 +29,8 @@ jest.mock('@tanstack/react-query', () => ({
 }));
 
 // Mock useUserPrivilege hook
-jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-widgets'),
+jest.mock('@bahmni/widgets', () => ({
+  ...jest.requireActual('@bahmni/widgets'),
   useUserPrivilege: jest.fn(() => ({
     userPrivileges: ['Get Patients', 'Add Patients'],
   })),
@@ -46,9 +46,9 @@ jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
   ),
 }));
 // Mock all child components
-jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
+jest.mock('@bahmni/design-system', () => ({
   __esModule: true,
-  ...jest.requireActual('@bahmni-frontend/bahmni-design-system'),
+  ...jest.requireActual('@bahmni/design-system'),
   ActionArea: ({
     title,
     primaryButtonText,
@@ -135,8 +135,8 @@ jest.mock('../../../services/consultationBundleService', () => ({
   createMedicationRequestEntries: jest.fn(() => []),
 }));
 
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   getCurrentUserPrivileges: jest.fn(),
   findActiveEncounterInSession: jest.fn().mockResolvedValue(null),
 }));
@@ -164,8 +164,8 @@ jest.mock('../../../utils/fhir/consultationBundleCreator', () => ({
 }));
 
 // Mock privilege service
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   getCurrentUserPrivileges: jest.fn(),
 }));
 // Create mock store factories
@@ -275,9 +275,7 @@ describe('ConsultationPad - Encounter Session Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Mock privilege service
-    const { getCurrentUserPrivileges } = jest.requireMock(
-      '@bahmni-frontend/bahmni-services',
-    );
+    const { getCurrentUserPrivileges } = jest.requireMock('@bahmni/services');
     (getCurrentUserPrivileges as jest.Mock).mockResolvedValue([
       { name: 'app:clinical:observationForms' },
       { name: 'app:clinical:locationpicker' },

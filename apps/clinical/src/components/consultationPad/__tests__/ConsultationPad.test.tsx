@@ -1,7 +1,4 @@
-import {
-  AUDIT_LOG_EVENT_DETAILS,
-  dispatchAuditEvent,
-} from '@bahmni-frontend/bahmni-services';
+import { AUDIT_LOG_EVENT_DETAILS, dispatchAuditEvent } from '@bahmni/services';
 import {
   render,
   screen,
@@ -23,8 +20,8 @@ import ConsultationPad from '../ConsultationPad';
 
 // Import the mocked service to get access to the mock function
 
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   dispatchAuditEvent: jest.fn(),
   findActiveEncounterInSession: jest.fn().mockResolvedValue(null),
   __esModule: true,
@@ -51,9 +48,9 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
 }));
 
 // Mock all child components
-jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
+jest.mock('@bahmni/design-system', () => ({
   __esModule: true,
-  ...jest.requireActual('@bahmni-frontend/bahmni-design-system'),
+  ...jest.requireActual('@bahmni/design-system'),
   ActionArea: ({
     title,
     primaryButtonText,
@@ -187,7 +184,7 @@ const mockUseObservationFormsSearch =
 // Mock hooks
 const mockAddNotification = jest.fn();
 
-jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
+jest.mock('@bahmni/widgets', () => ({
   useNotification: jest.fn(() => ({
     addNotification: mockAddNotification,
   })),

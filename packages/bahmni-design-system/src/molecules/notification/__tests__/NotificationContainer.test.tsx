@@ -1,4 +1,4 @@
-import { Notification } from '@bahmni-frontend/bahmni-services';
+import { Notification } from '@bahmni/services';
 import { render, screen, fireEvent } from '@testing-library/react';
 import NotificationContainer from '../NotificationContainer';
 import '@testing-library/jest-dom';

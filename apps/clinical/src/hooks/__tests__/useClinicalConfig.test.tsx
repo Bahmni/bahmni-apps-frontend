@@ -5,7 +5,7 @@ import { ClinicalConfigProvider } from '../../providers/ClinicalConfigProvider';
 import { useClinicalConfig } from '../useClinicalConfig';
 
 // Mock notification service
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
+jest.mock('@bahmni/services', () => ({
   getDashboardConfig: jest.fn(),
   getFormattedError: jest.fn((error) => ({
     title: 'Error',

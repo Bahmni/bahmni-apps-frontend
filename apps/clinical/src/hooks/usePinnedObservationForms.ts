@@ -1,7 +1,4 @@
-import {
-  getFormattedError,
-  ObservationForm,
-} from '@bahmni-frontend/bahmni-services';
+import { getFormattedError, ObservationForm } from '@bahmni/services';
 import { useState, useEffect, useRef } from 'react';
 import {
   loadPinnedForms,

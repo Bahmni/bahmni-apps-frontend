@@ -2,7 +2,7 @@ import {
   PatientSearchResult,
   PatientSearchResultBundle,
   PatientSearchField,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import {
   formatPatientSearchResult,
   type PatientSearchViewModel,

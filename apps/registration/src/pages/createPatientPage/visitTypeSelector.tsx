@@ -1,4 +1,4 @@
-import { Button, Dropdown } from '@bahmni-frontend/bahmni-design-system';
+import { Button, Dropdown } from '@bahmni/design-system';
 import {
   getVisitTypes,
   useTranslation,
@@ -12,7 +12,7 @@ import {
   getRegistrationConfig,
   type VisitData,
   type AuditEventType,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import styles from './styles/VisitTypeSelector.module.scss';

@@ -2,7 +2,7 @@ import {
   FormattedAllergy,
   AllergyStatus,
   AllergySeverity,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { render, screen } from '@testing-library/react';
 import AllergiesTable from '../AllergiesTable';
 import { useAllergies } from '../useAllergies';

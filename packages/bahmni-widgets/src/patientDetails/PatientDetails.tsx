@@ -1,4 +1,4 @@
-import { Icon, ICON_SIZE } from '@bahmni-frontend/bahmni-design-system';
+import { Icon, ICON_SIZE } from '@bahmni/design-system';
 import { SkeletonText } from '@carbon/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';

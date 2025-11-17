@@ -1,7 +1,4 @@
-import {
-  searchConcepts,
-  type ConceptSearch,
-} from '@bahmni-frontend/bahmni-services';
+import { searchConcepts, type ConceptSearch } from '@bahmni/services';
 import { useState, useEffect } from 'react';
 import useDebounce from './useDebounce';
 

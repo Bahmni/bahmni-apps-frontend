@@ -1,10 +1,10 @@
-import { DashboardSectionConfig } from '@bahmni-frontend/bahmni-services';
+import { DashboardSectionConfig } from '@bahmni/services';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import DashboardSection from '../DashboardSection';
 
 // Mock dependencies
-jest.mock('@bahmni-frontend/bahmni-design-system', () => ({
+jest.mock('@bahmni/design-system', () => ({
   Tile: jest.fn(({ children, ref, ...rest }) => (
     <div className="cds--tile" data-testid="carbon-tile" ref={ref} {...rest}>
       {children}
@@ -28,7 +28,7 @@ jest.mock('../styles/DashboardSection.module.scss', () => ({
 }));
 
 // Mock the display control components
-jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
+jest.mock('@bahmni/widgets', () => ({
   __esModule: true,
   AllergiesTable: () => (
     <div data-testid="allergies-table">Allergies Table</div>

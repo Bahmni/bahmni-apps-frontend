@@ -1,4 +1,4 @@
-import { FHIR_ENCOUNTER_TYPE_CODE_SYSTEM } from '@bahmni-frontend/bahmni-services';
+import { FHIR_ENCOUNTER_TYPE_CODE_SYSTEM } from '@bahmni/services';
 import { Encounter } from 'fhir/r4';
 import { createCodeableConcept, createCoding } from './codeableConceptCreator';
 import {

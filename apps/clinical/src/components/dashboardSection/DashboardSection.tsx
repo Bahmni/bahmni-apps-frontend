@@ -1,8 +1,5 @@
-import { Tile } from '@bahmni-frontend/bahmni-design-system';
-import {
-  useTranslation,
-  DashboardSectionConfig,
-} from '@bahmni-frontend/bahmni-services';
+import { Tile } from '@bahmni/design-system';
+import { useTranslation, DashboardSectionConfig } from '@bahmni/services';
 import {
   AllergiesTable,
   ConditionsTable,
@@ -11,7 +8,7 @@ import {
   MedicationsTable,
   RadiologyInvestigationTable,
   VitalFlowSheet,
-} from '@bahmni-frontend/bahmni-widgets';
+} from '@bahmni/widgets';
 import React from 'react';
 import styles from './styles/DashboardSection.module.scss';
 
