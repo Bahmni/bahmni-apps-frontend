@@ -61,6 +61,7 @@ export const Profile = ({
   // Get registration config for patient information settings
   const { registrationConfig } = useRegistrationConfig();
   const patientInfoConfig = registrationConfig?.patientInformation;
+  console.log('Patient Info Config:', patientInfoConfig);
 
   // Component owns ALL its state
   const [formData, setFormData] = useState<BasicInfoData>({
