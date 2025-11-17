@@ -29,6 +29,12 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      - name: Build dependencies first
+        run: |
+          npx nx build @bahmni/services
+          npx nx build @bahmni/design-system
+          npx nx build @bahmni/widgets
+
       - name: Lint
         run: npx nx lint @bahmni/clinical-app
 
@@ -51,7 +57,7 @@ jobs:
 
           # Update package version and publish in one workflow
           npm version "$DEV_VERSION" --no-git-tag-version
-          npm publish --access public --tag dev
+          #npm publish --access public --tag dev
           
           # Output information
           echo "::notice title=Package Published::Published @bahmni/clinical-app@$DEV_VERSION"
