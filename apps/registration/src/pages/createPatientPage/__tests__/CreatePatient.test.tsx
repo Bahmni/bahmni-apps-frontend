@@ -1,3 +1,4 @@
+import { initFontAwesome } from '@bahmni-frontend/bahmni-design-system';
 import { dispatchAuditEvent } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -121,6 +122,10 @@ jest.mock('../visitTypeSelector', () => ({
 describe('CreatePatient', () => {
   let queryClient: QueryClient;
   let mockMutateAsync: jest.Mock;
+
+  beforeAll(() => {
+    initFontAwesome();
+  });
 
   beforeEach(() => {
     queryClient = new QueryClient({
