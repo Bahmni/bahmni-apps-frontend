@@ -3,7 +3,7 @@ import {
   fetchReactionConcepts,
   getFormattedError,
   useTranslation,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { Coding } from 'fhir/r4';
 import { useEffect, useState, useMemo } from 'react';
 import { AllergenConcept } from '../models/allergy';

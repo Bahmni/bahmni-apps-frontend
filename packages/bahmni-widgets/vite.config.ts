@@ -30,7 +30,7 @@ export default defineConfig(() => ({
     lib: {
       // Could also be a dictionary or array of multiple entry points.
       entry: 'src/index.ts',
-      name: 'bahmni-widgets',
+      name: '@bahmni/widgets',
       fileName: 'index',
       // Change this to the formats you want to support.
       // Don't forget to update your package.json as well.
@@ -39,12 +39,12 @@ export default defineConfig(() => ({
     rollupOptions: {
       // External packages that should not be bundled into your library.
       external: [
-        'react', 
-        'react-dom', 
-        'react/jsx-runtime', 
-        'react-router-dom', 
+        'react',
+        'react-dom',
+        'react/jsx-runtime',
+        'react-router-dom',
         'react-i18next',
-        '@tanstack/react-query'
+        '@tanstack/react-query',
       ],
     },
   },

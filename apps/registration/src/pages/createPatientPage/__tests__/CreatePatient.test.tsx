@@ -1,4 +1,4 @@
-import { dispatchAuditEvent } from '@bahmni-frontend/bahmni-services';
+import { dispatchAuditEvent } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
@@ -7,8 +7,8 @@ import CreatePatient from '../CreatePatient';
 import { validateAllSections, collectFormData } from '../patientFormService';
 
 // Mock the dependencies
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   notificationService: {
     showSuccess: jest.fn(),
     showError: jest.fn(),

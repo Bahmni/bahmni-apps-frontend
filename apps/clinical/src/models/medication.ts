@@ -1,4 +1,4 @@
-import { Frequency } from '@bahmni-frontend/bahmni-services';
+import { Frequency } from '@bahmni/services';
 import { Medication } from 'fhir/r4';
 import { Concept } from './encounterConcepts';
 

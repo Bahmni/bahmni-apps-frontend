@@ -1,5 +1,5 @@
 {
-  "name": "bahmni-clinical-app",
+  "name": "@bahmni/clinical-app",
   "version": "0.0.1",
   "type": "module",
   "main": "./dist/index.js",

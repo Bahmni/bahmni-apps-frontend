@@ -1,4 +1,4 @@
-import { RegistrationConfig } from '@bahmni-frontend/bahmni-services';
+import { RegistrationConfig } from '@bahmni/services';
 import { renderHook } from '@testing-library/react';
 import { RegistrationConfigProvider } from '../../providers/RegistrationConfigProvider';
 import { useRegistrationConfig } from '../useRegistrationConfig';

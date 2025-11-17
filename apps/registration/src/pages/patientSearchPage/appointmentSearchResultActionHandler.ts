@@ -7,7 +7,7 @@ import {
   PatientSearchResultBundle,
   hasPrivilege,
   dateComparator,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { NavigateFunction } from 'react-router-dom';
 import { PatientSearchViewModel } from './utils';
 
@@ -81,6 +81,7 @@ export const handleActionButtonClick = async (
     const options: Record<string, string> = {};
     options['patientUuid'] = row.uuid;
     options['appointmentNumber'] = row.appointmentNumber!;
+    options['appointmentUuid'] = row.appointmentUuid!;
     handleActionNavigation(navigation ?? '', options, navigate);
   }
 };

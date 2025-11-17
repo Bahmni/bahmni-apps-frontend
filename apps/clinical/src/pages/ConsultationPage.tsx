@@ -5,15 +5,9 @@ import {
   ICON_SIZE,
   useSidebarNavigation,
   ActionAreaLayout,
-} from '@bahmni-frontend/bahmni-design-system';
-import {
-  useTranslation,
-  BAHMNI_HOME_PATH,
-} from '@bahmni-frontend/bahmni-services';
-import {
-  useNotification,
-  useUserPrivilege,
-} from '@bahmni-frontend/bahmni-widgets';
+} from '@bahmni/design-system';
+import { useTranslation, BAHMNI_HOME_PATH } from '@bahmni/services';
+import { useNotification, useUserPrivilege } from '@bahmni/widgets';
 import React, { Suspense, useMemo, useState } from 'react';
 import ConsultationPad from '../components/consultationPad/ConsultationPad';
 import DashboardContainer from '../components/dashboardContainer/DashboardContainer';

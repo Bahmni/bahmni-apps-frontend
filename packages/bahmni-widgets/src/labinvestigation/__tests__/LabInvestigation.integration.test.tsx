@@ -2,7 +2,7 @@ import {
   LabTestPriority,
   FormattedLabTest,
   useTranslation,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { render, screen, waitFor } from '@testing-library/react';
 import { useParams } from 'react-router-dom';
 import LabInvestigation from '../LabInvestigation';
@@ -11,8 +11,8 @@ import useLabInvestigations from '../useLabInvestigations';
 // Mock the hook directly for integration testing
 jest.mock('../useLabInvestigations');
 
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   useTranslation: jest.fn(),
 }));
 

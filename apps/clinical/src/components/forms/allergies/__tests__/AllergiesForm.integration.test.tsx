@@ -1,4 +1,4 @@
-import * as bahmniServices from '@bahmni-frontend/bahmni-services';
+import * as bahmniServices from '@bahmni/services';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Coding } from 'fhir/r4';
@@ -12,8 +12,8 @@ import AllergiesForm from '../AllergiesForm';
 // Mock hooks and services
 jest.mock('../../../../stores/allergyStore');
 jest.mock('../../../../hooks/useClinicalConfig');
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   fetchAndFormatAllergenConcepts: jest.fn(),
   fetchReactionConcepts: jest.fn(),
 }));

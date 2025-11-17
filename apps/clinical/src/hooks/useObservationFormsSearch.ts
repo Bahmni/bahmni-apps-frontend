@@ -2,8 +2,8 @@ import {
   fetchObservationForms,
   getFormattedError,
   ObservationForm,
-} from '@bahmni-frontend/bahmni-services';
-import { useUserPrivilege } from '@bahmni-frontend/bahmni-widgets';
+} from '@bahmni/services';
+import { useUserPrivilege } from '@bahmni/widgets';
 import { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { filterFormsByUserPrivileges } from '../components/forms/observationForms/utils/privilegeUtils';

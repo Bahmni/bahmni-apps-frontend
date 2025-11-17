@@ -4,7 +4,7 @@ import {
   SearchActionConfig,
   updateAppointmentStatus,
   UserPrivilege,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { NavigateFunction } from 'react-router-dom';
 import {
   getAppointmentStatusClassName,
@@ -16,8 +16,8 @@ import {
 } from '../appointmentSearchResultActionHandler';
 import { PatientSearchViewModel } from '../utils';
 
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   updateAppointmentStatus: jest.fn(),
   hasPrivilege: jest.fn((privileges: any[], privilegeName: string) => {
     return privileges.some((priv) => priv.name === privilegeName);

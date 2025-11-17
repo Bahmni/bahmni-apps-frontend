@@ -4,7 +4,7 @@ import {
   getCurrentUser,
   USER_PINNED_PREFERENCE_URL,
   getFormattedError,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { PINNED_FORMS_ERROR_MESSAGES } from '../constants/errors';
 import { PINNED_FORMS_DELIMITER } from '../constants/forms';
 import { UserData } from '../models/observationForms';

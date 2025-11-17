@@ -1,5 +1,5 @@
 {
-  "name": "@bahmni-frontend/sample-app-module",
+  "name": "@bahmni/sample-app-module",
   "version": "0.0.1",
   "type": "module",
   "main": "./dist/index.js",

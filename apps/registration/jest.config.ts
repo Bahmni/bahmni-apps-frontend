@@ -1,5 +1,5 @@
 export default {
-  displayName: 'bahmni-registration-app',
+  displayName: '@bahmni/registration-app',
   preset: '../../jest.preset.js',
   testEnvironment: 'jsdom',
   transform: {

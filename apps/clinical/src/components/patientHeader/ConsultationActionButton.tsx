@@ -1,5 +1,5 @@
-import { Button } from '@bahmni-frontend/bahmni-design-system';
-import { useTranslation } from '@bahmni-frontend/bahmni-services';
+import { Button } from '@bahmni/design-system';
+import { useTranslation } from '@bahmni/services';
 import React from 'react';
 import { useEncounterSession } from '../../hooks/useEncounterSession';
 import styles from './styles/PatientHeader.module.scss';

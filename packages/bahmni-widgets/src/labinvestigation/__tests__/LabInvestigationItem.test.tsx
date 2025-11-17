@@ -2,12 +2,12 @@ import {
   FormattedLabTest,
   LabTestPriority,
   useTranslation,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { render, screen } from '@testing-library/react';
 import LabInvestigationItem from '../LabInvestigationItem';
 
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   useTranslation: jest.fn(),
 }));
 
