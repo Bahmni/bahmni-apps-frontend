@@ -15,13 +15,6 @@
     "./styles": "./dist/index.css",
     "./locales/*": "./dist/locales/*"
   },
-  "peerDependencies": {
-    "@bahmni/services": "^0.0.1-0",
-    "@bahmni/design-system": "0.0.1-0",
-    "@bahmni/widgets": "0.0.1-0",
-    "@tanstack/react-query": "^5.85.5",
-    "@tanstack/react-query-devtools": "^5.85.5"
-  },
   "author": "Thoughtworks Inc.",
   "license": "MPLv2",
   "description": "A comprehensive clinical consultation module for Bahmni, built with React and Bahmni Design System. Provides a complete EMR interface for patient consultations, clinical documentation, orders, and medical record management.",
