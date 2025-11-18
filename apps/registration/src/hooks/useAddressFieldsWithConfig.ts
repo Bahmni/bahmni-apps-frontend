@@ -1,4 +1,4 @@
-import { getOrderedAddressHierarchyLevels } from '@bahmni-frontend/bahmni-services';
+import { getOrderedAddressHierarchyLevels } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import {

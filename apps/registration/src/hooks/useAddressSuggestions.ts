@@ -1,7 +1,7 @@
 import {
   getAddressHierarchyEntries,
   type AddressHierarchyEntry,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { useQueries } from '@tanstack/react-query';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { AddressLevel, SelectedAddressMetadata } from './useAddressFields';

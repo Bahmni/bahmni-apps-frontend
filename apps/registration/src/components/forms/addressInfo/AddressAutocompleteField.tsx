@@ -1,5 +1,5 @@
-import { ComboBox } from '@bahmni-frontend/bahmni-design-system';
-import type { AddressHierarchyEntry } from '@bahmni-frontend/bahmni-services';
+import { ComboBox } from '@bahmni/design-system';
+import type { AddressHierarchyEntry } from '@bahmni/services';
 import { useMemo } from 'react';
 import type { AddressLevel } from '../../../hooks/useAddressFields';
 import styles from './styles/index.module.scss';
