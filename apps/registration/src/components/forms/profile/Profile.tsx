@@ -61,7 +61,6 @@ export const Profile = ({
   // Get registration config for patient information settings
   const { registrationConfig } = useRegistrationConfig();
   const patientInfoConfig = registrationConfig?.patientInformation;
-  console.log('Patient Info Config:', patientInfoConfig);
 
   // Component owns ALL its state
   const [formData, setFormData] = useState<BasicInfoData>({
@@ -123,22 +122,24 @@ export const Profile = ({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Real-time name validation (as user types)
+  const fieldValidationConfig = registrationConfig?.fieldValidation;
   const handleNameChange = (field: string, value: string) => {
-    const nameRegex = /^[a-zA-Z\s]*$/;
+    const pattern = fieldValidationConfig?.[field]?.pattern ?? '^[a-zA-Z\\s]*$';
+    const nameRegex = new RegExp(pattern);
+    const errorMessage = fieldValidationConfig?.[field]?.errorMessage;
     if (nameRegex.test(value)) {
       handleInputChange(field, value);
+
       setNameErrors((prev) => ({ ...prev, [field]: '' }));
       setValidationErrors((prev) => ({ ...prev, [field]: '' }));
     } else {
       setNameErrors((prev) => ({
         ...prev,
-        [field]: t('CREATE_PATIENT_VALIDATION_NAME_INVALID'),
+        [field]: errorMessage,
       }));
     }
   };
 
-  // Date/Age handlers
   const { handleDateInputChange, handleDateOfBirthChange, handleAgeChange } =
     createDateAgeHandlers({
       setDateErrors,
@@ -159,17 +160,32 @@ export const Profile = ({
       dateOfBirth: '',
     };
 
-    // Required field validations
-    if (!formData.firstName.trim()) {
+    // Validate firstName - check if required from config or default to true
+    const firstNameRequired =
+      fieldValidationConfig?.firstName?.required ?? true;
+    if (firstNameRequired && !formData.firstName.trim()) {
       newValidationErrors.firstName = t(
         'CREATE_PATIENT_VALIDATION_FIRST_NAME_REQUIRED',
       );
       isValid = false;
     }
 
-    // Validate last name based on config
+    const middleNameRequired =
+      fieldValidationConfig?.middleName?.required ?? false;
+    if (middleNameRequired && !formData.middleName.trim()) {
+      setNameErrors((prev) => ({
+        ...prev,
+        middleName:
+          fieldValidationConfig?.middleName?.errorMessage ??
+          t('CREATE_PATIENT_VALIDATION_NAME_INVALID'),
+      }));
+      isValid = false;
+    }
+
     const isLastNameMandatory = patientInfoConfig?.isLastNameMandatory ?? true;
-    if (isLastNameMandatory && !formData.lastName.trim()) {
+    const lastNameRequired =
+      fieldValidationConfig?.lastName?.required ?? isLastNameMandatory;
+    if (lastNameRequired && !formData.lastName.trim()) {
       newValidationErrors.lastName = t(
         'CREATE_PATIENT_VALIDATION_LAST_NAME_REQUIRED',
       );
@@ -464,16 +480,20 @@ export const Profile = ({
               </div>
             </CheckboxGroup>
 
-            <div>
-              <TextInput
-                id="birth-time"
-                type="time"
-                required
-                value={formData.birthTime}
-                onChange={(e) => handleInputChange('birthTime', e.target.value)}
-                labelText={t('CREATE_PATIENT_BIRTH_TIME')}
-              />
-            </div>
+            {(patientInfoConfig?.showBirthTime ?? false) && (
+              <div>
+                <TextInput
+                  id="birth-time"
+                  type="time"
+                  required
+                  value={formData.birthTime}
+                  onChange={(e) =>
+                    handleInputChange('birthTime', e.target.value)
+                  }
+                  labelText={t('CREATE_PATIENT_BIRTH_TIME')}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -196,20 +196,131 @@
     "patientInformation": {
       "type": "object",
       "description": "Patient name related fields configuration",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
+        "defaultIdentifierPrefix": {
+          "type": "string",
+          "description": "Default prefix for patient identifiers"
+        },
+        "autoCompleteFields": {
+          "type": "array",
+          "description": "Fields that should have autocomplete functionality",
+          "items": { "type": "string" }
+        },
         "showMiddleName": { "type": "boolean" }, 
         "showLastName": { "type": "boolean" },
         "isLastNameMandatory": { "type": "boolean" },
+        "patientNameDisplayOrder": {
+          "type": "array",
+          "description": "Order in which patient name fields should be displayed",
+          "items": { "type": "string" }
+        },
+        "showBirthTime": { "type": "boolean" },
+        "showDOBEstimated": { "type": "boolean" },
+        "additionalPatientInformation": {
+          "type": "object",
+          "description": "Additional patient information configuration",
+          "additionalProperties": true,
+          "properties": {
+            "translationKey": {
+              "type": "string",
+              "description": "Translation key for the section title"
+            },
+            "expectedFields": {
+              "type": "array",
+              "description": "Array of expected fields with translation keys",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "type": "string",
+                    "description": "Field name"
+                  },
+                  "translationKey": {
+                    "type": "string",
+                    "description": "Translation key for the field label"
+                  }
+                }
+              }
+            }
+          }
+        },
         "addressHierarchy": {
           "type": "object",
           "description": "Address hierarchy levels to be displayed",
+          "additionalProperties": true,
           "properties": {
              "showAddressFieldsTopDown": { "type": "boolean" },
-             "strictAutocompleteFromLevel": { "type": "string" }
+             "strictAutocompleteFromLevel": { "type": "string" },
+             "requiredFields": {
+               "type": "array",
+               "description": "List of address fields that are required",
+               "items": { "type": "string" }
+             }
           }
+        }
+      }
+    },
+    "fieldValidation": {
+      "type": "object",
+      "description": "Field validation rules with regex patterns and error messages",
+      "additionalProperties": true,
+      "properties": {
+        "firstName": {
+          "type": "object",
+          "properties": {
+            "pattern": {
+              "type": "string",
+              "description": "Regular expression pattern for field validation"
+            },
+            "errorMessage": {
+              "type": "string",
+              "description": "Error message to display when validation fails"
+            },
+            "required": {
+              "type": "boolean",
+              "description": "Whether the field is required"
+            }
+          }
+        },
+        "lastName": {
+          "type": "object",
+          "properties": {
+            "pattern": {
+              "type": "string",
+              "description": "Regular expression pattern for field validation"
+            },
+            "errorMessage": {
+              "type": "string",
+              "description": "Error message to display when validation fails"
+            },
+            "required": {
+              "type": "boolean",
+              "description": "Whether the field is required"
+            }
+          }
+        }
+      }
+    },
+    "addressHierarchy": {
+      "type": "object",
+      "description": "Address hierarchy configuration at root level",
+      "additionalProperties": true,
+      "properties": {
+        "showAddressFieldsTopDown": { 
+          "type": "boolean",
+          "description": "Whether to show address fields from top to bottom"
+        },
+        "strictAutocompleteFromLevel": { 
+          "type": "string",
+          "description": "Address level from which strict autocomplete should be enforced"
+        },
+        "requiredFields": {
+          "type": "array",
+          "description": "List of address fields that are required",
+          "items": { "type": "string" }
         }
       }
     }
   }
-}
+  }
