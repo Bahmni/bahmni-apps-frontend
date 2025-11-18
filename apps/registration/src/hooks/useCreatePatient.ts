@@ -21,6 +21,7 @@ interface CreatePatientFormData {
   profile: BasicInfoData & {
     dobEstimated: boolean;
     patientIdentifier: PatientIdentifier;
+    image: string;
   };
   address: PatientAddress;
   contact: ContactData;
@@ -113,6 +114,7 @@ function transformFormDataToPayload(
       },
       identifiers: [profile.patientIdentifier],
     },
+    ...(profile.image && { image: profile.image }),
     relationships: [],
   };
 

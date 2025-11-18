@@ -8,6 +8,12 @@ jest.mock('@bahmni/services', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
+  useCamera: jest.fn(() => ({
+    videoRef: { current: null },
+    start: jest.fn(),
+    stop: jest.fn(),
+    capture: jest.fn(),
+  })),
   MAX_PATIENT_AGE_YEARS: 120,
 }));
 
