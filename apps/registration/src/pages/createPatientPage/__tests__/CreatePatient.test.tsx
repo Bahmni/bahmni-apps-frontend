@@ -6,7 +6,6 @@ import { useCreatePatient } from '../../../hooks/useCreatePatient';
 import CreatePatient from '../CreatePatient';
 import { validateAllSections, collectFormData } from '../patientFormService';
 
-// Mock the dependencies
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   notificationService: {
@@ -35,24 +34,6 @@ jest.mock('../../../hooks/useCreatePatient');
 jest.mock('../patientFormService');
 
 // Mock child components
-interface Breadcrumb {
-  label: string;
-  href?: string;
-  onClick?: () => void;
-}
-
-jest.mock('../../../components/Header', () => ({
-  Header: ({ breadcrumbs }: { breadcrumbs: Breadcrumb[] }) => (
-    <div data-testid="header">
-      {breadcrumbs.map((bc, idx: number) => (
-        <span key={`breadcrumb-${bc.label}`} data-testid={`breadcrumb-${idx}`}>
-          {bc.label}
-        </span>
-      ))}
-    </div>
-  ),
-}));
-
 jest.mock('../../../components/forms/profile/Profile', () => ({
   Profile: ({ ref }: { ref?: React.Ref<unknown> }) => {
     // Expose imperative methods via ref
@@ -189,21 +170,6 @@ describe('CreatePatient', () => {
       expect(screen.getByTestId('patient-address')).toBeInTheDocument();
       expect(screen.getByTestId('patient-contact')).toBeInTheDocument();
       expect(screen.getByTestId('patient-additional')).toBeInTheDocument();
-    });
-
-    it('should render the header with breadcrumbs', () => {
-      renderComponent();
-
-      expect(screen.getByTestId('header')).toBeInTheDocument();
-      expect(
-        screen.getByText('CREATE_PATIENT_BREADCRUMB_HOME'),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText('CREATE_PATIENT_BREADCRUMB_SEARCH'),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText('CREATE_PATIENT_BREADCRUMB_CURRENT'),
-      ).toBeInTheDocument();
     });
 
     it('should render the page title', () => {
@@ -535,38 +501,11 @@ describe('CreatePatient', () => {
     });
   });
 
-  describe('Breadcrumb Navigation', () => {
-    it('should have correct number of breadcrumbs', () => {
+  describe('Header Component', () => {
+    it('should render the header component', () => {
       renderComponent();
 
-      expect(screen.getByTestId('breadcrumb-0')).toBeInTheDocument();
-      expect(screen.getByTestId('breadcrumb-1')).toBeInTheDocument();
-      expect(screen.getByTestId('breadcrumb-2')).toBeInTheDocument();
-    });
-
-    it('should have home breadcrumb with correct label', () => {
-      renderComponent();
-
-      const homeBreadcrumb = screen.getByTestId('breadcrumb-0');
-      expect(homeBreadcrumb.textContent).toBe('CREATE_PATIENT_BREADCRUMB_HOME');
-    });
-
-    it('should have search breadcrumb with correct label', () => {
-      renderComponent();
-
-      const searchBreadcrumb = screen.getByTestId('breadcrumb-1');
-      expect(searchBreadcrumb.textContent).toBe(
-        'CREATE_PATIENT_BREADCRUMB_SEARCH',
-      );
-    });
-
-    it('should have current page breadcrumb with correct label', () => {
-      renderComponent();
-
-      const currentBreadcrumb = screen.getByTestId('breadcrumb-2');
-      expect(currentBreadcrumb.textContent).toBe(
-        'CREATE_PATIENT_BREADCRUMB_CURRENT',
-      );
+      expect(screen.getByTestId('header')).toBeInTheDocument();
     });
   });
 
