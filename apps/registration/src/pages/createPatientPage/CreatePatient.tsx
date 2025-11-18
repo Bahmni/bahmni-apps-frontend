@@ -1,4 +1,8 @@
-import { Button, Tile, BaseLayout   Header,
+import {
+  Button,
+  Tile,
+  BaseLayout,
+  Header,
   Icon,
   ICON_SIZE,
 } from '@bahmni/design-system';
