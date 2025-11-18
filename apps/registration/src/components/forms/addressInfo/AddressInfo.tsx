@@ -26,13 +26,9 @@ interface AddressInfoProps {
   ref?: React.Ref<AddressInfoRef>;
 }
 
-// Fields that don't need autocomplete (free text fields)
-const FREE_TEXT_FIELDS = ['address1', 'address2', 'cityVillage'];
-
 export const AddressInfo = ({ ref }: AddressInfoProps) => {
   const { t } = useTranslation();
 
-  // Use the enhanced hook that fetches address levels dynamically
   const {
     address,
     displayLevels,
@@ -44,7 +40,6 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     isLoadingLevels,
   } = useAddressFieldsWithConfig();
 
-  // Track validation errors dynamically
   const [addressErrors, setAddressErrors] = useState<Record<string, string>>(
     {},
   );
@@ -52,12 +47,31 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
   // Track which fields are being auto-populated to prevent infinite loops
   const autoPopulatingFieldsRef = useRef<Set<string>>(new Set());
 
-  // Get list of fields that need autocomplete (not free text fields)
+  // Determine which fields should have autocomplete (ComboBox) vs free text (TextInput)
+  // Fields with isStrictEntry=true (affected by strictAutocompleteFromLevel cascade) use ComboBox
+  // Fields with isStrictEntry=false (not affected by cascade) use plain TextInput
+  const hierarchyFieldNames = useMemo(() => {
+    // Get fields that are part of the address hierarchy (have isStrictEntry=true from cascade)
+    // These fields should use ComboBox with autocomplete
+    const hierarchyFields = new Set<string>();
+
+    // Include only fields that have isStrictEntry=true
+    // The cascade algorithm marks the configured level and all parent levels as strict
+    levelsWithStrictEntry.forEach((level) => {
+      if (level.isStrictEntry === true) {
+        hierarchyFields.add(level.addressField);
+      }
+    });
+
+    return hierarchyFields;
+  }, [levelsWithStrictEntry]);
+
+  // Get list of fields that need autocomplete (fields in address hierarchy)
   const autocompleteFields = useMemo(() => {
     return levelsWithStrictEntry
       .map((level) => level.addressField)
-      .filter((field) => !FREE_TEXT_FIELDS.includes(field));
-  }, [levelsWithStrictEntry]);
+      .filter((field) => hierarchyFieldNames.has(field));
+  }, [levelsWithStrictEntry, hierarchyFieldNames]);
 
   // Use custom hook for suggestion management
   const {
@@ -368,11 +382,13 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
         {displayLevels.map((level) => {
           const fieldName = level.addressField;
 
-          // Check if this field needs autocomplete or is free text
-          if (FREE_TEXT_FIELDS.includes(fieldName)) {
-            return renderFreeTextField(fieldName);
-          } else {
+          // Check if this field is part of address hierarchy (has autocomplete)
+          // Fields returned by API are hierarchy fields → render as ComboBox
+          // Fields NOT in API (e.g., address1, address2) → render as TextInput
+          if (hierarchyFieldNames.has(fieldName)) {
             return renderAutocompleteField(fieldName);
+          } else {
+            return renderFreeTextField(fieldName);
           }
         })}
       </div>
