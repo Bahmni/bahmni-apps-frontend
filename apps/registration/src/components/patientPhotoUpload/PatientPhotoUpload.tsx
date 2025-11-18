@@ -1,10 +1,5 @@
-import {
-  Button,
-  Modal,
-  FileUploader,
-  IconButton,
-} from '@bahmni-frontend/bahmni-design-system';
-import { useTranslation, useCamera } from '@bahmni-frontend/bahmni-services';
+import { Button, Modal, FileUploader, IconButton } from '@bahmni/design-system';
+import { useTranslation, useCamera } from '@bahmni/services';
 import { Close } from '@carbon/icons-react';
 import React, { useState, useCallback } from 'react';
 import styles from './styles.module.scss';

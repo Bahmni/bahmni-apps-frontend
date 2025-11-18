@@ -1,9 +1,9 @@
-import { useCamera } from '@bahmni-frontend/bahmni-services';
+import { useCamera } from '@bahmni/services';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PatientPhotoUpload } from './PatientPhotoUpload';
 
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
+jest.mock('@bahmni/services', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
