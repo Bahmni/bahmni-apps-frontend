@@ -1,0 +1,65 @@
+name: CI & Publish @bahmni/clinical-app
+
+on:
+  push:
+    branches:
+      - test-branch-packages
+
+env:
+  NODE_VERSION: "22"
+  PACKAGE_PATH: "apps/clinical"
+
+jobs:
+  lint-test-build-publish:
+    runs-on: ubuntu-latest
+    environment: npm-publish
+    env:
+      NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build dependencies first
+        run: |
+          npx nx build @bahmni/services
+          npx nx build @bahmni/design-system
+          npx nx build @bahmni/widgets
+
+      - name: Lint
+        run: npx nx lint @bahmni/clinical-app
+
+      - name: Test
+        run: npx nx test @bahmni/clinical-app
+
+      - name: Build
+        run: npx nx build @bahmni/clinical-app
+
+      - name: Publish dev build to npm
+        working-directory: ${{env.PACKAGE_PATH}}
+        run: |
+          # Base version from package.json
+          BASE_VERSION=$(node -p "require('./package.json').version")
+          BUILD_NUM=${{ github.run_number }}
+
+          # Generate unique dev version (e.g., 1.2.3-dev.42)
+          DEV_VERSION="${BASE_VERSION}-dev.${BUILD_NUM}"
+          echo "📦 Publishing @bahmni/clinical-app@$DEV_VERSION"
+
+          # Update package version and publish in one workflow
+          npm version "$DEV_VERSION" --no-git-tag-version
+          #npm publish --access public --tag dev
+          
+          # Output information
+          echo "::notice title=Package Published::Published @bahmni/clinical-app@$DEV_VERSION"
+          echo "::notice title=Install Command::npm install @bahmni/clinical-app@dev"
+          echo "::notice title=Build Info::Build #${BUILD_NUM}"
