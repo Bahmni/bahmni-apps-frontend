@@ -264,7 +264,7 @@
     "fieldValidation": {
       "type": "object",
       "description": "Field validation rules with regex patterns and error messages",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "properties": {
         "firstName": {
           "type": "object",

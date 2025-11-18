@@ -63,8 +63,8 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
         const emailRegex = new RegExp(pattern);
         if (!emailRegex.test(value as string)) {
           newErrors[fieldName] =
-            (fieldValidationConfig?.['email']?.errorMessage ??
-              t('CREATE_PATIENT_VALIDATION_EMAIL_INVALID')) ||
+            fieldValidationConfig?.['email']?.errorMessage ??
+            t('CREATE_PATIENT_VALIDATION_EMAIL_INVALID') ??
             'Invalid email format';
           isValid = false;
         }
