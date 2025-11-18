@@ -202,11 +202,6 @@
           "type": "string",
           "description": "Default prefix for patient identifiers"
         },
-        "autoCompleteFields": {
-          "type": "array",
-          "description": "Fields that should have autocomplete functionality",
-          "items": { "type": "string" }
-        },
         "showMiddleName": { "type": "boolean" }, 
         "showLastName": { "type": "boolean" },
         "isLastNameMandatory": { "type": "boolean" },
@@ -248,15 +243,10 @@
         "addressHierarchy": {
           "type": "object",
           "description": "Address hierarchy levels to be displayed",
-          "additionalProperties": true,
+          "additionalProperties": false,
           "properties": {
              "showAddressFieldsTopDown": { "type": "boolean" },
-             "strictAutocompleteFromLevel": { "type": "string" },
-             "requiredFields": {
-               "type": "array",
-               "description": "List of address fields that are required",
-               "items": { "type": "string" }
-             }
+             "strictAutocompleteFromLevel": { "type": "string" }
           }
         }
       }
@@ -264,7 +254,7 @@
     "fieldValidation": {
       "type": "object",
       "description": "Field validation rules with regex patterns and error messages",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "firstName": {
           "type": "object",
@@ -299,26 +289,19 @@
               "description": "Whether the field is required"
             }
           }
-        }
-      }
-    },
-    "addressHierarchy": {
-      "type": "object",
-      "description": "Address hierarchy configuration at root level",
-      "additionalProperties": true,
-      "properties": {
-        "showAddressFieldsTopDown": { 
-          "type": "boolean",
-          "description": "Whether to show address fields from top to bottom"
         },
-        "strictAutocompleteFromLevel": { 
-          "type": "string",
-          "description": "Address level from which strict autocomplete should be enforced"
-        },
-        "requiredFields": {
-          "type": "array",
-          "description": "List of address fields that are required",
-          "items": { "type": "string" }
+        "email": {
+          "type": "object",
+          "properties": {
+            "pattern": {
+              "type": "string",
+              "description": "Regular expression pattern for email validation"
+            },
+            "errorMessage": {
+              "type": "string",
+              "description": "Error message to display when email validation fails"
+            }
+          }
         }
       }
     }
