@@ -67,10 +67,10 @@
   gap: $spacing-07;
 }
 
-.headerButtonContainer {
+.headerButton {
   position: fixed;
-  top: 0;
+  top: $spacing-02;
   right: $spacing-09;
-  padding: $spacing-02;
+  padding-inline: $spacing-08;
   z-index: 9999;
 }

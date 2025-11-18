@@ -313,11 +313,13 @@ const PatientSearchPage: React.FC = () => {
       header={
         <>
           <Header breadcrumbItems={breadcrumbs} globalActions={globalActions} />
-          <div className={styles.headerButtonContainer}>
-            <Button kind="primary" onClick={handleCreateNewPatient} size="md">
-              {t('CREATE_PATIENT_BUTTON_TEXT')}
-            </Button>
-          </div>
+          <Button
+            onClick={handleCreateNewPatient}
+            size="md"
+            className={styles.headerButton}
+          >
+            {t('CREATE_PATIENT_BUTTON_TEXT')}
+          </Button>
         </>
       }
       main={
