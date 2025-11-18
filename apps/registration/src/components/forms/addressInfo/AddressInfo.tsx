@@ -103,20 +103,8 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
   );
 
   // Handle suggestion selection
-  // Handle suggestion selection
   const handleSuggestionSelect = useCallback(
     (field: string, entry: AddressHierarchyEntry) => {
-      // eslint-disable-next-line no-console
-      console.log(`[AddressInfo] Selected ${field}:`, {
-        name: entry.name,
-        uuid: entry.uuid,
-        userGeneratedId: entry.userGeneratedId,
-        hasParent: !!entry.parent,
-        parentName: entry.parent?.name,
-        parentUuid: entry.parent?.uuid,
-        fullEntry: entry,
-      });
-
       // Convert AddressHierarchyEntry to AddressHierarchyItem recursively
       const convertToItem = (
         entry: AddressHierarchyEntry | null | undefined,
@@ -134,14 +122,7 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       const item = convertToItem(entry);
       if (!item) return; // Safety check - should not happen with valid entry
 
-      // eslint-disable-next-line no-console
-      console.log(`[AddressInfo] Converted item:`, item);
-
-      // eslint-disable-next-line no-console
-      console.log(`[AddressInfo] About to call handleFieldSelect`);
       handleFieldSelect(field, item);
-      // eslint-disable-next-line no-console
-      console.log(`[AddressInfo] Called handleFieldSelect successfully`);
 
       // Update selectedItems for the current field and auto-populate parent fields
       // Collect all entries first, then batch update to avoid race conditions
@@ -151,9 +132,6 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
 
       // Auto-populate parent fields if they exist
       if (item.parent) {
-        // eslint-disable-next-line no-console
-        console.log('[AddressInfo] Auto-populating selectedItems for parents');
-
         // Find the hierarchy of parent fields
         const fieldIndex = levelsWithStrictEntry.findIndex(
           (l) => l.addressField === field,
@@ -169,10 +147,6 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
 
             // Only process if parent has required uuid
             if (!currentParent.uuid) {
-              // eslint-disable-next-line no-console
-              console.warn(
-                `[AddressInfo] Skipping ${parentFieldName} - no UUID available`,
-              );
               currentParent = currentParent.parent;
               currentFieldIndex--;
               continue;
@@ -193,12 +167,6 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
                   }
                 : undefined,
             };
-
-            // eslint-disable-next-line no-console
-            console.log(
-              `[AddressInfo] Collected selectedItem for ${parentFieldName}:`,
-              parentEntry,
-            );
 
             entriesToUpdate[parentFieldName] = parentEntry;
 
@@ -222,8 +190,6 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       if (item.parent) {
         setTimeout(() => {
           autoPopulatingFieldsRef.current.clear();
-          // eslint-disable-next-line no-console
-          console.log('[AddressInfo] Cleared auto-populating fields set');
         }, 100);
       }
 
@@ -289,10 +255,6 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     (field: string, entry: AddressHierarchyEntry | null) => {
       // Skip if this field is being auto-populated (prevents infinite loops)
       if (autoPopulatingFieldsRef.current.has(field)) {
-        // eslint-disable-next-line no-console
-        console.log(
-          `[AddressInfo] Skipping onChange for ${field} - being auto-populated`,
-        );
         // Remove from set after skipping once
         autoPopulatingFieldsRef.current.delete(field);
         return;
@@ -328,13 +290,6 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       const isDisabled = isFieldReadOnly(level);
       const error = addressErrors[fieldName];
       const fieldSuggestions = suggestions[fieldName] ?? [];
-
-      // eslint-disable-next-line no-console
-      console.log(`[AddressInfo] Rendering ${fieldName}:`, {
-        suggestionsCount: fieldSuggestions.length,
-        suggestions: fieldSuggestions.map((s) => s.name),
-        isDisabled,
-      });
 
       return (
         <AddressAutocompleteField
@@ -409,17 +364,6 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       </span>
 
       <div className={styles.row}>
-        {/* Render all fields dynamically based on displayLevels from backend */}
-        {displayLevels.map((level) => {
-          const fieldName = level.addressField;
-
-          // Check if this field needs autocomplete or is free text
-          if (FREE_TEXT_FIELDS.includes(fieldName)) {
-            return renderFreeTextField(fieldName);
-          } else {
-            return renderAutocompleteField(fieldName);
-          }
-        })}
         {/* Render all fields dynamically based on displayLevels from backend */}
         {displayLevels.map((level) => {
           const fieldName = level.addressField;

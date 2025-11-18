@@ -228,12 +228,6 @@ export function useAddressFields(
    */
   const handleFieldSelect = useCallback(
     (fieldName: string, selectedItem: AddressHierarchyItem) => {
-      // eslint-disable-next-line no-console
-      console.log('[useAddressFields] handleFieldSelect called:', {
-        fieldName,
-        selectedItem,
-      });
-
       // Update the selected field
       // Use userGeneratedId if available (e.g., postal codes), otherwise use name
       const fieldValue = selectedItem.userGeneratedId ?? selectedItem.name;
@@ -249,45 +243,17 @@ export function useAddressFields(
         },
       }));
 
-      // eslint-disable-next-line no-console
-      console.log('[useAddressFields] Checking for parent:', {
-        hasParent: !!selectedItem.parent,
-        parent: selectedItem.parent,
-      });
-
       // Auto-populate parent fields if provided in the selected item
       if (selectedItem.parent) {
-        // eslint-disable-next-line no-console
-        console.log('[useAddressFields] Starting auto-population');
         const descendingOrder = [...levelsWithStrictEntry].reverse();
         const names = descendingOrder.map((l) => l.addressField);
         const index = names.indexOf(fieldName);
         const parentFields = names.slice(index + 1);
 
-        // eslint-disable-next-line no-console
-        console.log('[useAddressFields] Hierarchy info:', {
-          descendingOrder: names,
-          fieldName,
-          index,
-          parentFields,
-        });
-
         let parent: AddressHierarchyItem | undefined = selectedItem.parent;
         parentFields.forEach((parentField) => {
-          // eslint-disable-next-line no-console
-          console.log('[useAddressFields] Processing parent field:', {
-            parentField,
-            hasParent: !!parent,
-            parentName: parent?.name,
-          });
-
           if (parent?.name) {
             const currentParent = parent; // Capture current parent before reassigning
-            // eslint-disable-next-line no-console
-            console.log(
-              `[useAddressFields] Populating ${parentField} with:`,
-              currentParent.name,
-            );
 
             // Use userGeneratedId if available, otherwise use name
             const parentValue =
@@ -308,8 +274,6 @@ export function useAddressFields(
             parent = parent.parent;
           }
         });
-        // eslint-disable-next-line no-console
-        console.log('[useAddressFields] Auto-population complete');
       }
     },
     [levelsWithStrictEntry],

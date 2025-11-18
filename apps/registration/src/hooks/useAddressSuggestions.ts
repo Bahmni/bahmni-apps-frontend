@@ -102,27 +102,6 @@ export function useAddressSuggestions(
             return entry.parent?.uuid === expectedParentUuid;
           });
           result[fieldName] = filtered;
-
-          if (filtered.length < rawSuggestions.length) {
-            // eslint-disable-next-line no-console
-            console.warn(
-              `[useAddressSuggestions] Backend returned ${rawSuggestions.length - filtered.length} incorrect entries for ${fieldName} (parent UUID mismatch). Filtered them out.`,
-              {
-                expectedParentUuid,
-                receivedEntries: rawSuggestions.map((e) => ({
-                  name: e.name,
-                  parentUuid: e.parent?.uuid,
-                })),
-                filteredCount: filtered.length,
-                filteredEntries: filtered.map((e) => ({
-                  name: e.name,
-                  uuid: e.uuid,
-                  parent: e.parent,
-                  hasGrandparent: !!e.parent?.parent,
-                })),
-              },
-            );
-          }
         } else {
           // No parent filtering needed for top-level fields
           result[fieldName] = rawSuggestions;
