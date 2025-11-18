@@ -1,4 +1,3 @@
-import { initFontAwesome } from '@bahmni-frontend/bahmni-design-system';
 import {
   PatientSearchResult,
   AUDIT_LOG_EVENT_DETAILS,
@@ -181,10 +180,6 @@ jest.mock('@bahmni/widgets', () => ({
 
 describe('PatientSearchPage', () => {
   let queryClient: QueryClient;
-
-  beforeAll(() => {
-    initFontAwesome();
-  });
 
   beforeEach(() => {
     i18n.changeLanguage('en');
