@@ -20,8 +20,7 @@
     "@bahmni/design-system": "0.0.1-0",
     "@bahmni/widgets": "0.0.1-0",
     "@tanstack/react-query": "^5.85.5",
-    "@tanstack/react-query-devtools": "^5.85.5",
-    "zustand": "^.0.7"
+    "@tanstack/react-query-devtools": "^5.85.5"
   },
   "author": "Thoughtworks Inc.",
   "license": "MPLv2",
