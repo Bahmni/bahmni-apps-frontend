@@ -25,7 +25,7 @@ interface CreatePatientFormData {
   profile: BasicInfoData & {
     dobEstimated: boolean;
     patientIdentifier: PatientIdentifier;
-    image: string;
+    image?: string;
   };
   address: PatientAddress;
   contact: ContactData;
