@@ -178,6 +178,7 @@ export {
   OPENMRS_REST_V1,
   OPENMRS_FHIR_R4,
   BAHMNI_HOME_PATH,
+  BASE_PATH,
 } from './constants/app';
 export {
   getCurrentUserPrivileges,
