@@ -23,7 +23,6 @@ interface SortableDataTableProps<T> {
   emptyStateMessage?: string;
   renderCell?: (row: T, cellId: string) => React.ReactNode;
   className?: string;
-  onRowClick?: (row: T) => void;
 }
 
 export const SortableDataTable = <T extends { id: string }>({
@@ -37,7 +36,6 @@ export const SortableDataTable = <T extends { id: string }>({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   renderCell = (row, cellId) => (row as any)[cellId],
   className = 'sortable-data-table',
-  onRowClick,
 }: SortableDataTableProps<T>) => {
   if (errorStateMessage) {
     return (
@@ -113,14 +111,7 @@ export const SortableDataTable = <T extends { id: string }>({
               {tableRows.map((row) => {
                 const originalRow = rowMap.get(row.id)!;
                 return (
-                  <TableRow
-                    {...getRowProps({ row })}
-                    key={row.id}
-                    onClick={
-                      onRowClick ? () => onRowClick(originalRow) : undefined
-                    }
-                    className={onRowClick ? styles.interactiveRow : ''}
-                  >
+                  <TableRow {...getRowProps({ row })} key={row.id}>
                     {row.cells.map((cell) => (
                       <TableCell key={cell.id}>
                         {renderCell(originalRow, cell.info.header)}

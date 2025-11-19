@@ -92,6 +92,10 @@ jest.mock('@tanstack/react-query', () => ({
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   dispatchAuditEvent: jest.fn(),
+  getCurrentUser: jest.fn().mockResolvedValue({
+    username: 'testuser',
+    uuid: 'test-uuid',
+  }),
   getRegistrationConfig: jest.fn(),
   updateAppointmentStatus: jest.fn(),
   notificationService: {
@@ -271,7 +275,7 @@ describe('PatientSearchPage', () => {
     });
   });
 
-  it('should render the Header with Breadcrumbs component', () => {
+  it('should render the Header with Breadcrumbs and globalActions', () => {
     render(
       <MemoryRouter>
         <NotificationProvider>
@@ -283,10 +287,11 @@ describe('PatientSearchPage', () => {
         </NotificationProvider>
       </MemoryRouter>,
     );
-    expect(screen.getByText('Home')).toBeInTheDocument();
-    expect(screen.getByText('Search Patient')).toBeInTheDocument();
-    expect(screen.getByText('Create new patient')).toBeInTheDocument();
-    expect(screen.getByText('Hi, Profile name')).toBeInTheDocument();
+    expect(screen.getByTestId('global-action-user')).toBeInTheDocument();
+    const createNewPatientButton = screen.getByRole('button', {
+      name: /create new patient/i,
+    });
+    expect(createNewPatientButton).toBeInTheDocument();
     expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
     expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
     expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
@@ -597,55 +602,6 @@ describe('PatientSearchPage', () => {
         expect(patientName2.tagName).not.toBe('A');
         expect(phoneNumber.tagName).not.toBe('A');
         expect(genderElements[0].tagName).not.toBe('A');
-      });
-    });
-
-    it('should navigate to patient details when row is clicked', async () => {
-      delete (window as any).location;
-      window.location = { href: '' } as any;
-
-      mockSearchData = {
-        totalCount: mockSearchPatientData.length,
-        pageOfResults: mockSearchPatientData,
-      };
-      mockOnSearchArgs = [mockSearchData, 'test-search'];
-
-      (useQuery as jest.Mock).mockReturnValue({
-        data: {
-          totalCount: mockSearchPatientData.length,
-          pageOfResults: mockSearchPatientData,
-        },
-        error: null,
-        isLoading: false,
-      });
-
-      render(
-        <MemoryRouter>
-          <NotificationProvider>
-            <QueryClientProvider client={queryClient}>
-              <UserPrivilegeProvider>
-                <PatientSearchPage />
-              </UserPrivilegeProvider>
-            </QueryClientProvider>
-          </NotificationProvider>
-        </MemoryRouter>,
-      );
-
-      const searchInput = screen.getByPlaceholderText(
-        'Search by name or patient ID',
-      );
-      fireEvent.input(searchInput, { target: { value: 'test search' } });
-      fireEvent.click(screen.getByTestId('search-patient-search-button'));
-
-      await waitFor(() => {
-        const tableRows = screen.getAllByRole('row');
-        const firstDataRow = tableRows[1];
-
-        fireEvent.click(firstDataRow);
-
-        expect(window.location.href).toBe(
-          '/bahmni/registration/index.html#/patient/02f47490-d657-48ee-98e7-4c9133ea168b',
-        );
       });
     });
 

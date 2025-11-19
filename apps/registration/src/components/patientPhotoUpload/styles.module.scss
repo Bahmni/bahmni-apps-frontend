@@ -1,0 +1,74 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.photoUploadSection {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-05;
+  width: $spacing-05 * 9;
+  height: $spacing-05 * 11;
+  background: $layer-01;
+  justify-content: center;
+
+  .removeButtonWrapper {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 10;
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    padding: $spacing-05;
+    object-fit: contain;
+    display: block;
+  }
+}
+
+.wrapButton {
+  padding-right: $spacing-05;
+}
+
+.imagePreviewContainer {
+  aspect-ratio: 3/4;
+  background: $layer-02;
+  display: flex;
+  img,
+  video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+.buttonGroup {
+  display: flex;
+  justify-content: center;
+  gap: $spacing-05;
+  margin-top: $spacing-05;
+}
+
+.errorMessage {
+  color: $support-error;
+  font-size: $spacing-04;
+  font-weight: 400;
+  margin-top: $spacing-01;
+  height: $spacing-08;
+}
+
+:global {
+  .cds--modal-container {
+    width: $spacing-05 * 25;
+  }
+  .cds--modal-content {
+    padding: $spacing-05;
+  }
+
+  .cds--file__selected-file {
+    margin-top: $spacing-09 * -1.25;
+    margin-left: $spacing-05 * 10;
+  }
+}
