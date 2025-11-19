@@ -17,9 +17,6 @@ import { useMutation } from '@tanstack/react-query';
 import { convertTimeToISODateTime } from '../components/forms/profile/dateAgeUtils';
 import { BasicInfoData, ContactData, AdditionalData } from '../models/patient';
 
-/**
- * Form data structure representing all collected patient information
- */
 interface UpdatePatientFormData {
   patientUuid: string;
   profile: BasicInfoData & {
@@ -31,14 +28,6 @@ interface UpdatePatientFormData {
   additional: AdditionalData;
 }
 
-/**
- * Custom hook for updating a patient with React Query
- *
- * Handles:
- * - Data transformation from form data to API payload
- * - Mutation execution
- * - Success/error notifications
- */
 export const useUpdatePatient = () => {
   const mutation = useMutation({
     mutationFn: (formData: UpdatePatientFormData) => {
@@ -53,7 +42,6 @@ export const useUpdatePatient = () => {
       );
 
       if (response?.patient?.uuid) {
-        // Dispatch audit event for patient update
         dispatchAuditEvent({
           eventType: AUDIT_LOG_EVENT_DETAILS.REGISTER_NEW_PATIENT
             .eventType as AuditEventType,
@@ -74,7 +62,6 @@ function transformFormDataToPayload(
   formData: UpdatePatientFormData,
 ): CreatePatientRequest {
   const { profile, address, contact, additional } = formData;
-  // Build patient name object
   const patientName: PatientName = {
     givenName: profile.firstName,
     ...(profile.middleName && { middleName: profile.middleName }),
@@ -83,10 +70,8 @@ function transformFormDataToPayload(
     preferred: false,
   };
 
-  // Build patient attributes (contact info and additional info)
   const attributes: PatientAttribute[] = [];
 
-  // Add phone number if provided
   if (contact.phoneNumber) {
     attributes.push({
       attributeType: { uuid: PHONE_NUMBER_UUID },
@@ -94,7 +79,6 @@ function transformFormDataToPayload(
     });
   }
 
-  // Add alternate phone number if provided
   if (contact.altPhoneNumber) {
     attributes.push({
       attributeType: { uuid: ALTERNATE_PHONE_NUMBER_UUID },
@@ -102,7 +86,6 @@ function transformFormDataToPayload(
     });
   }
 
-  // Add email if provided
   if (additional.email) {
     attributes.push({
       attributeType: { uuid: EMAIL_UUID },
@@ -110,7 +93,6 @@ function transformFormDataToPayload(
     });
   }
 
-  // Build the complete patient payload
   const payload: CreatePatientRequest = {
     patient: {
       person: {

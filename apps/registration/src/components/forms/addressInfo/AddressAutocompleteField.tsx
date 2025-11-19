@@ -18,10 +18,6 @@ interface AddressAutocompleteFieldProps {
   onInputChange: (field: string, value: string) => void;
 }
 
-/**
- * Autocomplete field component for address hierarchy fields
- * Uses ComboBox with dynamic suggestions from backend API
- */
 export const AddressAutocompleteField = ({
   fieldName,
   level,
@@ -32,27 +28,20 @@ export const AddressAutocompleteField = ({
   onSelectionChange,
   onInputChange,
 }: AddressAutocompleteFieldProps) => {
-  // Memoize the itemToString function for input display
-  // Only show the main value (not parent) in the selected input field
   const itemToString = useMemo(
     () => (item: AddressHierarchyEntry | null) => {
       if (!item) return '';
-      // Use userGeneratedId if available (e.g., postal codes), otherwise use name
       return item.userGeneratedId ?? item.name;
     },
     [],
   );
 
-  // Memoize the itemToElement function for dropdown display
-  // Display format: "value, parent" (e.g., "110001, New Delhi" for postal codes)
   const itemToElement = useMemo(
     () => (item: AddressHierarchyEntry) => {
       if (!item) return '';
 
-      // Use userGeneratedId if available (e.g., postal codes), otherwise use name
       const mainValue = item.userGeneratedId ?? item.name;
 
-      // Append parent name if available for better context in dropdown
       if (item.parent?.name) {
         return `${mainValue}, ${item.parent.name}`;
       }
@@ -80,7 +69,6 @@ export const AddressAutocompleteField = ({
           if (data.selectedItem) {
             onSelectionChange(fieldName, data.selectedItem);
           } else {
-            // Clear selection if user clears the input
             onSelectionChange(fieldName, null);
           }
         }}

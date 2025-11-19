@@ -71,9 +71,7 @@ describe('useAddressFields', () => {
         showAddressFieldsTopDown: true,
       };
 
-      const { result } = renderHook(() =>
-        useAddressFields(oddLevels, config),
-      );
+      const { result } = renderHook(() => useAddressFields(oddLevels, config));
 
       expect(result.current.levelChunks).toHaveLength(2);
       expect(result.current.levelChunks[0]).toHaveLength(2);
@@ -82,10 +80,10 @@ describe('useAddressFields', () => {
   });
 
   describe('Strict Entry Configuration', () => {
-    it('should mark fields as strict entry from specified level downwards', () => {
+    it('should mark fields as strict entry from specified level upwards to parents', () => {
       const config: AddressHierarchyConfig = {
         showAddressFieldsTopDown: true,
-        strictAutocompleteFromLevel: 'stateProvince',
+        strictAutocompleteFromLevel: 'countyDistrict',
       };
 
       const { result } = renderHook(() =>
@@ -94,12 +92,23 @@ describe('useAddressFields', () => {
 
       const levels = result.current.levelsWithStrictEntry;
 
-      // Country is above stateProvince in hierarchy, so not strict
-      expect(levels.find((l) => l.addressField === 'country')?.isStrictEntry).toBeFalsy();
-      // stateProvince and below should be strict
-      expect(levels.find((l) => l.addressField === 'stateProvince')?.isStrictEntry).toBe(true);
-      expect(levels.find((l) => l.addressField === 'countyDistrict')?.isStrictEntry).toBe(true);
-      expect(levels.find((l) => l.addressField === 'cityVillage')?.isStrictEntry).toBe(true);
+      // Cascade algorithm: configured level and all parent levels are strict
+      // country is parent of countyDistrict, should be strict
+      expect(
+        levels.find((l) => l.addressField === 'country')?.isStrictEntry,
+      ).toBe(true);
+      // stateProvince is parent of countyDistrict, should be strict
+      expect(
+        levels.find((l) => l.addressField === 'stateProvince')?.isStrictEntry,
+      ).toBe(true);
+      // countyDistrict is the configured level, should be strict
+      expect(
+        levels.find((l) => l.addressField === 'countyDistrict')?.isStrictEntry,
+      ).toBe(true);
+      // cityVillage is child of countyDistrict, should NOT be strict
+      expect(
+        levels.find((l) => l.addressField === 'cityVillage')?.isStrictEntry,
+      ).toBe(false);
     });
 
     it('should not mark any fields as strict when strictAutocompleteFromLevel is not set', () => {
@@ -254,27 +263,27 @@ describe('useAddressFields', () => {
   });
 
   describe('Read-Only Fields', () => {
-    it('should mark strict entry child fields as read-only when parent is empty in top-down mode', () => {
+    it('should mark strict entry fields as read-only when parent is empty in top-down mode', () => {
       const config: AddressHierarchyConfig = {
         showAddressFieldsTopDown: true,
-        strictAutocompleteFromLevel: 'countyDistrict', // Start strict from district
+        strictAutocompleteFromLevel: 'stateProvince', // Start strict from state
       };
 
       const { result } = renderHook(() =>
         useAddressFields(mockAddressLevels, config),
       );
 
+      const stateLevel = result.current.levelsWithStrictEntry.find(
+        (l) => l.addressField === 'stateProvince',
+      )!;
       const districtLevel = result.current.levelsWithStrictEntry.find(
         (l) => l.addressField === 'countyDistrict',
       )!;
-      const villageLevel = result.current.levelsWithStrictEntry.find(
-        (l) => l.addressField === 'cityVillage',
-      )!;
 
-      // District is strict and parent (state) is empty, so read-only
-      expect(result.current.isFieldReadOnly(districtLevel)).toBe(true);
-      // Village is strict and parent (district) is empty, so read-only
-      expect(result.current.isFieldReadOnly(villageLevel)).toBe(true);
+      // State is strict and parent (country) is empty, so read-only
+      expect(result.current.isFieldReadOnly(stateLevel)).toBe(true);
+      // District is NOT strict (child of configured level), so not read-only
+      expect(result.current.isFieldReadOnly(districtLevel)).toBe(false);
     });
 
     it('should not mark child field as read-only when parent has value', () => {

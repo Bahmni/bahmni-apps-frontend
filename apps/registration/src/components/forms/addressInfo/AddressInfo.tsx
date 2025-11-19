@@ -44,19 +44,11 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     {},
   );
 
-  // Track which fields are being auto-populated to prevent infinite loops
   const autoPopulatingFieldsRef = useRef<Set<string>>(new Set());
 
-  // Determine which fields should have autocomplete (ComboBox) vs free text (TextInput)
-  // Fields with isStrictEntry=true (affected by strictAutocompleteFromLevel cascade) use ComboBox
-  // Fields with isStrictEntry=false (not affected by cascade) use plain TextInput
   const hierarchyFieldNames = useMemo(() => {
-    // Get fields that are part of the address hierarchy (have isStrictEntry=true from cascade)
-    // These fields should use ComboBox with autocomplete
     const hierarchyFields = new Set<string>();
 
-    // Include only fields that have isStrictEntry=true
-    // The cascade algorithm marks the configured level and all parent levels as strict
     levelsWithStrictEntry.forEach((level) => {
       if (level.isStrictEntry === true) {
         hierarchyFields.add(level.addressField);
@@ -66,14 +58,12 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     return hierarchyFields;
   }, [levelsWithStrictEntry]);
 
-  // Get list of fields that need autocomplete (fields in address hierarchy)
   const autocompleteFields = useMemo(() => {
     return levelsWithStrictEntry
       .map((level) => level.addressField)
       .filter((field) => hierarchyFieldNames.has(field));
   }, [levelsWithStrictEntry, hierarchyFieldNames]);
 
-  // Use custom hook for suggestion management
   const {
     suggestions,
     selectedItems,
@@ -87,24 +77,17 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     selectedMetadata,
   );
 
-  // Handle input change for autocomplete fields (ComboBox typing)
   const handleAddressInputChange = useCallback(
     (field: string, value: string) => {
       const level = levelsWithStrictEntry.find((l) => l.addressField === field);
 
-      // For ComboBox fields, trigger search for suggestions
       if (autocompleteFields.includes(field)) {
         debouncedSearchAddress(field, value);
-        // Un-mark this field as cleared since user is typing fresh query
         unmarkFieldAsCleared(field);
       }
-
-      // For non-strict fields, allow free text entry - update address state immediately
       if (level && !level.isStrictEntry) {
         handleFieldChange(field, value);
       }
-
-      // Clear validation error when typing
       setAddressErrors((prev) => ({ ...prev, [field]: '' }));
     },
     [
@@ -116,10 +99,8 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     ],
   );
 
-  // Handle suggestion selection
   const handleSuggestionSelect = useCallback(
     (field: string, entry: AddressHierarchyEntry) => {
-      // Convert AddressHierarchyEntry to AddressHierarchyItem recursively
       const convertToItem = (
         entry: AddressHierarchyEntry | null | undefined,
       ): AddressHierarchyItem | undefined => {
@@ -134,24 +115,19 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       };
 
       const item = convertToItem(entry);
-      if (!item) return; // Safety check - should not happen with valid entry
+      if (!item) return;
 
       handleFieldSelect(field, item);
 
-      // Update selectedItems for the current field and auto-populate parent fields
-      // Collect all entries first, then batch update to avoid race conditions
       const entriesToUpdate: Record<string, AddressHierarchyEntry> = {
-        [field]: entry, // Always include the current field's selection
+        [field]: entry,
       };
 
-      // Auto-populate parent fields if they exist
       if (item.parent) {
-        // Find the hierarchy of parent fields
         const fieldIndex = levelsWithStrictEntry.findIndex(
           (l) => l.addressField === field,
         );
         if (fieldIndex >= 0) {
-          // Walk up the parent chain and collect entries
           let currentParent: AddressHierarchyItem | undefined = item.parent;
           let currentFieldIndex = fieldIndex - 1;
 
@@ -159,14 +135,12 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
             const parentFieldName =
               levelsWithStrictEntry[currentFieldIndex].addressField;
 
-            // Only process if parent has required uuid
             if (!currentParent.uuid) {
               currentParent = currentParent.parent;
               currentFieldIndex--;
               continue;
             }
 
-            // Convert AddressHierarchyItem back to AddressHierarchyEntry for ComboBox
             const parentEntry: AddressHierarchyEntry = {
               uuid: currentParent.uuid,
               name: currentParent.name,
@@ -184,7 +158,6 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
 
             entriesToUpdate[parentFieldName] = parentEntry;
 
-            // Mark this parent field as being auto-populated
             autoPopulatingFieldsRef.current.add(parentFieldName);
 
             currentParent = currentParent.parent;
@@ -193,14 +166,11 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
         }
       }
 
-      // Batch update all selectedItems at once (current field + parents)
       setSelectedItems((prev) => ({
         ...prev,
         ...entriesToUpdate,
       }));
 
-      // Clear the auto-populating fields set after ALL ComboBox onChange events have been processed
-      // Use a longer timeout to ensure all cascading onChange calls are skipped
       if (item.parent) {
         setTimeout(() => {
           autoPopulatingFieldsRef.current.clear();
@@ -209,8 +179,6 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
 
       setAddressErrors((prev) => ({ ...prev, [field]: '' }));
 
-      // Clear search queries and suggestions for child fields
-      // This ensures child field suggestions are filtered by the new parent selection
       clearChildSuggestions(field);
     },
     [
@@ -221,7 +189,6 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     ],
   );
 
-  // Validate that strict entry fields were selected from dropdown
   const validate = useCallback((): boolean => {
     let isValid = true;
     const newErrors: Record<string, string> = {};
@@ -230,7 +197,6 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       if (level.isStrictEntry && address[level.addressField]) {
         const metadata = selectedMetadata[level.addressField];
 
-        // Check if value exists but wasn't selected from dropdown (no metadata)
         if (!metadata?.uuid && !metadata?.userGeneratedId) {
           newErrors[level.addressField] =
             t('CREATE_PATIENT_VALIDATION_SELECT_FROM_DROPDOWN') ??
@@ -244,11 +210,9 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     return isValid;
   }, [levelsWithStrictEntry, address, selectedMetadata, t]);
 
-  // Get data for submission - dynamically build the address object
   const getData = useCallback((): PatientAddress => {
     const result: PatientAddress = {};
 
-    // Add all fields dynamically from the address object
     Object.keys(address).forEach((key) => {
       if (address[key]) {
         result[key as keyof PatientAddress] = address[key]!;
@@ -258,18 +222,14 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     return result;
   }, [address]);
 
-  // Expose methods via ref
   useImperativeHandle(ref, () => ({
     validate,
     getData,
   }));
 
-  // Handle selection change for autocomplete fields
   const handleSelectionChange = useCallback(
     (field: string, entry: AddressHierarchyEntry | null) => {
-      // Skip if this field is being auto-populated (prevents infinite loops)
       if (autoPopulatingFieldsRef.current.has(field)) {
-        // Remove from set after skipping once
         autoPopulatingFieldsRef.current.delete(field);
         return;
       }
@@ -277,11 +237,8 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       if (entry) {
         handleSuggestionSelect(field, entry);
       } else {
-        // Clear selection if user clears the input
         setSelectedItems((prev) => ({ ...prev, [field]: null }));
-        // Clear the field value and child fields
         handleFieldChange(field, '');
-        // Clear child suggestions
         clearChildSuggestions(field);
       }
     },
@@ -293,7 +250,6 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     ],
   );
 
-  // Render autocomplete field with suggestions using ComboBox
   const renderAutocompleteField = useCallback(
     (fieldName: string) => {
       const level = levelsWithStrictEntry.find(
@@ -330,7 +286,6 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     ],
   );
 
-  // Render free text field (no autocomplete)
   const renderFreeTextField = useCallback(
     (fieldName: string) => {
       const level = levelsWithStrictEntry.find(
@@ -357,7 +312,6 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     [levelsWithStrictEntry, isFieldReadOnly, address, handleFieldChange],
   );
 
-  // Show loading state while fetching address levels
   if (isLoadingLevels) {
     return (
       <div className={styles.formSection}>
@@ -378,13 +332,9 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       </span>
 
       <div className={styles.row}>
-        {/* Render all fields dynamically based on displayLevels from backend */}
         {displayLevels.map((level) => {
           const fieldName = level.addressField;
 
-          // Check if this field is part of address hierarchy (has autocomplete)
-          // Fields returned by API are hierarchy fields → render as ComboBox
-          // Fields NOT in API (e.g., address1, address2) → render as TextInput
           if (hierarchyFieldNames.has(fieldName)) {
             return renderAutocompleteField(fieldName);
           } else {
