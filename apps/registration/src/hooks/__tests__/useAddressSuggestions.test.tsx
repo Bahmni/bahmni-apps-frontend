@@ -1,9 +1,12 @@
-import { renderHook, act, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactNode } from 'react';
-import { useAddressSuggestions } from '../useAddressSuggestions';
-import type { AddressLevel, SelectedAddressMetadata } from '../useAddressFields';
 import * as services from '@bahmni/services';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import { ReactNode } from 'react';
+import type {
+  AddressLevel,
+  SelectedAddressMetadata,
+} from '../useAddressFields';
+import { useAddressSuggestions } from '../useAddressSuggestions';
 
 // Mock dependencies
 jest.mock('@bahmni/services');
@@ -204,7 +207,12 @@ describe('useAddressSuggestions', () => {
         {
           name: 'Bangalore Urban',
           uuid: 'district-uuid-1',
-          parent: { uuid: 'state-uuid-1', name: 'Karnataka' },
+          parent: {
+            uuid: 'state-uuid-1',
+            name: 'Karnataka',
+            userGeneratedId: null,
+          },
+          userGeneratedId: null,
         },
       ]);
 
@@ -250,12 +258,22 @@ describe('useAddressSuggestions', () => {
         {
           name: 'Bangalore Urban',
           uuid: 'district-uuid-1',
-          parent: { uuid: 'state-uuid-1', name: 'Karnataka' },
+          parent: {
+            uuid: 'state-uuid-1',
+            name: 'Karnataka',
+            userGeneratedId: null,
+          },
+          userGeneratedId: null,
         },
         {
           name: 'Chennai',
           uuid: 'district-uuid-2',
-          parent: { uuid: 'state-uuid-2', name: 'Tamil Nadu' },
+          parent: {
+            uuid: 'state-uuid-2',
+            name: 'Tamil Nadu',
+            userGeneratedId: null,
+          },
+          userGeneratedId: null,
         },
       ]);
 
@@ -381,7 +399,7 @@ describe('useAddressSuggestions', () => {
         result.current.clearChildSuggestions('stateProvince');
       });
 
-      expect(result.current.selectedItems['countyDistrict']).toBe(null);
+      expect(result.current.selectedItems['countyDistrict']).toBeNull();
       expect(result.current.selectedItems['stateProvince']).toBe(
         mockSuggestions[0],
       );

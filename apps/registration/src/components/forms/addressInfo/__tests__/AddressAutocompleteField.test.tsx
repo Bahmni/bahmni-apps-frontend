@@ -1,8 +1,8 @@
+import type { AddressHierarchyEntry } from '@bahmni/services';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { AddressAutocompleteField } from '../AddressAutocompleteField';
-import type { AddressHierarchyEntry } from '@bahmni/services';
 import type { AddressLevel } from '../../../../hooks/useAddressFields';
+import { AddressAutocompleteField } from '../AddressAutocompleteField';
 
 // Mock the ComboBox component
 jest.mock('@bahmni/design-system', () => ({
@@ -58,7 +58,7 @@ jest.mock('@bahmni/design-system', () => ({
           <ul data-testid={`suggestions-${id}`}>
             {items.map((item: any, index: number) => (
               <li
-                key={index}
+                key={item.uuid ?? item.name ?? index}
                 data-testid={`suggestion-${index}`}
                 onClick={() => handleSelection(item)}
               >
@@ -84,19 +84,21 @@ describe('AddressAutocompleteField', () => {
     {
       name: 'Karnataka',
       uuid: 'state-uuid-1',
-      userGeneratedId: undefined,
+      userGeneratedId: null,
       parent: {
         name: 'India',
         uuid: 'country-uuid-1',
+        userGeneratedId: null,
       },
     },
     {
       name: 'Tamil Nadu',
       uuid: 'state-uuid-2',
-      userGeneratedId: undefined,
+      userGeneratedId: null,
       parent: {
         name: 'India',
         uuid: 'country-uuid-1',
+        userGeneratedId: null,
       },
     },
   ];
@@ -165,7 +167,7 @@ describe('AddressAutocompleteField', () => {
         <AddressAutocompleteField
           fieldName="stateProvince"
           level={mockLevel}
-          isDisabled={true}
+          isDisabled
           suggestions={[]}
           selectedItem={null}
           onSelectionChange={mockOnSelectionChange}
@@ -241,6 +243,7 @@ describe('AddressAutocompleteField', () => {
           parent: {
             name: 'Bangalore',
             uuid: 'city-uuid-1',
+            userGeneratedId: null,
           },
         },
       ];
@@ -248,7 +251,11 @@ describe('AddressAutocompleteField', () => {
       render(
         <AddressAutocompleteField
           fieldName="postalCode"
-          level={{ ...mockLevel, addressField: 'postalCode', name: 'Postal Code' }}
+          level={{
+            ...mockLevel,
+            addressField: 'postalCode',
+            name: 'Postal Code',
+          }}
           isDisabled={false}
           suggestions={postalCodeSuggestions}
           selectedItem={null}
@@ -265,8 +272,8 @@ describe('AddressAutocompleteField', () => {
         {
           name: 'Karnataka',
           uuid: 'state-uuid-1',
-          userGeneratedId: undefined,
-          parent: null,
+          userGeneratedId: null,
+          parent: undefined,
         },
       ];
 
@@ -325,7 +332,9 @@ describe('AddressAutocompleteField', () => {
         />,
       );
 
-      const input = screen.getByTestId('input-stateProvince') as HTMLInputElement;
+      const input = screen.getByTestId(
+        'input-stateProvince',
+      ) as HTMLInputElement;
       expect(input.value).toBe('Karnataka');
     });
 
@@ -334,7 +343,7 @@ describe('AddressAutocompleteField', () => {
         name: 'Postal Name',
         uuid: 'postal-uuid-1',
         userGeneratedId: '560001',
-        parent: null,
+        parent: undefined,
       };
 
       render(
@@ -396,8 +405,16 @@ describe('AddressAutocompleteField', () => {
 
       // userEvent.type() types each character individually
       expect(mockOnInputChange).toHaveBeenCalledTimes(2);
-      expect(mockOnInputChange).toHaveBeenNthCalledWith(1, 'stateProvince', 'K');
-      expect(mockOnInputChange).toHaveBeenNthCalledWith(2, 'stateProvince', 'a');
+      expect(mockOnInputChange).toHaveBeenNthCalledWith(
+        1,
+        'stateProvince',
+        'K',
+      );
+      expect(mockOnInputChange).toHaveBeenNthCalledWith(
+        2,
+        'stateProvince',
+        'a',
+      );
     });
   });
 
@@ -473,7 +490,9 @@ describe('AddressAutocompleteField', () => {
         />,
       );
 
-      const input = screen.getByTestId('input-stateProvince') as HTMLInputElement;
+      const input = screen.getByTestId(
+        'input-stateProvince',
+      ) as HTMLInputElement;
       expect(input.value).toBe('');
     });
 
@@ -481,8 +500,8 @@ describe('AddressAutocompleteField', () => {
       const itemWithoutParent: AddressHierarchyEntry = {
         name: 'Test',
         uuid: 'test-uuid',
-        userGeneratedId: undefined,
-        parent: null,
+        userGeneratedId: null,
+        parent: undefined,
       };
 
       render(

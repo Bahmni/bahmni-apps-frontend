@@ -2,7 +2,6 @@ import {
   useTranslation,
   getAddressHierarchyEntries,
   getOrderedAddressHierarchyLevels,
-  type AddressHierarchyEntry,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {

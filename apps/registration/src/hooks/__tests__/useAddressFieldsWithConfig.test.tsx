@@ -1,11 +1,11 @@
-import { renderHook, waitFor } from '@testing-library/react';
+import * as services from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { renderHook, waitFor } from '@testing-library/react';
 import { ReactNode } from 'react';
 import {
   useAddressFieldsWithConfig,
   useAddressHierarchyLevels,
 } from '../useAddressFieldsWithConfig';
-import * as services from '@bahmni/services';
 import * as useRegistrationConfigModule from '../useRegistrationConfig';
 
 // Mock dependencies
@@ -231,12 +231,12 @@ describe('useAddressFieldsWithConfig', () => {
 
       // Should fall back to default levels
       expect(result.current.displayLevels).toHaveLength(6);
-      expect(
-        result.current.displayLevels.map((l) => l.addressField),
-      ).toContain('address1');
-      expect(
-        result.current.displayLevels.map((l) => l.addressField),
-      ).toContain('address2');
+      expect(result.current.displayLevels.map((l) => l.addressField)).toContain(
+        'address1',
+      );
+      expect(result.current.displayLevels.map((l) => l.addressField)).toContain(
+        'address2',
+      );
     });
 
     it('should return default levels when API returns empty array', async () => {
