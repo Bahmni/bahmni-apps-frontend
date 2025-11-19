@@ -605,55 +605,6 @@ describe('PatientSearchPage', () => {
       });
     });
 
-    it('should navigate to patient details when row is clicked', async () => {
-      delete (window as any).location;
-      window.location = { href: '' } as any;
-
-      mockSearchData = {
-        totalCount: mockSearchPatientData.length,
-        pageOfResults: mockSearchPatientData,
-      };
-      mockOnSearchArgs = [mockSearchData, 'test-search'];
-
-      (useQuery as jest.Mock).mockReturnValue({
-        data: {
-          totalCount: mockSearchPatientData.length,
-          pageOfResults: mockSearchPatientData,
-        },
-        error: null,
-        isLoading: false,
-      });
-
-      render(
-        <MemoryRouter>
-          <NotificationProvider>
-            <QueryClientProvider client={queryClient}>
-              <UserPrivilegeProvider>
-                <PatientSearchPage />
-              </UserPrivilegeProvider>
-            </QueryClientProvider>
-          </NotificationProvider>
-        </MemoryRouter>,
-      );
-
-      const searchInput = screen.getByPlaceholderText(
-        'Search by name or patient ID',
-      );
-      fireEvent.input(searchInput, { target: { value: 'test search' } });
-      fireEvent.click(screen.getByTestId('search-patient-search-button'));
-
-      await waitFor(() => {
-        const tableRows = screen.getAllByRole('row');
-        const firstDataRow = tableRows[1];
-
-        fireEvent.click(firstDataRow);
-
-        expect(window.location.href).toBe(
-          '/bahmni/registration/index.html#/patient/02f47490-d657-48ee-98e7-4c9133ea168b',
-        );
-      });
-    });
-
     it('should show loading state when navigating to patient details', async () => {
       delete (window as any).location;
       window.location = { href: '' } as any;

@@ -169,13 +169,6 @@ const PatientSearchPage: React.FC = () => {
     window.location.href = `/bahmni/registration/index.html#/patient/${patientUuid}`;
   };
 
-  const handleRowClick = (row: PatientSearchViewModel<PatientSearchResult>) => {
-    if (selectedFieldType === 'appointment') return;
-    if (row.uuid) {
-      navigateToPatient(row.uuid);
-    }
-  };
-
   const renderIdentifier = (uuid: string, identifier: string) => {
     return (
       <Link
@@ -360,7 +353,6 @@ const PatientSearchPage: React.FC = () => {
                     ? t('REGISTRATION_PATIENT_SEARCH_ERROR_MESSAGE')
                     : undefined
                 }
-                onRowClick={handleRowClick}
               />
             </div>
           )}
