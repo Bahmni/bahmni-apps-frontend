@@ -1,5 +1,4 @@
 import {
-  Button,
   TextInput,
   Dropdown,
   Checkbox,
@@ -26,12 +25,14 @@ import {
   useGenderData,
   useIdentifierData,
 } from '../../../utils/identifierGenderUtils';
+import { PatientPhotoUpload } from '../../patientPhotoUpload/PatientPhotoUpload';
 import { createDateAgeHandlers, formatToDisplay } from './dateAgeUtils';
 
 export interface ProfileRef {
   getData: () => BasicInfoData & {
     dobEstimated: boolean;
     patientIdentifier: PatientIdentifier;
+    image?: string;
   };
   validate: () => boolean;
   clearData: () => void;
@@ -79,6 +80,7 @@ export const Profile = ({
   });
 
   const [dobEstimated, setDobEstimated] = useState(initialDobEstimated);
+  const [patientImage, setPatientImage] = useState<string>('');
 
   // Component owns ALL its error states
   const [nameErrors, setNameErrors] = useState<BasicInfoErrors>({
@@ -237,6 +239,7 @@ export const Profile = ({
         ...formData,
         dobEstimated,
         patientIdentifier,
+        ...(patientImage && { image: patientImage }),
       };
     },
     validate,
@@ -255,6 +258,7 @@ export const Profile = ({
         birthTime: '',
       });
       setDobEstimated(false);
+      setPatientImage('');
       setNameErrors({ firstName: '', middleName: '', lastName: '' });
       setValidationErrors({
         firstName: '',
@@ -280,16 +284,7 @@ export const Profile = ({
         )}
       </span>
       <div className={styles.row}>
-        <div className={styles.photocol}>
-          <div className={styles.photoUploadSection}>
-            <Button kind="tertiary" size="sm" className={styles.wrapButton}>
-              {t('CREATE_PATIENT_UPLOAD_PHOTO')}
-            </Button>
-            <Button kind="tertiary" size="sm" className={styles.wrapButton}>
-              {t('CREATE_PATIENT_CAPTURE_PHOTO')}
-            </Button>
-          </div>
-        </div>
+        <PatientPhotoUpload onPhotoConfirm={setPatientImage} />
 
         <div className={styles.col}>
           <div className={styles.row}>

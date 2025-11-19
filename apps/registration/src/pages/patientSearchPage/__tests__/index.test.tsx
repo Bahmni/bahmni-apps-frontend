@@ -92,6 +92,10 @@ jest.mock('@tanstack/react-query', () => ({
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   dispatchAuditEvent: jest.fn(),
+  getCurrentUser: jest.fn().mockResolvedValue({
+    username: 'testuser',
+    uuid: 'test-uuid',
+  }),
   getRegistrationConfig: jest.fn(),
   updateAppointmentStatus: jest.fn(),
   notificationService: {
@@ -271,7 +275,7 @@ describe('PatientSearchPage', () => {
     });
   });
 
-  it('should render the Header with Breadcrumbs component', () => {
+  it('should render the Header with Breadcrumbs and globalActions', () => {
     render(
       <MemoryRouter>
         <NotificationProvider>
@@ -283,10 +287,11 @@ describe('PatientSearchPage', () => {
         </NotificationProvider>
       </MemoryRouter>,
     );
-    expect(screen.getByText('Home')).toBeInTheDocument();
-    expect(screen.getByText('Search Patient')).toBeInTheDocument();
-    expect(screen.getByText('Create new patient')).toBeInTheDocument();
-    expect(screen.getByText('Hi, Profile name')).toBeInTheDocument();
+    expect(screen.getByTestId('global-action-user')).toBeInTheDocument();
+    const createNewPatientButton = screen.getByRole('button', {
+      name: /create new patient/i,
+    });
+    expect(createNewPatientButton).toBeInTheDocument();
     expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
     expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
     expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(

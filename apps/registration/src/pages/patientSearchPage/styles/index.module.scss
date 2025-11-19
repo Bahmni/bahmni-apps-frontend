@@ -11,8 +11,7 @@
   background-color: $layer-02;
   padding: $spacing-06 $spacing-12;
   padding-inline: calc($spacing-12 + $spacing-02);
-  padding-top: calc(48px + $spacing-12);
-  margin-top: 0;
+  padding-top: $spacing-08;
 }
 
 .patientSearchResult {
@@ -66,4 +65,12 @@
   padding: 0.4375rem $spacing-05 !important;
   align-items: center;
   gap: $spacing-07;
+}
+
+.headerButton {
+  position: fixed;
+  top: $spacing-02;
+  right: $spacing-09;
+  padding-inline: $spacing-05;
+  z-index: 9999;
 }
