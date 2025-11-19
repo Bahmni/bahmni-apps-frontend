@@ -32,7 +32,9 @@
     "@types/fhir": "^0.0.41",
     "react-router-dom": "^7.5.3",
     "react-i18next": "^13.0.0",
-    "i18next": "^23.0.0"
+    "i18next": "^23.0.0",
+    "@bahmni/design-system": "^0.0.1-0",
+    "@bahmni/services": "^0.0.1-0"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
