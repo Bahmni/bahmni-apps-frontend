@@ -1,4 +1,7 @@
-# bahmni-registration-app
+# @bahmni/registration-app
 
-## Description
-A modern patient registration and search module for Bahmni, built with React and the Bahmni Design System. Provides intuitive interfaces for patient registration, search, and management in healthcare settings.
+This library was generated with [Nx](https://nx.dev).
+
+## Running unit tests
+
+Run `nx test @bahmni/registration-app` to execute the unit tests via [Vitest](https://vitest.dev/).
