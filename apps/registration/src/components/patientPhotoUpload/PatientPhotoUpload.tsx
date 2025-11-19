@@ -236,6 +236,7 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
       </div>
 
       <Modal
+        className={styles.patientPhoto}
         open={isModalOpen}
         onRequestClose={handleModalClose}
         passiveModal
