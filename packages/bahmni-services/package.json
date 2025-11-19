@@ -8,18 +8,21 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     }
   },
-  "author": "Bahmni Team",
-  "license": "MIT",
+  "author": "Thoughtworks Inc.",
+  "license": "MPLv2",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bahnew/bahmni-clinical-frontend.git",
-    "directory": "bahmni-frontend/packages/bahmni-services"
+    "url": "git+https://github.com/Bahmni/bahmni-apps-frontend.git",
+    "directory": "bahmni-apps-frontend/packages/bahmni-services"
+  },
+   "scripts": {
+    "build": "vite build",
+    "prepublishOnly": "yarn run build"
   },
   "dependencies": {
     "axios": "^1.12.0",
@@ -31,5 +34,11 @@
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
-  }
+  },
+  "description": "A set of service utilities and API integration helpers that act as an abstraction layer for communicating with OpenMRS backend APIs.",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
 }
