@@ -689,9 +689,7 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
         <tbody
           aria-live="polite"
         >
-          <tr
-            class=""
-          >
+          <tr>
             <td>
               Acetylsalicylic acid 150 mg
             </td>
@@ -717,9 +715,7 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
               stopped
             </td>
           </tr>
-          <tr
-            class=""
-          >
+          <tr>
             <td>
               Paroxetine 12.5 mg
             </td>
@@ -745,9 +741,7 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
               stopped
             </td>
           </tr>
-          <tr
-            class=""
-          >
+          <tr>
             <td>
               Chlorpheniramine maleate 4 mg
             </td>
@@ -773,9 +767,7 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
               scheduled
             </td>
           </tr>
-          <tr
-            class=""
-          >
+          <tr>
             <td>
               Paracetamol 650 mg
             </td>
@@ -801,9 +793,7 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
               stopped
             </td>
           </tr>
-          <tr
-            class=""
-          >
+          <tr>
             <td>
               Hydrochlorothiazide 25 mg
             </td>
@@ -829,9 +819,7 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
               stopped
             </td>
           </tr>
-          <tr
-            class=""
-          >
+          <tr>
             <td>
               Oxygen
             </td>
