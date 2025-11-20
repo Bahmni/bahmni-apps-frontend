@@ -69,7 +69,7 @@ jobs:
             AFFECTED=$(npx nx show projects --affected --base=HEAD~1 --head=HEAD --type=lib)
             PACKAGES=()
 
-            for package in @bahmni/services @bahmni/widgets @bahmni/design-system; do
+            for package in bahmni-services bahmni-widgets bahmni-design-system; do
               if echo "$AFFECTED" | grep -q "^${package}$"; then
                 if [ "$IS_TAG" == "true" ] && [ -n "$TARGET_PACKAGE" ] && [ "$TARGET_PACKAGE" != "$package" ]; then
                   continue
