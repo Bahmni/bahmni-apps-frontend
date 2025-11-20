@@ -4,7 +4,9 @@ const webpack = require('webpack');
 const { join } = require('path');
 
 module.exports = (env, argv) => {
-  const publicPath = env.PUBLIC_PATH || process.env.PUBLIC_PATH || '/';
+  //TODO to read this from docker compose
+  //TODO should we hardcode?
+  const publicPath = env.PUBLIC_PATH || process.env.PUBLIC_PATH || '/bahmni-new/';
   return {
     output: {
       path: join(__dirname, 'dist'),
@@ -14,7 +16,7 @@ module.exports = (env, argv) => {
     devServer: {
       port: 3000,
       historyApiFallback: {
-        index: '/index.html',
+        index: '/bahmni-new/index.html',
         disableDotRule: true,
         htmlAcceptHeaders: ['text/html', 'application/xhtml+xml'],
       },
