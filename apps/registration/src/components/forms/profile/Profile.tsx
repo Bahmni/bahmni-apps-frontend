@@ -164,6 +164,10 @@ export const Profile = ({
     }
   };
 
+  const handleNameBlur = (field: string) => {
+    setNameErrors((prev) => ({ ...prev, [field]: '' }));
+  };
+
   const { handleDateInputChange, handleDateOfBirthChange, handleAgeChange } =
     createDateAgeHandlers({
       setDateErrors,
@@ -362,6 +366,7 @@ export const Profile = ({
               invalid={!!nameErrors.firstName || !!validationErrors.firstName}
               invalidText={nameErrors.firstName || validationErrors.firstName}
               onChange={(e) => handleNameChange('firstName', e.target.value)}
+              onBlur={() => handleNameBlur('firstName')}
             />
 
             {(patientInfoConfig?.showMiddleName ?? true) && (
@@ -373,6 +378,7 @@ export const Profile = ({
                 invalid={!!nameErrors.middleName}
                 invalidText={nameErrors.middleName}
                 onChange={(e) => handleNameChange('middleName', e.target.value)}
+                onBlur={() => handleNameBlur('middleName')}
               />
             )}
 
@@ -388,6 +394,7 @@ export const Profile = ({
                 invalid={!!nameErrors.lastName || !!validationErrors.lastName}
                 invalidText={nameErrors.lastName || validationErrors.lastName}
                 onChange={(e) => handleNameChange('lastName', e.target.value)}
+                onBlur={() => handleNameBlur('lastName')}
               />
             )}
           </div>
