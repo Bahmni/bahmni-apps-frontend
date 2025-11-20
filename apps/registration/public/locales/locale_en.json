@@ -91,5 +91,12 @@
   "REGISTRATION_PATIENT_SEARCH_TABLE_TITLE": "Patient results ({{count}})",
   "SEARCH_BY_CUSTOM_ATTRIBUTE": "Search by {{attribute}}",
   "START_VISIT_TYPE": "Start {{visitType}} visit",
-  "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "User {{username}} accessed patient search screen in registration app"
+  "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "User {{username}} accessed patient search screen in registration app",
+  "REGISTRATION_ADDRESS_COUNTRY": "Country",
+  "REGISTRATION_ADDRESS_STATE": "State",
+  "REGISTRATION_ADDRESS_DISTRICT": "District",
+  "REGISTRATION_ADDRESS_CITY_VILLAGE": "City/Village",
+  "REGISTRATION_ADDRESS_POSTAL_CODE": "Pincode",
+  "REGISTRATION_ADDRESS_LOCALITY": "Locality/Sector",
+  "REGISTRATION_ADDRESS_HOUSE_FLAT_NO": "House number/ Flat number"
 }

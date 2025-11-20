@@ -91,5 +91,12 @@
   "REGISTRATION_PATIENT_SEARCH_TABLE_TITLE": "Resultados de pacientes ({{count}})",
   "SEARCH_BY_CUSTOM_ATTRIBUTE": "Buscar por {{attribute}}",
   "START_VISIT_TYPE": "Empezar visita {{visitType}}",
-  "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "El usuario {{username}} accedió a la pantalla de búsqueda de pacientes en la aplicación de registro"
+  "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "El usuario {{username}} accedió a la pantalla de búsqueda de pacientes en la aplicación de registro",
+  "REGISTRATION_ADDRESS_COUNTRY": "País",
+  "REGISTRATION_ADDRESS_STATE": "Estado",
+  "REGISTRATION_ADDRESS_DISTRICT": "Distrito",
+  "REGISTRATION_ADDRESS_CITY_VILLAGE": "Ciudad/Pueblo",
+  "REGISTRATION_ADDRESS_POSTAL_CODE": "Código postal",
+  "REGISTRATION_ADDRESS_LOCALITY": "Localidad/Sector",
+  "REGISTRATION_ADDRESS_HOUSE_FLAT_NO": "Número de casa/Número de apartamento"
 }

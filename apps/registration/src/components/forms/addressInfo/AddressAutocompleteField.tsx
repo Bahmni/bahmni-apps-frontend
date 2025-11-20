@@ -1,5 +1,5 @@
 import { ComboBox } from '@bahmni/design-system';
-import type { AddressHierarchyEntry } from '@bahmni/services';
+import { useTranslation, type AddressHierarchyEntry } from '@bahmni/services';
 import { useMemo } from 'react';
 import type { AddressLevel } from '../../../hooks/useAddressFields';
 import styles from './styles/index.module.scss';
@@ -16,6 +16,7 @@ interface AddressAutocompleteFieldProps {
     entry: AddressHierarchyEntry | null,
   ) => void;
   onInputChange: (field: string, value: string) => void;
+  translationKey?: string;
 }
 
 export const AddressAutocompleteField = ({
@@ -27,7 +28,13 @@ export const AddressAutocompleteField = ({
   selectedItem,
   onSelectionChange,
   onInputChange,
+  translationKey,
 }: AddressAutocompleteFieldProps) => {
+  const { t } = useTranslation();
+
+  const translatedLabel = useMemo(() => {
+    return translationKey ? t(translationKey) : level.name;
+  }, [t, translationKey, level.name]);
   const itemToString = useMemo(
     () => (item: AddressHierarchyEntry | null) => {
       if (!item) return '';
@@ -55,8 +62,8 @@ export const AddressAutocompleteField = ({
     <div key={fieldName} className={styles.col}>
       <ComboBox
         id={fieldName}
-        titleText={level.required ? `${level.name} *` : level.name}
-        placeholder={level.name}
+        titleText={level.required ? `${translatedLabel} *` : translatedLabel}
+        placeholder={translatedLabel}
         items={suggestions}
         itemToString={itemToString}
         itemToElement={itemToElement}

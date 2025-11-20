@@ -64,6 +64,10 @@ export interface PatientInformationConfig {
     showAddressFieldsTopDown?: boolean;
     strictAutocompleteFromLevel?: string;
     requiredFields?: string[];
+    expectedFields?: Array<{
+      addressField: string;
+      translationKey: string;
+    }>;
   };
 }
 

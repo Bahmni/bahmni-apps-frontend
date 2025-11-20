@@ -68,6 +68,16 @@ export function useAddressFieldsWithConfig(initialAddress?: AddressData) {
     [addressHierarchyConfig],
   );
 
+  const getTranslationKey = useMemo(() => {
+    const translationMap = new Map<string, string>();
+    addressHierarchyConfig?.expectedFields?.forEach((field) => {
+      translationMap.set(field.addressField, field.translationKey);
+    });
+    return (addressField: string): string | null => {
+      return translationMap.get(addressField) ?? null;
+    };
+  }, [addressHierarchyConfig]);
+
   const addressFieldsResult = useAddressFields(
     addressLevels,
     config,
@@ -82,6 +92,7 @@ export function useAddressFieldsWithConfig(initialAddress?: AddressData) {
     levelsError,
 
     addressLevelsFromApi,
+    getTranslationKey,
   };
 }
 

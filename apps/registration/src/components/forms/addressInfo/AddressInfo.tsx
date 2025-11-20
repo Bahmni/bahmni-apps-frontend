@@ -38,6 +38,7 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     isFieldReadOnly,
     selectedMetadata,
     isLoadingLevels,
+    getTranslationKey,
   } = useAddressFieldsWithConfig();
 
   const [addressErrors, setAddressErrors] = useState<Record<string, string>>(
@@ -272,6 +273,7 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
           selectedItem={selectedItems[fieldName] ?? null}
           onSelectionChange={handleSelectionChange}
           onInputChange={handleAddressInputChange}
+          translationKey={getTranslationKey(level.addressField)}
         />
       );
     },
@@ -283,6 +285,7 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       selectedItems,
       handleSelectionChange,
       handleAddressInputChange,
+      getTranslationKey,
     ],
   );
 
@@ -295,13 +298,17 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
 
       const isDisabled = isFieldReadOnly(level);
       const fieldValue = address[fieldName] ?? '';
+      const translationKey = getTranslationKey(level.addressField);
+      const translatedLabel = translationKey ? t(translationKey) : level.name;
 
       return (
         <div key={fieldName} className={styles.col}>
           <TextInput
             id={fieldName}
-            labelText={level.required ? `${level.name} *` : level.name}
-            placeholder={level.name}
+            labelText={
+              level.required ? `${translatedLabel} *` : translatedLabel
+            }
+            placeholder={translatedLabel}
             value={fieldValue}
             disabled={isDisabled}
             onChange={(e) => handleFieldChange(fieldName, e.target.value)}
@@ -309,7 +316,14 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
         </div>
       );
     },
-    [levelsWithStrictEntry, isFieldReadOnly, address, handleFieldChange],
+    [
+      levelsWithStrictEntry,
+      isFieldReadOnly,
+      address,
+      handleFieldChange,
+      t,
+      getTranslationKey,
+    ],
   );
 
   if (isLoadingLevels) {

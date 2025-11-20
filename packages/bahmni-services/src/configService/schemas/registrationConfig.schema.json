@@ -245,8 +245,25 @@
           "description": "Address hierarchy levels to be displayed",
           "additionalProperties": false,
           "properties": {
-             "showAddressFieldsTopDown": { "type": "boolean" },
-             "strictAutocompleteFromLevel": { "type": "string" }
+            "showAddressFieldsTopDown": { "type": "boolean" },
+            "strictAutocompleteFromLevel": { "type": "string" },
+            "expectedFields": {
+              "type": "array",
+              "description": "Array of expected fields with translation keys",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "addressField": {
+                    "type": "string",
+                    "description": "Field name"
+                  },
+                  "translationKey": {
+                    "type": "string",
+                    "description": "Translation key for the field label"
+                  }
+                }
+              }
+            }
           }
         }
       }

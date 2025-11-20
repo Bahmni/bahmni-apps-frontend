@@ -4,6 +4,25 @@ import userEvent from '@testing-library/user-event';
 import type { AddressLevel } from '../../../../hooks/useAddressFields';
 import { AddressAutocompleteField } from '../AddressAutocompleteField';
 
+// Mock the translation hook
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  useTranslation: jest.fn(() => ({
+    t: (key: string) => {
+      // Simulate translation: ADDRESS_FIELD_STATEPROVINCE -> State
+      const translations: Record<string, string> = {
+        ADDRESS_FIELD_STATEPROVINCE: 'State',
+        ADDRESS_FIELD_POSTALCODE: 'Postal Code',
+        ADDRESS_FIELD_COUNTYDISTRICT: 'District',
+        ADDRESS_FIELD_CITYVILLAGE: 'City/Village',
+        ADDRESS_FIELD_ADDRESS1: 'Address Line 1',
+        ADDRESS_FIELD_ADDRESS2: 'Address Line 2',
+      };
+      return translations[key] ?? key;
+    },
+  })),
+}));
+
 // Mock the ComboBox component
 jest.mock('@bahmni/design-system', () => ({
   ComboBox: jest.fn(
