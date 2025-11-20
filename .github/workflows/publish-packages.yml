@@ -2,7 +2,7 @@ name: Publish Packages
 
 on:
   push:
-    branches: [main]
+    branches: [BAH-4245]
     paths:
       - 'packages/**'
     tags:
@@ -150,7 +150,7 @@ jobs:
       - working-directory: packages/${{ matrix.package }}
         run: |
           npm version ${{ steps.version.outputs.version }} --no-git-tag-version
-          npm publish --access public --tag ${{ steps.version.outputs.dist-tag }}
+          #npm publish --access public --tag ${{ steps.version.outputs.dist-tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
