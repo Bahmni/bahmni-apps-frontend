@@ -63,6 +63,15 @@ export const Profile = ({
   const { registrationConfig } = useRegistrationConfig();
   const patientInfoConfig = registrationConfig?.patientInformation;
 
+  const getRequiredLabel = (labelKey: string, isRequired: boolean) => {
+    return (
+      <>
+        {t(labelKey)}
+        {isRequired && <span className={styles.requiredAsterisk}>*</span>}
+      </>
+    );
+  };
+
   // Component owns ALL its state
   const [formData, setFormData] = useState<BasicInfoData>({
     patientIdFormat:
@@ -129,16 +138,29 @@ export const Profile = ({
     const pattern = fieldValidationConfig?.[field]?.pattern ?? '^[a-zA-Z\\s]*$';
     const nameRegex = new RegExp(pattern);
     const errorMessage = fieldValidationConfig?.[field]?.errorMessage;
+
+    const isMiddleName = field === 'middleName';
+    const isMiddleNameMandatory =
+      patientInfoConfig?.isMiddleNameMandatory ?? false;
+    const middleNameRequired =
+      fieldValidationConfig?.middleName?.required ?? isMiddleNameMandatory;
+    const shouldValidateMiddleName = middleNameRequired || value.trim() !== '';
+
     if (nameRegex.test(value)) {
       handleInputChange(field, value);
 
       setNameErrors((prev) => ({ ...prev, [field]: '' }));
       setValidationErrors((prev) => ({ ...prev, [field]: '' }));
     } else {
-      setNameErrors((prev) => ({
-        ...prev,
-        [field]: errorMessage,
-      }));
+      if (isMiddleName && !shouldValidateMiddleName) {
+        handleInputChange(field, value);
+        setNameErrors((prev) => ({ ...prev, [field]: '' }));
+      } else {
+        setNameErrors((prev) => ({
+          ...prev,
+          [field]: errorMessage,
+        }));
+      }
     }
   };
 
@@ -163,8 +185,10 @@ export const Profile = ({
     };
 
     // Validate firstName - check if required from config or default to true
+    const isFirstNameMandatory =
+      patientInfoConfig?.isFirstNameMandatory ?? true;
     const firstNameRequired =
-      fieldValidationConfig?.firstName?.required ?? true;
+      fieldValidationConfig?.firstName?.required ?? isFirstNameMandatory;
     if (firstNameRequired && !formData.firstName.trim()) {
       newValidationErrors.firstName = t(
         'CREATE_PATIENT_VALIDATION_FIRST_NAME_REQUIRED',
@@ -172,8 +196,10 @@ export const Profile = ({
       isValid = false;
     }
 
+    const isMiddleNameMandatory =
+      patientInfoConfig?.isMiddleNameMandatory ?? false;
     const middleNameRequired =
-      fieldValidationConfig?.middleName?.required ?? false;
+      fieldValidationConfig?.middleName?.required ?? isMiddleNameMandatory;
     if (middleNameRequired && !formData.middleName.trim()) {
       setNameErrors((prev) => ({
         ...prev,
@@ -194,14 +220,17 @@ export const Profile = ({
       isValid = false;
     }
 
-    if (!formData.gender) {
+    const isGenderMandatory = patientInfoConfig?.isGenderMandatory ?? true;
+    if (isGenderMandatory && !formData.gender) {
       newValidationErrors.gender = t(
         'CREATE_PATIENT_VALIDATION_GENDER_REQUIRED',
       );
       isValid = false;
     }
 
-    if (!formData.dateOfBirth) {
+    const isDateOfBirthMandatory =
+      patientInfoConfig?.isDateOfBirthMandatory ?? true;
+    if (isDateOfBirthMandatory && !formData.dateOfBirth) {
       newValidationErrors.dateOfBirth = t(
         'CREATE_PATIENT_VALIDATION_DATE_OF_BIRTH_REQUIRED',
       );
@@ -324,10 +353,12 @@ export const Profile = ({
           <div className={`${styles.row} ${styles.nameFields}`}>
             <TextInput
               id="first-name"
-              labelText={t('CREATE_PATIENT_FIRST_NAME')}
-              placeholder={t('CREATE_PATIENT_FIRST_NAME_PLACEHOLDER')}
+              labelText={getRequiredLabel(
+                'CREATE_PATIENT_FIRST_NAME',
+                patientInfoConfig?.isFirstNameMandatory ?? true,
+              )}
+              placeholder={t('CREATE_PATIENT_FIRST_NAME')}
               value={formData.firstName}
-              required
               invalid={!!nameErrors.firstName || !!validationErrors.firstName}
               invalidText={nameErrors.firstName || validationErrors.firstName}
               onChange={(e) => handleNameChange('firstName', e.target.value)}
@@ -348,9 +379,11 @@ export const Profile = ({
             {(patientInfoConfig?.showLastName ?? true) && (
               <TextInput
                 id="last-name"
-                labelText={t('CREATE_PATIENT_LAST_NAME')}
-                placeholder={t('CREATE_PATIENT_LAST_NAME_PLACEHOLDER')}
-                required={patientInfoConfig?.isLastNameMandatory ?? true}
+                labelText={getRequiredLabel(
+                  'CREATE_PATIENT_LAST_NAME',
+                  patientInfoConfig?.isLastNameMandatory ?? true,
+                )}
+                placeholder={t('CREATE_PATIENT_LAST_NAME')}
                 value={formData.lastName}
                 invalid={!!nameErrors.lastName || !!validationErrors.lastName}
                 invalidText={nameErrors.lastName || validationErrors.lastName}
@@ -363,7 +396,10 @@ export const Profile = ({
             <div className={styles.dropdownField}>
               <Dropdown
                 id="gender"
-                titleText={t('CREATE_PATIENT_GENDER')}
+                titleText={getRequiredLabel(
+                  'CREATE_PATIENT_GENDER',
+                  patientInfoConfig?.isGenderMandatory ?? true,
+                )}
                 label={t('CREATE_PATIENT_SELECT')}
                 items={genders}
                 aria-required="true"
@@ -454,7 +490,10 @@ export const Profile = ({
                 <DatePickerInput
                   id="date-of-birth"
                   placeholder={t('CREATE_PATIENT_DATE_OF_BIRTH_PLACEHOLDER')}
-                  labelText={t('CREATE_PATIENT_DATE_OF_BIRTH')}
+                  labelText={getRequiredLabel(
+                    'CREATE_PATIENT_DATE_OF_BIRTH',
+                    patientInfoConfig?.isDateOfBirthMandatory ?? true,
+                  )}
                   invalid={
                     !!dateErrors.dateOfBirth || !!validationErrors.dateOfBirth
                   }
