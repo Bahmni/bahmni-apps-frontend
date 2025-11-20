@@ -52,6 +52,7 @@ jest.mock('../../../../hooks/useRegistrationConfig', () => ({
         showLastName: true,
         isLastNameMandatory: true,
         showBirthTime: true,
+        showEnterManually: true,
       },
     },
     setRegistrationConfig: jest.fn(),

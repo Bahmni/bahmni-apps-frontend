@@ -303,20 +303,22 @@ export const Profile = ({
                 }
               />
             </div>
-            <div className={styles.col}>
-              <CheckboxGroup legendText={t('CREATE_PATIENT_ENTRY_TYPE')}>
-                <div className={styles.checkboxField}>
-                  <Checkbox
-                    labelText={t('CREATE_PATIENT_ENTER_MANUALLY')}
-                    id="entry-type"
-                    checked={formData.entryType}
-                    onChange={(e) =>
-                      handleInputChange('entryType', e.target.checked)
-                    }
-                  />
-                </div>
-              </CheckboxGroup>
-            </div>
+            {(patientInfoConfig?.showEnterManually ?? false) && (
+              <div className={styles.col}>
+                <CheckboxGroup legendText={t('CREATE_PATIENT_ENTRY_TYPE')}>
+                  <div className={styles.checkboxField}>
+                    <Checkbox
+                      labelText={t('CREATE_PATIENT_ENTER_MANUALLY')}
+                      id="entry-type"
+                      checked={formData.entryType}
+                      onChange={(e) =>
+                        handleInputChange('entryType', e.target.checked)
+                      }
+                    />
+                  </div>
+                </CheckboxGroup>
+              </div>
+            )}
           </div>
 
           <div className={`${styles.row} ${styles.nameFields}`}>

@@ -46,6 +46,7 @@ export interface PatientInformationConfig {
   showBirthTime?: boolean;
   showCasteSameAsLastNameCheckbox?: boolean;
   showDOBEstimated?: boolean;
+  showEnterManually?: boolean;
   additionalPatientInformation?: {
     translationKey?: string;
     expectedFields?: Array<{
