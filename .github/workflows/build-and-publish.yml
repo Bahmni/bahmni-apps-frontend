@@ -32,6 +32,11 @@ jobs:
 
       # - name: Lint styles
       #   run: yarn lint:styles
+      - name: Build dependencies first
+        run: |
+          npx nx build @bahmni/services
+          npx nx build @bahmni/design-system
+          npx nx build @bahmni/widgets
 
       - name: Run tests
         run: npx nx run-many --target=test

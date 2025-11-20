@@ -8,24 +8,36 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
     "./styles": "./dist/index.css"
   },
-  "author": "Bahmni Team",
-  "license": "MIT",
+  "author": "Thoughtworks Inc.",
+  "license": "MPLv2",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bahnew/bahmni-clinical-frontend.git",
-    "directory": "bahmni-frontend/packages/bahmni-widgets"
+    "url": "git+https://github.com/Bahmni/bahmni-apps-frontend.git",
+    "directory": "bahmni-apps-frontend/packages/bahmni-widgets"
   },
-  "dependencies": {},
+  "scripts": {
+    "build": "vite build",
+    "prepublishOnly": "yarn run build"
+  },
+  "dependencies": {
+    "@bahmni/design-system": "^0.0.1-0",
+    "@bahmni/services": "^0.0.1-0"
+  },
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
     "@tanstack/react-query": "^5.85.5"
-  }
+  },
+  "description": "Reusable React display controls and components extracted for sharing across Bahmni modules. Includes common clinical widgets and notification provider to avoid duplication across different Bahmni applications.",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
 }
