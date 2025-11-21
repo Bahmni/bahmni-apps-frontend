@@ -273,7 +273,7 @@
       "description": "Field validation rules with regex patterns and error messages",
       "additionalProperties": true,
       "properties": {
-        "firstName": {
+        "fieldName": {
           "type": "object",
           "properties": {
             "pattern": {
@@ -287,36 +287,6 @@
             "required": {
               "type": "boolean",
               "description": "Whether the field is required"
-            }
-          }
-        },
-        "lastName": {
-          "type": "object",
-          "properties": {
-            "pattern": {
-              "type": "string",
-              "description": "Regular expression pattern for field validation"
-            },
-            "errorMessage": {
-              "type": "string",
-              "description": "Error message to display when validation fails"
-            },
-            "required": {
-              "type": "boolean",
-              "description": "Whether the field is required"
-            }
-          }
-        },
-        "email": {
-          "type": "object",
-          "properties": {
-            "pattern": {
-              "type": "string",
-              "description": "Regular expression pattern for email validation"
-            },
-            "errorMessage": {
-              "type": "string",
-              "description": "Error message to display when email validation fails"
             }
           }
         }

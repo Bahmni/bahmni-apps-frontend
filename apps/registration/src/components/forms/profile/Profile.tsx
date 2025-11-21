@@ -101,6 +101,7 @@ export const Profile = ({
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({
     firstName: '',
     lastName: '',
+    middleName: '',
     gender: '',
     dateOfBirth: '',
   });
@@ -134,33 +135,24 @@ export const Profile = ({
   };
 
   const fieldValidationConfig = registrationConfig?.fieldValidation;
+
   const handleNameChange = (field: string, value: string) => {
     const pattern = fieldValidationConfig?.[field]?.pattern ?? '^[a-zA-Z\\s]*$';
     const nameRegex = new RegExp(pattern);
     const errorMessage = fieldValidationConfig?.[field]?.errorMessage;
 
-    const isMiddleName = field === 'middleName';
-    const isMiddleNameMandatory =
-      patientInfoConfig?.isMiddleNameMandatory ?? false;
-    const middleNameRequired =
-      fieldValidationConfig?.middleName?.required ?? isMiddleNameMandatory;
-    const shouldValidateMiddleName = middleNameRequired || value.trim() !== '';
-
+    // Always validate pattern if there's any input
     if (nameRegex.test(value)) {
+      // Valid input: update field and clear errors
       handleInputChange(field, value);
-
       setNameErrors((prev) => ({ ...prev, [field]: '' }));
       setValidationErrors((prev) => ({ ...prev, [field]: '' }));
     } else {
-      if (isMiddleName && !shouldValidateMiddleName) {
-        handleInputChange(field, value);
-        setNameErrors((prev) => ({ ...prev, [field]: '' }));
-      } else {
-        setNameErrors((prev) => ({
-          ...prev,
-          [field]: errorMessage,
-        }));
-      }
+      // Invalid input: show pattern error (don't update the field value)
+      setNameErrors((prev) => ({
+        ...prev,
+        [field]: errorMessage,
+      }));
     }
   };
 
@@ -184,13 +176,14 @@ export const Profile = ({
     const newValidationErrors: ValidationErrors = {
       firstName: '',
       lastName: '',
+      middleName: '',
       gender: '',
       dateOfBirth: '',
     };
 
     // Validate firstName - check if required from config or default to true
     const isFirstNameMandatory =
-      patientInfoConfig?.isFirstNameMandatory ?? true;
+      fieldValidationConfig?.firstName?.required ?? true;
     const firstNameRequired =
       fieldValidationConfig?.firstName?.required ?? isFirstNameMandatory;
     if (firstNameRequired && !formData.firstName.trim()) {
@@ -200,23 +193,15 @@ export const Profile = ({
       isValid = false;
     }
 
-    const isMiddleNameMandatory =
-      patientInfoConfig?.isMiddleNameMandatory ?? false;
     const middleNameRequired =
-      fieldValidationConfig?.middleName?.required ?? isMiddleNameMandatory;
+      fieldValidationConfig?.middleName?.required ?? false;
     if (middleNameRequired && !formData.middleName.trim()) {
-      setNameErrors((prev) => ({
-        ...prev,
-        middleName:
-          fieldValidationConfig?.middleName?.errorMessage ??
-          t('CREATE_PATIENT_VALIDATION_NAME_INVALID'),
-      }));
+      newValidationErrors.middleName = t(
+        'CREATE_PATIENT_VALIDATION_MIDDLE_NAME_REQUIRED',
+      );
       isValid = false;
     }
-
-    const isLastNameMandatory = patientInfoConfig?.isLastNameMandatory ?? true;
-    const lastNameRequired =
-      fieldValidationConfig?.lastName?.required ?? isLastNameMandatory;
+    const lastNameRequired = fieldValidationConfig?.lastName?.required ?? true;
     if (lastNameRequired && !formData.lastName.trim()) {
       newValidationErrors.lastName = t(
         'CREATE_PATIENT_VALIDATION_LAST_NAME_REQUIRED',
@@ -296,6 +281,7 @@ export const Profile = ({
       setValidationErrors({
         firstName: '',
         lastName: '',
+        middleName: '',
         gender: '',
         dateOfBirth: '',
       });
@@ -359,7 +345,7 @@ export const Profile = ({
               id="first-name"
               labelText={getRequiredLabel(
                 'CREATE_PATIENT_FIRST_NAME',
-                patientInfoConfig?.isFirstNameMandatory ?? true,
+                fieldValidationConfig?.firstName?.required ?? true,
               )}
               placeholder={t('CREATE_PATIENT_FIRST_NAME')}
               value={formData.firstName}
@@ -372,22 +358,29 @@ export const Profile = ({
             {(patientInfoConfig?.showMiddleName ?? true) && (
               <TextInput
                 id="middle-name"
-                labelText={t('CREATE_PATIENT_MIDDLE_NAME')}
+                labelText={getRequiredLabel(
+                  'CREATE_PATIENT_MIDDLE_NAME',
+                  fieldValidationConfig?.middleName?.required ?? false,
+                )}
                 placeholder={t('CREATE_PATIENT_MIDDLE_NAME_PLACEHOLDER')}
                 value={formData.middleName}
-                invalid={!!nameErrors.middleName}
-                invalidText={nameErrors.middleName}
+                invalid={
+                  !!nameErrors.middleName || !!validationErrors.middleName
+                }
+                invalidText={
+                  nameErrors.middleName || validationErrors.middleName
+                }
                 onChange={(e) => handleNameChange('middleName', e.target.value)}
                 onBlur={() => handleNameBlur('middleName')}
               />
             )}
 
-            {(patientInfoConfig?.showLastName ?? true) && (
+            {patientInfoConfig?.showLastName && (
               <TextInput
                 id="last-name"
                 labelText={getRequiredLabel(
                   'CREATE_PATIENT_LAST_NAME',
-                  patientInfoConfig?.isLastNameMandatory ?? true,
+                  fieldValidationConfig?.lastName?.required ?? true,
                 )}
                 placeholder={t('CREATE_PATIENT_LAST_NAME')}
                 value={formData.lastName}

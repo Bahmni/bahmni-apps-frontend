@@ -41,9 +41,6 @@ export interface PatientInformationConfig {
   autoCompleteFields?: string[];
   showMiddleName?: boolean;
   showLastName?: boolean;
-  isFirstNameMandatory?: boolean;
-  isMiddleNameMandatory?: boolean;
-  isLastNameMandatory?: boolean;
   isGenderMandatory?: boolean;
   isDateOfBirthMandatory?: boolean;
   patientNameDisplayOrder?: string[];
