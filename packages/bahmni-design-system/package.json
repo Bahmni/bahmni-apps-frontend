@@ -8,19 +8,22 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
     "./styles": "./dist/index.css"
   },
-  "author": "Bahmni Team",
-  "license": "MIT",
+  "author": "Thoughtworks Inc.",
+  "license": "MPLv2",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bahnew/bahmni-clinical-frontend.git",
-    "directory": "bahmni-frontend/packages/bahmni-design-system"
+    "url": "git+https://github.com/Bahmni/bahmni-apps-frontend.git",
+    "directory": "bahmni-apps-frontend/packages/bahmni-design-system"
+  },
+  "scripts": {
+    "build": "vite build",
+    "prepublishOnly": "yarn run build"
   },
   "dependencies": {
     "@bahmni/services": "^0.0.1-0",
@@ -28,10 +31,20 @@
     "@carbon/react": "^1.83.0",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
-    "@fortawesome/react-fontawesome": "^0.2.2"
+    "@fortawesome/react-fontawesome": "^0.2.2",
+    "@bahmni/services": "^0.0.1-0"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
+  },
+  "description": "A reusable React component library and design assets based on Carbon Design System, suitable for building modern healthcare and enterprise web applications.",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "devDependencies": {
+    "@types/carbon__layout": "^0.0.3"
   }
 }

@@ -29,7 +29,7 @@
 }
 
 .wrapButton {
-  padding-right: $spacing-05;
+  padding-right: $spacing-05 !important
 }
 
 .imagePreviewContainer {
@@ -59,16 +59,17 @@
   height: $spacing-08;
 }
 
-:global {
-  .cds--modal-container {
-    width: $spacing-05 * 25;
+.patientPhoto {
+  :global(.cds--modal-container) {
+    width: $spacing-05 * 25 !important;
   }
-  .cds--modal-content {
-    padding: $spacing-05;
+  
+  :global(.cds--modal-content) {
+    padding: $spacing-05 !important;
   }
 
-  .cds--file__selected-file {
-    margin-top: $spacing-09 * -1.25;
-    margin-left: $spacing-05 * 10;
+  :global(.cds--file__selected-file) {
+    margin-top: $spacing-09 * -1.25 !important;
+    margin-left: $spacing-05 * 10 !important;
   }
 }

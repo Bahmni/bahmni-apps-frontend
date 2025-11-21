@@ -68,9 +68,9 @@
 }
 
 .headerButton {
-  position: fixed;
+  position: absolute !important;
   top: $spacing-02;
   right: $spacing-09;
-  padding-inline: $spacing-05;
+  padding-inline: $spacing-05 !important;
   z-index: 9999;
 }
