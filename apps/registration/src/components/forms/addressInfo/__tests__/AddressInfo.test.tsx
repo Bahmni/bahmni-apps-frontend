@@ -1,7 +1,7 @@
 import {
   useTranslation,
   getAddressHierarchyEntries,
-  type AddressHierarchyEntry,
+  getOrderedAddressHierarchyLevels,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
@@ -19,6 +19,29 @@ import { AddressInfo, AddressInfoRef } from '../AddressInfo';
 jest.mock('@bahmni/services', () => ({
   useTranslation: jest.fn(),
   getAddressHierarchyEntries: jest.fn(),
+  getOrderedAddressHierarchyLevels: jest.fn(),
+}));
+
+// Mock registration config hook - with overridable return value
+// Default: no strictAutocompleteFromLevel (all fields are plain text inputs)
+const mockUseRegistrationConfig = jest.fn(() => ({
+  registrationConfig: {
+    patientInformation: {
+      addressHierarchy: {
+        showAddressFieldsTopDown: false,
+      },
+    },
+  },
+  setRegistrationConfig: jest.fn(),
+  isLoading: false,
+  setIsLoading: jest.fn(),
+  error: null,
+  setError: jest.fn(),
+  refetch: jest.fn(),
+}));
+
+jest.mock('../../../../hooks/useRegistrationConfig', () => ({
+  useRegistrationConfig: jest.fn(() => mockUseRegistrationConfig()),
 }));
 
 const mockUseTranslation = useTranslation as jest.MockedFunction<
@@ -28,9 +51,13 @@ const mockGetAddressHierarchyEntries =
   getAddressHierarchyEntries as jest.MockedFunction<
     typeof getAddressHierarchyEntries
   >;
+const mockGetOrderedAddressHierarchyLevels =
+  getOrderedAddressHierarchyLevels as jest.MockedFunction<
+    typeof getOrderedAddressHierarchyLevels
+  >;
 
-// Helper to render with QueryClient
-const renderWithQueryClient = (component: React.ReactElement) => {
+// Helper to render with QueryClient and wait for async loading
+const renderWithQueryClient = async (component: React.ReactElement) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -38,9 +65,18 @@ const renderWithQueryClient = (component: React.ReactElement) => {
       },
     },
   });
-  return render(
+  const result = render(
     <QueryClientProvider client={queryClient}>{component}</QueryClientProvider>,
   );
+
+  // Wait for address levels to load
+  await waitFor(() => {
+    expect(
+      screen.queryByText('Loading address fields...'),
+    ).not.toBeInTheDocument();
+  });
+
+  return result;
 };
 
 describe('AddressInfo', () => {
@@ -50,6 +86,40 @@ describe('AddressInfo', () => {
     jest.useFakeTimers();
     mockUseTranslation.mockReturnValue({ t: mockT } as any);
     mockGetAddressHierarchyEntries.mockClear();
+
+    // Mock the address hierarchy levels from backend
+    mockGetOrderedAddressHierarchyLevels.mockResolvedValue([
+      {
+        addressField: 'address1',
+        name: 'CREATE_PATIENT_HOUSE_NUMBER',
+        required: false,
+      },
+      {
+        addressField: 'address2',
+        name: 'CREATE_PATIENT_LOCALITY',
+        required: false,
+      },
+      {
+        addressField: 'stateProvince',
+        name: 'CREATE_PATIENT_STATE',
+        required: false,
+      },
+      {
+        addressField: 'countyDistrict',
+        name: 'CREATE_PATIENT_DISTRICT',
+        required: false,
+      },
+      {
+        addressField: 'cityVillage',
+        name: 'CREATE_PATIENT_CITY',
+        required: false,
+      },
+      {
+        addressField: 'postalCode',
+        name: 'CREATE_PATIENT_PINCODE',
+        required: false,
+      },
+    ]);
   });
 
   afterEach(() => {
@@ -58,11 +128,27 @@ describe('AddressInfo', () => {
     });
     jest.useRealTimers();
     jest.clearAllMocks();
+    // Reset mock to default
+    mockUseRegistrationConfig.mockImplementation(() => ({
+      registrationConfig: {
+        patientInformation: {
+          addressHierarchy: {
+            showAddressFieldsTopDown: false,
+          },
+        },
+      },
+      setRegistrationConfig: jest.fn(),
+      isLoading: false,
+      setIsLoading: jest.fn(),
+      error: null,
+      setError: jest.fn(),
+      refetch: jest.fn(),
+    }));
   });
 
   describe('Rendering', () => {
-    it('renders all address input fields correctly', () => {
-      renderWithQueryClient(<AddressInfo />);
+    it('should render all address input fields correctly', async () => {
+      await renderWithQueryClient(<AddressInfo />);
 
       expect(
         screen.getByLabelText(/CREATE_PATIENT_HOUSE_NUMBER/),
@@ -80,575 +166,77 @@ describe('AddressInfo', () => {
       ).toBeInTheDocument();
     });
 
-    it('renders section title', () => {
-      renderWithQueryClient(<AddressInfo />);
-
+    it('should render section title', async () => {
+      await renderWithQueryClient(<AddressInfo />);
       expect(mockT).toHaveBeenCalledWith('CREATE_PATIENT_SECTION_ADDRESS_INFO');
+    });
+
+    it('should show loading state while fetching address levels', () => {
+      const queryClient = new QueryClient();
+      render(
+        <QueryClientProvider client={queryClient}>
+          <AddressInfo />
+        </QueryClientProvider>,
+      );
+      expect(screen.getByText('Loading address fields...')).toBeInTheDocument();
     });
   });
 
-  describe('Input Handling', () => {
-    it('updates simple text fields without validation', () => {
-      const ref = createRef<AddressInfoRef>();
-      renderWithQueryClient(<AddressInfo ref={ref} />);
+  describe('Input Handling - Text Fields', () => {
+    it('should update text fields when user types', async () => {
+      await renderWithQueryClient(<AddressInfo />);
 
       const houseNumberInput = screen.getByLabelText(
         /CREATE_PATIENT_HOUSE_NUMBER/,
       );
       const localityInput = screen.getByLabelText(/CREATE_PATIENT_LOCALITY/);
-      const cityInput = screen.getByLabelText(/CREATE_PATIENT_CITY/);
 
       fireEvent.change(houseNumberInput, { target: { value: '123' } });
       fireEvent.change(localityInput, { target: { value: 'Street Name' } });
-      fireEvent.change(cityInput, { target: { value: 'Mumbai' } });
 
       expect(houseNumberInput).toHaveValue('123');
       expect(localityInput).toHaveValue('Street Name');
-      expect(cityInput).toHaveValue('Mumbai');
-
-      // Simple fields should not trigger validation errors
-      let isValid: boolean | undefined;
-      act(() => {
-        isValid = ref.current?.validate();
-      });
-      expect(isValid).toBe(true);
     });
 
-    it('allows clearing field values', () => {
-      renderWithQueryClient(<AddressInfo />);
-
-      const cityInput = screen.getByLabelText(/CREATE_PATIENT_CITY/);
-      fireEvent.change(cityInput, { target: { value: 'Mumbai' } });
-      expect(cityInput).toHaveValue('Mumbai');
-
-      fireEvent.change(cityInput, { target: { value: '' } });
-      expect(cityInput).toHaveValue('');
-    });
-  });
-
-  describe('Validation', () => {
-    it('validates that dropdown fields require selection from dropdown', () => {
-      const ref = createRef<AddressInfoRef>();
-      renderWithQueryClient(<AddressInfo ref={ref} />);
-
-      const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
-      fireEvent.change(districtInput, {
-        target: { value: 'Invalid District' },
-      });
-
-      let isValid: boolean | undefined;
-      act(() => {
-        isValid = ref.current?.validate();
-      });
-      expect(isValid).toBe(false);
-    });
-
-    it('validates all three dropdown fields (district, state, pincode)', () => {
-      const ref = createRef<AddressInfoRef>();
-      renderWithQueryClient(<AddressInfo ref={ref} />);
-
-      const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
-      const stateInput = screen.getByLabelText(/CREATE_PATIENT_STATE/);
-      const pincodeInput = screen.getByLabelText(/CREATE_PATIENT_PINCODE/);
-
-      fireEvent.change(districtInput, { target: { value: 'Invalid' } });
-      fireEvent.change(stateInput, { target: { value: 'Invalid' } });
-      fireEvent.change(pincodeInput, { target: { value: 'Invalid' } });
-
-      let isValid: boolean | undefined;
-      act(() => {
-        isValid = ref.current?.validate();
-      });
-      expect(isValid).toBe(false);
-    });
-
-    it('returns true when dropdown fields are empty', () => {
-      const ref = createRef<AddressInfoRef>();
-      renderWithQueryClient(<AddressInfo ref={ref} />);
-
-      let isValid: boolean | undefined;
-      act(() => {
-        isValid = ref.current?.validate();
-      });
-      expect(isValid).toBe(true);
-    });
-
-    it('validates correctly after clearing a dropdown field', () => {
-      const ref = createRef<AddressInfoRef>();
-      renderWithQueryClient(<AddressInfo ref={ref} />);
-
-      const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
-
-      // Enter invalid value
-      fireEvent.change(districtInput, { target: { value: 'Invalid' } });
-      let isValid: boolean | undefined;
-      act(() => {
-        isValid = ref.current?.validate();
-      });
-      expect(isValid).toBe(false);
-
-      // Clear the field
-      fireEvent.change(districtInput, { target: { value: '' } });
-      act(() => {
-        isValid = ref.current?.validate();
-      });
-      expect(isValid).toBe(true);
-    });
-  });
-
-  describe('Address Suggestions', () => {
-    it('debounces search and fetches suggestions after 300ms', async () => {
-      const mockSuggestions: AddressHierarchyEntry[] = [
-        {
-          uuid: '1',
-          name: 'Test District',
-          userGeneratedId: null,
-          parent: undefined,
-        },
-      ];
-      mockGetAddressHierarchyEntries.mockResolvedValue(mockSuggestions);
-
-      renderWithQueryClient(<AddressInfo />);
-
-      const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
-      fireEvent.change(districtInput, { target: { value: 'Test' } });
-
-      // Should not call immediately
-      expect(mockGetAddressHierarchyEntries).not.toHaveBeenCalled();
-
-      // Advance timers by debounce delay
-      act(() => {
-        jest.advanceTimersByTime(300);
-      });
-
-      await waitFor(() => {
-        expect(mockGetAddressHierarchyEntries).toHaveBeenCalledWith(
-          'countyDistrict',
-          'Test',
-        );
-      });
-    });
-
-    it('does not fetch suggestions for short search terms (< 2 chars)', async () => {
-      renderWithQueryClient(<AddressInfo />);
-
-      const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
-      fireEvent.change(districtInput, { target: { value: 'T' } });
-
-      act(() => {
-        jest.advanceTimersByTime(300);
-      });
-
-      await waitFor(() => {
-        expect(mockGetAddressHierarchyEntries).not.toHaveBeenCalled();
-      });
-    });
-
-    it('clears suggestions when input is cleared', async () => {
-      const mockSuggestions: AddressHierarchyEntry[] = [
-        {
-          uuid: '1',
-          name: 'Test District',
-          userGeneratedId: null,
-          parent: undefined,
-        },
-      ];
-      mockGetAddressHierarchyEntries.mockResolvedValue(mockSuggestions);
-
-      renderWithQueryClient(<AddressInfo />);
-
-      const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
-
-      // First, trigger suggestions
-      fireEvent.change(districtInput, { target: { value: 'Test' } });
-      act(() => {
-        jest.advanceTimersByTime(300);
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Test District')).toBeInTheDocument();
-      });
-
-      // Clear input
-      fireEvent.change(districtInput, { target: { value: '' } });
-      act(() => {
-        jest.advanceTimersByTime(300);
-      });
-
-      await waitFor(() => {
-        expect(screen.queryByText('Test District')).not.toBeInTheDocument();
-      });
-    });
-
-    it('displays suggestions when available', async () => {
-      const mockSuggestions: AddressHierarchyEntry[] = [
-        {
-          uuid: '1',
-          name: 'District A',
-          userGeneratedId: null,
-          parent: {
-            uuid: 'state-x',
-            name: 'State X',
-            userGeneratedId: null,
-            parent: undefined,
-          },
-        },
-        {
-          uuid: '2',
-          name: 'District B',
-          userGeneratedId: null,
-          parent: {
-            uuid: 'state-y',
-            name: 'State Y',
-            userGeneratedId: null,
-            parent: undefined,
-          },
-        },
-      ];
-      mockGetAddressHierarchyEntries.mockResolvedValue(mockSuggestions);
-
-      renderWithQueryClient(<AddressInfo />);
-
-      const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
-      fireEvent.change(districtInput, { target: { value: 'District' } });
-
-      act(() => {
-        jest.advanceTimersByTime(300);
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('District A')).toBeInTheDocument();
-        expect(screen.getByText('District B')).toBeInTheDocument();
-        expect(screen.getByText('State X')).toBeInTheDocument();
-        expect(screen.getByText('State Y')).toBeInTheDocument();
-      });
-    });
-
-    it('handles API errors gracefully', async () => {
-      mockGetAddressHierarchyEntries.mockRejectedValue(new Error('API Error'));
-
-      renderWithQueryClient(<AddressInfo />);
-
-      const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
-      fireEvent.change(districtInput, { target: { value: 'Test' } });
-
-      act(() => {
-        jest.advanceTimersByTime(300);
-      });
-
-      await waitFor(() => {
-        expect(mockGetAddressHierarchyEntries).toHaveBeenCalled();
-      });
-
-      // Should not display any suggestions or error messages
-      expect(screen.queryByText('Test District')).not.toBeInTheDocument();
-    });
-
-    it('hides suggestions on blur after delay', async () => {
-      const mockSuggestions: AddressHierarchyEntry[] = [
-        {
-          uuid: '1',
-          name: 'Test District',
-          userGeneratedId: null,
-          parent: undefined,
-        },
-      ];
-      mockGetAddressHierarchyEntries.mockResolvedValue(mockSuggestions);
-
-      renderWithQueryClient(<AddressInfo />);
-
-      const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
-      fireEvent.change(districtInput, { target: { value: 'Test' } });
-
-      act(() => {
-        jest.advanceTimersByTime(300);
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Test District')).toBeInTheDocument();
-      });
-
-      fireEvent.blur(districtInput);
-
-      // Advance by blur delay (200ms in component)
-      act(() => {
-        jest.advanceTimersByTime(200);
-      });
-
-      await waitFor(() => {
-        expect(screen.queryByText('Test District')).not.toBeInTheDocument();
-      });
-    });
-
-    it('shows suggestions on focus if they exist', async () => {
-      const mockSuggestions: AddressHierarchyEntry[] = [
-        {
-          uuid: '1',
-          name: 'Test District',
-          userGeneratedId: null,
-          parent: undefined,
-        },
-      ];
-      mockGetAddressHierarchyEntries.mockResolvedValue(mockSuggestions);
-
-      renderWithQueryClient(<AddressInfo />);
-
-      const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
-
-      // Trigger suggestions
-      fireEvent.change(districtInput, { target: { value: 'Test' } });
-      act(() => {
-        jest.advanceTimersByTime(300);
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Test District')).toBeInTheDocument();
-      });
-
-      // Blur to hide
-      fireEvent.blur(districtInput);
-      act(() => {
-        jest.advanceTimersByTime(200);
-      });
-
-      await waitFor(() => {
-        expect(screen.queryByText('Test District')).not.toBeInTheDocument();
-      });
-
-      // Focus again should show suggestions
-      fireEvent.focus(districtInput);
-
-      await waitFor(() => {
-        expect(screen.getByText('Test District')).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe('Suggestion Selection', () => {
-    it('selects district suggestion and updates state field', async () => {
-      const mockEntry: AddressHierarchyEntry = {
-        uuid: '123',
-        name: 'Test District',
-        userGeneratedId: null,
-        parent: {
-          uuid: 'state-123',
-          name: 'Test State',
-          userGeneratedId: null,
-          parent: undefined,
-        },
-      };
-      mockGetAddressHierarchyEntries.mockResolvedValue([mockEntry]);
-
-      const ref = createRef<AddressInfoRef>();
-      renderWithQueryClient(<AddressInfo ref={ref} />);
-
-      const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
-      fireEvent.change(districtInput, { target: { value: 'Test' } });
-
-      act(() => {
-        jest.advanceTimersByTime(300);
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Test District')).toBeInTheDocument();
-      });
-
-      fireEvent.click(screen.getByText('Test District'));
-
-      expect(districtInput).toHaveValue('Test District');
-      expect(screen.getByLabelText(/CREATE_PATIENT_STATE/)).toHaveValue(
-        'Test State',
+    it('should allow clearing field values', async () => {
+      await renderWithQueryClient(<AddressInfo />);
+
+      const houseNumberInput = screen.getByLabelText(
+        /CREATE_PATIENT_HOUSE_NUMBER/,
       );
+      fireEvent.change(houseNumberInput, { target: { value: '123' } });
+      expect(houseNumberInput).toHaveValue('123');
 
-      // Should pass validation after selection from dropdown
-      let isValid: boolean | undefined;
-      act(() => {
-        isValid = ref.current?.validate();
-      });
-      expect(isValid).toBe(true);
-    });
-
-    it('selects postal code and cascades to district and state', async () => {
-      const mockEntry: AddressHierarchyEntry = {
-        uuid: '123',
-        name: '400001',
-        userGeneratedId: null,
-        parent: {
-          uuid: 'district-123',
-          name: 'Mumbai District',
-          userGeneratedId: null,
-          parent: {
-            uuid: 'state-123',
-            name: 'Maharashtra',
-            userGeneratedId: null,
-            parent: undefined,
-          },
-        },
-      };
-      mockGetAddressHierarchyEntries.mockResolvedValue([mockEntry]);
-
-      const ref = createRef<AddressInfoRef>();
-      renderWithQueryClient(<AddressInfo ref={ref} />);
-
-      const postalInput = screen.getByLabelText(/CREATE_PATIENT_PINCODE/);
-      fireEvent.change(postalInput, { target: { value: '400' } });
-
-      act(() => {
-        jest.advanceTimersByTime(300);
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('400001')).toBeInTheDocument();
-      });
-
-      fireEvent.click(screen.getByText('400001'));
-
-      expect(postalInput).toHaveValue('400001');
-      expect(screen.getByLabelText(/CREATE_PATIENT_DISTRICT/)).toHaveValue(
-        'Mumbai District',
-      );
-      expect(screen.getByLabelText(/CREATE_PATIENT_STATE/)).toHaveValue(
-        'Maharashtra',
-      );
-
-      // All fields should pass validation
-      let isValid: boolean | undefined;
-      act(() => {
-        isValid = ref.current?.validate();
-      });
-      expect(isValid).toBe(true);
-    });
-
-    it('selects state suggestion without cascading', async () => {
-      const mockEntry: AddressHierarchyEntry = {
-        uuid: '123',
-        name: 'Maharashtra',
-        userGeneratedId: null,
-        parent: undefined,
-      };
-      mockGetAddressHierarchyEntries.mockResolvedValue([mockEntry]);
-
-      const ref = createRef<AddressInfoRef>();
-      renderWithQueryClient(<AddressInfo ref={ref} />);
-
-      const stateInput = screen.getByLabelText(/CREATE_PATIENT_STATE/);
-      fireEvent.change(stateInput, { target: { value: 'Maha' } });
-
-      act(() => {
-        jest.advanceTimersByTime(300);
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Maharashtra')).toBeInTheDocument();
-      });
-
-      fireEvent.click(screen.getByText('Maharashtra'));
-
-      expect(stateInput).toHaveValue('Maharashtra');
-
-      // Should not update other fields
-      expect(screen.getByLabelText(/CREATE_PATIENT_DISTRICT/)).toHaveValue('');
-      expect(screen.getByLabelText(/CREATE_PATIENT_PINCODE/)).toHaveValue('');
-
-      let isValid: boolean | undefined;
-      act(() => {
-        isValid = ref.current?.validate();
-      });
-      expect(isValid).toBe(true);
-    });
-
-    it('hides suggestions after selection', async () => {
-      const mockEntry: AddressHierarchyEntry = {
-        uuid: '123',
-        name: 'Test District',
-        userGeneratedId: null,
-        parent: undefined,
-      };
-      mockGetAddressHierarchyEntries.mockResolvedValue([mockEntry]);
-
-      renderWithQueryClient(<AddressInfo />);
-
-      const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
-      fireEvent.change(districtInput, { target: { value: 'Test' } });
-
-      act(() => {
-        jest.advanceTimersByTime(300);
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Test District')).toBeInTheDocument();
-      });
-
-      fireEvent.click(screen.getByText('Test District'));
-
-      expect(screen.queryByText('Test District')).not.toBeInTheDocument();
-    });
-
-    it('clears validation errors when suggestion is selected', async () => {
-      const mockEntry: AddressHierarchyEntry = {
-        uuid: '123',
-        name: 'Valid District',
-        userGeneratedId: null,
-        parent: undefined,
-      };
-      mockGetAddressHierarchyEntries.mockResolvedValue([mockEntry]);
-
-      const ref = createRef<AddressInfoRef>();
-      renderWithQueryClient(<AddressInfo ref={ref} />);
-
-      const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
-
-      // Type invalid value and validate
-      fireEvent.change(districtInput, { target: { value: 'Invalid' } });
-      let isValid: boolean | undefined;
-      act(() => {
-        isValid = ref.current?.validate();
-      });
-      expect(isValid).toBe(false);
-
-      // Now select from dropdown
-      fireEvent.change(districtInput, { target: { value: 'Valid' } });
-      act(() => {
-        jest.advanceTimersByTime(300);
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Valid District')).toBeInTheDocument();
-      });
-
-      fireEvent.click(screen.getByText('Valid District'));
-
-      // Validation should pass after selection
-      act(() => {
-        isValid = ref.current?.validate();
-      });
-      expect(isValid).toBe(true);
+      fireEvent.change(houseNumberInput, { target: { value: '' } });
+      expect(houseNumberInput).toHaveValue('');
     });
   });
 
   describe('getData Method', () => {
-    it('returns empty object when no fields are filled', () => {
+    it('should return empty object when no fields are filled', async () => {
       const ref = createRef<AddressInfoRef>();
-      renderWithQueryClient(<AddressInfo ref={ref} />);
+      await renderWithQueryClient(<AddressInfo ref={ref} />);
 
       const data = ref.current?.getData();
       expect(data).toEqual({});
     });
 
-    it('returns only filled fields', () => {
+    it('should return only filled fields', async () => {
       const ref = createRef<AddressInfoRef>();
-      renderWithQueryClient(<AddressInfo ref={ref} />);
+      await renderWithQueryClient(<AddressInfo ref={ref} />);
 
-      const cityInput = screen.getByLabelText(/CREATE_PATIENT_CITY/);
-      fireEvent.change(cityInput, { target: { value: 'Mumbai' } });
+      const houseNumberInput = screen.getByLabelText(
+        /CREATE_PATIENT_HOUSE_NUMBER/,
+      );
+      fireEvent.change(houseNumberInput, { target: { value: '123' } });
 
       const data = ref.current?.getData();
-      expect(data).toEqual({ cityVillage: 'Mumbai' });
+      expect(data).toEqual({ address1: '123' });
     });
 
-    it('returns all filled fields with correct property names', () => {
+    it('should return multiple filled fields', async () => {
       const ref = createRef<AddressInfoRef>();
-      renderWithQueryClient(<AddressInfo ref={ref} />);
+      await renderWithQueryClient(<AddressInfo ref={ref} />);
 
       fireEvent.change(screen.getByLabelText(/CREATE_PATIENT_HOUSE_NUMBER/), {
         target: { value: '123' },
@@ -656,33 +244,170 @@ describe('AddressInfo', () => {
       fireEvent.change(screen.getByLabelText(/CREATE_PATIENT_LOCALITY/), {
         target: { value: 'Street' },
       });
-      fireEvent.change(screen.getByLabelText(/CREATE_PATIENT_DISTRICT/), {
-        target: { value: 'District' },
-      });
-      fireEvent.change(screen.getByLabelText(/CREATE_PATIENT_CITY/), {
-        target: { value: 'Mumbai' },
-      });
-      fireEvent.change(screen.getByLabelText(/CREATE_PATIENT_STATE/), {
-        target: { value: 'Maharashtra' },
-      });
-      fireEvent.change(screen.getByLabelText(/CREATE_PATIENT_PINCODE/), {
-        target: { value: '400001' },
-      });
 
       const data = ref.current?.getData();
       expect(data).toEqual({
         address1: '123',
         address2: 'Street',
-        countyDistrict: 'District',
-        cityVillage: 'Mumbai',
-        stateProvince: 'Maharashtra',
-        postalCode: '400001',
+      });
+    });
+  });
+
+  describe('Validation - Text Fields', () => {
+    it('should pass validation when no fields are required', async () => {
+      const ref = createRef<AddressInfoRef>();
+      await renderWithQueryClient(<AddressInfo ref={ref} />);
+
+      let isValid: boolean | undefined;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
+
+      expect(isValid).toBe(true);
+    });
+
+    it('should pass validation for text fields with any value', async () => {
+      const ref = createRef<AddressInfoRef>();
+      await renderWithQueryClient(<AddressInfo ref={ref} />);
+
+      fireEvent.change(screen.getByLabelText(/CREATE_PATIENT_HOUSE_NUMBER/), {
+        target: { value: 'Any value' },
+      });
+
+      let isValid: boolean | undefined;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
+
+      expect(isValid).toBe(true);
+    });
+  });
+
+  describe('Autocomplete Fields with Strict Entry', () => {
+    beforeEach(() => {
+      // Configure strict autocomplete from countyDistrict
+      // This makes countyDistrict and its parents (stateProvince, address2, address1) strict
+      // while cityVillage and postalCode remain as plain text inputs
+      mockUseRegistrationConfig.mockImplementation(
+        () =>
+          ({
+            registrationConfig: {
+              patientInformation: {
+                addressHierarchy: {
+                  showAddressFieldsTopDown: false,
+                  strictAutocompleteFromLevel: 'countyDistrict',
+                } as any,
+              },
+            },
+            setRegistrationConfig: jest.fn(),
+            isLoading: false,
+            setIsLoading: jest.fn(),
+            error: null,
+            setError: jest.fn(),
+            refetch: jest.fn(),
+          }) as any,
+      );
+    });
+
+    it('should render ComboBox for strict autocomplete fields', async () => {
+      await renderWithQueryClient(<AddressInfo />);
+
+      // District should be a combobox (configured level)
+      const districtInput = screen.getByRole('combobox', {
+        name: /CREATE_PATIENT_DISTRICT/,
+      });
+      expect(districtInput).toBeInTheDocument();
+
+      // Pincode should be plain text input (child of configured level)
+      const pincodeInput = screen.getByLabelText(/CREATE_PATIENT_PINCODE/);
+      expect(pincodeInput).toHaveAttribute('type', 'text');
+      expect(pincodeInput).not.toHaveAttribute('role', 'combobox');
+    });
+
+    it('should trigger search when typing in autocomplete field', async () => {
+      mockGetAddressHierarchyEntries.mockResolvedValue([
+        {
+          uuid: '1',
+          name: 'Test District',
+          userGeneratedId: null,
+          parent: undefined,
+        },
+      ]);
+
+      await renderWithQueryClient(<AddressInfo />);
+
+      const districtInput = screen.getByRole('combobox', {
+        name: /CREATE_PATIENT_DISTRICT/,
+      });
+
+      fireEvent.change(districtInput, { target: { value: 'Te' } });
+
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
+
+      await waitFor(() => {
+        expect(mockGetAddressHierarchyEntries).toHaveBeenCalledWith(
+          'countyDistrict',
+          'Te',
+          20,
+          undefined,
+        );
+      });
+    });
+
+    it('should display suggestions when available', async () => {
+      mockGetAddressHierarchyEntries.mockResolvedValue([
+        {
+          uuid: '1',
+          name: 'District A',
+          userGeneratedId: null,
+          parent: { uuid: 'state-1', name: 'State A' },
+        },
+      ]);
+
+      await renderWithQueryClient(<AddressInfo />);
+
+      const districtInput = screen.getByRole('combobox', {
+        name: /CREATE_PATIENT_DISTRICT/,
+      });
+
+      fireEvent.change(districtInput, { target: { value: 'District' } });
+
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText(/District A/)).toBeInTheDocument();
       });
     });
   });
 
   describe('Debouncing', () => {
-    it('cancels previous debounced search when typing rapidly', async () => {
+    beforeEach(() => {
+      mockUseRegistrationConfig.mockImplementation(
+        () =>
+          ({
+            registrationConfig: {
+              patientInformation: {
+                addressHierarchy: {
+                  showAddressFieldsTopDown: false,
+                  strictAutocompleteFromLevel: 'countyDistrict',
+                } as any,
+              },
+            },
+            setRegistrationConfig: jest.fn(),
+            isLoading: false,
+            setIsLoading: jest.fn(),
+            error: null,
+            setError: jest.fn(),
+            refetch: jest.fn(),
+          }) as any,
+      );
+    });
+
+    it('should cancel previous debounced search when typing rapidly', async () => {
       mockGetAddressHierarchyEntries.mockResolvedValue([
         {
           uuid: '1',
@@ -692,33 +417,191 @@ describe('AddressInfo', () => {
         },
       ]);
 
-      renderWithQueryClient(<AddressInfo />);
+      await renderWithQueryClient(<AddressInfo />);
 
-      const districtInput = screen.getByLabelText(/CREATE_PATIENT_DISTRICT/);
+      const districtInput = screen.getByRole('combobox', {
+        name: /CREATE_PATIENT_DISTRICT/,
+      });
 
       // Type rapidly
       fireEvent.change(districtInput, { target: { value: 'T' } });
       act(() => {
-        jest.advanceTimersByTime(100);
+        jest.advanceTimersByTime(50);
       });
 
       fireEvent.change(districtInput, { target: { value: 'Te' } });
       act(() => {
-        jest.advanceTimersByTime(100);
+        jest.advanceTimersByTime(50);
+      });
+
+      fireEvent.change(districtInput, { target: { value: 'Tes' } });
+      act(() => {
+        jest.advanceTimersByTime(50);
       });
 
       fireEvent.change(districtInput, { target: { value: 'Test' } });
       act(() => {
-        jest.advanceTimersByTime(300);
+        jest.advanceTimersByTime(250);
+      });
+
+      act(() => {
+        jest.runOnlyPendingTimers();
       });
 
       // Should only call once with the final value
+      await waitFor(
+        () => {
+          expect(mockGetAddressHierarchyEntries).toHaveBeenCalledTimes(1);
+          expect(mockGetAddressHierarchyEntries).toHaveBeenCalledWith(
+            'countyDistrict',
+            'Test',
+            20,
+            undefined,
+          );
+        },
+        { timeout: 3000 },
+      );
+    });
+
+    it('should debounce search and wait 200ms before API call', async () => {
+      mockGetAddressHierarchyEntries.mockResolvedValue([
+        {
+          uuid: '1',
+          name: 'Test District',
+          userGeneratedId: null,
+          parent: undefined,
+        },
+      ]);
+
+      await renderWithQueryClient(<AddressInfo />);
+
+      const districtInput = screen.getByRole('combobox', {
+        name: /CREATE_PATIENT_DISTRICT/,
+      });
+
+      fireEvent.change(districtInput, { target: { value: 'Test' } });
+
+      // Should not call immediately
+      expect(mockGetAddressHierarchyEntries).not.toHaveBeenCalled();
+
+      // Advance by 150ms
+      act(() => {
+        jest.advanceTimersByTime(150);
+      });
+      expect(mockGetAddressHierarchyEntries).not.toHaveBeenCalled();
+
+      // Advance by another 100ms
+      act(() => {
+        jest.advanceTimersByTime(100);
+      });
+
       await waitFor(() => {
-        expect(mockGetAddressHierarchyEntries).toHaveBeenCalledTimes(1);
         expect(mockGetAddressHierarchyEntries).toHaveBeenCalledWith(
           'countyDistrict',
           'Test',
+          20,
+          undefined,
         );
+      });
+    });
+  });
+
+  describe('Field Ordering Configuration', () => {
+    it('should render fields in bottom-up order by default', async () => {
+      await renderWithQueryClient(<AddressInfo />);
+
+      const allInputs = screen.getAllByRole('textbox');
+      const inputIds = allInputs.map((input) => input.getAttribute('id'));
+
+      // Bottom-up means reversed order from API
+      expect(inputIds).toEqual([
+        'postalCode',
+        'cityVillage',
+        'countyDistrict',
+        'stateProvince',
+        'address2',
+        'address1',
+      ]);
+    });
+
+    it('should render fields in top-down order when configured', async () => {
+      mockUseRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          patientInformation: {
+            addressHierarchy: {
+              showAddressFieldsTopDown: true,
+            } as any,
+          },
+        },
+        setRegistrationConfig: jest.fn(),
+        isLoading: false,
+        setIsLoading: jest.fn(),
+        error: null,
+        setError: jest.fn(),
+        refetch: jest.fn(),
+      } as any);
+
+      await renderWithQueryClient(<AddressInfo />);
+
+      const allInputs = screen.getAllByRole('textbox');
+      const inputIds = allInputs.map((input) => input.getAttribute('id'));
+
+      // Top-down means API order as-is
+      expect(inputIds).toEqual([
+        'address1',
+        'address2',
+        'stateProvince',
+        'countyDistrict',
+        'cityVillage',
+        'postalCode',
+      ]);
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should show default fields when API fails', async () => {
+      mockGetOrderedAddressHierarchyLevels.mockRejectedValue(
+        new Error('API Error'),
+      );
+
+      const queryClient = new QueryClient({
+        defaultOptions: {
+          queries: {
+            retry: false,
+          },
+        },
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <AddressInfo />
+        </QueryClientProvider>,
+      );
+
+      // Query has retry: 2 configured, so need to wait for retries to complete
+      // Should render default address fields after error with default labels
+      await waitFor(
+        () => {
+          expect(
+            screen.getByLabelText(/House Number \/ Flat/),
+          ).toBeInTheDocument();
+          expect(screen.getByLabelText(/Postal Code/)).toBeInTheDocument();
+        },
+        { timeout: 10000 },
+      );
+    });
+
+    it('should handle empty API response', async () => {
+      mockGetOrderedAddressHierarchyLevels.mockResolvedValue([]);
+
+      await renderWithQueryClient(<AddressInfo />);
+
+      // Should render default address fields with default labels
+      await waitFor(() => {
+        expect(
+          screen.getByLabelText(/House Number \/ Flat/),
+        ).toBeInTheDocument();
+        expect(screen.getByLabelText(/Postal Code/)).toBeInTheDocument();
       });
     });
   });

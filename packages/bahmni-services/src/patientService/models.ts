@@ -144,6 +144,14 @@ export interface AddressHierarchyResponse {
   results: AddressHierarchyEntry[];
 }
 
+export interface OrderedAddressHierarchyLevel {
+  name: string;
+  addressField: string;
+  required: boolean;
+}
+
+export type OrderedAddressHierarchyLevels = OrderedAddressHierarchyLevel[];
+
 export interface VisitType {
   visitTypes: Record<string, string>;
 }

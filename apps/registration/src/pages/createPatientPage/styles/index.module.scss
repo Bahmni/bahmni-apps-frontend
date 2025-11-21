@@ -12,6 +12,7 @@
     display: flex;
     align-items: center;
     width: calc(100% - ($spacing-13 + $spacing-05));
+    font-weight: 600;
   }
 
   // Form Container
@@ -35,11 +36,15 @@
     .sectionTitle {
        @include type-style("heading-compact-02");
       font-size: $spacing-05;
-      font-weight: 400;
     }
 
     .formSectionTitle {
       @include type-style("body-compact-02");
+    }
+
+    .patientUuid {
+      margin-left: 1rem;
+      font-weight: 400;
     }
       
     // Photo Upload Section
@@ -223,4 +228,9 @@
   font-size: $spacing-04;
   color: #525252;
   margin-top: $spacing-01;
+}
+
+.requiredAsterisk {
+  color: #da1e28;
+  margin-left: $spacing-01;
 }

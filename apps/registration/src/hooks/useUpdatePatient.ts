@@ -1,5 +1,5 @@
 import {
-  createPatient,
+  updatePatient,
   notificationService,
   CreatePatientRequest,
   PatientName,
@@ -14,33 +14,30 @@ import {
   EMAIL_UUID,
 } from '@bahmni/services';
 import { useMutation } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
 import { convertTimeToISODateTime } from '../components/forms/profile/dateAgeUtils';
 import { BasicInfoData, ContactData, AdditionalData } from '../models/patient';
 
-interface CreatePatientFormData {
+interface UpdatePatientFormData {
+  patientUuid: string;
   profile: BasicInfoData & {
     dobEstimated: boolean;
     patientIdentifier: PatientIdentifier;
-    image?: string;
   };
   address: PatientAddress;
   contact: ContactData;
   additional: AdditionalData;
 }
 
-export const useCreatePatient = () => {
-  const navigate = useNavigate();
-
+export const useUpdatePatient = () => {
   const mutation = useMutation({
-    mutationFn: (formData: CreatePatientFormData) => {
+    mutationFn: (formData: UpdatePatientFormData) => {
       const payload = transformFormDataToPayload(formData);
-      return createPatient(payload);
+      return updatePatient(formData.patientUuid, payload);
     },
     onSuccess: (response) => {
       notificationService.showSuccess(
         'Success',
-        'Patient saved successfully',
+        'Patient updated successfully',
         5000,
       );
 
@@ -51,21 +48,10 @@ export const useCreatePatient = () => {
           patientUuid: response.patient.uuid,
           module: AUDIT_LOG_EVENT_DETAILS.REGISTER_NEW_PATIENT.module,
         });
-
-        window.history.replaceState(
-          {
-            patientDisplay: response.patient.display,
-            patientUuid: response.patient.uuid,
-          },
-          '',
-          `/registration/patient/${response.patient.uuid}`,
-        );
-      } else {
-        navigate('/registration/search');
       }
     },
     onError: () => {
-      notificationService.showError('Error', 'Failed to save patient', 5000);
+      notificationService.showError('Error', 'Failed to update patient', 5000);
     },
   });
 
@@ -73,7 +59,7 @@ export const useCreatePatient = () => {
 };
 
 function transformFormDataToPayload(
-  formData: CreatePatientFormData,
+  formData: UpdatePatientFormData,
 ): CreatePatientRequest {
   const { profile, address, contact, additional } = formData;
   const patientName: PatientName = {
@@ -125,7 +111,6 @@ function transformFormDataToPayload(
       },
       identifiers: [profile.patientIdentifier],
     },
-    ...(profile.image && { image: profile.image }),
     relationships: [],
   };
 

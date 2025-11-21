@@ -20,7 +20,8 @@
 }
 
 .col {
-  flex: 1 1;
+  flex: 0 0 calc(50% - 0.5rem);
+  min-width: 0;
 }
 
 .addressFieldWrapper {

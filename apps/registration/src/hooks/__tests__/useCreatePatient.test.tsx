@@ -137,7 +137,26 @@ describe('useCreatePatient', () => {
             birthdateEstimated: false,
             birthtime: '1993-05-15T05:00:00.000Z',
             addresses: [mockFormData.address],
-            attributes: [],
+            attributes: [
+              {
+                attributeType: {
+                  uuid: 'a384873b-847a-4a86-b869-28fb601162dd',
+                },
+                value: '+1234567890',
+              },
+              {
+                attributeType: {
+                  uuid: '27fa84ff-fdd6-4895-9c77-254b60555f39',
+                },
+                value: '+0987654321',
+              },
+              {
+                attributeType: {
+                  uuid: 'e3123cba-5e07-11ef-8f7c-0242ac120002',
+                },
+                value: 'john.doe@example.com',
+              },
+            ],
             deathDate: null,
             causeOfDeath: '',
           },
@@ -527,7 +546,26 @@ describe('useCreatePatient', () => {
             birthdateEstimated: false,
             birthtime: '1993-05-15T05:00:00.000Z',
             addresses: [mockFormData.address],
-            attributes: [],
+            attributes: [
+              {
+                attributeType: {
+                  uuid: 'a384873b-847a-4a86-b869-28fb601162dd',
+                },
+                value: '+1234567890',
+              },
+              {
+                attributeType: {
+                  uuid: '27fa84ff-fdd6-4895-9c77-254b60555f39',
+                },
+                value: '+0987654321',
+              },
+              {
+                attributeType: {
+                  uuid: 'e3123cba-5e07-11ef-8f7c-0242ac120002',
+                },
+                value: 'john.doe@example.com',
+              },
+            ],
             deathDate: null,
             causeOfDeath: '',
           },
