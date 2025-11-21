@@ -12,6 +12,7 @@ import {
   PatientIdentifier,
 } from '@bahmni/services';
 import { useState, useImperativeHandle, useEffect } from 'react';
+import { useRegistrationConfig } from '../../../hooks/useRegistrationConfig';
 import type { BasicInfoData } from '../../../models/patient';
 import type {
   BasicInfoErrors,
@@ -41,12 +42,14 @@ export interface ProfileRef {
 interface ProfileProps {
   initialData?: BasicInfoData;
   initialDobEstimated?: boolean;
+  patientIdentifier?: string | null;
   ref?: React.Ref<ProfileRef>;
 }
 
 export const Profile = ({
   initialData,
   initialDobEstimated = false,
+  patientIdentifier,
   ref,
 }: ProfileProps) => {
   const { t } = useTranslation();
@@ -55,6 +58,19 @@ export const Profile = ({
   const { identifierPrefixes, primaryIdentifierType, identifierSources } =
     useIdentifierData();
   const { genders } = useGenderData(t);
+
+  // Get registration config for patient information settings
+  const { registrationConfig } = useRegistrationConfig();
+  const patientInfoConfig = registrationConfig?.patientInformation;
+
+  const getRequiredLabel = (labelKey: string, isRequired: boolean) => {
+    return (
+      <>
+        {t(labelKey)}
+        {isRequired && <span className={styles.requiredAsterisk}>*</span>}
+      </>
+    );
+  };
 
   // Component owns ALL its state
   const [formData, setFormData] = useState<BasicInfoData>({
@@ -117,22 +133,41 @@ export const Profile = ({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Real-time name validation (as user types)
+  const fieldValidationConfig = registrationConfig?.fieldValidation;
   const handleNameChange = (field: string, value: string) => {
-    const nameRegex = /^[a-zA-Z\s]*$/;
+    const pattern = fieldValidationConfig?.[field]?.pattern ?? '^[a-zA-Z\\s]*$';
+    const nameRegex = new RegExp(pattern);
+    const errorMessage = fieldValidationConfig?.[field]?.errorMessage;
+
+    const isMiddleName = field === 'middleName';
+    const isMiddleNameMandatory =
+      patientInfoConfig?.isMiddleNameMandatory ?? false;
+    const middleNameRequired =
+      fieldValidationConfig?.middleName?.required ?? isMiddleNameMandatory;
+    const shouldValidateMiddleName = middleNameRequired || value.trim() !== '';
+
     if (nameRegex.test(value)) {
       handleInputChange(field, value);
+
       setNameErrors((prev) => ({ ...prev, [field]: '' }));
       setValidationErrors((prev) => ({ ...prev, [field]: '' }));
     } else {
-      setNameErrors((prev) => ({
-        ...prev,
-        [field]: t('CREATE_PATIENT_VALIDATION_NAME_INVALID'),
-      }));
+      if (isMiddleName && !shouldValidateMiddleName) {
+        handleInputChange(field, value);
+        setNameErrors((prev) => ({ ...prev, [field]: '' }));
+      } else {
+        setNameErrors((prev) => ({
+          ...prev,
+          [field]: errorMessage,
+        }));
+      }
     }
   };
 
-  // Date/Age handlers
+  const handleNameBlur = (field: string) => {
+    setNameErrors((prev) => ({ ...prev, [field]: '' }));
+  };
+
   const { handleDateInputChange, handleDateOfBirthChange, handleAgeChange } =
     createDateAgeHandlers({
       setDateErrors,
@@ -153,29 +188,53 @@ export const Profile = ({
       dateOfBirth: '',
     };
 
-    // Required field validations
-    if (!formData.firstName.trim()) {
+    // Validate firstName - check if required from config or default to true
+    const isFirstNameMandatory =
+      patientInfoConfig?.isFirstNameMandatory ?? true;
+    const firstNameRequired =
+      fieldValidationConfig?.firstName?.required ?? isFirstNameMandatory;
+    if (firstNameRequired && !formData.firstName.trim()) {
       newValidationErrors.firstName = t(
         'CREATE_PATIENT_VALIDATION_FIRST_NAME_REQUIRED',
       );
       isValid = false;
     }
 
-    if (!formData.lastName.trim()) {
+    const isMiddleNameMandatory =
+      patientInfoConfig?.isMiddleNameMandatory ?? false;
+    const middleNameRequired =
+      fieldValidationConfig?.middleName?.required ?? isMiddleNameMandatory;
+    if (middleNameRequired && !formData.middleName.trim()) {
+      setNameErrors((prev) => ({
+        ...prev,
+        middleName:
+          fieldValidationConfig?.middleName?.errorMessage ??
+          t('CREATE_PATIENT_VALIDATION_NAME_INVALID'),
+      }));
+      isValid = false;
+    }
+
+    const isLastNameMandatory = patientInfoConfig?.isLastNameMandatory ?? true;
+    const lastNameRequired =
+      fieldValidationConfig?.lastName?.required ?? isLastNameMandatory;
+    if (lastNameRequired && !formData.lastName.trim()) {
       newValidationErrors.lastName = t(
         'CREATE_PATIENT_VALIDATION_LAST_NAME_REQUIRED',
       );
       isValid = false;
     }
 
-    if (!formData.gender) {
+    const isGenderMandatory = patientInfoConfig?.isGenderMandatory ?? true;
+    if (isGenderMandatory && !formData.gender) {
       newValidationErrors.gender = t(
         'CREATE_PATIENT_VALIDATION_GENDER_REQUIRED',
       );
       isValid = false;
     }
 
-    if (!formData.dateOfBirth) {
+    const isDateOfBirthMandatory =
+      patientInfoConfig?.isDateOfBirthMandatory ?? true;
+    if (isDateOfBirthMandatory && !formData.dateOfBirth) {
       newValidationErrors.dateOfBirth = t(
         'CREATE_PATIENT_VALIDATION_DATE_OF_BIRTH_REQUIRED',
       );
@@ -251,7 +310,11 @@ export const Profile = ({
   return (
     <div className={styles.formSection}>
       <span className={styles.formSectionTitle}>
-        {t('CREATE_PATIENT_SECTION_BASIC_INFO')}
+        {patientIdentifier ? (
+          <span className={styles.patientUuid}>{patientIdentifier}</span>
+        ) : (
+          t('CREATE_PATIENT_SECTION_BASIC_INFO')
+        )}
       </span>
       <div className={styles.row}>
         <PatientPhotoUpload onPhotoConfirm={setPatientImage} />
@@ -273,61 +336,77 @@ export const Profile = ({
                 }
               />
             </div>
-            <div className={styles.col}>
-              <CheckboxGroup legendText={t('CREATE_PATIENT_ENTRY_TYPE')}>
-                <div className={styles.checkboxField}>
-                  <Checkbox
-                    labelText={t('CREATE_PATIENT_ENTER_MANUALLY')}
-                    id="entry-type"
-                    checked={formData.entryType}
-                    onChange={(e) =>
-                      handleInputChange('entryType', e.target.checked)
-                    }
-                  />
-                </div>
-              </CheckboxGroup>
-            </div>
+            {(patientInfoConfig?.showEnterManually ?? false) && (
+              <div className={styles.col}>
+                <CheckboxGroup legendText={t('CREATE_PATIENT_ENTRY_TYPE')}>
+                  <div className={styles.checkboxField}>
+                    <Checkbox
+                      labelText={t('CREATE_PATIENT_ENTER_MANUALLY')}
+                      id="entry-type"
+                      checked={formData.entryType}
+                      onChange={(e) =>
+                        handleInputChange('entryType', e.target.checked)
+                      }
+                    />
+                  </div>
+                </CheckboxGroup>
+              </div>
+            )}
           </div>
 
           <div className={`${styles.row} ${styles.nameFields}`}>
             <TextInput
               id="first-name"
-              labelText={t('CREATE_PATIENT_FIRST_NAME')}
-              placeholder={t('CREATE_PATIENT_FIRST_NAME_PLACEHOLDER')}
+              labelText={getRequiredLabel(
+                'CREATE_PATIENT_FIRST_NAME',
+                patientInfoConfig?.isFirstNameMandatory ?? true,
+              )}
+              placeholder={t('CREATE_PATIENT_FIRST_NAME')}
               value={formData.firstName}
-              required
               invalid={!!nameErrors.firstName || !!validationErrors.firstName}
               invalidText={nameErrors.firstName || validationErrors.firstName}
               onChange={(e) => handleNameChange('firstName', e.target.value)}
+              onBlur={() => handleNameBlur('firstName')}
             />
 
-            <TextInput
-              id="middle-name"
-              labelText={t('CREATE_PATIENT_MIDDLE_NAME')}
-              placeholder={t('CREATE_PATIENT_MIDDLE_NAME_PLACEHOLDER')}
-              value={formData.middleName}
-              invalid={!!nameErrors.middleName}
-              invalidText={nameErrors.middleName}
-              onChange={(e) => handleNameChange('middleName', e.target.value)}
-            />
+            {(patientInfoConfig?.showMiddleName ?? true) && (
+              <TextInput
+                id="middle-name"
+                labelText={t('CREATE_PATIENT_MIDDLE_NAME')}
+                placeholder={t('CREATE_PATIENT_MIDDLE_NAME_PLACEHOLDER')}
+                value={formData.middleName}
+                invalid={!!nameErrors.middleName}
+                invalidText={nameErrors.middleName}
+                onChange={(e) => handleNameChange('middleName', e.target.value)}
+                onBlur={() => handleNameBlur('middleName')}
+              />
+            )}
 
-            <TextInput
-              id="last-name"
-              labelText={t('CREATE_PATIENT_LAST_NAME')}
-              placeholder={t('CREATE_PATIENT_LAST_NAME_PLACEHOLDER')}
-              required
-              value={formData.lastName}
-              invalid={!!nameErrors.lastName || !!validationErrors.lastName}
-              invalidText={nameErrors.lastName || validationErrors.lastName}
-              onChange={(e) => handleNameChange('lastName', e.target.value)}
-            />
+            {(patientInfoConfig?.showLastName ?? true) && (
+              <TextInput
+                id="last-name"
+                labelText={getRequiredLabel(
+                  'CREATE_PATIENT_LAST_NAME',
+                  patientInfoConfig?.isLastNameMandatory ?? true,
+                )}
+                placeholder={t('CREATE_PATIENT_LAST_NAME')}
+                value={formData.lastName}
+                invalid={!!nameErrors.lastName || !!validationErrors.lastName}
+                invalidText={nameErrors.lastName || validationErrors.lastName}
+                onChange={(e) => handleNameChange('lastName', e.target.value)}
+                onBlur={() => handleNameBlur('lastName')}
+              />
+            )}
           </div>
 
           <div className={`${styles.row} ${styles.demographicsFields}`}>
             <div className={styles.dropdownField}>
               <Dropdown
                 id="gender"
-                titleText={t('CREATE_PATIENT_GENDER')}
+                titleText={getRequiredLabel(
+                  'CREATE_PATIENT_GENDER',
+                  patientInfoConfig?.isGenderMandatory ?? true,
+                )}
                 label={t('CREATE_PATIENT_SELECT')}
                 items={genders}
                 aria-required="true"
@@ -418,7 +497,10 @@ export const Profile = ({
                 <DatePickerInput
                   id="date-of-birth"
                   placeholder={t('CREATE_PATIENT_DATE_OF_BIRTH_PLACEHOLDER')}
-                  labelText={t('CREATE_PATIENT_DATE_OF_BIRTH')}
+                  labelText={getRequiredLabel(
+                    'CREATE_PATIENT_DATE_OF_BIRTH',
+                    patientInfoConfig?.isDateOfBirthMandatory ?? true,
+                  )}
                   invalid={
                     !!dateErrors.dateOfBirth || !!validationErrors.dateOfBirth
                   }
@@ -441,16 +523,20 @@ export const Profile = ({
               </div>
             </CheckboxGroup>
 
-            <div>
-              <TextInput
-                id="birth-time"
-                type="time"
-                required
-                value={formData.birthTime}
-                onChange={(e) => handleInputChange('birthTime', e.target.value)}
-                labelText={t('CREATE_PATIENT_BIRTH_TIME')}
-              />
-            </div>
+            {(patientInfoConfig?.showBirthTime ?? false) && (
+              <div>
+                <TextInput
+                  id="birth-time"
+                  type="time"
+                  required
+                  value={formData.birthTime}
+                  onChange={(e) =>
+                    handleInputChange('birthTime', e.target.value)
+                  }
+                  labelText={t('CREATE_PATIENT_BIRTH_TIME')}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

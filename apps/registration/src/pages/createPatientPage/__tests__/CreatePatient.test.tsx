@@ -6,6 +6,7 @@ import { useCreatePatient } from '../../../hooks/useCreatePatient';
 import CreatePatient from '../CreatePatient';
 import { validateAllSections, collectFormData } from '../patientFormService';
 
+// Mock the dependencies
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   notificationService: {
