@@ -141,8 +141,8 @@ export const Profile = ({
     const nameRegex = new RegExp(pattern);
     const errorMessage = fieldValidationConfig?.[field]?.errorMessage;
 
-    // Always validate pattern if there's any input
-    if (nameRegex.test(value)) {
+    // Always allow empty string (for backspace/delete)
+    if (value === '' || nameRegex.test(value)) {
       // Valid input: update field and clear errors
       handleInputChange(field, value);
       setNameErrors((prev) => ({ ...prev, [field]: '' }));
