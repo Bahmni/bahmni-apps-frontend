@@ -202,7 +202,7 @@ const PatientSearchPage: React.FC = () => {
         {searchFields.map((field) =>
           field.actions?.map((action) => {
             if (!shouldRenderActionButton(action, userPrivileges ?? []))
-              return <div key={action.translationKey} />;
+              return null;
             return (
               <Button
                 key={action.translationKey}
