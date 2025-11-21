@@ -37,10 +37,14 @@ jobs:
       - name: Detect affected packages
         id: affected
         run: |
-          # Get affected library projects
-          AFFECTED=$(npx nx show projects --affected --base=origin/main --type=lib || echo "")
+          # Get affected library projects (returns newline-separated list)
+          AFFECTED_RAW=$(npx nx show projects --affected --base=origin/main --type=lib || echo "")
           
-          # If no affected projects detected, check all packages (for manual dispatch or first run)
+          # Filter to only include packages from packages/ directory
+          # Convert newlines to spaces for single-line output
+          AFFECTED=$(echo "$AFFECTED_RAW" | grep "^@bahmni/" | grep -E "(services|design-system|widgets)" | tr '\n' ' ' | xargs)
+          
+          # If no affected packages detected, check all packages (for manual dispatch or first run)
           if [ -z "$AFFECTED" ]; then
             AFFECTED="@bahmni/services @bahmni/design-system @bahmni/widgets"
           fi
