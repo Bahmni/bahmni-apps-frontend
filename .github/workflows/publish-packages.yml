@@ -5,162 +5,237 @@ on:
     branches: [workflows]
     paths:
       - 'packages/**'
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
-      - 'services-v[0-9]+.[0-9]+.[0-9]+'
-      - 'widgets-v[0-9]+.[0-9]+.[0-9]+'
-      - 'design-system-v[0-9]+.[0-9]+.[0-9]+'
   workflow_dispatch:
 
 env:
   NODE_VERSION: '22'
 
 jobs:
-  detect-changes:
+  # Detect which packages are affected by the changes
+  detect-affected:
     runs-on: ubuntu-latest
     outputs:
-      packages: ${{ steps.set-packages.outputs.packages }}
-      has-changes: ${{ steps.set-packages.outputs.has-changes }}
-      is-tag: ${{ steps.set-packages.outputs.is-tag }}
-      tag-version: ${{ steps.set-packages.outputs.tag-version }}
-      target-package: ${{ steps.set-packages.outputs.target-package }}
+      affected_packages: ${{ steps.affected.outputs.packages }}
+      has_services: ${{ steps.check.outputs.has_services }}
+      has_design_system: ${{ steps.check.outputs.has_design_system }}
+      has_widgets: ${{ steps.check.outputs.has_widgets }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'yarn'
 
-      - run: yarn install --frozen-lockfile
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
 
-      - id: set-packages
+      - name: Detect affected packages
+        id: affected
         run: |
-          IS_TAG="false"
-          TAG_VERSION=""
-          TARGET_PACKAGE=""
-
-          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            IS_TAG="true"
-            TAG="${{ github.ref_name }}"
-
-            if [[ "$TAG" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
-              TAG_VERSION="${BASH_REMATCH[1]}"
-              echo "Global tag detected: v${TAG_VERSION}"
-            elif [[ "$TAG" =~ ^(@bahmni/services|@bahmni/widgets|@bahmni/design-system)-v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
-              TARGET_PACKAGE="${BASH_REMATCH[1]}"
-              TAG_VERSION="${BASH_REMATCH[2]}"
-              echo "Package-specific tag detected: ${TARGET_PACKAGE}-v${TAG_VERSION}"
-            else
-              echo "Error: Invalid tag format. Expected v{semver} or {package}-v{semver}"
-              exit 1
-            fi
+          # Get affected library projects
+          AFFECTED=$(npx nx show projects --affected --base=origin/main --type=lib || echo "")
+          
+          # If no affected projects detected, check all packages (for manual dispatch or first run)
+          if [ -z "$AFFECTED" ]; then
+            AFFECTED="@bahmni/services @bahmni/design-system @bahmni/widgets"
           fi
+          
+          echo "Affected packages: $AFFECTED"
+          echo "packages=$AFFECTED" >> $GITHUB_OUTPUT
 
-          echo "is-tag=$IS_TAG" >> $GITHUB_OUTPUT
-          echo "tag-version=$TAG_VERSION" >> $GITHUB_OUTPUT
-          echo "target-package=$TARGET_PACKAGE" >> $GITHUB_OUTPUT
-
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            AFFECTED_PACKAGES='["@bahmni/services","@bahmni/widgets","@bahmni/design-system"]'
+      - name: Check which packages are affected
+        id: check
+        run: |
+          AFFECTED="${{ steps.affected.outputs.packages }}"
+          
+          if echo "$AFFECTED" | grep -q "services"; then
+            echo "has_services=true" >> $GITHUB_OUTPUT
           else
-            AFFECTED=$(npx nx show projects --affected --base=HEAD~1 --head=HEAD --type=lib)
-            PACKAGES=()
-
-            for package in bahmni-services bahmni-widgets bahmni-design-system; do
-              if echo "$AFFECTED" | grep -q "^${package}$"; then
-                if [ "$IS_TAG" == "true" ] && [ -n "$TARGET_PACKAGE" ] && [ "$TARGET_PACKAGE" != "$package" ]; then
-                  continue
-                fi
-                PACKAGES+=("\"$package\"")
-              fi
-            done
-
-            AFFECTED_PACKAGES="[$(IFS=,; echo "${PACKAGES[*]}")]"
-            [ ${#PACKAGES[@]} -eq 0 ] && AFFECTED_PACKAGES='[]'
+            echo "has_services=false" >> $GITHUB_OUTPUT
+          fi
+          
+          if echo "$AFFECTED" | grep -q "design-system"; then
+            echo "has_design_system=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_design_system=false" >> $GITHUB_OUTPUT
+          fi
+          
+          if echo "$AFFECTED" | grep -q "widgets"; then
+            echo "has_widgets=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_widgets=false" >> $GITHUB_OUTPUT
           fi
 
-          echo "packages=$AFFECTED_PACKAGES" >> $GITHUB_OUTPUT
-          [ "$AFFECTED_PACKAGES" == "[]" ] && echo "has-changes=false" >> $GITHUB_OUTPUT || echo "has-changes=true" >> $GITHUB_OUTPUT
-          echo "Packages to publish: $AFFECTED_PACKAGES"
-
-  test-and-build:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.has-changes == 'true'
+  # Publish @bahmni/services (no dependencies)
+  # Note: PACKAGE_NAME is the scoped npm name, PACKAGE_PATH is the directory path
+  publish-services:
+    needs: detect-affected
+    if: needs.detect-affected.outputs.has_services == 'true'
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        package: ${{ fromJson(needs.detect-changes.outputs.packages) }}
-      fail-fast: false
+    environment: npm-publish
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      PACKAGE_NAME: '@bahmni/services'  # Scoped npm package name
+      PACKAGE_PATH: 'packages/bahmni-services'  # Directory path (without @bahmni scope)
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'yarn'
-
-      - run: yarn install --frozen-lockfile
-      - run: npx nx lint ${{ matrix.package }}
-      - run: npx nx test ${{ matrix.package }}
-      - run: npx nx build ${{ matrix.package }}
-
-  publish:
-    needs: [detect-changes, test-and-build]
-    if: needs.detect-changes.outputs.has-changes == 'true'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      packages: write
-    strategy:
-      matrix:
-        package: ${{ fromJson(needs.detect-changes.outputs.packages) }}
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'yarn'
           registry-url: 'https://registry.npmjs.org'
+          cache: 'yarn'
 
-      - run: yarn install --frozen-lockfile
-      - run: npx nx build ${{ matrix.package }}
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
 
-      - id: version
-        working-directory: packages/${{ matrix.package }}
+      - name: Lint
+        run: npx nx lint @bahmni/services
+
+      - name: Test
+        run: npx nx test @bahmni/services
+
+      - name: Build with dependencies
+        run: npx nx build @bahmni/services --with-deps
+
+      - name: Publish dev build to npm
+        working-directory: ${{ env.PACKAGE_PATH }}
         run: |
+          # Base version from package.json
           BASE_VERSION=$(node -p "require('./package.json').version")
+          BUILD_NUM=${{ github.run_number }}
 
-          if [ "${{ needs.detect-changes.outputs.is-tag }}" == "true" ]; then
-            PUBLISH_VERSION="${{ needs.detect-changes.outputs.tag-version }}"
-            DIST_TAG="latest"
-          else
-            PUBLISH_VERSION="${BASE_VERSION}-dev.${{ github.run_number }}"
-            DIST_TAG="dev"
-          fi
+          # Generate unique dev version (e.g., 0.0.1-dev.42)
+          DEV_VERSION="${BASE_VERSION}-dev.${BUILD_NUM}"
+          echo "📦 Publishing @bahmni/services@$DEV_VERSION"
 
-          echo "version=$PUBLISH_VERSION" >> $GITHUB_OUTPUT
-          echo "dist-tag=$DIST_TAG" >> $GITHUB_OUTPUT
-          echo "Publishing ${{ matrix.package }}@${PUBLISH_VERSION} with tag ${DIST_TAG}"
+          # Update package version and publish
+          npm version "$DEV_VERSION" --no-git-tag-version
+          #npm publish --access public --tag dev
+          
+          # Output information
+          echo "::notice title=Package Published::Published @bahmni/services@$DEV_VERSION"
+          echo "::notice title=Install Command::npm install @bahmni/services@dev"
+          echo "::notice title=Build Info::Build #${BUILD_NUM}"
 
-      - working-directory: packages/${{ matrix.package }}
+  # Publish @bahmni/design-system (depends on services)
+  # Note: PACKAGE_NAME is the scoped npm name, PACKAGE_PATH is the directory path
+  publish-design-system:
+    needs: [detect-affected, publish-services]
+    if: |
+      always() &&
+      needs.detect-affected.outputs.has_design_system == 'true' &&
+      (needs.publish-services.result == 'success' || needs.publish-services.result == 'skipped')
+    runs-on: ubuntu-latest
+    environment: npm-publish
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      PACKAGE_NAME: '@bahmni/design-system'  # Scoped npm package name
+      PACKAGE_PATH: 'packages/bahmni-design-system'  # Directory path (without @bahmni scope)
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Lint
+        run: npx nx lint @bahmni/design-system
+
+      - name: Test
+        run: npx nx test @bahmni/design-system
+
+      - name: Build with dependencies
+        run: npx nx build @bahmni/design-system --with-deps
+
+      - name: Publish dev build to npm
+        working-directory: ${{ env.PACKAGE_PATH }}
         run: |
-          npm version ${{ steps.version.outputs.version }} --no-git-tag-version
-          #npm publish --access public --tag ${{ steps.version.outputs.dist-tag }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # Base version from package.json
+          BASE_VERSION=$(node -p "require('./package.json').version")
+          BUILD_NUM=${{ github.run_number }}
 
-      - if: needs.detect-changes.outputs.is-tag == 'true'
+          # Generate unique dev version (e.g., 0.0.1-dev.42)
+          DEV_VERSION="${BASE_VERSION}-dev.${BUILD_NUM}"
+          echo "📦 Publishing @bahmni/design-system@$DEV_VERSION"
+
+          # Update package version and publish
+          npm version "$DEV_VERSION" --no-git-tag-version
+          #npm publish --access public --tag dev
+          
+          # Output information
+          echo "::notice title=Package Published::Published @bahmni/design-system@$DEV_VERSION"
+          echo "::notice title=Install Command::npm install @bahmni/design-system@dev"
+          echo "::notice title=Build Info::Build #${BUILD_NUM}"
+
+  # Publish @bahmni/widgets (depends on design-system and services)
+  # Note: PACKAGE_NAME is the scoped npm name, PACKAGE_PATH is the directory path
+  publish-widgets:
+    needs: [detect-affected, publish-services, publish-design-system]
+    if: |
+      always() &&
+      needs.detect-affected.outputs.has_widgets == 'true' &&
+      (needs.publish-services.result == 'success' || needs.publish-services.result == 'skipped') &&
+      (needs.publish-design-system.result == 'success' || needs.publish-design-system.result == 'skipped')
+    runs-on: ubuntu-latest
+    environment: npm-publish
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      PACKAGE_NAME: '@bahmni/widgets'  # Scoped npm package name
+      PACKAGE_PATH: 'packages/bahmni-widgets'  # Directory path (without @bahmni scope)
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Lint
+        run: npx nx lint @bahmni/widgets
+
+      - name: Test
+        run: npx nx test @bahmni/widgets
+
+      - name: Build with dependencies
+        run: npx nx build @bahmni/widgets --with-deps
+
+      - name: Publish dev build to npm
+        working-directory: ${{ env.PACKAGE_PATH }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Base version from package.json
+          BASE_VERSION=$(node -p "require('./package.json').version")
+          BUILD_NUM=${{ github.run_number }}
 
-          if [ -z "${{ needs.detect-changes.outputs.target-package }}" ]; then
-            TAG_NAME="${{ matrix.package }}-v${{ steps.version.outputs.version }}"
-            git tag -a "$TAG_NAME" -m "Release ${{ matrix.package }} v${{ steps.version.outputs.version }}"
-            git push origin "$TAG_NAME"
-          fi
+          # Generate unique dev version (e.g., 0.0.1-dev.42)
+          DEV_VERSION="${BASE_VERSION}-dev.${BUILD_NUM}"
+          echo "📦 Publishing @bahmni/widgets@$DEV_VERSION"
+
+          # Update package version and publish
+          npm version "$DEV_VERSION" --no-git-tag-version
+          #npm publish --access public --tag dev
+          
+          # Output information
+          echo "::notice title=Package Published::Published @bahmni/widgets@$DEV_VERSION"
+          echo "::notice title=Install Command::npm install @bahmni/widgets@dev"
+          echo "::notice title=Build Info::Build #${BUILD_NUM}"
