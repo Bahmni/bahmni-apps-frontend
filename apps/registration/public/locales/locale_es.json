@@ -61,6 +61,7 @@
   "CREATE_PATIENT_VALIDATION_AGE_YEARS_MAX": "La edad no puede ser mayor de 120 años",
   "CREATE_PATIENT_VALIDATION_DATE_OF_BIRTH_REQUIRED": "La fecha de nacimiento es obligatoria",
   "CREATE_PATIENT_VALIDATION_FIRST_NAME_REQUIRED": "El nombre es obligatorio",
+  "CREATE_PATIENT_VALIDATION_MIDDLE_NAME_REQUIRED": "El segundo nombre es obligatorio",
   "CREATE_PATIENT_VALIDATION_GENDER_REQUIRED": "El género es obligatorio",
   "CREATE_PATIENT_VALIDATION_LAST_NAME_REQUIRED": "El apellido es obligatorio",
   "CREATE_PATIENT_VALIDATION_NAME_INVALID": "No se permiten números ni caracteres especiales",

@@ -1,9 +1,9 @@
-import { TextInput } from '@bahmni/design-system';
+import { TextInput, Tile } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { useCallback, useImperativeHandle, useState, useMemo } from 'react';
 import { useRegistrationConfig } from '../../../hooks/useRegistrationConfig';
 import type { AdditionalData } from '../../../models/patient';
-import styles from '../../../pages/createPatientPage/styles/index.module.scss';
+import styles from '../additionalInfo/styles/index.module.scss';
 
 export interface AdditionalInfoRef {
   validate: () => boolean;
@@ -91,8 +91,10 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
   }
 
   return (
-    <div className={styles.formSection}>
-      <span className={styles.formSectionTitle}>{t(sectionTitle)}</span>
+    <div className={styles.additionalInfoSection}>
+      <Tile className={styles.headerTile}>
+        <span className={styles.headerTitle}>{t(sectionTitle)}</span>
+      </Tile>
       <div className={styles.row}>
         {expectedFields.map((fieldConfig) => {
           const fieldName = fieldConfig.field;

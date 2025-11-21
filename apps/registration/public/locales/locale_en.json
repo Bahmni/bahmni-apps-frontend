@@ -61,6 +61,7 @@
   "CREATE_PATIENT_VALIDATION_AGE_YEARS_MAX": "Age cannot be more than 120 years",
   "CREATE_PATIENT_VALIDATION_DATE_OF_BIRTH_REQUIRED": "Date of birth is required",
   "CREATE_PATIENT_VALIDATION_FIRST_NAME_REQUIRED": "First name is required",
+  "CREATE_PATIENT_VALIDATION_MIDDLE_NAME_REQUIRED": "Middle name is required",
   "CREATE_PATIENT_VALIDATION_GENDER_REQUIRED": "Gender is required",
   "CREATE_PATIENT_VALIDATION_LAST_NAME_REQUIRED": "Last name is required",
   "CREATE_PATIENT_VALIDATION_NAME_INVALID": "Numbers and special characters are not allowed",
