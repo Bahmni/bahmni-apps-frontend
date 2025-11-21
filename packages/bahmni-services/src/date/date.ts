@@ -364,16 +364,12 @@ export function formatDateAndTime(date: number, includeTime: boolean): string {
 
   return formattedDate;
 }
-export function calculateAgeinYearsAndMonths(birthDateMillis: number) {
+export function calculateAgeinYearsAndMonths(birthDateMillis: number): string {
   const birthDate = new Date(birthDateMillis);
   const today = new Date();
 
-  let years = today.getFullYear() - birthDate.getFullYear();
-  let months = today.getMonth() - birthDate.getMonth();
-  if (months < 0 || (months === 0 && today.getDate() < birthDate.getDate())) {
-    years--;
-    months += 12;
-  }
+  const years = differenceInYears(today, birthDate);
+  const months = differenceInMonths(today, birthDate) - years * 12;
 
   return `${years} years ${months} months`;
 }
