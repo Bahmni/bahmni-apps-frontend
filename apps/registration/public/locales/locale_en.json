@@ -59,6 +59,7 @@
   "CREATE_PATIENT_VALIDATION_AGE_DAYS_MAX": "Days cannot be more than 31",
   "CREATE_PATIENT_VALIDATION_AGE_MONTHS_MAX": "Months cannot be more than 11",
   "CREATE_PATIENT_VALIDATION_AGE_YEARS_MAX": "Age cannot be more than 120 years",
+  "CREATE_PATIENT_VALIDATION_BIRTH_TIME_INVALID": "Please enter a valid time",
   "CREATE_PATIENT_VALIDATION_DATE_OF_BIRTH_REQUIRED": "Date of birth is required",
   "CREATE_PATIENT_VALIDATION_FIRST_NAME_REQUIRED": "First name is required",
   "CREATE_PATIENT_VALIDATION_MIDDLE_NAME_REQUIRED": "Middle name is required",

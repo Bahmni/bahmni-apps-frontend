@@ -16,6 +16,7 @@ export interface ValidationErrors {
   middleName: string;
   gender: string;
   dateOfBirth: string;
+  birthTime: string;
 }
 
 /**

@@ -104,6 +104,7 @@ export const Profile = ({
     middleName: '',
     gender: '',
     dateOfBirth: '',
+    birthTime: '',
   });
 
   const [ageErrors, setAgeErrors] = useState<AgeErrors>({
@@ -160,6 +161,48 @@ export const Profile = ({
     setNameErrors((prev) => ({ ...prev, [field]: '' }));
   };
 
+  const isInputElementInvalid = (
+    event?:
+      | React.FocusEvent<HTMLInputElement>
+      | React.ChangeEvent<HTMLInputElement>,
+  ): boolean => {
+    const inputElement = event?.target as HTMLInputElement;
+    return inputElement ? !inputElement.validity.valid : false;
+  };
+
+  const updateBirthTimeError = (errorMessage: string) => {
+    setValidationErrors((prev) => ({
+      ...prev,
+      birthTime: errorMessage,
+    }));
+  };
+
+  // Handler for birthTime changes with validation
+  const handleBirthTimeChange = (
+    value: string,
+    event?:
+      | React.FocusEvent<HTMLInputElement>
+      | React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    handleInputChange('birthTime', value);
+    const isBlurEvent = event?.type === 'blur';
+
+    if (isBlurEvent) {
+      if (value === '') {
+        updateBirthTimeError('');
+        return;
+      }
+    }
+
+    const isHtml5Invalid = isInputElementInvalid(event);
+
+    if (isHtml5Invalid) {
+      updateBirthTimeError(t('CREATE_PATIENT_VALIDATION_BIRTH_TIME_INVALID'));
+    } else {
+      updateBirthTimeError('');
+    }
+  };
+
   const { handleDateInputChange, handleDateOfBirthChange, handleAgeChange } =
     createDateAgeHandlers({
       setDateErrors,
@@ -179,6 +222,7 @@ export const Profile = ({
       middleName: '',
       gender: '',
       dateOfBirth: '',
+      birthTime: '',
     };
 
     // Validate firstName - check if required from config or default to true
@@ -224,6 +268,20 @@ export const Profile = ({
         'CREATE_PATIENT_VALIDATION_DATE_OF_BIRTH_REQUIRED',
       );
       isValid = false;
+    }
+    if (patientInfoConfig?.showBirthTime) {
+      const birthTimeElement = document.getElementById(
+        'birth-time',
+      ) as HTMLInputElement;
+      const isBirthTimeInvalid =
+        birthTimeElement && !birthTimeElement.validity.valid;
+
+      if (isBirthTimeInvalid) {
+        newValidationErrors.birthTime = t(
+          'CREATE_PATIENT_VALIDATION_BIRTH_TIME_INVALID',
+        );
+        isValid = false;
+      }
     }
 
     // Check if there are any existing errors (name format, age, date)
@@ -284,6 +342,7 @@ export const Profile = ({
         middleName: '',
         gender: '',
         dateOfBirth: '',
+        birthTime: '',
       });
       setAgeErrors({ ageYears: '', ageMonths: '', ageDays: '' });
       setDateErrors({ dateOfBirth: '' });
@@ -521,11 +580,11 @@ export const Profile = ({
                 <TextInput
                   id="birth-time"
                   type="time"
-                  required
                   value={formData.birthTime}
-                  onChange={(e) =>
-                    handleInputChange('birthTime', e.target.value)
-                  }
+                  onChange={(e) => handleBirthTimeChange(e.target.value, e)}
+                  onBlur={(e) => handleBirthTimeChange(e.target.value, e)}
+                  invalid={!!validationErrors.birthTime}
+                  invalidText={validationErrors.birthTime}
                   labelText={t('CREATE_PATIENT_BIRTH_TIME')}
                 />
               </div>

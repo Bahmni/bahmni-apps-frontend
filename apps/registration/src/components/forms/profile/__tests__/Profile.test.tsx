@@ -452,6 +452,105 @@ describe('Profile', () => {
       const data = ref.current?.getData();
       expect(data?.birthTime).toBe('14:30');
     });
+
+    it('should accept valid time format HH:MM', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
+
+      const birthTimeInput = screen.getByLabelText(
+        'CREATE_PATIENT_BIRTH_TIME',
+      ) as HTMLInputElement;
+
+      fireEvent.change(birthTimeInput, { target: { value: '09:45' } });
+
+      const data = ref.current?.getData();
+      expect(data?.birthTime).toBe('09:45');
+    });
+
+    it('should allow empty birth time as it is optional', async () => {
+      const initialData: BasicInfoData = {
+        patientIdFormat: 'BAH',
+        entryType: false,
+        firstName: 'John',
+        middleName: '',
+        lastName: 'Doe',
+        gender: 'CREATE_PATIENT_GENDER_MALE',
+        ageYears: '30',
+        ageMonths: '',
+        ageDays: '',
+        dateOfBirth: '1993-01-01',
+        birthTime: '',
+      };
+
+      await act(async () => {
+        render(<Profile ref={ref} initialData={initialData} />);
+      });
+
+      let isValid: boolean | undefined;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
+
+      expect(isValid).toBe(true);
+    });
+
+    it('should accept midnight time 00:00', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
+
+      const birthTimeInput = screen.getByLabelText(
+        'CREATE_PATIENT_BIRTH_TIME',
+      ) as HTMLInputElement;
+
+      fireEvent.change(birthTimeInput, { target: { value: '00:00' } });
+
+      const data = ref.current?.getData();
+      expect(data?.birthTime).toBe('00:00');
+    });
+
+    it('should accept end of day time 23:59', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
+
+      const birthTimeInput = screen.getByLabelText(
+        'CREATE_PATIENT_BIRTH_TIME',
+      ) as HTMLInputElement;
+
+      fireEvent.change(birthTimeInput, { target: { value: '23:59' } });
+
+      const data = ref.current?.getData();
+      expect(data?.birthTime).toBe('23:59');
+    });
+
+    it('should pass validation with valid birth time and all required fields', async () => {
+      const initialData: BasicInfoData = {
+        patientIdFormat: 'BAH',
+        entryType: false,
+        firstName: 'John',
+        middleName: '',
+        lastName: 'Doe',
+        gender: 'CREATE_PATIENT_GENDER_MALE',
+        ageYears: '30',
+        ageMonths: '',
+        ageDays: '',
+        dateOfBirth: '1993-01-01',
+        birthTime: '15:45',
+      };
+
+      await act(async () => {
+        render(<Profile ref={ref} initialData={initialData} />);
+      });
+
+      let isValid: boolean | undefined;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
+
+      expect(isValid).toBe(true);
+    });
   });
 
   describe('Configuration-based Field Visibility', () => {
