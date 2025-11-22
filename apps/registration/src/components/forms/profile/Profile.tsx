@@ -213,6 +213,26 @@ export const Profile = ({
       t,
     });
 
+  // Handler to prevent invalid characters in age number inputs
+  const handleAgeKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (['-', '+', 'e', 'E', '.'].includes(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const handleAgePaste = (
+    e: React.ClipboardEvent<HTMLInputElement>,
+    field: 'ageYears' | 'ageMonths' | 'ageDays',
+  ) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData('text');
+    const sanitized = pastedText.replace(/[-+eE.]/g, '');
+
+    if (sanitized && /^\d+$/.test(sanitized)) {
+      handleAgeChange(field, sanitized);
+    }
+  };
+
   // VALIDATION METHOD - Called by parent on submit
   const validate = (): boolean => {
     let isValid = true;
@@ -488,6 +508,8 @@ export const Profile = ({
                     onChange={(e) =>
                       handleAgeChange('ageYears', e.target.value)
                     }
+                    onKeyDown={handleAgeKeyDown}
+                    onPaste={(e) => handleAgePaste(e, 'ageYears')}
                   />
                 </div>
 
@@ -505,6 +527,8 @@ export const Profile = ({
                     onChange={(e) =>
                       handleAgeChange('ageMonths', e.target.value)
                     }
+                    onKeyDown={handleAgeKeyDown}
+                    onPaste={(e) => handleAgePaste(e, 'ageMonths')}
                   />
                 </div>
 
@@ -519,6 +543,8 @@ export const Profile = ({
                     invalid={!!ageErrors.ageDays}
                     invalidText={ageErrors.ageDays}
                     onChange={(e) => handleAgeChange('ageDays', e.target.value)}
+                    onKeyDown={handleAgeKeyDown}
+                    onPaste={(e) => handleAgePaste(e, 'ageDays')}
                   />
                 </div>
               </div>
@@ -532,9 +558,7 @@ export const Profile = ({
                 datePickerType="single"
                 minDate={(() => {
                   const date = new Date();
-                  date.setFullYear(
-                    date.getFullYear() - MAX_PATIENT_AGE_YEARS + 1,
-                  );
+                  date.setFullYear(date.getFullYear() - MAX_PATIENT_AGE_YEARS);
                   date.setHours(0, 0, 0, 0);
                   return date;
                 })()}
