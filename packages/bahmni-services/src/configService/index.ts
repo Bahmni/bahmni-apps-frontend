@@ -9,6 +9,7 @@ export {
   type DashboardConfig,
   type MedicationJSONConfig,
   type DashboardSectionConfig,
+  type ControlConfig,
   type Dashboard,
   type Frequency,
   type RegistrationConfig,

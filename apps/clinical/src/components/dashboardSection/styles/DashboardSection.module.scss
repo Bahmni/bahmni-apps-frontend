@@ -19,3 +19,31 @@
   height: $spacing-07;
   background-color: $layer-01;
 }
+
+.widgetError {
+  padding: $spacing-05;
+  background-color: $support-error-inverse;
+  border: 1px solid $support-error;
+  border-radius: 4px;
+  color: $text-error;
+  
+  p {
+    margin: 0;
+    @include type-style("body-compact-01");
+  }
+}
+
+.widgetLoading {
+  padding: $spacing-05;
+  color: $text-secondary;
+  @include type-style("body-compact-01");
+  text-align: center;
+}
+
+.noContent {
+  padding: $spacing-05;
+  color: $text-secondary;
+  @include type-style("body-compact-01");
+  font-style: italic;
+  text-align: center;
+}

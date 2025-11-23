@@ -1,15 +1,11 @@
 import { Tile } from '@bahmni/design-system';
-import { useTranslation, DashboardSectionConfig } from '@bahmni/services';
 import {
-  AllergiesTable,
-  ConditionsTable,
-  DiagnosesTable,
-  LabInvestigation,
-  MedicationsTable,
-  RadiologyInvestigationTable,
-  VitalFlowSheet,
-} from '@bahmni/widgets';
-import React from 'react';
+  useTranslation,
+  DashboardSectionConfig,
+  ControlConfig,
+} from '@bahmni/services';
+import { getWidget } from '@bahmni/widgets';
+import React, { Suspense } from 'react';
 import styles from './styles/DashboardSection.module.scss';
 
 export interface DashboardSectionProps {
@@ -17,43 +13,53 @@ export interface DashboardSectionProps {
   ref: React.RefObject<HTMLDivElement | null>;
 }
 
-//TODO: Refactor this to depend on Controls configuration
-const renderSectionContent = (section: DashboardSectionConfig) => {
-  switch (section.name) {
-    case 'Allergies':
-      return <AllergiesTable />;
-    case 'Conditions':
-      return (
-        <>
-          <ConditionsTable />
-          <div className={styles.divider} />
-          <DiagnosesTable />
-        </>
-      );
-    case 'Lab Investigations':
-      return <LabInvestigation />;
-    case 'Radiology Investigations':
-      return <RadiologyInvestigationTable />;
-    case 'Medications':
-      return <MedicationsTable />;
-    case 'Flowsheet':
-      return (
-        <VitalFlowSheet
-          latestCount={5}
-          groupBy="obstime"
-          obsConcepts={[
-            'Temperature',
-            'Pulse',
-            'Respiratory rate',
-            'Blood Pressure',
-            'Body Position',
-          ]}
-        />
-      );
-    default:
-      return null;
+const renderControl = (
+  control: ControlConfig,
+  index: number,
+  totalControls: number,
+) => {
+  const WidgetComponent = getWidget(control.type);
+
+  if (!WidgetComponent) {
+    return (
+      <div key={`${control.type}-${index}`} className={styles.widgetError}>
+        <p>Widget type &quot;{control.type}&quot; not found in registry</p>
+      </div>
+    );
   }
+
+  const showDivider = index < totalControls - 1;
+
+  return (
+    <React.Fragment key={`${control.type}-${index}`}>
+      <Suspense
+        fallback={<div className={styles.widgetLoading}>Loading widget...</div>}
+      >
+        <WidgetComponent config={control.config} />
+      </Suspense>
+      {showDivider && <div className={styles.divider} />}
+    </React.Fragment>
+  );
 };
+
+const renderSectionContent = (section: DashboardSectionConfig) => {
+  if (!section.controls || section.controls.length === 0) {
+    return (
+      <div className={styles.noContent}>
+        No widgets configured for this section
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {section.controls.map((control, index) =>
+        renderControl(control, index, section.controls.length),
+      )}
+    </>
+  );
+};
+
 /**
  * DashboardSection component that renders a single dashboard section as a Carbon Tile
  *
