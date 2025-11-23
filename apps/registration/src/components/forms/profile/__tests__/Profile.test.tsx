@@ -94,10 +94,24 @@ jest.mock('../../../../hooks/useRegistrationConfig', () => ({
 
 describe('Profile', () => {
   let ref: React.RefObject<ProfileRef | null>;
+  let queryClient: QueryClient;
 
   beforeEach(() => {
     ref = React.createRef<ProfileRef | null>();
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
   });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return render(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>,
+    );
+  };
 
   describe('Rendering', () => {
     it('should render basic info fields', async () => {
