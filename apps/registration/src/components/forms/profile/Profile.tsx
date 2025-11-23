@@ -12,6 +12,8 @@ import {
   MAX_NAME_LENGTH,
   PatientIdentifier,
 } from '@bahmni/services';
+import { useQueryClient } from '@tanstack/react-query';
+import { Patient } from 'fhir/r4';
 import { useState, useImperativeHandle, useEffect } from 'react';
 import { useRegistrationConfig } from '../../../hooks/useRegistrationConfig';
 import type { BasicInfoData } from '../../../models/patient';
@@ -54,6 +56,7 @@ export const Profile = ({
   ref,
 }: ProfileProps) => {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
 
   // Use utility hooks for identifier and gender data
   const { identifierPrefixes, primaryIdentifierType, identifierSources } =
@@ -117,6 +120,30 @@ export const Profile = ({
   const [dateErrors, setDateErrors] = useState<DateErrors>({
     dateOfBirth: '',
   });
+
+  // Extract patient data from cache
+  useEffect(() => {
+    const patientQueries = queryClient.getQueriesData<Patient>({
+      queryKey: ['patient'],
+    });
+
+    if (patientQueries.length > 0) {
+      const [, cachedPatient] = patientQueries[0];
+
+      if (cachedPatient) {
+        const name = cachedPatient.name?.[0];
+
+        setFormData((prev) => ({
+          ...prev,
+          firstName: name?.given?.[0] ?? '',
+          middleName: name?.given?.[1] ?? '',
+          lastName: name?.family ?? '',
+          gender: cachedPatient.gender ?? '',
+          dateOfBirth: cachedPatient.birthDate ?? '',
+        }));
+      }
+    }
+  }, [queryClient]);
 
   // Update patientIdFormat when identifierPrefixes loads
   useEffect(() => {
