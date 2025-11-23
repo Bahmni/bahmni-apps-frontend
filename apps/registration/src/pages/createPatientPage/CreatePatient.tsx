@@ -79,8 +79,6 @@ const CreatePatient = () => {
   const patientAdditionalIdentifiersRef =
     useRef<AdditionalIdentifiersRef>(null);
 
-  // Fetch patient data if in edit mode
-  // TODO: Transform FHIR Patient data to form data and populate fields
   useQuery({
     queryKey: ['patient', patientUuidFromUrl],
     queryFn: () => getPatientById(patientUuidFromUrl!),
