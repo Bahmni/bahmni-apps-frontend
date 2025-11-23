@@ -7,8 +7,9 @@ import {
   getAllWidgetTypes,
   getAllWidgetConfigs,
   resetWidgetRegistry,
-  type WidgetConfig,
 } from '../index';
+
+import { WidgetConfig } from '../model';
 
 // Mock React components for testing
 const MockComponent1 = () => null;
@@ -26,7 +27,7 @@ describe('Widget Registry', () => {
       const builtInWidgets = [
         'allergies',
         'conditions',
-        'diagnosis',
+        'diagnoses',
         'labOrders',
         'pacsOrders',
         'treatment',
@@ -256,7 +257,7 @@ describe('Widget Registry', () => {
       const expectedTypes = [
         'allergies',
         'conditions',
-        'diagnosis',
+        'diagnoses',
         'labOrders',
         'pacsOrders',
         'treatment',
