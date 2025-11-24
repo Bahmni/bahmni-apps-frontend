@@ -1,166 +1,99 @@
-name: Publish Packages
+name: Publish Affected Packages
 
 on:
   push:
-    branches: [packages-workflows]
-    paths:
-      - "packages/**"
-  workflow_dispatch:
+    branches:
+      - main
 
-env:
-  NODE_VERSION: "22"
-
-# Detect affected + build matrix (ordered)
 jobs:
   detect-affected:
     runs-on: ubuntu-latest
+
     outputs:
-      matrix: ${{ steps.matrix.outputs.matrix }}
+      matrix: ${{ steps.build-matrix.outputs.matrix }}
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "yarn"
+          node-version: 18
 
-      - run: yarn install --frozen-lockfile
+      - name: Install dependencies
+        run: npm ci
 
-      - id: detect
+      # Nx handles:
+      # - changed projects
+      # - dependents
+      # - dependency order
+      # - uniqueness
+      - id: affected
+        name: Get Nx affected projects (in dependency order)
         run: |
-          # Get affected Nx projects
-          RAW=$(npx nx show projects --affected --base=origin/main --type=lib || echo "")
-          AFFECTED=$(echo "$RAW" | grep "^@bahmni/" | xargs)
+          PROJECTS=$(npx nx print-affected --base=origin/main --head=HEAD --select=projects --plain)
+          echo "projects=$PROJECTS"
+          echo "projects=$PROJECTS" >> $GITHUB_OUTPUT
 
-          # If empty (manual dispatch), publish all
-          if [ -z "$AFFECTED" ]; then
-            AFFECTED="@bahmni/services @bahmni/design-system @bahmni/widgets"
-          fi
-
-          echo "affected=$AFFECTED" >> $GITHUB_OUTPUT
-          echo "Affected: $AFFECTED"
-
-      - id: matrix
+      - id: build-matrix
+        name: Convert projects into JSON matrix
         run: |
-          AFFECTED="${{ steps.detect.outputs.affected }}"
-
-          ORDER=(services design-system widgets)
-          MATRIX="["
-
-          for P in "${ORDER[@]}"; do
-            if echo "$AFFECTED" | grep -q "$P"; then
-              MATRIX="$MATRIX\"$P\","
-            fi
-          done
-
-          MATRIX="${MATRIX%,}]"
-
+          # Convert space-separated Nx output into JSON array
+          MATRIX=$(jq -n --arg a "${{ steps.affected.outputs.projects }}" '
+            $a | split(" ") | map(select(. != ""))')
+          echo "matrix=$MATRIX"
           echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
-          echo "Publish matrix: $MATRIX"
 
-
-# Matrix publish job
   publish:
     needs: detect-affected
-    if: ${{ needs.detect-affected.outputs.matrix != '[]' }}
     runs-on: ubuntu-latest
 
     strategy:
-      max-parallel: 1   # enforce strict publish order
+      fail-fast: false
       matrix:
-        package: ${{ fromJson(needs.detect-affected.outputs.matrix) }}
-
-    environment: npm-publish
+        project: ${{ fromJson(needs.detect-affected.outputs.matrix) }}
 
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: 18
           registry-url: "https://registry.npmjs.org"
-          cache: "yarn"
 
-      - run: yarn install --frozen-lockfile
+      - name: Install dependencies
+        run: npm ci
 
-      # Internal dependency version updates
+      - name: Build affected project
+        run: npx nx build ${{ matrix.project }}
 
-      - name: Update internal dependency versions
+      # Each project already has a package.json under dist/... because Nx copies it
+      - name: Update package version to dev version
+        id: version
         run: |
-          PKG="${{ matrix.package }}"
-          PKG_PATH="packages/bahmni-$PKG"
+          PKG_DIR=$(npx nx show project ${{ matrix.project }} --select=targets.build.options.outputPath --plain)
 
-          echo "Updating internal dependencies for: $PKG"
+          BASE_VERSION=$(jq -r '.version' "$PKG_DIR/package.json")
+          BUILD_NUM=${{ github.run_number }}
 
-          # Get previously published versions via artifacts
-          download_version() {
-            NAME="$1"
-            if gh run download ${{ github.run_id }} -n version-$NAME --dir . 2>/dev/null; then
-              cat version-$NAME/version
-            else
-              echo ""
-            fi
-          }
+          DEV_VERSION="${BASE_VERSION}-dev.${BUILD_NUM}"
 
-          SERVICES_VER=$(download_version "services")
-          DESIGN_VER=$(download_version "design-system")
+          echo "Updating version to $DEV_VERSION in $PKG_DIR/package.json"
 
-          cd "$PKG_PATH"
+          jq --arg v "$DEV_VERSION" '.version = $v' \
+            "$PKG_DIR/package.json" > "$PKG_DIR/package.tmp.json"
 
-          # Update dependencies based on package
-          if [ "$PKG" = "design-system" ] && [ -n "$SERVICES_VER" ]; then
-            echo "Updating @bahmni/services → $SERVICES_VER"
-            jq --arg ver "$SERVICES_VER" '.dependencies["@bahmni/services"] = $ver' package.json > package.json.tmp
-            mv package.json.tmp package.json
-          fi
+          mv "$PKG_DIR/package.tmp.json" "$PKG_DIR/package.json"
 
-          if [ "$PKG" = "widgets" ]; then
-            if [ -n "$SERVICES_VER" ]; then
-              echo "Updating @bahmni/services → $SERVICES_VER"
-              jq --arg ver "$SERVICES_VER" '.dependencies["@bahmni/services"] = $ver' package.json > package.json.tmp
-              mv package.json.tmp package.json
-            fi
-            if [ -n "$DESIGN_VER" ]; then
-              echo "Updating @bahmni/design-system → $DESIGN_VER"
-              jq --arg ver "$DESIGN_VER" '.dependencies["@bahmni/design-system"] = $ver' package.json > package.json.tmp
-              mv package.json.tmp package.json
-            fi
-          fi
+          echo "version=$DEV_VERSION" >> $GITHUB_OUTPUT
 
-      # Lint, test, build, publish
-
-      - name: Build & Publish
-        id: publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish dry-run (npm publish commented out)
         run: |
-          FULL_NAME="@bahmni/${{ matrix.package }}"
-          PKG_PATH="packages/bahmni-${{ matrix.package }}"
+          PKG_DIR=$(npx nx show project ${{ matrix.project }} --select=targets.build.options.outputPath --plain)
+          echo "Would publish: $PKG_DIR (version ${{ steps.version.outputs.version }})"
 
-          echo "Linting..."
-          npx nx lint $FULL_NAME
-
-          echo "Testing..."
-          npx nx test $FULL_NAME
-
-          echo "Building..."
-          npx nx build $FULL_NAME
-
-          cd "$PKG_PATH"
-          BASE=$(node -p "require('./package.json').version")
-          DEV="${BASE}-dev.${{ github.run_number }}"
-          npm version "$DEV" --no-git-tag-version
-
-          echo "$DEV" > version
-          # npm publish --access public --tag dev
-
-          echo "::notice title=Published::$FULL_NAME@$DEV"
-
-      # Make version available to later matrix items
-      - name: Upload version artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: version-${{ matrix.package }}
-          path: packages/bahmni-${{ matrix.package }}/version
+          # DRY RUN ONLY
+          # npm publish "$PKG_DIR" --tag dev
