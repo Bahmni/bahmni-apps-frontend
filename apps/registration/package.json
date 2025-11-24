@@ -1,5 +1,5 @@
 {
-  "name": "@bahmni-frontend/registration",
+  "name": "@bahmni/registration-app",
   "version": "0.0.1",
   "type": "module",
   "main": "./dist/index.js",
@@ -8,7 +8,6 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
@@ -20,5 +19,13 @@
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
     "@tanstack/react-query": "^5.85.5"
-  }
+  },
+  "author": "Thoughtworks Inc.",
+  "license": "MPLv2",
+  "description": "A modern patient registration and search module for Bahmni, built with React and the Bahmni Design System. Provides intuitive interfaces for patient registration, search, and management in healthcare settings.",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
 }

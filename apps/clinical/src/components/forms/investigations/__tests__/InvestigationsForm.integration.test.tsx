@@ -1,7 +1,7 @@
 import {
   getFlattenedInvestigations,
   getFormattedError,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import i18n from '../../../../../setupTests.i18n';
@@ -10,8 +10,8 @@ import { ServiceRequestInputEntry } from '../../../../models/serviceRequest';
 import useServiceRequestStore from '../../../../stores/serviceRequestStore';
 import InvestigationsForm from '../InvestigationsForm';
 
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   getFlattenedInvestigations: jest.fn(),
   getFormattedError: jest.fn(),
 }));

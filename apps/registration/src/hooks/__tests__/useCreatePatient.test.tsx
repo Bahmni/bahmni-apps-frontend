@@ -2,15 +2,15 @@ import {
   createPatient,
   notificationService,
   dispatchAuditEvent,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 import { ReactNode } from 'react';
 import { useCreatePatient } from '../useCreatePatient';
 
 // Mock dependencies
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   createPatient: jest.fn(),
   notificationService: {
     showSuccess: jest.fn(),
@@ -61,7 +61,7 @@ describe('useCreatePatient', () => {
       ageMonths: '6',
       ageDays: '15',
       dateOfBirth: '1993-05-15',
-      birthTime: '10:30',
+      birthTime: '1993-05-15T05:00:00.000Z',
       dobEstimated: false,
       patientIdentifier: {
         identifierSourceUuid: 'source-uuid-123',
@@ -135,9 +135,28 @@ describe('useCreatePatient', () => {
             gender: 'M',
             birthdate: '1993-05-15',
             birthdateEstimated: false,
-            birthtime: '10:30',
+            birthtime: '1993-05-15T05:00:00.000Z',
             addresses: [mockFormData.address],
-            attributes: [],
+            attributes: [
+              {
+                attributeType: {
+                  uuid: 'a384873b-847a-4a86-b869-28fb601162dd',
+                },
+                value: '+1234567890',
+              },
+              {
+                attributeType: {
+                  uuid: '27fa84ff-fdd6-4895-9c77-254b60555f39',
+                },
+                value: '+0987654321',
+              },
+              {
+                attributeType: {
+                  uuid: 'e3123cba-5e07-11ef-8f7c-0242ac120002',
+                },
+                value: 'john.doe@example.com',
+              },
+            ],
             deathDate: null,
             causeOfDeath: '',
           },
@@ -525,9 +544,28 @@ describe('useCreatePatient', () => {
             gender: 'M',
             birthdate: '1993-05-15',
             birthdateEstimated: false,
-            birthtime: '10:30',
+            birthtime: '1993-05-15T05:00:00.000Z',
             addresses: [mockFormData.address],
-            attributes: [],
+            attributes: [
+              {
+                attributeType: {
+                  uuid: 'a384873b-847a-4a86-b869-28fb601162dd',
+                },
+                value: '+1234567890',
+              },
+              {
+                attributeType: {
+                  uuid: '27fa84ff-fdd6-4895-9c77-254b60555f39',
+                },
+                value: '+0987654321',
+              },
+              {
+                attributeType: {
+                  uuid: 'e3123cba-5e07-11ef-8f7c-0242ac120002',
+                },
+                value: 'john.doe@example.com',
+              },
+            ],
             deathDate: null,
             causeOfDeath: '',
           },

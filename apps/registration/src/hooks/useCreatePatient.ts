@@ -5,36 +5,30 @@ import {
   PatientName,
   PatientIdentifier,
   PatientAddress,
+  PatientAttribute,
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
-} from '@bahmni-frontend/bahmni-services';
+  PHONE_NUMBER_UUID,
+  ALTERNATE_PHONE_NUMBER_UUID,
+  EMAIL_UUID,
+} from '@bahmni/services';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { convertTimeToISODateTime } from '../components/forms/profile/dateAgeUtils';
 import { BasicInfoData, ContactData, AdditionalData } from '../models/patient';
 
-/**
- * Form data structure representing all collected patient information
- */
 interface CreatePatientFormData {
   profile: BasicInfoData & {
     dobEstimated: boolean;
     patientIdentifier: PatientIdentifier;
+    image?: string;
   };
   address: PatientAddress;
   contact: ContactData;
   additional: AdditionalData;
 }
 
-/**
- * Custom hook for creating a patient with React Query
- *
- * Handles:
- * - Data transformation from form data to API payload
- * - Mutation execution
- * - Success/error notifications
- * - Navigation after success
- */
 export const useCreatePatient = () => {
   const navigate = useNavigate();
 
@@ -51,7 +45,6 @@ export const useCreatePatient = () => {
       );
 
       if (response?.patient?.uuid) {
-        // Dispatch audit event for patient registration
         dispatchAuditEvent({
           eventType: AUDIT_LOG_EVENT_DETAILS.REGISTER_NEW_PATIENT
             .eventType as AuditEventType,
@@ -59,7 +52,6 @@ export const useCreatePatient = () => {
           module: AUDIT_LOG_EVENT_DETAILS.REGISTER_NEW_PATIENT.module,
         });
 
-        // Update browser history with patient details
         window.history.replaceState(
           {
             patientDisplay: response.patient.display,
@@ -80,20 +72,10 @@ export const useCreatePatient = () => {
   return mutation;
 };
 
-/**
- * Transform form data structure to API payload structure
- *
- * @param formData - Collected data from all form sections
- * @returns CreatePatientRequest payload for API
- */
 function transformFormDataToPayload(
   formData: CreatePatientFormData,
 ): CreatePatientRequest {
-  const { profile, address } = formData;
-  // Note: contact and additional data are not yet integrated into the API payload
-  // TODO: Add these when backend support is added
-
-  // Build patient name object
+  const { profile, address, contact, additional } = formData;
   const patientName: PatientName = {
     givenName: profile.firstName,
     ...(profile.middleName && { middleName: profile.middleName }),
@@ -102,7 +84,29 @@ function transformFormDataToPayload(
     preferred: false,
   };
 
-  // Build the complete patient payload
+  const attributes: PatientAttribute[] = [];
+
+  if (contact.phoneNumber) {
+    attributes.push({
+      attributeType: { uuid: PHONE_NUMBER_UUID },
+      value: contact.phoneNumber,
+    });
+  }
+
+  if (contact.altPhoneNumber) {
+    attributes.push({
+      attributeType: { uuid: ALTERNATE_PHONE_NUMBER_UUID },
+      value: contact.altPhoneNumber,
+    });
+  }
+
+  if (additional.email) {
+    attributes.push({
+      attributeType: { uuid: EMAIL_UUID },
+      value: additional.email,
+    });
+  }
+
   const payload: CreatePatientRequest = {
     patient: {
       person: {
@@ -110,14 +114,18 @@ function transformFormDataToPayload(
         gender: profile.gender.charAt(0).toUpperCase(),
         birthdate: profile.dateOfBirth,
         birthdateEstimated: profile.dobEstimated,
-        birthtime: profile.birthTime || null,
+        birthtime: convertTimeToISODateTime(
+          profile.dateOfBirth,
+          profile.birthTime,
+        ),
         addresses: [address],
-        attributes: [],
+        attributes,
         deathDate: null,
         causeOfDeath: '',
       },
       identifiers: [profile.patientIdentifier],
     },
+    ...(profile.image && { image: profile.image }),
     relationships: [],
   };
 

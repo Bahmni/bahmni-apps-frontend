@@ -107,3 +107,5 @@ export {
   type FormCardContainerProps,
 } from './molecules/formCardContainer';
 export { FormCard, type FormCardProps } from './molecules/formCard';
+export { Modal, type ModalProps } from './atoms/modal';
+export { FileUploader, type FileUploaderProps } from './atoms/fileUploader';

@@ -2,16 +2,22 @@ import {
   Button,
   Tile,
   BaseLayout,
-} from '@bahmni-frontend/bahmni-design-system';
+  Header,
+  Icon,
+  ICON_SIZE,
+} from '@bahmni/design-system';
 import {
   BAHMNI_HOME_PATH,
   useTranslation,
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
-} from '@bahmni-frontend/bahmni-services';
+  getPatientById,
+  CreatePatientResponse,
+} from '@bahmni/services';
+import { useQuery } from '@tanstack/react-query';
 import { useRef, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   AdditionalInfo,
   AdditionalInfoRef,
@@ -29,8 +35,10 @@ import {
   PatientRelationshipsRef,
 } from '../../components/forms/patientRelationships/PatientRelationships';
 import { Profile, ProfileRef } from '../../components/forms/profile/Profile';
-import { Header } from '../../components/Header';
+import { BAHMNI_REGISTRATION_SEARCH } from '../../constants/app';
+
 import { useCreatePatient } from '../../hooks/useCreatePatient';
+import { useUpdatePatient } from '../../hooks/useUpdatePatient';
 import { validateAllSections, collectFormData } from './patientFormService';
 import styles from './styles/index.module.scss';
 import { VisitTypeSelector } from './visitTypeSelector';
@@ -38,7 +46,18 @@ import { VisitTypeSelector } from './visitTypeSelector';
 const CreatePatient = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [patientUuid, setPatientUuid] = useState<string | null>(null);
+  const { patientUuid: patientUuidFromUrl } = useParams<{
+    patientUuid: string;
+  }>();
+
+  // Determine if we're in edit mode based on URL parameter
+  const isEditMode = !!patientUuidFromUrl;
+  const [patientUuid, setPatientUuid] = useState<string | null>(
+    patientUuidFromUrl ?? null,
+  );
+  const [patientIdentifier, setPatientIdentifier] = useState<string | null>(
+    null,
+  );
 
   const patientProfileRef = useRef<ProfileRef>(null);
   const patientAddressRef = useRef<AddressInfoRef>(null);
@@ -46,8 +65,17 @@ const CreatePatient = () => {
   const patientAdditionalRef = useRef<AdditionalInfoRef>(null);
   const patientRelationshipsRef = useRef<PatientRelationshipsRef>(null);
 
-  // Use the custom hook for patient creation
+  // Fetch patient data if in edit mode
+  // TODO: Transform FHIR Patient data to form data and populate fields
+  useQuery({
+    queryKey: ['patient', patientUuidFromUrl],
+    queryFn: () => getPatientById(patientUuidFromUrl!),
+    enabled: isEditMode,
+  });
+
+  // Use the appropriate mutation based on mode
   const createPatientMutation = useCreatePatient();
+  const updatePatientMutation = useUpdatePatient();
 
   // Dispatch audit event when page is viewed
   useEffect(() => {
@@ -58,15 +86,30 @@ const CreatePatient = () => {
     });
   }, []);
 
-  // Track patient UUID after successful creation
+  // Track patient UUID and identifier after successful creation/update
   useEffect(() => {
     if (createPatientMutation.isSuccess && createPatientMutation.data) {
-      const response = createPatientMutation.data;
+      const response = createPatientMutation.data as CreatePatientResponse;
       if (response?.patient?.uuid) {
         setPatientUuid(response.patient.uuid);
       }
+      if (response?.patient?.identifiers?.[0]?.identifier) {
+        setPatientIdentifier(response.patient.identifiers[0].identifier);
+      }
     }
   }, [createPatientMutation.isSuccess, createPatientMutation.data]);
+
+  useEffect(() => {
+    if (updatePatientMutation.isSuccess && updatePatientMutation.data) {
+      const response = updatePatientMutation.data as CreatePatientResponse;
+      if (response?.patient?.uuid) {
+        setPatientUuid(response.patient.uuid);
+      }
+      if (response?.patient?.identifiers?.[0]?.identifier) {
+        setPatientIdentifier(response.patient.identifiers[0].identifier);
+      }
+    }
+  }, [updatePatientMutation.isSuccess, updatePatientMutation.data]);
 
   const handleSave = async (): Promise<string | null> => {
     // Validate all form sections
@@ -93,11 +136,28 @@ const CreatePatient = () => {
       return null;
     }
 
-    // Trigger mutation with collected data
+    // Trigger mutation with collected data (create or update)
     try {
-      const response = await createPatientMutation.mutateAsync(formData);
-      if (response?.patient?.uuid) {
-        return response.patient.uuid;
+      if (isEditMode && patientUuid) {
+        // Update existing patient
+        const response = (await updatePatientMutation.mutateAsync({
+          patientUuid,
+          ...formData,
+        })) as CreatePatientResponse;
+        if (response?.patient?.uuid) {
+          return response.patient.uuid;
+        }
+      } else {
+        // Create new patient
+        const response = (await createPatientMutation.mutateAsync(
+          formData,
+        )) as CreatePatientResponse;
+        if (response?.patient?.uuid) {
+          const newPatientUuid = response.patient.uuid;
+          // Navigate to edit patient page after successful save
+          navigate(`/registration/edit/${newPatientUuid}`);
+          return newPatientUuid;
+        }
       }
       return null;
     } catch {
@@ -106,27 +166,55 @@ const CreatePatient = () => {
   };
 
   const breadcrumbs = [
-    { label: t('CREATE_PATIENT_BREADCRUMB_HOME'), href: BAHMNI_HOME_PATH },
     {
-      label: t('CREATE_PATIENT_BREADCRUMB_SEARCH'),
-      onClick: () => navigate('/registration/search'),
+      id: 'home',
+      label: t('CREATE_PATIENT_BREADCRUMB_HOME'),
+      href: BAHMNI_HOME_PATH,
     },
-    { label: t('CREATE_PATIENT_BREADCRUMB_CURRENT') },
+    {
+      id: 'search',
+      label: t('CREATE_PATIENT_BREADCRUMB_SEARCH'),
+      href: BAHMNI_REGISTRATION_SEARCH,
+    },
+    {
+      id: 'current',
+      label: t('CREATE_PATIENT_BREADCRUMB_CURRENT'),
+      isCurrentPage: true,
+    },
   ];
+  const globalActions = [
+    {
+      id: 'user',
+      label: 'user',
+      renderIcon: <Icon id="user" name="fa-user" size={ICON_SIZE.LG} />,
+      onClick: () => {},
+    },
+  ];
+
+  const isPending = isEditMode
+    ? updatePatientMutation.isPending
+    : createPatientMutation.isPending;
 
   return (
     <BaseLayout
-      header={<Header breadcrumbs={breadcrumbs} />}
+      header={
+        <Header breadcrumbItems={breadcrumbs} globalActions={globalActions} />
+      }
       main={
         <div>
           <Tile className={styles.patientDetailsHeader}>
             <span className={styles.sectionTitle}>
-              {t('CREATE_PATIENT_HEADER_TITLE')}
+              {isEditMode
+                ? t('EDIT_PATIENT_HEADER_TITLE')
+                : t('CREATE_PATIENT_HEADER_TITLE')}
             </span>
           </Tile>
 
           <div className={styles.formContainer}>
-            <Profile ref={patientProfileRef} />
+            <Profile
+              ref={patientProfileRef}
+              patientIdentifier={patientIdentifier}
+            />
             <AddressInfo ref={patientAddressRef} />
             <ContactInfo ref={patientContactRef} />
             <AdditionalInfo ref={patientAdditionalRef} />
@@ -136,20 +224,19 @@ const CreatePatient = () => {
 
           {/* Footer Actions */}
           <div className={styles.formActions}>
-            <Button kind="tertiary">
+            <Button
+              kind="tertiary"
+              onClick={() => navigate('/registration/search')}
+            >
               {t('CREATE_PATIENT_BACK_TO_SEARCH')}
             </Button>
             <div className={styles.actionButtons}>
               <Button
                 kind="tertiary"
                 onClick={handleSave}
-                disabled={
-                  createPatientMutation.isPending || patientUuid != null
-                }
+                disabled={isPending || (!isEditMode && patientUuid != null)}
               >
-                {createPatientMutation.isPending
-                  ? 'Saving...'
-                  : t('CREATE_PATIENT_SAVE')}
+                {isPending ? 'Saving...' : t('CREATE_PATIENT_SAVE')}
               </Button>
               <Button kind="tertiary">
                 {t('CREATE_PATIENT_PRINT_REG_CARD')}

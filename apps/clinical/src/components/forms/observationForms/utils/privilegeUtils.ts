@@ -1,7 +1,4 @@
-import {
-  ObservationForm,
-  UserPrivilege,
-} from '@bahmni-frontend/bahmni-services';
+import { ObservationForm, UserPrivilege } from '@bahmni/services';
 /**
  * Check if user has required privileges to access a form
  * @param userPrivileges - Array of user privileges from whoami API

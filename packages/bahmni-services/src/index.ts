@@ -1,5 +1,6 @@
 export { get, post, put, del } from './api';
 export { initAppI18n, useTranslation } from './i18n';
+export { useCamera } from './cameraService';
 export {
   getPatientById,
   getFormattedPatientById,
@@ -7,6 +8,7 @@ export {
   searchPatientByCustomAttribute,
   getPrimaryIdentifierType,
   createPatient,
+  updatePatient,
   createVisit,
   getActiveVisitByPatient,
   getIdentifierData,
@@ -14,6 +16,7 @@ export {
   getAddressHierarchyEntries,
   getVisitTypes,
   getVisitLocationUUID,
+  getOrderedAddressHierarchyLevels,
   getRelationshipTypes,
   type FormattedPatientData,
   type PatientSearchResult,
@@ -29,12 +32,17 @@ export {
   type PatientIdentifier,
   type PatientAttribute,
   type AddressHierarchyEntry,
+  type OrderedAddressHierarchyLevel,
+  type OrderedAddressHierarchyLevels,
   MAX_PATIENT_AGE_YEARS,
   PHONE_NUMBER_UUID,
   EMAIL_UUID,
   ALTERNATE_PHONE_NUMBER_UUID,
 } from './patientService';
-export { searchAppointmentsByAttribute } from './AppointmentService/appointmmetService';
+export {
+  searchAppointmentsByAttribute,
+  updateAppointmentStatus,
+} from './AppointmentService/appointmmetService';
 export {
   type Appointment,
   type AppointmentSearchResult,
@@ -53,6 +61,8 @@ export {
   groupByDate,
   filterReplacementEntries,
   refreshQueries,
+  parseQueryParams,
+  formatUrl,
 } from './utils';
 export {
   type FormatDateResult,
@@ -70,6 +80,7 @@ export {
   getTodayDate,
   calculateAgeinYearsAndMonths,
   formatDateAndTime,
+  dateComparator,
 } from './date';
 export { type Notification, notificationService } from './notification';
 export {
@@ -137,6 +148,7 @@ export {
   type RegistrationConfig,
   type PatientSearchConfig,
   type PatientSearchField,
+  type SearchActionConfig,
 } from './configService';
 
 export { getCurrentUser, getUserLoginLocation, type User } from './userService';

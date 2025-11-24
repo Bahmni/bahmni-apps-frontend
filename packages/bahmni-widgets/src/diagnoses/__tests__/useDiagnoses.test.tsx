@@ -3,12 +3,12 @@ import {
   getFormattedError,
   useTranslation,
   Diagnosis,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { useDiagnoses } from '../useDiagnoses';
 
-jest.mock('@bahmni-frontend/bahmni-services');
+jest.mock('@bahmni/services');
 jest.mock('../../hooks/usePatientUUID');
 
 const mockedGetPatientDiagnoses = getPatientDiagnoses as jest.MockedFunction<

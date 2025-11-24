@@ -1,4 +1,4 @@
-import { get } from '@bahmni-frontend/bahmni-services';
+import { get } from '@bahmni/services';
 import i18next from 'i18next';
 import { ENCOUNTER_CONCEPTS_URL } from '../constants/app';
 import { COMMON_ERROR_MESSAGES } from '../constants/errors';

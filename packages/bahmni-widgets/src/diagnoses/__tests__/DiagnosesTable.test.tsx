@@ -4,7 +4,7 @@ import {
   sortByDate,
   DATE_FORMAT,
   useTranslation,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import DiagnosesTable from '../DiagnosesTable';
@@ -13,8 +13,8 @@ import { useDiagnoses } from '../useDiagnoses';
 expect.extend(toHaveNoViolations);
 
 jest.mock('../useDiagnoses');
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   useTranslation: jest.fn(),
   formatDate: jest.fn(),
   sortByDate: jest.fn(),

@@ -1,15 +1,10 @@
-import {
-  Content,
-  initFontAwesome,
-} from '@bahmni-frontend/bahmni-design-system';
-import {
-  initAppI18n,
-  initializeAuditListener,
-} from '@bahmni-frontend/bahmni-services';
+import { Content, initFontAwesome } from '@bahmni/design-system';
+import { initAppI18n, initializeAuditListener } from '@bahmni/services';
 import {
   NotificationProvider,
   NotificationServiceComponent,
-} from '@bahmni-frontend/bahmni-widgets';
+  UserPrivilegeProvider,
+} from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import React, { useEffect, useState } from 'react';
@@ -52,10 +47,13 @@ const RegistrationApp: React.FC = () => {
         <NotificationServiceComponent />
         <QueryClientProvider client={queryClient}>
           <RegistrationConfigProvider>
-            <Routes>
-              <Route path="/search" element={<PatientSearchPage />} />
-              <Route path="/new" element={<CreatePatient />} />
-            </Routes>
+            <UserPrivilegeProvider>
+              <Routes>
+                <Route path="/search" element={<PatientSearchPage />} />
+                <Route path="/new" element={<CreatePatient />} />
+                <Route path="/edit/:patientUuid" element={<CreatePatient />} />
+              </Routes>
+            </UserPrivilegeProvider>
           </RegistrationConfigProvider>
           <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>

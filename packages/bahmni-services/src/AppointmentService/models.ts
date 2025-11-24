@@ -1,11 +1,13 @@
 import { PatientSearchResult } from '../patientService/models';
 
 export interface AppointmentSearchResult extends PatientSearchResult {
+  appointmentUuid?: string;
   appointmentNumber?: string;
   appointmentDate?: string;
   appointmentReason?: string;
   appointmentStatus?: string;
 }
+
 export interface Appointment {
   length: number;
   uuid: string;

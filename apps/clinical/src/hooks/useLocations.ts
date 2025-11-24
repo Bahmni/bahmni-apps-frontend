@@ -1,4 +1,4 @@
-import { useTranslation } from '@bahmni-frontend/bahmni-services';
+import { useTranslation } from '@bahmni/services';
 import { useState, useCallback, useEffect } from 'react';
 import { OpenMRSLocation } from '../models/location';
 import { getLocations } from '../services/locationService';

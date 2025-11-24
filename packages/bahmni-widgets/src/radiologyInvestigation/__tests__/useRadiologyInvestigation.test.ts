@@ -3,7 +3,7 @@ import {
   RadiologyInvestigation,
   getFormattedError,
   useTranslation,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import {
@@ -13,7 +13,7 @@ import {
 } from '../__mocks__/mocks';
 import { useRadiologyInvestigation } from '../useRadiologyInvestigation';
 
-jest.mock('@bahmni-frontend/bahmni-services');
+jest.mock('@bahmni/services');
 jest.mock('../../hooks/usePatientUUID');
 jest.mock('react-router-dom', () => ({
   useParams: jest.fn(),

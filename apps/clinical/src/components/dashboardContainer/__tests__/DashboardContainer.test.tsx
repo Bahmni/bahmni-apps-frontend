@@ -2,8 +2,8 @@ import {
   DashboardSectionConfig as DashboardSectionType,
   AUDIT_LOG_EVENT_DETAILS,
   dispatchAuditEvent,
-} from '@bahmni-frontend/bahmni-services';
-import { usePatientUUID } from '@bahmni-frontend/bahmni-widgets';
+} from '@bahmni/services';
+import { usePatientUUID } from '@bahmni/widgets';
 import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import DashboardContainer from '../DashboardContainer';
@@ -12,8 +12,8 @@ import DashboardContainer from '../DashboardContainer';
 const mockScrollIntoView = jest.fn();
 
 // Mock the audit event dispatcher
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
-  ...jest.requireActual('@bahmni-frontend/bahmni-services'),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   dispatchAuditEvent: jest.fn(),
   useTranslation: jest.fn(() => ({
     t: (key: string) => key, // Mock translation function
@@ -21,7 +21,7 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
 }));
 
 // Mock the usePatientUUID hook
-jest.mock('@bahmni-frontend/bahmni-widgets', () => ({
+jest.mock('@bahmni/widgets', () => ({
   usePatientUUID: jest.fn(),
 }));
 

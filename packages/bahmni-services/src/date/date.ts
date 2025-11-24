@@ -8,6 +8,9 @@ import {
   subMonths,
   subDays,
   format,
+  isSameDay,
+  isBefore,
+  isAfter,
 } from 'date-fns';
 import type { Locale } from 'date-fns';
 import { enUS, enGB, es, fr, de } from 'date-fns/locale';
@@ -339,24 +342,15 @@ export const getTodayDate = (): Date => {
 export function formatDateAndTime(date: number, includeTime: boolean): string {
   const d = new Date(date);
 
-  const day = String(d.getDate()).padStart(2, '0');
-  const year = d.getFullYear();
-  const monthNames = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-  const month = monthNames[d.getMonth()];
-
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+  const parts = formatter.formatToParts(d);
+  const day = parts.find((p) => p.type === 'day')?.value;
+  const month = parts.find((p) => p.type === 'month')?.value;
+  const year = parts.find((p) => p.type === 'year')?.value;
   let formattedDate = `${day} ${month} ${year}`;
 
   if (includeTime) {
@@ -370,16 +364,12 @@ export function formatDateAndTime(date: number, includeTime: boolean): string {
 
   return formattedDate;
 }
-export function calculateAgeinYearsAndMonths(birthDateMillis: number) {
+export function calculateAgeinYearsAndMonths(birthDateMillis: number): string {
   const birthDate = new Date(birthDateMillis);
   const today = new Date();
 
-  let years = today.getFullYear() - birthDate.getFullYear();
-  let months = today.getMonth() - birthDate.getMonth();
-  if (months < 0 || (months === 0 && today.getDate() < birthDate.getDate())) {
-    years--;
-    months += 12;
-  }
+  const years = differenceInYears(today, birthDate);
+  const months = differenceInMonths(today, birthDate) - years * 12;
 
   return `${years} years ${months} months`;
 }
@@ -412,3 +402,27 @@ export function sortByDate(
     return ascending ? diff : -diff;
   });
 }
+
+/**
+ *  Compare given date with specified timeframe: 'past', 'today', or 'future'.
+ *  @dateFrom string - The date string to compare (in a format parseable by Date constructor)
+ *  @timeframe string - The timeframe to compare against ('past', 'today', 'future')
+ *  @returns boolean - true if the date matches the specified timeframe, false otherwise
+ */
+
+export const dateComparator = (
+  dateFrom: string,
+  timeframe: string,
+): boolean => {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const givenDate = new Date(dateFrom);
+
+  const comparator = {
+    today: () => isSameDay(givenDate, today),
+    past: () => isBefore(givenDate, today),
+    future: () => isAfter(givenDate, today),
+  };
+
+  return comparator[timeframe as keyof typeof comparator]();
+};

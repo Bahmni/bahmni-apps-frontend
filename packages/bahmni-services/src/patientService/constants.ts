@@ -87,6 +87,9 @@ export const PRIMARY_IDENTIFIER_TYPE_PROPERTY = 'bahmni.primaryIdentifierType';
 export const CREATE_PATIENT_URL =
   OPENMRS_REST_V1 + '/bahmnicore/patientprofile';
 
+export const UPDATE_PATIENT_URL = (patientUuid: string) =>
+  OPENMRS_REST_V1 + `/bahmnicore/patientprofile/${patientUuid}`;
+
 export const CREATE_VISIT_URL = OPENMRS_REST_V1 + '/visit';
 
 export const GET_ACTIVE_VISIT_URL = (patientUuid: string) =>
@@ -99,8 +102,16 @@ export const ADDRESS_HIERARCHY_URL = (
   addressField: string,
   searchString: string,
   limit: number = 20,
-) =>
-  `/openmrs/module/addresshierarchy/ajax/getPossibleAddressHierarchyEntriesWithParents.form?addressField=${addressField}&limit=${limit}&searchString=${encodeURIComponent(searchString)}`;
+  parentUuid?: string,
+) => {
+  let url = `/openmrs/module/addresshierarchy/ajax/getPossibleAddressHierarchyEntriesWithParents.form?addressField=${addressField}&limit=${limit}&searchString=${encodeURIComponent(searchString)}`;
+  if (parentUuid) {
+    url += `&parent=${parentUuid}`;
+  }
+  return url;
+};
+
+export const ORDERED_ADDRESS_HIERARCHY_URL = `/openmrs/module/addresshierarchy/ajax/getOrderedAddressHierarchyLevels.form`;
 
 export const RELATIONSHIP_TYPES_URL =
   OPENMRS_REST_V1 + '/relationshiptype?v=custom:(aIsToB,bIsToA,uuid) ';

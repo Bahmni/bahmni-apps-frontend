@@ -2,9 +2,9 @@ import {
   PatientSearchResult,
   PatientSearchResultBundle,
   PatientSearchField,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 
-export type PatientSearchViewModel<T> = T & {
+export type PatientSearchViewModel<T extends PatientSearchResult> = T & {
   id: string;
   name: string;
   [key: string]: unknown;

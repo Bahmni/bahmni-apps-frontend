@@ -1,7 +1,4 @@
-import {
-  usePatientUUID,
-  useActivePractitioner,
-} from '@bahmni-frontend/bahmni-widgets';
+import { usePatientUUID, useActivePractitioner } from '@bahmni/widgets';
 import { render, screen, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React from 'react';
@@ -17,10 +14,10 @@ jest.mock('../../../../hooks/useEncounterConcepts');
 jest.mock('../../../../hooks/useActiveVisit');
 jest.mock('../../../../stores/encounterDetailsStore');
 
-jest.mock('@bahmni-frontend/bahmni-widgets');
+jest.mock('@bahmni/widgets');
 
 // Mock the utils
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
+jest.mock('@bahmni/services', () => ({
   formatDate: jest.fn(() => ({
     formattedResult: '16/05/2025',
     error: null,
@@ -46,7 +43,7 @@ jest.mock('@bahmni-frontend/bahmni-services', () => ({
 }));
 
 // Mock the Carbon components
-jest.mock('@bahmni-frontend/bahmni-design-system', () => {
+jest.mock('@bahmni/design-system', () => {
   const actual = jest.requireActual('@carbon/react');
 
   interface MockDropdownProps {

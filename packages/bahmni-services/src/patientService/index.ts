@@ -5,6 +5,7 @@ export {
   searchPatientByCustomAttribute,
   getPrimaryIdentifierType,
   createPatient,
+  updatePatient,
   createVisit,
   getActiveVisitByPatient,
   getIdentifierData,
@@ -12,6 +13,7 @@ export {
   getAddressHierarchyEntries,
   getVisitTypes,
   getVisitLocationUUID,
+  getOrderedAddressHierarchyLevels,
   getRelationshipTypes,
 } from './patientService';
 export {
@@ -32,6 +34,8 @@ export {
   type VisitType,
   type VisitLocationResponse,
   type ActiveVisit,
+  type OrderedAddressHierarchyLevel,
+  type OrderedAddressHierarchyLevels,
 } from './models';
 export {
   MAX_PATIENT_AGE_YEARS,

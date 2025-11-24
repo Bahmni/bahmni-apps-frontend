@@ -2,13 +2,13 @@ import {
   getFormattedAllergies,
   getFormattedError,
   FormattedAllergy,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { useNotification } from '../../notification';
 import { useAllergies } from '../useAllergies';
 
-jest.mock('@bahmni-frontend/bahmni-services', () => ({
+jest.mock('@bahmni/services', () => ({
   getFormattedAllergies: jest.fn(),
   getFormattedError: jest.fn(),
 }));

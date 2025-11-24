@@ -1,4 +1,4 @@
-import { notificationService } from '@bahmni-frontend/bahmni-services';
+import { notificationService } from '@bahmni/services';
 import type { AdditionalInfoRef } from '../../components/forms/additionalInfo/AdditionalInfo';
 import type { AddressInfoRef } from '../../components/forms/addressInfo/AddressInfo';
 import type { ContactInfoRef } from '../../components/forms/contactInfo/ContactInfo';

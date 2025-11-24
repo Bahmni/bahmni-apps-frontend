@@ -1,4 +1,4 @@
-import { useTranslation } from '@bahmni-frontend/bahmni-services';
+import { useTranslation } from '@bahmni/services';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React from 'react';
@@ -7,9 +7,9 @@ import '@testing-library/jest-dom';
 
 expect.extend(toHaveNoViolations);
 
-jest.mock('@bahmni-frontend/bahmni-services');
+jest.mock('@bahmni/services');
 // Mock the PatientDetails component
-jest.mock('@bahmni-frontend/bahmni-widgets', () => {
+jest.mock('@bahmni/widgets', () => {
   return {
     __esModule: true,
     PatientDetails: () => (
