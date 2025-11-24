@@ -15,10 +15,7 @@ jobs:
   detect-affected:
     runs-on: ubuntu-latest
     outputs:
-      affected_packages: ${{ steps.affected.outputs.packages }}
-      has_services: ${{ steps.check.outputs.has_services }}
-      has_design_system: ${{ steps.check.outputs.has_design_system }}
-      has_widgets: ${{ steps.check.outputs.has_widgets }}
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -34,58 +31,79 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Detect affected packages
-        id: affected
+      - name: Detect affected packages and create matrix
+        id: set-matrix
         run: |
-          # Get affected library projects (returns newline-separated list)
-          AFFECTED_RAW=$(npx nx show projects --affected --base=origin/main --type=lib || echo "")
+          # Get affected library projects
+          AFFECTED_RAW=$(npx nx show projects --affected --base=origin/main --type=lib 2>/dev/null || echo "")
           
-          # Filter to only include packages from packages/ directory
-          # Convert newlines to spaces for single-line output
-          AFFECTED=$(echo "$AFFECTED_RAW" | grep "^@bahmni/" | grep -E "(services|design-system|widgets)" | tr '\n' ' ' | xargs)
+          # Filter to only include our three packages
+          AFFECTED=$(echo "$AFFECTED_RAW" | grep -E "(bahmni-services|bahmni-design-system|bahmni-widgets)" || echo "")
           
-          # If no affected packages detected, check all packages (for manual dispatch or first run)
-          if [ -z "$AFFECTED" ]; then
-            AFFECTED="@bahmni/services @bahmni/design-system @bahmni/widgets"
+          # Determine which packages to publish (affected + all dependents)
+          PUBLISH_SERVICES=false
+          PUBLISH_DESIGN_SYSTEM=false
+          PUBLISH_WIDGETS=false
+          
+          # If services is affected, publish all packages (everything depends on it)
+          if echo "$AFFECTED" | grep -q "bahmni-services"; then
+            PUBLISH_SERVICES=true
+            PUBLISH_DESIGN_SYSTEM=true
+            PUBLISH_WIDGETS=true
+            echo "Services affected - will publish all packages"
           fi
           
-          echo "Affected packages: $AFFECTED"
-          echo "packages=$AFFECTED" >> $GITHUB_OUTPUT
+          # If design-system is affected, publish design-system and widgets (widgets depends on it)
+          if echo "$AFFECTED" | grep -q "bahmni-design-system"; then
+            PUBLISH_DESIGN_SYSTEM=true
+            PUBLISH_WIDGETS=true
+            echo "Design-system affected - will publish design-system and widgets"
+          fi
+          
+          # If widgets is affected, publish only widgets (nothing depends on it)
+          if echo "$AFFECTED" | grep -q "bahmni-widgets"; then
+            PUBLISH_WIDGETS=true
+            echo "Widgets affected - will publish widgets"
+          fi
+          
+          # Build matrix JSON in dependency order: services → design-system → widgets
+          MATRIX_JSON="[]"
+          
+          if [ "$PUBLISH_SERVICES" = true ]; then
+            MATRIX_JSON=$(echo "$MATRIX_JSON" | jq '. + [{"name": "@bahmni/services", "path": "packages/bahmni-services"}]')
+          fi
+          
+          if [ "$PUBLISH_DESIGN_SYSTEM" = true ]; then
+            MATRIX_JSON=$(echo "$MATRIX_JSON" | jq '. + [{"name": "@bahmni/design-system", "path": "packages/bahmni-design-system"}]')
+          fi
+          
+          if [ "$PUBLISH_WIDGETS" = true ]; then
+            MATRIX_JSON=$(echo "$MATRIX_JSON" | jq '. + [{"name": "@bahmni/widgets", "path": "packages/bahmni-widgets"}]')
+          fi
+          
+          # For workflow_dispatch, include all packages if none detected
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "$(echo $MATRIX_JSON | jq '. | length')" -eq 0 ]; then
+            MATRIX_JSON='[{"name": "@bahmni/services", "path": "packages/bahmni-services"}, {"name": "@bahmni/design-system", "path": "packages/bahmni-design-system"}, {"name": "@bahmni/widgets", "path": "packages/bahmni-widgets"}]'
+          fi
+          
+          # Create final matrix
+          MATRIX="{\"include\":$MATRIX_JSON}"
+          
+          echo "Matrix: $MATRIX"
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
 
-      - name: Check which packages are affected
-        id: check
-        run: |
-          AFFECTED="${{ steps.affected.outputs.packages }}"
-          
-          if echo "$AFFECTED" | grep -q "services"; then
-            echo "has_services=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_services=false" >> $GITHUB_OUTPUT
-          fi
-          
-          if echo "$AFFECTED" | grep -q "design-system"; then
-            echo "has_design_system=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_design_system=false" >> $GITHUB_OUTPUT
-          fi
-          
-          if echo "$AFFECTED" | grep -q "widgets"; then
-            echo "has_widgets=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_widgets=false" >> $GITHUB_OUTPUT
-          fi
-
-  # Publish @bahmni/services (no dependencies)
-  # Note: PACKAGE_NAME is the scoped npm name, PACKAGE_PATH is the directory path
-  publish-services:
+  # Publish packages using matrix strategy
+  publish-packages:
     needs: detect-affected
-    if: needs.detect-affected.outputs.has_services == 'true'
+    if: needs.detect-affected.outputs.matrix != '{"include":[]}'
     runs-on: ubuntu-latest
     environment: npm-publish
+    strategy:
+      matrix: ${{ fromJson(needs.detect-affected.outputs.matrix) }}
+      max-parallel: 1  # Publish one package at a time to maintain dependency order
+      fail-fast: false
     env:
       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      PACKAGE_NAME: '@bahmni/services'  # Scoped npm package name
-      PACKAGE_PATH: 'packages/bahmni-services'  # Directory path (without @bahmni scope)
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -100,17 +118,17 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Lint
-        run: npx nx lint @bahmni/services
+      - name: Lint ${{ matrix.name }}
+        run: npx nx lint ${{ matrix.name }}
 
-      - name: Test
-        run: npx nx test @bahmni/services
+      - name: Test ${{ matrix.name }}
+        run: npx nx test ${{ matrix.name }}
 
-      - name: Build
-        run: npx nx build @bahmni/services
+      - name: Build ${{ matrix.name }}
+        run: npx nx build ${{ matrix.name }}
 
       - name: Publish dev build to npm
-        working-directory: ${{ env.PACKAGE_PATH }}
+        working-directory: ${{ matrix.path }}
         run: |
           # Base version from package.json
           BASE_VERSION=$(node -p "require('./package.json').version")
@@ -118,128 +136,13 @@ jobs:
 
           # Generate unique dev version (e.g., 0.0.1-dev.42)
           DEV_VERSION="${BASE_VERSION}-dev.${BUILD_NUM}"
-          echo "📦 Publishing @bahmni/services@$DEV_VERSION"
+          echo "📦 Publishing ${{ matrix.name }}@$DEV_VERSION"
 
           # Update package version and publish
           npm version "$DEV_VERSION" --no-git-tag-version
           #npm publish --access public --tag dev
           
           # Output information
-          echo "::notice title=Package Published::Published @bahmni/services@$DEV_VERSION"
-          echo "::notice title=Install Command::npm install @bahmni/services@dev"
-          echo "::notice title=Build Info::Build #${BUILD_NUM}"
-
-  # Publish @bahmni/design-system (depends on services)
-  # Note: PACKAGE_NAME is the scoped npm name, PACKAGE_PATH is the directory path
-  publish-design-system:
-    needs: [detect-affected, publish-services]
-    if: |
-      always() &&
-      needs.detect-affected.outputs.has_design_system == 'true' &&
-      (needs.publish-services.result == 'success' || needs.publish-services.result == 'skipped')
-    runs-on: ubuntu-latest
-    environment: npm-publish
-    env:
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      PACKAGE_NAME: '@bahmni/design-system'  # Scoped npm package name
-      PACKAGE_PATH: 'packages/bahmni-design-system'  # Directory path (without @bahmni scope)
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          registry-url: 'https://registry.npmjs.org'
-          cache: 'yarn'
-
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: Lint
-        run: npx nx lint @bahmni/design-system
-
-      - name: Test
-        run: npx nx test @bahmni/design-system
-
-      - name: Build
-        run: npx nx build @bahmni/design-system
-
-      - name: Publish dev build to npm
-        working-directory: ${{ env.PACKAGE_PATH }}
-        run: |
-          # Base version from package.json
-          BASE_VERSION=$(node -p "require('./package.json').version")
-          BUILD_NUM=${{ github.run_number }}
-
-          # Generate unique dev version (e.g., 0.0.1-dev.42)
-          DEV_VERSION="${BASE_VERSION}-dev.${BUILD_NUM}"
-          echo "📦 Publishing @bahmni/design-system@$DEV_VERSION"
-
-          # Update package version and publish
-          npm version "$DEV_VERSION" --no-git-tag-version
-          #npm publish --access public --tag dev
-          
-          # Output information
-          echo "::notice title=Package Published::Published @bahmni/design-system@$DEV_VERSION"
-          echo "::notice title=Install Command::npm install @bahmni/design-system@dev"
-          echo "::notice title=Build Info::Build #${BUILD_NUM}"
-
-  # Publish @bahmni/widgets (depends on design-system and services)
-  # Note: PACKAGE_NAME is the scoped npm name, PACKAGE_PATH is the directory path
-  publish-widgets:
-    needs: [detect-affected, publish-services, publish-design-system]
-    if: |
-      always() &&
-      needs.detect-affected.outputs.has_widgets == 'true' &&
-      (needs.publish-services.result == 'success' || needs.publish-services.result == 'skipped') &&
-      (needs.publish-design-system.result == 'success' || needs.publish-design-system.result == 'skipped')
-    runs-on: ubuntu-latest
-    environment: npm-publish
-    env:
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      PACKAGE_NAME: '@bahmni/widgets'  # Scoped npm package name
-      PACKAGE_PATH: 'packages/bahmni-widgets'  # Directory path (without @bahmni scope)
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          registry-url: 'https://registry.npmjs.org'
-          cache: 'yarn'
-
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: Lint
-        run: npx nx lint @bahmni/widgets
-
-      - name: Test
-        run: npx nx test @bahmni/widgets
-
-      - name: Build
-        run: npx nx build @bahmni/widgets
-
-      - name: Publish dev build to npm
-        working-directory: ${{ env.PACKAGE_PATH }}
-        run: |
-          # Base version from package.json
-          BASE_VERSION=$(node -p "require('./package.json').version")
-          BUILD_NUM=${{ github.run_number }}
-
-          # Generate unique dev version (e.g., 0.0.1-dev.42)
-          DEV_VERSION="${BASE_VERSION}-dev.${BUILD_NUM}"
-          echo "📦 Publishing @bahmni/widgets@$DEV_VERSION"
-
-          # Update package version and publish
-          npm version "$DEV_VERSION" --no-git-tag-version
-          #npm publish --access public --tag dev
-          
-          # Output information
-          echo "::notice title=Package Published::Published @bahmni/widgets@$DEV_VERSION"
-          echo "::notice title=Install Command::npm install @bahmni/widgets@dev"
+          echo "::notice title=Package Published::Published ${{ matrix.name }}@$DEV_VERSION"
+          echo "::notice title=Install Command::npm install ${{ matrix.name }}@dev"
           echo "::notice title=Build Info::Build #${BUILD_NUM}"
