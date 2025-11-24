@@ -2,8 +2,8 @@ name: Publish Affected Packages
 
 on:
   push:
-  branches:
-    - packages-workflows
+    branches:
+      - packages-workflows
 
 jobs:
   detect-affected:
