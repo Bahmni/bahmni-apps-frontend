@@ -35,7 +35,7 @@ jobs:
       - id: affected
         name: Get Nx affected projects (in dependency order)
         run: |
-          AFFECTED=$(yarn nx print-affected --base=origin/main --head=HEAD --select=projects --plain)
+          AFFECTED="$(yarn nx print-affected --base=origin/main --head=HEAD --select=projects --plain)"
           echo "projects=$AFFECTED"
           echo "projects=$AFFECTED" >> $GITHUB_OUTPUT
 
