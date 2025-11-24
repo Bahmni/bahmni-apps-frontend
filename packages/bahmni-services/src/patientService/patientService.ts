@@ -12,6 +12,7 @@ import {
   APP_SETTINGS_URL,
   PRIMARY_IDENTIFIER_TYPE_PROPERTY,
   CREATE_PATIENT_URL,
+  UPDATE_PATIENT_URL,
   CREATE_VISIT_URL,
   GET_ACTIVE_VISIT_URL,
   ADDRESS_HIERARCHY_URL,
@@ -20,6 +21,7 @@ import {
   UUID_PATTERN,
   VISIT_TYPES_URL,
   GET_VISIT_LOCATION,
+  ORDERED_ADDRESS_HIERARCHY_URL,
 } from './constants';
 import {
   FormattedPatientData,
@@ -33,6 +35,7 @@ import {
   ActiveVisit,
   VisitData,
   VisitType,
+  OrderedAddressHierarchyLevels,
 } from './models';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
@@ -301,6 +304,22 @@ export const createPatient = async (
 };
 
 /**
+ * Update an existing patient
+ * @param patientUuid - The UUID of the patient to update
+ * @param patientData - The patient data to update
+ * @returns Promise<CreatePatientResponse> - The updated patient response
+ */
+export const updatePatient = async (
+  patientUuid: string,
+  patientData: CreatePatientRequest,
+): Promise<CreatePatientResponse> => {
+  return post<CreatePatientResponse>(
+    UPDATE_PATIENT_URL(patientUuid),
+    patientData,
+  );
+};
+
+/**
  * Get genders from global property
  * @returns Promise<string[]> - Array of gender display names
  */
@@ -316,12 +335,14 @@ export const getGenders = async (): Promise<string[]> => {
  * @param addressField - The address field type (e.g., 'countyDistrict', 'stateProvince', 'postalCode')
  * @param searchString - The search term
  * @param limit - Maximum number of results (default: 20)
+ * @param parentUuid - Optional parent UUID to filter results hierarchically (for top-down mode)
  * @returns Promise<AddressHierarchyEntry[]> - Array of address hierarchy entries with parent information
  */
 export const getAddressHierarchyEntries = async (
   addressField: string,
   searchString: string,
   limit: number = ADDRESS_HIERARCHY_DEFAULT_LIMIT,
+  parentUuid?: string,
 ): Promise<AddressHierarchyEntry[]> => {
   if (
     !searchString ||
@@ -332,7 +353,7 @@ export const getAddressHierarchyEntries = async (
 
   try {
     return await get<AddressHierarchyEntry[]>(
-      ADDRESS_HIERARCHY_URL(addressField, searchString, limit),
+      ADDRESS_HIERARCHY_URL(addressField, searchString, limit, parentUuid),
     );
   } catch (error) {
     throw new Error(
@@ -381,3 +402,13 @@ export const getVisitLocationUUID = async (
 ): Promise<VisitLocationResponse> => {
   return get<VisitLocationResponse>(GET_VISIT_LOCATION(loginLocation));
 };
+
+/**
+ * Get ordered address hierarchy levels from OpenMRS
+ * Returns the configured order of address fields as defined in the system
+ * @returns Promise<OrderedAddressHierarchyLevels> - Array of address hierarchy levels with their display names and field names
+ */
+export const getOrderedAddressHierarchyLevels =
+  async (): Promise<OrderedAddressHierarchyLevels> => {
+    return get<OrderedAddressHierarchyLevels>(ORDERED_ADDRESS_HIERARCHY_URL);
+  };
