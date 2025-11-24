@@ -42,3 +42,60 @@ jobs:
       - id: build-matrix
         name: Convert projects into JSON matrix
         run: |
+          MATRIX=$(jq -n --arg a "${{ steps.affected.outputs.projects }}" '
+            $a | split(" ") | map(select(. != ""))')
+          echo "matrix=$MATRIX"
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+
+  publish:
+    needs: detect-affected
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        project: ${{ fromJson(needs.detect-affected.outputs.matrix) }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          registry-url: "https://registry.npmjs.org"
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build affected project
+        run: yarn nx build ${{ matrix.project }}
+
+      - name: Update package version to dev version
+        id: version
+        run: |
+          PKG_DIR=$(yarn nx show project ${{ matrix.project }} --select=targets.build.options.outputPath --plain)
+
+          BASE_VERSION=$(jq -r '.version' "$PKG_DIR/package.json")
+          BUILD_NUM=${{ github.run_number }}
+
+          DEV_VERSION="${BASE_VERSION}-dev.${BUILD_NUM}"
+
+          echo "Updating version to $DEV_VERSION in $PKG_DIR/package.json"
+
+          jq --arg v "$DEV_VERSION" '.version = $v' \
+            "$PKG_DIR/package.json" > "$PKG_DIR/package.tmp.json"
+
+          mv "$PKG_DIR/package.tmp.json" "$PKG_DIR/package.json"
+
+          echo "version=$DEV_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Publish dry-run
+        run: |
+          PKG_DIR=$(yarn nx show project ${{ matrix.project }} --select=targets.build.options.outputPath --plain)
+
+          echo "Would publish: $PKG_DIR (version ${{ steps.version.outputs.version }})"
+
+          # DRY RUN ONLY
+          # yarn npm publish "$PKG_DIR" --tag dev
