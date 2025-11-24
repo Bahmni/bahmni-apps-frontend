@@ -2,7 +2,7 @@ name: Publish Packages
 
 on:
   push:
-    branches: [workflows]
+    branches: [packages-workflows]
     paths:
       - 'packages/**'
   workflow_dispatch:
