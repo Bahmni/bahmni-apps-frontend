@@ -86,8 +86,8 @@ jobs:
             MATRIX_JSON='[{"name": "@bahmni/services", "path": "packages/bahmni-services"}, {"name": "@bahmni/design-system", "path": "packages/bahmni-design-system"}, {"name": "@bahmni/widgets", "path": "packages/bahmni-widgets"}]'
           fi
           
-          # Create final matrix
-          MATRIX="{\"include\":$MATRIX_JSON}"
+          # Create final matrix with compact JSON output
+          MATRIX=$(echo "{\"include\":$MATRIX_JSON}" | jq -c .)
           
           echo "Matrix: $MATRIX"
           echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
