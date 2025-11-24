@@ -2,7 +2,7 @@
 
 ## Description
 
-A reusable React component library built on [Carbon Design System](https://carbondesignsystem.com/), designed for building modern healthcare and enterprise web applications....
+A reusable React component library built on [Carbon Design System](https://carbondesignsystem.com/), designed for building modern healthcare and enterprise web applications.
 
 This library was generated with [Nx](https://nx.dev).
 
