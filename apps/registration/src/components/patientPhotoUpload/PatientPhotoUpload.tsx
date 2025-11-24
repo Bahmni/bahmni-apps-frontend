@@ -85,7 +85,7 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
     const file = files[0];
     setFileName(file.name);
     if (file.size > MAX_FILE_SIZE) {
-      const fileSizeKB = Math.round(file.size / 1024);
+      const fileSizeKB = Math.round(file.size / 1000);
       setFileSizeError(
         t('CREATE_PATIENT_UPLOAD_PHOTO_FILE_SIZE_ERROR', {
           fileSize: `${fileSizeKB}KB`,
@@ -146,7 +146,11 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
           <video ref={videoRef} autoPlay playsInline />
         </div>
         <div className={styles.buttonGroup}>
-          <Button kind="primary" onClick={handleCaptureClick}>
+          <Button
+            kind="primary"
+            onClick={handleCaptureClick}
+            className={styles.button}
+          >
             {t('CREATE_PATIENT_CAPTURE_PHOTO')}
           </Button>
         </div>
@@ -157,10 +161,18 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
           <img src={previewUrl} alt="Preview" />
         </div>
         <div className={styles.buttonGroup}>
-          <Button kind="primary" onClick={handleConfirm}>
+          <Button
+            kind="primary"
+            onClick={handleConfirm}
+            className={styles.button}
+          >
             {t('CREATE_PATIENT_UPLOAD_PHOTO_CONFIRM')}
           </Button>
-          <Button kind="primary" onClick={handlePreview}>
+          <Button
+            kind="primary"
+            onClick={handlePreview}
+            className={styles.button}
+          >
             {t('CREATE_PATIENT_UPLOAD_PHOTO_RETAKE')}
           </Button>
         </div>
@@ -183,12 +195,22 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
           onDelete={handleFileDelete}
           filenameStatus="edit"
         />
+        {!fileName && (
+          <div className={styles.noFileChosen}>
+            {t('CREATE_PATIENT_NO_FILE_CHOSEN')}
+          </div>
+        )}
         <div className={styles.errorMessage}>{fileSizeError}</div>
         <div className={styles.imagePreviewContainer}>
           {previewUrl && <img src={previewUrl} alt="Preview" />}
         </div>
         <div className={styles.buttonGroup}>
-          <Button kind="primary" onClick={handleConfirm} disabled={!previewUrl}>
+          <Button
+            kind="primary"
+            onClick={handleConfirm}
+            disabled={!previewUrl}
+            className={styles.button}
+          >
             {t('CREATE_PATIENT_UPLOAD_PHOTO_CONFIRM')}
           </Button>
         </div>

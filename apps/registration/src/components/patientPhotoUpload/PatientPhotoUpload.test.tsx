@@ -119,6 +119,10 @@ describe('PatientPhotoUpload', () => {
         screen.getByText(/CREATE_PATIENT_UPLOAD_PHOTO_MODAL_HEADING/),
       ).toBeInTheDocument();
 
+      expect(
+        screen.getByText('CREATE_PATIENT_NO_FILE_CHOSEN'),
+      ).toBeInTheDocument();
+
       const validFile = new File(['test'], 'test.jpg', {
         type: 'image/jpeg',
       });
