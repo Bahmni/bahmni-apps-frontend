@@ -9,6 +9,7 @@ import {
 import {
   useTranslation,
   MAX_PATIENT_AGE_YEARS,
+  MAX_NAME_LENGTH,
   PatientIdentifier,
 } from '@bahmni/services';
 import { useState, useImperativeHandle, useEffect } from 'react';
@@ -144,10 +145,21 @@ export const Profile = ({
 
     // Always allow empty string (for backspace/delete)
     if (value === '' || nameRegex.test(value)) {
-      // Valid input: update field and clear errors
+      // Valid input: update field
       handleInputChange(field, value);
-      setNameErrors((prev) => ({ ...prev, [field]: '' }));
-      setValidationErrors((prev) => ({ ...prev, [field]: '' }));
+
+      // Check for max length and show error if exceeded
+      if (value.length > MAX_NAME_LENGTH) {
+        const maxLengthKey = `CREATE_PATIENT_VALIDATION_${field.toUpperCase()}_MAX_LENGTH`;
+        setNameErrors((prev) => ({
+          ...prev,
+          [field]: t(maxLengthKey),
+        }));
+      } else {
+        // Clear errors if within limit
+        setNameErrors((prev) => ({ ...prev, [field]: '' }));
+        setValidationErrors((prev) => ({ ...prev, [field]: '' }));
+      }
     } else {
       // Invalid input: show pattern error (don't update the field value)
       setNameErrors((prev) => ({
@@ -255,6 +267,11 @@ export const Profile = ({
         'CREATE_PATIENT_VALIDATION_FIRST_NAME_REQUIRED',
       );
       isValid = false;
+    } else if (formData.firstName.length > MAX_NAME_LENGTH) {
+      newValidationErrors.firstName = t(
+        'CREATE_PATIENT_VALIDATION_FIRST_NAME_MAX_LENGTH',
+      );
+      isValid = false;
     }
 
     const middleNameRequired =
@@ -264,11 +281,21 @@ export const Profile = ({
         'CREATE_PATIENT_VALIDATION_MIDDLE_NAME_REQUIRED',
       );
       isValid = false;
+    } else if (formData.middleName.length > MAX_NAME_LENGTH) {
+      newValidationErrors.middleName = t(
+        'CREATE_PATIENT_VALIDATION_MIDDLE_NAME_MAX_LENGTH',
+      );
+      isValid = false;
     }
     const lastNameRequired = fieldValidationConfig?.lastName?.required ?? true;
     if (lastNameRequired && !formData.lastName.trim()) {
       newValidationErrors.lastName = t(
         'CREATE_PATIENT_VALIDATION_LAST_NAME_REQUIRED',
+      );
+      isValid = false;
+    } else if (formData.lastName.length > MAX_NAME_LENGTH) {
+      newValidationErrors.lastName = t(
+        'CREATE_PATIENT_VALIDATION_LAST_NAME_MAX_LENGTH',
       );
       isValid = false;
     }

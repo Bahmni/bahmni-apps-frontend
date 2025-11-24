@@ -123,6 +123,7 @@ export const APPOINTMENTS_SEARCH_URL = OPENMRS_REST_V1 + '/appointments/search';
 
 // Validation constants
 export const MAX_PATIENT_AGE_YEARS = 120;
+export const MAX_NAME_LENGTH = 50;
 export const UUID_PATTERN = /^[a-f0-9-]{36}$/i;
 export const PHONE_NUMBER_UUID = 'a384873b-847a-4a86-b869-28fb601162dd';
 export const ALTERNATE_PHONE_NUMBER_UUID =

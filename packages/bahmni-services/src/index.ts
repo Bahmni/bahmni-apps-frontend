@@ -37,6 +37,7 @@ export {
   type PersonAttributeType,
   type PersonAttributeTypesResponse,
   MAX_PATIENT_AGE_YEARS,
+  MAX_NAME_LENGTH,
   PHONE_NUMBER_UUID,
   EMAIL_UUID,
   ALTERNATE_PHONE_NUMBER_UUID,
