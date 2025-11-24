@@ -35,9 +35,9 @@ jobs:
       - id: affected
         name: Get Nx affected projects (in dependency order)
         run: |
-          PROJECTS=$(yarn nx print-affected --base=origin/main --head=HEAD --select=projects --plain)
-          echo "projects=$PROJECTS"
-          echo "projects=$PROJECTS" >> $GITHUB_OUTPUT
+          AFFECTED=$(yarn nx print-affected --base=origin/main --head=HEAD --select=projects --plain)
+          echo "projects=$AFFECTED"
+          echo "projects=$AFFECTED" >> $GITHUB_OUTPUT
 
       - id: build-matrix
         name: Convert projects into JSON matrix
