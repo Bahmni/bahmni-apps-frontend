@@ -35,6 +35,7 @@
   "CREATE_PATIENT_LOCALITY": "Localidad/Sector",
   "CREATE_PATIENT_MIDDLE_NAME": "Segundo nombre",
   "CREATE_PATIENT_MIDDLE_NAME_PLACEHOLDER": "Segundo nombre",
+  "CREATE_PATIENT_NO_FILE_CHOSEN": "Ningún archivo elegido",
   "CREATE_PATIENT_PATIENT_ID_FORMAT": "Formato de ID del paciente",
   "CREATE_PATIENT_PHONE_NUMBER": "Número de teléfono",
   "CREATE_PATIENT_PHONE_NUMBER_PLACEHOLDER": "Número de teléfono",
