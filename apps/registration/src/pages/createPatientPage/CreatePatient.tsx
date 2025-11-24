@@ -12,7 +12,7 @@ import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
-  getPatientById,
+  getFormattedPatientById,
   CreatePatientResponse,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
@@ -46,6 +46,12 @@ import { useAdditionalIdentifiers } from '../../hooks/useAdditionalIdentifiers';
 import { useCreatePatient } from '../../hooks/useCreatePatient';
 import { useRelationshipValidation } from '../../hooks/useRelationshipValidation';
 import { useUpdatePatient } from '../../hooks/useUpdatePatient';
+import {
+  convertToBasicInfoData,
+  convertToContactData,
+  convertToAdditionalData,
+  convertToAddressData,
+} from '../../utils/patientDataConverter';
 import { validateAllSections, collectFormData } from './patientFormService';
 import styles from './styles/index.module.scss';
 import { VisitTypeSelector } from './visitTypeSelector';
@@ -79,11 +85,16 @@ const CreatePatient = () => {
   const patientAdditionalIdentifiersRef =
     useRef<AdditionalIdentifiersRef>(null);
 
-  useQuery({
-    queryKey: ['patient', patientUuidFromUrl],
-    queryFn: () => getPatientById(patientUuidFromUrl!),
+  const { data: patientDetails } = useQuery({
+    queryKey: ['formattedPatient', patientUuidFromUrl],
+    queryFn: () => getFormattedPatientById(patientUuidFromUrl!),
     enabled: isEditMode,
   });
+
+  const profileInitialData = convertToBasicInfoData(patientDetails);
+  const contactInitialData = convertToContactData(patientDetails);
+  const additionalInitialData = convertToAdditionalData(patientDetails);
+  const addressInitialData = convertToAddressData(patientDetails);
 
   // Use the appropriate mutation based on mode
   const createPatientMutation = useCreatePatient();
@@ -241,9 +252,20 @@ const CreatePatient = () => {
             <Profile
               ref={patientProfileRef}
               patientIdentifier={patientIdentifier}
+              initialData={profileInitialData}
             />
-            <AddressInfo ref={patientAddressRef} />
-            <ContactInfo ref={patientContactRef} />
+            <AddressInfo
+              ref={patientAddressRef}
+              initialData={addressInitialData}
+            />
+            <ContactInfo
+              ref={patientContactRef}
+              initialData={contactInitialData}
+            />
+            <AdditionalInfo
+              ref={patientAdditionalRef}
+              initialData={additionalInitialData}
+            />
           </div>
 
           <AdditionalInfo ref={patientAdditionalRef} />

@@ -12,10 +12,7 @@ import {
   MAX_NAME_LENGTH,
   PatientIdentifier,
 } from '@bahmni/services';
-import { useQueryClient } from '@tanstack/react-query';
-import { Patient } from 'fhir/r4';
 import { useState, useImperativeHandle, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
 import { useRegistrationConfig } from '../../../hooks/useRegistrationConfig';
 import type { BasicInfoData } from '../../../models/patient';
 import type {
@@ -57,8 +54,6 @@ export const Profile = ({
   ref,
 }: ProfileProps) => {
   const { t } = useTranslation();
-  const queryClient = useQueryClient();
-  const { patientUuid } = useParams<{ patientUuid: string }>();
 
   // Use utility hooks for identifier and gender data
   const { identifierPrefixes, primaryIdentifierType, identifierSources } =
@@ -122,35 +117,6 @@ export const Profile = ({
   const [dateErrors, setDateErrors] = useState<DateErrors>({
     dateOfBirth: '',
   });
-
-  useEffect(() => {
-    /* eslint-disable no-console */
-
-    console.log('patientUuid', patientUuid);
-    if (!patientUuid) return;
-
-    const patientQueries = queryClient.getQueriesData<Patient>({
-      queryKey: ['patient', patientUuid],
-    });
-    console.log('patientQueries', patientQueries);
-    if (patientQueries.length > 0) {
-      const [, cachedPatient] = patientQueries[0];
-      console.log('cachedPatient', cachedPatient);
-      /* eslint-enable no-console */
-      if (cachedPatient) {
-        const name = cachedPatient.name?.[0];
-
-        setFormData((prev) => ({
-          ...prev,
-          firstName: name?.given?.[0] ?? '',
-          middleName: name?.given?.[1] ?? '',
-          lastName: name?.family ?? '',
-          gender: cachedPatient.gender ?? '',
-          dateOfBirth: cachedPatient.birthDate ?? '',
-        }));
-      }
-    }
-  }, [queryClient, patientUuid]);
 
   // Update patientIdFormat when identifierPrefixes loads
   useEffect(() => {
