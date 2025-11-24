@@ -132,3 +132,7 @@ export const EMAIL_UUID = 'e3123cba-5e07-11ef-8f7c-0242ac120002';
 export const VISIT_TYPES_URL = () =>
   OPENMRS_REST_V1 +
   `/bahmnicore/config/bahmniencounter?callerContext=REGISTRATION_CONCEPTS`;
+
+export const PERSON_ATTRIBUTE_TYPES_URL =
+  OPENMRS_REST_V1 +
+  '/personattributetype?v=custom:(uuid,name,sortWeight,description,format,concept)';

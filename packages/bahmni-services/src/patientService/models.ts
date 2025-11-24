@@ -250,3 +250,23 @@ export interface ServiceType {
   description?: string;
   uuid?: string;
 }
+
+/**
+ * Person Attribute Type from OpenMRS
+ * Represents custom attributes that can be added to person records
+ */
+export interface PersonAttributeType {
+  uuid: string;
+  name: string;
+  sortWeight: number;
+  description: string | null;
+  format: string;
+  concept: {
+    uuid: string;
+    display: string;
+  } | null;
+}
+
+export interface PersonAttributeTypesResponse {
+  results: PersonAttributeType[];
+}
