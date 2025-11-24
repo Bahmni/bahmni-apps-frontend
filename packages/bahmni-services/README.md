@@ -3,7 +3,7 @@
 
 ## Description
 
-A set of service utilities and API integration helpers that act as an abstraction layer for communicating with OpenMRS backend APIs..
+A set of service utilities and API integration helpers that act as an abstraction layer for communicating with OpenMRS backend APIs.....
 
 ## Bundler Configuration
 
