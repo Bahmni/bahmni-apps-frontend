@@ -13,17 +13,19 @@ jobs:
       matrix: ${{ steps.build-matrix.outputs.matrix }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: 'yarn'
 
       - name: Install dependencies
-        run: npm ci
+        run: yarn install --frozen-lockfile
 
       # Nx handles:
       # - changed projects
@@ -33,67 +35,10 @@ jobs:
       - id: affected
         name: Get Nx affected projects (in dependency order)
         run: |
-          PROJECTS=$(npx nx print-affected --base=origin/main --head=HEAD --select=projects --plain)
+          PROJECTS=$(yarn nx print-affected --base=origin/main --head=HEAD --select=projects --plain)
           echo "projects=$PROJECTS"
           echo "projects=$PROJECTS" >> $GITHUB_OUTPUT
 
       - id: build-matrix
         name: Convert projects into JSON matrix
         run: |
-          # Convert space-separated Nx output into JSON array
-          MATRIX=$(jq -n --arg a "${{ steps.affected.outputs.projects }}" '
-            $a | split(" ") | map(select(. != ""))')
-          echo "matrix=$MATRIX"
-          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
-
-  publish:
-    needs: detect-affected
-    runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        project: ${{ fromJson(needs.detect-affected.outputs.matrix) }}
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          registry-url: "https://registry.npmjs.org"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build affected project
-        run: npx nx build ${{ matrix.project }}
-
-      # Each project already has a package.json under dist/... because Nx copies it
-      - name: Update package version to dev version
-        id: version
-        run: |
-          PKG_DIR=$(npx nx show project ${{ matrix.project }} --select=targets.build.options.outputPath --plain)
-
-          BASE_VERSION=$(jq -r '.version' "$PKG_DIR/package.json")
-          BUILD_NUM=${{ github.run_number }}
-
-          DEV_VERSION="${BASE_VERSION}-dev.${BUILD_NUM}"
-
-          echo "Updating version to $DEV_VERSION in $PKG_DIR/package.json"
-
-          jq --arg v "$DEV_VERSION" '.version = $v' \
-            "$PKG_DIR/package.json" > "$PKG_DIR/package.tmp.json"
-
-          mv "$PKG_DIR/package.tmp.json" "$PKG_DIR/package.json"
-
-          echo "version=$DEV_VERSION" >> $GITHUB_OUTPUT
-
-      - name: Publish dry-run (npm publish commented out)
-        run: |
-          PKG_DIR=$(npx nx show project ${{ matrix.project }} --select=targets.build.options.outputPath --plain)
-          echo "Would publish: $PKG_DIR (version ${{ steps.version.outputs.version }})"
-
-          # DRY RUN ONLY
-          # npm publish "$PKG_DIR" --tag dev
