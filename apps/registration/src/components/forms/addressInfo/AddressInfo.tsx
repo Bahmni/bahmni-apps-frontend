@@ -11,7 +11,10 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { AddressHierarchyItem } from '../../../hooks/useAddressFields';
+import type {
+  AddressData,
+  AddressHierarchyItem,
+} from '../../../hooks/useAddressFields';
 import { useAddressFieldsWithConfig } from '../../../hooks/useAddressFieldsWithConfig';
 import { useAddressSuggestions } from '../../../hooks/useAddressSuggestions';
 import { AddressAutocompleteField } from './AddressAutocompleteField';
@@ -23,10 +26,11 @@ export type AddressInfoRef = {
 };
 
 interface AddressInfoProps {
+  initialData?: AddressData;
   ref?: React.Ref<AddressInfoRef>;
 }
 
-export const AddressInfo = ({ ref }: AddressInfoProps) => {
+export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
   const { t } = useTranslation();
 
   const {
@@ -39,7 +43,7 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     selectedMetadata,
     isLoadingLevels,
     getTranslationKey,
-  } = useAddressFieldsWithConfig();
+  } = useAddressFieldsWithConfig(initialData);
 
   const [addressErrors, setAddressErrors] = useState<Record<string, string>>(
     {},
