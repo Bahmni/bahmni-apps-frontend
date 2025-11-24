@@ -35,7 +35,7 @@ jobs:
         id: set-matrix
         run: |
           # Get affected library projects
-          AFFECTED_RAW=$(npx nx show projects --affected --base=origin/main --type=lib 2>/dev/null || echo "")
+          AFFECTED_RAW=$(npx nx show projects --affected --base=HEAD~1 --type=lib 2>/dev/null || echo "")
           
           # Filter to only include our three packages
           AFFECTED=$(echo "$AFFECTED_RAW" | grep -E "(bahmni-services|bahmni-design-system|bahmni-widgets)" || echo "")
