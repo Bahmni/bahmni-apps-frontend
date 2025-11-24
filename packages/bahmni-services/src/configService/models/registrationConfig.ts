@@ -48,9 +48,16 @@ export interface PatientInformationConfig {
   showCasteSameAsLastNameCheckbox?: boolean;
   showDOBEstimated?: boolean;
   showEnterManually?: boolean;
+  contactInformation?: {
+    translationKey?: string;
+    attributes?: Array<{
+      field: string;
+      translationKey: string;
+    }>;
+  };
   additionalPatientInformation?: {
     translationKey?: string;
-    expectedFields?: Array<{
+    attributes?: Array<{
       field: string;
       translationKey: string;
     }>;
