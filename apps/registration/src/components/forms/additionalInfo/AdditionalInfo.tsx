@@ -1,6 +1,7 @@
 import { TextInput, Tile } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { useCallback, useImperativeHandle, useState, useMemo } from 'react';
+import { usePersonAttributeFields } from '../../../hooks/usePersonAttributeFields';
 import { useRegistrationConfig } from '../../../hooks/useRegistrationConfig';
 import type { AdditionalData } from '../../../models/patient';
 import styles from '../additionalInfo/styles/index.module.scss';
@@ -18,23 +19,44 @@ interface AdditionalInfoProps {
 export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
   const { t } = useTranslation();
   const { registrationConfig } = useRegistrationConfig();
-
-  const fieldValidationConfig = registrationConfig?.fieldValidation;
-  const pattern = fieldValidationConfig?.['email']?.pattern ?? '^[a-zA-Z\\s]*$';
+  const { attributeFields } = usePersonAttributeFields();
 
   const additionalInfoConfig =
     registrationConfig?.patientInformation?.additionalPatientInformation;
-  const expectedFields = additionalInfoConfig?.expectedFields ?? [];
-  const sectionTitle = t('CREATE_PATIENT_SECTION_ADDITIONAL_INFO');
+  const configAttributes = additionalInfoConfig?.attributes ?? [];
+  const sectionTitle =
+    additionalInfoConfig?.translationKey ??
+    'CREATE_PATIENT_SECTION_ADDITIONAL_INFO';
 
-  // Initialize form data based on expected fields
+  // Only show fields that exist in BOTH person attributes API AND config attributes
+  const fieldsToShow = useMemo(() => {
+    if (configAttributes.length === 0) {
+      return [];
+    }
+
+    const configFieldNames = configAttributes.map((attr) => attr.field);
+    return attributeFields.filter((attrField) =>
+      configFieldNames.includes(attrField.name),
+    );
+  }, [configAttributes, attributeFields]);
+
+  // Create a map of field name to translation key
+  const fieldTranslationMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    configAttributes.forEach((attr) => {
+      map[attr.field] = attr.translationKey;
+    });
+    return map;
+  }, [configAttributes]);
+
+  // Initialize form data based on fields to show
   const initialFormData = useMemo(() => {
     const data: AdditionalData = {};
-    expectedFields.forEach((field) => {
-      data[field.field] = initialData?.[field.field] ?? '';
+    fieldsToShow.forEach((field) => {
+      data[field.name] = initialData?.[field.name] ?? '';
     });
     return data;
-  }, [expectedFields, initialData]);
+  }, [fieldsToShow, initialData]);
 
   const [formData, setFormData] = useState<AdditionalData>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -51,21 +73,21 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
     [errors],
   );
 
+  const fieldValidationConfig = registrationConfig?.fieldValidation;
+
   const validate = useCallback((): boolean => {
     const newErrors: Record<string, string> = {};
     let isValid = true;
 
-    expectedFields.forEach((fieldConfig) => {
-      const fieldName = fieldConfig.field;
+    fieldsToShow.forEach((field) => {
+      const fieldName = field.name;
       const value = formData[fieldName];
+      const validationRule = fieldValidationConfig?.[fieldName];
 
-      if (fieldName === 'email' && value) {
-        const emailRegex = new RegExp(pattern);
-        if (!emailRegex.test(value as string)) {
-          newErrors[fieldName] =
-            fieldValidationConfig?.['email']?.errorMessage ??
-            t('CREATE_PATIENT_VALIDATION_EMAIL_INVALID') ??
-            'Invalid email format';
+      if (validationRule && value) {
+        const regex = new RegExp(validationRule.pattern);
+        if (!regex.test(value as string)) {
+          newErrors[fieldName] = validationRule.errorMessage;
           isValid = false;
         }
       }
@@ -73,7 +95,7 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
 
     setErrors(newErrors);
     return isValid;
-  }, [expectedFields, formData, pattern, fieldValidationConfig, t]);
+  }, [fieldsToShow, formData, fieldValidationConfig]);
 
   const getData = useCallback((): AdditionalData => {
     return formData;
@@ -85,8 +107,8 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
     getData,
   }));
 
-  // If no fields are configured, don't render the section
-  if (expectedFields.length === 0) {
+  // If no fields match between config and API, don't render the section
+  if (fieldsToShow.length === 0) {
     return null;
   }
 
@@ -96,15 +118,16 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
         <span className={styles.headerTitle}>{t(sectionTitle)}</span>
       </Tile>
       <div className={styles.row}>
-        {expectedFields.map((fieldConfig) => {
-          const fieldName = fieldConfig.field;
+        {fieldsToShow.map((field) => {
+          const fieldName = field.name;
           const value = formData[fieldName] ?? '';
           const error = errors[fieldName] || '';
-          const label = t(fieldConfig.translationKey);
+          const translationKey = fieldTranslationMap[fieldName] || fieldName;
+          const label = t(translationKey);
           return (
-            <div key={fieldName} className={styles.emailField}>
+            <div key={field.uuid} className={styles.emailField}>
               <TextInput
-                id={fieldName}
+                id={field.uuid}
                 labelText={label}
                 placeholder={label}
                 value={value as string}
