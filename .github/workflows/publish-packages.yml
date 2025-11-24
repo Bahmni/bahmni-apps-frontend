@@ -38,7 +38,7 @@ jobs:
           AFFECTED_RAW=$(npx nx show projects --affected --base=${{ github.event.before }} --type=lib 2>/dev/null || echo "")
           
           # Filter to only include our three packages
-          AFFECTED=$(echo "$AFFECTED_RAW" | grep -E "(bahmni-services|bahmni-design-system|bahmni-widgets)" || echo "")
+          AFFECTED=$(echo "$AFFECTED_RAW" | grep -E "(@bahmni/services|@bahmni/design-system|@bahmni/widgets)" || echo "")
           
           # Determine which packages to publish (affected + all dependents)
           PUBLISH_SERVICES=false
@@ -46,7 +46,7 @@ jobs:
           PUBLISH_WIDGETS=false
           
           # If services is affected, publish all packages (everything depends on it)
-          if echo "$AFFECTED" | grep -q "bahmni-services"; then
+          if echo "$AFFECTED" | grep -q "@bahmni/services"; then
             PUBLISH_SERVICES=true
             PUBLISH_DESIGN_SYSTEM=true
             PUBLISH_WIDGETS=true
@@ -54,14 +54,14 @@ jobs:
           fi
           
           # If design-system is affected, publish design-system and widgets (widgets depends on it)
-          if echo "$AFFECTED" | grep -q "bahmni-design-system"; then
+          if echo "$AFFECTED" | grep -q "@bahmni/design-system"; then
             PUBLISH_DESIGN_SYSTEM=true
             PUBLISH_WIDGETS=true
             echo "Design-system affected - will publish design-system and widgets"
           fi
           
           # If widgets is affected, publish only widgets (nothing depends on it)
-          if echo "$AFFECTED" | grep -q "bahmni-widgets"; then
+          if echo "$AFFECTED" | grep -q "@bahmni/widgets"; then
             PUBLISH_WIDGETS=true
             echo "Widgets affected - will publish widgets"
           fi
