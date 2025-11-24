@@ -15,6 +15,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { Patient } from 'fhir/r4';
 import { useState, useImperativeHandle, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { useRegistrationConfig } from '../../../hooks/useRegistrationConfig';
 import type { BasicInfoData } from '../../../models/patient';
 import type {
@@ -57,6 +58,7 @@ export const Profile = ({
 }: ProfileProps) => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const { patientUuid } = useParams<{ patientUuid: string }>();
 
   // Use utility hooks for identifier and gender data
   const { identifierPrefixes, primaryIdentifierType, identifierSources } =
@@ -121,10 +123,11 @@ export const Profile = ({
     dateOfBirth: '',
   });
 
-  // Extract patient data from cache
   useEffect(() => {
+    if (!patientUuid) return;
+
     const patientQueries = queryClient.getQueriesData<Patient>({
-      queryKey: ['patient'],
+      queryKey: ['patient', patientUuid],
     });
 
     if (patientQueries.length > 0) {
@@ -143,7 +146,7 @@ export const Profile = ({
         }));
       }
     }
-  }, [queryClient]);
+  }, [queryClient, patientUuid]);
 
   // Update patientIdFormat when identifierPrefixes loads
   useEffect(() => {
