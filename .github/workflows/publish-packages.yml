@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - packages-workflows
+    paths:
+      - 'packages/**'
+  workflow_dispatch:
 
 jobs:
   detect-affected:
