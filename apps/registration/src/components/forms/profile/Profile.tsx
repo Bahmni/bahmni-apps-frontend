@@ -124,15 +124,19 @@ export const Profile = ({
   });
 
   useEffect(() => {
+    /* eslint-disable no-console */
+
+    console.log('patientUuid', patientUuid);
     if (!patientUuid) return;
 
     const patientQueries = queryClient.getQueriesData<Patient>({
       queryKey: ['patient', patientUuid],
     });
-
+    console.log('patientQueries', patientQueries);
     if (patientQueries.length > 0) {
       const [, cachedPatient] = patientQueries[0];
-
+      console.log('cachedPatient', cachedPatient);
+      /* eslint-enable no-console */
       if (cachedPatient) {
         const name = cachedPatient.name?.[0];
 
