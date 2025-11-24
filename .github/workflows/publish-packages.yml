@@ -31,39 +31,59 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Detect affected packages and create matrix
+      - name: Detect affected packages, apps and create matrix
         id: set-matrix
         run: |
           # Get affected library projects
           AFFECTED_RAW=$(npx nx show projects --affected --base=${{ github.event.before }} --type=lib 2>/dev/null || echo "")
           
-          # Filter to only include our three packages
-          AFFECTED=$(echo "$AFFECTED_RAW" | grep -E "(@bahmni/services|@bahmni/design-system|@bahmni/widgets)" || echo "")
+          # Filter to only include our three packages and two apps
+          AFFECTED=$(echo "$AFFECTED_RAW" | grep -E "(@bahmni/services|@bahmni/design-system|@bahmni/widgets|@bahmni/clinical-app|@bahmni/registration-app)" || echo "")
           
           # Determine which packages to publish (affected + all dependents)
           PUBLISH_SERVICES=false
           PUBLISH_DESIGN_SYSTEM=false
           PUBLISH_WIDGETS=false
+          PUBLISH_CLINICAL_APP=false
+          PUBLISH_REGISTRATION_APP=false
           
-          # If services is affected, publish all packages (everything depends on it)
+          # If services is affected, publish all packages (everything depends on it) and apps
           if echo "$AFFECTED" | grep -q "@bahmni/services"; then
             PUBLISH_SERVICES=true
             PUBLISH_DESIGN_SYSTEM=true
             PUBLISH_WIDGETS=true
-            echo "Services affected - will publish all packages"
+            PUBLISH_CLINICAL_APP=true
+            PUBLISH_REGISTRATION_APP=true
+            echo "Services affected - will publish all packages and apps"
           fi
           
-          # If design-system is affected, publish design-system and widgets (widgets depends on it)
+          # If design-system is affected, publish design-system and widgets (widgets depends on it) and apps
           if echo "$AFFECTED" | grep -q "@bahmni/design-system"; then
             PUBLISH_DESIGN_SYSTEM=true
             PUBLISH_WIDGETS=true
-            echo "Design-system affected - will publish design-system and widgets"
+            PUBLISH_CLINICAL_APP=true
+            PUBLISH_REGISTRATION_APP=true
+            echo "Design-system affected - will publish design-system and widgets and apps"
           fi
           
-          # If widgets is affected, publish only widgets (nothing depends on it)
+          # If widgets is affected, publish only widgets and apps
           if echo "$AFFECTED" | grep -q "@bahmni/widgets"; then
             PUBLISH_WIDGETS=true
-            echo "Widgets affected - will publish widgets"
+            PUBLISH_CLINICAL_APP=true
+            PUBLISH_REGISTRATION_APP=true
+            echo "Widgets affected - will publish widgets and apps"
+          fi
+
+          # If cinical-app is affected, publish only clinical-app (nothing depends on it)
+          if echo "$AFFECTED" | grep -q "@bahmni/clinical-app"; then
+            PUBLISH_CLINICAL_APP=true
+            echo "Clinical-app affected - will publish clinical-app"
+          fi
+
+          # If registration-app is affected, publish only registration-app (nothing depends on it)
+          if echo "$AFFECTED" | grep -q "@bahmni/registration-app"; then
+            PUBLISH_REGISTRATION_APP=true
+            echo "Registration-app affected - will publish registration-app"
           fi
           
           # Build matrix JSON in dependency order: services → design-system → widgets
@@ -80,10 +100,18 @@ jobs:
           if [ "$PUBLISH_WIDGETS" = true ]; then
             MATRIX_JSON=$(echo "$MATRIX_JSON" | jq '. + [{"name": "@bahmni/widgets", "path": "packages/bahmni-widgets"}]')
           fi
+
+          if [ "$PUBLISH_CLINICAL_APP" = true ]; then
+            MATRIX_JSON=$(echo "$MATRIX_JSON" | jq '. + [{"name": "@bahmni/clinical-app", "path": "apps/clinical"}]')
+          fi
+
+          if [ "$PUBLISH_REGISTRATION_APP" = true ]; then
+            MATRIX_JSON=$(echo "$MATRIX_JSON" | jq '. + [{"name": "@bahmni/registration-app", "path": "apps/registration"}]')
+          fi
           
-          # For workflow_dispatch, include all packages if none detected
+          # For workflow_dispatch, include all packages and apps if none detected
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "$(echo $MATRIX_JSON | jq '. | length')" -eq 0 ]; then
-            MATRIX_JSON='[{"name": "@bahmni/services", "path": "packages/bahmni-services"}, {"name": "@bahmni/design-system", "path": "packages/bahmni-design-system"}, {"name": "@bahmni/widgets", "path": "packages/bahmni-widgets"}]'
+            MATRIX_JSON='[{"name": "@bahmni/services", "path": "packages/bahmni-services"}, {"name": "@bahmni/design-system", "path": "packages/bahmni-design-system"}, {"name": "@bahmni/widgets", "path": "packages/bahmni-widgets"}, {"name": "@bahmni/clinical-app", "path": "apps/clinical"}, {"name": "@bahmni/registration-app", "path": "apps/registration"}]'
           fi
           
           # Create final matrix with compact JSON output
