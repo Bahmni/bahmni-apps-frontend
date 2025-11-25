@@ -41,6 +41,9 @@ export interface PatientInformationConfig {
   autoCompleteFields?: string[];
   showMiddleName?: boolean;
   showLastName?: boolean;
+  isFirstNameMandatory?: boolean;
+  isMiddleNameMandatory?: boolean;
+  isLastNameMandatory?: boolean;
   isGenderMandatory?: boolean;
   isDateOfBirthMandatory?: boolean;
   patientNameDisplayOrder?: string[];
@@ -78,7 +81,6 @@ export interface PatientInformationConfig {
 export interface FieldValidationRule {
   pattern: string;
   errorMessage: string;
-  required?: boolean;
 }
 
 export interface FieldValidationConfig {
