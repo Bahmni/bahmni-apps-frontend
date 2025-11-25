@@ -27,35 +27,41 @@
 }
    
   
-.emailField{
-  width: 288px;
-  padding-bottom: $spacing-03 + $spacing-01;
+.emailField {
+  flex: 0 0 calc(50% - $spacing-06 / 2);
+
       
-   > * {
-        flex: 1 1 0;
-        min-width: 0;
-      }
+  > * {
+    flex: 1 1 0;
+    min-width: 0;
+  }
 
   > * {
-        position: relative;
-        
-        div[class*="cds--form-requirement"] {
-          position: absolute;
-          top: 100%;
-          left: 0;
-          margin-top: $spacing-01;
-          z-index: 1;
-        }
-      }
+    position: relative;
+    
+    div[class*="cds--form-requirement"] {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: $spacing-01;
+      z-index: 1;
+    }
+  }
 } 
 
 .row {
-  width: calc(100% - ($spacing-13 + $spacing-05));
-  max-width: $spacing-13 * 9 + $spacing-05 + $spacing-02;
+  width: 100%;
   padding: $spacing-06;
   display: flex;
   flex-wrap: wrap;
   flex-direction: row;
   gap: $spacing-05;
   overflow: visible;
+}
+
+.fieldsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-06;
+  padding-bottom: $spacing-03 + $spacing-01;
 }

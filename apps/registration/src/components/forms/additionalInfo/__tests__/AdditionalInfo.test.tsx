@@ -10,6 +10,22 @@ jest.mock('@bahmni/services', () => ({
   useTranslation: jest.fn(),
 }));
 
+// Mock PersonAttributeInput component
+jest.mock('../../../common/PersonAttributeInput', () => ({
+  PersonAttributeInput: ({ label, value, onChange, error }: any) => (
+    <div>
+      <label htmlFor={label}>{label}</label>
+      <input
+        id={label}
+        aria-label={label}
+        value={value ?? ''}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      {error && <span>{error}</span>}
+    </div>
+  ),
+}));
+
 // Mock usePersonAttributeFields hook
 const mockUsePersonAttributeFields = jest.fn(() => ({
   attributeFields: [
@@ -18,12 +34,14 @@ const mockUsePersonAttributeFields = jest.fn(() => ({
       name: 'email',
       format: 'java.lang.String',
       sortWeight: 1,
+      description: null,
     },
     {
       uuid: 'cluster-uuid',
       name: 'cluster',
       format: 'java.lang.String',
       sortWeight: 2,
+      description: null,
     },
   ],
   isLoading: false,
@@ -103,12 +121,14 @@ describe('AdditionalInfo', () => {
           name: 'email',
           format: 'java.lang.String',
           sortWeight: 1,
+          description: null,
         },
         {
           uuid: 'cluster-uuid',
           name: 'cluster',
           format: 'java.lang.String',
           sortWeight: 2,
+          description: null,
         },
       ],
       isLoading: false,
@@ -477,6 +497,7 @@ describe('AdditionalInfo', () => {
             name: 'customField',
             format: 'java.lang.String',
             sortWeight: 1,
+            description: null,
           },
         ],
         isLoading: false,
@@ -502,6 +523,82 @@ describe('AdditionalInfo', () => {
       render(<AdditionalInfo />);
 
       expect(screen.getByLabelText('CUSTOM_FIELD_LABEL')).toBeInTheDocument();
+    });
+
+    it('should support boolean type fields', () => {
+      mockUsePersonAttributeFields.mockReturnValue({
+        attributeFields: [
+          {
+            uuid: 'boolean-uuid',
+            name: 'isActive',
+            format: 'java.lang.Boolean',
+            sortWeight: 1,
+            description: null,
+          },
+        ],
+        isLoading: false,
+        error: null,
+      });
+
+      mockUseRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          patientInformation: {
+            additionalPatientInformation: {
+              translationKey: 'CREATE_PATIENT_SECTION_ADDITIONAL_INFO',
+              attributes: [
+                {
+                  field: 'isActive',
+                  translationKey: 'IS_ACTIVE',
+                },
+              ],
+            },
+          },
+        },
+      } as any);
+
+      render(<AdditionalInfo />);
+
+      expect(screen.getByLabelText('IS_ACTIVE')).toBeInTheDocument();
+    });
+
+    it('should support concept type fields with answers', () => {
+      mockUsePersonAttributeFields.mockReturnValue({
+        attributeFields: [
+          {
+            uuid: 'concept-uuid',
+            name: 'bloodGroup',
+            format: 'org.openmrs.Concept',
+            sortWeight: 1,
+            description: null,
+            answers: [
+              { uuid: 'a-uuid', display: 'A+' },
+              { uuid: 'b-uuid', display: 'B+' },
+            ],
+          } as any,
+        ],
+        isLoading: false,
+        error: null,
+      });
+
+      mockUseRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          patientInformation: {
+            additionalPatientInformation: {
+              translationKey: 'CREATE_PATIENT_SECTION_ADDITIONAL_INFO',
+              attributes: [
+                {
+                  field: 'bloodGroup',
+                  translationKey: 'BLOOD_GROUP',
+                },
+              ],
+            },
+          },
+        },
+      } as any);
+
+      render(<AdditionalInfo />);
+
+      expect(screen.getByLabelText('BLOOD_GROUP')).toBeInTheDocument();
     });
   });
 });

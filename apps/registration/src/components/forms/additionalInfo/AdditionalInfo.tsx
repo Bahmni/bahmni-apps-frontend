@@ -1,9 +1,13 @@
-import { TextInput, Tile } from '@bahmni/design-system';
+import { Tile } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
-import { useCallback, useImperativeHandle, useState, useMemo } from 'react';
+import { useCallback, useImperativeHandle, useMemo, useState } from 'react';
+
 import { usePersonAttributeFields } from '../../../hooks/usePersonAttributeFields';
 import { useRegistrationConfig } from '../../../hooks/useRegistrationConfig';
 import type { AdditionalData } from '../../../models/patient';
+
+import { PersonAttributeInput } from '../../common/PersonAttributeInput';
+
 import styles from '../additionalInfo/styles/index.module.scss';
 
 export interface AdditionalInfoRef {
@@ -62,7 +66,7 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleFieldChange = useCallback(
-    (fieldName: string, value: string) => {
+    (fieldName: string, value: string | number | boolean) => {
       setFormData((prev) => ({ ...prev, [fieldName]: value }));
 
       // Clear error when user types
@@ -74,6 +78,20 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
   );
 
   const fieldValidationConfig = registrationConfig?.fieldValidation;
+
+  // Get validation config for a specific field
+  const getValidationConfig = useCallback(
+    (fieldName: string) => {
+      const validationRule = fieldValidationConfig?.[fieldName];
+      if (!validationRule) return undefined;
+
+      return {
+        pattern: validationRule.pattern,
+        errorMessage: validationRule.errorMessage,
+      };
+    },
+    [fieldValidationConfig],
+  );
 
   const validate = useCallback((): boolean => {
     const newErrors: Record<string, string> = {};
@@ -117,27 +135,34 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
       <Tile className={styles.headerTile}>
         <span className={styles.headerTitle}>{t(sectionTitle)}</span>
       </Tile>
-      <div className={styles.row}>
-        {fieldsToShow.map((field) => {
-          const fieldName = field.name;
-          const value = formData[fieldName] ?? '';
-          const error = errors[fieldName] || '';
-          const translationKey = fieldTranslationMap[fieldName] || fieldName;
-          const label = t(translationKey);
-          return (
-            <div key={field.uuid} className={styles.emailField}>
-              <TextInput
-                id={field.uuid}
-                labelText={label}
-                placeholder={label}
-                value={value as string}
-                invalid={!!error}
-                invalidText={error}
-                onChange={(e) => handleFieldChange(fieldName, e.target.value)}
-              />
-            </div>
-          );
-        })}
+      <div className={styles.fieldsContainer}>
+        <div className={styles.row}>
+          {fieldsToShow.map((field) => {
+            const fieldName = field.name;
+            const value = formData[fieldName] ?? '';
+            const error = errors[fieldName] || '';
+            const translationKey = fieldTranslationMap[fieldName] || fieldName;
+            const label = t(translationKey);
+
+            return (
+              <div key={field.uuid} className={styles.emailField}>
+                <PersonAttributeInput
+                  uuid={field.uuid}
+                  label={label}
+                  format={field.format}
+                  value={value}
+                  answers={field.answers}
+                  error={error}
+                  placeholder={label}
+                  validation={getValidationConfig(fieldName)}
+                  onChange={(newValue) =>
+                    handleFieldChange(fieldName, newValue)
+                  }
+                />
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
