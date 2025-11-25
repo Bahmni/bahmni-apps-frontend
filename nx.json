@@ -81,6 +81,9 @@
     }
   ],
   "targetDefaults": {
+    "build": {
+      "dependsOn": ["^build"]
+    },
     "test": {
       "dependsOn": ["^build"]
     }
@@ -101,6 +104,16 @@
         "linter": "eslint",
         "unitTestRunner": "jest"
       }
+    }
+  }, 
+  "release": {
+    "projects": ["packages/*", "apps/*"],
+    "projectsRelationship": "independent",
+    "git": {
+      "commitMessage": "chore(release): {projectName} {version}"
+    },
+    "version": {
+      "updateDependents": "auto"
     }
   }
 }
