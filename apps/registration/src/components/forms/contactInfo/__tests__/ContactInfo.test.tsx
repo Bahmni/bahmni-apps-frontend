@@ -56,12 +56,10 @@ const mockUseRegistrationConfig = jest.fn(() => ({
       phoneNumber: {
         pattern: '^\\+?[0-9]{6,15}$',
         errorMessage: 'Phone number should be 6 to 15 digits',
-        required: false,
       },
       alternatePhoneNumber: {
         pattern: '^\\+?[0-9]{6,15}$',
         errorMessage: 'Alternate phone number should be 6 to 15 digits',
-        required: false,
       },
     },
   },
