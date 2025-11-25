@@ -1,0 +1,62 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+
+// Form Container
+
+.formSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formSectionTitle {
+  @include type-style("body-compact-02");
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.identifierField {
+  width: 100%;
+}
+
+.identifierTable {
+  width: 100%;
+
+  // Hide the table header
+  :global(thead) {
+    display: none;
+  }
+
+  // Remove table borders
+  :global(table) {
+    border: none;
+  }
+
+  :global(td) {
+    border: none;
+    border-top: none;
+    border-bottom: none;
+  }
+
+  :global(tr) {
+    border: none;
+    border-top: none;
+    border-bottom: none;
+  }
+
+  // Set first column width to fit content (label column)
+  :global(td:first-child) {
+    width: 1%;
+    white-space: nowrap;
+  }
+
+  // Second column takes remaining space (input column)
+  :global(td:last-child) {
+    width: 99%;
+  }
+}

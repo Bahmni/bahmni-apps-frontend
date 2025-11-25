@@ -16,12 +16,16 @@ import {
   CreatePatientResponse,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   AdditionalInfo,
   AdditionalInfoRef,
 } from '../../components/forms/additionalInfo/AdditionalInfo';
+import {
+  AdditionalIdentifiers,
+  AdditionalIdentifiersRef,
+} from '../../components/forms/additionalIdentifiers/AdditionalIdentifiers';
 import {
   AddressInfo,
   AddressInfoRef,
@@ -34,6 +38,7 @@ import { Profile, ProfileRef } from '../../components/forms/profile/Profile';
 import { BAHMNI_REGISTRATION_SEARCH } from '../../constants/app';
 
 import { useCreatePatient } from '../../hooks/useCreatePatient';
+import { useIdentifierTypes } from '../../hooks/useIdentifierTypes';
 import { useUpdatePatient } from '../../hooks/useUpdatePatient';
 import { validateAllSections, collectFormData } from './patientFormService';
 import styles from './styles/index.module.scss';
@@ -55,10 +60,19 @@ const CreatePatient = () => {
     null,
   );
 
+  // Check if additional identifiers are available
+  const { data: identifierTypes } = useIdentifierTypes();
+  const hasAdditionalIdentifiers = useMemo(() => {
+    if (!identifierTypes) return false;
+    return identifierTypes.some((type) => type.primary === false);
+  }, [identifierTypes]);
+
   const patientProfileRef = useRef<ProfileRef>(null);
   const patientAddressRef = useRef<AddressInfoRef>(null);
   const patientContactRef = useRef<ContactInfoRef>(null);
   const patientAdditionalRef = useRef<AdditionalInfoRef>(null);
+  const patientAdditionalIdentifiersRef =
+    useRef<AdditionalIdentifiersRef>(null);
 
   // Fetch patient data if in edit mode
   // TODO: Transform FHIR Patient data to form data and populate fields
@@ -113,6 +127,7 @@ const CreatePatient = () => {
       addressRef: patientAddressRef,
       contactRef: patientContactRef,
       additionalRef: patientAdditionalRef,
+      additionalIdentifiersRef: patientAdditionalIdentifiersRef,
     });
 
     if (!isValid) {
@@ -125,6 +140,7 @@ const CreatePatient = () => {
       addressRef: patientAddressRef,
       contactRef: patientContactRef,
       additionalRef: patientAdditionalRef,
+      additionalIdentifiersRef: patientAdditionalIdentifiersRef,
     });
 
     if (!formData) {
@@ -214,6 +230,20 @@ const CreatePatient = () => {
             <ContactInfo ref={patientContactRef} />
             <AdditionalInfo ref={patientAdditionalRef} />
           </div>
+
+          {hasAdditionalIdentifiers && (
+            <>
+              <Tile className={styles.patientDetailsHeader}>
+                <span className={styles.sectionTitle}>
+                  {t('ADDITIONAL_IDENTIFIERS_HEADER_TITLE')}
+                </span>
+              </Tile>
+
+              <div className={styles.formContainer}>
+                <AdditionalIdentifiers ref={patientAdditionalIdentifiersRef} />
+              </div>
+            </>
+          )}
 
           {/* Footer Actions */}
           <div className={styles.formActions}>
