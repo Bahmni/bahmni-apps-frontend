@@ -52,9 +52,9 @@ export const PersonAttributeInput = ({
         <div className={styles.checkboxField}>
           <Checkbox
             id={uuid}
-            labelText={label}
             checked={value === true || value === 'true'}
             onChange={(evt, { checked }) => onChange(checked)}
+            labelText={''}
           />
         </div>
       </CheckboxGroup>
