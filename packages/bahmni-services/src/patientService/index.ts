@@ -38,7 +38,19 @@ export {
   type OrderedAddressHierarchyLevels,
   type PersonAttributeType,
   type PersonAttributeTypesResponse,
+  type ConceptAnswer,
+  type PersonAttributeConcept,
 } from './models';
+export {
+  AttributeFormat,
+  AttributeInputType,
+  getInputTypeForFormat,
+  isBooleanFormat,
+  isConceptFormat,
+  isNumberFormat,
+  isDateFormat,
+  isTextFormat,
+} from './attributeFormatMapper';
 export {
   MAX_PATIENT_AGE_YEARS,
   MAX_NAME_LENGTH,

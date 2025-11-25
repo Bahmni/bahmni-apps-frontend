@@ -136,4 +136,4 @@ export const VISIT_TYPES_URL = () =>
 
 export const PERSON_ATTRIBUTE_TYPES_URL =
   OPENMRS_REST_V1 +
-  '/personattributetype?v=custom:(uuid,name,sortWeight,description,format,concept)';
+  '/personattributetype?v=custom:(uuid,name,sortWeight,description,format,concept:(uuid,display,answers:(uuid,name)))';
