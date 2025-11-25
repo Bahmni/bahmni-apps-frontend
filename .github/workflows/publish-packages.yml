@@ -2,7 +2,7 @@ name: Publish Packages
 
 on:
   push:
-    branches: [main]
+    branches: [workflows]
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
       - 'services-v[0-9]+.[0-9]+.[0-9]+'
@@ -142,7 +142,7 @@ jobs:
 
           # Update package version and publish
           npm version "$DEV_VERSION" --no-git-tag-version
-          npm publish --access public --tag dev
+          #npm publish --access public --tag dev
           
           # Output information
           echo "::notice title=Package Published::Published ${{ matrix.name }}@$DEV_VERSION"
@@ -202,10 +202,10 @@ jobs:
           
           if [ "$PROJECT" = "all" ]; then
             echo "Running nx release for all projects..."
-            npx nx release
+            npx nx release --dry-run
           else
             echo "Running nx release for $PROJECT..."
-            npx nx release --projects=$PROJECT
+            npx nx release --projects=$PROJECT --dry-run
           fi
           
           echo "::notice title=Release Status::Nx release completed successfully (dry-run mode)"
