@@ -56,30 +56,33 @@ jobs:
       - name: Detect affected packages and apps for publishing
         id: set-matrix
         run: |
-          # Get all affected projects (packages and apps)
+          # Get all affected projects including their dependents (Nx handles dependency graph)
           AFFECTED_RAW=$(npx nx show projects --affected --base=${{ github.event.before }} 2>/dev/null || echo "")
           
           echo "Affected projects: $AFFECTED_RAW"
           
-          # Define our publishable packages and apps with their paths
-          declare -A PUBLISHABLE_PROJECTS=(
-            ["@bahmni/services"]="packages/bahmni-services"
-            ["@bahmni/design-system"]="packages/bahmni-design-system"
-            ["@bahmni/widgets"]="packages/bahmni-widgets"
-            ["@bahmni/clinical-app"]="apps/clinical"
-            ["@bahmni/registration-app"]="apps/registration"
-          )
-          
-          # Build matrix JSON by checking which publishable projects are affected
+          # Build matrix JSON directly from affected projects, excluding distro
           MATRIX_JSON="[]"
           
-          # Process in dependency order
-          for PROJECT_NAME in "@bahmni/services" "@bahmni/design-system" "@bahmni/widgets" "@bahmni/clinical-app" "@bahmni/registration-app"; do
-            if echo "$AFFECTED_RAW" | grep -q "$PROJECT_NAME"; then
-              PROJECT_PATH="${PUBLISHABLE_PROJECTS[$PROJECT_NAME]}"
-              echo "Adding $PROJECT_NAME to publish matrix"
-              MATRIX_JSON=$(echo "$MATRIX_JSON" | jq --arg name "$PROJECT_NAME" --arg path "$PROJECT_PATH" '. + [{"name": $name, "path": $path}]')
+          for PROJECT in $AFFECTED_RAW; do
+            # Skip distro (not publishable)
+            if [ "$PROJECT" = "@bahmni/distro" ]; then
+              continue
             fi
+            
+            # Determine the project path
+            if [[ $PROJECT == *"-app" ]]; then
+              # It's an app (e.g., @bahmni/clinical-app -> apps/clinical)
+              APP_NAME=$(echo "$PROJECT" | sed 's/@bahmni\///' | sed 's/-app//')
+              PROJECT_PATH="apps/$APP_NAME"
+            else
+              # It's a package (e.g., @bahmni/services -> packages/bahmni-services)
+              PKG_NAME=$(echo "$PROJECT" | sed 's/@bahmni\///')
+              PROJECT_PATH="packages/bahmni-$PKG_NAME"
+            fi
+            
+            echo "Adding $PROJECT to publish matrix (path: $PROJECT_PATH)"
+            MATRIX_JSON=$(echo "$MATRIX_JSON" | jq --arg name "$PROJECT" --arg path "$PROJECT_PATH" '. + [{"name": $name, "path": $path}]')
           done
           
           # For workflow_dispatch, include all packages and apps if none detected
