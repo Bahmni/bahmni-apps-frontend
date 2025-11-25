@@ -202,10 +202,10 @@ jobs:
           
           if [ "$PROJECT" = "all" ]; then
             echo "Running nx release for all projects..."
-            npx nx release 
+            npx nx release --dry-run
           else
             echo "Running nx release for $PROJECT..."
-            npx nx release --projects=$PROJECT 
+            npx nx release --projects=$PROJECT --dry-run
           fi
           
           echo "::notice title=Release Status::Nx release completed successfully (dry-run mode)"
