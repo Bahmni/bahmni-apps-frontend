@@ -37,7 +37,9 @@ export interface ContactData {
 
 /**
  * Patient Additional Information Data
+ * Supports dynamic fields based on configuration
  */
 export interface AdditionalData {
-  email: string;
+  email?: string;
+  [key: string]: string | number | undefined;
 }

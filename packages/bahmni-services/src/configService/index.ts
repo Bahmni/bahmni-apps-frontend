@@ -14,5 +14,6 @@ export {
   type RegistrationConfig,
   type PatientSearchConfig,
   type PatientSearchField,
+  type PatientInformationConfig,
   type SearchActionConfig,
 } from './models';

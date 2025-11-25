@@ -36,7 +36,54 @@ export interface PatientSearchConfig {
   appointment: AppointmentSearchField[];
 }
 
+export interface PatientInformationConfig {
+  defaultIdentifierPrefix?: string;
+  autoCompleteFields?: string[];
+  showMiddleName?: boolean;
+  showLastName?: boolean;
+  isFirstNameMandatory?: boolean;
+  isMiddleNameMandatory?: boolean;
+  isLastNameMandatory?: boolean;
+  isGenderMandatory?: boolean;
+  isDateOfBirthMandatory?: boolean;
+  patientNameDisplayOrder?: string[];
+  showBirthTime?: boolean;
+  showCasteSameAsLastNameCheckbox?: boolean;
+  showDOBEstimated?: boolean;
+  showEnterManually?: boolean;
+  additionalPatientInformation?: {
+    translationKey?: string;
+    expectedFields?: Array<{
+      field: string;
+      translationKey: string;
+    }>;
+  };
+  hiddenAttributes?: string[];
+  defaults?: Record<string, unknown>;
+  addressHierarchy?: {
+    showAddressFieldsTopDown?: boolean;
+    strictAutocompleteFromLevel?: string;
+    requiredFields?: string[];
+    expectedFields?: Array<{
+      addressField: string;
+      translationKey: string;
+    }>;
+  };
+}
+
+export interface FieldValidationRule {
+  pattern: string;
+  errorMessage: string;
+  required?: boolean;
+}
+
+export interface FieldValidationConfig {
+  [fieldName: string]: FieldValidationRule;
+}
+
 export interface RegistrationConfig {
   patientSearch: PatientSearchConfig;
   defaultVisitType?: string;
+  patientInformation?: PatientInformationConfig;
+  fieldValidation?: FieldValidationConfig;
 }
