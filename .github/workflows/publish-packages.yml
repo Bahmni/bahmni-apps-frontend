@@ -3,16 +3,25 @@ name: Publish Packages
 on:
   push:
     branches: [workflows]
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'services-v[0-9]+.[0-9]+.[0-9]+'
+      - 'widgets-v[0-9]+.[0-9]+.[0-9]+'
+      - 'design-system-v[0-9]+.[0-9]+.[0-9]+'
+      - 'clinical-app-v[0-9]+.[0-9]+.[0-9]+'
+      - 'registration-app-v[0-9]+.[0-9]+.[0-9]+'
     paths:
       - 'packages/**'
+      - 'apps/**'
   workflow_dispatch:
 
 env:
   NODE_VERSION: '22'
 
 jobs:
-  # Detect which packages are affected by the changes
+  # Detect which packages and apps are affected by the changes (dev releases only)
   detect-affected:
+    if: github.ref_type == 'branch'
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
@@ -85,7 +94,7 @@ jobs:
           echo "Publish Matrix: $MATRIX"
           echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
 
-  # Publish packages using matrix strategy
+  # Publish packages and apps using matrix strategy
   publish-packages:
     needs: detect-affected
     if: needs.detect-affected.outputs.matrix != '{"include":[]}'
@@ -93,7 +102,7 @@ jobs:
     environment: npm-publish
     strategy:
       matrix: ${{ fromJson(needs.detect-affected.outputs.matrix) }}
-      max-parallel: 1  # Publish one package at a time to maintain dependency order
+      max-parallel: 1  # Publish one package or app at a time to maintain dependency order
       fail-fast: false
     env:
       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -136,3 +145,64 @@ jobs:
           echo "::notice title=Package Published::Published ${{ matrix.name }}@$DEV_VERSION"
           echo "::notice title=Install Command::npm install ${{ matrix.name }}@dev"
           echo "::notice title=Build Info::Build #${BUILD_NUM}"
+
+  # Release stable versions using nx release (triggered by tags)
+  release-stable:
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Parse tag and determine project
+        id: parse-tag
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          echo "Tag: $TAG"
+          
+          # Determine which project to release based on tag name
+          if [[ $TAG == services-v* ]]; then
+            PROJECT="@bahmni/services"
+          elif [[ $TAG == widgets-v* ]]; then
+            PROJECT="@bahmni/widgets"
+          elif [[ $TAG == design-system-v* ]]; then
+            PROJECT="@bahmni/design-system"
+          elif [[ $TAG == clinical-v* ]]; then
+            PROJECT="@bahmni/clinical-app"
+          elif [[ $TAG == registration-v* ]]; then
+            PROJECT="@bahmni/registration-app"
+          elif [[ $TAG == v* ]]; then
+            # Generic version tag - release all projects
+            PROJECT="all"
+          else
+            echo "Unknown tag pattern: $TAG"
+            exit 1
+          fi
+          
+          echo "project=$PROJECT" >> $GITHUB_OUTPUT
+          echo "::notice title=Release Target::Releasing project(s): $PROJECT"
+
+      - name: Run nx release (dry-run)
+        run: |
+          PROJECT="${{ steps.parse-tag.outputs.project }}"
+          
+          if [ "$PROJECT" = "all" ]; then
+            echo "Running nx release for all projects..."
+            npx nx release --dry-run
+          else
+            echo "Running nx release for $PROJECT..."
+            npx nx release --projects=$PROJECT --dry-run
+          fi
+          
+          echo "::notice title=Release Status::Nx release completed successfully (dry-run mode)"
