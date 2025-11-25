@@ -25,25 +25,24 @@
   gap: 1rem;
  }
 
- .phoneNumberField{
-      width: 288px;
+ .phoneNumberField {
+  flex: 0 0 calc(25% - $spacing-06 / 2);
   padding-bottom: $spacing-03 + $spacing-01;
       
-   > * {
-        flex: 1 1 0;
-        min-width: 0;
-      }
+  > * {
+    flex: 1 1 0;
+    min-width: 0;
+  }
 
   > * {
-        position: relative;
-        
-        div[class*="cds--form-requirement"] {
-          position: absolute;
-          top: 100%;
-          left: 0;
-          margin-top: $spacing-01;
-          z-index: 1;
-        }
-      }
+    position: relative;
+    
+    div[class*="cds--form-requirement"] {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: $spacing-01;
+      z-index: 1;
     }
-
+  }
+}

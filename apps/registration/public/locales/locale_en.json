@@ -81,6 +81,8 @@
   "LOADING_PATIENT_DETAILS": "Navigating to patient details...",
   "PHONE_NUMBER": "Phone Number",
   "PHONE_NUMBER_VALIDATION_ERROR": "Please enter only numbers.",
+
+  "REGISTRATION_INVALID_NUMBER_MAX_LENGTH": "Number cannot exceed 15 characters",
   "REGISTRATION_PATIENT_SEARCH_BREADCRUMB_HOME": "Home",
   "REGISTRATION_PATIENT_SEARCH_BUTTON_TITLE": "Search",
   "REGISTRATION_PATIENT_SEARCH_CUSTOM_ATTRIBUTE_EMPTY_MESSAGE": "No matching search results for {{searchTerm}}. Try adjusting your search parameters.",

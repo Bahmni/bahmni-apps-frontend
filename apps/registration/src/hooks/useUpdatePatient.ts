@@ -9,13 +9,12 @@ import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
-  PHONE_NUMBER_UUID,
-  ALTERNATE_PHONE_NUMBER_UUID,
-  EMAIL_UUID,
+  PersonAttributeType,
 } from '@bahmni/services';
 import { useMutation } from '@tanstack/react-query';
 import { convertTimeToISODateTime } from '../components/forms/profile/dateAgeUtils';
 import { BasicInfoData, ContactData, AdditionalData } from '../models/patient';
+import { usePersonAttributes } from './usePersonAttributes';
 
 interface UpdatePatientFormData {
   patientUuid: string;
@@ -29,9 +28,11 @@ interface UpdatePatientFormData {
 }
 
 export const useUpdatePatient = () => {
+  const { personAttributes } = usePersonAttributes();
+
   const mutation = useMutation({
     mutationFn: (formData: UpdatePatientFormData) => {
-      const payload = transformFormDataToPayload(formData);
+      const payload = transformFormDataToPayload(formData, personAttributes);
       return updatePatient(formData.patientUuid, payload);
     },
     onSuccess: (response) => {
@@ -60,6 +61,7 @@ export const useUpdatePatient = () => {
 
 function transformFormDataToPayload(
   formData: UpdatePatientFormData,
+  personAttributes: PersonAttributeType[],
 ): CreatePatientRequest {
   const { profile, address, contact, additional } = formData;
   const patientName: PatientName = {
@@ -70,28 +72,33 @@ function transformFormDataToPayload(
     preferred: false,
   };
 
+  // Create a map of attribute name to UUID for quick lookup
+  const attributeMap = new Map<string, string>();
+  personAttributes.forEach((attr) => {
+    attributeMap.set(attr.name, attr.uuid);
+  });
+
   const attributes: PatientAttribute[] = [];
 
-  if (contact.phoneNumber) {
-    attributes.push({
-      attributeType: { uuid: PHONE_NUMBER_UUID },
-      value: contact.phoneNumber,
-    });
-  }
+  // Dynamically add all contact attributes
+  Object.entries(contact).forEach(([key, value]) => {
+    if (value && attributeMap.has(key)) {
+      attributes.push({
+        attributeType: { uuid: attributeMap.get(key)! },
+        value: String(value),
+      });
+    }
+  });
 
-  if (contact.altPhoneNumber) {
-    attributes.push({
-      attributeType: { uuid: ALTERNATE_PHONE_NUMBER_UUID },
-      value: contact.altPhoneNumber,
-    });
-  }
-
-  if (additional.email) {
-    attributes.push({
-      attributeType: { uuid: EMAIL_UUID },
-      value: additional.email,
-    });
-  }
+  // Dynamically add all additional attributes
+  Object.entries(additional).forEach(([key, value]) => {
+    if (value && attributeMap.has(key)) {
+      attributes.push({
+        attributeType: { uuid: attributeMap.get(key)! },
+        value: String(value),
+      });
+    }
+  });
 
   const payload: CreatePatientRequest = {
     patient: {

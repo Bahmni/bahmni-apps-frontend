@@ -81,6 +81,7 @@
   "LOADING_PATIENT_DETAILS": "Navegando a los detalles del paciente...",
   "PHONE_NUMBER": "Número de teléfono",
   "PHONE_NUMBER_VALIDATION_ERROR": "Por favor, introduzca sólo números.",
+  "REGISTRATION_INVALID_NUMBER_MAX_LENGTH": "El número no puede exceder los 15 caracteres",
   "REGISTRATION_PATIENT_SEARCH_BREADCRUMB_HOME": "Hogar",
   "REGISTRATION_PATIENT_SEARCH_BUTTON_TITLE": "Buscar",
   "REGISTRATION_PATIENT_SEARCH_CUSTOM_ATTRIBUTE_EMPTY_MESSAGE": "No hay resultados de búsqueda para {{searchTerm}}. Intenta ajustar tus parámetros de búsqueda.",

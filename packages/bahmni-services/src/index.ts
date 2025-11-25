@@ -48,9 +48,7 @@ export {
   isTextFormat,
   MAX_PATIENT_AGE_YEARS,
   MAX_NAME_LENGTH,
-  PHONE_NUMBER_UUID,
-  EMAIL_UUID,
-  ALTERNATE_PHONE_NUMBER_UUID,
+  MAX_PHONE_NUMBER_LENGTH,
 } from './patientService';
 export {
   searchAppointmentsByAttribute,

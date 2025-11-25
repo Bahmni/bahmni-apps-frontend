@@ -6,7 +6,12 @@ import {
   Dropdown,
   TextInput,
 } from '@bahmni/design-system';
-import { AttributeInputType, getInputTypeForFormat } from '@bahmni/services';
+import {
+  AttributeInputType,
+  getInputTypeForFormat,
+  useTranslation,
+  MAX_PHONE_NUMBER_LENGTH,
+} from '@bahmni/services';
 import { ChangeEvent } from 'react';
 import { AttributeAnswer } from '../../hooks/usePersonAttributeFields';
 import styles from '../common/styles/index.module.scss';
@@ -43,6 +48,7 @@ export const PersonAttributeInput = ({
   validation,
   onChange,
 }: PersonAttributeInputProps) => {
+  const { t } = useTranslation();
   const inputType = getInputTypeForFormat(format);
 
   // Checkbox for boolean types
@@ -139,6 +145,14 @@ export const PersonAttributeInput = ({
       }
     };
 
+    // Determine if there's a max length error
+    const hasMaxLengthError = numericValue.length > MAX_PHONE_NUMBER_LENGTH;
+    const maxLengthError = hasMaxLengthError
+      ? t('REGISTRATION_INVALID_NUMBER_MAX_LENGTH')
+      : '';
+
+    const displayError = maxLengthError || error;
+
     return (
       <TextInput
         id={uuid}
@@ -147,11 +161,11 @@ export const PersonAttributeInput = ({
         placeholder={placeholder ?? label}
         min={0}
         value={numericValue}
-        invalid={!!error}
-        invalidText={error}
-        onChange={(e: ChangeEvent<HTMLInputElement>) =>
-          onChange(e.target.value)
-        }
+        invalid={!!displayError}
+        invalidText={displayError}
+        onChange={(e: ChangeEvent<HTMLInputElement>) => {
+          onChange(e.target.value);
+        }}
         onKeyDown={handleNumberKeyDown}
         onPaste={handleNumberPaste}
       />

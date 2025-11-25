@@ -145,7 +145,7 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
             const label = t(translationKey);
 
             return (
-              <div key={field.uuid} className={styles.emailField}>
+              <div key={field.uuid} className={styles.attributeField}>
                 <PersonAttributeInput
                   uuid={field.uuid}
                   label={label}

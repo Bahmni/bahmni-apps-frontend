@@ -27,9 +27,9 @@
 }
    
   
-.emailField {
+.attributeField {
   flex: 0 0 calc(50% - $spacing-06 / 2);
-
+  padding-bottom: $spacing-03 + $spacing-01;
       
   > * {
     flex: 1 1 0;
@@ -47,7 +47,7 @@
       z-index: 1;
     }
   }
-} 
+}
 
 .row {
   width: 100%;
@@ -63,5 +63,4 @@
   display: flex;
   flex-direction: column;
   gap: $spacing-06;
-  padding-bottom: $spacing-03 + $spacing-01;
 }
