@@ -28,7 +28,9 @@ describe('usePersonAttributes', () => {
       try {
         renderHook(() => usePersonAttributes());
       } catch (error) {
+        // eslint-disable-next-line jest/no-conditional-expect
         expect(error).toBeInstanceOf(Error);
+        // eslint-disable-next-line jest/no-conditional-expect
         expect((error as Error).message).toBe(
           'usePersonAttributes must be used within a PersonAttributesProvider',
         );
