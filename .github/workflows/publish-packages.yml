@@ -65,8 +65,8 @@ jobs:
           MATRIX_JSON="[]"
           
           for PROJECT in $AFFECTED_RAW; do
-            # Skip distro (not publishable)
-            if [ "$PROJECT" = "@bahmni/distro" ]; then
+            # Skip distro and sample-app-module (not publishable)
+            if [ "$PROJECT" = "@bahmni/distro" ] || [ "$PROJECT" = "@bahmni/sample-app-module" ]; then
               continue
             fi
             
