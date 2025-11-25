@@ -257,12 +257,10 @@ export const Profile = ({
       birthTime: '',
     };
 
-    // Validate firstName - check if required from config or default to true
+    // Validate firstName - check if required from patientInformation config
     const isFirstNameMandatory =
-      fieldValidationConfig?.firstName?.required ?? true;
-    const firstNameRequired =
-      fieldValidationConfig?.firstName?.required ?? isFirstNameMandatory;
-    if (firstNameRequired && !formData.firstName.trim()) {
+      patientInfoConfig?.isFirstNameMandatory ?? true;
+    if (isFirstNameMandatory && !formData.firstName.trim()) {
       newValidationErrors.firstName = t(
         'CREATE_PATIENT_VALIDATION_FIRST_NAME_REQUIRED',
       );
@@ -274,9 +272,9 @@ export const Profile = ({
       isValid = false;
     }
 
-    const middleNameRequired =
-      fieldValidationConfig?.middleName?.required ?? false;
-    if (middleNameRequired && !formData.middleName.trim()) {
+    const isMiddleNameMandatory =
+      patientInfoConfig?.isMiddleNameMandatory ?? false;
+    if (isMiddleNameMandatory && !formData.middleName.trim()) {
       newValidationErrors.middleName = t(
         'CREATE_PATIENT_VALIDATION_MIDDLE_NAME_REQUIRED',
       );
@@ -287,8 +285,8 @@ export const Profile = ({
       );
       isValid = false;
     }
-    const lastNameRequired = fieldValidationConfig?.lastName?.required ?? true;
-    if (lastNameRequired && !formData.lastName.trim()) {
+    const isLastNameMandatory = patientInfoConfig?.isLastNameMandatory ?? true;
+    if (isLastNameMandatory && !formData.lastName.trim()) {
       newValidationErrors.lastName = t(
         'CREATE_PATIENT_VALIDATION_LAST_NAME_REQUIRED',
       );
@@ -451,7 +449,7 @@ export const Profile = ({
               id="first-name"
               labelText={getRequiredLabel(
                 'CREATE_PATIENT_FIRST_NAME',
-                fieldValidationConfig?.firstName?.required ?? true,
+                patientInfoConfig?.isFirstNameMandatory ?? true,
               )}
               placeholder={t('CREATE_PATIENT_FIRST_NAME')}
               value={formData.firstName}
@@ -466,7 +464,7 @@ export const Profile = ({
                 id="middle-name"
                 labelText={getRequiredLabel(
                   'CREATE_PATIENT_MIDDLE_NAME',
-                  fieldValidationConfig?.middleName?.required ?? false,
+                  patientInfoConfig?.isMiddleNameMandatory ?? false,
                 )}
                 placeholder={t('CREATE_PATIENT_MIDDLE_NAME_PLACEHOLDER')}
                 value={formData.middleName}
@@ -486,7 +484,7 @@ export const Profile = ({
                 id="last-name"
                 labelText={getRequiredLabel(
                   'CREATE_PATIENT_LAST_NAME',
-                  fieldValidationConfig?.lastName?.required ?? true,
+                  patientInfoConfig?.isLastNameMandatory ?? true,
                 )}
                 placeholder={t('CREATE_PATIENT_LAST_NAME')}
                 value={formData.lastName}

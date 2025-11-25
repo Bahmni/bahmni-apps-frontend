@@ -61,6 +61,8 @@ const mockUseRegistrationConfig = jest.fn(() => ({
     patientInformation: {
       showMiddleName: true,
       showLastName: true,
+      isFirstNameMandatory: true,
+      isMiddleNameMandatory: false,
       isLastNameMandatory: true,
       showBirthTime: true,
       showEnterManually: true,
@@ -69,12 +71,12 @@ const mockUseRegistrationConfig = jest.fn(() => ({
     },
     fieldValidation: {
       firstName: {
-        required: true,
         pattern: '^[a-zA-Z\\s]*$',
+        errorMessage: 'First name should contain only alphabets without space',
       },
       lastName: {
-        required: true,
         pattern: '^[a-zA-Z\\s]*$',
+        errorMessage: 'Last name should contain only alphabets without space',
       },
     },
   },
