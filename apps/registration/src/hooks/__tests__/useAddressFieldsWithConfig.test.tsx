@@ -36,6 +36,11 @@ describe('useAddressFieldsWithConfig', () => {
     jest.clearAllMocks();
   });
 
+  afterEach(async () => {
+    queryClient.clear();
+    await queryClient.cancelQueries();
+  });
+
   const wrapper = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );

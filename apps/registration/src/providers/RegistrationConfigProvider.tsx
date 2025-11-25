@@ -4,13 +4,8 @@ import {
   RegistrationConfig,
   getFormattedError,
 } from '@bahmni/services';
-import React, {
-  ReactNode,
-  useState,
-  useMemo,
-  useEffect,
-  useCallback,
-} from 'react';
+import { useQuery } from '@tanstack/react-query';
+import React, { ReactNode, useState, useMemo, useEffect } from 'react';
 import { RegistrationConfigContext } from '../contexts/RegistrationConfigContext';
 
 interface RegistrationConfigProviderProps {
@@ -23,35 +18,48 @@ export const RegistrationConfigProvider: React.FC<
 > = ({ children, initialConfig }) => {
   const [registrationConfig, setRegistrationConfig] =
     useState<RegistrationConfig | null>(initialConfig ?? null);
-  const [isLoading, setIsLoading] = useState(!initialConfig);
-  const [error, setError] = useState<Error | null>(null);
 
-  const fetchConfig = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const config: RegistrationConfig | null = await getRegistrationConfig();
-      setRegistrationConfig(config);
-    } catch (error) {
-      const { title, message } = getFormattedError(error);
-      const errorObj = new Error(message);
-      setError(errorObj);
-      notificationService.showError(title, message);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const {
+    data: queryData,
+    isLoading: queryIsLoading,
+    error: queryError,
+    refetch: queryRefetch,
+  } = useQuery({
+    queryKey: ['registrationConfig'],
+    queryFn: getRegistrationConfig,
+    enabled: !initialConfig,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 2,
+  });
 
-  const refetch = useCallback(async () => {
-    await fetchConfig();
-  }, [fetchConfig]);
-
+  // Update registrationConfig when query data changes
   useEffect(() => {
-    // Only fetch if no initial config provided
-    if (!initialConfig) {
-      fetchConfig();
+    if (queryData !== undefined && !initialConfig) {
+      setRegistrationConfig(queryData);
     }
-  }, [fetchConfig, initialConfig]);
+  }, [queryData, initialConfig]);
+
+  // Show error notifications
+  useEffect(() => {
+    if (queryError) {
+      const { title, message } = getFormattedError(queryError);
+      notificationService.showError(title, message);
+    }
+  }, [queryError]);
+
+  // Derive loading and error states
+  const isLoading = initialConfig ? false : queryIsLoading;
+  const error = queryError ? new Error(String(queryError)) : null;
+
+  // Maintain compatibility with setIsLoading and setError for context interface
+  const setIsLoading = () => {};
+  const setError = () => {};
+
+  // Refetch wrapper to maintain async signature
+  const refetch = async () => {
+    await queryRefetch();
+  };
 
   const value = useMemo(
     () => ({

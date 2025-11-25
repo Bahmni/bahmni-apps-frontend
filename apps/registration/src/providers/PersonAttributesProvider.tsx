@@ -4,13 +4,8 @@ import {
   notificationService,
   PersonAttributeType,
 } from '@bahmni/services';
-import React, {
-  ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { useQuery } from '@tanstack/react-query';
+import React, { ReactNode, useEffect, useMemo, useState } from 'react';
 import { PersonAttributesContext } from '../contexts/PersonAttributesContext';
 
 interface PersonAttributesProviderProps {
@@ -24,35 +19,49 @@ export const PersonAttributesProvider: React.FC<
   const [personAttributes, setPersonAttributes] = useState<
     PersonAttributeType[]
   >(initialAttributes ?? []);
-  const [isLoading, setIsLoading] = useState(!initialAttributes);
-  const [error, setError] = useState<Error | null>(null);
 
-  const fetchAttributes = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await getPersonAttributeTypes(); //TODO Use TanStack Query
-      setPersonAttributes(response.results ?? []);
-    } catch (error) {
-      const { title, message } = getFormattedError(error);
-      const errorObj = new Error(message);
-      setError(errorObj);
-      notificationService.showError(title, message);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const {
+    data: queryData,
+    isLoading: queryIsLoading,
+    error: queryError,
+    refetch: queryRefetch,
+  } = useQuery({
+    queryKey: ['personAttributeTypes'],
+    queryFn: async () => {
+      const response = await getPersonAttributeTypes();
+      return response.results ?? [];
+    },
+    enabled: !initialAttributes,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 2,
+  });
 
-  const refetch = useCallback(async () => {
-    await fetchAttributes();
-  }, [fetchAttributes]);
-
+  // Update personAttributes when query data changes
   useEffect(() => {
-    // Only fetch if no initial attributes provided
-    if (!initialAttributes) {
-      fetchAttributes();
+    if (queryData && !initialAttributes) {
+      setPersonAttributes(queryData);
     }
-  }, [fetchAttributes, initialAttributes]);
+  }, [queryData, initialAttributes]);
+
+  // Show error notifications
+  useEffect(() => {
+    if (queryError) {
+      const { title, message } = getFormattedError(queryError);
+      notificationService.showError(title, message);
+    }
+  }, [queryError]);
+
+  const isLoading = initialAttributes ? false : queryIsLoading;
+  const error = queryError ? new Error(String(queryError)) : null;
+
+  const setIsLoading = () => {};
+  const setError = () => {};
+
+  // Refetch wrapper to maintain async signature
+  const refetch = async () => {
+    await queryRefetch();
+  };
 
   const value = useMemo(
     () => ({
