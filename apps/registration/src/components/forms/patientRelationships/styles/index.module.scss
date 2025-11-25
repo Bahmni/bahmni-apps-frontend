@@ -1,22 +1,24 @@
+@use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
 
 .relationshipSection {
   margin: 0 auto;
-  width: calc(100% - 176px);
-  max-width: 1240px;
-  background: #fff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  margin-top: $spacing-08;
+  width: calc(100% - ($spacing-13 + $spacing-05));
+  max-width: $spacing-13 * 9 + $spacing-05 + $spacing-02;
+  background: var(--cds-background);
+  box-shadow: 0 $spacing-01 $spacing-03 rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
-  margin-top: 40px;
   overflow: visible;
 }
 
 .headerTile {
-  height: 54px;
+  height: $spacing-08 + $spacing-05;
   display: flex;
   align-items: center;
-  padding: 16px;
+  padding: $spacing-05;
 }
 
 .headerTitle {
@@ -35,15 +37,15 @@
   :global(.cds--combo-box),
   :global(.cds--date-picker__input),
   :global(.cds--text-input) {
-    background-color: var(--cds-field, #ffffff) !important;
+    background-color: var(--cds-field) !important;
   }
 
   :global(.cds--list-box__menu-item) {
-    background-color: var(--cds-layer, #ffffff) !important;
+    background-color: var(--cds-layer) !important;
   }
 
   :global(.cds--list-box__menu-item:hover) {
-    background-color: var(--cds-layer-hover, #e8e8e8) !important;
+    background-color: var(--cds-layer-hover) !important;
   }
 
   // Ensure dropdown menus appear above other content
@@ -70,13 +72,18 @@
 }
 
 .addButtonContainer {
-  padding: 24px;
+  padding: $spacing-06;
 }
 
 .wrapButton {
   white-space: normal;
   text-align: center;
   word-break: break-word;
-  border-radius: 2px !important;
-  padding-right: 1rem !important;
+  border-radius: $spacing-01 !important;
+  padding-right: $spacing-05 !important;
+}
+
+.requiredAsterisk {
+  color: var(--cds-support-error);
+  margin-left: $spacing-01;
 }

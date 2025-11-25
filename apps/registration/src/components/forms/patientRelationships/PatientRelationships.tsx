@@ -5,13 +5,13 @@ import {
   DatePickerInput,
   ComboBox,
   SimpleDataTable,
-} from '@bahmni-frontend/bahmni-design-system';
+} from '@bahmni/design-system';
 import {
   useTranslation,
   searchPatientByNameOrId,
   PatientSearchResult,
   getRelationshipTypes,
-} from '@bahmni-frontend/bahmni-services';
+} from '@bahmni/services';
 import { Close } from '@carbon/icons-react';
 import { Tile } from '@carbon/react';
 import { useQuery } from '@tanstack/react-query';
@@ -72,6 +72,9 @@ export const PatientRelationships = forwardRef<
 
   const [searchTerms, setSearchTerms] = useState<Record<string, string>>({});
   const [activeSearchId, setActiveSearchId] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, { relationshipType?: string; patientId?: string }>
+  >({});
 
   const { data: searchResults } = useQuery({
     queryKey: ['patientSearch', searchTerms[activeSearchId ?? '']],
@@ -109,6 +112,17 @@ export const PatientRelationships = forwardRef<
     setRelationships((prev) =>
       prev.map((rel) => (rel.id === id ? { ...rel, [field]: value } : rel)),
     );
+
+    // Clear validation error when user makes a change
+    if (field === 'relationshipType' || field === 'patientId') {
+      setValidationErrors((prev) => ({
+        ...prev,
+        [id]: {
+          ...prev[id],
+          [field]: undefined,
+        },
+      }));
+    }
   };
 
   const handlePatientSearch = (rowId: string, searchValue: string) => {
@@ -161,10 +175,34 @@ export const PatientRelationships = forwardRef<
 
   useImperativeHandle(ref, () => ({
     getData: () => relationships,
-    validate: () => true,
+    validate: () => {
+      let isValid = true;
+      const newValidationErrors: Record<
+        string,
+        { relationshipType?: string; patientId?: string }
+      > = {};
+
+      relationships.forEach((rel) => {
+        const errors: { relationshipType?: string; patientId?: string } = {};
+
+        if (!rel.relationshipType.trim()) {
+          errors.relationshipType =
+            t('RELATIONSHIP_TYPE_REQUIRED') || 'Relationship type is required';
+          isValid = false;
+        }
+
+        if (Object.keys(errors).length > 0) {
+          newValidationErrors[rel.id] = errors;
+        }
+      });
+
+      setValidationErrors(newValidationErrors);
+      return isValid;
+    },
     clearData: () => {
       setRelationships([]);
       setSearchTerms({});
+      setValidationErrors({});
     },
   }));
 
@@ -173,13 +211,17 @@ export const PatientRelationships = forwardRef<
       key: 'relationshipType',
       header: t('RELATIONSHIP_TYPE') ?? 'Relationship Type',
     },
-    { key: 'patientId', header: t('PATIENT_ID') ?? 'Patient Id' },
+    {
+      key: 'patientId',
+      header: t('PATIENT_ID') ?? 'Patient Id',
+    },
     { key: 'tillDate', header: t('TILL_DATE') ?? 'Till date' },
     { key: 'actions', header: t('ACTIONS') ?? 'Actions' },
   ];
 
   const rows = relationships.map((rel) => {
     const suggestions = getPatientSuggestions(rel.id);
+    const rowErrors = validationErrors[rel.id] || {};
 
     return {
       id: rel.id,
@@ -190,6 +232,8 @@ export const PatientRelationships = forwardRef<
           label={t('SELECT') ?? 'Select'}
           items={relationshipTypes}
           selectedItem={rel.relationshipType}
+          invalid={!!rowErrors.relationshipType}
+          invalidText={rowErrors.relationshipType}
           onChange={({ selectedItem }) =>
             updateRelationship(rel.id, 'relationshipType', selectedItem ?? '')
           }
@@ -205,6 +249,8 @@ export const PatientRelationships = forwardRef<
           selectedItem={
             suggestions.find((s) => s.identifier === rel.patientId) ?? null
           }
+          invalid={!!rowErrors.patientId}
+          invalidText={rowErrors.patientId}
           onInputChange={(inputValue) =>
             handlePatientSearch(rel.id, inputValue ?? '')
           }
@@ -218,6 +264,7 @@ export const PatientRelationships = forwardRef<
           dateFormat="d/m/Y"
           datePickerType="single"
           value={rel.tillDate}
+          minDate={new Date()}
           onChange={(dates) => {
             if (dates[0]) {
               updateRelationship(

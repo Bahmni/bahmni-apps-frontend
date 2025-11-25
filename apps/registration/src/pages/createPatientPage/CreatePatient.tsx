@@ -14,6 +14,7 @@ import {
   dispatchAuditEvent,
   getPatientById,
   CreatePatientResponse,
+  getRelationshipTypes,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { useRef, useState, useEffect } from 'react';
@@ -49,6 +50,13 @@ const CreatePatient = () => {
   const { patientUuid: patientUuidFromUrl } = useParams<{
     patientUuid: string;
   }>();
+
+  const { data: relationshipTypes = [], isLoading: isLoadingRelationships } =
+    useQuery({
+      queryKey: ['relationshipTypes'],
+      queryFn: getRelationshipTypes,
+      staleTime: 0,
+    });
 
   // Determine if we're in edit mode based on URL parameter
   const isEditMode = !!patientUuidFromUrl;
@@ -120,7 +128,11 @@ const CreatePatient = () => {
       additionalRef: patientAdditionalRef,
     });
 
-    if (!isValid) {
+    // Validate relationships if section exists
+    const isRelationshipsValid =
+      patientRelationshipsRef.current?.validate() ?? true;
+
+    if (!isValid || !isRelationshipsValid) {
       return null;
     }
 
@@ -220,7 +232,12 @@ const CreatePatient = () => {
             <AdditionalInfo ref={patientAdditionalRef} />
           </div>
 
-          <PatientRelationships ref={patientRelationshipsRef} />
+          {/* Show relationships section only if API returns relationship types */}
+          {!isLoadingRelationships &&
+            Array.isArray(relationshipTypes) &&
+            relationshipTypes.length > 0 && (
+              <PatientRelationships ref={patientRelationshipsRef} />
+            )}
 
           {/* Footer Actions */}
           <div className={styles.formActions}>

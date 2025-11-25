@@ -45,6 +45,7 @@
   "CREATE_PATIENT_SECTION_ADDRESS_INFO": "Información de dirección",
   "CREATE_PATIENT_SECTION_BASIC_INFO": "Información básica",
   "CREATE_PATIENT_SECTION_CONTACT_INFO": "Información de contacto",
+  "CREATE_PATIENT_SECTION_RELATIONSHIPS": "Relaciones",
   "CREATE_PATIENT_SELECT": "Seleccionar",
   "CREATE_PATIENT_START_OPD_VISIT": "Iniciar visita OPD",
   "CREATE_PATIENT_STATE": "Estado",
@@ -98,5 +99,17 @@
   "REGISTRATION_ADDRESS_CITY_VILLAGE": "Ciudad/Pueblo",
   "REGISTRATION_ADDRESS_POSTAL_CODE": "Código postal",
   "REGISTRATION_ADDRESS_LOCALITY": "Localidad/Sector",
-  "REGISTRATION_ADDRESS_HOUSE_FLAT_NO": "Número de casa/Número de apartamento"
+  "REGISTRATION_ADDRESS_HOUSE_FLAT_NO": "Número de casa/Número de apartamento",
+  "RELATIONSHIP_TYPE": "Tipo de relación",
+  "PATIENT_NAME_OR_ID": "Nombre o ID del paciente",
+  "PATIENT_ID": "ID del paciente",
+  "TILL_DATE": "Válido hasta",
+  "ACTION": "Acción",
+  "ACTIONS": "Acciones",
+  "ADD_RELATIONSHIP": "Agregar otra",
+  "REMOVE": "Eliminar",
+  "RELATIONSHIPS_TABLE": "Tabla de relaciones",
+  "ENTER_PATIENT_ID": "Buscar paciente",
+  "SELECT_DATE": "dd/mm/aaaa",
+  "SELECT": "Seleccionar"
 }

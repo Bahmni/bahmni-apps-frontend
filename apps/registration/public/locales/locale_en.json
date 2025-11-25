@@ -45,6 +45,7 @@
   "CREATE_PATIENT_SECTION_ADDRESS_INFO": "Address information",
   "CREATE_PATIENT_SECTION_BASIC_INFO": "Basic information",
   "CREATE_PATIENT_SECTION_CONTACT_INFO": "Contact information",
+  "CREATE_PATIENT_SECTION_RELATIONSHIPS": "Relationships",
   "CREATE_PATIENT_SELECT": "Select",
   "CREATE_PATIENT_START_OPD_VISIT": "Start OPD visit",
   "CREATE_PATIENT_STATE": "State",
@@ -98,5 +99,18 @@
   "REGISTRATION_ADDRESS_CITY_VILLAGE": "City/Village",
   "REGISTRATION_ADDRESS_POSTAL_CODE": "Pincode",
   "REGISTRATION_ADDRESS_LOCALITY": "Locality/Sector",
-  "REGISTRATION_ADDRESS_HOUSE_FLAT_NO": "House number/ Flat number"
+  "REGISTRATION_ADDRESS_HOUSE_FLAT_NO": "House number/ Flat number",
+  "RELATIONSHIP_TYPE": "Relationship Type",
+  "PATIENT_NAME_OR_ID": "Patient name or ID",
+  "PATIENT_ID": "Patient Id",
+  "TILL_DATE": "Valid till",
+  "ACTION": "Action",
+  "ACTIONS": "Actions",
+  "ADD_RELATIONSHIP": "Add another",
+  "REMOVE": "Remove",
+  "RELATIONSHIPS_TABLE": "Relationships table",
+  "ENTER_PATIENT_ID": "Search Patient",
+  "SELECT_DATE": "dd/mm/yyyy",
+  "SELECT": "Select",
+  "RELATIONSHIP_TYPE_REQUIRED": "Relationship type is required"
 }
