@@ -5,58 +5,46 @@
 // Form Container
 
 .formSection {
+  margin: 0 auto;
+  width: calc(100% - ($spacing-13 + $spacing-05));
+  max-width: $spacing-13 * 9 + $spacing-05 + $spacing-02;
+  box-shadow: 0 $spacing-01 $spacing-03 rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-09;
 }
 
 .formSectionTitle {
   @include type-style("body-compact-02");
 }
 
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
 
 .identifierField {
-  width: 100%;
+  width: 288px;
+  :global(.cds--text-input) {
+    background-color: $field-01;  
+  }
 }
 
 .identifierTable {
   width: 100%;
 
-  // Hide the table header
-  :global(thead) {
-    display: none;
-  }
+  :global(tbody) {
+    
+    tr:hover td {
+      cursor: default;
+      border-bottom: 1px solid $border-subtle-01 !important;
+    }
 
-  // Remove table borders
-  :global(table) {
-    border: none;
-  }
 
-  :global(td) {
-    border: none;
-    border-top: none;
-    border-bottom: none;
-  }
+    td:first-child {
+      width: 181px;
+      white-space: nowrap;
+      font-weight: 600;
+    }
 
-  :global(tr) {
-    border: none;
-    border-top: none;
-    border-bottom: none;
-  }
-
-  // Set first column width to fit content (label column)
-  :global(td:first-child) {
-    width: 1%;
-    white-space: nowrap;
-  }
-
-  // Second column takes remaining space (input column)
-  :global(td:last-child) {
-    width: 99%;
+    td:last-child {
+      width: auto;
+    }
   }
 }

@@ -19,13 +19,13 @@ import { useQuery } from '@tanstack/react-query';
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
-  AdditionalInfo,
-  AdditionalInfoRef,
-} from '../../components/forms/additionalInfo/AdditionalInfo';
-import {
   AdditionalIdentifiers,
   AdditionalIdentifiersRef,
 } from '../../components/forms/additionalIdentifiers/AdditionalIdentifiers';
+import {
+  AdditionalInfo,
+  AdditionalInfoRef,
+} from '../../components/forms/additionalInfo/AdditionalInfo';
 import {
   AddressInfo,
   AddressInfoRef,
@@ -239,9 +239,7 @@ const CreatePatient = () => {
                 </span>
               </Tile>
 
-              <div className={styles.formContainer}>
-                <AdditionalIdentifiers ref={patientAdditionalIdentifiersRef} />
-              </div>
+              <AdditionalIdentifiers ref={patientAdditionalIdentifiersRef} />
             </>
           )}
 

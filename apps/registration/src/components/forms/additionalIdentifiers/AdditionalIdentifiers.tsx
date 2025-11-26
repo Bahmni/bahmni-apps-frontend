@@ -77,8 +77,8 @@ export const AdditionalIdentifiers = ({
 
   // Prepare table data
   const headers: DataTableHeader[] = [
-    { key: 'label', header: '' },
-    { key: 'value', header: '' },
+    { key: 'label', header: 'Document type' },
+    { key: 'value', header: 'Document number' },
   ];
 
   const rows: IdentifierRow[] = extraIdentifierTypes.map((identifierType) => ({
@@ -89,7 +89,7 @@ export const AdditionalIdentifiers = ({
 
   const renderCell = (row: IdentifierRow, cellId: string) => {
     if (cellId === 'label') {
-      return <span>{row.name}</span>;
+      return <span className={styles.identifierField}>{row.name}</span>;
     }
     if (cellId === 'value') {
       const value = formData[row.uuid] ?? '';
