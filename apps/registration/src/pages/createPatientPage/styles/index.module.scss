@@ -2,27 +2,31 @@
 @use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/type" as *;
 
+.form{
+  margin: 0 auto;
+  max-width: $spacing-13 * 9 + $spacing-05 + $spacing-02;
+  margin-top:$spacing-08;
+  width: calc(100% - ($spacing-13 + $spacing-05));
+  box-shadow: 0 $spacing-01 $spacing-03 rgba(0, 0, 0, 0.3);
+  align-items: center;
+}
+
   // Patient Details Header
   .patientDetailsHeader {
-    margin: 0 auto;
-    margin-top:$spacing-08;
-    max-width: $spacing-13 * 9 + $spacing-05 + $spacing-02;
-    height: $spacing-08 + $spacing-05;
-    box-shadow: 0 $spacing-01 $spacing-03 rgba(0, 0, 0, 0.3);
     display: flex;
     align-items: center;
-    width: calc(100% - ($spacing-13 + $spacing-05));
-    font-weight: 600 !important;
   }
+
+  .sectionTitle {
+       @include type-style("heading-compact-02");
+      font-size: $spacing-05 !important;
+    }
 
   // Form Container
   .formContainer {
-    margin: 0 auto;
-    width: calc(100% - ($spacing-13 + $spacing-05));
-    max-width: $spacing-13 * 9 + $spacing-05 + $spacing-02;
+    
     padding: $spacing-06;
     background: #fff;
-    box-shadow: 0 $spacing-01 $spacing-03 rgba(0, 0, 0, 0.3);
     display: flex;
     flex-direction: column;
     gap: $spacing-09;
@@ -31,11 +35,6 @@
       display: flex;
       flex-direction: column;
       gap: $spacing-05;
-    }
-
-    .sectionTitle {
-       @include type-style("heading-compact-02");
-      font-size: $spacing-05;
     }
 
     .formSectionTitle {

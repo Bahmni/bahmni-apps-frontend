@@ -197,22 +197,24 @@ const CreatePatient = () => {
       }
       main={
         <div>
-          <Tile className={styles.patientDetailsHeader}>
-            <span className={styles.sectionTitle}>
-              {isEditMode
-                ? t('EDIT_PATIENT_HEADER_TITLE')
-                : t('CREATE_PATIENT_HEADER_TITLE')}
-            </span>
-          </Tile>
+          <div className={styles.form}>
+            <Tile className={styles.patientDetailsHeader}>
+              <span className={styles.sectionTitle}>
+                {isEditMode
+                  ? t('EDIT_PATIENT_HEADER_TITLE')
+                  : t('CREATE_PATIENT_HEADER_TITLE')}
+              </span>
+            </Tile>
 
-          <div className={styles.formContainer}>
-            <Profile
-              ref={patientProfileRef}
-              patientIdentifier={patientIdentifier}
-            />
-            <AddressInfo ref={patientAddressRef} />
-            <ContactInfo ref={patientContactRef} />
-            <AdditionalInfo ref={patientAdditionalRef} />
+            <div className={styles.formContainer}>
+              <Profile
+                ref={patientProfileRef}
+                patientIdentifier={patientIdentifier}
+              />
+              <AddressInfo ref={patientAddressRef} />
+              <ContactInfo ref={patientContactRef} />
+              <AdditionalInfo ref={patientAdditionalRef} />
+            </div>
           </div>
 
           {/* Footer Actions */}
