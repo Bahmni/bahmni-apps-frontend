@@ -12,7 +12,7 @@
     display: flex;
     align-items: center;
     width: calc(100% - ($spacing-13 + $spacing-05));
-    font-weight: 600;
+    font-weight: 600 !important;
   }
 
   // Form Container

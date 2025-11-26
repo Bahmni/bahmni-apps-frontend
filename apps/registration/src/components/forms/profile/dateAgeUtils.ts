@@ -202,6 +202,7 @@ export const createDateAgeHandlers = <
           dateOfBirth: formatToISO(new Date()),
         }));
         setAgeErrors((prev) => ({ ...prev, [field]: error }));
+        setDateErrors({ dateOfBirth: error });
         setDobEstimated(true);
         return;
       } else if (field === 'ageMonths' && numValue > 11) {
@@ -213,7 +214,7 @@ export const createDateAgeHandlers = <
 
     setAgeErrors((prev) => ({ ...prev, [field]: error }));
 
-    // Only update formData if there's no error
+    // Only update formData if there's no error in the individual field
     if (!error) {
       setFormData((prev) => {
         const updated = { ...prev, [field]: value };
@@ -226,11 +227,30 @@ export const createDateAgeHandlers = <
           const birthISO = AgeUtils.calculateBirthDate(age);
           updated.dateOfBirth = birthISO;
           setDobEstimated(true);
-          setDateErrors({ dateOfBirth: '' });
-          setValidationErrors((prev) => ({ ...prev, dateOfBirth: '' }));
+
+          const maxAgeDate = new Date();
+          maxAgeDate.setFullYear(
+            maxAgeDate.getFullYear() - MAX_PATIENT_AGE_YEARS,
+          );
+          maxAgeDate.setHours(0, 0, 0, 0);
+
+          const calculatedDobDate = new Date(birthISO);
+          calculatedDobDate.setHours(0, 0, 0, 0);
+
+          if (calculatedDobDate < maxAgeDate) {
+            // Age exceeds 120 years
+            setDateErrors({
+              dateOfBirth: t('CREATE_PATIENT_VALIDATION_AGE_YEARS_MAX'),
+            });
+          } else {
+            // Age is valid (120 years or younger)
+            setDateErrors({ dateOfBirth: '' });
+            setValidationErrors((prev) => ({ ...prev, dateOfBirth: '' }));
+          }
         } else {
           updated.dateOfBirth = '';
           setDobEstimated(false);
+          setDateErrors({ dateOfBirth: '' });
         }
         return updated;
       });

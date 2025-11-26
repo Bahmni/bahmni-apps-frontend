@@ -480,9 +480,7 @@ export const Profile = ({
                 datePickerType="single"
                 minDate={(() => {
                   const date = new Date();
-                  date.setFullYear(
-                    date.getFullYear() - MAX_PATIENT_AGE_YEARS + 1,
-                  );
+                  date.setFullYear(date.getFullYear() - MAX_PATIENT_AGE_YEARS);
                   date.setHours(0, 0, 0, 0);
                   return date;
                 })()}
