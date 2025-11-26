@@ -9,6 +9,16 @@ import type { AdditionalData } from '../../../models/patient';
 import { PersonAttributeInput } from '../../common/PersonAttributeInput';
 
 import styles from '../additionalInfo/styles/index.module.scss';
+import {
+  getFieldsToShow,
+  createFieldTranslationMap,
+  initializeFormData,
+  getFieldLabel,
+} from './additionalInfoHelpers';
+import {
+  validateAllFields,
+  getValidationConfig,
+} from './additionalInfoValidation';
 
 export interface AdditionalInfoRef {
   validate: () => boolean;
@@ -32,35 +42,20 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
     additionalInfoConfig?.translationKey ??
     'CREATE_PATIENT_SECTION_ADDITIONAL_INFO';
 
-  // Only show fields that exist in BOTH person attributes API AND config attributes
-  const fieldsToShow = useMemo(() => {
-    if (configAttributes.length === 0) {
-      return [];
-    }
+  const fieldsToShow = useMemo(
+    () => getFieldsToShow(attributeFields, configAttributes),
+    [configAttributes, attributeFields],
+  );
 
-    const configFieldNames = configAttributes.map((attr) => attr.field);
-    return attributeFields.filter((attrField) =>
-      configFieldNames.includes(attrField.name),
-    );
-  }, [configAttributes, attributeFields]);
+  const fieldTranslationMap = useMemo(
+    () => createFieldTranslationMap(configAttributes),
+    [configAttributes],
+  );
 
-  // Create a map of field name to translation key
-  const fieldTranslationMap = useMemo(() => {
-    const map: Record<string, string> = {};
-    configAttributes.forEach((attr) => {
-      map[attr.field] = attr.translationKey;
-    });
-    return map;
-  }, [configAttributes]);
-
-  // Initialize form data based on fields to show
-  const initialFormData = useMemo(() => {
-    const data: AdditionalData = {};
-    fieldsToShow.forEach((field) => {
-      data[field.name] = initialData?.[field.name] ?? '';
-    });
-    return data;
-  }, [fieldsToShow, initialData]);
+  const initialFormData = useMemo(
+    () => initializeFormData(fieldsToShow, initialData),
+    [fieldsToShow, initialData],
+  );
 
   const [formData, setFormData] = useState<AdditionalData>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -69,7 +64,6 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
     (fieldName: string, value: string | number | boolean) => {
       setFormData((prev) => ({ ...prev, [fieldName]: value }));
 
-      // Clear error when user types
       if (errors[fieldName]) {
         setErrors((prev) => ({ ...prev, [fieldName]: '' }));
       }
@@ -79,53 +73,25 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
 
   const fieldValidationConfig = registrationConfig?.fieldValidation;
 
-  // Get validation config for a specific field
-  const getValidationConfig = useCallback(
-    (fieldName: string) => {
-      const validationRule = fieldValidationConfig?.[fieldName];
-      if (!validationRule) return undefined;
-
-      return {
-        pattern: validationRule.pattern,
-        errorMessage: validationRule.errorMessage,
-      };
-    },
-    [fieldValidationConfig],
-  );
-
   const validate = useCallback((): boolean => {
-    const newErrors: Record<string, string> = {};
-    let isValid = true;
-
-    fieldsToShow.forEach((field) => {
-      const fieldName = field.name;
-      const value = formData[fieldName];
-      const validationRule = fieldValidationConfig?.[fieldName];
-
-      if (validationRule && value) {
-        const regex = new RegExp(validationRule.pattern);
-        if (!regex.test(value as string)) {
-          newErrors[fieldName] = validationRule.errorMessage;
-          isValid = false;
-        }
-      }
-    });
-
-    setErrors(newErrors);
-    return isValid;
+    const result = validateAllFields(
+      fieldsToShow,
+      formData,
+      fieldValidationConfig,
+    );
+    setErrors(result.errors);
+    return result.isValid;
   }, [fieldsToShow, formData, fieldValidationConfig]);
 
   const getData = useCallback((): AdditionalData => {
     return formData;
   }, [formData]);
 
-  // Expose methods to parent via ref
   useImperativeHandle(ref, () => ({
     validate,
     getData,
   }));
 
-  // If no fields match between config and API, don't render the section
   if (fieldsToShow.length === 0) {
     return null;
   }
@@ -141,8 +107,7 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
             const fieldName = field.name;
             const value = formData[fieldName] ?? '';
             const error = errors[fieldName] || '';
-            const translationKey = fieldTranslationMap[fieldName] || fieldName;
-            const label = t(translationKey);
+            const label = getFieldLabel(fieldName, fieldTranslationMap, t);
 
             return (
               <div key={field.uuid} className={styles.attributeField}>
@@ -154,7 +119,10 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
                   answers={field.answers}
                   error={error}
                   placeholder={label}
-                  validation={getValidationConfig(fieldName)}
+                  validation={getValidationConfig(
+                    fieldName,
+                    fieldValidationConfig,
+                  )}
                   onChange={(newValue) =>
                     handleFieldChange(fieldName, newValue)
                   }

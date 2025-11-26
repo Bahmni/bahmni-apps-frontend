@@ -1,9 +1,21 @@
 import { TextInput } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { useCallback, useImperativeHandle, useState, useMemo } from 'react';
+
 import { usePersonAttributeFields } from '../../../hooks/usePersonAttributeFields';
 import { useRegistrationConfig } from '../../../hooks/useRegistrationConfig';
 import type { ContactData } from '../../../models/patient';
+
+import {
+  getFieldsToShow,
+  createFieldTranslationMap,
+  initializeFormData,
+  getFieldLabel,
+} from './contactInfoHelpers';
+import {
+  isNumericPhoneValue,
+  validateAllFields,
+} from './contactInfoValidation';
 import styles from './styles/index.module.scss';
 
 export interface ContactInfoRef {
@@ -29,50 +41,29 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
 
   const fieldValidationConfig = registrationConfig?.fieldValidation;
 
-  // Filter by name: Only show fields that exist in BOTH person attributes API AND config attributes
-  const fieldsToShow = useMemo(() => {
-    if (configAttributes.length === 0) {
-      return [];
-    }
+  const fieldsToShow = useMemo(
+    () => getFieldsToShow(attributeFields, configAttributes),
+    [configAttributes, attributeFields],
+  );
 
-    const configFieldNames = configAttributes.map((attr) => attr.field);
-    return attributeFields.filter((attrField) =>
-      configFieldNames.includes(attrField.name),
-    );
-  }, [configAttributes, attributeFields]);
+  const fieldTranslationMap = useMemo(
+    () => createFieldTranslationMap(configAttributes),
+    [configAttributes],
+  );
 
-  // Create a map of field name to translation key
-  const fieldTranslationMap = useMemo(() => {
-    const map: Record<string, string> = {};
-    configAttributes.forEach((attr) => {
-      map[attr.field] = attr.translationKey;
-    });
-    return map;
-  }, [configAttributes]);
-
-  // Initialize form data based on fields to show
-  const initialFormData = useMemo(() => {
-    const data: ContactData = {
-      phoneNumber: '',
-      altPhoneNumber: '',
-    };
-    fieldsToShow.forEach((field) => {
-      data[field.name as keyof ContactData] =
-        (initialData?.[field.name as keyof ContactData] as string) ?? '';
-    });
-    return data;
-  }, [fieldsToShow, initialData]);
+  const initialFormData = useMemo(
+    () => initializeFormData(fieldsToShow, initialData),
+    [fieldsToShow, initialData],
+  );
 
   const [formData, setFormData] = useState<ContactData>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handlePhoneChange = useCallback(
     (fieldName: string, value: string) => {
-      const numericRegex = /^\+?[0-9]*$/;
-      if (numericRegex.test(value)) {
+      if (isNumericPhoneValue(value)) {
         setFormData((prev) => ({ ...prev, [fieldName]: value }));
 
-        // Clear error when user types
         if (errors[fieldName]) {
           setErrors((prev) => ({ ...prev, [fieldName]: '' }));
         }
@@ -82,25 +73,13 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
   );
 
   const validate = useCallback((): boolean => {
-    const newErrors: Record<string, string> = {};
-    let isValid = true;
-
-    fieldsToShow.forEach((field) => {
-      const fieldName = field.name;
-      const value = formData[fieldName as keyof ContactData] as string;
-      const validationRule = fieldValidationConfig?.[fieldName];
-
-      if (validationRule && value) {
-        const regex = new RegExp(validationRule.pattern);
-        if (!regex.test(value)) {
-          newErrors[fieldName] = validationRule.errorMessage;
-          isValid = false;
-        }
-      }
-    });
-
-    setErrors(newErrors);
-    return isValid;
+    const result = validateAllFields(
+      fieldsToShow,
+      formData,
+      fieldValidationConfig,
+    );
+    setErrors(result.errors);
+    return result.isValid;
   }, [fieldsToShow, formData, fieldValidationConfig]);
 
   const getData = useCallback((): ContactData => {
@@ -112,7 +91,6 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
     getData,
   }));
 
-  // If no fields match between config and API, don't render the section
   if (fieldsToShow.length === 0) {
     return null;
   }
@@ -125,8 +103,7 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
           const fieldName = field.name;
           const value =
             (formData[fieldName as keyof ContactData] as string) ?? '';
-          const translationKey = fieldTranslationMap[fieldName] || fieldName;
-          const label = t(translationKey);
+          const label = getFieldLabel(fieldName, fieldTranslationMap, t);
           const error = errors[fieldName] || '';
 
           return (
