@@ -142,6 +142,7 @@ const CreatePatient = () => {
       addressRef: patientAddressRef,
       contactRef: patientContactRef,
       additionalRef: patientAdditionalRef,
+      relationshipsRef: patientRelationshipsRef,
     });
 
     if (!formData) {

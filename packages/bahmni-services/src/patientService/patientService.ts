@@ -417,16 +417,22 @@ export const getOrderedAddressHierarchyLevels =
 
 /**
  * Get relationship types from OpenMRS
- * @returns Promise<string[]> - Array of relationship type display names
+ * @returns Promise<Array<{uuid: string, aIsToB: string, bIsToA: string}>> - Array of relationship type objects
  */
-export const getRelationshipTypes = async (): Promise<string[]> => {
+export const getRelationshipTypes = async (): Promise<
+  Array<{ uuid: string; aIsToB: string; bIsToA: string }>
+> => {
   try {
     const response = await get<RelationshipTypesResponse>(
       RELATIONSHIP_TYPES_URL,
     );
     return response.results
       .filter((type) => !type.retired)
-      .map((type) => type.aIsToB);
+      .map((type) => ({
+        uuid: type.uuid,
+        aIsToB: type.aIsToB,
+        bIsToA: type.bIsToA,
+      }));
   } catch (error) {
     throw new Error(
       `Failed to fetch relationship types: ${

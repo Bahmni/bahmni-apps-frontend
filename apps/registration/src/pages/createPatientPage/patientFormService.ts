@@ -2,6 +2,7 @@ import { notificationService } from '@bahmni/services';
 import type { AdditionalInfoRef } from '../../components/forms/additionalInfo/AdditionalInfo';
 import type { AddressInfoRef } from '../../components/forms/addressInfo/AddressInfo';
 import type { ContactInfoRef } from '../../components/forms/contactInfo/ContactInfo';
+import type { PatientRelationshipsRef } from '../../components/forms/patientRelationships/PatientRelationships';
 import type { ProfileRef } from '../../components/forms/profile/Profile';
 
 /**
@@ -12,6 +13,7 @@ export interface PatientFormRefs {
   addressRef: React.RefObject<AddressInfoRef | null>;
   contactRef: React.RefObject<ContactInfoRef | null>;
   additionalRef: React.RefObject<AdditionalInfoRef | null>;
+  relationshipsRef?: React.RefObject<PatientRelationshipsRef | null>;
 }
 
 /**
@@ -49,7 +51,13 @@ export function validateAllSections(refs: PatientFormRefs): boolean {
  * @returns Collected form data or null if any section fails to return data
  */
 export function collectFormData(refs: PatientFormRefs) {
-  const { profileRef, addressRef, contactRef, additionalRef } = refs;
+  const {
+    profileRef,
+    addressRef,
+    contactRef,
+    additionalRef,
+    relationshipsRef,
+  } = refs;
 
   const profileData = profileRef.current?.getData();
   if (!profileData) {
@@ -87,10 +95,14 @@ export function collectFormData(refs: PatientFormRefs) {
     return null;
   }
 
+  // Collect relationships data if the section exists
+  const relationshipsData = relationshipsRef?.current?.getData() ?? [];
+
   return {
     profile: profileData,
     address: addressData,
     contact: contactData,
     additional: additionalData,
+    relationships: relationshipsData,
   };
 }

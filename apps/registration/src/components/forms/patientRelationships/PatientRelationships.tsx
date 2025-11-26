@@ -15,7 +15,7 @@ import {
 import { Close } from '@carbon/icons-react';
 import { Tile } from '@carbon/react';
 import { useQuery } from '@tanstack/react-query';
-import { useState, forwardRef, useImperativeHandle } from 'react';
+import { useState, useImperativeHandle } from 'react';
 import styles from './styles/index.module.scss';
 
 export interface RelationshipData {
@@ -35,6 +35,7 @@ export interface PatientRelationshipsRef {
 
 interface PatientRelationshipsProps {
   initialData?: RelationshipData[];
+  ref?: React.Ref<PatientRelationshipsRef>;
 }
 
 interface PatientSuggestion {
@@ -44,10 +45,10 @@ interface PatientSuggestion {
   name: string;
 }
 
-export const PatientRelationships = forwardRef<
-  PatientRelationshipsRef,
-  PatientRelationshipsProps
->(({ initialData }, ref) => {
+export const PatientRelationships = ({
+  initialData,
+  ref,
+}: PatientRelationshipsProps) => {
   const { t } = useTranslation();
 
   // Fetch relationship types from API
@@ -231,11 +232,19 @@ export const PatientRelationships = forwardRef<
           titleText=""
           label={t('SELECT') ?? 'Select'}
           items={relationshipTypes}
-          selectedItem={rel.relationshipType}
+          itemToString={(item) => item?.aIsToB ?? ''}
+          selectedItem={
+            relationshipTypes.find((rt) => rt.uuid === rel.relationshipType) ??
+            null
+          }
           invalid={!!rowErrors.relationshipType}
           invalidText={rowErrors.relationshipType}
           onChange={({ selectedItem }) =>
-            updateRelationship(rel.id, 'relationshipType', selectedItem ?? '')
+            updateRelationship(
+              rel.id,
+              'relationshipType',
+              selectedItem?.uuid ?? '',
+            )
           }
         />
       ),
@@ -323,7 +332,7 @@ export const PatientRelationships = forwardRef<
       </div>
     </div>
   );
-});
+};
 
 PatientRelationships.displayName = 'PatientRelationships';
 
