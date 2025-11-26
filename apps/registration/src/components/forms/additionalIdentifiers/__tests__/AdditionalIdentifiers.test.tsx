@@ -1,12 +1,12 @@
+import { getIdentifierTypes } from '@bahmni/services';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { getIdentifierTypes } from '@bahmni/services';
+import { createRef } from 'react';
 import {
   AdditionalIdentifiers,
   AdditionalIdentifiersRef,
 } from '../AdditionalIdentifiers';
-import { createRef } from 'react';
 
 jest.mock('@bahmni/services', () => ({
   getIdentifierTypes: jest.fn(),
@@ -93,9 +93,7 @@ describe('AdditionalIdentifiers', () => {
     render(<AdditionalIdentifiers />, { wrapper });
 
     await waitFor(() => {
-      expect(
-        screen.getByText('CREATE_PATIENT_SECTION_ADDITIONAL_IDENTIFIERS'),
-      ).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('National ID')).toBeInTheDocument();
     });
 
     // Should render the two non-primary identifiers (as labels and inputs)

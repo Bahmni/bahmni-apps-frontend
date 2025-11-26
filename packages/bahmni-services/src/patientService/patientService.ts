@@ -238,84 +238,85 @@ export const searchPatientByCustomAttribute = async (
  * Get all identifier types from idgen
  * @returns Promise<IdentifierTypesResponse> - Array of all identifier types with their sources
  */
-export const getIdentifierTypes = async (): Promise<IdentifierTypesResponse> => {
-  // ============================================================================
-  // TODO: REMOVE THIS DUMMY DATA AFTER TESTING - FOR DEVELOPMENT ONLY
-  // ============================================================================
-  // This mock data allows you to see the AdditionalIdentifiers component
-  // in action without a real API endpoint.
-  //
-  // To test:
-  // 1. Start your dev server
-  // 2. Navigate to /registration/new
-  // 3. Look for "Additional Identifiers" section below "Basic Info"
-  // 4. You should see 4 input fields for non-primary identifiers
-  //
-  // To remove: Delete everything between the === lines and uncomment the line below
-  // ============================================================================
-  return Promise.resolve([
-    {
-      uuid: 'bahmni-primary-identifier-type',
-      name: 'Bahmni Patient Identifier',
-      description: 'Primary identifier for patient registration',
-      format: null,
-      required: true,
-      primary: true,
-      identifierSources: [
-        {
-          uuid: 'source-bah-001',
-          name: 'BAH Source',
-          prefix: 'BAH',
-        },
-        {
-          uuid: 'source-gan-002',
-          name: 'GAN Source',
-          prefix: 'GAN',
-        },
-      ],
-    },
-    {
-      uuid: 'national-id-card-identifier-type',
-      name: 'National ID Card',
-      description: 'National identification card number',
-      format: null,
-      required: false,
-      primary: false,
-      identifierSources: [],
-    },
-    {
-      uuid: 'passport-number-identifier-type',
-      name: 'Passport Number',
-      description: 'International passport identification number',
-      format: null,
-      required: false,
-      primary: false,
-      identifierSources: [],
-    },
-    {
-      uuid: 'drivers-license-identifier-type',
-      name: "Driver's License",
-      description: "Driver's license number",
-      format: null,
-      required: false,
-      primary: false,
-      identifierSources: [],
-    },
-    {
-      uuid: 'social-security-identifier-type',
-      name: 'Social Security Number',
-      description: 'Government issued social security number',
-      format: null,
-      required: false,
-      primary: false,
-      identifierSources: [],
-    },
-  ]);
-  // ============================================================================
-  // END OF DUMMY DATA - UNCOMMENT THE LINE BELOW FOR PRODUCTION
-  // ============================================================================
-  // return get<IdentifierTypesResponse>(IDENTIFIER_TYPES_URL);
-};
+export const getIdentifierTypes =
+  async (): Promise<IdentifierTypesResponse> => {
+    // ============================================================================
+    // TODO: REMOVE THIS DUMMY DATA AFTER TESTING - FOR DEVELOPMENT ONLY
+    // ============================================================================
+    // This mock data allows you to see the AdditionalIdentifiers component
+    // in action without a real API endpoint.
+    //
+    // To test:
+    // 1. Start your dev server
+    // 2. Navigate to /registration/new
+    // 3. Look for "Additional Identifiers" section below "Basic Info"
+    // 4. You should see 4 input fields for non-primary identifiers
+    //
+    // To remove: Delete everything between the === lines and uncomment the line below
+    // ============================================================================
+    return Promise.resolve([
+      {
+        uuid: 'bahmni-primary-identifier-type',
+        name: 'Bahmni Patient Identifier',
+        description: 'Primary identifier for patient registration',
+        format: null,
+        required: true,
+        primary: true,
+        identifierSources: [
+          {
+            uuid: 'source-bah-001',
+            name: 'BAH Source',
+            prefix: 'BAH',
+          },
+          {
+            uuid: 'source-gan-002',
+            name: 'GAN Source',
+            prefix: 'GAN',
+          },
+        ],
+      },
+      {
+        uuid: 'national-id-card-identifier-type',
+        name: 'National ID Card',
+        description: 'National identification card number',
+        format: null,
+        required: false,
+        primary: false,
+        identifierSources: [],
+      },
+      {
+        uuid: 'passport-number-identifier-type',
+        name: 'Passport Number',
+        description: 'International passport identification number',
+        format: null,
+        required: false,
+        primary: false,
+        identifierSources: [],
+      },
+      {
+        uuid: 'drivers-license-identifier-type',
+        name: "Driver's License",
+        description: "Driver's license number",
+        format: null,
+        required: false,
+        primary: false,
+        identifierSources: [],
+      },
+      {
+        uuid: 'social-security-identifier-type',
+        name: 'Social Security Number',
+        description: 'Government issued social security number',
+        format: null,
+        required: false,
+        primary: false,
+        identifierSources: [],
+      },
+    ]);
+    // ============================================================================
+    // END OF DUMMY DATA - UNCOMMENT THE LINE BELOW FOR PRODUCTION
+    // ============================================================================
+    // return get<IdentifierTypesResponse>(IDENTIFIER_TYPES_URL);
+  };
 
 /**
  * Get primary identifier type from Bahmni app settings

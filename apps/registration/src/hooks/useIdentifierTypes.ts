@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
 import { getIdentifierTypes, IdentifierTypesResponse } from '@bahmni/services';
+import { useQuery } from '@tanstack/react-query';
 
 export const IDENTIFIER_TYPES_QUERY_KEY = ['identifierTypes'];
 

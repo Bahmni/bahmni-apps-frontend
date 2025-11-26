@@ -1,6 +1,6 @@
-import { renderHook, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { getIdentifierTypes } from '@bahmni/services';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { renderHook, waitFor } from '@testing-library/react';
 import { useIdentifierTypes } from '../useIdentifierTypes';
 
 jest.mock('@bahmni/services', () => ({
