@@ -17,32 +17,33 @@
 .sectionTitle {
   @include type-style("heading-compact-02");
   font-size: $spacing-05;
+  display: flex;
+  width: 100%;
 }
 
 .infoContainer {
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  width: 100% !important;
-  padding: 0 $spacing-05 !important;
-  gap: $spacing-05 !important;
-  flex-wrap: wrap !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: $spacing-05;
 }
 
 .patientId {
-  font-weight: bold !important;
-  font-size: $spacing-05 !important;
-  white-space: nowrap !important;
-  flex-shrink: 0 !important;
+  font-weight: bold;
+  font-size: $spacing-05;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.5;
 }
 
 .registerDate {
-  font-weight: normal !important;
-  font-size: $spacing-05 !important;
-  margin-left: auto !important;
-  padding-left: min(50vw, $spacing-13 * 6) !important;
-  white-space: nowrap !important;
-  flex-shrink: 0 !important;
+  font-weight: normal;
+  font-size: ($spacing-04);
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.5;
+  margin-left: auto;
 }
 
 // Responsive adjustments for smaller screens
