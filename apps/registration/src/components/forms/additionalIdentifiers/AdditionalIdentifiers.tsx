@@ -33,7 +33,6 @@ export const AdditionalIdentifiers = ({
 }: AdditionalIdentifiersProps) => {
   const { data: identifierTypes, isLoading } = useIdentifierTypes();
 
-  // Filter to get only non-primary identifier types (extra identifiers)
   const extraIdentifierTypes = useMemo(() => {
     if (!identifierTypes) return [];
     return identifierTypes.filter(
@@ -43,7 +42,6 @@ export const AdditionalIdentifiers = ({
 
   const [formData, setFormData] = useState<AdditionalIdentifiersData>({});
 
-  // Initialize form data when extraIdentifierTypes changes
   useEffect(() => {
     const data: AdditionalIdentifiersData = {};
     extraIdentifierTypes.forEach((identifierType) => {
@@ -57,7 +55,6 @@ export const AdditionalIdentifiers = ({
   }, []);
 
   const validate = useCallback((): boolean => {
-    // No validation needed for optional identifiers
     return true;
   }, []);
 
@@ -70,12 +67,10 @@ export const AdditionalIdentifiers = ({
     getData,
   }));
 
-  // Don't render if loading or no extra identifiers available
   if (isLoading || extraIdentifierTypes.length === 0) {
     return null;
   }
 
-  // Prepare table data
   const headers: DataTableHeader[] = [
     { key: 'label', header: '' },
     { key: 'value', header: '' },
