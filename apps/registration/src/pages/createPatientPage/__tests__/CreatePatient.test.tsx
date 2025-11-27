@@ -102,21 +102,24 @@ jest.mock('../../../components/forms/additionalInfo/AdditionalInfo', () => ({
   },
 }));
 
-jest.mock('../../../components/forms/additionalIdentifiers/AdditionalIdentifiers', () => ({
-  AdditionalIdentifiers: ({ ref }: { ref?: React.Ref<unknown> }) => {
-    if (ref && typeof ref === 'object' && 'current' in ref) {
-      ref.current = {
-        validate: jest.fn(() => true),
-        getData: jest.fn(() => ({})),
-      };
-    }
-    return (
-      <div data-testid="patient-additional-identifiers">
-        Patient Additional Identifiers
-      </div>
-    );
-  },
-}));
+jest.mock(
+  '../../../components/forms/additionalIdentifiers/AdditionalIdentifiers',
+  () => ({
+    AdditionalIdentifiers: ({ ref }: { ref?: React.Ref<unknown> }) => {
+      if (ref && typeof ref === 'object' && 'current' in ref) {
+        ref.current = {
+          validate: jest.fn(() => true),
+          getData: jest.fn(() => ({})),
+        };
+      }
+      return (
+        <div data-testid="patient-additional-identifiers">
+          Patient Additional Identifiers
+        </div>
+      );
+    },
+  }),
+);
 
 jest.mock('../visitTypeSelector', () => ({
   VisitTypeSelector: ({
