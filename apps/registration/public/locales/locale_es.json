@@ -100,7 +100,7 @@
   "REGISTRATION_ADDRESS_POSTAL_CODE": "Código postal",
   "REGISTRATION_ADDRESS_LOCALITY": "Localidad/Sector",
   "REGISTRATION_ADDRESS_HOUSE_FLAT_NO": "Número de casa/Número de apartamento",
-  "RELATIONSHIP_TYPE": "Tipo de relación",
+  "RELATIONSHIP_TYPE": "Relación",
   "PATIENT_NAME_OR_ID": "Nombre o ID del paciente",
   "PATIENT_ID": "ID del paciente",
   "TILL_DATE": "Válido hasta",
@@ -113,5 +113,6 @@
   "SELECT_DATE": "dd/mm/aaaa",
   "SELECT": "Seleccionar",
   "RELATIONSHIP_TYPE_REQUIRED": "El tipo de relación es obligatorio",
-  "RELATIONSHIP_ALREADY_EXISTS": "La relación dada ya existe"
+  "RELATIONSHIP_ALREADY_EXISTS": "La relación dada ya existe",
+  "PATIENT_SELECTION_REQUIRED": "Por favor seleccione un paciente de la lista de autocompletar"
 }

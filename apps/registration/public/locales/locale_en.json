@@ -100,7 +100,7 @@
   "REGISTRATION_ADDRESS_POSTAL_CODE": "Pincode",
   "REGISTRATION_ADDRESS_LOCALITY": "Locality/Sector",
   "REGISTRATION_ADDRESS_HOUSE_FLAT_NO": "House number/ Flat number",
-  "RELATIONSHIP_TYPE": "Relationship Type",
+  "RELATIONSHIP_TYPE": "Relationship",
   "PATIENT_NAME_OR_ID": "Patient name or ID",
   "PATIENT_ID": "Patient Id",
   "TILL_DATE": "Valid till",
@@ -113,5 +113,6 @@
   "SELECT_DATE": "dd/mm/yyyy",
   "SELECT": "Select",
   "RELATIONSHIP_TYPE_REQUIRED": "Relationship type is required",
-  "RELATIONSHIP_ALREADY_EXISTS": "Given relationship already exists"
+  "RELATIONSHIP_ALREADY_EXISTS": "Given relationship already exists",
+  "PATIENT_SELECTION_REQUIRED": "Please select a patient from the autocomplete list"
 }

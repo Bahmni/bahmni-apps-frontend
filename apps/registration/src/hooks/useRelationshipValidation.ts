@@ -44,17 +44,29 @@ export const useRelationshipValidation = () => {
     const newValidationErrors: ValidationErrors = {};
 
     relationships.forEach((rel) => {
+      const hasAnyData =
+        rel.relationshipType.trim() ||
+        rel.patientId.trim() ||
+        rel.tillDate.trim();
+
+      if (!hasAnyData) {
+        return;
+      }
+
       const errors: { relationshipType?: string; patientId?: string } = {};
 
       if (!rel.relationshipType.trim()) {
-        errors.relationshipType =
-          t('RELATIONSHIP_TYPE_REQUIRED') || 'Relationship type is required';
+        errors.relationshipType = t('RELATIONSHIP_TYPE_REQUIRED');
+        isValid = false;
+      }
+
+      if (rel.relationshipType.trim() && !rel.patientUuid) {
+        errors.patientId = t('PATIENT_SELECTION_REQUIRED');
         isValid = false;
       }
 
       if (duplicateIds.has(rel.id)) {
-        errors.patientId =
-          t('RELATIONSHIP_ALREADY_EXISTS') || 'Relationship already exists';
+        errors.patientId = t('RELATIONSHIP_ALREADY_EXISTS');
         isValid = false;
       }
 

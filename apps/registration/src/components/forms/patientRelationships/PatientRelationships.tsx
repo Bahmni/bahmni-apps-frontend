@@ -149,11 +149,21 @@ export const PatientRelationships = ({
   const headers = [
     {
       key: 'relationshipType',
-      header: t('RELATIONSHIP_TYPE') ?? 'Relationship Type',
+      header: (
+        <span>
+          {t('RELATIONSHIP_TYPE') ?? 'Relationship Type'}
+          <span className={styles.requiredAsterisk}>*</span>
+        </span>
+      ),
     },
     {
       key: 'patientId',
-      header: t('PATIENT_ID') ?? 'Patient Id',
+      header: (
+        <span>
+          {t('PATIENT_ID') ?? 'Patient Id'}
+          <span className={styles.requiredAsterisk}>*</span>
+        </span>
+      ),
     },
     { key: 'tillDate', header: t('TILL_DATE') ?? 'Till date' },
     { key: 'actions', header: t('ACTIONS') ?? 'Actions' },
