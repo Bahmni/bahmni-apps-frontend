@@ -111,5 +111,7 @@
   "RELATIONSHIPS_TABLE": "Tabla de relaciones",
   "ENTER_PATIENT_ID": "Buscar paciente",
   "SELECT_DATE": "dd/mm/aaaa",
-  "SELECT": "Seleccionar"
+  "SELECT": "Seleccionar",
+  "RELATIONSHIP_TYPE_REQUIRED": "El tipo de relación es obligatorio",
+  "RELATIONSHIP_ALREADY_EXISTS": "La relación dada ya existe"
 }

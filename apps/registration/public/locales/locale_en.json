@@ -112,5 +112,6 @@
   "ENTER_PATIENT_ID": "Search Patient",
   "SELECT_DATE": "dd/mm/yyyy",
   "SELECT": "Select",
-  "RELATIONSHIP_TYPE_REQUIRED": "Relationship type is required"
+  "RELATIONSHIP_TYPE_REQUIRED": "Relationship type is required",
+  "RELATIONSHIP_ALREADY_EXISTS": "Given relationship already exists"
 }
