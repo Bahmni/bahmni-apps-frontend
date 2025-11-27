@@ -275,7 +275,7 @@ const CreatePatient = () => {
                 <div className={styles.infoContainer}>
                   <div
                     className={styles.patientId}
-                  >{`Patient Id: ${patientIdentifier}`}</div>
+                  >{`Patient ID: ${patientIdentifier}`}</div>
                   <div
                     className={styles.registerDate}
                   >{`Registered on ${registerDate}`}</div>
