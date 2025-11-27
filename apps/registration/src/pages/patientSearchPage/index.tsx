@@ -166,13 +166,12 @@ const PatientSearchPage: React.FC = () => {
 
   const navigateToPatient = (patientUuid: string) => {
     setIsNavigating(true);
-    window.location.href = `/bahmni/registration/index.html#/patient/${patientUuid}`;
+    navigate(`/registration/edit/${patientUuid}`);
   };
 
   const renderIdentifier = (uuid: string, identifier: string) => {
     return (
       <Link
-        href={`/bahmni/registration/index.html#/patient/${uuid}`}
         onClick={(e) => {
           e.preventDefault();
           navigateToPatient(uuid);

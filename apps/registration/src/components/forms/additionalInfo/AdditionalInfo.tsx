@@ -1,7 +1,6 @@
 import { Tile } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
-import { useCallback, useImperativeHandle, useMemo, useState } from 'react';
-
+import { useCallback, useImperativeHandle, useState, useEffect, useMemo } from 'react';
 import { usePersonAttributeFields } from '../../../hooks/usePersonAttributeFields';
 import { useRegistrationConfig } from '../../../hooks/useRegistrationConfig';
 import type { AdditionalData } from '../../../models/patient';
@@ -59,6 +58,16 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
 
   const [formData, setFormData] = useState<AdditionalData>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (initialData && expectedFields.length > 0) {
+      const data: AdditionalData = {};
+      expectedFields.forEach((field) => {
+        data[field.field] = initialData[field.field] ?? '';
+      });
+      setFormData(data);
+    }
+  }, [initialData, expectedFields]);
 
   const handleFieldChange = useCallback(
     (fieldName: string, value: string | number | boolean) => {

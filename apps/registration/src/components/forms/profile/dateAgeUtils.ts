@@ -259,12 +259,20 @@ export const convertTimeToISODateTime = (
     return null;
   }
 
-  // If timeString is already a full ISO datetime string, return it as-is
   if (timeString.includes('T')) {
     return timeString;
   }
 
-  const date = new Date(`${dateString}T${timeString}:00`);
+  const timeParts = timeString.split(':');
+  const hasSeconds = timeParts.length === 3;
+  const formattedTime = hasSeconds ? timeString : `${timeString}:00`;
+
+  const date = new Date(`${dateString}T${formattedTime}`);
+
+  if (isNaN(date.getTime())) {
+    return null;
+  }
+
   return date.toISOString();
 };
 
