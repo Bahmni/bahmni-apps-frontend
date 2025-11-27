@@ -220,15 +220,8 @@ export const blobToDataUrl = (blob: Blob): Promise<string> => {
 export const getPatientImageAsDataUrl = async (
   patientUUID: string,
 ): Promise<string | null> => {
-  const response = await fetch(PATIENT_IMAGE_URL(patientUUID), {});
+  const response = await fetch(PATIENT_IMAGE_URL(patientUUID));
   if (!response.ok) return null;
-
-  const etag = response.headers.get('etag');
-  const PLACEHOLDER_ETAG = '"031e744e7658cce0992287de9f1d694f7"';
-
-  if (etag === PLACEHOLDER_ETAG) {
-    return null;
-  }
 
   const blob = await response.blob();
   return await blobToDataUrl(blob);
