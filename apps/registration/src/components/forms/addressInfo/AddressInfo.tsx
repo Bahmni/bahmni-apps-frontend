@@ -6,6 +6,7 @@ import {
 } from '@bahmni/services';
 import {
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -81,6 +82,26 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
     levelsWithStrictEntry,
     selectedMetadata,
   );
+
+  useEffect(() => {
+    if (initialData && autocompleteFields.length > 0) {
+      const initialSelectedItems: Record<string, AddressHierarchyEntry | null> =
+        {};
+
+      autocompleteFields.forEach((fieldName) => {
+        const fieldValue = initialData[fieldName];
+        if (fieldValue) {
+          initialSelectedItems[fieldName] = {
+            name: fieldValue,
+            uuid: '',
+            userGeneratedId: fieldValue,
+          };
+        }
+      });
+
+      setSelectedItems(initialSelectedItems);
+    }
+  }, [initialData, autocompleteFields, setSelectedItems]);
 
   const handleAddressInputChange = useCallback(
     (field: string, value: string) => {
