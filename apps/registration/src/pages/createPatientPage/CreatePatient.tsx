@@ -12,11 +12,13 @@ import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
-  getFormattedPatientById,
+  getPatientImageAsDataUrl,
   CreatePatientResponse,
+  getPatientProfile,
 } from '@bahmni/services';
-import { useQuery } from '@tanstack/react-query';
-import { useRef, useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { parseISO } from 'date-fns';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   AdditionalInfo,
@@ -35,6 +37,7 @@ import { BAHMNI_REGISTRATION_SEARCH } from '../../constants/app';
 
 import { useCreatePatient } from '../../hooks/useCreatePatient';
 import { useUpdatePatient } from '../../hooks/useUpdatePatient';
+import { useGenderData } from '../../utils/identifierGenderUtils';
 import {
   convertToBasicInfoData,
   convertToContactData,
@@ -48,19 +51,17 @@ import { VisitTypeSelector } from './visitTypeSelector';
 const CreatePatient = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { getGenderDisplay } = useGenderData(t);
   const { patientUuid: patientUuidFromUrl } = useParams<{
     patientUuid: string;
   }>();
-
+  const [patientIdentifier, setPatientIdentifier] = useState<string>('');
+  const [registerDate, setRegisterDate] = useState<string>('');
+  const [patientName, setPatientName] = useState<string>('');
   // Determine if we're in edit mode based on URL parameter
-  const isEditMode = !!patientUuidFromUrl;
-  const [patientUuid, setPatientUuid] = useState<string | null>(
-    patientUuidFromUrl ?? null,
-  );
-  const [patientIdentifier, setPatientIdentifier] = useState<string | null>(
-    null,
-  );
-
+  const [isEditMode, setIsEditMode] = useState(!!patientUuidFromUrl);
+  const [patientUuid, setPatientUuid] = useState<string>();
   const patientProfileRef = useRef<ProfileRef>(null);
   const patientAddressRef = useRef<AddressInfoRef>(null);
   const patientContactRef = useRef<ContactInfoRef>(null);
@@ -68,14 +69,60 @@ const CreatePatient = () => {
 
   const { data: patientDetails } = useQuery({
     queryKey: ['formattedPatient', patientUuidFromUrl],
-    queryFn: () => getFormattedPatientById(patientUuidFromUrl!),
+    queryFn: () => getPatientProfile(patientUuidFromUrl!),
+    enabled: isEditMode,
+    refetchOnMount: false,
+  });
+
+  const { data: patientPhoto } = useQuery({
+    queryKey: ['patientPhoto', patientUuidFromUrl],
+    queryFn: () => getPatientImageAsDataUrl(patientUuidFromUrl!),
     enabled: isEditMode,
   });
 
-  const profileInitialData = convertToBasicInfoData(patientDetails);
-  const contactInitialData = convertToContactData(patientDetails);
-  const additionalInitialData = convertToAdditionalData(patientDetails);
-  const addressInitialData = convertToAddressData(patientDetails);
+  const profileInitialData = useMemo(
+    () => convertToBasicInfoData(patientDetails, getGenderDisplay),
+    [patientDetails, getGenderDisplay],
+  );
+
+  const contactInitialData = useMemo(
+    () => convertToContactData(patientDetails),
+    [patientDetails],
+  );
+
+  const additionalInitialData = useMemo(
+    () => convertToAdditionalData(patientDetails),
+    [patientDetails],
+  );
+
+  const addressInitialData = useMemo(
+    () => convertToAddressData(patientDetails),
+    [patientDetails],
+  );
+
+  const initialDobEstimated = useMemo(
+    () => patientDetails?.patient?.person?.birthdateEstimated ?? false,
+    [patientDetails],
+  );
+
+  useEffect(() => {
+    if (patientDetails) {
+      setPatientUuid(patientDetails.patient.uuid);
+      setPatientIdentifier(
+        patientDetails.patient.identifiers[0].identifier ?? '',
+      );
+      const dateCreated = patientDetails.patient.auditInfo?.dateCreated;
+      if (dateCreated) {
+        const date = parseISO(dateCreated);
+        setRegisterDate(date.toLocaleDateString());
+      }
+      setPatientName(patientDetails.patient.person.display ?? '');
+      setIsEditMode(false);
+      queryClient.removeQueries({
+        queryKey: ['formattedPatient', patientUuidFromUrl],
+      });
+    }
+  }, [patientDetails, patientUuidFromUrl, queryClient]);
 
   // Use the appropriate mutation based on mode
   const createPatientMutation = useCreatePatient();
@@ -90,33 +137,7 @@ const CreatePatient = () => {
     });
   }, []);
 
-  // Track patient UUID and identifier after successful creation/update
-  useEffect(() => {
-    if (createPatientMutation.isSuccess && createPatientMutation.data) {
-      const response = createPatientMutation.data as CreatePatientResponse;
-      if (response?.patient?.uuid) {
-        setPatientUuid(response.patient.uuid);
-      }
-      if (response?.patient?.identifiers?.[0]?.identifier) {
-        setPatientIdentifier(response.patient.identifiers[0].identifier);
-      }
-    }
-  }, [createPatientMutation.isSuccess, createPatientMutation.data]);
-
-  useEffect(() => {
-    if (updatePatientMutation.isSuccess && updatePatientMutation.data) {
-      const response = updatePatientMutation.data as CreatePatientResponse;
-      if (response?.patient?.uuid) {
-        setPatientUuid(response.patient.uuid);
-      }
-      if (response?.patient?.identifiers?.[0]?.identifier) {
-        setPatientIdentifier(response.patient.identifiers[0].identifier);
-      }
-    }
-  }, [updatePatientMutation.isSuccess, updatePatientMutation.data]);
-
   const handleSave = async (): Promise<string | null> => {
-    // Validate all form sections
     const isValid = validateAllSections({
       profileRef: patientProfileRef,
       addressRef: patientAddressRef,
@@ -128,7 +149,6 @@ const CreatePatient = () => {
       return null;
     }
 
-    // Collect data from all form sections
     const formData = collectFormData({
       profileRef: patientProfileRef,
       addressRef: patientAddressRef,
@@ -140,25 +160,23 @@ const CreatePatient = () => {
       return null;
     }
 
-    // Trigger mutation with collected data (create or update)
     try {
-      if (isEditMode && patientUuid) {
-        // Update existing patient
+      if (patientUuid) {
         const response = (await updatePatientMutation.mutateAsync({
           patientUuid,
           ...formData,
         })) as CreatePatientResponse;
         if (response?.patient?.uuid) {
+          setPatientUuid(response.patient.uuid);
           return response.patient.uuid;
         }
       } else {
-        // Create new patient
         const response = (await createPatientMutation.mutateAsync(
           formData,
         )) as CreatePatientResponse;
         if (response?.patient?.uuid) {
           const newPatientUuid = response.patient.uuid;
-          // Navigate to edit patient page after successful save
+          setPatientUuid(newPatientUuid);
           navigate(`/registration/edit/${newPatientUuid}`);
           return newPatientUuid;
         }
@@ -182,7 +200,7 @@ const CreatePatient = () => {
     },
     {
       id: 'current',
-      label: t('CREATE_PATIENT_BREADCRUMB_CURRENT'),
+      label: patientUuid ? patientName : t('CREATE_PATIENT_BREADCRUMB_CURRENT'),
       isCurrentPage: true,
     },
   ];
@@ -195,10 +213,6 @@ const CreatePatient = () => {
     },
   ];
 
-  const isPending = isEditMode
-    ? updatePatientMutation.isPending
-    : createPatientMutation.isPending;
-
   return (
     <BaseLayout
       header={
@@ -208,17 +222,27 @@ const CreatePatient = () => {
         <div>
           <Tile className={styles.patientDetailsHeader}>
             <span className={styles.sectionTitle}>
-              {isEditMode
-                ? t('EDIT_PATIENT_HEADER_TITLE')
-                : t('CREATE_PATIENT_HEADER_TITLE')}
+              {patientUuid ? (
+                <div className={styles.infoContainer}>
+                  <div
+                    className={styles.patientId}
+                  >{`Patient Id: ${patientIdentifier}`}</div>
+                  <div
+                    className={styles.registerDate}
+                  >{`Registered on ${registerDate}`}</div>
+                </div>
+              ) : (
+                t('CREATE_PATIENT_HEADER_TITLE')
+              )}
             </span>
           </Tile>
 
           <div className={styles.formContainer}>
             <Profile
               ref={patientProfileRef}
-              patientIdentifier={patientIdentifier}
               initialData={profileInitialData}
+              initialDobEstimated={initialDobEstimated}
+              initialPhoto={patientPhoto}
             />
             <AddressInfo
               ref={patientAddressRef}
@@ -245,12 +269,8 @@ const CreatePatient = () => {
               {t('CREATE_PATIENT_BACK_TO_SEARCH')}
             </Button>
             <div className={styles.actionButtons}>
-              <Button
-                kind="tertiary"
-                onClick={handleSave}
-                disabled={isPending || (!isEditMode && patientUuid != null)}
-              >
-                {isPending ? 'Saving...' : t('CREATE_PATIENT_SAVE')}
+              <Button kind="tertiary" onClick={handleSave}>
+                {t('CREATE_PATIENT_SAVE')}
               </Button>
               <Button kind="tertiary">
                 {t('CREATE_PATIENT_PRINT_REG_CARD')}
