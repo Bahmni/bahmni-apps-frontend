@@ -4,6 +4,7 @@ import { APP_PROPERTY_URL } from '../applicationConfigService/constants';
 import { PatientSearchField } from '../configService/models/registrationConfig';
 import { calculateAge } from '../date';
 import { getUserLoginLocation } from '../userService';
+import { blobToDataUrl } from '../utils';
 import {
   PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL,
   PATIENT_LUCENE_SEARCH_URL,
@@ -196,20 +197,6 @@ export const getFormattedPatientById = async (
 ): Promise<FormattedPatientData> => {
   const patient = await getPatientById(patientUUID);
   return formatPatientData(patient);
-};
-
-/**
- * Convert blob to base64 data URL
- * @param blob - The image blob
- * @returns Promise<string> - The base64 data URL
- */
-export const blobToDataUrl = (blob: Blob): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
 };
 
 /**
