@@ -6,16 +6,15 @@ import {
   ComboBox,
   SimpleDataTable,
 } from '@bahmni/design-system';
-import {
-  useTranslation,
-  searchPatientByNameOrId,
-  PatientSearchResult,
-  getRelationshipTypes,
-} from '@bahmni/services';
+import { useTranslation, getRelationshipTypes } from '@bahmni/services';
 import { Close } from '@carbon/icons-react';
 import { Tile } from '@carbon/react';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useImperativeHandle } from 'react';
+import {
+  usePatientSearch,
+  type PatientSuggestion,
+} from '../../../hooks/usePatientSearch';
 import { useRelationshipValidation } from '../../../hooks/useRelationshipValidation';
 import styles from './styles/index.module.scss';
 
@@ -39,13 +38,6 @@ interface PatientRelationshipsProps {
   ref?: React.Ref<PatientRelationshipsRef>;
 }
 
-interface PatientSuggestion {
-  id: string;
-  text: string;
-  identifier: string;
-  name: string;
-}
-
 export const PatientRelationships = ({
   initialData,
   ref,
@@ -56,7 +48,7 @@ export const PatientRelationships = ({
   const { data: relationshipTypes = [] } = useQuery({
     queryKey: ['relationshipTypes'],
     queryFn: getRelationshipTypes,
-    staleTime: Infinity, // Cache indefinitely since relationship types rarely change
+    staleTime: Infinity,
   });
 
   const [relationships, setRelationships] = useState<RelationshipData[]>(
@@ -72,10 +64,6 @@ export const PatientRelationships = ({
         ],
   );
 
-  const [searchTerms, setSearchTerms] = useState<Record<string, string>>({});
-  const [activeSearchId, setActiveSearchId] = useState<string | null>(null);
-
-  // Use validation hook
   const {
     validationErrors,
     validateRelationships,
@@ -83,33 +71,13 @@ export const PatientRelationships = ({
     clearAllErrors,
   } = useRelationshipValidation();
 
-  const { data: searchResults } = useQuery({
-    queryKey: ['patientSearch', searchTerms[activeSearchId ?? '']],
-    queryFn: () =>
-      searchPatientByNameOrId(encodeURI(searchTerms[activeSearchId ?? ''])),
-    enabled:
-      !!activeSearchId && (searchTerms[activeSearchId]?.length ?? 0) >= 2,
-    staleTime: 0,
-    gcTime: 0,
-  });
-
-  const getPatientSuggestions = (rowId: string): PatientSuggestion[] => {
-    if (!searchTerms[rowId] || searchTerms[rowId].length < 2) return [];
-
-    return (searchResults?.pageOfResults ?? []).map(
-      (patient: PatientSearchResult) => ({
-        id: patient.uuid,
-        text:
-          `${patient.givenName} ${patient.middleName || ''} ${patient.familyName}`
-            .replace(/\s+/g, ' ')
-            .trim() + ` (${patient.identifier})`,
-        identifier: patient.identifier ?? '',
-        name: `${patient.givenName} ${patient.middleName || ''} ${patient.familyName}`
-          .replace(/\s+/g, ' ')
-          .trim(),
-      }),
-    );
-  };
+  const {
+    getPatientSuggestions,
+    handleSearch,
+    clearSearch,
+    clearAllSearches,
+    setSearchTerms,
+  } = usePatientSearch();
 
   const updateRelationship = (
     id: string,
@@ -120,15 +88,13 @@ export const PatientRelationships = ({
       prev.map((rel) => (rel.id === id ? { ...rel, [field]: value } : rel)),
     );
 
-    // Clear validation error when user makes a change
     if (field === 'relationshipType' || field === 'patientId') {
       clearFieldError(id, field);
     }
   };
 
   const handlePatientSearch = (rowId: string, searchValue: string) => {
-    setSearchTerms((prev) => ({ ...prev, [rowId]: searchValue }));
-    setActiveSearchId(rowId);
+    handleSearch(rowId, searchValue);
     updateRelationship(rowId, 'patientId', searchValue);
   };
 
@@ -167,11 +133,7 @@ export const PatientRelationships = ({
 
   const removeRelationship = (id: string) => {
     setRelationships((prev) => prev.filter((rel) => rel.id !== id));
-    setSearchTerms((prev) => {
-      const updated = { ...prev };
-      delete updated[id];
-      return updated;
-    });
+    clearSearch(id);
   };
 
   useImperativeHandle(ref, () => ({
@@ -179,7 +141,7 @@ export const PatientRelationships = ({
     validate: () => validateRelationships(relationships),
     clearData: () => {
       setRelationships([]);
-      setSearchTerms({});
+      clearAllSearches();
       clearAllErrors();
     },
   }));

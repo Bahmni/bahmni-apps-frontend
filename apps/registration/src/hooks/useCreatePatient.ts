@@ -110,9 +110,7 @@ function transformFormDataToPayload(
     });
   }
 
-  // Transform relationships to backend format
-  // Filter out empty relationships (no patient selected) and those without relationship type
-  const transformedRelationships = formData.relationships
+  const transformedRelationships = (formData.relationships || [])
     .filter((rel) => rel.patientUuid && rel.relationshipType)
     .map((rel) => {
       const relationship: {
@@ -124,7 +122,6 @@ function transformFormDataToPayload(
         personB: { uuid: rel.patientUuid },
       };
 
-      // Convert tillDate (dd/mm/yyyy) to ISO 8601 UTC format if present
       if (rel.tillDate) {
         const date = parseDateStringToDate(rel.tillDate);
         if (date) {
