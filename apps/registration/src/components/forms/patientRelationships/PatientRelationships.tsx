@@ -16,6 +16,7 @@ import { Close } from '@carbon/icons-react';
 import { Tile } from '@carbon/react';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useImperativeHandle } from 'react';
+import { useRelationshipValidation } from '../../../hooks/useRelationshipValidation';
 import styles from './styles/index.module.scss';
 
 export interface RelationshipData {
@@ -73,9 +74,14 @@ export const PatientRelationships = ({
 
   const [searchTerms, setSearchTerms] = useState<Record<string, string>>({});
   const [activeSearchId, setActiveSearchId] = useState<string | null>(null);
-  const [validationErrors, setValidationErrors] = useState<
-    Record<string, { relationshipType?: string; patientId?: string }>
-  >({});
+
+  // Use validation hook
+  const {
+    validationErrors,
+    validateRelationships,
+    clearFieldError,
+    clearAllErrors,
+  } = useRelationshipValidation();
 
   const { data: searchResults } = useQuery({
     queryKey: ['patientSearch', searchTerms[activeSearchId ?? '']],
@@ -116,13 +122,7 @@ export const PatientRelationships = ({
 
     // Clear validation error when user makes a change
     if (field === 'relationshipType' || field === 'patientId') {
-      setValidationErrors((prev) => ({
-        ...prev,
-        [id]: {
-          ...prev[id],
-          [field]: undefined,
-        },
-      }));
+      clearFieldError(id, field);
     }
   };
 
@@ -176,34 +176,11 @@ export const PatientRelationships = ({
 
   useImperativeHandle(ref, () => ({
     getData: () => relationships,
-    validate: () => {
-      let isValid = true;
-      const newValidationErrors: Record<
-        string,
-        { relationshipType?: string; patientId?: string }
-      > = {};
-
-      relationships.forEach((rel) => {
-        const errors: { relationshipType?: string; patientId?: string } = {};
-
-        if (!rel.relationshipType.trim()) {
-          errors.relationshipType =
-            t('RELATIONSHIP_TYPE_REQUIRED') || 'Relationship type is required';
-          isValid = false;
-        }
-
-        if (Object.keys(errors).length > 0) {
-          newValidationErrors[rel.id] = errors;
-        }
-      });
-
-      setValidationErrors(newValidationErrors);
-      return isValid;
-    },
+    validate: () => validateRelationships(relationships),
     clearData: () => {
       setRelationships([]);
       setSearchTerms({});
-      setValidationErrors({});
+      clearAllErrors();
     },
   }));
 
@@ -222,7 +199,7 @@ export const PatientRelationships = ({
 
   const rows = relationships.map((rel) => {
     const suggestions = getPatientSuggestions(rel.id);
-    const rowErrors = validationErrors[rel.id] || {};
+    const rowErrors = validationErrors[rel.id] ?? {};
 
     return {
       id: rel.id,
