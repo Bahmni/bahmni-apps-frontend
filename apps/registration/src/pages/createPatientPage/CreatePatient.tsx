@@ -130,17 +130,22 @@ const CreatePatient = () => {
     [patientDetails],
   );
 
+  const getRegisterDate = (obj: any): void => {
+    const dateCreated = obj?.patient?.auditInfo?.dateCreated;
+    if (!dateCreated) {
+      return;
+    }
+    const date = parseISO(dateCreated);
+    setRegisterDate(date.toLocaleDateString());
+  };
+
   useEffect(() => {
     if (patientDetails) {
       setPatientUuid(patientDetails.patient.uuid);
       setPatientIdentifier(
         patientDetails.patient.identifiers[0].identifier ?? '',
       );
-      const dateCreated = patientDetails.patient.auditInfo?.dateCreated;
-      if (dateCreated) {
-        const date = parseISO(dateCreated);
-        setRegisterDate(date.toLocaleDateString());
-      }
+      getRegisterDate(patientDetails);
       setPatientName(patientDetails.patient.person.display ?? '');
       setIsEditMode(false);
       queryClient.removeQueries({
@@ -208,6 +213,8 @@ const CreatePatient = () => {
         })) as CreatePatientResponse;
         if (response?.patient?.uuid) {
           setPatientUuid(response.patient.uuid);
+          setPatientIdentifier(response.patient.identifiers[0].identifier);
+          getRegisterDate(response);
           return response.patient.uuid;
         }
       } else {
@@ -217,6 +224,8 @@ const CreatePatient = () => {
         if (response?.patient?.uuid) {
           const newPatientUuid = response.patient.uuid;
           setPatientUuid(newPatientUuid);
+          setPatientIdentifier(response.patient.identifiers[0].identifier);
+          getRegisterDate(response);
           navigate(`/registration/edit/${newPatientUuid}`);
           return newPatientUuid;
         }
