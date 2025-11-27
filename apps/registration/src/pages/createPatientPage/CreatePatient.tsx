@@ -214,6 +214,7 @@ const CreatePatient = () => {
         if (response?.patient?.uuid) {
           setPatientUuid(response.patient.uuid);
           setPatientIdentifier(response.patient.identifiers[0].identifier);
+          setPatientName(response.patient.person.names[0].display);
           getRegisterDate(response);
           return response.patient.uuid;
         }
@@ -225,6 +226,7 @@ const CreatePatient = () => {
           const newPatientUuid = response.patient.uuid;
           setPatientUuid(newPatientUuid);
           setPatientIdentifier(response.patient.identifiers[0].identifier);
+          setPatientName(response.patient.person.names[0].display);
           getRegisterDate(response);
           navigate(`/registration/edit/${newPatientUuid}`);
           return newPatientUuid;
