@@ -251,6 +251,82 @@ export interface ServiceType {
   uuid?: string;
 }
 
+export interface PatientProfileResponse {
+  patient: {
+    uuid: string;
+    display?: string;
+    identifiers: Array<{
+      uuid?: string;
+      identifier?: string;
+      identifierType: {
+        uuid: string;
+        name: string;
+        description?: string;
+        format?: string;
+        display?: string;
+      };
+      preferred: boolean;
+      voided?: boolean;
+    }>;
+    person: {
+      uuid: string;
+      display?: string;
+      gender: string;
+      age?: number;
+      birthdate: string;
+      birthdateEstimated: boolean;
+      birthtime?: string;
+      dead?: boolean;
+      deathDate?: string;
+      names: Array<{
+        uuid?: string;
+        givenName: string;
+        middleName?: string;
+        familyName: string;
+        display?: string;
+        preferred?: boolean;
+        voided?: boolean;
+      }>;
+      addresses?: Array<{
+        uuid?: string;
+        preferred?: boolean;
+        address1?: string;
+        address2?: string;
+        address3?: string;
+        address4?: string;
+        address5?: string;
+        address6?: string;
+        cityVillage?: string;
+        countyDistrict?: string;
+        stateProvince?: string;
+        country?: string;
+        postalCode?: string;
+        voided?: boolean;
+      }>;
+      attributes?: Array<{
+        uuid?: string;
+        display?: string;
+        value: string | number | boolean;
+        attributeType: {
+          uuid: string;
+          name: string;
+          description?: string;
+          format?: string;
+          display?: string;
+        };
+        voided?: boolean;
+      }>;
+      voided?: boolean;
+    };
+    voided?: boolean;
+    auditInfo?: {
+      dateCreated?: string;
+      dateChanged?: string;
+    };
+  };
+  image?: string;
+}
+
 /**
  * Concept answer for dropdown/select inputs
  */

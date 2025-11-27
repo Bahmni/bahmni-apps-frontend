@@ -1,4 +1,6 @@
-import type { FormattedPatientData } from '@bahmni/services';
+import type { PatientProfileResponse } from '@bahmni/services';
+import { calculateAge } from '@bahmni/services';
+import { format, isValid, parseISO } from 'date-fns';
 import { AddressData } from '../hooks/useAddressFields';
 import type {
   BasicInfoData,
@@ -6,100 +8,110 @@ import type {
   AdditionalData,
 } from '../models/patient';
 
-/**
- * Convert FormattedPatientData to BasicInfoData (Profile component)
- * Extracts name parts from fullName and age components
- */
 export const convertToBasicInfoData = (
-  patientData: FormattedPatientData | undefined,
+  patientData: PatientProfileResponse | undefined,
+  getGenderDisplay?: (code: string) => string,
 ): BasicInfoData | undefined => {
   if (!patientData) return undefined;
 
-  const nameParts = patientData.fullName?.split(' ') ?? [];
-  const firstName = nameParts[0] ?? '';
-  const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
-  const middleName =
-    nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : '';
+  const preferredName =
+    patientData.patient.person.names.find((name) => name.preferred) ??
+    patientData.patient.person.names[0];
 
-  const ageYears = patientData.age?.years?.toString() ?? '';
-  const ageMonths = patientData.age?.months?.toString() ?? '';
-  const ageDays = patientData.age?.days?.toString() ?? '';
+  if (!preferredName) return undefined;
+
+  const birthdate = patientData.patient.person.birthdate;
+  const birthtimeIso = patientData.patient.person.birthtime;
+
+  const dateOnly = birthdate ? birthdate.split('T')[0] : '';
+
+  const age = dateOnly ? calculateAge(dateOnly) : null;
+
+  let birthTime = '';
+  if (birthtimeIso) {
+    const date = parseISO(birthtimeIso);
+    if (isValid(date)) {
+      birthTime = format(date, 'HH:mm');
+    }
+  }
+  const genderCode = patientData.patient.person.gender;
+  const genderDisplay = getGenderDisplay?.(genderCode) ?? genderCode;
 
   return {
     patientIdFormat: '',
-    entryType: false,
-    firstName,
-    middleName,
-    lastName,
-    gender: patientData.gender ?? '',
-    ageYears,
-    ageMonths,
-    ageDays,
-    dateOfBirth: patientData.birthDate ?? '',
-    birthTime: '',
+    entryType: patientData.patient.person.birthdateEstimated,
+    firstName: preferredName.givenName,
+    middleName: preferredName.middleName ?? '',
+    lastName: preferredName.familyName,
+    gender: genderDisplay,
+    ageYears: age?.years.toString() ?? '',
+    ageMonths: age?.months.toString() ?? '',
+    ageDays: age?.days.toString() ?? '',
+    dateOfBirth: dateOnly,
+    birthTime: birthTime,
   };
 };
 
-/**
- * Convert FormattedPatientData to ContactData (ContactInfo component)
- * Extracts phone number from formattedContact string
- */
 export const convertToContactData = (
-  patientData: FormattedPatientData | undefined,
+  patientData: PatientProfileResponse | undefined,
 ): ContactData | undefined => {
-  if (!patientData?.formattedContact) return undefined;
+  if (!patientData?.patient.person.attributes) return undefined;
 
-  const phoneMatch = patientData.formattedContact.match(/phone:\s*(.+)/i);
-  const phoneNumber = phoneMatch?.[1]?.trim() ?? '';
+  const phoneAttribute = patientData.patient.person.attributes.find((attr) =>
+    attr.attributeType?.display?.toLowerCase().includes('phone'),
+  );
+
+  const altPhoneAttribute = patientData.patient.person.attributes.find((attr) =>
+    attr.attributeType?.display?.toLowerCase().includes('alternate'),
+  );
 
   return {
-    phoneNumber,
-    altPhoneNumber: '',
+    phoneNumber: phoneAttribute?.value?.toString() ?? '',
+    altPhoneNumber: altPhoneAttribute?.value?.toString() ?? '',
   };
 };
 
-/**
- * Convert FormattedPatientData to AddressData (AddressInfo component)
- * Parses formattedAddress string into address components
- * Returns Record<string, string | null> format for hook compatibility
- */
 export const convertToAddressData = (
-  patientData: FormattedPatientData | undefined,
+  patientData: PatientProfileResponse | undefined,
 ): AddressData | undefined => {
-  if (!patientData?.formattedAddress) return undefined;
+  if (
+    !patientData?.patient.person.addresses ||
+    patientData.patient.person.addresses.length === 0
+  ) {
+    return undefined;
+  }
 
-  const parts = patientData.formattedAddress.split(',').map((p) => p.trim());
+  const address = patientData.patient.person.addresses[0];
 
-  return {
-    address1: parts[0] || null,
-    address2: parts[1] || null,
-    cityVillage: parts[2] || null,
-    countyDistrict: null,
-    stateProvince: parts[3]?.split(' ')[0] || null,
-    postalCode: parts[3]?.split(' ')[1] || null,
-  };
+  const addressData: AddressData = {};
+  Object.keys(address).forEach((key) => {
+    if (key === 'links' || key === 'resourceVersion') return;
+
+    const value = (address as Record<string, unknown>)[key];
+    addressData[key] =
+      value !== undefined && value !== null ? String(value) : null;
+  });
+
+  return addressData;
 };
 
-/**
- * Convert FormattedPatientData to AdditionalData (AdditionalInfo component)
- * Extracts additional attributes from identifiers map
- */
 export const convertToAdditionalData = (
-  patientData: FormattedPatientData | undefined,
+  patientData: PatientProfileResponse | undefined,
 ): AdditionalData | undefined => {
-  if (!patientData) return undefined;
+  if (
+    !patientData?.patient.person.attributes ||
+    patientData.patient.person.attributes.length === 0
+  ) {
+    return undefined;
+  }
 
   const additionalData: AdditionalData = {};
 
-  if (patientData.identifiers && patientData.identifiers.size > 0) {
-    patientData.identifiers.forEach((value, key) => {
-      if (key.toLowerCase().includes('email')) {
-        additionalData.email = value;
-      } else {
-        additionalData[key] = value;
-      }
-    });
-  }
+  patientData.patient.person.attributes.forEach((attr) => {
+    const fieldName = attr.attributeType?.display;
+    if (!fieldName) return;
+    additionalData[fieldName] = attr.value?.toString() ?? '';
+  });
 
-  return Object.keys(additionalData).length > 0 ? additionalData : undefined;
+  return additionalData;
 };

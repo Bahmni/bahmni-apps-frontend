@@ -22,6 +22,7 @@ interface UpdatePatientFormData {
   profile: BasicInfoData & {
     dobEstimated: boolean;
     patientIdentifier: PatientIdentifier;
+    image?: string;
   };
   address: PatientAddress;
   contact: ContactData;
@@ -48,10 +49,10 @@ export const useUpdatePatient = () => {
 
       if (response?.patient?.uuid) {
         dispatchAuditEvent({
-          eventType: AUDIT_LOG_EVENT_DETAILS.REGISTER_NEW_PATIENT
+          eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_PATIENT_DETAILS
             .eventType as AuditEventType,
           patientUuid: response.patient.uuid,
-          module: AUDIT_LOG_EVENT_DETAILS.REGISTER_NEW_PATIENT.module,
+          module: AUDIT_LOG_EVENT_DETAILS.EDIT_PATIENT_DETAILS.module,
         });
       }
     },
@@ -127,6 +128,7 @@ function transformFormDataToPayload(
       },
       identifiers: [profile.patientIdentifier],
     },
+    ...(profile.image && { image: profile.image }),
     relationships: [],
   };
 
