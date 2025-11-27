@@ -77,8 +77,8 @@ export const AdditionalIdentifiers = ({
 
   // Prepare table data
   const headers: DataTableHeader[] = [
-    { key: 'label', header: 'Document type' },
-    { key: 'value', header: 'Document number' },
+    { key: 'label', header: '' },
+    { key: 'value', header: '' },
   ];
 
   const rows: IdentifierRow[] = extraIdentifierTypes.map((identifierType) => ({

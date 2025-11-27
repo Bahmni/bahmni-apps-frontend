@@ -39,6 +39,7 @@ import { BAHMNI_REGISTRATION_SEARCH } from '../../constants/app';
 
 import { useCreatePatient } from '../../hooks/useCreatePatient';
 import { useIdentifierTypes } from '../../hooks/useIdentifierTypes';
+import { useRegistrationConfig } from '../../hooks/useRegistrationConfig';
 import { useUpdatePatient } from '../../hooks/useUpdatePatient';
 import { validateAllSections, collectFormData } from './patientFormService';
 import styles from './styles/index.module.scss';
@@ -60,12 +61,22 @@ const CreatePatient = () => {
     null,
   );
 
+  // Get configuration for extra identifiers
+  const { registrationConfig } = useRegistrationConfig();
+  const isExtraIdentifiersSectionEnabled =
+    registrationConfig?.patientInformation?.isExtraPatientIdentifiersSection ??
+    true; // Default to true if config not available
+
   // Check if additional identifiers are available
   const { data: identifierTypes } = useIdentifierTypes();
   const hasAdditionalIdentifiers = useMemo(() => {
     if (!identifierTypes) return false;
     return identifierTypes.some((type) => type.primary === false);
   }, [identifierTypes]);
+
+  // Show additional identifiers section only if both config is enabled AND identifiers exist
+  const shouldShowAdditionalIdentifiers =
+    isExtraIdentifiersSectionEnabled && hasAdditionalIdentifiers;
 
   const patientProfileRef = useRef<ProfileRef>(null);
   const patientAddressRef = useRef<AddressInfoRef>(null);
@@ -231,7 +242,7 @@ const CreatePatient = () => {
             <AdditionalInfo ref={patientAdditionalRef} />
           </div>
 
-          {hasAdditionalIdentifiers && (
+          {shouldShowAdditionalIdentifiers && (
             <>
               <Tile className={styles.patientDetailsHeader}>
                 <span className={styles.sectionTitle}>

@@ -3,6 +3,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { useCreatePatient } from '../../../hooks/useCreatePatient';
+import { useIdentifierTypes } from '../../../hooks/useIdentifierTypes';
+import { useRegistrationConfig } from '../../../hooks/useRegistrationConfig';
 import CreatePatient from '../CreatePatient';
 import { validateAllSections, collectFormData } from '../patientFormService';
 
@@ -32,6 +34,8 @@ jest.mock('react-router-dom', () => ({
 }));
 
 jest.mock('../../../hooks/useCreatePatient');
+jest.mock('../../../hooks/useIdentifierTypes');
+jest.mock('../../../hooks/useRegistrationConfig');
 jest.mock('../patientFormService');
 
 // Mock child components
@@ -98,6 +102,22 @@ jest.mock('../../../components/forms/additionalInfo/AdditionalInfo', () => ({
   },
 }));
 
+jest.mock('../../../components/forms/additionalIdentifiers/AdditionalIdentifiers', () => ({
+  AdditionalIdentifiers: ({ ref }: { ref?: React.Ref<unknown> }) => {
+    if (ref && typeof ref === 'object' && 'current' in ref) {
+      ref.current = {
+        validate: jest.fn(() => true),
+        getData: jest.fn(() => ({})),
+      };
+    }
+    return (
+      <div data-testid="patient-additional-identifiers">
+        Patient Additional Identifiers
+      </div>
+    );
+  },
+}));
+
 jest.mock('../visitTypeSelector', () => ({
   VisitTypeSelector: ({
     onVisitSave,
@@ -138,6 +158,27 @@ describe('CreatePatient', () => {
       isPending: false,
       isSuccess: false,
       data: null,
+    });
+
+    // Mock useIdentifierTypes to return additional identifiers by default
+    (useIdentifierTypes as jest.Mock).mockReturnValue({
+      data: [
+        { uuid: 'primary-id', name: 'Primary ID', primary: true },
+        { uuid: 'national-id', name: 'National ID', primary: false },
+      ],
+      isLoading: false,
+      error: null,
+    });
+
+    // Mock useRegistrationConfig to enable additional identifiers by default
+    (useRegistrationConfig as jest.Mock).mockReturnValue({
+      registrationConfig: {
+        patientInformation: {
+          isExtraPatientIdentifiersSection: true,
+        },
+      },
+      isLoading: false,
+      error: null,
     });
 
     (validateAllSections as jest.Mock).mockReturnValue(true);
@@ -218,6 +259,7 @@ describe('CreatePatient', () => {
             addressRef: expect.any(Object),
             contactRef: expect.any(Object),
             additionalRef: expect.any(Object),
+            additionalIdentifiersRef: expect.any(Object),
           }),
         );
       });
@@ -265,6 +307,7 @@ describe('CreatePatient', () => {
             addressRef: expect.any(Object),
             contactRef: expect.any(Object),
             additionalRef: expect.any(Object),
+            additionalIdentifiersRef: expect.any(Object),
           }),
         );
       });
@@ -614,6 +657,139 @@ describe('CreatePatient', () => {
       const { unmount } = renderComponent();
 
       expect(() => unmount()).not.toThrow();
+    });
+  });
+
+  describe('Additional Identifiers Conditional Rendering', () => {
+    it('should show additional identifiers section when config is enabled and identifiers exist', () => {
+      renderComponent();
+
+      expect(
+        screen.getByTestId('patient-additional-identifiers'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('ADDITIONAL_IDENTIFIERS_HEADER_TITLE'),
+      ).toBeInTheDocument();
+    });
+
+    it('should not show additional identifiers section when config is disabled', () => {
+      (useRegistrationConfig as jest.Mock).mockReturnValue({
+        registrationConfig: {
+          patientInformation: {
+            isExtraPatientIdentifiersSection: false,
+          },
+        },
+        isLoading: false,
+        error: null,
+      });
+
+      renderComponent();
+
+      expect(
+        screen.queryByTestId('patient-additional-identifiers'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('ADDITIONAL_IDENTIFIERS_HEADER_TITLE'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should not show additional identifiers section when no additional identifiers exist', () => {
+      (useIdentifierTypes as jest.Mock).mockReturnValue({
+        data: [{ uuid: 'primary-id', name: 'Primary ID', primary: true }],
+        isLoading: false,
+        error: null,
+      });
+
+      renderComponent();
+
+      expect(
+        screen.queryByTestId('patient-additional-identifiers'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('ADDITIONAL_IDENTIFIERS_HEADER_TITLE'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should not show additional identifiers section when identifierTypes data is null', () => {
+      (useIdentifierTypes as jest.Mock).mockReturnValue({
+        data: null,
+        isLoading: false,
+        error: null,
+      });
+
+      renderComponent();
+
+      expect(
+        screen.queryByTestId('patient-additional-identifiers'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should not show additional identifiers section when identifierTypes data is undefined', () => {
+      (useIdentifierTypes as jest.Mock).mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        error: null,
+      });
+
+      renderComponent();
+
+      expect(
+        screen.queryByTestId('patient-additional-identifiers'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should default to showing section when config is not provided', () => {
+      (useRegistrationConfig as jest.Mock).mockReturnValue({
+        registrationConfig: {
+          patientInformation: {},
+        },
+        isLoading: false,
+        error: null,
+      });
+
+      renderComponent();
+
+      expect(
+        screen.getByTestId('patient-additional-identifiers'),
+      ).toBeInTheDocument();
+    });
+
+    it('should default to showing section when patientInformation config is not provided', () => {
+      (useRegistrationConfig as jest.Mock).mockReturnValue({
+        registrationConfig: {},
+        isLoading: false,
+        error: null,
+      });
+
+      renderComponent();
+
+      expect(
+        screen.getByTestId('patient-additional-identifiers'),
+      ).toBeInTheDocument();
+    });
+
+    it('should not show additional identifiers section when both conditions are not met', () => {
+      (useRegistrationConfig as jest.Mock).mockReturnValue({
+        registrationConfig: {
+          patientInformation: {
+            isExtraPatientIdentifiersSection: false,
+          },
+        },
+        isLoading: false,
+        error: null,
+      });
+
+      (useIdentifierTypes as jest.Mock).mockReturnValue({
+        data: [{ uuid: 'primary-id', name: 'Primary ID', primary: true }],
+        isLoading: false,
+        error: null,
+      });
+
+      renderComponent();
+
+      expect(
+        screen.queryByTestId('patient-additional-identifiers'),
+      ).not.toBeInTheDocument();
     });
   });
 });

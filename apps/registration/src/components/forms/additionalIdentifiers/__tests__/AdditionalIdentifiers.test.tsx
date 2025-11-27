@@ -93,7 +93,7 @@ describe('AdditionalIdentifiers', () => {
     render(<AdditionalIdentifiers />, { wrapper });
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText('National ID')).toBeInTheDocument();
+      expect(screen.getByText('National ID')).toBeInTheDocument();
     });
 
     // Should render the two non-primary identifiers (as labels and inputs)
