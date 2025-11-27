@@ -130,6 +130,7 @@ const CreatePatient = () => {
     [patientDetails],
   );
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getRegisterDate = (obj: any): void => {
     const dateCreated = obj?.patient?.auditInfo?.dateCreated;
     if (!dateCreated) {
