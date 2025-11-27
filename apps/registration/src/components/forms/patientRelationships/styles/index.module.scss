@@ -8,7 +8,7 @@
   width: calc(100% - ($spacing-13 + $spacing-05));
   max-width: $spacing-13 * 9 + $spacing-05 + $spacing-02;
   background: var(--cds-background);
-  box-shadow: 0 $spacing-01 $spacing-03 rgba(0, 0, 0, 0.3);
+  box-shadow: 0 $spacing-01 $spacing-03 var(--cds-shadow);
   display: flex;
   flex-direction: column;
   overflow: visible;
@@ -28,11 +28,12 @@
 
 .tableContainer {
   width: 100%;
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: visible;
   padding-bottom: 250px;
   margin-bottom: -250px;
+  -webkit-overflow-scrolling: touch;
 
-  // Ensure form elements maintain default colors inside table
   :global(.cds--list-box),
   :global(.cds--combo-box),
   :global(.cds--date-picker__input),
@@ -48,20 +49,30 @@
     background-color: var(--cds-layer-hover) !important;
   }
 
-  // Ensure dropdown menus appear above other content
   :global(.cds--list-box__menu),
   :global(.cds--date-picker__calendar) {
     z-index: 9999 !important;
   }
 
-  // Ensure table allows overflow for dropdowns
   :global(.cds--data-table-container),
   :global(.cds--data-table-content) {
     overflow: visible !important;
   }
 
-  // Fix ComboBox width to prevent resizing when typing
+
+  :global(.cds--data-table) {
+    min-width: 100%;
+    width: max-content;
+  }
+
+
   :global(.cds--combo-box) {
+    min-width: $spacing-13 + $spacing-06;
+    width: 100%;
+  }
+
+  :global(.cds--dropdown) {
+    min-width: $spacing-13 + $spacing-04;
     width: 100%;
   }
 
@@ -84,6 +95,6 @@
 }
 
 .requiredAsterisk {
-  color: var(--cds-support-error);
+  color: #da1e28 !important;
   margin-left: $spacing-01;
 }
