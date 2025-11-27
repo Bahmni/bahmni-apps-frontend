@@ -14,6 +14,50 @@
     font-weight: 600;
   }
 
+.sectionTitle {
+  @include type-style("heading-compact-02");
+  font-size: $spacing-05;
+}
+
+.infoContainer {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+  padding: 0 $spacing-05 !important;
+  gap: $spacing-05 !important;
+  flex-wrap: wrap !important;
+}
+
+.patientId {
+  font-weight: bold !important;
+  font-size: $spacing-05 !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+.registerDate {
+  font-weight: normal !important;
+  font-size: $spacing-05 !important;
+  margin-left: auto !important;
+  padding-left: min(50vw, $spacing-13 * 6) !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+// Responsive adjustments for smaller screens
+@media (max-width: 768px) {
+  .infoContainer {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: $spacing-03 !important;
+  }
+
+  .registerDate {
+    margin-left: 0 !important;
+  }
+}
+
 // Form Container
 .formContainer {
   margin: 0 auto;
