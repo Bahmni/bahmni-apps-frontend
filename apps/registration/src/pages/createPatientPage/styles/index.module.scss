@@ -2,17 +2,18 @@
 @use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/type" as *;
 
-  // Patient Details Header
-  .patientDetailsHeader {
-    margin: 0 auto;
-    margin-top:$spacing-08;
-    max-width: $spacing-13 * 9 + $spacing-05 + $spacing-02;
-    height: $spacing-08 + $spacing-05;
-    display: flex;
-    align-items: center;
-    width: calc(100% - ($spacing-13 + $spacing-05));
-    font-weight: 600;
-  }
+// Patient Details Header
+.patientDetailsHeader {
+  margin: 0 auto;
+  margin-top:$spacing-08;
+  max-width: $spacing-13 * 9 + $spacing-05 + $spacing-02;
+  box-shadow: 0 $spacing-01 $spacing-03 $shadow;
+  height: $spacing-08 + $spacing-05;
+  display: flex;
+  align-items: center;
+  width: calc(100% - ($spacing-13 + $spacing-05));
+  font-weight: 600;
+}
 
 .sectionTitle {
   @include type-style("heading-compact-02");
@@ -66,7 +67,7 @@
   max-width: $spacing-13 * 9 + $spacing-05 + $spacing-02;
   padding: $spacing-06;
   background: #fff;
-  box-shadow: 0 $spacing-01 $spacing-03 rgba(0, 0, 0, 0.3);
+  box-shadow: 0 $spacing-01 $spacing-03 $shadow;
   display: flex;
   flex-direction: column;
   gap: $spacing-09;
