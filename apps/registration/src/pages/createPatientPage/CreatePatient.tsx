@@ -13,7 +13,7 @@ import {
   AuditEventType,
   dispatchAuditEvent,
   getPatientImageAsDataUrl,
-  CreatePatientResponse,
+  PatientProfileResponse,
   getPatientProfile,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
@@ -211,23 +211,32 @@ const CreatePatient = () => {
         const response = (await updatePatientMutation.mutateAsync({
           patientUuid,
           ...formData,
-        })) as CreatePatientResponse;
+        })) as PatientProfileResponse;
         if (response?.patient?.uuid) {
+          queryClient.setQueryData(['formattedPatient', patientUuid], response);
           setPatientUuid(response.patient.uuid);
-          setPatientIdentifier(response.patient.identifiers[0].identifier);
-          setPatientName(response.patient.person.names[0].display);
+          setPatientIdentifier(
+            response.patient.identifiers[0].identifier ?? '',
+          );
+          setPatientName(response.patient.person.display ?? '');
           getRegisterDate(response);
           return response.patient.uuid;
         }
       } else {
         const response = (await createPatientMutation.mutateAsync(
           formData,
-        )) as CreatePatientResponse;
+        )) as PatientProfileResponse;
         if (response?.patient?.uuid) {
           const newPatientUuid = response.patient.uuid;
+          queryClient.setQueryData(
+            ['formattedPatient', newPatientUuid],
+            response,
+          );
           setPatientUuid(newPatientUuid);
-          setPatientIdentifier(response.patient.identifiers[0].identifier);
-          setPatientName(response.patient.person.names[0].display);
+          setPatientIdentifier(
+            response.patient.identifiers[0].identifier ?? '',
+          );
+          setPatientName(response.patient.person.display ?? '');
           getRegisterDate(response);
           navigate(`/registration/edit/${newPatientUuid}`);
           return newPatientUuid;
