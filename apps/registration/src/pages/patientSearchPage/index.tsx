@@ -57,7 +57,7 @@ const PatientSearchPage: React.FC = () => {
   const { userPrivileges } = useUserPrivilege();
 
   const handleCreateNewPatient = () => {
-    navigate('/registration/new');
+    navigate('/registration/patient/new');
   };
 
   const getSearchFieldsFromConfig = async (selectedType: string) => {
@@ -166,7 +166,7 @@ const PatientSearchPage: React.FC = () => {
 
   const navigateToPatient = (patientUuid: string) => {
     setIsNavigating(true);
-    navigate(`/registration/edit/${patientUuid}`);
+    navigate(`/registration/patient/${patientUuid}`);
   };
 
   const renderIdentifier = (uuid: string, identifier: string) => {
