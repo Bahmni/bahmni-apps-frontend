@@ -22,6 +22,7 @@ import {
   VISIT_TYPES_URL,
   GET_VISIT_LOCATION,
   ORDERED_ADDRESS_HIERARCHY_URL,
+  PERSON_ATTRIBUTE_TYPES_URL,
 } from './constants';
 import {
   FormattedPatientData,
@@ -36,6 +37,7 @@ import {
   VisitData,
   VisitType,
   OrderedAddressHierarchyLevels,
+  PersonAttributeTypesResponse,
 } from './models';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
@@ -411,4 +413,14 @@ export const getVisitLocationUUID = async (
 export const getOrderedAddressHierarchyLevels =
   async (): Promise<OrderedAddressHierarchyLevels> => {
     return get<OrderedAddressHierarchyLevels>(ORDERED_ADDRESS_HIERARCHY_URL);
+  };
+
+/**
+ * Get all person attribute types from OpenMRS
+ * Returns person attributes configured in the system with their metadata
+ * @returns Promise<PersonAttributeTypesResponse> - Array of person attribute type configurations
+ */
+export const getPersonAttributeTypes =
+  async (): Promise<PersonAttributeTypesResponse> => {
+    return get<PersonAttributeTypesResponse>(PERSON_ATTRIBUTE_TYPES_URL);
   };
