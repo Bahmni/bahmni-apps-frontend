@@ -9,7 +9,6 @@ export interface AppointmentSearchResult extends PatientSearchResult {
 }
 
 export interface Appointment {
-  length: number;
   uuid: string;
   appointmentNumber: string;
   dateCreated: number;

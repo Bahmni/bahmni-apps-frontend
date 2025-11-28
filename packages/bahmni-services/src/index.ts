@@ -53,6 +53,7 @@ export {
 export {
   searchAppointmentsByAttribute,
   updateAppointmentStatus,
+  getAppointmentById,
 } from './AppointmentService/appointmmetService';
 export {
   type Appointment,
@@ -115,6 +116,7 @@ export {
   searchConcepts,
   searchFHIRConcepts,
   searchFHIRConceptsByName,
+  getConceptById,
   type ConceptSearch,
   type ConceptClass,
 } from './conceptService';

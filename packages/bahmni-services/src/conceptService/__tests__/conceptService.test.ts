@@ -5,10 +5,12 @@ import {
   searchConcepts,
   searchFHIRConcepts,
   searchFHIRConceptsByName,
+  getConceptById,
 } from '../conceptService';
 import {
   FHIR_VALUESET_URL,
   FHIR_VALUESET_FILTER_EXPAND_URL,
+  CONCEPT_GET_URL,
 } from '../constants';
 
 jest.mock('../../api');
@@ -206,6 +208,151 @@ describe('conceptService', () => {
           'filter=test%20%E6%B5%8B%E8%AF%95%20%E3%83%86%E3%82%B9%E3%83%88',
         ),
       );
+    });
+  });
+
+  describe('getConceptById', () => {
+    const mockUUID = '162555AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    const mockConceptData = {
+      uuid: mockUUID,
+      display: 'Temperature',
+      name: {
+        display: 'Temperature',
+        uuid: '162556AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+        name: 'Temperature',
+        locale: 'en',
+        localePreferred: true,
+        conceptNameType: 'FULLY_SPECIFIED',
+        links: [
+          {
+            rel: 'self',
+            uri: `/openmrs/ws/rest/v1/concept/${mockUUID}/name/162556AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA`,
+            resourceAlias: 'name',
+          },
+        ],
+        resourceVersion: '1.9',
+      },
+      datatype: {
+        uuid: '8d4a4488-c2cc-11de-8d13-0010c6dffd0f',
+        display: 'Numeric',
+        links: [
+          {
+            rel: 'self',
+            uri: '/openmrs/ws/rest/v1/conceptdatatype/8d4a4488-c2cc-11de-8d13-0010c6dffd0f',
+          },
+        ],
+      },
+      conceptClass: {
+        uuid: '8d4907b2-c2cc-11de-8d13-0010c6dffd0f',
+        display: 'Test',
+        links: [
+          {
+            rel: 'self',
+            uri: '/openmrs/ws/rest/v1/conceptclass/8d4907b2-c2cc-11de-8d13-0010c6dffd0f',
+          },
+        ],
+      },
+      set: false,
+      version: '1.0',
+      retired: false,
+      names: [],
+      descriptions: [],
+      mappings: [],
+      answers: [],
+      setMembers: [],
+      attributes: [],
+      links: [
+        {
+          rel: 'self',
+          uri: `/openmrs/ws/rest/v1/concept/${mockUUID}`,
+          resourceAlias: 'concept',
+        },
+      ],
+      resourceVersion: '1.9',
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      (api.get as jest.Mock).mockResolvedValue(mockConceptData);
+    });
+
+    it('should call API with correct concept URL', async () => {
+      await getConceptById(mockUUID);
+
+      expect(api.get).toHaveBeenCalledWith(CONCEPT_GET_URL(mockUUID));
+      expect(api.get).toHaveBeenCalledWith(
+        `/openmrs/ws/rest/v1/concept/${mockUUID}`,
+      );
+    });
+
+    it('should return ConceptData from API response', async () => {
+      const result = await getConceptById(mockUUID);
+
+      expect(result).toEqual(mockConceptData);
+      expect(result.uuid).toBe(mockUUID);
+      expect(result.display).toBe('Temperature');
+    });
+
+    it('should handle 404 not found errors', async () => {
+      const notFoundError = new Error('Concept not found');
+      notFoundError.name = 'NotFoundError';
+      (api.get as jest.Mock).mockRejectedValue(notFoundError);
+
+      await expect(getConceptById('invalid-uuid')).rejects.toThrow(
+        notFoundError,
+      );
+    });
+
+    it('should work with different UUID formats', async () => {
+      const shortUUID = '12345';
+      await getConceptById(shortUUID);
+
+      expect(api.get).toHaveBeenCalledWith(CONCEPT_GET_URL(shortUUID));
+    });
+
+    it('should handle empty UUID', async () => {
+      const emptyUUID = '';
+      await getConceptById(emptyUUID);
+
+      expect(api.get).toHaveBeenCalledWith(CONCEPT_GET_URL(emptyUUID));
+    });
+
+    it('should return concept with set members when concept is a set', async () => {
+      const mockSetConcept = {
+        ...mockConceptData,
+        set: true,
+        setMembers: [
+          {
+            uuid: 'member1-uuid',
+            display: 'Member 1',
+            links: [
+              {
+                rel: 'self',
+                uri: '/openmrs/ws/rest/v1/concept/member1-uuid',
+              },
+            ],
+          },
+        ],
+      };
+      (api.get as jest.Mock).mockResolvedValue(mockSetConcept);
+
+      const result = await getConceptById(mockUUID);
+
+      expect(result.set).toBe(true);
+      expect(result.setMembers).toHaveLength(1);
+      expect(result.setMembers[0].uuid).toBe('member1-uuid');
+    });
+
+    it('should return retired concept when concept is retired', async () => {
+      const mockRetiredConcept = {
+        ...mockConceptData,
+        retired: true,
+      };
+      (api.get as jest.Mock).mockResolvedValue(mockRetiredConcept);
+
+      const result = await getConceptById(mockUUID);
+
+      expect(result.retired).toBe(true);
     });
   });
 });

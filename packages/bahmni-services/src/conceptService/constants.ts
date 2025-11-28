@@ -11,3 +11,6 @@ export const CONCEPT_SEARCH_URL = (
 ) =>
   OPENMRS_REST_V1 +
   `/bahmni/terminologies/concepts?limit=${limit}&locale=${locale}&term=${term}`;
+
+export const CONCEPT_GET_URL = (uuid: string) =>
+  OPENMRS_REST_V1 + `/concept/${uuid}`;
