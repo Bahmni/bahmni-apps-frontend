@@ -238,7 +238,7 @@ const CreatePatient = () => {
           );
           setPatientName(response.patient.person.display ?? '');
           getRegisterDate(response);
-          navigate(`/registration/edit/${newPatientUuid}`);
+          navigate(`/registration/patient/${newPatientUuid}`);
           return newPatientUuid;
         }
       }
