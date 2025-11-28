@@ -13,6 +13,7 @@ export interface BasicInfoData {
   ageDays: string;
   dateOfBirth: string;
   birthTime: string;
+  nameUuid?: string;
 }
 
 /**

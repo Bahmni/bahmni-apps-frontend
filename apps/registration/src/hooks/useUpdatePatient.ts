@@ -66,6 +66,7 @@ function transformFormDataToPayload(
 ): CreatePatientRequest {
   const { profile, address, contact, additional } = formData;
   const patientName: PatientName = {
+    ...(profile.nameUuid && { uuid: profile.nameUuid }),
     givenName: profile.firstName,
     ...(profile.middleName && { middleName: profile.middleName }),
     familyName: profile.lastName,

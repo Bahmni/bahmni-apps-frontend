@@ -90,6 +90,7 @@ export const Profile = ({
     ageDays: '',
     dateOfBirth: '',
     birthTime: '',
+    nameUuid: '',
   });
   const [dobEstimated, setDobEstimated] = useState(false);
   const [patientImage, setPatientImage] = useState<string>('');
@@ -109,6 +110,7 @@ export const Profile = ({
         ageDays: initialData.ageDays ?? '',
         dateOfBirth: initialData.dateOfBirth ?? '',
         birthTime: initialData.birthTime ?? '',
+        nameUuid: initialData.nameUuid ?? '',
       });
     }
   }, [initialData, identifierPrefixes]);
@@ -404,6 +406,7 @@ export const Profile = ({
         ageDays: '',
         dateOfBirth: '',
         birthTime: '',
+        nameUuid: '',
       });
       setDobEstimated(false);
       setPatientImage('');

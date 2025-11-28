@@ -66,6 +66,7 @@ export type AppSettingsResponse = AppSetting[];
 
 // Patient Creation Models
 export interface PatientName {
+  uuid?: string;
   givenName: string;
   middleName?: string;
   familyName: string;
