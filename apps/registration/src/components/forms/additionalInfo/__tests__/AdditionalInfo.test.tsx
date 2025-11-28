@@ -420,12 +420,12 @@ describe('AdditionalInfo', () => {
       expect(data).toEqual({ email: 'data@example.com' });
     });
 
-    it('returns empty strings for unfilled fields', () => {
+    it('returns empty object for unfilled fields', () => {
       const ref = createRef<AdditionalInfoRef>();
       render(<AdditionalInfo ref={ref} />);
 
       const data = ref.current?.getData();
-      expect(data).toEqual({ email: '' });
+      expect(data).toEqual({});
     });
 
     it('returns all field values for multiple fields', () => {

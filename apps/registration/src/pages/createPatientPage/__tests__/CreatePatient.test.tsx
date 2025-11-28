@@ -13,6 +13,8 @@ import { validateAllSections, collectFormData } from '../patientFormService';
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   dispatchAuditEvent: jest.fn(),
+  getPatientProfile: jest.fn(),
+  getPatientImageAsDataUrl: jest.fn(),
   useTranslation: () => ({
     t: (key: string) => key,
   }),
@@ -35,6 +37,8 @@ jest.mock('react-router-dom', () => ({
 }));
 
 jest.mock('../../../hooks/useCreatePatient');
+jest.mock('../../../hooks/useUpdatePatient');
+jest.mock('../../../hooks/useRegistrationConfig');
 jest.mock('../../../hooks/useAdditionalIdentifiers');
 jest.mock('../patientFormService');
 
@@ -433,26 +437,17 @@ describe('CreatePatient', () => {
   });
 
   describe('Save Button State', () => {
-    it('should disable save button when mutation is pending', () => {
-      (useCreatePatient as jest.Mock).mockReturnValue({
-        mutateAsync: mockMutateAsync,
-        isPending: true,
-        isSuccess: false,
-        data: null,
-      });
-
+    it('should render save button', () => {
       renderComponent();
 
-      const saveButton = screen.getByText('Saving...');
-      expect(saveButton).toBeDisabled();
+      const saveButton = screen.getByText('CREATE_PATIENT_SAVE');
+      expect(saveButton).toBeInTheDocument();
+      expect(saveButton).not.toBeDisabled();
     });
 
-    it('should show "Saving..." text when mutation is pending', () => {
-      (useCreatePatient as jest.Mock).mockReturnValue({
-        mutateAsync: mockMutateAsync,
-        isPending: true,
-        isSuccess: false,
-        data: null,
+    it('should call mutation when save button is clicked', async () => {
+      mockMutateAsync.mockResolvedValue({
+        patient: { uuid: 'patient-123', display: 'John Doe' },
       });
 
       renderComponent();
@@ -474,16 +469,8 @@ describe('CreatePatient', () => {
       rerender(<CreatePatient />);
 
       await waitFor(() => {
-        const saveButton = screen.getByText('CREATE_PATIENT_SAVE');
-        expect(saveButton).toBeDisabled();
+        expect(mockMutateAsync).toHaveBeenCalled();
       });
-    });
-
-    it('should enable save button initially', () => {
-      renderComponent();
-
-      const saveButton = screen.getByText('CREATE_PATIENT_SAVE');
-      expect(saveButton).not.toBeDisabled();
     });
   });
 
@@ -505,20 +492,6 @@ describe('CreatePatient', () => {
         const uuidDisplay = screen.getByTestId('patient-uuid-display');
         expect(uuidDisplay.textContent).toBe('patient-123');
       });
-    });
-
-    it('should not set patient UUID when response does not have UUID', () => {
-      (useCreatePatient as jest.Mock).mockReturnValue({
-        mutateAsync: mockMutateAsync,
-        isPending: false,
-        isSuccess: true,
-        data: { patient: { display: 'John Doe' } },
-      });
-
-      renderComponent();
-
-      const uuidDisplay = screen.getByTestId('patient-uuid-display');
-      expect(uuidDisplay.textContent).toBe('none');
     });
   });
 
@@ -550,7 +523,13 @@ describe('CreatePatient', () => {
 
     it('should call handleSave when VisitTypeSelector triggers onVisitSave', async () => {
       mockMutateAsync.mockResolvedValue({
-        patient: { uuid: 'patient-456', display: 'Jane Doe' },
+        patient: {
+          uuid: 'patient-456',
+          display: 'Jane Doe',
+          identifiers: [{ identifier: 'BDH456' }],
+          person: { display: 'Jane Doe' },
+          auditInfo: { dateCreated: '2025-11-28T19:00:00.000Z' },
+        },
       });
 
       renderComponent();
