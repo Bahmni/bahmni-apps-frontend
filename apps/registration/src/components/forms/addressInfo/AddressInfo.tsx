@@ -262,9 +262,19 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       const error = addressErrors[fieldName];
       const fieldSuggestions = suggestions[fieldName] ?? [];
 
+      const fieldIndex = levelsWithStrictEntry.findIndex(
+        (l) => l.addressField === fieldName,
+      );
+      const parentField =
+        fieldIndex > 0
+          ? levelsWithStrictEntry[fieldIndex - 1].addressField
+          : null;
+      const parentValue = parentField ? address[parentField] : null;
+      const componentKey = `${fieldName}-${parentValue ?? 'empty'}`;
+
       return (
         <AddressAutocompleteField
-          key={fieldName}
+          key={componentKey}
           fieldName={fieldName}
           level={level}
           isDisabled={isDisabled}
@@ -286,6 +296,7 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       handleSelectionChange,
       handleAddressInputChange,
       getTranslationKey,
+      address,
     ],
   );
 
