@@ -49,6 +49,7 @@ export const convertToBasicInfoData = (
     ageDays: age?.days.toString() ?? '',
     dateOfBirth: dateOnly,
     birthTime: birthTime,
+    nameUuid: preferredName.uuid,
   };
 };
 
