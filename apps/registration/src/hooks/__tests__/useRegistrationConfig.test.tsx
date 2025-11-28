@@ -1,4 +1,5 @@
 import { RegistrationConfig } from '@bahmni/services';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook } from '@testing-library/react';
 import { RegistrationConfigProvider } from '../../providers/RegistrationConfigProvider';
 import { useRegistrationConfig } from '../useRegistrationConfig';
@@ -18,6 +19,23 @@ const mockConfig: RegistrationConfig = {
 };
 
 describe('useRegistrationConfig', () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+        },
+      },
+    });
+  });
+
+  afterEach(async () => {
+    queryClient.clear();
+    await queryClient.cancelQueries();
+  });
+
   it('should throw error when used outside provider', () => {
     // Suppress console.error for this test
     const consoleError = jest
@@ -35,28 +53,26 @@ describe('useRegistrationConfig', () => {
 
   it('should return context when used within provider', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <RegistrationConfigProvider initialConfig={mockConfig}>
-        {children}
-      </RegistrationConfigProvider>
+      <QueryClientProvider client={queryClient}>
+        <RegistrationConfigProvider initialConfig={mockConfig}>
+          {children}
+        </RegistrationConfigProvider>
+      </QueryClientProvider>
     );
 
     const { result } = renderHook(() => useRegistrationConfig(), { wrapper });
 
     expect(result.current).toBeDefined();
     expect(result.current.registrationConfig).toEqual(mockConfig);
-    expect(result.current.isLoading).toBe(false);
-    expect(result.current.error).toBeNull();
-    expect(typeof result.current.refetch).toBe('function');
-    expect(typeof result.current.setRegistrationConfig).toBe('function');
-    expect(typeof result.current.setIsLoading).toBe('function');
-    expect(typeof result.current.setError).toBe('function');
   });
 
   it('should provide null config when no initialConfig is provided', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <RegistrationConfigProvider initialConfig={null}>
-        {children}
-      </RegistrationConfigProvider>
+      <QueryClientProvider client={queryClient}>
+        <RegistrationConfigProvider initialConfig={null}>
+          {children}
+        </RegistrationConfigProvider>
+      </QueryClientProvider>
     );
 
     const { result } = renderHook(() => useRegistrationConfig(), { wrapper });

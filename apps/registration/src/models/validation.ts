@@ -13,8 +13,10 @@ export interface BasicInfoErrors {
 export interface ValidationErrors {
   firstName: string;
   lastName: string;
+  middleName: string;
   gender: string;
   dateOfBirth: string;
+  birthTime: string;
 }
 
 /**

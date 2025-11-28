@@ -8,7 +8,6 @@
     margin-top:$spacing-08;
     max-width: $spacing-13 * 9 + $spacing-05 + $spacing-02;
     height: $spacing-08 + $spacing-05;
-    box-shadow: 0 $spacing-01 $spacing-03 rgba(0, 0, 0, 0.3);
     display: flex;
     align-items: center;
     width: calc(100% - ($spacing-13 + $spacing-05));
@@ -35,7 +34,7 @@
 
     .sectionTitle {
        @include type-style("heading-compact-02");
-      font-size: $spacing-05;
+      font-size: $spacing-05 !important;
     }
 
     .formSectionTitle {
