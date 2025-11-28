@@ -52,9 +52,9 @@ const RegistrationApp: React.FC = () => {
               <UserPrivilegeProvider>
                 <Routes>
                   <Route path="/search" element={<PatientSearchPage />} />
-                  <Route path="/new" element={<CreatePatient />} />
+                  <Route path="patient/new" element={<CreatePatient />} />
                   <Route
-                    path="/edit/:patientUuid"
+                    path="/patient/:patientUuid"
                     element={<CreatePatient />}
                   />
                 </Routes>
