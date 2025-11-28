@@ -16,7 +16,7 @@ import {
   CreatePatientResponse,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import { useRef, useState, useEffect, useMemo } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   AdditionalIdentifiers,
@@ -37,9 +37,8 @@ import {
 import { Profile, ProfileRef } from '../../components/forms/profile/Profile';
 import { BAHMNI_REGISTRATION_SEARCH } from '../../constants/app';
 
+import { useAdditionalIdentifiers } from '../../hooks/useAdditionalIdentifiers';
 import { useCreatePatient } from '../../hooks/useCreatePatient';
-import { useIdentifierTypes } from '../../hooks/useIdentifierTypes';
-import { useRegistrationConfig } from '../../hooks/useRegistrationConfig';
 import { useUpdatePatient } from '../../hooks/useUpdatePatient';
 import { validateAllSections, collectFormData } from './patientFormService';
 import styles from './styles/index.module.scss';
@@ -61,22 +60,7 @@ const CreatePatient = () => {
     null,
   );
 
-  // Get configuration for extra identifiers
-  const { registrationConfig } = useRegistrationConfig();
-  const isExtraIdentifiersSectionEnabled =
-    registrationConfig?.patientInformation?.isExtraPatientIdentifiersSection ??
-    true; // Default to true if config not available
-
-  // Check if additional identifiers are available
-  const { data: identifierTypes } = useIdentifierTypes();
-  const hasAdditionalIdentifiers = useMemo(() => {
-    if (!identifierTypes) return false;
-    return identifierTypes.some((type) => type.primary === false);
-  }, [identifierTypes]);
-
-  // Show additional identifiers section only if both config is enabled AND identifiers exist
-  const shouldShowAdditionalIdentifiers =
-    isExtraIdentifiersSectionEnabled && hasAdditionalIdentifiers;
+  const { shouldShowAdditionalIdentifiers } = useAdditionalIdentifiers();
 
   const patientProfileRef = useRef<ProfileRef>(null);
   const patientAddressRef = useRef<AddressInfoRef>(null);

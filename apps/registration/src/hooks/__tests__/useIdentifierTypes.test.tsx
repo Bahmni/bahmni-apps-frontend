@@ -80,16 +80,22 @@ describe('useIdentifierTypes', () => {
 
     const { result } = renderHook(() => useIdentifierTypes(), { wrapper });
 
-    await waitFor(() => {
-      expect(result.current.isError).toBe(true);
-    });
+    // Wait for all retries to complete (with increased timeout for exponential backoff)
+    await waitFor(
+      () => {
+        expect(result.current.isError).toBe(true);
+      },
+      { timeout: 10000 },
+    );
 
     expect(result.current.error).toEqual(mockError);
     expect(result.current.data).toBeUndefined();
     expect(result.current.isLoading).toBe(false);
+    // Hook has retry: 2, so it should attempt 3 times total (1 initial + 2 retries)
+    expect(getIdentifierTypes).toHaveBeenCalledTimes(3);
   });
 
-  it('should use cache for subsequent calls', async () => {
+  it('should use cache for subsequent calls within stale time', async () => {
     (getIdentifierTypes as jest.Mock).mockResolvedValue(mockIdentifierTypes);
 
     const { result: result1 } = renderHook(() => useIdentifierTypes(), {
@@ -105,11 +111,11 @@ describe('useIdentifierTypes', () => {
     });
 
     expect(result2.current.data).toEqual(mockIdentifierTypes);
-    // Should only be called once due to infinite caching
+    // Should only be called once because data is still fresh (within 30 min staleTime)
     expect(getIdentifierTypes).toHaveBeenCalledTimes(1);
   });
 
-  it('should cache data indefinitely and not refetch automatically', async () => {
+  it('should not refetch within stale time window', async () => {
     jest.useFakeTimers();
     (getIdentifierTypes as jest.Mock).mockResolvedValue(mockIdentifierTypes);
 
@@ -121,12 +127,53 @@ describe('useIdentifierTypes', () => {
 
     expect(getIdentifierTypes).toHaveBeenCalledTimes(1);
 
-    // Advance time by 1 hour
-    jest.advanceTimersByTime(60 * 60 * 1000);
+    // Advance time by 29 minutes (within 30-minute stale time)
+    jest.advanceTimersByTime(29 * 60 * 1000);
 
-    // Should still only be called once (no automatic refetch)
+    // Should still only be called once (data is still fresh)
     expect(getIdentifierTypes).toHaveBeenCalledTimes(1);
     expect(result.current.data).toEqual(mockIdentifierTypes);
+
+    jest.useRealTimers();
+  });
+
+  it('should mark data as stale after staleTime expires', async () => {
+    jest.useFakeTimers();
+    (getIdentifierTypes as jest.Mock).mockResolvedValue(mockIdentifierTypes);
+
+    const { result, unmount } = renderHook(() => useIdentifierTypes(), {
+      wrapper,
+    });
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    expect(getIdentifierTypes).toHaveBeenCalledTimes(1);
+
+    // Advance time past stale time (31 minutes)
+    jest.advanceTimersByTime(31 * 60 * 1000);
+
+    // Run pending timers to ensure TanStack Query processes the stale time
+    jest.runOnlyPendingTimers();
+
+    // Unmount and remount to trigger a new mount (which checks staleness)
+    unmount();
+
+    const { result: result2 } = renderHook(() => useIdentifierTypes(), {
+      wrapper,
+    });
+
+    // Wait for the refetch to complete
+    await waitFor(
+      () => {
+        expect(result2.current.isSuccess).toBe(true);
+      },
+      { timeout: 5000 },
+    );
+
+    // Should have been called twice: once on initial mount, once after stale time expired
+    expect(getIdentifierTypes).toHaveBeenCalledTimes(2);
 
     jest.useRealTimers();
   });
@@ -145,5 +192,34 @@ describe('useIdentifierTypes', () => {
     await result.current.refetch();
 
     expect(getIdentifierTypes).toHaveBeenCalledTimes(2);
+  });
+
+  it('should retry on failure with exponential backoff', async () => {
+    const mockError = new Error('Network error');
+    let callCount = 0;
+
+    (getIdentifierTypes as jest.Mock).mockImplementation(() => {
+      callCount++;
+      // Fail first 2 attempts, succeed on 3rd
+      if (callCount < 3) {
+        return Promise.reject(mockError);
+      }
+      return Promise.resolve(mockIdentifierTypes);
+    });
+
+    const { result } = renderHook(() => useIdentifierTypes(), { wrapper });
+
+    // Wait for all retries to complete with extended timeout for exponential backoff
+    await waitFor(
+      () => {
+        expect(result.current.isSuccess).toBe(true);
+      },
+      { timeout: 10000 },
+    );
+
+    // Should have retried 2 times before succeeding on 3rd attempt
+    expect(getIdentifierTypes).toHaveBeenCalledTimes(3);
+    expect(result.current.data).toEqual(mockIdentifierTypes);
+    expect(result.current.error).toBeNull();
   });
 });
