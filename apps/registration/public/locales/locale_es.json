@@ -105,5 +105,6 @@
   "REGISTRATION_ADDRESS_CITY_VILLAGE": "Ciudad/Pueblo",
   "REGISTRATION_ADDRESS_POSTAL_CODE": "Código postal",
   "REGISTRATION_ADDRESS_LOCALITY": "Localidad/Sector",
-  "REGISTRATION_ADDRESS_HOUSE_FLAT_NO": "Número de casa/Número de apartamento"
+  "REGISTRATION_ADDRESS_HOUSE_FLAT_NO": "Número de casa / Número de apartamento",
+  "ADDITIONAL_IDENTIFIERS_HEADER_TITLE": "Identificadores adicionales"
 }

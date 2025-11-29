@@ -43,6 +43,9 @@ describe('patientFormService', () => {
             getData: jest.fn(),
           },
         },
+        additionalIdentifiersRef: {
+          current: null,
+        },
       };
 
       const result = validateAllSections(mockRefs);
@@ -82,6 +85,9 @@ describe('patientFormService', () => {
             validate: jest.fn(() => true),
             getData: jest.fn(),
           },
+        },
+        additionalIdentifiersRef: {
+          current: null,
         },
       };
 
@@ -123,6 +129,9 @@ describe('patientFormService', () => {
             getData: jest.fn(),
           },
         },
+        additionalIdentifiersRef: {
+          current: null,
+        },
       };
 
       const result = validateAllSections(mockRefs);
@@ -162,6 +171,9 @@ describe('patientFormService', () => {
             validate: jest.fn(() => true),
             getData: jest.fn(),
           },
+        },
+        additionalIdentifiersRef: {
+          current: null,
         },
       };
 
@@ -203,6 +215,9 @@ describe('patientFormService', () => {
             getData: jest.fn(),
           },
         },
+        additionalIdentifiersRef: {
+          current: null,
+        },
       };
 
       const result = validateAllSections(mockRefs);
@@ -243,6 +258,9 @@ describe('patientFormService', () => {
             getData: jest.fn(),
           },
         },
+        additionalIdentifiersRef: {
+          current: null,
+        },
       };
 
       const result = validateAllSections(mockRefs);
@@ -273,6 +291,9 @@ describe('patientFormService', () => {
             validate: jest.fn(() => true),
             getData: jest.fn(),
           },
+        },
+        additionalIdentifiersRef: {
+          current: null,
         },
       };
 
@@ -313,6 +334,9 @@ describe('patientFormService', () => {
             validate: jest.fn(() => true),
             getData: jest.fn(),
           },
+        },
+        additionalIdentifiersRef: {
+          current: null,
         },
       };
 
@@ -382,6 +406,9 @@ describe('patientFormService', () => {
             getData: jest.fn(() => mockAdditionalData),
           },
         },
+        additionalIdentifiersRef: {
+          current: null,
+        },
       };
 
       const result = collectFormData(mockRefs);
@@ -391,6 +418,7 @@ describe('patientFormService', () => {
         address: mockAddressData,
         contact: mockContactData,
         additional: mockAdditionalData,
+        additionalIdentifiers: {},
       });
       expect(notificationService.showError).not.toHaveBeenCalled();
     });
@@ -422,6 +450,9 @@ describe('patientFormService', () => {
             validate: jest.fn(),
             getData: jest.fn(() => ({ email: 'test@example.com' })),
           },
+        },
+        additionalIdentifiersRef: {
+          current: null,
         },
       };
 
@@ -467,6 +498,9 @@ describe('patientFormService', () => {
             getData: jest.fn(() => ({ email: 'test@example.com' })),
           },
         },
+        additionalIdentifiersRef: {
+          current: null,
+        },
       };
 
       const result = collectFormData(mockRefs);
@@ -510,6 +544,9 @@ describe('patientFormService', () => {
             validate: jest.fn(),
             getData: jest.fn(() => ({ email: 'test@example.com' })),
           },
+        },
+        additionalIdentifiersRef: {
+          current: null,
         },
       };
 
@@ -555,6 +592,9 @@ describe('patientFormService', () => {
             getData: jest.fn(() => null),
           },
         },
+        additionalIdentifiersRef: {
+          current: null,
+        },
       };
 
       const result = collectFormData(mockRefs);
@@ -589,6 +629,9 @@ describe('patientFormService', () => {
             validate: jest.fn(),
             getData: jest.fn(() => ({ email: 'test@example.com' })),
           },
+        },
+        additionalIdentifiersRef: {
+          current: null,
         },
       };
 
@@ -634,6 +677,9 @@ describe('patientFormService', () => {
             getData: jest.fn(() => ({ email: 'test@example.com' })),
           },
         },
+        additionalIdentifiersRef: {
+          current: null,
+        },
       };
 
       collectFormData(mockRefs);
@@ -672,6 +718,9 @@ describe('patientFormService', () => {
             validate: jest.fn(),
             getData: jest.fn(() => ({ email: 'test@example.com' })),
           },
+        },
+        additionalIdentifiersRef: {
+          current: null,
         },
       };
 

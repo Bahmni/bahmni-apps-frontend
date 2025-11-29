@@ -43,3 +43,11 @@ export interface ContactData {
 export interface AdditionalData {
   [key: string]: string | number | boolean | undefined;
 }
+
+/**
+ * Patient Additional Identifiers Data
+ * Key-value pairs where key is identifier type UUID and value is the identifier
+ */
+export interface AdditionalIdentifiersData {
+  [identifierTypeUuid: string]: string;
+}

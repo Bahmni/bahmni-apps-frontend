@@ -1,0 +1,51 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+
+// Form Container
+
+.formSection {
+  margin: 0 auto;
+  width: calc(100% - ($spacing-13 + $spacing-05));
+  max-width: $spacing-13 * 9 + $spacing-05 + $spacing-02;
+  box-shadow: 0 $spacing-01 $spacing-03 0 $shadow;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-09;
+}
+
+.formSectionTitle {
+  @include type-style("body-compact-02");
+}
+
+
+.identifierField {
+  width: 288px;
+  :global(.cds--text-input) {
+    background-color: $field-01;  
+  }
+}
+
+.identifierTable {
+  width: 100%;
+
+  :global(tbody) {
+    
+    tr:hover td {
+      cursor: default;
+      border-bottom: 1px solid $border-subtle-01 !important;
+    }
+
+
+    td:first-child {
+      width: $spacing-13 + $spacing-06;
+      white-space: nowrap;
+      font-weight: 600;
+      align-content: center;
+    }
+
+    td:last-child {
+      width: auto;
+    }
+  }
+}

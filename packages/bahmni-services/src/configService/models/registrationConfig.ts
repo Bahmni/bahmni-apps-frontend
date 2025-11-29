@@ -76,6 +76,7 @@ export interface PatientInformationConfig {
       translationKey: string;
     }>;
   };
+  isExtraPatientIdentifiersSection?: boolean;
 }
 
 export interface FieldValidationRule {
