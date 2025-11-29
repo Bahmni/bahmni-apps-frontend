@@ -51,9 +51,7 @@ describe('useAdditionalIdentifiers', () => {
 
   const wrapper = ({ children }: { children: React.ReactNode }) => {
     return (
-      <QueryClientProvider client={queryClient}>
-        {children}
-      </QueryClientProvider>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     );
   };
 
@@ -123,9 +121,7 @@ describe('useAdditionalIdentifiers', () => {
       },
     ];
 
-    (getIdentifierTypes as jest.Mock).mockResolvedValue(
-      onlyPrimaryIdentifiers,
-    );
+    (getIdentifierTypes as jest.Mock).mockResolvedValue(onlyPrimaryIdentifiers);
 
     const { result } = renderHook(() => useAdditionalIdentifiers(), {
       wrapper,
