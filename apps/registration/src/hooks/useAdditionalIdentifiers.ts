@@ -1,6 +1,19 @@
+import { getIdentifierTypes, IdentifierTypesResponse } from '@bahmni/services';
+import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { useIdentifierTypes } from './useIdentifierTypes';
 import { useRegistrationConfig } from './useRegistrationConfig';
+
+export const IDENTIFIER_TYPES_QUERY_KEY = ['identifierTypes'];
+
+export const useIdentifierTypes = () => {
+  return useQuery<IdentifierTypesResponse, Error>({
+    queryKey: IDENTIFIER_TYPES_QUERY_KEY,
+    queryFn: getIdentifierTypes,
+    staleTime: 30 * 60 * 1000, // 30 minutes
+    gcTime: 60 * 60 * 1000, // 60 minutes
+    retry: 2,
+  });
+};
 
 export const useAdditionalIdentifiers = () => {
   const { registrationConfig } = useRegistrationConfig();

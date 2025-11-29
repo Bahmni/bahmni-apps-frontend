@@ -8,7 +8,7 @@
   margin: 0 auto;
   width: calc(100% - ($spacing-13 + $spacing-05));
   max-width: $spacing-13 * 9 + $spacing-05 + $spacing-02;
-  box-shadow: 0 $spacing-01 $spacing-03 rgba(0, 0, 0, 0.3);
+  box-shadow: 0 $spacing-01 $spacing-03 0 $shadow;
   display: flex;
   flex-direction: column;
   gap: $spacing-09;
@@ -38,9 +38,10 @@
 
 
     td:first-child {
-      width: 181px;
+      width: $spacing-13 + $spacing-06;
       white-space: nowrap;
       font-weight: 600;
+      align-content: center;
     }
 
     td:last-child {

@@ -1,5 +1,4 @@
 import { TextInput, SortableDataTable } from '@bahmni/design-system';
-import type { DataTableHeader } from '@carbon/react';
 import {
   useCallback,
   useImperativeHandle,
@@ -7,7 +6,7 @@ import {
   useMemo,
   useEffect,
 } from 'react';
-import { useIdentifierTypes } from '../../../hooks/useIdentifierTypes';
+import { useIdentifierTypes } from '../../../hooks/useAdditionalIdentifiers';
 import type { AdditionalIdentifiersData } from '../../../models/patient';
 import styles from './styles/index.module.scss';
 
@@ -71,7 +70,7 @@ export const AdditionalIdentifiers = ({
     return null;
   }
 
-  const headers: DataTableHeader[] = [
+  const headers = [
     { key: 'label', header: '' },
     { key: 'value', header: '' },
   ];
@@ -110,10 +109,6 @@ export const AdditionalIdentifiers = ({
         rows={rows}
         ariaLabel=""
         renderCell={renderCell}
-        sortable={[
-          { key: 'label', sortable: false },
-          { key: 'value', sortable: false },
-        ]}
         className={styles.identifierTable}
       />
     </div>

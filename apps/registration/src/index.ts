@@ -6,4 +6,4 @@ export { RegistrationApp };
 export {
   useIdentifierTypes,
   IDENTIFIER_TYPES_QUERY_KEY,
-} from './hooks/useIdentifierTypes';
+} from './hooks/useAdditionalIdentifiers';
