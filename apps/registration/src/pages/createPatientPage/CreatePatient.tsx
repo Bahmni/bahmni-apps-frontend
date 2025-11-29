@@ -223,8 +223,9 @@ const CreatePatient = () => {
             />
             <AddressInfo ref={patientAddressRef} />
             <ContactInfo ref={patientContactRef} />
-            <AdditionalInfo ref={patientAdditionalRef} />
           </div>
+
+          <AdditionalInfo ref={patientAdditionalRef} />
 
           {shouldShowAdditionalIdentifiers && (
             <>

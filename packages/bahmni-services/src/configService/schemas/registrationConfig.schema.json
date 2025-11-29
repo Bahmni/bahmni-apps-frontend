@@ -243,6 +243,63 @@
             }
           }
         },
+        "additionalPatientInformation": {
+          "type": "object",
+          "description": "Additional patient information configuration",
+          "additionalProperties": true,
+          "properties": {
+            "translationKey": { 
+              "type": "string",
+              "description": "Translation key for the section title"
+            },
+            "attributes": {
+              "type": "array",
+              "description": "Array of attribute fields with translation keys",
+              "items": {
+                "type": "object",
+                "required": ["field", "translationKey"],
+                "properties": {
+                  "field": { 
+                    "type": "string",
+                    "description": "Field name" 
+                  },
+                  "translationKey": { 
+                    "type": "string",
+                    "description": "Translation key for the field label" 
+                  }
+                }
+              }
+            }
+          }
+        },
+        "contactInformation": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "translationKey": { 
+              "type": "string",
+              "description": "Translation key for the section title"
+           },
+            "attributes": {
+              "type": "array",
+              "description": "Array of attribute fields with translation keys",
+              "items": {
+                "type": "object",
+                "required": ["field", "translationKey"],
+                "properties": {
+                  "field": { 
+                    "type": "string",
+                    "description": "Field name" 
+                   },
+                  "translationKey": { 
+                    "type": "string",
+                    "description": "Translation key for the field label" 
+                  }
+                }
+              }
+            }
+          }
+        },
         "isExtraPatientIdentifiersSection": {
           "type": "boolean",
           "description": "Whether to show extra patient identifiers section"
