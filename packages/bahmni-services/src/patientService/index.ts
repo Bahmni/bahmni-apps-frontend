@@ -15,6 +15,7 @@ export {
   getVisitLocationUUID,
   getOrderedAddressHierarchyLevels,
   getRelationshipTypes,
+  getPersonAttributeTypes,
 } from './patientService';
 export {
   type FormattedPatientData,
@@ -36,10 +37,23 @@ export {
   type ActiveVisit,
   type OrderedAddressHierarchyLevel,
   type OrderedAddressHierarchyLevels,
+  type PersonAttributeType,
+  type PersonAttributeTypesResponse,
+  type ConceptAnswer,
+  type PersonAttributeConcept,
 } from './models';
 export {
+  AttributeFormat,
+  AttributeInputType,
+  getInputTypeForFormat,
+  isBooleanFormat,
+  isConceptFormat,
+  isNumberFormat,
+  isDateFormat,
+  isTextFormat,
+} from './attributeFormatMapper';
+export {
   MAX_PATIENT_AGE_YEARS,
-  PHONE_NUMBER_UUID,
-  EMAIL_UUID,
-  ALTERNATE_PHONE_NUMBER_UUID,
+  MAX_NAME_LENGTH,
+  MAX_PHONE_NUMBER_LENGTH,
 } from './constants';

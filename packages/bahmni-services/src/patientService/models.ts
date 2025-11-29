@@ -251,6 +251,42 @@ export interface ServiceType {
   uuid?: string;
 }
 
+/**
+ * Concept answer for dropdown/select inputs
+ */
+export interface ConceptAnswer {
+  uuid: string;
+  name: {
+    display: string;
+  };
+}
+
+/**
+ * Concept with answers for person attributes
+ */
+export interface PersonAttributeConcept {
+  uuid: string;
+  display: string;
+  answers?: ConceptAnswer[];
+}
+
+/**
+ * Person Attribute Type from OpenMRS
+ * Represents custom attributes that can be added to person records
+ */
+export interface PersonAttributeType {
+  uuid: string;
+  name: string;
+  sortWeight: number;
+  description: string | null;
+  format: string;
+  concept?: PersonAttributeConcept | null;
+}
+
+export interface PersonAttributeTypesResponse {
+  results: PersonAttributeType[];
+}
+
 export interface RelationshipType {
   uuid: string;
   display: string;

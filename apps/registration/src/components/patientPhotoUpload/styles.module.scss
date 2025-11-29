@@ -51,6 +51,11 @@
   margin-top: $spacing-05;
 }
 
+.button {
+  padding-inline: $spacing-08 !important;
+  min-width: $spacing-06 * 6 !important;
+}
+
 .errorMessage {
   color: $support-error;
   font-size: $spacing-04;
@@ -72,4 +77,10 @@
     margin-top: $spacing-09 * -1.25 !important;
     margin-left: $spacing-05 * 10 !important;
   }
+}
+
+.noFileChosen {
+  position: absolute !important;
+  margin-top: $spacing-09 * -1 !important;
+  margin-left: $spacing-05 * 11 !important;
 }

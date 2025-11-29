@@ -1,8 +1,10 @@
-import { dispatchAuditEvent } from '@bahmni/services';
+import { dispatchAuditEvent, PersonAttributeType } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { ReactNode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { useCreatePatient } from '../../../hooks/useCreatePatient';
+import { PersonAttributesProvider } from '../../../providers/PersonAttributesProvider';
 import CreatePatient from '../CreatePatient';
 import { validateAllSections, collectFormData } from '../patientFormService';
 
@@ -123,6 +125,33 @@ describe('CreatePatient', () => {
   let queryClient: QueryClient;
   let mockMutateAsync: jest.Mock;
 
+  const mockPersonAttributes: PersonAttributeType[] = [
+    {
+      uuid: 'phone-uuid',
+      name: 'phoneNumber',
+      description: 'Phone Number',
+      format: 'java.lang.String',
+      sortWeight: 1,
+      concept: null,
+    },
+    {
+      uuid: 'alt-phone-uuid',
+      name: 'altPhoneNumber',
+      description: 'Alternate Phone Number',
+      format: 'java.lang.String',
+      sortWeight: 2,
+      concept: null,
+    },
+    {
+      uuid: 'email-uuid',
+      name: 'email',
+      description: 'Email',
+      format: 'java.lang.String',
+      sortWeight: 3,
+      concept: null,
+    },
+  ];
+
   beforeEach(() => {
     queryClient = new QueryClient({
       defaultOptions: {
@@ -153,14 +182,16 @@ describe('CreatePatient', () => {
     jest.clearAllMocks();
   });
 
+  const Wrapper = ({ children }: { children: ReactNode }) => (
+    <QueryClientProvider client={queryClient}>
+      <PersonAttributesProvider initialAttributes={mockPersonAttributes}>
+        <BrowserRouter>{children}</BrowserRouter>
+      </PersonAttributesProvider>
+    </QueryClientProvider>
+  );
+
   const renderComponent = () => {
-    return render(
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <CreatePatient />
-        </BrowserRouter>
-      </QueryClientProvider>,
-    );
+    return render(<CreatePatient />, { wrapper: Wrapper });
   };
 
   describe('Component Initialization', () => {
@@ -391,13 +422,7 @@ describe('CreatePatient', () => {
       const { rerender } = renderComponent();
 
       // Trigger the effect that sets patientUuid
-      rerender(
-        <QueryClientProvider client={queryClient}>
-          <BrowserRouter>
-            <CreatePatient />
-          </BrowserRouter>
-        </QueryClientProvider>,
-      );
+      rerender(<CreatePatient />);
 
       await waitFor(() => {
         const saveButton = screen.getByText('CREATE_PATIENT_SAVE');
@@ -425,13 +450,7 @@ describe('CreatePatient', () => {
         data: { patient: { uuid: 'patient-123', display: 'John Doe' } },
       });
 
-      rerender(
-        <QueryClientProvider client={queryClient}>
-          <BrowserRouter>
-            <CreatePatient />
-          </BrowserRouter>
-        </QueryClientProvider>,
-      );
+      rerender(<CreatePatient />);
 
       await waitFor(() => {
         const uuidDisplay = screen.getByTestId('patient-uuid-display');
@@ -472,13 +491,7 @@ describe('CreatePatient', () => {
         data: { patient: { uuid: 'patient-123', display: 'John Doe' } },
       });
 
-      rerender(
-        <QueryClientProvider client={queryClient}>
-          <BrowserRouter>
-            <CreatePatient />
-          </BrowserRouter>
-        </QueryClientProvider>,
-      );
+      rerender(<CreatePatient />);
 
       await waitFor(() => {
         const uuidDisplay = screen.getByTestId('patient-uuid-display');

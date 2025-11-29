@@ -230,8 +230,9 @@ const CreatePatient = () => {
             />
             <AddressInfo ref={patientAddressRef} />
             <ContactInfo ref={patientContactRef} />
-            <AdditionalInfo ref={patientAdditionalRef} />
           </div>
+
+          <AdditionalInfo ref={patientAdditionalRef} />
 
           {/* Show relationships section only if API returns relationship types */}
           {!isLoadingRelationships &&

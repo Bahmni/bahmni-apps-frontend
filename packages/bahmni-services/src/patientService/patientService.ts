@@ -22,6 +22,7 @@ import {
   VISIT_TYPES_URL,
   GET_VISIT_LOCATION,
   ORDERED_ADDRESS_HIERARCHY_URL,
+  PERSON_ATTRIBUTE_TYPES_URL,
   RELATIONSHIP_TYPES_URL,
 } from './constants';
 import {
@@ -37,6 +38,7 @@ import {
   VisitData,
   VisitType,
   OrderedAddressHierarchyLevels,
+  PersonAttributeTypesResponse,
   RelationshipTypesResponse,
 } from './models';
 
@@ -441,3 +443,13 @@ export const getRelationshipTypes = async (): Promise<
     );
   }
 };
+
+/**
+ * Get all person attribute types from OpenMRS
+ * Returns person attributes configured in the system with their metadata
+ * @returns Promise<PersonAttributeTypesResponse> - Array of person attribute type configurations
+ */
+export const getPersonAttributeTypes =
+  async (): Promise<PersonAttributeTypesResponse> => {
+    return get<PersonAttributeTypesResponse>(PERSON_ATTRIBUTE_TYPES_URL);
+  };
