@@ -2,10 +2,12 @@ import {
   createPatient,
   notificationService,
   dispatchAuditEvent,
+  PersonAttributeType,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 import { ReactNode } from 'react';
+import { PersonAttributesProvider } from '../../providers/PersonAttributesProvider';
 import { useCreatePatient } from '../useCreatePatient';
 
 // Mock dependencies
@@ -34,6 +36,33 @@ const mockCreatePatient = createPatient as jest.Mock;
 describe('useCreatePatient', () => {
   let queryClient: QueryClient;
 
+  const mockPersonAttributes: PersonAttributeType[] = [
+    {
+      uuid: 'a384873b-847a-4a86-b869-28fb601162dd',
+      name: 'phoneNumber',
+      description: 'Phone Number',
+      format: 'java.lang.String',
+      sortWeight: 1,
+      concept: null,
+    },
+    {
+      uuid: '27fa84ff-fdd6-4895-9c77-254b60555f39',
+      name: 'altPhoneNumber',
+      description: 'Alternate Phone Number',
+      format: 'java.lang.String',
+      sortWeight: 2,
+      concept: null,
+    },
+    {
+      uuid: 'e3123cba-5e07-11ef-8f7c-0242ac120002',
+      name: 'email',
+      description: 'Email',
+      format: 'java.lang.String',
+      sortWeight: 3,
+      concept: null,
+    },
+  ];
+
   const createWrapper = () => {
     queryClient = new QueryClient({
       defaultOptions: {
@@ -43,7 +72,11 @@ describe('useCreatePatient', () => {
     });
 
     const Wrapper = ({ children }: { children: ReactNode }) => (
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <PersonAttributesProvider initialAttributes={mockPersonAttributes}>
+          {children}
+        </PersonAttributesProvider>
+      </QueryClientProvider>
     );
 
     return Wrapper;

@@ -1,7 +1,21 @@
 import { TextInput } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
-import { useCallback, useImperativeHandle, useState } from 'react';
+import { useCallback, useImperativeHandle, useState, useMemo } from 'react';
+
+import { usePersonAttributeFields } from '../../../hooks/usePersonAttributeFields';
+import { useRegistrationConfig } from '../../../hooks/useRegistrationConfig';
 import type { ContactData } from '../../../models/patient';
+
+import {
+  getFieldsToShow,
+  createFieldTranslationMap,
+  initializeFormData,
+  getFieldLabel,
+} from './contactInfoHelpers';
+import {
+  isNumericPhoneValue,
+  validateAllFields,
+} from './contactInfoValidation';
 import styles from './styles/index.module.scss';
 
 export interface ContactInfoRef {
@@ -16,25 +30,57 @@ interface ContactInfoProps {
 
 export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
   const { t } = useTranslation();
+  const { attributeFields } = usePersonAttributeFields();
+  const { registrationConfig } = useRegistrationConfig();
 
-  const [formData, setFormData] = useState<ContactData>({
-    phoneNumber: initialData?.phoneNumber ?? '',
-    altPhoneNumber: initialData?.altPhoneNumber ?? '',
-  });
+  const contactInfoConfig =
+    registrationConfig?.patientInformation?.contactInformation;
+  const configAttributes = contactInfoConfig?.attributes ?? [];
+  const sectionTitle =
+    contactInfoConfig?.translationKey ?? 'CREATE_PATIENT_SECTION_CONTACT_INFO';
+
+  const fieldValidationConfig = registrationConfig?.fieldValidation;
+
+  const fieldsToShow = useMemo(
+    () => getFieldsToShow(attributeFields, configAttributes),
+    [configAttributes, attributeFields],
+  );
+
+  const fieldTranslationMap = useMemo(
+    () => createFieldTranslationMap(configAttributes),
+    [configAttributes],
+  );
+
+  const initialFormData = useMemo(
+    () => initializeFormData(fieldsToShow, initialData),
+    [fieldsToShow, initialData],
+  );
+
+  const [formData, setFormData] = useState<ContactData>(initialFormData);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handlePhoneChange = useCallback(
-    (field: keyof ContactData, value: string) => {
-      const numericRegex = /^\+?[0-9]*$/;
-      if (numericRegex.test(value)) {
-        setFormData((prev) => ({ ...prev, [field]: value }));
+    (fieldName: string, value: string) => {
+      if (isNumericPhoneValue(value)) {
+        setFormData((prev) => ({ ...prev, [fieldName]: value }));
+
+        if (errors[fieldName]) {
+          setErrors((prev) => ({ ...prev, [fieldName]: '' }));
+        }
       }
     },
-    [],
+    [errors],
   );
 
   const validate = useCallback((): boolean => {
-    return true;
-  }, []);
+    const result = validateAllFields(
+      fieldsToShow,
+      formData,
+      fieldValidationConfig,
+    );
+    setErrors(result.errors);
+    return result.isValid;
+  }, [fieldsToShow, formData, fieldValidationConfig]);
 
   const getData = useCallback((): ContactData => {
     return formData;
@@ -45,32 +91,35 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
     getData,
   }));
 
+  if (fieldsToShow.length === 0) {
+    return null;
+  }
+
   return (
     <div className={styles.formSection}>
-      <span className={styles.formSectionTitle}>
-        {t('CREATE_PATIENT_SECTION_CONTACT_INFO')}
-      </span>
+      <span className={styles.formSectionTitle}>{t(sectionTitle)}</span>
       <div className={styles.row}>
-        <div className={styles.phoneNumberField}>
-          <TextInput
-            id="phone-number"
-            labelText={t('CREATE_PATIENT_PHONE_NUMBER')}
-            placeholder={t('CREATE_PATIENT_PHONE_NUMBER_PLACEHOLDER')}
-            value={formData.phoneNumber}
-            onChange={(e) => handlePhoneChange('phoneNumber', e.target.value)}
-          />
-        </div>
-        <div className={styles.phoneNumberField}>
-          <TextInput
-            id="alt-phone-number"
-            labelText={t('CREATE_PATIENT_ALT_PHONE_NUMBER')}
-            placeholder={t('CREATE_PATIENT_ALT_PHONE_NUMBER')}
-            value={formData.altPhoneNumber}
-            onChange={(e) =>
-              handlePhoneChange('altPhoneNumber', e.target.value)
-            }
-          />
-        </div>
+        {fieldsToShow.map((field) => {
+          const fieldName = field.name;
+          const value =
+            (formData[fieldName as keyof ContactData] as string) ?? '';
+          const label = getFieldLabel(fieldName, fieldTranslationMap, t);
+          const error = errors[fieldName] || '';
+
+          return (
+            <div key={field.uuid} className={styles.phoneNumberField}>
+              <TextInput
+                id={field.uuid}
+                labelText={label}
+                placeholder={label}
+                value={value}
+                invalid={!!error}
+                invalidText={error}
+                onChange={(e) => handlePhoneChange(fieldName, e.target.value)}
+              />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

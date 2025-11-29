@@ -198,48 +198,25 @@
       "description": "Patient name related fields configuration",
       "additionalProperties": true,
       "properties": {
-        "defaultIdentifierPrefix": {
+        "defaultIdentifierPrefix": { 
           "type": "string",
           "description": "Default prefix for patient identifiers"
-        },
-        "showMiddleName": { "type": "boolean" }, 
+       },
+        "showEnterManually": { "type": "boolean" },
+        "showMiddleName": { "type": "boolean" },
         "showLastName": { "type": "boolean" },
+        "isFirstNameMandatory": { "type": "boolean" },
+        "isMiddleNameMandatory": { "type": "boolean" },
+        "isGenderMandatory": { "type": "boolean" },
+        "isDateOfBirthMandatory": { "type": "boolean" },
         "isLastNameMandatory": { "type": "boolean" },
-        "patientNameDisplayOrder": {
-          "type": "array",
-          "description": "Order in which patient name fields should be displayed",
-          "items": { "type": "string" }
+        "patientNameDisplayOrder": { 
+          "type": "array", 
+          "description": "Order in which patient name fields should be displayed", 
+          "items": { "type": "string" } 
         },
         "showBirthTime": { "type": "boolean" },
         "showDOBEstimated": { "type": "boolean" },
-        "additionalPatientInformation": {
-          "type": "object",
-          "description": "Additional patient information configuration",
-          "additionalProperties": true,
-          "properties": {
-            "translationKey": {
-              "type": "string",
-              "description": "Translation key for the section title"
-            },
-            "expectedFields": {
-              "type": "array",
-              "description": "Array of expected fields with translation keys",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "field": {
-                    "type": "string",
-                    "description": "Field name"
-                  },
-                  "translationKey": {
-                    "type": "string",
-                    "description": "Translation key for the field label"
-                  }
-                }
-              }
-            }
-          }
-        },
         "addressHierarchy": {
           "type": "object",
           "description": "Address hierarchy levels to be displayed",
@@ -276,55 +253,21 @@
       "type": "object",
       "description": "Field validation rules with regex patterns and error messages",
       "additionalProperties": true,
-      "properties": {
-        "firstName": {
+      "patternProperties": {
+        "^.*$": {
           "type": "object",
           "properties": {
-            "pattern": {
+            "pattern": { 
               "type": "string",
               "description": "Regular expression pattern for field validation"
-            },
-            "errorMessage": {
+           },
+            "errorMessage": { 
               "type": "string",
-              "description": "Error message to display when validation fails"
-            },
-            "required": {
-              "type": "boolean",
-              "description": "Whether the field is required"
-            }
-          }
-        },
-        "lastName": {
-          "type": "object",
-          "properties": {
-            "pattern": {
-              "type": "string",
-              "description": "Regular expression pattern for field validation"
-            },
-            "errorMessage": {
-              "type": "string",
-              "description": "Error message to display when validation fails"
-            },
-            "required": {
-              "type": "boolean",
-              "description": "Whether the field is required"
-            }
-          }
-        },
-        "email": {
-          "type": "object",
-          "properties": {
-            "pattern": {
-              "type": "string",
-              "description": "Regular expression pattern for email validation"
-            },
-            "errorMessage": {
-              "type": "string",
-              "description": "Error message to display when email validation fails"
-            }
+            "description": "Error message to display when validation fails"
+           }
           }
         }
       }
     }
   }
-  }
+}

@@ -40,8 +40,10 @@ interface CreateDateAgeHandlersParams<
     React.SetStateAction<{
       firstName: string;
       lastName: string;
+      middleName: string;
       gender: string;
       dateOfBirth: string;
+      birthTime: string;
     }>
   >;
   setAgeErrors: React.Dispatch<React.SetStateAction<AgeErrors>>;

@@ -1,4 +1,10 @@
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  act,
+  waitFor,
+} from '@testing-library/react';
 import React from 'react';
 import type { BasicInfoData } from '../../../../models/patient';
 import { Profile } from '../Profile';
@@ -44,24 +50,46 @@ jest.mock('../dateAgeUtils', () => ({
   }),
 }));
 
-jest.mock('../../../../hooks/useRegistrationConfig', () => ({
-  useRegistrationConfig: () => ({
-    registrationConfig: {
-      patientInformation: {
-        showMiddleName: true,
-        showLastName: true,
-        isLastNameMandatory: true,
-        showBirthTime: true,
-        showEnterManually: true,
+jest.mock('../../../patientPhotoUpload/PatientPhotoUpload', () => ({
+  PatientPhotoUpload: jest.fn(() => (
+    <div data-testid="patient-photo-upload">Photo Upload Mock</div>
+  )),
+}));
+
+const mockUseRegistrationConfig = jest.fn(() => ({
+  registrationConfig: {
+    patientInformation: {
+      showMiddleName: true,
+      showLastName: true,
+      isFirstNameMandatory: true,
+      isMiddleNameMandatory: false,
+      isLastNameMandatory: true,
+      showBirthTime: true,
+      showEnterManually: true,
+      isGenderMandatory: true,
+      isDateOfBirthMandatory: true,
+    },
+    fieldValidation: {
+      firstName: {
+        pattern: '^[a-zA-Z\\s]*$',
+        errorMessage: 'First name should contain only alphabets without space',
+      },
+      lastName: {
+        pattern: '^[a-zA-Z\\s]*$',
+        errorMessage: 'Last name should contain only alphabets without space',
       },
     },
-    setRegistrationConfig: jest.fn(),
-    isLoading: false,
-    setIsLoading: jest.fn(),
-    error: null,
-    setError: jest.fn(),
-    refetch: jest.fn(),
-  }),
+  },
+  setRegistrationConfig: jest.fn(),
+  isLoading: false,
+  setIsLoading: jest.fn(),
+  error: null,
+  setError: jest.fn(),
+  refetch: jest.fn(),
+}));
+
+jest.mock('../../../../hooks/useRegistrationConfig', () => ({
+  useRegistrationConfig: jest.fn(() => mockUseRegistrationConfig()),
 }));
 
 describe('Profile', () => {
@@ -72,12 +100,16 @@ describe('Profile', () => {
   });
 
   describe('Rendering', () => {
-    it('should render basic info fields', () => {
-      render(<Profile ref={ref} />);
+    it('should render basic info fields', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
 
-      expect(
-        screen.getByLabelText(/CREATE_PATIENT_FIRST_NAME/),
-      ).toBeInTheDocument();
+      await waitFor(() => {
+        expect(
+          screen.getByLabelText(/CREATE_PATIENT_FIRST_NAME/),
+        ).toBeInTheDocument();
+      });
       expect(
         screen.getByLabelText(/CREATE_PATIENT_LAST_NAME/),
       ).toBeInTheDocument();
@@ -86,8 +118,10 @@ describe('Profile', () => {
   });
 
   describe('Name Validation', () => {
-    it('should accept valid name with only letters', () => {
-      render(<Profile ref={ref} />);
+    it('should accept valid name with only letters', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
       const firstNameInput = screen.getByLabelText(
         /CREATE_PATIENT_FIRST_NAME/,
       ) as HTMLInputElement;
@@ -96,8 +130,10 @@ describe('Profile', () => {
       expect(firstNameInput.value).toBe('John');
     });
 
-    it('should accept name with spaces', () => {
-      render(<Profile ref={ref} />);
+    it('should accept name with spaces', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
       const firstNameInput = screen.getByLabelText(
         /CREATE_PATIENT_FIRST_NAME/,
       ) as HTMLInputElement;
@@ -106,8 +142,10 @@ describe('Profile', () => {
       expect(firstNameInput.value).toBe('John Doe');
     });
 
-    it('should reject name with numbers', () => {
-      render(<Profile ref={ref} />);
+    it('should reject name with numbers', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
       const firstNameInput = screen.getByLabelText(
         /CREATE_PATIENT_FIRST_NAME/,
       ) as HTMLInputElement;
@@ -116,8 +154,10 @@ describe('Profile', () => {
       expect(firstNameInput.value).toBe('');
     });
 
-    it('should reject name with special characters', () => {
-      render(<Profile ref={ref} />);
+    it('should reject name with special characters', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
       const lastNameInput = screen.getByLabelText(
         /CREATE_PATIENT_LAST_NAME/,
       ) as HTMLInputElement;
@@ -128,8 +168,10 @@ describe('Profile', () => {
   });
 
   describe('Required Field Validation', () => {
-    it('should show errors when required fields are empty', () => {
-      render(<Profile ref={ref} />);
+    it('should show errors when required fields are empty', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
 
       let isValid: boolean | undefined;
       act(() => {
@@ -139,7 +181,7 @@ describe('Profile', () => {
       expect(isValid).toBe(false);
     });
 
-    it('should validate successfully with all required fields', () => {
+    it('should validate successfully with all required fields', async () => {
       const initialData: BasicInfoData = {
         patientIdFormat: 'BAH',
         entryType: false,
@@ -154,7 +196,9 @@ describe('Profile', () => {
         birthTime: '',
       };
 
-      render(<Profile ref={ref} initialData={initialData} />);
+      await act(async () => {
+        render(<Profile ref={ref} initialData={initialData} />);
+      });
 
       let isValid: boolean | undefined;
       act(() => {
@@ -164,8 +208,10 @@ describe('Profile', () => {
       expect(isValid).toBe(true);
     });
 
-    it('should clear first name error when field is filled', () => {
-      render(<Profile ref={ref} />);
+    it('should clear first name error when field is filled', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
 
       act(() => {
         ref.current?.validate();
@@ -183,8 +229,10 @@ describe('Profile', () => {
   });
 
   describe('getData Method', () => {
-    it('should return empty data when no input provided', () => {
-      render(<Profile ref={ref} />);
+    it('should return empty data when no input provided', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
 
       const data = ref.current?.getData();
 
@@ -193,8 +241,10 @@ describe('Profile', () => {
       expect(data?.gender).toBe('');
     });
 
-    it('should return current form data', () => {
-      render(<Profile ref={ref} />);
+    it('should return current form data', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
 
       const firstNameInput = screen.getByLabelText(/CREATE_PATIENT_FIRST_NAME/);
       const lastNameInput = screen.getByLabelText(/CREATE_PATIENT_LAST_NAME/);
@@ -208,8 +258,10 @@ describe('Profile', () => {
       expect(data?.lastName).toBe('Doe');
     });
 
-    it('should return patientIdentifier with correct structure', () => {
-      render(<Profile ref={ref} />);
+    it('should return patientIdentifier with correct structure', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
 
       const data = ref.current?.getData();
 
@@ -222,15 +274,17 @@ describe('Profile', () => {
       });
     });
 
-    it('should return dobEstimated flag', () => {
-      render(<Profile ref={ref} initialDobEstimated />);
+    it('should return dobEstimated flag', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} initialDobEstimated />);
+      });
 
       const data = ref.current?.getData();
 
       expect(data?.dobEstimated).toBe(true);
     });
 
-    it('should return initial data when provided', () => {
+    it('should return initial data when provided', async () => {
       const initialData: BasicInfoData = {
         patientIdFormat: 'GAN',
         entryType: true,
@@ -245,7 +299,9 @@ describe('Profile', () => {
         birthTime: '10:30',
       };
 
-      render(<Profile ref={ref} initialData={initialData} />);
+      await act(async () => {
+        render(<Profile ref={ref} initialData={initialData} />);
+      });
 
       const data = ref.current?.getData();
 
@@ -258,7 +314,7 @@ describe('Profile', () => {
   });
 
   describe('clearData Method', () => {
-    it('should clear all form data', () => {
+    it('should clear all form data', async () => {
       const initialData: BasicInfoData = {
         patientIdFormat: 'BAH',
         entryType: false,
@@ -273,7 +329,9 @@ describe('Profile', () => {
         birthTime: '10:00',
       };
 
-      render(<Profile ref={ref} initialData={initialData} />);
+      await act(async () => {
+        render(<Profile ref={ref} initialData={initialData} />);
+      });
 
       act(() => {
         ref.current?.clearData();
@@ -290,8 +348,10 @@ describe('Profile', () => {
   });
 
   describe('setCustomError Method', () => {
-    it('should set custom error for a field', () => {
-      render(<Profile ref={ref} />);
+    it('should set custom error for a field', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
 
       act(() => {
         ref.current?.setCustomError('firstName', 'Custom error message');
@@ -307,8 +367,10 @@ describe('Profile', () => {
   });
 
   describe('Gender Selection', () => {
-    it('should update gender when selected', () => {
-      render(<Profile ref={ref} />);
+    it('should update gender when selected', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
 
       const data = ref.current?.getData();
       expect(data?.gender).toBe('');
@@ -316,8 +378,10 @@ describe('Profile', () => {
   });
 
   describe('Entry Type Checkbox', () => {
-    it('should toggle entry type checkbox', () => {
-      render(<Profile ref={ref} />);
+    it('should toggle entry type checkbox', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
 
       const checkbox = screen.getByLabelText(
         'CREATE_PATIENT_ENTER_MANUALLY',
@@ -333,8 +397,10 @@ describe('Profile', () => {
   });
 
   describe('DOB Estimated Checkbox', () => {
-    it('should toggle DOB estimated checkbox', () => {
-      render(<Profile ref={ref} />);
+    it('should toggle DOB estimated checkbox', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
 
       const checkbox = screen.getByLabelText(
         'CREATE_PATIENT_ESTIMATED',
@@ -348,8 +414,10 @@ describe('Profile', () => {
       expect(data?.dobEstimated).toBe(true);
     });
 
-    it('should initialize with dobEstimated from props', () => {
-      render(<Profile ref={ref} initialDobEstimated />);
+    it('should initialize with dobEstimated from props', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} initialDobEstimated />);
+      });
 
       const checkbox = screen.getByLabelText(
         'CREATE_PATIENT_ESTIMATED',
@@ -360,8 +428,10 @@ describe('Profile', () => {
   });
 
   describe('Patient ID Format Selection', () => {
-    it('should update patient ID format', () => {
-      render(<Profile ref={ref} />);
+    it('should update patient ID format', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
 
       const data = ref.current?.getData();
 
@@ -370,8 +440,10 @@ describe('Profile', () => {
   });
 
   describe('Birth Time Input', () => {
-    it('should update birth time', () => {
-      render(<Profile ref={ref} />);
+    it('should update birth time', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
 
       const birthTimeInput = screen.getByLabelText(
         'CREATE_PATIENT_BIRTH_TIME',
@@ -382,11 +454,112 @@ describe('Profile', () => {
       const data = ref.current?.getData();
       expect(data?.birthTime).toBe('14:30');
     });
+
+    it('should accept valid time format HH:MM', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
+
+      const birthTimeInput = screen.getByLabelText(
+        'CREATE_PATIENT_BIRTH_TIME',
+      ) as HTMLInputElement;
+
+      fireEvent.change(birthTimeInput, { target: { value: '09:45' } });
+
+      const data = ref.current?.getData();
+      expect(data?.birthTime).toBe('09:45');
+    });
+
+    it('should allow empty birth time as it is optional', async () => {
+      const initialData: BasicInfoData = {
+        patientIdFormat: 'BAH',
+        entryType: false,
+        firstName: 'John',
+        middleName: '',
+        lastName: 'Doe',
+        gender: 'CREATE_PATIENT_GENDER_MALE',
+        ageYears: '30',
+        ageMonths: '',
+        ageDays: '',
+        dateOfBirth: '1993-01-01',
+        birthTime: '',
+      };
+
+      await act(async () => {
+        render(<Profile ref={ref} initialData={initialData} />);
+      });
+
+      let isValid: boolean | undefined;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
+
+      expect(isValid).toBe(true);
+    });
+
+    it('should accept midnight time 00:00', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
+
+      const birthTimeInput = screen.getByLabelText(
+        'CREATE_PATIENT_BIRTH_TIME',
+      ) as HTMLInputElement;
+
+      fireEvent.change(birthTimeInput, { target: { value: '00:00' } });
+
+      const data = ref.current?.getData();
+      expect(data?.birthTime).toBe('00:00');
+    });
+
+    it('should accept end of day time 23:59', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
+
+      const birthTimeInput = screen.getByLabelText(
+        'CREATE_PATIENT_BIRTH_TIME',
+      ) as HTMLInputElement;
+
+      fireEvent.change(birthTimeInput, { target: { value: '23:59' } });
+
+      const data = ref.current?.getData();
+      expect(data?.birthTime).toBe('23:59');
+    });
+
+    it('should pass validation with valid birth time and all required fields', async () => {
+      const initialData: BasicInfoData = {
+        patientIdFormat: 'BAH',
+        entryType: false,
+        firstName: 'John',
+        middleName: '',
+        lastName: 'Doe',
+        gender: 'CREATE_PATIENT_GENDER_MALE',
+        ageYears: '30',
+        ageMonths: '',
+        ageDays: '',
+        dateOfBirth: '1993-01-01',
+        birthTime: '15:45',
+      };
+
+      await act(async () => {
+        render(<Profile ref={ref} initialData={initialData} />);
+      });
+
+      let isValid: boolean | undefined;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
+
+      expect(isValid).toBe(true);
+    });
   });
 
   describe('Configuration-based Field Visibility', () => {
-    it('should show middle name and last name fields when configuration is true', () => {
-      render(<Profile ref={ref} />);
+    it('should show middle name and last name fields when configuration is true', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
 
       expect(
         screen.getByLabelText(/CREATE_PATIENT_FIRST_NAME/),
@@ -399,16 +572,20 @@ describe('Profile', () => {
       ).toBeInTheDocument();
     });
 
-    it('should mark last name as required when isLastNameMandatory is true', () => {
-      render(<Profile ref={ref} />);
+    it('should mark last name as required when isLastNameMandatory is true', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
 
       // Check that the required asterisk is present in the label
       const lastNameLabel = screen.getByText(/CREATE_PATIENT_LAST_NAME/);
       expect(lastNameLabel).toBeInTheDocument();
     });
 
-    it('should validate last name when isLastNameMandatory is true', () => {
-      render(<Profile ref={ref} />);
+    it('should validate last name when isLastNameMandatory is true', async () => {
+      await act(async () => {
+        render(<Profile ref={ref} />);
+      });
 
       const firstNameInput = screen.getByLabelText(
         /CREATE_PATIENT_FIRST_NAME/,

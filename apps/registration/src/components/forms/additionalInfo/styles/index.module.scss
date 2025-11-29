@@ -2,26 +2,65 @@
 @use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/type" as *;
 
-.formSection {
- display: flex;
- flex-direction: column;
- gap: 16px;
+.additionalInfoSection {
+  margin: 0 auto;
+  width: calc(100% - ($spacing-13 + $spacing-05));
+  max-width: $spacing-13 * 9 + $spacing-05 + $spacing-02;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  margin-top: 40px;
+  overflow: visible;
 }
 
-.formSectionTitle {
-@include type-style("body-compact-02");
-}     
+.headerTile {
+  max-width: $spacing-13 * 9 + $spacing-05 + $spacing-02;
+  height: $spacing-08 + $spacing-05;
+  display: flex;
+  align-items: center;
+}
+
+.headerTitle {
+  @include type-style("heading-compact-02");
+  font-size: $spacing-05 !important;
+}
+   
   
-.emailField{
-  width: 288px;
-} 
+.attributeField {
+  flex: 0 0 calc(50% - $spacing-06 / 2);
+  padding-bottom: $spacing-03 + $spacing-01;
+      
+  > * {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  > * {
+    position: relative;
+    
+    div[class*="cds--form-requirement"] {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: $spacing-01;
+      z-index: 1;
+    }
+  }
+}
 
 .row {
+  width: 100%;
+  padding: $spacing-06;
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-}    
+  flex-direction: row;
+  gap: $spacing-05;
+  overflow: visible;
+}
 
-
-
-
+.fieldsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-06;
+}

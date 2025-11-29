@@ -10,13 +10,55 @@ jest.mock('@bahmni/services', () => ({
   useTranslation: jest.fn(),
 }));
 
-// Mock registration config hook - with overridable return value
+// Mock PersonAttributeInput component
+jest.mock('../../../common/PersonAttributeInput', () => ({
+  PersonAttributeInput: ({ label, value, onChange, error }: any) => (
+    <div>
+      <label htmlFor={label}>{label}</label>
+      <input
+        id={label}
+        aria-label={label}
+        value={value ?? ''}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      {error && <span>{error}</span>}
+    </div>
+  ),
+}));
+
+// Mock usePersonAttributeFields hook
+const mockUsePersonAttributeFields = jest.fn(() => ({
+  attributeFields: [
+    {
+      uuid: 'email-uuid',
+      name: 'email',
+      format: 'java.lang.String',
+      sortWeight: 1,
+      description: null,
+    },
+    {
+      uuid: 'cluster-uuid',
+      name: 'cluster',
+      format: 'java.lang.String',
+      sortWeight: 2,
+      description: null,
+    },
+  ],
+  isLoading: false,
+  error: null,
+}));
+
+jest.mock('../../../../hooks/usePersonAttributeFields', () => ({
+  usePersonAttributeFields: () => mockUsePersonAttributeFields(),
+}));
+
+// Mock registration config hook
 const mockUseRegistrationConfig = jest.fn(() => ({
   registrationConfig: {
     patientInformation: {
       additionalPatientInformation: {
         translationKey: 'CREATE_PATIENT_SECTION_ADDITIONAL_INFO',
-        expectedFields: [
+        attributes: [
           {
             field: 'email',
             translationKey: 'CREATE_PATIENT_EMAIL',
@@ -27,16 +69,10 @@ const mockUseRegistrationConfig = jest.fn(() => ({
     fieldValidation: {
       email: {
         pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
-        errorMessage: 'Should be a valid email address',
+        errorMessage: 'CREATE_PATIENT_VALIDATION_EMAIL_INVALID',
       },
     },
   },
-  setRegistrationConfig: jest.fn(),
-  isLoading: false,
-  setIsLoading: jest.fn(),
-  error: null,
-  setError: jest.fn(),
-  refetch: jest.fn(),
 }));
 
 jest.mock('../../../../hooks/useRegistrationConfig', () => ({
@@ -52,6 +88,7 @@ describe('AdditionalInfo', () => {
 
   beforeEach(() => {
     mockUseTranslation.mockReturnValue({ t: mockT } as any);
+    jest.clearAllMocks();
 
     // Reset to default config
     mockUseRegistrationConfig.mockReturnValue({
@@ -59,7 +96,7 @@ describe('AdditionalInfo', () => {
         patientInformation: {
           additionalPatientInformation: {
             translationKey: 'CREATE_PATIENT_SECTION_ADDITIONAL_INFO',
-            expectedFields: [
+            attributes: [
               {
                 field: 'email',
                 translationKey: 'CREATE_PATIENT_EMAIL',
@@ -74,12 +111,28 @@ describe('AdditionalInfo', () => {
           },
         },
       },
-      setRegistrationConfig: jest.fn(),
+    });
+
+    // Reset to default person attributes
+    mockUsePersonAttributeFields.mockReturnValue({
+      attributeFields: [
+        {
+          uuid: 'email-uuid',
+          name: 'email',
+          format: 'java.lang.String',
+          sortWeight: 1,
+          description: null,
+        },
+        {
+          uuid: 'cluster-uuid',
+          name: 'cluster',
+          format: 'java.lang.String',
+          sortWeight: 2,
+          description: null,
+        },
+      ],
       isLoading: false,
-      setIsLoading: jest.fn(),
       error: null,
-      setError: jest.fn(),
-      refetch: jest.fn(),
     });
   });
 
@@ -113,16 +166,9 @@ describe('AdditionalInfo', () => {
           patientInformation: {
             additionalPatientInformation: {
               translationKey: 'CREATE_PATIENT_SECTION_ADDITIONAL_INFO',
-              expectedFields: [
+              attributes: [
                 { field: 'email', translationKey: 'CREATE_PATIENT_EMAIL' },
-                {
-                  field: 'phoneNumber',
-                  translationKey: 'CREATE_PATIENT_PHONE',
-                },
-                {
-                  field: 'occupation',
-                  translationKey: 'CREATE_PATIENT_OCCUPATION',
-                },
+                { field: 'cluster', translationKey: 'CREATE_PATIENT_CLUSTER' },
               ],
             },
           },
@@ -133,46 +179,27 @@ describe('AdditionalInfo', () => {
             },
           },
         },
-        setRegistrationConfig: jest.fn(),
-        isLoading: false,
-        setIsLoading: jest.fn(),
-        error: null,
-        setError: jest.fn(),
-        refetch: jest.fn(),
       });
 
       render(<AdditionalInfo />);
 
       expect(screen.getByLabelText('CREATE_PATIENT_EMAIL')).toBeInTheDocument();
-      expect(screen.getByLabelText('CREATE_PATIENT_PHONE')).toBeInTheDocument();
       expect(
-        screen.getByLabelText('CREATE_PATIENT_OCCUPATION'),
+        screen.getByLabelText('CREATE_PATIENT_CLUSTER'),
       ).toBeInTheDocument();
     });
 
-    it('returns null when no expected fields are configured', () => {
+    it('returns null when no attributes are configured', () => {
       mockUseRegistrationConfig.mockReturnValue({
         registrationConfig: {
           patientInformation: {
             additionalPatientInformation: {
               translationKey: 'CREATE_PATIENT_SECTION_ADDITIONAL_INFO',
-              expectedFields: [],
-            },
-          },
-          fieldValidation: {
-            email: {
-              pattern: '',
-              errorMessage: 'Should be a valid email address',
+              attributes: [],
             },
           },
         },
-        setRegistrationConfig: jest.fn(),
-        isLoading: false,
-        setIsLoading: jest.fn(),
-        error: null,
-        setError: jest.fn(),
-        refetch: jest.fn(),
-      });
+      } as any);
 
       const { container } = render(<AdditionalInfo />);
       expect(container.firstChild).toBeNull();
@@ -181,29 +208,36 @@ describe('AdditionalInfo', () => {
     it('returns null when additionalPatientInformation is not configured', () => {
       mockUseRegistrationConfig.mockReturnValue({
         registrationConfig: {
-          patientInformation: {
-            additionalPatientInformation: {
-              translationKey: 'CREATE_PATIENT_SECTION_ADDITIONAL_INFO',
-              expectedFields: [],
-            },
-          },
-          fieldValidation: {
-            email: {
-              pattern: '',
-              errorMessage: 'Should be a valid email address',
-            },
-          },
+          patientInformation: {},
         },
-        setRegistrationConfig: jest.fn(),
-        isLoading: false,
-        setIsLoading: jest.fn(),
-        error: null,
-        setError: jest.fn(),
-        refetch: jest.fn(),
-      });
+      } as any);
 
       const { container } = render(<AdditionalInfo />);
       expect(container.firstChild).toBeNull();
+    });
+
+    it('only renders fields that exist in both API and config', () => {
+      mockUseRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          patientInformation: {
+            additionalPatientInformation: {
+              translationKey: 'CREATE_PATIENT_SECTION_ADDITIONAL_INFO',
+              attributes: [
+                { field: 'email', translationKey: 'CREATE_PATIENT_EMAIL' },
+                { field: 'nonExistentField', translationKey: 'SOME_FIELD' },
+              ],
+            },
+          },
+        },
+      } as any);
+
+      render(<AdditionalInfo />);
+
+      // Should render email (exists in API)
+      expect(screen.getByLabelText('CREATE_PATIENT_EMAIL')).toBeInTheDocument();
+
+      // Should NOT render nonExistentField (doesn't exist in API)
+      expect(screen.queryByLabelText('SOME_FIELD')).not.toBeInTheDocument();
     });
   });
 
@@ -224,12 +258,9 @@ describe('AdditionalInfo', () => {
           patientInformation: {
             additionalPatientInformation: {
               translationKey: 'CREATE_PATIENT_SECTION_ADDITIONAL_INFO',
-              expectedFields: [
+              attributes: [
                 { field: 'email', translationKey: 'CREATE_PATIENT_EMAIL' },
-                {
-                  field: 'phoneNumber',
-                  translationKey: 'CREATE_PATIENT_PHONE',
-                },
+                { field: 'cluster', translationKey: 'CREATE_PATIENT_CLUSTER' },
               ],
             },
           },
@@ -240,12 +271,6 @@ describe('AdditionalInfo', () => {
             },
           },
         },
-        setRegistrationConfig: jest.fn(),
-        isLoading: false,
-        setIsLoading: jest.fn(),
-        error: null,
-        setError: jest.fn(),
-        refetch: jest.fn(),
       });
 
       render(<AdditionalInfo />);
@@ -253,15 +278,15 @@ describe('AdditionalInfo', () => {
       const emailInput = screen.getByLabelText(
         'CREATE_PATIENT_EMAIL',
       ) as HTMLInputElement;
-      const phoneInput = screen.getByLabelText(
-        'CREATE_PATIENT_PHONE',
+      const clusterInput = screen.getByLabelText(
+        'CREATE_PATIENT_CLUSTER',
       ) as HTMLInputElement;
 
       fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      fireEvent.change(phoneInput, { target: { value: '1234567890' } });
+      fireEvent.change(clusterInput, { target: { value: 'North' } });
 
       expect(emailInput.value).toBe('test@example.com');
-      expect(phoneInput.value).toBe('1234567890');
+      expect(clusterInput.value).toBe('North');
     });
 
     it('clears field values', () => {
@@ -322,13 +347,13 @@ describe('AdditionalInfo', () => {
       ).toBeInTheDocument();
     });
 
-    it('uses custom email pattern from config', () => {
+    it('uses custom pattern from config', () => {
       mockUseRegistrationConfig.mockReturnValue({
         registrationConfig: {
           patientInformation: {
             additionalPatientInformation: {
               translationKey: 'CREATE_PATIENT_SECTION_ADDITIONAL_INFO',
-              expectedFields: [
+              attributes: [
                 { field: 'email', translationKey: 'CREATE_PATIENT_EMAIL' },
               ],
             },
@@ -340,12 +365,6 @@ describe('AdditionalInfo', () => {
             },
           },
         },
-        setRegistrationConfig: jest.fn(),
-        isLoading: false,
-        setIsLoading: jest.fn(),
-        error: null,
-        setError: jest.fn(),
-        refetch: jest.fn(),
       });
 
       const ref = createRef<AdditionalInfoRef>();
@@ -362,51 +381,6 @@ describe('AdditionalInfo', () => {
       });
       expect(isValid).toBe(false);
       expect(screen.getByText('CUSTOM_ERROR_MESSAGE')).toBeInTheDocument();
-    });
-
-    it('uses default pattern when fieldValidation is not configured', () => {
-      mockUseRegistrationConfig.mockReturnValue({
-        registrationConfig: {
-          patientInformation: {
-            additionalPatientInformation: {
-              translationKey: 'CREATE_PATIENT_SECTION_ADDITIONAL_INFO',
-              expectedFields: [
-                { field: 'email', translationKey: 'CREATE_PATIENT_EMAIL' },
-              ],
-            },
-          },
-          fieldValidation: {
-            email: {
-              pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
-              errorMessage: 'CREATE_PATIENT_VALIDATION_EMAIL_INVALID',
-            },
-          },
-        },
-        setRegistrationConfig: jest.fn(),
-        isLoading: false,
-        setIsLoading: jest.fn(),
-        error: null,
-        setError: jest.fn(),
-        refetch: jest.fn(),
-      });
-
-      const ref = createRef<AdditionalInfoRef>();
-      render(<AdditionalInfo ref={ref} />);
-
-      const emailInput = screen.getByLabelText(
-        'CREATE_PATIENT_EMAIL',
-      ) as HTMLInputElement;
-      // Use letters only to test that valid email pattern works
-      fireEvent.change(emailInput, { target: { value: 'invalidemailformat' } });
-
-      let isValid: boolean | undefined;
-      act(() => {
-        isValid = ref.current?.validate();
-      });
-      expect(isValid).toBe(false);
-      expect(
-        screen.getByText('CREATE_PATIENT_VALIDATION_EMAIL_INVALID'),
-      ).toBeInTheDocument();
     });
 
     it('clears error when user types after validation failure', () => {
@@ -429,53 +403,6 @@ describe('AdditionalInfo', () => {
       expect(
         screen.queryByText('CREATE_PATIENT_VALIDATION_EMAIL_INVALID'),
       ).not.toBeInTheDocument();
-    });
-
-    it('only validates email field, not other fields', () => {
-      mockUseRegistrationConfig.mockReturnValue({
-        registrationConfig: {
-          patientInformation: {
-            additionalPatientInformation: {
-              translationKey: 'CREATE_PATIENT_SECTION_ADDITIONAL_INFO',
-              expectedFields: [
-                { field: 'email', translationKey: 'CREATE_PATIENT_EMAIL' },
-                {
-                  field: 'phoneNumber',
-                  translationKey: 'CREATE_PATIENT_PHONE',
-                },
-              ],
-            },
-          },
-          fieldValidation: {
-            email: {
-              pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
-              errorMessage: 'CREATE_PATIENT_VALIDATION_EMAIL_INVALID',
-            },
-          },
-        },
-        setRegistrationConfig: jest.fn(),
-        isLoading: false,
-        setIsLoading: jest.fn(),
-        error: null,
-        setError: jest.fn(),
-        refetch: jest.fn(),
-      });
-
-      const ref = createRef<AdditionalInfoRef>();
-      render(<AdditionalInfo ref={ref} />);
-
-      const emailInput = screen.getByLabelText(
-        'CREATE_PATIENT_EMAIL',
-      ) as HTMLInputElement;
-      const phoneInput = screen.getByLabelText(
-        'CREATE_PATIENT_PHONE',
-      ) as HTMLInputElement;
-
-      fireEvent.change(emailInput, { target: { value: 'valid@example.com' } });
-      fireEvent.change(phoneInput, { target: { value: 'any value' } });
-
-      const isValid = ref.current?.validate();
-      expect(isValid).toBe(true); // Phone number doesn't have validation
     });
   });
 
@@ -507,16 +434,9 @@ describe('AdditionalInfo', () => {
           patientInformation: {
             additionalPatientInformation: {
               translationKey: 'CREATE_PATIENT_SECTION_ADDITIONAL_INFO',
-              expectedFields: [
+              attributes: [
                 { field: 'email', translationKey: 'CREATE_PATIENT_EMAIL' },
-                {
-                  field: 'phoneNumber',
-                  translationKey: 'CREATE_PATIENT_PHONE',
-                },
-                {
-                  field: 'occupation',
-                  translationKey: 'CREATE_PATIENT_OCCUPATION',
-                },
+                { field: 'cluster', translationKey: 'CREATE_PATIENT_CLUSTER' },
               ],
             },
           },
@@ -527,12 +447,6 @@ describe('AdditionalInfo', () => {
             },
           },
         },
-        setRegistrationConfig: jest.fn(),
-        isLoading: false,
-        setIsLoading: jest.fn(),
-        error: null,
-        setError: jest.fn(),
-        refetch: jest.fn(),
       });
 
       const ref = createRef<AdditionalInfoRef>();
@@ -541,18 +455,14 @@ describe('AdditionalInfo', () => {
       fireEvent.change(screen.getByLabelText('CREATE_PATIENT_EMAIL'), {
         target: { value: 'test@example.com' },
       });
-      fireEvent.change(screen.getByLabelText('CREATE_PATIENT_PHONE'), {
-        target: { value: '1234567890' },
-      });
-      fireEvent.change(screen.getByLabelText('CREATE_PATIENT_OCCUPATION'), {
-        target: { value: 'Engineer' },
+      fireEvent.change(screen.getByLabelText('CREATE_PATIENT_CLUSTER'), {
+        target: { value: 'North' },
       });
 
       const data = ref.current?.getData();
       expect(data).toEqual({
         email: 'test@example.com',
-        phoneNumber: '1234567890',
-        occupation: 'Engineer',
+        cluster: 'North',
       });
     });
 
@@ -575,6 +485,120 @@ describe('AdditionalInfo', () => {
 
       const data = ref.current?.getData();
       expect(data).toEqual({ email: 'updated@example.com' });
+    });
+  });
+
+  describe('Dynamic Fields', () => {
+    it('should render custom person attributes when configured', () => {
+      mockUsePersonAttributeFields.mockReturnValue({
+        attributeFields: [
+          {
+            uuid: 'custom-uuid',
+            name: 'customField',
+            format: 'java.lang.String',
+            sortWeight: 1,
+            description: null,
+          },
+        ],
+        isLoading: false,
+        error: null,
+      });
+
+      mockUseRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          patientInformation: {
+            additionalPatientInformation: {
+              translationKey: 'CREATE_PATIENT_SECTION_ADDITIONAL_INFO',
+              attributes: [
+                {
+                  field: 'customField',
+                  translationKey: 'CUSTOM_FIELD_LABEL',
+                },
+              ],
+            },
+          },
+        },
+      } as any);
+
+      render(<AdditionalInfo />);
+
+      expect(screen.getByLabelText('CUSTOM_FIELD_LABEL')).toBeInTheDocument();
+    });
+
+    it('should support boolean type fields', () => {
+      mockUsePersonAttributeFields.mockReturnValue({
+        attributeFields: [
+          {
+            uuid: 'boolean-uuid',
+            name: 'isActive',
+            format: 'java.lang.Boolean',
+            sortWeight: 1,
+            description: null,
+          },
+        ],
+        isLoading: false,
+        error: null,
+      });
+
+      mockUseRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          patientInformation: {
+            additionalPatientInformation: {
+              translationKey: 'CREATE_PATIENT_SECTION_ADDITIONAL_INFO',
+              attributes: [
+                {
+                  field: 'isActive',
+                  translationKey: 'IS_ACTIVE',
+                },
+              ],
+            },
+          },
+        },
+      } as any);
+
+      render(<AdditionalInfo />);
+
+      expect(screen.getByLabelText('IS_ACTIVE')).toBeInTheDocument();
+    });
+
+    it('should support concept type fields with answers', () => {
+      mockUsePersonAttributeFields.mockReturnValue({
+        attributeFields: [
+          {
+            uuid: 'concept-uuid',
+            name: 'bloodGroup',
+            format: 'org.openmrs.Concept',
+            sortWeight: 1,
+            description: null,
+            answers: [
+              { uuid: 'a-uuid', display: 'A+' },
+              { uuid: 'b-uuid', display: 'B+' },
+            ],
+          } as any,
+        ],
+        isLoading: false,
+        error: null,
+      });
+
+      mockUseRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          patientInformation: {
+            additionalPatientInformation: {
+              translationKey: 'CREATE_PATIENT_SECTION_ADDITIONAL_INFO',
+              attributes: [
+                {
+                  field: 'bloodGroup',
+                  translationKey: 'BLOOD_GROUP',
+                },
+              ],
+            },
+          },
+        },
+      } as any);
+
+      render(<AdditionalInfo />);
+
+      expect(screen.getByLabelText('BLOOD_GROUP')).toBeInTheDocument();
     });
   });
 });

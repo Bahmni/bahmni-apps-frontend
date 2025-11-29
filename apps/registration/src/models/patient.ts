@@ -38,10 +38,10 @@ export interface ContactData {
 /**
  * Patient Additional Information Data
  * Supports dynamic fields based on configuration
+ * Supports various data types: string, number, boolean for different attribute formats
  */
 export interface AdditionalData {
-  email?: string;
-  [key: string]: string | number | undefined;
+  [key: string]: string | number | boolean | undefined;
 }
 
 /**
