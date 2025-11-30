@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { PatientRelationships } from '../PatientRelationships';
@@ -43,10 +43,14 @@ describe('PatientRelationships', () => {
         expect(
           screen.getByText('CREATE_PATIENT_SECTION_RELATIONSHIPS'),
         ).toBeInTheDocument();
-        expect(screen.getByText('RELATIONSHIP_TYPE')).toBeInTheDocument();
-        expect(screen.getByText('PATIENT_ID')).toBeInTheDocument();
-        expect(screen.getByText('TILL_DATE')).toBeInTheDocument();
-        expect(screen.getByText('ADD_RELATIONSHIP')).toBeInTheDocument();
+        expect(
+          screen.getByText('REGISTRATION_RELATIONSHIP_TYPE'),
+        ).toBeInTheDocument();
+        expect(screen.getByText('REGISTRATION_PATIENT_ID')).toBeInTheDocument();
+        expect(screen.getByText('REGISTRATION_TILL_DATE')).toBeInTheDocument();
+        expect(
+          screen.getByText('REGISTRATION_ADD_RELATIONSHIP'),
+        ).toBeInTheDocument();
       });
     });
 
@@ -76,28 +80,32 @@ describe('PatientRelationships', () => {
       render(<PatientRelationships ref={ref} />, { wrapper });
 
       await waitFor(() => {
-        expect(screen.getByText('ADD_RELATIONSHIP')).toBeInTheDocument();
+        expect(
+          screen.getByText('REGISTRATION_ADD_RELATIONSHIP'),
+        ).toBeInTheDocument();
       });
 
       const addButton = screen.getByRole('button', {
-        name: 'ADD_RELATIONSHIP',
+        name: 'REGISTRATION_ADD_RELATIONSHIP',
       });
       await user.click(addButton);
       await user.click(addButton);
 
       await waitFor(() => {
-        expect(screen.getAllByRole('button', { name: 'REMOVE' })).toHaveLength(
-          3,
-        );
+        expect(
+          screen.getAllByRole('button', { name: 'REGISTRATION_REMOVE' }),
+        ).toHaveLength(3);
       });
 
-      const removeButtons = screen.getAllByRole('button', { name: 'REMOVE' });
+      const removeButtons = screen.getAllByRole('button', {
+        name: 'REGISTRATION_REMOVE',
+      });
       await user.click(removeButtons[0]);
 
       await waitFor(() => {
-        expect(screen.getAllByRole('button', { name: 'REMOVE' })).toHaveLength(
-          2,
-        );
+        expect(
+          screen.getAllByRole('button', { name: 'REGISTRATION_REMOVE' }),
+        ).toHaveLength(2);
       });
     });
   });
@@ -131,7 +139,7 @@ describe('PatientRelationships', () => {
       expect(initialFetchedData?.[0]).toHaveProperty('tillDate');
 
       const addButton = screen.getByRole('button', {
-        name: 'ADD_RELATIONSHIP',
+        name: 'REGISTRATION_ADD_RELATIONSHIP',
       });
       await user.click(addButton);
 
@@ -158,7 +166,9 @@ describe('PatientRelationships', () => {
         expect(ref.current?.getData()).toHaveLength(1);
       });
 
-      ref.current?.clearData();
+      act(() => {
+        ref.current?.clearData();
+      });
 
       await waitFor(() => {
         expect(ref.current?.getData()).toEqual([]);

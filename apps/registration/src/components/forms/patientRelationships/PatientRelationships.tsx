@@ -48,7 +48,7 @@ export const PatientRelationships = ({
   const { data: relationshipTypes = [] } = useQuery({
     queryKey: ['relationshipTypes'],
     queryFn: getRelationshipTypes,
-    staleTime: Infinity,
+    staleTime: 1000 * 60 * 5,
   });
 
   const [relationships, setRelationships] = useState<RelationshipData[]>(
@@ -85,11 +85,29 @@ export const PatientRelationships = ({
     value: string,
   ) => {
     setRelationships((prev) =>
-      prev.map((rel) => (rel.id === id ? { ...rel, [field]: value } : rel)),
+      prev.map((rel) => {
+        if (rel.id === id) {
+          if (field === 'relationshipType') {
+            return {
+              ...rel,
+              [field]: value,
+              patientId: '',
+              patientUuid: '',
+              patientName: '',
+            };
+          }
+          return { ...rel, [field]: value };
+        }
+        return rel;
+      }),
     );
 
     if (field === 'relationshipType' || field === 'patientId') {
       clearFieldError(id, field);
+    }
+    if (field === 'relationshipType') {
+      clearSearch(id);
+      setSearchTerms((prev) => ({ ...prev, [id]: '' }));
     }
   };
 
@@ -151,7 +169,7 @@ export const PatientRelationships = ({
       key: 'relationshipType',
       header: (
         <span>
-          {t('RELATIONSHIP_TYPE') ?? 'Relationship Type'}
+          {t('REGISTRATION_RELATIONSHIP_TYPE') ?? 'Relationship Type'}
           <span className={styles.requiredAsterisk}>*</span>
         </span>
       ),
@@ -160,13 +178,13 @@ export const PatientRelationships = ({
       key: 'patientId',
       header: (
         <span>
-          {t('PATIENT_ID') ?? 'Patient Id'}
+          {t('REGISTRATION_PATIENT_ID') ?? 'Patient Id'}
           <span className={styles.requiredAsterisk}>*</span>
         </span>
       ),
     },
-    { key: 'tillDate', header: t('TILL_DATE') ?? 'Till date' },
-    { key: 'actions', header: t('ACTIONS') ?? 'Actions' },
+    { key: 'tillDate', header: t('REGISTRATION_TILL_DATE') ?? 'Till date' },
+    { key: 'actions', header: t('REGISTRATION_ACTIONS') ?? 'Actions' },
   ];
 
   const rows = relationships.map((rel) => {
@@ -179,7 +197,7 @@ export const PatientRelationships = ({
         <Dropdown
           id={`relationship-type-${rel.id}`}
           titleText=""
-          label={t('SELECT') ?? 'Select'}
+          label={t('REGISTRATION_SELECT') ?? 'Select'}
           items={relationshipTypes}
           itemToString={(item) => item?.aIsToB ?? ''}
           selectedItem={
@@ -199,9 +217,10 @@ export const PatientRelationships = ({
       ),
       patientId: (
         <ComboBox
+          key={`patient-search-${rel.id}-${rel.relationshipType}`}
           id={`patient-search-${rel.id}`}
           titleText=""
-          placeholder={t('ENTER_PATIENT_ID') ?? 'Search Patient'}
+          placeholder={t('REGISTRATION_ENTER_PATIENT_ID') ?? 'Search Patient'}
           items={suggestions}
           itemToString={(item) => item?.text ?? ''}
           selectedItem={
@@ -235,7 +254,7 @@ export const PatientRelationships = ({
         >
           <DatePickerInput
             id={`till-date-${rel.id}`}
-            placeholder={t('SELECT_DATE') ?? 'dd/mm/yyyy'}
+            placeholder={t('REGISTRATION_SELECT_DATE') ?? 'dd/mm/yyyy'}
             labelText=""
           />
         </DatePicker>
@@ -245,7 +264,7 @@ export const PatientRelationships = ({
           kind="ghost"
           size="sm"
           hasIconOnly
-          iconDescription={t('REMOVE') ?? 'Remove'}
+          iconDescription={t('REGISTRATION_REMOVE') ?? 'Remove'}
           onClick={() => removeRelationship(rel.id)}
         >
           <Close size={16} />
@@ -266,7 +285,9 @@ export const PatientRelationships = ({
         <SimpleDataTable
           headers={headers}
           rows={rows}
-          ariaLabel={t('RELATIONSHIPS_TABLE') ?? 'Relationships table'}
+          ariaLabel={
+            t('REGISTRATION_RELATIONSHIPS_TABLE') ?? 'Relationships table'
+          }
         />
       </div>
 
@@ -276,7 +297,7 @@ export const PatientRelationships = ({
           className={styles.wrapButton}
           onClick={addRelationship}
         >
-          {t('ADD_RELATIONSHIP') ?? 'Add another'}
+          {t('REGISTRATION_ADD_RELATIONSHIP') ?? 'Add another'}
         </Button>
       </div>
     </div>

@@ -36,7 +36,7 @@ describe('useRelationshipValidation', () => {
 
       expect(isValid).toBe(false);
       expect(result.current.validationErrors['rel-1']).toEqual({
-        relationshipType: 'RELATIONSHIP_TYPE_REQUIRED',
+        relationshipType: 'REGISTRATION_RELATIONSHIP_TYPE_REQUIRED',
       });
     });
 
@@ -89,7 +89,7 @@ describe('useRelationshipValidation', () => {
 
       expect(isValid).toBe(false);
       expect(result.current.validationErrors['rel-2']).toEqual({
-        patientId: 'RELATIONSHIP_ALREADY_EXISTS',
+        patientId: 'REGISTRATION_RELATIONSHIP_ALREADY_EXISTS',
       });
     });
 
@@ -155,10 +155,10 @@ describe('useRelationshipValidation', () => {
 
       expect(isValid).toBe(false);
       expect(result.current.validationErrors['rel-1']).toEqual({
-        relationshipType: 'RELATIONSHIP_TYPE_REQUIRED',
+        relationshipType: 'REGISTRATION_RELATIONSHIP_TYPE_REQUIRED',
       });
       expect(result.current.validationErrors['rel-3']).toEqual({
-        patientId: 'RELATIONSHIP_ALREADY_EXISTS',
+        patientId: 'REGISTRATION_RELATIONSHIP_ALREADY_EXISTS',
       });
     });
   });

@@ -56,17 +56,17 @@ export const useRelationshipValidation = () => {
       const errors: { relationshipType?: string; patientId?: string } = {};
 
       if (!rel.relationshipType.trim()) {
-        errors.relationshipType = t('RELATIONSHIP_TYPE_REQUIRED');
+        errors.relationshipType = t('REGISTRATION_RELATIONSHIP_TYPE_REQUIRED');
         isValid = false;
       }
 
       if (rel.relationshipType.trim() && !rel.patientUuid) {
-        errors.patientId = t('PATIENT_SELECTION_REQUIRED');
+        errors.patientId = t('REGISTRATION_PATIENT_SELECTION_REQUIRED');
         isValid = false;
       }
 
       if (duplicateIds.has(rel.id)) {
-        errors.patientId = t('RELATIONSHIP_ALREADY_EXISTS');
+        errors.patientId = t('REGISTRATION_RELATIONSHIP_ALREADY_EXISTS');
         isValid = false;
       }
 
