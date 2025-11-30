@@ -169,7 +169,7 @@ export const PatientRelationships = ({
       key: 'relationshipType',
       header: (
         <span>
-          {t('REGISTRATION_RELATIONSHIP_TYPE') ?? 'Relationship Type'}
+          {t('REGISTRATION_RELATIONSHIP_TYPE')}
           <span className={styles.requiredAsterisk}>*</span>
         </span>
       ),
@@ -178,13 +178,13 @@ export const PatientRelationships = ({
       key: 'patientId',
       header: (
         <span>
-          {t('REGISTRATION_PATIENT_ID') ?? 'Patient Id'}
+          {t('REGISTRATION_PATIENT_ID')}
           <span className={styles.requiredAsterisk}>*</span>
         </span>
       ),
     },
-    { key: 'tillDate', header: t('REGISTRATION_TILL_DATE') ?? 'Till date' },
-    { key: 'actions', header: t('REGISTRATION_ACTIONS') ?? 'Actions' },
+    { key: 'tillDate', header: t('REGISTRATION_TILL_DATE') },
+    { key: 'actions', header: t('REGISTRATION_ACTIONS') },
   ];
 
   const rows = relationships.map((rel) => {
@@ -197,7 +197,7 @@ export const PatientRelationships = ({
         <Dropdown
           id={`relationship-type-${rel.id}`}
           titleText=""
-          label={t('REGISTRATION_SELECT') ?? 'Select'}
+          label={t('REGISTRATION_SELECT')}
           items={relationshipTypes}
           itemToString={(item) => item?.aIsToB ?? ''}
           selectedItem={
@@ -220,7 +220,7 @@ export const PatientRelationships = ({
           key={`patient-search-${rel.id}-${rel.relationshipType}`}
           id={`patient-search-${rel.id}`}
           titleText=""
-          placeholder={t('REGISTRATION_ENTER_PATIENT_ID') ?? 'Search Patient'}
+          placeholder={t('REGISTRATION_ENTER_PATIENT_ID')}
           items={suggestions}
           itemToString={(item) => item?.text ?? ''}
           selectedItem={
@@ -254,7 +254,7 @@ export const PatientRelationships = ({
         >
           <DatePickerInput
             id={`till-date-${rel.id}`}
-            placeholder={t('REGISTRATION_SELECT_DATE') ?? 'dd/mm/yyyy'}
+            placeholder={t('REGISTRATION_SELECT_DATE')}
             labelText=""
           />
         </DatePicker>
@@ -264,7 +264,7 @@ export const PatientRelationships = ({
           kind="ghost"
           size="sm"
           hasIconOnly
-          iconDescription={t('REGISTRATION_REMOVE') ?? 'Remove'}
+          iconDescription={t('REGISTRATION_REMOVE')}
           onClick={() => removeRelationship(rel.id)}
         >
           <Close size={16} />
@@ -277,7 +277,7 @@ export const PatientRelationships = ({
     <div className={styles.relationshipSection}>
       <Tile className={styles.headerTile}>
         <span className={styles.headerTitle}>
-          {t('CREATE_PATIENT_SECTION_RELATIONSHIPS') ?? 'Relationships'}
+          {t('CREATE_PATIENT_SECTION_RELATIONSHIPS')}
         </span>
       </Tile>
 
@@ -285,9 +285,7 @@ export const PatientRelationships = ({
         <SimpleDataTable
           headers={headers}
           rows={rows}
-          ariaLabel={
-            t('REGISTRATION_RELATIONSHIPS_TABLE') ?? 'Relationships table'
-          }
+          ariaLabel={t('REGISTRATION_RELATIONSHIPS_TABLE')}
         />
       </div>
 
@@ -297,7 +295,7 @@ export const PatientRelationships = ({
           className={styles.wrapButton}
           onClick={addRelationship}
         >
-          {t('REGISTRATION_ADD_RELATIONSHIP') ?? 'Add another'}
+          {t('REGISTRATION_ADD_RELATIONSHIP')}
         </Button>
       </div>
     </div>

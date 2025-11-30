@@ -9,6 +9,14 @@ export interface PatientSuggestion {
   name: string;
 }
 
+const MIN_SEARCH_LENGTH = 2;
+
+const formatPatientName = (patient: PatientSearchResult): string => {
+  return `${patient.givenName} ${patient.middleName || ''} ${patient.familyName}`
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
 export const usePatientSearch = () => {
   const [searchTerms, setSearchTerms] = useState<Record<string, string>>({});
   const [activeSearchId, setActiveSearchId] = useState<string | null>(null);
@@ -18,26 +26,26 @@ export const usePatientSearch = () => {
     queryFn: () =>
       searchPatientByNameOrId(encodeURI(searchTerms[activeSearchId ?? ''])),
     enabled:
-      !!activeSearchId && (searchTerms[activeSearchId]?.length ?? 0) >= 2,
+      !!activeSearchId &&
+      (searchTerms[activeSearchId]?.length ?? 0) >= MIN_SEARCH_LENGTH,
     staleTime: 0,
     gcTime: 0,
   });
 
   const getPatientSuggestions = (rowId: string): PatientSuggestion[] => {
-    if (!searchTerms[rowId] || searchTerms[rowId].length < 2) return [];
+    if (!searchTerms[rowId] || searchTerms[rowId].length < MIN_SEARCH_LENGTH)
+      return [];
 
     return (searchResults?.pageOfResults ?? []).map(
-      (patient: PatientSearchResult) => ({
-        id: patient.uuid,
-        text:
-          `${patient.givenName} ${patient.middleName || ''} ${patient.familyName}`
-            .replace(/\s+/g, ' ')
-            .trim() + ` (${patient.identifier})`,
-        identifier: patient.identifier ?? '',
-        name: `${patient.givenName} ${patient.middleName || ''} ${patient.familyName}`
-          .replace(/\s+/g, ' ')
-          .trim(),
-      }),
+      (patient: PatientSearchResult) => {
+        const fullName = formatPatientName(patient);
+        return {
+          id: patient.uuid,
+          text: `${fullName} (${patient.identifier})`,
+          identifier: patient.identifier ?? '',
+          name: fullName,
+        };
+      },
     );
   };
 
