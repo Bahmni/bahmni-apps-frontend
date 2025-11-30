@@ -14,6 +14,7 @@ export {
   getVisitTypes,
   getVisitLocationUUID,
   getOrderedAddressHierarchyLevels,
+  getRelationshipTypes,
   getPersonAttributeTypes,
 } from './patientService';
 export {

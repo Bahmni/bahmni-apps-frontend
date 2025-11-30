@@ -1,0 +1,28 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.simpleDataTableBody {
+  td {
+    @include type-style("body-compact-01");
+    background-color: #ffffff;
+    color: $text-primary !important;
+    height: $spacing-10;
+    align-content: start;
+    padding: $spacing-05 $spacing-05 !important;
+  }
+  
+  th,
+  th * {
+    background-color: #ffffff !important;
+    font-weight: normal;
+    color: $text-secondary;
+    cursor: default !important;
+  }
+  
+  th {
+    border-block: 1px solid $border-subtle !important;
+    padding: $spacing-05 $spacing-05 !important;
+  }
+}

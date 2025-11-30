@@ -14,6 +14,7 @@ import {
   dispatchAuditEvent,
   getPatientById,
   CreatePatientResponse,
+  getRelationshipTypes,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { useRef, useState, useEffect } from 'react';
@@ -30,6 +31,10 @@ import {
   ContactInfo,
   ContactInfoRef,
 } from '../../components/forms/contactInfo/ContactInfo';
+import {
+  PatientRelationships,
+  PatientRelationshipsRef,
+} from '../../components/forms/patientRelationships/PatientRelationships';
 import { Profile, ProfileRef } from '../../components/forms/profile/Profile';
 import { BAHMNI_REGISTRATION_SEARCH } from '../../constants/app';
 
@@ -46,6 +51,13 @@ const CreatePatient = () => {
     patientUuid: string;
   }>();
 
+  const { data: relationshipTypes = [], isLoading: isLoadingRelationships } =
+    useQuery({
+      queryKey: ['relationshipTypes'],
+      queryFn: getRelationshipTypes,
+      staleTime: 0,
+    });
+
   // Determine if we're in edit mode based on URL parameter
   const isEditMode = !!patientUuidFromUrl;
   const [patientUuid, setPatientUuid] = useState<string | null>(
@@ -59,6 +71,7 @@ const CreatePatient = () => {
   const patientAddressRef = useRef<AddressInfoRef>(null);
   const patientContactRef = useRef<ContactInfoRef>(null);
   const patientAdditionalRef = useRef<AdditionalInfoRef>(null);
+  const patientRelationshipsRef = useRef<PatientRelationshipsRef>(null);
 
   // Fetch patient data if in edit mode
   // TODO: Transform FHIR Patient data to form data and populate fields
@@ -115,7 +128,11 @@ const CreatePatient = () => {
       additionalRef: patientAdditionalRef,
     });
 
-    if (!isValid) {
+    // Validate relationships if section exists
+    const isRelationshipsValid =
+      patientRelationshipsRef.current?.validate() ?? true;
+
+    if (!isValid || !isRelationshipsValid) {
       return null;
     }
 
@@ -125,6 +142,7 @@ const CreatePatient = () => {
       addressRef: patientAddressRef,
       contactRef: patientContactRef,
       additionalRef: patientAdditionalRef,
+      relationshipsRef: patientRelationshipsRef,
     });
 
     if (!formData) {
@@ -215,6 +233,13 @@ const CreatePatient = () => {
           </div>
 
           <AdditionalInfo ref={patientAdditionalRef} />
+
+          {/* Show relationships section only if API returns relationship types */}
+          {!isLoadingRelationships &&
+            Array.isArray(relationshipTypes) &&
+            relationshipTypes.length > 0 && (
+              <PatientRelationships ref={patientRelationshipsRef} />
+            )}
 
           {/* Footer Actions */}
           <div className={styles.formActions}>
