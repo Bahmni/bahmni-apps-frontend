@@ -235,12 +235,6 @@ export const createDateAgeHandlers = <
       setFormData((prev) => {
         const updated = { ...prev, [field]: value };
 
-        // Check if there are any age validation errors
-        const hasAgeErrors =
-          Number(updated.ageYears) > MAX_PATIENT_AGE_YEARS ||
-          Number(updated.ageMonths) > 11 ||
-          Number(updated.ageDays) > 31;
-
         const age = {
           years:
             Number(updated.ageYears) > MAX_PATIENT_AGE_YEARS
@@ -275,27 +269,10 @@ export const createDateAgeHandlers = <
             setDateErrors({ dateOfBirth: '' });
             setValidationErrors((prev) => ({ ...prev, dateOfBirth: '' }));
           }
-        } else if (
-          age.years === 0 &&
-          age.months === 0 &&
-          age.days === 0 &&
-          !hasAgeErrors
-        ) {
+        } else if (age.years == 0 && age.months == 0 && age.days == 0) {
           updated.dateOfBirth = '';
-        } else if (
-          age.years === 0 &&
-          age.months === 0 &&
-          age.days === 0 &&
-          hasAgeErrors
-        ) {
-          setFormData((prev) => ({
-            ...prev,
-            [field]: value,
-            dateOfBirth: formatToISO(new Date()),
-          }));
-          setDobEstimated(false);
-          setDateErrors({ dateOfBirth: '' });
         } else {
+          // updated.dateOfBirth = '';
           setDobEstimated(false);
           setDateErrors({ dateOfBirth: '' });
         }
