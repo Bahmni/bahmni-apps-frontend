@@ -4200,6 +4200,11 @@
   dependencies:
     "@types/node" "*"
 
+"@types/carbon__layout@^0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@types/carbon__layout/-/carbon__layout-0.0.3.tgz#7e7b0385c65ec0bb4391f7dbec6933589d22818d"
+  integrity sha512-ZAAgNTBecBtxuqm/yQCWkXN2Nlz0TorTORhGKWuy1pO3jF0TRNut/0W8me14396Q6a0BugH/xMa7Jv8miQP3kg==
+
 "@types/chai@^5.2.2":
   version "5.2.2"
   resolved "https://registry.yarnpkg.com/@types/chai/-/chai-5.2.2.tgz#6f14cea18180ffc4416bc0fd12be05fdd73bdd6b"

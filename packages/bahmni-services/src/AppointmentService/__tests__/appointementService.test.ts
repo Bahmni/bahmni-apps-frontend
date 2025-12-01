@@ -1,10 +1,14 @@
-import { post } from '../../api';
-import { searchAppointmentsByAttribute } from '../appointmmetService';
-import { APPOINTMENTS_SEARCH_URL } from '../constatns';
+import { post, get } from '../../api';
+import {
+  searchAppointmentsByAttribute,
+  getAppointmentById,
+} from '../appointmmetService';
+import { APPOINTMENTS_SEARCH_URL, APPOINTMENTS_URL } from '../constatns';
 import { Appointment } from '../models';
 
 jest.mock('../../api');
 const mockedPost = post as jest.MockedFunction<typeof post>;
+const mockedGet = get as jest.MockedFunction<typeof get>;
 
 describe('Appointment Service', () => {
   const mockAppointment: Appointment = {
@@ -170,6 +174,94 @@ describe('Appointment Service', () => {
         searchTerm,
       );
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('getAppointmentById', () => {
+    const mockUUID = 'appt-uuid-1';
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      mockedGet.mockResolvedValue(mockAppointment);
+    });
+
+    it('should call API with correct appointment URL', async () => {
+      await getAppointmentById(mockUUID);
+
+      expect(mockedGet).toHaveBeenCalledWith(`${APPOINTMENTS_URL}/${mockUUID}`);
+      expect(mockedGet).toHaveBeenCalledWith(
+        `/openmrs/ws/rest/v1/appointments/${mockUUID}`,
+      );
+    });
+
+    it('should return Appointment from API response', async () => {
+      const result = await getAppointmentById(mockUUID);
+
+      expect(result).toEqual(mockAppointment);
+      expect(result.uuid).toBe(mockUUID);
+      expect(result.appointmentNumber).toBe('APT-12345');
+      expect(result.patient.name).toBe('John Doe');
+    });
+
+    it('should handle 404 not found errors', async () => {
+      const notFoundError = new Error('Appointment not found');
+      notFoundError.name = 'NotFoundError';
+      mockedGet.mockRejectedValue(notFoundError);
+
+      await expect(getAppointmentById('invalid-uuid')).rejects.toThrow(
+        notFoundError,
+      );
+    });
+
+    it('should work with different UUID formats', async () => {
+      const shortUUID = '12345';
+      await getAppointmentById(shortUUID);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        `${APPOINTMENTS_URL}/${shortUUID}`,
+      );
+    });
+
+    it('should handle empty UUID', async () => {
+      const emptyUUID = '';
+      await getAppointmentById(emptyUUID);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        `${APPOINTMENTS_URL}/${emptyUUID}`,
+      );
+    });
+
+    it('should return appointment with complete patient information', async () => {
+      const result = await getAppointmentById(mockUUID);
+
+      expect(result.patient).toBeDefined();
+      expect(result.patient.uuid).toBe('patient-uuid-1');
+      expect(result.patient.identifier).toBe('ABC200001');
+      expect(result.patient.name).toBe('John Doe');
+      expect(result.patient.gender).toBe('M');
+    });
+
+    it('should return appointment with service details', async () => {
+      const result = await getAppointmentById(mockUUID);
+
+      expect(result.service).toBeDefined();
+      expect(result.service.uuid).toBe('service-uuid');
+      expect(result.service.name).toBe('Consultation');
+    });
+
+    it('should return appointment with status information', async () => {
+      const result = await getAppointmentById(mockUUID);
+
+      expect(result.status).toBe('Scheduled');
+      expect(result.appointmentKind).toBe('Scheduled');
+    });
+
+    it('should return appointment with reasons when present', async () => {
+      const result = await getAppointmentById(mockUUID);
+
+      expect(result.reasons).toHaveLength(1);
+      expect(result.reasons[0].conceptUuid).toBe('reason-uuid');
+      expect(result.reasons[0].name).toBe('Consultation');
     });
   });
 });
