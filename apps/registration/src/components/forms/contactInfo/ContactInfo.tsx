@@ -1,6 +1,12 @@
 import { TextInput } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
-import { useCallback, useEffect, useImperativeHandle, useState, useMemo } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useState,
+  useMemo,
+} from 'react';
 
 import { usePersonAttributeFields } from '../../../hooks/usePersonAttributeFields';
 import { useRegistrationConfig } from '../../../hooks/useRegistrationConfig';
@@ -59,7 +65,7 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
   const [formData, setFormData] = useState<ContactData>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-    useEffect(() => {
+  useEffect(() => {
     if (initialData) {
       setFormData({
         phoneNumber: initialData.phoneNumber ?? '',

@@ -15,10 +15,11 @@ import {
   getPatientImageAsDataUrl,
   PatientProfileResponse,
   getPatientProfile,
+  formatDate,
+  REGISTRATION_DATE_FORMAT,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { parseISO } from 'date-fns';
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -136,8 +137,10 @@ const CreatePatient = () => {
     if (!dateCreated) {
       return;
     }
-    const date = parseISO(dateCreated);
-    setRegisterDate(date.toLocaleDateString());
+    const result = formatDate(dateCreated, t, REGISTRATION_DATE_FORMAT);
+    if (!result.error) {
+      setRegisterDate(result.formattedResult);
+    }
   };
 
   useEffect(() => {
