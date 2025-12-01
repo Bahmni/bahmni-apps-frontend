@@ -284,6 +284,9 @@ describe('CreatePatient', () => {
             additionalRef: expect.any(Object),
             additionalIdentifiersRef: expect.any(Object),
           }),
+          expect.objectContaining({
+            shouldValidateAdditionalIdentifiers: expect.any(Boolean),
+          }),
         );
       });
     });

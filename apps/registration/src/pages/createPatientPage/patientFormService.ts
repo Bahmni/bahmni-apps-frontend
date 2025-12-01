@@ -5,9 +5,6 @@ import type { AddressInfoRef } from '../../components/forms/addressInfo/AddressI
 import type { ContactInfoRef } from '../../components/forms/contactInfo/ContactInfo';
 import type { ProfileRef } from '../../components/forms/profile/Profile';
 
-/**
- * Form references interface for all patient registration sections
- */
 export interface PatientFormRefs {
   profileRef: React.RefObject<ProfileRef | null>;
   addressRef: React.RefObject<AddressInfoRef | null>;
@@ -16,13 +13,15 @@ export interface PatientFormRefs {
   additionalIdentifiersRef: React.RefObject<AdditionalIdentifiersRef | null>;
 }
 
-/**
- * Validate all patient form sections
- *
- * @param refs - References to all form sections
- * @returns true if all sections are valid, false otherwise
- */
-export function validateAllSections(refs: PatientFormRefs): boolean {
+export interface ValidationOptions {
+  /** Whether to validate additional identifiers section (only if visible) */
+  shouldValidateAdditionalIdentifiers?: boolean;
+}
+
+export function validateAllSections(
+  refs: PatientFormRefs,
+  options?: ValidationOptions,
+): boolean {
   const {
     profileRef,
     addressRef,
@@ -35,15 +34,16 @@ export function validateAllSections(refs: PatientFormRefs): boolean {
   const isAddressValid = addressRef.current?.validate() ?? false;
   const isContactValid = contactRef.current?.validate() ?? false;
   const isAdditionalValid = additionalRef.current?.validate() ?? false;
-  const isAdditionalIdentifiersValid =
-    additionalIdentifiersRef.current?.validate() ?? true; // Default to true if not rendered
 
-  const allValid =
-    isProfileValid &&
-    isAddressValid &&
-    isContactValid &&
-    isAdditionalValid &&
-    isAdditionalIdentifiersValid;
+  let allValid =
+    isProfileValid && isAddressValid && isContactValid && isAdditionalValid;
+
+  const shouldValidate = options?.shouldValidateAdditionalIdentifiers ?? false;
+  if (shouldValidate) {
+    const isAdditionalIdentifiersValid =
+      additionalIdentifiersRef.current?.validate() ?? true;
+    allValid = allValid && isAdditionalIdentifiersValid;
+  }
 
   if (!allValid) {
     notificationService.showError(

@@ -348,6 +348,108 @@ describe('patientFormService', () => {
       expect(mockRefs.contactRef.current?.validate).toHaveBeenCalled();
       expect(mockRefs.additionalRef.current?.validate).toHaveBeenCalled();
     });
+
+    it('should skip additional identifiers validation when section is not visible', () => {
+      const mockRefs: PatientFormRefs = {
+        profileRef: {
+          current: {
+            validate: jest.fn(() => true),
+            getData: jest.fn(),
+            clearData: jest.fn(),
+            setCustomError: jest.fn(),
+          },
+        },
+        addressRef: {
+          current: {
+            validate: jest.fn(() => true),
+            getData: jest.fn(),
+          },
+        },
+        contactRef: {
+          current: {
+            validate: jest.fn(() => true),
+            getData: jest.fn(),
+          },
+        },
+        additionalRef: {
+          current: {
+            validate: jest.fn(() => true),
+            getData: jest.fn(),
+          },
+        },
+        additionalIdentifiersRef: {
+          current: {
+            validate: jest.fn(() => false), // This would fail if called
+            getData: jest.fn(),
+          },
+        },
+      };
+
+      // Pass shouldValidateAdditionalIdentifiers: false
+      const result = validateAllSections(mockRefs, {
+        shouldValidateAdditionalIdentifiers: false,
+      });
+
+      // Should return true because additional identifiers validation is skipped
+      expect(result).toBe(true);
+      expect(
+        mockRefs.additionalIdentifiersRef.current?.validate,
+      ).not.toHaveBeenCalled();
+      expect(notificationService.showError).not.toHaveBeenCalled();
+    });
+
+    it('should validate additional identifiers when section is visible', () => {
+      const mockRefs: PatientFormRefs = {
+        profileRef: {
+          current: {
+            validate: jest.fn(() => true),
+            getData: jest.fn(),
+            clearData: jest.fn(),
+            setCustomError: jest.fn(),
+          },
+        },
+        addressRef: {
+          current: {
+            validate: jest.fn(() => true),
+            getData: jest.fn(),
+          },
+        },
+        contactRef: {
+          current: {
+            validate: jest.fn(() => true),
+            getData: jest.fn(),
+          },
+        },
+        additionalRef: {
+          current: {
+            validate: jest.fn(() => true),
+            getData: jest.fn(),
+          },
+        },
+        additionalIdentifiersRef: {
+          current: {
+            validate: jest.fn(() => false),
+            getData: jest.fn(),
+          },
+        },
+      };
+
+      // Pass shouldValidateAdditionalIdentifiers: true
+      const result = validateAllSections(mockRefs, {
+        shouldValidateAdditionalIdentifiers: true,
+      });
+
+      // Should return false because additional identifiers validation failed
+      expect(result).toBe(false);
+      expect(
+        mockRefs.additionalIdentifiersRef.current?.validate,
+      ).toHaveBeenCalled();
+      expect(notificationService.showError).toHaveBeenCalledWith(
+        'Error',
+        'Please fix validation errors',
+        5000,
+      );
+    });
   });
 
   describe('collectFormData', () => {

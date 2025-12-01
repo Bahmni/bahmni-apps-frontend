@@ -117,13 +117,18 @@ const CreatePatient = () => {
 
   const handleSave = async (): Promise<string | null> => {
     // Validate all form sections
-    const isValid = validateAllSections({
-      profileRef: patientProfileRef,
-      addressRef: patientAddressRef,
-      contactRef: patientContactRef,
-      additionalRef: patientAdditionalRef,
-      additionalIdentifiersRef: patientAdditionalIdentifiersRef,
-    });
+    const isValid = validateAllSections(
+      {
+        profileRef: patientProfileRef,
+        addressRef: patientAddressRef,
+        contactRef: patientContactRef,
+        additionalRef: patientAdditionalRef,
+        additionalIdentifiersRef: patientAdditionalIdentifiersRef,
+      },
+      {
+        shouldValidateAdditionalIdentifiers: shouldShowAdditionalIdentifiers,
+      },
+    );
 
     if (!isValid) {
       return null;
