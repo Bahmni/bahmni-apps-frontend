@@ -1,4 +1,5 @@
 import { TextInput, SortableDataTable } from '@bahmni/design-system';
+import { useTranslation } from '@bahmni/services';
 import {
   useCallback,
   useImperativeHandle,
@@ -6,8 +7,10 @@ import {
   useMemo,
   useEffect,
 } from 'react';
+import { REGISTRATION_NAMESPACE } from '../../../constants/app';
 import { useIdentifierTypes } from '../../../hooks/useAdditionalIdentifiers';
 import type { AdditionalIdentifiersData } from '../../../models/patient';
+import { getTranslatedLabel } from '../../../utils/translation';
 import styles from './styles/index.module.scss';
 
 export interface AdditionalIdentifiersRef {
@@ -30,6 +33,7 @@ export const AdditionalIdentifiers = ({
   initialData,
   ref,
 }: AdditionalIdentifiersProps) => {
+  const { t } = useTranslation();
   const { data: identifierTypes, isLoading } = useIdentifierTypes();
 
   const extraIdentifierTypes = useMemo(() => {
@@ -82,8 +86,14 @@ export const AdditionalIdentifiers = ({
   }));
 
   const renderCell = (row: IdentifierRow, cellId: string) => {
+    const translatedName = getTranslatedLabel(
+      t,
+      REGISTRATION_NAMESPACE,
+      row.name,
+    );
+
     if (cellId === 'label') {
-      return <span className={styles.identifierField}>{row.name}</span>;
+      return <span className={styles.identifierField}>{translatedName}</span>;
     }
     if (cellId === 'value') {
       const value = formData[row.uuid] ?? '';
@@ -92,7 +102,7 @@ export const AdditionalIdentifiers = ({
           <TextInput
             id={`identifier-${row.uuid}`}
             labelText=""
-            placeholder={row.name}
+            placeholder={translatedName}
             value={value}
             onChange={(e) => handleFieldChange(row.uuid, e.target.value)}
           />
