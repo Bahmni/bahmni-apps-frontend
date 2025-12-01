@@ -2,11 +2,12 @@ import { ValueSet } from 'fhir/r4';
 import { get } from '../api';
 import { getUserPreferredLocale } from '../i18n/translationService';
 import {
+  CONCEPT_GET_URL,
   CONCEPT_SEARCH_URL,
   FHIR_VALUESET_FILTER_EXPAND_URL,
   FHIR_VALUESET_URL,
 } from './constants';
-import { ConceptSearch } from './models';
+import { ConceptData, ConceptSearch } from './models';
 
 /**
  * Search for concepts matching the provided term
@@ -39,3 +40,7 @@ export const searchFHIRConceptsByName = async (
   const url = `${FHIR_VALUESET_FILTER_EXPAND_URL(name)}`;
   return get<ValueSet>(url);
 };
+
+export async function getConceptById(uuid: string): Promise<ConceptData> {
+  return await get<ConceptData>(CONCEPT_GET_URL(uuid));
+}
