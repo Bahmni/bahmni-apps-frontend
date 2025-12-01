@@ -6,6 +6,7 @@ export {
   getFormattedPatientById,
   searchPatientByNameOrId,
   searchPatientByCustomAttribute,
+  getIdentifierTypes,
   getPrimaryIdentifierType,
   createPatient,
   updatePatient,

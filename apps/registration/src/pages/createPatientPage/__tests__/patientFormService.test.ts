@@ -43,6 +43,9 @@ describe('patientFormService', () => {
             getData: jest.fn(),
           },
         },
+        additionalIdentifiersRef: {
+          current: null,
+        },
       };
 
       const result = validateAllSections(mockRefs);
@@ -82,6 +85,9 @@ describe('patientFormService', () => {
             validate: jest.fn(() => true),
             getData: jest.fn(),
           },
+        },
+        additionalIdentifiersRef: {
+          current: null,
         },
       };
 
@@ -123,6 +129,9 @@ describe('patientFormService', () => {
             getData: jest.fn(),
           },
         },
+        additionalIdentifiersRef: {
+          current: null,
+        },
       };
 
       const result = validateAllSections(mockRefs);
@@ -162,6 +171,9 @@ describe('patientFormService', () => {
             validate: jest.fn(() => true),
             getData: jest.fn(),
           },
+        },
+        additionalIdentifiersRef: {
+          current: null,
         },
       };
 
@@ -203,6 +215,9 @@ describe('patientFormService', () => {
             getData: jest.fn(),
           },
         },
+        additionalIdentifiersRef: {
+          current: null,
+        },
       };
 
       const result = validateAllSections(mockRefs);
@@ -243,6 +258,9 @@ describe('patientFormService', () => {
             getData: jest.fn(),
           },
         },
+        additionalIdentifiersRef: {
+          current: null,
+        },
       };
 
       const result = validateAllSections(mockRefs);
@@ -273,6 +291,9 @@ describe('patientFormService', () => {
             validate: jest.fn(() => true),
             getData: jest.fn(),
           },
+        },
+        additionalIdentifiersRef: {
+          current: null,
         },
       };
 
@@ -314,6 +335,9 @@ describe('patientFormService', () => {
             getData: jest.fn(),
           },
         },
+        additionalIdentifiersRef: {
+          current: null,
+        },
       };
 
       validateAllSections(mockRefs);
@@ -323,6 +347,108 @@ describe('patientFormService', () => {
       expect(mockRefs.addressRef.current?.validate).toHaveBeenCalled();
       expect(mockRefs.contactRef.current?.validate).toHaveBeenCalled();
       expect(mockRefs.additionalRef.current?.validate).toHaveBeenCalled();
+    });
+
+    it('should skip additional identifiers validation when section is not visible', () => {
+      const mockRefs: PatientFormRefs = {
+        profileRef: {
+          current: {
+            validate: jest.fn(() => true),
+            getData: jest.fn(),
+            clearData: jest.fn(),
+            setCustomError: jest.fn(),
+          },
+        },
+        addressRef: {
+          current: {
+            validate: jest.fn(() => true),
+            getData: jest.fn(),
+          },
+        },
+        contactRef: {
+          current: {
+            validate: jest.fn(() => true),
+            getData: jest.fn(),
+          },
+        },
+        additionalRef: {
+          current: {
+            validate: jest.fn(() => true),
+            getData: jest.fn(),
+          },
+        },
+        additionalIdentifiersRef: {
+          current: {
+            validate: jest.fn(() => false), // This would fail if called
+            getData: jest.fn(),
+          },
+        },
+      };
+
+      // Pass shouldValidateAdditionalIdentifiers: false
+      const result = validateAllSections(mockRefs, {
+        shouldValidateAdditionalIdentifiers: false,
+      });
+
+      // Should return true because additional identifiers validation is skipped
+      expect(result).toBe(true);
+      expect(
+        mockRefs.additionalIdentifiersRef.current?.validate,
+      ).not.toHaveBeenCalled();
+      expect(notificationService.showError).not.toHaveBeenCalled();
+    });
+
+    it('should validate additional identifiers when section is visible', () => {
+      const mockRefs: PatientFormRefs = {
+        profileRef: {
+          current: {
+            validate: jest.fn(() => true),
+            getData: jest.fn(),
+            clearData: jest.fn(),
+            setCustomError: jest.fn(),
+          },
+        },
+        addressRef: {
+          current: {
+            validate: jest.fn(() => true),
+            getData: jest.fn(),
+          },
+        },
+        contactRef: {
+          current: {
+            validate: jest.fn(() => true),
+            getData: jest.fn(),
+          },
+        },
+        additionalRef: {
+          current: {
+            validate: jest.fn(() => true),
+            getData: jest.fn(),
+          },
+        },
+        additionalIdentifiersRef: {
+          current: {
+            validate: jest.fn(() => false),
+            getData: jest.fn(),
+          },
+        },
+      };
+
+      // Pass shouldValidateAdditionalIdentifiers: true
+      const result = validateAllSections(mockRefs, {
+        shouldValidateAdditionalIdentifiers: true,
+      });
+
+      // Should return false because additional identifiers validation failed
+      expect(result).toBe(false);
+      expect(
+        mockRefs.additionalIdentifiersRef.current?.validate,
+      ).toHaveBeenCalled();
+      expect(notificationService.showError).toHaveBeenCalledWith(
+        'Error',
+        'Please fix validation errors',
+        5000,
+      );
     });
   });
 
@@ -382,6 +508,9 @@ describe('patientFormService', () => {
             getData: jest.fn(() => mockAdditionalData),
           },
         },
+        additionalIdentifiersRef: {
+          current: null,
+        },
       };
 
       const result = collectFormData(mockRefs);
@@ -391,6 +520,7 @@ describe('patientFormService', () => {
         address: mockAddressData,
         contact: mockContactData,
         additional: mockAdditionalData,
+        additionalIdentifiers: {},
       });
       expect(notificationService.showError).not.toHaveBeenCalled();
     });
@@ -422,6 +552,9 @@ describe('patientFormService', () => {
             validate: jest.fn(),
             getData: jest.fn(() => ({ email: 'test@example.com' })),
           },
+        },
+        additionalIdentifiersRef: {
+          current: null,
         },
       };
 
@@ -467,6 +600,9 @@ describe('patientFormService', () => {
             getData: jest.fn(() => ({ email: 'test@example.com' })),
           },
         },
+        additionalIdentifiersRef: {
+          current: null,
+        },
       };
 
       const result = collectFormData(mockRefs);
@@ -510,6 +646,9 @@ describe('patientFormService', () => {
             validate: jest.fn(),
             getData: jest.fn(() => ({ email: 'test@example.com' })),
           },
+        },
+        additionalIdentifiersRef: {
+          current: null,
         },
       };
 
@@ -555,6 +694,9 @@ describe('patientFormService', () => {
             getData: jest.fn(() => null),
           },
         },
+        additionalIdentifiersRef: {
+          current: null,
+        },
       };
 
       const result = collectFormData(mockRefs);
@@ -589,6 +731,9 @@ describe('patientFormService', () => {
             validate: jest.fn(),
             getData: jest.fn(() => ({ email: 'test@example.com' })),
           },
+        },
+        additionalIdentifiersRef: {
+          current: null,
         },
       };
 
@@ -634,6 +779,9 @@ describe('patientFormService', () => {
             getData: jest.fn(() => ({ email: 'test@example.com' })),
           },
         },
+        additionalIdentifiersRef: {
+          current: null,
+        },
       };
 
       collectFormData(mockRefs);
@@ -672,6 +820,9 @@ describe('patientFormService', () => {
             validate: jest.fn(),
             getData: jest.fn(() => ({ email: 'test@example.com' })),
           },
+        },
+        additionalIdentifiersRef: {
+          current: null,
         },
       };
 

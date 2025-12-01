@@ -299,6 +299,10 @@
               }
             }
           }
+        },
+        "showExtraPatientIdentifiersSection": {
+          "type": "boolean",
+          "description": "Whether to show extra patient identifiers section"
         }
       }
     },
