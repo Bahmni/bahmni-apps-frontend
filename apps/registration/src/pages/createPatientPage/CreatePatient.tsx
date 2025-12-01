@@ -20,6 +20,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useRef, useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
+  AdditionalIdentifiers,
+  AdditionalIdentifiersRef,
+} from '../../components/forms/additionalIdentifiers/AdditionalIdentifiers';
+import {
   AdditionalInfo,
   AdditionalInfoRef,
 } from '../../components/forms/additionalInfo/AdditionalInfo';
@@ -38,6 +42,7 @@ import {
 import { Profile, ProfileRef } from '../../components/forms/profile/Profile';
 import { BAHMNI_REGISTRATION_SEARCH } from '../../constants/app';
 
+import { useAdditionalIdentifiers } from '../../hooks/useAdditionalIdentifiers';
 import { useCreatePatient } from '../../hooks/useCreatePatient';
 import { useUpdatePatient } from '../../hooks/useUpdatePatient';
 import { validateAllSections, collectFormData } from './patientFormService';
@@ -67,11 +72,15 @@ const CreatePatient = () => {
     null,
   );
 
+  const { shouldShowAdditionalIdentifiers } = useAdditionalIdentifiers();
+
   const patientProfileRef = useRef<ProfileRef>(null);
   const patientAddressRef = useRef<AddressInfoRef>(null);
   const patientContactRef = useRef<ContactInfoRef>(null);
   const patientAdditionalRef = useRef<AdditionalInfoRef>(null);
   const patientRelationshipsRef = useRef<PatientRelationshipsRef>(null);
+  const patientAdditionalIdentifiersRef =
+    useRef<AdditionalIdentifiersRef>(null);
 
   // Fetch patient data if in edit mode
   // TODO: Transform FHIR Patient data to form data and populate fields
@@ -121,12 +130,18 @@ const CreatePatient = () => {
 
   const handleSave = async (): Promise<string | null> => {
     // Validate all form sections
-    const isValid = validateAllSections({
-      profileRef: patientProfileRef,
-      addressRef: patientAddressRef,
-      contactRef: patientContactRef,
-      additionalRef: patientAdditionalRef,
-    });
+    const isValid = validateAllSections(
+      {
+        profileRef: patientProfileRef,
+        addressRef: patientAddressRef,
+        contactRef: patientContactRef,
+        additionalRef: patientAdditionalRef,
+        additionalIdentifiersRef: patientAdditionalIdentifiersRef,
+      },
+      {
+        shouldValidateAdditionalIdentifiers: shouldShowAdditionalIdentifiers,
+      },
+    );
 
     // Validate relationships if section exists
     const isRelationshipsValid =
@@ -143,6 +158,7 @@ const CreatePatient = () => {
       contactRef: patientContactRef,
       additionalRef: patientAdditionalRef,
       relationshipsRef: patientRelationshipsRef,
+      additionalIdentifiersRef: patientAdditionalIdentifiersRef,
     });
 
     if (!formData) {
@@ -240,6 +256,17 @@ const CreatePatient = () => {
             relationshipTypes.length > 0 && (
               <PatientRelationships ref={patientRelationshipsRef} />
             )}
+          {shouldShowAdditionalIdentifiers && (
+            <>
+              <Tile className={styles.patientDetailsHeader}>
+                <span className={styles.sectionTitle}>
+                  {t('ADDITIONAL_IDENTIFIERS_HEADER_TITLE')}
+                </span>
+              </Tile>
+
+              <AdditionalIdentifiers ref={patientAdditionalIdentifiersRef} />
+            </>
+          )}
 
           {/* Footer Actions */}
           <div className={styles.formActions}>

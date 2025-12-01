@@ -6,6 +6,7 @@ export {
   getFormattedPatientById,
   searchPatientByNameOrId,
   searchPatientByCustomAttribute,
+  getIdentifierTypes,
   getPrimaryIdentifierType,
   createPatient,
   updatePatient,
@@ -54,6 +55,7 @@ export {
 export {
   searchAppointmentsByAttribute,
   updateAppointmentStatus,
+  getAppointmentById,
 } from './AppointmentService/appointmmetService';
 export {
   type Appointment,
@@ -116,6 +118,7 @@ export {
   searchConcepts,
   searchFHIRConcepts,
   searchFHIRConceptsByName,
+  getConceptById,
   type ConceptSearch,
   type ConceptClass,
 } from './conceptService';

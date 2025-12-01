@@ -1,37 +1,51 @@
 import { notificationService } from '@bahmni/services';
+import type { AdditionalIdentifiersRef } from '../../components/forms/additionalIdentifiers/AdditionalIdentifiers';
 import type { AdditionalInfoRef } from '../../components/forms/additionalInfo/AdditionalInfo';
 import type { AddressInfoRef } from '../../components/forms/addressInfo/AddressInfo';
 import type { ContactInfoRef } from '../../components/forms/contactInfo/ContactInfo';
 import type { PatientRelationshipsRef } from '../../components/forms/patientRelationships/PatientRelationships';
 import type { ProfileRef } from '../../components/forms/profile/Profile';
 
-/**
- * Form references interface for all patient registration sections
- */
 export interface PatientFormRefs {
   profileRef: React.RefObject<ProfileRef | null>;
   addressRef: React.RefObject<AddressInfoRef | null>;
   contactRef: React.RefObject<ContactInfoRef | null>;
   additionalRef: React.RefObject<AdditionalInfoRef | null>;
   relationshipsRef?: React.RefObject<PatientRelationshipsRef | null>;
+  additionalIdentifiersRef: React.RefObject<AdditionalIdentifiersRef | null>;
 }
 
-/**
- * Validate all patient form sections
- *
- * @param refs - References to all form sections
- * @returns true if all sections are valid, false otherwise
- */
-export function validateAllSections(refs: PatientFormRefs): boolean {
-  const { profileRef, addressRef, contactRef, additionalRef } = refs;
+export interface ValidationOptions {
+  /** Whether to validate additional identifiers section (only if visible) */
+  shouldValidateAdditionalIdentifiers?: boolean;
+}
+
+export function validateAllSections(
+  refs: PatientFormRefs,
+  options?: ValidationOptions,
+): boolean {
+  const {
+    profileRef,
+    addressRef,
+    contactRef,
+    additionalRef,
+    additionalIdentifiersRef,
+  } = refs;
 
   const isProfileValid = profileRef.current?.validate() ?? false;
   const isAddressValid = addressRef.current?.validate() ?? false;
   const isContactValid = contactRef.current?.validate() ?? false;
   const isAdditionalValid = additionalRef.current?.validate() ?? false;
 
-  const allValid =
+  let allValid =
     isProfileValid && isAddressValid && isContactValid && isAdditionalValid;
+
+  const shouldValidate = options?.shouldValidateAdditionalIdentifiers ?? false;
+  if (shouldValidate) {
+    const isAdditionalIdentifiersValid =
+      additionalIdentifiersRef.current?.validate() ?? true;
+    allValid = allValid && isAdditionalIdentifiersValid;
+  }
 
   if (!allValid) {
     notificationService.showError(
@@ -57,6 +71,7 @@ export function collectFormData(refs: PatientFormRefs) {
     contactRef,
     additionalRef,
     relationshipsRef,
+    additionalIdentifiersRef,
   } = refs;
 
   const profileData = profileRef.current?.getData();
@@ -97,6 +112,9 @@ export function collectFormData(refs: PatientFormRefs) {
 
   // Collect relationships data if the section exists
   const relationshipsData = relationshipsRef?.current?.getData() ?? [];
+  // Additional identifiers are optional - only collect if component is rendered
+  const additionalIdentifiersData =
+    additionalIdentifiersRef.current?.getData() ?? {};
 
   return {
     profile: profileData,
@@ -104,5 +122,6 @@ export function collectFormData(refs: PatientFormRefs) {
     contact: contactData,
     additional: additionalData,
     relationships: relationshipsData,
+    additionalIdentifiers: additionalIdentifiersData,
   };
 }

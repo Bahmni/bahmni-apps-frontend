@@ -239,6 +239,15 @@ export const searchPatientByCustomAttribute = async (
 };
 
 /**
+ * Get all identifier types from idgen
+ * @returns Promise<IdentifierTypesResponse> - Array of all identifier types with their sources
+ */
+export const getIdentifierTypes =
+  async (): Promise<IdentifierTypesResponse> => {
+    return get<IdentifierTypesResponse>(IDENTIFIER_TYPES_URL);
+  };
+
+/**
  * Get primary identifier type from Bahmni app settings
  * @returns Promise<string | null> - The primary identifier type UUID or null if not found
  */

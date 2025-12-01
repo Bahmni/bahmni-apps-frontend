@@ -1,4 +1,4 @@
-import { post } from '../api';
+import { post, get } from '../api';
 import { APPOINTMENTS_SEARCH_URL, APPOINTMENTS_URL } from './constatns';
 import { Appointment } from './models';
 
@@ -23,3 +23,7 @@ export const updateAppointmentStatus = async (
   );
   return updatedAppointment;
 };
+
+export async function getAppointmentById(uuid: string): Promise<Appointment> {
+  return await get<Appointment>(`${APPOINTMENTS_URL}/${uuid}`);
+}

@@ -122,5 +122,6 @@
   "REGISTRATION_SELECT": "Select",
   "REGISTRATION_RELATIONSHIP_TYPE_REQUIRED": "Relationship type is required",
   "REGISTRATION_RELATIONSHIP_ALREADY_EXISTS": "Given relationship already exists",
-  "REGISTRATION_PATIENT_SELECTION_REQUIRED": "Please select a patient from the autocomplete list"
+  "REGISTRATION_PATIENT_SELECTION_REQUIRED": "Please select a patient from the autocomplete list",
+  "ADDITIONAL_IDENTIFIERS_HEADER_TITLE": "Additional Identifiers"
 }
