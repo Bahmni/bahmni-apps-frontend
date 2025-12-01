@@ -95,6 +95,7 @@ export {
   DATE_TIME_FORMAT,
   ISO_DATE_FORMAT,
   FULL_MONTH_DATE_FORMAT,
+  REGISTRATION_DATE_FORMAT,
   getTodayDate,
   calculateAgeinYearsAndMonths,
   formatDateAndTime,
