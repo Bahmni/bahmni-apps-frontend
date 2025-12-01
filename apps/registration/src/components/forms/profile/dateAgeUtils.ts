@@ -214,17 +214,25 @@ export const createDateAgeHandlers = <
       }
     }
 
-    setAgeErrors((prev) => ({ ...prev, [field]: error }));
+    // Update error state
+    const updatedErrors = { [field]: error };
+    setAgeErrors((prev) => ({ ...prev, ...updatedErrors }));
 
     // Only update formData if there's no error in the individual field
     if (!error) {
       setFormData((prev) => {
         const updated = { ...prev, [field]: value };
+
         const age = {
-          years: Number(updated.ageYears) || 0,
-          months: Number(updated.ageMonths) || 0,
-          days: Number(updated.ageDays) || 0,
+          years:
+            Number(updated.ageYears) > MAX_PATIENT_AGE_YEARS
+              ? 0
+              : Number(updated.ageYears) || 0,
+          months:
+            Number(updated.ageMonths) > 11 ? 0 : Number(updated.ageMonths) || 0,
+          days: Number(updated.ageDays) > 31 ? 0 : Number(updated.ageDays) || 0,
         };
+
         if (age.years > 0 || age.months > 0 || age.days > 0) {
           const birthISO = AgeUtils.calculateBirthDate(age);
           updated.dateOfBirth = birthISO;
