@@ -41,6 +41,7 @@
   "CREATE_PATIENT_PHONE_NUMBER_PLACEHOLDER": "Número de teléfono",
   "CREATE_PATIENT_PINCODE": "Código postal",
   "CREATE_PATIENT_PRINT_REG_CARD": "Imprimir tarjeta de registro",
+  "CREATE_PATIENT_REGISTERED_ON": "Registrado en",
   "CREATE_PATIENT_SAVE": "Guardar",
   "CREATE_PATIENT_SECTION_ADDITIONAL_INFO": "Información adicional",
   "CREATE_PATIENT_SECTION_ADDRESS_INFO": "Información de dirección",
