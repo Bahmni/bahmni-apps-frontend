@@ -197,7 +197,7 @@ export const createDateAgeHandlers = <
     if (value && !isNaN(numValue)) {
       if (field === 'ageYears' && numValue > MAX_PATIENT_AGE_YEARS) {
         error = t('CREATE_PATIENT_VALIDATION_AGE_YEARS_MAX');
-        // Set DOB to today's date when age exceeds 120
+
         setFormData((prev) => ({
           ...prev,
           [field]: value,
@@ -209,8 +209,20 @@ export const createDateAgeHandlers = <
         return;
       } else if (field === 'ageMonths' && numValue > 11) {
         error = t('CREATE_PATIENT_VALIDATION_AGE_MONTHS_MAX');
+
+        setFormData((prev) => ({
+          ...prev,
+          [field]: value,
+          dateOfBirth: formatToISO(new Date()),
+        }));
       } else if (field === 'ageDays' && numValue > 31) {
         error = t('CREATE_PATIENT_VALIDATION_AGE_DAYS_MAX');
+
+        setFormData((prev) => ({
+          ...prev,
+          [field]: value,
+          dateOfBirth: formatToISO(new Date()),
+        }));
       }
     }
 
@@ -222,6 +234,12 @@ export const createDateAgeHandlers = <
     if (!error) {
       setFormData((prev) => {
         const updated = { ...prev, [field]: value };
+
+        // Check if there are any age validation errors
+        const hasAgeErrors =
+          Number(updated.ageYears) > MAX_PATIENT_AGE_YEARS ||
+          Number(updated.ageMonths) > 11 ||
+          Number(updated.ageDays) > 31;
 
         const age = {
           years:
@@ -257,8 +275,27 @@ export const createDateAgeHandlers = <
             setDateErrors({ dateOfBirth: '' });
             setValidationErrors((prev) => ({ ...prev, dateOfBirth: '' }));
           }
-        } else {
+        } else if (
+          age.years === 0 &&
+          age.months === 0 &&
+          age.days === 0 &&
+          !hasAgeErrors
+        ) {
           updated.dateOfBirth = '';
+        } else if (
+          age.years === 0 &&
+          age.months === 0 &&
+          age.days === 0 &&
+          hasAgeErrors
+        ) {
+          setFormData((prev) => ({
+            ...prev,
+            [field]: value,
+            dateOfBirth: formatToISO(new Date()),
+          }));
+          setDobEstimated(false);
+          setDateErrors({ dateOfBirth: '' });
+        } else {
           setDobEstimated(false);
           setDateErrors({ dateOfBirth: '' });
         }
