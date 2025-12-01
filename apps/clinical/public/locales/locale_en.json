@@ -239,5 +239,9 @@
   "VITAL_SIGNS_PULSE": "Pulse",
   "VITAL_SIGNS_RESPIRATORY_RATE": "Respiratory rate",
   "VITAL_SIGNS_SYSTOLIC_BLOOD_PRESSURE": "Systolic blood pressure",
-  "VITAL_SIGNS_TEMPERATURE": "Temperature"
+  "VITAL_SIGNS_TEMPERATURE": "Temperature",
+  "CONTROL_NOT_FOUND": "No controls registered for type: {{type}}",
+  "NO_CONFIGURED_CONTROLS": "No configured controls to for this section",
+  "INITIALIZING_CONTROL": "Initializing control..."
+
 }

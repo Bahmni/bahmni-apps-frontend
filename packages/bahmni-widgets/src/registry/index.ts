@@ -1,5 +1,5 @@
 import { ComponentType, LazyExoticComponent } from 'react';
-import { WidgetConfig } from './model';
+import { WidgetConfig, WidgetProps } from './model';
 import { builtInWidgets } from './widgetMap';
 
 type WidgetRegistryMap = Map<string, WidgetConfig>;
@@ -39,7 +39,7 @@ class WidgetRegistryManager {
 
   public get(
     type: string,
-  ): LazyExoticComponent<ComponentType<object>> | undefined {
+  ): LazyExoticComponent<ComponentType<WidgetProps>> | undefined {
     return this.registry.get(type)?.component;
   }
 
@@ -75,7 +75,7 @@ export const registerWidget = (config: WidgetConfig): void => {
 
 export const getWidget = (
   type: string,
-): LazyExoticComponent<ComponentType<object>> | undefined => {
+): LazyExoticComponent<ComponentType<WidgetProps>> | undefined => {
   return WidgetRegistryManager.getInstance().get(type);
 };
 

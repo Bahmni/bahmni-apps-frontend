@@ -19,9 +19,16 @@ jest.mock('@bahmni/services', () => {
   return {
     ...actual,
     useTranslation: () => ({
-      t: jest.fn((key) =>
-        key === 'custom.translation.key' ? 'Translated Title' : key,
-      ),
+      t: jest.fn((key) => {
+        const translations: Record<string, string> = {
+          'custom.translation.key': 'Translated Title',
+          NO_CONFIGURED_CONTROLS: 'No widgets configured for this section',
+          CONTROL_NOT_FOUND: 'Widget not found in registry',
+          INITIALIZING_CONTROL: 'Loading widget...',
+        };
+
+        return translations[key] || key;
+      }),
     }),
   };
 });
@@ -52,20 +59,22 @@ jest.mock('@bahmni/widgets', () => {
 const MockAllergiesWidget = ({
   config,
 }: {
-  config: Record<string, string>;
+  config?: Record<string, unknown>;
 }) => (
   <div data-testid="allergies-widget">
-    Allergies Widget {config.testProp && `- ${config.testProp}`}
+    Allergies Widget{' '}
+    {typeof config?.testProp === 'string' && `- ${config.testProp}`}
   </div>
 );
 
 const MockConditionsWidget = ({
   config,
 }: {
-  config: Record<string, string>;
+  config?: Record<string, unknown>;
 }) => (
   <div data-testid="conditions-widget">
-    Conditions Widget {config.testProp && `- ${config.testProp}`}
+    Conditions Widget{' '}
+    {typeof config?.testProp === 'string' && `- ${config.testProp}`}
   </div>
 );
 
@@ -352,7 +361,7 @@ describe('DashboardSection Component', () => {
       render(<DashboardSection section={section} ref={mockRef} />);
 
       expect(
-        screen.getByText(/Widget type "unknown-widget" not found in registry/),
+        screen.getByText(/Widget not found in registry/),
       ).toBeInTheDocument();
       expect(mockGetWidget).toHaveBeenCalledWith('unknown-widget');
     });
@@ -372,16 +381,9 @@ describe('DashboardSection Component', () => {
 
       render(<DashboardSection section={section} ref={mockRef} />);
 
-      expect(
-        screen.getByText(
-          /Widget type "unknown-widget-1" not found in registry/,
-        ),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText(
-          /Widget type "unknown-widget-2" not found in registry/,
-        ),
-      ).toBeInTheDocument();
+      expect(screen.getAllByText(/Widget not found in registry/)).toHaveLength(
+        2,
+      );
     });
 
     it('renders valid widgets and shows errors for invalid ones', async () => {
@@ -417,7 +419,7 @@ describe('DashboardSection Component', () => {
       });
 
       expect(
-        screen.getByText(/Widget type "unknown-widget" not found in registry/),
+        screen.getByText(/Widget not found in registry/),
       ).toBeInTheDocument();
     });
   });
