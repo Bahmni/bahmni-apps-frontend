@@ -290,7 +290,7 @@ const CreatePatient = () => {
                   >{`Patient ID: ${patientIdentifier}`}</div>
                   <div
                     className={styles.registerDate}
-                  >{`Registered on ${registerDate}`}</div>
+                  >{`${t('CREATE_PATIENT_REGISTERED_ON')} ${registerDate}`}</div>
                 </div>
               ) : (
                 t('CREATE_PATIENT_HEADER_TITLE')
