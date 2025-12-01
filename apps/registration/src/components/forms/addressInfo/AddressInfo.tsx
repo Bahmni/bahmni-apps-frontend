@@ -39,6 +39,7 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     selectedMetadata,
     isLoadingLevels,
     getTranslationKey,
+    clearChildFields,
   } = useAddressFieldsWithConfig();
 
   const [addressErrors, setAddressErrors] = useState<Record<string, string>>(
@@ -82,6 +83,13 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     (field: string, value: string) => {
       const level = levelsWithStrictEntry.find((l) => l.addressField === field);
 
+      if (!value) {
+        setSelectedItems((prev) => ({ ...prev, [field]: null }));
+        handleFieldChange(field, value);
+        clearChildSuggestions(field);
+        clearChildFields(field);
+      }
+
       if (autocompleteFields.includes(field)) {
         debouncedSearchAddress(field, value);
         unmarkFieldAsCleared(field);
@@ -97,6 +105,9 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       unmarkFieldAsCleared,
       levelsWithStrictEntry,
       handleFieldChange,
+      clearChildSuggestions,
+      clearChildFields,
+      setSelectedItems,
     ],
   );
 
