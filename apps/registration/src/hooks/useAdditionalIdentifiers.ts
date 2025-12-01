@@ -22,7 +22,7 @@ export const useAdditionalIdentifiers = () => {
   const isConfigEnabled = useMemo(
     () =>
       registrationConfig?.patientInformation
-        ?.isExtraPatientIdentifiersSection ?? true,
+        ?.showExtraPatientIdentifiersSection ?? true,
     [registrationConfig],
   );
 

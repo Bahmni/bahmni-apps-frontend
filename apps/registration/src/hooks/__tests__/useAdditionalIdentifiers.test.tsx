@@ -59,7 +59,7 @@ describe('useAdditionalIdentifiers', () => {
     (useRegistrationConfig as jest.Mock).mockReturnValue({
       registrationConfig: {
         patientInformation: {
-          isExtraPatientIdentifiersSection: true,
+          showExtraPatientIdentifiersSection: true,
         },
       },
     });
@@ -83,7 +83,7 @@ describe('useAdditionalIdentifiers', () => {
     (useRegistrationConfig as jest.Mock).mockReturnValue({
       registrationConfig: {
         patientInformation: {
-          isExtraPatientIdentifiersSection: false,
+          showExtraPatientIdentifiersSection: false,
         },
       },
     });
@@ -107,7 +107,7 @@ describe('useAdditionalIdentifiers', () => {
     (useRegistrationConfig as jest.Mock).mockReturnValue({
       registrationConfig: {
         patientInformation: {
-          isExtraPatientIdentifiersSection: true,
+          showExtraPatientIdentifiersSection: true,
         },
       },
     });
@@ -180,7 +180,7 @@ describe('useAdditionalIdentifiers', () => {
     (useRegistrationConfig as jest.Mock).mockReturnValue({
       registrationConfig: {
         patientInformation: {
-          isExtraPatientIdentifiersSection: true,
+          showExtraPatientIdentifiersSection: true,
         },
       },
     });
@@ -203,7 +203,7 @@ describe('useAdditionalIdentifiers', () => {
     (useRegistrationConfig as jest.Mock).mockReturnValue({
       registrationConfig: {
         patientInformation: {
-          isExtraPatientIdentifiersSection: true,
+          showExtraPatientIdentifiersSection: true,
         },
       },
     });
@@ -223,7 +223,7 @@ describe('useAdditionalIdentifiers', () => {
     (useRegistrationConfig as jest.Mock).mockReturnValue({
       registrationConfig: {
         patientInformation: {
-          isExtraPatientIdentifiersSection: true,
+          showExtraPatientIdentifiersSection: true,
         },
       },
     });
@@ -282,7 +282,7 @@ describe('useAdditionalIdentifiers', () => {
     (useRegistrationConfig as jest.Mock).mockReturnValue({
       registrationConfig: {
         patientInformation: {
-          isExtraPatientIdentifiersSection: true,
+          showExtraPatientIdentifiersSection: true,
         },
       },
     });
@@ -304,7 +304,7 @@ describe('useAdditionalIdentifiers', () => {
     (useRegistrationConfig as jest.Mock).mockReturnValue({
       registrationConfig: {
         patientInformation: {
-          isExtraPatientIdentifiersSection: true,
+          showExtraPatientIdentifiersSection: true,
         },
       },
     });

@@ -76,7 +76,7 @@ export interface PatientInformationConfig {
       translationKey: string;
     }>;
   };
-  isExtraPatientIdentifiersSection?: boolean;
+  showExtraPatientIdentifiersSection?: boolean;
 }
 
 export interface FieldValidationRule {
