@@ -425,7 +425,7 @@ describe('AdditionalInfo', () => {
       render(<AdditionalInfo ref={ref} />);
 
       const data = ref.current?.getData();
-      expect(data).toEqual({});
+      expect(data).toEqual({ email: '' });
     });
 
     it('returns all field values for multiple fields', () => {
