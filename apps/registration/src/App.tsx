@@ -13,6 +13,7 @@ import { queryClientConfig } from './config/tanstackQuery';
 import { REGISTRATION_NAMESPACE } from './constants/app';
 import CreatePatient from './pages/createPatientPage/CreatePatient';
 import PatientSearchPage from './pages/patientSearchPage';
+import { PersonAttributesProvider } from './providers/PersonAttributesProvider';
 import { RegistrationConfigProvider } from './providers/RegistrationConfigProvider';
 
 const queryClient = new QueryClient(queryClientConfig);
@@ -47,13 +48,18 @@ const RegistrationApp: React.FC = () => {
         <NotificationServiceComponent />
         <QueryClientProvider client={queryClient}>
           <RegistrationConfigProvider>
-            <UserPrivilegeProvider>
-              <Routes>
-                <Route path="/search" element={<PatientSearchPage />} />
-                <Route path="/new" element={<CreatePatient />} />
-                <Route path="/edit/:patientUuid" element={<CreatePatient />} />
-              </Routes>
-            </UserPrivilegeProvider>
+            <PersonAttributesProvider>
+              <UserPrivilegeProvider>
+                <Routes>
+                  <Route path="/search" element={<PatientSearchPage />} />
+                  <Route path="/new" element={<CreatePatient />} />
+                  <Route
+                    path="/edit/:patientUuid"
+                    element={<CreatePatient />}
+                  />
+                </Routes>
+              </UserPrivilegeProvider>
+            </PersonAttributesProvider>
           </RegistrationConfigProvider>
           <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>

@@ -9,6 +9,7 @@ import {
 import {
   useTranslation,
   MAX_PATIENT_AGE_YEARS,
+  MAX_NAME_LENGTH,
   PatientIdentifier,
 } from '@bahmni/services';
 import { useState, useImperativeHandle, useEffect } from 'react';
@@ -101,8 +102,10 @@ export const Profile = ({
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({
     firstName: '',
     lastName: '',
+    middleName: '',
     gender: '',
     dateOfBirth: '',
+    birthTime: '',
   });
 
   const [ageErrors, setAgeErrors] = useState<AgeErrors>({
@@ -134,38 +137,82 @@ export const Profile = ({
   };
 
   const fieldValidationConfig = registrationConfig?.fieldValidation;
+
   const handleNameChange = (field: string, value: string) => {
     const pattern = fieldValidationConfig?.[field]?.pattern ?? '^[a-zA-Z\\s]*$';
     const nameRegex = new RegExp(pattern);
     const errorMessage = fieldValidationConfig?.[field]?.errorMessage;
 
-    const isMiddleName = field === 'middleName';
-    const isMiddleNameMandatory =
-      patientInfoConfig?.isMiddleNameMandatory ?? false;
-    const middleNameRequired =
-      fieldValidationConfig?.middleName?.required ?? isMiddleNameMandatory;
-    const shouldValidateMiddleName = middleNameRequired || value.trim() !== '';
-
-    if (nameRegex.test(value)) {
+    // Always allow empty string (for backspace/delete)
+    if (value === '' || nameRegex.test(value)) {
+      // Valid input: update field
       handleInputChange(field, value);
 
-      setNameErrors((prev) => ({ ...prev, [field]: '' }));
-      setValidationErrors((prev) => ({ ...prev, [field]: '' }));
-    } else {
-      if (isMiddleName && !shouldValidateMiddleName) {
-        handleInputChange(field, value);
-        setNameErrors((prev) => ({ ...prev, [field]: '' }));
-      } else {
+      // Check for max length and show error if exceeded
+      if (value.length > MAX_NAME_LENGTH) {
+        const maxLengthKey = `CREATE_PATIENT_VALIDATION_${field.toUpperCase()}_MAX_LENGTH`;
         setNameErrors((prev) => ({
           ...prev,
-          [field]: errorMessage,
+          [field]: t(maxLengthKey),
         }));
+      } else {
+        // Clear errors if within limit
+        setNameErrors((prev) => ({ ...prev, [field]: '' }));
+        setValidationErrors((prev) => ({ ...prev, [field]: '' }));
       }
+    } else {
+      // Invalid input: show pattern error (don't update the field value)
+      setNameErrors((prev) => ({
+        ...prev,
+        [field]: errorMessage,
+      }));
     }
   };
 
   const handleNameBlur = (field: string) => {
     setNameErrors((prev) => ({ ...prev, [field]: '' }));
+  };
+
+  const isInputElementInvalid = (
+    event?:
+      | React.FocusEvent<HTMLInputElement>
+      | React.ChangeEvent<HTMLInputElement>,
+  ): boolean => {
+    const inputElement = event?.target as HTMLInputElement;
+    return inputElement ? !inputElement.validity.valid : false;
+  };
+
+  const updateBirthTimeError = (errorMessage: string) => {
+    setValidationErrors((prev) => ({
+      ...prev,
+      birthTime: errorMessage,
+    }));
+  };
+
+  // Handler for birthTime changes with validation
+  const handleBirthTimeChange = (
+    value: string,
+    event?:
+      | React.FocusEvent<HTMLInputElement>
+      | React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    handleInputChange('birthTime', value);
+    const isBlurEvent = event?.type === 'blur';
+
+    if (isBlurEvent) {
+      if (value === '') {
+        updateBirthTimeError('');
+        return;
+      }
+    }
+
+    const isHtml5Invalid = isInputElementInvalid(event);
+
+    if (isHtml5Invalid) {
+      updateBirthTimeError(t('CREATE_PATIENT_VALIDATION_BIRTH_TIME_INVALID'));
+    } else {
+      updateBirthTimeError('');
+    }
   };
 
   const { handleDateInputChange, handleDateOfBirthChange, handleAgeChange } =
@@ -178,48 +225,75 @@ export const Profile = ({
       t,
     });
 
+  // Handler to prevent invalid characters in age number inputs
+  const handleAgeKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (['-', '+', 'e', 'E', '.'].includes(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const handleAgePaste = (
+    e: React.ClipboardEvent<HTMLInputElement>,
+    field: 'ageYears' | 'ageMonths' | 'ageDays',
+  ) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData('text');
+    const sanitized = pastedText.replace(/[-+eE.]/g, '');
+
+    if (sanitized && /^\d+$/.test(sanitized)) {
+      handleAgeChange(field, sanitized);
+    }
+  };
+
   // VALIDATION METHOD - Called by parent on submit
   const validate = (): boolean => {
     let isValid = true;
     const newValidationErrors: ValidationErrors = {
       firstName: '',
       lastName: '',
+      middleName: '',
       gender: '',
       dateOfBirth: '',
+      birthTime: '',
     };
 
-    // Validate firstName - check if required from config or default to true
+    // Validate firstName - check if required from patientInformation config
     const isFirstNameMandatory =
       patientInfoConfig?.isFirstNameMandatory ?? true;
-    const firstNameRequired =
-      fieldValidationConfig?.firstName?.required ?? isFirstNameMandatory;
-    if (firstNameRequired && !formData.firstName.trim()) {
+    if (isFirstNameMandatory && !formData.firstName.trim()) {
       newValidationErrors.firstName = t(
         'CREATE_PATIENT_VALIDATION_FIRST_NAME_REQUIRED',
+      );
+      isValid = false;
+    } else if (formData.firstName.length > MAX_NAME_LENGTH) {
+      newValidationErrors.firstName = t(
+        'CREATE_PATIENT_VALIDATION_FIRST_NAME_MAX_LENGTH',
       );
       isValid = false;
     }
 
     const isMiddleNameMandatory =
       patientInfoConfig?.isMiddleNameMandatory ?? false;
-    const middleNameRequired =
-      fieldValidationConfig?.middleName?.required ?? isMiddleNameMandatory;
-    if (middleNameRequired && !formData.middleName.trim()) {
-      setNameErrors((prev) => ({
-        ...prev,
-        middleName:
-          fieldValidationConfig?.middleName?.errorMessage ??
-          t('CREATE_PATIENT_VALIDATION_NAME_INVALID'),
-      }));
+    if (isMiddleNameMandatory && !formData.middleName.trim()) {
+      newValidationErrors.middleName = t(
+        'CREATE_PATIENT_VALIDATION_MIDDLE_NAME_REQUIRED',
+      );
+      isValid = false;
+    } else if (formData.middleName.length > MAX_NAME_LENGTH) {
+      newValidationErrors.middleName = t(
+        'CREATE_PATIENT_VALIDATION_MIDDLE_NAME_MAX_LENGTH',
+      );
       isValid = false;
     }
-
     const isLastNameMandatory = patientInfoConfig?.isLastNameMandatory ?? true;
-    const lastNameRequired =
-      fieldValidationConfig?.lastName?.required ?? isLastNameMandatory;
-    if (lastNameRequired && !formData.lastName.trim()) {
+    if (isLastNameMandatory && !formData.lastName.trim()) {
       newValidationErrors.lastName = t(
         'CREATE_PATIENT_VALIDATION_LAST_NAME_REQUIRED',
+      );
+      isValid = false;
+    } else if (formData.lastName.length > MAX_NAME_LENGTH) {
+      newValidationErrors.lastName = t(
+        'CREATE_PATIENT_VALIDATION_LAST_NAME_MAX_LENGTH',
       );
       isValid = false;
     }
@@ -239,6 +313,20 @@ export const Profile = ({
         'CREATE_PATIENT_VALIDATION_DATE_OF_BIRTH_REQUIRED',
       );
       isValid = false;
+    }
+    if (patientInfoConfig?.showBirthTime) {
+      const birthTimeElement = document.getElementById(
+        'birth-time',
+      ) as HTMLInputElement;
+      const isBirthTimeInvalid =
+        birthTimeElement && !birthTimeElement.validity.valid;
+
+      if (isBirthTimeInvalid) {
+        newValidationErrors.birthTime = t(
+          'CREATE_PATIENT_VALIDATION_BIRTH_TIME_INVALID',
+        );
+        isValid = false;
+      }
     }
 
     // Check if there are any existing errors (name format, age, date)
@@ -296,8 +384,10 @@ export const Profile = ({
       setValidationErrors({
         firstName: '',
         lastName: '',
+        middleName: '',
         gender: '',
         dateOfBirth: '',
+        birthTime: '',
       });
       setAgeErrors({ ageYears: '', ageMonths: '', ageDays: '' });
       setDateErrors({ dateOfBirth: '' });
@@ -372,17 +462,24 @@ export const Profile = ({
             {(patientInfoConfig?.showMiddleName ?? true) && (
               <TextInput
                 id="middle-name"
-                labelText={t('CREATE_PATIENT_MIDDLE_NAME')}
+                labelText={getRequiredLabel(
+                  'CREATE_PATIENT_MIDDLE_NAME',
+                  patientInfoConfig?.isMiddleNameMandatory ?? false,
+                )}
                 placeholder={t('CREATE_PATIENT_MIDDLE_NAME_PLACEHOLDER')}
                 value={formData.middleName}
-                invalid={!!nameErrors.middleName}
-                invalidText={nameErrors.middleName}
+                invalid={
+                  !!nameErrors.middleName || !!validationErrors.middleName
+                }
+                invalidText={
+                  nameErrors.middleName || validationErrors.middleName
+                }
                 onChange={(e) => handleNameChange('middleName', e.target.value)}
                 onBlur={() => handleNameBlur('middleName')}
               />
             )}
 
-            {(patientInfoConfig?.showLastName ?? true) && (
+            {patientInfoConfig?.showLastName && (
               <TextInput
                 id="last-name"
                 labelText={getRequiredLabel(
@@ -436,6 +533,8 @@ export const Profile = ({
                     onChange={(e) =>
                       handleAgeChange('ageYears', e.target.value)
                     }
+                    onKeyDown={handleAgeKeyDown}
+                    onPaste={(e) => handleAgePaste(e, 'ageYears')}
                   />
                 </div>
 
@@ -453,6 +552,8 @@ export const Profile = ({
                     onChange={(e) =>
                       handleAgeChange('ageMonths', e.target.value)
                     }
+                    onKeyDown={handleAgeKeyDown}
+                    onPaste={(e) => handleAgePaste(e, 'ageMonths')}
                   />
                 </div>
 
@@ -467,6 +568,8 @@ export const Profile = ({
                     invalid={!!ageErrors.ageDays}
                     invalidText={ageErrors.ageDays}
                     onChange={(e) => handleAgeChange('ageDays', e.target.value)}
+                    onKeyDown={handleAgeKeyDown}
+                    onPaste={(e) => handleAgePaste(e, 'ageDays')}
                   />
                 </div>
               </div>
@@ -526,11 +629,11 @@ export const Profile = ({
                 <TextInput
                   id="birth-time"
                   type="time"
-                  required
                   value={formData.birthTime}
-                  onChange={(e) =>
-                    handleInputChange('birthTime', e.target.value)
-                  }
+                  onChange={(e) => handleBirthTimeChange(e.target.value, e)}
+                  onBlur={(e) => handleBirthTimeChange(e.target.value, e)}
+                  invalid={!!validationErrors.birthTime}
+                  invalidText={validationErrors.birthTime}
                   labelText={t('CREATE_PATIENT_BIRTH_TIME')}
                 />
               </div>

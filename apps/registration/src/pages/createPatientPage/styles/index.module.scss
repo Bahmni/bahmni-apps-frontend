@@ -37,6 +37,11 @@
       gap: $spacing-05;
     }
 
+    .sectionTitle {
+       @include type-style("heading-compact-02");
+      font-size: $spacing-05 !important;
+    }
+
     .formSectionTitle {
       @include type-style("body-compact-02");
     }
