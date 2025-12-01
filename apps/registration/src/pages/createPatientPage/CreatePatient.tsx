@@ -79,9 +79,6 @@ const CreatePatient = () => {
   const [patientUuid, setPatientUuid] = useState<string | null>(
     patientUuidFromUrl ?? null,
   );
-  const [patientIdentifier, setPatientIdentifier] = useState<string | null>(
-    null,
-  );
 
   const { shouldShowAdditionalIdentifiers } = useAdditionalIdentifiers();
 
