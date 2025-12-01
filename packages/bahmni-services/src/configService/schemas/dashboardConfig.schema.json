@@ -28,7 +28,24 @@
           },
           "controls": {
             "type": "array",
-            "description": "List of controls in the section"
+            "description": "List of controls in the section",
+            "items":[
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["type"],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "Type of the control"
+                  },
+                  "config": {
+                    "type": "object",
+                    "description": "Configuration for the control"
+                  }
+                }
+              }
+            ]
           }
         }
       }
