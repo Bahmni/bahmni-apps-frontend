@@ -67,11 +67,24 @@ export const AdditionalIdentifiers = ({
     let isValid = true;
 
     extraIdentifierTypes.forEach((identifierType) => {
-      if (identifierType.required) {
-        const value = formData[identifierType.uuid];
-        if (!value || value.trim() === '') {
+      const value = formData[identifierType.uuid];
+
+      if (identifierType.required && (!value || value.trim() === '')) {
+        newErrors[identifierType.uuid] = t(
+          'CREATE_PATIENT_VALIDATION_IDENTIFIER_REQUIRED',
+          { identifierName: identifierType.name },
+        );
+        isValid = false;
+        return;
+      }
+
+      if (identifierType.format && value && value.trim() !== '') {
+        const pattern = identifierType.format;
+        const formatRegex = new RegExp(pattern);
+
+        if (!formatRegex.test(value)) {
           newErrors[identifierType.uuid] = t(
-            'CREATE_PATIENT_VALIDATION_IDENTIFIER_REQUIRED',
+            'CREATE_PATIENT_VALIDATION_IDENTIFIER_PATTERN_INVALID',
             { identifierName: identifierType.name },
           );
           isValid = false;

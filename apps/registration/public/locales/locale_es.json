@@ -71,6 +71,7 @@
   "CREATE_PATIENT_VALIDATION_MIDDLE_NAME_MAX_LENGTH": "El segundo nombre no puede exceder los 50 caracteres",
   "CREATE_PATIENT_VALIDATION_LAST_NAME_MAX_LENGTH": "El apellido no puede exceder los 50 caracteres",
   "CREATE_PATIENT_VALIDATION_IDENTIFIER_REQUIRED": "{{identifierName}} es obligatorio",
+  "CREATE_PATIENT_VALIDATION_IDENTIFIER_PATTERN_INVALID": "El formato de {{identifierName}} no es válido",
   "CREATE_PATIENT_VALIDATION_SELECT_FROM_DROPDOWN": "Seleccione la entrada del menú desplegable",
   "DATE_ERROR_EMPTY_OR_INVALID": "La cadena de fecha está vacía o no es válida",
   "DATE_ERROR_FORMAT": "Error de formato de fecha",
