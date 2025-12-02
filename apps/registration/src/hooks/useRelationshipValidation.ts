@@ -1,4 +1,5 @@
-import { useTranslation } from '@bahmni/services';
+import { useTranslation, getRelationshipTypes } from '@bahmni/services';
+import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import type { RelationshipData } from '../components/forms/patientRelationships/PatientRelationships';
 
@@ -11,6 +12,13 @@ interface ValidationErrors {
 
 export const useRelationshipValidation = () => {
   const { t } = useTranslation();
+
+  const { data: relationshipTypes = [] } = useQuery({
+    queryKey: ['relationshipTypes'],
+    queryFn: getRelationshipTypes,
+    staleTime: 30 * 60 * 1000,
+  });
+
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
     {},
   );
@@ -97,6 +105,7 @@ export const useRelationshipValidation = () => {
   };
 
   return {
+    relationshipTypes,
     validationErrors,
     validateRelationships,
     clearFieldError,

@@ -437,13 +437,11 @@ export const getRelationshipTypes = async (): Promise<
     const response = await get<RelationshipTypesResponse>(
       RELATIONSHIP_TYPES_URL,
     );
-    return response.results
-      .filter((type) => !type.retired)
-      .map((type) => ({
-        uuid: type.uuid,
-        aIsToB: type.aIsToB,
-        bIsToA: type.bIsToA,
-      }));
+    return response.results.map((type) => ({
+      uuid: type.uuid,
+      aIsToB: type.aIsToB,
+      bIsToA: type.bIsToA,
+    }));
   } catch (error) {
     throw new Error(
       `Failed to fetch relationship types: ${

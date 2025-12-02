@@ -29,6 +29,7 @@ export function validateAllSections(
     addressRef,
     contactRef,
     additionalRef,
+    relationshipsRef,
     additionalIdentifiersRef,
   } = refs;
 
@@ -36,9 +37,14 @@ export function validateAllSections(
   const isAddressValid = addressRef.current?.validate() ?? false;
   const isContactValid = contactRef.current?.validate() ?? false;
   const isAdditionalValid = additionalRef.current?.validate() ?? false;
+  const isRelationshipsValid = relationshipsRef?.current?.validate() ?? true;
 
   let allValid =
-    isProfileValid && isAddressValid && isContactValid && isAdditionalValid;
+    isProfileValid &&
+    isAddressValid &&
+    isContactValid &&
+    isAdditionalValid &&
+    isRelationshipsValid;
 
   const shouldValidate = options?.shouldValidateAdditionalIdentifiers ?? false;
   if (shouldValidate) {

@@ -1,4 +1,6 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, act } from '@testing-library/react';
+import React from 'react';
 import type { RelationshipData } from '../../components/forms/patientRelationships/PatientRelationships';
 import { useRelationshipValidation } from '../useRelationshipValidation';
 
@@ -6,18 +8,44 @@ jest.mock('@bahmni/services', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
+  getRelationshipTypes: jest.fn(() =>
+    Promise.resolve([
+      { uuid: 'rel-type-1', aIsToB: 'Parent', bIsToA: 'Child' },
+      { uuid: 'rel-type-2', aIsToB: 'Sibling', bIsToA: 'Sibling' },
+    ]),
+  ),
 }));
 
 describe('useRelationshipValidation', () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+        },
+      },
+    });
+  });
+
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+
   it('should initialize with empty validation errors', () => {
-    const { result } = renderHook(() => useRelationshipValidation());
+    const { result } = renderHook(() => useRelationshipValidation(), {
+      wrapper,
+    });
 
     expect(result.current.validationErrors).toEqual({});
   });
 
   describe('validateRelationships', () => {
     it('should validate required relationship type', () => {
-      const { result } = renderHook(() => useRelationshipValidation());
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
 
       const relationships: RelationshipData[] = [
         {
@@ -41,7 +69,9 @@ describe('useRelationshipValidation', () => {
     });
 
     it('should pass validation when relationship type is provided', () => {
-      const { result } = renderHook(() => useRelationshipValidation());
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
 
       const relationships: RelationshipData[] = [
         {
@@ -63,7 +93,9 @@ describe('useRelationshipValidation', () => {
     });
 
     it('should detect duplicate relationships with same type and patientUuid', () => {
-      const { result } = renderHook(() => useRelationshipValidation());
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
 
       const relationships: RelationshipData[] = [
         {
@@ -94,7 +126,9 @@ describe('useRelationshipValidation', () => {
     });
 
     it('should not flag duplicates if relationship types are different', () => {
-      const { result } = renderHook(() => useRelationshipValidation());
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
 
       const relationships: RelationshipData[] = [
         {
@@ -123,7 +157,9 @@ describe('useRelationshipValidation', () => {
     });
 
     it('should handle multiple validation errors', () => {
-      const { result } = renderHook(() => useRelationshipValidation());
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
 
       const relationships: RelationshipData[] = [
         {
@@ -165,7 +201,9 @@ describe('useRelationshipValidation', () => {
 
   describe('clearFieldError', () => {
     it('should clear specific field error', () => {
-      const { result } = renderHook(() => useRelationshipValidation());
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
 
       const relationships: RelationshipData[] = [
         {
@@ -194,7 +232,9 @@ describe('useRelationshipValidation', () => {
 
   describe('clearAllErrors', () => {
     it('should clear all validation errors', () => {
-      const { result } = renderHook(() => useRelationshipValidation());
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
 
       const relationships: RelationshipData[] = [
         {

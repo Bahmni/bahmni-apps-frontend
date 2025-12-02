@@ -14,7 +14,6 @@ import {
   dispatchAuditEvent,
   getPatientById,
   CreatePatientResponse,
-  getRelationshipTypes,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { useRef, useState, useEffect } from 'react';
@@ -44,6 +43,7 @@ import { BAHMNI_REGISTRATION_SEARCH } from '../../constants/app';
 
 import { useAdditionalIdentifiers } from '../../hooks/useAdditionalIdentifiers';
 import { useCreatePatient } from '../../hooks/useCreatePatient';
+import { useRelationshipValidation } from '../../hooks/useRelationshipValidation';
 import { useUpdatePatient } from '../../hooks/useUpdatePatient';
 import { validateAllSections, collectFormData } from './patientFormService';
 import styles from './styles/index.module.scss';
@@ -56,12 +56,7 @@ const CreatePatient = () => {
     patientUuid: string;
   }>();
 
-  const { data: relationshipTypes = [], isLoading: isLoadingRelationships } =
-    useQuery({
-      queryKey: ['relationshipTypes'],
-      queryFn: getRelationshipTypes,
-      staleTime: 0,
-    });
+  const { relationshipTypes } = useRelationshipValidation();
 
   // Determine if we're in edit mode based on URL parameter
   const isEditMode = !!patientUuidFromUrl;
@@ -136,6 +131,7 @@ const CreatePatient = () => {
         addressRef: patientAddressRef,
         contactRef: patientContactRef,
         additionalRef: patientAdditionalRef,
+        relationshipsRef: patientRelationshipsRef,
         additionalIdentifiersRef: patientAdditionalIdentifiersRef,
       },
       {
@@ -143,11 +139,7 @@ const CreatePatient = () => {
       },
     );
 
-    // Validate relationships if section exists
-    const isRelationshipsValid =
-      patientRelationshipsRef.current?.validate() ?? true;
-
-    if (!isValid || !isRelationshipsValid) {
+    if (!isValid) {
       return null;
     }
 
@@ -250,12 +242,9 @@ const CreatePatient = () => {
 
           <AdditionalInfo ref={patientAdditionalRef} />
 
-          {/* Show relationships section only if API returns relationship types */}
-          {!isLoadingRelationships &&
-            Array.isArray(relationshipTypes) &&
-            relationshipTypes.length > 0 && (
-              <PatientRelationships ref={patientRelationshipsRef} />
-            )}
+          {Array.isArray(relationshipTypes) && relationshipTypes.length > 0 && (
+            <PatientRelationships ref={patientRelationshipsRef} />
+          )}
           {shouldShowAdditionalIdentifiers && (
             <>
               <Tile className={styles.patientDetailsHeader}>
