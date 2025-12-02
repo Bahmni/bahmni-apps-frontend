@@ -43,7 +43,7 @@ import {
   PatientRelationshipsRef,
 } from '../../components/forms/patientRelationships/PatientRelationships';
 import { Profile, ProfileRef } from '../../components/forms/profile/Profile';
-import { BAHMNI_REGISTRATION_SEARCH } from '../../constants/app';
+import { BAHMNI_REGISTRATION_SEARCH, getPatientUrl } from '../../constants/app';
 
 import { useAdditionalIdentifiers } from '../../hooks/useAdditionalIdentifiers';
 import { useCreatePatient } from '../../hooks/useCreatePatient';
@@ -238,7 +238,7 @@ const PatientRegister = () => {
           );
           setPatientName(response.patient.person.display ?? '');
           getRegisterDate(response);
-          navigate(`/registration/patient/${newPatientUuid}`);
+          navigate(getPatientUrl(newPatientUuid));
           return newPatientUuid;
         }
       }
