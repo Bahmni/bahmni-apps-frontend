@@ -75,20 +75,6 @@ export const AdditionalIdentifiers = ({
           { identifierName: identifierType.name },
         );
         isValid = false;
-        return;
-      }
-
-      if (identifierType.format && value && value.trim() !== '') {
-        const pattern = identifierType.format;
-        const formatRegex = new RegExp(pattern);
-
-        if (!formatRegex.test(value)) {
-          newErrors[identifierType.uuid] = t(
-            'CREATE_PATIENT_VALIDATION_IDENTIFIER_PATTERN_INVALID',
-            { identifierName: identifierType.name },
-          );
-          isValid = false;
-        }
       }
     });
 
