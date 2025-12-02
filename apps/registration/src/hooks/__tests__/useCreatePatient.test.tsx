@@ -119,6 +119,7 @@ describe('useCreatePatient', () => {
     additional: {
       email: 'john.doe@example.com',
     },
+    additionalIdentifiers: {},
   };
 
   const mockSuccessResponse = {
@@ -642,6 +643,168 @@ describe('useCreatePatient', () => {
             }),
           }),
         }),
+      );
+    });
+  });
+
+  describe('Additional Identifiers', () => {
+    it('should include additional identifiers in the payload when provided', async () => {
+      const formDataWithAdditionalIdentifiers = {
+        ...mockFormData,
+        additionalIdentifiers: {
+          'passport-uuid-123': 'P12345678',
+          'national-id-uuid-456': 'NID987654321',
+        },
+      };
+
+      mockCreatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useCreatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(formDataWithAdditionalIdentifiers);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(mockCreatePatient).toHaveBeenCalledWith(
+        expect.objectContaining({
+          patient: expect.objectContaining({
+            identifiers: [
+              mockFormData.profile.patientIdentifier,
+              {
+                identifier: 'P12345678',
+                identifierType: 'passport-uuid-123',
+                preferred: false,
+              },
+              {
+                identifier: 'NID987654321',
+                identifierType: 'national-id-uuid-456',
+                preferred: false,
+              },
+            ],
+          }),
+        }),
+      );
+    });
+
+    it('should only include primary identifier when no additional identifiers provided', async () => {
+      mockCreatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useCreatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(mockFormData);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(mockCreatePatient).toHaveBeenCalledWith(
+        expect.objectContaining({
+          patient: expect.objectContaining({
+            identifiers: [mockFormData.profile.patientIdentifier],
+          }),
+        }),
+      );
+    });
+
+    it('should filter out empty additional identifiers', async () => {
+      const formDataWithEmptyIdentifiers = {
+        ...mockFormData,
+        additionalIdentifiers: {
+          'passport-uuid-123': 'P12345678',
+          'national-id-uuid-456': '',
+          'license-uuid-789': '   ',
+        },
+      };
+
+      mockCreatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useCreatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(formDataWithEmptyIdentifiers);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(mockCreatePatient).toHaveBeenCalledWith(
+        expect.objectContaining({
+          patient: expect.objectContaining({
+            identifiers: [
+              mockFormData.profile.patientIdentifier,
+              {
+                identifier: 'P12345678',
+                identifierType: 'passport-uuid-123',
+                preferred: false,
+              },
+            ],
+          }),
+        }),
+      );
+    });
+
+    it('should handle single additional identifier', async () => {
+      const formDataWithSingleIdentifier = {
+        ...mockFormData,
+        additionalIdentifiers: {
+          'national-id-uuid-456': 'NID12345',
+        },
+      };
+
+      mockCreatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useCreatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(formDataWithSingleIdentifier);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const callArgs = mockCreatePatient.mock.calls[0][0];
+      expect(callArgs.patient.identifiers).toHaveLength(2);
+      expect(callArgs.patient.identifiers[1]).toEqual({
+        identifier: 'NID12345',
+        identifierType: 'national-id-uuid-456',
+        preferred: false,
+      });
+    });
+
+    it('should handle multiple additional identifiers correctly', async () => {
+      const formDataWithMultipleIdentifiers = {
+        ...mockFormData,
+        additionalIdentifiers: {
+          'passport-uuid-123': 'P12345678',
+          'national-id-uuid-456': 'NID987654321',
+          'voter-id-uuid-789': 'VID11122233',
+        },
+      };
+
+      mockCreatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useCreatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(formDataWithMultipleIdentifiers);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const callArgs = mockCreatePatient.mock.calls[0][0];
+      expect(callArgs.patient.identifiers).toHaveLength(4);
+      expect(callArgs.patient.identifiers[0]).toEqual(
+        mockFormData.profile.patientIdentifier,
       );
     });
   });
