@@ -163,6 +163,7 @@ export {
   type PatientSearchConfig,
   type PatientSearchField,
   type SearchActionConfig,
+  type ControlConfig,
 } from './configService';
 
 export { getCurrentUser, getUserLoginLocation, type User } from './userService';

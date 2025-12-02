@@ -239,5 +239,8 @@
   "VITAL_SIGNS_PULSE": "Pulso",
   "VITAL_SIGNS_RESPIRATORY_RATE": "Frecuencia respiratoria",
   "VITAL_SIGNS_SYSTOLIC_BLOOD_PRESSURE": "Presión arterial sistólica",
-  "VITAL_SIGNS_TEMPERATURE": "Temperatura"
+  "VITAL_SIGNS_TEMPERATURE": "Temperatura",
+  "CONTROL_NOT_FOUND": "Aucun contrôle enregistré pour le type : {{type}}",
+  "NO_CONFIGURED_CONTROLS": "Aucune commande configurée pour cette section",
+  "INITIALIZING_CONTROL": "Initialisation du contrôle..."
 }
