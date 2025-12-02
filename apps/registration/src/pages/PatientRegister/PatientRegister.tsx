@@ -60,7 +60,7 @@ import { validateAllSections, collectFormData } from './patientFormService';
 import styles from './styles/index.module.scss';
 import { VisitTypeSelector } from './visitTypeSelector';
 
-const CreatePatient = () => {
+const PatientRegister = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -362,4 +362,4 @@ const CreatePatient = () => {
     />
   );
 };
-export default CreatePatient;
+export default PatientRegister;

@@ -6,8 +6,8 @@ import { BrowserRouter } from 'react-router-dom';
 import { useAdditionalIdentifiers } from '../../../hooks/useAdditionalIdentifiers';
 import { useCreatePatient } from '../../../hooks/useCreatePatient';
 import { PersonAttributesProvider } from '../../../providers/PersonAttributesProvider';
-import CreatePatient from '../CreatePatient';
 import { validateAllSections, collectFormData } from '../patientFormService';
+import PatientRegister from '../PatientRegister';
 
 // Mock useQuery
 const mockUseQuery = jest.fn();
@@ -153,7 +153,7 @@ jest.mock('../visitTypeSelector', () => ({
   ),
 }));
 
-describe('CreatePatient', () => {
+describe('PatientRegister', () => {
   let queryClient: QueryClient;
   let mockMutateAsync: jest.Mock;
   let mockAddNotification: jest.Mock;
@@ -249,7 +249,7 @@ describe('CreatePatient', () => {
   );
 
   const renderComponent = () => {
-    return render(<CreatePatient />, { wrapper: Wrapper });
+    return render(<PatientRegister />, { wrapper: Wrapper });
   };
 
   describe('Component Initialization', () => {

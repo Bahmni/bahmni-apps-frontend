@@ -22,7 +22,7 @@ import type {
   AgeErrors,
   DateErrors,
 } from '../../../models/validation';
-import styles from '../../../pages/createPatientPage/styles/index.module.scss';
+import styles from '../../../pages/PatientRegister/styles/index.module.scss';
 import {
   useGenderData,
   useIdentifierData,
