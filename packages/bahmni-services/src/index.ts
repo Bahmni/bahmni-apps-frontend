@@ -153,6 +153,7 @@ export {
   getDashboardConfig,
   getMedicationConfig,
   getRegistrationConfig,
+  validateConfig,
   type ClinicalConfig,
   type DashboardConfig,
   type MedicationJSONConfig,
