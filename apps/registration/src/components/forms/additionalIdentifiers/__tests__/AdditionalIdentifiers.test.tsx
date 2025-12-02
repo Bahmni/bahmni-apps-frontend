@@ -15,7 +15,7 @@ jest.mock('@bahmni/services', () => ({
   }),
 }));
 
-jest.mock('../../../utils/translation', () => ({
+jest.mock('../../../../utils/translation', () => ({
   getTranslatedLabel: jest.fn(
     (_t: unknown, _module: string, fieldName: string) => fieldName,
   ),

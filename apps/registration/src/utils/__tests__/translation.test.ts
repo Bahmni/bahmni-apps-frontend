@@ -7,7 +7,9 @@ jest.mock('@bahmni/services', () => ({
 }));
 
 const mockNormalizeTranslationKey =
-  normalizeTranslationKey as jest.MockedFunction<typeof normalizeTranslationKey>;
+  normalizeTranslationKey as jest.MockedFunction<
+    typeof normalizeTranslationKey
+  >;
 
 describe('Translation Utils', () => {
   describe('getTranslatedLabel', () => {
@@ -15,7 +17,7 @@ describe('Translation Utils', () => {
 
     beforeEach(() => {
       jest.clearAllMocks();
-      mockT = jest.fn() as jest.MockedFunction<TFunction>;
+      mockT = jest.fn() as unknown as jest.MockedFunction<TFunction>;
     });
 
     it('should return translated value when translation exists', () => {
