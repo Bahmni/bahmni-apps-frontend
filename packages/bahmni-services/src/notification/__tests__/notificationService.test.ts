@@ -4,11 +4,6 @@ import {
 } from '../notificationService';
 
 describe('notificationService', () => {
-  beforeEach(() => {
-    delete (window as any).__bahmniNotificationCallback;
-    delete (window as any).__bahmniPendingNotifications;
-  });
-
   describe('createNotificationService', () => {
     it('should create a notification service with the expected methods', () => {
       const service = createNotificationService();
@@ -20,17 +15,16 @@ describe('notificationService', () => {
       expect(service).toHaveProperty('showError');
     });
 
-    it('should queue notifications when called before registration', () => {
+    it('should log an error when methods are called before registration', () => {
       const service = createNotificationService();
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       service.showSuccess('Title', 'Message');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Notification service not properly initialized. Call register() first.',
+      );
 
-      expect((window as any).__bahmniPendingNotifications).toHaveLength(1);
-      expect((window as any).__bahmniPendingNotifications[0]).toEqual({
-        title: 'Title',
-        message: 'Message',
-        type: 'success',
-      });
+      consoleSpy.mockRestore();
     });
 
     it('should call the registered callback with the correct notification data', () => {
@@ -69,39 +63,40 @@ describe('notificationService', () => {
       });
     });
 
-    it('should flush queued notifications when callback is registered', () => {
+    it('should log an error when showInfo is called before registration', () => {
       const service = createNotificationService();
-      const mockCallback = jest.fn();
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
-      // Queue some notifications before registration
-      service.showSuccess('Queued 1', 'Message 1');
-      service.showInfo('Queued 2', 'Message 2');
+      service.showInfo('Info Title', 'Info Message');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Notification service not properly initialized. Call register() first.',
+      );
 
-      // Now register the callback
-      service.register(mockCallback);
-
-      // Both queued notifications should have been flushed
-      expect(mockCallback).toHaveBeenCalledTimes(2);
-      expect(mockCallback).toHaveBeenCalledWith({
-        title: 'Queued 1',
-        message: 'Message 1',
-        type: 'success',
-      });
-      expect(mockCallback).toHaveBeenCalledWith({
-        title: 'Queued 2',
-        message: 'Message 2',
-        type: 'info',
-      });
+      consoleSpy.mockRestore();
     });
 
-    it('should store callback in window object', () => {
+    it('should log an error when showWarning is called before registration', () => {
       const service = createNotificationService();
-      const mockCallback = jest.fn();
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
-      service.register(mockCallback);
+      service.showWarning('Warning Title', 'Warning Message');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Notification service not properly initialized. Call register() first.',
+      );
 
-      // Callback should be stored in window
-      expect((window as any).__bahmniNotificationCallback).toBe(mockCallback);
+      consoleSpy.mockRestore();
+    });
+
+    it('should log an error when showError is called before registration', () => {
+      const service = createNotificationService();
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      service.showError('Error Title', 'Error Message');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Notification service not properly initialized. Call register() first.',
+      );
+
+      consoleSpy.mockRestore();
     });
   });
 
