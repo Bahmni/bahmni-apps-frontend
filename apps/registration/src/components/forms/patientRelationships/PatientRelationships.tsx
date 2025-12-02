@@ -1,22 +1,18 @@
-import {
-  Button,
-  Dropdown,
-  DatePicker,
-  DatePickerInput,
-  ComboBox,
-  SimpleDataTable,
-} from '@bahmni/design-system';
-import { useTranslation, getRelationshipTypes } from '@bahmni/services';
-import { Close } from '@carbon/icons-react';
-import { Tile } from '@carbon/react';
-import { useQuery } from '@tanstack/react-query';
+import { Button, SimpleDataTable, Tile } from '@bahmni/design-system';
+import { useTranslation } from '@bahmni/services';
 import { useState, useImperativeHandle } from 'react';
-import {
-  usePatientSearch,
-  type PatientSuggestion,
-} from '../../../hooks/usePatientSearch';
+import type { PatientSuggestion } from '../../../hooks/usePatientSearch';
+import { usePatientSearch } from '../../../hooks/usePatientSearch';
 import { useRelationshipValidation } from '../../../hooks/useRelationshipValidation';
+import { RelationshipRow } from './RelationshipRow';
 import styles from './styles/index.module.scss';
+
+const RELATIONSHIP_FIELDS = {
+  RELATIONSHIP_TYPE: 'relationshipType',
+  PATIENT_ID: 'patientId',
+  TILL_DATE: 'tillDate',
+  ACTIONS: 'actions',
+} as const;
 
 export interface RelationshipData {
   id: string;
@@ -44,13 +40,6 @@ export const PatientRelationships = ({
 }: PatientRelationshipsProps) => {
   const { t } = useTranslation();
 
-  // Fetch relationship types from API
-  const { data: relationshipTypes = [] } = useQuery({
-    queryKey: ['relationshipTypes'],
-    queryFn: getRelationshipTypes,
-    staleTime: 1000 * 60 * 5,
-  });
-
   const [relationships, setRelationships] = useState<RelationshipData[]>(
     initialData?.length
       ? initialData
@@ -65,6 +54,7 @@ export const PatientRelationships = ({
   );
 
   const {
+    relationshipTypes,
     validationErrors,
     validateRelationships,
     clearFieldError,
@@ -87,7 +77,7 @@ export const PatientRelationships = ({
     setRelationships((prev) =>
       prev.map((rel) => {
         if (rel.id === id) {
-          if (field === 'relationshipType') {
+          if (field === RELATIONSHIP_FIELDS.RELATIONSHIP_TYPE) {
             return {
               ...rel,
               [field]: value,
@@ -102,10 +92,13 @@ export const PatientRelationships = ({
       }),
     );
 
-    if (field === 'relationshipType' || field === 'patientId') {
+    if (
+      field === RELATIONSHIP_FIELDS.RELATIONSHIP_TYPE ||
+      field === RELATIONSHIP_FIELDS.PATIENT_ID
+    ) {
       clearFieldError(id, field);
     }
-    if (field === 'relationshipType') {
+    if (field === RELATIONSHIP_FIELDS.RELATIONSHIP_TYPE) {
       clearSearch(id);
       setSearchTerms((prev) => ({ ...prev, [id]: '' }));
     }
@@ -113,7 +106,7 @@ export const PatientRelationships = ({
 
   const handlePatientSearch = (rowId: string, searchValue: string) => {
     handleSearch(rowId, searchValue);
-    updateRelationship(rowId, 'patientId', searchValue);
+    updateRelationship(rowId, RELATIONSHIP_FIELDS.PATIENT_ID, searchValue);
   };
 
   const handlePatientSelect = (
@@ -166,7 +159,7 @@ export const PatientRelationships = ({
 
   const headers = [
     {
-      key: 'relationshipType',
+      key: RELATIONSHIP_FIELDS.RELATIONSHIP_TYPE,
       header: (
         <span>
           {t('REGISTRATION_RELATIONSHIP_TYPE')}
@@ -175,7 +168,7 @@ export const PatientRelationships = ({
       ),
     },
     {
-      key: 'patientId',
+      key: RELATIONSHIP_FIELDS.PATIENT_ID,
       header: (
         <span>
           {t('REGISTRATION_PATIENT_ID')}
@@ -183,94 +176,25 @@ export const PatientRelationships = ({
         </span>
       ),
     },
-    { key: 'tillDate', header: t('REGISTRATION_TILL_DATE') },
-    { key: 'actions', header: t('REGISTRATION_ACTIONS') },
+    { key: RELATIONSHIP_FIELDS.TILL_DATE, header: t('REGISTRATION_TILL_DATE') },
+    { key: RELATIONSHIP_FIELDS.ACTIONS, header: t('REGISTRATION_ACTIONS') },
   ];
 
   const rows = relationships.map((rel) => {
     const suggestions = getPatientSuggestions(rel.id);
     const rowErrors = validationErrors[rel.id] ?? {};
 
-    return {
-      id: rel.id,
-      relationshipType: (
-        <Dropdown
-          id={`relationship-type-${rel.id}`}
-          titleText=""
-          label={t('REGISTRATION_SELECT')}
-          items={relationshipTypes}
-          itemToString={(item) => item?.aIsToB ?? ''}
-          selectedItem={
-            relationshipTypes.find((rt) => rt.uuid === rel.relationshipType) ??
-            null
-          }
-          invalid={!!rowErrors.relationshipType}
-          invalidText={rowErrors.relationshipType}
-          onChange={({ selectedItem }) =>
-            updateRelationship(
-              rel.id,
-              'relationshipType',
-              selectedItem?.uuid ?? '',
-            )
-          }
-        />
-      ),
-      patientId: (
-        <ComboBox
-          key={`patient-search-${rel.id}-${rel.relationshipType}`}
-          id={`patient-search-${rel.id}`}
-          titleText=""
-          placeholder={t('REGISTRATION_ENTER_PATIENT_ID')}
-          items={suggestions}
-          itemToString={(item) => item?.text ?? ''}
-          selectedItem={
-            suggestions.find((s) => s.identifier === rel.patientId) ?? null
-          }
-          invalid={!!rowErrors.patientId}
-          invalidText={rowErrors.patientId}
-          onInputChange={(inputValue) =>
-            handlePatientSearch(rel.id, inputValue ?? '')
-          }
-          onChange={({ selectedItem }) =>
-            handlePatientSelect(rel.id, selectedItem ?? null)
-          }
-        />
-      ),
-      tillDate: (
-        <DatePicker
-          dateFormat="d/m/Y"
-          datePickerType="single"
-          value={rel.tillDate}
-          minDate={new Date()}
-          onChange={(dates) => {
-            if (dates[0]) {
-              updateRelationship(
-                rel.id,
-                'tillDate',
-                dates[0].toLocaleDateString('en-GB'),
-              );
-            }
-          }}
-        >
-          <DatePickerInput
-            id={`till-date-${rel.id}`}
-            placeholder={t('REGISTRATION_SELECT_DATE')}
-            labelText=""
-          />
-        </DatePicker>
-      ),
-      actions: (
-        <Button
-          kind="ghost"
-          size="sm"
-          hasIconOnly
-          iconDescription={t('REGISTRATION_REMOVE')}
-          onClick={() => removeRelationship(rel.id)}
-        >
-          <Close size={16} />
-        </Button>
-      ),
-    };
+    return RelationshipRow({
+      relationship: rel,
+      relationshipTypes,
+      suggestions,
+      errors: rowErrors,
+      onUpdateRelationship: updateRelationship,
+      onPatientSearch: handlePatientSearch,
+      onPatientSelect: handlePatientSelect,
+      onRemove: removeRelationship,
+      t,
+    });
   });
 
   return (

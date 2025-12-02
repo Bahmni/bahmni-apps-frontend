@@ -174,5 +174,76 @@ describe('PatientRelationships', () => {
         expect(ref.current?.getData()).toEqual([]);
       });
     });
+
+    it('should validate empty relationships correctly', async () => {
+      render(<PatientRelationships ref={ref} />, { wrapper });
+
+      await waitFor(() => {
+        expect(ref.current).not.toBeNull();
+      });
+
+      let isValid;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
+
+      // Empty relationships are allowed (they are skipped during validation)
+      expect(isValid).toBe(true);
+    });
+
+    it('should validate incomplete relationships correctly', async () => {
+      const initialData: RelationshipData[] = [
+        {
+          id: 'rel-1',
+          relationshipType: 'rel-type-1',
+          patientId: 'GAN123456',
+          tillDate: '31/12/2024',
+        },
+      ];
+
+      render(<PatientRelationships ref={ref} initialData={initialData} />, {
+        wrapper,
+      });
+
+      await waitFor(() => {
+        expect(ref.current).not.toBeNull();
+      });
+
+      let isValid;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
+
+      // Should fail validation (has relationshipType but no patientUuid)
+      expect(isValid).toBe(false);
+    });
+
+    it('should validate complete relationships with UUID correctly', async () => {
+      const initialData: RelationshipData[] = [
+        {
+          id: 'rel-1',
+          relationshipType: 'rel-type-1',
+          patientId: 'GAN123456',
+          patientUuid: 'uuid-123',
+          tillDate: '31/12/2024',
+        },
+      ];
+
+      render(<PatientRelationships ref={ref} initialData={initialData} />, {
+        wrapper,
+      });
+
+      await waitFor(() => {
+        expect(ref.current).not.toBeNull();
+      });
+
+      let isValid;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
+
+      // Should pass validation (has both relationshipType and patientUuid)
+      expect(isValid).toBe(true);
+    });
   });
 });
