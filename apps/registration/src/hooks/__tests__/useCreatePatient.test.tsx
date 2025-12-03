@@ -121,6 +121,7 @@ describe('useCreatePatient', () => {
     additional: {
       email: 'john.doe@example.com',
     },
+    relationships: [],
   };
 
   const mockSuccessResponse = {
@@ -386,10 +387,9 @@ describe('useCreatePatient', () => {
 
       // Verify error notification
       expect(mockAddNotification).toHaveBeenCalledWith({
-        title: 'Error',
-        message: 'Failed to save patient',
+        title: 'Error saving patient',
+        message: 'API Error',
         type: 'error',
-        timeout: 5000,
       });
 
       // Verify success notification was not called with success type
@@ -416,10 +416,9 @@ describe('useCreatePatient', () => {
       });
 
       expect(mockAddNotification).toHaveBeenCalledWith({
-        title: 'Error',
-        message: 'Failed to save patient',
+        title: 'Error saving patient',
+        message: 'Network request failed',
         type: 'error',
-        timeout: 5000,
       });
     });
 
