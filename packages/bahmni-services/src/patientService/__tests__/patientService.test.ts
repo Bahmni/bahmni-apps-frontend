@@ -32,8 +32,6 @@ import {
   createVisit,
   getActiveVisitByPatient,
   getVisitLocationUUID,
-  getPatientImageAsDataUrl,
-  getPatientProfile,
 } from '../patientService';
 
 // Mock the api module
@@ -1535,7 +1533,7 @@ describe('Patient Service', () => {
   });
 
   describe('getGenders', () => {
-    it('should return object of gender codes to display names', async () => {
+    it('should return array of gender display names', async () => {
       // Arrange
       const mockGenders = {
         M: 'Male',
@@ -1549,10 +1547,10 @@ describe('Patient Service', () => {
 
       // Assert
       expect(mockedGet).toHaveBeenCalledWith(APP_PROPERTY_URL('mrs.genders'));
-      expect(result).toEqual({ M: 'Male', F: 'Female', O: 'Other' });
+      expect(result).toEqual(['Male', 'Female', 'Other']);
     });
 
-    it('should return empty object when no genders configured', async () => {
+    it('should return empty array when no genders configured', async () => {
       // Arrange
       mockedGet.mockResolvedValueOnce({});
 
@@ -1560,7 +1558,7 @@ describe('Patient Service', () => {
       const result = await getGenders();
 
       // Assert
-      expect(result).toEqual({});
+      expect(result).toEqual([]);
     });
 
     it('should propagate API errors', async () => {
@@ -1742,46 +1740,6 @@ describe('Patient Service', () => {
         ),
       );
       expect(result).toEqual(mockResponse);
-    });
-  });
-
-  describe('getPatientImageAsDataUrl', () => {
-    it('should fetch patient image correctly', async () => {
-      const patientUUID = 'c22a5000-3f10-11e4-adec-0800271c1b75';
-      const mockBlob = new Blob(['test'], { type: 'image/jpeg' });
-      const mockResponse = {
-        ok: true,
-        blob: jest.fn().mockResolvedValue(mockBlob),
-      };
-      global.fetch = jest.fn().mockResolvedValue(mockResponse);
-
-      await getPatientImageAsDataUrl(patientUUID);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining(`patientUuid=${patientUUID}`),
-      );
-    });
-  });
-
-  describe('getPatientProfile', () => {
-    it('should fetch patient profile correctly', async () => {
-      const patientUuid = 'c22a5000-3f10-11e4-adec-0800271c1b75';
-      const mockProfile = {
-        patient: {
-          uuid: patientUuid,
-          person: {
-            names: [{ givenName: 'John', familyName: 'Doe' }],
-          },
-        },
-      };
-      mockedGet.mockResolvedValueOnce(mockProfile);
-
-      const result = await getPatientProfile(patientUuid);
-
-      expect(mockedGet).toHaveBeenCalledWith(
-        expect.stringContaining(`/patientprofile/${patientUuid}?v=full`),
-      );
-      expect(result).toEqual(mockProfile);
     });
   });
 });

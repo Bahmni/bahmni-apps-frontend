@@ -9,10 +9,10 @@ import {
   AuditEventType,
   dispatchAuditEvent,
   PersonAttributeType,
-  useTranslation,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import type { RelationshipData } from '../components/forms/patientRelationships/PatientRelationships';
 import { convertTimeToISODateTime } from '../components/forms/profile/dateAgeUtils';
@@ -33,10 +33,10 @@ interface CreatePatientFormData {
 }
 
 export const useCreatePatient = () => {
-  const { t } = useTranslation();
-  const { addNotification } = useNotification();
   const navigate = useNavigate();
   const { personAttributes } = usePersonAttributes();
+  const { addNotification } = useNotification();
+  const { t } = useTranslation();
 
   const mutation = useMutation({
     mutationFn: (formData: CreatePatientFormData) => {
@@ -71,11 +71,12 @@ export const useCreatePatient = () => {
         navigate('/registration/search');
       }
     },
-    onError: (error) => {
+    onError: () => {
       addNotification({
+        title: t('NOTIFICATION_ERROR_TITLE'),
+        message: t('NOTIFICATION_PATIENT_SAVE_FAILED'),
         type: 'error',
-        title: t('ERROR_SAVING_PATIENT'),
-        message: error instanceof Error ? error.message : String(error),
+        timeout: 5000,
       });
     },
   });

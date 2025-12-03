@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 
 export interface AddressLevel {
   addressField: string;
@@ -36,15 +36,9 @@ export function useAddressFields(
   config: AddressHierarchyConfig,
   initialAddress?: AddressData,
 ) {
-  const [address, setAddress] = useState<AddressData>({});
+  const [address, setAddress] = useState<AddressData>(initialAddress ?? {});
   const [selectedMetadata, setSelectedMetadata] =
     useState<SelectedAddressMetadata>({});
-
-  useEffect(() => {
-    if (initialAddress) {
-      setAddress(initialAddress);
-    }
-  }, [initialAddress]);
 
   const displayLevels = useMemo(() => {
     if (config.showAddressFieldsTopDown) {

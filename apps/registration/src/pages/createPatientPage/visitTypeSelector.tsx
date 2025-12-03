@@ -99,7 +99,7 @@ export const VisitTypeSelector = ({
   const { data: activeVisit, error: getVisitError } = useQuery({
     queryKey: ['getActiveVisitByPatient', patientUuid, isVisitCreated],
     queryFn: () => getActiveVisitByPatient(patientUuid!),
-    enabled: Boolean(patientUuid),
+    enabled: Boolean(patientUuid) && isVisitCreated,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });

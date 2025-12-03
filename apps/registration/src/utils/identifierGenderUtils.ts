@@ -35,7 +35,7 @@ export const useIdentifierData = () => {
 };
 
 export const useGenderData = (t: (key: string) => string) => {
-  const { data: gendersFromApi = {} } = useQuery({
+  const { data: gendersFromApi = [] } = useQuery({
     queryKey: ['genders'],
     queryFn: getGenders,
     staleTime: 5 * 60 * 1000,
@@ -44,18 +44,11 @@ export const useGenderData = (t: (key: string) => string) => {
 
   // Map genders to their translated values
   const genders = useMemo(() => {
-    return Object.values(gendersFromApi).map((gender) => {
+    return gendersFromApi.map((gender) => {
       const genderKey = `CREATE_PATIENT_GENDER_${gender.toUpperCase()}`;
       return t(genderKey);
     });
   }, [gendersFromApi, t]);
 
-  const getGenderDisplay = (code: string): string => {
-    const genderValue = gendersFromApi[code];
-    if (!genderValue) return code;
-    const genderKey = `CREATE_PATIENT_GENDER_${genderValue.toUpperCase()}`;
-    return t(genderKey);
-  };
-
-  return { genders, getGenderDisplay };
+  return { genders };
 };
