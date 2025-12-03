@@ -537,7 +537,7 @@ describe('PatientSearchPage', () => {
   });
 
   describe('Patient ID Link Navigation', () => {
-    it('should render patient ID as a clickable link with correct href', async () => {
+    it('should render patient ID as text in search results', async () => {
       mockSearchData = {
         totalCount: mockSearchPatientData.length,
         pageOfResults: mockSearchPatientData,
@@ -574,20 +574,9 @@ describe('PatientSearchPage', () => {
       fireEvent.click(screen.getByTestId('search-patient-search-button'));
 
       await waitFor(() => {
-        const patientLink1 = screen.getByRole('link', { name: 'ABC200001' });
-        const patientLink2 = screen.getByRole('link', { name: 'ABC200002' });
-
-        expect(patientLink1).toBeInTheDocument();
-        expect(patientLink2).toBeInTheDocument();
-
-        expect(patientLink1).toHaveAttribute(
-          'href',
-          '/bahmni/registration/index.html#/patient/02f47490-d657-48ee-98e7-4c9133ea168b',
-        );
-        expect(patientLink2).toHaveAttribute(
-          'href',
-          '/bahmni/registration/index.html#/patient/02f47490-d657-48ee-98e7-4c9133ea1685',
-        );
+        // Patient IDs are rendered as text, not links
+        expect(screen.getByText('ABC200001')).toBeInTheDocument();
+        expect(screen.getByText('ABC200002')).toBeInTheDocument();
 
         const patientName1 = screen.getByText('Steffi Maria Graf');
         const patientName2 = screen.getByText('John Doe');
@@ -598,14 +587,10 @@ describe('PatientSearchPage', () => {
         expect(patientName2).toBeInTheDocument();
         expect(phoneNumber).toBeInTheDocument();
         expect(genderElements.length).toBeGreaterThan(0);
-        expect(patientName1.tagName).not.toBe('A');
-        expect(patientName2.tagName).not.toBe('A');
-        expect(phoneNumber.tagName).not.toBe('A');
-        expect(genderElements[0].tagName).not.toBe('A');
       });
     });
 
-    it('should show loading state when navigating to patient details', async () => {
+    it('should display patient data in search results table', async () => {
       delete (window as any).location;
       window.location = { href: '' } as any;
 
@@ -624,7 +609,7 @@ describe('PatientSearchPage', () => {
         isLoading: false,
       });
 
-      const { rerender } = render(
+      render(
         <MemoryRouter>
           <NotificationProvider>
             <QueryClientProvider client={queryClient}>
@@ -643,24 +628,11 @@ describe('PatientSearchPage', () => {
       fireEvent.click(screen.getByTestId('search-patient-search-button'));
 
       await waitFor(() => {
-        const patientLink = screen.getByRole('link', { name: 'ABC200001' });
-        fireEvent.click(patientLink);
+        // Check patient data is displayed in table
+        expect(screen.getByText('ABC200001')).toBeInTheDocument();
+        expect(screen.getByText('Steffi Maria Graf')).toBeInTheDocument();
+        expect(screen.getByText('864579392')).toBeInTheDocument();
       });
-
-      rerender(
-        <MemoryRouter>
-          <NotificationProvider>
-            <QueryClientProvider client={queryClient}>
-              <UserPrivilegeProvider>
-                <PatientSearchPage />
-              </UserPrivilegeProvider>
-            </QueryClientProvider>
-          </NotificationProvider>
-        </MemoryRouter>,
-      );
-      expect(
-        screen.getByTitle('Navigating to patient details...'),
-      ).toBeInTheDocument();
     });
   });
 
