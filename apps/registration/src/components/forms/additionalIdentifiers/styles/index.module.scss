@@ -25,7 +25,7 @@
   padding-top: $spacing-03 + $spacing-01;
   
   :global(.cds--text-input) {
-    background-color: $field-01;  
+    background-color: $field-01 !important;  
   }
 
   > * {
