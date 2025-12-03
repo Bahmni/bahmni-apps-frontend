@@ -5,9 +5,7 @@ export const useEocData = (): EocContextType => {
   const context = useContext(EocContext);
 
   if (context === undefined) {
-    throw new Error(
-      'useEocData must be used within an EocProvider',
-    );
+    throw new Error('useEocData must be used within an EocProvider');
   }
 
   return context;
