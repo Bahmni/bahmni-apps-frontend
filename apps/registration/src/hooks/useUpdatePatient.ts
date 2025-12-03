@@ -9,7 +9,9 @@ import {
   AuditEventType,
   dispatchAuditEvent,
   PersonAttributeType,
+  useTranslation,
 } from '@bahmni/services';
+import { useNotification } from '@bahmni/widgets';
 import { useNotification } from '@bahmni/widgets';
 import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -30,6 +32,8 @@ interface UpdatePatientFormData {
 }
 
 export const useUpdatePatient = () => {
+  const { t } = useTranslation();
+  const { addNotification } = useNotification();
   const { personAttributes } = usePersonAttributes();
   const { addNotification } = useNotification();
   const { t } = useTranslation();
@@ -56,12 +60,11 @@ export const useUpdatePatient = () => {
         });
       }
     },
-    onError: () => {
+    onError: (error) => {
       addNotification({
-        title: t('NOTIFICATION_ERROR_TITLE'),
-        message: t('NOTIFICATION_PATIENT_UPDATE_FAILED'),
         type: 'error',
-        timeout: 5000,
+        title: t('ERROR_UPDATING_PATIENT'),
+        message: error instanceof Error ? error.message : String(error),
       });
     },
   });
@@ -74,6 +77,12 @@ function transformFormDataToPayload(
   personAttributes: PersonAttributeType[],
 ): CreatePatientRequest {
   const { profile, address, contact, additional } = formData;
+
+  const addressWithNulls: PatientAddress = {};
+  Object.entries(address).forEach(([key, value]) => {
+    addressWithNulls[key as keyof PatientAddress] =
+      value && value.trim() !== '' ? value : null;
+  });
   const patientName: PatientName = {
     ...(profile.nameUuid && { uuid: profile.nameUuid }),
     givenName: profile.firstName,
@@ -122,7 +131,7 @@ function transformFormDataToPayload(
           profile.dateOfBirth,
           profile.birthTime,
         ),
-        addresses: [address],
+        addresses: [addressWithNulls],
         attributes,
         deathDate: null,
         causeOfDeath: '',
