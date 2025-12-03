@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 export { get, post, put, del } from './api';
 export { initAppI18n, useTranslation } from './i18n';
 export { useCamera } from './cameraService';
@@ -180,7 +181,7 @@ export {
 } from './providerService';
 export { findActiveEncounterInSession } from './encounterSessionService';
 
-export { getActiveVisit, getEncountersForEOC } from './encounterService';
+export { getActiveVisit, getEncountersForEOC, type EocReferecneType } from './encounterService';
 
 export {
   dispatchAuditEvent,

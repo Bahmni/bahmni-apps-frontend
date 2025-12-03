@@ -9,12 +9,14 @@ import {
 import { useTranslation, BAHMNI_HOME_PATH } from '@bahmni/services';
 import { useNotification, useUserPrivilege } from '@bahmni/widgets';
 import React, { Suspense, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import ConsultationPad from '../components/consultationPad/ConsultationPad';
 import DashboardContainer from '../components/dashboardContainer/DashboardContainer';
 import PatientHeader from '../components/patientHeader/PatientHeader';
 import { BAHMNI_CLINICAL_PATH } from '../constants/app';
 import { useClinicalConfig } from '../hooks/useClinicalConfig';
 import { useDashboardConfig } from '../hooks/useDashboardConfig';
+import { EocProvider } from '../providers/EocProvider';
 import {
   getDefaultDashboard,
   getSidebarItems,
@@ -68,6 +70,18 @@ const ConsultationPage: React.FC = () => {
   const { userPrivileges } = useUserPrivilege();
   const { addNotification } = useNotification();
   const [isActionAreaVisible, setIsActionAreaVisible] = useState(false);
+  const [searchParams] = useSearchParams();
+
+  const episodeIds = useMemo(() => {
+    const eocId = searchParams.get('eocId');
+    if (!eocId) return [];
+    return eocId
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean);
+  }, [searchParams]);
+
+  console.log('Episode Ids:', episodeIds);
 
   const currentDashboard = useMemo(() => {
     if (!clinicalConfig) return null;
@@ -132,10 +146,12 @@ const ConsultationPage: React.FC = () => {
             />
           }
         >
-          <DashboardContainer
-            sections={dashboardConfig.sections}
-            activeItemId={activeItemId}
-          />
+          <EocProvider episodeIds={episodeIds}>
+            <DashboardContainer
+              sections={dashboardConfig.sections}
+              activeItemId={activeItemId}
+            />
+          </EocProvider>
         </Suspense>
       }
       isActionAreaVisible={isActionAreaVisible}

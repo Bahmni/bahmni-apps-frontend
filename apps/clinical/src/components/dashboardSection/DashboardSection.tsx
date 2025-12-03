@@ -6,6 +6,7 @@ import {
 } from '@bahmni/services';
 import { getWidget } from '@bahmni/widgets';
 import React, { Suspense } from 'react';
+import { useEocData } from '../../hooks/useEocData';
 import styles from './styles/DashboardSection.module.scss';
 
 export interface DashboardSectionProps {
@@ -24,6 +25,9 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
   ref,
 }) => {
   const { t } = useTranslation();
+  const { eoc } = useEocData();
+  console.log('EOCReference in DashboardSection:', eoc);
+
   const renderControl = (
     control: ControlConfig,
     index: number,
@@ -50,7 +54,7 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
             </div>
           }
         >
-          <WidgetComponent config={control.config} />
+          <WidgetComponent config={control.config} eocReferecne={eoc} />
         </Suspense>
         {showDivider && <div className={styles.divider} />}
       </React.Fragment>

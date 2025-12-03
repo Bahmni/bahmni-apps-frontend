@@ -31,6 +31,8 @@ export const EocProvider: React.FC<EncounterDataProviderProps> = ({
     [encountersData, isLoadingEncounters, error],
   );
 
+  console.log('EOC Provider Value:', value);
+
   return <EocContext.Provider value={value}>{children}</EocContext.Provider>;
 };
 
