@@ -4,41 +4,46 @@
 
   // Patient Details Header
   .patientDetailsHeader {
-    margin: 24px 88px 0;
-    max-width: 1240px;
-    height: 54px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    margin: 0 auto;
+    margin-top:$spacing-08;
+    max-width: $spacing-13 * 9 + $spacing-05 + $spacing-02;
+    height: $spacing-08 + $spacing-05;
     display: flex;
     align-items: center;
-    padding: 16px;
+    width: calc(100% - ($spacing-13 + $spacing-05));
+    font-weight: 600;
   }
 
   // Form Container
   .formContainer {
-    margin: 0 88px;
-    width: calc(100% - 176px);
-    max-width: 1240px;
-    padding: 24px;
+    margin: 0 auto;
+    width: calc(100% - ($spacing-13 + $spacing-05));
+    max-width: $spacing-13 * 9 + $spacing-05 + $spacing-02;
+    padding: $spacing-06;
     background: #fff;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 $spacing-01 $spacing-03 rgba(0, 0, 0, 0.3);
     display: flex;
     flex-direction: column;
-    gap: 48px;
+    gap: $spacing-09;
 
     .formSection {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: $spacing-05;
     }
 
     .sectionTitle {
        @include type-style("heading-compact-02");
-      font-size: 16px;
-      font-weight: 400;
+      font-size: $spacing-05 !important;
     }
 
     .formSectionTitle {
       @include type-style("body-compact-02");
+    }
+
+    .patientUuid {
+      margin-left: 1rem;
+      font-weight: 400;
     }
       
     // Photo Upload Section
@@ -46,9 +51,9 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
-      width: 144px;
-      height: 176px;
+      gap: $spacing-05;
+      width: $spacing-13 + $spacing-05;
+      height: $spacing-13 + $spacing-09;
       background: #f4f4f4;
       display: flex;
       align-items: center;
@@ -59,7 +64,7 @@
      white-space: normal;   
      text-align: center;    
      word-break: break-word;
-     border-radius: 2px !important;
+     border-radius: $spacing-01 !important;
      padding-right: $spacing-05 !important;
     }
     
@@ -74,7 +79,7 @@
           position: absolute;
           top: 100%;
           left: 0;
-          margin-top: 2px;
+          margin-top: $spacing-01;
           z-index: 1;
         }
       }
@@ -83,10 +88,10 @@
     .ageFieldsWrapper {
       display: flex;
       flex-direction: row;
-      gap: 16px;
+      gap: $spacing-05;
       width: 100%;
       align-items: flex-start;
-      padding-bottom: 10px;
+      padding-bottom: $spacing-03 + $spacing-01;
 
       .ageInputs {
         flex: 1;
@@ -94,8 +99,8 @@
     }
 
     .nameFields {
-      margin-top: 16px;
-      padding-bottom: 10px;
+      margin-top: $spacing-05;
+      padding-bottom: $spacing-03 + $spacing-01;
       
       > * {
         flex: 1 1 0;
@@ -106,46 +111,44 @@
     .demographicsFields,
     .birthInfo,
     .birthInfoFields {
-      margin-top: 16px;
+      margin-top: $spacing-05;
     }
 
     .demographicsFields {
-      padding-bottom: 10px;
+      padding-bottom: $spacing-03 + $spacing-01;
     }
 
     .dropdownField {
-      width: 188px;
-      margin-bottom: -1px;
+      width: $spacing-13 + $spacing-09 + $spacing-04;
+      margin-bottom: -$spacing-01;
     }
     .checkboxField {
-      margin-top: 0.5rem;
+      margin-top: $spacing-03;
     }
 
     .emailField,.phoneNumberField{
-      width: 288px;
+      width: $spacing-13 * 2 + $spacing-07;
     }
   }
    
   .formActions {
-    width: calc(100% - 176px);
-    max-width: 1240px;
+    margin: 0 auto;
+    width: calc(100% - ($spacing-13 + $spacing-05));
+    max-width: $spacing-13 * 9 + $spacing-05 + $spacing-02;
+    padding: $spacing-06 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 24px 87px;
-    margin-top: auto;
-
     .actionButtons {
       display: flex;
-      align-items: center;
-      gap: 16px;
+      gap: $spacing-05;
     }
   }
 
   .row {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: $spacing-05;
 }
 
 .col {
@@ -154,7 +157,7 @@
 
 .ageFieldsWrapper {
   display: flex;
-  gap: 1rem;
+  gap: $spacing-05;
   flex-wrap: wrap;
 }
 
@@ -162,18 +165,18 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: $spacing-05;
 }
 
 .photoRow {
   display: flex;
   flex-wrap: nowrap;
   align-items: flex-start;
-  gap: 2rem;
+  gap: $spacing-07;
 }
 
 .photoCol {
-  flex: 0 0 200px; 
+  flex: 0 0 ($spacing-13 + $spacing-09 + $spacing-06); 
 }
 
 .formCol {
@@ -192,19 +195,19 @@
   left: 0;
   right: 0;
   background: white;
-  max-height: 200px;
+  max-height: $spacing-13 + $spacing-09 + $spacing-06;
   overflow-y: auto;
   z-index: 1000;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e0e0e0;
+  box-shadow: 0 $spacing-02 $spacing-03 rgba(0, 0, 0, 0.1);
+  border: $spacing-01 solid #e0e0e0;
   border-top: none;
-  margin-top: -1px;
+  margin-top: -$spacing-01;
 }
 
 .suggestionItem {
-  padding: 8px 12px;
+  padding: $spacing-03 $spacing-04;
   cursor: pointer;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: $spacing-01 solid #f0f0f0;
   
   &:hover {
     background-color: #f5f5f5;
@@ -216,12 +219,17 @@
 }
 
 .suggestionName {
-  font-size: 0.875rem;
+  font-size: $spacing-05 - $spacing-01;
   font-weight: 500;
 }
 
 .suggestionParent {
-  font-size: 0.75rem;
+  font-size: $spacing-04;
   color: #525252;
-  margin-top: 2px;
+  margin-top: $spacing-01;
+}
+
+.requiredAsterisk {
+  color: #da1e28;
+  margin-left: $spacing-01;
 }

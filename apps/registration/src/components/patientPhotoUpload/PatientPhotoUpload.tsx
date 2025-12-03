@@ -1,12 +1,11 @@
 import { Button, Modal, FileUploader, IconButton } from '@bahmni/design-system';
 import { useTranslation, useCamera } from '@bahmni/services';
 import { Close } from '@carbon/icons-react';
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import styles from './styles.module.scss';
 
 interface PatientPhotoUploadProps {
   onPhotoConfirm: (base64Image: string) => void;
-  initialPhoto?: string;
 }
 
 const toJpegDataUrl = (img: HTMLImageElement, quality = 1) => {
@@ -28,7 +27,6 @@ const revokeObjectUrl = (url?: string) => {
 
 export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
   onPhotoConfirm,
-  initialPhoto,
 }) => {
   const { t } = useTranslation();
 
@@ -40,12 +38,6 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
     undefined,
   );
   const [fileSizeError, setFileSizeError] = useState<string>('');
-
-  useEffect(() => {
-    if (initialPhoto) {
-      setConfirmedUrl(initialPhoto);
-    }
-  }, [initialPhoto]);
 
   const MAX_FILE_SIZE = 500 * 1024;
 

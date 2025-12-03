@@ -213,15 +213,13 @@ describe('useAddressFields', () => {
         showAddressFieldsTopDown: true,
       };
 
-      const initialAddress = {
-        country: 'India',
-        stateProvince: 'Maharashtra',
-        countyDistrict: 'Mumbai District',
-        cityVillage: 'Mumbai',
-      };
-
       const { result } = renderHook(() =>
-        useAddressFields(mockAddressLevels, config, initialAddress),
+        useAddressFields(mockAddressLevels, config, {
+          country: 'India',
+          stateProvince: 'Maharashtra',
+          countyDistrict: 'Mumbai District',
+          cityVillage: 'Mumbai',
+        }),
       );
 
       act(() => {
@@ -294,13 +292,11 @@ describe('useAddressFields', () => {
         strictAutocompleteFromLevel: 'stateProvince',
       };
 
-      const initialAddress = {
-        country: 'India',
-        stateProvince: 'Maharashtra',
-      };
-
       const { result } = renderHook(() =>
-        useAddressFields(mockAddressLevels, config, initialAddress),
+        useAddressFields(mockAddressLevels, config, {
+          country: 'India',
+          stateProvince: 'Maharashtra',
+        }),
       );
 
       const districtLevel = result.current.levelsWithStrictEntry.find(
@@ -394,13 +390,11 @@ describe('useAddressFields', () => {
         showAddressFieldsTopDown: true,
       };
 
-      const initialAddress = {
-        country: 'India',
-        stateProvince: 'Maharashtra',
-      };
-
       const { result } = renderHook(() =>
-        useAddressFields(mockAddressLevels, config, initialAddress),
+        useAddressFields(mockAddressLevels, config, {
+          country: 'India',
+          stateProvince: 'Maharashtra',
+        }),
       );
 
       expect(result.current.address.country).toBe('India');

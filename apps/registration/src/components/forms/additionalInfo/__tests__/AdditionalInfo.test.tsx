@@ -420,7 +420,7 @@ describe('AdditionalInfo', () => {
       expect(data).toEqual({ email: 'data@example.com' });
     });
 
-    it('returns empty object for unfilled fields', () => {
+    it('returns empty strings for unfilled fields', () => {
       const ref = createRef<AdditionalInfoRef>();
       render(<AdditionalInfo ref={ref} />);
 

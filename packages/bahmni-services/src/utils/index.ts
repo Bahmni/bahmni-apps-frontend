@@ -9,5 +9,4 @@ export {
   refreshQueries,
   parseQueryParams,
   formatUrl,
-  blobToDataUrl,
 } from './utils';
