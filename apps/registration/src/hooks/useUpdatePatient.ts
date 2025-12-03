@@ -1,6 +1,5 @@
 import {
   updatePatient,
-  notificationService,
   CreatePatientRequest,
   PatientName,
   PatientIdentifier,
@@ -11,7 +10,9 @@ import {
   dispatchAuditEvent,
   PersonAttributeType,
 } from '@bahmni/services';
+import { useNotification } from '@bahmni/widgets';
 import { useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { convertTimeToISODateTime } from '../components/forms/profile/dateAgeUtils';
 import { BasicInfoData, ContactData, AdditionalData } from '../models/patient';
 import { usePersonAttributes } from './usePersonAttributes';
@@ -29,6 +30,8 @@ interface UpdatePatientFormData {
 
 export const useUpdatePatient = () => {
   const { personAttributes } = usePersonAttributes();
+  const { addNotification } = useNotification();
+  const { t } = useTranslation();
 
   const mutation = useMutation({
     mutationFn: (formData: UpdatePatientFormData) => {
@@ -36,11 +39,12 @@ export const useUpdatePatient = () => {
       return updatePatient(formData.patientUuid, payload);
     },
     onSuccess: (response) => {
-      notificationService.showSuccess(
-        'Success',
-        'Patient updated successfully',
-        5000,
-      );
+      addNotification({
+        title: t('NOTIFICATION_SUCCESS_TITLE'),
+        message: t('NOTIFICATION_PATIENT_UPDATED_SUCCESSFULLY'),
+        type: 'success',
+        timeout: 5000,
+      });
 
       if (response?.patient?.uuid) {
         dispatchAuditEvent({
@@ -52,7 +56,12 @@ export const useUpdatePatient = () => {
       }
     },
     onError: () => {
-      notificationService.showError('Error', 'Failed to update patient', 5000);
+      addNotification({
+        title: t('NOTIFICATION_ERROR_TITLE'),
+        message: t('NOTIFICATION_PATIENT_UPDATE_FAILED'),
+        type: 'error',
+        timeout: 5000,
+      });
     },
   });
 

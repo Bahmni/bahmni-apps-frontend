@@ -15,6 +15,7 @@ import {
   getPatientById,
   CreatePatientResponse,
 } from '@bahmni/services';
+import { useNotification } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import { useRef, useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -52,6 +53,7 @@ import { VisitTypeSelector } from './visitTypeSelector';
 const CreatePatient = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { addNotification } = useNotification();
   const { patientUuid: patientUuidFromUrl } = useParams<{
     patientUuid: string;
   }>();
@@ -134,6 +136,8 @@ const CreatePatient = () => {
         relationshipsRef: patientRelationshipsRef,
         additionalIdentifiersRef: patientAdditionalIdentifiersRef,
       },
+      addNotification,
+      t,
       {
         shouldValidateAdditionalIdentifiers: shouldShowAdditionalIdentifiers,
       },
@@ -144,14 +148,18 @@ const CreatePatient = () => {
     }
 
     // Collect data from all form sections
-    const formData = collectFormData({
-      profileRef: patientProfileRef,
-      addressRef: patientAddressRef,
-      contactRef: patientContactRef,
-      additionalRef: patientAdditionalRef,
-      relationshipsRef: patientRelationshipsRef,
-      additionalIdentifiersRef: patientAdditionalIdentifiersRef,
-    });
+    const formData = collectFormData(
+      {
+        profileRef: patientProfileRef,
+        addressRef: patientAddressRef,
+        contactRef: patientContactRef,
+        additionalRef: patientAdditionalRef,
+        relationshipsRef: patientRelationshipsRef,
+        additionalIdentifiersRef: patientAdditionalIdentifiersRef,
+      },
+      addNotification,
+      t,
+    );
 
     if (!formData) {
       return null;

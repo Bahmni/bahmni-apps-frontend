@@ -122,5 +122,16 @@
   "REGISTRATION_RELATIONSHIP_TYPE_REQUIRED": "El tipo de relación es obligatorio",
   "REGISTRATION_RELATIONSHIP_ALREADY_EXISTS": "La relación dada ya existe",
   "REGISTRATION_PATIENT_SELECTION_REQUIRED": "Por favor seleccione un paciente de la lista de autocompletar",
-  "ADDITIONAL_IDENTIFIERS_HEADER_TITLE": "Identificadores adicionales"
+  "ADDITIONAL_IDENTIFIERS_HEADER_TITLE": "Identificadores adicionales",
+  "NOTIFICATION_SUCCESS_TITLE": "Éxito",
+  "NOTIFICATION_ERROR_TITLE": "Error",
+  "NOTIFICATION_PATIENT_SAVED_SUCCESSFULLY": "Paciente guardado exitosamente",
+  "NOTIFICATION_PATIENT_UPDATED_SUCCESSFULLY": "Paciente actualizado exitosamente",
+  "NOTIFICATION_PATIENT_SAVE_FAILED": "Error al guardar el paciente",
+  "NOTIFICATION_PATIENT_UPDATE_FAILED": "Error al actualizar el paciente",
+  "NOTIFICATION_VALIDATION_ERRORS": "Por favor complete los campos obligatorios",
+  "NOTIFICATION_UNABLE_TO_GET_PATIENT_DATA": "No se pueden obtener los datos del paciente",
+  "NOTIFICATION_UNABLE_TO_GET_ADDRESS_DATA": "No se pueden obtener los datos de dirección del paciente",
+  "NOTIFICATION_UNABLE_TO_GET_CONTACT_DATA": "No se pueden obtener los datos de contacto del paciente",
+  "NOTIFICATION_UNABLE_TO_GET_ADDITIONAL_DATA": "No se pueden obtener los datos adicionales del paciente"
 }
