@@ -2,7 +2,6 @@ import { notificationService } from '@bahmni/services';
 import { validateAllSections, collectFormData } from '../patientFormService';
 import type { PatientFormRefs } from '../patientFormService';
 
-// Mock the notification service
 jest.mock('@bahmni/services', () => ({
   notificationService: {
     showError: jest.fn(),
@@ -485,7 +484,7 @@ describe('patientFormService', () => {
         profileRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => mockProfileData),
+            getData: jest.fn(() => mockProfileData) as any,
             clearData: jest.fn(),
             setCustomError: jest.fn(),
           },
@@ -520,6 +519,7 @@ describe('patientFormService', () => {
         address: mockAddressData,
         contact: mockContactData,
         additional: mockAdditionalData,
+        relationships: [],
         additionalIdentifiers: {},
       });
       expect(notificationService.showError).not.toHaveBeenCalled();
@@ -544,7 +544,10 @@ describe('patientFormService', () => {
         contactRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => ({ phoneNumber: '1234567890' })),
+            getData: jest.fn(() => ({
+              phoneNumber: '1234567890',
+              altPhoneNumber: '',
+            })),
           },
         },
         additionalRef: {
