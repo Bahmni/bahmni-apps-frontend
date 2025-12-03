@@ -1,6 +1,5 @@
 import {
   createPatient,
-  notificationService,
   CreatePatientRequest,
   PatientName,
   PatientIdentifier,
@@ -11,6 +10,7 @@ import {
   dispatchAuditEvent,
   PersonAttributeType,
 } from '@bahmni/services';
+import { useNotification } from '@bahmni/widgets';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { convertTimeToISODateTime } from '../components/forms/profile/dateAgeUtils';
@@ -31,6 +31,7 @@ interface CreatePatientFormData {
 export const useCreatePatient = () => {
   const navigate = useNavigate();
   const { personAttributes } = usePersonAttributes();
+  const { addNotification } = useNotification();
 
   const mutation = useMutation({
     mutationFn: (formData: CreatePatientFormData) => {
@@ -38,11 +39,12 @@ export const useCreatePatient = () => {
       return createPatient(payload);
     },
     onSuccess: (response) => {
-      notificationService.showSuccess(
-        'Success',
-        'Patient saved successfully',
-        5000,
-      );
+      addNotification({
+        title: 'Success',
+        message: 'Patient saved successfully',
+        type: 'success',
+        timeout: 5000,
+      });
 
       if (response?.patient?.uuid) {
         dispatchAuditEvent({
@@ -65,7 +67,12 @@ export const useCreatePatient = () => {
       }
     },
     onError: () => {
-      notificationService.showError('Error', 'Failed to save patient', 5000);
+      addNotification({
+        title: 'Error',
+        message: 'Failed to save patient',
+        type: 'error',
+        timeout: 5000,
+      });
     },
   });
 

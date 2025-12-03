@@ -2,7 +2,6 @@ import { Button, Dropdown } from '@bahmni/design-system';
 import {
   getVisitTypes,
   useTranslation,
-  notificationService,
   createVisit,
   getActiveVisitByPatient,
   getUserLoginLocation,
@@ -13,6 +12,7 @@ import {
   type VisitData,
   type AuditEventType,
 } from '@bahmni/services';
+import { useNotification } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import styles from './styles/VisitTypeSelector.module.scss';
@@ -27,6 +27,7 @@ export const VisitTypeSelector = ({
   patientUuid,
 }: VisitTypeSelectorProps) => {
   const { t } = useTranslation();
+  const { addNotification } = useNotification();
   const [visitPayload, setVisitPayload] = useState<VisitData>();
 
   const {
@@ -107,12 +108,14 @@ export const VisitTypeSelector = ({
 
   useEffect(() => {
     if (error) {
-      notificationService.showError(
-        t('ERROR_DEFAULT_TITLE'),
-        error instanceof Error ? error.message : 'An error occurred',
-      );
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: error instanceof Error ? error.message : 'An error occurred',
+        type: 'error',
+        timeout: 5000,
+      });
     }
-  }, [error, t]);
+  }, [error, t, addNotification]);
 
   const handleVisitTypeChange = async (
     selectedItem: { name: string; uuid: string } | null,
