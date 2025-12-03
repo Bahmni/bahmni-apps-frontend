@@ -169,6 +169,9 @@ export {
   type PatientSearchField,
   type SearchActionConfig,
   type ControlConfig,
+  type AppExtensionConfig,
+  type AppExtension,
+  type ExtensionPoint,
 } from './configService';
 
 export { getCurrentUser, getUserLoginLocation, type User } from './userService';

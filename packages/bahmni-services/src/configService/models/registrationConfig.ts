@@ -88,9 +88,32 @@ export interface FieldValidationConfig {
   [fieldName: string]: FieldValidationRule;
 }
 
+export interface AppExtensionConfig {
+  id: string;
+  extensionPointId: string;
+  type: 'link';
+  translationKey: string;
+  url: string;
+  shortcutKey?: string;
+  icon?: string;
+  order?: number;
+  requiredPrivilege?: string;
+}
+
+export interface AppExtension {
+  [key: string]: AppExtensionConfig;
+}
+
 export interface RegistrationConfig {
   patientSearch: PatientSearchConfig;
   defaultVisitType?: string;
   patientInformation?: PatientInformationConfig;
   fieldValidation?: FieldValidationConfig;
+  extensionPoints?: ExtensionPoint[];
+  appExtensions?: AppExtension;
+}
+
+export interface ExtensionPoint {
+  id: string;
+  description?: string;
 }

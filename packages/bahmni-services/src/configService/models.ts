@@ -14,4 +14,7 @@ export {
   type PatientSearchField,
   type PatientInformationConfig,
   type SearchActionConfig,
+  type AppExtensionConfig,
+  type AppExtension,
+  type ExtensionPoint,
 } from './models/registrationConfig';
