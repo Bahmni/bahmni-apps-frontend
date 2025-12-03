@@ -6,16 +6,12 @@ import {
 } from '@bahmni/services';
 import {
   useCallback,
-  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
   useState,
 } from 'react';
-import type {
-  AddressData,
-  AddressHierarchyItem,
-} from '../../../hooks/useAddressFields';
+import type { AddressHierarchyItem } from '../../../hooks/useAddressFields';
 import { useAddressFieldsWithConfig } from '../../../hooks/useAddressFieldsWithConfig';
 import { useAddressSuggestions } from '../../../hooks/useAddressSuggestions';
 import { AddressAutocompleteField } from './AddressAutocompleteField';
@@ -27,11 +23,10 @@ export type AddressInfoRef = {
 };
 
 interface AddressInfoProps {
-  initialData?: AddressData;
   ref?: React.Ref<AddressInfoRef>;
 }
 
-export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
+export const AddressInfo = ({ ref }: AddressInfoProps) => {
   const { t } = useTranslation();
 
   const {
@@ -44,7 +39,7 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
     selectedMetadata,
     isLoadingLevels,
     getTranslationKey,
-  } = useAddressFieldsWithConfig(initialData);
+  } = useAddressFieldsWithConfig();
 
   const [addressErrors, setAddressErrors] = useState<Record<string, string>>(
     {},
@@ -82,26 +77,6 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
     levelsWithStrictEntry,
     selectedMetadata,
   );
-
-  useEffect(() => {
-    if (initialData && autocompleteFields.length > 0) {
-      const initialSelectedItems: Record<string, AddressHierarchyEntry | null> =
-        {};
-
-      autocompleteFields.forEach((fieldName) => {
-        const fieldValue = initialData[fieldName];
-        if (fieldValue) {
-          initialSelectedItems[fieldName] = {
-            name: fieldValue,
-            uuid: '',
-            userGeneratedId: fieldValue,
-          };
-        }
-      });
-
-      setSelectedItems(initialSelectedItems);
-    }
-  }, [initialData, autocompleteFields, setSelectedItems]);
 
   const handleAddressInputChange = useCallback(
     (field: string, value: string) => {
@@ -240,7 +215,9 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
     const result: PatientAddress = {};
 
     Object.keys(address).forEach((key) => {
-      result[key as keyof PatientAddress] = address[key] ?? '';
+      if (address[key]) {
+        result[key as keyof PatientAddress] = address[key]!;
+      }
     });
 
     return result;

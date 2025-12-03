@@ -1,12 +1,6 @@
 import { TextInput } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
-import {
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useState,
-  useMemo,
-} from 'react';
+import { useCallback, useImperativeHandle, useState, useMemo } from 'react';
 
 import { usePersonAttributeFields } from '../../../hooks/usePersonAttributeFields';
 import { useRegistrationConfig } from '../../../hooks/useRegistrationConfig';
@@ -65,14 +59,6 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
   const [formData, setFormData] = useState<ContactData>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    if (initialData) {
-      setFormData({
-        phoneNumber: initialData.phoneNumber ?? '',
-        altPhoneNumber: initialData.altPhoneNumber ?? '',
-      });
-    }
-  }, [initialData]);
   const handlePhoneChange = useCallback(
     (fieldName: string, value: string) => {
       if (isNumericPhoneValue(value)) {

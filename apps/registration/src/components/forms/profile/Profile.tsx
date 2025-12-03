@@ -13,7 +13,6 @@ import {
   PatientIdentifier,
 } from '@bahmni/services';
 import { useState, useImperativeHandle, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
 import { useRegistrationConfig } from '../../../hooks/useRegistrationConfig';
 import type { BasicInfoData } from '../../../models/patient';
 import type {
@@ -22,7 +21,7 @@ import type {
   AgeErrors,
   DateErrors,
 } from '../../../models/validation';
-import styles from '../../../pages/PatientRegister/styles/index.module.scss';
+import styles from '../../../pages/createPatientPage/styles/index.module.scss';
 import {
   useGenderData,
   useIdentifierData,
@@ -45,7 +44,6 @@ interface ProfileProps {
   initialData?: BasicInfoData;
   initialDobEstimated?: boolean;
   patientIdentifier?: string | null;
-  initialPhoto?: string | null | undefined;
   ref?: React.Ref<ProfileRef>;
 }
 
@@ -53,10 +51,10 @@ export const Profile = ({
   initialData,
   initialDobEstimated = false,
   patientIdentifier,
-  initialPhoto,
   ref,
 }: ProfileProps) => {
   const { t } = useTranslation();
+
   // Use utility hooks for identifier and gender data
   const { identifierPrefixes, primaryIdentifierType, identifierSources } =
     useIdentifierData();
@@ -65,9 +63,7 @@ export const Profile = ({
   // Get registration config for patient information settings
   const { registrationConfig } = useRegistrationConfig();
   const patientInfoConfig = registrationConfig?.patientInformation;
-  const { patientUuid: patientUuidFromUrl } = useParams<{
-    patientUuid: string;
-  }>();
+
   const getRequiredLabel = (labelKey: string, isRequired: boolean) => {
     return (
       <>
@@ -79,47 +75,22 @@ export const Profile = ({
 
   // Component owns ALL its state
   const [formData, setFormData] = useState<BasicInfoData>({
-    patientIdFormat: '',
-    entryType: false,
-    firstName: '',
-    middleName: '',
-    lastName: '',
-    gender: '',
-    ageYears: '',
-    ageMonths: '',
-    ageDays: '',
-    dateOfBirth: '',
-    birthTime: '',
-    nameUuid: '',
+    patientIdFormat:
+      (initialData?.patientIdFormat ?? identifierPrefixes[0]) || '',
+    entryType: initialData?.entryType ?? false,
+    firstName: initialData?.firstName ?? '',
+    middleName: initialData?.middleName ?? '',
+    lastName: initialData?.lastName ?? '',
+    gender: initialData?.gender ?? '',
+    ageYears: initialData?.ageYears ?? '',
+    ageMonths: initialData?.ageMonths ?? '',
+    ageDays: initialData?.ageDays ?? '',
+    dateOfBirth: initialData?.dateOfBirth ?? '',
+    birthTime: initialData?.birthTime ?? '',
   });
-  const [dobEstimated, setDobEstimated] = useState(false);
+
+  const [dobEstimated, setDobEstimated] = useState(initialDobEstimated);
   const [patientImage, setPatientImage] = useState<string>('');
-
-  useEffect(() => {
-    if (initialData) {
-      setFormData({
-        patientIdFormat:
-          initialData.patientIdFormat || identifierPrefixes[0] || '',
-        entryType: initialData.entryType ?? false,
-        firstName: initialData.firstName ?? '',
-        middleName: initialData.middleName ?? '',
-        lastName: initialData.lastName ?? '',
-        gender: initialData.gender ?? '',
-        ageYears: initialData.ageYears ?? '',
-        ageMonths: initialData.ageMonths ?? '',
-        ageDays: initialData.ageDays ?? '',
-        dateOfBirth: initialData.dateOfBirth ?? '',
-        birthTime: initialData.birthTime ?? '',
-        nameUuid: initialData.nameUuid ?? '',
-      });
-    }
-  }, [initialData, identifierPrefixes]);
-
-  useEffect(() => {
-    if (initialDobEstimated == true) {
-      setDobEstimated(initialDobEstimated);
-    }
-  }, [initialDobEstimated]);
 
   // Component owns ALL its error states
   const [nameErrors, setNameErrors] = useState<BasicInfoErrors>({
@@ -406,7 +377,6 @@ export const Profile = ({
         ageDays: '',
         dateOfBirth: '',
         birthTime: '',
-        nameUuid: '',
       });
       setDobEstimated(false);
       setPatientImage('');
@@ -437,30 +407,25 @@ export const Profile = ({
         )}
       </span>
       <div className={styles.row}>
-        <PatientPhotoUpload
-          onPhotoConfirm={setPatientImage}
-          initialPhoto={initialPhoto ?? undefined}
-        />
+        <PatientPhotoUpload onPhotoConfirm={setPatientImage} />
 
         <div className={styles.col}>
           <div className={styles.row}>
-            {!patientUuidFromUrl && (
-              <div className={styles.dropdownField}>
-                <Dropdown
-                  id="patient-id-format"
-                  titleText={t('CREATE_PATIENT_PATIENT_ID_FORMAT')}
-                  label={
-                    (formData.patientIdFormat || identifierPrefixes[0]) ??
-                    t('CREATE_PATIENT_SELECT')
-                  }
-                  items={identifierPrefixes}
-                  selectedItem={formData.patientIdFormat}
-                  onChange={({ selectedItem }) =>
-                    handleInputChange('patientIdFormat', selectedItem ?? '')
-                  }
-                />
-              </div>
-            )}
+            <div className={styles.dropdownField}>
+              <Dropdown
+                id="patient-id-format"
+                titleText={t('CREATE_PATIENT_PATIENT_ID_FORMAT')}
+                label={
+                  (formData.patientIdFormat || identifierPrefixes[0]) ??
+                  t('CREATE_PATIENT_SELECT')
+                }
+                items={identifierPrefixes}
+                selectedItem={formData.patientIdFormat}
+                onChange={({ selectedItem }) =>
+                  handleInputChange('patientIdFormat', selectedItem ?? '')
+                }
+              />
+            </div>
             {(patientInfoConfig?.showEnterManually ?? false) && (
               <div className={styles.col}>
                 <CheckboxGroup legendText={t('CREATE_PATIENT_ENTRY_TYPE')}>
