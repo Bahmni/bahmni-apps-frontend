@@ -98,9 +98,11 @@ const emptyVitalFlowSheetData: VitalFlowSheetData = {
 
 describe('VitalFlowSheet Integration Tests', () => {
   const defaultProps = {
-    latestCount: 5,
-    obsConcepts: ['Temperature', 'Blood Pressure', 'Heart Rate'],
-    groupBy: 'obstime',
+    config: {
+      latestCount: 5,
+      obsConcepts: ['Temperature', 'Blood Pressure', 'Heart Rate'],
+      groupBy: 'obstime',
+    },
   };
 
   beforeEach(() => {
@@ -145,9 +147,9 @@ describe('VitalFlowSheet Integration Tests', () => {
 
     expect(mockGetVitalFlowSheetData).toHaveBeenCalledWith(
       'test-patient-uuid',
-      defaultProps.latestCount,
-      defaultProps.obsConcepts,
-      defaultProps.groupBy,
+      defaultProps.config.latestCount,
+      defaultProps.config.obsConcepts,
+      defaultProps.config.groupBy,
     );
 
     // Check that the table shows the expected data
@@ -333,9 +335,9 @@ describe('VitalFlowSheet Integration Tests', () => {
 
     expect(mockGetVitalFlowSheetData).toHaveBeenCalledWith(
       'different-patient-uuid',
-      defaultProps.latestCount,
-      defaultProps.obsConcepts,
-      defaultProps.groupBy,
+      defaultProps.config.latestCount,
+      defaultProps.config.obsConcepts,
+      defaultProps.config.groupBy,
     );
   });
 
@@ -350,9 +352,11 @@ describe('VitalFlowSheet Integration Tests', () => {
 
     // Change parameters
     const newProps = {
-      latestCount: 10,
-      obsConcepts: ['Temperature', 'Heart Rate'],
-      groupBy: 'encounter',
+      config: {
+        latestCount: 10,
+        obsConcepts: ['Temperature', 'Heart Rate'],
+        groupBy: 'encounter',
+      },
     };
 
     const newData: VitalFlowSheetData = {
@@ -389,9 +393,9 @@ describe('VitalFlowSheet Integration Tests', () => {
     await waitFor(() => {
       expect(mockGetVitalFlowSheetData).toHaveBeenCalledWith(
         'test-patient-uuid',
-        newProps.latestCount,
-        newProps.obsConcepts,
-        newProps.groupBy,
+        newProps.config.latestCount,
+        newProps.config.obsConcepts,
+        newProps.config.groupBy,
       );
     });
 
