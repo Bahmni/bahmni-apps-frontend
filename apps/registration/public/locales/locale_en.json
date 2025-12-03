@@ -114,14 +114,6 @@
   "REGISTRATION_PATIENT_SEARCH_TABLE_TITLE": "Patient results ({{count}})",
   "SEARCH_BY_CUSTOM_ATTRIBUTE": "Search by {{attribute}}",
   "START_VISIT_TYPE": "Start {{visitType}} visit",
-  "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "User {{username}} accessed patient search screen in registration app",
-  "REGISTRATION_ADDRESS_COUNTRY": "Country",
-  "REGISTRATION_ADDRESS_STATE": "State",
-  "REGISTRATION_ADDRESS_DISTRICT": "District",
-  "REGISTRATION_ADDRESS_CITY_VILLAGE": "City/Village",
-  "REGISTRATION_ADDRESS_POSTAL_CODE": "Pincode",
-  "REGISTRATION_ADDRESS_LOCALITY": "Locality/Sector",
-  "REGISTRATION_ADDRESS_HOUSE_FLAT_NO": "House number/ Flat number",
   "REGISTRATION_RELATIONSHIP_TYPE": "Relationship",
   "REGISTRATION_PATIENT_NAME_OR_ID": "Patient name or ID",
   "REGISTRATION_PATIENT_ID": "Patient Id",
@@ -137,7 +129,6 @@
   "REGISTRATION_RELATIONSHIP_TYPE_REQUIRED": "Relationship type is required",
   "REGISTRATION_RELATIONSHIP_ALREADY_EXISTS": "Given relationship already exists",
   "REGISTRATION_PATIENT_SELECTION_REQUIRED": "Please select a patient from the autocomplete list",
-  "ADDITIONAL_IDENTIFIERS_HEADER_TITLE": "Additional Identifiers",
   "NOTIFICATION_SUCCESS_TITLE": "Success",
   "NOTIFICATION_ERROR_TITLE": "Error",
   "NOTIFICATION_PATIENT_SAVED_SUCCESSFULLY": "Patient saved successfully",
@@ -148,7 +139,7 @@
   "NOTIFICATION_UNABLE_TO_GET_PATIENT_DATA": "Unable to get patient data",
   "NOTIFICATION_UNABLE_TO_GET_ADDRESS_DATA": "Unable to get patient address data",
   "NOTIFICATION_UNABLE_TO_GET_CONTACT_DATA": "Unable to get patient contact data",
-  "NOTIFICATION_UNABLE_TO_GET_ADDITIONAL_DATA": "Unable to get patient additional data"
+  "NOTIFICATION_UNABLE_TO_GET_ADDITIONAL_DATA": "Unable to get patient additional data",
   "SUCCESS": "Success",
   "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "User {{username}} accessed patient search screen in registration app"
 }
