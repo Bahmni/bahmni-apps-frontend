@@ -128,6 +128,7 @@ const CreatePatient = () => {
         additionalIdentifiersRef: patientAdditionalIdentifiersRef,
       },
       addNotification,
+      t,
       {
         shouldValidateAdditionalIdentifiers: shouldShowAdditionalIdentifiers,
       },
@@ -147,6 +148,7 @@ const CreatePatient = () => {
         additionalIdentifiersRef: patientAdditionalIdentifiersRef,
       },
       addNotification,
+      t,
     );
 
     if (!formData) {

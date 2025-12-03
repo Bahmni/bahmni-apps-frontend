@@ -12,6 +12,7 @@ import {
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { convertTimeToISODateTime } from '../components/forms/profile/dateAgeUtils';
 import { BasicInfoData, ContactData, AdditionalData } from '../models/patient';
@@ -32,6 +33,7 @@ export const useCreatePatient = () => {
   const navigate = useNavigate();
   const { personAttributes } = usePersonAttributes();
   const { addNotification } = useNotification();
+  const { t } = useTranslation();
 
   const mutation = useMutation({
     mutationFn: (formData: CreatePatientFormData) => {
@@ -40,8 +42,8 @@ export const useCreatePatient = () => {
     },
     onSuccess: (response) => {
       addNotification({
-        title: 'Success',
-        message: 'Patient saved successfully',
+        title: t('NOTIFICATION_SUCCESS_TITLE'),
+        message: t('NOTIFICATION_PATIENT_SAVED_SUCCESSFULLY'),
         type: 'success',
         timeout: 5000,
       });
@@ -68,8 +70,8 @@ export const useCreatePatient = () => {
     },
     onError: () => {
       addNotification({
-        title: 'Error',
-        message: 'Failed to save patient',
+        title: t('NOTIFICATION_ERROR_TITLE'),
+        message: t('NOTIFICATION_PATIENT_SAVE_FAILED'),
         type: 'error',
         timeout: 5000,
       });

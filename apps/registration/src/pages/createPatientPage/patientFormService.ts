@@ -21,6 +21,7 @@ export interface ValidationOptions {
 export function validateAllSections(
   refs: PatientFormRefs,
   addNotification: (notification: Omit<Notification, 'id'>) => void,
+  t: (key: string) => string,
   options?: ValidationOptions,
 ): boolean {
   const {
@@ -48,8 +49,8 @@ export function validateAllSections(
 
   if (!allValid) {
     addNotification({
-      title: 'Error',
-      message: 'Please fix validation errors',
+      title: t('NOTIFICATION_ERROR_TITLE'),
+      message: t('NOTIFICATION_VALIDATION_ERRORS'),
       type: 'error',
       timeout: 5000,
     });
@@ -63,11 +64,13 @@ export function validateAllSections(
  *
  * @param refs - References to all form sections
  * @param addNotification - Function to show notifications
+ * @param t - Translation function
  * @returns Collected form data or null if any section fails to return data
  */
 export function collectFormData(
   refs: PatientFormRefs,
   addNotification: (notification: Omit<Notification, 'id'>) => void,
+  t: (key: string) => string,
 ) {
   const {
     profileRef,
@@ -80,8 +83,8 @@ export function collectFormData(
   const profileData = profileRef.current?.getData();
   if (!profileData) {
     addNotification({
-      title: 'Error',
-      message: 'Unable to get patient data',
+      title: t('NOTIFICATION_ERROR_TITLE'),
+      message: t('NOTIFICATION_UNABLE_TO_GET_PATIENT_DATA'),
       type: 'error',
       timeout: 5000,
     });
@@ -91,8 +94,8 @@ export function collectFormData(
   const addressData = addressRef.current?.getData();
   if (!addressData) {
     addNotification({
-      title: 'Error',
-      message: 'Unable to get patient address data',
+      title: t('NOTIFICATION_ERROR_TITLE'),
+      message: t('NOTIFICATION_UNABLE_TO_GET_ADDRESS_DATA'),
       type: 'error',
       timeout: 5000,
     });
@@ -102,8 +105,8 @@ export function collectFormData(
   const contactData = contactRef.current?.getData();
   if (!contactData) {
     addNotification({
-      title: 'Error',
-      message: 'Unable to get patient contact data',
+      title: t('NOTIFICATION_ERROR_TITLE'),
+      message: t('NOTIFICATION_UNABLE_TO_GET_CONTACT_DATA'),
       type: 'error',
       timeout: 5000,
     });
@@ -113,8 +116,8 @@ export function collectFormData(
   const additionalData = additionalRef.current?.getData();
   if (!additionalData) {
     addNotification({
-      title: 'Error',
-      message: 'Unable to get patient additional data',
+      title: t('NOTIFICATION_ERROR_TITLE'),
+      message: t('NOTIFICATION_UNABLE_TO_GET_ADDITIONAL_DATA'),
       type: 'error',
       timeout: 5000,
     });
