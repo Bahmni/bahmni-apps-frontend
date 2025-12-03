@@ -1,3 +1,4 @@
+@use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/theme" as *;
@@ -7,8 +8,7 @@
   margin-top: $spacing-08;
   width: calc(100% - ($spacing-13 + $spacing-05));
   max-width: $spacing-13 * 9 + $spacing-05 + $spacing-02;
-  background: var(--cds-background);
-  box-shadow: 0 $spacing-01 $spacing-03 var(--cds-shadow);
+  box-shadow: 0 $spacing-01 $spacing-03 $shadow;
   display: flex;
   flex-direction: column;
   overflow: visible;
@@ -34,21 +34,7 @@
   margin-bottom: -250px;
   -webkit-overflow-scrolling: touch;
 
-  :global(.cds--list-box),
-  :global(.cds--combo-box),
-  :global(.cds--date-picker__input),
-  :global(.cds--text-input) {
-    background-color: var(--cds-field) !important;
-  }
-
-  :global(.cds--list-box__menu-item) {
-    background-color: var(--cds-layer) !important;
-  }
-
-  :global(.cds--list-box__menu-item:hover) {
-    background-color: var(--cds-layer-hover) !important;
-  }
-
+  
   :global(.cds--list-box__menu),
   :global(.cds--date-picker__calendar) {
     z-index: 9999 !important;
@@ -59,21 +45,13 @@
     overflow: visible !important;
   }
 
-
-  :global(.cds--data-table) {
-    min-width: 100%;
-    width: max-content;
-  }
-
-
+  
   :global(.cds--combo-box) {
-    min-width: $spacing-13 + $spacing-06;
-    width: 100%;
+    width: $spacing-13 + $spacing-06;
   }
 
   :global(.cds--dropdown) {
-    min-width: $spacing-13 + $spacing-04;
-    width: 100%;
+    width: $spacing-13 + $spacing-04;
   }
 
   :global(.cds--list-box__field) {
@@ -90,11 +68,11 @@
   white-space: normal;
   text-align: center;
   word-break: break-word;
-  border-radius: $spacing-01 !important;
-  padding-right: $spacing-05 !important;
+  border-radius: $spacing-01;
+  padding-right: $spacing-05;
 }
 
 .requiredAsterisk {
-  color: #da1e28 !important;
+  color: $support-error !important;
   margin-left: $spacing-01;
 }
