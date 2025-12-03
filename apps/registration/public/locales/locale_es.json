@@ -114,14 +114,6 @@
   "REGISTRATION_PATIENT_SEARCH_TABLE_TITLE": "Resultados de pacientes ({{count}})",
   "SEARCH_BY_CUSTOM_ATTRIBUTE": "Buscar por {{attribute}}",
   "START_VISIT_TYPE": "Empezar visita {{visitType}}",
-  "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "El usuario {{username}} accedió a la pantalla de búsqueda de pacientes en la aplicación de registro",
-  "REGISTRATION_ADDRESS_COUNTRY": "País",
-  "REGISTRATION_ADDRESS_STATE": "Estado",
-  "REGISTRATION_ADDRESS_DISTRICT": "Distrito",
-  "REGISTRATION_ADDRESS_CITY_VILLAGE": "Ciudad/Pueblo",
-  "REGISTRATION_ADDRESS_POSTAL_CODE": "Código postal",
-  "REGISTRATION_ADDRESS_LOCALITY": "Localidad/Sector",
-  "REGISTRATION_ADDRESS_HOUSE_FLAT_NO": "Número de casa/Número de apartamento",
   "REGISTRATION_RELATIONSHIP_TYPE": "Relación",
   "REGISTRATION_PATIENT_NAME_OR_ID": "Nombre o ID del paciente",
   "REGISTRATION_PATIENT_ID": "ID del paciente",
@@ -137,7 +129,6 @@
   "REGISTRATION_RELATIONSHIP_TYPE_REQUIRED": "El tipo de relación es obligatorio",
   "REGISTRATION_RELATIONSHIP_ALREADY_EXISTS": "La relación dada ya existe",
   "REGISTRATION_PATIENT_SELECTION_REQUIRED": "Por favor seleccione un paciente de la lista de autocompletar",
-  "ADDITIONAL_IDENTIFIERS_HEADER_TITLE": "Identificadores adicionales",
   "NOTIFICATION_SUCCESS_TITLE": "Éxito",
   "NOTIFICATION_ERROR_TITLE": "Error",
   "NOTIFICATION_PATIENT_SAVED_SUCCESSFULLY": "Paciente guardado exitosamente",
@@ -148,7 +139,7 @@
   "NOTIFICATION_UNABLE_TO_GET_PATIENT_DATA": "No se pueden obtener los datos del paciente",
   "NOTIFICATION_UNABLE_TO_GET_ADDRESS_DATA": "No se pueden obtener los datos de dirección del paciente",
   "NOTIFICATION_UNABLE_TO_GET_CONTACT_DATA": "No se pueden obtener los datos de contacto del paciente",
-  "NOTIFICATION_UNABLE_TO_GET_ADDITIONAL_DATA": "No se pueden obtener los datos adicionales del paciente"
+  "NOTIFICATION_UNABLE_TO_GET_ADDITIONAL_DATA": "No se pueden obtener los datos adicionales del paciente",
   "SUCCESS": "Éxito",
   "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "El usuario {{username}} accedió a la pantalla de búsqueda de pacientes en la aplicación de registro"
 }

@@ -13,7 +13,6 @@ import {
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { useMutation } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import type { RelationshipData } from '../components/forms/patientRelationships/PatientRelationships';
 import { convertTimeToISODateTime } from '../components/forms/profile/dateAgeUtils';
@@ -38,8 +37,6 @@ export const useCreatePatient = () => {
   const { addNotification } = useNotification();
   const navigate = useNavigate();
   const { personAttributes } = usePersonAttributes();
-  const { addNotification } = useNotification();
-  const { t } = useTranslation();
 
   const mutation = useMutation({
     mutationFn: (formData: CreatePatientFormData) => {

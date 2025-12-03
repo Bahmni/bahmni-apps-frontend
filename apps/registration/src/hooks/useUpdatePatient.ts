@@ -12,9 +12,7 @@ import {
   useTranslation,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
-import { useNotification } from '@bahmni/widgets';
 import { useMutation } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import { convertTimeToISODateTime } from '../components/forms/profile/dateAgeUtils';
 import { BasicInfoData, ContactData, AdditionalData } from '../models/patient';
 import { usePersonAttributes } from './usePersonAttributes';
@@ -35,8 +33,6 @@ export const useUpdatePatient = () => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const { personAttributes } = usePersonAttributes();
-  const { addNotification } = useNotification();
-  const { t } = useTranslation();
 
   const mutation = useMutation({
     mutationFn: (formData: UpdatePatientFormData) => {
