@@ -11,10 +11,7 @@ const mockGetUserLoginLocation = jest.fn();
 const mockGetActiveVisitByPatient = jest.fn();
 const mockGetVisitLocationUUID = jest.fn();
 const mockGetRegistrationConfig = jest.fn();
-
-const mockNotificationService = {
-  showError: jest.fn(),
-};
+const mockAddNotification = jest.fn();
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -26,9 +23,6 @@ jest.mock('@bahmni/services', () => ({
   getVisitLocationUUID: (loginLocation: string) =>
     mockGetVisitLocationUUID(loginLocation),
   getRegistrationConfig: () => mockGetRegistrationConfig(),
-  get notificationService() {
-    return mockNotificationService;
-  },
   useTranslation: () => ({
     t: (key: string, params?: Record<string, any>) => {
       if (key === 'START_VISIT_TYPE' && params?.visitType) {
@@ -38,6 +32,10 @@ jest.mock('@bahmni/services', () => ({
     },
   }),
   dispatchAuditEvent: jest.fn(),
+}));
+
+jest.mock('@bahmni/widgets', () => ({
+  useNotification: jest.fn(),
 }));
 
 const mockVisitTypes = {
@@ -68,6 +66,11 @@ describe('VisitTypeSelector', () => {
     mockOnVisitSave = jest.fn();
     jest.clearAllMocks();
     queryClient.clear();
+
+    const { useNotification } = jest.requireMock('@bahmni/widgets');
+    useNotification.mockReturnValue({
+      addNotification: mockAddNotification,
+    });
 
     mockGetUserLoginLocation.mockReturnValue(mockLoginLocation);
     mockGetVisitTypes.mockResolvedValue(mockVisitTypes);
@@ -166,10 +169,12 @@ describe('VisitTypeSelector', () => {
 
     await waitFor(() => {
       expect(mockGetVisitTypes).toHaveBeenCalled();
-      expect(mockNotificationService.showError).toHaveBeenCalledWith(
-        'ERROR_DEFAULT_TITLE',
-        error.message,
-      );
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'ERROR_DEFAULT_TITLE',
+        message: error.message,
+        type: 'error',
+        timeout: 5000,
+      });
     });
   });
 
@@ -192,10 +197,12 @@ describe('VisitTypeSelector', () => {
 
     await waitFor(() => {
       expect(mockOnVisitSave).toHaveBeenCalled();
-      expect(mockNotificationService.showError).toHaveBeenCalledWith(
-        'ERROR_DEFAULT_TITLE',
-        error.message,
-      );
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'ERROR_DEFAULT_TITLE',
+        message: error.message,
+        type: 'error',
+        timeout: 5000,
+      });
     });
   });
 
