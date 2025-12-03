@@ -20,13 +20,11 @@ export const EocProvider: React.FC<EncounterDataProviderProps> = ({
     queryKey: ['encounters-for-eoc', episodeIds],
     queryFn: () => getEncountersForEOC(episodeIds),
     enabled: episodeIds.length > 0,
-    staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000,
   });
 
   const value = useMemo(
     () => ({
-      encountersData: encountersData ?? null,
+      eoc: encountersData ?? null,
       isLoadingEncounters,
       error: error as Error | null,
     }),
