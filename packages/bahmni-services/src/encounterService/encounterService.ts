@@ -1,6 +1,7 @@
 import { Encounter, Bundle } from 'fhir/r4';
 import { get } from '../api';
 import { PATIENT_VISITS_URL, EOC_ENCOUNTERS_URL } from './constants';
+import { EocReferecneType } from './models';
 
 /**
  * Fetches visits for a given patient UUID from the FHIR R4 endpoint
@@ -46,7 +47,7 @@ export async function getActiveVisit(
  */
 export async function getEncountersForEOC(
   eocIds: string[] | string,
-): Promise<{ visitIds: string[]; encounterIds: string[] }> {
+): Promise<EocReferecneType> {
   const ids = Array.isArray(eocIds) ? eocIds.join(',') : eocIds;
   const bundle = await get<Bundle>(EOC_ENCOUNTERS_URL(ids));
 

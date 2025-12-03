@@ -4,3 +4,4 @@ export {
   getPatientVisits,
   getVisits,
 } from './encounterService';
+export type { EocReferecneType } from './models';
