@@ -3,9 +3,11 @@ import type { PatientFormRefs } from '../patientFormService';
 
 describe('patientFormService', () => {
   let mockAddNotification: jest.Mock;
+  let mockT: jest.Mock;
 
   beforeEach(() => {
     mockAddNotification = jest.fn();
+    mockT = jest.fn((key: string) => key);
     jest.clearAllMocks();
   });
 
@@ -43,7 +45,7 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = validateAllSections(mockRefs, mockAddNotification);
+      const result = validateAllSections(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBe(true);
       expect(mockRefs.profileRef.current?.validate).toHaveBeenCalled();
@@ -86,12 +88,12 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = validateAllSections(mockRefs, mockAddNotification);
+      const result = validateAllSections(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBe(false);
       expect(mockAddNotification).toHaveBeenCalledWith({
-        title: 'Error',
-        message: 'Please fix validation errors',
+        title: 'NOTIFICATION_ERROR_TITLE',
+        message: 'NOTIFICATION_VALIDATION_ERRORS',
         type: 'error',
         timeout: 5000,
       });
@@ -130,12 +132,12 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = validateAllSections(mockRefs, mockAddNotification);
+      const result = validateAllSections(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBe(false);
       expect(mockAddNotification).toHaveBeenCalledWith({
-        title: 'Error',
-        message: 'Please fix validation errors',
+        title: 'NOTIFICATION_ERROR_TITLE',
+        message: 'NOTIFICATION_VALIDATION_ERRORS',
         type: 'error',
         timeout: 5000,
       });
@@ -174,12 +176,12 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = validateAllSections(mockRefs, mockAddNotification);
+      const result = validateAllSections(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBe(false);
       expect(mockAddNotification).toHaveBeenCalledWith({
-        title: 'Error',
-        message: 'Please fix validation errors',
+        title: 'NOTIFICATION_ERROR_TITLE',
+        message: 'NOTIFICATION_VALIDATION_ERRORS',
         type: 'error',
         timeout: 5000,
       });
@@ -218,12 +220,12 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = validateAllSections(mockRefs, mockAddNotification);
+      const result = validateAllSections(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBe(false);
       expect(mockAddNotification).toHaveBeenCalledWith({
-        title: 'Error',
-        message: 'Please fix validation errors',
+        title: 'NOTIFICATION_ERROR_TITLE',
+        message: 'NOTIFICATION_VALIDATION_ERRORS',
         type: 'error',
         timeout: 5000,
       });
@@ -262,7 +264,7 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = validateAllSections(mockRefs, mockAddNotification);
+      const result = validateAllSections(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBe(false);
       expect(mockAddNotification).toHaveBeenCalledTimes(1);
@@ -296,12 +298,12 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = validateAllSections(mockRefs, mockAddNotification);
+      const result = validateAllSections(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBe(false);
       expect(mockAddNotification).toHaveBeenCalledWith({
-        title: 'Error',
-        message: 'Please fix validation errors',
+        title: 'NOTIFICATION_ERROR_TITLE',
+        message: 'NOTIFICATION_VALIDATION_ERRORS',
         type: 'error',
         timeout: 5000,
       });
@@ -340,7 +342,7 @@ describe('patientFormService', () => {
         },
       };
 
-      validateAllSections(mockRefs, mockAddNotification);
+      validateAllSections(mockRefs, mockAddNotification, mockT);
 
       // Verify all validate methods were called even though first one failed
       expect(mockRefs.profileRef.current?.validate).toHaveBeenCalled();
@@ -386,7 +388,7 @@ describe('patientFormService', () => {
       };
 
       // Pass shouldValidateAdditionalIdentifiers: false
-      const result = validateAllSections(mockRefs, mockAddNotification, {
+      const result = validateAllSections(mockRefs, mockAddNotification, mockT, {
         shouldValidateAdditionalIdentifiers: false,
       });
 
@@ -435,7 +437,7 @@ describe('patientFormService', () => {
       };
 
       // Pass shouldValidateAdditionalIdentifiers: true
-      const result = validateAllSections(mockRefs, mockAddNotification, {
+      const result = validateAllSections(mockRefs, mockAddNotification, mockT, {
         shouldValidateAdditionalIdentifiers: true,
       });
 
@@ -445,8 +447,8 @@ describe('patientFormService', () => {
         mockRefs.additionalIdentifiersRef.current?.validate,
       ).toHaveBeenCalled();
       expect(mockAddNotification).toHaveBeenCalledWith({
-        title: 'Error',
-        message: 'Please fix validation errors',
+        title: 'NOTIFICATION_ERROR_TITLE',
+        message: 'NOTIFICATION_VALIDATION_ERRORS',
         type: 'error',
         timeout: 5000,
       });
@@ -514,7 +516,7 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = collectFormData(mockRefs, mockAddNotification);
+      const result = collectFormData(mockRefs, mockAddNotification, mockT);
 
       expect(result).toEqual({
         profile: mockProfileData,
@@ -559,12 +561,12 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = collectFormData(mockRefs, mockAddNotification);
+      const result = collectFormData(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBeNull();
       expect(mockAddNotification).toHaveBeenCalledWith({
-        title: 'Error',
-        message: 'Unable to get patient data',
+        title: 'NOTIFICATION_ERROR_TITLE',
+        message: 'NOTIFICATION_UNABLE_TO_GET_PATIENT_DATA',
         type: 'error',
         timeout: 5000,
       });
@@ -607,12 +609,12 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = collectFormData(mockRefs, mockAddNotification);
+      const result = collectFormData(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBeNull();
       expect(mockAddNotification).toHaveBeenCalledWith({
-        title: 'Error',
-        message: 'Unable to get patient address data',
+        title: 'NOTIFICATION_ERROR_TITLE',
+        message: 'NOTIFICATION_UNABLE_TO_GET_ADDRESS_DATA',
         type: 'error',
         timeout: 5000,
       });
@@ -655,12 +657,12 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = collectFormData(mockRefs, mockAddNotification);
+      const result = collectFormData(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBeNull();
       expect(mockAddNotification).toHaveBeenCalledWith({
-        title: 'Error',
-        message: 'Unable to get patient contact data',
+        title: 'NOTIFICATION_ERROR_TITLE',
+        message: 'NOTIFICATION_UNABLE_TO_GET_CONTACT_DATA',
         type: 'error',
         timeout: 5000,
       });
@@ -703,12 +705,12 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = collectFormData(mockRefs, mockAddNotification);
+      const result = collectFormData(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBeNull();
       expect(mockAddNotification).toHaveBeenCalledWith({
-        title: 'Error',
-        message: 'Unable to get patient additional data',
+        title: 'NOTIFICATION_ERROR_TITLE',
+        message: 'NOTIFICATION_UNABLE_TO_GET_ADDITIONAL_DATA',
         type: 'error',
         timeout: 5000,
       });
@@ -742,12 +744,12 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = collectFormData(mockRefs, mockAddNotification);
+      const result = collectFormData(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBeNull();
       expect(mockAddNotification).toHaveBeenCalledWith({
-        title: 'Error',
-        message: 'Unable to get patient data',
+        title: 'NOTIFICATION_ERROR_TITLE',
+        message: 'NOTIFICATION_UNABLE_TO_GET_PATIENT_DATA',
         type: 'error',
         timeout: 5000,
       });
@@ -790,7 +792,7 @@ describe('patientFormService', () => {
         },
       };
 
-      collectFormData(mockRefs, mockAddNotification);
+      collectFormData(mockRefs, mockAddNotification, mockT);
 
       expect(mockRefs.profileRef.current?.getData).toHaveBeenCalled();
       expect(mockRefs.addressRef.current?.getData).toHaveBeenCalled();
@@ -832,12 +834,12 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = collectFormData(mockRefs, mockAddNotification);
+      const result = collectFormData(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBeNull();
       expect(mockAddNotification).toHaveBeenCalledWith({
-        title: 'Error',
-        message: 'Unable to get patient data',
+        title: 'NOTIFICATION_ERROR_TITLE',
+        message: 'NOTIFICATION_UNABLE_TO_GET_PATIENT_DATA',
         type: 'error',
         timeout: 5000,
       });

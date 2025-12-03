@@ -292,6 +292,7 @@ describe('CreatePatient', () => {
             additionalIdentifiersRef: expect.any(Object),
           }),
           expect.any(Function),
+          expect.any(Function), // translation function
           expect.objectContaining({
             shouldValidateAdditionalIdentifiers: expect.any(Boolean),
           }),
@@ -344,6 +345,7 @@ describe('CreatePatient', () => {
             additionalIdentifiersRef: expect.any(Object),
           }),
           expect.any(Function),
+          expect.any(Function), // translation function
         );
       });
     });
