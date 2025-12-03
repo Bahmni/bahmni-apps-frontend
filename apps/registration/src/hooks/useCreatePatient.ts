@@ -9,6 +9,7 @@ import {
   AuditEventType,
   dispatchAuditEvent,
   PersonAttributeType,
+  useTranslation,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { useMutation } from '@tanstack/react-query';
@@ -33,6 +34,8 @@ interface CreatePatientFormData {
 }
 
 export const useCreatePatient = () => {
+  const { t } = useTranslation();
+  const { addNotification } = useNotification();
   const navigate = useNavigate();
   const { personAttributes } = usePersonAttributes();
   const { addNotification } = useNotification();
@@ -71,12 +74,11 @@ export const useCreatePatient = () => {
         navigate('/registration/search');
       }
     },
-    onError: () => {
+    onError: (error) => {
       addNotification({
-        title: t('NOTIFICATION_ERROR_TITLE'),
-        message: t('NOTIFICATION_PATIENT_SAVE_FAILED'),
         type: 'error',
-        timeout: 5000,
+        title: t('ERROR_SAVING_PATIENT'),
+        message: error instanceof Error ? error.message : String(error),
       });
     },
   });

@@ -75,9 +75,11 @@ describe('useCreatePatient', () => {
 
     const Wrapper = ({ children }: { children: ReactNode }) => (
       <QueryClientProvider client={queryClient}>
-        <PersonAttributesProvider initialAttributes={mockPersonAttributes}>
-          {children}
-        </PersonAttributesProvider>
+        <NotificationProvider>
+          <PersonAttributesProvider initialAttributes={mockPersonAttributes}>
+            {children}
+          </PersonAttributesProvider>
+        </NotificationProvider>
       </QueryClientProvider>
     );
 

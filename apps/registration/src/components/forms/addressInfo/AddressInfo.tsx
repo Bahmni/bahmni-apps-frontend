@@ -240,9 +240,7 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
     const result: PatientAddress = {};
 
     Object.keys(address).forEach((key) => {
-      if (address[key]) {
-        result[key as keyof PatientAddress] = address[key]!;
-      }
+      result[key as keyof PatientAddress] = address[key] ?? '';
     });
 
     return result;

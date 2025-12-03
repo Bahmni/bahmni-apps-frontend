@@ -12,15 +12,15 @@ import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
-  getPatientImageAsDataUrl,
   PatientProfileResponse,
-  getPatientProfile,
-  formatDate,
-  REGISTRATION_DATE_FORMAT,
 } from '@bahmni/services';
+<<<<<<< HEAD
 import { useNotification } from '@bahmni/widgets';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRef, useState, useEffect, useMemo } from 'react';
+=======
+import { useRef, useState, useEffect } from 'react';
+>>>>>>> 7597dbb3 (BAH-4243|Fix. Notification Service and address pr comments)
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   AdditionalIdentifiers,
@@ -47,15 +47,13 @@ import { BAHMNI_REGISTRATION_SEARCH, getPatientUrl } from '../../constants/app';
 
 import { useAdditionalIdentifiers } from '../../hooks/useAdditionalIdentifiers';
 import { useCreatePatient } from '../../hooks/useCreatePatient';
+<<<<<<< HEAD
 import { useRelationshipValidation } from '../../hooks/useRelationshipValidation';
+=======
+import { usePatientDetails } from '../../hooks/usePatientDetails';
+import { usePatientPhoto } from '../../hooks/usePatientPhoto';
+>>>>>>> 7597dbb3 (BAH-4243|Fix. Notification Service and address pr comments)
 import { useUpdatePatient } from '../../hooks/useUpdatePatient';
-import { useGenderData } from '../../utils/identifierGenderUtils';
-import {
-  convertToBasicInfoData,
-  convertToContactData,
-  convertToAdditionalData,
-  convertToAddressData,
-} from '../../utils/patientDataConverter';
 import { validateAllSections, collectFormData } from './patientFormService';
 import styles from './styles/index.module.scss';
 import { VisitTypeSelector } from './visitTypeSelector';
@@ -63,6 +61,7 @@ import { VisitTypeSelector } from './visitTypeSelector';
 const PatientRegister = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+<<<<<<< HEAD
   const queryClient = useQueryClient();
   const { getGenderDisplay } = useGenderData(t);
   const { addNotification } = useNotification();
@@ -76,6 +75,12 @@ const PatientRegister = () => {
 
   // Determine if we're in edit mode based on URL parameter
   const [isEditMode, setIsEditMode] = useState(!!patientUuidFromUrl);
+=======
+  const { patientUuid: patientUuidFromUrl } = useParams<{
+    patientUuid: string;
+  }>();
+
+>>>>>>> 7597dbb3 (BAH-4243|Fix. Notification Service and address pr comments)
   const [patientUuid, setPatientUuid] = useState<string | null>(
     patientUuidFromUrl ?? null,
   );
@@ -90,70 +95,26 @@ const PatientRegister = () => {
   const patientAdditionalIdentifiersRef =
     useRef<AdditionalIdentifiersRef>(null);
 
-  const { data: patientDetails } = useQuery({
-    queryKey: ['formattedPatient', patientUuidFromUrl],
-    queryFn: () => getPatientProfile(patientUuidFromUrl!),
-    enabled: isEditMode,
-    refetchOnMount: false,
+  const {
+    profileInitialData,
+    contactInitialData,
+    additionalInitialData,
+    addressInitialData,
+    initialDobEstimated,
+    metadata,
+  } = usePatientDetails({
+    patientUuid: patientUuidFromUrl,
   });
 
-  const { data: patientPhoto } = useQuery({
-    queryKey: ['patientPhoto', patientUuidFromUrl],
-    queryFn: () => getPatientImageAsDataUrl(patientUuidFromUrl!),
-    enabled: isEditMode,
+  const { patientPhoto } = usePatientPhoto({
+    patientUuid: patientUuidFromUrl,
   });
-
-  const profileInitialData = useMemo(
-    () => convertToBasicInfoData(patientDetails, getGenderDisplay),
-    [patientDetails, getGenderDisplay],
-  );
-
-  const contactInitialData = useMemo(
-    () => convertToContactData(patientDetails),
-    [patientDetails],
-  );
-
-  const additionalInitialData = useMemo(
-    () => convertToAdditionalData(patientDetails),
-    [patientDetails],
-  );
-
-  const addressInitialData = useMemo(
-    () => convertToAddressData(patientDetails),
-    [patientDetails],
-  );
-
-  const initialDobEstimated = useMemo(
-    () => patientDetails?.patient?.person?.birthdateEstimated ?? false,
-    [patientDetails],
-  );
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const getRegisterDate = (obj: any): void => {
-    const dateCreated = obj?.patient?.auditInfo?.dateCreated;
-    if (!dateCreated) {
-      return;
-    }
-    const result = formatDate(dateCreated, t, REGISTRATION_DATE_FORMAT);
-    if (!result.error) {
-      setRegisterDate(result.formattedResult);
-    }
-  };
 
   useEffect(() => {
-    if (patientDetails) {
-      setPatientUuid(patientDetails.patient.uuid);
-      setPatientIdentifier(
-        patientDetails.patient.identifiers[0].identifier ?? '',
-      );
-      getRegisterDate(patientDetails);
-      setPatientName(patientDetails.patient.person.display ?? '');
-      setIsEditMode(false);
-      queryClient.removeQueries({
-        queryKey: ['formattedPatient', patientUuidFromUrl],
-      });
+    if (metadata?.patientUuid) {
+      setPatientUuid(metadata.patientUuid);
     }
-  }, [patientDetails, patientUuidFromUrl, queryClient]);
+  }, [metadata]);
 
   // Use the appropriate mutation based on mode
   const createPatientMutation = useCreatePatient();
@@ -213,13 +174,6 @@ const PatientRegister = () => {
           ...formData,
         })) as PatientProfileResponse;
         if (response?.patient?.uuid) {
-          queryClient.setQueryData(['formattedPatient', patientUuid], response);
-          setPatientUuid(response.patient.uuid);
-          setPatientIdentifier(
-            response.patient.identifiers[0].identifier ?? '',
-          );
-          setPatientName(response.patient.person.display ?? '');
-          getRegisterDate(response);
           return response.patient.uuid;
         }
       } else {
@@ -228,16 +182,7 @@ const PatientRegister = () => {
         )) as PatientProfileResponse;
         if (response?.patient?.uuid) {
           const newPatientUuid = response.patient.uuid;
-          queryClient.setQueryData(
-            ['formattedPatient', newPatientUuid],
-            response,
-          );
           setPatientUuid(newPatientUuid);
-          setPatientIdentifier(
-            response.patient.identifiers[0].identifier ?? '',
-          );
-          setPatientName(response.patient.person.display ?? '');
-          getRegisterDate(response);
           navigate(getPatientUrl(newPatientUuid));
           return newPatientUuid;
         }
@@ -261,7 +206,10 @@ const PatientRegister = () => {
     },
     {
       id: 'current',
-      label: patientUuid ? patientName : t('CREATE_PATIENT_BREADCRUMB_CURRENT'),
+      label:
+        patientUuid && metadata?.patientName
+          ? metadata.patientName
+          : t('CREATE_PATIENT_BREADCRUMB_CURRENT'),
       isCurrentPage: true,
     },
   ];
@@ -287,10 +235,10 @@ const PatientRegister = () => {
                 <div className={styles.infoContainer}>
                   <div
                     className={styles.patientId}
-                  >{`Patient ID: ${patientIdentifier}`}</div>
+                  >{`Patient ID: ${metadata?.patientIdentifier}`}</div>
                   <div
                     className={styles.registerDate}
-                  >{`${t('CREATE_PATIENT_REGISTERED_ON')} ${registerDate}`}</div>
+                  >{`${t('CREATE_PATIENT_REGISTERED_ON')} ${metadata?.registerDate}`}</div>
                 </div>
               ) : (
                 t('CREATE_PATIENT_HEADER_TITLE')
