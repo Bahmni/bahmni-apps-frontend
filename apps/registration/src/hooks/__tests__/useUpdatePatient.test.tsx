@@ -1,5 +1,5 @@
 import {
-  createPatient,
+  updatePatient,
   dispatchAuditEvent,
   PersonAttributeType,
 } from '@bahmni/services';
@@ -8,12 +8,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 import { ReactNode } from 'react';
 import { PersonAttributesProvider } from '../../providers/PersonAttributesProvider';
-import { useCreatePatient } from '../useCreatePatient';
+import { useUpdatePatient } from '../useUpdatePatient';
 
 // Mock dependencies
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  createPatient: jest.fn(),
+  updatePatient: jest.fn(),
   dispatchAuditEvent: jest.fn(),
   AUDIT_LOG_EVENT_DETAILS: {
     REGISTER_NEW_PATIENT: {
@@ -27,15 +27,11 @@ jest.mock('@bahmni/widgets', () => ({
   useNotification: jest.fn(),
 }));
 
-jest.mock('react-router-dom', () => ({
-  useNavigate: () => jest.fn(),
-}));
-
-const mockCreatePatient = createPatient as jest.Mock;
+const mockUpdatePatient = updatePatient as jest.Mock;
 const mockUseNotification = useNotification as jest.Mock;
 const mockAddNotification = jest.fn();
 
-describe('useCreatePatient', () => {
+describe('useUpdatePatient', () => {
   let queryClient: QueryClient;
 
   const mockPersonAttributes: PersonAttributeType[] = [
@@ -85,6 +81,7 @@ describe('useCreatePatient', () => {
   };
 
   const mockFormData = {
+    patientUuid: 'patient-uuid-123',
     profile: {
       patientIdFormat: 'BDH',
       entryType: false,
@@ -138,15 +135,13 @@ describe('useCreatePatient', () => {
     mockUseNotification.mockReturnValue({
       addNotification: mockAddNotification,
     });
-    // Mock window.history.replaceState
-    window.history.replaceState = jest.fn();
   });
 
-  describe('Successful patient creation', () => {
-    it('should successfully create a patient and show success notification', async () => {
-      mockCreatePatient.mockResolvedValue(mockSuccessResponse);
+  describe('Successful patient update', () => {
+    it('should successfully update a patient and show success notification', async () => {
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
 
-      const { result } = renderHook(() => useCreatePatient(), {
+      const { result } = renderHook(() => useUpdatePatient(), {
         wrapper: createWrapper(),
       });
 
@@ -157,8 +152,8 @@ describe('useCreatePatient', () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      // Verify createPatient was called with correct payload
-      expect(mockCreatePatient).toHaveBeenCalledWith({
+      // Verify updatePatient was called with correct payload
+      expect(mockUpdatePatient).toHaveBeenCalledWith('patient-uuid-123', {
         patient: {
           person: {
             names: [
@@ -206,7 +201,7 @@ describe('useCreatePatient', () => {
       // Verify success notification
       expect(mockAddNotification).toHaveBeenCalledWith({
         title: 'Success',
-        message: 'Patient saved successfully',
+        message: 'Patient updated successfully',
         type: 'success',
         timeout: 5000,
       });
@@ -217,19 +212,9 @@ describe('useCreatePatient', () => {
         patientUuid: 'patient-uuid-123',
         module: 'registration',
       });
-
-      // Verify browser history was updated
-      expect(window.history.replaceState).toHaveBeenCalledWith(
-        {
-          patientDisplay: 'John Michael Doe',
-          patientUuid: 'patient-uuid-123',
-        },
-        '',
-        '/registration/patient/patient-uuid-123',
-      );
     });
 
-    it('should handle patient creation without middle name', async () => {
+    it('should handle patient update without middle name', async () => {
       const formDataWithoutMiddleName = {
         ...mockFormData,
         profile: {
@@ -238,9 +223,9 @@ describe('useCreatePatient', () => {
         },
       };
 
-      mockCreatePatient.mockResolvedValue(mockSuccessResponse);
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
 
-      const { result } = renderHook(() => useCreatePatient(), {
+      const { result } = renderHook(() => useUpdatePatient(), {
         wrapper: createWrapper(),
       });
 
@@ -251,7 +236,8 @@ describe('useCreatePatient', () => {
       });
 
       // Verify the payload doesn't include middleName
-      expect(mockCreatePatient).toHaveBeenCalledWith(
+      expect(mockUpdatePatient).toHaveBeenCalledWith(
+        'patient-uuid-123',
         expect.objectContaining({
           patient: expect.objectContaining({
             person: expect.objectContaining({
@@ -278,9 +264,9 @@ describe('useCreatePatient', () => {
         },
       };
 
-      mockCreatePatient.mockResolvedValue(mockSuccessResponse);
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
 
-      const { result } = renderHook(() => useCreatePatient(), {
+      const { result } = renderHook(() => useUpdatePatient(), {
         wrapper: createWrapper(),
       });
 
@@ -291,7 +277,8 @@ describe('useCreatePatient', () => {
       });
 
       // Verify birthdateEstimated is true
-      expect(mockCreatePatient).toHaveBeenCalledWith(
+      expect(mockUpdatePatient).toHaveBeenCalledWith(
+        'patient-uuid-123',
         expect.objectContaining({
           patient: expect.objectContaining({
             person: expect.objectContaining({
@@ -311,9 +298,9 @@ describe('useCreatePatient', () => {
         },
       };
 
-      mockCreatePatient.mockResolvedValue(mockSuccessResponse);
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
 
-      const { result } = renderHook(() => useCreatePatient(), {
+      const { result } = renderHook(() => useUpdatePatient(), {
         wrapper: createWrapper(),
       });
 
@@ -324,7 +311,8 @@ describe('useCreatePatient', () => {
       });
 
       // Verify gender is capitalized correctly
-      expect(mockCreatePatient).toHaveBeenCalledWith(
+      expect(mockUpdatePatient).toHaveBeenCalledWith(
+        'patient-uuid-123',
         expect.objectContaining({
           patient: expect.objectContaining({
             person: expect.objectContaining({
@@ -344,9 +332,9 @@ describe('useCreatePatient', () => {
         },
       };
 
-      mockCreatePatient.mockResolvedValue(mockSuccessResponse);
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
 
-      const { result } = renderHook(() => useCreatePatient(), {
+      const { result } = renderHook(() => useUpdatePatient(), {
         wrapper: createWrapper(),
       });
 
@@ -357,7 +345,8 @@ describe('useCreatePatient', () => {
       });
 
       // Verify birthtime is null
-      expect(mockCreatePatient).toHaveBeenCalledWith(
+      expect(mockUpdatePatient).toHaveBeenCalledWith(
+        'patient-uuid-123',
         expect.objectContaining({
           patient: expect.objectContaining({
             person: expect.objectContaining({
@@ -370,11 +359,11 @@ describe('useCreatePatient', () => {
   });
 
   describe('Error handling', () => {
-    it('should show error notification when patient creation fails', async () => {
+    it('should show error notification when patient update fails', async () => {
       const error = new Error('API Error');
-      mockCreatePatient.mockRejectedValue(error);
+      mockUpdatePatient.mockRejectedValue(error);
 
-      const { result } = renderHook(() => useCreatePatient(), {
+      const { result } = renderHook(() => useUpdatePatient(), {
         wrapper: createWrapper(),
       });
 
@@ -387,12 +376,12 @@ describe('useCreatePatient', () => {
       // Verify error notification
       expect(mockAddNotification).toHaveBeenCalledWith({
         title: 'Error',
-        message: 'Failed to save patient',
+        message: 'Failed to update patient',
         type: 'error',
         timeout: 5000,
       });
 
-      // Verify success notification was not called with success type
+      // Verify success notification was not called
       expect(mockAddNotification).not.toHaveBeenCalledWith(
         expect.objectContaining({ type: 'success' }),
       );
@@ -403,9 +392,9 @@ describe('useCreatePatient', () => {
 
     it('should handle network errors', async () => {
       const networkError = new Error('Network request failed');
-      mockCreatePatient.mockRejectedValue(networkError);
+      mockUpdatePatient.mockRejectedValue(networkError);
 
-      const { result } = renderHook(() => useCreatePatient(), {
+      const { result } = renderHook(() => useUpdatePatient(), {
         wrapper: createWrapper(),
       });
 
@@ -417,7 +406,7 @@ describe('useCreatePatient', () => {
 
       expect(mockAddNotification).toHaveBeenCalledWith({
         title: 'Error',
-        message: 'Failed to save patient',
+        message: 'Failed to update patient',
         type: 'error',
         timeout: 5000,
       });
@@ -428,9 +417,9 @@ describe('useCreatePatient', () => {
         message: 'Validation failed',
         errors: ['Invalid date format'],
       };
-      mockCreatePatient.mockRejectedValue(validationError);
+      mockUpdatePatient.mockRejectedValue(validationError);
 
-      const { result } = renderHook(() => useCreatePatient(), {
+      const { result } = renderHook(() => useUpdatePatient(), {
         wrapper: createWrapper(),
       });
 
@@ -450,14 +439,14 @@ describe('useCreatePatient', () => {
 
   describe('Mutation states', () => {
     it('should track isPending state during mutation', async () => {
-      mockCreatePatient.mockImplementation(
+      mockUpdatePatient.mockImplementation(
         () =>
           new Promise((resolve) => {
             setTimeout(() => resolve(mockSuccessResponse), 100);
           }),
       );
 
-      const { result } = renderHook(() => useCreatePatient(), {
+      const { result } = renderHook(() => useUpdatePatient(), {
         wrapper: createWrapper(),
       });
 
@@ -478,9 +467,9 @@ describe('useCreatePatient', () => {
     });
 
     it('should provide mutation data after success', async () => {
-      mockCreatePatient.mockResolvedValue(mockSuccessResponse);
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
 
-      const { result } = renderHook(() => useCreatePatient(), {
+      const { result } = renderHook(() => useUpdatePatient(), {
         wrapper: createWrapper(),
       });
 
@@ -494,10 +483,10 @@ describe('useCreatePatient', () => {
     });
 
     it('should provide error after failure', async () => {
-      const error = new Error('Creation failed');
-      mockCreatePatient.mockRejectedValue(error);
+      const error = new Error('Update failed');
+      mockUpdatePatient.mockRejectedValue(error);
 
-      const { result } = renderHook(() => useCreatePatient(), {
+      const { result } = renderHook(() => useUpdatePatient(), {
         wrapper: createWrapper(),
       });
 
@@ -519,9 +508,9 @@ describe('useCreatePatient', () => {
         },
       };
 
-      mockCreatePatient.mockResolvedValue(responseWithoutUuid);
+      mockUpdatePatient.mockResolvedValue(responseWithoutUuid);
 
-      const { result } = renderHook(() => useCreatePatient(), {
+      const { result } = renderHook(() => useUpdatePatient(), {
         wrapper: createWrapper(),
       });
 
@@ -540,15 +529,12 @@ describe('useCreatePatient', () => {
 
       // Verify audit event was NOT dispatched (no UUID)
       expect(dispatchAuditEvent).not.toHaveBeenCalled();
-
-      // Verify browser history was NOT updated
-      expect(window.history.replaceState).not.toHaveBeenCalled();
     });
 
     it('should handle empty response', async () => {
-      mockCreatePatient.mockResolvedValue({});
+      mockUpdatePatient.mockResolvedValue({});
 
-      const { result } = renderHook(() => useCreatePatient(), {
+      const { result } = renderHook(() => useUpdatePatient(), {
         wrapper: createWrapper(),
       });
 
@@ -569,9 +555,9 @@ describe('useCreatePatient', () => {
 
   describe('Data transformation', () => {
     it('should correctly transform all form data to API payload', async () => {
-      mockCreatePatient.mockResolvedValue(mockSuccessResponse);
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
 
-      const { result } = renderHook(() => useCreatePatient(), {
+      const { result } = renderHook(() => useUpdatePatient(), {
         wrapper: createWrapper(),
       });
 
@@ -581,10 +567,13 @@ describe('useCreatePatient', () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      const callArgs = mockCreatePatient.mock.calls[0][0];
+      const callArgs = mockUpdatePatient.mock.calls[0];
+
+      // Verify patient UUID is passed as first argument
+      expect(callArgs[0]).toBe('patient-uuid-123');
 
       // Verify complete payload structure
-      expect(callArgs).toEqual({
+      expect(callArgs[1]).toEqual({
         patient: {
           person: {
             names: [
@@ -639,9 +628,9 @@ describe('useCreatePatient', () => {
         },
       };
 
-      mockCreatePatient.mockResolvedValue(mockSuccessResponse);
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
 
-      const { result } = renderHook(() => useCreatePatient(), {
+      const { result } = renderHook(() => useUpdatePatient(), {
         wrapper: createWrapper(),
       });
 
@@ -651,7 +640,8 @@ describe('useCreatePatient', () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      expect(mockCreatePatient).toHaveBeenCalledWith(
+      expect(mockUpdatePatient).toHaveBeenCalledWith(
+        'patient-uuid-123',
         expect.objectContaining({
           patient: expect.objectContaining({
             person: expect.objectContaining({
@@ -665,6 +655,190 @@ describe('useCreatePatient', () => {
           }),
         }),
       );
+    });
+
+    it('should handle empty contact attributes', async () => {
+      const formDataWithEmptyContact = {
+        ...mockFormData,
+        contact: {
+          phoneNumber: '',
+          altPhoneNumber: '',
+        },
+      };
+
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useUpdatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(formDataWithEmptyContact);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const callArgs = mockUpdatePatient.mock.calls[0][1];
+
+      // Verify no contact attributes are included
+      const contactAttributes = callArgs.patient.person.attributes.filter(
+        (attr: { attributeType: { uuid: string } }) =>
+          attr.attributeType.uuid === 'a384873b-847a-4a86-b869-28fb601162dd' ||
+          attr.attributeType.uuid === '27fa84ff-fdd6-4895-9c77-254b60555f39',
+      );
+
+      expect(contactAttributes).toHaveLength(0);
+    });
+
+    it('should handle only some contact attributes provided', async () => {
+      const formDataWithPartialContact = {
+        ...mockFormData,
+        contact: {
+          phoneNumber: '+1234567890',
+          altPhoneNumber: '',
+        },
+      };
+
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useUpdatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(formDataWithPartialContact);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const callArgs = mockUpdatePatient.mock.calls[0][1];
+
+      // Verify only phoneNumber is included
+      const phoneAttribute = callArgs.patient.person.attributes.find(
+        (attr: { attributeType: { uuid: string } }) =>
+          attr.attributeType.uuid === 'a384873b-847a-4a86-b869-28fb601162dd',
+      );
+
+      expect(phoneAttribute).toEqual({
+        attributeType: {
+          uuid: 'a384873b-847a-4a86-b869-28fb601162dd',
+        },
+        value: '+1234567890',
+      });
+
+      const altPhoneAttribute = callArgs.patient.person.attributes.find(
+        (attr: { attributeType: { uuid: string } }) =>
+          attr.attributeType.uuid === '27fa84ff-fdd6-4895-9c77-254b60555f39',
+      );
+
+      expect(altPhoneAttribute).toBeUndefined();
+    });
+
+    it('should handle empty additional attributes', async () => {
+      const formDataWithEmptyAdditional = {
+        ...mockFormData,
+        additional: {
+          email: '',
+        },
+      };
+
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useUpdatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(formDataWithEmptyAdditional);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const callArgs = mockUpdatePatient.mock.calls[0][1];
+
+      // Verify email attribute is not included
+      const emailAttribute = callArgs.patient.person.attributes.find(
+        (attr: { attributeType: { uuid: string } }) =>
+          attr.attributeType.uuid === 'e3123cba-5e07-11ef-8f7c-0242ac120002',
+      );
+
+      expect(emailAttribute).toBeUndefined();
+    });
+  });
+
+  describe('Patient UUID handling', () => {
+    it('should use the correct patient UUID from form data', async () => {
+      const differentUuid = 'different-patient-uuid-456';
+      const formDataWithDifferentUuid = {
+        ...mockFormData,
+        patientUuid: differentUuid,
+      };
+
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useUpdatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(formDataWithDifferentUuid);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      // Verify the first argument is the correct patient UUID
+      expect(mockUpdatePatient).toHaveBeenCalledWith(
+        differentUuid,
+        expect.any(Object),
+      );
+    });
+  });
+
+  describe('Attribute mapping', () => {
+    it('should only include attributes that match person attribute types', async () => {
+      const formDataWithUnmappedAttributes = {
+        ...mockFormData,
+        contact: {
+          phoneNumber: '+1234567890',
+          altPhoneNumber: '',
+          unknownField: 'value',
+        } as any,
+        additional: {
+          email: 'john@example.com',
+          anotherUnknownField: 'value',
+        } as any,
+      };
+
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useUpdatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(formDataWithUnmappedAttributes);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const callArgs = mockUpdatePatient.mock.calls[0][1];
+
+      // Verify only mapped attributes are included
+      expect(callArgs.patient.person.attributes).toHaveLength(2);
+      expect(callArgs.patient.person.attributes).toEqual([
+        {
+          attributeType: {
+            uuid: 'a384873b-847a-4a86-b869-28fb601162dd',
+          },
+          value: '+1234567890',
+        },
+        {
+          attributeType: {
+            uuid: 'e3123cba-5e07-11ef-8f7c-0242ac120002',
+          },
+          value: 'john@example.com',
+        },
+      ]);
     });
   });
 });

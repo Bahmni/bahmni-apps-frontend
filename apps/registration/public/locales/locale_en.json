@@ -123,5 +123,16 @@
   "REGISTRATION_RELATIONSHIP_TYPE_REQUIRED": "Relationship type is required",
   "REGISTRATION_RELATIONSHIP_ALREADY_EXISTS": "Given relationship already exists",
   "REGISTRATION_PATIENT_SELECTION_REQUIRED": "Please select a patient from the autocomplete list",
-  "ADDITIONAL_IDENTIFIERS_HEADER_TITLE": "Additional Identifiers"
+  "ADDITIONAL_IDENTIFIERS_HEADER_TITLE": "Additional Identifiers",
+  "NOTIFICATION_SUCCESS_TITLE": "Success",
+  "NOTIFICATION_ERROR_TITLE": "Error",
+  "NOTIFICATION_PATIENT_SAVED_SUCCESSFULLY": "Patient saved successfully",
+  "NOTIFICATION_PATIENT_UPDATED_SUCCESSFULLY": "Patient updated successfully",
+  "NOTIFICATION_PATIENT_SAVE_FAILED": "Failed to save patient",
+  "NOTIFICATION_PATIENT_UPDATE_FAILED": "Failed to update patient",
+  "NOTIFICATION_VALIDATION_ERRORS": "Please fill the mandatory fields",
+  "NOTIFICATION_UNABLE_TO_GET_PATIENT_DATA": "Unable to get patient data",
+  "NOTIFICATION_UNABLE_TO_GET_ADDRESS_DATA": "Unable to get patient address data",
+  "NOTIFICATION_UNABLE_TO_GET_CONTACT_DATA": "Unable to get patient contact data",
+  "NOTIFICATION_UNABLE_TO_GET_ADDITIONAL_DATA": "Unable to get patient additional data"
 }

@@ -12,10 +12,6 @@ import { validateAllSections, collectFormData } from '../patientFormService';
 // Mock the dependencies
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  notificationService: {
-    showSuccess: jest.fn(),
-    showError: jest.fn(),
-  },
   dispatchAuditEvent: jest.fn(),
   useTranslation: () => ({
     t: (key: string) => key,
@@ -27,6 +23,10 @@ jest.mock('@bahmni/services', () => ({
       module: 'registration',
     },
   },
+}));
+
+jest.mock('@bahmni/widgets', () => ({
+  useNotification: jest.fn(),
 }));
 
 jest.mock('react-router-dom', () => ({
@@ -145,6 +145,7 @@ jest.mock('../visitTypeSelector', () => ({
 describe('CreatePatient', () => {
   let queryClient: QueryClient;
   let mockMutateAsync: jest.Mock;
+  let mockAddNotification: jest.Mock;
 
   const mockPersonAttributes: PersonAttributeType[] = [
     {
@@ -182,6 +183,12 @@ describe('CreatePatient', () => {
     });
 
     mockMutateAsync = jest.fn();
+    mockAddNotification = jest.fn();
+
+    const { useNotification } = jest.requireMock('@bahmni/widgets');
+    useNotification.mockReturnValue({
+      addNotification: mockAddNotification,
+    });
 
     (useCreatePatient as jest.Mock).mockReturnValue({
       mutateAsync: mockMutateAsync,
@@ -284,6 +291,8 @@ describe('CreatePatient', () => {
             additionalRef: expect.any(Object),
             additionalIdentifiersRef: expect.any(Object),
           }),
+          expect.any(Function),
+          expect.any(Function), // translation function
           expect.objectContaining({
             shouldValidateAdditionalIdentifiers: expect.any(Boolean),
           }),
@@ -335,6 +344,8 @@ describe('CreatePatient', () => {
             additionalRef: expect.any(Object),
             additionalIdentifiersRef: expect.any(Object),
           }),
+          expect.any(Function),
+          expect.any(Function), // translation function
         );
       });
     });

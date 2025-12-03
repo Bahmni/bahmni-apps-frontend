@@ -1,4 +1,4 @@
-import { notificationService } from '@bahmni/services';
+import type { Notification } from '@bahmni/services';
 import type { AdditionalIdentifiersRef } from '../../components/forms/additionalIdentifiers/AdditionalIdentifiers';
 import type { AdditionalInfoRef } from '../../components/forms/additionalInfo/AdditionalInfo';
 import type { AddressInfoRef } from '../../components/forms/addressInfo/AddressInfo';
@@ -22,6 +22,8 @@ export interface ValidationOptions {
 
 export function validateAllSections(
   refs: PatientFormRefs,
+  addNotification: (notification: Omit<Notification, 'id'>) => void,
+  t: (key: string) => string,
   options?: ValidationOptions,
 ): boolean {
   const {
@@ -54,11 +56,12 @@ export function validateAllSections(
   }
 
   if (!allValid) {
-    notificationService.showError(
-      'Error',
-      'Please fix validation errors',
-      5000,
-    );
+    addNotification({
+      title: t('NOTIFICATION_ERROR_TITLE'),
+      message: t('NOTIFICATION_VALIDATION_ERRORS'),
+      type: 'error',
+      timeout: 5000,
+    });
   }
 
   return allValid;
@@ -68,9 +71,15 @@ export function validateAllSections(
  * Collect data from all patient form sections
  *
  * @param refs - References to all form sections
+ * @param addNotification - Function to show notifications
+ * @param t - Translation function
  * @returns Collected form data or null if any section fails to return data
  */
-export function collectFormData(refs: PatientFormRefs) {
+export function collectFormData(
+  refs: PatientFormRefs,
+  addNotification: (notification: Omit<Notification, 'id'>) => void,
+  t: (key: string) => string,
+) {
   const {
     profileRef,
     addressRef,
@@ -82,37 +91,45 @@ export function collectFormData(refs: PatientFormRefs) {
 
   const profileData = profileRef.current?.getData();
   if (!profileData) {
-    notificationService.showError('Error', 'Unable to get patient data', 5000);
+    addNotification({
+      title: t('NOTIFICATION_ERROR_TITLE'),
+      message: t('NOTIFICATION_UNABLE_TO_GET_PATIENT_DATA'),
+      type: 'error',
+      timeout: 5000,
+    });
     return null;
   }
 
   const addressData = addressRef.current?.getData();
   if (!addressData) {
-    notificationService.showError(
-      'Error',
-      'Unable to get patient address data',
-      5000,
-    );
+    addNotification({
+      title: t('NOTIFICATION_ERROR_TITLE'),
+      message: t('NOTIFICATION_UNABLE_TO_GET_ADDRESS_DATA'),
+      type: 'error',
+      timeout: 5000,
+    });
     return null;
   }
 
   const contactData = contactRef.current?.getData();
   if (!contactData) {
-    notificationService.showError(
-      'Error',
-      'Unable to get patient contact data',
-      5000,
-    );
+    addNotification({
+      title: t('NOTIFICATION_ERROR_TITLE'),
+      message: t('NOTIFICATION_UNABLE_TO_GET_CONTACT_DATA'),
+      type: 'error',
+      timeout: 5000,
+    });
     return null;
   }
 
   const additionalData = additionalRef.current?.getData();
   if (!additionalData) {
-    notificationService.showError(
-      'Error',
-      'Unable to get patient additional data',
-      5000,
-    );
+    addNotification({
+      title: t('NOTIFICATION_ERROR_TITLE'),
+      message: t('NOTIFICATION_UNABLE_TO_GET_ADDITIONAL_DATA'),
+      type: 'error',
+      timeout: 5000,
+    });
     return null;
   }
 
