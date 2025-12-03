@@ -35,11 +35,16 @@ import {
   ContactInfo,
   ContactInfoRef,
 } from '../../components/forms/contactInfo/ContactInfo';
+import {
+  PatientRelationships,
+  PatientRelationshipsRef,
+} from '../../components/forms/patientRelationships/PatientRelationships';
 import { Profile, ProfileRef } from '../../components/forms/profile/Profile';
 import { BAHMNI_REGISTRATION_SEARCH } from '../../constants/app';
 
 import { useAdditionalIdentifiers } from '../../hooks/useAdditionalIdentifiers';
 import { useCreatePatient } from '../../hooks/useCreatePatient';
+import { useRelationshipValidation } from '../../hooks/useRelationshipValidation';
 import { useUpdatePatient } from '../../hooks/useUpdatePatient';
 import { validateAllSections, collectFormData } from './patientFormService';
 import styles from './styles/index.module.scss';
@@ -52,6 +57,8 @@ const CreatePatient = () => {
   const { patientUuid: patientUuidFromUrl } = useParams<{
     patientUuid: string;
   }>();
+
+  const { relationshipTypes } = useRelationshipValidation();
 
   // Determine if we're in edit mode based on URL parameter
   const isEditMode = !!patientUuidFromUrl;
@@ -68,6 +75,7 @@ const CreatePatient = () => {
   const patientAddressRef = useRef<AddressInfoRef>(null);
   const patientContactRef = useRef<ContactInfoRef>(null);
   const patientAdditionalRef = useRef<AdditionalInfoRef>(null);
+  const patientRelationshipsRef = useRef<PatientRelationshipsRef>(null);
   const patientAdditionalIdentifiersRef =
     useRef<AdditionalIdentifiersRef>(null);
 
@@ -125,6 +133,7 @@ const CreatePatient = () => {
         addressRef: patientAddressRef,
         contactRef: patientContactRef,
         additionalRef: patientAdditionalRef,
+        relationshipsRef: patientRelationshipsRef,
         additionalIdentifiersRef: patientAdditionalIdentifiersRef,
       },
       addNotification,
@@ -145,6 +154,7 @@ const CreatePatient = () => {
         addressRef: patientAddressRef,
         contactRef: patientContactRef,
         additionalRef: patientAdditionalRef,
+        relationshipsRef: patientRelationshipsRef,
         additionalIdentifiersRef: patientAdditionalIdentifiersRef,
       },
       addNotification,
@@ -240,6 +250,9 @@ const CreatePatient = () => {
 
           <AdditionalInfo ref={patientAdditionalRef} />
 
+          {Array.isArray(relationshipTypes) && relationshipTypes.length > 0 && (
+            <PatientRelationships ref={patientRelationshipsRef} />
+          )}
           {shouldShowAdditionalIdentifiers && (
             <>
               <Tile className={styles.patientDetailsHeader}>

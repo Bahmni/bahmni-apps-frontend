@@ -523,6 +523,7 @@ describe('patientFormService', () => {
         address: mockAddressData,
         contact: mockContactData,
         additional: mockAdditionalData,
+        relationships: [],
         additionalIdentifiers: {},
       });
       expect(mockAddNotification).not.toHaveBeenCalled();
@@ -547,7 +548,10 @@ describe('patientFormService', () => {
         contactRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => ({ phoneNumber: '1234567890' })) as any,
+            getData: jest.fn(() => ({
+              phoneNumber: '1234567890',
+              altPhoneNumber: '',
+            })) as any,
           },
         },
         additionalRef: {

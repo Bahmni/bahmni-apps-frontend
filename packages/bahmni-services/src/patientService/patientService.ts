@@ -23,6 +23,7 @@ import {
   GET_VISIT_LOCATION,
   ORDERED_ADDRESS_HIERARCHY_URL,
   PERSON_ATTRIBUTE_TYPES_URL,
+  RELATIONSHIP_TYPES_URL,
 } from './constants';
 import {
   FormattedPatientData,
@@ -38,6 +39,7 @@ import {
   VisitType,
   OrderedAddressHierarchyLevels,
   PersonAttributeTypesResponse,
+  RelationshipTypesResponse,
 } from './models';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
@@ -423,6 +425,31 @@ export const getOrderedAddressHierarchyLevels =
   async (): Promise<OrderedAddressHierarchyLevels> => {
     return get<OrderedAddressHierarchyLevels>(ORDERED_ADDRESS_HIERARCHY_URL);
   };
+
+/**
+ * Get relationship types from OpenMRS
+ * @returns Promise<Array<{uuid: string, aIsToB: string, bIsToA: string}>> - Array of relationship type objects
+ */
+export const getRelationshipTypes = async (): Promise<
+  Array<{ uuid: string; aIsToB: string; bIsToA: string }>
+> => {
+  try {
+    const response = await get<RelationshipTypesResponse>(
+      RELATIONSHIP_TYPES_URL,
+    );
+    return response.results.map((type) => ({
+      uuid: type.uuid,
+      aIsToB: type.aIsToB,
+      bIsToA: type.bIsToA,
+    }));
+  } catch (error) {
+    throw new Error(
+      `Failed to fetch relationship types: ${
+        error instanceof Error ? error.message : 'Unknown error'
+      }`,
+    );
+  }
+};
 
 /**
  * Get all person attribute types from OpenMRS

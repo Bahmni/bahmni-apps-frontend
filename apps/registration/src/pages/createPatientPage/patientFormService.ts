@@ -3,6 +3,7 @@ import type { AdditionalIdentifiersRef } from '../../components/forms/additional
 import type { AdditionalInfoRef } from '../../components/forms/additionalInfo/AdditionalInfo';
 import type { AddressInfoRef } from '../../components/forms/addressInfo/AddressInfo';
 import type { ContactInfoRef } from '../../components/forms/contactInfo/ContactInfo';
+import type { PatientRelationshipsRef } from '../../components/forms/patientRelationships/PatientRelationships';
 import type { ProfileRef } from '../../components/forms/profile/Profile';
 
 export interface PatientFormRefs {
@@ -10,6 +11,7 @@ export interface PatientFormRefs {
   addressRef: React.RefObject<AddressInfoRef | null>;
   contactRef: React.RefObject<ContactInfoRef | null>;
   additionalRef: React.RefObject<AdditionalInfoRef | null>;
+  relationshipsRef?: React.RefObject<PatientRelationshipsRef | null>;
   additionalIdentifiersRef: React.RefObject<AdditionalIdentifiersRef | null>;
 }
 
@@ -29,6 +31,7 @@ export function validateAllSections(
     addressRef,
     contactRef,
     additionalRef,
+    relationshipsRef,
     additionalIdentifiersRef,
   } = refs;
 
@@ -36,9 +39,14 @@ export function validateAllSections(
   const isAddressValid = addressRef.current?.validate() ?? false;
   const isContactValid = contactRef.current?.validate() ?? false;
   const isAdditionalValid = additionalRef.current?.validate() ?? false;
+  const isRelationshipsValid = relationshipsRef?.current?.validate() ?? true;
 
   let allValid =
-    isProfileValid && isAddressValid && isContactValid && isAdditionalValid;
+    isProfileValid &&
+    isAddressValid &&
+    isContactValid &&
+    isAdditionalValid &&
+    isRelationshipsValid;
 
   const shouldValidate = options?.shouldValidateAdditionalIdentifiers ?? false;
   if (shouldValidate) {
@@ -77,6 +85,7 @@ export function collectFormData(
     addressRef,
     contactRef,
     additionalRef,
+    relationshipsRef,
     additionalIdentifiersRef,
   } = refs;
 
@@ -124,6 +133,8 @@ export function collectFormData(
     return null;
   }
 
+  // Collect relationships data if the section exists
+  const relationshipsData = relationshipsRef?.current?.getData() ?? [];
   // Additional identifiers are optional - only collect if component is rendered
   const additionalIdentifiersData =
     additionalIdentifiersRef.current?.getData() ?? {};
@@ -133,6 +144,7 @@ export function collectFormData(
     address: addressData,
     contact: contactData,
     additional: additionalData,
+    relationships: relationshipsData,
     additionalIdentifiers: additionalIdentifiersData,
   };
 }

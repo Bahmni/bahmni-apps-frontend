@@ -14,8 +14,10 @@ import { useNotification } from '@bahmni/widgets';
 import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import type { RelationshipData } from '../components/forms/patientRelationships/PatientRelationships';
 import { convertTimeToISODateTime } from '../components/forms/profile/dateAgeUtils';
 import { BasicInfoData, ContactData, AdditionalData } from '../models/patient';
+import { parseDateStringToDate } from '../utils/ageUtils';
 import { usePersonAttributes } from './usePersonAttributes';
 
 interface CreatePatientFormData {
@@ -27,6 +29,7 @@ interface CreatePatientFormData {
   address: PatientAddress;
   contact: ContactData;
   additional: AdditionalData;
+  relationships: RelationshipData[];
 }
 
 export const useCreatePatient = () => {
@@ -122,6 +125,28 @@ function transformFormDataToPayload(
     }
   });
 
+  const transformedRelationships = (formData.relationships || [])
+    .filter((rel) => rel.patientUuid && rel.relationshipType)
+    .map((rel) => {
+      const relationship: {
+        relationshipType: { uuid: string };
+        personB: { uuid: string };
+        endDate?: string;
+      } = {
+        relationshipType: { uuid: rel.relationshipType! },
+        personB: { uuid: rel.patientUuid },
+      };
+
+      if (rel.tillDate) {
+        const date = parseDateStringToDate(rel.tillDate);
+        if (date) {
+          relationship.endDate = date.toISOString();
+        }
+      }
+
+      return relationship;
+    });
+
   const payload: CreatePatientRequest = {
     patient: {
       person: {
@@ -141,7 +166,7 @@ function transformFormDataToPayload(
       identifiers: [profile.patientIdentifier],
     },
     ...(profile.image && { image: profile.image }),
-    relationships: [],
+    relationships: transformedRelationships,
   };
 
   return payload;
