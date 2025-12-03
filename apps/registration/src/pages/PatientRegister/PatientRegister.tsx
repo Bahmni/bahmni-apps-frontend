@@ -14,13 +14,8 @@ import {
   dispatchAuditEvent,
   PatientProfileResponse,
 } from '@bahmni/services';
-<<<<<<< HEAD
 import { useNotification } from '@bahmni/widgets';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRef, useState, useEffect, useMemo } from 'react';
-=======
 import { useRef, useState, useEffect } from 'react';
->>>>>>> 7597dbb3 (BAH-4243|Fix. Notification Service and address pr comments)
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   AdditionalIdentifiers,
@@ -47,12 +42,9 @@ import { BAHMNI_REGISTRATION_SEARCH, getPatientUrl } from '../../constants/app';
 
 import { useAdditionalIdentifiers } from '../../hooks/useAdditionalIdentifiers';
 import { useCreatePatient } from '../../hooks/useCreatePatient';
-<<<<<<< HEAD
-import { useRelationshipValidation } from '../../hooks/useRelationshipValidation';
-=======
 import { usePatientDetails } from '../../hooks/usePatientDetails';
 import { usePatientPhoto } from '../../hooks/usePatientPhoto';
->>>>>>> 7597dbb3 (BAH-4243|Fix. Notification Service and address pr comments)
+import { useRelationshipValidation } from '../../hooks/useRelationshipValidation';
 import { useUpdatePatient } from '../../hooks/useUpdatePatient';
 import { validateAllSections, collectFormData } from './patientFormService';
 import styles from './styles/index.module.scss';
@@ -61,31 +53,17 @@ import { VisitTypeSelector } from './visitTypeSelector';
 const PatientRegister = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-<<<<<<< HEAD
-  const queryClient = useQueryClient();
-  const { getGenderDisplay } = useGenderData(t);
   const { addNotification } = useNotification();
   const { patientUuid: patientUuidFromUrl } = useParams<{
     patientUuid: string;
   }>();
-  const [patientIdentifier, setPatientIdentifier] = useState<string>('');
-  const [registerDate, setRegisterDate] = useState<string>('');
-  const [patientName, setPatientName] = useState<string>('');
-  const { relationshipTypes } = useRelationshipValidation();
 
-  // Determine if we're in edit mode based on URL parameter
-  const [isEditMode, setIsEditMode] = useState(!!patientUuidFromUrl);
-=======
-  const { patientUuid: patientUuidFromUrl } = useParams<{
-    patientUuid: string;
-  }>();
-
->>>>>>> 7597dbb3 (BAH-4243|Fix. Notification Service and address pr comments)
   const [patientUuid, setPatientUuid] = useState<string | null>(
     patientUuidFromUrl ?? null,
   );
 
   const { shouldShowAdditionalIdentifiers } = useAdditionalIdentifiers();
+  const { relationshipTypes } = useRelationshipValidation();
 
   const patientProfileRef = useRef<ProfileRef>(null);
   const patientAddressRef = useRef<AddressInfoRef>(null);
@@ -261,13 +239,12 @@ const PatientRegister = () => {
               ref={patientContactRef}
               initialData={contactInitialData}
             />
-            <AdditionalInfo
-              ref={patientAdditionalRef}
-              initialData={additionalInitialData}
-            />
           </div>
 
-          <AdditionalInfo ref={patientAdditionalRef} />
+          <AdditionalInfo
+            ref={patientAdditionalRef}
+            initialData={additionalInitialData}
+          />
 
           {Array.isArray(relationshipTypes) && relationshipTypes.length > 0 && (
             <PatientRelationships ref={patientRelationshipsRef} />
