@@ -11,7 +11,7 @@ import React, { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { queryClientConfig } from './config/tanstackQuery';
 import { REGISTRATION_NAMESPACE } from './constants/app';
-import CreatePatient from './pages/createPatientPage/CreatePatient';
+import PatientRegister from './pages/PatientRegister/PatientRegister';
 import PatientSearchPage from './pages/patientSearchPage';
 import { PersonAttributesProvider } from './providers/PersonAttributesProvider';
 import { RegistrationConfigProvider } from './providers/RegistrationConfigProvider';
@@ -52,10 +52,10 @@ const RegistrationApp: React.FC = () => {
               <UserPrivilegeProvider>
                 <Routes>
                   <Route path="/search" element={<PatientSearchPage />} />
-                  <Route path="/new" element={<CreatePatient />} />
+                  <Route path="patient/new" element={<PatientRegister />} />
                   <Route
-                    path="/edit/:patientUuid"
-                    element={<CreatePatient />}
+                    path="/patient/:patientUuid"
+                    element={<PatientRegister />}
                   />
                 </Routes>
               </UserPrivilegeProvider>

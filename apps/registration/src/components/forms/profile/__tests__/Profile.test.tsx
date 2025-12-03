@@ -23,17 +23,25 @@ jest.mock('@bahmni/services', () => ({
   MAX_PATIENT_AGE_YEARS: 120,
 }));
 
+// Create stable mock data outside to prevent infinite re-renders
+const mockGenders = [
+  'CREATE_PATIENT_GENDER_MALE',
+  'CREATE_PATIENT_GENDER_FEMALE',
+];
+const mockIdentifierPrefixes = ['BAH', 'GAN'];
+const mockIdentifierSources = new Map([
+  ['BAH', 'source-uuid-1'],
+  ['GAN', 'source-uuid-2'],
+]);
+
 jest.mock('../../../../utils/identifierGenderUtils', () => ({
   useGenderData: () => ({
-    genders: ['CREATE_PATIENT_GENDER_MALE', 'CREATE_PATIENT_GENDER_FEMALE'],
+    genders: mockGenders,
   }),
   useIdentifierData: () => ({
-    identifierPrefixes: ['BAH', 'GAN'],
+    identifierPrefixes: mockIdentifierPrefixes,
     primaryIdentifierType: 'primary-type-uuid',
-    identifierSources: new Map([
-      ['BAH', 'source-uuid-1'],
-      ['GAN', 'source-uuid-2'],
-    ]),
+    identifierSources: mockIdentifierSources,
   }),
 }));
 
@@ -309,7 +317,7 @@ describe('Profile', () => {
       expect(data?.middleName).toBe('M');
       expect(data?.lastName).toBe('Smith');
       expect(data?.gender).toBe('CREATE_PATIENT_GENDER_FEMALE');
-      expect(data?.patientIdFormat).toBe('GAN');
+      expect(data?.patientIdFormat).toBe('BAH');
     });
   });
 

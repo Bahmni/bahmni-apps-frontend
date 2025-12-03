@@ -16,8 +16,8 @@ jest.mock('@bahmni/services', () => ({
   updatePatient: jest.fn(),
   dispatchAuditEvent: jest.fn(),
   AUDIT_LOG_EVENT_DETAILS: {
-    REGISTER_NEW_PATIENT: {
-      eventType: 'REGISTER_NEW_PATIENT',
+    EDIT_PATIENT_DETAILS: {
+      eventType: 'EDIT_PATIENT_DETAILS',
       module: 'registration',
     },
   },
@@ -208,7 +208,7 @@ describe('useUpdatePatient', () => {
 
       // Verify audit event was dispatched
       expect(dispatchAuditEvent).toHaveBeenCalledWith({
-        eventType: 'REGISTER_NEW_PATIENT',
+        eventType: 'EDIT_PATIENT_DETAILS',
         patientUuid: 'patient-uuid-123',
         module: 'registration',
       });
@@ -375,10 +375,9 @@ describe('useUpdatePatient', () => {
 
       // Verify error notification
       expect(mockAddNotification).toHaveBeenCalledWith({
-        title: 'Error',
-        message: 'Failed to update patient',
         type: 'error',
-        timeout: 5000,
+        title: 'Error updating patient',
+        message: 'API Error',
       });
 
       // Verify success notification was not called
@@ -405,10 +404,9 @@ describe('useUpdatePatient', () => {
       });
 
       expect(mockAddNotification).toHaveBeenCalledWith({
-        title: 'Error',
-        message: 'Failed to update patient',
         type: 'error',
-        timeout: 5000,
+        title: 'Error updating patient',
+        message: 'Network request failed',
       });
     });
 
@@ -429,11 +427,11 @@ describe('useUpdatePatient', () => {
         expect(result.current.isError).toBe(true);
       });
 
-      expect(mockAddNotification).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: 'error',
-        }),
-      );
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        type: 'error',
+        title: 'Error updating patient',
+        message: '[object Object]',
+      });
     });
   });
 
