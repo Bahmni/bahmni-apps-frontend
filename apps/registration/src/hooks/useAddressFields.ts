@@ -43,6 +43,22 @@ export function useAddressFields(
   useEffect(() => {
     if (initialAddress && Object.keys(initialAddress).length > 0) {
       setAddress(initialAddress);
+
+      const initialMetadata: SelectedAddressMetadata = {};
+      Object.keys(initialAddress).forEach((fieldName) => {
+        const fieldValue = initialAddress[fieldName];
+        if (fieldValue) {
+          initialMetadata[fieldName] = {
+            uuid: undefined,
+            userGeneratedId: fieldValue,
+            value: fieldValue,
+          };
+        }
+      });
+
+      if (Object.keys(initialMetadata).length > 0) {
+        setSelectedMetadata(initialMetadata);
+      }
     }
   }, [initialAddress]);
 

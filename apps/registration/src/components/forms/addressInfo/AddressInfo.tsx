@@ -51,6 +51,7 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
   );
 
   const autoPopulatingFieldsRef = useRef<Set<string>>(new Set());
+  const isInitializingRef = useRef(false);
 
   const hierarchyFieldNames = useMemo(() => {
     const hierarchyFields = new Set<string>();
@@ -86,6 +87,8 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
   useEffect(() => {
     if (!initialData || levelsWithStrictEntry.length === 0) return;
 
+    isInitializingRef.current = true;
+
     const initialSelectedItems: Record<string, AddressHierarchyEntry | null> =
       {};
 
@@ -104,24 +107,14 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
       setSelectedItems(initialSelectedItems);
     }
 
-    autocompleteFields.forEach((fieldName) => {
-      const fieldValue = initialData[fieldName];
-      if (fieldValue) {
-        const item: AddressHierarchyItem = {
-          name: fieldValue,
-          uuid: '',
-          userGeneratedId: fieldValue,
-        };
-
-        handleFieldSelect(fieldName, item);
-      }
-    });
+    setTimeout(() => {
+      isInitializingRef.current = false;
+    }, 0);
   }, [
     initialData,
     levelsWithStrictEntry.length,
     autocompleteFields,
     setSelectedItems,
-    handleFieldSelect,
   ]);
 
   const handleAddressInputChange = useCallback(
@@ -226,7 +219,9 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
 
       setAddressErrors((prev) => ({ ...prev, [field]: '' }));
 
-      clearChildSuggestions(field);
+      if (!isInitializingRef.current) {
+        clearChildSuggestions(field);
+      }
     },
     [
       handleFieldSelect,
