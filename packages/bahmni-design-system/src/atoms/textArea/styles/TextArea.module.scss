@@ -1,0 +1,25 @@
+@use "@carbon/react/scss/spacing" as *;
+
+.textAreaWrapper {
+  position: relative;
+
+  :global {
+    .cds--text-area__label-wrapper {
+      justify-content: flex-end;
+      position: absolute;
+      bottom: calc($spacing-06 + $spacing-02) * -1;
+    }
+  }
+}
+
+.textAreaWrapperInvalid {
+  position: relative;
+
+  :global {
+    .cds--text-area__label-wrapper {
+      justify-content: flex-end;
+      position: absolute;
+      bottom: -$spacing-03;
+    }
+  }
+}

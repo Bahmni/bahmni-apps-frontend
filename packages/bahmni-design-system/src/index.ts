@@ -36,6 +36,7 @@ export {
 export { NumberInput, type NumberInputProps } from './atoms/numberInput';
 export { ComboBox, type ComboBoxProps } from './atoms/comboBox';
 export { TextInput, type TextInputProps } from './atoms/textInput';
+export { TextArea, type TextAreaProps } from './atoms/textArea';
 export { NotificationContainer } from './molecules/notification';
 export { SortableDataTable } from './molecules/sortableDataTable';
 export {
