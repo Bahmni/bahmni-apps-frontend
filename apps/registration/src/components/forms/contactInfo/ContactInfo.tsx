@@ -66,13 +66,11 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (initialData) {
-      setFormData({
-        phoneNumber: initialData.phoneNumber ?? '',
-        altPhoneNumber: initialData.altPhoneNumber ?? '',
-      });
+    if (initialData && fieldsToShow.length > 0) {
+      const data = initializeFormData(fieldsToShow, initialData);
+      setFormData(data);
     }
-  }, [initialData]);
+  }, [initialData, fieldsToShow.length]);
   const handlePhoneChange = useCallback(
     (fieldName: string, value: string) => {
       if (isNumericPhoneValue(value)) {

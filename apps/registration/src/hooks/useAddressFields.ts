@@ -41,7 +41,7 @@ export function useAddressFields(
     useState<SelectedAddressMetadata>({});
 
   useEffect(() => {
-    if (initialAddress) {
+    if (initialAddress && Object.keys(initialAddress).length > 0) {
       setAddress(initialAddress);
     }
   }, [initialAddress]);

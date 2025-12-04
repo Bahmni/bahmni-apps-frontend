@@ -84,24 +84,29 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
   );
 
   useEffect(() => {
-    if (initialData && autocompleteFields.length > 0) {
-      const initialSelectedItems: Record<string, AddressHierarchyEntry | null> =
-        {};
+    if (!initialData || levelsWithStrictEntry.length === 0) return;
 
-      autocompleteFields.forEach((fieldName) => {
-        const fieldValue = initialData[fieldName];
-        if (fieldValue) {
-          initialSelectedItems[fieldName] = {
-            name: fieldValue,
-            uuid: '',
-            userGeneratedId: fieldValue,
-          };
-        }
-      });
-
+    const initialSelectedItems: Record<string, AddressHierarchyEntry | null> =
+      {};
+    autocompleteFields.forEach((fieldName) => {
+      const fieldValue = initialData[fieldName];
+      if (fieldValue) {
+        initialSelectedItems[fieldName] = {
+          name: fieldValue,
+          uuid: '',
+          userGeneratedId: fieldValue,
+        };
+      }
+    });
+    if (Object.keys(initialSelectedItems).length > 0) {
       setSelectedItems(initialSelectedItems);
     }
-  }, [initialData, autocompleteFields, setSelectedItems]);
+  }, [
+    initialData,
+    levelsWithStrictEntry.length,
+    autocompleteFields,
+    setSelectedItems,
+  ]);
 
   const handleAddressInputChange = useCallback(
     (field: string, value: string) => {
