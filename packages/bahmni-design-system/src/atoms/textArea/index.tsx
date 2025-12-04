@@ -11,8 +11,7 @@ export type TextAreaProps = CarbonTextAreaProps & {
 
 export const TextArea: React.FC<TextAreaProps> = ({
   testId,
-  className,
-  invalid = false,
+  invalid,
   ...carbonProps
 }) => {
   const wrapperClassName = invalid
@@ -21,12 +20,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
 
   return (
     <div className={wrapperClassName}>
-      <CarbonTextArea
-        {...carbonProps}
-        invalid={invalid}
-        className={className}
-        data-testid={testId}
-      />
+      <CarbonTextArea {...carbonProps} invalid={invalid} data-testid={testId} />
     </div>
   );
 };
