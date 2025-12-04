@@ -205,11 +205,15 @@ export {
 } from './privilegeService';
 export {
   fetchObservationForms,
+  fetchFormMetadata,
   type ObservationForm,
   type FormApiResponse,
   type ApiNameTranslation,
   type FormPrivilege,
   type ApiFormPrivilege,
+  type FormMetadata,
+  type FormMetadataApiResponse,
+  type FormResource,
 } from './observationFormsService';
 
 export {
