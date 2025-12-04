@@ -88,6 +88,7 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
 
     const initialSelectedItems: Record<string, AddressHierarchyEntry | null> =
       {};
+
     autocompleteFields.forEach((fieldName) => {
       const fieldValue = initialData[fieldName];
       if (fieldValue) {
@@ -98,14 +99,29 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
         };
       }
     });
+
     if (Object.keys(initialSelectedItems).length > 0) {
       setSelectedItems(initialSelectedItems);
     }
+
+    autocompleteFields.forEach((fieldName) => {
+      const fieldValue = initialData[fieldName];
+      if (fieldValue) {
+        const item: AddressHierarchyItem = {
+          name: fieldValue,
+          uuid: '',
+          userGeneratedId: fieldValue,
+        };
+
+        handleFieldSelect(fieldName, item);
+      }
+    });
   }, [
     initialData,
     levelsWithStrictEntry.length,
     autocompleteFields,
     setSelectedItems,
+    handleFieldSelect,
   ]);
 
   const handleAddressInputChange = useCallback(
