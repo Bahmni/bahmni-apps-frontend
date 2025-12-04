@@ -78,6 +78,7 @@ const PatientRegister = () => {
     contactInitialData,
     additionalInitialData,
     addressInitialData,
+    additionalIdentifiersInitialData,
     initialDobEstimated,
     metadata,
   } = usePatientDetails({
@@ -150,6 +151,7 @@ const PatientRegister = () => {
         const response = (await updatePatientMutation.mutateAsync({
           patientUuid,
           ...formData,
+          additionalIdentifiersInitialData,
         })) as PatientProfileResponse;
         if (response?.patient?.uuid) {
           return response.patient.uuid;
@@ -257,7 +259,10 @@ const PatientRegister = () => {
                 </span>
               </Tile>
 
-              <AdditionalIdentifiers ref={patientAdditionalIdentifiersRef} />
+              <AdditionalIdentifiers
+                ref={patientAdditionalIdentifiersRef}
+                initialData={additionalIdentifiersInitialData}
+              />
             </>
           )}
 

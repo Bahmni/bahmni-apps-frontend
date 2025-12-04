@@ -13,6 +13,7 @@ import {
   convertToContactData,
   convertToAdditionalData,
   convertToAddressData,
+  convertToAdditionalIdentifiersData,
 } from '../utils/patientDataConverter';
 
 interface UsePatientDetailsProps {
@@ -39,8 +40,6 @@ export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
     registerDate: '',
   });
 
-  const [queryEnabled, setQueryEnabled] = useState(true);
-
   const {
     data: patientDetails,
     isLoading,
@@ -48,7 +47,7 @@ export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
   } = useQuery({
     queryKey: ['formattedPatient', patientUuid],
     queryFn: () => getPatientProfile(patientUuid!),
-    enabled: !!patientUuid && queryEnabled,
+    enabled: !!patientUuid,
   });
 
   useEffect(() => {
@@ -81,6 +80,11 @@ export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
     [patientDetails],
   );
 
+  const additionalIdentifiersInitialData = useMemo(
+    () => convertToAdditionalIdentifiersData(patientDetails),
+    [patientDetails],
+  );
+
   const initialDobEstimated = useMemo(
     () => patientDetails?.patient?.person?.birthdateEstimated ?? false,
     [patientDetails],
@@ -105,8 +109,6 @@ export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
         patientName: patientDetails.patient.person.display ?? '',
         registerDate: formattedDate,
       });
-
-      setQueryEnabled(false);
     }
   }, [patientDetails, t]);
 
@@ -125,6 +127,7 @@ export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
     contactInitialData,
     additionalInitialData,
     addressInitialData,
+    additionalIdentifiersInitialData,
     initialDobEstimated,
     metadata,
   };
