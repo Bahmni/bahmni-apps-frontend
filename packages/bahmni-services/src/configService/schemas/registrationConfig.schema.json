@@ -345,53 +345,56 @@
         }
       }
     },
-    "appExtensions": {
-      "type": "object",
-      "description": "App extension configurations with dynamic keys",
-      "additionalProperties": false,
-      "patternProperties": {
-        "^[a-zA-Z]+$": {
-          "type": "object",
-          "description": "Extension configuration (e.g., search, appointment, etc.)",
-          "additionalProperties": false,
-          "properties": {
-            "id": {
-              "type": "string",
-              "description": "Unique identifier for the extension"
-            },
-            "extensionPointId": {
-              "type": "string",
-              "description": "Extension point identifier this extension attaches to"
-            },
-            "type": {
-              "type": "string",
-              "enum": ["link"],
-              "description": "Type of extension (currently only 'link' is supported)"
-            },
-            "translationKey": {
-              "type": "string",
-              "description": "Translation key for the extension label"
-            },
-            "url": {
-              "type": "string",
-              "description": "URL path for the extension"
-            },
-            "shortcutKey": {
-              "type": "string",
-              "description": "Keyboard shortcut key for the extension"
-            },
-            "icon": {
-              "type": "string",
-              "description": "Icon class name (e.g., FontAwesome class like 'fa-search')"
-            },
-            "order": {
-              "type": "number",
-              "description": "Display order of the extension"
-            },
-            "requiredPrivilege": {
-              "type": "string",
-              "description": "Required privilege to access this extension"
-            }
+    "registrationAppExtensions": {
+      "type": "array",
+      "description": "Array of app extension configurations for registration",
+      "items": {
+        "type": "object",
+        "description": "Extension configuration",
+        "additionalProperties": false,
+        "required": ["id", "extensionPointId", "type", "translationKey"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the extension"
+          },
+          "extensionPointId": {
+            "type": "string",
+            "description": "Extension point identifier this extension attaches to"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["link", "startVisit"],
+            "description": "Type of extension (e.g., 'link', 'startVisit')"
+          },
+          "translationKey": {
+            "type": "string",
+            "description": "Translation key for the extension label"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL path for the extension"
+          },
+          "shortcutKey": {
+            "type": "string",
+            "description": "Keyboard shortcut key for the extension"
+          },
+          "icon": {
+            "type": "string",
+            "description": "Icon class name (e.g., FontAwesome class like 'fa-search')"
+          },
+          "order": {
+            "type": "number",
+            "description": "Display order of the extension"
+          },
+          "requiredPrivilege": {
+            "type": "string",
+            "description": "Required privilege to access this extension"
+          },
+          "customProperties": {
+            "type": "object",
+            "description": "Additional custom properties for the extension",
+            "additionalProperties": true
           }
         }
       }

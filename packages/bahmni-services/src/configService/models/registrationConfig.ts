@@ -91,17 +91,14 @@ export interface FieldValidationConfig {
 export interface AppExtensionConfig {
   id: string;
   extensionPointId: string;
-  type: 'link';
+  type: 'link' | 'startVisit';
   translationKey: string;
   url: string;
   shortcutKey?: string;
   icon?: string;
   order?: number;
   requiredPrivilege?: string;
-}
-
-export interface AppExtension {
-  [key: string]: AppExtensionConfig;
+  customProperties?: Record<string, unknown>;
 }
 
 export interface RegistrationConfig {
@@ -110,7 +107,7 @@ export interface RegistrationConfig {
   patientInformation?: PatientInformationConfig;
   fieldValidation?: FieldValidationConfig;
   extensionPoints?: ExtensionPoint[];
-  appExtensions?: AppExtension;
+  registrationAppExtensions?: AppExtensionConfig[];
 }
 
 export interface ExtensionPoint {
