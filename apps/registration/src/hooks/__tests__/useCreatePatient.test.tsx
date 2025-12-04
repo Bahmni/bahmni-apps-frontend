@@ -1,9 +1,9 @@
 import {
   createPatient,
-  notificationService,
   dispatchAuditEvent,
   PersonAttributeType,
 } from '@bahmni/services';
+import { useNotification } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 import { ReactNode } from 'react';
@@ -14,10 +14,6 @@ import { useCreatePatient } from '../useCreatePatient';
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   createPatient: jest.fn(),
-  notificationService: {
-    showSuccess: jest.fn(),
-    showError: jest.fn(),
-  },
   dispatchAuditEvent: jest.fn(),
   AUDIT_LOG_EVENT_DETAILS: {
     REGISTER_NEW_PATIENT: {
@@ -27,11 +23,17 @@ jest.mock('@bahmni/services', () => ({
   },
 }));
 
+jest.mock('@bahmni/widgets', () => ({
+  useNotification: jest.fn(),
+}));
+
 jest.mock('react-router-dom', () => ({
   useNavigate: () => jest.fn(),
 }));
 
 const mockCreatePatient = createPatient as jest.Mock;
+const mockUseNotification = useNotification as jest.Mock;
+const mockAddNotification = jest.fn();
 
 describe('useCreatePatient', () => {
   let queryClient: QueryClient;
@@ -120,6 +122,7 @@ describe('useCreatePatient', () => {
       email: 'john.doe@example.com',
     },
     additionalIdentifiers: {},
+    relationships: [],
   };
 
   const mockSuccessResponse = {
@@ -134,6 +137,9 @@ describe('useCreatePatient', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUseNotification.mockReturnValue({
+      addNotification: mockAddNotification,
+    });
     // Mock window.history.replaceState
     window.history.replaceState = jest.fn();
   });
@@ -200,11 +206,12 @@ describe('useCreatePatient', () => {
       });
 
       // Verify success notification
-      expect(notificationService.showSuccess).toHaveBeenCalledWith(
-        'Success',
-        'Patient saved successfully',
-        5000,
-      );
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'Success',
+        message: 'Patient saved successfully',
+        type: 'success',
+        timeout: 5000,
+      });
 
       // Verify audit event was dispatched
       expect(dispatchAuditEvent).toHaveBeenCalledWith({
@@ -380,14 +387,16 @@ describe('useCreatePatient', () => {
       });
 
       // Verify error notification
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        'Error',
-        'Failed to save patient',
-        5000,
-      );
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'Error saving patient',
+        message: 'API Error',
+        type: 'error',
+      });
 
-      // Verify success notification was not called
-      expect(notificationService.showSuccess).not.toHaveBeenCalled();
+      // Verify success notification was not called with success type
+      expect(mockAddNotification).not.toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'success' }),
+      );
 
       // Verify audit event was not dispatched
       expect(dispatchAuditEvent).not.toHaveBeenCalled();
@@ -407,11 +416,11 @@ describe('useCreatePatient', () => {
         expect(result.current.isError).toBe(true);
       });
 
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        'Error',
-        'Failed to save patient',
-        5000,
-      );
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'Error saving patient',
+        message: 'Network request failed',
+        type: 'error',
+      });
     });
 
     it('should handle validation errors from API', async () => {
@@ -431,7 +440,11 @@ describe('useCreatePatient', () => {
         expect(result.current.isError).toBe(true);
       });
 
-      expect(notificationService.showError).toHaveBeenCalled();
+      expect(mockAddNotification).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'error',
+        }),
+      );
     });
   });
 
@@ -519,7 +532,11 @@ describe('useCreatePatient', () => {
       });
 
       // Verify success notification is still shown
-      expect(notificationService.showSuccess).toHaveBeenCalled();
+      expect(mockAddNotification).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'success',
+        }),
+      );
 
       // Verify audit event was NOT dispatched (no UUID)
       expect(dispatchAuditEvent).not.toHaveBeenCalled();
@@ -541,7 +558,11 @@ describe('useCreatePatient', () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      expect(notificationService.showSuccess).toHaveBeenCalled();
+      expect(mockAddNotification).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'success',
+        }),
+      );
       expect(dispatchAuditEvent).not.toHaveBeenCalled();
     });
   });

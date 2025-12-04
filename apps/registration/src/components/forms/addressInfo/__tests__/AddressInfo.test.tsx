@@ -231,7 +231,14 @@ describe('AddressInfo', () => {
       fireEvent.change(houseNumberInput, { target: { value: '123' } });
 
       const data = ref.current?.getData();
-      expect(data).toEqual({ address1: '123' });
+      expect(data).toEqual({
+        address1: '123',
+        address2: '',
+        cityVillage: '',
+        countyDistrict: '',
+        postalCode: '',
+        stateProvince: '',
+      });
     });
 
     it('should return multiple filled fields', async () => {
@@ -249,6 +256,10 @@ describe('AddressInfo', () => {
       expect(data).toEqual({
         address1: '123',
         address2: 'Street',
+        cityVillage: '',
+        countyDistrict: '',
+        postalCode: '',
+        stateProvince: '',
       });
     });
   });
@@ -362,7 +373,7 @@ describe('AddressInfo', () => {
           uuid: '1',
           name: 'District A',
           userGeneratedId: null,
-          parent: { uuid: 'state-1', name: 'State A' },
+          parent: { uuid: 'state-1', name: 'State A', userGeneratedId: null },
         },
       ]);
 

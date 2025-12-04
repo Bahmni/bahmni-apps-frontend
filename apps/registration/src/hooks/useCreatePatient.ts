@@ -1,6 +1,5 @@
 import {
   createPatient,
-  notificationService,
   CreatePatientRequest,
   PatientName,
   PatientIdentifier,
@@ -10,9 +9,12 @@ import {
   AuditEventType,
   dispatchAuditEvent,
   PersonAttributeType,
+  useTranslation,
 } from '@bahmni/services';
+import { useNotification } from '@bahmni/widgets';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import type { RelationshipData } from '../components/forms/patientRelationships/PatientRelationships';
 import { convertTimeToISODateTime } from '../components/forms/profile/dateAgeUtils';
 import {
   BasicInfoData,
@@ -20,6 +22,7 @@ import {
   AdditionalData,
   AdditionalIdentifiersData,
 } from '../models/patient';
+import { parseDateStringToDate } from '../utils/ageUtils';
 import { usePersonAttributes } from './usePersonAttributes';
 
 interface CreatePatientFormData {
@@ -32,9 +35,12 @@ interface CreatePatientFormData {
   contact: ContactData;
   additional: AdditionalData;
   additionalIdentifiers: AdditionalIdentifiersData;
+  relationships: RelationshipData[];
 }
 
 export const useCreatePatient = () => {
+  const { t } = useTranslation();
+  const { addNotification } = useNotification();
   const navigate = useNavigate();
   const { personAttributes } = usePersonAttributes();
 
@@ -44,11 +50,12 @@ export const useCreatePatient = () => {
       return createPatient(payload);
     },
     onSuccess: (response) => {
-      notificationService.showSuccess(
-        'Success',
-        'Patient saved successfully',
-        5000,
-      );
+      addNotification({
+        title: t('NOTIFICATION_SUCCESS_TITLE'),
+        message: t('NOTIFICATION_PATIENT_SAVED_SUCCESSFULLY'),
+        type: 'success',
+        timeout: 5000,
+      });
 
       if (response?.patient?.uuid) {
         dispatchAuditEvent({
@@ -70,8 +77,12 @@ export const useCreatePatient = () => {
         navigate('/registration/search');
       }
     },
-    onError: () => {
-      notificationService.showError('Error', 'Failed to save patient', 5000);
+    onError: (error) => {
+      addNotification({
+        type: 'error',
+        title: t('ERROR_SAVING_PATIENT'),
+        message: error instanceof Error ? error.message : String(error),
+      });
     },
   });
 
@@ -118,6 +129,28 @@ function transformFormDataToPayload(
     }
   });
 
+  const transformedRelationships = (formData.relationships || [])
+    .filter((rel) => rel.patientUuid && rel.relationshipType)
+    .map((rel) => {
+      const relationship: {
+        relationshipType: { uuid: string };
+        personB: { uuid: string };
+        endDate?: string;
+      } = {
+        relationshipType: { uuid: rel.relationshipType! },
+        personB: { uuid: rel.patientUuid },
+      };
+
+      if (rel.tillDate) {
+        const date = parseDateStringToDate(rel.tillDate);
+        if (date) {
+          relationship.endDate = date.toISOString();
+        }
+      }
+
+      return relationship;
+    });
+
   const identifiers: (PatientIdentifier & { identifier?: string })[] = [
     profile.patientIdentifier,
   ];
@@ -153,7 +186,7 @@ function transformFormDataToPayload(
       identifiers,
     },
     ...(profile.image && { image: profile.image }),
-    relationships: [],
+    relationships: transformedRelationships,
   };
 
   return payload;

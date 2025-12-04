@@ -16,10 +16,15 @@ import {
   createConceptRows,
 } from './utils';
 
-interface VitalFlowSheetProps {
+// TODO: Add JSON Schmema for VitalFlowSheetConfig
+interface VitalFlowSheetConfig {
   latestCount: number;
   obsConcepts: string[];
   groupBy?: string;
+}
+
+interface VitalFlowSheetProps {
+  config: VitalFlowSheetConfig;
 }
 
 interface ComplexDisplayData {
@@ -47,9 +52,7 @@ interface FlowSheetRow {
 }
 
 const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
-  latestCount,
-  obsConcepts,
-  groupBy,
+  config: { latestCount, obsConcepts, groupBy },
 }) => {
   const { t } = useTranslation();
 
