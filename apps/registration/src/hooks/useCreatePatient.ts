@@ -70,24 +70,8 @@ export const useCreatePatient = () => {
         navigate('/registration/search');
       }
     },
-    onError: (error: unknown) => {
-      let errorMessage = '';
-
-      if (typeof error === 'string') {
-        const colonIndex = error.indexOf(': ');
-        errorMessage =
-          colonIndex !== -1 ? error.substring(colonIndex + 2) : error;
-      }
-
-      const validationReasonMatch = errorMessage.match(
-        /failed to validate with reason: (.+)\]$/,
-      );
-
-      const displayMessage = validationReasonMatch
-        ? validationReasonMatch[1].trim()
-        : errorMessage || 'Failed to save patient';
-
-      notificationService.showError('Error', displayMessage, 5000);
+    onError: () => {
+      notificationService.showError('Error', 'Failed to save patient', 5000);
     },
   });
 
