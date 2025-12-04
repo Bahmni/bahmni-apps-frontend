@@ -1,6 +1,16 @@
 import { ActionArea, Icon, ICON_SIZE } from '@bahmni/design-system';
-import { ObservationForm } from '@bahmni/services';
-import React from 'react';
+import {
+  Container,
+  FormMetadata as Form2FormMetadata,
+} from '@bahmni/form2-controls';
+import '@bahmni/form2-controls/dist/bundle.css';
+import {
+  fetchFormMetadata,
+  FormMetadata,
+  ObservationForm,
+} from '@bahmni/services';
+import { usePatientUUID } from '@bahmni/widgets';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_FORM_API_NAMES } from '../../../constants/forms';
 import styles from './styles/ObservationFormsContainer.module.scss';
@@ -35,9 +45,37 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   updatePinnedForms,
 }) => {
   const { t } = useTranslation();
+  const patientUUID = usePatientUUID();
 
   // Use the external viewingForm from parent
   const viewingForm = externalViewingForm;
+
+  // State to store form metadata
+  const [formMetadata, setFormMetadata] = useState<FormMetadata | null>(null);
+  const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
+
+  // Fetch form metadata when viewingForm changes
+  useEffect(() => {
+    const loadFormMetadata = async () => {
+      if (viewingForm?.uuid) {
+        setIsLoadingMetadata(true);
+        try {
+          const metadata = await fetchFormMetadata(viewingForm.uuid);
+          setFormMetadata(metadata);
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error('Error fetching form metadata:', error);
+          setFormMetadata(null);
+        } finally {
+          setIsLoadingMetadata(false);
+        }
+      } else {
+        setFormMetadata(null);
+      }
+    };
+
+    loadFormMetadata();
+  }, [viewingForm?.uuid]);
 
   // Check if current form is pinned
   const isCurrentFormPinned = viewingForm
@@ -78,8 +116,23 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   const formViewContent = (
     <div className={styles.formView}>
       <div className={styles.formContent}>
-        {/* TODO: Actual form rendering will be implemented here */}
-        {/* For now, show empty content as form rendering is not yet implemented */}
+        {isLoadingMetadata ? (
+          <div>{t('OBSERVATION_FORM_LOADING_METADATA')}</div>
+        ) : formMetadata && patientUUID ? (
+          <Container
+            metadata={formMetadata.schema as Form2FormMetadata}
+            observations={[]}
+            patient={{ uuid: patientUUID }}
+            translations={{}}
+            validate={false}
+            validateForm={false}
+            collapse={false}
+            locale="en"
+            onValueUpdated={() => {}}
+          />
+        ) : (
+          <div>{t('OBSERVATION_FORM_LOADING_METADATA_ERROR')}</div>
+        )}
       </div>
     </div>
   );
