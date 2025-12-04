@@ -122,6 +122,9 @@ export const AdditionalIdentifiers = ({
     if (cellId === 'value') {
       const value = formData[row.uuid] ?? '';
       const error = errors[row.uuid] ?? '';
+      const hasInitialData = Boolean(
+        initialData?.[row.uuid] && initialData[row.uuid].trim() !== '',
+      );
       return (
         <div className={styles.identifierField}>
           <TextInput
@@ -131,6 +134,7 @@ export const AdditionalIdentifiers = ({
             value={value}
             invalid={!!error}
             invalidText={error}
+            disabled={hasInitialData}
             onChange={(e) => handleFieldChange(row.uuid, e.target.value)}
           />
         </div>
