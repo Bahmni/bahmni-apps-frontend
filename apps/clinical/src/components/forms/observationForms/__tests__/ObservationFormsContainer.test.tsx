@@ -18,6 +18,35 @@ jest.mock('react-i18next', () => ({
   })),
 }));
 
+// Mock the form metadata service
+const mockFetchFormMetadata = jest.fn();
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  fetchFormMetadata: (...args: unknown[]) => mockFetchFormMetadata(...args),
+}));
+
+// Mock the form2-controls package
+jest.mock('@bahmni/form2-controls', () => ({
+  Container: jest.fn(({ metadata }) => (
+    <div data-testid="form2-container">
+      Form Container with metadata: {JSON.stringify(metadata)}
+    </div>
+  )),
+}));
+
+// Mock the form2-controls CSS
+jest.mock('@bahmni/form2-controls/dist/bundle.css', () => ({}));
+
+// Mock the usePatientUUID hook
+jest.mock('@bahmni/widgets', () => ({
+  usePatientUUID: jest.fn(() => 'test-patient-uuid'),
+}));
+
+// Mock the constants
+jest.mock('../../../../constants/forms', () => ({
+  DEFAULT_FORM_API_NAMES: ['History and Examination', 'Vitals'],
+}));
+
 // Mock ActionArea component
 jest.mock('@bahmni/design-system', () => ({
   ActionArea: jest.fn(
@@ -276,6 +305,104 @@ describe('ObservationFormsContainer', () => {
       expect(
         screen.getByText('translated_OBSERVATION_FORM_BACK_BUTTON'),
       ).toBeInTheDocument();
+    });
+  });
+
+  describe('Form Metadata Loading', () => {
+    beforeEach(() => {
+      mockFetchFormMetadata.mockClear();
+    });
+
+    it('should fetch form metadata when viewingForm changes', async () => {
+      const mockMetadata = {
+        schema: {
+          name: 'Test Form Schema',
+          controls: [],
+        },
+      };
+      mockFetchFormMetadata.mockResolvedValue(mockMetadata);
+
+      render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+      );
+
+      expect(mockFetchFormMetadata).toHaveBeenCalledWith('test-form-uuid');
+    });
+
+    it('should display loading message while fetching metadata', () => {
+      mockFetchFormMetadata.mockImplementation(
+        () => new Promise(() => {}), // Never resolves
+      );
+
+      render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+      );
+
+      expect(
+        screen.getByText('translated_OBSERVATION_FORM_LOADING_METADATA'),
+      ).toBeInTheDocument();
+    });
+
+    it('should render Container component with metadata when loaded', async () => {
+      const mockMetadata = {
+        schema: {
+          name: 'Test Form Schema',
+          controls: [],
+        },
+      };
+      mockFetchFormMetadata.mockResolvedValue(mockMetadata);
+
+      render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+      );
+
+      await screen.findByTestId('form2-container');
+      expect(screen.getByTestId('form2-container')).toBeInTheDocument();
+    });
+
+    it('should display error message when metadata fetch fails', async () => {
+      mockFetchFormMetadata.mockRejectedValue(new Error('Failed to fetch'));
+
+      render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+      );
+
+      await screen.findByText(
+        'translated_OBSERVATION_FORM_LOADING_METADATA_ERROR',
+      );
+      expect(
+        screen.getByText('translated_OBSERVATION_FORM_LOADING_METADATA_ERROR'),
+      ).toBeInTheDocument();
+    });
+
+    it('should not fetch metadata when viewingForm is null', () => {
+      render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={null} />,
+      );
+
+      expect(mockFetchFormMetadata).not.toHaveBeenCalled();
+    });
+
+    it('should clear metadata when viewingForm changes to null', async () => {
+      const mockMetadata = {
+        schema: {
+          name: 'Test Form Schema',
+          controls: [],
+        },
+      };
+      mockFetchFormMetadata.mockResolvedValue(mockMetadata);
+
+      const { rerender } = render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+      );
+
+      await screen.findByTestId('form2-container');
+
+      rerender(
+        <ObservationFormsContainer {...defaultProps} viewingForm={null} />,
+      );
+
+      expect(screen.queryByTestId('form2-container')).not.toBeInTheDocument();
     });
   });
 
