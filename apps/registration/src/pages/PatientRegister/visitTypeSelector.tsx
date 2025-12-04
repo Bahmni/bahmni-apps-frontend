@@ -15,6 +15,7 @@ import {
 import { useNotification } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
+import { AppExtensionButtons } from '../../components/appExtensions/AppExtensionButtons';
 import styles from './styles/VisitTypeSelector.module.scss';
 
 interface VisitTypeSelectorProps {
@@ -140,7 +141,7 @@ export const VisitTypeSelector = ({
         className={styles.visitButton}
         kind="tertiary"
         disabled={isLoadingVisitTypes || visitTypesArray.length === 0}
-        onClick={() => handleVisitTypeChange(defaultVisitType)}
+        onClick={() => defaultVisitType}
       >
         {!isLoadingVisitTypes && defaultVisitType
           ? hasActiveVisit
@@ -169,6 +170,12 @@ export const VisitTypeSelector = ({
           }
           titleText=""
           selectedItem={null}
+        />
+      )}
+      {patientUuid && (
+        <AppExtensionButtons
+          extensionId="bahmni.registration.navigation.patient.start.visit"
+          urlContext={{ patientUuid }}
         />
       )}
     </div>

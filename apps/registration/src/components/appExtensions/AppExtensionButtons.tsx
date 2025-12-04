@@ -1,14 +1,15 @@
 import { Button } from '@bahmni/design-system';
-import { AppExtensionConfig, hasPrivilege } from '@bahmni/services';
-import { useUserPrivilege } from '@bahmni/widgets';
+import { AppExtensionConfig, useTranslation } from '@bahmni/services';
 import { useNavigate } from 'react-router-dom';
-import { useRegistrationConfig } from '../../hooks/useRegistrationConfig';
+import { useFilteredExtensions } from '../../hooks/useFilteredExtensions';
+import { processExtensionClick } from '../../utils/extensionNavigation';
 
 export interface AppExtensionButtonsProps {
   extensionPointId?: string;
   extensionId?: string;
   onExtensionClick?: (extension: AppExtensionConfig) => void;
   buttonKind?: 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'danger';
+  urlContext?: Record<string, string | number | null | undefined>;
 }
 
 /**
@@ -21,60 +22,21 @@ export const AppExtensionButtons = ({
   extensionId,
   onExtensionClick,
   buttonKind = 'tertiary',
+  urlContext = {},
 }: AppExtensionButtonsProps) => {
-  const { registrationConfig, isLoading: configLoading } =
-    useRegistrationConfig();
-  const { userPrivileges, isLoading: privilegesLoading } = useUserPrivilege();
+  const { t } = useTranslation();
   const navigate = useNavigate();
+  const { filteredExtensions, isLoading } = useFilteredExtensions({
+    extensionPointId,
+    extensionId,
+  });
 
-  // Don't render while loading
-  if (configLoading || privilegesLoading) {
-    return null;
-  }
-
-  const extensions: AppExtensionConfig[] =
-    registrationConfig?.registrationAppExtensions ?? [];
-
-  // Filter extensions by extension point or specific extension ID
-  let filteredExtensions = extensions;
-
-  if (extensionId) {
-    // Filter by specific extension ID
-    filteredExtensions = extensions.filter((ext) => ext.id === extensionId);
-  } else if (extensionPointId) {
-    // Filter by extension point ID (location)
-    filteredExtensions = extensions.filter(
-      (ext) => ext.extensionPointId === extensionPointId,
-    );
-  }
-
-  // Apply privilege filter and sort
-  filteredExtensions = filteredExtensions
-    .filter(
-      (ext) =>
-        !ext.requiredPrivilege ||
-        hasPrivilege(userPrivileges, ext.requiredPrivilege),
-    )
-    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-
-  if (filteredExtensions.length === 0) {
+  if (isLoading || filteredExtensions.length === 0) {
     return null;
   }
 
   const handleClick = (extension: AppExtensionConfig) => {
-    // Call parent callback if provided
-    onExtensionClick?.(extension);
-
-    // Handle navigation based on extension type
-    if (!extension.url) return;
-
-    if (extension.type === 'link') {
-      // For 'link' type: navigate to the absolute URL (external navigation)
-      window.location.href = extension.url;
-    } else if (extension.type === 'startVisit') {
-      // For 'startVisit' type: navigate within registration app using React Router
-      navigate(extension.url);
-    }
+    processExtensionClick(extension, navigate, urlContext, onExtensionClick);
   };
 
   return (
@@ -86,8 +48,7 @@ export const AppExtensionButtons = ({
           onClick={() => handleClick(extension)}
         >
           {extension.icon && <i className={extension.icon} />}
-          {/* Translation will be handled by parent component */}
-          {extension.translationKey}
+          {t(extension.translationKey)}
         </Button>
       ))}
     </>

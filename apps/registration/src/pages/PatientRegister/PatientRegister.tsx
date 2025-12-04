@@ -17,7 +17,6 @@ import {
 import { useNotification } from '@bahmni/widgets';
 import { useRef, useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { AppExtensionButtons } from '../../components/appExtensions/AppExtensionButtons';
 import {
   AdditionalIdentifiers,
   AdditionalIdentifiersRef,
@@ -287,7 +286,6 @@ const PatientRegister = () => {
                 onVisitSave={handleSave}
                 patientUuid={patientUuid}
               />
-              <AppExtensionButtons extensionId="bahmni.registration.navigation.patient.start.visit" />
             </div>
           </div>
         </div>

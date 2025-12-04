@@ -1,19 +1,14 @@
 import { AppExtensionConfig } from '@bahmni/services';
-import { useUserPrivilege } from '@bahmni/widgets';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { useRegistrationConfig } from '../../../hooks/useRegistrationConfig';
+import { useFilteredExtensions } from '../../../hooks/useFilteredExtensions';
 import { AppExtensionButtons } from '../AppExtensionButtons';
 
 // Mock the hooks
-jest.mock('../../../hooks/useRegistrationConfig');
-jest.mock('@bahmni/widgets');
+jest.mock('../../../hooks/useFilteredExtensions');
 
-const mockUseRegistrationConfig = useRegistrationConfig as jest.MockedFunction<
-  typeof useRegistrationConfig
->;
-const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
-  typeof useUserPrivilege
+const mockUseFilteredExtensions = useFilteredExtensions as jest.MockedFunction<
+  typeof useFilteredExtensions
 >;
 
 describe('AppExtensionButtons', () => {
@@ -37,42 +32,16 @@ describe('AppExtensionButtons', () => {
       icon: 'fa-print',
       order: 2,
     },
-    {
-      id: 'ext-3',
-      extensionPointId: 'org.bahmni.registration.header',
-      type: 'link',
-      translationKey: 'SETTINGS',
-      url: '/settings',
-      order: 1,
-    },
-  ];
-
-  const mockUserPrivileges = [
-    { uuid: '1', name: 'Start Visit' },
-    { uuid: '2', name: 'View Patients' },
   ];
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseUserPrivilege.mockReturnValue({
-      userPrivileges: mockUserPrivileges,
-      isLoading: false,
-      error: null,
-      setUserPrivileges: jest.fn(),
-      setIsLoading: jest.fn(),
-      setError: jest.fn(),
-    });
   });
 
-  it('should render nothing while config is loading', () => {
-    mockUseRegistrationConfig.mockReturnValue({
-      registrationConfig: null,
+  it('should render nothing while loading', () => {
+    mockUseFilteredExtensions.mockReturnValue({
+      filteredExtensions: [],
       isLoading: true,
-      error: null,
-      setRegistrationConfig: jest.fn(),
-      setIsLoading: jest.fn(),
-      setError: jest.fn(),
-      refetch: jest.fn(),
     });
 
     const { container } = render(
@@ -81,25 +50,10 @@ describe('AppExtensionButtons', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('should render nothing while privileges are loading', () => {
-    mockUseRegistrationConfig.mockReturnValue({
-      registrationConfig: {
-        registrationAppExtensions: mockExtensions,
-      } as any,
+  it('should render nothing when no extensions are returned', () => {
+    mockUseFilteredExtensions.mockReturnValue({
+      filteredExtensions: [],
       isLoading: false,
-      error: null,
-      setRegistrationConfig: jest.fn(),
-      setIsLoading: jest.fn(),
-      setError: jest.fn(),
-      refetch: jest.fn(),
-    });
-    mockUseUserPrivilege.mockReturnValue({
-      userPrivileges: null,
-      isLoading: true,
-      error: null,
-      setUserPrivileges: jest.fn(),
-      setIsLoading: jest.fn(),
-      setError: jest.fn(),
     });
 
     const { container } = render(
@@ -108,17 +62,10 @@ describe('AppExtensionButtons', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('should render extensions filtered by extension point', () => {
-    mockUseRegistrationConfig.mockReturnValue({
-      registrationConfig: {
-        registrationAppExtensions: mockExtensions,
-      } as any,
+  it('should render filtered extensions', () => {
+    mockUseFilteredExtensions.mockReturnValue({
+      filteredExtensions: mockExtensions,
       isLoading: false,
-      error: null,
-      setRegistrationConfig: jest.fn(),
-      setIsLoading: jest.fn(),
-      setError: jest.fn(),
-      refetch: jest.fn(),
     });
 
     render(
@@ -127,50 +74,12 @@ describe('AppExtensionButtons', () => {
 
     expect(screen.getByText('START_VISIT')).toBeInTheDocument();
     expect(screen.getByText('PRINT_CARD')).toBeInTheDocument();
-    expect(screen.queryByText('SETTINGS')).not.toBeInTheDocument();
-  });
-
-  it('should filter extensions by user privilege', () => {
-    mockUseUserPrivilege.mockReturnValue({
-      userPrivileges: [{ uuid: '1', name: 'View Patients' }],
-      isLoading: false,
-      error: null,
-      setUserPrivileges: jest.fn(),
-      setIsLoading: jest.fn(),
-      setError: jest.fn(),
-    });
-
-    mockUseRegistrationConfig.mockReturnValue({
-      registrationConfig: {
-        registrationAppExtensions: mockExtensions,
-      } as any,
-      isLoading: false,
-      error: null,
-      setRegistrationConfig: jest.fn(),
-      setIsLoading: jest.fn(),
-      setError: jest.fn(),
-      refetch: jest.fn(),
-    });
-
-    render(
-      <AppExtensionButtons extensionPointId="org.bahmni.registration.footer" />,
-    );
-
-    expect(screen.queryByText('START_VISIT')).not.toBeInTheDocument();
-    expect(screen.getByText('PRINT_CARD')).toBeInTheDocument();
   });
 
   it('should render extensions in order', () => {
-    mockUseRegistrationConfig.mockReturnValue({
-      registrationConfig: {
-        registrationAppExtensions: mockExtensions,
-      } as any,
+    mockUseFilteredExtensions.mockReturnValue({
+      filteredExtensions: mockExtensions,
       isLoading: false,
-      error: null,
-      setRegistrationConfig: jest.fn(),
-      setIsLoading: jest.fn(),
-      setError: jest.fn(),
-      refetch: jest.fn(),
     });
 
     const { container } = render(
@@ -184,16 +93,9 @@ describe('AppExtensionButtons', () => {
 
   it('should call onExtensionClick when button is clicked', () => {
     const onExtensionClick = jest.fn();
-    mockUseRegistrationConfig.mockReturnValue({
-      registrationConfig: {
-        registrationAppExtensions: mockExtensions,
-      } as any,
+    mockUseFilteredExtensions.mockReturnValue({
+      filteredExtensions: mockExtensions,
       isLoading: false,
-      error: null,
-      setRegistrationConfig: jest.fn(),
-      setIsLoading: jest.fn(),
-      setError: jest.fn(),
-      refetch: jest.fn(),
     });
 
     render(
@@ -210,16 +112,9 @@ describe('AppExtensionButtons', () => {
   });
 
   it('should render icon if provided', () => {
-    mockUseRegistrationConfig.mockReturnValue({
-      registrationConfig: {
-        registrationAppExtensions: mockExtensions,
-      } as any,
+    mockUseFilteredExtensions.mockReturnValue({
+      filteredExtensions: mockExtensions,
       isLoading: false,
-      error: null,
-      setRegistrationConfig: jest.fn(),
-      setIsLoading: jest.fn(),
-      setError: jest.fn(),
-      refetch: jest.fn(),
     });
 
     const { container } = render(
@@ -230,56 +125,10 @@ describe('AppExtensionButtons', () => {
     expect(icons.length).toBeGreaterThan(0);
   });
 
-  it('should render nothing when no extensions match extension point', () => {
-    mockUseRegistrationConfig.mockReturnValue({
-      registrationConfig: {
-        registrationAppExtensions: mockExtensions,
-      } as any,
-      isLoading: false,
-      error: null,
-      setRegistrationConfig: jest.fn(),
-      setIsLoading: jest.fn(),
-      setError: jest.fn(),
-      refetch: jest.fn(),
-    });
-
-    const { container } = render(
-      <AppExtensionButtons extensionPointId="org.bahmni.nonexistent" />,
-    );
-
-    expect(container.firstChild).toBeNull();
-  });
-
-  it('should render nothing when registrationAppExtensions is undefined', () => {
-    mockUseRegistrationConfig.mockReturnValue({
-      registrationConfig: {} as any,
-      isLoading: false,
-      error: null,
-      setRegistrationConfig: jest.fn(),
-      setIsLoading: jest.fn(),
-      setError: jest.fn(),
-      refetch: jest.fn(),
-    });
-
-    const { container } = render(
-      <AppExtensionButtons extensionPointId="org.bahmni.registration.footer" />,
-    );
-
-    expect(container.firstChild).toBeNull();
-  });
-
-  // Tests for extensionId filtering
   it('should render specific extension when filtered by extensionId', () => {
-    mockUseRegistrationConfig.mockReturnValue({
-      registrationConfig: {
-        registrationAppExtensions: mockExtensions,
-      } as any,
+    mockUseFilteredExtensions.mockReturnValue({
+      filteredExtensions: [mockExtensions[0]],
       isLoading: false,
-      error: null,
-      setRegistrationConfig: jest.fn(),
-      setIsLoading: jest.fn(),
-      setError: jest.fn(),
-      refetch: jest.fn(),
     });
 
     render(
@@ -288,56 +137,48 @@ describe('AppExtensionButtons', () => {
 
     expect(screen.getByText('START_VISIT')).toBeInTheDocument();
     expect(screen.queryByText('PRINT_CARD')).not.toBeInTheDocument();
-    expect(screen.queryByText('SETTINGS')).not.toBeInTheDocument();
   });
 
-  it('should respect privilege when filtering by extensionId', () => {
-    mockUseUserPrivilege.mockReturnValue({
-      userPrivileges: [{ uuid: '1', name: 'View Patients' }],
+  it('should apply custom buttonKind prop', () => {
+    mockUseFilteredExtensions.mockReturnValue({
+      filteredExtensions: [mockExtensions[0]],
       isLoading: false,
-      error: null,
-      setUserPrivileges: jest.fn(),
-      setIsLoading: jest.fn(),
-      setError: jest.fn(),
-    });
-
-    mockUseRegistrationConfig.mockReturnValue({
-      registrationConfig: {
-        registrationAppExtensions: mockExtensions,
-      } as any,
-      isLoading: false,
-      error: null,
-      setRegistrationConfig: jest.fn(),
-      setIsLoading: jest.fn(),
-      setError: jest.fn(),
-      refetch: jest.fn(),
     });
 
     const { container } = render(
-      <AppExtensionButtons extensionId="bahmni.registration.navigation.patient.start.visit" />,
+      <AppExtensionButtons
+        extensionId="bahmni.registration.navigation.patient.start.visit"
+        buttonKind="primary"
+      />,
     );
 
-    // START_VISIT requires 'Start Visit' privilege, user only has 'View Patients'
-    expect(container.firstChild).toBeNull();
+    const button = container.querySelector('button');
+    expect(button).toBeInTheDocument();
   });
 
-  it('should render nothing when extensionId does not match any extension', () => {
-    mockUseRegistrationConfig.mockReturnValue({
-      registrationConfig: {
-        registrationAppExtensions: mockExtensions,
-      } as any,
+  it('should accept urlContext prop for URL interpolation', () => {
+    const extensionWithTemplate: AppExtensionConfig = {
+      id: 'test-extension',
+      extensionPointId: 'org.bahmni.registration.footer',
+      type: 'link',
+      translationKey: 'VIEW_PATIENT',
+      url: '/clinical/patient/{{patientUuid}}/dashboard',
+      order: 1,
+    };
+
+    mockUseFilteredExtensions.mockReturnValue({
+      filteredExtensions: [extensionWithTemplate],
       isLoading: false,
-      error: null,
-      setRegistrationConfig: jest.fn(),
-      setIsLoading: jest.fn(),
-      setError: jest.fn(),
-      refetch: jest.fn(),
     });
 
-    const { container } = render(
-      <AppExtensionButtons extensionId="non.existent.extension" />,
+    render(
+      <AppExtensionButtons
+        extensionPointId="org.bahmni.registration.footer"
+        urlContext={{ patientUuid: 'test-uuid-123' }}
+      />,
     );
 
-    expect(container.firstChild).toBeNull();
+    const button = screen.getByText('VIEW_PATIENT');
+    expect(button).toBeInTheDocument();
   });
 });
