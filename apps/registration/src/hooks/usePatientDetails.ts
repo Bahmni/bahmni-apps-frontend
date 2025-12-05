@@ -107,16 +107,11 @@ export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
       });
 
       setQueryEnabled(false);
-    }
-  }, [patientDetails, t]);
-
-  useEffect(() => {
-    return () => {
       queryClient.removeQueries({
         queryKey: ['formattedPatient', patientUuid],
       });
-    };
-  }, [patientUuid, queryClient]);
+    }
+  }, [patientDetails, patientUuid, queryClient, t]);
 
   return {
     patientDetails,
