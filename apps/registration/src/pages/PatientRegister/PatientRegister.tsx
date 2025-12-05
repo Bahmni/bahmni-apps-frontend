@@ -13,6 +13,7 @@ import {
   AuditEventType,
   dispatchAuditEvent,
   PatientProfileResponse,
+  AppExtensionConfig,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { useRef, useState, useEffect } from 'react';
@@ -171,6 +172,20 @@ const PatientRegister = () => {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleDefaultAction = async (extension: AppExtensionConfig) => {
+    // Validate that patient exists before allowing navigation
+    if (!patientUuid) {
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: t('REGISTRATION_PATIENT_MUST_BE_SAVED'),
+        type: 'error',
+        timeout: 5000,
+      });
+      throw new Error('Patient must be saved first');
+    }
+  };
+
   const breadcrumbs = [
     {
       id: 'home',
@@ -279,6 +294,7 @@ const PatientRegister = () => {
               <RegistrationActions
                 extensionPointId="org.bahmni.registration.navigation"
                 onVisitSave={handleSave}
+                onDefaultAction={handleDefaultAction}
               />
             </div>
           </div>

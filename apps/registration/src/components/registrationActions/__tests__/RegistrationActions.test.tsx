@@ -1,15 +1,22 @@
 import { AppExtensionConfig } from '@bahmni/services';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import { BrowserRouter } from 'react-router-dom';
 import { useFilteredExtensions } from '../../../hooks/useFilteredExtensions';
+import * as extensionNavigation from '../../../utils/extensionNavigation';
 import { RegistrationActions } from '../RegistrationActions';
 
-// Mock the hooks
+// Mock the hooks and utilities
 jest.mock('../../../hooks/useFilteredExtensions');
+jest.mock('../../../utils/extensionNavigation');
 
 const mockUseFilteredExtensions = useFilteredExtensions as jest.MockedFunction<
   typeof useFilteredExtensions
 >;
+
+const renderWithRouter = (component: React.ReactElement) => {
+  return render(<BrowserRouter>{component}</BrowserRouter>);
+};
 
 describe('RegistrationActions', () => {
   const mockExtensions: AppExtensionConfig[] = [
@@ -44,7 +51,7 @@ describe('RegistrationActions', () => {
       isLoading: true,
     });
 
-    const { container } = render(
+    const { container } = renderWithRouter(
       <RegistrationActions extensionPointId="org.bahmni.registration.footer" />,
     );
     expect(container.firstChild).toBeNull();
@@ -56,7 +63,7 @@ describe('RegistrationActions', () => {
       isLoading: false,
     });
 
-    const { container } = render(
+    const { container } = renderWithRouter(
       <RegistrationActions extensionPointId="org.bahmni.registration.footer" />,
     );
     expect(container.firstChild).toBeNull();
@@ -68,7 +75,7 @@ describe('RegistrationActions', () => {
       isLoading: false,
     });
 
-    render(
+    renderWithRouter(
       <RegistrationActions extensionPointId="org.bahmni.registration.footer" />,
     );
 
@@ -82,7 +89,7 @@ describe('RegistrationActions', () => {
       isLoading: false,
     });
 
-    const { container } = render(
+    const { container } = renderWithRouter(
       <RegistrationActions extensionPointId="org.bahmni.registration.footer" />,
     );
 
@@ -97,7 +104,7 @@ describe('RegistrationActions', () => {
       isLoading: false,
     });
 
-    const { container } = render(
+    const { container } = renderWithRouter(
       <RegistrationActions extensionPointId="org.bahmni.registration.footer" />,
     );
 
@@ -111,7 +118,7 @@ describe('RegistrationActions', () => {
       isLoading: false,
     });
 
-    const { container } = render(
+    const { container } = renderWithRouter(
       <RegistrationActions
         extensionPointId="org.bahmni.registration.footer"
         buttonKind="primary"
@@ -137,7 +144,7 @@ describe('RegistrationActions', () => {
       isLoading: false,
     });
 
-    render(
+    renderWithRouter(
       <RegistrationActions
         extensionPointId="org.bahmni.registration.footer"
         urlContext={{ patientUuid: 'test-uuid-123' }}
@@ -146,5 +153,189 @@ describe('RegistrationActions', () => {
 
     const button = screen.getByText('VIEW_PATIENT');
     expect(button).toBeInTheDocument();
+  });
+
+  describe('onDefaultAction callback', () => {
+    const mockHandleExtensionNavigation = jest.spyOn(
+      extensionNavigation,
+      'handleExtensionNavigation',
+    );
+
+    beforeEach(() => {
+      mockHandleExtensionNavigation.mockClear();
+    });
+
+    it('should call onDefaultAction before navigation', async () => {
+      const onDefaultAction = jest.fn().mockResolvedValue(undefined);
+      const extension: AppExtensionConfig = {
+        id: 'test-extension',
+        extensionPointId: 'org.bahmni.registration.footer',
+        type: 'link',
+        translationKey: 'VIEW_PATIENT',
+        url: '#/patient/123',
+        order: 1,
+      };
+
+      mockUseFilteredExtensions.mockReturnValue({
+        filteredExtensions: [extension],
+        isLoading: false,
+      });
+
+      renderWithRouter(
+        <RegistrationActions
+          extensionPointId="org.bahmni.registration.footer"
+          onDefaultAction={onDefaultAction}
+        />,
+      );
+
+      const button = screen.getByText('VIEW_PATIENT');
+      fireEvent.click(button);
+
+      await waitFor(() => {
+        expect(onDefaultAction).toHaveBeenCalledWith(extension);
+      });
+    });
+
+    it('should proceed with navigation after successful onDefaultAction', async () => {
+      const onDefaultAction = jest.fn().mockResolvedValue(undefined);
+      const extension: AppExtensionConfig = {
+        id: 'test-extension',
+        extensionPointId: 'org.bahmni.registration.footer',
+        type: 'link',
+        translationKey: 'VIEW_PATIENT',
+        url: '#/patient/123',
+        order: 1,
+      };
+
+      mockUseFilteredExtensions.mockReturnValue({
+        filteredExtensions: [extension],
+        isLoading: false,
+      });
+
+      renderWithRouter(
+        <RegistrationActions
+          extensionPointId="org.bahmni.registration.footer"
+          onDefaultAction={onDefaultAction}
+        />,
+      );
+
+      const button = screen.getByText('VIEW_PATIENT');
+      fireEvent.click(button);
+
+      await waitFor(() => {
+        expect(onDefaultAction).toHaveBeenCalled();
+        expect(mockHandleExtensionNavigation).toHaveBeenCalledWith(
+          '#/patient/123',
+          {},
+          expect.any(Function),
+          undefined,
+        );
+      });
+    });
+
+    it('should not navigate if onDefaultAction throws error', async () => {
+      const onDefaultAction = jest
+        .fn()
+        .mockRejectedValue(new Error('Validation failed'));
+      const extension: AppExtensionConfig = {
+        id: 'test-extension',
+        extensionPointId: 'org.bahmni.registration.footer',
+        type: 'link',
+        translationKey: 'VIEW_PATIENT',
+        url: '#/patient/123',
+        order: 1,
+      };
+
+      mockUseFilteredExtensions.mockReturnValue({
+        filteredExtensions: [extension],
+        isLoading: false,
+      });
+
+      renderWithRouter(
+        <RegistrationActions
+          extensionPointId="org.bahmni.registration.footer"
+          onDefaultAction={onDefaultAction}
+        />,
+      );
+
+      const button = screen.getByText('VIEW_PATIENT');
+      fireEvent.click(button);
+
+      await waitFor(() => {
+        expect(onDefaultAction).toHaveBeenCalled();
+      });
+
+      expect(mockHandleExtensionNavigation).not.toHaveBeenCalled();
+    });
+
+    it('should pass customProperties to handleExtensionNavigation', async () => {
+      const onDefaultAction = jest.fn().mockResolvedValue(undefined);
+      const customProperties = { visitType: 'OPD', source: 'registration' };
+      const extension: AppExtensionConfig = {
+        id: 'test-extension',
+        extensionPointId: 'org.bahmni.registration.footer',
+        type: 'link',
+        translationKey: 'VIEW_PATIENT',
+        url: '#/patient/123',
+        order: 1,
+        customProperties,
+      };
+
+      mockUseFilteredExtensions.mockReturnValue({
+        filteredExtensions: [extension],
+        isLoading: false,
+      });
+
+      renderWithRouter(
+        <RegistrationActions
+          extensionPointId="org.bahmni.registration.footer"
+          onDefaultAction={onDefaultAction}
+        />,
+      );
+
+      const button = screen.getByText('VIEW_PATIENT');
+      fireEvent.click(button);
+
+      await waitFor(() => {
+        expect(mockHandleExtensionNavigation).toHaveBeenCalledWith(
+          '#/patient/123',
+          {},
+          expect.any(Function),
+          customProperties,
+        );
+      });
+    });
+
+    it('should navigate without onDefaultAction if not provided', async () => {
+      const extension: AppExtensionConfig = {
+        id: 'test-extension',
+        extensionPointId: 'org.bahmni.registration.footer',
+        type: 'link',
+        translationKey: 'VIEW_PATIENT',
+        url: '#/patient/123',
+        order: 1,
+      };
+
+      mockUseFilteredExtensions.mockReturnValue({
+        filteredExtensions: [extension],
+        isLoading: false,
+      });
+
+      renderWithRouter(
+        <RegistrationActions extensionPointId="org.bahmni.registration.footer" />,
+      );
+
+      const button = screen.getByText('VIEW_PATIENT');
+      fireEvent.click(button);
+
+      await waitFor(() => {
+        expect(mockHandleExtensionNavigation).toHaveBeenCalledWith(
+          '#/patient/123',
+          {},
+          expect.any(Function),
+          undefined,
+        );
+      });
+    });
   });
 });
