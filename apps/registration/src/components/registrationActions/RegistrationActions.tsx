@@ -10,6 +10,7 @@ export interface RegistrationActionsProps {
   buttonKind?: 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'danger';
   urlContext?: Record<string, string>;
   onVisitSave?: () => Promise<string | null>;
+  onDefaultAction?: (extension: AppExtensionConfig) => void | Promise<void>;
 }
 
 /**
@@ -17,12 +18,17 @@ export interface RegistrationActionsProps {
  * Auto-extracts URL params from route and merges with provided urlContext
  * type="startVisit": renders VisitTypeSelector
  * Other types: renders Button with navigation
+ *
+ * @param onDefaultAction - Optional callback executed before navigation
+ *   Parent should handle validation (e.g., check if patient is saved) and business logic
+ *   If validation fails, parent should show error notification and throw/reject to prevent navigation
  */
 export const RegistrationActions = ({
   extensionPointId,
   buttonKind = 'tertiary',
   urlContext = {},
   onVisitSave,
+  onDefaultAction,
 }: RegistrationActionsProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -45,9 +51,28 @@ export const RegistrationActions = ({
     return null;
   }
 
-  const handleClick = (extension: AppExtensionConfig) => {
-    if (!extension.url) return;
-    handleExtensionNavigation(extension.url, mergedUrlContext, navigate);
+  const handleClick = async (extension: AppExtensionConfig) => {
+    try {
+      // Call parent callback first (e.g., to validate and save patient data)
+      // Parent can throw error or return early to prevent navigation
+      if (onDefaultAction) {
+        await onDefaultAction(extension);
+      }
+
+      // Then proceed with navigation
+      if (extension.url) {
+        handleExtensionNavigation(
+          extension.url,
+          mergedUrlContext,
+          navigate,
+          extension.customProperties,
+        );
+      }
+    } catch {
+      // Parent callback threw an error (e.g., validation failed)
+      // Error should have already been handled by parent (notification shown)
+      // Simply prevent navigation by not proceeding
+    }
   };
 
   return (

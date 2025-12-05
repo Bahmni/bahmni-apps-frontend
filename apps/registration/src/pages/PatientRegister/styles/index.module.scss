@@ -160,6 +160,7 @@
   align-items: center;
   .actionButtons {
     display: flex;
+    flex-direction: row-reverse;
     gap: $spacing-05;
   }
 }
