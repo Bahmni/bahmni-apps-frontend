@@ -1,24 +1,27 @@
-import { Button } from '@bahmni/design-system';
+import { Button, Icon, ICON_SIZE } from '@bahmni/design-system';
 import { AppExtensionConfig, useTranslation } from '@bahmni/services';
 import { useNavigate } from 'react-router-dom';
 import { useFilteredExtensions } from '../../hooks/useFilteredExtensions';
+import { VisitTypeSelector } from '../../pages/PatientRegister/visitTypeSelector';
 import { handleExtensionNavigation } from '../../utils/extensionNavigation';
 
 export interface RegistrationActionsProps {
   extensionPointId?: string;
   buttonKind?: 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'danger';
   urlContext?: Record<string, string>;
+  onVisitSave?: () => Promise<string | null>;
 }
 
 /**
- * Component that renders app extension buttons filtered by privilege
- * Can filter by extensionPointId (show all extensions in a location)
- * Handles navigation internally based on extension type
+ * Component that renders extensions based on type
+ * type="startVisit": renders VisitTypeSelector
+ * Other types: renders Button with navigation
  */
 export const RegistrationActions = ({
   extensionPointId,
   buttonKind = 'tertiary',
   urlContext = {},
+  onVisitSave,
 }: RegistrationActionsProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -37,16 +40,39 @@ export const RegistrationActions = ({
 
   return (
     <>
-      {filteredExtensions.map((extension) => (
-        <Button
-          key={extension.id}
-          kind={buttonKind}
-          onClick={() => handleClick(extension)}
-        >
-          {extension.icon && <i className={extension.icon} />}
-          {t(extension.translationKey)}
-        </Button>
-      ))}
+      {filteredExtensions.map((extension) => {
+        if (extension.type === 'startVisit' && onVisitSave) {
+          return (
+            <VisitTypeSelector
+              key={extension.id}
+              onVisitSave={onVisitSave}
+              patientUuid={urlContext.patientUuid}
+              onNavigate={() => handleClick(extension)}
+            />
+          );
+        }
+
+        return (
+          <Button
+            key={extension.id}
+            kind={buttonKind}
+            onClick={() => handleClick(extension)}
+            renderIcon={
+              extension.icon
+                ? () => (
+                    <Icon
+                      id={extension.id}
+                      name={extension.icon!}
+                      size={ICON_SIZE.SM}
+                    />
+                  )
+                : undefined
+            }
+          >
+            {t(extension.translationKey)}
+          </Button>
+        );
+      })}
     </>
   );
 };
