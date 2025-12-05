@@ -73,6 +73,7 @@
   "CREATE_PATIENT_VALIDATION_MIDDLE_NAME_MAX_LENGTH": "Middle name cannot exceed 50 characters",
   "CREATE_PATIENT_VALIDATION_MIDDLE_NAME_REQUIRED": "Middle name is required",
   "CREATE_PATIENT_VALIDATION_NAME_INVALID": "Numbers and special characters are not allowed",
+  "CREATE_PATIENT_VALIDATION_IDENTIFIER_REQUIRED": "{{identifierName}} is required",
   "CREATE_PATIENT_VALIDATION_SELECT_FROM_DROPDOWN": "Select input from drop down",
   "DATE_ERROR_EMPTY_OR_INVALID": "Date string is empty or invalid",
   "DATE_ERROR_FORMAT": "Date Format Error",
