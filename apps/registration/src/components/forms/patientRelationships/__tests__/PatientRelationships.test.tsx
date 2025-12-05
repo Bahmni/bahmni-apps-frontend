@@ -18,6 +18,12 @@ jest.mock('@bahmni/services', () => ({
       { uuid: 'rel-type-2', aIsToB: 'Sibling', bIsToA: 'Sibling' },
     ]),
   ),
+  searchPatientByNameOrId: jest.fn(() =>
+    Promise.resolve({
+      pageOfResults: [],
+      totalCount: 0,
+    }),
+  ),
 }));
 
 describe('PatientRelationships', () => {

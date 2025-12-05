@@ -16,7 +16,12 @@ import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import type { RelationshipData } from '../components/forms/patientRelationships/PatientRelationships';
 import { convertTimeToISODateTime } from '../components/forms/profile/dateAgeUtils';
-import { BasicInfoData, ContactData, AdditionalData } from '../models/patient';
+import {
+  BasicInfoData,
+  ContactData,
+  AdditionalData,
+  AdditionalIdentifiersData,
+} from '../models/patient';
 import { parseDateStringToDate } from '../utils/ageUtils';
 import { usePersonAttributes } from './usePersonAttributes';
 
@@ -29,6 +34,7 @@ interface CreatePatientFormData {
   address: PatientAddress;
   contact: ContactData;
   additional: AdditionalData;
+  additionalIdentifiers: AdditionalIdentifiersData;
   relationships: RelationshipData[];
 }
 
@@ -76,6 +82,7 @@ export const useCreatePatient = () => {
         type: 'error',
         title: t('ERROR_SAVING_PATIENT'),
         message: error instanceof Error ? error.message : String(error),
+        timeout: 5000,
       });
     },
   });
@@ -87,7 +94,8 @@ function transformFormDataToPayload(
   formData: CreatePatientFormData,
   personAttributes: PersonAttributeType[],
 ): CreatePatientRequest {
-  const { profile, address, contact, additional } = formData;
+  const { profile, address, contact, additional, additionalIdentifiers } =
+    formData;
   const patientName: PatientName = {
     givenName: profile.firstName,
     ...(profile.middleName && { middleName: profile.middleName }),
@@ -104,7 +112,6 @@ function transformFormDataToPayload(
 
   const attributes: PatientAttribute[] = [];
 
-  // Dynamically add all contact attributes
   Object.entries(contact).forEach(([key, value]) => {
     if (value && attributeMap.has(key)) {
       attributes.push({
@@ -114,7 +121,6 @@ function transformFormDataToPayload(
     }
   });
 
-  // Dynamically add all additional attributes
   Object.entries(additional).forEach(([key, value]) => {
     if (value && attributeMap.has(key)) {
       attributes.push({
@@ -146,6 +152,22 @@ function transformFormDataToPayload(
       return relationship;
     });
 
+  const identifiers: (PatientIdentifier & { identifier?: string })[] = [
+    profile.patientIdentifier,
+  ];
+
+  Object.entries(additionalIdentifiers).forEach(
+    ([identifierTypeUuid, value]) => {
+      if (value && value.trim() !== '') {
+        identifiers.push({
+          identifier: value,
+          identifierType: identifierTypeUuid,
+          preferred: false,
+        });
+      }
+    },
+  );
+
   const payload: CreatePatientRequest = {
     patient: {
       person: {
@@ -162,7 +184,7 @@ function transformFormDataToPayload(
         deathDate: null,
         causeOfDeath: '',
       },
-      identifiers: [profile.patientIdentifier],
+      identifiers,
     },
     ...(profile.image && { image: profile.image }),
     relationships: transformedRelationships,

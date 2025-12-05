@@ -24,11 +24,17 @@ export const getFormattedError = (
     if (axiosError?.response) {
       const status = axiosError.response.status;
       switch (status) {
-        case 400:
+        case 400: {
           title = 'Bad Request';
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const responseData = axiosError.response.data as Record<string, any>;
+          const backendMessage =
+            responseData?.error?.message ?? responseData?.message;
           message =
+            backendMessage ??
             'Invalid input parameters. Please check your request and try again.';
           break;
+        }
         case 401:
           title = 'Unauthorized';
           message =
