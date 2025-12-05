@@ -15,17 +15,18 @@ import {
 import { useNotification } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
-import { RegistrationActions } from '../../components/registrationActions/RegistrationActions';
 import styles from './styles/VisitTypeSelector.module.scss';
 
 interface VisitTypeSelectorProps {
   onVisitSave: () => Promise<string | null>;
   patientUuid?: string | null;
+  onNavigate?: () => void;
 }
 
 export const VisitTypeSelector = ({
   onVisitSave,
   patientUuid,
+  onNavigate,
 }: VisitTypeSelectorProps) => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
@@ -132,6 +133,8 @@ export const VisitTypeSelector = ({
         location: visitLocationUUID.uuid,
       });
     }
+
+    onNavigate?.();
   };
 
   return (
@@ -141,7 +144,7 @@ export const VisitTypeSelector = ({
         className={styles.visitButton}
         kind="tertiary"
         disabled={isLoadingVisitTypes || visitTypesArray.length === 0}
-        onClick={() => defaultVisitType}
+        onClick={() => handleVisitTypeChange(defaultVisitType)}
       >
         {!isLoadingVisitTypes && defaultVisitType
           ? hasActiveVisit
@@ -170,12 +173,6 @@ export const VisitTypeSelector = ({
           }
           titleText=""
           selectedItem={null}
-        />
-      )}
-      {patientUuid && (
-        <RegistrationActions
-          extensionPointId="org.bahmni.registration.navigation"
-          urlContext={{ patientUuid }}
         />
       )}
     </div>
