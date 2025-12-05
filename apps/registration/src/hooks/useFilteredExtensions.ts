@@ -4,7 +4,6 @@ import { useRegistrationConfig } from './useRegistrationConfig';
 
 interface UseFilteredExtensionsProps {
   extensionPointId?: string;
-  extensionId?: string;
 }
 
 interface UseFilteredExtensionsReturn {
@@ -18,7 +17,6 @@ interface UseFilteredExtensionsReturn {
  */
 export const useFilteredExtensions = ({
   extensionPointId,
-  extensionId,
 }: UseFilteredExtensionsProps): UseFilteredExtensionsReturn => {
   const { registrationConfig, isLoading: configLoading } =
     useRegistrationConfig();
@@ -50,13 +48,10 @@ export const useFilteredExtensions = ({
     }
   }
 
-  // Filter extensions by extension point or specific extension ID
+  // Filter extensions by extension point ID
   let filtered = extensions;
 
-  if (extensionId) {
-    // Filter by specific extension ID
-    filtered = extensions.filter((ext) => ext.id === extensionId);
-  } else if (extensionPointId) {
+  if (extensionPointId) {
     // Filter by extension point ID (location)
     filtered = extensions.filter(
       (ext) => ext.extensionPointId === extensionPointId,
