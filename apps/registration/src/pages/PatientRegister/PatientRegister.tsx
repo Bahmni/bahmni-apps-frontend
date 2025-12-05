@@ -276,13 +276,10 @@ const PatientRegister = () => {
               <Button kind="tertiary">
                 {t('CREATE_PATIENT_PRINT_REG_CARD')}
               </Button>
-              {patientUuid && (
-                <RegistrationActions
-                  extensionPointId="org.bahmni.registration.navigation"
-                  urlContext={{ patientUuid }}
-                  onVisitSave={handleSave}
-                />
-              )}
+              <RegistrationActions
+                extensionPointId="org.bahmni.registration.navigation"
+                onVisitSave={handleSave}
+              />
             </div>
           </div>
         </div>

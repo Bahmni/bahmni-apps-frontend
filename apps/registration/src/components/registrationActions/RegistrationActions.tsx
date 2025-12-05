@@ -1,6 +1,6 @@
 import { Button, Icon, ICON_SIZE } from '@bahmni/design-system';
 import { AppExtensionConfig, useTranslation } from '@bahmni/services';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useFilteredExtensions } from '../../hooks/useFilteredExtensions';
 import { VisitTypeSelector } from '../../pages/PatientRegister/visitTypeSelector';
 import { handleExtensionNavigation } from '../../utils/extensionNavigation';
@@ -14,6 +14,7 @@ export interface RegistrationActionsProps {
 
 /**
  * Component that renders extensions based on type
+ * Auto-extracts URL params from route and merges with provided urlContext
  * type="startVisit": renders VisitTypeSelector
  * Other types: renders Button with navigation
  */
@@ -25,9 +26,20 @@ export const RegistrationActions = ({
 }: RegistrationActionsProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const routeParams = useParams();
   const { filteredExtensions, isLoading } = useFilteredExtensions({
     extensionPointId,
   });
+
+  // Auto-extract URL context from route params and merge with provided context
+  const mergedUrlContext: Record<string, string> = {
+    ...Object.fromEntries(
+      Object.entries(routeParams).filter(
+        ([, value]) => value !== undefined,
+      ) as [string, string][],
+    ),
+    ...urlContext,
+  };
 
   if (isLoading || filteredExtensions.length === 0) {
     return null;
@@ -35,7 +47,7 @@ export const RegistrationActions = ({
 
   const handleClick = (extension: AppExtensionConfig) => {
     if (!extension.url) return;
-    handleExtensionNavigation(extension.url, urlContext, navigate);
+    handleExtensionNavigation(extension.url, mergedUrlContext, navigate);
   };
 
   return (
@@ -46,7 +58,7 @@ export const RegistrationActions = ({
             <VisitTypeSelector
               key={extension.id}
               onVisitSave={onVisitSave}
-              patientUuid={urlContext.patientUuid}
+              patientUuid={mergedUrlContext.patientUuid}
               onNavigate={() => handleClick(extension)}
             />
           );
