@@ -219,38 +219,40 @@ const PatientRegister = () => {
       }
       main={
         <div>
-          <Tile className={styles.patientDetailsHeader}>
-            <span className={styles.sectionTitle}>
-              {patientUuid ? (
-                <div className={styles.infoContainer}>
-                  <div
-                    className={styles.patientId}
-                  >{`Patient ID: ${metadata?.patientIdentifier}`}</div>
-                  <div
-                    className={styles.registerDate}
-                  >{`${t('CREATE_PATIENT_REGISTERED_ON')} ${metadata?.registerDate}`}</div>
-                </div>
-              ) : (
-                t('CREATE_PATIENT_HEADER_TITLE')
-              )}
-            </span>
-          </Tile>
+          <div className={styles.form}>
+            <Tile className={styles.patientDetailsHeader}>
+              <span className={styles.sectionTitle}>
+                {patientUuid ? (
+                  <div className={styles.infoContainer}>
+                    <div
+                      className={styles.patientId}
+                    >{`Patient ID: ${metadata?.patientIdentifier}`}</div>
+                    <div
+                      className={styles.registerDate}
+                    >{`${t('CREATE_PATIENT_REGISTERED_ON')} ${metadata?.registerDate}`}</div>
+                  </div>
+                ) : (
+                  t('CREATE_PATIENT_HEADER_TITLE')
+                )}
+              </span>
+            </Tile>
 
-          <div className={styles.formContainer}>
-            <Profile
-              ref={patientProfileRef}
-              initialData={profileInitialData}
-              initialDobEstimated={initialDobEstimated}
-              initialPhoto={patientPhoto}
-            />
-            <AddressInfo
-              ref={patientAddressRef}
-              initialData={addressInitialData}
-            />
-            <ContactInfo
-              ref={patientContactRef}
-              initialData={contactInitialData}
-            />
+            <div className={styles.formContainer}>
+              <Profile
+                ref={patientProfileRef}
+                initialData={profileInitialData}
+                initialDobEstimated={initialDobEstimated}
+                initialPhoto={patientPhoto}
+              />
+              <AddressInfo
+                ref={patientAddressRef}
+                initialData={addressInitialData}
+              />
+              <ContactInfo
+                ref={patientContactRef}
+                initialData={contactInitialData}
+              />
+            </div>
           </div>
 
           <AdditionalInfo
@@ -262,15 +264,7 @@ const PatientRegister = () => {
             <PatientRelationships ref={patientRelationshipsRef} />
           )}
           {shouldShowAdditionalIdentifiers && (
-            <>
-              <Tile className={styles.patientDetailsHeader}>
-                <span className={styles.sectionTitle}>
-                  {t('ADDITIONAL_IDENTIFIERS_HEADER_TITLE')}
-                </span>
-              </Tile>
-
-              <AdditionalIdentifiers ref={patientAdditionalIdentifiersRef} />
-            </>
+            <AdditionalIdentifiers ref={patientAdditionalIdentifiersRef} />
           )}
 
           {/* Footer Actions */}

@@ -1,4 +1,4 @@
-import { TextInput, SortableDataTable } from '@bahmni/design-system';
+import { TextInput, SortableDataTable, Tile } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import {
   useCallback,
@@ -141,6 +141,11 @@ export const AdditionalIdentifiers = ({
 
   return (
     <div className={styles.formSection}>
+      <Tile className={styles.patientDetailsHeader}>
+        <span className={styles.sectionTitle}>
+          {t('ADDITIONAL_IDENTIFIERS_HEADER_TITLE')}
+        </span>
+      </Tile>
       <SortableDataTable
         headers={headers}
         rows={rows}
