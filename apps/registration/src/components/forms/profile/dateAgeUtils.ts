@@ -245,6 +245,11 @@ export const createDateAgeHandlers = <
           days: Number(updated.ageDays) > 31 ? 0 : Number(updated.ageDays) || 0,
         };
 
+        const hasAgeErrors =
+          Number(updated.ageYears) > MAX_PATIENT_AGE_YEARS ||
+          Number(updated.ageMonths) > 11 ||
+          Number(updated.ageDays) > 31;
+
         if (age.years > 0 || age.months > 0 || age.days > 0) {
           const birthISO = AgeUtils.calculateBirthDate(age);
           updated.dateOfBirth = birthISO;
@@ -269,10 +274,21 @@ export const createDateAgeHandlers = <
             setDateErrors({ dateOfBirth: '' });
             setValidationErrors((prev) => ({ ...prev, dateOfBirth: '' }));
           }
-        } else if (age.years == 0 && age.months == 0 && age.days == 0) {
+        } else if (
+          age.years == 0 &&
+          age.months == 0 &&
+          age.days == 0 &&
+          !hasAgeErrors
+        ) {
           updated.dateOfBirth = '';
+          setDobEstimated(false);
+          setDateErrors({ dateOfBirth: '' });
         } else {
-          // updated.dateOfBirth = '';
+          setFormData((prev) => ({
+            ...prev,
+            [field]: value,
+            dateOfBirth: formatToISO(new Date()),
+          }));
           setDobEstimated(false);
           setDateErrors({ dateOfBirth: '' });
         }
