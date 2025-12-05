@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useFilteredExtensions } from '../../hooks/useFilteredExtensions';
 import { processExtensionClick } from '../../utils/extensionNavigation';
 
-export interface AppExtensionButtonsProps {
+export interface RegistrationActionsProps {
   extensionPointId?: string;
   extensionId?: string;
   onExtensionClick?: (extension: AppExtensionConfig) => void;
@@ -17,13 +17,13 @@ export interface AppExtensionButtonsProps {
  * Can filter by extensionPointId (show all extensions in a location) or extensionId (show specific extension)
  * Handles navigation internally based on extension type
  */
-export const AppExtensionButtons = ({
+export const RegistrationActions = ({
   extensionPointId,
   extensionId,
   onExtensionClick,
   buttonKind = 'tertiary',
   urlContext = {},
-}: AppExtensionButtonsProps) => {
+}: RegistrationActionsProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { filteredExtensions, isLoading } = useFilteredExtensions({

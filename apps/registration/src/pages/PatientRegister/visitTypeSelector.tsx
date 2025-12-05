@@ -15,7 +15,7 @@ import {
 import { useNotification } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
-import { AppExtensionButtons } from '../../components/appExtensions/AppExtensionButtons';
+import { RegistrationActions } from '../../components/registrationActions/RegistrationActions';
 import styles from './styles/VisitTypeSelector.module.scss';
 
 interface VisitTypeSelectorProps {
@@ -173,7 +173,7 @@ export const VisitTypeSelector = ({
         />
       )}
       {patientUuid && (
-        <AppExtensionButtons
+        <RegistrationActions
           extensionId="bahmni.registration.navigation.patient.start.visit"
           urlContext={{ patientUuid }}
         />
