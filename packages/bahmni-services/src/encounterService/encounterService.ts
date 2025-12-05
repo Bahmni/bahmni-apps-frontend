@@ -63,15 +63,28 @@ export async function getEncountersForEOC(
     if (encounter.id) {
       encounterIds.push(encounter.id);
     }
-
     let visitId = encounter.partOf?.reference?.split('/')[1];
-
-    if (!visitId && encounter.meta?.tag?.some((tag) => tag.code === 'visit')) {
+    const isVisitEncounter =
+      encounter.meta?.tag?.some((tag) => tag.code === 'visit') ??
+      encounter.type?.some((type) =>
+        type.coding?.some(
+          (coding) =>
+            coding.display?.toLowerCase().includes('visit') ??
+            coding.code?.toLowerCase().includes('visit'),
+        ),
+      );
+    if (isVisitEncounter) {
       visitId = encounter.id;
     }
 
     if (visitId && !visitIds.includes(visitId)) {
       visitIds.push(visitId);
+    }
+    if (!visitIds.length && encounter.partOf?.reference) {
+      const partOfId = encounter.partOf.reference.split('/')[1];
+      if (partOfId && !visitIds.includes(partOfId)) {
+        visitIds.push(partOfId);
+      }
     }
   });
 

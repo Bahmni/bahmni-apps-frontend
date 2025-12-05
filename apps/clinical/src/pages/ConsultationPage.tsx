@@ -16,7 +16,7 @@ import PatientHeader from '../components/patientHeader/PatientHeader';
 import { BAHMNI_CLINICAL_PATH } from '../constants/app';
 import { useClinicalConfig } from '../hooks/useClinicalConfig';
 import { useDashboardConfig } from '../hooks/useDashboardConfig';
-import { EocProvider } from '../providers/EocProvider';
+import { ClinicalAppsProvider } from '../providers/ClinicalAppsProvider';
 import {
   getDefaultDashboard,
   getSidebarItems,
@@ -73,16 +73,13 @@ const ConsultationPage: React.FC = () => {
   const [searchParams] = useSearchParams();
 
   const episodeIds = useMemo(() => {
-    const eocId = searchParams.get('eocId');
-    if (!eocId) return [];
-    return eocId
+    const episodeId = searchParams.get('episodeId');
+    if (!episodeId) return [];
+    return episodeId
       .split(',')
       .map((id) => id.trim())
       .filter(Boolean);
   }, [searchParams]);
-
-  console.log('Episode Ids:', episodeIds);
-
   const currentDashboard = useMemo(() => {
     if (!clinicalConfig) return null;
     return getDefaultDashboard(clinicalConfig.dashboards || []);
@@ -120,47 +117,47 @@ const ConsultationPage: React.FC = () => {
   }
 
   return (
-    <ActionAreaLayout
-      headerWSideNav={
-        <Header
-          breadcrumbItems={breadcrumbItems}
-          globalActions={globalActions}
-          sideNavItems={sidebarItems}
-          activeSideNavItemId={activeItemId}
-          onSideNavItemClick={handleItemClick}
-          isRail={isActionAreaVisible}
-        />
-      }
-      patientHeader={
-        <PatientHeader
-          isActionAreaVisible={isActionAreaVisible}
-          setIsActionAreaVisible={setIsActionAreaVisible}
-        />
-      }
-      mainDisplay={
-        <Suspense
-          fallback={
-            <Loading
-              description={t('LOADING_DASHBOARD_CONTENT')}
-              role="status"
-            />
-          }
-        >
-          <EocProvider episodeIds={episodeIds}>
+    <ClinicalAppsProvider episodeIds={episodeIds}>
+      <ActionAreaLayout
+        headerWSideNav={
+          <Header
+            breadcrumbItems={breadcrumbItems}
+            globalActions={globalActions}
+            sideNavItems={sidebarItems}
+            activeSideNavItemId={activeItemId}
+            onSideNavItemClick={handleItemClick}
+            isRail={isActionAreaVisible}
+          />
+        }
+        patientHeader={
+          <PatientHeader
+            isActionAreaVisible={isActionAreaVisible}
+            setIsActionAreaVisible={setIsActionAreaVisible}
+          />
+        }
+        mainDisplay={
+          <Suspense
+            fallback={
+              <Loading
+                description={t('LOADING_DASHBOARD_CONTENT')}
+                role="status"
+              />
+            }
+          >
             <DashboardContainer
               sections={dashboardConfig.sections}
               activeItemId={activeItemId}
             />
-          </EocProvider>
-        </Suspense>
-      }
-      isActionAreaVisible={isActionAreaVisible}
-      actionArea={
-        <ConsultationPad
-          onClose={() => setIsActionAreaVisible((prev) => !prev)}
-        />
-      }
-    />
+          </Suspense>
+        }
+        isActionAreaVisible={isActionAreaVisible}
+        actionArea={
+          <ConsultationPad
+            onClose={() => setIsActionAreaVisible((prev) => !prev)}
+          />
+        }
+      />
+    </ClinicalAppsProvider>
   );
 };
 
