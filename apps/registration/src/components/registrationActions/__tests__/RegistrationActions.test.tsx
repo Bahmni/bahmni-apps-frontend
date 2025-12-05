@@ -2,7 +2,7 @@ import { AppExtensionConfig } from '@bahmni/services';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { useFilteredExtensions } from '../../../hooks/useFilteredExtensions';
-import { AppExtensionButtons } from '../AppExtensionButtons';
+import { RegistrationActions } from '../RegistrationActions';
 
 // Mock the hooks
 jest.mock('../../../hooks/useFilteredExtensions');
@@ -11,7 +11,7 @@ const mockUseFilteredExtensions = useFilteredExtensions as jest.MockedFunction<
   typeof useFilteredExtensions
 >;
 
-describe('AppExtensionButtons', () => {
+describe('RegistrationActions', () => {
   const mockExtensions: AppExtensionConfig[] = [
     {
       id: 'bahmni.registration.navigation.patient.start.visit',
@@ -45,7 +45,7 @@ describe('AppExtensionButtons', () => {
     });
 
     const { container } = render(
-      <AppExtensionButtons extensionPointId="org.bahmni.registration.footer" />,
+      <RegistrationActions extensionPointId="org.bahmni.registration.footer" />,
     );
     expect(container.firstChild).toBeNull();
   });
@@ -57,7 +57,7 @@ describe('AppExtensionButtons', () => {
     });
 
     const { container } = render(
-      <AppExtensionButtons extensionPointId="org.bahmni.registration.footer" />,
+      <RegistrationActions extensionPointId="org.bahmni.registration.footer" />,
     );
     expect(container.firstChild).toBeNull();
   });
@@ -69,7 +69,7 @@ describe('AppExtensionButtons', () => {
     });
 
     render(
-      <AppExtensionButtons extensionPointId="org.bahmni.registration.footer" />,
+      <RegistrationActions extensionPointId="org.bahmni.registration.footer" />,
     );
 
     expect(screen.getByText('START_VISIT')).toBeInTheDocument();
@@ -83,7 +83,7 @@ describe('AppExtensionButtons', () => {
     });
 
     const { container } = render(
-      <AppExtensionButtons extensionPointId="org.bahmni.registration.footer" />,
+      <RegistrationActions extensionPointId="org.bahmni.registration.footer" />,
     );
 
     const buttons = container.querySelectorAll('button');
@@ -99,7 +99,7 @@ describe('AppExtensionButtons', () => {
     });
 
     render(
-      <AppExtensionButtons
+      <RegistrationActions
         extensionPointId="org.bahmni.registration.footer"
         onExtensionClick={onExtensionClick}
       />,
@@ -118,7 +118,7 @@ describe('AppExtensionButtons', () => {
     });
 
     const { container } = render(
-      <AppExtensionButtons extensionPointId="org.bahmni.registration.footer" />,
+      <RegistrationActions extensionPointId="org.bahmni.registration.footer" />,
     );
 
     const icons = container.querySelectorAll('.fa-calendar');
@@ -132,7 +132,7 @@ describe('AppExtensionButtons', () => {
     });
 
     render(
-      <AppExtensionButtons extensionId="bahmni.registration.navigation.patient.start.visit" />,
+      <RegistrationActions extensionId="bahmni.registration.navigation.patient.start.visit" />,
     );
 
     expect(screen.getByText('START_VISIT')).toBeInTheDocument();
@@ -146,7 +146,7 @@ describe('AppExtensionButtons', () => {
     });
 
     const { container } = render(
-      <AppExtensionButtons
+      <RegistrationActions
         extensionId="bahmni.registration.navigation.patient.start.visit"
         buttonKind="primary"
       />,
@@ -172,7 +172,7 @@ describe('AppExtensionButtons', () => {
     });
 
     render(
-      <AppExtensionButtons
+      <RegistrationActions
         extensionPointId="org.bahmni.registration.footer"
         urlContext={{ patientUuid: 'test-uuid-123' }}
       />,
