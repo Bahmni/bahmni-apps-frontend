@@ -11,11 +11,16 @@
   box-shadow: 0 $spacing-01 $spacing-03 0 $shadow;
   display: flex;
   flex-direction: column;
-  gap: $spacing-09;
+  margin-top: $spacing-08;
 }
 
-.formSectionTitle {
-  @include type-style("body-compact-02");
+
+.headerTile {
+  align-content: center;
+}
+
+.headerTitle {
+  @include type-style("heading-compact-02");
 }
 
 
@@ -43,8 +48,15 @@
 }
 
 .identifierTable {
+  :global(thead) {
+    visibility: collapse;
+  }
 
   :global(tbody) {
+    tr:first-child td {
+      border-top: none !important;
+    }
+    
     tr:hover td {
       cursor: default;
       border-bottom: 1px solid $border-subtle-01 !important;
