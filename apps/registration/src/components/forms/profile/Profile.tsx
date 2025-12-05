@@ -179,7 +179,7 @@ export const Profile = ({
 
       // Check for max length and show error if exceeded
       if (value.length > MAX_NAME_LENGTH) {
-        const maxLengthKey = `CREATE_PATIENT_VALIDATION_${field.toUpperCase()}_MAX_LENGTH`;
+        const maxLengthKey = `CREATE_PATIENT_VALIDATION_${field.replace(/([A-Z])/g, '_$1').toUpperCase()}_MAX_LENGTH`;
         setNameErrors((prev) => ({
           ...prev,
           [field]: t(maxLengthKey),
