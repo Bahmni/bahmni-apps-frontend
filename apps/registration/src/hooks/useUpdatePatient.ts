@@ -73,6 +73,7 @@ export const useUpdatePatient = () => {
         type: 'error',
         title: t('ERROR_UPDATING_PATIENT'),
         message: error instanceof Error ? error.message : String(error),
+        timeout: 5000,
       });
     },
   });

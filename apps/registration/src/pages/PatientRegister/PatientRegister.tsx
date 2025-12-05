@@ -248,14 +248,15 @@ const PatientRegister = () => {
             initialData={additionalInitialData}
           />
 
-          {Array.isArray(relationshipTypes) && relationshipTypes.length > 0 && (
-            <PatientRelationships ref={patientRelationshipsRef} />
-          )}
           {shouldShowAdditionalIdentifiers && (
             <AdditionalIdentifiers
               ref={patientAdditionalIdentifiersRef}
               initialData={additionalIdentifiersInitialData}
             />
+          )}
+
+          {Array.isArray(relationshipTypes) && relationshipTypes.length > 0 && (
+            <PatientRelationships ref={patientRelationshipsRef} />
           )}
 
           {/* Footer Actions */}

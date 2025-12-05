@@ -379,6 +379,7 @@ describe('useUpdatePatient', () => {
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
         title: 'Error updating patient',
+        timeout: 5000,
         message: 'API Error',
       });
 
@@ -408,6 +409,7 @@ describe('useUpdatePatient', () => {
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
         title: 'Error updating patient',
+        timeout: 5000,
         message: 'Network request failed',
       });
     });
@@ -432,6 +434,7 @@ describe('useUpdatePatient', () => {
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
         title: 'Error updating patient',
+        timeout: 5000,
         message: '[object Object]',
       });
     });
