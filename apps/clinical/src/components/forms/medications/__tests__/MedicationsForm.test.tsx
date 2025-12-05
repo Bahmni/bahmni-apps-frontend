@@ -169,9 +169,7 @@ describe('MedicationsForm', () => {
         name: /search to add medication/i,
       });
 
-      await waitFor(async () => {
-        await user.type(searchBox, 'paracetamol');
-      });
+      await user.type(searchBox, 'paracetamol');
 
       // Wait for search results to appear
       await waitFor(() => {
@@ -179,9 +177,7 @@ describe('MedicationsForm', () => {
       });
 
       // Click on the medication
-      await waitFor(async () => {
-        await user.click(screen.getByText('Paracetamol 500mg'));
-      });
+      await user.click(screen.getByText('Paracetamol 500mg'));
 
       // Verify the store was called correctly
       await waitFor(() => {
@@ -215,9 +211,7 @@ describe('MedicationsForm', () => {
       mockSearchHook.mockClear();
 
       // Type to trigger search
-      await waitFor(async () => {
-        await user.type(searchBox, 'paracetamol');
-      });
+      await user.type(searchBox, 'paracetamol');
 
       // Verify search was called with the typed term
       expect(mockSearchHook).toHaveBeenCalledWith('paracetamol');
@@ -231,9 +225,7 @@ describe('MedicationsForm', () => {
       mockSearchHook.mockClear();
 
       // Select the medication
-      await waitFor(async () => {
-        await user.click(screen.getByText('Paracetamol 500mg'));
-      });
+      await user.click(screen.getByText('Paracetamol 500mg'));
 
       // Verify the medication was added
       await waitFor(() => {
@@ -281,9 +273,7 @@ describe('MedicationsForm', () => {
       const closeButton = screen.getByRole('button', {
         name: /close/i,
       });
-      await waitFor(async () => {
-        await user.click(closeButton);
-      });
+      await user.click(closeButton);
 
       await waitFor(() => {
         expect(mockStore.removeMedication).toHaveBeenCalledWith(
@@ -313,9 +303,7 @@ describe('MedicationsForm', () => {
       const searchBox = screen.getByRole('combobox', {
         name: /search to add medication/i,
       });
-      await waitFor(async () => {
-        await user.type(searchBox, 'test');
-      });
+      await user.type(searchBox, 'test');
 
       await waitFor(() => {
         expect(screen.getByText('Loading medications...')).toBeInTheDocument();
@@ -335,9 +323,7 @@ describe('MedicationsForm', () => {
       const searchBox = screen.getByRole('combobox', {
         name: /search to add medication/i,
       });
-      await waitFor(async () => {
-        await user.type(searchBox, 'test');
-      });
+      await user.type(searchBox, 'test');
 
       await waitFor(() => {
         expect(
@@ -359,9 +345,7 @@ describe('MedicationsForm', () => {
         name: /search to add medication/i,
       });
 
-      await waitFor(async () => {
-        await user.type(searchBox, 'nonexistent');
-      });
+      await user.type(searchBox, 'nonexistent');
 
       await waitFor(() => {
         expect(
@@ -423,9 +407,7 @@ describe('MedicationsForm', () => {
       });
 
       // Type in search box to trigger search results
-      await waitFor(async () => {
-        await user.type(searchBox, 'med');
-      });
+      await user.type(searchBox, 'med');
 
       // Wait for search results to appear
       await waitFor(() => {
@@ -454,20 +436,16 @@ describe('MedicationsForm', () => {
       });
 
       // Test with undefined selectedItem
-      await waitFor(() => {
-        fireEvent.change(searchBox, {
-          target: { value: 'test' },
-          selectedItem: undefined,
-        });
+      fireEvent.change(searchBox, {
+        target: { value: 'test' },
+        selectedItem: undefined,
       });
       expect(mockStore.addMedication).not.toHaveBeenCalled();
 
       // Test with null selectedItem
-      await waitFor(() => {
-        fireEvent.change(searchBox, {
-          target: { value: 'test' },
-          selectedItem: null,
-        });
+      fireEvent.change(searchBox, {
+        target: { value: 'test' },
+        selectedItem: null,
       });
       expect(mockStore.addMedication).not.toHaveBeenCalled();
     });
@@ -532,9 +510,7 @@ describe('MedicationsForm', () => {
       const searchBox = screen.getByRole('combobox', {
         name: /search to add medication/i,
       });
-      await waitFor(async () => {
-        await user.type(searchBox, 'test');
-      });
+      await user.type(searchBox, 'test');
 
       // Should still display the medication
       await waitFor(() => {

@@ -4,6 +4,7 @@ import { APP_PROPERTY_URL } from '../applicationConfigService/constants';
 import { PatientSearchField } from '../configService/models/registrationConfig';
 import { calculateAge } from '../date';
 import { getUserLoginLocation } from '../userService';
+import { blobToDataUrl } from '../utils';
 import {
   PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL,
   PATIENT_LUCENE_SEARCH_URL,
@@ -22,7 +23,10 @@ import {
   VISIT_TYPES_URL,
   GET_VISIT_LOCATION,
   ORDERED_ADDRESS_HIERARCHY_URL,
+  PATIENT_IMAGE_URL,
+  GET_PATIENT_PROFILE_URL,
   PERSON_ATTRIBUTE_TYPES_URL,
+  RELATIONSHIP_TYPES_URL,
 } from './constants';
 import {
   FormattedPatientData,
@@ -37,7 +41,9 @@ import {
   VisitData,
   VisitType,
   OrderedAddressHierarchyLevels,
+  PatientProfileResponse,
   PersonAttributeTypesResponse,
+  RelationshipTypesResponse,
 } from './models';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
@@ -194,6 +200,21 @@ export const getFormattedPatientById = async (
 };
 
 /**
+ * Fetch patient image and convert to data URL
+ * @param patientUUID - The UUID of the patient
+ * @returns Promise<string | null> - The image data URL or null
+ */
+export const getPatientImageAsDataUrl = async (
+  patientUUID: string,
+): Promise<string | null> => {
+  const response = await fetch(PATIENT_IMAGE_URL(patientUUID));
+  if (!response.ok) return null;
+
+  const blob = await response.blob();
+  return await blobToDataUrl(blob);
+};
+
+/**
  * Search patient by Name / Identifier
  * @param searchTerm - The Name / Identifier of the patient
  * @returns A formatted patient search bundle object
@@ -332,13 +353,10 @@ export const updatePatient = async (
 
 /**
  * Get genders from global property
- * @returns Promise<string[]> - Array of gender display names
+ * @returns Promise<Record<string, string>> - Object mapping gender codes to display names (e.g., {"M": "Male"})
  */
-export const getGenders = async (): Promise<string[]> => {
-  const genders = await get<Record<string, string>>(
-    APP_PROPERTY_URL('mrs.genders'),
-  );
-  return Object.values(genders);
+export const getGenders = async (): Promise<Record<string, string>> => {
+  return get<Record<string, string>>(APP_PROPERTY_URL('mrs.genders'));
 };
 
 /**
@@ -423,6 +441,37 @@ export const getOrderedAddressHierarchyLevels =
   async (): Promise<OrderedAddressHierarchyLevels> => {
     return get<OrderedAddressHierarchyLevels>(ORDERED_ADDRESS_HIERARCHY_URL);
   };
+
+export const getPatientProfile = async (
+  patientUuid: string,
+): Promise<PatientProfileResponse> => {
+  return get<PatientProfileResponse>(GET_PATIENT_PROFILE_URL(patientUuid));
+};
+
+/**
+ * Get relationship types from OpenMRS
+ * @returns Promise<Array<{uuid: string, aIsToB: string, bIsToA: string}>> - Array of relationship type objects
+ */
+export const getRelationshipTypes = async (): Promise<
+  Array<{ uuid: string; aIsToB: string; bIsToA: string }>
+> => {
+  try {
+    const response = await get<RelationshipTypesResponse>(
+      RELATIONSHIP_TYPES_URL,
+    );
+    return response.results.map((type) => ({
+      uuid: type.uuid,
+      aIsToB: type.aIsToB,
+      bIsToA: type.bIsToA,
+    }));
+  } catch (error) {
+    throw new Error(
+      `Failed to fetch relationship types: ${
+        error instanceof Error ? error.message : 'Unknown error'
+      }`,
+    );
+  }
+};
 
 /**
  * Get all person attribute types from OpenMRS

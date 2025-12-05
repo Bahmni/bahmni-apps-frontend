@@ -15,6 +15,9 @@ export {
   getVisitTypes,
   getVisitLocationUUID,
   getOrderedAddressHierarchyLevels,
+  getPatientImageAsDataUrl,
+  getPatientProfile,
+  getRelationshipTypes,
   getPersonAttributeTypes,
 } from './patientService';
 export {
@@ -37,6 +40,7 @@ export {
   type ActiveVisit,
   type OrderedAddressHierarchyLevel,
   type OrderedAddressHierarchyLevels,
+  type PatientProfileResponse,
   type PersonAttributeType,
   type PersonAttributeTypesResponse,
   type ConceptAnswer,

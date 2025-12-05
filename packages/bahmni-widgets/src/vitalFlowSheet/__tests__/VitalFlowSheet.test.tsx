@@ -59,9 +59,11 @@ jest.mock('@bahmni/services', () => ({
 
 describe('VitalFlowSheet Empty State', () => {
   const defaultProps = {
-    latestCount: 5,
-    obsConcepts: ['Temperature', 'Blood Pressure'],
-    groupBy: 'obstime',
+    config: {
+      latestCount: 5,
+      obsConcepts: ['Temperature', 'Blood Pressure'],
+      groupBy: 'obstime',
+    },
   };
 
   beforeEach(() => {

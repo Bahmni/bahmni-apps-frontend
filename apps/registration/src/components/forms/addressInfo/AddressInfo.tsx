@@ -6,12 +6,16 @@ import {
 } from '@bahmni/services';
 import {
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
   useState,
 } from 'react';
-import type { AddressHierarchyItem } from '../../../hooks/useAddressFields';
+import type {
+  AddressData,
+  AddressHierarchyItem,
+} from '../../../hooks/useAddressFields';
 import { useAddressFieldsWithConfig } from '../../../hooks/useAddressFieldsWithConfig';
 import { useAddressSuggestions } from '../../../hooks/useAddressSuggestions';
 import { AddressAutocompleteField } from './AddressAutocompleteField';
@@ -23,10 +27,11 @@ export type AddressInfoRef = {
 };
 
 interface AddressInfoProps {
+  initialData?: AddressData;
   ref?: React.Ref<AddressInfoRef>;
 }
 
-export const AddressInfo = ({ ref }: AddressInfoProps) => {
+export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
   const { t } = useTranslation();
 
   const {
@@ -40,13 +45,14 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     isLoadingLevels,
     getTranslationKey,
     clearChildFields,
-  } = useAddressFieldsWithConfig();
+  } = useAddressFieldsWithConfig(initialData);
 
   const [addressErrors, setAddressErrors] = useState<Record<string, string>>(
     {},
   );
 
   const autoPopulatingFieldsRef = useRef<Set<string>>(new Set());
+  const isInitializingRef = useRef(false);
 
   const hierarchyFieldNames = useMemo(() => {
     const hierarchyFields = new Set<string>();
@@ -78,6 +84,39 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     levelsWithStrictEntry,
     selectedMetadata,
   );
+
+  useEffect(() => {
+    if (!initialData || levelsWithStrictEntry.length === 0) return;
+
+    isInitializingRef.current = true;
+
+    const initialSelectedItems: Record<string, AddressHierarchyEntry | null> =
+      {};
+
+    autocompleteFields.forEach((fieldName) => {
+      const fieldValue = initialData[fieldName];
+      if (fieldValue) {
+        initialSelectedItems[fieldName] = {
+          name: fieldValue,
+          uuid: '',
+          userGeneratedId: fieldValue,
+        };
+      }
+    });
+
+    if (Object.keys(initialSelectedItems).length > 0) {
+      setSelectedItems(initialSelectedItems);
+    }
+
+    setTimeout(() => {
+      isInitializingRef.current = false;
+    }, 0);
+  }, [
+    initialData,
+    levelsWithStrictEntry.length,
+    autocompleteFields,
+    setSelectedItems,
+  ]);
 
   const handleAddressInputChange = useCallback(
     (field: string, value: string) => {
@@ -191,7 +230,9 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
 
       setAddressErrors((prev) => ({ ...prev, [field]: '' }));
 
-      clearChildSuggestions(field);
+      if (!isInitializingRef.current) {
+        clearChildSuggestions(field);
+      }
     },
     [
       handleFieldSelect,
@@ -226,9 +267,7 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     const result: PatientAddress = {};
 
     Object.keys(address).forEach((key) => {
-      if (address[key]) {
-        result[key as keyof PatientAddress] = address[key]!;
-      }
+      result[key as keyof PatientAddress] = address[key] ?? '';
     });
 
     return result;

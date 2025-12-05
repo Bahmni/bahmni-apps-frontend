@@ -20,32 +20,47 @@
 
 
 .identifierField {
-  width: 288px;
+  width: $spacing-13 + $spacing-13 + $spacing-07;
+  padding-bottom: $spacing-03 + $spacing-03;
+  padding-top: $spacing-03 + $spacing-01;
+  
   :global(.cds--text-input) {
-    background-color: $field-01;  
+    background-color: $field-01 !important;  
   }
+
+  > * {
+        position: relative;
+        
+        div[class*="cds--form-requirement"] {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          margin-top: $spacing-01;
+          z-index: 1;
+        }
+      }
+
 }
 
 .identifierTable {
-  width: 100%;
 
   :global(tbody) {
-    
     tr:hover td {
       cursor: default;
       border-bottom: 1px solid $border-subtle-01 !important;
     }
 
-
     td:first-child {
       width: $spacing-13 + $spacing-06;
       white-space: nowrap;
-      font-weight: 600;
+      @include type-style("heading-compact-01");
       align-content: center;
     }
-
-    td:last-child {
-      width: auto;
-    }
   }
+}
+
+.requiredAsterisk {
+  color: #da1e28;
+  margin-left: $spacing-01;
+  @include type-style("body-compact-01");
 }
