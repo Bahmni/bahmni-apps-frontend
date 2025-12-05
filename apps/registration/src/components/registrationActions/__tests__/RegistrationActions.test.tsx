@@ -1,5 +1,5 @@
 import { AppExtensionConfig } from '@bahmni/services';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { useFilteredExtensions } from '../../../hooks/useFilteredExtensions';
 import { RegistrationActions } from '../RegistrationActions';
@@ -89,26 +89,6 @@ describe('RegistrationActions', () => {
     const buttons = container.querySelectorAll('button');
     expect(buttons[0]).toHaveTextContent('START_VISIT');
     expect(buttons[1]).toHaveTextContent('PRINT_CARD');
-  });
-
-  it('should call onExtensionClick when button is clicked', () => {
-    const onExtensionClick = jest.fn();
-    mockUseFilteredExtensions.mockReturnValue({
-      filteredExtensions: mockExtensions,
-      isLoading: false,
-    });
-
-    render(
-      <RegistrationActions
-        extensionPointId="org.bahmni.registration.footer"
-        onExtensionClick={onExtensionClick}
-      />,
-    );
-
-    const button = screen.getByText('START_VISIT');
-    fireEvent.click(button);
-
-    expect(onExtensionClick).toHaveBeenCalledWith(mockExtensions[0]);
   });
 
   it('should render icon if provided', () => {

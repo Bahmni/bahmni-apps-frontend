@@ -2,13 +2,12 @@ import { Button } from '@bahmni/design-system';
 import { AppExtensionConfig, useTranslation } from '@bahmni/services';
 import { useNavigate } from 'react-router-dom';
 import { useFilteredExtensions } from '../../hooks/useFilteredExtensions';
-import { processExtensionClick } from '../../utils/extensionNavigation';
+import { handleExtensionNavigation } from '../../utils/extensionNavigation';
 
 export interface RegistrationActionsProps {
   extensionPointId?: string;
-  onExtensionClick?: (extension: AppExtensionConfig) => void;
   buttonKind?: 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'danger';
-  urlContext?: Record<string, string | number | null | undefined>;
+  urlContext?: Record<string, string>;
 }
 
 /**
@@ -18,7 +17,6 @@ export interface RegistrationActionsProps {
  */
 export const RegistrationActions = ({
   extensionPointId,
-  onExtensionClick,
   buttonKind = 'tertiary',
   urlContext = {},
 }: RegistrationActionsProps) => {
@@ -33,7 +31,8 @@ export const RegistrationActions = ({
   }
 
   const handleClick = (extension: AppExtensionConfig) => {
-    processExtensionClick(extension, navigate, urlContext, onExtensionClick);
+    if (!extension.url) return;
+    handleExtensionNavigation(extension.url, urlContext, navigate);
   };
 
   return (
