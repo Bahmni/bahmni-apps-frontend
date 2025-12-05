@@ -6,6 +6,7 @@ import {
 } from '@bahmni/services';
 import { getWidget } from '@bahmni/widgets';
 import React, { Suspense } from 'react';
+import { useClinicalAppsData } from '../../hooks/useClinicalAppsData';
 import styles from './styles/DashboardSection.module.scss';
 
 export interface DashboardSectionProps {
@@ -24,6 +25,20 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
   ref,
 }) => {
   const { t } = useTranslation();
+  const { episodeOfCare, visit, encounter } = useClinicalAppsData();
+  const allEncounterIds = Array.from(
+    new Set([
+      ...episodeOfCare.flatMap((eoc) => eoc.encounterIds),
+      ...visit.flatMap((v) => v.encounterIds),
+      ...encounter.map((enc) => enc.uuid),
+    ]),
+  );
+  const allVisitIds = Array.from(
+    new Set([
+      ...episodeOfCare.flatMap((eoc) => eoc.visitIds),
+      ...visit.map((v) => v.uuid),
+    ]),
+  );
   const renderControl = (
     control: ControlConfig,
     index: number,
@@ -50,7 +65,11 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
             </div>
           }
         >
-          <WidgetComponent config={control.config} />
+          <WidgetComponent
+            config={control.config}
+            encounterIds={allEncounterIds}
+            visitIds={allVisitIds}
+          />
         </Suspense>
         {showDivider && <div className={styles.divider} />}
       </React.Fragment>

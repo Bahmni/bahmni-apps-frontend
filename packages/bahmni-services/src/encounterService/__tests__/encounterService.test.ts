@@ -3,9 +3,10 @@ import {
   getPatientVisits,
   getVisits,
   getActiveVisit,
+  getEncountersForEOC,
 } from '../../encounterService';
 import { mockVisitBundle, mockActiveVisit } from '../__mocks__/mocks';
-import { PATIENT_VISITS_URL } from '../constants';
+import { PATIENT_VISITS_URL, EOC_ENCOUNTERS_URL } from '../constants';
 
 jest.mock('../../api');
 const mockedGet = get as jest.MockedFunction<typeof get>;
@@ -84,6 +85,86 @@ describe('encounterService', () => {
       const activeVisit = await getActiveVisit(patientUUID);
 
       expect(activeVisit).toBeNull();
+    });
+  });
+
+  describe('getEncountersForEOC', () => {
+    const mockEOCBundle = {
+      resourceType: 'Bundle' as const,
+      id: 'eoc-bundle-123',
+      type: 'searchset' as const,
+      entry: [
+        {
+          fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/EpisodeOfCare/eoc-123',
+          resource: {
+            resourceType: 'EpisodeOfCare' as const,
+            id: 'eoc-123',
+          },
+        },
+        {
+          fullUrl:
+            'http://localhost/openmrs/ws/fhir2/R4/Encounter/encounter-456',
+          resource: {
+            resourceType: 'Encounter' as const,
+            id: 'encounter-456',
+            episodeOfCare: [
+              {
+                reference: 'EpisodeOfCare/eoc-123',
+              },
+            ],
+          },
+        },
+      ],
+    };
+
+    it('should fetch encounters for a single EOC ID', async () => {
+      const eocId = 'eoc-123';
+      mockedGet.mockResolvedValueOnce(mockEOCBundle);
+
+      await getEncountersForEOC(eocId);
+
+      expect(mockedGet).toHaveBeenCalledWith(EOC_ENCOUNTERS_URL(eocId));
+    });
+
+    it('should fetch encounters for multiple EOC IDs', async () => {
+      const eocIds = ['eoc-123', 'eoc-456'];
+      const expectedJoinedIds = 'eoc-123,eoc-456';
+      mockedGet.mockResolvedValueOnce(mockEOCBundle);
+
+      await getEncountersForEOC(eocIds);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        EOC_ENCOUNTERS_URL(expectedJoinedIds),
+      );
+    });
+
+    it('should return visit IDs and encounter IDs', async () => {
+      const eocId = 'eoc-123';
+      mockedGet.mockResolvedValueOnce(mockEOCBundle);
+
+      const result = await getEncountersForEOC(eocId);
+
+      expect(result).toEqual({
+        visitIds: [],
+        encounterIds: ['encounter-456'],
+      });
+    });
+
+    it('should handle empty array input', async () => {
+      const eocIds: string[] = [];
+      const expectedJoinedIds = '';
+      mockedGet.mockResolvedValueOnce({
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [],
+      });
+
+      const result = await getEncountersForEOC(eocIds);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        EOC_ENCOUNTERS_URL(expectedJoinedIds),
+      );
+      expect(result).toEqual({ visitIds: [], encounterIds: [] });
     });
   });
 });

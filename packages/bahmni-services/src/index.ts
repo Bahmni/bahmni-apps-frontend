@@ -180,7 +180,11 @@ export {
 } from './providerService';
 export { findActiveEncounterInSession } from './encounterSessionService';
 
-export { getActiveVisit } from './encounterService';
+export {
+  getActiveVisit,
+  getEncountersForEOC,
+  type EocReferecneType,
+} from './encounterService';
 
 export {
   dispatchAuditEvent,
