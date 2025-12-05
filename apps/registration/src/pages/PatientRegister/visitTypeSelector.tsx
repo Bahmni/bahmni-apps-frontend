@@ -174,7 +174,7 @@ export const VisitTypeSelector = ({
       )}
       {patientUuid && (
         <RegistrationActions
-          extensionId="bahmni.registration.navigation.patient.start.visit"
+          extensionPointId="org.bahmni.registration.navigation"
           urlContext={{ patientUuid }}
         />
       )}

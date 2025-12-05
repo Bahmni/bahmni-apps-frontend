@@ -6,7 +6,6 @@ import { processExtensionClick } from '../../utils/extensionNavigation';
 
 export interface RegistrationActionsProps {
   extensionPointId?: string;
-  extensionId?: string;
   onExtensionClick?: (extension: AppExtensionConfig) => void;
   buttonKind?: 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'danger';
   urlContext?: Record<string, string | number | null | undefined>;
@@ -14,12 +13,11 @@ export interface RegistrationActionsProps {
 
 /**
  * Component that renders app extension buttons filtered by privilege
- * Can filter by extensionPointId (show all extensions in a location) or extensionId (show specific extension)
+ * Can filter by extensionPointId (show all extensions in a location)
  * Handles navigation internally based on extension type
  */
 export const RegistrationActions = ({
   extensionPointId,
-  extensionId,
   onExtensionClick,
   buttonKind = 'tertiary',
   urlContext = {},
@@ -28,7 +26,6 @@ export const RegistrationActions = ({
   const navigate = useNavigate();
   const { filteredExtensions, isLoading } = useFilteredExtensions({
     extensionPointId,
-    extensionId,
   });
 
   if (isLoading || filteredExtensions.length === 0) {

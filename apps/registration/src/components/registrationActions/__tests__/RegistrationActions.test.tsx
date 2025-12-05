@@ -125,20 +125,6 @@ describe('RegistrationActions', () => {
     expect(icons.length).toBeGreaterThan(0);
   });
 
-  it('should render specific extension when filtered by extensionId', () => {
-    mockUseFilteredExtensions.mockReturnValue({
-      filteredExtensions: [mockExtensions[0]],
-      isLoading: false,
-    });
-
-    render(
-      <RegistrationActions extensionId="bahmni.registration.navigation.patient.start.visit" />,
-    );
-
-    expect(screen.getByText('START_VISIT')).toBeInTheDocument();
-    expect(screen.queryByText('PRINT_CARD')).not.toBeInTheDocument();
-  });
-
   it('should apply custom buttonKind prop', () => {
     mockUseFilteredExtensions.mockReturnValue({
       filteredExtensions: [mockExtensions[0]],
@@ -147,7 +133,7 @@ describe('RegistrationActions', () => {
 
     const { container } = render(
       <RegistrationActions
-        extensionId="bahmni.registration.navigation.patient.start.visit"
+        extensionPointId="org.bahmni.registration.footer"
         buttonKind="primary"
       />,
     );
