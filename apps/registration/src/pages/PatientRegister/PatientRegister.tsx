@@ -252,18 +252,10 @@ const PatientRegister = () => {
             <PatientRelationships ref={patientRelationshipsRef} />
           )}
           {shouldShowAdditionalIdentifiers && (
-            <>
-              <Tile className={styles.patientDetailsHeader}>
-                <span className={styles.sectionTitle}>
-                  {t('ADDITIONAL_IDENTIFIERS_HEADER_TITLE')}
-                </span>
-              </Tile>
-
-              <AdditionalIdentifiers
-                ref={patientAdditionalIdentifiersRef}
-                initialData={additionalIdentifiersInitialData}
-              />
-            </>
+            <AdditionalIdentifiers
+              ref={patientAdditionalIdentifiersRef}
+              initialData={additionalIdentifiersInitialData}
+            />
           )}
 
           {/* Footer Actions */}
