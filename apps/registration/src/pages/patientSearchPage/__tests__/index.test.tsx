@@ -152,6 +152,9 @@ jest.mock('@bahmni/widgets', () => ({
   useUserPrivilege: jest.fn(() => ({
     userPrivileges: mockUserPrivileges,
   })),
+  register: jest.fn(),
+  useNotification: jest.fn(() => ({ addNotification: jest.fn() })),
+  NotificationProvider: ({ children }: any) => children,
   SearchPatient: jest.fn(({ onSearch }) => {
     const handleSearch = () => {
       if (onSearch) {

@@ -79,14 +79,22 @@ const PatientRegister = () => {
     additionalInitialData,
     addressInitialData,
     initialDobEstimated,
-    metadata,
+    metadata: initialMetadata,
   } = usePatientDetails({
     patientUuid: patientUuidFromUrl,
   });
 
+  const [metadata, setMetadata] = useState(initialMetadata);
+
   const { patientPhoto } = usePatientPhoto({
     patientUuid: patientUuidFromUrl,
   });
+
+  useEffect(() => {
+    if (initialMetadata) {
+      setMetadata(initialMetadata);
+    }
+  }, [initialMetadata]);
 
   useEffect(() => {
     if (metadata?.patientUuid) {
@@ -152,6 +160,10 @@ const PatientRegister = () => {
           ...formData,
         })) as PatientProfileResponse;
         if (response?.patient?.uuid) {
+          setMetadata({
+            ...metadata,
+            patientName: response.patient.person.display ?? '',
+          });
           return response.patient.uuid;
         }
       } else {

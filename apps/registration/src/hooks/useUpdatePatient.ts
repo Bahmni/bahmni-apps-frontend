@@ -82,7 +82,7 @@ function transformFormDataToPayload(
   const patientName: PatientName = {
     ...(profile.nameUuid && { uuid: profile.nameUuid }),
     givenName: profile.firstName,
-    ...(profile.middleName && { middleName: profile.middleName }),
+    middleName: profile.middleName || '',
     familyName: profile.lastName,
     display: `${profile.firstName}${profile.middleName ? ' ' + profile.middleName : ''} ${profile.lastName}`,
     preferred: false,
@@ -98,20 +98,20 @@ function transformFormDataToPayload(
 
   // Dynamically add all contact attributes
   Object.entries(contact).forEach(([key, value]) => {
-    if (value && attributeMap.has(key)) {
+    if (attributeMap.has(key)) {
       attributes.push({
         attributeType: { uuid: attributeMap.get(key)! },
-        value: String(value),
+        value: String(value ?? ''),
       });
     }
   });
 
   // Dynamically add all additional attributes
   Object.entries(additional).forEach(([key, value]) => {
-    if (value && attributeMap.has(key)) {
+    if (attributeMap.has(key)) {
       attributes.push({
         attributeType: { uuid: attributeMap.get(key)! },
-        value: String(value),
+        value: String(value ?? ''),
       });
     }
   });

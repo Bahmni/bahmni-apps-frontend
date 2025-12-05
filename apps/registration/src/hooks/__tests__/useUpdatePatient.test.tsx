@@ -678,14 +678,24 @@ describe('useUpdatePatient', () => {
 
       const callArgs = mockUpdatePatient.mock.calls[0][1];
 
-      // Verify no contact attributes are included
+      // Verify empty contact attributes are sent with empty strings
       const contactAttributes = callArgs.patient.person.attributes.filter(
         (attr: { attributeType: { uuid: string } }) =>
           attr.attributeType.uuid === 'a384873b-847a-4a86-b869-28fb601162dd' ||
           attr.attributeType.uuid === '27fa84ff-fdd6-4895-9c77-254b60555f39',
       );
 
-      expect(contactAttributes).toHaveLength(0);
+      expect(contactAttributes).toHaveLength(2);
+      expect(contactAttributes).toEqual([
+        {
+          attributeType: { uuid: 'a384873b-847a-4a86-b869-28fb601162dd' },
+          value: '',
+        },
+        {
+          attributeType: { uuid: '27fa84ff-fdd6-4895-9c77-254b60555f39' },
+          value: '',
+        },
+      ]);
     });
 
     it('should handle only some contact attributes provided', async () => {
@@ -711,7 +721,7 @@ describe('useUpdatePatient', () => {
 
       const callArgs = mockUpdatePatient.mock.calls[0][1];
 
-      // Verify only phoneNumber is included
+      // Verify phoneNumber has value
       const phoneAttribute = callArgs.patient.person.attributes.find(
         (attr: { attributeType: { uuid: string } }) =>
           attr.attributeType.uuid === 'a384873b-847a-4a86-b869-28fb601162dd',
@@ -724,12 +734,18 @@ describe('useUpdatePatient', () => {
         value: '+1234567890',
       });
 
+      // Verify altPhoneNumber is sent with empty string
       const altPhoneAttribute = callArgs.patient.person.attributes.find(
         (attr: { attributeType: { uuid: string } }) =>
           attr.attributeType.uuid === '27fa84ff-fdd6-4895-9c77-254b60555f39',
       );
 
-      expect(altPhoneAttribute).toBeUndefined();
+      expect(altPhoneAttribute).toEqual({
+        attributeType: {
+          uuid: '27fa84ff-fdd6-4895-9c77-254b60555f39',
+        },
+        value: '',
+      });
     });
 
     it('should handle empty additional attributes', async () => {
@@ -754,13 +770,18 @@ describe('useUpdatePatient', () => {
 
       const callArgs = mockUpdatePatient.mock.calls[0][1];
 
-      // Verify email attribute is not included
+      // Verify email attribute is sent with empty string
       const emailAttribute = callArgs.patient.person.attributes.find(
         (attr: { attributeType: { uuid: string } }) =>
           attr.attributeType.uuid === 'e3123cba-5e07-11ef-8f7c-0242ac120002',
       );
 
-      expect(emailAttribute).toBeUndefined();
+      expect(emailAttribute).toEqual({
+        attributeType: {
+          uuid: 'e3123cba-5e07-11ef-8f7c-0242ac120002',
+        },
+        value: '',
+      });
     });
   });
 
@@ -821,14 +842,20 @@ describe('useUpdatePatient', () => {
 
       const callArgs = mockUpdatePatient.mock.calls[0][1];
 
-      // Verify only mapped attributes are included
-      expect(callArgs.patient.person.attributes).toHaveLength(2);
+      // Verify only mapped attributes are included (including empty altPhoneNumber)
+      expect(callArgs.patient.person.attributes).toHaveLength(3);
       expect(callArgs.patient.person.attributes).toEqual([
         {
           attributeType: {
             uuid: 'a384873b-847a-4a86-b869-28fb601162dd',
           },
           value: '+1234567890',
+        },
+        {
+          attributeType: {
+            uuid: '27fa84ff-fdd6-4895-9c77-254b60555f39',
+          },
+          value: '',
         },
         {
           attributeType: {

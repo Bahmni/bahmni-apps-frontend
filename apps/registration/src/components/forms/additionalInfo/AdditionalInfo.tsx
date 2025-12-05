@@ -73,7 +73,7 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
       });
       setFormData(data);
     }
-  }, [initialData, fieldsToShow]);
+  }, [initialData, fieldsToShow.length]);
 
   const handleFieldChange = useCallback(
     (fieldName: string, value: string | number | boolean) => {
