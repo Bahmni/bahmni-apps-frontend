@@ -18,7 +18,10 @@ export {
   getVisitTypes,
   getVisitLocationUUID,
   getOrderedAddressHierarchyLevels,
+  getPatientImageAsDataUrl,
+  getPatientProfile,
   getPersonAttributeTypes,
+  getRelationshipTypes,
   type FormattedPatientData,
   type PatientSearchResult,
   type PatientSearchResultBundle,
@@ -35,6 +38,7 @@ export {
   type AddressHierarchyEntry,
   type OrderedAddressHierarchyLevel,
   type OrderedAddressHierarchyLevels,
+  type PatientProfileResponse,
   type PersonAttributeType,
   type PersonAttributeTypesResponse,
   type ConceptAnswer,
@@ -90,6 +94,7 @@ export {
   DATE_TIME_FORMAT,
   ISO_DATE_FORMAT,
   FULL_MONTH_DATE_FORMAT,
+  REGISTRATION_DATE_FORMAT,
   getTodayDate,
   calculateAgeinYearsAndMonths,
   formatDateAndTime,
@@ -163,6 +168,7 @@ export {
   type PatientSearchConfig,
   type PatientSearchField,
   type SearchActionConfig,
+  type ControlConfig,
 } from './configService';
 
 export { getCurrentUser, getUserLoginLocation, type User } from './userService';

@@ -1018,6 +1018,17 @@ describe('common utility functions', () => {
     });
   });
 
+  describe('blobToDataUrl', () => {
+    it('should convert blob to data URL', async () => {
+      const { blobToDataUrl } = await import('../utils');
+      const mockBlob = new Blob(['test data'], { type: 'text/plain' });
+      const result = await blobToDataUrl(mockBlob);
+
+      expect(result).toContain('data:');
+      expect(typeof result).toBe('string');
+    });
+  });
+
   describe('formatUrl', () => {
     const originalLocation = window.location;
 

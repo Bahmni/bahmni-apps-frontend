@@ -1,6 +1,5 @@
 import {
   updatePatient,
-  notificationService,
   CreatePatientRequest,
   PatientName,
   PatientIdentifier,
@@ -10,7 +9,9 @@ import {
   AuditEventType,
   dispatchAuditEvent,
   PersonAttributeType,
+  useTranslation,
 } from '@bahmni/services';
+import { useNotification } from '@bahmni/widgets';
 import { useMutation } from '@tanstack/react-query';
 import { convertTimeToISODateTime } from '../components/forms/profile/dateAgeUtils';
 import { BasicInfoData, ContactData, AdditionalData } from '../models/patient';
@@ -21,6 +22,7 @@ interface UpdatePatientFormData {
   profile: BasicInfoData & {
     dobEstimated: boolean;
     patientIdentifier: PatientIdentifier;
+    image?: string;
   };
   address: PatientAddress;
   contact: ContactData;
@@ -28,6 +30,8 @@ interface UpdatePatientFormData {
 }
 
 export const useUpdatePatient = () => {
+  const { t } = useTranslation();
+  const { addNotification } = useNotification();
   const { personAttributes } = usePersonAttributes();
 
   const mutation = useMutation({
@@ -36,23 +40,28 @@ export const useUpdatePatient = () => {
       return updatePatient(formData.patientUuid, payload);
     },
     onSuccess: (response) => {
-      notificationService.showSuccess(
-        'Success',
-        'Patient updated successfully',
-        5000,
-      );
+      addNotification({
+        title: t('NOTIFICATION_SUCCESS_TITLE'),
+        message: t('NOTIFICATION_PATIENT_UPDATED_SUCCESSFULLY'),
+        type: 'success',
+        timeout: 5000,
+      });
 
       if (response?.patient?.uuid) {
         dispatchAuditEvent({
-          eventType: AUDIT_LOG_EVENT_DETAILS.REGISTER_NEW_PATIENT
+          eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_PATIENT_DETAILS
             .eventType as AuditEventType,
           patientUuid: response.patient.uuid,
-          module: AUDIT_LOG_EVENT_DETAILS.REGISTER_NEW_PATIENT.module,
+          module: AUDIT_LOG_EVENT_DETAILS.EDIT_PATIENT_DETAILS.module,
         });
       }
     },
-    onError: () => {
-      notificationService.showError('Error', 'Failed to update patient', 5000);
+    onError: (error) => {
+      addNotification({
+        type: 'error',
+        title: t('ERROR_UPDATING_PATIENT'),
+        message: error instanceof Error ? error.message : String(error),
+      });
     },
   });
 
@@ -64,9 +73,16 @@ function transformFormDataToPayload(
   personAttributes: PersonAttributeType[],
 ): CreatePatientRequest {
   const { profile, address, contact, additional } = formData;
+
+  const addressWithNulls: PatientAddress = {};
+  Object.entries(address).forEach(([key, value]) => {
+    addressWithNulls[key as keyof PatientAddress] =
+      value && value.trim() !== '' ? value : null;
+  });
   const patientName: PatientName = {
+    ...(profile.nameUuid && { uuid: profile.nameUuid }),
     givenName: profile.firstName,
-    ...(profile.middleName && { middleName: profile.middleName }),
+    middleName: profile.middleName || '',
     familyName: profile.lastName,
     display: `${profile.firstName}${profile.middleName ? ' ' + profile.middleName : ''} ${profile.lastName}`,
     preferred: false,
@@ -82,20 +98,20 @@ function transformFormDataToPayload(
 
   // Dynamically add all contact attributes
   Object.entries(contact).forEach(([key, value]) => {
-    if (value && attributeMap.has(key)) {
+    if (attributeMap.has(key)) {
       attributes.push({
         attributeType: { uuid: attributeMap.get(key)! },
-        value: String(value),
+        value: String(value ?? ''),
       });
     }
   });
 
   // Dynamically add all additional attributes
   Object.entries(additional).forEach(([key, value]) => {
-    if (value && attributeMap.has(key)) {
+    if (attributeMap.has(key)) {
       attributes.push({
         attributeType: { uuid: attributeMap.get(key)! },
-        value: String(value),
+        value: String(value ?? ''),
       });
     }
   });
@@ -111,13 +127,14 @@ function transformFormDataToPayload(
           profile.dateOfBirth,
           profile.birthTime,
         ),
-        addresses: [address],
+        addresses: [addressWithNulls],
         attributes,
         deathDate: null,
         causeOfDeath: '',
       },
       identifiers: [profile.patientIdentifier],
     },
+    ...(profile.image && { image: profile.image }),
     relationships: [],
   };
 

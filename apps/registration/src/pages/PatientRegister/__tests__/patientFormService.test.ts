@@ -1,16 +1,13 @@
-import { notificationService } from '@bahmni/services';
 import { validateAllSections, collectFormData } from '../patientFormService';
 import type { PatientFormRefs } from '../patientFormService';
 
-// Mock the notification service
-jest.mock('@bahmni/services', () => ({
-  notificationService: {
-    showError: jest.fn(),
-  },
-}));
-
 describe('patientFormService', () => {
+  let mockAddNotification: jest.Mock;
+  let mockT: jest.Mock;
+
   beforeEach(() => {
+    mockAddNotification = jest.fn();
+    mockT = jest.fn((key: string) => key);
     jest.clearAllMocks();
   });
 
@@ -48,14 +45,14 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = validateAllSections(mockRefs);
+      const result = validateAllSections(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBe(true);
       expect(mockRefs.profileRef.current?.validate).toHaveBeenCalled();
       expect(mockRefs.addressRef.current?.validate).toHaveBeenCalled();
       expect(mockRefs.contactRef.current?.validate).toHaveBeenCalled();
       expect(mockRefs.additionalRef.current?.validate).toHaveBeenCalled();
-      expect(notificationService.showError).not.toHaveBeenCalled();
+      expect(mockAddNotification).not.toHaveBeenCalled();
     });
 
     it('should return false when profile validation fails', () => {
@@ -91,14 +88,15 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = validateAllSections(mockRefs);
+      const result = validateAllSections(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBe(false);
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        'Error',
-        'Please fix validation errors',
-        5000,
-      );
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'NOTIFICATION_ERROR_TITLE',
+        message: 'NOTIFICATION_VALIDATION_ERRORS',
+        type: 'error',
+        timeout: 5000,
+      });
     });
 
     it('should return false when address validation fails', () => {
@@ -134,14 +132,15 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = validateAllSections(mockRefs);
+      const result = validateAllSections(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBe(false);
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        'Error',
-        'Please fix validation errors',
-        5000,
-      );
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'NOTIFICATION_ERROR_TITLE',
+        message: 'NOTIFICATION_VALIDATION_ERRORS',
+        type: 'error',
+        timeout: 5000,
+      });
     });
 
     it('should return false when contact validation fails', () => {
@@ -177,14 +176,15 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = validateAllSections(mockRefs);
+      const result = validateAllSections(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBe(false);
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        'Error',
-        'Please fix validation errors',
-        5000,
-      );
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'NOTIFICATION_ERROR_TITLE',
+        message: 'NOTIFICATION_VALIDATION_ERRORS',
+        type: 'error',
+        timeout: 5000,
+      });
     });
 
     it('should return false when additional validation fails', () => {
@@ -220,14 +220,15 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = validateAllSections(mockRefs);
+      const result = validateAllSections(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBe(false);
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        'Error',
-        'Please fix validation errors',
-        5000,
-      );
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'NOTIFICATION_ERROR_TITLE',
+        message: 'NOTIFICATION_VALIDATION_ERRORS',
+        type: 'error',
+        timeout: 5000,
+      });
     });
 
     it('should return false when multiple sections fail validation', () => {
@@ -263,10 +264,10 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = validateAllSections(mockRefs);
+      const result = validateAllSections(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBe(false);
-      expect(notificationService.showError).toHaveBeenCalledTimes(1);
+      expect(mockAddNotification).toHaveBeenCalledTimes(1);
     });
 
     it('should return false when ref current is null', () => {
@@ -297,14 +298,15 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = validateAllSections(mockRefs);
+      const result = validateAllSections(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBe(false);
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        'Error',
-        'Please fix validation errors',
-        5000,
-      );
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'NOTIFICATION_ERROR_TITLE',
+        message: 'NOTIFICATION_VALIDATION_ERRORS',
+        type: 'error',
+        timeout: 5000,
+      });
     });
 
     it('should validate all sections even if first one fails', () => {
@@ -340,7 +342,7 @@ describe('patientFormService', () => {
         },
       };
 
-      validateAllSections(mockRefs);
+      validateAllSections(mockRefs, mockAddNotification, mockT);
 
       // Verify all validate methods were called even though first one failed
       expect(mockRefs.profileRef.current?.validate).toHaveBeenCalled();
@@ -386,7 +388,7 @@ describe('patientFormService', () => {
       };
 
       // Pass shouldValidateAdditionalIdentifiers: false
-      const result = validateAllSections(mockRefs, {
+      const result = validateAllSections(mockRefs, mockAddNotification, mockT, {
         shouldValidateAdditionalIdentifiers: false,
       });
 
@@ -395,7 +397,7 @@ describe('patientFormService', () => {
       expect(
         mockRefs.additionalIdentifiersRef.current?.validate,
       ).not.toHaveBeenCalled();
-      expect(notificationService.showError).not.toHaveBeenCalled();
+      expect(mockAddNotification).not.toHaveBeenCalled();
     });
 
     it('should validate additional identifiers when section is visible', () => {
@@ -435,7 +437,7 @@ describe('patientFormService', () => {
       };
 
       // Pass shouldValidateAdditionalIdentifiers: true
-      const result = validateAllSections(mockRefs, {
+      const result = validateAllSections(mockRefs, mockAddNotification, mockT, {
         shouldValidateAdditionalIdentifiers: true,
       });
 
@@ -444,11 +446,12 @@ describe('patientFormService', () => {
       expect(
         mockRefs.additionalIdentifiersRef.current?.validate,
       ).toHaveBeenCalled();
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        'Error',
-        'Please fix validation errors',
-        5000,
-      );
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'NOTIFICATION_ERROR_TITLE',
+        message: 'NOTIFICATION_VALIDATION_ERRORS',
+        type: 'error',
+        timeout: 5000,
+      });
     });
   });
 
@@ -485,7 +488,7 @@ describe('patientFormService', () => {
         profileRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => mockProfileData),
+            getData: jest.fn(() => mockProfileData) as any,
             clearData: jest.fn(),
             setCustomError: jest.fn(),
           },
@@ -493,19 +496,19 @@ describe('patientFormService', () => {
         addressRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => mockAddressData),
+            getData: jest.fn(() => mockAddressData) as any,
           },
         },
         contactRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => mockContactData),
+            getData: jest.fn(() => mockContactData) as any,
           },
         },
         additionalRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => mockAdditionalData),
+            getData: jest.fn(() => mockAdditionalData) as any,
           },
         },
         additionalIdentifiersRef: {
@@ -513,16 +516,17 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = collectFormData(mockRefs);
+      const result = collectFormData(mockRefs, mockAddNotification, mockT);
 
       expect(result).toEqual({
         profile: mockProfileData,
         address: mockAddressData,
         contact: mockContactData,
         additional: mockAdditionalData,
+        relationships: [],
         additionalIdentifiers: {},
       });
-      expect(notificationService.showError).not.toHaveBeenCalled();
+      expect(mockAddNotification).not.toHaveBeenCalled();
     });
 
     it('should return null when profile data is missing', () => {
@@ -530,7 +534,7 @@ describe('patientFormService', () => {
         profileRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => null),
+            getData: jest.fn(() => null) as any,
             clearData: jest.fn(),
             setCustomError: jest.fn(),
           },
@@ -538,19 +542,22 @@ describe('patientFormService', () => {
         addressRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => ({ address1: '123 Main St' })),
+            getData: jest.fn(() => ({ address1: '123 Main St' })) as any,
           },
         },
         contactRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => ({ phoneNumber: '1234567890' })),
+            getData: jest.fn(() => ({
+              phoneNumber: '1234567890',
+              altPhoneNumber: '',
+            })) as any,
           },
         },
         additionalRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => ({ email: 'test@example.com' })),
+            getData: jest.fn(() => ({ email: 'test@example.com' })) as any,
           },
         },
         additionalIdentifiersRef: {
@@ -558,14 +565,15 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = collectFormData(mockRefs);
+      const result = collectFormData(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBeNull();
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        'Error',
-        'Unable to get patient data',
-        5000,
-      );
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'NOTIFICATION_ERROR_TITLE',
+        message: 'NOTIFICATION_UNABLE_TO_GET_PATIENT_DATA',
+        type: 'error',
+        timeout: 5000,
+      });
     });
 
     it('should return null when address data is missing', () => {
@@ -577,7 +585,7 @@ describe('patientFormService', () => {
               firstName: 'John',
               lastName: 'Doe',
               gender: 'male',
-            })),
+            })) as any,
             clearData: jest.fn(),
             setCustomError: jest.fn(),
           },
@@ -585,19 +593,19 @@ describe('patientFormService', () => {
         addressRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => null),
+            getData: jest.fn(() => null) as any,
           },
         },
         contactRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => ({ phoneNumber: '1234567890' })),
+            getData: jest.fn(() => ({ phoneNumber: '1234567890' })) as any,
           },
         },
         additionalRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => ({ email: 'test@example.com' })),
+            getData: jest.fn(() => ({ email: 'test@example.com' })) as any,
           },
         },
         additionalIdentifiersRef: {
@@ -605,14 +613,15 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = collectFormData(mockRefs);
+      const result = collectFormData(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBeNull();
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        'Error',
-        'Unable to get patient address data',
-        5000,
-      );
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'NOTIFICATION_ERROR_TITLE',
+        message: 'NOTIFICATION_UNABLE_TO_GET_ADDRESS_DATA',
+        type: 'error',
+        timeout: 5000,
+      });
     });
 
     it('should return null when contact data is missing', () => {
@@ -624,7 +633,7 @@ describe('patientFormService', () => {
               firstName: 'John',
               lastName: 'Doe',
               gender: 'male',
-            })),
+            })) as any,
             clearData: jest.fn(),
             setCustomError: jest.fn(),
           },
@@ -632,19 +641,19 @@ describe('patientFormService', () => {
         addressRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => ({ address1: '123 Main St' })),
+            getData: jest.fn(() => ({ address1: '123 Main St' })) as any,
           },
         },
         contactRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => null),
+            getData: jest.fn(() => null) as any,
           },
         },
         additionalRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => ({ email: 'test@example.com' })),
+            getData: jest.fn(() => ({ email: 'test@example.com' })) as any,
           },
         },
         additionalIdentifiersRef: {
@@ -652,14 +661,15 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = collectFormData(mockRefs);
+      const result = collectFormData(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBeNull();
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        'Error',
-        'Unable to get patient contact data',
-        5000,
-      );
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'NOTIFICATION_ERROR_TITLE',
+        message: 'NOTIFICATION_UNABLE_TO_GET_CONTACT_DATA',
+        type: 'error',
+        timeout: 5000,
+      });
     });
 
     it('should return null when additional data is missing', () => {
@@ -671,7 +681,7 @@ describe('patientFormService', () => {
               firstName: 'John',
               lastName: 'Doe',
               gender: 'male',
-            })),
+            })) as any,
             clearData: jest.fn(),
             setCustomError: jest.fn(),
           },
@@ -679,19 +689,19 @@ describe('patientFormService', () => {
         addressRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => ({ address1: '123 Main St' })),
+            getData: jest.fn(() => ({ address1: '123 Main St' })) as any,
           },
         },
         contactRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => ({ phoneNumber: '1234567890' })),
+            getData: jest.fn(() => ({ phoneNumber: '1234567890' })) as any,
           },
         },
         additionalRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => null),
+            getData: jest.fn(() => null) as any,
           },
         },
         additionalIdentifiersRef: {
@@ -699,14 +709,15 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = collectFormData(mockRefs);
+      const result = collectFormData(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBeNull();
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        'Error',
-        'Unable to get patient additional data',
-        5000,
-      );
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'NOTIFICATION_ERROR_TITLE',
+        message: 'NOTIFICATION_UNABLE_TO_GET_ADDITIONAL_DATA',
+        type: 'error',
+        timeout: 5000,
+      });
     });
 
     it('should return null when ref current is null', () => {
@@ -717,19 +728,19 @@ describe('patientFormService', () => {
         addressRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => ({ address1: '123 Main St' })),
+            getData: jest.fn(() => ({ address1: '123 Main St' })) as any,
           },
         },
         contactRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => ({ phoneNumber: '1234567890' })),
+            getData: jest.fn(() => ({ phoneNumber: '1234567890' })) as any,
           },
         },
         additionalRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => ({ email: 'test@example.com' })),
+            getData: jest.fn(() => ({ email: 'test@example.com' })) as any,
           },
         },
         additionalIdentifiersRef: {
@@ -737,14 +748,15 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = collectFormData(mockRefs);
+      const result = collectFormData(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBeNull();
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        'Error',
-        'Unable to get patient data',
-        5000,
-      );
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'NOTIFICATION_ERROR_TITLE',
+        message: 'NOTIFICATION_UNABLE_TO_GET_PATIENT_DATA',
+        type: 'error',
+        timeout: 5000,
+      });
     });
 
     it('should call getData on all refs before the failing one', () => {
@@ -756,7 +768,7 @@ describe('patientFormService', () => {
               firstName: 'John',
               lastName: 'Doe',
               gender: 'male',
-            })),
+            })) as any,
             clearData: jest.fn(),
             setCustomError: jest.fn(),
           },
@@ -764,19 +776,19 @@ describe('patientFormService', () => {
         addressRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => ({ address1: '123 Main St' })),
+            getData: jest.fn(() => ({ address1: '123 Main St' })) as any,
           },
         },
         contactRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => null),
+            getData: jest.fn(() => null) as any,
           },
         },
         additionalRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => ({ email: 'test@example.com' })),
+            getData: jest.fn(() => ({ email: 'test@example.com' })) as any,
           },
         },
         additionalIdentifiersRef: {
@@ -784,7 +796,7 @@ describe('patientFormService', () => {
         },
       };
 
-      collectFormData(mockRefs);
+      collectFormData(mockRefs, mockAddNotification, mockT);
 
       expect(mockRefs.profileRef.current?.getData).toHaveBeenCalled();
       expect(mockRefs.addressRef.current?.getData).toHaveBeenCalled();
@@ -798,7 +810,7 @@ describe('patientFormService', () => {
         profileRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => undefined),
+            getData: jest.fn(() => undefined) as any,
             clearData: jest.fn(),
             setCustomError: jest.fn(),
           },
@@ -806,19 +818,19 @@ describe('patientFormService', () => {
         addressRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => ({ address1: '123 Main St' })),
+            getData: jest.fn(() => ({ address1: '123 Main St' })) as any,
           },
         },
         contactRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => ({ phoneNumber: '1234567890' })),
+            getData: jest.fn(() => ({ phoneNumber: '1234567890' })) as any,
           },
         },
         additionalRef: {
           current: {
             validate: jest.fn(),
-            getData: jest.fn(() => ({ email: 'test@example.com' })),
+            getData: jest.fn(() => ({ email: 'test@example.com' })) as any,
           },
         },
         additionalIdentifiersRef: {
@@ -826,14 +838,15 @@ describe('patientFormService', () => {
         },
       };
 
-      const result = collectFormData(mockRefs);
+      const result = collectFormData(mockRefs, mockAddNotification, mockT);
 
       expect(result).toBeNull();
-      expect(notificationService.showError).toHaveBeenCalledWith(
-        'Error',
-        'Unable to get patient data',
-        5000,
-      );
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'NOTIFICATION_ERROR_TITLE',
+        message: 'NOTIFICATION_UNABLE_TO_GET_PATIENT_DATA',
+        type: 'error',
+        timeout: 5000,
+      });
     });
   });
 });
