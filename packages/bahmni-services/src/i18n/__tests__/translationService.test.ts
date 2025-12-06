@@ -9,6 +9,7 @@ import {
   getTranslations,
   getUserPreferredLocale,
   getTranslationFile,
+  normalizeTranslationKey,
 } from '../translationService';
 
 jest.mock('../../api');
@@ -232,6 +233,94 @@ describe('Translation Service', () => {
           [namespace]: {},
         },
       });
+    });
+  });
+
+  describe('normalizeTranslationKey', () => {
+    it('should normalize translation key with module and field name', () => {
+      const result = normalizeTranslationKey('registration', 'National ID');
+      expect(result).toBe('REGISTRATION_NATIONAL_ID');
+    });
+
+    it('should replace spaces with underscores', () => {
+      const result = normalizeTranslationKey('clinical', 'Blood Pressure');
+      expect(result).toBe('CLINICAL_BLOOD_PRESSURE');
+    });
+
+    it('should remove special characters except underscores', () => {
+      const result = normalizeTranslationKey('registration', 'City/Village');
+      expect(result).toBe('REGISTRATION_CITYVILLAGE');
+    });
+
+    it('should handle single word inputs', () => {
+      const result = normalizeTranslationKey('home', 'title');
+      expect(result).toBe('HOME_TITLE');
+    });
+
+    it('should convert to uppercase', () => {
+      const result = normalizeTranslationKey('registration', 'firstName');
+      expect(result).toBe('REGISTRATION_FIRSTNAME');
+    });
+
+    it('should handle already uppercase inputs', () => {
+      const result = normalizeTranslationKey('REGISTRATION', 'NAME');
+      expect(result).toBe('REGISTRATION_NAME');
+    });
+
+    it('should handle mixed case inputs', () => {
+      const result = normalizeTranslationKey('Registration', 'FirstName');
+      expect(result).toBe('REGISTRATION_FIRSTNAME');
+    });
+
+    it('should handle field names with numbers', () => {
+      const result = normalizeTranslationKey('clinical', 'Ward 2B');
+      expect(result).toBe('CLINICAL_WARD_2B');
+    });
+
+    it('should handle multiple spaces', () => {
+      const result = normalizeTranslationKey(
+        'registration',
+        'Address   Line   One',
+      );
+      expect(result).toBe('REGISTRATION_ADDRESS_LINE_ONE');
+    });
+
+    it('should handle field names with hyphens', () => {
+      const result = normalizeTranslationKey('clinical', 'Patient-ID');
+      expect(result).toBe('CLINICAL_PATIENTID');
+    });
+
+    it('should handle field names with dots', () => {
+      const result = normalizeTranslationKey('registration', 'email.address');
+      expect(result).toBe('REGISTRATION_EMAILADDRESS');
+    });
+
+    it('should preserve existing underscores in field name', () => {
+      const result = normalizeTranslationKey('clinical', 'patient_name');
+      expect(result).toBe('CLINICAL_PATIENT_NAME');
+    });
+
+    it('should handle field names with parentheses', () => {
+      const result = normalizeTranslationKey('clinical', 'Temperature (C)');
+      expect(result).toBe('CLINICAL_TEMPERATURE_C');
+    });
+
+    it('should handle complex field names', () => {
+      const result = normalizeTranslationKey(
+        'registration',
+        "Patient's ID Number (2024)",
+      );
+      expect(result).toBe('REGISTRATION_PATIENTS_ID_NUMBER_2024');
+    });
+
+    it('should handle field names with spaces', () => {
+      const result = normalizeTranslationKey('clinical', 'patient name');
+      expect(result).toBe('CLINICAL_PATIENT_NAME');
+    });
+
+    it('should handle camelCase field names', () => {
+      const result = normalizeTranslationKey('registration', 'phoneNumber');
+      expect(result).toBe('REGISTRATION_PHONENUMBER');
     });
   });
 });
