@@ -7,8 +7,10 @@ import {
   useMemo,
   useEffect,
 } from 'react';
+import { REGISTRATION_NAMESPACE } from '../../../constants/app';
 import { useIdentifierTypes } from '../../../hooks/useAdditionalIdentifiers';
 import type { AdditionalIdentifiersData } from '../../../models/patient';
+import { getTranslatedLabel } from '../../../utils/translation';
 import styles from './styles/index.module.scss';
 
 export interface AdditionalIdentifiersRef {
@@ -107,6 +109,12 @@ export const AdditionalIdentifiers = ({
   }));
 
   const renderCell = (row: IdentifierRow, cellId: string) => {
+    const translatedName = getTranslatedLabel(
+      t,
+      REGISTRATION_NAMESPACE,
+      row.name,
+    );
+
     if (cellId === 'label') {
       const identifierType = extraIdentifierTypes.find(
         (type) => type.uuid === row.uuid,
@@ -114,7 +122,7 @@ export const AdditionalIdentifiers = ({
       const isRequired = identifierType?.required ?? false;
       return (
         <span className={styles.identifierField}>
-          {row.name}
+          {translatedName}
           {isRequired && <span className={styles.requiredAsterisk}>*</span>}
         </span>
       );
@@ -127,7 +135,7 @@ export const AdditionalIdentifiers = ({
           <TextInput
             id={`identifier-${row.uuid}`}
             labelText=""
-            placeholder={row.name}
+            placeholder={translatedName}
             value={value}
             invalid={!!error}
             invalidText={error}
