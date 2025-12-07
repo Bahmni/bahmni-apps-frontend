@@ -1,4 +1,5 @@
 import { lazy } from 'react';
+import { WidgetConfig } from '../model';
 import {
   registerWidget,
   getWidget,
@@ -8,8 +9,6 @@ import {
   getAllWidgetConfigs,
   resetWidgetRegistry,
 } from '../registry';
-
-import { WidgetConfig } from '../model';
 
 // Mock React components for testing
 const MockComponent1 = () => null;

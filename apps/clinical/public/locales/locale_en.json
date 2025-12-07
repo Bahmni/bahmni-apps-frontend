@@ -242,6 +242,7 @@
   "VITAL_SIGNS_TEMPERATURE": "Temperature",
   "CONTROL_NOT_FOUND": "No controls registered for type: {{type}}",
   "NO_CONFIGURED_CONTROLS": "No configured controls to for this section",
-  "INITIALIZING_CONTROL": "Initializing control..."
-
+  "INITIALIZING_CONTROL": "Initializing control...",
+  "CONFIG_VALIDATING": "Validating configuration...",
+  "INVALID_CONTROL_CONFIGURATION": "Invalid Configuration"
 }

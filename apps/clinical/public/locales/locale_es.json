@@ -240,7 +240,9 @@
   "VITAL_SIGNS_RESPIRATORY_RATE": "Frecuencia respiratoria",
   "VITAL_SIGNS_SYSTOLIC_BLOOD_PRESSURE": "Presión arterial sistólica",
   "VITAL_SIGNS_TEMPERATURE": "Temperatura",
-  "CONTROL_NOT_FOUND": "Aucun contrôle enregistré pour le type : {{type}}",
-  "NO_CONFIGURED_CONTROLS": "Aucune commande configurée pour cette section",
-  "INITIALIZING_CONTROL": "Initialisation du contrôle..."
+  "CONTROL_NOT_FOUND": "No hay controles registrados para el tipo: {{type}}",
+  "NO_CONFIGURED_CONTROLS": "No hay controles configurados para esta sección",
+  "INITIALIZING_CONTROL": "Inicializando control...",
+  "CONFIG_VALIDATING": "Validando configuración...",
+  "INVALID_CONTROL_CONFIGURATION": "Configuración Inválida"
 }

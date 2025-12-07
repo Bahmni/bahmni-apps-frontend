@@ -1,0 +1,21 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+
+.validatingConfig {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  min-height: 200px;
+}
+
+.configValidatorError {
+  padding: $spacing-05;
+  color: $support-error;
+  @include type-style("body-compact-01");
+  font-style: italic;
+  text-align: center;
+}

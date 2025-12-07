@@ -1,5 +1,5 @@
-import { renderHook, waitFor } from '@testing-library/react';
 import { validateConfig } from '@bahmni/services';
+import { renderHook, waitFor } from '@testing-library/react';
 import { useConfigValidation } from '../useConfigValidation';
 
 jest.mock('@bahmni/services');

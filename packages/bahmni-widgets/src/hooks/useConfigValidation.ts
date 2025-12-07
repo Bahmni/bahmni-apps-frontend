@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
 import { validateConfig } from '@bahmni/services';
+import { useState, useEffect } from 'react';
 
 interface ConfigValidationState {
   isValidating: boolean;

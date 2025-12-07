@@ -60,22 +60,20 @@ interface TestWidgetConfig {
 }
 
 // Create mock widget components
-const MockAllergiesWidget = ({
-  config,
-}: WidgetProps) => {
+const MockAllergiesWidget = ({ config }: WidgetProps) => {
   const { testProp } = config as TestWidgetConfig;
-  return (<div data-testid="allergies-widget">
-    Allergies Widget {`- ${testProp}`}
-  </div>);
+  return (
+    <div data-testid="allergies-widget">Allergies Widget {`- ${testProp}`}</div>
+  );
 };
 
-const MockConditionsWidget = ({
-  config,
-}: WidgetProps) => {
+const MockConditionsWidget = ({ config }: WidgetProps) => {
   const { testProp } = config as TestWidgetConfig;
-  return (<div data-testid="conditions-widget">
-    Conditions Widget {`- ${testProp}`}
-  </div>);
+  return (
+    <div data-testid="conditions-widget">
+      Conditions Widget {`- ${testProp}`}
+    </div>
+  );
 };
 
 const MockDiagnosisWidget = () => (

@@ -6,5 +6,5 @@ export {
   hasWidget,
   getAllWidgetTypes,
   getAllWidgetConfigs,
-  resetWidgetRegistry
+  resetWidgetRegistry,
 } from './registry';
