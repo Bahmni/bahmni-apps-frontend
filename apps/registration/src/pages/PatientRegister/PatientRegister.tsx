@@ -80,14 +80,22 @@ const PatientRegister = () => {
     addressInitialData,
     additionalIdentifiersInitialData,
     initialDobEstimated,
-    metadata,
+    metadata: initialMetadata,
   } = usePatientDetails({
     patientUuid: patientUuidFromUrl,
   });
 
+  const [metadata, setMetadata] = useState(initialMetadata);
+
   const { patientPhoto } = usePatientPhoto({
     patientUuid: patientUuidFromUrl,
   });
+
+  useEffect(() => {
+    if (initialMetadata) {
+      setMetadata(initialMetadata);
+    }
+  }, [initialMetadata]);
 
   useEffect(() => {
     if (metadata?.patientUuid) {
@@ -154,6 +162,10 @@ const PatientRegister = () => {
           additionalIdentifiersInitialData,
         })) as PatientProfileResponse;
         if (response?.patient?.uuid) {
+          setMetadata({
+            ...metadata,
+            patientName: response.patient.person.display ?? '',
+          });
           return response.patient.uuid;
         }
       } else {
@@ -209,38 +221,40 @@ const PatientRegister = () => {
       }
       main={
         <div>
-          <Tile className={styles.patientDetailsHeader}>
-            <span className={styles.sectionTitle}>
-              {patientUuid ? (
-                <div className={styles.infoContainer}>
-                  <div
-                    className={styles.patientId}
-                  >{`Patient ID: ${metadata?.patientIdentifier}`}</div>
-                  <div
-                    className={styles.registerDate}
-                  >{`${t('CREATE_PATIENT_REGISTERED_ON')} ${metadata?.registerDate}`}</div>
-                </div>
-              ) : (
-                t('CREATE_PATIENT_HEADER_TITLE')
-              )}
-            </span>
-          </Tile>
+          <div className={styles.form}>
+            <Tile className={styles.patientDetailsHeader}>
+              <span className={styles.sectionTitle}>
+                {patientUuid ? (
+                  <div className={styles.infoContainer}>
+                    <div
+                      className={styles.patientId}
+                    >{`Patient ID: ${metadata?.patientIdentifier}`}</div>
+                    <div
+                      className={styles.registerDate}
+                    >{`${t('CREATE_PATIENT_REGISTERED_ON')} ${metadata?.registerDate}`}</div>
+                  </div>
+                ) : (
+                  t('CREATE_PATIENT_HEADER_TITLE')
+                )}
+              </span>
+            </Tile>
 
-          <div className={styles.formContainer}>
-            <Profile
-              ref={patientProfileRef}
-              initialData={profileInitialData}
-              initialDobEstimated={initialDobEstimated}
-              initialPhoto={patientPhoto}
-            />
-            <AddressInfo
-              ref={patientAddressRef}
-              initialData={addressInitialData}
-            />
-            <ContactInfo
-              ref={patientContactRef}
-              initialData={contactInitialData}
-            />
+            <div className={styles.formContainer}>
+              <Profile
+                ref={patientProfileRef}
+                initialData={profileInitialData}
+                initialDobEstimated={initialDobEstimated}
+                initialPhoto={patientPhoto}
+              />
+              <AddressInfo
+                ref={patientAddressRef}
+                initialData={addressInitialData}
+              />
+              <ContactInfo
+                ref={patientContactRef}
+                initialData={contactInitialData}
+              />
+            </div>
           </div>
 
           <AdditionalInfo

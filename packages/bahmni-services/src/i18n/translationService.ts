@@ -105,3 +105,15 @@ export const getTranslations = async (
 
   return translations;
 };
+
+export const normalizeTranslationKey = (
+  module: string,
+  fieldName: string,
+): string => {
+  const normalizedModule = module.toUpperCase();
+  const normalizedFieldName = fieldName
+    .toUpperCase()
+    .replace(/\s+/g, '_')
+    .replace(/[^A-Z0-9_]/g, '');
+  return `${normalizedModule}_${normalizedFieldName}`;
+};

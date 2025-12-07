@@ -44,6 +44,7 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
     selectedMetadata,
     isLoadingLevels,
     getTranslationKey,
+    clearChildFields,
   } = useAddressFieldsWithConfig(initialData);
 
   const [addressErrors, setAddressErrors] = useState<Record<string, string>>(
@@ -51,6 +52,7 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
   );
 
   const autoPopulatingFieldsRef = useRef<Set<string>>(new Set());
+  const isInitializingRef = useRef(false);
 
   const hierarchyFieldNames = useMemo(() => {
     const hierarchyFields = new Set<string>();
@@ -84,28 +86,48 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
   );
 
   useEffect(() => {
-    if (initialData && autocompleteFields.length > 0) {
-      const initialSelectedItems: Record<string, AddressHierarchyEntry | null> =
-        {};
+    if (!initialData || levelsWithStrictEntry.length === 0) return;
 
-      autocompleteFields.forEach((fieldName) => {
-        const fieldValue = initialData[fieldName];
-        if (fieldValue) {
-          initialSelectedItems[fieldName] = {
-            name: fieldValue,
-            uuid: '',
-            userGeneratedId: fieldValue,
-          };
-        }
-      });
+    isInitializingRef.current = true;
 
+    const initialSelectedItems: Record<string, AddressHierarchyEntry | null> =
+      {};
+
+    autocompleteFields.forEach((fieldName) => {
+      const fieldValue = initialData[fieldName];
+      if (fieldValue) {
+        initialSelectedItems[fieldName] = {
+          name: fieldValue,
+          uuid: '',
+          userGeneratedId: fieldValue,
+        };
+      }
+    });
+
+    if (Object.keys(initialSelectedItems).length > 0) {
       setSelectedItems(initialSelectedItems);
     }
-  }, [initialData, autocompleteFields, setSelectedItems]);
+
+    setTimeout(() => {
+      isInitializingRef.current = false;
+    }, 0);
+  }, [
+    initialData,
+    levelsWithStrictEntry.length,
+    autocompleteFields,
+    setSelectedItems,
+  ]);
 
   const handleAddressInputChange = useCallback(
     (field: string, value: string) => {
       const level = levelsWithStrictEntry.find((l) => l.addressField === field);
+
+      if (!value) {
+        setSelectedItems((prev) => ({ ...prev, [field]: null }));
+        handleFieldChange(field, value);
+        clearChildSuggestions(field);
+        clearChildFields(field);
+      }
 
       if (autocompleteFields.includes(field)) {
         debouncedSearchAddress(field, value);
@@ -122,6 +144,9 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
       unmarkFieldAsCleared,
       levelsWithStrictEntry,
       handleFieldChange,
+      clearChildSuggestions,
+      clearChildFields,
+      setSelectedItems,
     ],
   );
 
@@ -205,7 +230,9 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
 
       setAddressErrors((prev) => ({ ...prev, [field]: '' }));
 
-      clearChildSuggestions(field);
+      if (!isInitializingRef.current) {
+        clearChildSuggestions(field);
+      }
     },
     [
       handleFieldSelect,
@@ -285,9 +312,19 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
       const error = addressErrors[fieldName];
       const fieldSuggestions = suggestions[fieldName] ?? [];
 
+      const fieldIndex = levelsWithStrictEntry.findIndex(
+        (l) => l.addressField === fieldName,
+      );
+      const parentField =
+        fieldIndex > 0
+          ? levelsWithStrictEntry[fieldIndex - 1].addressField
+          : null;
+      const parentValue = parentField ? address[parentField] : null;
+      const componentKey = `${fieldName}-${parentValue ?? 'empty'}`;
+
       return (
         <AddressAutocompleteField
-          key={fieldName}
+          key={componentKey}
           fieldName={fieldName}
           level={level}
           isDisabled={isDisabled}
@@ -309,6 +346,7 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
       handleSelectionChange,
       handleAddressInputChange,
       getTranslationKey,
+      address,
     ],
   );
 
