@@ -77,8 +77,9 @@ describe('ConfigValidator', () => {
         </ConfigValidator>,
       );
 
+      expect(screen.getByText('⚠️')).toBeInTheDocument();
       expect(
-        screen.getByText('⚠️ INVALID_CONTROL_CONFIGURATION'),
+        screen.getByText('INVALID_CONTROL_CONFIGURATION'),
       ).toBeInTheDocument();
       expect(screen.queryByText('Child Content')).not.toBeInTheDocument();
     });
@@ -99,7 +100,7 @@ describe('ConfigValidator', () => {
       expect(screen.getByText('Child Content')).toBeInTheDocument();
       expect(screen.queryByText('CONFIG_VALIDATING')).not.toBeInTheDocument();
       expect(
-        screen.queryByText('⚠️ INVALID_CONTROL_CONFIGURATION'),
+        screen.queryByText('INVALID_CONTROL_CONFIGURATION'),
       ).not.toBeInTheDocument();
     });
   });
@@ -295,7 +296,7 @@ describe('ConfigValidator', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText('⚠️ INVALID_CONTROL_CONFIGURATION'),
+          screen.getByText('INVALID_CONTROL_CONFIGURATION'),
         ).toBeInTheDocument();
       });
       expect(screen.queryByText('CONFIG_VALIDATING')).not.toBeInTheDocument();

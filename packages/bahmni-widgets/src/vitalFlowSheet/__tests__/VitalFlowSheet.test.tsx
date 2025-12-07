@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import React from 'react';
 
 import { useVitalFlowSheet } from '../useVitalFlowSheet';
 import VitalFlowSheet from '../VitalFlowSheet';
@@ -9,6 +10,14 @@ jest.mock('../useVitalFlowSheet');
 const mockUseVitalFlowSheet = useVitalFlowSheet as jest.MockedFunction<
   typeof useVitalFlowSheet
 >;
+
+// Mock ConfigValidator to pass through children and track calls
+const mockConfigValidator = jest.fn(
+  ({ children }: { children: React.ReactNode }) => <>{children}</>,
+);
+jest.mock('../../configValidator', () => ({
+  ConfigValidator: (props: any) => mockConfigValidator(props),
+}));
 
 // Mock react-router-dom to avoid TextEncoder issues
 jest.mock('react-router-dom', () => ({
@@ -68,6 +77,7 @@ describe('VitalFlowSheet Empty State', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockConfigValidator.mockClear();
   });
 
   it('should show empty state when tabularData has empty observation data', () => {
@@ -213,5 +223,51 @@ describe('VitalFlowSheet Empty State', () => {
     expect(screen.getByText('Failed to fetch vital signs')).toBeInTheDocument();
     expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
     expect(screen.queryByTestId('data-table')).not.toBeInTheDocument();
+  });
+
+  it('should wrap content with ConfigValidator and pass correct props', () => {
+    // Arrange
+    mockUseVitalFlowSheet.mockReturnValue({
+      data: {
+        tabularData: {
+          '2024-01-01 10:00:00': {
+            Temperature: { value: '36.5', abnormal: false },
+          },
+        },
+        conceptDetails: [
+          {
+            name: 'Temperature',
+            fullName: 'Temperature (C)',
+            units: '°C',
+            hiNormal: 37.5,
+            lowNormal: 36.0,
+            attributes: {},
+          },
+        ],
+      },
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    // Act
+    render(<VitalFlowSheet {...defaultProps} />);
+
+    // Assert - ConfigValidator should be called with config and schema
+    expect(mockConfigValidator).toHaveBeenCalledWith(
+      expect.objectContaining({
+        config: defaultProps.config,
+        schema: expect.objectContaining({
+          type: 'object',
+          required: ['latestCount', 'obsConcepts'],
+          properties: expect.objectContaining({
+            latestCount: expect.any(Object),
+            obsConcepts: expect.any(Object),
+            groupBy: expect.any(Object),
+          }),
+        }),
+        children: expect.anything(),
+      }),
+    );
   });
 });
