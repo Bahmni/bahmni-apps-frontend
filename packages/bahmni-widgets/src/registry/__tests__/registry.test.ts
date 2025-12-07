@@ -7,7 +7,7 @@ import {
   getAllWidgetTypes,
   getAllWidgetConfigs,
   resetWidgetRegistry,
-} from '../index';
+} from '../registry';
 
 import { WidgetConfig } from '../model';
 
