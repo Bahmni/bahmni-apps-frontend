@@ -1,5 +1,5 @@
 import { DashboardSectionConfig } from '@bahmni/services';
-import { getWidget } from '@bahmni/widgets';
+import { getWidget, WidgetProps } from '@bahmni/widgets';
 import { render, screen, waitFor } from '@testing-library/react';
 import React, { Suspense } from 'react';
 import DashboardSection from '../DashboardSection';
@@ -55,28 +55,28 @@ jest.mock('@bahmni/widgets', () => {
   };
 });
 
+interface TestWidgetConfig {
+  testProp?: string;
+}
+
 // Create mock widget components
 const MockAllergiesWidget = ({
   config,
-}: {
-  config?: Record<string, unknown>;
-}) => (
-  <div data-testid="allergies-widget">
-    Allergies Widget{' '}
-    {typeof config?.testProp === 'string' && `- ${config.testProp}`}
-  </div>
-);
+}: WidgetProps) => {
+  const { testProp } = config as TestWidgetConfig;
+  return (<div data-testid="allergies-widget">
+    Allergies Widget {`- ${testProp}`}
+  </div>);
+};
 
 const MockConditionsWidget = ({
   config,
-}: {
-  config?: Record<string, unknown>;
-}) => (
-  <div data-testid="conditions-widget">
-    Conditions Widget{' '}
-    {typeof config?.testProp === 'string' && `- ${config.testProp}`}
-  </div>
-);
+}: WidgetProps) => {
+  const { testProp } = config as TestWidgetConfig;
+  return (<div data-testid="conditions-widget">
+    Conditions Widget {`- ${testProp}`}
+  </div>);
+};
 
 const MockDiagnosisWidget = () => (
   <div data-testid="diagnosis-widget">Diagnosis Widget</div>

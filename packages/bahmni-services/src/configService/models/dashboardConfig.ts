@@ -12,5 +12,5 @@ export interface DashboardConfig {
 
 export interface ControlConfig {
   type: string;
-  config: Record<string, unknown>;
+  config: unknown;
 }
