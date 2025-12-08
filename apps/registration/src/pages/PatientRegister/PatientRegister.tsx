@@ -294,9 +294,6 @@ const PatientRegister = () => {
               <Button kind="tertiary" onClick={handleSave}>
                 {t('CREATE_PATIENT_SAVE')}
               </Button>
-              <Button kind="tertiary">
-                {t('CREATE_PATIENT_PRINT_REG_CARD')}
-              </Button>
               <RegistrationActions
                 extensionPointId="org.bahmni.registration.navigation"
                 onVisitSave={handleSave}
