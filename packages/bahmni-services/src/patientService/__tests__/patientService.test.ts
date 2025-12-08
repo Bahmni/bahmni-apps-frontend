@@ -165,7 +165,7 @@ describe('Patient Service', () => {
             dateCreated: 1744775604000,
             activeVisitUuid: null,
             customAttribute:
-              '{"phoneNumber" : "8645973159","alternatePhoneNumber" : "7548621593"}',
+              '{"phoneNumber" : "8645973159","alternatePhoneNumber" : "7548621593","email":"jake@example.com"}',
             patientProgramAttributeValue: null,
             hasBeenAdmitted: false,
             age: '57 years 8 months',

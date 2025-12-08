@@ -125,6 +125,21 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
     );
   };
 
+  const isEmailSearch = () => {
+    const selectedField = searchFields.find(
+      (field) => t(field.translationKey) === selectedDropdownItem,
+    );
+    return selectedField?.fields.includes('email') ?? false;
+  };
+
+  const validateFieldInput = (fieldName: string, value: string): string => {
+    const validationRule = configData?.fieldValidation?.[fieldName];
+    if (!validationRule || !value) return '';
+
+    const regex = new RegExp(validationRule.pattern);
+    return regex.test(value) ? '' : validationRule.errorMessage;
+  };
+
   const handleChange = (inputValue: string, type: 'name' | 'advance') => {
     if (type === 'advance') {
       if (isPhoneSearch()) {
@@ -175,6 +190,16 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
         } else {
           setPhoneInputError('');
           setSearchTerm(formattedValue);
+          setAdvanceSearchInput(trimmedValue);
+        }
+      } else if (isEmailSearch()) {
+        const validationError = validateFieldInput('email', trimmedValue);
+        if (validationError) {
+          setPhoneInputError(t('EMAIL_VALIDATION_ERROR'));
+          return;
+        } else {
+          setPhoneInputError('');
+          setSearchTerm(trimmedValue);
           setAdvanceSearchInput(trimmedValue);
         }
       } else {
