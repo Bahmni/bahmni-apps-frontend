@@ -74,7 +74,13 @@ export const AdditionalIdentifiers = ({
       if (identifierType.required && (!value || value.trim() === '')) {
         newErrors[identifierType.uuid] = t(
           'CREATE_PATIENT_VALIDATION_IDENTIFIER_REQUIRED',
-          { identifierName: identifierType.name },
+          {
+            identifierName: getTranslatedLabel(
+              t,
+              REGISTRATION_NAMESPACE,
+              identifierType.name,
+            ),
+          },
         );
         isValid = false;
       }
