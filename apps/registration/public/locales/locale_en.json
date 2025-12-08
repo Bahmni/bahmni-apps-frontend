@@ -83,6 +83,7 @@
   "LOADING_PATIENT_DETAILS": "Navigating to patient details...",
   "PHONE_NUMBER": "Phone Number",
   "PHONE_NUMBER_VALIDATION_ERROR": "Please enter only numbers.",
+  "EMAIL_VALIDATION_ERROR": "Please enter a valid email address",
 
   "REGISTRATION_INVALID_NUMBER_MAX_LENGTH": "Number cannot exceed 15 characters",
   "REGISTRATION_PATIENT_SEARCH_BREADCRUMB_HOME": "Home",
@@ -134,5 +135,8 @@
   "NOTIFICATION_UNABLE_TO_GET_PATIENT_DATA": "Unable to get patient data",
   "NOTIFICATION_UNABLE_TO_GET_ADDRESS_DATA": "Unable to get patient address data",
   "NOTIFICATION_UNABLE_TO_GET_CONTACT_DATA": "Unable to get patient contact data",
-  "NOTIFICATION_UNABLE_TO_GET_ADDITIONAL_DATA": "Unable to get patient additional data"
+  "NOTIFICATION_UNABLE_TO_GET_ADDITIONAL_DATA": "Unable to get patient additional data",
+  "REGISTRATION_YEARS_SHORT": "y",
+  "REGISTRATION_MONTHS_SHORT": "m",
+  "REGISTRATION_DAYS_SHORT": "d"
 }

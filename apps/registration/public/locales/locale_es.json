@@ -83,6 +83,7 @@
   "LOADING_PATIENT_DETAILS": "Navegando a los detalles del paciente...",
   "PHONE_NUMBER": "Número de teléfono",
   "PHONE_NUMBER_VALIDATION_ERROR": "Por favor, introduzca sólo números.",
+  "EMAIL_VALIDATION_ERROR": "Por favor ingrese una dirección de correo electrónico válida",
   "REGISTRATION_INVALID_NUMBER_MAX_LENGTH": "El número no puede exceder los 15 caracteres",
   "REGISTRATION_PATIENT_SEARCH_BREADCRUMB_HOME": "Hogar",
   "REGISTRATION_PATIENT_SEARCH_BUTTON_TITLE": "Buscar",
@@ -133,5 +134,8 @@
   "NOTIFICATION_UNABLE_TO_GET_PATIENT_DATA": "No se pueden obtener los datos del paciente",
   "NOTIFICATION_UNABLE_TO_GET_ADDRESS_DATA": "No se pueden obtener los datos de dirección del paciente",
   "NOTIFICATION_UNABLE_TO_GET_CONTACT_DATA": "No se pueden obtener los datos de contacto del paciente",
-  "NOTIFICATION_UNABLE_TO_GET_ADDITIONAL_DATA": "No se pueden obtener los datos adicionales del paciente"
+  "NOTIFICATION_UNABLE_TO_GET_ADDITIONAL_DATA": "No se pueden obtener los datos adicionales del paciente",
+  "REGISTRATION_YEARS_SHORT": "a",
+  "REGISTRATION_MONTHS_SHORT": "m",
+  "REGISTRATION_DAYS_SHORT": "d"
 }

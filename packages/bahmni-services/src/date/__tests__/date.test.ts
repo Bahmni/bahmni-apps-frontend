@@ -634,13 +634,13 @@ describe('calculateAgeinYearsAndMonths', () => {
     const birthDate = new Date(2000, 2, 28);
     const birthDateMillis = birthDate.getTime();
     const result = calculateAgeinYearsAndMonths(birthDateMillis);
-    expect(result).toBe('24 years 0 months');
+    expect(result).toBe('24 years 0 months 0 days');
   });
 
   it('should calculate age correctly for someone born 5 years and 3 months ago', () => {
     const birthDate = new Date(2018, 11, 28);
     const birthDateMillis = birthDate.getTime();
     const result = calculateAgeinYearsAndMonths(birthDateMillis);
-    expect(result).toBe('5 years 3 months');
+    expect(result).toBe('5 years 3 months 0 days');
   });
 });
