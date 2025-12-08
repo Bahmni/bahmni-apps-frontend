@@ -96,9 +96,7 @@ jest.mock('@bahmni/design-system', () => ({
       data-testid="skeleton-text"
       data-width={width}
       data-line-count={lineCount}
-    >
-      Loading...
-    </div>
+    />
   )),
   ICON_SIZE: {
     SM: 'SM',
