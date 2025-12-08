@@ -376,7 +376,7 @@ describe('useUpdatePatient', () => {
       // Verify error notification
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
-        title: 'ERROR_UPDATING_PATIENT',
+        title: 'Error updating patient',
         message: 'API Error',
       });
 
@@ -405,7 +405,7 @@ describe('useUpdatePatient', () => {
 
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
-        title: 'ERROR_UPDATING_PATIENT',
+        title: 'Error updating patient',
         message: 'Network request failed',
       });
     });
@@ -429,7 +429,7 @@ describe('useUpdatePatient', () => {
 
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
-        title: 'ERROR_UPDATING_PATIENT',
+        title: 'Error updating patient',
         message: '[object Object]',
       });
     });
