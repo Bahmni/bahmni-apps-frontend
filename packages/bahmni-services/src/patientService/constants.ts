@@ -11,9 +11,28 @@ export const PATIENT_RESOURCE_URL = (patientUUID: string) =>
 export const PATIENT_LUCENE_SEARCH_URL = (
   searchTerm: string,
   loginLocationUuid: string,
-) =>
-  OPENMRS_REST_V1 +
-  `/bahmni/search/patient/lucene?filterOnAllIdentifiers=false&identifier=${searchTerm}&q=${searchTerm}&loginLocationUuid=${loginLocationUuid}&patientSearchResultsConfig=phoneNumber&patientSearchResultsConfig=alternatePhoneNumber&s=byIdOrName`;
+) => {
+  const params = new URLSearchParams({
+    filterOnAllIdentifiers: 'false',
+    identifier: searchTerm,
+    q: searchTerm,
+    loginLocationUuid,
+    s: 'byIdOrNameOrVillage',
+    startIndex: '0',
+  });
+
+  params.append('patientAttributes', 'phoneNumber');
+  params.append('patientAttributes', 'alternatePhoneNumber');
+  params.append('patientAttributes', 'email');
+  params.append('patientSearchResultsConfig', 'phoneNumber');
+  params.append('patientSearchResultsConfig', 'alternatePhoneNumber');
+  params.append('patientSearchResultsConfig', 'email');
+
+  params.append('addressSearchResultsConfig', 'city_village');
+  params.append('addressSearchResultsConfig', 'address2');
+
+  return `${OPENMRS_REST_V1}/bahmni/search/patient/lucene?${params.toString()}`;
+};
 
 export const PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL = (
   searchTerm: string,

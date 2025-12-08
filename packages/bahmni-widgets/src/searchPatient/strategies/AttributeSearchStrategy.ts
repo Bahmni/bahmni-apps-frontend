@@ -35,7 +35,7 @@ export class AttributeSearchStrategy implements SearchStrategy {
       translator,
     );
 
-    return this.transformResults(rawResults);
+    return this.transformResults(rawResults, context);
   }
 
   /**
@@ -73,6 +73,7 @@ export class AttributeSearchStrategy implements SearchStrategy {
    */
   transformResults(
     results: PatientSearchResultBundle,
+    context: SearchContext,
   ): PatientSearchResultBundle {
     return {
       ...results,
@@ -82,7 +83,10 @@ export class AttributeSearchStrategy implements SearchStrategy {
           ? formatDateAndTime(new Date(patient.birthDate).getTime(), false)
           : patient.birthDate,
         age: patient.birthDate
-          ? calculateAgeinYearsAndMonths(new Date(patient.birthDate).getTime())
+          ? calculateAgeinYearsAndMonths(
+              new Date(patient.birthDate).getTime(),
+              context.translator,
+            )
           : patient.age,
       })),
     };
