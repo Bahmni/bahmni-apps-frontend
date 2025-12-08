@@ -388,7 +388,7 @@ describe('useCreatePatient', () => {
 
       // Verify error notification
       expect(mockAddNotification).toHaveBeenCalledWith({
-        title: 'Error saving patient',
+        title: 'ERROR_SAVING_PATIENT',
         message: 'API Error',
         timeout: 5000,
         type: 'error',
@@ -418,7 +418,7 @@ describe('useCreatePatient', () => {
       });
 
       expect(mockAddNotification).toHaveBeenCalledWith({
-        title: 'Error saving patient',
+        title: 'ERROR_SAVING_PATIENT',
         message: 'Network request failed',
         timeout: 5000,
         type: 'error',
