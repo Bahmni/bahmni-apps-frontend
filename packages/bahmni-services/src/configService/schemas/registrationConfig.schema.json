@@ -387,6 +387,11 @@
             "type": "number",
             "description": "Display order of the extension"
           },
+          "kind": {
+            "type": "string",
+            "enum": ["primary", "secondary", "tertiary", "ghost", "danger"],
+            "description": "Button kind/variant (defaults to 'primary' if not specified)"
+          },
           "requiredPrivilege": {
             "type": "string",
             "description": "Required privilege to access this extension"

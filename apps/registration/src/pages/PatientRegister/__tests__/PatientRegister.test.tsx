@@ -162,18 +162,16 @@ jest.mock(
   '../../../components/registrationActions/RegistrationActions',
   () => ({
     RegistrationActions: ({
-      onDefaultAction,
-      onVisitSave,
+      onBeforeNavigate,
     }: {
-      onDefaultAction?: (extension: any) => void | Promise<void>;
-      onVisitSave?: () => Promise<string | null>;
+      onBeforeNavigate?: () => Promise<unknown>;
     }) => (
       <div data-testid="registration-actions">
         <button
           data-testid="extension-action-button"
           onClick={async () => {
             try {
-              await onDefaultAction?.({ id: 'test-extension', url: '#/test' });
+              await onBeforeNavigate?.();
             } catch {
               // Error caught, prevent navigation (same as real component)
             }
@@ -181,11 +179,6 @@ jest.mock(
         >
           Extension Action
         </button>
-        {onVisitSave && (
-          <button data-testid="visit-action-button" onClick={onVisitSave}>
-            Visit Action
-          </button>
-        )}
       </div>
     ),
   }),
@@ -329,9 +322,6 @@ describe('PatientRegister', () => {
         screen.getByText('CREATE_PATIENT_BACK_TO_SEARCH'),
       ).toBeInTheDocument();
       expect(screen.getByText('CREATE_PATIENT_SAVE')).toBeInTheDocument();
-      expect(
-        screen.getByText('CREATE_PATIENT_PRINT_REG_CARD'),
-      ).toBeInTheDocument();
       expect(screen.getByTestId('registration-actions')).toBeInTheDocument();
     });
 
@@ -578,37 +568,6 @@ describe('PatientRegister', () => {
     });
   });
 
-  describe('Visit Type Selector Integration', () => {
-    it('should pass handleSave to RegistrationActions', () => {
-      renderComponent();
-
-      expect(screen.getByTestId('registration-actions')).toBeInTheDocument();
-      // RegistrationActions should receive onVisitSave prop
-      expect(screen.getByTestId('visit-action-button')).toBeInTheDocument();
-    });
-
-    it('should call handleSave when RegistrationActions triggers onVisitSave', async () => {
-      mockMutateAsync.mockResolvedValue({
-        patient: {
-          uuid: 'patient-456',
-          display: 'Jane Doe',
-          identifiers: [{ identifier: 'BDH456' }],
-          person: { display: 'Jane Doe' },
-          auditInfo: { dateCreated: '2025-11-28T19:00:00.000Z' },
-        },
-      });
-
-      renderComponent();
-
-      const visitSaveButton = screen.getByTestId('visit-action-button');
-      fireEvent.click(visitSaveButton);
-
-      await waitFor(() => {
-        expect(validateAllSections).toHaveBeenCalled();
-      });
-    });
-  });
-
   describe('Header Component', () => {
     it('should render the header component', () => {
       renderComponent();
@@ -692,13 +651,6 @@ describe('PatientRegister', () => {
       const backButton = screen.getByText('CREATE_PATIENT_BACK_TO_SEARCH');
       expect(backButton).toBeInTheDocument();
     });
-
-    it('should render print registration card button', () => {
-      renderComponent();
-
-      const printButton = screen.getByText('CREATE_PATIENT_PRINT_REG_CARD');
-      expect(printButton).toBeInTheDocument();
-    });
   });
 
   describe('Multiple Save Attempts', () => {
@@ -743,19 +695,14 @@ describe('PatientRegister', () => {
       expect(screen.getByTestId('registration-actions')).toBeInTheDocument();
     });
 
-    it('should show error notification when onDefaultAction is called without patient saved', async () => {
+    it('should call handleSave when extension button is clicked without patient saved', async () => {
       renderComponent();
 
       const extensionButton = screen.getByTestId('extension-action-button');
       fireEvent.click(extensionButton);
 
       await waitFor(() => {
-        expect(mockAddNotification).toHaveBeenCalledWith({
-          title: 'ERROR_DEFAULT_TITLE',
-          message: 'REGISTRATION_PATIENT_MUST_BE_SAVED',
-          type: 'error',
-          timeout: 5000,
-        });
+        expect(validateAllSections).toHaveBeenCalled();
       });
     });
 

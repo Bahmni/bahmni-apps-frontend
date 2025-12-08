@@ -124,7 +124,11 @@ export const VisitTypeSelector = ({
   ) => {
     if (!selectedItem) return;
 
-    const currentPatientUUID = patientUuid ?? (await onVisitSave());
+    const currentPatientUUID = await onVisitSave();
+
+    if (!currentPatientUUID) {
+      return;
+    }
 
     if (currentPatientUUID && visitLocationUUID && !hasActiveVisit) {
       setVisitPayload({

@@ -97,6 +97,7 @@ export interface AppExtensionConfig {
   shortcutKey?: string;
   icon?: string;
   order?: number;
+  kind?: 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'danger';
   requiredPrivilege?: string;
   customProperties?: Record<string, unknown>;
 }

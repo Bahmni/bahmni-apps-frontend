@@ -7,10 +7,8 @@ import { handleExtensionNavigation } from '../../utils/extensionNavigation';
 
 export interface RegistrationActionsProps {
   extensionPointId?: string;
-  buttonKind?: 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'danger';
   urlContext?: Record<string, string>;
-  onVisitSave?: () => Promise<string | null>;
-  onDefaultAction?: (extension: AppExtensionConfig) => void | Promise<void>;
+  onBeforeNavigate?: () => Promise<unknown>;
 }
 
 /**
@@ -19,16 +17,14 @@ export interface RegistrationActionsProps {
  * type="startVisit": renders VisitTypeSelector
  * Other types: renders Button with navigation
  *
- * @param onDefaultAction - Optional callback executed before navigation
- *   Parent should handle validation (e.g., check if patient is saved) and business logic
- *   If validation fails, parent should show error notification and throw/reject to prevent navigation
+ * @param onBeforeNavigate - Optional callback executed before navigation
+ *   Parent should handle validation and save patient data
+ *   If validation fails, parent should show error notification and throw to prevent navigation
  */
 export const RegistrationActions = ({
   extensionPointId,
-  buttonKind = 'tertiary',
   urlContext = {},
-  onVisitSave,
-  onDefaultAction,
+  onBeforeNavigate,
 }: RegistrationActionsProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -53,13 +49,14 @@ export const RegistrationActions = ({
 
   const handleClick = async (extension: AppExtensionConfig) => {
     try {
-      // Call parent callback first (e.g., to validate and save patient data)
-      // Parent can throw error or return early to prevent navigation
-      if (onDefaultAction) {
-        await onDefaultAction(extension);
+      if (extension.type !== 'startVisit' && onBeforeNavigate) {
+        const result = await onBeforeNavigate();
+
+        if (!result) {
+          return;
+        }
       }
 
-      // Then proceed with navigation
       if (extension.url) {
         handleExtensionNavigation(
           extension.url,
@@ -78,12 +75,12 @@ export const RegistrationActions = ({
   return (
     <>
       {filteredExtensions.map((extension) => {
-        if (extension.type === 'startVisit' && onVisitSave) {
+        if (extension.type === 'startVisit') {
           return (
             <VisitTypeSelector
               key={extension.id}
-              onVisitSave={onVisitSave}
               patientUuid={mergedUrlContext.patientUuid}
+              onVisitSave={onBeforeNavigate as () => Promise<string | null>}
               onNavigate={() => handleClick(extension)}
             />
           );
@@ -92,7 +89,7 @@ export const RegistrationActions = ({
         return (
           <Button
             key={extension.id}
-            kind={buttonKind}
+            kind={extension.kind ?? 'primary'}
             onClick={() => handleClick(extension)}
             renderIcon={
               extension.icon
