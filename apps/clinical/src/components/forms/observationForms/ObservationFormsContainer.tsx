@@ -1,4 +1,9 @@
-import { ActionArea, Icon, ICON_SIZE } from '@bahmni/design-system';
+import {
+  ActionArea,
+  Icon,
+  ICON_SIZE,
+  SkeletonText,
+} from '@bahmni/design-system';
 import {
   Container,
   FormMetadata as Form2FormMetadata,
@@ -117,7 +122,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     <div className={styles.formView}>
       <div className={styles.formContent}>
         {isLoadingMetadata ? (
-          <div>{t('OBSERVATION_FORM_LOADING_METADATA')}</div>
+          <SkeletonText width="100%" lineCount={3} />
         ) : formMetadata && patientUUID ? (
           <Container
             metadata={formMetadata.schema as Form2FormMetadata}

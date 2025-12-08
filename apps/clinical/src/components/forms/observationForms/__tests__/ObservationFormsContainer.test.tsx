@@ -91,6 +91,15 @@ jest.mock('@bahmni/design-system', () => ({
       Icon
     </div>
   )),
+  SkeletonText: jest.fn(({ width, lineCount }) => (
+    <div
+      data-testid="skeleton-text"
+      data-width={width}
+      data-line-count={lineCount}
+    >
+      Loading...
+    </div>
+  )),
   ICON_SIZE: {
     SM: 'SM',
     MD: 'MD',
@@ -308,7 +317,7 @@ describe('ObservationFormsContainer', () => {
     });
   });
 
-  describe('Form Metadata Loading', () => {
+  describe('form-controls Rendering', () => {
     beforeEach(() => {
       mockFetchFormMetadata.mockClear();
     });
@@ -329,7 +338,7 @@ describe('ObservationFormsContainer', () => {
       expect(mockFetchFormMetadata).toHaveBeenCalledWith('test-form-uuid');
     });
 
-    it('should display loading message while fetching metadata', () => {
+    it('should display SkeletonText while fetching metadata', () => {
       mockFetchFormMetadata.mockImplementation(
         () => new Promise(() => {}), // Never resolves
       );
@@ -338,9 +347,10 @@ describe('ObservationFormsContainer', () => {
         <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
       );
 
-      expect(
-        screen.getByText('translated_OBSERVATION_FORM_LOADING_METADATA'),
-      ).toBeInTheDocument();
+      const skeletonText = screen.getByTestId('skeleton-text');
+      expect(skeletonText).toBeInTheDocument();
+      expect(skeletonText).toHaveAttribute('data-width', '100%');
+      expect(skeletonText).toHaveAttribute('data-line-count', '3');
     });
 
     it('should render Container component with metadata when loaded', async () => {
