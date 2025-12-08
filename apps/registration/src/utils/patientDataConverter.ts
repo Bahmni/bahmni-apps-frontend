@@ -56,20 +56,11 @@ export const convertToBasicInfoData = (
 export const convertToContactData = (
   patientData: PatientProfileResponse | undefined,
 ): ContactData | undefined => {
-  if (!patientData?.patient.person.attributes) return undefined;
+  if (!patientData?.patient.person.attributes) {
+    return undefined;
+  }
 
-  const phoneAttribute = patientData.patient.person.attributes.find((attr) =>
-    attr.attributeType?.display?.toLowerCase().includes('phone'),
-  );
-
-  const altPhoneAttribute = patientData.patient.person.attributes.find((attr) =>
-    attr.attributeType?.display?.toLowerCase().includes('alternate'),
-  );
-
-  return {
-    phoneNumber: phoneAttribute?.value?.toString() ?? '',
-    altPhoneNumber: altPhoneAttribute?.value?.toString() ?? '',
-  };
+  return convertPersonAttributes(patientData);
 };
 
 export const convertToAddressData = (
@@ -106,13 +97,19 @@ export const convertToAdditionalData = (
     return undefined;
   }
 
-  const additionalData: AdditionalData = {};
+  return convertPersonAttributes(patientData);
+};
 
-  patientData.patient.person.attributes.forEach((attr) => {
+function convertPersonAttributes(
+  patientData: PatientProfileResponse,
+): Record<string, string> {
+  const data: Record<string, string> = {};
+
+  patientData.patient.person.attributes?.forEach((attr) => {
     const fieldName = attr.attributeType?.display;
     if (!fieldName) return;
-    additionalData[fieldName] = attr.value?.toString() ?? '';
+    data[fieldName] = attr.value?.toString() ?? '';
   });
 
-  return additionalData;
-};
+  return data;
+}
