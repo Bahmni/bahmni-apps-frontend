@@ -61,25 +61,38 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
 
   // Fetch form metadata when viewingForm changes
   useEffect(() => {
+    let cancelled = false;
+
     const loadFormMetadata = async () => {
       if (viewingForm?.uuid) {
         setIsLoadingMetadata(true);
         try {
           const metadata = await fetchFormMetadata(viewingForm.uuid);
-          setFormMetadata(metadata);
+          if (!cancelled) {
+            setFormMetadata(metadata);
+          }
         } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error('Error fetching form metadata:', error);
-          setFormMetadata(null);
+          if (!cancelled) {
+            // eslint-disable-next-line no-console
+            console.error('Error fetching form metadata:', error);
+            setFormMetadata(null);
+          }
         } finally {
-          setIsLoadingMetadata(false);
+          if (!cancelled) {
+            setIsLoadingMetadata(false);
+          }
         }
       } else {
         setFormMetadata(null);
+        setIsLoadingMetadata(false);
       }
     };
 
     loadFormMetadata();
+
+    return () => {
+      cancelled = true;
+    };
   }, [viewingForm?.uuid]);
 
   // Check if current form is pinned

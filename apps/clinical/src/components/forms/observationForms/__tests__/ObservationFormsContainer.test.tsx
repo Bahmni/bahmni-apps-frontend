@@ -412,6 +412,75 @@ describe('ObservationFormsContainer', () => {
 
       expect(screen.queryByTestId('form2-container')).not.toBeInTheDocument();
     });
+
+    it('should handle race conditions when switching between forms quickly', async () => {
+      const formA: ObservationForm = {
+        name: 'Form A',
+        uuid: 'form-a-uuid',
+        id: 1,
+        privileges: [],
+      };
+
+      const formB: ObservationForm = {
+        name: 'Form B',
+        uuid: 'form-b-uuid',
+        id: 2,
+        privileges: [],
+      };
+
+      const metadataA = {
+        schema: {
+          name: 'Form A Schema',
+          controls: [],
+        },
+      };
+
+      const metadataB = {
+        schema: {
+          name: 'Form B Schema',
+          controls: [],
+        },
+      };
+
+      let resolveA: (value: unknown) => void;
+      let resolveB: (value: unknown) => void;
+
+      // Set up promises that we can control
+      const promiseA = new Promise((resolve) => {
+        resolveA = resolve;
+      });
+      const promiseB = new Promise((resolve) => {
+        resolveB = resolve;
+      });
+
+      mockFetchFormMetadata
+        .mockReturnValueOnce(promiseA)
+        .mockReturnValueOnce(promiseB);
+
+      const { rerender } = render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={formA} />,
+      );
+
+      // Start loading Form A, then quickly switch to Form B
+      rerender(
+        <ObservationFormsContainer {...defaultProps} viewingForm={formB} />,
+      );
+
+      // Resolve Form B first (it completes faster)
+      resolveB!(metadataB);
+      await screen.findByTestId('form2-container');
+
+      // Now resolve Form A (it was slower, but should be ignored)
+      resolveA!(metadataA);
+
+      // Wait a bit to ensure any state updates would have occurred
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Should still show Form B's metadata, not Form A's
+      const container = screen.getByTestId('form2-container');
+      expect(container).toHaveTextContent('Form B Schema');
+      expect(container).not.toHaveTextContent('Form A Schema');
+    });
   });
 
   describe('Pin Toggle Functionality', () => {
