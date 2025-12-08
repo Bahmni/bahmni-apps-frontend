@@ -56,9 +56,10 @@ export const useUpdatePatient = () => {
       });
 
       if (response?.patient?.uuid) {
-        queryClient.invalidateQueries({
-          queryKey: ['formattedPatient', variables.patientUuid],
-        });
+        queryClient.setQueryData(
+          ['formattedPatient', variables.patientUuid],
+          response,
+        );
 
         dispatchAuditEvent({
           eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_PATIENT_DETAILS
