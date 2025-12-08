@@ -84,6 +84,8 @@
   "PHONE_NUMBER": "Phone Number",
   "PHONE_NUMBER_VALIDATION_ERROR": "Please enter only numbers.",
   "EMAIL_VALIDATION_ERROR": "Please enter a valid email address",
+  "ERROR_SAVING_PATIENT": "Error saving patient",
+  "ERROR_UPDATING_PATIENT": "Error updating patient",
 
   "REGISTRATION_INVALID_NUMBER_MAX_LENGTH": "Number cannot exceed 15 characters",
   "REGISTRATION_PATIENT_SEARCH_BREADCRUMB_HOME": "Home",
