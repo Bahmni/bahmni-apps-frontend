@@ -1,4 +1,5 @@
-import { TextInput, SortableDataTable } from '@bahmni/design-system';
+import { TextInput, SortableDataTable, Tile } from '@bahmni/design-system';
+import { useTranslation } from '@bahmni/services';
 import {
   useCallback,
   useImperativeHandle,
@@ -6,8 +7,10 @@ import {
   useMemo,
   useEffect,
 } from 'react';
+import { REGISTRATION_NAMESPACE } from '../../../constants/app';
 import { useIdentifierTypes } from '../../../hooks/useAdditionalIdentifiers';
 import type { AdditionalIdentifiersData } from '../../../models/patient';
+import { getTranslatedLabel } from '../../../utils/translation';
 import styles from './styles/index.module.scss';
 
 export interface AdditionalIdentifiersRef {
@@ -30,6 +33,7 @@ export const AdditionalIdentifiers = ({
   initialData,
   ref,
 }: AdditionalIdentifiersProps) => {
+  const { t } = useTranslation();
   const { data: identifierTypes, isLoading } = useIdentifierTypes();
 
   const extraIdentifierTypes = useMemo(() => {
@@ -40,6 +44,7 @@ export const AdditionalIdentifiers = ({
   }, [identifierTypes]);
 
   const [formData, setFormData] = useState<AdditionalIdentifiersData>({});
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     const data: AdditionalIdentifiersData = {};
@@ -49,13 +54,35 @@ export const AdditionalIdentifiers = ({
     setFormData(data);
   }, [extraIdentifierTypes, initialData]);
 
-  const handleFieldChange = useCallback((uuid: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [uuid]: value }));
-  }, []);
+  const handleFieldChange = useCallback(
+    (uuid: string, value: string) => {
+      setFormData((prev) => ({ ...prev, [uuid]: value }));
+      if (errors[uuid]) {
+        setErrors((prev) => ({ ...prev, [uuid]: '' }));
+      }
+    },
+    [errors],
+  );
 
   const validate = useCallback((): boolean => {
-    return true;
-  }, []);
+    const newErrors: { [key: string]: string } = {};
+    let isValid = true;
+
+    extraIdentifierTypes.forEach((identifierType) => {
+      const value = formData[identifierType.uuid];
+
+      if (identifierType.required && (!value || value.trim() === '')) {
+        newErrors[identifierType.uuid] = t(
+          'CREATE_PATIENT_VALIDATION_IDENTIFIER_REQUIRED',
+          { identifierName: identifierType.name },
+        );
+        isValid = false;
+      }
+    });
+
+    setErrors(newErrors);
+    return isValid;
+  }, [extraIdentifierTypes, formData, t]);
 
   const getData = useCallback((): AdditionalIdentifiersData => {
     return formData;
@@ -82,18 +109,36 @@ export const AdditionalIdentifiers = ({
   }));
 
   const renderCell = (row: IdentifierRow, cellId: string) => {
+    const translatedName = getTranslatedLabel(
+      t,
+      REGISTRATION_NAMESPACE,
+      row.name,
+    );
+
     if (cellId === 'label') {
-      return <span className={styles.identifierField}>{row.name}</span>;
+      const identifierType = extraIdentifierTypes.find(
+        (type) => type.uuid === row.uuid,
+      );
+      const isRequired = identifierType?.required ?? false;
+      return (
+        <span className={styles.identifierField}>
+          {translatedName}
+          {isRequired && <span className={styles.requiredAsterisk}>*</span>}
+        </span>
+      );
     }
     if (cellId === 'value') {
       const value = formData[row.uuid] ?? '';
+      const error = errors[row.uuid] ?? '';
       return (
         <div className={styles.identifierField}>
           <TextInput
             id={`identifier-${row.uuid}`}
             labelText=""
-            placeholder={row.name}
+            placeholder={translatedName}
             value={value}
+            invalid={!!error}
+            invalidText={error}
             onChange={(e) => handleFieldChange(row.uuid, e.target.value)}
           />
         </div>
@@ -104,6 +149,11 @@ export const AdditionalIdentifiers = ({
 
   return (
     <div className={styles.formSection}>
+      <Tile className={styles.patientDetailsHeader}>
+        <span className={styles.sectionTitle}>
+          {t('ADDITIONAL_IDENTIFIERS_HEADER_TITLE')}
+        </span>
+      </Tile>
       <SortableDataTable
         headers={headers}
         rows={rows}

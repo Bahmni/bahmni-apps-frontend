@@ -2,6 +2,7 @@ import { PatientSearchField } from '../configService/models/registrationConfig';
 import {
   OPENMRS_FHIR_R4,
   OPENMRS_REST_V1,
+  OPENMRS_REST_V2,
   VISIT_LOCATION_UUID,
 } from '../constants/app';
 
@@ -109,6 +110,9 @@ export const CREATE_PATIENT_URL =
 export const UPDATE_PATIENT_URL = (patientUuid: string) =>
   OPENMRS_REST_V1 + `/bahmnicore/patientprofile/${patientUuid}`;
 
+export const GET_PATIENT_PROFILE_URL = (patientUuid: string) =>
+  OPENMRS_REST_V1 + `/patientprofile/${patientUuid}?v=full`;
+
 export const CREATE_VISIT_URL = OPENMRS_REST_V1 + '/visit';
 
 export const GET_ACTIVE_VISIT_URL = (patientUuid: string) =>
@@ -152,6 +156,9 @@ export const UUID_PATTERN = /^[a-f0-9-]{36}$/i;
 export const VISIT_TYPES_URL = () =>
   OPENMRS_REST_V1 +
   `/bahmnicore/config/bahmniencounter?callerContext=REGISTRATION_CONCEPTS`;
+
+export const PATIENT_IMAGE_URL = (patientUuid: string) =>
+  OPENMRS_REST_V2 + `/patientImage?patientUuid=${patientUuid}`;
 
 export const PERSON_ATTRIBUTE_TYPES_URL =
   OPENMRS_REST_V1 +

@@ -6,12 +6,16 @@ import {
 } from '@bahmni/services';
 import {
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
   useState,
 } from 'react';
-import type { AddressHierarchyItem } from '../../../hooks/useAddressFields';
+import type {
+  AddressData,
+  AddressHierarchyItem,
+} from '../../../hooks/useAddressFields';
 import { useAddressFieldsWithConfig } from '../../../hooks/useAddressFieldsWithConfig';
 import { useAddressSuggestions } from '../../../hooks/useAddressSuggestions';
 import { AddressAutocompleteField } from './AddressAutocompleteField';
@@ -23,10 +27,11 @@ export type AddressInfoRef = {
 };
 
 interface AddressInfoProps {
+  initialData?: AddressData;
   ref?: React.Ref<AddressInfoRef>;
 }
 
-export const AddressInfo = ({ ref }: AddressInfoProps) => {
+export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
   const { t } = useTranslation();
 
   const {
@@ -39,13 +44,15 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     selectedMetadata,
     isLoadingLevels,
     getTranslationKey,
-  } = useAddressFieldsWithConfig();
+    clearChildFields,
+  } = useAddressFieldsWithConfig(initialData);
 
   const [addressErrors, setAddressErrors] = useState<Record<string, string>>(
     {},
   );
 
   const autoPopulatingFieldsRef = useRef<Set<string>>(new Set());
+  const isInitializingRef = useRef(false);
 
   const hierarchyFieldNames = useMemo(() => {
     const hierarchyFields = new Set<string>();
@@ -78,9 +85,49 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     selectedMetadata,
   );
 
+  useEffect(() => {
+    if (!initialData || levelsWithStrictEntry.length === 0) return;
+
+    isInitializingRef.current = true;
+
+    const initialSelectedItems: Record<string, AddressHierarchyEntry | null> =
+      {};
+
+    autocompleteFields.forEach((fieldName) => {
+      const fieldValue = initialData[fieldName];
+      if (fieldValue) {
+        initialSelectedItems[fieldName] = {
+          name: fieldValue,
+          uuid: '',
+          userGeneratedId: fieldValue,
+        };
+      }
+    });
+
+    if (Object.keys(initialSelectedItems).length > 0) {
+      setSelectedItems(initialSelectedItems);
+    }
+
+    setTimeout(() => {
+      isInitializingRef.current = false;
+    }, 0);
+  }, [
+    initialData,
+    levelsWithStrictEntry.length,
+    autocompleteFields,
+    setSelectedItems,
+  ]);
+
   const handleAddressInputChange = useCallback(
     (field: string, value: string) => {
       const level = levelsWithStrictEntry.find((l) => l.addressField === field);
+
+      if (!value) {
+        setSelectedItems((prev) => ({ ...prev, [field]: null }));
+        handleFieldChange(field, value);
+        clearChildSuggestions(field);
+        clearChildFields(field);
+      }
 
       if (autocompleteFields.includes(field)) {
         debouncedSearchAddress(field, value);
@@ -97,6 +144,9 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       unmarkFieldAsCleared,
       levelsWithStrictEntry,
       handleFieldChange,
+      clearChildSuggestions,
+      clearChildFields,
+      setSelectedItems,
     ],
   );
 
@@ -180,7 +230,9 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
 
       setAddressErrors((prev) => ({ ...prev, [field]: '' }));
 
-      clearChildSuggestions(field);
+      if (!isInitializingRef.current) {
+        clearChildSuggestions(field);
+      }
     },
     [
       handleFieldSelect,
@@ -215,9 +267,7 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
     const result: PatientAddress = {};
 
     Object.keys(address).forEach((key) => {
-      if (address[key]) {
-        result[key as keyof PatientAddress] = address[key]!;
-      }
+      result[key as keyof PatientAddress] = address[key] ?? '';
     });
 
     return result;
@@ -262,9 +312,19 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       const error = addressErrors[fieldName];
       const fieldSuggestions = suggestions[fieldName] ?? [];
 
+      const fieldIndex = levelsWithStrictEntry.findIndex(
+        (l) => l.addressField === fieldName,
+      );
+      const parentField =
+        fieldIndex > 0
+          ? levelsWithStrictEntry[fieldIndex - 1].addressField
+          : null;
+      const parentValue = parentField ? address[parentField] : null;
+      const componentKey = `${fieldName}-${parentValue ?? 'empty'}`;
+
       return (
         <AddressAutocompleteField
-          key={fieldName}
+          key={componentKey}
           fieldName={fieldName}
           level={level}
           isDisabled={isDisabled}
@@ -286,6 +346,7 @@ export const AddressInfo = ({ ref }: AddressInfoProps) => {
       handleSelectionChange,
       handleAddressInputChange,
       getTranslationKey,
+      address,
     ],
   );
 

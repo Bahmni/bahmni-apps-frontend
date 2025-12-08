@@ -137,5 +137,6 @@
   "NOTIFICATION_UNABLE_TO_GET_ADDITIONAL_DATA": "No se pueden obtener los datos adicionales del paciente",
   "REGISTRATION_YEARS_SHORT": "a",
   "REGISTRATION_MONTHS_SHORT": "m",
-  "REGISTRATION_DAYS_SHORT": "d"
+  "REGISTRATION_DAYS_SHORT": "d",
+  "SUCCESS": "Éxito"
 }
