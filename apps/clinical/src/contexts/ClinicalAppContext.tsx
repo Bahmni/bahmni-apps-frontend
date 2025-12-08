@@ -2,20 +2,20 @@ import { createContext } from 'react';
 
 export interface EpisodeOfCare {
   uuid: string;
-  encounterIds: string[];
-  visitIds: string[];
+  encounterUuids: string[];
+  visitUuids: string[];
 }
 
 export interface Visit {
   uuid: string;
-  encounterIds: string[];
+  encounterUuids: string[];
 }
 
 export interface Encounter {
   uuid: string;
 }
 
-export interface ClinicalAppsContextType {
+export interface ClinicalAppContextType {
   episodeOfCare: EpisodeOfCare[];
   visit: Visit[];
   encounter: Encounter[];
@@ -23,6 +23,6 @@ export interface ClinicalAppsContextType {
   error: Error | null;
 }
 
-export const ClinicalAppsContext = createContext<
-  ClinicalAppsContextType | undefined
+export const ClinicalAppContext = createContext<
+  ClinicalAppContextType | undefined
 >(undefined);

@@ -6,12 +6,13 @@ import {
 } from '@bahmni/services';
 import { getWidget } from '@bahmni/widgets';
 import React, { Suspense } from 'react';
-import { useClinicalAppsData } from '../../hooks/useClinicalAppsData';
 import styles from './styles/DashboardSection.module.scss';
 
 export interface DashboardSectionProps {
   section: DashboardSectionConfig;
   ref: React.RefObject<HTMLDivElement | null>;
+  encounterUuids: string[];
+  visitUuids: string[];
 }
 
 /**
@@ -23,22 +24,11 @@ export interface DashboardSectionProps {
 const DashboardSection: React.FC<DashboardSectionProps> = ({
   section,
   ref,
+  encounterUuids,
+  visitUuids,
 }) => {
   const { t } = useTranslation();
-  const { episodeOfCare, visit, encounter } = useClinicalAppsData();
-  const allEncounterIds = Array.from(
-    new Set([
-      ...episodeOfCare.flatMap((eoc) => eoc.encounterIds),
-      ...visit.flatMap((v) => v.encounterIds),
-      ...encounter.map((enc) => enc.uuid),
-    ]),
-  );
-  const allVisitIds = Array.from(
-    new Set([
-      ...episodeOfCare.flatMap((eoc) => eoc.visitIds),
-      ...visit.map((v) => v.uuid),
-    ]),
-  );
+
   const renderControl = (
     control: ControlConfig,
     index: number,
@@ -55,7 +45,6 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
     }
 
     const showDivider = index < totalControls - 1;
-
     return (
       <React.Fragment key={`${control.type}-${index}`}>
         <Suspense
@@ -67,8 +56,8 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
         >
           <WidgetComponent
             config={control.config}
-            encounterIds={allEncounterIds}
-            visitIds={allVisitIds}
+            encounterUuids={encounterUuids}
+            visitUuids={visitUuids}
           />
         </Suspense>
         {showDivider && <div className={styles.divider} />}

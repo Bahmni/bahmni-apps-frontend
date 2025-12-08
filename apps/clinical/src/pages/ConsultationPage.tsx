@@ -16,7 +16,7 @@ import PatientHeader from '../components/patientHeader/PatientHeader';
 import { BAHMNI_CLINICAL_PATH } from '../constants/app';
 import { useClinicalConfig } from '../hooks/useClinicalConfig';
 import { useDashboardConfig } from '../hooks/useDashboardConfig';
-import { ClinicalAppsProvider } from '../providers/ClinicalAppsProvider';
+import { ClinicalAppProvider } from '../providers/ClinicalAppProvider';
 import {
   getDefaultDashboard,
   getSidebarItems,
@@ -72,10 +72,10 @@ const ConsultationPage: React.FC = () => {
   const [isActionAreaVisible, setIsActionAreaVisible] = useState(false);
   const [searchParams] = useSearchParams();
 
-  const episodeIds = useMemo(() => {
-    const episodeId = searchParams.get('episodeId');
-    if (!episodeId) return [];
-    return episodeId
+  const episodeUuids = useMemo(() => {
+    const episodeUuid = searchParams.get('episodeUuid');
+    if (!episodeUuid) return [];
+    return episodeUuid
       .split(',')
       .map((id) => id.trim())
       .filter(Boolean);
@@ -117,7 +117,7 @@ const ConsultationPage: React.FC = () => {
   }
 
   return (
-    <ClinicalAppsProvider episodeIds={episodeIds}>
+    <ClinicalAppProvider episodeUuids={episodeUuids}>
       <ActionAreaLayout
         headerWSideNav={
           <Header
@@ -157,7 +157,7 @@ const ConsultationPage: React.FC = () => {
           />
         }
       />
-    </ClinicalAppsProvider>
+    </ClinicalAppProvider>
   );
 };
 

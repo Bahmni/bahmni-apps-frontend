@@ -1,7 +1,6 @@
 import { Encounter, Bundle } from 'fhir/r4';
 import { get } from '../api';
-import { PATIENT_VISITS_URL, EOC_ENCOUNTERS_URL } from './constants';
-import { EocReferecneType } from './models';
+import { PATIENT_VISITS_URL } from './constants';
 
 /**
  * Fetches visits for a given patient UUID from the FHIR R4 endpoint
@@ -38,55 +37,4 @@ export async function getActiveVisit(
 ): Promise<Encounter | null> {
   const encounters = await getVisits(patientUUID);
   return encounters.find((encounter) => !encounter.period?.end) ?? null;
-}
-
-/**
- * Fetches encounters for Episode-of-Care IDs and extracts visit and encounter IDs
- * @param eocIds - Array of EOC IDs or single EOC ID
- * @returns Promise resolving to object with visit IDs and encounter IDs
- */
-export async function getEncountersForEOC(
-  eocIds: string[] | string,
-): Promise<EocReferecneType> {
-  const ids = Array.isArray(eocIds) ? eocIds.join(',') : eocIds;
-  const bundle = await get<Bundle>(EOC_ENCOUNTERS_URL(ids));
-
-  const encounters =
-    bundle.entry
-      ?.filter((entry) => entry.resource?.resourceType === 'Encounter')
-      ?.map((entry) => entry.resource as Encounter) ?? [];
-
-  const visitIds: string[] = [];
-  const encounterIds: string[] = [];
-
-  encounters.forEach((encounter) => {
-    if (encounter.id) {
-      encounterIds.push(encounter.id);
-    }
-    let visitId = encounter.partOf?.reference?.split('/')[1];
-    const isVisitEncounter =
-      encounter.meta?.tag?.some((tag) => tag.code === 'visit') ??
-      encounter.type?.some((type) =>
-        type.coding?.some(
-          (coding) =>
-            coding.display?.toLowerCase().includes('visit') ??
-            coding.code?.toLowerCase().includes('visit'),
-        ),
-      );
-    if (isVisitEncounter) {
-      visitId = encounter.id;
-    }
-
-    if (visitId && !visitIds.includes(visitId)) {
-      visitIds.push(visitId);
-    }
-    if (!visitIds.length && encounter.partOf?.reference) {
-      const partOfId = encounter.partOf.reference.split('/')[1];
-      if (partOfId && !visitIds.includes(partOfId)) {
-        visitIds.push(partOfId);
-      }
-    }
-  });
-
-  return { visitIds, encounterIds };
 }

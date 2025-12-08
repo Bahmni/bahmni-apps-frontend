@@ -2,17 +2,17 @@ import { DashboardSectionConfig } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import React, { Suspense } from 'react';
-import { ClinicalAppsProvider } from '../../../providers/ClinicalAppsProvider';
+import { ClinicalAppProvider } from '../../../providers/ClinicalAppProvider';
 import DashboardSection from '../DashboardSection';
 
-jest.mock('../../../providers/ClinicalAppsProvider', () => ({
-  ClinicalAppsProvider: ({ children }: { children: React.ReactNode }) => {
-    return <div data-testid="mocked-clinical-apps-provider">{children}</div>;
-  },
+jest.mock('../../../providers/ClinicalAppProvider', () => ({
+  ClinicalAppProvider: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="mock-clinical-apps-provider">{children}</div>
+  ),
 }));
 
-jest.mock('../../../hooks/useClinicalAppsData', () => ({
-  useClinicalAppsData: () => ({
+jest.mock('../../../hooks/useClinicalAppData', () => ({
+  useClinicalAppData: () => ({
     episodeOfCare: [],
     visit: [],
     encounter: [],
@@ -122,9 +122,14 @@ const renderDashboardSectionWithProvider = (
 
   return render(
     <QueryClientProvider client={queryClient}>
-      <ClinicalAppsProvider episodeIds={mockEpisodeIds}>
-        <DashboardSection section={section} ref={ref} />
-      </ClinicalAppsProvider>
+      <ClinicalAppProvider episodeUuids={mockEpisodeIds}>
+        <DashboardSection
+          section={section}
+          ref={ref}
+          encounterUuids={[]}
+          visitUuids={[]}
+        />
+      </ClinicalAppProvider>
     </QueryClientProvider>,
   );
 };
@@ -287,11 +292,16 @@ describe('DashboardSection Component', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <ClinicalAppsProvider episodeIds={['episode-1', 'episode-2']}>
+          <ClinicalAppProvider episodeUuids={['episode-1', 'episode-2']}>
             <Suspense fallback={<div>Loading...</div>}>
-              <DashboardSection section={section} ref={mockRef} />
+              <DashboardSection
+                section={section}
+                ref={mockRef}
+                encounterUuids={[]}
+                visitUuids={[]}
+              />
             </Suspense>
-          </ClinicalAppsProvider>
+          </ClinicalAppProvider>
         </QueryClientProvider>,
       );
 
@@ -338,11 +348,16 @@ describe('DashboardSection Component', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <ClinicalAppsProvider episodeIds={['episode-1', 'episode-2']}>
+          <ClinicalAppProvider episodeUuids={['episode-1', 'episode-2']}>
             <Suspense fallback={<div>Loading...</div>}>
-              <DashboardSection section={section} ref={mockRef} />
+              <DashboardSection
+                section={section}
+                ref={mockRef}
+                encounterUuids={[]}
+                visitUuids={[]}
+              />
             </Suspense>
-          </ClinicalAppsProvider>
+          </ClinicalAppProvider>
         </QueryClientProvider>,
       );
 
@@ -394,11 +409,16 @@ describe('DashboardSection Component', () => {
 
       const { container } = render(
         <QueryClientProvider client={queryClient}>
-          <ClinicalAppsProvider episodeIds={['episode-1', 'episode-2']}>
+          <ClinicalAppProvider episodeUuids={['episode-1', 'episode-2']}>
             <Suspense fallback={<div>Loading...</div>}>
-              <DashboardSection section={section} ref={mockRef} />
+              <DashboardSection
+                section={section}
+                ref={mockRef}
+                encounterUuids={[]}
+                visitUuids={[]}
+              />
             </Suspense>
-          </ClinicalAppsProvider>
+          </ClinicalAppProvider>
         </QueryClientProvider>,
       );
 
@@ -437,9 +457,14 @@ describe('DashboardSection Component', () => {
       // Should have no dividers for single widget
       const { container } = render(
         <QueryClientProvider client={new QueryClient()}>
-          <ClinicalAppsProvider episodeIds={[]}>
-            <DashboardSection section={section} ref={mockRef} />
-          </ClinicalAppsProvider>
+          <ClinicalAppProvider episodeUuids={[]}>
+            <DashboardSection
+              section={section}
+              ref={mockRef}
+              encounterUuids={[]}
+              visitUuids={[]}
+            />
+          </ClinicalAppProvider>
         </QueryClientProvider>,
       );
       const dividers = container.querySelectorAll('.divider');
@@ -527,11 +552,16 @@ describe('DashboardSection Component', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <ClinicalAppsProvider episodeIds={['episode-1', 'episode-2']}>
+          <ClinicalAppProvider episodeUuids={['episode-1', 'episode-2']}>
             <Suspense fallback={<div>Loading...</div>}>
-              <DashboardSection section={section} ref={mockRef} />
+              <DashboardSection
+                section={section}
+                ref={mockRef}
+                encounterUuids={[]}
+                visitUuids={[]}
+              />
             </Suspense>
-          </ClinicalAppsProvider>
+          </ClinicalAppProvider>
         </QueryClientProvider>,
       );
 
@@ -598,7 +628,6 @@ describe('DashboardSection Component', () => {
 
       renderDashboardSectionWithProvider(section, mockRef);
 
-      // The loading state is shown by the Suspense inside the DashboardSection
       expect(screen.getByText('Loading widget...')).toBeInTheDocument();
 
       await waitFor(() => {

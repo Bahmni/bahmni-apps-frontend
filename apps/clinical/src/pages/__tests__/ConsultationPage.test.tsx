@@ -148,7 +148,7 @@ jest.mock('../../components/dashboardContainer/DashboardContainer', () => {
 //   ));
 // });
 
-const renderWithProvider = (component: React.ReactElement) => {
+const renderWithProvider = (component: React.ReactElement, url?: string) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -159,7 +159,9 @@ const renderWithProvider = (component: React.ReactElement) => {
 
   return render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/consultation?episodeId=test-episode']}>
+      <MemoryRouter
+        initialEntries={[url ?? '/consultation?episodeUuid=test-episode']}
+      >
         {component}
       </MemoryRouter>
     </QueryClientProvider>,
