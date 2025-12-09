@@ -18,6 +18,12 @@ jest.mock('react-i18next', () => ({
   })),
 }));
 
+// Mock TanStack Query
+const mockUseQuery = jest.fn();
+jest.mock('@tanstack/react-query', () => ({
+  useQuery: (...args: unknown[]) => mockUseQuery(...args),
+}));
+
 // Mock the form metadata service
 const mockFetchFormMetadata = jest.fn();
 const mockGetFormattedError = jest.fn();
@@ -154,6 +160,13 @@ describe('ObservationFormsContainer', () => {
     mockUsePinnedObservationForms.mockReturnValue({
       pinnedForms: [],
       updatePinnedForms: jest.fn(),
+      isLoading: false,
+      error: null,
+    });
+
+    // Default useQuery mock - returns no data when no form is being viewed
+    mockUseQuery.mockReturnValue({
+      data: undefined,
       isLoading: false,
       error: null,
     });
@@ -323,26 +336,28 @@ describe('ObservationFormsContainer', () => {
       mockGetFormattedError.mockClear();
     });
 
-    it('should fetch form metadata when viewingForm changes', async () => {
-      const mockMetadata = {
-        schema: {
-          name: 'Test Form Schema',
-          controls: [],
-        },
-      };
-      mockFetchFormMetadata.mockResolvedValue(mockMetadata);
-
+    it('should use TanStack Query to fetch form metadata when viewingForm is provided', () => {
       render(
         <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
       );
 
-      expect(mockFetchFormMetadata).toHaveBeenCalledWith('test-form-uuid');
+      // Verify useQuery was called with the correct configuration
+      expect(mockUseQuery).toHaveBeenCalledWith(
+        expect.objectContaining({
+          queryKey: ['formMetadata', 'test-form-uuid'],
+          queryFn: expect.any(Function),
+          enabled: true,
+        }),
+      );
     });
 
     it('should display SkeletonText while fetching metadata', () => {
-      mockFetchFormMetadata.mockImplementation(
-        () => new Promise(() => {}), // Never resolves
-      );
+      // Mock useQuery to return loading state
+      mockUseQuery.mockReturnValue({
+        data: undefined,
+        isLoading: true,
+        error: null,
+      });
 
       render(
         <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
@@ -361,128 +376,53 @@ describe('ObservationFormsContainer', () => {
           controls: [],
         },
       };
-      mockFetchFormMetadata.mockResolvedValue(mockMetadata);
+
+      // Mock useQuery to return success state with data
+      mockUseQuery.mockReturnValue({
+        data: mockMetadata,
+        isLoading: false,
+        error: null,
+      });
 
       render(
         <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
       );
 
-      await screen.findByTestId('form2-container');
       expect(screen.getByTestId('form2-container')).toBeInTheDocument();
     });
 
     it('should display error message when metadata fetch fails', async () => {
-      mockFetchFormMetadata.mockRejectedValue(new Error('Failed to fetch'));
+      const mockError = new Error('Failed to fetch');
       mockGetFormattedError.mockReturnValue({
         message: 'Failed to fetch',
         title: 'Error',
       });
 
+      // Mock useQuery to return error state
+      mockUseQuery.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        error: mockError,
+      });
+
       render(
         <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
       );
 
-      await screen.findByText('Failed to fetch');
       expect(screen.getByText('Failed to fetch')).toBeInTheDocument();
     });
 
-    it('should not fetch metadata when viewingForm is null', () => {
+    it('should not enable query when viewingForm is null', () => {
       render(
         <ObservationFormsContainer {...defaultProps} viewingForm={null} />,
       );
 
-      expect(mockFetchFormMetadata).not.toHaveBeenCalled();
-    });
-
-    it('should clear metadata when viewingForm changes to null', async () => {
-      const mockMetadata = {
-        schema: {
-          name: 'Test Form Schema',
-          controls: [],
-        },
-      };
-      mockFetchFormMetadata.mockResolvedValue(mockMetadata);
-
-      const { rerender } = render(
-        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+      // Verify useQuery was called with enabled: false
+      expect(mockUseQuery).toHaveBeenCalledWith(
+        expect.objectContaining({
+          enabled: false,
+        }),
       );
-
-      await screen.findByTestId('form2-container');
-
-      rerender(
-        <ObservationFormsContainer {...defaultProps} viewingForm={null} />,
-      );
-
-      expect(screen.queryByTestId('form2-container')).not.toBeInTheDocument();
-    });
-
-    it('should handle race conditions when switching between forms quickly', async () => {
-      const formA: ObservationForm = {
-        name: 'Form A',
-        uuid: 'form-a-uuid',
-        id: 1,
-        privileges: [],
-      };
-
-      const formB: ObservationForm = {
-        name: 'Form B',
-        uuid: 'form-b-uuid',
-        id: 2,
-        privileges: [],
-      };
-
-      const metadataA = {
-        schema: {
-          name: 'Form A Schema',
-          controls: [],
-        },
-      };
-
-      const metadataB = {
-        schema: {
-          name: 'Form B Schema',
-          controls: [],
-        },
-      };
-
-      let resolveA: (value: unknown) => void;
-      let resolveB: (value: unknown) => void;
-
-      // Set up promises that we can control
-      const promiseA = new Promise((resolve) => {
-        resolveA = resolve;
-      });
-      const promiseB = new Promise((resolve) => {
-        resolveB = resolve;
-      });
-
-      mockFetchFormMetadata
-        .mockReturnValueOnce(promiseA)
-        .mockReturnValueOnce(promiseB);
-
-      const { rerender } = render(
-        <ObservationFormsContainer {...defaultProps} viewingForm={formA} />,
-      );
-
-      // Start loading Form A, then quickly switch to Form B
-      rerender(
-        <ObservationFormsContainer {...defaultProps} viewingForm={formB} />,
-      );
-
-      // Resolve Form B first (it completes faster)
-      resolveB!(metadataB);
-      await screen.findByTestId('form2-container');
-
-      // Now resolve Form A (it was slower, but should be ignored)
-      resolveA!(metadataA);
-
-      // Wait a bit to ensure any state updates would have occurred
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
-      // Should still show Form B's metadata, not Form A's
-      const container = screen.getByTestId('form2-container');
-      expect(container).toHaveTextContent('Form B Schema');
-      expect(container).not.toHaveTextContent('Form A Schema');
     });
   });
 

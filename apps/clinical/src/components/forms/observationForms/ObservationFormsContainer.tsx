@@ -16,7 +16,8 @@ import {
   getFormattedError,
 } from '@bahmni/services';
 import { usePatientUUID } from '@bahmni/widgets';
-import React, { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { getUserPreferredLocale } from '../../../../../../packages/bahmni-services/src/i18n/translationService';
 import { DEFAULT_FORM_API_NAMES } from '../../../constants/forms';
@@ -54,52 +55,24 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
 
-  // State to store form metadata
-  const [formMetadata, setFormMetadata] = useState<FormMetadata | null>(null);
-  const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  // Fetch form metadata using TanStack Query
+  const {
+    data: formMetadata,
+    isLoading: isLoadingMetadata,
+    error: queryError,
+  } = useQuery<FormMetadata>({
+    queryKey: ['formMetadata', viewingForm?.uuid],
+    queryFn: () => fetchFormMetadata(viewingForm!.uuid),
+    enabled: !!viewingForm?.uuid,
+  });
 
-  // Fetch form metadata when viewingForm changes
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadFormMetadata = async () => {
-      if (viewingForm?.uuid) {
-        setIsLoadingMetadata(true);
-        try {
-          const metadata = await fetchFormMetadata(viewingForm.uuid);
-          if (!cancelled) {
-            setFormMetadata(metadata);
-          }
-        } catch (err) {
-          if (!cancelled) {
-            const formattedError = getFormattedError(err);
-            setError(
-              new Error(
-                formattedError.message ?? t('ERROR_FETCHING_FORM_METADATA'),
-              ),
-            );
-            setFormMetadata(null);
-          }
-        } finally {
-          if (!cancelled) {
-            setIsLoadingMetadata(false);
-          }
-        }
-      } else {
-        setFormMetadata(null);
-        setIsLoadingMetadata(false);
-        setError(null);
-      }
-    };
-
-    loadFormMetadata();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [viewingForm?.uuid]);
-
+  // Format error for display
+  const error = queryError
+    ? new Error(
+        getFormattedError(queryError).message ??
+          t('ERROR_FETCHING_FORM_METADATA'),
+      )
+    : null;
   // Check if current form is pinned
   const isCurrentFormPinned = viewingForm
     ? pinnedForms.some((form) => form.uuid === viewingForm.uuid)

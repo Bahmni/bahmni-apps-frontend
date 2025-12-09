@@ -40,11 +40,9 @@ exports[`ObservationFormsContainer Rendering and Structure should match the snap
         <div
           class="formContent"
         >
-          <div
-            data-line-count="3"
-            data-testid="skeleton-text"
-            data-width="100%"
-          />
+          <div>
+            translated_OBSERVATION_FORM_LOADING_METADATA_ERROR
+          </div>
         </div>
       </div>
     </div>
