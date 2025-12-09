@@ -57,5 +57,19 @@ export const useGenderData = (t: (key: string) => string) => {
     return t(genderKey);
   };
 
-  return { genders, getGenderDisplay };
+  const getGenderAbbreviation = (gender: string): string => {
+    const genderUpper = gender?.trim().toUpperCase();
+    const genderMap: Record<string, string> = {
+      M: 'PATIENT_SEARCH_GENDER_M',
+      MALE: 'PATIENT_SEARCH_GENDER_M',
+      F: 'PATIENT_SEARCH_GENDER_F',
+      FEMALE: 'PATIENT_SEARCH_GENDER_F',
+      O: 'PATIENT_SEARCH_GENDER_O',
+      OTHER: 'PATIENT_SEARCH_GENDER_O',
+    };
+
+    return genderMap[genderUpper] ? t(genderMap[genderUpper]) : gender;
+  };
+
+  return { genders, getGenderDisplay, getGenderAbbreviation };
 };

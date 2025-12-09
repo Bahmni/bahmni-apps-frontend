@@ -86,6 +86,11 @@
   "EMAIL_VALIDATION_ERROR": "Por favor ingrese una dirección de correo electrónico válida",
   "ERROR_SAVING_PATIENT": "Error al guardar el paciente",
   "ERROR_UPDATING_PATIENT": "Error al actualizar el paciente",
+
+  "PATIENT_SEARCH_GENDER_M": "M",
+  "PATIENT_SEARCH_GENDER_F": "F",
+  "PATIENT_SEARCH_GENDER_O": "O",
+
   "REGISTRATION_INVALID_NUMBER_MAX_LENGTH": "El número no puede exceder los 15 caracteres",
   "REGISTRATION_PATIENT_SEARCH_BREADCRUMB_HOME": "Hogar",
   "REGISTRATION_PATIENT_SEARCH_BUTTON_TITLE": "Buscar",
