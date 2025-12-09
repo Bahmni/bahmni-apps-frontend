@@ -13,6 +13,7 @@ import {
   convertToContactData,
   convertToAdditionalData,
   convertToAddressData,
+  convertToAdditionalIdentifiersData,
   convertToRelationshipsData,
 } from '../utils/patientDataConverter';
 
@@ -80,6 +81,11 @@ export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
     [patientDetails],
   );
 
+  const additionalIdentifiersInitialData = useMemo(
+    () => convertToAdditionalIdentifiersData(patientDetails),
+    [patientDetails],
+  );
+
   const relationshipsInitialData = useMemo(
     () => convertToRelationshipsData(patientDetails),
     [patientDetails],
@@ -119,6 +125,7 @@ export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
     contactInitialData,
     additionalInitialData,
     addressInitialData,
+    additionalIdentifiersInitialData,
     relationshipsInitialData,
     initialDobEstimated,
     metadata,
