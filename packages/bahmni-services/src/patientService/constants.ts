@@ -69,11 +69,6 @@ export const PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL = (
       searchFieldParam: 'addressFieldName',
       resultParam: 'addressSearchResultsConfig',
     },
-    program: {
-      searchParam: 'programAttributeFieldValue',
-      searchFieldParam: 'programAttributeFieldName',
-      resultParam: 'programAttributeFieldName',
-    },
   };
 
   const config = fieldTypeConfig[fieldType as keyof typeof fieldTypeConfig];
