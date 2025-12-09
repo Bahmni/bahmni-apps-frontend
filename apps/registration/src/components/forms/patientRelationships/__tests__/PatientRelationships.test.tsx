@@ -47,12 +47,14 @@ describe('PatientRelationships', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText('CREATE_PATIENT_SECTION_RELATIONSHIPS'),
+          screen.getByText('CREATE_PATIENT_SECTION_RELATIONSHIPS_INFO'),
         ).toBeInTheDocument();
         expect(
           screen.getByText('REGISTRATION_RELATIONSHIP_TYPE'),
         ).toBeInTheDocument();
-        expect(screen.getByText('REGISTRATION_PATIENT_ID')).toBeInTheDocument();
+        expect(
+          screen.getByText('REGISTRATION_PATIENT_NAME_OR_ID'),
+        ).toBeInTheDocument();
         expect(screen.getByText('REGISTRATION_TILL_DATE')).toBeInTheDocument();
         expect(
           screen.getByText('REGISTRATION_ADD_RELATIONSHIP'),
@@ -76,6 +78,30 @@ describe('PatientRelationships', () => {
 
       await waitFor(() => {
         expect(ref.current?.getData()).toEqual(initialData);
+      });
+    });
+
+    it('should sync state when initialData changes', async () => {
+      const { rerender } = render(<PatientRelationships ref={ref} />, {
+        wrapper,
+      });
+
+      const updatedData: RelationshipData[] = [
+        {
+          id: 'rel-1',
+          relationshipType: 'rel-type-1',
+          patientId: 'GAN123456',
+          patientUuid: 'uuid-123',
+          patientName: 'Jane Doe',
+          tillDate: '31/12/2024',
+          isExisting: true,
+        },
+      ];
+
+      rerender(<PatientRelationships ref={ref} initialData={updatedData} />);
+
+      await waitFor(() => {
+        expect(ref.current?.getData()).toEqual(updatedData);
       });
     });
   });

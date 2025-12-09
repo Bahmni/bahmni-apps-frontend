@@ -120,9 +120,9 @@ export const convertToAdditionalData = (
 
 export const convertToRelationshipsData = (
   patientData: PatientProfileResponse | undefined,
-): RelationshipData[] | undefined => {
+): RelationshipData[] => {
   if (!patientData?.relationships || patientData.relationships.length === 0) {
-    return undefined;
+    return [];
   }
 
   const currentPatientUuid = patientData.patient.uuid;
