@@ -29,7 +29,8 @@ jest.mock('@tanstack/react-query', () => ({
     invalidateQueries: jest.fn(),
   })),
   QueryClient: jest.requireActual('@tanstack/react-query').QueryClient,
-  QueryClientProvider: jest.requireActual('@tanstack/react-query').QueryClientProvider,
+  QueryClientProvider: jest.requireActual('@tanstack/react-query')
+    .QueryClientProvider,
 }));
 
 // Mock useUserPrivilege hook

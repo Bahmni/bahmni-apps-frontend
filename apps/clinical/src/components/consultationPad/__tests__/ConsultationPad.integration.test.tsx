@@ -70,7 +70,8 @@ jest.mock('@tanstack/react-query', () => ({
     error: null,
   })),
   QueryClient: jest.requireActual('@tanstack/react-query').QueryClient,
-  QueryClientProvider: jest.requireActual('@tanstack/react-query').QueryClientProvider,
+  QueryClientProvider: jest.requireActual('@tanstack/react-query')
+    .QueryClientProvider,
 }));
 
 // Create mock user

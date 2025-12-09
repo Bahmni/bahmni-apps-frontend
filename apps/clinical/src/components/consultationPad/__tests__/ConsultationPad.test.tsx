@@ -410,7 +410,7 @@ describe('ConsultationPad', () => {
     return render(
       <ClinicalAppProvider episodeUuids={episodeUuids}>
         <ConsultationPad onClose={mockOnClose} />
-      </ClinicalAppProvider>
+      </ClinicalAppProvider>,
     );
   };
 

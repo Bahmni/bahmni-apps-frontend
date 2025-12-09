@@ -42,7 +42,6 @@ export const createEpisodeOfCareReference = (
   return createReference('EpisodeOfCare', episodeOfCareUUID);
 };
 
-
 export const createPractitionerReference = (
   practitionerUUID: string,
 ): Reference => {

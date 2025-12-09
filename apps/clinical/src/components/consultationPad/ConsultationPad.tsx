@@ -164,7 +164,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
 
   const episodeOfCareUuids: string[] = episodeOfCare.map((eoc) => eoc.uuid);
 
-
   // TODO: Extract Business Logic
   // 1. Create a consultationService to handle submission logic
   // 2. Extract validation logic into a custom hook
