@@ -7,6 +7,7 @@ import {
   Close,
   Link,
 } from '@bahmni/design-system';
+import { getPatientUrlExternal } from '../../../constants/app';
 import type { PatientSuggestion } from '../../../hooks/usePatientSearch';
 import type { RelationshipData } from './PatientRelationships';
 import styles from './styles/index.module.scss';
@@ -67,8 +68,10 @@ export const RelationshipRow = ({
       relationshipType: <span>{relationshipTypeDisplay ?? '-'}</span>,
       patientId: (
         <Link
-          href={`/patient/${relationship.patientUuid}`}
+          href={getPatientUrlExternal(relationship.patientUuid!)}
           className={styles.patientLink}
+          target="_blank"
+          rel="noopener noreferrer"
         >
           {relationship.patientName}
         </Link>
