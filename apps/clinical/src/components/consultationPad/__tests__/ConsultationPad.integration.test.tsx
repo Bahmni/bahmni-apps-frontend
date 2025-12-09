@@ -22,6 +22,7 @@ import {
   mockProvider,
 } from '../../../__mocks__/consultationPadMocks';
 import { FhirEncounter, FhirEncounterType } from '../../../models/encounter';
+import { ClinicalAppProvider } from '../../../providers/ClinicalAppProvider';
 import { ClinicalConfigProvider } from '../../../providers/ClinicalConfigProvider';
 import * as consultationBundleService from '../../../services/consultationBundleService';
 import { getEncounterConcepts } from '../../../services/encounterConceptsService';
@@ -37,19 +38,6 @@ jest.mock('../../../services/consultationBundleService');
 jest.mock('../../../services/locationService');
 jest.mock('../../../services/encounterConceptsService');
 
-jest.mock('@bahmni/services', () => ({
-  ...jest.requireActual('@bahmni/services'),
-  getFormattedError: jest.fn(),
-  getActiveVisit: jest.fn(),
-  logAuditEvent: jest.fn(),
-  getConditions: jest.fn(),
-}));
-
-jest.mock('@bahmni/widgets', () => ({
-  ...jest.requireActual('@bahmni/widgets'),
-  useActivePractitioner: jest.fn(),
-  usePatientUUID: jest.fn(() => 'patient-1'),
-}));
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getFormattedError: jest.fn(),
@@ -73,6 +61,18 @@ jest.mock('@bahmni/widgets', () => ({
   ]),
 }));
 
+// Mock TanStack Query
+jest.mock('@tanstack/react-query', () => ({
+  ...jest.requireActual('@tanstack/react-query'),
+  useQuery: jest.fn(() => ({
+    data: [],
+    isLoading: false,
+    error: null,
+  })),
+  QueryClient: jest.requireActual('@tanstack/react-query').QueryClient,
+  QueryClientProvider: jest.requireActual('@tanstack/react-query').QueryClientProvider,
+}));
+
 // Create mock user
 const mockUser: User = {
   uuid: 'user-1',
@@ -91,10 +91,13 @@ const mockUser: User = {
 };
 
 // Create a mock crypto.randomUUID function since the ConsultationPad uses it
-global.crypto = {
-  ...global.crypto,
-  randomUUID: () => 'mock-uuid-1234-5678-9abc-def012345678',
-};
+Object.defineProperty(global, 'crypto', {
+  value: {
+    ...global.crypto,
+    randomUUID: jest.fn(() => 'mock-uuid-1234-5678-9abc-def012345678'),
+  },
+  writable: true,
+});
 
 // Test wrapper component with all required providers
 const TestWrapper = ({ children }: { children: React.ReactNode }) => {
@@ -114,15 +117,17 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => {
   return (
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={queryClient}>
-        <NotificationProvider>
-          <ClinicalConfigProvider>
-            <MemoryRouter initialEntries={['/patient/patient-1']}>
-              <Routes>
-                <Route path="/patient/:patientUuid" element={children} />
-              </Routes>
-            </MemoryRouter>
-          </ClinicalConfigProvider>
-        </NotificationProvider>
+        <ClinicalAppProvider episodeUuids={[]}>
+          <NotificationProvider>
+            <ClinicalConfigProvider>
+              <MemoryRouter initialEntries={['/patient/patient-1']}>
+                <Routes>
+                  <Route path="/patient/:patientUuid" element={children} />
+                </Routes>
+              </MemoryRouter>
+            </ClinicalConfigProvider>
+          </NotificationProvider>
+        </ClinicalAppProvider>
       </QueryClientProvider>
     </I18nextProvider>
   );

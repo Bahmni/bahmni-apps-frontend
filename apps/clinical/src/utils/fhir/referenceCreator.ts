@@ -36,6 +36,13 @@ export const createEncounterLocationReference = (
   return encounterLocation;
 };
 
+export const createEpisodeOfCareReference = (
+  episodeOfCareUUID: string,
+): Reference => {
+  return createReference('EpisodeOfCare', episodeOfCareUUID);
+};
+
+
 export const createPractitionerReference = (
   practitionerUUID: string,
 ): Reference => {

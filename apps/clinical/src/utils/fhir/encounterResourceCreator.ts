@@ -5,6 +5,7 @@ import {
   createEncounterLocationReference,
   createEncounterParticipantReference,
   createEncounterReference,
+  createEpisodeOfCareReference,
   createPatientReference,
 } from './referenceCreator';
 
@@ -14,6 +15,7 @@ export const createEncounterResource = (
   patientUUID: string,
   participantUUIDs: string[],
   visitUUID: string,
+  episodeOfCareUUID: string[],
   encounterLocationUUID: string,
   encounterStartTimestamp: Date,
 ): Encounter => {
@@ -52,5 +54,6 @@ export const createEncounterResource = (
     period: {
       start: encounterStartTimestamp.toISOString(),
     },
+    episodeOfCare: [createEpisodeOfCareReference(episodeOfCareUUID[0])],
   };
 };

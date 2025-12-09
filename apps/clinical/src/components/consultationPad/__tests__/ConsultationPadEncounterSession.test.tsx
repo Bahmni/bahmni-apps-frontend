@@ -4,6 +4,7 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '../../../../setupTests.i18n';
+import { ClinicalAppProvider } from '../../../providers/ClinicalAppProvider';
 import ConsultationPad from '../ConsultationPad';
 
 // Mock the useEncounterSession hook
@@ -13,19 +14,22 @@ jest.mock('../../../hooks/useEncounterSession', () => ({
 }));
 // Mock TanStack Query
 jest.mock('@tanstack/react-query', () => ({
+  ...jest.requireActual('@tanstack/react-query'),
+  useQuery: jest.fn(() => ({
+    data: {
+      encounterUuids: [],
+      visitUuids: [],
+    },
+    isLoading: false,
+    error: null,
+  })),
   useQueryClient: jest.fn(() => ({
     cancelQueries: jest.fn(),
     removeQueries: jest.fn(),
     invalidateQueries: jest.fn(),
   })),
-  QueryClient: jest.fn().mockImplementation(() => ({
-    cancelQueries: jest.fn(),
-    removeQueries: jest.fn(),
-    invalidateQueries: jest.fn(),
-  })),
-  QueryClientProvider: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
+  QueryClient: jest.requireActual('@tanstack/react-query').QueryClient,
+  QueryClientProvider: jest.requireActual('@tanstack/react-query').QueryClientProvider,
 }));
 
 // Mock useUserPrivilege hook
@@ -263,7 +267,9 @@ const renderWithProviders = (ui: React.ReactElement) => {
   return render(
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={queryClient}>
-        <UserPrivilegeProvider>{ui}</UserPrivilegeProvider>
+        <ClinicalAppProvider episodeUuids={[]}>
+          <UserPrivilegeProvider>{ui}</UserPrivilegeProvider>
+        </ClinicalAppProvider>
       </QueryClientProvider>
     </I18nextProvider>,
   );
@@ -463,7 +469,13 @@ describe('ConsultationPad - Encounter Session Integration', () => {
 
       rerender(
         <I18nextProvider i18n={i18n}>
-          <ConsultationPad onClose={mockOnClose} />
+          <QueryClientProvider client={new QueryClient()}>
+            <ClinicalAppProvider episodeUuids={[]}>
+              <UserPrivilegeProvider>
+                <ConsultationPad onClose={mockOnClose} />
+              </UserPrivilegeProvider>
+            </ClinicalAppProvider>
+          </QueryClientProvider>
         </I18nextProvider>,
       );
 
@@ -500,7 +512,13 @@ describe('ConsultationPad - Encounter Session Integration', () => {
 
       rerender(
         <I18nextProvider i18n={i18n}>
-          <ConsultationPad onClose={mockOnClose} />
+          <QueryClientProvider client={new QueryClient()}>
+            <ClinicalAppProvider episodeUuids={[]}>
+              <UserPrivilegeProvider>
+                <ConsultationPad onClose={mockOnClose} />
+              </UserPrivilegeProvider>
+            </ClinicalAppProvider>
+          </QueryClientProvider>
         </I18nextProvider>,
       );
 
@@ -534,7 +552,13 @@ describe('ConsultationPad - Encounter Session Integration', () => {
 
       rerender(
         <I18nextProvider i18n={i18n}>
-          <ConsultationPad onClose={mockOnClose} />
+          <QueryClientProvider client={new QueryClient()}>
+            <ClinicalAppProvider episodeUuids={[]}>
+              <UserPrivilegeProvider>
+                <ConsultationPad onClose={mockOnClose} />
+              </UserPrivilegeProvider>
+            </ClinicalAppProvider>
+          </QueryClientProvider>
         </I18nextProvider>,
       );
 
