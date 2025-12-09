@@ -20,9 +20,11 @@ jest.mock('react-i18next', () => ({
 
 // Mock the form metadata service
 const mockFetchFormMetadata = jest.fn();
+const mockGetFormattedError = jest.fn();
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   fetchFormMetadata: (...args: unknown[]) => mockFetchFormMetadata(...args),
+  getFormattedError: (...args: unknown[]) => mockGetFormattedError(...args),
 }));
 
 // Mock the form2-controls package
@@ -318,6 +320,7 @@ describe('ObservationFormsContainer', () => {
   describe('form-controls Rendering', () => {
     beforeEach(() => {
       mockFetchFormMetadata.mockClear();
+      mockGetFormattedError.mockClear();
     });
 
     it('should fetch form metadata when viewingForm changes', async () => {
@@ -370,17 +373,17 @@ describe('ObservationFormsContainer', () => {
 
     it('should display error message when metadata fetch fails', async () => {
       mockFetchFormMetadata.mockRejectedValue(new Error('Failed to fetch'));
+      mockGetFormattedError.mockReturnValue({
+        message: 'Failed to fetch',
+        title: 'Error',
+      });
 
       render(
         <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
       );
 
-      await screen.findByText(
-        'translated_OBSERVATION_FORM_LOADING_METADATA_ERROR',
-      );
-      expect(
-        screen.getByText('translated_OBSERVATION_FORM_LOADING_METADATA_ERROR'),
-      ).toBeInTheDocument();
+      await screen.findByText('Failed to fetch');
+      expect(screen.getByText('Failed to fetch')).toBeInTheDocument();
     });
 
     it('should not fetch metadata when viewingForm is null', () => {

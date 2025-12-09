@@ -112,6 +112,7 @@
   "ERROR_DEFAULT_TITLE": "Error",
   "ERROR_FETCHING_CONCEPTS": "An unexpected error occurred. Please try again later.",
   "ERROR_FETCHING_ENCOUNTER_DETAILS": "Error fetching encounter details",
+  "ERROR_FETCHING_FORM_METADATA": "Error fetching form metadata",
   "ERROR_FETCHING_LOCATIONS_DETAILS": "Error fetching locations details",
   "ERROR_FETCHING_MEDICATION_CONFIG": "Error fetching medication configuration",
   "ERROR_FETCHING_PRACTITIONERS_DETAILS": "Error fetching practitioners details",

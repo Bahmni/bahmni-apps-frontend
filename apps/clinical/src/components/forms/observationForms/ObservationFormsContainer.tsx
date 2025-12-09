@@ -13,6 +13,7 @@ import {
   fetchFormMetadata,
   FormMetadata,
   ObservationForm,
+  getFormattedError,
 } from '@bahmni/services';
 import { usePatientUUID } from '@bahmni/widgets';
 import React, { useEffect, useState } from 'react';
@@ -58,6 +59,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   // State to store form metadata
   const [formMetadata, setFormMetadata] = useState<FormMetadata | null>(null);
   const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
   // Fetch form metadata when viewingForm changes
   useEffect(() => {
@@ -71,10 +73,14 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
           if (!cancelled) {
             setFormMetadata(metadata);
           }
-        } catch (error) {
+        } catch (err) {
           if (!cancelled) {
-            // eslint-disable-next-line no-console
-            console.error('Error fetching form metadata:', error);
+            const formattedError = getFormattedError(err);
+            setError(
+              new Error(
+                formattedError.message ?? t('ERROR_FETCHING_FORM_METADATA'),
+              ),
+            );
             setFormMetadata(null);
           }
         } finally {
@@ -85,6 +91,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       } else {
         setFormMetadata(null);
         setIsLoadingMetadata(false);
+        setError(null);
       }
     };
 
@@ -136,6 +143,8 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       <div className={styles.formContent}>
         {isLoadingMetadata ? (
           <SkeletonText width="100%" lineCount={3} />
+        ) : error ? (
+          <div>{error.message}</div>
         ) : formMetadata && patientUUID ? (
           <Container
             metadata={formMetadata.schema as Form2FormMetadata}
