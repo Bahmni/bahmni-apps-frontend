@@ -129,7 +129,9 @@ jest.mock(
       }
       return (
         <div data-testid="patient-additional-identifiers">
-          <span>ADDITIONAL_IDENTIFIERS_HEADER_TITLE</span>
+          <div data-testid="header-tile">
+            <span>ADDITIONAL_IDENTIFIERS_HEADER_TITLE</span>
+          </div>
           Patient Additional Identifiers
         </div>
       );

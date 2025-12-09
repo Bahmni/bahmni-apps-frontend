@@ -12,9 +12,14 @@ import {
   useTranslation,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { convertTimeToISODateTime } from '../components/forms/profile/dateAgeUtils';
-import { BasicInfoData, ContactData, AdditionalData } from '../models/patient';
+import {
+  BasicInfoData,
+  ContactData,
+  AdditionalData,
+  AdditionalIdentifiersData,
+} from '../models/patient';
 import { usePersonAttributes } from './usePersonAttributes';
 
 interface UpdatePatientFormData {
@@ -27,19 +32,22 @@ interface UpdatePatientFormData {
   address: PatientAddress;
   contact: ContactData;
   additional: AdditionalData;
+  additionalIdentifiers: AdditionalIdentifiersData;
+  additionalIdentifiersInitialData?: AdditionalIdentifiersData;
 }
 
 export const useUpdatePatient = () => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const { personAttributes } = usePersonAttributes();
+  const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: (formData: UpdatePatientFormData) => {
       const payload = transformFormDataToPayload(formData, personAttributes);
       return updatePatient(formData.patientUuid, payload);
     },
-    onSuccess: (response) => {
+    onSuccess: (response, variables) => {
       addNotification({
         title: t('NOTIFICATION_SUCCESS_TITLE'),
         message: t('NOTIFICATION_PATIENT_UPDATED_SUCCESSFULLY'),
@@ -48,6 +56,11 @@ export const useUpdatePatient = () => {
       });
 
       if (response?.patient?.uuid) {
+        queryClient.setQueryData(
+          ['formattedPatient', variables.patientUuid],
+          response,
+        );
+
         dispatchAuditEvent({
           eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_PATIENT_DETAILS
             .eventType as AuditEventType,
@@ -61,6 +74,7 @@ export const useUpdatePatient = () => {
         type: 'error',
         title: t('ERROR_UPDATING_PATIENT'),
         message: error instanceof Error ? error.message : String(error),
+        timeout: 5000,
       });
     },
   });
@@ -72,7 +86,14 @@ function transformFormDataToPayload(
   formData: UpdatePatientFormData,
   personAttributes: PersonAttributeType[],
 ): CreatePatientRequest {
-  const { profile, address, contact, additional } = formData;
+  const {
+    profile,
+    address,
+    contact,
+    additional,
+    additionalIdentifiers,
+    additionalIdentifiersInitialData,
+  } = formData;
 
   const addressWithNulls: PatientAddress = {};
   Object.entries(address).forEach(([key, value]) => {
@@ -116,6 +137,29 @@ function transformFormDataToPayload(
     }
   });
 
+  const identifiers: (PatientIdentifier & { identifier?: string })[] = [
+    profile.patientIdentifier,
+  ];
+
+  Object.entries(additionalIdentifiers).forEach(
+    ([identifierTypeUuid, identifierValue]) => {
+      const hasInitialData =
+        additionalIdentifiersInitialData?.[identifierTypeUuid] &&
+        additionalIdentifiersInitialData[identifierTypeUuid].trim() !== '';
+      if (hasInitialData) {
+        return;
+      }
+
+      if (identifierValue && identifierValue.trim() !== '') {
+        identifiers.push({
+          identifier: identifierValue,
+          identifierType: identifierTypeUuid,
+          preferred: false,
+        });
+      }
+    },
+  );
+
   const payload: CreatePatientRequest = {
     patient: {
       person: {
@@ -132,7 +176,7 @@ function transformFormDataToPayload(
         deathDate: null,
         causeOfDeath: '',
       },
-      identifiers: [profile.patientIdentifier],
+      identifiers,
     },
     ...(profile.image && { image: profile.image }),
     relationships: [],
