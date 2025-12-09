@@ -40,8 +40,6 @@ export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
     registerDate: '',
   });
 
-  const [queryEnabled, setQueryEnabled] = useState(true);
-
   const {
     data: patientDetails,
     isLoading,
@@ -49,7 +47,7 @@ export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
   } = useQuery({
     queryKey: ['formattedPatient', patientUuid],
     queryFn: () => getPatientProfile(patientUuid!),
-    enabled: !!patientUuid && queryEnabled,
+    enabled: !!patientUuid,
   });
 
   useEffect(() => {
@@ -110,11 +108,6 @@ export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
           patientDetails.patient.identifiers[0]?.identifier ?? '',
         patientName: patientDetails.patient.person.display ?? '',
         registerDate: formattedDate,
-      });
-
-      setQueryEnabled(false);
-      queryClient.removeQueries({
-        queryKey: ['formattedPatient', patientUuid],
       });
     }
   }, [patientDetails, patientUuid, queryClient, t]);

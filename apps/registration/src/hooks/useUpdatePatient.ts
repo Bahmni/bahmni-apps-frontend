@@ -12,7 +12,7 @@ import {
   useTranslation,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { RelationshipData } from '../components/forms/patientRelationships/PatientRelationships';
 import { convertTimeToISODateTime } from '../components/forms/profile/dateAgeUtils';
 import { BasicInfoData, ContactData, AdditionalData } from '../models/patient';
@@ -36,13 +36,14 @@ export const useUpdatePatient = () => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const { personAttributes } = usePersonAttributes();
+  const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: (formData: UpdatePatientFormData) => {
       const payload = transformFormDataToPayload(formData, personAttributes);
       return updatePatient(formData.patientUuid, payload);
     },
-    onSuccess: (response) => {
+    onSuccess: (response, variables) => {
       addNotification({
         title: t('NOTIFICATION_SUCCESS_TITLE'),
         message: t('NOTIFICATION_PATIENT_UPDATED_SUCCESSFULLY'),
@@ -57,6 +58,11 @@ export const useUpdatePatient = () => {
           patientUuid: response.patient.uuid,
           module: AUDIT_LOG_EVENT_DETAILS.EDIT_PATIENT_DETAILS.module,
         });
+
+        queryClient.setQueryData(
+          ['formattedPatient', variables.patientUuid],
+          response,
+        );
       }
     },
     onError: (error) => {
