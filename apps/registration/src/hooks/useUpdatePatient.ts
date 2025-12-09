@@ -13,8 +13,10 @@ import {
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { useMutation } from '@tanstack/react-query';
+import type { RelationshipData } from '../components/forms/patientRelationships/PatientRelationships';
 import { convertTimeToISODateTime } from '../components/forms/profile/dateAgeUtils';
 import { BasicInfoData, ContactData, AdditionalData } from '../models/patient';
+import { parseDateStringToDate } from '../utils/ageUtils';
 import { usePersonAttributes } from './usePersonAttributes';
 
 interface UpdatePatientFormData {
@@ -27,6 +29,7 @@ interface UpdatePatientFormData {
   address: PatientAddress;
   contact: ContactData;
   additional: AdditionalData;
+  relationships?: RelationshipData[];
 }
 
 export const useUpdatePatient = () => {
@@ -72,7 +75,7 @@ function transformFormDataToPayload(
   formData: UpdatePatientFormData,
   personAttributes: PersonAttributeType[],
 ): CreatePatientRequest {
-  const { profile, address, contact, additional } = formData;
+  const { profile, address, contact, additional, relationships } = formData;
 
   const addressWithNulls: PatientAddress = {};
   Object.entries(address).forEach(([key, value]) => {
@@ -116,6 +119,40 @@ function transformFormDataToPayload(
     }
   });
 
+  const transformedRelationships = (relationships ?? [])
+    .filter((rel) => {
+      return !rel.isExisting || rel.isDeleted;
+    })
+    .map((rel) => {
+      if (rel.isDeleted) {
+        return {
+          uuid: rel.id,
+          personA: { uuid: formData.patientUuid },
+          personB: { uuid: rel.patientUuid! },
+          relationshipType: { uuid: rel.relationshipType! },
+          voided: true,
+        };
+      }
+
+      const relationship: {
+        relationshipType: { uuid: string };
+        personB: { uuid: string };
+        endDate?: string;
+      } = {
+        relationshipType: { uuid: rel.relationshipType! },
+        personB: { uuid: rel.patientUuid! },
+      };
+
+      if (rel.tillDate) {
+        const date = parseDateStringToDate(rel.tillDate);
+        if (date) {
+          relationship.endDate = date.toISOString();
+        }
+      }
+
+      return relationship;
+    });
+
   const payload: CreatePatientRequest = {
     patient: {
       person: {
@@ -135,7 +172,7 @@ function transformFormDataToPayload(
       identifiers: [profile.patientIdentifier],
     },
     ...(profile.image && { image: profile.image }),
-    relationships: [],
+    relationships: transformedRelationships,
   };
 
   return payload;
