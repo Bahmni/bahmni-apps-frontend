@@ -31,7 +31,7 @@ describe('RegistrationActions', () => {
   const mockExtensions: AppExtensionConfig[] = [
     {
       id: 'bahmni.registration.navigation.patient.start.visit',
-      extensionPointId: 'org.bahmni.registration.footer',
+      extensionPointId: 'org.bahmni.registration.navigation',
       type: 'startVisit',
       translationKey: 'START_VISIT',
       url: '/visit',
@@ -41,7 +41,7 @@ describe('RegistrationActions', () => {
     },
     {
       id: 'ext-2',
-      extensionPointId: 'org.bahmni.registration.footer',
+      extensionPointId: 'org.bahmni.registration.navigation',
       type: 'link',
       translationKey: 'PRINT_CARD',
       url: '/print',
@@ -61,7 +61,7 @@ describe('RegistrationActions', () => {
     });
 
     const { container } = renderWithRouter(
-      <RegistrationActions extensionPointId="org.bahmni.registration.footer" />,
+      <RegistrationActions extensionPointId="org.bahmni.registration.navigation" />,
     );
     expect(container.firstChild).toBeNull();
   });
@@ -73,7 +73,7 @@ describe('RegistrationActions', () => {
     });
 
     const { container } = renderWithRouter(
-      <RegistrationActions extensionPointId="org.bahmni.registration.footer" />,
+      <RegistrationActions extensionPointId="org.bahmni.registration.navigation" />,
     );
     expect(container.firstChild).toBeNull();
   });
@@ -85,7 +85,7 @@ describe('RegistrationActions', () => {
     });
 
     renderWithRouter(
-      <RegistrationActions extensionPointId="org.bahmni.registration.footer" />,
+      <RegistrationActions extensionPointId="org.bahmni.registration.navigation" />,
     );
 
     expect(screen.getByText('PRINT_CARD')).toBeInTheDocument();
@@ -98,7 +98,7 @@ describe('RegistrationActions', () => {
     });
 
     renderWithRouter(
-      <RegistrationActions extensionPointId="org.bahmni.registration.footer" />,
+      <RegistrationActions extensionPointId="org.bahmni.registration.navigation" />,
     );
 
     expect(screen.getByTestId('visit-type-selector')).toBeInTheDocument();
@@ -111,7 +111,7 @@ describe('RegistrationActions', () => {
     });
 
     const { container } = renderWithRouter(
-      <RegistrationActions extensionPointId="org.bahmni.registration.footer" />,
+      <RegistrationActions extensionPointId="org.bahmni.registration.navigation" />,
     );
 
     const icons = container.querySelectorAll('.fa-print');
@@ -125,7 +125,7 @@ describe('RegistrationActions', () => {
     });
 
     const { container } = renderWithRouter(
-      <RegistrationActions extensionPointId="org.bahmni.registration.footer" />,
+      <RegistrationActions extensionPointId="org.bahmni.registration.navigation" />,
     );
 
     const button = container.querySelector('button');
@@ -135,7 +135,7 @@ describe('RegistrationActions', () => {
   it('should render button for extensions with URL templates', () => {
     const extensionWithTemplate: AppExtensionConfig = {
       id: 'test-extension',
-      extensionPointId: 'org.bahmni.registration.footer',
+      extensionPointId: 'org.bahmni.registration.navigation',
       type: 'link',
       translationKey: 'VIEW_PATIENT',
       url: '/clinical/patient/{{patientUuid}}/dashboard',
@@ -148,7 +148,7 @@ describe('RegistrationActions', () => {
     });
 
     renderWithRouter(
-      <RegistrationActions extensionPointId="org.bahmni.registration.footer" />,
+      <RegistrationActions extensionPointId="org.bahmni.registration.navigation" />,
     );
 
     const button = screen.getByText('VIEW_PATIENT');
@@ -169,7 +169,7 @@ describe('RegistrationActions', () => {
       const onBeforeNavigate = jest.fn().mockResolvedValue(undefined);
       const extension: AppExtensionConfig = {
         id: 'test-extension',
-        extensionPointId: 'org.bahmni.registration.footer',
+        extensionPointId: 'org.bahmni.registration.navigation',
         type: 'link',
         translationKey: 'VIEW_PATIENT',
         url: '#/patient/123',
@@ -183,7 +183,7 @@ describe('RegistrationActions', () => {
 
       renderWithRouter(
         <RegistrationActions
-          extensionPointId="org.bahmni.registration.footer"
+          extensionPointId="org.bahmni.registration.navigation"
           onBeforeNavigate={onBeforeNavigate}
         />,
       );
@@ -202,7 +202,7 @@ describe('RegistrationActions', () => {
         .mockRejectedValue(new Error('Validation failed'));
       const extension: AppExtensionConfig = {
         id: 'test-extension',
-        extensionPointId: 'org.bahmni.registration.footer',
+        extensionPointId: 'org.bahmni.registration.navigation',
         type: 'link',
         translationKey: 'VIEW_PATIENT',
         url: '#/patient/123',
@@ -216,7 +216,7 @@ describe('RegistrationActions', () => {
 
       renderWithRouter(
         <RegistrationActions
-          extensionPointId="org.bahmni.registration.footer"
+          extensionPointId="org.bahmni.registration.navigation"
           onBeforeNavigate={onBeforeNavigate}
         />,
       );
@@ -234,7 +234,7 @@ describe('RegistrationActions', () => {
     it('should navigate without onBeforeNavigate if not provided', async () => {
       const extension: AppExtensionConfig = {
         id: 'test-extension',
-        extensionPointId: 'org.bahmni.registration.footer',
+        extensionPointId: 'org.bahmni.registration.navigation',
         type: 'link',
         translationKey: 'VIEW_PATIENT',
         url: '#/patient/123',
@@ -247,7 +247,7 @@ describe('RegistrationActions', () => {
       });
 
       renderWithRouter(
-        <RegistrationActions extensionPointId="org.bahmni.registration.footer" />,
+        <RegistrationActions extensionPointId="org.bahmni.registration.navigation" />,
       );
 
       const button = screen.getByText('VIEW_PATIENT');
