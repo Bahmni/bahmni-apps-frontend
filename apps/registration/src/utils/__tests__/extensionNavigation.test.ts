@@ -33,21 +33,7 @@ describe('extensionNavigation', () => {
 
       handleExtensionNavigation(url, {}, mockNavigate);
 
-      expect(mockNavigate).toHaveBeenCalledWith('/visit/123', {
-        state: undefined,
-      });
-      expect(window.location.href).toBe('');
-    });
-
-    it('should pass customProperties with hash URL navigation', () => {
-      const url = '#/visit/123';
-      const customProperties = { visitType: 'OPD', customData: { foo: 'bar' } };
-
-      handleExtensionNavigation(url, {}, mockNavigate, customProperties);
-
-      expect(mockNavigate).toHaveBeenCalledWith('/visit/123', {
-        state: { customProperties },
-      });
+      expect(mockNavigate).toHaveBeenCalledWith('/visit/123');
       expect(window.location.href).toBe('');
     });
 
@@ -57,9 +43,7 @@ describe('extensionNavigation', () => {
 
       handleExtensionNavigation(url, options, mockNavigate);
 
-      expect(mockNavigate).toHaveBeenCalledWith('/patient/abc-123', {
-        state: undefined,
-      });
+      expect(mockNavigate).toHaveBeenCalledWith('/patient/abc-123');
       expect(window.location.href).toBe('');
     });
 
@@ -70,22 +54,6 @@ describe('extensionNavigation', () => {
 
       expect(mockNavigate).not.toHaveBeenCalled();
       expect(window.location.href).toBe('/clinical/patient/123');
-    });
-
-    it('should store customProperties in sessionStorage for cross-app navigation', () => {
-      const url = '/clinical/patient/123';
-      const customProperties = { visitType: 'OPD', source: 'registration' };
-      const setItemSpy = jest.spyOn(Storage.prototype, 'setItem');
-
-      handleExtensionNavigation(url, {}, mockNavigate, customProperties);
-
-      expect(setItemSpy).toHaveBeenCalledWith(
-        'extensionState',
-        JSON.stringify(customProperties),
-      );
-      expect(window.location.href).toBe('/clinical/patient/123');
-
-      setItemSpy.mockRestore();
     });
 
     it('should use window.location for external URLs', () => {

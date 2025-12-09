@@ -132,7 +132,7 @@ describe('RegistrationActions', () => {
     expect(button).toBeInTheDocument();
   });
 
-  it('should accept urlContext prop for URL interpolation', () => {
+  it('should render button for extensions with URL templates', () => {
     const extensionWithTemplate: AppExtensionConfig = {
       id: 'test-extension',
       extensionPointId: 'org.bahmni.registration.footer',
@@ -148,10 +148,7 @@ describe('RegistrationActions', () => {
     });
 
     renderWithRouter(
-      <RegistrationActions
-        extensionPointId="org.bahmni.registration.footer"
-        urlContext={{ patientUuid: 'test-uuid-123' }}
-      />,
+      <RegistrationActions extensionPointId="org.bahmni.registration.footer" />,
     );
 
     const button = screen.getByText('VIEW_PATIENT');
@@ -261,7 +258,6 @@ describe('RegistrationActions', () => {
           '#/patient/123',
           {},
           expect.any(Function),
-          undefined,
         );
       });
     });

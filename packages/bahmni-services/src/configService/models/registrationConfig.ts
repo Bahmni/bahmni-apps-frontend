@@ -99,7 +99,6 @@ export interface AppExtensionConfig {
   order?: number;
   kind?: 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'danger';
   requiredPrivilege?: string;
-  customProperties?: Record<string, unknown>;
 }
 
 export interface RegistrationConfig {

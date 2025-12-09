@@ -395,11 +395,6 @@
           "requiredPrivilege": {
             "type": "string",
             "description": "Required privilege to access this extension"
-          },
-          "customProperties": {
-            "type": "object",
-            "description": "Additional custom properties for the extension",
-            "additionalProperties": true
           }
         }
       }

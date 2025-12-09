@@ -7,13 +7,12 @@ import { handleExtensionNavigation } from '../../utils/extensionNavigation';
 
 export interface RegistrationActionsProps {
   extensionPointId?: string;
-  urlContext?: Record<string, string>;
   onBeforeNavigate?: () => Promise<unknown>;
 }
 
 /**
  * Component that renders extensions based on type
- * Auto-extracts URL params from route and merges with provided urlContext
+ * Auto-extracts URL params from route as key-value pairs
  * type="startVisit": renders VisitTypeSelector
  * Other types: renders Button with navigation
  *
@@ -23,7 +22,6 @@ export interface RegistrationActionsProps {
  */
 export const RegistrationActions = ({
   extensionPointId,
-  urlContext = {},
   onBeforeNavigate,
 }: RegistrationActionsProps) => {
   const { t } = useTranslation();
@@ -33,15 +31,13 @@ export const RegistrationActions = ({
     extensionPointId,
   });
 
-  // Auto-extract URL context from route params and merge with provided context
-  const mergedUrlContext: Record<string, string> = {
-    ...Object.fromEntries(
-      Object.entries(routeParams).filter(
-        ([, value]) => value !== undefined,
-      ) as [string, string][],
-    ),
-    ...urlContext,
-  };
+  // Auto-extract URL context from route params as key-value pairs, filtering out undefined values
+  const routeContext: Record<string, string> = Object.fromEntries(
+    Object.entries(routeParams).filter(([, value]) => value !== undefined) as [
+      string,
+      string,
+    ][],
+  );
 
   if (isLoading || filteredExtensions.length === 0) {
     return null;
@@ -58,12 +54,7 @@ export const RegistrationActions = ({
       }
 
       if (extension.url) {
-        handleExtensionNavigation(
-          extension.url,
-          mergedUrlContext,
-          navigate,
-          extension.customProperties,
-        );
+        handleExtensionNavigation(extension.url, routeContext, navigate);
       }
     } catch {
       // Parent callback threw an error (e.g., validation failed)
@@ -79,7 +70,7 @@ export const RegistrationActions = ({
           return (
             <VisitTypeSelector
               key={extension.id}
-              patientUuid={mergedUrlContext.patientUuid}
+              patientUuid={routeContext.patientUuid}
               onVisitSave={onBeforeNavigate as () => Promise<string | null>}
               onNavigate={() => handleClick(extension)}
             />
