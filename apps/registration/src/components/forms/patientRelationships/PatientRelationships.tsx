@@ -1,6 +1,6 @@
 import { Button, SimpleDataTable, Tile } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
-import { useState, useImperativeHandle } from 'react';
+import { useState, useImperativeHandle, useEffect } from 'react';
 import type { PatientSuggestion } from '../../../hooks/usePatientSearch';
 import { usePatientSearch } from '../../../hooks/usePatientSearch';
 import { useRelationshipValidation } from '../../../hooks/useRelationshipValidation';
@@ -17,16 +17,20 @@ const RELATIONSHIP_FIELDS = {
 export interface RelationshipData {
   id: string;
   relationshipType: string;
+  relationshipTypeLabel?: string;
   patientId: string;
   patientUuid?: string;
   patientName?: string;
   tillDate: string;
+  isExisting?: boolean;
+  isDeleted?: boolean;
 }
 
 export interface PatientRelationshipsRef {
   getData: () => RelationshipData[];
   validate: () => boolean;
   clearData: () => void;
+  removeDeletedRelationships: () => void;
 }
 
 interface PatientRelationshipsProps {
@@ -52,6 +56,12 @@ export const PatientRelationships = ({
           },
         ],
   );
+
+  useEffect(() => {
+    if (initialData?.length) {
+      setRelationships(initialData);
+    }
+  }, [initialData]);
 
   const {
     relationshipTypes,
@@ -143,7 +153,16 @@ export const PatientRelationships = ({
   };
 
   const removeRelationship = (id: string) => {
-    setRelationships((prev) => prev.filter((rel) => rel.id !== id));
+    setRelationships((prev) =>
+      prev
+        .map((rel) => {
+          if (rel.id === id && rel.isExisting) {
+            return { ...rel, isDeleted: true };
+          }
+          return rel;
+        })
+        .filter((rel) => !(rel.id === id && !rel.isExisting)),
+    );
     clearSearch(id);
   };
 
@@ -154,6 +173,9 @@ export const PatientRelationships = ({
       setRelationships([]);
       clearAllSearches();
       clearAllErrors();
+    },
+    removeDeletedRelationships: () => {
+      setRelationships((prev) => prev.filter((rel) => !rel.isDeleted));
     },
   }));
 
@@ -180,22 +202,24 @@ export const PatientRelationships = ({
     { key: RELATIONSHIP_FIELDS.ACTIONS, header: t('REGISTRATION_ACTIONS') },
   ];
 
-  const rows = relationships.map((rel) => {
-    const suggestions = getPatientSuggestions(rel.id);
-    const rowErrors = validationErrors[rel.id] ?? {};
+  const rows = relationships
+    .filter((rel) => !rel.isDeleted)
+    .map((rel) => {
+      const suggestions = getPatientSuggestions(rel.id);
+      const rowErrors = validationErrors[rel.id] ?? {};
 
-    return RelationshipRow({
-      relationship: rel,
-      relationshipTypes,
-      suggestions,
-      errors: rowErrors,
-      onUpdateRelationship: updateRelationship,
-      onPatientSearch: handlePatientSearch,
-      onPatientSelect: handlePatientSelect,
-      onRemove: removeRelationship,
-      t,
+      return RelationshipRow({
+        relationship: rel,
+        relationshipTypes,
+        suggestions,
+        errors: rowErrors,
+        onUpdateRelationship: updateRelationship,
+        onPatientSearch: handlePatientSearch,
+        onPatientSelect: handlePatientSelect,
+        onRemove: removeRelationship,
+        t,
+      });
     });
-  });
 
   return (
     <div className={styles.relationshipSection}>
