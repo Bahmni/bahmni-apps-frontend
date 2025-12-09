@@ -1,4 +1,4 @@
-import { FORM_METADATA_URL } from '../constants/app';
+import { FORM_METADATA_URL } from './constants';
 
 /**
  * Response structure from the form metadata API

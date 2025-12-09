@@ -166,7 +166,7 @@ export {
 } from './configService';
 
 export { getCurrentUser, getUserLoginLocation, type User } from './userService';
-export { USER_PINNED_PREFERENCE_URL } from './constants/app';
+export { USER_PINNED_PREFERENCE_URL } from './observationFormsService/constants';
 export {
   getCurrentProvider,
   type Provider,
