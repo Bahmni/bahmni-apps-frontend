@@ -193,7 +193,7 @@ export const PatientRelationships = ({
       key: RELATIONSHIP_FIELDS.PATIENT_ID,
       header: (
         <span>
-          {t('REGISTRATION_PATIENT_ID')}
+          {t('REGISTRATION_PATIENT_NAME_OR_ID')}
           <span className={styles.requiredAsterisk}>*</span>
         </span>
       ),
@@ -225,7 +225,7 @@ export const PatientRelationships = ({
     <div className={styles.relationshipSection}>
       <Tile className={styles.headerTile}>
         <span className={styles.headerTitle}>
-          {t('CREATE_PATIENT_SECTION_RELATIONSHIPS')}
+          {t('CREATE_PATIENT_SECTION_RELATIONSHIPS_INFO')}
         </span>
       </Tile>
 
