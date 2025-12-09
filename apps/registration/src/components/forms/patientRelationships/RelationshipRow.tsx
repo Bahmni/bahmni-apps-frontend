@@ -65,7 +65,11 @@ export const RelationshipRow = ({
   if (isExisting) {
     return {
       id: relationship.id,
-      relationshipType: <span>{relationshipTypeDisplay ?? '-'}</span>,
+      relationshipType: (
+        <span className={styles.readOnlyText}>
+          {relationshipTypeDisplay ?? '-'}
+        </span>
+      ),
       patientId: (
         <Link
           href={getPatientUrlExternal(relationship.patientUuid!)}
