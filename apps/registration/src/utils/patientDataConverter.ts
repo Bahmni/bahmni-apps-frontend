@@ -1,6 +1,7 @@
 import type { PatientProfileResponse } from '@bahmni/services';
 import { calculateAge } from '@bahmni/services';
 import { format, isValid, parseISO } from 'date-fns';
+import type { RelationshipData } from '../components/forms/patientRelationships/PatientRelationships';
 import { AddressData } from '../hooks/useAddressFields';
 import type {
   BasicInfoData,
@@ -115,4 +116,42 @@ export const convertToAdditionalData = (
   });
 
   return additionalData;
+};
+
+export const convertToRelationshipsData = (
+  patientData: PatientProfileResponse | undefined,
+): RelationshipData[] | undefined => {
+  if (!patientData?.relationships || patientData.relationships.length === 0) {
+    return undefined;
+  }
+
+  const currentPatientUuid = patientData.patient.uuid;
+
+  return patientData.relationships
+    .filter((rel) => !rel.voided)
+    .map((rel) => {
+      const isPersonA = rel.personA.uuid === currentPatientUuid;
+      const relatedPerson = isPersonA ? rel.personB : rel.personA;
+
+      let formattedDate = '';
+      if (rel.endDate) {
+        const date = parseISO(rel.endDate);
+        if (isValid(date)) {
+          formattedDate = format(date, 'yyyy-MM-dd');
+        }
+      }
+
+      return {
+        id: rel.uuid,
+        relationshipType: rel.relationshipType.uuid,
+        relationshipTypeLabel: isPersonA
+          ? rel.relationshipType.display.split('/')[0]?.trim()
+          : rel.relationshipType.display.split('/')[1]?.trim(),
+        patientId: '',
+        patientUuid: relatedPerson.uuid,
+        patientName: relatedPerson.display,
+        tillDate: formattedDate,
+        isExisting: true,
+      };
+    });
 };
