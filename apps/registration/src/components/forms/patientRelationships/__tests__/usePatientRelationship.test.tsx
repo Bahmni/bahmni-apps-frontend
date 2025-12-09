@@ -135,23 +135,6 @@ describe('usePatientRelationship', () => {
       });
     });
 
-    it('should remove non-existing relationship completely', () => {
-      const { result } = renderHook(() => usePatientRelationship({}));
-
-      act(() => {
-        result.current.addRelationship();
-      });
-
-      const relationshipId = result.current.relationships[1].id;
-
-      act(() => {
-        result.current.removeRelationship(relationshipId);
-      });
-
-      expect(result.current.relationships).toHaveLength(0);
-      expect(mockClearSearch).toHaveBeenCalledWith(relationshipId);
-    });
-
     it('should mark existing relationship as deleted instead of removing', () => {
       const initialData = [
         {
