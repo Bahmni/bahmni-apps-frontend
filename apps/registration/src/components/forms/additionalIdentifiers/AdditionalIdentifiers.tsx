@@ -74,7 +74,13 @@ export const AdditionalIdentifiers = ({
       if (identifierType.required && (!value || value.trim() === '')) {
         newErrors[identifierType.uuid] = t(
           'CREATE_PATIENT_VALIDATION_IDENTIFIER_REQUIRED',
-          { identifierName: identifierType.name },
+          {
+            identifierName: getTranslatedLabel(
+              t,
+              REGISTRATION_NAMESPACE,
+              identifierType.name,
+            ),
+          },
         );
         isValid = false;
       }
@@ -130,6 +136,9 @@ export const AdditionalIdentifiers = ({
     if (cellId === 'value') {
       const value = formData[row.uuid] ?? '';
       const error = errors[row.uuid] ?? '';
+      const hasInitialData = Boolean(
+        initialData?.[row.uuid] && initialData[row.uuid].trim() !== '',
+      );
       return (
         <div className={styles.identifierField}>
           <TextInput
@@ -139,6 +148,7 @@ export const AdditionalIdentifiers = ({
             value={value}
             invalid={!!error}
             invalidText={error}
+            disabled={hasInitialData}
             onChange={(e) => handleFieldChange(row.uuid, e.target.value)}
           />
         </div>
@@ -149,8 +159,8 @@ export const AdditionalIdentifiers = ({
 
   return (
     <div className={styles.formSection}>
-      <Tile className={styles.patientDetailsHeader}>
-        <span className={styles.sectionTitle}>
+      <Tile className={styles.headerTile}>
+        <span className={styles.headerTitle}>
           {t('ADDITIONAL_IDENTIFIERS_HEADER_TITLE')}
         </span>
       </Tile>

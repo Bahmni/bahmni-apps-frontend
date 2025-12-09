@@ -116,3 +116,27 @@ export const convertToAdditionalData = (
 
   return additionalData;
 };
+
+export const convertToAdditionalIdentifiersData = (
+  patientData: PatientProfileResponse | undefined,
+): Record<string, string> | undefined => {
+  if (
+    !patientData?.patient.identifiers ||
+    patientData.patient.identifiers.length <= 1
+  ) {
+    return undefined;
+  }
+
+  const additionalIdentifiers = patientData.patient.identifiers.slice(1);
+
+  const identifiersData: Record<string, string> = {};
+
+  additionalIdentifiers.forEach((identifier) => {
+    if (!identifier.voided && identifier.identifierType?.uuid) {
+      identifiersData[identifier.identifierType.uuid] =
+        identifier.identifier ?? '';
+    }
+  });
+
+  return Object.keys(identifiersData).length > 0 ? identifiersData : undefined;
+};

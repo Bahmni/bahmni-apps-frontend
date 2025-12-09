@@ -14,17 +14,13 @@
   margin-top: $spacing-08;
 }
 
-.patientDetailsHeader {
-    display: flex;
-    align-content: center;
-  }
 
-.sectionTitle {
-  @include type-style("heading-compact-02");
+.headerTile {
+  align-content: center;
 }
 
-.formSectionTitle {
-  @include type-style("body-compact-02");
+.headerTitle {
+  @include type-style("heading-compact-02");
 }
 
 
@@ -52,8 +48,15 @@
 }
 
 .identifierTable {
+  :global(thead) {
+    visibility: collapse;
+  }
 
   :global(tbody) {
+    tr:first-child td {
+      border-top: none !important;
+    }
+    
     tr:hover td {
       cursor: default;
       border-bottom: 1px solid $border-subtle-01 !important;

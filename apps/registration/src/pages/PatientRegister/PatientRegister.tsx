@@ -78,6 +78,7 @@ const PatientRegister = () => {
     contactInitialData,
     additionalInitialData,
     addressInitialData,
+    additionalIdentifiersInitialData,
     initialDobEstimated,
     metadata: initialMetadata,
   } = usePatientDetails({
@@ -158,6 +159,7 @@ const PatientRegister = () => {
         const response = (await updatePatientMutation.mutateAsync({
           patientUuid,
           ...formData,
+          additionalIdentifiersInitialData,
         })) as PatientProfileResponse;
         if (response?.patient?.uuid) {
           setMetadata({
@@ -260,11 +262,15 @@ const PatientRegister = () => {
             initialData={additionalInitialData}
           />
 
+          {shouldShowAdditionalIdentifiers && (
+            <AdditionalIdentifiers
+              ref={patientAdditionalIdentifiersRef}
+              initialData={additionalIdentifiersInitialData}
+            />
+          )}
+
           {Array.isArray(relationshipTypes) && relationshipTypes.length > 0 && (
             <PatientRelationships ref={patientRelationshipsRef} />
-          )}
-          {shouldShowAdditionalIdentifiers && (
-            <AdditionalIdentifiers ref={patientAdditionalIdentifiersRef} />
           )}
 
           {/* Footer Actions */}
