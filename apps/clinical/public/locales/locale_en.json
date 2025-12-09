@@ -128,6 +128,7 @@
   "ERROR_SEARCHING_INVESTIGATIONS": "Error searching investigations",
   "ERROR_SEARCHING_MEDICATIONS": "Error searching medications",
   "ERROR_VALIDATION_TITLE": "Validation Error",
+  "ERROR_FETCHING_CLINICAL_DATA": "Invalid episode uuid",
   "INPUT_VALUE_REQUIRED": "Please enter a value",
   "INVALID_RESPONSE": "Invalid response received from the server",
   "INVESTIGATIONS_ADDED": "Added {{investigationType}}",
@@ -243,5 +244,4 @@
   "CONTROL_NOT_FOUND": "No controls registered for type: {{type}}",
   "NO_CONFIGURED_CONTROLS": "No configured controls to for this section",
   "INITIALIZING_CONTROL": "Initializing control..."
-
 }

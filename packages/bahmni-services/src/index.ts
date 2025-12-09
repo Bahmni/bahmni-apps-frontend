@@ -183,7 +183,7 @@ export { findActiveEncounterInSession } from './encounterSessionService';
 export { getActiveVisit } from './encounterService';
 
 export {
-  getEncountersForEOC,
+  getEncountersAndVisitsForEOC,
   type EpisodeOfCareDataType,
 } from './episodeOfCareService';
 

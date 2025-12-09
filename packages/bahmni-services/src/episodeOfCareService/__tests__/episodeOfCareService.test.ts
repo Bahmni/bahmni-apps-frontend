@@ -1,6 +1,6 @@
 import { get } from '../../api';
 import { EOC_ENCOUNTERS_URL } from '../constants';
-import { getEncountersForEOC } from '../episodeOfCareService';
+import { getEncountersAndVisitsForEOC } from '../episodeOfCareService';
 
 jest.mock('../../api');
 const mockedGet = get as jest.MockedFunction<typeof get>;
@@ -15,6 +15,7 @@ describe('episodeOfCareService', () => {
       resourceType: 'Bundle' as const,
       id: 'eoc-bundle-123',
       type: 'searchset' as const,
+      total: 2,
       entry: [
         {
           fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/EpisodeOfCare/eoc-123',
@@ -62,7 +63,7 @@ describe('episodeOfCareService', () => {
       const eocId = 'eoc-123';
       mockedGet.mockResolvedValueOnce(mockEOCBundle);
 
-      await getEncountersForEOC(eocId);
+      await getEncountersAndVisitsForEOC([eocId]);
 
       expect(mockedGet).toHaveBeenCalledWith(EOC_ENCOUNTERS_URL(eocId));
     });
@@ -72,7 +73,7 @@ describe('episodeOfCareService', () => {
       const expectedJoinedIds = 'eoc-123,eoc-456';
       mockedGet.mockResolvedValueOnce(mockEOCBundle);
 
-      await getEncountersForEOC(eocIds);
+      await getEncountersAndVisitsForEOC(eocIds);
 
       expect(mockedGet).toHaveBeenCalledWith(
         EOC_ENCOUNTERS_URL(expectedJoinedIds),
@@ -83,7 +84,7 @@ describe('episodeOfCareService', () => {
       const eocId = 'eoc-123';
       mockedGet.mockResolvedValueOnce(mockEOCBundle);
 
-      const result = await getEncountersForEOC(eocId);
+      const result = await getEncountersAndVisitsForEOC([eocId]);
 
       expect(result).toEqual({
         visitUuids: ['visit-789'], // Should be deduplicated - both encounters have same visit
@@ -116,7 +117,7 @@ describe('episodeOfCareService', () => {
       const eocId = 'eoc-123';
       mockedGet.mockResolvedValueOnce(bundleWithoutPartOf);
 
-      const result = await getEncountersForEOC(eocId);
+      const result = await getEncountersAndVisitsForEOC([eocId]);
 
       expect(result).toEqual({
         visitUuids: [], // No visit UUIDs because no partOf reference
@@ -130,15 +131,17 @@ describe('episodeOfCareService', () => {
       mockedGet.mockResolvedValueOnce({
         resourceType: 'Bundle',
         type: 'searchset',
+        total: 0,
         entry: [],
       });
 
-      const result = await getEncountersForEOC(eocIds);
+      await expect(getEncountersAndVisitsForEOC(eocIds)).rejects.toThrow(
+        'No episode of care found for the provided UUIDs: ',
+      );
 
       expect(mockedGet).toHaveBeenCalledWith(
         EOC_ENCOUNTERS_URL(expectedJoinedIds),
       );
-      expect(result).toEqual({ visitUuids: [], encounterUuids: [] });
     });
 
     it('should handle bundle with no entries', async () => {
@@ -146,10 +149,11 @@ describe('episodeOfCareService', () => {
       mockedGet.mockResolvedValueOnce({
         resourceType: 'Bundle',
         type: 'searchset',
+        total: 1,
         entry: undefined,
       });
 
-      const result = await getEncountersForEOC(eocId);
+      const result = await getEncountersAndVisitsForEOC([eocId]);
 
       expect(result).toEqual({ visitUuids: [], encounterUuids: [] });
     });
@@ -159,6 +163,7 @@ describe('episodeOfCareService', () => {
         resourceType: 'Bundle' as const,
         id: 'mixed-bundle',
         type: 'searchset' as const,
+        total: 3,
         entry: [
           {
             fullUrl:
@@ -192,12 +197,26 @@ describe('episodeOfCareService', () => {
       const eocId = 'eoc-123';
       mockedGet.mockResolvedValueOnce(bundleWithMixedResources);
 
-      const result = await getEncountersForEOC(eocId);
+      const result = await getEncountersAndVisitsForEOC([eocId]);
 
       expect(result).toEqual({
         visitUuids: ['visit-789'],
         encounterUuids: ['encounter-456'],
       });
+    });
+
+    it('should throw error when bundle total is 0', async () => {
+      const eocIds = ['invalid-eoc-123'];
+      mockedGet.mockResolvedValueOnce({
+        resourceType: 'Bundle',
+        type: 'searchset',
+        total: 0,
+        entry: [],
+      });
+
+      await expect(getEncountersAndVisitsForEOC(eocIds)).rejects.toThrow(
+        'No episode of care found for the provided UUIDs: invalid-eoc-123',
+      );
     });
   });
 });

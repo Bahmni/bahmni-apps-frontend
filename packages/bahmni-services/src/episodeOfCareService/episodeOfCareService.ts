@@ -8,11 +8,17 @@ import { EpisodeOfCareDataType } from './models';
  * @param eocUuids - Array of EOC UUIDs or single EOC UUID
  * @returns Promise resolving to object with visit UUIDs and encounter UUIDs
  */
-export async function getEncountersForEOC(
-  eocUuids: string[] | string,
+export async function getEncountersAndVisitsForEOC(
+  eocUuids: string[],
 ): Promise<EpisodeOfCareDataType> {
-  const ids = Array.isArray(eocUuids) ? eocUuids.join(',') : eocUuids;
+  const ids = eocUuids.join(',');
   const bundle = await get<Bundle>(EOC_ENCOUNTERS_URL(ids));
+
+  if (bundle.total === 0) {
+    throw new Error(
+      'No episode of care found for the provided UUIDs: ' + eocUuids.join(', '),
+    );
+  }
 
   const encounters =
     bundle.entry

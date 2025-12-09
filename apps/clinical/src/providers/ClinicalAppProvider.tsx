@@ -1,5 +1,5 @@
 import { Loading } from '@bahmni/design-system';
-import { getEncountersForEOC, useTranslation } from '@bahmni/services';
+import { useTranslation, getEncountersAndVisitsForEOC } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { ReactNode, useMemo } from 'react';
 import {
@@ -23,7 +23,7 @@ export const ClinicalAppProvider: React.FC<ClinicalAppDataProviderProps> = ({
     error,
   } = useQuery({
     queryKey: ['encounters-for-eoc', episodeUuids],
-    queryFn: () => getEncountersForEOC(episodeUuids),
+    queryFn: () => getEncountersAndVisitsForEOC(episodeUuids),
     enabled: episodeUuids.length > 0,
   });
 
@@ -52,6 +52,13 @@ export const ClinicalAppProvider: React.FC<ClinicalAppDataProviderProps> = ({
   if (isLoadingEncounters && episodeUuids.length > 0) {
     return <Loading description={t('LOADING_CLINICAL_DATA')} role="status" />;
   }
+
+  if (error)
+    return (
+      <div className="alert alert-danger">
+        {t('ERROR_FETCHING_CLINICAL_DATA')}
+      </div>
+    );
 
   return (
     <ClinicalAppContext.Provider value={value}>
