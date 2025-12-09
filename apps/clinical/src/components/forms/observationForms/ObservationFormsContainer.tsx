@@ -45,16 +45,13 @@ interface ObservationFormsContainerProps {
  */
 const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   onViewingFormChange,
-  viewingForm: externalViewingForm,
+  viewingForm,
   onRemoveForm,
   pinnedForms,
   updatePinnedForms,
 }) => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
-
-  // Use the external viewingForm from parent
-  const viewingForm = externalViewingForm;
 
   // State to store form metadata
   const [formMetadata, setFormMetadata] = useState<FormMetadata | null>(null);
