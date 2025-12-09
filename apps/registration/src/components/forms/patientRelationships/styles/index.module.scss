@@ -76,3 +76,17 @@
   color: $support-error !important;
   margin-left: $spacing-01;
 }
+
+
+.patientLink {
+  text-decoration: underline;
+  cursor: pointer;
+  
+  &:hover {
+    color: $link-primary-hover;
+  }
+  
+  &:visited {
+    color: $link-visited;
+  }
+}
