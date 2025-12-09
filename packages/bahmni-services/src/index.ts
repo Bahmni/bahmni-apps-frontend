@@ -212,8 +212,6 @@ export {
   type FormPrivilege,
   type ApiFormPrivilege,
   type FormMetadata,
-  type FormMetadataApiResponse,
-  type FormResource,
 } from './observationFormsService';
 
 export {
