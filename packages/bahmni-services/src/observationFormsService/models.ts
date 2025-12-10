@@ -29,3 +29,26 @@ export interface FormApiResponse {
   privileges: ApiFormPrivilege[];
   nameTranslation: string;
 }
+
+// Response structure from the form metadata API
+export interface FormResource {
+  uuid: string;
+  value: string; // JSON string containing the form schema
+}
+
+export interface FormMetadataApiResponse {
+  uuid: string;
+  name: string;
+  version: string;
+  published: boolean;
+  resources: FormResource[];
+}
+
+//Parsed form metadata structure
+export interface FormMetadata {
+  uuid: string;
+  name: string;
+  version: string;
+  published: boolean;
+  schema: unknown; // The parsed form schema/definition
+}
