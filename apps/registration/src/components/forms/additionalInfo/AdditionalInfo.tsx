@@ -17,7 +17,6 @@ import styles from '../additionalInfo/styles/index.module.scss';
 import {
   getFieldsToShow,
   createFieldTranslationMap,
-  initializeFormData,
   getFieldLabel,
 } from './additionalInfoHelpers';
 import {
@@ -57,23 +56,14 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
     [configAttributes],
   );
 
-  const initialFormData = useMemo(
-    () => initializeFormData(fieldsToShow, initialData),
-    [fieldsToShow, initialData],
-  );
-
-  const [formData, setFormData] = useState<AdditionalData>(initialFormData);
+  const [formData, setFormData] = useState<AdditionalData>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (initialData && fieldsToShow.length > 0) {
-      const data: AdditionalData = {};
-      fieldsToShow.forEach((field) => {
-        data[field.name] = initialData[field.name] ?? '';
-      });
-      setFormData(data);
+    if (initialData && Object.keys(initialData).length > 0) {
+      setFormData(initialData);
     }
-  }, [initialData, fieldsToShow.length]);
+  }, [initialData, fieldsToShow]);
 
   const handleFieldChange = useCallback(
     (fieldName: string, value: string | number | boolean) => {
@@ -99,8 +89,14 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
   }, [fieldsToShow, formData, fieldValidationConfig]);
 
   const getData = useCallback((): AdditionalData => {
-    return formData;
-  }, [formData]);
+    const displayedData: AdditionalData = {};
+    fieldsToShow.forEach((field) => {
+      if (formData[field.name] !== undefined) {
+        displayedData[field.name] = formData[field.name];
+      }
+    });
+    return displayedData;
+  }, [formData, fieldsToShow]);
 
   useImperativeHandle(ref, () => ({
     validate,
