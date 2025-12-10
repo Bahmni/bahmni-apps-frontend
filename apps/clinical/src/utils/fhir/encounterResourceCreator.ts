@@ -19,7 +19,6 @@ export const createEncounterResource = (
   encounterLocationUUID: string,
   encounterStartTimestamp: Date,
 ): Encounter => {
-
   return {
     resourceType: 'Encounter',
     class: {
