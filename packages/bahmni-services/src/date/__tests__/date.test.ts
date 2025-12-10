@@ -115,7 +115,7 @@ describe('calculateAge', () => {
       expect(result).not.toBeNull();
       expect(result?.years).toBe(0);
       expect(result?.months).toBe(1);
-      expect(result?.days).toBe(1); // Feb has 29 days in 2024 (leap year)
+      expect(result?.days).toBe(1);
     });
 
     it('should handle births on May 31 when current date is July 30', () => {

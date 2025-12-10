@@ -4,6 +4,8 @@ import {
   differenceInYears,
   differenceInMonths,
   differenceInDays,
+  addYears,
+  addMonths,
   subYears,
   subMonths,
   subDays,
@@ -71,11 +73,14 @@ export function calculateAge(dateString: string): Age | null {
   if (!isValid(birthDate)) return null; // Invalid date check
   const today = new Date();
   if (birthDate > today) return null; // Future dates are invalid
+
   const years = differenceInYears(today, birthDate);
-  const lastBirthday = subYears(today, years);
-  const months = differenceInMonths(lastBirthday, birthDate);
-  const lastMonth = subMonths(lastBirthday, months);
-  const days = differenceInDays(lastMonth, birthDate);
+  const lastBirthday = addYears(birthDate, years);
+
+  const months = differenceInMonths(today, lastBirthday);
+  const lastMonthAnniversary = addMonths(lastBirthday, months);
+
+  const days = differenceInDays(today, lastMonthAnniversary);
 
   return { years, months, days };
 }
@@ -381,10 +386,10 @@ export function calculateAgeinYearsAndMonths(
   const today = new Date();
 
   const years = differenceInYears(today, birthDate);
-  const lastBirthday = subYears(today, years);
-  const months = differenceInMonths(lastBirthday, birthDate);
-  const lastMonth = subMonths(lastBirthday, months);
-  const days = differenceInDays(lastMonth, birthDate);
+  const lastBirthday = addYears(birthDate, years);
+  const months = differenceInMonths(today, lastBirthday);
+  const lastMonthAnniversary = addMonths(lastBirthday, months);
+  const days = differenceInDays(today, lastMonthAnniversary);
 
   if (years === 0 && months < 3) {
     const totalDays = differenceInDays(today, birthDate);
@@ -408,7 +413,7 @@ export function calculateAgeinYearsAndMonths(
     .filter(([value]) => value > 0)
     .map(([value, key]) => `${value}${t(key, { count: value })}`);
 
-  return parts.join(' ') || '0';
+  return parts.join(' ') || '0d';
 }
 /**
  * Sorts an array of objects by a date field
