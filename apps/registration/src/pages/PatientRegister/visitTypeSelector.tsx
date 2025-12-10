@@ -112,7 +112,7 @@ export const VisitTypeSelector = ({
     if (error) {
       addNotification({
         title: t('ERROR_DEFAULT_TITLE'),
-        message: error instanceof Error ? error.message : 'An error occurred',
+        message: error instanceof Error ? error.message : String(error),
         type: 'error',
         timeout: 5000,
       });
