@@ -79,6 +79,7 @@ const PatientRegister = () => {
     additionalInitialData,
     addressInitialData,
     additionalIdentifiersInitialData,
+    relationshipsInitialData,
     initialDobEstimated,
     metadata: initialMetadata,
   } = usePatientDetails({
@@ -166,6 +167,7 @@ const PatientRegister = () => {
             ...metadata,
             patientName: response.patient.person.display ?? '',
           });
+          patientRelationshipsRef.current?.removeDeletedRelationships();
           return response.patient.uuid;
         }
       } else {
@@ -270,7 +272,10 @@ const PatientRegister = () => {
           )}
 
           {Array.isArray(relationshipTypes) && relationshipTypes.length > 0 && (
-            <PatientRelationships ref={patientRelationshipsRef} />
+            <PatientRelationships
+              ref={patientRelationshipsRef}
+              initialData={relationshipsInitialData}
+            />
           )}
 
           {/* Footer Actions */}

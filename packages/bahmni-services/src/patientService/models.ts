@@ -326,6 +326,8 @@ export interface PatientProfileResponse {
     };
   };
   image?: string;
+  relationships?: Relationship[];
+  resourceVersion?: string;
 }
 
 /**
@@ -375,4 +377,39 @@ export interface RelationshipType {
 
 export interface RelationshipTypesResponse {
   results: RelationshipType[];
+}
+
+export interface Person {
+  uuid: string;
+  display: string;
+  links?: Array<{
+    rel: string;
+    uri: string;
+    resourceAlias?: string;
+  }>;
+}
+
+export interface Relationship {
+  uuid: string;
+  display: string;
+  personA: Person;
+  relationshipType: {
+    uuid: string;
+    display: string;
+    links?: Array<{
+      rel: string;
+      uri: string;
+      resourceAlias?: string;
+    }>;
+  };
+  personB: Person;
+  voided: boolean;
+  startDate: string | null;
+  endDate: string | null;
+  links?: Array<{
+    rel: string;
+    uri: string;
+    resourceAlias?: string;
+  }>;
+  resourceVersion?: string;
 }

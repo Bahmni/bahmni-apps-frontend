@@ -47,11 +47,20 @@
 
   
   :global(.cds--combo-box) {
-    width: $spacing-13 + $spacing-06;
+    width: $spacing-13 + $spacing-12 + $spacing-02 + $spacing-01;
+    
+    :global(.cds--text-input) {
+      background-color: $field-01 !important;  
+    }
   }
 
   :global(.cds--dropdown) {
-    width: $spacing-13 + $spacing-04;
+    width: $spacing-13 + $spacing-12 + $spacing-02 + $spacing-01;
+    background-color: $field-01 !important;
+  }
+
+  :global(.cds--date-picker) {
+    width: $spacing-13 + $spacing-12 + $spacing-02 + $spacing-01;
   }
 
   :global(.cds--list-box__field) {
@@ -75,4 +84,30 @@
 .requiredAsterisk {
   color: $support-error !important;
   margin-left: $spacing-01;
+}
+
+.readOnlyText {
+  display: inline-block;
+  width: $spacing-13 + $spacing-12 + $spacing-02 + $spacing-01; // 160 + 96 + 4 + 2 = 262px
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.patientLink {
+  display: inline-block;
+  width: $spacing-13 + $spacing-12 + $spacing-02 + $spacing-01; // 160 + 96 + 4 + 2 = 262px
+  text-decoration: underline;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  
+  &:hover {
+    color: $link-primary-hover;
+  }
+  
+  &:visited {
+    color: $link-visited;
+  }
 }

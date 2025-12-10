@@ -1023,4 +1023,155 @@ describe('useUpdatePatient', () => {
       ]);
     });
   });
+
+  describe('Relationships handling', () => {
+    it('should send empty relationships array when no relationships provided', async () => {
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useUpdatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(mockFormData);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const callArgs = mockUpdatePatient.mock.calls[0][1];
+      expect(callArgs.relationships).toEqual([]);
+    });
+
+    it('should include relationships in the update payload', async () => {
+      const formDataWithRelationships = {
+        ...mockFormData,
+        relationships: [
+          {
+            id: 'rel-1',
+            relationshipType: 'rel-type-uuid-1',
+            patientId: 'GAN789012',
+            patientUuid: 'related-patient-uuid',
+            tillDate: '31/12/2024',
+          },
+        ],
+      };
+
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useUpdatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(formDataWithRelationships);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const callArgs = mockUpdatePatient.mock.calls[0][1];
+      expect(callArgs.relationships).toBeDefined();
+      expect(callArgs.relationships).toHaveLength(1);
+    });
+
+    it('should transform relationships to API format correctly', async () => {
+      const formDataWithRelationships = {
+        ...mockFormData,
+        relationships: [
+          {
+            id: 'rel-1',
+            relationshipType: 'rel-type-uuid-1',
+            patientId: 'GAN789012',
+            patientUuid: 'related-patient-uuid',
+            tillDate: '31/12/2024',
+          },
+        ],
+      };
+
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useUpdatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(formDataWithRelationships);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const callArgs = mockUpdatePatient.mock.calls[0][1];
+      expect(callArgs.relationships[0]).toMatchObject({
+        relationshipType: { uuid: 'rel-type-uuid-1' },
+        personB: { uuid: 'related-patient-uuid' },
+      });
+      expect(callArgs.relationships[0].endDate).toBeDefined();
+    });
+
+    it('should handle relationships without end date', async () => {
+      const formDataWithRelationships = {
+        ...mockFormData,
+        relationships: [
+          {
+            id: 'rel-1',
+            relationshipType: 'rel-type-uuid-1',
+            patientId: 'GAN789012',
+            patientUuid: 'related-patient-uuid',
+            tillDate: '',
+          },
+        ],
+      };
+
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useUpdatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(formDataWithRelationships);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const callArgs = mockUpdatePatient.mock.calls[0][1];
+      expect(callArgs.relationships[0].endDate).toBeUndefined();
+    });
+
+    it('should handle multiple relationships', async () => {
+      const formDataWithMultipleRelationships = {
+        ...mockFormData,
+        relationships: [
+          {
+            id: 'rel-1',
+            relationshipType: 'rel-type-uuid-1',
+            patientId: 'GAN789012',
+            patientUuid: 'related-patient-uuid-1',
+            tillDate: '31/12/2024',
+          },
+          {
+            id: 'rel-2',
+            relationshipType: 'rel-type-uuid-2',
+            patientId: 'GAN654321',
+            patientUuid: 'related-patient-uuid-2',
+            tillDate: '',
+          },
+        ],
+      };
+
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useUpdatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(formDataWithMultipleRelationships);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const callArgs = mockUpdatePatient.mock.calls[0][1];
+      expect(callArgs.relationships).toHaveLength(2);
+    });
+  });
 });

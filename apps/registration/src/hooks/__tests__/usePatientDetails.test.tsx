@@ -24,6 +24,7 @@ jest.mock('../../utils/patientDataConverter', () => ({
   convertToAdditionalData: jest.fn(() => ({})),
   convertToAddressData: jest.fn(() => ({})),
   convertToAdditionalIdentifiersData: jest.fn(() => ({})),
+  convertToRelationshipsData: jest.fn(() => []),
 }));
 
 const mockGetPatientProfile = getPatientProfile as jest.MockedFunction<

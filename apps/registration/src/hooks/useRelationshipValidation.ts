@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import type { RelationshipData } from '../components/forms/patientRelationships/PatientRelationships';
 
-interface ValidationErrors {
+export interface ValidationErrors {
   [key: string]: {
     relationshipType?: string;
     patientId?: string;
