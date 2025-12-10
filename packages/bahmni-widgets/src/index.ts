@@ -10,6 +10,7 @@ export { RadiologyInvestigationTable } from './radiologyInvestigation';
 export { LabInvestigation } from './labinvestigation';
 export { SearchPatient } from './searchPatient';
 export { VitalFlowSheet } from './vitalFlowSheet';
+export { GenericServiceRequestTable } from './genericServiceRequest';
 
 // Notification System
 export {
