@@ -2,6 +2,8 @@ import { ComponentType, LazyExoticComponent } from 'react';
 
 export interface WidgetProps {
   config?: Record<string, unknown>;
+  encounterUuids?: string[];
+  visitUuids?: string[];
 }
 export interface WidgetConfig {
   type: string;

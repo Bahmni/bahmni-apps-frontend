@@ -9,12 +9,14 @@ import {
 import { useTranslation, BAHMNI_HOME_PATH } from '@bahmni/services';
 import { useNotification, useUserPrivilege } from '@bahmni/widgets';
 import React, { Suspense, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import ConsultationPad from '../components/consultationPad/ConsultationPad';
 import DashboardContainer from '../components/dashboardContainer/DashboardContainer';
 import PatientHeader from '../components/patientHeader/PatientHeader';
 import { BAHMNI_CLINICAL_PATH } from '../constants/app';
 import { useClinicalConfig } from '../hooks/useClinicalConfig';
 import { useDashboardConfig } from '../hooks/useDashboardConfig';
+import { ClinicalAppProvider } from '../providers/ClinicalAppProvider';
 import {
   getDefaultDashboard,
   getSidebarItems,
@@ -68,7 +70,16 @@ const ConsultationPage: React.FC = () => {
   const { userPrivileges } = useUserPrivilege();
   const { addNotification } = useNotification();
   const [isActionAreaVisible, setIsActionAreaVisible] = useState(false);
+  const [searchParams] = useSearchParams();
 
+  const episodeUuids = useMemo(() => {
+    const episodeUuid = searchParams.get('episodeUuid');
+    if (!episodeUuid) return [];
+    return episodeUuid
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean);
+  }, [searchParams]);
   const currentDashboard = useMemo(() => {
     if (!clinicalConfig) return null;
     return getDefaultDashboard(clinicalConfig.dashboards || []);
@@ -106,45 +117,47 @@ const ConsultationPage: React.FC = () => {
   }
 
   return (
-    <ActionAreaLayout
-      headerWSideNav={
-        <Header
-          breadcrumbItems={breadcrumbItems}
-          globalActions={globalActions}
-          sideNavItems={sidebarItems}
-          activeSideNavItemId={activeItemId}
-          onSideNavItemClick={handleItemClick}
-          isRail={isActionAreaVisible}
-        />
-      }
-      patientHeader={
-        <PatientHeader
-          isActionAreaVisible={isActionAreaVisible}
-          setIsActionAreaVisible={setIsActionAreaVisible}
-        />
-      }
-      mainDisplay={
-        <Suspense
-          fallback={
-            <Loading
-              description={t('LOADING_DASHBOARD_CONTENT')}
-              role="status"
-            />
-          }
-        >
-          <DashboardContainer
-            sections={dashboardConfig.sections}
-            activeItemId={activeItemId}
+    <ClinicalAppProvider episodeUuids={episodeUuids}>
+      <ActionAreaLayout
+        headerWSideNav={
+          <Header
+            breadcrumbItems={breadcrumbItems}
+            globalActions={globalActions}
+            sideNavItems={sidebarItems}
+            activeSideNavItemId={activeItemId}
+            onSideNavItemClick={handleItemClick}
+            isRail={isActionAreaVisible}
           />
-        </Suspense>
-      }
-      isActionAreaVisible={isActionAreaVisible}
-      actionArea={
-        <ConsultationPad
-          onClose={() => setIsActionAreaVisible((prev) => !prev)}
-        />
-      }
-    />
+        }
+        patientHeader={
+          <PatientHeader
+            isActionAreaVisible={isActionAreaVisible}
+            setIsActionAreaVisible={setIsActionAreaVisible}
+          />
+        }
+        mainDisplay={
+          <Suspense
+            fallback={
+              <Loading
+                description={t('LOADING_DASHBOARD_CONTENT')}
+                role="status"
+              />
+            }
+          >
+            <DashboardContainer
+              sections={dashboardConfig.sections}
+              activeItemId={activeItemId}
+            />
+          </Suspense>
+        }
+        isActionAreaVisible={isActionAreaVisible}
+        actionArea={
+          <ConsultationPad
+            onClose={() => setIsActionAreaVisible((prev) => !prev)}
+          />
+        }
+      />
+    </ClinicalAppProvider>
   );
 };
 

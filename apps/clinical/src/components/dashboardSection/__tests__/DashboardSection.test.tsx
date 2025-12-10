@@ -1,8 +1,25 @@
 import { DashboardSectionConfig } from '@bahmni/services';
-import { getWidget } from '@bahmni/widgets';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import React, { Suspense } from 'react';
+import { ClinicalAppProvider } from '../../../providers/ClinicalAppProvider';
 import DashboardSection from '../DashboardSection';
+
+jest.mock('../../../providers/ClinicalAppProvider', () => ({
+  ClinicalAppProvider: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="mock-clinical-apps-provider">{children}</div>
+  ),
+}));
+
+jest.mock('../../../hooks/useClinicalAppData', () => ({
+  useClinicalAppData: () => ({
+    episodeOfCare: [],
+    visit: [],
+    encounter: [],
+    isLoading: false,
+    error: null,
+  }),
+}));
 
 // Mock dependencies
 jest.mock('@bahmni/design-system', () => ({
@@ -55,6 +72,10 @@ jest.mock('@bahmni/widgets', () => {
   };
 });
 
+const mockGetWidget = jest.mocked(
+  jest.requireMock('@bahmni/widgets').getWidget,
+);
+
 // Create mock widget components
 const MockAllergiesWidget = ({
   config,
@@ -86,12 +107,38 @@ const MockTreatmentWidget = () => (
   <div data-testid="treatment-widget">Treatment Widget</div>
 );
 
+const renderDashboardSectionWithProvider = (
+  section: DashboardSectionConfig,
+  ref: React.RefObject<HTMLDivElement | null>,
+) => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+  const mockEpisodeIds = ['episode-1', 'episode-2'];
+
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <ClinicalAppProvider episodeUuids={mockEpisodeIds}>
+        <DashboardSection
+          section={section}
+          ref={ref}
+          encounterUuids={[]}
+          visitUuids={[]}
+        />
+      </ClinicalAppProvider>
+    </QueryClientProvider>,
+  );
+};
+
 describe('DashboardSection Component', () => {
-  const mockGetWidget = getWidget as jest.MockedFunction<typeof getWidget>;
   const mockRef = React.createRef<HTMLDivElement>();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    mockGetWidget.mockClear();
   });
 
   describe('Basic Rendering', () => {
@@ -103,7 +150,7 @@ describe('DashboardSection Component', () => {
         controls: [],
       };
 
-      render(<DashboardSection section={mockSection} ref={mockRef} />);
+      renderDashboardSectionWithProvider(mockSection, mockRef);
 
       expect(screen.getByText('Test Section')).toBeInTheDocument();
     });
@@ -116,8 +163,9 @@ describe('DashboardSection Component', () => {
         controls: [],
       };
 
-      const { container } = render(
-        <DashboardSection section={mockSection} ref={mockRef} />,
+      const { container } = renderDashboardSectionWithProvider(
+        mockSection,
+        mockRef,
       );
 
       const sectionDiv = container.querySelector(
@@ -134,7 +182,7 @@ describe('DashboardSection Component', () => {
         controls: [],
       };
 
-      render(<DashboardSection section={mockSection} ref={mockRef} />);
+      renderDashboardSectionWithProvider(mockSection, mockRef);
 
       expect(screen.getByTestId('carbon-tile')).toBeInTheDocument();
     });
@@ -148,7 +196,7 @@ describe('DashboardSection Component', () => {
         controls: [],
       };
 
-      render(<DashboardSection section={mockSection} ref={testRef} />);
+      renderDashboardSectionWithProvider(mockSection, testRef);
 
       expect(screen.getByTestId('carbon-tile')).toBeInTheDocument();
     });
@@ -162,9 +210,7 @@ describe('DashboardSection Component', () => {
         controls: [],
       };
 
-      render(
-        <DashboardSection section={sectionWithTranslationKey} ref={mockRef} />,
-      );
+      renderDashboardSectionWithProvider(sectionWithTranslationKey, mockRef);
 
       // The mock returns the translated text for 'custom.translation.key'
       expect(screen.getByText('Translated Title')).toBeInTheDocument();
@@ -175,9 +221,14 @@ describe('DashboardSection Component', () => {
 
   describe('Registry-based Widget Rendering', () => {
     it('renders a single widget from controls array', async () => {
-      mockGetWidget.mockReturnValue(
-        React.lazy(() => Promise.resolve({ default: MockAllergiesWidget })),
-      );
+      mockGetWidget.mockImplementation((type: string) => {
+        if (type === 'allergies') {
+          return React.lazy(() =>
+            Promise.resolve({ default: MockAllergiesWidget }),
+          );
+        }
+        return undefined;
+      });
 
       const section: DashboardSectionConfig = {
         id: 'allergies-section',
@@ -191,11 +242,7 @@ describe('DashboardSection Component', () => {
         ],
       };
 
-      render(
-        <Suspense fallback={<div>Loading...</div>}>
-          <DashboardSection section={section} ref={mockRef} />
-        </Suspense>,
-      );
+      renderDashboardSectionWithProvider(section, mockRef);
 
       await waitFor(() => {
         expect(screen.getByTestId('allergies-widget')).toBeInTheDocument();
@@ -205,13 +252,19 @@ describe('DashboardSection Component', () => {
     });
 
     it('renders multiple widgets from controls array', async () => {
-      mockGetWidget
-        .mockReturnValueOnce(
-          React.lazy(() => Promise.resolve({ default: MockConditionsWidget })),
-        )
-        .mockReturnValueOnce(
-          React.lazy(() => Promise.resolve({ default: MockDiagnosisWidget })),
-        );
+      mockGetWidget.mockImplementation((type: string) => {
+        if (type === 'conditions') {
+          return React.lazy(() =>
+            Promise.resolve({ default: MockConditionsWidget }),
+          );
+        }
+        if (type === 'diagnosis') {
+          return React.lazy(() =>
+            Promise.resolve({ default: MockDiagnosisWidget }),
+          );
+        }
+        return undefined;
+      });
 
       const section: DashboardSectionConfig = {
         id: 'conditions-section',
@@ -229,10 +282,27 @@ describe('DashboardSection Component', () => {
         ],
       };
 
+      const queryClient = new QueryClient({
+        defaultOptions: {
+          queries: {
+            retry: false,
+          },
+        },
+      });
+
       render(
-        <Suspense fallback={<div>Loading...</div>}>
-          <DashboardSection section={section} ref={mockRef} />
-        </Suspense>,
+        <QueryClientProvider client={queryClient}>
+          <ClinicalAppProvider episodeUuids={['episode-1', 'episode-2']}>
+            <Suspense fallback={<div>Loading...</div>}>
+              <DashboardSection
+                section={section}
+                ref={mockRef}
+                encounterUuids={[]}
+                visitUuids={[]}
+              />
+            </Suspense>
+          </ClinicalAppProvider>
+        </QueryClientProvider>,
       );
 
       await waitFor(() => {
@@ -245,9 +315,14 @@ describe('DashboardSection Component', () => {
     });
 
     it('passes config as props to widgets', async () => {
-      mockGetWidget.mockReturnValue(
-        React.lazy(() => Promise.resolve({ default: MockAllergiesWidget })),
-      );
+      mockGetWidget.mockImplementation((type: string) => {
+        if (type === 'allergies') {
+          return React.lazy(() =>
+            Promise.resolve({ default: MockAllergiesWidget }),
+          );
+        }
+        return undefined;
+      });
 
       const section: DashboardSectionConfig = {
         id: 'allergies-section',
@@ -263,10 +338,27 @@ describe('DashboardSection Component', () => {
         ],
       };
 
+      const queryClient = new QueryClient({
+        defaultOptions: {
+          queries: {
+            retry: false,
+          },
+        },
+      });
+
       render(
-        <Suspense fallback={<div>Loading...</div>}>
-          <DashboardSection section={section} ref={mockRef} />
-        </Suspense>,
+        <QueryClientProvider client={queryClient}>
+          <ClinicalAppProvider episodeUuids={['episode-1', 'episode-2']}>
+            <Suspense fallback={<div>Loading...</div>}>
+              <DashboardSection
+                section={section}
+                ref={mockRef}
+                encounterUuids={[]}
+                visitUuids={[]}
+              />
+            </Suspense>
+          </ClinicalAppProvider>
+        </QueryClientProvider>,
       );
 
       await waitFor(() => {
@@ -277,16 +369,24 @@ describe('DashboardSection Component', () => {
     });
 
     it('renders dividers between multiple widgets', async () => {
-      mockGetWidget
-        .mockReturnValueOnce(
-          React.lazy(() => Promise.resolve({ default: MockConditionsWidget })),
-        )
-        .mockReturnValueOnce(
-          React.lazy(() => Promise.resolve({ default: MockDiagnosisWidget })),
-        )
-        .mockReturnValueOnce(
-          React.lazy(() => Promise.resolve({ default: MockTreatmentWidget })),
-        );
+      mockGetWidget.mockImplementation((type: string) => {
+        if (type === 'conditions') {
+          return React.lazy(() =>
+            Promise.resolve({ default: MockConditionsWidget }),
+          );
+        }
+        if (type === 'diagnosis') {
+          return React.lazy(() =>
+            Promise.resolve({ default: MockDiagnosisWidget }),
+          );
+        }
+        if (type === 'treatment') {
+          return React.lazy(() =>
+            Promise.resolve({ default: MockTreatmentWidget }),
+          );
+        }
+        return undefined;
+      });
 
       const section: DashboardSectionConfig = {
         id: 'multi-widget-section',
@@ -299,10 +399,27 @@ describe('DashboardSection Component', () => {
         ],
       };
 
+      const queryClient = new QueryClient({
+        defaultOptions: {
+          queries: {
+            retry: false,
+          },
+        },
+      });
+
       const { container } = render(
-        <Suspense fallback={<div>Loading...</div>}>
-          <DashboardSection section={section} ref={mockRef} />
-        </Suspense>,
+        <QueryClientProvider client={queryClient}>
+          <ClinicalAppProvider episodeUuids={['episode-1', 'episode-2']}>
+            <Suspense fallback={<div>Loading...</div>}>
+              <DashboardSection
+                section={section}
+                ref={mockRef}
+                encounterUuids={[]}
+                visitUuids={[]}
+              />
+            </Suspense>
+          </ClinicalAppProvider>
+        </QueryClientProvider>,
       );
 
       await waitFor(() => {
@@ -315,9 +432,14 @@ describe('DashboardSection Component', () => {
     });
 
     it('does not render divider after the last widget', async () => {
-      mockGetWidget.mockReturnValue(
-        React.lazy(() => Promise.resolve({ default: MockAllergiesWidget })),
-      );
+      mockGetWidget.mockImplementation((type: string) => {
+        if (type === 'allergies') {
+          return React.lazy(() =>
+            Promise.resolve({ default: MockAllergiesWidget }),
+          );
+        }
+        return undefined;
+      });
 
       const section: DashboardSectionConfig = {
         id: 'single-widget-section',
@@ -326,17 +448,25 @@ describe('DashboardSection Component', () => {
         controls: [{ type: 'allergies', config: {} }],
       };
 
-      const { container } = render(
-        <Suspense fallback={<div>Loading...</div>}>
-          <DashboardSection section={section} ref={mockRef} />
-        </Suspense>,
-      );
+      renderDashboardSectionWithProvider(section, mockRef);
 
       await waitFor(() => {
         expect(screen.getByTestId('allergies-widget')).toBeInTheDocument();
       });
 
       // Should have no dividers for single widget
+      const { container } = render(
+        <QueryClientProvider client={new QueryClient()}>
+          <ClinicalAppProvider episodeUuids={[]}>
+            <DashboardSection
+              section={section}
+              ref={mockRef}
+              encounterUuids={[]}
+              visitUuids={[]}
+            />
+          </ClinicalAppProvider>
+        </QueryClientProvider>,
+      );
       const dividers = container.querySelectorAll('.divider');
       expect(dividers).toHaveLength(0);
     });
@@ -358,7 +488,7 @@ describe('DashboardSection Component', () => {
         ],
       };
 
-      render(<DashboardSection section={section} ref={mockRef} />);
+      renderDashboardSectionWithProvider(section, mockRef);
 
       expect(
         screen.getByText(/Widget not found in registry/),
@@ -379,7 +509,7 @@ describe('DashboardSection Component', () => {
         ],
       };
 
-      render(<DashboardSection section={section} ref={mockRef} />);
+      renderDashboardSectionWithProvider(section, mockRef);
 
       expect(screen.getAllByText(/Widget not found in registry/)).toHaveLength(
         2,
@@ -387,14 +517,19 @@ describe('DashboardSection Component', () => {
     });
 
     it('renders valid widgets and shows errors for invalid ones', async () => {
-      mockGetWidget
-        .mockReturnValueOnce(
-          React.lazy(() => Promise.resolve({ default: MockAllergiesWidget })),
-        )
-        .mockReturnValueOnce(undefined)
-        .mockReturnValueOnce(
-          React.lazy(() => Promise.resolve({ default: MockDiagnosisWidget })),
-        );
+      mockGetWidget.mockImplementation((type: string) => {
+        if (type === 'allergies') {
+          return React.lazy(() =>
+            Promise.resolve({ default: MockAllergiesWidget }),
+          );
+        }
+        if (type === 'diagnosis') {
+          return React.lazy(() =>
+            Promise.resolve({ default: MockDiagnosisWidget }),
+          );
+        }
+        return undefined; // For unknown-widget
+      });
 
       const section: DashboardSectionConfig = {
         id: 'mixed-section',
@@ -407,10 +542,27 @@ describe('DashboardSection Component', () => {
         ],
       };
 
+      const queryClient = new QueryClient({
+        defaultOptions: {
+          queries: {
+            retry: false,
+          },
+        },
+      });
+
       render(
-        <Suspense fallback={<div>Loading...</div>}>
-          <DashboardSection section={section} ref={mockRef} />
-        </Suspense>,
+        <QueryClientProvider client={queryClient}>
+          <ClinicalAppProvider episodeUuids={['episode-1', 'episode-2']}>
+            <Suspense fallback={<div>Loading...</div>}>
+              <DashboardSection
+                section={section}
+                ref={mockRef}
+                encounterUuids={[]}
+                visitUuids={[]}
+              />
+            </Suspense>
+          </ClinicalAppProvider>
+        </QueryClientProvider>,
       );
 
       await waitFor(() => {
@@ -433,7 +585,7 @@ describe('DashboardSection Component', () => {
         controls: [],
       };
 
-      render(<DashboardSection section={section} ref={mockRef} />);
+      renderDashboardSectionWithProvider(section, mockRef);
 
       expect(
         screen.getByText('No widgets configured for this section'),
@@ -448,7 +600,7 @@ describe('DashboardSection Component', () => {
         controls: undefined as any,
       };
 
-      render(<DashboardSection section={section} ref={mockRef} />);
+      renderDashboardSectionWithProvider(section, mockRef);
 
       expect(
         screen.getByText('No widgets configured for this section'),
@@ -474,9 +626,8 @@ describe('DashboardSection Component', () => {
         controls: [{ type: 'allergies', config: {} }],
       };
 
-      render(<DashboardSection section={section} ref={mockRef} />);
+      renderDashboardSectionWithProvider(section, mockRef);
 
-      // The loading state is shown by the Suspense inside DashboardSection
       expect(screen.getByText('Loading widget...')).toBeInTheDocument();
 
       await waitFor(() => {

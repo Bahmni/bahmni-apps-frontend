@@ -5,6 +5,7 @@ import {
   createEncounterLocationReference,
   createEncounterParticipantReference,
   createEncounterReference,
+  createEpisodeOfCareReference,
   createPatientReference,
 } from '../referenceCreator';
 
@@ -18,6 +19,7 @@ jest.mock('../referenceCreator', () => ({
   createEncounterLocationReference: jest.fn(),
   createEncounterParticipantReference: jest.fn(),
   createEncounterReference: jest.fn(),
+  createEpisodeOfCareReference: jest.fn(),
   createPatientReference: jest.fn(),
 }));
 
@@ -42,6 +44,9 @@ describe('encounterResourceCreator utility functions', () => {
     (createEncounterLocationReference as jest.Mock).mockReturnValue({
       location: { reference: 'Location/mock' },
     });
+    (createEpisodeOfCareReference as jest.Mock).mockReturnValue({
+      reference: 'EpisodeOfCare/mock',
+    });
   });
 
   describe('createEncounterResource', () => {
@@ -52,6 +57,7 @@ describe('encounterResourceCreator utility functions', () => {
       const patientUUID = 'patient-uuid';
       const participantUUIDs = ['practitioner-uuid-1', 'practitioner-uuid-2'];
       const visitUUID = 'visit-uuid';
+      const episodeOfCareUUID = ['episode-uuid'];
       const encounterLocationUUID = 'location-uuid';
       const encounterStartTimestamp = new Date('2023-01-01T12:00:00Z');
 
@@ -62,6 +68,7 @@ describe('encounterResourceCreator utility functions', () => {
         patientUUID,
         participantUUIDs,
         visitUUID,
+        episodeOfCareUUID,
         encounterLocationUUID,
         encounterStartTimestamp,
       );
@@ -95,6 +102,7 @@ describe('encounterResourceCreator utility functions', () => {
         period: {
           start: encounterStartTimestamp.toISOString(),
         },
+        episodeOfCare: [{ reference: 'EpisodeOfCare/mock' }],
       });
 
       // Verify mock calls
@@ -118,6 +126,7 @@ describe('encounterResourceCreator utility functions', () => {
       expect(createEncounterLocationReference).toHaveBeenCalledWith(
         encounterLocationUUID,
       );
+      expect(createEpisodeOfCareReference).toHaveBeenCalledWith('episode-uuid');
     });
 
     it('should handle empty participant UUIDs array', () => {
@@ -127,6 +136,7 @@ describe('encounterResourceCreator utility functions', () => {
       const patientUUID = 'patient-uuid';
       const participantUUIDs: string[] = [];
       const visitUUID = 'visit-uuid';
+      const episodeOfCareUUID = ['episode-uuid'];
       const encounterLocationUUID = 'location-uuid';
       const encounterStartTimestamp = new Date('2023-01-01T12:00:00Z');
 
@@ -137,6 +147,7 @@ describe('encounterResourceCreator utility functions', () => {
         patientUUID,
         participantUUIDs,
         visitUUID,
+        episodeOfCareUUID,
         encounterLocationUUID,
         encounterStartTimestamp,
       );

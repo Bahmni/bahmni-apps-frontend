@@ -186,6 +186,11 @@ export { findActiveEncounterInSession } from './encounterSessionService';
 export { getActiveVisit } from './encounterService';
 
 export {
+  getEncountersAndVisitsForEOC,
+  type EpisodeOfCareDataType,
+} from './episodeOfCareService';
+
+export {
   dispatchAuditEvent,
   AUDIT_LOG_EVENT_DETAILS,
   initializeAuditListener,

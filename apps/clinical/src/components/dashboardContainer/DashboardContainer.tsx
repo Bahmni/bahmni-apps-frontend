@@ -8,6 +8,7 @@ import {
 } from '@bahmni/services';
 import { usePatientUUID } from '@bahmni/widgets';
 import React, { useEffect, useRef } from 'react';
+import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import DashboardSection from '../dashboardSection/DashboardSection';
 import styles from './styles/DashboardContainer.module.scss';
 
@@ -33,6 +34,21 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
   const sectionRefs = useRef<{
     [key: string]: React.RefObject<HTMLDivElement | null>;
   }>({});
+
+  const { episodeOfCare, visit, encounter } = useClinicalAppData();
+  const allEncounterIds = Array.from(
+    new Set([
+      ...episodeOfCare.flatMap((eoc) => eoc.encounterUuids),
+      ...visit.flatMap((v) => v.encounterUuids),
+      ...encounter.map((enc) => enc.uuid),
+    ]),
+  );
+  const allVisitIds = Array.from(
+    new Set([
+      ...episodeOfCare.flatMap((eoc) => eoc.visitUuids),
+      ...visit.map((v) => v.uuid),
+    ]),
+  );
 
   // Dispatch dashboard view event when component mounts
   useEffect(() => {
@@ -87,6 +103,8 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
           <DashboardSection
             section={section}
             ref={sectionRefs.current[section.id]}
+            encounterUuids={allEncounterIds}
+            visitUuids={allVisitIds}
           />
         </article>
       ))}

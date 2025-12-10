@@ -1,8 +1,10 @@
 import { useSidebarNavigation } from '@bahmni/design-system';
 import { useNotification } from '@bahmni/widgets';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { ReactNode } from 'react';
+import { MemoryRouter } from 'react-router-dom';
 import {
   validFullClinicalConfig,
   validDashboardConfig,
@@ -37,6 +39,16 @@ jest.mock('../../hooks/useEncounterSession');
 jest.mock('react-i18next', () => ({
   useTranslation: jest.fn(() => ({
     t: jest.fn((key) => `translated_${key}`),
+  })),
+}));
+
+// Mock React Query to avoid loading state by default
+jest.mock('@tanstack/react-query', () => ({
+  ...jest.requireActual('@tanstack/react-query'),
+  useQuery: jest.fn(() => ({
+    data: { encounterIds: [], visitIds: [] },
+    isLoading: false,
+    error: null,
   })),
 }));
 
@@ -136,9 +148,24 @@ jest.mock('../../components/dashboardContainer/DashboardContainer', () => {
 //   ));
 // });
 
-// Test wrapper - UserPrivilegeProvider is already mocked, so we can render directly
-const renderWithProvider = (component: React.ReactElement) => {
-  return render(component);
+const renderWithProvider = (component: React.ReactElement, url?: string) => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter
+        initialEntries={[url ?? '/consultation?episodeUuid=test-episode']}
+      >
+        {component}
+      </MemoryRouter>
+    </QueryClientProvider>,
+  );
 };
 
 describe('ConsultationPage', () => {
@@ -530,6 +557,47 @@ describe('ConsultationPage', () => {
 
       // Simply verify the hook was called
       expect(sidebarNavigationSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('ClinicalAppsProvider Loading State', () => {
+    it('should show loading spinner when ClinicalAppsProvider is fetching data', () => {
+      // Mock React Query to be in loading state
+      const { useQuery } = jest.requireMock('@tanstack/react-query');
+      (useQuery as jest.Mock).mockReturnValue({
+        data: null,
+        isLoading: true,
+        error: null,
+      });
+
+      // Setup valid configs so we get to ClinicalAppsProvider
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: validFullClinicalConfig,
+      });
+      (useDashboardConfig as jest.Mock).mockReturnValue({
+        dashboardConfig: validDashboardConfig,
+      });
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
+      (useUserPrivilege as jest.Mock).mockReturnValue({
+        userPrivileges: ['Get Patients', 'Add Patients'],
+      });
+
+      renderWithProvider(<ConsultationPage />);
+
+      // Verify ClinicalAppsProvider loading state is shown
+      expect(screen.getByTestId('carbon-loading')).toBeInTheDocument();
+      expect(screen.getByTestId('carbon-loading')).toHaveTextContent(
+        'translated_LOADING_CLINICAL_DATA',
+      );
+      expect(screen.getByTestId('carbon-loading')).toHaveAttribute(
+        'role',
+        'status',
+      );
+
+      // Verify main layout is not rendered
+      expect(
+        screen.queryByTestId('mocked-clinical-layout'),
+      ).not.toBeInTheDocument();
     });
   });
 });

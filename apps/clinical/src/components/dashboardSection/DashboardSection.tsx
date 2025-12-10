@@ -11,6 +11,8 @@ import styles from './styles/DashboardSection.module.scss';
 export interface DashboardSectionProps {
   section: DashboardSectionConfig;
   ref: React.RefObject<HTMLDivElement | null>;
+  encounterUuids: string[];
+  visitUuids: string[];
 }
 
 /**
@@ -22,8 +24,11 @@ export interface DashboardSectionProps {
 const DashboardSection: React.FC<DashboardSectionProps> = ({
   section,
   ref,
+  encounterUuids,
+  visitUuids,
 }) => {
   const { t } = useTranslation();
+
   const renderControl = (
     control: ControlConfig,
     index: number,
@@ -40,7 +45,6 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
     }
 
     const showDivider = index < totalControls - 1;
-
     return (
       <React.Fragment key={`${control.type}-${index}`}>
         <Suspense
@@ -50,7 +54,11 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
             </div>
           }
         >
-          <WidgetComponent config={control.config} />
+          <WidgetComponent
+            config={control.config}
+            encounterUuids={encounterUuids}
+            visitUuids={visitUuids}
+          />
         </Suspense>
         {showDivider && <div className={styles.divider} />}
       </React.Fragment>
