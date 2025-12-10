@@ -23,7 +23,10 @@ export class NameOrIdSearchStrategy implements SearchStrategy {
     searchTerm: string,
     context: SearchContext,
   ): Promise<PatientSearchResultBundle> {
-    const rawResults = await searchPatientByNameOrId(encodeURI(searchTerm));
+    const rawResults = await searchPatientByNameOrId(
+      encodeURI(searchTerm),
+      context.searchFields,
+    );
     return this.transformResults(rawResults, context);
   }
 

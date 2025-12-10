@@ -6,12 +6,52 @@ import {
   VISIT_LOCATION_UUID,
 } from '../constants/app';
 
+/**
+ * Configuration mapping for different field types used in patient search.
+ * Each type uses different query parameter names for search and results.
+ */
+const FIELD_TYPE_CONFIG = {
+  person: {
+    searchParam: 'customAttribute',
+    searchFieldParam: 'patientAttributes',
+    resultParam: 'patientSearchResultsConfig',
+  },
+  address: {
+    searchParam: 'addressFieldValue',
+    searchFieldParam: 'addressFieldName',
+    resultParam: 'addressSearchResultsConfig',
+  },
+} as const;
+
+/**
+ * Helper function to append search result fields to URL params based on field type configuration.
+ * This is used to dynamically add fields from config to search result parameters.
+ *
+ * @param params - URLSearchParams object to append to
+ * @param allSearchFields - Array of patient search field configurations from backend
+ */
+const appendSearchResultFields = (
+  params: URLSearchParams,
+  allSearchFields: PatientSearchField[],
+): void => {
+  allSearchFields.forEach((field) => {
+    const typeConfig =
+      FIELD_TYPE_CONFIG[field.type as keyof typeof FIELD_TYPE_CONFIG];
+    if (typeConfig) {
+      field.fields.forEach((fieldName) => {
+        params.append(typeConfig.resultParam, fieldName);
+      });
+    }
+  });
+};
+
 export const PATIENT_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 + `/Patient/${patientUUID}`;
 // TODO: update get api client to pass path params
 export const PATIENT_LUCENE_SEARCH_URL = (
   searchTerm: string,
   loginLocationUuid: string,
+  allSearchFields?: PatientSearchField[],
 ) => {
   const params = new URLSearchParams({
     filterOnAllIdentifiers: 'false',
@@ -22,15 +62,18 @@ export const PATIENT_LUCENE_SEARCH_URL = (
     startIndex: '0',
   });
 
-  params.append('patientAttributes', 'phoneNumber');
-  params.append('patientAttributes', 'alternatePhoneNumber');
-  params.append('patientAttributes', 'email');
-  params.append('patientSearchResultsConfig', 'phoneNumber');
-  params.append('patientSearchResultsConfig', 'alternatePhoneNumber');
-  params.append('patientSearchResultsConfig', 'email');
-
-  params.append('addressSearchResultsConfig', 'city_village');
-  params.append('addressSearchResultsConfig', 'address2');
+  if (allSearchFields && allSearchFields.length > 0) {
+    allSearchFields.forEach((field) => {
+      const typeConfig =
+        FIELD_TYPE_CONFIG[field.type as keyof typeof FIELD_TYPE_CONFIG];
+      if (typeConfig) {
+        field.fields.forEach((fieldName) => {
+          params.append(typeConfig.searchFieldParam, fieldName);
+          params.append(typeConfig.resultParam, fieldName);
+        });
+      }
+    });
+  }
 
   return `${OPENMRS_REST_V1}/bahmni/search/patient/lucene?${params.toString()}`;
 };
@@ -51,27 +94,8 @@ export const PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL = (
     filterOnAllIdentifiers: 'false',
   });
 
-  /**
-   * Configuration mapping for different field types.
-   * Each type uses different query parameter names:
-   * - searchParam: Parameter for the search value (e.g., customAttribute=searchTerm)
-   * - searchFieldParam: Parameter for field names to search (e.g., patientAttributes=phoneNumber)
-   * - resultParam: Parameter for fields to include in results other than searchFieldParams (e.g., patientSearchResultsConfig=email)
-   */
-  const fieldTypeConfig = {
-    person: {
-      searchParam: 'customAttribute',
-      searchFieldParam: 'patientAttributes',
-      resultParam: 'patientSearchResultsConfig',
-    },
-    address: {
-      searchParam: 'addressFieldValue',
-      searchFieldParam: 'addressFieldName',
-      resultParam: 'addressSearchResultsConfig',
-    },
-  };
-
-  const config = fieldTypeConfig[fieldType as keyof typeof fieldTypeConfig];
+  // Use shared config for field type mapping
+  const config = FIELD_TYPE_CONFIG[fieldType as keyof typeof FIELD_TYPE_CONFIG];
   if (config) {
     params.set(config.searchParam, trimmedSearchTerm);
     fieldsToSearch.forEach((field) => {
@@ -79,15 +103,7 @@ export const PATIENT_CUSTOM_ATTRIBUTE_SEARCH_URL = (
     });
   }
 
-  allSearchFields.forEach((field) => {
-    const typeConfig =
-      fieldTypeConfig[field.type as keyof typeof fieldTypeConfig];
-    if (typeConfig) {
-      field.fields.forEach((fieldName) => {
-        params.append(typeConfig.resultParam, fieldName);
-      });
-    }
-  });
+  appendSearchResultFields(params, allSearchFields);
 
   return OPENMRS_REST_V1 + `/bahmni/search/patient?${params.toString()}`;
 };
