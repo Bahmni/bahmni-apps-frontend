@@ -64,13 +64,23 @@ export const validDashboardConfig: DashboardConfig = {
       name: 'Vitals',
       icon: 'heartbeat',
       translationKey: 'VITALS_SECTION',
-      controls: [],
+      controls: [
+        {
+          type: 'flowSheet',
+          config: {},
+        },
+      ],
     },
     {
       id: 'medications',
       name: 'Medications',
       icon: 'pills',
-      controls: [],
+      controls: [
+        {
+          type: 'treatment',
+          config: {},
+        },
+      ],
     },
   ],
 };

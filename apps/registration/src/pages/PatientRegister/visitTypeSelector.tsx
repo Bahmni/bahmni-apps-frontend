@@ -2,7 +2,6 @@ import { Button, Dropdown } from '@bahmni/design-system';
 import {
   getVisitTypes,
   useTranslation,
-  notificationService,
   createVisit,
   getActiveVisitByPatient,
   getUserLoginLocation,
@@ -13,6 +12,7 @@ import {
   type VisitData,
   type AuditEventType,
 } from '@bahmni/services';
+import { useNotification } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import styles from './styles/VisitTypeSelector.module.scss';
@@ -20,13 +20,16 @@ import styles from './styles/VisitTypeSelector.module.scss';
 interface VisitTypeSelectorProps {
   onVisitSave: () => Promise<string | null>;
   patientUuid?: string | null;
+  onNavigate?: () => void;
 }
 
 export const VisitTypeSelector = ({
   onVisitSave,
   patientUuid,
+  onNavigate,
 }: VisitTypeSelectorProps) => {
   const { t } = useTranslation();
+  const { addNotification } = useNotification();
   const [visitPayload, setVisitPayload] = useState<VisitData>();
 
   const {
@@ -98,7 +101,7 @@ export const VisitTypeSelector = ({
   const { data: activeVisit, error: getVisitError } = useQuery({
     queryKey: ['getActiveVisitByPatient', patientUuid, isVisitCreated],
     queryFn: () => getActiveVisitByPatient(patientUuid!),
-    enabled: Boolean(patientUuid) && isVisitCreated,
+    enabled: Boolean(patientUuid),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
@@ -107,19 +110,25 @@ export const VisitTypeSelector = ({
 
   useEffect(() => {
     if (error) {
-      notificationService.showError(
-        t('ERROR_DEFAULT_TITLE'),
-        error instanceof Error ? error.message : 'An error occurred',
-      );
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: error instanceof Error ? error.message : 'An error occurred',
+        type: 'error',
+        timeout: 5000,
+      });
     }
-  }, [error, t]);
+  }, [error, t, addNotification]);
 
   const handleVisitTypeChange = async (
     selectedItem: { name: string; uuid: string } | null,
   ) => {
     if (!selectedItem) return;
 
-    const currentPatientUUID = patientUuid ?? (await onVisitSave());
+    const currentPatientUUID = await onVisitSave();
+
+    if (!currentPatientUUID) {
+      return;
+    }
 
     if (currentPatientUUID && visitLocationUUID && !hasActiveVisit) {
       setVisitPayload({
@@ -128,6 +137,8 @@ export const VisitTypeSelector = ({
         location: visitLocationUUID.uuid,
       });
     }
+
+    onNavigate?.();
   };
 
   return (

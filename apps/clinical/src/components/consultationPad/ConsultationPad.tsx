@@ -22,6 +22,7 @@ import { useEncounterDetailsStore } from '../../../src/stores/encounterDetailsSt
 import { useMedicationStore } from '../../../src/stores/medicationsStore';
 import useServiceRequestStore from '../../../src/stores/serviceRequestStore';
 import { ERROR_TITLES } from '../../constants/errors';
+import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { usePinnedObservationForms } from '../../hooks/usePinnedObservationForms';
 import { ConsultationBundle } from '../../models/consultationBundle';
 import {
@@ -159,6 +160,10 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     encounterParticipants.length > 0
   );
 
+  const { episodeOfCare } = useClinicalAppData();
+
+  const episodeOfCareUuids: string[] = episodeOfCare.map((eoc) => eoc.uuid);
+
   // TODO: Extract Business Logic
   // 1. Create a consultationService to handle submission logic
   // 2. Extract validation logic into a custom hook
@@ -171,6 +176,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       patientUUID!,
       encounterParticipants.map((p) => p.uuid),
       activeVisit!.id,
+      episodeOfCareUuids,
       selectedLocation!.uuid,
       consultationDate,
     );

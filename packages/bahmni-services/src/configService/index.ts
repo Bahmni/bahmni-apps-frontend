@@ -9,6 +9,7 @@ export {
   type DashboardConfig,
   type MedicationJSONConfig,
   type DashboardSectionConfig,
+  type ControlConfig,
   type Dashboard,
   type Frequency,
   type RegistrationConfig,
@@ -16,4 +17,6 @@ export {
   type PatientSearchField,
   type PatientInformationConfig,
   type SearchActionConfig,
+  type AppExtensionConfig,
+  type ExtensionPoint,
 } from './models';

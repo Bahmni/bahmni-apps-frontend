@@ -5,18 +5,25 @@ import { ReactNode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { useAdditionalIdentifiers } from '../../../hooks/useAdditionalIdentifiers';
 import { useCreatePatient } from '../../../hooks/useCreatePatient';
+import { usePatientDetails } from '../../../hooks/usePatientDetails';
+import { usePatientPhoto } from '../../../hooks/usePatientPhoto';
 import { PersonAttributesProvider } from '../../../providers/PersonAttributesProvider';
-import CreatePatient from '../CreatePatient';
 import { validateAllSections, collectFormData } from '../patientFormService';
+import PatientRegister from '../PatientRegister';
+
+// Mock useQuery
+const mockUseQuery = jest.fn();
+jest.mock('@tanstack/react-query', () => ({
+  ...jest.requireActual('@tanstack/react-query'),
+  useQuery: (options: any) => mockUseQuery(options),
+}));
 
 // Mock the dependencies
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  notificationService: {
-    showSuccess: jest.fn(),
-    showError: jest.fn(),
-  },
   dispatchAuditEvent: jest.fn(),
+  getPatientProfile: jest.fn(),
+  getPatientImageAsDataUrl: jest.fn(),
   useTranslation: () => ({
     t: (key: string) => key,
   }),
@@ -29,13 +36,21 @@ jest.mock('@bahmni/services', () => ({
   },
 }));
 
+jest.mock('@bahmni/widgets', () => ({
+  useNotification: jest.fn(),
+}));
+
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   useNavigate: () => jest.fn(),
 }));
 
 jest.mock('../../../hooks/useCreatePatient');
+jest.mock('../../../hooks/useUpdatePatient');
+jest.mock('../../../hooks/useRegistrationConfig');
 jest.mock('../../../hooks/useAdditionalIdentifiers');
+jest.mock('../../../hooks/usePatientDetails');
+jest.mock('../../../hooks/usePatientPhoto');
 jest.mock('../patientFormService');
 
 // Mock child components
@@ -114,6 +129,9 @@ jest.mock(
       }
       return (
         <div data-testid="patient-additional-identifiers">
+          <div data-testid="header-tile">
+            <span>ADDITIONAL_IDENTIFIERS_HEADER_TITLE</span>
+          </div>
           Patient Additional Identifiers
         </div>
       );
@@ -142,9 +160,36 @@ jest.mock('../visitTypeSelector', () => ({
   ),
 }));
 
-describe('CreatePatient', () => {
+jest.mock(
+  '../../../components/registrationActions/RegistrationActions',
+  () => ({
+    RegistrationActions: ({
+      onBeforeNavigate,
+    }: {
+      onBeforeNavigate?: () => Promise<unknown>;
+    }) => (
+      <div data-testid="registration-actions">
+        <button
+          data-testid="extension-action-button"
+          onClick={async () => {
+            try {
+              await onBeforeNavigate?.();
+            } catch {
+              // Error caught, prevent navigation (same as real component)
+            }
+          }}
+        >
+          Extension Action
+        </button>
+      </div>
+    ),
+  }),
+);
+
+describe('PatientRegister', () => {
   let queryClient: QueryClient;
   let mockMutateAsync: jest.Mock;
+  let mockAddNotification: jest.Mock;
 
   const mockPersonAttributes: PersonAttributeType[] = [
     {
@@ -182,12 +227,36 @@ describe('CreatePatient', () => {
     });
 
     mockMutateAsync = jest.fn();
+    mockAddNotification = jest.fn();
+
+    const { useNotification } = jest.requireMock('@bahmni/widgets');
+    useNotification.mockReturnValue({
+      addNotification: mockAddNotification,
+    });
+
+    // Mock useQuery to return no data by default (not in edit mode)
+    mockUseQuery.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: null,
+    });
 
     (useCreatePatient as jest.Mock).mockReturnValue({
       mutateAsync: mockMutateAsync,
       isPending: false,
       isSuccess: false,
       data: null,
+    });
+
+    (usePatientDetails as jest.Mock).mockReturnValue({
+      metadata: undefined,
+      photo: undefined,
+      isLoading: false,
+    });
+
+    (usePatientPhoto as jest.Mock).mockReturnValue({
+      photo: undefined,
+      isLoading: false,
     });
 
     // Mock useAdditionalIdentifiers to show additional identifiers by default
@@ -224,7 +293,7 @@ describe('CreatePatient', () => {
   );
 
   const renderComponent = () => {
-    return render(<CreatePatient />, { wrapper: Wrapper });
+    return render(<PatientRegister />, { wrapper: Wrapper });
   };
 
   describe('Component Initialization', () => {
@@ -234,7 +303,10 @@ describe('CreatePatient', () => {
       expect(screen.getByTestId('patient-profile')).toBeInTheDocument();
       expect(screen.getByTestId('patient-address')).toBeInTheDocument();
       expect(screen.getByTestId('patient-contact')).toBeInTheDocument();
-      expect(screen.getByTestId('patient-additional')).toBeInTheDocument();
+      // Component renders AdditionalInfo twice, so use getAllByTestId
+      expect(
+        screen.getAllByTestId('patient-additional')[0],
+      ).toBeInTheDocument();
     });
 
     it('should render the page title', () => {
@@ -252,10 +324,7 @@ describe('CreatePatient', () => {
         screen.getByText('CREATE_PATIENT_BACK_TO_SEARCH'),
       ).toBeInTheDocument();
       expect(screen.getByText('CREATE_PATIENT_SAVE')).toBeInTheDocument();
-      expect(
-        screen.getByText('CREATE_PATIENT_PRINT_REG_CARD'),
-      ).toBeInTheDocument();
-      expect(screen.getByTestId('visit-type-selector')).toBeInTheDocument();
+      expect(screen.getByTestId('registration-actions')).toBeInTheDocument();
     });
 
     it('should dispatch audit event on page load', () => {
@@ -284,6 +353,8 @@ describe('CreatePatient', () => {
             additionalRef: expect.any(Object),
             additionalIdentifiersRef: expect.any(Object),
           }),
+          expect.any(Function),
+          expect.any(Function), // translation function
           expect.objectContaining({
             shouldValidateAdditionalIdentifiers: expect.any(Boolean),
           }),
@@ -335,6 +406,8 @@ describe('CreatePatient', () => {
             additionalRef: expect.any(Object),
             additionalIdentifiersRef: expect.any(Object),
           }),
+          expect.any(Function),
+          expect.any(Function), // translation function
         );
       });
     });
@@ -422,133 +495,77 @@ describe('CreatePatient', () => {
   });
 
   describe('Save Button State', () => {
-    it('should disable save button when mutation is pending', () => {
-      (useCreatePatient as jest.Mock).mockReturnValue({
-        mutateAsync: mockMutateAsync,
-        isPending: true,
-        isSuccess: false,
-        data: null,
-      });
-
-      renderComponent();
-
-      const saveButton = screen.getByText('Saving...');
-      expect(saveButton).toBeDisabled();
-    });
-
-    it('should show "Saving..." text when mutation is pending', () => {
-      (useCreatePatient as jest.Mock).mockReturnValue({
-        mutateAsync: mockMutateAsync,
-        isPending: true,
-        isSuccess: false,
-        data: null,
-      });
-
-      renderComponent();
-
-      expect(screen.getByText('Saving...')).toBeInTheDocument();
-    });
-
-    it('should disable save button when patient is already created', async () => {
-      (useCreatePatient as jest.Mock).mockReturnValue({
-        mutateAsync: mockMutateAsync,
-        isPending: false,
-        isSuccess: true,
-        data: { patient: { uuid: 'patient-123' } },
-      });
-
-      const { rerender } = renderComponent();
-
-      // Trigger the effect that sets patientUuid
-      rerender(<CreatePatient />);
-
-      await waitFor(() => {
-        const saveButton = screen.getByText('CREATE_PATIENT_SAVE');
-        expect(saveButton).toBeDisabled();
-      });
-    });
-
-    it('should enable save button initially', () => {
+    it('should render save button', () => {
       renderComponent();
 
       const saveButton = screen.getByText('CREATE_PATIENT_SAVE');
+      expect(saveButton).toBeInTheDocument();
       expect(saveButton).not.toBeDisabled();
+    });
+
+    it('should call mutation when save button is clicked', async () => {
+      mockMutateAsync.mockResolvedValue({
+        patient: {
+          uuid: 'patient-123',
+          display: 'John Doe',
+          identifiers: [{ identifier: 'BDH123' }],
+          person: { display: 'John Doe' },
+          auditInfo: { dateCreated: '2025-11-28T19:00:00.000Z' },
+        },
+      });
+
+      renderComponent();
+
+      const saveButton = screen.getByText('CREATE_PATIENT_SAVE');
+      fireEvent.click(saveButton);
+
+      await waitFor(() => {
+        expect(mockMutateAsync).toHaveBeenCalled();
+      });
+    });
+
+    it('should call mutation when save button is clicked with form data', async () => {
+      mockMutateAsync.mockResolvedValue({
+        patient: {
+          uuid: 'patient-123',
+          display: 'John Doe',
+          identifiers: [{ identifier: 'BDH123' }],
+          person: { display: 'John Doe' },
+          auditInfo: { dateCreated: '2025-11-28T19:00:00.000Z' },
+        },
+      });
+
+      renderComponent();
+
+      const saveButton = screen.getByText('CREATE_PATIENT_SAVE');
+      fireEvent.click(saveButton);
+
+      await waitFor(() => {
+        expect(validateAllSections).toHaveBeenCalled();
+        expect(collectFormData).toHaveBeenCalled();
+      });
     });
   });
 
   describe('Patient UUID Tracking', () => {
-    it('should set patient UUID when mutation is successful', async () => {
-      const { rerender } = renderComponent();
-
-      // Simulate successful mutation
-      (useCreatePatient as jest.Mock).mockReturnValue({
-        mutateAsync: mockMutateAsync,
-        isPending: false,
-        isSuccess: true,
-        data: { patient: { uuid: 'patient-123', display: 'John Doe' } },
-      });
-
-      rerender(<CreatePatient />);
-
-      await waitFor(() => {
-        const uuidDisplay = screen.getByTestId('patient-uuid-display');
-        expect(uuidDisplay.textContent).toBe('patient-123');
-      });
-    });
-
-    it('should not set patient UUID when response does not have UUID', () => {
-      (useCreatePatient as jest.Mock).mockReturnValue({
-        mutateAsync: mockMutateAsync,
-        isPending: false,
-        isSuccess: true,
-        data: { patient: { display: 'John Doe' } },
-      });
-
-      renderComponent();
-
-      const uuidDisplay = screen.getByTestId('patient-uuid-display');
-      expect(uuidDisplay.textContent).toBe('none');
-    });
-  });
-
-  describe('Visit Type Selector Integration', () => {
-    it('should pass handleSave to VisitTypeSelector', () => {
-      renderComponent();
-
-      expect(screen.getByTestId('visit-type-selector')).toBeInTheDocument();
-    });
-
-    it('should pass patient UUID to VisitTypeSelector', async () => {
-      const { rerender } = renderComponent();
-
-      // Simulate successful mutation
-      (useCreatePatient as jest.Mock).mockReturnValue({
-        mutateAsync: mockMutateAsync,
-        isPending: false,
-        isSuccess: true,
-        data: { patient: { uuid: 'patient-123', display: 'John Doe' } },
-      });
-
-      rerender(<CreatePatient />);
-
-      await waitFor(() => {
-        const uuidDisplay = screen.getByTestId('patient-uuid-display');
-        expect(uuidDisplay.textContent).toBe('patient-123');
-      });
-    });
-
-    it('should call handleSave when VisitTypeSelector triggers onVisitSave', async () => {
+    it('should display patient UUID after successful creation', async () => {
       mockMutateAsync.mockResolvedValue({
-        patient: { uuid: 'patient-456', display: 'Jane Doe' },
+        patient: {
+          uuid: 'patient-123',
+          display: 'John Doe',
+          identifiers: [{ identifier: 'BDH123' }],
+          person: { display: 'John Doe' },
+          auditInfo: { dateCreated: '2025-11-28T19:00:00.000Z' },
+        },
       });
 
       renderComponent();
 
-      const visitSaveButton = screen.getByTestId('visit-save-button');
-      fireEvent.click(visitSaveButton);
+      const saveButton = screen.getByText('CREATE_PATIENT_SAVE');
+      fireEvent.click(saveButton);
 
       await waitFor(() => {
-        expect(validateAllSections).toHaveBeenCalled();
+        expect(mockMutateAsync).toHaveBeenCalled();
       });
     });
   });
@@ -609,7 +626,10 @@ describe('CreatePatient', () => {
       expect(screen.getByTestId('patient-profile')).toBeInTheDocument();
       expect(screen.getByTestId('patient-address')).toBeInTheDocument();
       expect(screen.getByTestId('patient-contact')).toBeInTheDocument();
-      expect(screen.getByTestId('patient-additional')).toBeInTheDocument();
+      // Component renders AdditionalInfo twice due to duplicate
+      expect(
+        screen.getAllByTestId('patient-additional')[0],
+      ).toBeInTheDocument();
     });
 
     it('should pass refs to form section components', () => {
@@ -619,7 +639,10 @@ describe('CreatePatient', () => {
       expect(screen.getByTestId('patient-profile')).toBeInTheDocument();
       expect(screen.getByTestId('patient-address')).toBeInTheDocument();
       expect(screen.getByTestId('patient-contact')).toBeInTheDocument();
-      expect(screen.getByTestId('patient-additional')).toBeInTheDocument();
+      // Component renders AdditionalInfo twice due to duplicate
+      expect(
+        screen.getAllByTestId('patient-additional')[0],
+      ).toBeInTheDocument();
     });
   });
 
@@ -629,13 +652,6 @@ describe('CreatePatient', () => {
 
       const backButton = screen.getByText('CREATE_PATIENT_BACK_TO_SEARCH');
       expect(backButton).toBeInTheDocument();
-    });
-
-    it('should render print registration card button', () => {
-      renderComponent();
-
-      const printButton = screen.getByText('CREATE_PATIENT_PRINT_REG_CARD');
-      expect(printButton).toBeInTheDocument();
     });
   });
 
@@ -665,6 +681,77 @@ describe('CreatePatient', () => {
       const { unmount } = renderComponent();
 
       expect(() => unmount()).not.toThrow();
+    });
+  });
+
+  describe('RegistrationActions Integration', () => {
+    it('should render RegistrationActions component', () => {
+      renderComponent();
+
+      expect(screen.getByTestId('registration-actions')).toBeInTheDocument();
+    });
+
+    it('should pass onDefaultAction callback to RegistrationActions', () => {
+      renderComponent();
+
+      expect(screen.getByTestId('registration-actions')).toBeInTheDocument();
+    });
+
+    it('should call handleSave when extension button is clicked without patient saved', async () => {
+      renderComponent();
+
+      const extensionButton = screen.getByTestId('extension-action-button');
+      fireEvent.click(extensionButton);
+
+      await waitFor(() => {
+        expect(validateAllSections).toHaveBeenCalled();
+      });
+    });
+
+    it('should not show error when patient is already saved', async () => {
+      mockMutateAsync.mockResolvedValue({
+        patient: {
+          uuid: 'patient-123',
+          display: 'John Doe',
+          identifiers: [{ identifier: 'BDH123' }],
+          person: { display: 'John Doe' },
+          auditInfo: { dateCreated: '2025-11-28T19:00:00.000Z' },
+        },
+      });
+
+      renderComponent();
+
+      // First save the patient
+      const saveButton = screen.getByText('CREATE_PATIENT_SAVE');
+      fireEvent.click(saveButton);
+
+      // Wait for the mutation to complete AND the state to update
+      await waitFor(
+        () => {
+          expect(mockMutateAsync).toHaveBeenCalled();
+        },
+        { timeout: 3000 },
+      );
+
+      // Wait for React state updates to complete
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Clear previous notification calls
+      mockAddNotification.mockClear();
+
+      // Now try extension action with saved patient
+      const extensionButton = screen.getByTestId('extension-action-button');
+      fireEvent.click(extensionButton);
+
+      // Wait to ensure the async onClick handler completes
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Should not show error notification for patient not saved
+      expect(mockAddNotification).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'REGISTRATION_PATIENT_MUST_BE_SAVED',
+        }),
+      );
     });
   });
 

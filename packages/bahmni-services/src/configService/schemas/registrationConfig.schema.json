@@ -325,6 +325,79 @@
           }
         }
       }
+    },
+    "extensionPoints": {
+      "type": "array",
+      "description": "Array of extension point definitions that extensions can attach to",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the extension point (e.g., 'org.bahmni.registration.navigation')"
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable description of what this extension point is for"
+          }
+        }
+      }
+    },
+    "registrationAppExtensions": {
+      "type": "array",
+      "description": "Array of app extension configurations for registration",
+      "items": {
+        "type": "object",
+        "description": "Extension configuration",
+        "additionalProperties": false,
+        "required": ["id", "extensionPointId", "type", "requiredPrivilege"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the extension"
+          },
+          "extensionPointId": {
+            "type": "string",
+            "description": "Extension point identifier this extension attaches to"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["link", "startVisit"],
+            "description": "Type of extension (e.g., 'link', 'startVisit')"
+          },
+          "translationKey": {
+            "type": "string",
+            "description": "Translation key for the extension label"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL path for the extension"
+          },
+          "shortcutKey": {
+            "type": "string",
+            "description": "Keyboard shortcut key for the extension"
+          },
+          "icon": {
+            "type": "string",
+            "description": "Icon class name (e.g., FontAwesome class like 'fa-search')"
+          },
+          "order": {
+            "type": "number",
+            "description": "Display order of the extension"
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["primary", "secondary", "tertiary", "ghost", "danger"],
+            "description": "Button kind/variant (defaults to 'primary' if not specified)"
+          },
+          "requiredPrivilege": {
+            "type": "string",
+            "description": "Required privilege to access this extension"
+          }
+        }
+      }
     }
   }
 }

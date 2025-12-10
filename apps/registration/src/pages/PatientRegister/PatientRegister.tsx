@@ -12,10 +12,9 @@ import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
-  getPatientById,
-  CreatePatientResponse,
+  PatientProfileResponse,
 } from '@bahmni/services';
-import { useQuery } from '@tanstack/react-query';
+import { useNotification } from '@bahmni/widgets';
 import { useRef, useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -34,48 +33,75 @@ import {
   ContactInfo,
   ContactInfoRef,
 } from '../../components/forms/contactInfo/ContactInfo';
+import {
+  PatientRelationships,
+  PatientRelationshipsRef,
+} from '../../components/forms/patientRelationships/PatientRelationships';
 import { Profile, ProfileRef } from '../../components/forms/profile/Profile';
-import { BAHMNI_REGISTRATION_SEARCH } from '../../constants/app';
+import { RegistrationActions } from '../../components/registrationActions/RegistrationActions';
+import { BAHMNI_REGISTRATION_SEARCH, getPatientUrl } from '../../constants/app';
 
 import { useAdditionalIdentifiers } from '../../hooks/useAdditionalIdentifiers';
 import { useCreatePatient } from '../../hooks/useCreatePatient';
+import { usePatientDetails } from '../../hooks/usePatientDetails';
+import { usePatientPhoto } from '../../hooks/usePatientPhoto';
+import { useRelationshipValidation } from '../../hooks/useRelationshipValidation';
 import { useUpdatePatient } from '../../hooks/useUpdatePatient';
 import { validateAllSections, collectFormData } from './patientFormService';
 import styles from './styles/index.module.scss';
-import { VisitTypeSelector } from './visitTypeSelector';
 
-const CreatePatient = () => {
+const PatientRegister = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { addNotification } = useNotification();
   const { patientUuid: patientUuidFromUrl } = useParams<{
     patientUuid: string;
   }>();
 
-  // Determine if we're in edit mode based on URL parameter
-  const isEditMode = !!patientUuidFromUrl;
   const [patientUuid, setPatientUuid] = useState<string | null>(
     patientUuidFromUrl ?? null,
   );
-  const [patientIdentifier, setPatientIdentifier] = useState<string | null>(
-    null,
-  );
 
   const { shouldShowAdditionalIdentifiers } = useAdditionalIdentifiers();
+  const { relationshipTypes } = useRelationshipValidation();
 
   const patientProfileRef = useRef<ProfileRef>(null);
   const patientAddressRef = useRef<AddressInfoRef>(null);
   const patientContactRef = useRef<ContactInfoRef>(null);
   const patientAdditionalRef = useRef<AdditionalInfoRef>(null);
+  const patientRelationshipsRef = useRef<PatientRelationshipsRef>(null);
   const patientAdditionalIdentifiersRef =
     useRef<AdditionalIdentifiersRef>(null);
 
-  // Fetch patient data if in edit mode
-  // TODO: Transform FHIR Patient data to form data and populate fields
-  useQuery({
-    queryKey: ['patient', patientUuidFromUrl],
-    queryFn: () => getPatientById(patientUuidFromUrl!),
-    enabled: isEditMode,
+  const {
+    profileInitialData,
+    contactInitialData,
+    additionalInitialData,
+    addressInitialData,
+    additionalIdentifiersInitialData,
+    initialDobEstimated,
+    metadata: initialMetadata,
+  } = usePatientDetails({
+    patientUuid: patientUuidFromUrl,
   });
+
+  const [metadata, setMetadata] = useState(initialMetadata);
+
+  const { patientPhoto } = usePatientPhoto({
+    patientUuid: patientUuidFromUrl,
+  });
+
+  useEffect(() => {
+    if (initialMetadata) {
+      setMetadata(initialMetadata);
+    }
+  }, [initialMetadata]);
+
+  useEffect(() => {
+    if (metadata?.patientUuid) {
+      setPatientUuid(metadata.patientUuid);
+    }
+  }, [metadata]);
 
   // Use the appropriate mutation based on mode
   const createPatientMutation = useCreatePatient();
@@ -90,41 +116,18 @@ const CreatePatient = () => {
     });
   }, []);
 
-  // Track patient UUID and identifier after successful creation/update
-  useEffect(() => {
-    if (createPatientMutation.isSuccess && createPatientMutation.data) {
-      const response = createPatientMutation.data as CreatePatientResponse;
-      if (response?.patient?.uuid) {
-        setPatientUuid(response.patient.uuid);
-      }
-      if (response?.patient?.identifiers?.[0]?.identifier) {
-        setPatientIdentifier(response.patient.identifiers[0].identifier);
-      }
-    }
-  }, [createPatientMutation.isSuccess, createPatientMutation.data]);
-
-  useEffect(() => {
-    if (updatePatientMutation.isSuccess && updatePatientMutation.data) {
-      const response = updatePatientMutation.data as CreatePatientResponse;
-      if (response?.patient?.uuid) {
-        setPatientUuid(response.patient.uuid);
-      }
-      if (response?.patient?.identifiers?.[0]?.identifier) {
-        setPatientIdentifier(response.patient.identifiers[0].identifier);
-      }
-    }
-  }, [updatePatientMutation.isSuccess, updatePatientMutation.data]);
-
   const handleSave = async (): Promise<string | null> => {
-    // Validate all form sections
     const isValid = validateAllSections(
       {
         profileRef: patientProfileRef,
         addressRef: patientAddressRef,
         contactRef: patientContactRef,
         additionalRef: patientAdditionalRef,
+        relationshipsRef: patientRelationshipsRef,
         additionalIdentifiersRef: patientAdditionalIdentifiersRef,
       },
+      addNotification,
+      t,
       {
         shouldValidateAdditionalIdentifiers: shouldShowAdditionalIdentifiers,
       },
@@ -134,39 +137,45 @@ const CreatePatient = () => {
       return null;
     }
 
-    // Collect data from all form sections
-    const formData = collectFormData({
-      profileRef: patientProfileRef,
-      addressRef: patientAddressRef,
-      contactRef: patientContactRef,
-      additionalRef: patientAdditionalRef,
-      additionalIdentifiersRef: patientAdditionalIdentifiersRef,
-    });
+    const formData = collectFormData(
+      {
+        profileRef: patientProfileRef,
+        addressRef: patientAddressRef,
+        contactRef: patientContactRef,
+        additionalRef: patientAdditionalRef,
+        relationshipsRef: patientRelationshipsRef,
+        additionalIdentifiersRef: patientAdditionalIdentifiersRef,
+      },
+      addNotification,
+      t,
+    );
 
     if (!formData) {
       return null;
     }
 
-    // Trigger mutation with collected data (create or update)
     try {
-      if (isEditMode && patientUuid) {
-        // Update existing patient
+      if (patientUuid) {
         const response = (await updatePatientMutation.mutateAsync({
           patientUuid,
           ...formData,
-        })) as CreatePatientResponse;
+          additionalIdentifiersInitialData,
+        })) as PatientProfileResponse;
         if (response?.patient?.uuid) {
+          setMetadata({
+            ...metadata,
+            patientName: response.patient.person.display ?? '',
+          });
           return response.patient.uuid;
         }
       } else {
-        // Create new patient
         const response = (await createPatientMutation.mutateAsync(
           formData,
-        )) as CreatePatientResponse;
+        )) as PatientProfileResponse;
         if (response?.patient?.uuid) {
           const newPatientUuid = response.patient.uuid;
-          // Navigate to edit patient page after successful save
-          navigate(`/registration/edit/${newPatientUuid}`);
+          setPatientUuid(newPatientUuid);
+          navigate(getPatientUrl(newPatientUuid));
           return newPatientUuid;
         }
       }
@@ -189,7 +198,10 @@ const CreatePatient = () => {
     },
     {
       id: 'current',
-      label: t('CREATE_PATIENT_BREADCRUMB_CURRENT'),
+      label:
+        patientUuid && metadata?.patientName
+          ? metadata.patientName
+          : t('CREATE_PATIENT_BREADCRUMB_CURRENT'),
       isCurrentPage: true,
     },
   ];
@@ -202,10 +214,6 @@ const CreatePatient = () => {
     },
   ];
 
-  const isPending = isEditMode
-    ? updatePatientMutation.isPending
-    : createPatientMutation.isPending;
-
   return (
     <BaseLayout
       header={
@@ -213,35 +221,56 @@ const CreatePatient = () => {
       }
       main={
         <div>
-          <Tile className={styles.patientDetailsHeader}>
-            <span className={styles.sectionTitle}>
-              {isEditMode
-                ? t('EDIT_PATIENT_HEADER_TITLE')
-                : t('CREATE_PATIENT_HEADER_TITLE')}
-            </span>
-          </Tile>
+          <div className={styles.form}>
+            <Tile className={styles.patientDetailsHeader}>
+              <span className={styles.sectionTitle}>
+                {patientUuid ? (
+                  <div className={styles.infoContainer}>
+                    <div
+                      className={styles.patientId}
+                    >{`Patient ID: ${metadata?.patientIdentifier}`}</div>
+                    <div
+                      className={styles.registerDate}
+                    >{`${t('CREATE_PATIENT_REGISTERED_ON')} ${metadata?.registerDate}`}</div>
+                  </div>
+                ) : (
+                  t('CREATE_PATIENT_HEADER_TITLE')
+                )}
+              </span>
+            </Tile>
 
-          <div className={styles.formContainer}>
-            <Profile
-              ref={patientProfileRef}
-              patientIdentifier={patientIdentifier}
-            />
-            <AddressInfo ref={patientAddressRef} />
-            <ContactInfo ref={patientContactRef} />
+            <div className={styles.formContainer}>
+              <Profile
+                ref={patientProfileRef}
+                initialData={profileInitialData}
+                initialDobEstimated={initialDobEstimated}
+                initialPhoto={patientPhoto}
+              />
+              <AddressInfo
+                ref={patientAddressRef}
+                initialData={addressInitialData}
+              />
+              <ContactInfo
+                ref={patientContactRef}
+                initialData={contactInitialData}
+              />
+            </div>
           </div>
 
-          <AdditionalInfo ref={patientAdditionalRef} />
+          <AdditionalInfo
+            ref={patientAdditionalRef}
+            initialData={additionalInitialData}
+          />
 
           {shouldShowAdditionalIdentifiers && (
-            <>
-              <Tile className={styles.patientDetailsHeader}>
-                <span className={styles.sectionTitle}>
-                  {t('ADDITIONAL_IDENTIFIERS_HEADER_TITLE')}
-                </span>
-              </Tile>
+            <AdditionalIdentifiers
+              ref={patientAdditionalIdentifiersRef}
+              initialData={additionalIdentifiersInitialData}
+            />
+          )}
 
-              <AdditionalIdentifiers ref={patientAdditionalIdentifiersRef} />
-            </>
+          {Array.isArray(relationshipTypes) && relationshipTypes.length > 0 && (
+            <PatientRelationships ref={patientRelationshipsRef} />
           )}
 
           {/* Footer Actions */}
@@ -253,19 +282,12 @@ const CreatePatient = () => {
               {t('CREATE_PATIENT_BACK_TO_SEARCH')}
             </Button>
             <div className={styles.actionButtons}>
-              <Button
-                kind="tertiary"
-                onClick={handleSave}
-                disabled={isPending || (!isEditMode && patientUuid != null)}
-              >
-                {isPending ? 'Saving...' : t('CREATE_PATIENT_SAVE')}
+              <Button kind="tertiary" onClick={handleSave}>
+                {t('CREATE_PATIENT_SAVE')}
               </Button>
-              <Button kind="tertiary">
-                {t('CREATE_PATIENT_PRINT_REG_CARD')}
-              </Button>
-              <VisitTypeSelector
-                onVisitSave={handleSave}
-                patientUuid={patientUuid}
+              <RegistrationActions
+                extensionPointId="org.bahmni.registration.navigation"
+                onBeforeNavigate={handleSave}
               />
             </div>
           </div>
@@ -274,4 +296,4 @@ const CreatePatient = () => {
     />
   );
 };
-export default CreatePatient;
+export default PatientRegister;

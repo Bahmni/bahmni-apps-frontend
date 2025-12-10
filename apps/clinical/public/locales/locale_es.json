@@ -129,6 +129,7 @@
   "ERROR_SEARCHING_INVESTIGATIONS": "Error al buscar investigaciones",
   "ERROR_SEARCHING_MEDICATIONS": "Error al buscar medicamentos",
   "ERROR_VALIDATION_TITLE": "Error de validación",
+  "ERROR_FETCHING_CLINICAL_DATA": "Invalid episode uuid",
   "INPUT_VALUE_REQUIRED": "Por favor, ingrese un valor",
   "INVALID_RESPONSE": "Se recibió una respuesta no válida del servidor",
   "INVESTIGATIONS_ADDED": "{{investigationType}} agregadas",
@@ -242,5 +243,8 @@
   "VITAL_SIGNS_PULSE": "Pulso",
   "VITAL_SIGNS_RESPIRATORY_RATE": "Frecuencia respiratoria",
   "VITAL_SIGNS_SYSTOLIC_BLOOD_PRESSURE": "Presión arterial sistólica",
-  "VITAL_SIGNS_TEMPERATURE": "Temperatura"
+  "VITAL_SIGNS_TEMPERATURE": "Temperatura",
+  "CONTROL_NOT_FOUND": "Aucun contrôle enregistré pour le type : {{type}}",
+  "NO_CONFIGURED_CONTROLS": "Aucune commande configurée pour cette section",
+  "INITIALIZING_CONTROL": "Initialisation du contrôle..."
 }

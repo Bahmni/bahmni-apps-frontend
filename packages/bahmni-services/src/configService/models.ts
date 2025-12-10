@@ -2,6 +2,7 @@ export { type ClinicalConfig, type Dashboard } from './models/config';
 export {
   type DashboardConfig,
   type DashboardSectionConfig,
+  type ControlConfig,
 } from './models/dashboardConfig';
 export {
   type MedicationJSONConfig,
@@ -13,4 +14,6 @@ export {
   type PatientSearchField,
   type PatientInformationConfig,
   type SearchActionConfig,
+  type AppExtensionConfig,
+  type ExtensionPoint,
 } from './models/registrationConfig';

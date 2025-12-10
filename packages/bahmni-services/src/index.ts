@@ -1,5 +1,10 @@
 export { get, post, put, del } from './api';
-export { initAppI18n, useTranslation, getUserPreferredLocale } from './i18n';
+export {
+  initAppI18n,
+  useTranslation,
+  normalizeTranslationKey,
+  getUserPreferredLocale,
+} from './i18n';
 export { useCamera } from './cameraService';
 export {
   getPatientById,
@@ -18,7 +23,10 @@ export {
   getVisitTypes,
   getVisitLocationUUID,
   getOrderedAddressHierarchyLevels,
+  getPatientImageAsDataUrl,
+  getPatientProfile,
   getPersonAttributeTypes,
+  getRelationshipTypes,
   type FormattedPatientData,
   type PatientSearchResult,
   type PatientSearchResultBundle,
@@ -35,6 +43,7 @@ export {
   type AddressHierarchyEntry,
   type OrderedAddressHierarchyLevel,
   type OrderedAddressHierarchyLevels,
+  type PatientProfileResponse,
   type PersonAttributeType,
   type PersonAttributeTypesResponse,
   type ConceptAnswer,
@@ -90,6 +99,7 @@ export {
   DATE_TIME_FORMAT,
   ISO_DATE_FORMAT,
   FULL_MONTH_DATE_FORMAT,
+  REGISTRATION_DATE_FORMAT,
   getTodayDate,
   calculateAgeinYearsAndMonths,
   formatDateAndTime,
@@ -162,7 +172,11 @@ export {
   type RegistrationConfig,
   type PatientSearchConfig,
   type PatientSearchField,
+  type PatientInformationConfig,
   type SearchActionConfig,
+  type ControlConfig,
+  type AppExtensionConfig,
+  type ExtensionPoint,
 } from './configService';
 
 export { getCurrentUser, getUserLoginLocation, type User } from './userService';
@@ -175,6 +189,11 @@ export {
 export { findActiveEncounterInSession } from './encounterSessionService';
 
 export { getActiveVisit } from './encounterService';
+
+export {
+  getEncountersAndVisitsForEOC,
+  type EpisodeOfCareDataType,
+} from './episodeOfCareService';
 
 export {
   dispatchAuditEvent,
