@@ -2,7 +2,7 @@ import { useTranslation } from '@bahmni/services';
 import { render, fireEvent, screen, act } from '@testing-library/react';
 import { createRef } from 'react';
 import '@testing-library/jest-dom';
-import { AdditionalData } from '../../../../models/patient';
+import { PersonAttributesData } from '../../../../models/patient';
 import { AdditionalInfo, AdditionalInfoRef } from '../AdditionalInfo';
 
 // Mock the translation hook
@@ -142,7 +142,7 @@ describe('AdditionalInfo', () => {
 
   describe('Rendering', () => {
     it('renders correctly with initial data', () => {
-      const initialData: AdditionalData = { email: 'test@example.com' };
+      const initialData: PersonAttributesData = { email: 'test@example.com' };
       render(<AdditionalInfo initialData={initialData} />);
 
       const emailInput = screen.getByLabelText(
@@ -467,7 +467,7 @@ describe('AdditionalInfo', () => {
     });
 
     it('preserves initial data and merges with changes', () => {
-      const initialData: AdditionalData = {
+      const initialData: PersonAttributesData = {
         email: 'initial@example.com',
       };
 
@@ -488,7 +488,7 @@ describe('AdditionalInfo', () => {
     });
 
     it('should only return fields that are displayed by this component', () => {
-      const initialData: AdditionalData = {
+      const initialData: PersonAttributesData = {
         email: 'test@example.com',
         phoneNumber: '1234567890',
       };

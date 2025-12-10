@@ -1,9 +1,8 @@
 import type { PatientProfileResponse } from '@bahmni/services';
 import {
   convertToBasicInfoData,
-  convertToContactData,
+  convertToPersonAttributesData,
   convertToAddressData,
-  convertToAdditionalData,
 } from '../patientDataConverter';
 
 const mockPatientData: PatientProfileResponse = {
@@ -90,9 +89,9 @@ describe('patientDataConverter', () => {
     });
   });
 
-  describe('convertToContactData', () => {
-    it('should convert all patient attributes to ContactData (config-driven)', () => {
-      const result = convertToContactData(mockPatientData);
+  describe('convertToPersonAttributesData', () => {
+    it('should convert all patient attributes to person attributes data (config-driven)', () => {
+      const result = convertToPersonAttributesData(mockPatientData);
       // Keys use display name from attributeType
       expect(result?.['Phone Number']).toBe('1234567890');
       expect(result?.['Alternate Phone Number']).toBe('0987654321');
@@ -110,7 +109,7 @@ describe('patientDataConverter', () => {
           },
         },
       };
-      const result = convertToContactData(emptyData);
+      const result = convertToPersonAttributesData(emptyData);
       expect(result).toBeUndefined();
     });
   });
@@ -123,16 +122,8 @@ describe('patientDataConverter', () => {
     });
   });
 
-  describe('convertToAdditionalData', () => {
-    it('should convert all patient attributes to AdditionalData (config-driven)', () => {
-      const result = convertToAdditionalData(mockPatientData);
-      // Keys use display name from attributeType
-      expect(result?.['Phone Number']).toBe('1234567890');
-      expect(result?.['Alternate Phone Number']).toBe('0987654321');
-      expect(result?.['Occupation']).toBe('Engineer');
-    });
-
-    it('should return undefined if no attributes exist', () => {
+  describe('Person Attributes Edge Cases', () => {
+    it('should return undefined when patient data has empty attributes array', () => {
       const emptyData: PatientProfileResponse = {
         ...mockPatientData,
         patient: {
@@ -143,26 +134,12 @@ describe('patientDataConverter', () => {
           },
         },
       };
-      const result = convertToAdditionalData(emptyData);
+      const result = convertToPersonAttributesData(emptyData);
       expect(result).toBeUndefined();
-    });
-  });
-
-  describe('Data Consistency', () => {
-    it('should return same data from both converters (components filter display)', () => {
-      const contactData = convertToContactData(mockPatientData);
-      const additionalData = convertToAdditionalData(mockPatientData);
-
-      expect(contactData).toEqual(additionalData);
-      expect(contactData).toEqual({
-        'Phone Number': '1234567890',
-        'Alternate Phone Number': '0987654321',
-        Occupation: 'Engineer',
-      });
     });
 
     it('should use attribute display name as key', () => {
-      const result = convertToContactData(mockPatientData);
+      const result = convertToPersonAttributesData(mockPatientData);
 
       // Keys should match the display name from attributeType
       expect(result).toHaveProperty('Phone Number');
