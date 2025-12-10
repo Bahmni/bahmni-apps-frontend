@@ -13,7 +13,8 @@ const mockServiceRequestBundle: ServiceRequestBundle = {
   total: 3,
   entry: [
     {
-      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/ServiceRequest/4964b392-2d03-4ff2-870a-ad4ed177e59c',
+      fullUrl:
+        'http://localhost/openmrs/ws/fhir2/R4/ServiceRequest/4964b392-2d03-4ff2-870a-ad4ed177e59c',
       resource: {
         resourceType: 'ServiceRequest',
         id: '4964b392-2d03-4ff2-870a-ad4ed177e59c',
