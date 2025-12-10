@@ -29,20 +29,12 @@ export interface AddressData {
 }
 
 /**
- * Patient Contact Information Data
- * Supports dynamic fields based on configuration (e.g., phoneNumber, email, altPhoneNumber)
- * Supports various data types: string, number, boolean for different attribute formats
- */
-export interface ContactData {
-  [key: string]: string | number | boolean | undefined;
-}
-
-/**
- * Patient Additional Information Data
+ * Patient Person Attributes Data
+ * Used by both Contact Info and Additional Info sections
  * Supports dynamic fields based on configuration
  * Supports various data types: string, number, boolean for different attribute formats
  */
-export interface AdditionalData {
+export interface PersonAttributesData {
   [key: string]: string | number | boolean | undefined;
 }
 

@@ -9,27 +9,27 @@ import {
 
 import { usePersonAttributeFields } from '../../../hooks/usePersonAttributeFields';
 import { useRegistrationConfig } from '../../../hooks/useRegistrationConfig';
-import type { ContactData } from '../../../models/patient';
+import type { PersonAttributesData } from '../../../models/patient';
 
-import { PersonAttributeInput } from '../../common/PersonAttributeInput';
 import {
   getFieldsToShow,
   createFieldTranslationMap,
   getFieldLabel,
-} from './contactInfoHelpers';
+} from '../../common/personAttributeHelpers';
+import { PersonAttributeInput } from '../../common/PersonAttributeInput';
 import {
   validateAllFields,
   getValidationConfig,
-} from './contactInfoValidation';
+} from '../../common/personAttributeValidation';
 import styles from './styles/index.module.scss';
 
 export interface ContactInfoRef {
   validate: () => boolean;
-  getData: () => ContactData;
+  getData: () => PersonAttributesData;
 }
 
 interface ContactInfoProps {
-  initialData?: ContactData;
+  initialData?: PersonAttributesData;
   ref?: React.Ref<ContactInfoRef>;
 }
 
@@ -56,7 +56,7 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
     [configAttributes],
   );
 
-  const [formData, setFormData] = useState<ContactData>({});
+  const [formData, setFormData] = useState<PersonAttributesData>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -86,8 +86,8 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
     return result.isValid;
   }, [fieldsToShow, formData, fieldValidationConfig]);
 
-  const getData = useCallback((): ContactData => {
-    const displayedData: ContactData = {};
+  const getData = useCallback((): PersonAttributesData => {
+    const displayedData: PersonAttributesData = {};
     fieldsToShow.forEach((field) => {
       if (formData[field.name] !== undefined) {
         displayedData[field.name] = formData[field.name];

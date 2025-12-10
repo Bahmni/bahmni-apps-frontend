@@ -9,28 +9,27 @@ import {
 } from 'react';
 import { usePersonAttributeFields } from '../../../hooks/usePersonAttributeFields';
 import { useRegistrationConfig } from '../../../hooks/useRegistrationConfig';
-import type { AdditionalData } from '../../../models/patient';
+import type { PersonAttributesData } from '../../../models/patient';
 
-import { PersonAttributeInput } from '../../common/PersonAttributeInput';
-
-import styles from '../additionalInfo/styles/index.module.scss';
 import {
   getFieldsToShow,
   createFieldTranslationMap,
   getFieldLabel,
-} from './additionalInfoHelpers';
+} from '../../common/personAttributeHelpers';
+import { PersonAttributeInput } from '../../common/PersonAttributeInput';
 import {
   validateAllFields,
   getValidationConfig,
-} from './additionalInfoValidation';
+} from '../../common/personAttributeValidation';
+import styles from '../additionalInfo/styles/index.module.scss';
 
 export interface AdditionalInfoRef {
   validate: () => boolean;
-  getData: () => AdditionalData;
+  getData: () => PersonAttributesData;
 }
 
 interface AdditionalInfoProps {
-  initialData?: AdditionalData;
+  initialData?: PersonAttributesData;
   ref?: React.Ref<AdditionalInfoRef>;
 }
 
@@ -56,7 +55,7 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
     [configAttributes],
   );
 
-  const [formData, setFormData] = useState<AdditionalData>({});
+  const [formData, setFormData] = useState<PersonAttributesData>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -88,8 +87,8 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
     return result.isValid;
   }, [fieldsToShow, formData, fieldValidationConfig]);
 
-  const getData = useCallback((): AdditionalData => {
-    const displayedData: AdditionalData = {};
+  const getData = useCallback((): PersonAttributesData => {
+    const displayedData: PersonAttributesData = {};
     fieldsToShow.forEach((field) => {
       if (formData[field.name] !== undefined) {
         displayedData[field.name] = formData[field.name];

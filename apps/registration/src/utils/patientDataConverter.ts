@@ -2,11 +2,7 @@ import type { PatientProfileResponse } from '@bahmni/services';
 import { calculateAge } from '@bahmni/services';
 import { format, isValid, parseISO } from 'date-fns';
 import { AddressData } from '../hooks/useAddressFields';
-import type {
-  BasicInfoData,
-  ContactData,
-  AdditionalData,
-} from '../models/patient';
+import type { BasicInfoData, PersonAttributesData } from '../models/patient';
 
 export const convertToBasicInfoData = (
   patientData: PatientProfileResponse | undefined,
@@ -53,14 +49,25 @@ export const convertToBasicInfoData = (
   };
 };
 
-export const convertToContactData = (
+export const convertToPersonAttributesData = (
   patientData: PatientProfileResponse | undefined,
-): ContactData | undefined => {
-  if (!patientData?.patient.person.attributes) {
+): PersonAttributesData | undefined => {
+  if (
+    !patientData?.patient.person.attributes ||
+    patientData.patient.person.attributes.length === 0
+  ) {
     return undefined;
   }
 
-  return convertPersonAttributes(patientData);
+  const data: PersonAttributesData = {};
+
+  patientData.patient.person.attributes.forEach((attr) => {
+    const fieldName = attr.attributeType?.display;
+    if (!fieldName) return;
+    data[fieldName] = attr.value?.toString() ?? '';
+  });
+
+  return data;
 };
 
 export const convertToAddressData = (
@@ -86,33 +93,6 @@ export const convertToAddressData = (
 
   return addressData;
 };
-
-export const convertToAdditionalData = (
-  patientData: PatientProfileResponse | undefined,
-): AdditionalData | undefined => {
-  if (
-    !patientData?.patient.person.attributes ||
-    patientData.patient.person.attributes.length === 0
-  ) {
-    return undefined;
-  }
-
-  return convertPersonAttributes(patientData);
-};
-
-function convertPersonAttributes(
-  patientData: PatientProfileResponse,
-): Record<string, string> {
-  const data: Record<string, string> = {};
-
-  patientData.patient.person.attributes?.forEach((attr) => {
-    const fieldName = attr.attributeType?.display;
-    if (!fieldName) return;
-    data[fieldName] = attr.value?.toString() ?? '';
-  });
-
-  return data;
-}
 
 export const convertToAdditionalIdentifiersData = (
   patientData: PatientProfileResponse | undefined,
