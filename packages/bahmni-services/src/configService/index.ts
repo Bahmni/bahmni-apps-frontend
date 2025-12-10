@@ -17,4 +17,6 @@ export {
   type PatientSearchField,
   type PatientInformationConfig,
   type SearchActionConfig,
+  type AppExtensionConfig,
+  type ExtensionPoint,
 } from './models';

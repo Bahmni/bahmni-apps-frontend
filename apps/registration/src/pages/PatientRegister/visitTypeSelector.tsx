@@ -20,11 +20,13 @@ import styles from './styles/VisitTypeSelector.module.scss';
 interface VisitTypeSelectorProps {
   onVisitSave: () => Promise<string | null>;
   patientUuid?: string | null;
+  onNavigate?: () => void;
 }
 
 export const VisitTypeSelector = ({
   onVisitSave,
   patientUuid,
+  onNavigate,
 }: VisitTypeSelectorProps) => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
@@ -122,7 +124,11 @@ export const VisitTypeSelector = ({
   ) => {
     if (!selectedItem) return;
 
-    const currentPatientUUID = patientUuid ?? (await onVisitSave());
+    const currentPatientUUID = await onVisitSave();
+
+    if (!currentPatientUUID) {
+      return;
+    }
 
     if (currentPatientUUID && visitLocationUUID && !hasActiveVisit) {
       setVisitPayload({
@@ -131,6 +137,8 @@ export const VisitTypeSelector = ({
         location: visitLocationUUID.uuid,
       });
     }
+
+    onNavigate?.();
   };
 
   return (

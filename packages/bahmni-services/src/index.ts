@@ -167,8 +167,11 @@ export {
   type RegistrationConfig,
   type PatientSearchConfig,
   type PatientSearchField,
+  type PatientInformationConfig,
   type SearchActionConfig,
   type ControlConfig,
+  type AppExtensionConfig,
+  type ExtensionPoint,
 } from './configService';
 
 export { getCurrentUser, getUserLoginLocation, type User } from './userService';

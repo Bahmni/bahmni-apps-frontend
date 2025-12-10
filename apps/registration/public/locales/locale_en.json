@@ -113,6 +113,7 @@
   "REGISTRATION_PATIENT_SEARCH_HEADER_PHONE_NUMBER": "Phone Number",
   "REGISTRATION_PATIENT_SEARCH_INPUT_PLACEHOLDER": "Search by name or patient ID",
   "REGISTRATION_PATIENT_SEARCH_TABLE_TITLE": "Patient results ({{count}})",
+  "REGISTRATION_PATIENT_MUST_BE_SAVED": "Please save the patient before proceeding",
   "SEARCH_BY_CUSTOM_ATTRIBUTE": "Search by {{attribute}}",
   "START_VISIT_TYPE": "Start {{visitType}} visit",
   "REGISTRATION_RELATIONSHIP_TYPE": "Relationship",
