@@ -33,8 +33,8 @@ export interface PersonAttributeInputProps {
   onChange: (value: string | number | boolean) => void;
 }
 
-const isNumericPhoneValue = (value: string): boolean => {
-  const numericRegex = /^\+?[0-9]*$/;
+const isNumericValue = (value: string): boolean => {
+  const numericRegex = /^[0-9]*$/;
   return numericRegex.test(value);
 };
 
@@ -146,8 +146,7 @@ export const PersonAttributeInput = ({
 
       const handleNumberChange = (e: ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value;
-        // Only update if the value is valid numeric (allows +digits)
-        if (isNumericPhoneValue(newValue)) {
+        if (isNumericValue(newValue)) {
           onChange(newValue);
         }
       };

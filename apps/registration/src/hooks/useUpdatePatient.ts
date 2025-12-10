@@ -16,8 +16,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { convertTimeToISODateTime } from '../components/forms/profile/dateAgeUtils';
 import {
   BasicInfoData,
-  ContactData,
-  AdditionalData,
+  PersonAttributesData,
   AdditionalIdentifiersData,
 } from '../models/patient';
 import { usePersonAttributes } from './usePersonAttributes';
@@ -30,8 +29,8 @@ interface UpdatePatientFormData {
     image?: string;
   };
   address: PatientAddress;
-  contact: ContactData;
-  additional: AdditionalData;
+  contact: PersonAttributesData;
+  additional: PersonAttributesData;
   additionalIdentifiers: AdditionalIdentifiersData;
   additionalIdentifiersInitialData?: AdditionalIdentifiersData;
 }
