@@ -1,5 +1,23 @@
-import { ActionArea, Icon, ICON_SIZE } from '@bahmni/design-system';
-import { ObservationForm } from '@bahmni/services';
+import {
+  ActionArea,
+  Icon,
+  ICON_SIZE,
+  SkeletonText,
+} from '@bahmni/design-system';
+import {
+  Container,
+  FormMetadata as Form2FormMetadata,
+} from '@bahmni/form2-controls';
+import '@bahmni/form2-controls/dist/bundle.css';
+import {
+  fetchFormMetadata,
+  FormMetadata,
+  ObservationForm,
+  getFormattedError,
+  getUserPreferredLocale,
+} from '@bahmni/services';
+import { usePatientUUID } from '@bahmni/widgets';
+import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_FORM_API_NAMES } from '../../../constants/forms';
@@ -29,16 +47,32 @@ interface ObservationFormsContainerProps {
  */
 const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   onViewingFormChange,
-  viewingForm: externalViewingForm,
+  viewingForm,
   onRemoveForm,
   pinnedForms,
   updatePinnedForms,
 }) => {
   const { t } = useTranslation();
+  const patientUUID = usePatientUUID();
 
-  // Use the external viewingForm from parent
-  const viewingForm = externalViewingForm;
+  // Fetch form metadata using TanStack Query
+  const {
+    data: formMetadata,
+    isLoading: isLoadingMetadata,
+    error: queryError,
+  } = useQuery<FormMetadata>({
+    queryKey: ['formMetadata', viewingForm?.uuid],
+    queryFn: () => fetchFormMetadata(viewingForm!.uuid),
+    enabled: !!viewingForm?.uuid,
+  });
 
+  // Format error for display
+  const error = queryError
+    ? new Error(
+        getFormattedError(queryError).message ??
+          t('ERROR_FETCHING_FORM_METADATA'),
+      )
+    : null;
   // Check if current form is pinned
   const isCurrentFormPinned = viewingForm
     ? pinnedForms.some((form) => form.uuid === viewingForm.uuid)
@@ -78,8 +112,25 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   const formViewContent = (
     <div className={styles.formView}>
       <div className={styles.formContent}>
-        {/* TODO: Actual form rendering will be implemented here */}
-        {/* For now, show empty content as form rendering is not yet implemented */}
+        {isLoadingMetadata ? (
+          <SkeletonText width="100%" lineCount={3} />
+        ) : error ? (
+          <div>{error.message}</div>
+        ) : formMetadata && patientUUID ? (
+          <Container
+            metadata={formMetadata.schema as Form2FormMetadata}
+            observations={[]}
+            patient={{ uuid: patientUUID }}
+            translations={{}}
+            validate={false}
+            validateForm={false}
+            collapse={false}
+            locale={getUserPreferredLocale()}
+            onValueUpdated={() => {}}
+          />
+        ) : (
+          <div>{t('OBSERVATION_FORM_LOADING_METADATA_ERROR')}</div>
+        )}
       </div>
     </div>
   );

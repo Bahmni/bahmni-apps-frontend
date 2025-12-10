@@ -18,6 +18,43 @@ jest.mock('react-i18next', () => ({
   })),
 }));
 
+// Mock TanStack Query
+const mockUseQuery = jest.fn();
+jest.mock('@tanstack/react-query', () => ({
+  useQuery: (...args: unknown[]) => mockUseQuery(...args),
+}));
+
+// Mock the form metadata service
+const mockFetchFormMetadata = jest.fn();
+const mockGetFormattedError = jest.fn();
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  fetchFormMetadata: (...args: unknown[]) => mockFetchFormMetadata(...args),
+  getFormattedError: (...args: unknown[]) => mockGetFormattedError(...args),
+}));
+
+// Mock the form2-controls package
+jest.mock('@bahmni/form2-controls', () => ({
+  Container: jest.fn(({ metadata }) => (
+    <div data-testid="form2-container">
+      Form Container with metadata: {JSON.stringify(metadata)}
+    </div>
+  )),
+}));
+
+// Mock the form2-controls CSS
+jest.mock('@bahmni/form2-controls/dist/bundle.css', () => ({}));
+
+// Mock the usePatientUUID hook
+jest.mock('@bahmni/widgets', () => ({
+  usePatientUUID: jest.fn(() => 'test-patient-uuid'),
+}));
+
+// Mock the constants
+jest.mock('../../../../constants/forms', () => ({
+  DEFAULT_FORM_API_NAMES: ['History and Examination', 'Vitals'],
+}));
+
 // Mock ActionArea component
 jest.mock('@bahmni/design-system', () => ({
   ActionArea: jest.fn(
@@ -61,6 +98,13 @@ jest.mock('@bahmni/design-system', () => ({
     <div data-testid={`icon-${id}`} data-icon-name={name} data-size={size}>
       Icon
     </div>
+  )),
+  SkeletonText: jest.fn(({ width, lineCount }) => (
+    <div
+      data-testid="skeleton-text"
+      data-width={width}
+      data-line-count={lineCount}
+    />
   )),
   ICON_SIZE: {
     SM: 'SM',
@@ -116,6 +160,13 @@ describe('ObservationFormsContainer', () => {
     mockUsePinnedObservationForms.mockReturnValue({
       pinnedForms: [],
       updatePinnedForms: jest.fn(),
+      isLoading: false,
+      error: null,
+    });
+
+    // Default useQuery mock - returns no data when no form is being viewed
+    mockUseQuery.mockReturnValue({
+      data: undefined,
       isLoading: false,
       error: null,
     });
@@ -276,6 +327,102 @@ describe('ObservationFormsContainer', () => {
       expect(
         screen.getByText('translated_OBSERVATION_FORM_BACK_BUTTON'),
       ).toBeInTheDocument();
+    });
+  });
+
+  describe('form-controls Rendering', () => {
+    beforeEach(() => {
+      mockFetchFormMetadata.mockClear();
+      mockGetFormattedError.mockClear();
+    });
+
+    it('should use TanStack Query to fetch form metadata when viewingForm is provided', () => {
+      render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+      );
+
+      // Verify useQuery was called with the correct configuration
+      expect(mockUseQuery).toHaveBeenCalledWith(
+        expect.objectContaining({
+          queryKey: ['formMetadata', 'test-form-uuid'],
+          queryFn: expect.any(Function),
+          enabled: true,
+        }),
+      );
+    });
+
+    it('should display SkeletonText while fetching metadata', () => {
+      // Mock useQuery to return loading state
+      mockUseQuery.mockReturnValue({
+        data: undefined,
+        isLoading: true,
+        error: null,
+      });
+
+      render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+      );
+
+      const skeletonText = screen.getByTestId('skeleton-text');
+      expect(skeletonText).toBeInTheDocument();
+      expect(skeletonText).toHaveAttribute('data-width', '100%');
+      expect(skeletonText).toHaveAttribute('data-line-count', '3');
+    });
+
+    it('should render Container component with metadata when loaded', async () => {
+      const mockMetadata = {
+        schema: {
+          name: 'Test Form Schema',
+          controls: [],
+        },
+      };
+
+      // Mock useQuery to return success state with data
+      mockUseQuery.mockReturnValue({
+        data: mockMetadata,
+        isLoading: false,
+        error: null,
+      });
+
+      render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+      );
+
+      expect(screen.getByTestId('form2-container')).toBeInTheDocument();
+    });
+
+    it('should display error message when metadata fetch fails', async () => {
+      const mockError = new Error('Failed to fetch');
+      mockGetFormattedError.mockReturnValue({
+        message: 'Failed to fetch',
+        title: 'Error',
+      });
+
+      // Mock useQuery to return error state
+      mockUseQuery.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        error: mockError,
+      });
+
+      render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+      );
+
+      expect(screen.getByText('Failed to fetch')).toBeInTheDocument();
+    });
+
+    it('should not enable query when viewingForm is null', () => {
+      render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={null} />,
+      );
+
+      // Verify useQuery was called with enabled: false
+      expect(mockUseQuery).toHaveBeenCalledWith(
+        expect.objectContaining({
+          enabled: false,
+        }),
+      );
     });
   });
 
