@@ -15,7 +15,6 @@ import type { ContactData } from '../../../models/patient';
 import {
   getFieldsToShow,
   createFieldTranslationMap,
-  initializeFormData,
   getFieldLabel,
 } from './contactInfoHelpers';
 import {
@@ -57,20 +56,14 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
     [configAttributes],
   );
 
-  const initialFormData = useMemo(
-    () => initializeFormData(fieldsToShow, initialData),
-    [fieldsToShow, initialData],
-  );
-
-  const [formData, setFormData] = useState<ContactData>(initialFormData);
+  const [formData, setFormData] = useState<ContactData>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (initialData && fieldsToShow.length > 0) {
-      const data = initializeFormData(fieldsToShow, initialData);
-      setFormData(data);
+    if (initialData && Object.keys(initialData).length > 0) {
+      setFormData(initialData);
     }
-  }, [initialData, fieldsToShow.length]);
+  }, [initialData, fieldsToShow]);
   const handlePhoneChange = useCallback(
     (fieldName: string, value: string) => {
       if (isNumericPhoneValue(value)) {
@@ -95,8 +88,14 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
   }, [fieldsToShow, formData, fieldValidationConfig]);
 
   const getData = useCallback((): ContactData => {
-    return formData;
-  }, [formData]);
+    const displayedData: ContactData = {};
+    fieldsToShow.forEach((field) => {
+      if (formData[field.name] !== undefined) {
+        displayedData[field.name] = formData[field.name];
+      }
+    });
+    return displayedData;
+  }, [formData, fieldsToShow]);
 
   useImperativeHandle(ref, () => ({
     validate,
@@ -113,8 +112,7 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
       <div className={styles.row}>
         {fieldsToShow.map((field) => {
           const fieldName = field.name;
-          const value =
-            (formData[fieldName as keyof ContactData] as string) ?? '';
+          const value = (formData[fieldName] as string) ?? '';
           const label = getFieldLabel(fieldName, fieldTranslationMap, t);
           const error = errors[fieldName] || '';
 

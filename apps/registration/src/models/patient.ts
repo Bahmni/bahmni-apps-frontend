@@ -30,10 +30,10 @@ export interface AddressData {
 
 /**
  * Patient Contact Information Data
+ * Supports dynamic fields based on configuration (e.g., phoneNumber, email, altPhoneNumber)
  */
 export interface ContactData {
-  phoneNumber: string;
-  altPhoneNumber: string;
+  [key: string]: string | undefined;
 }
 
 /**

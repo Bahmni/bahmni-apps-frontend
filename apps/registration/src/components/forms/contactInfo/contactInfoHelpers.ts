@@ -34,13 +34,9 @@ export const initializeFormData = (
   fieldsToShow: PersonAttributeField[],
   initialData?: ContactData,
 ): ContactData => {
-  const data: ContactData = {
-    phoneNumber: '',
-    altPhoneNumber: '',
-  };
+  const data: ContactData = {};
   fieldsToShow.forEach((field) => {
-    data[field.name as keyof ContactData] =
-      (initialData?.[field.name as keyof ContactData] as string) ?? '';
+    data[field.name] = initialData?.[field.name] ?? '';
   });
   return data;
 };
