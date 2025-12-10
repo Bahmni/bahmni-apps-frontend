@@ -5,6 +5,9 @@ import {
   formatDate,
 } from '@bahmni/services';
 import React, { useMemo } from 'react';
+import { ConfigValidator } from '../configValidator';
+import { WidgetProps } from '../registry';
+import flowSheetConfigSchema from './flowsheetConfig.schema.json';
 import styles from './styles/VitalFlowSheet.module.scss';
 import { useVitalFlowSheet } from './useVitalFlowSheet';
 import {
@@ -16,15 +19,10 @@ import {
   createConceptRows,
 } from './utils';
 
-// TODO: Add JSON Schmema for VitalFlowSheetConfig
 interface VitalFlowSheetConfig {
   latestCount: number;
   obsConcepts: string[];
   groupBy?: string;
-}
-
-interface VitalFlowSheetProps {
-  config: VitalFlowSheetConfig;
 }
 
 interface ComplexDisplayData {
@@ -51,11 +49,11 @@ interface FlowSheetRow {
   [key: string]: unknown;
 }
 
-const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
-  config: { latestCount, obsConcepts, groupBy },
-}) => {
+const VitalFlowSheetContent: React.FC<WidgetProps> = ({ config }) => {
   const { t } = useTranslation();
 
+  // Safe type assertion after ConfigValidator validation
+  const { latestCount, obsConcepts, groupBy } = config as VitalFlowSheetConfig;
   const {
     data: vitalsData,
     loading,
@@ -274,4 +272,14 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
   );
 };
 
+const VitalFlowSheet: React.FC<WidgetProps> = (props) => {
+  return (
+    <ConfigValidator
+      config={props.config}
+      schema={flowSheetConfigSchema as Record<string, unknown>}
+    >
+      <VitalFlowSheetContent {...props} />
+    </ConfigValidator>
+  );
+};
 export default VitalFlowSheet;

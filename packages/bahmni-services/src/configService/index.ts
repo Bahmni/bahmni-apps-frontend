@@ -3,6 +3,7 @@ export {
   getDashboardConfig,
   getMedicationConfig,
   getRegistrationConfig,
+  validateConfig,
 } from './configService';
 export {
   type ClinicalConfig,

@@ -1,7 +1,7 @@
 import { ComponentType, LazyExoticComponent } from 'react';
 
 export interface WidgetProps {
-  config?: Record<string, unknown>;
+  config?: unknown;
 }
 export interface WidgetConfig {
   type: string;

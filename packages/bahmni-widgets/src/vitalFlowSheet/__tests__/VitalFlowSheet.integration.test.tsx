@@ -7,6 +7,7 @@ import {
 } from '@bahmni/services';
 import { render, screen, waitFor } from '@testing-library/react';
 import { useParams } from 'react-router-dom';
+import { useConfigValidation } from '../../hooks/useConfigValidation';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import VitalFlowSheet from '../VitalFlowSheet';
 
@@ -20,6 +21,7 @@ jest.mock('@bahmni/services', () => ({
 }));
 
 jest.mock('../../hooks/usePatientUUID');
+jest.mock('../../hooks/useConfigValidation');
 jest.mock('../../notification', () => ({
   useNotification: () => ({
     addNotification: jest.fn(),
@@ -43,6 +45,9 @@ const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
 >;
 const mockUseParams = useParams as jest.MockedFunction<typeof useParams>;
+const mockUseConfigValidation = useConfigValidation as jest.MockedFunction<
+  typeof useConfigValidation
+>;
 
 // Mock vital flow sheet data that matches the component's expected data structure
 const mockVitalFlowSheetData: VitalFlowSheetData = {
@@ -130,6 +135,13 @@ describe('VitalFlowSheet Integration Tests', () => {
       title: 'Error',
       message: error instanceof Error ? error.message : 'Unknown error',
     }));
+
+    // Mock config validation to always pass by default
+    mockUseConfigValidation.mockReturnValue({
+      isValidating: false,
+      isValid: true,
+      error: null,
+    });
   });
 
   afterEach(() => {
@@ -140,6 +152,15 @@ describe('VitalFlowSheet Integration Tests', () => {
     mockGetVitalFlowSheetData.mockResolvedValue(mockVitalFlowSheetData);
 
     render(<VitalFlowSheet {...defaultProps} />);
+
+    // Verify config validation was called with correct params
+    expect(mockUseConfigValidation).toHaveBeenCalledWith({
+      config: defaultProps.config,
+      schema: expect.objectContaining({
+        type: 'object',
+        required: ['latestCount', 'obsConcepts'],
+      }),
+    });
 
     await waitFor(() => {
       expect(screen.getByTestId('sortable-data-table')).toBeInTheDocument();
@@ -468,6 +489,74 @@ describe('VitalFlowSheet Integration Tests', () => {
     expect(
       screen.getByText('No vital signs data available'),
     ).toBeInTheDocument();
+    expect(mockGetVitalFlowSheetData).not.toHaveBeenCalled();
+  });
+
+  it('should validate config before rendering content', async () => {
+    mockGetVitalFlowSheetData.mockResolvedValue(mockVitalFlowSheetData);
+
+    render(<VitalFlowSheet {...defaultProps} />);
+
+    // Verify useConfigValidation was called with the config and schema
+    expect(mockUseConfigValidation).toHaveBeenCalledWith({
+      config: defaultProps.config,
+      schema: expect.objectContaining({
+        type: 'object',
+        required: ['latestCount', 'obsConcepts'],
+        properties: expect.objectContaining({
+          latestCount: expect.any(Object),
+          obsConcepts: expect.any(Object),
+          groupBy: expect.any(Object),
+        }),
+      }),
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('sortable-data-table')).toBeInTheDocument();
+    });
+  });
+
+  it('should not render content when config validation fails', () => {
+    mockUseConfigValidation.mockReturnValue({
+      isValidating: false,
+      isValid: false,
+      error: 'Invalid configuration',
+    });
+
+    render(<VitalFlowSheet {...defaultProps} />);
+
+    // Verify config validation was called
+    expect(mockUseConfigValidation).toHaveBeenCalledWith({
+      config: defaultProps.config,
+      schema: expect.any(Object),
+    });
+
+    // Content should not be rendered
+    expect(screen.queryByTestId('sortable-data-table')).not.toBeInTheDocument();
+
+    // Data fetching should not happen
+    expect(mockGetVitalFlowSheetData).not.toHaveBeenCalled();
+  });
+
+  it('should not fetch data during config validation', () => {
+    mockUseConfigValidation.mockReturnValue({
+      isValidating: true,
+      isValid: false,
+      error: null,
+    });
+
+    render(<VitalFlowSheet {...defaultProps} />);
+
+    // Verify config validation was called
+    expect(mockUseConfigValidation).toHaveBeenCalledWith({
+      config: defaultProps.config,
+      schema: expect.any(Object),
+    });
+
+    // Content should not be rendered during validation
+    expect(screen.queryByTestId('sortable-data-table')).not.toBeInTheDocument();
+
+    // Data fetching should not happen during validation
     expect(mockGetVitalFlowSheetData).not.toHaveBeenCalled();
   });
 });

@@ -164,7 +164,7 @@ const fetchConfig = async <T>(configPath: string): Promise<T | null> => {
  * @param configSchema - JSON schema to validate against
  * @returns Boolean indicating if configuration is valid
  */
-const validateConfig = async (
+export const validateConfig = async (
   config: unknown,
   configSchema: Record<string, unknown>,
 ): Promise<boolean> => {
