@@ -148,6 +148,7 @@ export {
 } from './labInvestigationService';
 export {
   getFlattenedInvestigations,
+  getOrderTypes,
   type FlattenedInvestigations,
   type OrderType,
   type OrderTypeResponse,
@@ -226,3 +227,5 @@ export {
   type VitalFlowSheetData,
   type VitalFlowSheetConceptDetail,
 } from './vitalFlowSheetService';
+
+export { getServiceRequests } from './orderRequestService';

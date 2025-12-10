@@ -14,7 +14,7 @@ const fetchInvestigations = async (): Promise<ValueSet> => {
   return await searchFHIRConceptsByName(ALL_ORDERABLES_CONCEPT_NAME);
 };
 
-const getOrderTypes = async (): Promise<OrderTypeResponse> => {
+export const getOrderTypes = async (): Promise<OrderTypeResponse> => {
   return await get(ORDER_TYPE_URL);
 };
 

@@ -1,4 +1,7 @@
-export { getFlattenedInvestigations } from './investigationService';
+export {
+  getFlattenedInvestigations,
+  getOrderTypes,
+} from './investigationService';
 export {
   type FlattenedInvestigations,
   type OrderType,
