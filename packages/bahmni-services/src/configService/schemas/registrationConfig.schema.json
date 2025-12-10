@@ -352,7 +352,7 @@
         "type": "object",
         "description": "Extension configuration",
         "additionalProperties": false,
-        "required": ["id", "extensionPointId", "type", "translationKey"],
+        "required": ["id", "extensionPointId", "type", "requiredPrivilege"],
         "properties": {
           "id": {
             "type": "string",
