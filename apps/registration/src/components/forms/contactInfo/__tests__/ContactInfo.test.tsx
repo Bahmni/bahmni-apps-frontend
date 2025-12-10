@@ -220,14 +220,14 @@ describe('ContactInfo', () => {
   });
 
   describe('getData Method', () => {
-    it('should return empty data when no input provided', () => {
+    it('should return only displayed fields when no input provided', () => {
       render(<ContactInfo ref={ref} />);
 
       const data = ref.current?.getData();
 
       expect(data).toEqual({
-        phoneNumber: '',
-        altPhoneNumber: '',
+        phoneNumber: undefined,
+        alternatePhoneNumber: undefined,
       });
     });
 

@@ -420,12 +420,12 @@ describe('AdditionalInfo', () => {
       expect(data).toEqual({ email: 'data@example.com' });
     });
 
-    it('returns empty object for unfilled fields', () => {
+    it('returns only displayed fields when unfilled', () => {
       const ref = createRef<AdditionalInfoRef>();
       render(<AdditionalInfo ref={ref} />);
 
       const data = ref.current?.getData();
-      expect(data).toEqual({ email: '' });
+      expect(data).toEqual({ email: undefined });
     });
 
     it('returns all field values for multiple fields', () => {
@@ -485,6 +485,21 @@ describe('AdditionalInfo', () => {
 
       const data = ref.current?.getData();
       expect(data).toEqual({ email: 'updated@example.com' });
+    });
+
+    it('should only return fields that are displayed by this component', () => {
+      const initialData: AdditionalData = {
+        email: 'test@example.com',
+        phoneNumber: '1234567890',
+      };
+
+      const ref = createRef<AdditionalInfoRef>();
+      render(<AdditionalInfo initialData={initialData} ref={ref} />);
+
+      const data = ref.current?.getData();
+
+      expect(data).toHaveProperty('email', 'test@example.com');
+      expect(data).not.toHaveProperty('phoneNumber');
     });
   });
 

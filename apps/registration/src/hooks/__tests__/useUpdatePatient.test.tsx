@@ -655,7 +655,7 @@ describe('useUpdatePatient', () => {
       );
     });
 
-    it('should handle empty contact attributes', async () => {
+    it('should handle empty contact attributes with voided flag', async () => {
       const formDataWithEmptyContact = {
         ...mockFormData,
         contact: {
@@ -678,7 +678,7 @@ describe('useUpdatePatient', () => {
 
       const callArgs = mockUpdatePatient.mock.calls[0][1];
 
-      // Verify empty contact attributes are sent with empty strings
+      // Verify empty contact attributes are sent with voided: true
       const contactAttributes = callArgs.patient.person.attributes.filter(
         (attr: { attributeType: { uuid: string } }) =>
           attr.attributeType.uuid === 'a384873b-847a-4a86-b869-28fb601162dd' ||
@@ -689,11 +689,11 @@ describe('useUpdatePatient', () => {
       expect(contactAttributes).toEqual([
         {
           attributeType: { uuid: 'a384873b-847a-4a86-b869-28fb601162dd' },
-          value: '',
+          voided: true,
         },
         {
           attributeType: { uuid: '27fa84ff-fdd6-4895-9c77-254b60555f39' },
-          value: '',
+          voided: true,
         },
       ]);
     });
@@ -734,7 +734,7 @@ describe('useUpdatePatient', () => {
         value: '+1234567890',
       });
 
-      // Verify altPhoneNumber is sent with empty string
+      // Verify altPhoneNumber is sent with voided: true
       const altPhoneAttribute = callArgs.patient.person.attributes.find(
         (attr: { attributeType: { uuid: string } }) =>
           attr.attributeType.uuid === '27fa84ff-fdd6-4895-9c77-254b60555f39',
@@ -744,11 +744,11 @@ describe('useUpdatePatient', () => {
         attributeType: {
           uuid: '27fa84ff-fdd6-4895-9c77-254b60555f39',
         },
-        value: '',
+        voided: true,
       });
     });
 
-    it('should handle empty additional attributes', async () => {
+    it('should handle empty additional attributes with voided flag', async () => {
       const formDataWithEmptyAdditional = {
         ...mockFormData,
         additional: {
@@ -770,7 +770,7 @@ describe('useUpdatePatient', () => {
 
       const callArgs = mockUpdatePatient.mock.calls[0][1];
 
-      // Verify email attribute is sent with empty string
+      // Verify email attribute is sent with voided: true for empty value
       const emailAttribute = callArgs.patient.person.attributes.find(
         (attr: { attributeType: { uuid: string } }) =>
           attr.attributeType.uuid === 'e3123cba-5e07-11ef-8f7c-0242ac120002',
@@ -780,7 +780,7 @@ describe('useUpdatePatient', () => {
         attributeType: {
           uuid: 'e3123cba-5e07-11ef-8f7c-0242ac120002',
         },
-        value: '',
+        voided: true,
       });
     });
   });
@@ -842,7 +842,7 @@ describe('useUpdatePatient', () => {
 
       const callArgs = mockUpdatePatient.mock.calls[0][1];
 
-      // Verify only mapped attributes are included (including empty altPhoneNumber)
+      // Verify only mapped attributes are included (altPhoneNumber voided, unknown fields excluded)
       expect(callArgs.patient.person.attributes).toHaveLength(3);
       expect(callArgs.patient.person.attributes).toEqual([
         {
@@ -855,7 +855,7 @@ describe('useUpdatePatient', () => {
           attributeType: {
             uuid: '27fa84ff-fdd6-4895-9c77-254b60555f39',
           },
-          value: '',
+          voided: true,
         },
         {
           attributeType: {
