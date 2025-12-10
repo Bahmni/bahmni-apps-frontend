@@ -3,6 +3,35 @@ import React from 'react';
 import { ContactInfo } from '../ContactInfo';
 import type { ContactInfoRef } from '../ContactInfo';
 
+// Mock PersonAttributeInput component
+jest.mock('../../../common/PersonAttributeInput', () => ({
+  PersonAttributeInput: ({
+    uuid,
+    label,
+    value,
+    onChange,
+    error,
+  }: {
+    uuid: string;
+    label: string;
+    value: string | number | boolean;
+    onChange: (value: string | number | boolean) => void;
+    error: string;
+  }) => (
+    <div>
+      <label htmlFor={uuid}>{label}</label>
+      <input
+        id={uuid}
+        value={value as string}
+        onChange={(e) => onChange(e.target.value)}
+        aria-invalid={!!error}
+        aria-describedby={error ? `${uuid}-error` : undefined}
+      />
+      {error && <span id={`${uuid}-error`}>{error}</span>}
+    </div>
+  ),
+}));
+
 // Mock the services
 jest.mock('@bahmni/services', () => ({
   useTranslation: () => ({
@@ -138,8 +167,8 @@ describe('ContactInfo', () => {
     });
   });
 
-  describe('Phone Number Validation', () => {
-    it('should accept valid numeric phone numbers', () => {
+  describe('Input Handling', () => {
+    it('should handle input changes', () => {
       render(<ContactInfo ref={ref} />);
       const phoneInput = screen.getByLabelText(
         'CREATE_PATIENT_PHONE_NUMBER',
@@ -149,7 +178,7 @@ describe('ContactInfo', () => {
       expect(phoneInput.value).toBe('1234567890');
     });
 
-    it('should accept plus sign at the beginning', () => {
+    it('should update value when input changes', () => {
       render(<ContactInfo ref={ref} />);
       const phoneInput = screen.getByLabelText(
         'CREATE_PATIENT_PHONE_NUMBER',
@@ -159,54 +188,23 @@ describe('ContactInfo', () => {
       expect(phoneInput.value).toBe('+911234567890');
     });
 
-    it('should reject letters', () => {
+    it('should clear error when valid input is provided', () => {
       render(<ContactInfo ref={ref} />);
       const phoneInput = screen.getByLabelText(
         'CREATE_PATIENT_PHONE_NUMBER',
       ) as HTMLInputElement;
 
-      fireEvent.change(phoneInput, { target: { value: '123abc456' } });
-      expect(phoneInput.value).toBe('');
-    });
+      // First trigger validation to show error
+      ref.current?.validate();
 
-    it('should reject spaces', () => {
-      render(<ContactInfo ref={ref} />);
-      const phoneInput = screen.getByLabelText(
-        'CREATE_PATIENT_PHONE_NUMBER',
-      ) as HTMLInputElement;
+      // Then provide valid input
+      fireEvent.change(phoneInput, { target: { value: '1234567890' } });
 
-      fireEvent.change(phoneInput, { target: { value: '123 456 7890' } });
-      expect(phoneInput.value).toBe('');
-    });
-
-    it('should reject special characters except plus', () => {
-      render(<ContactInfo ref={ref} />);
-      const phoneInput = screen.getByLabelText(
-        'CREATE_PATIENT_PHONE_NUMBER',
-      ) as HTMLInputElement;
-
-      fireEvent.change(phoneInput, { target: { value: '123-456-7890' } });
-      expect(phoneInput.value).toBe('');
-    });
-
-    it('should reject multiple plus signs', () => {
-      render(<ContactInfo ref={ref} />);
-      const phoneInput = screen.getByLabelText(
-        'CREATE_PATIENT_PHONE_NUMBER',
-      ) as HTMLInputElement;
-
-      fireEvent.change(phoneInput, { target: { value: '++123' } });
-      expect(phoneInput.value).toBe('');
-    });
-
-    it('should reject plus sign in the middle', () => {
-      render(<ContactInfo ref={ref} />);
-      const phoneInput = screen.getByLabelText(
-        'CREATE_PATIENT_PHONE_NUMBER',
-      ) as HTMLInputElement;
-
-      fireEvent.change(phoneInput, { target: { value: '123+456' } });
-      expect(phoneInput.value).toBe('');
+      // Error should be cleared
+      const errorElement = screen.queryByText(
+        'Phone number should be 6 to 15 digits',
+      );
+      expect(errorElement).not.toBeInTheDocument();
     });
   });
 
@@ -225,10 +223,7 @@ describe('ContactInfo', () => {
 
       const data = ref.current?.getData();
 
-      expect(data).toEqual({
-        phoneNumber: undefined,
-        alternatePhoneNumber: undefined,
-      });
+      expect(data).toEqual({});
     });
 
     it('should return current phone number', () => {
