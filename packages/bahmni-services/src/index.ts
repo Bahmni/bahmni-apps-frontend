@@ -1,5 +1,5 @@
 export { get, post, put, del } from './api';
-export { initAppI18n, useTranslation } from './i18n';
+export { initAppI18n, useTranslation, getUserPreferredLocale } from './i18n';
 export { useCamera } from './cameraService';
 export {
   getPatientById,

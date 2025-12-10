@@ -14,12 +14,12 @@ import {
   FormMetadata,
   ObservationForm,
   getFormattedError,
+  getUserPreferredLocale,
 } from '@bahmni/services';
 import { usePatientUUID } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { getUserPreferredLocale } from '../../../../../../packages/bahmni-services/src/i18n/translationService';
 import { DEFAULT_FORM_API_NAMES } from '../../../constants/forms';
 import styles from './styles/ObservationFormsContainer.module.scss';
 
