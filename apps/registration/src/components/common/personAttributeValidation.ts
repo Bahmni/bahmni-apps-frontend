@@ -1,5 +1,5 @@
-import type { PersonAttributeField } from '../../../hooks/usePersonAttributeFields';
-import type { AdditionalData } from '../../../models/patient';
+import type { PersonAttributeField } from '../../hooks/usePersonAttributeFields';
+import type { PersonAttributesData } from '../../models/patient';
 
 export interface ValidationConfig {
   pattern: string;
@@ -14,6 +14,7 @@ export interface ValidationResult {
 export interface FieldValidationConfig {
   [fieldName: string]: ValidationConfig;
 }
+
 export const getValidationConfig = (
   fieldName: string,
   fieldValidationConfig?: FieldValidationConfig,
@@ -46,7 +47,7 @@ export const validateField = (
 
 export const validateAllFields = (
   fieldsToShow: PersonAttributeField[],
-  formData: AdditionalData,
+  formData: PersonAttributesData,
   fieldValidationConfig?: FieldValidationConfig,
 ): ValidationResult => {
   const errors: Record<string, string> = {};
