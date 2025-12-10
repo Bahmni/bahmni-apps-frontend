@@ -1,5 +1,5 @@
-import { OBSERVATION_FORMS_URL } from '../../constants/app';
 import { getUserPreferredLocale } from '../../i18n/translationService';
+import { OBSERVATION_FORMS_URL } from '../constants';
 import { fetchObservationForms } from '../observationFormsService';
 
 // Mock fetch globally

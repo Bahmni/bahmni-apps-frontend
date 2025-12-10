@@ -1,5 +1,10 @@
 export { get, post, put, del } from './api';
-export { initAppI18n, useTranslation, normalizeTranslationKey } from './i18n';
+export {
+  initAppI18n,
+  useTranslation,
+  normalizeTranslationKey,
+  getUserPreferredLocale,
+} from './i18n';
 export { useCamera } from './cameraService';
 export {
   getPatientById,
@@ -176,7 +181,7 @@ export {
 } from './configService';
 
 export { getCurrentUser, getUserLoginLocation, type User } from './userService';
-export { USER_PINNED_PREFERENCE_URL } from './constants/app';
+export { USER_PINNED_PREFERENCE_URL } from './observationFormsService/constants';
 export {
   getCurrentProvider,
   type Provider,
@@ -220,11 +225,13 @@ export {
 } from './privilegeService';
 export {
   fetchObservationForms,
+  fetchFormMetadata,
   type ObservationForm,
   type FormApiResponse,
   type ApiNameTranslation,
   type FormPrivilege,
   type ApiFormPrivilege,
+  type FormMetadata,
 } from './observationFormsService';
 
 export {
