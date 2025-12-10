@@ -10,8 +10,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useGenderData } from '../utils/identifierGenderUtils';
 import {
   convertToBasicInfoData,
-  convertToContactData,
-  convertToAdditionalData,
+  convertToPersonAttributesData,
   convertToAddressData,
   convertToAdditionalIdentifiersData,
 } from '../utils/patientDataConverter';
@@ -65,13 +64,8 @@ export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
     [patientDetails, getGenderDisplay],
   );
 
-  const contactInitialData = useMemo(
-    () => convertToContactData(patientDetails),
-    [patientDetails],
-  );
-
-  const additionalInitialData = useMemo(
-    () => convertToAdditionalData(patientDetails),
+  const personAttributesInitialData = useMemo(
+    () => convertToPersonAttributesData(patientDetails),
     [patientDetails],
   );
 
@@ -116,8 +110,7 @@ export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
     patientDetails,
     isLoading,
     profileInitialData,
-    contactInitialData,
-    additionalInitialData,
+    personAttributesInitialData,
     addressInitialData,
     additionalIdentifiersInitialData,
     initialDobEstimated,
