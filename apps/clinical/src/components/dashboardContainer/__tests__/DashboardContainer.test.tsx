@@ -4,8 +4,10 @@ import {
   dispatchAuditEvent,
 } from '@bahmni/services';
 import { usePatientUUID } from '@bahmni/widgets';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
+import { ClinicalAppProvider } from '../../../providers/ClinicalAppProvider';
 import DashboardContainer from '../DashboardContainer';
 
 // Mock scrollIntoView
@@ -23,6 +25,18 @@ jest.mock('@bahmni/services', () => ({
 // Mock the usePatientUUID hook
 jest.mock('@bahmni/widgets', () => ({
   usePatientUUID: jest.fn(),
+}));
+
+jest.mock('@tanstack/react-query', () => ({
+  ...jest.requireActual('@tanstack/react-query'),
+  useQuery: jest.fn(() => ({
+    data: {
+      encounterUuids: ['encounter-1', 'encounter-2'],
+      visitUuids: ['visit-1', 'visit-2'],
+    },
+    isLoading: false,
+    error: null,
+  })),
 }));
 
 // Mock i18n hook
@@ -47,6 +61,28 @@ const mockDispatchAuditEvent = dispatchAuditEvent as jest.MockedFunction<
 const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
 >;
+
+const renderDashboardContainerWithProvider = (
+  sections: DashboardSectionType[],
+  activeItemId?: string | null,
+) => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+  const mockEpisodeIds = ['episode-1', 'episode-2'];
+
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <ClinicalAppProvider episodeUuids={mockEpisodeIds}>
+        <DashboardContainer sections={sections} activeItemId={activeItemId} />
+      </ClinicalAppProvider>
+    </QueryClientProvider>,
+  );
+};
 
 describe('DashboardContainer Component', () => {
   // Set up and reset mocks before each test
@@ -89,7 +125,7 @@ describe('DashboardContainer Component', () => {
   ];
 
   it('renders all sections', async () => {
-    render(<DashboardContainer sections={mockSections} />);
+    renderDashboardContainerWithProvider(mockSections);
 
     // Check if all sections are rendered
     expect(screen.getByTestId('mocked-section-Section 1')).toBeInTheDocument();
@@ -97,7 +133,7 @@ describe('DashboardContainer Component', () => {
   });
 
   it('renders a message when no sections are provided', async () => {
-    render(<DashboardContainer sections={[]} />);
+    renderDashboardContainerWithProvider([]);
 
     // Check if the no sections message is rendered
     expect(screen.getByText('NO_DASHBOARD_SECTIONS')).toBeInTheDocument();
@@ -114,12 +150,7 @@ describe('DashboardContainer Component', () => {
     }));
 
     // Render component with activeItemId matching a section id
-    render(
-      <DashboardContainer
-        sections={mockSections}
-        activeItemId="section-1-id"
-      />,
-    );
+    renderDashboardContainerWithProvider(mockSections, 'section-1-id');
 
     // Wait for all effects to execute
     await waitFor(() => {
@@ -134,12 +165,7 @@ describe('DashboardContainer Component', () => {
 
   it('does not scroll when activeItemId does not match any section', async () => {
     // Render component with a non-matching activeItemId
-    render(
-      <DashboardContainer
-        sections={mockSections}
-        activeItemId="NonExistentSection"
-      />,
-    );
+    renderDashboardContainerWithProvider(mockSections, 'NonExistentSection');
 
     // Wait for any pending effects to complete
     await waitFor(() => {});
@@ -150,7 +176,7 @@ describe('DashboardContainer Component', () => {
 
   it('does not scroll when activeItemId is null', async () => {
     // Render with null activeItemId
-    render(<DashboardContainer sections={mockSections} activeItemId={null} />);
+    renderDashboardContainerWithProvider(mockSections, null);
 
     // Wait for any pending effects to complete
     await waitFor(() => {});
@@ -169,7 +195,7 @@ describe('DashboardContainer Component', () => {
       current: spyElement,
     }));
 
-    const { rerender } = render(<DashboardContainer sections={mockSections} />);
+    const { rerender } = renderDashboardContainerWithProvider(mockSections);
 
     // Add a new section
     const updatedSections: DashboardSectionType[] = [
@@ -182,18 +208,31 @@ describe('DashboardContainer Component', () => {
       },
     ];
 
-    // Re-render with new sections
-    rerender(<DashboardContainer sections={updatedSections} />);
+    // Re-render with new sections - need to provide full context
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    rerender(
+      <QueryClientProvider client={queryClient}>
+        <ClinicalAppProvider episodeUuids={['episode-1', 'episode-2']}>
+          <DashboardContainer sections={updatedSections} />
+        </ClinicalAppProvider>
+      </QueryClientProvider>,
+    );
 
     // Check if the new section is rendered
     expect(screen.getByTestId('mocked-section-Section 3')).toBeInTheDocument();
 
     // Simulate activating the new section
     rerender(
-      <DashboardContainer
-        sections={updatedSections}
-        activeItemId="section-3-id"
-      />,
+      <QueryClientProvider client={queryClient}>
+        <ClinicalAppProvider episodeUuids={['episode-1', 'episode-2']}>
+          <DashboardContainer
+            sections={updatedSections}
+            activeItemId="section-3-id"
+          />
+        </ClinicalAppProvider>
+      </QueryClientProvider>,
     );
 
     // Wait for scrollIntoView to be called for the new section
@@ -208,13 +247,22 @@ describe('DashboardContainer Component', () => {
   });
 
   it('handles section removal correctly', async () => {
-    const { rerender } = render(<DashboardContainer sections={mockSections} />);
+    const { rerender } = renderDashboardContainerWithProvider(mockSections);
 
     // Remove a section
     const reducedSections: DashboardSectionType[] = [mockSections[0]];
 
-    // Re-render with fewer sections
-    rerender(<DashboardContainer sections={reducedSections} />);
+    // Re-render with fewer sections - need to provide full context
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    rerender(
+      <QueryClientProvider client={queryClient}>
+        <ClinicalAppProvider episodeUuids={['episode-1', 'episode-2']}>
+          <DashboardContainer sections={reducedSections} />
+        </ClinicalAppProvider>
+      </QueryClientProvider>,
+    );
 
     // The second section should not be rendered anymore
     expect(
@@ -223,10 +271,14 @@ describe('DashboardContainer Component', () => {
 
     // Activating the removed section should not scroll
     rerender(
-      <DashboardContainer
-        sections={reducedSections}
-        activeItemId="section-2-id"
-      />,
+      <QueryClientProvider client={queryClient}>
+        <ClinicalAppProvider episodeUuids={['episode-1', 'episode-2']}>
+          <DashboardContainer
+            sections={reducedSections}
+            activeItemId="section-2-id"
+          />
+        </ClinicalAppProvider>
+      </QueryClientProvider>,
     );
 
     // Wait for any pending effects to complete
@@ -241,7 +293,7 @@ describe('DashboardContainer Component', () => {
       const patientUuid = 'patient-123';
       mockUsePatientUUID.mockReturnValue(patientUuid);
 
-      render(<DashboardContainer sections={mockSections} />);
+      renderDashboardContainerWithProvider(mockSections);
 
       await waitFor(() => {
         expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
@@ -256,7 +308,7 @@ describe('DashboardContainer Component', () => {
       const patientUuid = 'patient-123';
       mockUsePatientUUID.mockReturnValue(patientUuid);
 
-      render(<DashboardContainer sections={mockSections} />);
+      renderDashboardContainerWithProvider(mockSections);
 
       await waitFor(() => {
         expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
@@ -269,7 +321,7 @@ describe('DashboardContainer Component', () => {
     it('should not dispatch audit event when patient UUID is null', async () => {
       mockUsePatientUUID.mockReturnValue(null);
 
-      render(<DashboardContainer sections={mockSections} />);
+      renderDashboardContainerWithProvider(mockSections);
 
       // Wait for any effects to complete
       await waitFor(() => {
@@ -287,9 +339,7 @@ describe('DashboardContainer Component', () => {
 
       mockUsePatientUUID.mockReturnValue(firstPatientUuid);
 
-      const { rerender } = render(
-        <DashboardContainer sections={mockSections} />,
-      );
+      const { rerender } = renderDashboardContainerWithProvider(mockSections);
 
       await waitFor(() => {
         expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
@@ -303,7 +353,18 @@ describe('DashboardContainer Component', () => {
       // Change patient UUID
       mockUsePatientUUID.mockReturnValue(secondPatientUuid);
 
-      rerender(<DashboardContainer sections={mockSections} />);
+      // For rerender, we need to wrap again
+      rerender(
+        <QueryClientProvider
+          client={
+            new QueryClient({ defaultOptions: { queries: { retry: false } } })
+          }
+        >
+          <ClinicalAppProvider episodeUuids={['episode-1', 'episode-2']}>
+            <DashboardContainer sections={mockSections} />
+          </ClinicalAppProvider>
+        </QueryClientProvider>,
+      );
 
       await waitFor(() => {
         expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
@@ -319,7 +380,7 @@ describe('DashboardContainer Component', () => {
       const patientUuid = 'patient-123';
       mockUsePatientUUID.mockReturnValue(patientUuid);
 
-      render(<DashboardContainer sections={mockSections} />);
+      renderDashboardContainerWithProvider(mockSections);
 
       // Component should still render normally
       await waitFor(() => {
@@ -341,7 +402,7 @@ describe('DashboardContainer Component', () => {
       const patientUuid = 'patient-123';
       mockUsePatientUUID.mockReturnValue(patientUuid);
 
-      render(<DashboardContainer sections={mockSections} />);
+      renderDashboardContainerWithProvider(mockSections);
 
       await waitFor(() => {
         const callArgs = mockDispatchAuditEvent.mock.calls[0][0];
