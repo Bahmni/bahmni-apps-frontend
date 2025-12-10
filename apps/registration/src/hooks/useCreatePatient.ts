@@ -18,8 +18,7 @@ import type { RelationshipData } from '../components/forms/patientRelationships/
 import { convertTimeToISODateTime } from '../components/forms/profile/dateAgeUtils';
 import {
   BasicInfoData,
-  ContactData,
-  AdditionalData,
+  PersonAttributesData,
   AdditionalIdentifiersData,
 } from '../models/patient';
 import { parseDateStringToDate } from '../utils/ageUtils';
@@ -32,8 +31,8 @@ interface CreatePatientFormData {
     image?: string;
   };
   address: PatientAddress;
-  contact: ContactData;
-  additional: AdditionalData;
+  contact: PersonAttributesData;
+  additional: PersonAttributesData;
   additionalIdentifiers: AdditionalIdentifiersData;
   relationships: RelationshipData[];
 }
@@ -110,18 +109,11 @@ function transformFormDataToPayload(
     attributeMap.set(attr.name, attr.uuid);
   });
 
+  // Merge contact and additional attributes
+  const allPersonAttributes = { ...contact, ...additional };
+
   const attributes: PatientAttribute[] = [];
-
-  Object.entries(contact).forEach(([key, value]) => {
-    if (value && attributeMap.has(key)) {
-      attributes.push({
-        attributeType: { uuid: attributeMap.get(key)! },
-        value: String(value),
-      });
-    }
-  });
-
-  Object.entries(additional).forEach(([key, value]) => {
+  Object.entries(allPersonAttributes).forEach(([key, value]) => {
     if (value && attributeMap.has(key)) {
       attributes.push({
         attributeType: { uuid: attributeMap.get(key)! },

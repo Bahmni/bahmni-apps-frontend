@@ -1,5 +1,5 @@
-import type { PersonAttributeField } from '../../../hooks/usePersonAttributeFields';
-import type { ContactData } from '../../../models/patient';
+import type { PersonAttributeField } from '../../hooks/usePersonAttributeFields';
+import type { PersonAttributesData } from '../../models/patient';
 
 export interface ValidationConfig {
   pattern: string;
@@ -29,7 +29,7 @@ export const getValidationConfig = (
 };
 
 export const validateField = (
-  value: string | undefined,
+  value: string | number | boolean | undefined,
   validationConfig: ValidationConfig,
 ): { isValid: boolean; error: string } => {
   if (!value) {
@@ -37,7 +37,7 @@ export const validateField = (
   }
 
   const regex = new RegExp(validationConfig.pattern);
-  const isValid = regex.test(value);
+  const isValid = regex.test(value as string);
 
   return {
     isValid,
@@ -47,7 +47,7 @@ export const validateField = (
 
 export const validateAllFields = (
   fieldsToShow: PersonAttributeField[],
-  formData: ContactData,
+  formData: PersonAttributesData,
   fieldValidationConfig?: FieldValidationConfig,
 ): ValidationResult => {
   const errors: Record<string, string> = {};
@@ -55,7 +55,7 @@ export const validateAllFields = (
 
   fieldsToShow.forEach((field) => {
     const fieldName = field.name;
-    const value = formData[fieldName as keyof ContactData] as string;
+    const value = formData[fieldName];
     const validationConfig = getValidationConfig(
       fieldName,
       fieldValidationConfig,
@@ -71,9 +71,4 @@ export const validateAllFields = (
   });
 
   return { isValid, errors };
-};
-
-export const isNumericPhoneValue = (value: string): boolean => {
-  const numericRegex = /^\+?[0-9]*$/;
-  return numericRegex.test(value);
 };

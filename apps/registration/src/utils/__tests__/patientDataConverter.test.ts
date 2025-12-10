@@ -1,14 +1,18 @@
 import type { PatientProfileResponse } from '@bahmni/services';
 import {
   convertToBasicInfoData,
-  convertToContactData,
+  convertToPersonAttributesData,
   convertToAddressData,
-  convertToAdditionalData,
 } from '../patientDataConverter';
 
 const mockPatientData: PatientProfileResponse = {
   patient: {
+    uuid: 'patient-uuid-123',
+    display: 'John A Doe',
+    identifiers: [],
     person: {
+      uuid: 'person-uuid-123',
+      display: 'John A Doe',
       names: [
         {
           givenName: 'John',
@@ -24,12 +28,43 @@ const mockPatientData: PatientProfileResponse = {
       gender: 'M',
       attributes: [
         {
-          attributeType: { display: 'Phone Number' },
+          uuid: 'person-attr-uuid-1',
+          display: '1234567890',
+          attributeType: {
+            uuid: 'attr-uuid-1',
+            display: 'Phone Number',
+            links: [],
+          },
           value: '1234567890',
+          voided: false,
+          links: [],
+          resourceVersion: '1.8',
         },
         {
-          attributeType: { display: 'Alternate Phone Number' },
+          uuid: 'person-attr-uuid-2',
+          display: '0987654321',
+          attributeType: {
+            uuid: 'attr-uuid-2',
+            display: 'Alternate Phone Number',
+            links: [],
+          },
           value: '0987654321',
+          voided: false,
+          links: [],
+          resourceVersion: '1.8',
+        },
+        {
+          uuid: 'person-attr-uuid-3',
+          display: 'Engineer',
+          attributeType: {
+            uuid: 'attr-uuid-3',
+            display: 'Occupation',
+            links: [],
+          },
+          value: 'Engineer',
+          voided: false,
+          links: [],
+          resourceVersion: '1.8',
         },
       ],
       addresses: [
@@ -54,11 +89,28 @@ describe('patientDataConverter', () => {
     });
   });
 
-  describe('convertToContactData', () => {
-    it('should convert patient attributes to ContactData', () => {
-      const result = convertToContactData(mockPatientData);
-      expect(result?.phoneNumber).toBe('1234567890');
-      expect(result?.altPhoneNumber).toBe('0987654321');
+  describe('convertToPersonAttributesData', () => {
+    it('should convert all patient attributes to person attributes data (config-driven)', () => {
+      const result = convertToPersonAttributesData(mockPatientData);
+      // Keys use display name from attributeType
+      expect(result?.['Phone Number']).toBe('1234567890');
+      expect(result?.['Alternate Phone Number']).toBe('0987654321');
+      expect(result?.['Occupation']).toBe('Engineer');
+    });
+
+    it('should return undefined if no attributes exist', () => {
+      const emptyData: PatientProfileResponse = {
+        ...mockPatientData,
+        patient: {
+          ...mockPatientData.patient,
+          person: {
+            ...mockPatientData.patient.person,
+            attributes: undefined,
+          },
+        },
+      };
+      const result = convertToPersonAttributesData(emptyData);
+      expect(result).toBeUndefined();
     });
   });
 
@@ -70,11 +122,34 @@ describe('patientDataConverter', () => {
     });
   });
 
-  describe('convertToAdditionalData', () => {
-    it('should convert patient attributes to AdditionalData', () => {
-      const result = convertToAdditionalData(mockPatientData);
-      expect(result?.['Phone Number']).toBe('1234567890');
-      expect(result?.['Alternate Phone Number']).toBe('0987654321');
+  describe('Person Attributes Edge Cases', () => {
+    it('should return undefined when patient data has empty attributes array', () => {
+      const emptyData: PatientProfileResponse = {
+        ...mockPatientData,
+        patient: {
+          ...mockPatientData.patient,
+          person: {
+            ...mockPatientData.patient.person,
+            attributes: [],
+          },
+        },
+      };
+      const result = convertToPersonAttributesData(emptyData);
+      expect(result).toBeUndefined();
+    });
+
+    it('should use attribute display name as key', () => {
+      const result = convertToPersonAttributesData(mockPatientData);
+
+      // Keys should match the display name from attributeType
+      expect(result).toHaveProperty('Phone Number');
+      expect(result).toHaveProperty('Alternate Phone Number');
+      expect(result).toHaveProperty('Occupation');
+
+      // Not the name field
+      expect(result).not.toHaveProperty('phoneNumber');
+      expect(result).not.toHaveProperty('altPhoneNumber');
+      expect(result).not.toHaveProperty('occupation');
     });
   });
 });

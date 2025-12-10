@@ -33,6 +33,11 @@ export interface PersonAttributeInputProps {
   onChange: (value: string | number | boolean) => void;
 }
 
+const isNumericValue = (value: string): boolean => {
+  const numericRegex = /^[0-9]*$/;
+  return numericRegex.test(value);
+};
+
 /**
  * Dynamic person attribute input component that renders appropriate input
  * based on the attribute format (Boolean, Concept, String, Date, Number, etc.)
@@ -139,21 +144,10 @@ export const PersonAttributeInput = ({
             ? value
             : '';
 
-      const handleNumberKeyDown = (
-        e: React.KeyboardEvent<HTMLInputElement>,
-      ) => {
-        if (['-', '+', 'e', 'E', '.'].includes(e.key)) {
-          e.preventDefault();
-        }
-      };
-
-      const handleNumberPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-        e.preventDefault();
-        const pastedText = e.clipboardData.getData('text');
-        const sanitized = pastedText.replace(/[-+eE.]/g, '');
-
-        if (sanitized && /^\d+$/.test(sanitized)) {
-          onChange(sanitized);
+      const handleNumberChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const newValue = e.target.value;
+        if (isNumericValue(newValue)) {
+          onChange(newValue);
         }
       };
 
@@ -167,18 +161,14 @@ export const PersonAttributeInput = ({
       return (
         <TextInput
           id={uuid}
-          type="number"
+          type="text"
           labelText={label}
           placeholder={placeholder ?? label}
-          min={0}
           value={numericValue}
           invalid={!!displayError}
           invalidText={displayError}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => {
-            onChange(e.target.value);
-          }}
-          onKeyDown={handleNumberKeyDown}
-          onPaste={handleNumberPaste}
+          onChange={handleNumberChange}
+          pattern={validation?.pattern}
         />
       );
     }

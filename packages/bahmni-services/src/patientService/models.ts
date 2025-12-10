@@ -305,17 +305,25 @@ export interface PatientProfileResponse {
         voided?: boolean;
       }>;
       attributes?: Array<{
-        uuid?: string;
         display?: string;
+        uuid?: string;
         value: string | number | boolean;
         attributeType: {
-          uuid: string;
-          name: string;
-          description?: string;
-          format?: string;
+          uuid?: string;
           display?: string;
+          links: Array<{
+            rel: string;
+            uri: string;
+            resourceAlias: string;
+          }>;
         };
         voided?: boolean;
+        links: Array<{
+          rel: string;
+          uri: string;
+          resourceAlias: string;
+        }>;
+        resourceVersion: string;
       }>;
       voided?: boolean;
     };

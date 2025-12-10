@@ -75,8 +75,7 @@ const PatientRegister = () => {
 
   const {
     profileInitialData,
-    contactInitialData,
-    additionalInitialData,
+    personAttributesInitialData,
     addressInitialData,
     additionalIdentifiersInitialData,
     initialDobEstimated,
@@ -252,14 +251,14 @@ const PatientRegister = () => {
               />
               <ContactInfo
                 ref={patientContactRef}
-                initialData={contactInitialData}
+                initialData={personAttributesInitialData}
               />
             </div>
           </div>
 
           <AdditionalInfo
             ref={patientAdditionalRef}
-            initialData={additionalInitialData}
+            initialData={personAttributesInitialData}
           />
 
           {shouldShowAdditionalIdentifiers && (

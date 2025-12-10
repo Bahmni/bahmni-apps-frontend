@@ -20,8 +20,7 @@ jest.mock('../../utils/identifierGenderUtils', () => ({
 }));
 jest.mock('../../utils/patientDataConverter', () => ({
   convertToBasicInfoData: jest.fn(() => ({})),
-  convertToContactData: jest.fn(() => ({})),
-  convertToAdditionalData: jest.fn(() => ({})),
+  convertToPersonAttributesData: jest.fn(() => ({})),
   convertToAddressData: jest.fn(() => ({})),
   convertToAdditionalIdentifiersData: jest.fn(() => ({})),
 }));

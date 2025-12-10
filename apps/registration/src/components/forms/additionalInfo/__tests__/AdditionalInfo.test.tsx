@@ -2,7 +2,7 @@ import { useTranslation } from '@bahmni/services';
 import { render, fireEvent, screen, act } from '@testing-library/react';
 import { createRef } from 'react';
 import '@testing-library/jest-dom';
-import { AdditionalData } from '../../../../models/patient';
+import { PersonAttributesData } from '../../../../models/patient';
 import { AdditionalInfo, AdditionalInfoRef } from '../AdditionalInfo';
 
 // Mock the translation hook
@@ -142,7 +142,7 @@ describe('AdditionalInfo', () => {
 
   describe('Rendering', () => {
     it('renders correctly with initial data', () => {
-      const initialData: AdditionalData = { email: 'test@example.com' };
+      const initialData: PersonAttributesData = { email: 'test@example.com' };
       render(<AdditionalInfo initialData={initialData} />);
 
       const emailInput = screen.getByLabelText(
@@ -420,12 +420,12 @@ describe('AdditionalInfo', () => {
       expect(data).toEqual({ email: 'data@example.com' });
     });
 
-    it('returns empty object for unfilled fields', () => {
+    it('returns only displayed fields when unfilled', () => {
       const ref = createRef<AdditionalInfoRef>();
       render(<AdditionalInfo ref={ref} />);
 
       const data = ref.current?.getData();
-      expect(data).toEqual({ email: '' });
+      expect(data).toEqual({ email: undefined });
     });
 
     it('returns all field values for multiple fields', () => {
@@ -467,7 +467,7 @@ describe('AdditionalInfo', () => {
     });
 
     it('preserves initial data and merges with changes', () => {
-      const initialData: AdditionalData = {
+      const initialData: PersonAttributesData = {
         email: 'initial@example.com',
       };
 
@@ -485,6 +485,21 @@ describe('AdditionalInfo', () => {
 
       const data = ref.current?.getData();
       expect(data).toEqual({ email: 'updated@example.com' });
+    });
+
+    it('should only return fields that are displayed by this component', () => {
+      const initialData: PersonAttributesData = {
+        email: 'test@example.com',
+        phoneNumber: '1234567890',
+      };
+
+      const ref = createRef<AdditionalInfoRef>();
+      render(<AdditionalInfo initialData={initialData} ref={ref} />);
+
+      const data = ref.current?.getData();
+
+      expect(data).toHaveProperty('email', 'test@example.com');
+      expect(data).not.toHaveProperty('phoneNumber');
     });
   });
 

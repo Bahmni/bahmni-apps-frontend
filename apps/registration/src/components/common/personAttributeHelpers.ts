@@ -1,5 +1,5 @@
-import type { PersonAttributeField } from '../../../hooks/usePersonAttributeFields';
-import type { ContactData } from '../../../models/patient';
+import type { PersonAttributeField } from '../../hooks/usePersonAttributeFields';
+import type { PersonAttributesData } from '../../models/patient';
 
 export interface ConfigAttribute {
   field: string;
@@ -32,15 +32,11 @@ export const createFieldTranslationMap = (
 
 export const initializeFormData = (
   fieldsToShow: PersonAttributeField[],
-  initialData?: ContactData,
-): ContactData => {
-  const data: ContactData = {
-    phoneNumber: '',
-    altPhoneNumber: '',
-  };
+  initialData?: PersonAttributesData,
+): PersonAttributesData => {
+  const data: PersonAttributesData = {};
   fieldsToShow.forEach((field) => {
-    data[field.name as keyof ContactData] =
-      (initialData?.[field.name as keyof ContactData] as string) ?? '';
+    data[field.name] = initialData?.[field.name] ?? '';
   });
   return data;
 };
