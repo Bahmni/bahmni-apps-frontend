@@ -112,6 +112,7 @@
   "ERROR_DEFAULT_TITLE": "Error",
   "ERROR_FETCHING_CONCEPTS": "An unexpected error occurred. Please try again later.",
   "ERROR_FETCHING_ENCOUNTER_DETAILS": "Error fetching encounter details",
+  "ERROR_FETCHING_FORM_METADATA": "Error fetching form metadata",
   "ERROR_FETCHING_LOCATIONS_DETAILS": "Error fetching locations details",
   "ERROR_FETCHING_MEDICATION_CONFIG": "Error fetching medication configuration",
   "ERROR_FETCHING_PRACTITIONERS_DETAILS": "Error fetching practitioners details",
@@ -128,6 +129,7 @@
   "ERROR_SEARCHING_INVESTIGATIONS": "Error searching investigations",
   "ERROR_SEARCHING_MEDICATIONS": "Error searching medications",
   "ERROR_VALIDATION_TITLE": "Validation Error",
+  "ERROR_FETCHING_CLINICAL_DATA": "Invalid episode uuid",
   "INPUT_VALUE_REQUIRED": "Please enter a value",
   "INVALID_RESPONSE": "Invalid response received from the server",
   "INVESTIGATIONS_ADDED": "Added {{investigationType}}",
@@ -202,6 +204,8 @@
   "OBSERVATION_FORMS_ERROR_LOADING_FORMS": "Error loading forms. Please try again later.",
   "OBSERVATION_FORMS_FORM_ALREADY_ADDED": "Already added",
   "OBSERVATION_FORMS_LOADING_FORMS": "Loading forms...",
+  "OBSERVATION_FORM_LOADING_METADATA": "Loading form's metadata...",
+  "OBSERVATION_FORM_LOADING_METADATA_ERROR": "Error loading form metadata",
   "OBSERVATION_FORMS_NO_FORMS_FOUND": "No matching forms found",
   "OBSERVATION_FORMS_SEARCH_ARIA_LABEL": "Search for observation forms",
   "OBSERVATION_FORMS_SEARCH_PLACEHOLDER": "Search to add observation form",
@@ -243,5 +247,4 @@
   "CONTROL_NOT_FOUND": "No controls registered for type: {{type}}",
   "NO_CONFIGURED_CONTROLS": "No configured controls to for this section",
   "INITIALIZING_CONTROL": "Initializing control..."
-
 }

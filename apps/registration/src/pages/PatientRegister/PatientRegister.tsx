@@ -38,6 +38,7 @@ import {
   PatientRelationshipsRef,
 } from '../../components/forms/patientRelationships/PatientRelationships';
 import { Profile, ProfileRef } from '../../components/forms/profile/Profile';
+import { RegistrationActions } from '../../components/registrationActions/RegistrationActions';
 import { BAHMNI_REGISTRATION_SEARCH, getPatientUrl } from '../../constants/app';
 
 import { useAdditionalIdentifiers } from '../../hooks/useAdditionalIdentifiers';
@@ -48,7 +49,6 @@ import { useRelationshipValidation } from '../../hooks/useRelationshipValidation
 import { useUpdatePatient } from '../../hooks/useUpdatePatient';
 import { validateAllSections, collectFormData } from './patientFormService';
 import styles from './styles/index.module.scss';
-import { VisitTypeSelector } from './visitTypeSelector';
 
 const PatientRegister = () => {
   const { t } = useTranslation();
@@ -78,6 +78,7 @@ const PatientRegister = () => {
     contactInitialData,
     additionalInitialData,
     addressInitialData,
+    additionalIdentifiersInitialData,
     initialDobEstimated,
     metadata: initialMetadata,
   } = usePatientDetails({
@@ -158,6 +159,7 @@ const PatientRegister = () => {
         const response = (await updatePatientMutation.mutateAsync({
           patientUuid,
           ...formData,
+          additionalIdentifiersInitialData,
         })) as PatientProfileResponse;
         if (response?.patient?.uuid) {
           setMetadata({
@@ -260,11 +262,15 @@ const PatientRegister = () => {
             initialData={additionalInitialData}
           />
 
+          {shouldShowAdditionalIdentifiers && (
+            <AdditionalIdentifiers
+              ref={patientAdditionalIdentifiersRef}
+              initialData={additionalIdentifiersInitialData}
+            />
+          )}
+
           {Array.isArray(relationshipTypes) && relationshipTypes.length > 0 && (
             <PatientRelationships ref={patientRelationshipsRef} />
-          )}
-          {shouldShowAdditionalIdentifiers && (
-            <AdditionalIdentifiers ref={patientAdditionalIdentifiersRef} />
           )}
 
           {/* Footer Actions */}
@@ -279,12 +285,9 @@ const PatientRegister = () => {
               <Button kind="tertiary" onClick={handleSave}>
                 {t('CREATE_PATIENT_SAVE')}
               </Button>
-              <Button kind="tertiary">
-                {t('CREATE_PATIENT_PRINT_REG_CARD')}
-              </Button>
-              <VisitTypeSelector
-                onVisitSave={handleSave}
-                patientUuid={patientUuid}
+              <RegistrationActions
+                extensionPointId="org.bahmni.registration.navigation"
+                onBeforeNavigate={handleSave}
               />
             </div>
           </div>

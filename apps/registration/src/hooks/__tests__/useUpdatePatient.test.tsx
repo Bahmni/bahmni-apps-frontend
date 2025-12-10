@@ -118,6 +118,8 @@ describe('useUpdatePatient', () => {
     additional: {
       email: 'john.doe@example.com',
     },
+    additionalIdentifiers: {},
+    additionalIdentifiersInitialData: undefined,
   };
 
   const mockSuccessResponse = {
@@ -377,6 +379,7 @@ describe('useUpdatePatient', () => {
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
         title: 'Error updating patient',
+        timeout: 5000,
         message: 'API Error',
       });
 
@@ -406,6 +409,7 @@ describe('useUpdatePatient', () => {
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
         title: 'Error updating patient',
+        timeout: 5000,
         message: 'Network request failed',
       });
     });
@@ -430,6 +434,7 @@ describe('useUpdatePatient', () => {
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
         title: 'Error updating patient',
+        timeout: 5000,
         message: '[object Object]',
       });
     });
@@ -863,6 +868,158 @@ describe('useUpdatePatient', () => {
           },
           value: 'john@example.com',
         },
+      ]);
+    });
+  });
+
+  describe('Additional Identifiers', () => {
+    it('should include new additional identifiers in the payload', async () => {
+      const formDataWithNewIdentifiers = {
+        ...mockFormData,
+        additionalIdentifiers: {
+          'pan-uuid': 'AAAAG3456B',
+          'aadhar-uuid': '123456789012',
+        },
+        additionalIdentifiersInitialData: undefined,
+      };
+
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useUpdatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(formDataWithNewIdentifiers);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const callArgs = mockUpdatePatient.mock.calls[0][1];
+
+      // Verify both new identifiers are included
+      expect(callArgs.patient.identifiers).toHaveLength(3); // primary + 2 additional
+      expect(callArgs.patient.identifiers).toEqual([
+        mockFormData.profile.patientIdentifier,
+        {
+          identifier: 'AAAAG3456B',
+          identifierType: 'pan-uuid',
+          preferred: false,
+        },
+        {
+          identifier: '123456789012',
+          identifierType: 'aadhar-uuid',
+          preferred: false,
+        },
+      ]);
+    });
+
+    it('should skip existing identifiers and only send new ones', async () => {
+      const formDataWithMixedIdentifiers = {
+        ...mockFormData,
+        additionalIdentifiers: {
+          'pan-uuid': 'AAAAG3456B', // Existing
+          'aadhar-uuid': '123456789012', // New
+        },
+        additionalIdentifiersInitialData: {
+          'pan-uuid': 'AAAAG3456B', // Has initial data - should be skipped
+        },
+      };
+
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useUpdatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(formDataWithMixedIdentifiers);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const callArgs = mockUpdatePatient.mock.calls[0][1];
+
+      // Verify only new identifier is included (Aadhar), not existing (PAN)
+      expect(callArgs.patient.identifiers).toHaveLength(2); // primary + 1 new
+      expect(callArgs.patient.identifiers).toEqual([
+        mockFormData.profile.patientIdentifier,
+        {
+          identifier: '123456789012',
+          identifierType: 'aadhar-uuid',
+          preferred: false,
+        },
+      ]);
+    });
+
+    it('should filter out empty additional identifiers', async () => {
+      const formDataWithEmptyIdentifiers = {
+        ...mockFormData,
+        additionalIdentifiers: {
+          'pan-uuid': 'AAAAG3456B',
+          'aadhar-uuid': '',
+          'license-uuid': '   ',
+        },
+        additionalIdentifiersInitialData: undefined,
+      };
+
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useUpdatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(formDataWithEmptyIdentifiers);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const callArgs = mockUpdatePatient.mock.calls[0][1];
+
+      // Verify only non-empty identifier is included
+      expect(callArgs.patient.identifiers).toHaveLength(2); // primary + 1
+      expect(callArgs.patient.identifiers).toEqual([
+        mockFormData.profile.patientIdentifier,
+        {
+          identifier: 'AAAAG3456B',
+          identifierType: 'pan-uuid',
+          preferred: false,
+        },
+      ]);
+    });
+
+    it('should not include any additional identifiers when all have initial data', async () => {
+      const formDataWithAllExisting = {
+        ...mockFormData,
+        additionalIdentifiers: {
+          'pan-uuid': 'AAAAG3456B',
+          'aadhar-uuid': '123456789012',
+        },
+        additionalIdentifiersInitialData: {
+          'pan-uuid': 'AAAAG3456B',
+          'aadhar-uuid': '123456789012',
+        },
+      };
+
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useUpdatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(formDataWithAllExisting);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const callArgs = mockUpdatePatient.mock.calls[0][1];
+
+      // Verify only primary identifier is included
+      expect(callArgs.patient.identifiers).toHaveLength(1);
+      expect(callArgs.patient.identifiers).toEqual([
+        mockFormData.profile.patientIdentifier,
       ]);
     });
   });

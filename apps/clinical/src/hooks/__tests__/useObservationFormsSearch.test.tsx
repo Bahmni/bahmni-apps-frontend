@@ -119,12 +119,11 @@ describe('useObservationFormsSearch', () => {
       expect(result.current.forms).toEqual([]);
       expect(result.current.error).toBeNull();
 
-      // Wait for API call to complete
+      // Wait for forms to be loaded
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.forms).toEqual(mockFormsData);
       });
 
-      expect(result.current.forms).toEqual(mockFormsData);
       expect(result.current.error).toBeNull();
       expect(fetchObservationForms).toHaveBeenCalledTimes(1);
     });
