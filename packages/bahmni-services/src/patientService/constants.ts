@@ -21,7 +21,7 @@ const FIELD_TYPE_CONFIG = {
     searchFieldParam: 'addressFieldName',
     resultParam: 'addressSearchResultsConfig',
   },
-} as const;
+};
 
 /**
  * Helper function to append search result fields to URL params based on field type configuration.
