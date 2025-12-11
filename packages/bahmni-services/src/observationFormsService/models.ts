@@ -52,3 +52,45 @@ export interface FormMetadata {
   published: boolean;
   schema: unknown; // The parsed form schema/definition
 }
+
+// Observation payload structure (used in consultation bundle)
+export interface ObservationPayload {
+  concept: { uuid: string };
+  value: string | number | boolean | ConceptValue;
+  obsDatetime?: string;
+  groupMembers?: ObservationPayload[];
+  comment?: string;
+  formFieldPath?: string; // Track which form field this came from
+}
+
+// Concept value for coded answers
+export interface ConceptValue {
+  uuid: string;
+  display?: string;
+}
+
+// Consultation bundle structure (simplified - shows observation forms integration)
+export interface ConsultationBundle {
+  patientUuid: string;
+  encounterTypeUuid: string;
+  visitUuid?: string;
+  providers?: Array<{ uuid: string }>;
+  observations: ObservationPayload[]; // Observation forms data goes here
+  diagnoses?: DiagnosisPayload[];
+  orders?: OrderPayload[];
+  // ... other consultation data
+}
+
+// Supporting interfaces for consultation bundle
+export interface DiagnosisPayload {
+  diagnosis: { uuid: string };
+  certainty: string;
+  order: string;
+}
+
+export interface OrderPayload {
+  concept: { uuid: string };
+  orderType: string;
+  action: string;
+  // ... other order fields
+}

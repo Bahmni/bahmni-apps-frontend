@@ -11,4 +11,22 @@ export {
   type FormMetadata,
   type FormMetadataApiResponse,
   type FormResource,
+  type ConsultationBundle,
+  type DiagnosisPayload,
+  type OrderPayload,
 } from './models';
+export {
+  transformFormDataToObservations,
+  transformObservationsToFormData,
+  type FormData,
+  type FormControlData,
+  type ObservationPayload,
+  type ConceptValue,
+} from './observationFormsTransformer';
+export {
+  validateFormData,
+  hasFormData,
+  validateRequiredFields,
+  type ValidationError,
+  type ValidationResult,
+} from './observationFormsValidator';
