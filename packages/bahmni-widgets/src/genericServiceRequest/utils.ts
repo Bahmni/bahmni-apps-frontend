@@ -85,6 +85,7 @@ export function createServiceRequestViewModels(
       priority: order.priority!,
       orderedBy: order.requester!.display!,
       orderedDate: orderedDate,
+      status: order.status!,
       ...(replaces && replaces.length > 0 && { replaces }),
     };
   });

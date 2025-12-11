@@ -140,6 +140,7 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
     () => [
       { key: 'testName', header: t('SERVICE_REQUEST_TEST_NAME') },
       { key: 'orderedBy', header: t('SERVICE_REQUEST_ORDERED_BY') },
+      { key: 'status', header: t('SERVICE_REQUEST_ORDERED_STATUS') },
     ],
     [t],
   );
@@ -148,6 +149,7 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
     () => [
       { key: 'testName', sortable: true },
       { key: 'orderedBy', sortable: true },
+      { key: 'status', sortable: true },
     ],
     [],
   );
@@ -193,6 +195,21 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
           );
         case 'orderedBy':
           return request.orderedBy;
+        case 'status':
+          return (
+            <>
+              {request.status === 'active' && (
+                <Tag type="outline">{t('IN_PROGRESS_STATUS')}</Tag>
+              )}
+              {request.status === 'completed' && (
+                <Tag type="outline">{t('COMPLETED_STATUS')}</Tag>
+              )}
+              {request.status === 'revoked' && (
+                <Tag type="outline">{t('REVOKED_STATUS')}</Tag>
+              )}
+            </>
+          );
+
         default:
           return null;
       }

@@ -4,5 +4,6 @@ export interface ServiceRequestViewModel {
   priority: string;
   orderedBy: string;
   orderedDate: string;
+  status: string;
   replaces?: string[];
 }
