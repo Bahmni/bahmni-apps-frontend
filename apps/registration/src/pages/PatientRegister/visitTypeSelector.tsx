@@ -8,13 +8,13 @@ import {
   getVisitLocationUUID,
   dispatchAuditEvent,
   AUDIT_LOG_EVENT_DETAILS,
-  getRegistrationConfig,
   type VisitData,
   type AuditEventType,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
+import { useRegistrationConfig } from '../../hooks/useRegistrationConfig';
 import styles from './styles/VisitTypeSelector.module.scss';
 
 interface VisitTypeSelectorProps {
@@ -31,6 +31,7 @@ export const VisitTypeSelector = ({
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const [visitPayload, setVisitPayload] = useState<VisitData>();
+  const { registrationConfig } = useRegistrationConfig();
 
   const {
     data: visitTypes,
@@ -46,13 +47,6 @@ export const VisitTypeSelector = ({
   const { data: visitLocationUUID } = useQuery({
     queryKey: ['visitLocationUUID', getUserLoginLocation().uuid],
     queryFn: () => getVisitLocationUUID(getUserLoginLocation().uuid),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  });
-
-  const { data: registrationConfig } = useQuery({
-    queryKey: ['registrationConfig'],
-    queryFn: getRegistrationConfig,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
