@@ -225,12 +225,24 @@ export {
 export {
   fetchObservationForms,
   fetchFormMetadata,
+  transformFormDataToObservations,
+  transformObservationsToFormData,
+  validateFormData,
+  hasFormData,
+  validateRequiredFields,
   type ObservationForm,
   type FormApiResponse,
   type ApiNameTranslation,
   type FormPrivilege,
   type ApiFormPrivilege,
   type FormMetadata,
+  type FormData,
+  type FormControlData,
+  type ObservationPayload,
+  type ConceptValue,
+  type ConsultationBundle,
+  type ValidationError,
+  type ValidationResult,
 } from './observationFormsService';
 
 export {

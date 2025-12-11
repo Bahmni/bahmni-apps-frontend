@@ -10,6 +10,7 @@ import {
   dispatchAuditEvent,
   useTranslation,
   ObservationForm,
+  ObservationPayload,
   refreshQueries,
 } from '@bahmni/services';
 import { conditionsQueryKeys, useNotification } from '@bahmni/widgets';
@@ -58,6 +59,10 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   const [selectedForms, setSelectedForms] = React.useState<ObservationForm[]>(
     [],
   );
+  // State to hold observations from all observation forms
+  const [observationFormsData, setObservationFormsData] = React.useState<
+    Record<string, ObservationPayload[]>
+  >({});
   const queryClient = useQueryClient();
   const { t } = useTranslation();
   const { addNotification } = useNotification();
@@ -132,6 +137,12 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   // Helper function to remove form from selected forms list
   const removeFormFromSelected = (formUuid: string) => {
     setSelectedForms((prev) => prev.filter((form) => form.uuid !== formUuid));
+    // Also remove form data when form is removed
+    setObservationFormsData((prev) => {
+      const updated = { ...prev };
+      delete updated[formUuid];
+      return updated;
+    });
   };
 
   const handleFormSelection = (form: ObservationForm) => {
@@ -149,6 +160,17 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     // Open form view
     handleViewingFormChange(form);
   };
+
+  // Callback to receive observation form data
+  const handleFormObservationsChange = React.useCallback(
+    (formUuid: string, observations: ObservationPayload[]) => {
+      setObservationFormsData((prev) => ({
+        ...prev,
+        [formUuid]: observations,
+      }));
+    },
+    [],
+  );
 
   // Data validation check for consultation submission
   const canSubmitConsultation = !!(
@@ -236,6 +258,17 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       practitionerUUID: practitionerUUID,
     });
 
+    // TODO: Convert observation forms data to FHIR Observation resources
+    // The observationFormsData contains ObservationPayload[] from each form
+    // These need to be converted to FHIR Observation resources and included in the bundle
+    // Example:
+    // const observationEntries = createObservationBundleEntries({
+    //   observationFormsData,
+    //   encounterSubject: encounterResource.subject!,
+    //   encounterReference,
+    //   practitionerUUID: practitionerUUID,
+    // });
+
     const consultationBundle = createConsultationBundle([
       encounterBundleEntry,
       ...diagnosisEntries,
@@ -243,6 +276,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       ...conditionEntries,
       ...serviceRequestEntries,
       ...medicationEntries,
+      // ...observationEntries,  // TODO: Add when observation conversion is implemented
     ]);
 
     return postConsultationBundle<ConsultationBundle>(consultationBundle);
@@ -281,6 +315,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         resetEncounterDetails();
         resetServiceRequests();
         resetMedications();
+        // Clear observation forms data after successful save
+        setObservationFormsData({});
+        setSelectedForms([]);
 
         if (selectedConditions.length > 0)
           await refreshQueries(queryClient, conditionsQueryKeys(patientUUID));
@@ -311,6 +348,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     resetAllergies();
     resetServiceRequests();
     resetMedications();
+    // Clear observation forms data on cancel
+    setObservationFormsData({});
+    setSelectedForms([]);
     onClose();
   };
   const consultationContent = (
@@ -346,6 +386,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         onRemoveForm={removeFormFromSelected}
         pinnedForms={pinnedForms}
         updatePinnedForms={updatePinnedForms}
+        onFormObservationsChange={handleFormObservationsChange}
+        existingObservations={observationFormsData[viewingForm.uuid]}
       />
     );
   }

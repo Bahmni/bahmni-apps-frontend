@@ -124,7 +124,6 @@ export function transformFormDataToObservations(
 
       observations.push(observation);
     } catch (error) {
-      console.error(`Failed to transform control ${control.id}:`, error);
       // Continue processing other controls
     }
   });

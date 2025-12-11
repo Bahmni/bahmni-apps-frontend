@@ -11,6 +11,7 @@ import {
 import '@bahmni/form2-controls/dist/bundle.css';
 import {
   ObservationForm,
+  ObservationPayload,
   getFormattedError,
   getUserPreferredLocale,
 } from '@bahmni/services';
@@ -19,6 +20,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_FORM_API_NAMES } from '../../../constants/forms';
 import { useObservationFormActions } from '../../../hooks/useObservationFormActions';
+import { useObservationFormData } from '../../../hooks/useObservationFormData';
 import { useObservationFormMetadata } from '../../../hooks/useObservationFormMetadata';
 import { useObservationFormPinning } from '../../../hooks/useObservationFormPinning';
 import styles from './styles/ObservationFormsContainer.module.scss';
@@ -33,6 +35,13 @@ interface ObservationFormsContainerProps {
   // Pinned forms state passed from parent (required)
   pinnedForms: ObservationForm[];
   updatePinnedForms: (newPinnedForms: ObservationForm[]) => Promise<void>;
+  // Callback to lift observation form data to parent for consultation bundle
+  onFormObservationsChange?: (
+    formUuid: string,
+    observations: ObservationPayload[],
+  ) => void;
+  // Existing saved observations for the current form (for edit mode)
+  existingObservations?: ObservationPayload[];
 }
 
 /**
@@ -51,6 +60,8 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   onRemoveForm,
   pinnedForms,
   updatePinnedForms,
+  onFormObservationsChange,
+  existingObservations,
 }) => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
@@ -66,11 +77,26 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     updatePinnedForms,
   });
 
+  const {
+    observations,
+    hasData,
+    isValid,
+    validationErrors,
+    handleFormDataChange,
+    clearFormData,
+  } = useObservationFormData();
+
   const { handleDiscardForm, handleSaveForm, handleBackToForms } =
     useObservationFormActions({
       viewingForm,
       onViewingFormChange,
       onRemoveForm,
+      observations,
+      hasData,
+      isValid,
+      validationErrors,
+      onFormObservationsChange,
+      clearFormData,
     });
 
   // Format error for display
@@ -92,14 +118,14 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         ) : formMetadata && patientUUID ? (
           <Container
             metadata={formMetadata.schema as Form2FormMetadata}
-            observations={[]}
+            observations={existingObservations ?? []}
             patient={{ uuid: patientUUID }}
             translations={{}}
             validate={false}
             validateForm={false}
             collapse={false}
             locale={getUserPreferredLocale()}
-            onValueUpdated={() => {}}
+            onValueUpdated={handleFormDataChange}
           />
         ) : (
           <div>{t('OBSERVATION_FORM_LOADING_METADATA_ERROR')}</div>
