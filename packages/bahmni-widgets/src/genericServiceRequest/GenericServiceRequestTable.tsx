@@ -29,13 +29,20 @@ export const orderTypesQueryKeys = () => ['orderTypes'] as const;
 export const genericServiceRequestQueryKeys = (
   categoryUuid: string,
   patientUUID: string,
-) => ['genericServiceRequest', categoryUuid, patientUUID] as const;
+  encounterUuids?: string[],
+) =>
+  ['genericServiceRequest', categoryUuid, patientUUID, encounterUuids] as const;
 
 const fetchServiceRequests = async (
   categoryUuid: string,
   patientUUID: string,
+  encounterUuids?: string[],
 ): Promise<ServiceRequestViewModel[]> => {
-  const response = await getServiceRequests(categoryUuid, patientUUID);
+  const response = await getServiceRequests(
+    categoryUuid,
+    patientUUID,
+    encounterUuids,
+  );
   return createServiceRequestViewModels(response);
 };
 
@@ -43,13 +50,16 @@ const fetchServiceRequests = async (
  * Component to display patient service requests grouped by date in accordion format
  * Each accordion item contains a SortableDataTable with service requests for that date
  */
-const GenericServiceRequestTable: React.FC<WidgetProps> = ({ config }) => {
+const GenericServiceRequestTable: React.FC<WidgetProps> = ({
+  config,
+  encounterUuids,
+  visitUuids,
+}) => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
   const categoryName = (config?.category as string) || '';
 
-  // Fetch order types to get the category UUID
   const {
     data: orderTypesData,
     isLoading: isLoadingOrderTypes,
@@ -60,7 +70,6 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({ config }) => {
     queryFn: getOrderTypes,
   });
 
-  // Find the category UUID from the category name
   const categoryUuid = useMemo(() => {
     if (!orderTypesData || !categoryName) return '';
     const orderType = orderTypesData.results.find(
@@ -69,16 +78,31 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({ config }) => {
     return orderType?.uuid ?? '';
   }, [orderTypesData, categoryName]);
 
-  // Fetch service requests using the category UUID
+  const combinedEncounterUuids = useMemo(() => {
+    const combined: string[] = [];
+    if (encounterUuids) {
+      combined.push(...encounterUuids);
+    }
+    if (visitUuids) {
+      combined.push(...visitUuids);
+    }
+    return combined.length > 0 ? combined : undefined;
+  }, [encounterUuids, visitUuids]);
+
   const {
     data,
     isLoading: isLoadingServiceRequests,
     isError: isServiceRequestsError,
     error: serviceRequestsError,
   } = useQuery({
-    queryKey: genericServiceRequestQueryKeys(categoryUuid, patientUUID!),
+    queryKey: genericServiceRequestQueryKeys(
+      categoryUuid,
+      patientUUID!,
+      combinedEncounterUuids,
+    ),
     enabled: !!patientUUID && !!categoryUuid,
-    queryFn: () => fetchServiceRequests(categoryUuid, patientUUID!),
+    queryFn: () =>
+      fetchServiceRequests(categoryUuid, patientUUID!, encounterUuids),
   });
 
   useEffect(() => {
@@ -140,7 +164,11 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({ config }) => {
       },
     );
 
-    const groupedData = grouped.map((group) => ({
+    const sortedGroups = grouped.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
+
+    const groupedData = sortedGroups.map((group) => ({
       date: group.date,
       requests: group.items,
     }));

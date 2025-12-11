@@ -76,6 +76,7 @@
   "CONSULTATION_PAD_TITLE": "Nueva Consulta",
   "CONSULTATION_SUBMITTED_SUCCESS_MESSAGE": "Consulta salvado correctamente",
   "CONSULTATION_SUBMITTED_SUCCESS_TITLE": "Éxito",
+  "DASHBOARD_TITLE_EXAMINATION_KEY": "Examination",
   "DEFAULT_AND_PINNED_FORMS_NO_FORMS_FOUND": "No hay formularios predeterminados o fijados",
   "DEFAULT_AND_PINNED_FORMS_TITLE": "Formularios Predeterminados y Anclados",
   "DEFAULT_FORM_HISTORY_AND_EXAMINATION": "Historia y Examen",
@@ -139,6 +140,7 @@
   "INVESTIGATION_ALREADY_SELECTED": "(Ya seleccionado)",
   "INVESTIGATION_PANEL": "Panel",
   "INVESTIGATION_PRIORITY_URGENT": "Urgente",
+  "INITIALIZING_CONTROL": "Initializing control...",
   "LAB_TEST_ERROR_LOADING": "Error al cargar pruebas de laboratorio",
   "LAB_TEST_LOADING": "Cargando pruebas de laboratorio...",
   "LAB_TEST_ORDERED_BY": "Ordenado por",
@@ -200,6 +202,7 @@
   "NO_MEDICATION_HISTORY": "No hay historial de medicamentos",
   "NO_RADIOLOGY_INVESTIGATIONS": "No se encontraron investigaciones de radiología",
   "NO_VITAL_SIGNS_DATA": "No se encontraron datos de signos vitales",
+  "NO_SERVICE_REQUESTS": "No service requests recorded",
   "OBSERVATION_FORMS_ADDED_FORMS": "Formularios Agregados",
   "OBSERVATION_FORMS_ERROR_LOADING_FORMS": "Error al cargar formularios. Por favor, inténtelo de nuevo más tarde.",
   "OBSERVATION_FORMS_FORM_ALREADY_ADDED": "Ya agregado",
@@ -246,5 +249,8 @@
   "VITAL_SIGNS_TEMPERATURE": "Temperatura",
   "CONTROL_NOT_FOUND": "Aucun contrôle enregistré pour le type : {{type}}",
   "NO_CONFIGURED_CONTROLS": "Aucune commande configurée pour cette section",
-  "INITIALIZING_CONTROL": "Initialisation du contrôle..."
+  "SERVICE_REQUEST_TEST_NAME": "Order name",
+  "SERVICE_REQUEST_ORDERED_BY": "Ordered By",
+  "SERVICE_REQUEST_HEADING": "Service Requests",
+  "SERVICE_REQUEST_PRIORITY_URGENT": "Urgent"
 }
