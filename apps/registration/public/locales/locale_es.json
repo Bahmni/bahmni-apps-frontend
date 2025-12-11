@@ -87,7 +87,6 @@
   "ERROR_LOADING_PATIENT_PHOTO": "Error al cargar la foto del paciente",
   "ERROR_SAVING_PATIENT": "Error al guardar el paciente",
   "ERROR_UPDATING_PATIENT": "Error al actualizar el paciente",
-  "EMAIL_VALIDATION_ERROR": "Por favor, introduce una dirección de correo electrónico válida",
   "LOADING_PATIENT_DETAILS": "Navegando a los detalles del paciente...",
   "PATIENT_SAVED_SUCCESSFULLY": "Paciente guardado exitosamente",
   "PATIENT_SEARCH_GENDER_M": "M",

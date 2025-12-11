@@ -87,7 +87,6 @@
   "ERROR_LOADING_PATIENT_PHOTO": "Error Loading Patient Photo",
   "ERROR_SAVING_PATIENT": "Error saving patient",
   "ERROR_UPDATING_PATIENT": "Error updating patient",
-  "EMAIL_VALIDATION_ERROR": "Please enter a valid email address",
   "LOADING_PATIENT_DETAILS": "Navigating to patient details...",
   "PATIENT_SAVED_SUCCESSFULLY": "Patient saved successfully",
   "PATIENT_SEARCH_GENDER_M": "M",

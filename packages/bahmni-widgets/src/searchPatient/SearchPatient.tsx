@@ -195,7 +195,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       } else if (isEmailSearch()) {
         const fieldValidationError = validateFieldInput('email', trimmedValue);
         if (fieldValidationError) {
-          setValidationError(t('EMAIL_VALIDATION_ERROR'));
+          setValidationError(t(fieldValidationError));
           return;
         } else {
           setValidationError('');
