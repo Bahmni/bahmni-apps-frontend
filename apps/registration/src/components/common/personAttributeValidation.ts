@@ -31,6 +31,7 @@ export const getValidationConfig = (
 export const validateField = (
   value: string | number | boolean | undefined,
   validationConfig: ValidationConfig,
+  t: (key: string) => string,
 ): { isValid: boolean; error: string } => {
   if (!value) {
     return { isValid: true, error: '' };
@@ -41,7 +42,7 @@ export const validateField = (
 
   return {
     isValid,
-    error: isValid ? '' : validationConfig.errorMessage,
+    error: isValid ? '' : t(validationConfig.errorMessage),
   };
 };
 
@@ -49,6 +50,7 @@ export const validateAllFields = (
   fieldsToShow: PersonAttributeField[],
   formData: PersonAttributesData,
   fieldValidationConfig?: FieldValidationConfig,
+  t?: (key: string) => string,
 ): ValidationResult => {
   const errors: Record<string, string> = {};
   let isValid = true;
@@ -61,8 +63,8 @@ export const validateAllFields = (
       fieldValidationConfig,
     );
 
-    if (validationConfig && value) {
-      const result = validateField(value, validationConfig);
+    if (validationConfig && value && t) {
+      const result = validateField(value, validationConfig, t);
       if (!result.isValid) {
         errors[fieldName] = result.error;
         isValid = false;

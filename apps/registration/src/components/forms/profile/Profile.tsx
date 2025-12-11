@@ -193,7 +193,7 @@ export const Profile = ({
       // Invalid input: show pattern error (don't update the field value)
       setNameErrors((prev) => ({
         ...prev,
-        [field]: errorMessage,
+        [field]: errorMessage ? t(errorMessage) : '',
       }));
     }
   };

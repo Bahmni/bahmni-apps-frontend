@@ -82,10 +82,11 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
       fieldsToShow,
       formData,
       fieldValidationConfig,
+      t,
     );
     setErrors(result.errors);
     return result.isValid;
-  }, [fieldsToShow, formData, fieldValidationConfig]);
+  }, [fieldsToShow, formData, fieldValidationConfig, t]);
 
   const getData = useCallback((): PersonAttributesData => {
     const displayedData: PersonAttributesData = {};
