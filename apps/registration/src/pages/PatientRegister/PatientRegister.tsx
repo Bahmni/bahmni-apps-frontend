@@ -227,7 +227,7 @@ const PatientRegister = () => {
                   <div className={styles.infoContainer}>
                     <div
                       className={styles.patientId}
-                    >{`Patient ID: ${metadata?.patientIdentifier}`}</div>
+                    >{`Patient ID : ${metadata?.patientIdentifier}`}</div>
                     <div
                       className={styles.registerDate}
                     >{`${t('CREATE_PATIENT_REGISTERED_ON')} ${metadata?.registerDate}`}</div>
