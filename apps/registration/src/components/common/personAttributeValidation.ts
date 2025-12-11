@@ -1,5 +1,5 @@
-import type { PersonAttributeField } from '../../../hooks/usePersonAttributeFields';
-import type { ContactData } from '../../../models/patient';
+import type { PersonAttributeField } from '../../hooks/usePersonAttributeFields';
+import type { PersonAttributesData } from '../../models/patient';
 
 export interface ValidationConfig {
   pattern: string;
@@ -29,40 +29,42 @@ export const getValidationConfig = (
 };
 
 export const validateField = (
-  value: string | undefined,
+  value: string | number | boolean | undefined,
   validationConfig: ValidationConfig,
+  t: (key: string) => string,
 ): { isValid: boolean; error: string } => {
   if (!value) {
     return { isValid: true, error: '' };
   }
 
   const regex = new RegExp(validationConfig.pattern);
-  const isValid = regex.test(value);
+  const isValid = regex.test(value as string);
 
   return {
     isValid,
-    error: isValid ? '' : validationConfig.errorMessage,
+    error: isValid ? '' : t(validationConfig.errorMessage),
   };
 };
 
 export const validateAllFields = (
   fieldsToShow: PersonAttributeField[],
-  formData: ContactData,
+  formData: PersonAttributesData,
   fieldValidationConfig?: FieldValidationConfig,
+  t?: (key: string) => string,
 ): ValidationResult => {
   const errors: Record<string, string> = {};
   let isValid = true;
 
   fieldsToShow.forEach((field) => {
     const fieldName = field.name;
-    const value = formData[fieldName as keyof ContactData] as string;
+    const value = formData[fieldName];
     const validationConfig = getValidationConfig(
       fieldName,
       fieldValidationConfig,
     );
 
-    if (validationConfig && value) {
-      const result = validateField(value, validationConfig);
+    if (validationConfig && value && t) {
+      const result = validateField(value, validationConfig, t);
       if (!result.isValid) {
         errors[fieldName] = result.error;
         isValid = false;
@@ -71,9 +73,4 @@ export const validateAllFields = (
   });
 
   return { isValid, errors };
-};
-
-export const isNumericPhoneValue = (value: string): boolean => {
-  const numericRegex = /^\+?[0-9]*$/;
-  return numericRegex.test(value);
 };
