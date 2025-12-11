@@ -11,6 +11,26 @@ jest.mock('../ObservationForms', () => ({
 jest.mock('../../../../hooks/useObservationFormsSearch');
 jest.mock('../../../../hooks/usePinnedObservationForms');
 
+// Mock the extracted custom hooks
+const mockUseObservationFormMetadata = jest.fn();
+const mockUseObservationFormPinning = jest.fn();
+const mockUseObservationFormActions = jest.fn();
+
+jest.mock('../../../../hooks/useObservationFormMetadata', () => ({
+  useObservationFormMetadata: (...args: unknown[]) =>
+    mockUseObservationFormMetadata(...args),
+}));
+
+jest.mock('../../../../hooks/useObservationFormPinning', () => ({
+  useObservationFormPinning: (...args: unknown[]) =>
+    mockUseObservationFormPinning(...args),
+}));
+
+jest.mock('../../../../hooks/useObservationFormActions', () => ({
+  useObservationFormActions: (...args: unknown[]) =>
+    mockUseObservationFormActions(...args),
+}));
+
 // Mock the translation hook
 jest.mock('react-i18next', () => ({
   useTranslation: jest.fn(() => ({
@@ -18,18 +38,10 @@ jest.mock('react-i18next', () => ({
   })),
 }));
 
-// Mock TanStack Query
-const mockUseQuery = jest.fn();
-jest.mock('@tanstack/react-query', () => ({
-  useQuery: (...args: unknown[]) => mockUseQuery(...args),
-}));
-
 // Mock the form metadata service
-const mockFetchFormMetadata = jest.fn();
 const mockGetFormattedError = jest.fn();
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  fetchFormMetadata: (...args: unknown[]) => mockFetchFormMetadata(...args),
   getFormattedError: (...args: unknown[]) => mockGetFormattedError(...args),
 }));
 
@@ -164,11 +176,22 @@ describe('ObservationFormsContainer', () => {
       error: null,
     });
 
-    // Default useQuery mock - returns no data when no form is being viewed
-    mockUseQuery.mockReturnValue({
+    // Mock the extracted hooks with default values
+    mockUseObservationFormMetadata.mockReturnValue({
       data: undefined,
       isLoading: false,
       error: null,
+    });
+
+    mockUseObservationFormPinning.mockReturnValue({
+      isCurrentFormPinned: false,
+      handlePinToggle: jest.fn(),
+    });
+
+    mockUseObservationFormActions.mockReturnValue({
+      handleDiscardForm: jest.fn(),
+      handleSaveForm: jest.fn(),
+      handleBackToForms: jest.fn(),
     });
   });
 
@@ -221,41 +244,64 @@ describe('ObservationFormsContainer', () => {
   });
 
   describe('Button Click Handlers', () => {
-    it('should call onViewingFormChange with null when Save button is clicked', () => {
-      const mockOnViewingFormChange = jest.fn();
+    it('should call handleSaveForm when Save button is clicked', () => {
+      const mockHandleSaveForm = jest.fn();
+      mockUseObservationFormActions.mockReturnValue({
+        handleDiscardForm: jest.fn(),
+        handleSaveForm: mockHandleSaveForm,
+        handleBackToForms: jest.fn(),
+      });
+
       render(
-        <ObservationFormsContainer
-          {...defaultProps}
-          onViewingFormChange={mockOnViewingFormChange}
-          viewingForm={mockForm}
-        />,
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
       );
 
       const saveButton = screen.getByTestId('primary-button');
       fireEvent.click(saveButton);
 
-      expect(mockOnViewingFormChange).toHaveBeenCalledWith(null);
+      expect(mockHandleSaveForm).toHaveBeenCalled();
     });
 
-    it('should call onViewingFormChange with null when Back button is clicked', () => {
-      const mockOnViewingFormChange = jest.fn();
+    it('should call handleBackToForms when Back button is clicked', () => {
+      const mockHandleBackToForms = jest.fn();
+      mockUseObservationFormActions.mockReturnValue({
+        handleDiscardForm: jest.fn(),
+        handleSaveForm: jest.fn(),
+        handleBackToForms: mockHandleBackToForms,
+      });
+
       render(
-        <ObservationFormsContainer
-          {...defaultProps}
-          onViewingFormChange={mockOnViewingFormChange}
-          viewingForm={mockForm}
-        />,
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
       );
 
       const backButton = screen.getByTestId('tertiary-button');
       fireEvent.click(backButton);
 
-      expect(mockOnViewingFormChange).toHaveBeenCalledWith(null);
+      expect(mockHandleBackToForms).toHaveBeenCalled();
     });
 
-    it('should call both onRemoveForm and onViewingFormChange when Discard button is clicked', () => {
+    it('should call handleDiscardForm when Discard button is clicked', () => {
+      const mockHandleDiscardForm = jest.fn();
+      mockUseObservationFormActions.mockReturnValue({
+        handleDiscardForm: mockHandleDiscardForm,
+        handleSaveForm: jest.fn(),
+        handleBackToForms: jest.fn(),
+      });
+
+      render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+      );
+
+      const discardButton = screen.getByTestId('secondary-button');
+      fireEvent.click(discardButton);
+
+      expect(mockHandleDiscardForm).toHaveBeenCalled();
+    });
+
+    it('should pass correct props to useObservationFormActions hook', () => {
       const mockOnViewingFormChange = jest.fn();
       const mockOnRemoveForm = jest.fn();
+
       render(
         <ObservationFormsContainer
           {...defaultProps}
@@ -265,28 +311,11 @@ describe('ObservationFormsContainer', () => {
         />,
       );
 
-      const discardButton = screen.getByTestId('secondary-button');
-      fireEvent.click(discardButton);
-
-      expect(mockOnRemoveForm).toHaveBeenCalledWith('test-form-uuid');
-      expect(mockOnViewingFormChange).toHaveBeenCalledWith(null);
-    });
-
-    it('should only call onViewingFormChange when Discard button is clicked and onRemoveForm is not provided', () => {
-      const mockOnViewingFormChange = jest.fn();
-      render(
-        <ObservationFormsContainer
-          {...defaultProps}
-          onViewingFormChange={mockOnViewingFormChange}
-          onRemoveForm={undefined}
-          viewingForm={mockForm}
-        />,
-      );
-
-      const discardButton = screen.getByTestId('secondary-button');
-      fireEvent.click(discardButton);
-
-      expect(mockOnViewingFormChange).toHaveBeenCalledWith(null);
+      expect(mockUseObservationFormActions).toHaveBeenCalledWith({
+        viewingForm: mockForm,
+        onViewingFormChange: mockOnViewingFormChange,
+        onRemoveForm: mockOnRemoveForm,
+      });
     });
   });
 
@@ -332,28 +361,23 @@ describe('ObservationFormsContainer', () => {
 
   describe('form-controls Rendering', () => {
     beforeEach(() => {
-      mockFetchFormMetadata.mockClear();
       mockGetFormattedError.mockClear();
     });
 
-    it('should use TanStack Query to fetch form metadata when viewingForm is provided', () => {
+    it('should call useObservationFormMetadata hook with viewingForm UUID', () => {
       render(
         <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
       );
 
-      // Verify useQuery was called with the correct configuration
-      expect(mockUseQuery).toHaveBeenCalledWith(
-        expect.objectContaining({
-          queryKey: ['formMetadata', 'test-form-uuid'],
-          queryFn: expect.any(Function),
-          enabled: true,
-        }),
+      // Verify useObservationFormMetadata was called with the correct UUID
+      expect(mockUseObservationFormMetadata).toHaveBeenCalledWith(
+        'test-form-uuid',
       );
     });
 
     it('should display SkeletonText while fetching metadata', () => {
-      // Mock useQuery to return loading state
-      mockUseQuery.mockReturnValue({
+      // Mock useObservationFormMetadata to return loading state
+      mockUseObservationFormMetadata.mockReturnValue({
         data: undefined,
         isLoading: true,
         error: null,
@@ -377,8 +401,8 @@ describe('ObservationFormsContainer', () => {
         },
       };
 
-      // Mock useQuery to return success state with data
-      mockUseQuery.mockReturnValue({
+      // Mock useObservationFormMetadata to return success state with data
+      mockUseObservationFormMetadata.mockReturnValue({
         data: mockMetadata,
         isLoading: false,
         error: null,
@@ -398,8 +422,8 @@ describe('ObservationFormsContainer', () => {
         title: 'Error',
       });
 
-      // Mock useQuery to return error state
-      mockUseQuery.mockReturnValue({
+      // Mock useObservationFormMetadata to return error state
+      mockUseObservationFormMetadata.mockReturnValue({
         data: undefined,
         isLoading: false,
         error: mockError,
@@ -412,17 +436,13 @@ describe('ObservationFormsContainer', () => {
       expect(screen.getByText('Failed to fetch')).toBeInTheDocument();
     });
 
-    it('should not enable query when viewingForm is null', () => {
+    it('should call useObservationFormMetadata with undefined when viewingForm is null', () => {
       render(
         <ObservationFormsContainer {...defaultProps} viewingForm={null} />,
       );
 
-      // Verify useQuery was called with enabled: false
-      expect(mockUseQuery).toHaveBeenCalledWith(
-        expect.objectContaining({
-          enabled: false,
-        }),
-      );
+      // Verify useObservationFormMetadata was called with undefined
+      expect(mockUseObservationFormMetadata).toHaveBeenCalledWith(undefined);
     });
   });
 
@@ -435,6 +455,11 @@ describe('ObservationFormsContainer', () => {
     };
 
     it('should show pinned state when form is in pinnedForms array', () => {
+      mockUseObservationFormPinning.mockReturnValue({
+        isCurrentFormPinned: true,
+        handlePinToggle: jest.fn(),
+      });
+
       render(
         <ObservationFormsContainer
           {...defaultProps}
@@ -451,6 +476,11 @@ describe('ObservationFormsContainer', () => {
     });
 
     it('should show unpinned state when form is not in pinnedForms array', () => {
+      mockUseObservationFormPinning.mockReturnValue({
+        isCurrentFormPinned: false,
+        handlePinToggle: jest.fn(),
+      });
+
       render(
         <ObservationFormsContainer
           {...defaultProps}
@@ -466,7 +496,30 @@ describe('ObservationFormsContainer', () => {
       expect(pinContainer).toHaveAttribute('title', 'Pin form');
     });
 
-    it('should call updatePinnedForms when pin icon is clicked', () => {
+    it('should call handlePinToggle when pin icon is clicked', () => {
+      const mockHandlePinToggle = jest.fn();
+      mockUseObservationFormPinning.mockReturnValue({
+        isCurrentFormPinned: true,
+        handlePinToggle: mockHandlePinToggle,
+      });
+
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={nonDefaultForm}
+          pinnedForms={[nonDefaultForm]}
+        />,
+      );
+
+      const pinIcon = screen.getByTestId('icon-pin-icon');
+      const pinContainer = pinIcon.parentElement;
+
+      fireEvent.click(pinContainer!);
+
+      expect(mockHandlePinToggle).toHaveBeenCalled();
+    });
+
+    it('should pass correct props to useObservationFormPinning hook', () => {
       const mockUpdatePinnedForms = jest.fn();
 
       render(
@@ -478,28 +531,11 @@ describe('ObservationFormsContainer', () => {
         />,
       );
 
-      const pinIcon = screen.getByTestId('icon-pin-icon');
-      const pinContainer = pinIcon.parentElement;
-
-      fireEvent.click(pinContainer!);
-
-      expect(mockUpdatePinnedForms).toHaveBeenCalledWith([]);
-    });
-
-    it('should handle pin toggle gracefully', () => {
-      render(
-        <ObservationFormsContainer
-          {...defaultProps}
-          viewingForm={nonDefaultForm}
-          pinnedForms={[nonDefaultForm]}
-        />,
-      );
-
-      const pinIcon = screen.getByTestId('icon-pin-icon');
-      const pinContainer = pinIcon.parentElement;
-
-      // Should not throw error when clicking
-      expect(() => fireEvent.click(pinContainer!)).not.toThrow();
+      expect(mockUseObservationFormPinning).toHaveBeenCalledWith({
+        viewingForm: nonDefaultForm,
+        pinnedForms: [nonDefaultForm],
+        updatePinnedForms: mockUpdatePinnedForms,
+      });
     });
   });
 });

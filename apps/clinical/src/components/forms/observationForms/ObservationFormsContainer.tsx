@@ -10,17 +10,17 @@ import {
 } from '@bahmni/form2-controls';
 import '@bahmni/form2-controls/dist/bundle.css';
 import {
-  fetchFormMetadata,
-  FormMetadata,
   ObservationForm,
   getFormattedError,
   getUserPreferredLocale,
 } from '@bahmni/services';
 import { usePatientUUID } from '@bahmni/widgets';
-import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_FORM_API_NAMES } from '../../../constants/forms';
+import { useObservationFormActions } from '../../../hooks/useObservationFormActions';
+import { useObservationFormMetadata } from '../../../hooks/useObservationFormMetadata';
+import { useObservationFormPinning } from '../../../hooks/useObservationFormPinning';
 import styles from './styles/ObservationFormsContainer.module.scss';
 
 interface ObservationFormsContainerProps {
@@ -54,17 +54,24 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
 }) => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
-
-  // Fetch form metadata using TanStack Query
   const {
     data: formMetadata,
     isLoading: isLoadingMetadata,
     error: queryError,
-  } = useQuery<FormMetadata>({
-    queryKey: ['formMetadata', viewingForm?.uuid],
-    queryFn: () => fetchFormMetadata(viewingForm!.uuid),
-    enabled: !!viewingForm?.uuid,
+  } = useObservationFormMetadata(viewingForm?.uuid);
+
+  const { isCurrentFormPinned, handlePinToggle } = useObservationFormPinning({
+    viewingForm,
+    pinnedForms,
+    updatePinnedForms,
   });
+
+  const { handleDiscardForm, handleSaveForm, handleBackToForms } =
+    useObservationFormActions({
+      viewingForm,
+      onViewingFormChange,
+      onRemoveForm,
+    });
 
   // Format error for display
   const error = queryError
@@ -73,40 +80,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
           t('ERROR_FETCHING_FORM_METADATA'),
       )
     : null;
-  // Check if current form is pinned
-  const isCurrentFormPinned = viewingForm
-    ? pinnedForms.some((form) => form.uuid === viewingForm.uuid)
-    : false;
-
-  const handlePinToggle = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (viewingForm) {
-      let newPinnedForms;
-      if (isCurrentFormPinned) {
-        newPinnedForms = pinnedForms.filter(
-          (form) => form.uuid !== viewingForm.uuid,
-        );
-      } else {
-        newPinnedForms = [...pinnedForms, viewingForm];
-      }
-      updatePinnedForms(newPinnedForms);
-    }
-  };
-
-  const handleDiscardForm = () => {
-    // Remove the form from selected forms list if callback is provided
-    if (viewingForm && onRemoveForm) {
-      onRemoveForm(viewingForm.uuid);
-    }
-    // Close the form view
-    onViewingFormChange(null);
-  };
-
-  const handleSaveForm = () => {
-    // TODO: Implement form saving logic
-    onViewingFormChange(null);
-  };
 
   // Form view content when a form is selected
   const formViewContent = (
@@ -163,9 +136,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         secondaryButtonText={t('OBSERVATION_FORM_DISCARD_BUTTON')}
         onSecondaryButtonClick={handleDiscardForm}
         tertiaryButtonText={t('OBSERVATION_FORM_BACK_BUTTON')}
-        onTertiaryButtonClick={() => {
-          onViewingFormChange(null);
-        }}
+        onTertiaryButtonClick={handleBackToForms}
         content={formViewContent}
       />
     );
