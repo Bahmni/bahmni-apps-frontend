@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { RegistrationConfigProvider } from '../../../providers/RegistrationConfigProvider';
 import { VisitTypeSelector } from '../visitTypeSelector';
 
 Element.prototype.scrollIntoView = jest.fn();
@@ -92,7 +93,9 @@ describe('VisitTypeSelector', () => {
   const renderComponent = () => {
     return render(
       <QueryClientProvider client={queryClient}>
-        <VisitTypeSelector onVisitSave={mockOnVisitSave} />
+        <RegistrationConfigProvider>
+          <VisitTypeSelector onVisitSave={mockOnVisitSave} />
+        </RegistrationConfigProvider>
       </QueryClientProvider>,
     );
   };

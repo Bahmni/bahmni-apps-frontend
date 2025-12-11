@@ -87,7 +87,7 @@ const PatientRegister = () => {
   const [metadata, setMetadata] = useState(initialMetadata);
 
   const { patientPhoto } = usePatientPhoto({
-    patientUuid: patientUuidFromUrl,
+    patientUuid: metadata?.patientUuid,
   });
 
   useEffect(() => {
@@ -184,6 +184,8 @@ const PatientRegister = () => {
     }
   };
 
+  const shouldShowActions = metadata?.patientUuid || patientUuidFromUrl == null;
+
   const breadcrumbs = [
     {
       id: 'home',
@@ -273,23 +275,25 @@ const PatientRegister = () => {
           )}
 
           {/* Footer Actions */}
-          <div className={styles.formActions}>
-            <Button
-              kind="tertiary"
-              onClick={() => navigate('/registration/search')}
-            >
-              {t('CREATE_PATIENT_BACK_TO_SEARCH')}
-            </Button>
-            <div className={styles.actionButtons}>
-              <Button kind="tertiary" onClick={handleSave}>
-                {t('CREATE_PATIENT_SAVE')}
+          {shouldShowActions && (
+            <div className={styles.formActions}>
+              <Button
+                kind="tertiary"
+                onClick={() => navigate('/registration/search')}
+              >
+                {t('CREATE_PATIENT_BACK_TO_SEARCH')}
               </Button>
-              <RegistrationActions
-                extensionPointId="org.bahmni.registration.navigation"
-                onBeforeNavigate={handleSave}
-              />
+              <div className={styles.actionButtons}>
+                <Button kind="tertiary" onClick={handleSave}>
+                  {t('CREATE_PATIENT_SAVE')}
+                </Button>
+                <RegistrationActions
+                  extensionPointId="org.bahmni.registration.navigation"
+                  onBeforeNavigate={handleSave}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       }
     />
