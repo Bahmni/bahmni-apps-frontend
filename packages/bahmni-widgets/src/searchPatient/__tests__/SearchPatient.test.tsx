@@ -205,6 +205,7 @@ describe('SearchPatient', () => {
     expect(mockOnSearch).toHaveBeenCalled();
     expect(searchPatientByNameOrId).toHaveBeenCalledWith(
       encodeURI('new value'),
+      expect.any(Array),
     );
     await waitFor(() => {
       expect(mockOnSearch).toHaveBeenCalledWith(
@@ -251,6 +252,7 @@ describe('SearchPatient', () => {
     await waitFor(() => {
       expect(searchPatientByNameOrId).toHaveBeenCalledWith(
         encodeURI('new value'),
+        expect.any(Array),
       );
       expect(mockOnSearch).toHaveBeenCalled();
     });
@@ -385,6 +387,7 @@ describe('SearchPatient', () => {
     expect(searchPatientByNameOrId).toHaveBeenCalledTimes(1);
     expect(searchPatientByNameOrId).toHaveBeenCalledWith(
       encodeURI('new value'),
+      expect.any(Array),
     );
     await waitFor(() => {
       expect(mockOnSearch).toHaveBeenCalledWith(
@@ -713,7 +716,7 @@ describe('SearchPatient', () => {
     const phoneSearchInput = screen.getByTestId('advance-search-input');
 
     expect(
-      screen.queryByTestId('phone-validation-error'),
+      screen.queryByTestId('field-validation-error'),
     ).not.toBeInTheDocument();
 
     await waitFor(() => {
@@ -745,7 +748,7 @@ describe('SearchPatient', () => {
     });
 
     expect(
-      screen.queryByTestId('phone-validation-error'),
+      screen.queryByTestId('field-validation-error'),
     ).not.toBeInTheDocument();
 
     expect(phoneSearchInput).toHaveValue('1234567890');
@@ -769,7 +772,7 @@ describe('SearchPatient', () => {
     });
 
     expect(
-      screen.queryByTestId('phone-validation-error'),
+      screen.queryByTestId('field-validation-error'),
     ).not.toBeInTheDocument();
 
     expect(phoneSearchInput).toHaveValue('+911234567890');

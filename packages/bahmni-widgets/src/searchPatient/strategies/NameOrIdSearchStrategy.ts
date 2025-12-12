@@ -23,8 +23,11 @@ export class NameOrIdSearchStrategy implements SearchStrategy {
     searchTerm: string,
     context: SearchContext,
   ): Promise<PatientSearchResultBundle> {
-    const rawResults = await searchPatientByNameOrId(encodeURI(searchTerm));
-    return this.transformResults(rawResults);
+    const rawResults = await searchPatientByNameOrId(
+      encodeURI(searchTerm),
+      context.searchFields,
+    );
+    return this.transformResults(rawResults, context);
   }
 
   /**
@@ -45,22 +48,47 @@ export class NameOrIdSearchStrategy implements SearchStrategy {
   }
 
   /**
-   * Transform results to format dates and calculate ages
+   * Parse JSON string safely
+   */
+  private parseJSON(
+    jsonString: string | null | undefined,
+  ): Record<string, string> {
+    try {
+      return jsonString ? JSON.parse(jsonString) : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  /**
+   * Transform results to format dates, calculate ages, and parse address/custom attributes
    */
   transformResults(
     results: PatientSearchResultBundle,
+    context: SearchContext,
   ): PatientSearchResultBundle {
     return {
       ...results,
-      pageOfResults: results.pageOfResults.map((patient) => ({
-        ...patient,
-        birthDate: patient.birthDate
-          ? formatDateAndTime(new Date(patient.birthDate).getTime(), false)
-          : patient.birthDate,
-        age: patient.birthDate
-          ? calculateAgeinYearsAndMonths(new Date(patient.birthDate).getTime())
-          : patient.age,
-      })),
+      pageOfResults: results.pageOfResults.map((patient) => {
+        const addressData = this.parseJSON(patient.addressFieldValue);
+        const customData = this.parseJSON(patient.customAttribute);
+
+        return {
+          ...patient,
+          birthDate: patient.birthDate
+            ? formatDateAndTime(new Date(patient.birthDate).getTime(), false)
+            : patient.birthDate,
+          age: patient.birthDate
+            ? calculateAgeinYearsAndMonths(
+                new Date(patient.birthDate).getTime(),
+                context.translator,
+              )
+            : patient.age,
+          city_village: addressData.city_village || '',
+          address2: addressData.address2 || '',
+          email: customData.email || '',
+        };
+      }),
     };
   }
 }

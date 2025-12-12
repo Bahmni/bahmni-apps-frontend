@@ -45,7 +45,8 @@ export const useGenderData = (t: (key: string) => string) => {
   // Map genders to their translated values
   const genders = useMemo(() => {
     return Object.values(gendersFromApi).map((gender) => {
-      const genderKey = `CREATE_PATIENT_GENDER_${gender.toUpperCase()}`;
+      const genderStr = String(gender || '');
+      const genderKey = `CREATE_PATIENT_GENDER_${genderStr.toUpperCase()}`;
       return t(genderKey);
     });
   }, [gendersFromApi, t]);
@@ -53,7 +54,8 @@ export const useGenderData = (t: (key: string) => string) => {
   const getGenderDisplay = (code: string): string => {
     const genderValue = gendersFromApi[code];
     if (!genderValue) return code;
-    const genderKey = `CREATE_PATIENT_GENDER_${genderValue.toUpperCase()}`;
+    const genderStr = String(genderValue);
+    const genderKey = `CREATE_PATIENT_GENDER_${genderStr.toUpperCase()}`;
     return t(genderKey);
   };
 
