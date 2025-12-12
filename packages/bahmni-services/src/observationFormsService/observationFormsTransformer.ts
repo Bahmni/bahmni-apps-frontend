@@ -1,8 +1,4 @@
-import {
-  FormMetadata,
-  ObservationPayload,
-  ConceptValue,
-} from './models';
+import { FormMetadata, ObservationPayload, ConceptValue } from './models';
 
 // Re-export types for convenience
 export type { ObservationPayload, ConceptValue };

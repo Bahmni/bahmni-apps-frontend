@@ -156,7 +156,9 @@ export function useObservationFormData(
   const hasData = formData ? hasFormData(formData) : false;
 
   // Validate form data
-  const validation = formData ? validateFormData(formData) : { isValid: true, errors: [] };
+  const validation = formData
+    ? validateFormData(formData)
+    : { isValid: true, errors: [] };
   const isValid = validation.isValid;
   const validationErrors = validation.errors;
 

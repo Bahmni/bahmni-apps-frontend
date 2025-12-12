@@ -1,5 +1,5 @@
-import { FormData, FormControlData } from './observationFormsTransformer';
 import { FormMetadata } from './models';
+import { FormData, FormControlData } from './observationFormsTransformer';
 
 /**
  * Validation error structure
@@ -53,7 +53,10 @@ function validateControl(control: FormControlData): ValidationError[] {
 
       case 'date':
       case 'datetime':
-        if (!(control.value instanceof Date) && typeof control.value !== 'string') {
+        if (
+          !(control.value instanceof Date) &&
+          typeof control.value !== 'string'
+        ) {
           errors.push({
             field: control.id,
             message: 'Date field must contain a Date object or ISO string',
@@ -200,7 +203,7 @@ export function validateRequiredFields(
 
   requiredFields.forEach((fieldId) => {
     const control = findControl(formData.controls, fieldId);
-    if (!control || control.value === null || control.value === undefined) {
+    if (control?.value === null || control?.value === undefined) {
       errors.push({
         field: fieldId,
         message: `Field ${fieldId} is required`,

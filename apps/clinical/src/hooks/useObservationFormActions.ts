@@ -38,7 +38,6 @@ export function useObservationFormActions({
   observations,
   hasData,
   isValid,
-  validationErrors,
   onFormObservationsChange,
   clearFormData,
 }: UseObservationFormActionsProps) {
@@ -58,13 +57,11 @@ export function useObservationFormActions({
   const handleSaveForm = useCallback(() => {
     // Validate form has data
     if (!hasData) {
-      console.warn('Cannot save observation form: No data entered');
       return;
     }
 
     // Validate form data
     if (!isValid) {
-      console.error('Cannot save observation form: Validation errors', validationErrors);
       // TODO: Show validation errors to user
       return;
     }
@@ -85,7 +82,6 @@ export function useObservationFormActions({
     observations,
     hasData,
     isValid,
-    validationErrors,
     onFormObservationsChange,
   ]);
 
