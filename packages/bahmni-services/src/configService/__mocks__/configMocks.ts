@@ -291,15 +291,6 @@ export const validRegistrationConfig = {
         ],
         type: 'program',
       },
-      {
-        translationKey:
-          'REGISTRATION_PATIENT_SEARCH_DROPDOWN_PROGRAM_REGISTRATION_ID',
-        fields: ['programRegistrationId'],
-        columnTranslationKeys: [
-          'REGISTRATION_PATIENT_SEARCH_HEADER_PROGRAM_REGISTRATION_ID',
-        ],
-        type: 'program',
-      },
     ],
   },
 };

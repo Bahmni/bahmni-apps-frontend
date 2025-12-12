@@ -142,6 +142,9 @@
   "NOTIFICATION_UNABLE_TO_GET_ADDRESS_DATA": "No se pueden obtener los datos de dirección del paciente",
   "NOTIFICATION_UNABLE_TO_GET_CONTACT_DATA": "No se pueden obtener los datos de contacto del paciente",
   "NOTIFICATION_UNABLE_TO_GET_ADDITIONAL_DATA": "No se pueden obtener los datos adicionales del paciente",
+  "REGISTRATION_DAYS_SHORT": "d",
+  "REGISTRATION_MONTHS_SHORT": "m",
+  "REGISTRATION_YEARS_SHORT": "a",
   "SUCCESS": "Éxito",
   "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "El usuario {{username}} accedió a la pantalla de búsqueda de pacientes en la aplicación de registro"
 }

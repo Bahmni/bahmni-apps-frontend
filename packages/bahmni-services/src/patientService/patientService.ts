@@ -217,14 +217,16 @@ export const getPatientImageAsDataUrl = async (
 /**
  * Search patient by Name / Identifier
  * @param searchTerm - The Name / Identifier of the patient
+ * @param allSearchFields - Optional array of PatientSearchField objects to dynamically configure search fields
  * @returns A formatted patient search bundle object
  */
 export const searchPatientByNameOrId = async (
   searchTerm: string,
+  allSearchFields?: PatientSearchField[],
 ): Promise<PatientSearchResultBundle> => {
   const loginLocation = getUserLoginLocation();
   const searchResultsBundle = await get<PatientSearchResultBundle>(
-    PATIENT_LUCENE_SEARCH_URL(searchTerm, loginLocation.uuid),
+    PATIENT_LUCENE_SEARCH_URL(searchTerm, loginLocation.uuid, allSearchFields),
   );
 
   return searchResultsBundle;

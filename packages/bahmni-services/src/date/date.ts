@@ -4,6 +4,8 @@ import {
   differenceInYears,
   differenceInMonths,
   differenceInDays,
+  addYears,
+  addMonths,
   subYears,
   subMonths,
   subDays,
@@ -71,11 +73,14 @@ export function calculateAge(dateString: string): Age | null {
   if (!isValid(birthDate)) return null; // Invalid date check
   const today = new Date();
   if (birthDate > today) return null; // Future dates are invalid
+
   const years = differenceInYears(today, birthDate);
-  const lastBirthday = subYears(today, years);
-  const months = differenceInMonths(lastBirthday, birthDate);
-  const lastMonth = subMonths(lastBirthday, months);
-  const days = differenceInDays(lastMonth, birthDate);
+  const lastBirthday = addYears(birthDate, years);
+
+  const months = differenceInMonths(today, lastBirthday);
+  const lastMonthAnniversary = addMonths(lastBirthday, months);
+
+  const days = differenceInDays(today, lastMonthAnniversary);
 
   return { years, months, days };
 }
@@ -364,14 +369,51 @@ export function formatDateAndTime(date: number, includeTime: boolean): string {
 
   return formattedDate;
 }
-export function calculateAgeinYearsAndMonths(birthDateMillis: number): string {
+/**
+ * Calculate and format age for display in patient search results.
+ * For infants under 3 months, displays age in total days only.
+ * For all others, displays age in years, months, and days format.
+ *
+ * @param birthDateMillis - Birth date in milliseconds
+ * @param t - Optional translation function for Y/M/D labels
+ * @returns Formatted age string (e.g., "45d" for infants, "25y 6m 15d" for others)
+ */
+export function calculateAgeinYearsAndMonths(
+  birthDateMillis: number,
+  t?: (key: string, options?: { count?: number }) => string,
+): string {
   const birthDate = new Date(birthDateMillis);
   const today = new Date();
 
   const years = differenceInYears(today, birthDate);
-  const months = differenceInMonths(today, birthDate) - years * 12;
+  const lastBirthday = addYears(birthDate, years);
+  const months = differenceInMonths(today, lastBirthday);
+  const lastMonthAnniversary = addMonths(lastBirthday, months);
+  const days = differenceInDays(today, lastMonthAnniversary);
 
-  return `${years} years ${months} months`;
+  if (years === 0 && months < 3) {
+    const totalDays = differenceInDays(today, birthDate);
+    if (!t) {
+      return `${totalDays} days`;
+    }
+    const dayUnit = t('REGISTRATION_DAYS_SHORT', { count: totalDays });
+    return `${totalDays}${dayUnit}`;
+  }
+  if (!t) {
+    return `${years} years ${months} months ${days} days`;
+  }
+
+  const ageComponents: Array<[number, string]> = [
+    [years, 'REGISTRATION_YEARS_SHORT'],
+    [months, 'REGISTRATION_MONTHS_SHORT'],
+    [days, 'REGISTRATION_DAYS_SHORT'],
+  ];
+
+  const parts = ageComponents
+    .filter(([value]) => value > 0)
+    .map(([value, key]) => `${value}${t(key, { count: value })}`);
+
+  return parts.join(' ') || '0d';
 }
 /**
  * Sorts an array of objects by a date field

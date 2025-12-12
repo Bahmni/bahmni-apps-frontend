@@ -33,7 +33,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [advanceSearchInput, setAdvanceSearchInput] = useState('');
-  const [phoneInputError, setPhoneInputError] = useState('');
+  const [validationError, setValidationError] = useState('');
   const { addNotification } = useNotification();
   const { t } = useTranslation();
   const [isAdvancedSearch, setIsAdvancedSearch] = useState<boolean>(false);
@@ -135,18 +135,18 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
         const formattedValue = hasPlusAtStart
           ? '+' + numericValue
           : numericValue;
-        setPhoneInputError(
-          phoneInputError && inputValue !== formattedValue
+        setValidationError(
+          validationError && inputValue !== formattedValue
             ? t('PHONE_NUMBER_VALIDATION_ERROR')
             : '',
         );
       } else {
-        setPhoneInputError('');
+        setValidationError('');
         setAdvanceSearchInput(inputValue);
         setSearchInput('');
       }
     } else {
-      setPhoneInputError('');
+      setValidationError('');
       setAdvanceSearchInput('');
       setSearchInput(inputValue);
     }
@@ -170,15 +170,15 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
           inputValue !== formattedValue && inputValue.length > 0;
 
         if (hasInvalidChars) {
-          setPhoneInputError(t('PHONE_NUMBER_VALIDATION_ERROR'));
+          setValidationError(t('PHONE_NUMBER_VALIDATION_ERROR'));
           return;
         } else {
-          setPhoneInputError('');
+          setValidationError('');
           setSearchTerm(formattedValue);
           setAdvanceSearchInput(trimmedValue);
         }
       } else {
-        setPhoneInputError('');
+        setValidationError('');
         setAdvanceSearchInput(trimmedValue);
         setSearchTerm(trimmedValue);
       }
@@ -193,7 +193,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
   const handleOnClear = (type: 'name' | 'advance') => {
     if (type === 'advance') {
       setAdvanceSearchInput('');
-      setPhoneInputError('');
+      setValidationError('');
     } else {
       setSearchInput('');
     }
@@ -330,12 +330,12 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
               onClear={() => handleOnClear('advance')}
               inputMode="numeric"
             />
-            {phoneInputError && (
+            {validationError && (
               <div
                 className={styles.errorMessage}
-                data-testid="phone-validation-error"
+                data-testid="field-validation-error"
               >
-                {phoneInputError}
+                {validationError}
               </div>
             )}
           </div>
@@ -353,7 +353,7 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
               setAdvanceSearchInput('');
               setSearchInput('');
               setSearchTerm('');
-              setPhoneInputError('');
+              setValidationError('');
             }}
             aria-label={t('PATIENT_SEARCH_ATTRIBUTE_SELECTOR')}
           />

@@ -36,6 +36,13 @@ import {
 import styles from './styles/index.module.scss';
 import { formatPatientSearchResult, PatientSearchViewModel } from './utils';
 
+const CELL_IDS = {
+  IDENTIFIER: 'identifier',
+  APPOINTMENT_STATUS: 'appointmentStatus',
+  GENDER: 'gender',
+  ACTIONS: 'actions',
+} as const;
+
 /**
  * PatientSearchPage
  * Registration Patient Search interface that let's the user search for a patient using keywords.
@@ -242,16 +249,19 @@ const PatientSearchPage: React.FC = () => {
       cellId: string,
     ): React.ReactNode => {
       switch (cellId) {
-        case 'identifier':
+        case CELL_IDS.IDENTIFIER:
           return renderIdentifier(row.uuid ?? '', row.identifier ?? '');
 
-        case 'appointmentStatus':
+        case CELL_IDS.APPOINTMENT_STATUS:
           return renderAppointmentStatus(
             row.uuid ?? '',
             (row.appointmentStatus as string) ?? '',
           );
 
-        case 'actions':
+        case CELL_IDS.GENDER:
+          return String(row.gender ?? '');
+
+        case CELL_IDS.ACTIONS:
           return renderActions(row);
       }
 

@@ -895,7 +895,7 @@ describe('ConfigService', () => {
       // Assert
       expect(mockGet).toHaveBeenCalledWith(REGISTRATION_CONFIG_URL);
       expect(result).toEqual(validRegistrationConfig);
-      expect(result?.patientSearch?.customAttributes).toHaveLength(6);
+      expect(result?.patientSearch?.customAttributes).toHaveLength(5);
     });
 
     test('should return null when API request fails', async () => {

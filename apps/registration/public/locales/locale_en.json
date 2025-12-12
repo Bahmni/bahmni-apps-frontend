@@ -142,6 +142,9 @@
   "NOTIFICATION_UNABLE_TO_GET_ADDRESS_DATA": "Unable to get patient address data",
   "NOTIFICATION_UNABLE_TO_GET_CONTACT_DATA": "Unable to get patient contact data",
   "NOTIFICATION_UNABLE_TO_GET_ADDITIONAL_DATA": "Unable to get patient additional data",
+  "REGISTRATION_DAYS_SHORT": "d",
+  "REGISTRATION_MONTHS_SHORT": "m",
+  "REGISTRATION_YEARS_SHORT": "y",
   "SUCCESS": "Success",
   "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "User {{username}} accessed patient search screen in registration app"
 }

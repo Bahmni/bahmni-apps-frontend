@@ -69,9 +69,11 @@ export interface SearchStrategy {
   /**
    * Optional: Transform/post-process the search results
    * @param results - The raw search results
+   * @param context - Context for transformation
    * @returns Transformed search results
    */
   transformResults?(
     results: PatientSearchResultBundle,
+    context: SearchContext,
   ): PatientSearchResultBundle;
 }
