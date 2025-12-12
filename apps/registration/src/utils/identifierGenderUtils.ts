@@ -59,30 +59,5 @@ export const useGenderData = (t: (key: string) => string) => {
     return t(genderKey);
   };
 
-  const getGenderAbbreviation = (gender: string): string => {
-    if (!gender) return gender;
-
-    const genderTrimmed = gender.trim();
-
-    let genderCode = '';
-
-    if (gendersFromApi[genderTrimmed.toUpperCase()]) {
-      genderCode = genderTrimmed.toUpperCase();
-    } else {
-      const entry = Object.entries(gendersFromApi).find(
-        ([, value]) =>
-          String(value).toLowerCase() === genderTrimmed.toLowerCase(),
-      );
-      if (entry) {
-        genderCode = entry[0];
-      }
-    }
-    if (genderCode) {
-      const translationKey = `PATIENT_SEARCH_GENDER_${genderCode}`;
-      return t(translationKey);
-    }
-    return gender;
-  };
-
-  return { genders, getGenderDisplay, getGenderAbbreviation };
+  return { genders, getGenderDisplay };
 };

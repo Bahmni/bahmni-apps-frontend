@@ -27,7 +27,6 @@ import {
 import { SearchPatient, useUserPrivilege } from '@bahmni/widgets';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGenderData } from '../../utils/identifierGenderUtils';
 import {
   getAppointmentStatusClassName,
   handleActionButtonClick,
@@ -63,7 +62,6 @@ const PatientSearchPage: React.FC = () => {
   const navigate = useNavigate();
   const [selectedFieldType, setSelectedFieldType] = useState<string>('');
   const { userPrivileges } = useUserPrivilege();
-  const { getGenderAbbreviation } = useGenderData(t);
 
   const handleCreateNewPatient = () => {
     navigate('/registration/patient/new');
@@ -261,7 +259,7 @@ const PatientSearchPage: React.FC = () => {
           );
 
         case CELL_IDS.GENDER:
-          return getGenderAbbreviation(String(row.gender ?? ''));
+          return String(row.gender ?? '');
 
         case CELL_IDS.ACTIONS:
           return renderActions(row);
