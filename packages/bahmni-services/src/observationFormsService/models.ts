@@ -60,6 +60,7 @@ export interface ObservationDataInFormControls {
   obsDatetime?: string;
   groupMembers?: ObservationDataInFormControls[];
   comment?: string;
+  interpretation?: ConceptValue; // Interpretation/abnormality flag
   formFieldPath?: string; // Track which form field this came from
 }
 

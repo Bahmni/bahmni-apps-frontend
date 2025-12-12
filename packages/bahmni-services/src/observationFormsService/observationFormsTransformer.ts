@@ -1,4 +1,8 @@
-import { FormMetadata, ObservationDataInFormControls, ConceptValue } from './models';
+import {
+  FormMetadata,
+  ObservationDataInFormControls,
+  ConceptValue,
+} from './models';
 
 export type { ObservationDataInFormControls, ConceptValue };
 
@@ -17,6 +21,7 @@ export interface FormControlData {
   value: string | number | boolean | Date | ConceptValue | null;
   label?: string;
   units?: string;
+  interpretation?: ConceptValue; // Interpretation/abnormality flag from form2-controls
   groupMembers?: FormControlData[];
 }
 
@@ -65,6 +70,7 @@ function transformGroupMembers(
       value: transformControlValue(member),
       obsDatetime: new Date().toISOString(),
       formFieldPath: member.id,
+      interpretation: member.interpretation,
       // Recursively handle nested groups
       groupMembers: member.groupMembers
         ? transformGroupMembers(member.groupMembers)
@@ -108,6 +114,11 @@ export function transformFormDataToObservations(
         obsDatetime: timestamp,
         formFieldPath: control.id,
       };
+
+      // Add interpretation if present
+      if (control.interpretation) {
+        observation.interpretation = control.interpretation;
+      }
 
       // Handle group members (complex controls)
       if (control.groupMembers && control.groupMembers.length > 0) {

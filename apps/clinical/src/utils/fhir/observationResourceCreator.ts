@@ -92,6 +92,19 @@ export const createObservationResource = (
     });
   }
 
+  // Handle interpretation (abnormality flag)
+  if (observationPayload.interpretation) {
+    observation.interpretation = [
+      createCodeableConcept([
+        createCoding(
+          observationPayload.interpretation.uuid,
+          undefined,
+          observationPayload.interpretation.display,
+        ),
+      ]),
+    ];
+  }
+
   // Handle comments
   if (observationPayload.comment) {
     observation.note = [

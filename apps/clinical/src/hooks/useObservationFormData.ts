@@ -53,6 +53,7 @@ export function useObservationFormData(
           children?: unknown[];
           control?: { id?: string; concept?: { uuid?: string } };
           value?: { value?: unknown };
+          interpretation?: { uuid?: string; display?: string };
           formFieldPath?: string;
           voided?: boolean;
         };
@@ -76,7 +77,7 @@ export function useObservationFormData(
               record.formFieldPath ?? record.control.id ?? 'unknown';
 
             if (conceptUuid) {
-              controls.push({
+              const control: FormControlData = {
                 id: fieldId,
                 conceptUuid,
                 type: 'obsControl' as const,
@@ -86,7 +87,20 @@ export function useObservationFormData(
                   | boolean
                   | Date
                   | null,
-              });
+              };
+
+              // Add interpretation if present
+              if (
+                record.interpretation?.uuid &&
+                typeof record.interpretation.uuid === 'string'
+              ) {
+                control.interpretation = {
+                  uuid: record.interpretation.uuid,
+                  display: record.interpretation.display,
+                };
+              }
+
+              controls.push(control);
             }
           }
 
