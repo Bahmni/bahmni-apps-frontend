@@ -33,6 +33,7 @@ import {
   createConditionsBundleEntries,
   createServiceRequestBundleEntries,
   createMedicationRequestEntries,
+  createObservationBundleEntries,
   createEncounterBundleEntry,
   getEncounterReference,
 } from '../../services/consultationBundleService';
@@ -258,16 +259,13 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       practitionerUUID: practitionerUUID,
     });
 
-    // TODO: Convert observation forms data to FHIR Observation resources
-    // The observationFormsData contains ObservationPayload[] from each form
-    // These need to be converted to FHIR Observation resources and included in the bundle
-    // Example:
-    // const observationEntries = createObservationBundleEntries({
-    //   observationFormsData,
-    //   encounterSubject: encounterResource.subject!,
-    //   encounterReference,
-    //   practitionerUUID: practitionerUUID,
-    // });
+    // Convert observation forms data to FHIR Observation resources
+    const observationEntries = createObservationBundleEntries({
+      observationFormsData,
+      encounterSubject: encounterResource.subject!,
+      encounterReference,
+      practitionerUUID: practitionerUUID,
+    });
 
     const consultationBundle = createConsultationBundle([
       encounterBundleEntry,
@@ -276,7 +274,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       ...conditionEntries,
       ...serviceRequestEntries,
       ...medicationEntries,
-      // ...observationEntries,  // TODO: Add when observation conversion is implemented
+      ...observationEntries,
     ]);
 
     return postConsultationBundle<ConsultationBundle>(consultationBundle);
