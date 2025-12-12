@@ -52,7 +52,10 @@ export function useObservationFormData(
         const formRecord = plainData as {
           children?: unknown[];
           control?: { id?: string; concept?: { uuid?: string } };
-          value?: { value?: unknown };
+          value?: {
+            value?: unknown;
+            interpretation?: { uuid?: string; display?: string };
+          };
           interpretation?: { uuid?: string; display?: string };
           formFieldPath?: string;
           voided?: boolean;
@@ -89,14 +92,18 @@ export function useObservationFormData(
                   | null,
               };
 
-              // Add interpretation if present
+              // Add interpretation if present - check both possible locations
+              // Check record level first, then inside value object
+              const interpretationData =
+                record.interpretation ?? record.value?.interpretation;
+
               if (
-                record.interpretation?.uuid &&
-                typeof record.interpretation.uuid === 'string'
+                interpretationData?.uuid &&
+                typeof interpretationData.uuid === 'string'
               ) {
                 control.interpretation = {
-                  uuid: record.interpretation.uuid,
-                  display: record.interpretation.display,
+                  uuid: interpretationData.uuid,
+                  display: interpretationData.display,
                 };
               }
 
