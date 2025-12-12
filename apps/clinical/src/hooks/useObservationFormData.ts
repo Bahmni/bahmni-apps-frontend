@@ -92,19 +92,16 @@ export function useObservationFormData(
                   | null,
               };
 
-              // Add interpretation if present - check both possible locations
+              // Add interpretation if present - extract the code string
               // Check record level first, then inside value object
               const interpretationData =
                 record.interpretation ?? record.value?.interpretation;
 
-              if (
-                interpretationData?.uuid &&
-                typeof interpretationData.uuid === 'string'
-              ) {
-                control.interpretation = {
-                  uuid: interpretationData.uuid,
-                  display: interpretationData.display,
-                };
+              if (interpretationData) {
+                // If it's already a string (code like "A", "N", etc.), use it directly
+                if (typeof interpretationData === 'string') {
+                  control.interpretation = interpretationData;
+                }
               }
 
               controls.push(control);

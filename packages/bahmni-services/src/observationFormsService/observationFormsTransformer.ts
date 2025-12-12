@@ -21,7 +21,7 @@ export interface FormControlData {
   value: string | number | boolean | Date | ConceptValue | null;
   label?: string;
   units?: string;
-  interpretation?: ConceptValue; // Interpretation/abnormality flag from form2-controls
+  interpretation?: string; // Interpretation code: A=ABNORMAL, N=NORMAL, etc.
   groupMembers?: FormControlData[];
 }
 

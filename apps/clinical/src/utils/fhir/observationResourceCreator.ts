@@ -2,6 +2,15 @@ import { ObservationDataInFormControls } from '@bahmni/services';
 import { Observation, Reference } from 'fhir/r4';
 import { createCodeableConcept, createCoding } from './codeableConceptCreator';
 
+// Map interpretation values from form2-controls to FHIR codes
+const INTERPRETATION_TO_CODE: Record<
+  string,
+  { code: string; display: string }
+> = {
+  ABNORMAL: { code: 'A', display: 'Abnormal' },
+  NORMAL: { code: 'N', display: 'Normal' },
+};
+
 /**
  * Creates a FHIR R4 Observation resource from ObservationDataInFormControls
  * @param observationPayload - The observation data from form2-controls
@@ -68,6 +77,27 @@ export const createObservationResource = (
     ]);
   }
 
+  // Add interpretation (receives "ABNORMAL" or "NORMAL" from form2-controls)
+  // Default to "NORMAL" if not provided or not "ABNORMAL"
+  const interpretationValue =
+    observationPayload.interpretation?.toUpperCase() || 'NORMAL';
+  const mapping =
+    INTERPRETATION_TO_CODE[interpretationValue] ||
+    INTERPRETATION_TO_CODE.NORMAL;
+
+  observation.interpretation = [
+    {
+      coding: [
+        {
+          system:
+            'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
+          code: mapping.code,
+          display: mapping.display,
+        },
+      ],
+    },
+  ];
+
   // Add form namespace path extension if provided
   if (formNamespacePath) {
     observation.extension = [
@@ -90,19 +120,6 @@ export const createObservationResource = (
         reference: `urn:uuid:${crypto.randomUUID()}`,
       };
     });
-  }
-
-  // Handle interpretation (abnormality flag)
-  if (observationPayload.interpretation) {
-    observation.interpretation = [
-      createCodeableConcept([
-        createCoding(
-          observationPayload.interpretation.uuid,
-          undefined,
-          observationPayload.interpretation.display,
-        ),
-      ]),
-    ];
   }
 
   // Handle comments
