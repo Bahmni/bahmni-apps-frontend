@@ -58,7 +58,9 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
-  const categoryName = (config?.category as string) || '';
+  const categoryName = (config?.orderType as string) || '';
+
+  console.log(categoryName, 'categoryName in GenericServiceRequestTable.tsx:');
 
   const {
     data: orderTypesData,
@@ -78,17 +80,6 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
     return orderType?.uuid ?? '';
   }, [orderTypesData, categoryName]);
 
-  const combinedEncounterUuids = useMemo(() => {
-    const combined: string[] = [];
-    if (encounterUuids) {
-      combined.push(...encounterUuids);
-    }
-    if (visitUuids) {
-      combined.push(...visitUuids);
-    }
-    return combined.length > 0 ? combined : undefined;
-  }, [encounterUuids, visitUuids]);
-
   const {
     data,
     isLoading: isLoadingServiceRequests,
@@ -98,13 +89,16 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
     queryKey: genericServiceRequestQueryKeys(
       categoryUuid,
       patientUUID!,
-      combinedEncounterUuids,
+      encounterUuids,
     ),
     enabled: !!patientUUID && !!categoryUuid,
     queryFn: () =>
       fetchServiceRequests(categoryUuid, patientUUID!, encounterUuids),
   });
 
+  console.log(data, 'data in GenericServiceRequestTable.tsx:');
+
+  console.log('hi');
   useEffect(() => {
     if (isOrderTypesError) {
       const { message } = getFormattedError(orderTypesError);

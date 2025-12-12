@@ -33,7 +33,7 @@ export const builtInWidgets: WidgetConfig[] = [
     component: lazy(() => import('../vitalFlowSheet/VitalFlowSheet')),
   },
   {
-    type: 'genericServiceRequest',
+    type: 'ordersControl',
     component: lazy(
       () => import('../genericServiceRequest/GenericServiceRequestTable'),
     ),

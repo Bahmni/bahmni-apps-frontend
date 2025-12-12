@@ -36,6 +36,8 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
   ) => {
     const WidgetComponent = getWidget(control.type);
 
+    console.log(!WidgetComponent);
+
     if (!WidgetComponent) {
       return (
         <div key={`${control.type}-${index}`} className={styles.widgetError}>

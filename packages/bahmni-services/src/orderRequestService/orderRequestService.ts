@@ -15,7 +15,13 @@ export async function getServiceRequests(
   patientUuid: string,
   encounterUuids?: string[],
 ): Promise<ServiceRequestBundle> {
+  let encounterUuidsString: string | undefined;
+
+  if (encounterUuids && encounterUuids.length > 0) {
+    encounterUuidsString = encounterUuids.join(',');
+  }
+
   return await get<ServiceRequestBundle>(
-    SERVICE_REQUESTS_URL(category, patientUuid, encounterUuids),
+    SERVICE_REQUESTS_URL(category, patientUuid, encounterUuidsString),
   );
 }
