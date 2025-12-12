@@ -77,26 +77,27 @@ export const createObservationResource = (
     ]);
   }
 
-  // Add interpretation (receives "ABNORMAL" or "NORMAL" from form2-controls)
-  // Default to "NORMAL" if not provided or not "ABNORMAL"
-  const interpretationValue =
-    observationPayload.interpretation?.toUpperCase() || 'NORMAL';
-  const mapping =
-    INTERPRETATION_TO_CODE[interpretationValue] ||
-    INTERPRETATION_TO_CODE.NORMAL;
+  // Add interpretation if provided (receives "ABNORMAL" or "NORMAL" from form2-controls)
+  // If null/undefined, don't include interpretation field
+  if (observationPayload.interpretation) {
+    const interpretationValue = observationPayload.interpretation.toUpperCase();
+    const mapping =
+      INTERPRETATION_TO_CODE[interpretationValue] ||
+      INTERPRETATION_TO_CODE.NORMAL;
 
-  observation.interpretation = [
-    {
-      coding: [
-        {
-          system:
-            'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
-          code: mapping.code,
-          display: mapping.display,
-        },
-      ],
-    },
-  ];
+    observation.interpretation = [
+      {
+        coding: [
+          {
+            system:
+              'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
+            code: mapping.code,
+            display: mapping.display,
+          },
+        ],
+      },
+    ];
+  }
 
   // Add form namespace path extension if provided
   if (formNamespacePath) {
