@@ -5,7 +5,7 @@ import {
   FormData,
   FormControlData,
   ConceptValue,
-  ObservationPayload,
+  ObservationDataInFormControls,
 } from '../observationFormsTransformer';
 
 describe('observationFormsTransformer', () => {

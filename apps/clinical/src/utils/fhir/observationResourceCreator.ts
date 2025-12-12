@@ -1,10 +1,10 @@
-import { ObservationPayload } from '@bahmni/services';
+import { ObservationDataInFormControls } from '@bahmni/services';
 import { Observation, Reference } from 'fhir/r4';
 import { createCodeableConcept, createCoding } from './codeableConceptCreator';
 
 /**
- * Creates a FHIR R4 Observation resource from ObservationPayload
- * @param observationPayload - The observation payload from form
+ * Creates a FHIR R4 Observation resource from ObservationDataInFormControls
+ * @param observationPayload - The observation data from form2-controls
  * @param subjectReference - Reference to the patient
  * @param encounterReference - Reference to the encounter
  * @param performerReference - Reference to the practitioner
@@ -12,7 +12,7 @@ import { createCodeableConcept, createCoding } from './codeableConceptCreator';
  * @returns FHIR R4 Observation resource
  */
 export const createObservationResource = (
-  observationPayload: ObservationPayload,
+  observationPayload: ObservationDataInFormControls,
   subjectReference: Reference,
   encounterReference: Reference,
   performerReference: Reference,
@@ -105,16 +105,16 @@ export const createObservationResource = (
 };
 
 /**
- * Recursively creates FHIR Observation resources from ObservationPayload array
+ * Recursively creates FHIR Observation resources from ObservationDataInFormControls array
  * Handles nested group members
- * @param observations - Array of observation payloads
+ * @param observations - Array of observation data from form2-controls
  * @param subjectReference - Reference to the patient
  * @param encounterReference - Reference to the encounter
  * @param performerReference - Reference to the practitioner
  * @returns Array of FHIR R4 Observation resources
  */
 export const createObservationResources = (
-  observations: ObservationPayload[],
+  observations: ObservationDataInFormControls[],
   subjectReference: Reference,
   encounterReference: Reference,
   performerReference: Reference,

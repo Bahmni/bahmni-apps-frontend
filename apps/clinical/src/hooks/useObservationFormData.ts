@@ -1,7 +1,7 @@
 import {
   FormData,
   FormControlData,
-  ObservationPayload,
+  ObservationDataInFormControls,
   transformFormDataToObservations,
   validateFormData,
   hasFormData,
@@ -9,13 +9,12 @@ import {
 import { useCallback, useState } from 'react';
 
 interface UseObservationFormDataProps {
-  // Optional: Existing form data to initialize with (for edit mode)
   initialFormData?: FormData | null;
 }
 
 interface UseObservationFormDataReturn {
   formData: FormData | null;
-  observations: ObservationPayload[];
+  observations: ObservationDataInFormControls[];
   hasData: boolean;
   isValid: boolean;
   validationErrors: Array<{ field: string; message: string }>;
@@ -23,18 +22,6 @@ interface UseObservationFormDataReturn {
   clearFormData: () => void;
 }
 
-/**
- * Hook to manage observation form data capture and transformation
- *
- * This hook:
- * - Captures form data from form2-controls Container
- * - Validates the form data
- * - Transforms it to observation payloads
- * - Provides the observations to be included in consultation bundle
- *
- * @param props - Optional initial form data for edit mode
- * @returns Form data management utilities and transformed observations
- */
 export function useObservationFormData(
   props?: UseObservationFormDataProps,
 ): UseObservationFormDataReturn {
@@ -43,7 +30,6 @@ export function useObservationFormData(
   );
 
   const handleFormDataChange = useCallback((data: unknown) => {
-    // Validate and normalize the incoming data
     let normalizedData: FormData | null = null;
 
     if (!data) {
@@ -51,7 +37,6 @@ export function useObservationFormData(
       return;
     }
 
-    // Check if data is an Immutable.js object (has toJS method)
     if (
       typeof data === 'object' &&
       'toJS' in data &&
@@ -59,13 +44,11 @@ export function useObservationFormData(
     ) {
       const plainData = (data as { toJS: () => unknown }).toJS();
 
-      // Now process the plain data
       if (
         plainData &&
         typeof plainData === 'object' &&
         !Array.isArray(plainData)
       ) {
-        // The form2-controls data structure has a 'children' array containing form records
         const formRecord = plainData as {
           children?: unknown[];
           control?: { id?: string; concept?: { uuid?: string } };
@@ -74,17 +57,14 @@ export function useObservationFormData(
           voided?: boolean;
         };
 
-        // Recursive function to extract controls from form record tree
         const extractControls = (
           record: typeof formRecord,
           controls: FormControlData[],
         ): void => {
-          // Skip voided records
           if (record.voided) {
             return;
           }
 
-          // Check if this record has a value to capture
           if (
             record.control &&
             record.value?.value !== null &&
@@ -110,7 +90,6 @@ export function useObservationFormData(
             }
           }
 
-          // Recursively process children
           if (record.children && Array.isArray(record.children)) {
             record.children.forEach((child) => {
               if (child && typeof child === 'object') {
@@ -128,17 +107,13 @@ export function useObservationFormData(
           metadata: {},
         };
       }
-    }
-    // Check if data already has the expected FormData structure
-    else if (
+    } else if (
       typeof data === 'object' &&
       'controls' in data &&
       Array.isArray((data as FormData).controls)
     ) {
       normalizedData = data as FormData;
-    }
-    // Check if data is an observations array (alternative format)
-    else if (Array.isArray(data)) {
+    } else if (Array.isArray(data)) {
       normalizedData = {
         controls: data,
         metadata: {},
@@ -152,17 +127,14 @@ export function useObservationFormData(
     setFormData(null);
   }, []);
 
-  // Check if form has any data
   const hasData = formData ? hasFormData(formData) : false;
 
-  // Validate form data
   const validation = formData
     ? validateFormData(formData)
     : { isValid: true, errors: [] };
   const isValid = validation.isValid;
   const validationErrors = validation.errors;
 
-  // Transform to observations (only if valid and has data)
   const observations =
     formData && isValid && hasData
       ? transformFormDataToObservations(formData)

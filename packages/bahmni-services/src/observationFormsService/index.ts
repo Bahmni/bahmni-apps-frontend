@@ -20,7 +20,7 @@ export {
   transformObservationsToFormData,
   type FormData,
   type FormControlData,
-  type ObservationPayload,
+  type ObservationDataInFormControls,
   type ConceptValue,
 } from './observationFormsTransformer';
 export {

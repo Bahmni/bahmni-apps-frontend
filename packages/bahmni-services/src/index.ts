@@ -238,7 +238,7 @@ export {
   type FormMetadata,
   type FormData,
   type FormControlData,
-  type ObservationPayload,
+  type ObservationDataInFormControls,
   type ConceptValue,
   type ConsultationBundle,
   type ValidationError,

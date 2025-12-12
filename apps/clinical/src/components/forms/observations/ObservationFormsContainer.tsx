@@ -11,7 +11,7 @@ import {
 import '@bahmni/form2-controls/dist/bundle.css';
 import {
   ObservationForm,
-  ObservationPayload,
+  ObservationDataInFormControls,
   getFormattedError,
   getUserPreferredLocale,
 } from '@bahmni/services';
@@ -38,10 +38,10 @@ interface ObservationFormsContainerProps {
   // Callback to lift observation form data to parent for consultation bundle
   onFormObservationsChange?: (
     formUuid: string,
-    observations: ObservationPayload[],
+    observations: ObservationDataInFormControls[],
   ) => void;
   // Existing saved observations for the current form (for edit mode)
-  existingObservations?: ObservationPayload[];
+  existingObservations?: ObservationDataInFormControls[];
 }
 
 /**

@@ -53,12 +53,12 @@ export interface FormMetadata {
   schema: unknown; // The parsed form schema/definition
 }
 
-// Observation payload structure (used in consultation bundle)
-export interface ObservationPayload {
+// Observation data from form2-controls (used in consultation bundle)
+export interface ObservationDataInFormControls {
   concept: { uuid: string };
   value: string | number | boolean | ConceptValue;
   obsDatetime?: string;
-  groupMembers?: ObservationPayload[];
+  groupMembers?: ObservationDataInFormControls[];
   comment?: string;
   formFieldPath?: string; // Track which form field this came from
 }
@@ -75,7 +75,7 @@ export interface ConsultationBundle {
   encounterTypeUuid: string;
   visitUuid?: string;
   providers?: Array<{ uuid: string }>;
-  observations: ObservationPayload[]; // Observation forms data goes here
+  observations: ObservationDataInFormControls[]; // Observation forms data goes here
   diagnoses?: DiagnosisPayload[];
   orders?: OrderPayload[];
   // ... other consultation data

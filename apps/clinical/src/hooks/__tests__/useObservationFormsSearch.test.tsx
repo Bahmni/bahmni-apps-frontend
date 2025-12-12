@@ -10,7 +10,7 @@ import { I18nextProvider } from 'react-i18next';
 
 import i18n from '../../../setupTests.i18n';
 
-import { filterFormsByUserPrivileges } from '../../components/forms/observationForms/utils/privilegeUtils';
+import { filterFormsByUserPrivileges } from '../../components/forms/observations/utils/privilegeUtils';
 import useObservationFormsSearch from '../useObservationFormsSearch';
 
 // Mock the common utils

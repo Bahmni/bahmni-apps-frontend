@@ -1,6 +1,6 @@
 import {
   ObservationForm,
-  ObservationPayload,
+  ObservationDataInFormControls,
   ValidationError,
 } from '@bahmni/services';
 import { useCallback } from 'react';
@@ -9,28 +9,17 @@ interface UseObservationFormActionsProps {
   viewingForm: ObservationForm | null | undefined;
   onViewingFormChange: (viewingForm: ObservationForm | null) => void;
   onRemoveForm?: (formUuid: string) => void;
-  observations: ObservationPayload[];
+  observations: ObservationDataInFormControls[];
   hasData: boolean;
   isValid: boolean;
   validationErrors: ValidationError[];
   onFormObservationsChange?: (
     formUuid: string,
-    observations: ObservationPayload[],
+    observations: ObservationDataInFormControls[],
   ) => void;
   clearFormData: () => void;
 }
 
-/**
- * Hook to manage observation form actions (save, discard, back)
- *
- * This hook handles:
- * - Form saving: Validates data and lifts observations to parent for consultation bundle
- * - Form discarding: Clears form data and optionally removes from selected forms
- * - Navigation back: Keeps form data but returns to form list
- *
- * @param props - Hook properties including form state, validation, and callbacks
- * @returns Observation form action handlers
- */
 export function useObservationFormActions({
   viewingForm,
   onViewingFormChange,
@@ -42,39 +31,28 @@ export function useObservationFormActions({
   clearFormData,
 }: UseObservationFormActionsProps) {
   const handleDiscardForm = useCallback(() => {
-    // Clear form data
     clearFormData();
 
-    // Remove the form from selected forms list if callback is provided
     if (viewingForm && onRemoveForm) {
       onRemoveForm(viewingForm.uuid);
     }
 
-    // Close the form view
     onViewingFormChange(null);
   }, [viewingForm, onRemoveForm, onViewingFormChange, clearFormData]);
 
   const handleSaveForm = useCallback(() => {
-    // Validate form has data
     if (!hasData) {
       return;
     }
 
-    // Validate form data
     if (!isValid) {
-      // TODO: Show validation errors to user
       return;
     }
 
-    // Lift observations to parent for inclusion in consultation bundle
     if (viewingForm && onFormObservationsChange) {
       onFormObservationsChange(viewingForm.uuid, observations);
     }
 
-    // DO NOT clear form data - keep it so user can reopen and edit
-    // Data will only be cleared when user explicitly discards the form
-
-    // Close the form view
     onViewingFormChange(null);
   }, [
     viewingForm,
@@ -86,8 +64,6 @@ export function useObservationFormActions({
   ]);
 
   const handleBackToForms = useCallback(() => {
-    // Keep form data, just close the view
-    // This allows user to come back and continue editing
     onViewingFormChange(null);
   }, [onViewingFormChange]);
 

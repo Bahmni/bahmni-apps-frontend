@@ -1,11 +1,7 @@
-import { FormMetadata, ObservationPayload, ConceptValue } from './models';
+import { FormMetadata, ObservationDataInFormControls, ConceptValue } from './models';
 
-// Re-export types for convenience
-export type { ObservationPayload, ConceptValue };
+export type { ObservationDataInFormControls, ConceptValue };
 
-/**
- * Form data structure from form2-controls Container component
- */
 export interface FormControlData {
   id: string;
   conceptUuid: string;
@@ -61,7 +57,7 @@ function transformControlValue(
  */
 function transformGroupMembers(
   groupMembers: FormControlData[],
-): ObservationPayload[] {
+): ObservationDataInFormControls[] {
   return groupMembers
     .filter((member) => member.value !== null && member.value !== undefined)
     .map((member) => ({
@@ -81,17 +77,17 @@ function transformGroupMembers(
  *
  * @param formData - Data from form2-controls Container.onValueUpdated
  * @param metadata - Form metadata (optional, for validation context)
- * @returns Array of observation payloads ready for consultation bundle
+ * @returns Array of observation data ready for consultation bundle
  */
 export function transformFormDataToObservations(
   formData: FormData,
   metadata?: FormMetadata,
-): ObservationPayload[] {
+): ObservationDataInFormControls[] {
   if (!formData.controls || formData.controls.length === 0) {
     return [];
   }
 
-  const observations: ObservationPayload[] = [];
+  const observations: ObservationDataInFormControls[] = [];
   const timestamp = new Date().toISOString();
 
   formData.controls.forEach((control) => {
@@ -106,7 +102,7 @@ export function transformFormDataToObservations(
     }
 
     try {
-      const observation: ObservationPayload = {
+      const observation: ObservationDataInFormControls = {
         concept: { uuid: control.conceptUuid },
         value: transformControlValue(control),
         obsDatetime: timestamp,
@@ -127,21 +123,10 @@ export function transformFormDataToObservations(
   return observations;
 }
 
-/**
- * Transform existing observations back to form data structure
- * Used when editing a previously saved form
- *
- * @param observations - Existing observations from backend
- * @param formMetadata - Form metadata to map observations to controls
- * @returns FormData structure for form2-controls Container
- */
 export function transformObservationsToFormData(
-  observations: ObservationPayload[],
+  observations: ObservationDataInFormControls[],
   formMetadata: FormMetadata,
 ): FormData {
-  // This would map observations back to the form structure
-  // Implementation depends on form2-controls data requirements
-  // Placeholder for now
   return {
     controls: [],
     metadata: {},
