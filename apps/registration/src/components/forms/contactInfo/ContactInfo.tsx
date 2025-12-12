@@ -1,4 +1,3 @@
-import { TextInput } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import {
   useCallback,
@@ -10,27 +9,27 @@ import {
 
 import { usePersonAttributeFields } from '../../../hooks/usePersonAttributeFields';
 import { useRegistrationConfig } from '../../../hooks/useRegistrationConfig';
-import type { ContactData } from '../../../models/patient';
+import type { PersonAttributesData } from '../../../models/patient';
 
 import {
   getFieldsToShow,
   createFieldTranslationMap,
-  initializeFormData,
   getFieldLabel,
-} from './contactInfoHelpers';
+} from '../../common/personAttributeHelpers';
+import { PersonAttributeInput } from '../../common/PersonAttributeInput';
 import {
-  isNumericPhoneValue,
   validateAllFields,
-} from './contactInfoValidation';
+  getValidationConfig,
+} from '../../common/personAttributeValidation';
 import styles from './styles/index.module.scss';
 
 export interface ContactInfoRef {
   validate: () => boolean;
-  getData: () => ContactData;
+  getData: () => PersonAttributesData;
 }
 
 interface ContactInfoProps {
-  initialData?: ContactData;
+  initialData?: PersonAttributesData;
   ref?: React.Ref<ContactInfoRef>;
 }
 
@@ -57,28 +56,21 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
     [configAttributes],
   );
 
-  const initialFormData = useMemo(
-    () => initializeFormData(fieldsToShow, initialData),
-    [fieldsToShow, initialData],
-  );
-
-  const [formData, setFormData] = useState<ContactData>(initialFormData);
+  const [formData, setFormData] = useState<PersonAttributesData>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (initialData && fieldsToShow.length > 0) {
-      const data = initializeFormData(fieldsToShow, initialData);
-      setFormData(data);
+    if (initialData && Object.keys(initialData).length > 0) {
+      setFormData(initialData);
     }
-  }, [initialData, fieldsToShow.length]);
-  const handlePhoneChange = useCallback(
-    (fieldName: string, value: string) => {
-      if (isNumericPhoneValue(value)) {
-        setFormData((prev) => ({ ...prev, [fieldName]: value }));
+  }, [initialData, fieldsToShow]);
 
-        if (errors[fieldName]) {
-          setErrors((prev) => ({ ...prev, [fieldName]: '' }));
-        }
+  const handleFieldChange = useCallback(
+    (fieldName: string, value: string | number | boolean) => {
+      setFormData((prev) => ({ ...prev, [fieldName]: value }));
+
+      if (errors[fieldName]) {
+        setErrors((prev) => ({ ...prev, [fieldName]: '' }));
       }
     },
     [errors],
@@ -89,14 +81,21 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
       fieldsToShow,
       formData,
       fieldValidationConfig,
+      t,
     );
     setErrors(result.errors);
     return result.isValid;
-  }, [fieldsToShow, formData, fieldValidationConfig]);
+  }, [fieldsToShow, formData, fieldValidationConfig, t]);
 
-  const getData = useCallback((): ContactData => {
-    return formData;
-  }, [formData]);
+  const getData = useCallback((): PersonAttributesData => {
+    const displayedData: PersonAttributesData = {};
+    fieldsToShow.forEach((field) => {
+      if (formData[field.name] !== undefined) {
+        displayedData[field.name] = formData[field.name];
+      }
+    });
+    return displayedData;
+  }, [formData, fieldsToShow]);
 
   useImperativeHandle(ref, () => ({
     validate,
@@ -113,21 +112,25 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
       <div className={styles.row}>
         {fieldsToShow.map((field) => {
           const fieldName = field.name;
-          const value =
-            (formData[fieldName as keyof ContactData] as string) ?? '';
+          const value = formData[fieldName] ?? '';
           const label = getFieldLabel(fieldName, fieldTranslationMap, t);
           const error = errors[fieldName] || '';
 
           return (
             <div key={field.uuid} className={styles.phoneNumberField}>
-              <TextInput
-                id={field.uuid}
-                labelText={label}
-                placeholder={label}
+              <PersonAttributeInput
+                uuid={field.uuid}
+                label={label}
+                format={field.format}
                 value={value}
-                invalid={!!error}
-                invalidText={error}
-                onChange={(e) => handlePhoneChange(fieldName, e.target.value)}
+                answers={field.answers}
+                error={error}
+                placeholder={label}
+                validation={getValidationConfig(
+                  fieldName,
+                  fieldValidationConfig,
+                )}
+                onChange={(newValue) => handleFieldChange(fieldName, newValue)}
               />
             </div>
           );
