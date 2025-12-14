@@ -1,0 +1,80 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.programsTableTitle {
+  background: $background !important;
+  min-block-size: fit-content !important;
+  border-top: 1px solid $border-subtle;
+  p {
+    @include type-style("heading-compact-02");
+    color: $text-primary;
+  }
+}
+
+.programName {
+  @include type-style("body-compact-01");
+}
+
+.outcomeContainer {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-02;
+}
+
+.outcomeText {
+  @include type-style("body-compact-01");
+  font-weight: 500;
+  color: $text-primary;
+}
+
+.outcomeDetails {
+  @include type-style("label-01");
+  color: $text-secondary;
+  margin: 0;
+}
+
+.programsTableBody {
+  td {
+    width: 14%;
+  }
+  td:nth-child(1) {
+    width: 16%;
+  }
+  td:nth-child(7) {
+    padding-inline: 0 !important;
+  }
+}
+
+.inProgressStatus {
+  color: $blue-60;
+}
+
+.submittedStatus {
+  color: $blue-50;
+}
+
+.finalisedStatus {
+  color: $green-60;
+}
+
+.completedStatus {
+  color: $green-50;
+}
+
+.onHoldStatus {
+  color: $yellow-50;
+}
+
+.cancelledStatus {
+  color: $red-50;
+}
+
+.abandonedStatus {
+  color: $red-60;
+}
+
+.unknownStatus {
+  color: $cool-gray-50;
+}
