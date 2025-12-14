@@ -238,3 +238,4 @@ export {
   type VitalFlowSheetData,
   type VitalFlowSheetConceptDetail,
 } from './vitalFlowSheetService';
+export { getPatientPrograms, type ProgramEnrollment } from './programService';
