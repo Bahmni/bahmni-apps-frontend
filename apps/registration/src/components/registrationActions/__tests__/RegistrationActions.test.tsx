@@ -1,5 +1,6 @@
 import { AppExtensionConfig } from '@bahmni/services';
 import { NotificationProvider } from '@bahmni/widgets';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { BrowserRouter } from 'react-router-dom';
@@ -20,10 +21,20 @@ const mockUseFilteredExtensions = useFilteredExtensions as jest.MockedFunction<
 >;
 
 const renderWithRouter = (component: React.ReactElement) => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+
   return render(
-    <NotificationProvider>
-      <BrowserRouter>{component}</BrowserRouter>
-    </NotificationProvider>,
+    <QueryClientProvider client={queryClient}>
+      <NotificationProvider>
+        <BrowserRouter>{component}</BrowserRouter>
+      </NotificationProvider>
+    </QueryClientProvider>,
   );
 };
 
@@ -196,10 +207,8 @@ describe('RegistrationActions', () => {
       });
     });
 
-    it('should not navigate if onBeforeNavigate throws error', async () => {
-      const onBeforeNavigate = jest
-        .fn()
-        .mockRejectedValue(new Error('Validation failed'));
+    it('should not navigate if onBeforeNavigate returns null', async () => {
+      const onBeforeNavigate = jest.fn().mockResolvedValue(null);
       const extension: AppExtensionConfig = {
         id: 'test-extension',
         extensionPointId: 'org.bahmni.registration.navigation',
@@ -231,7 +240,7 @@ describe('RegistrationActions', () => {
       expect(mockHandleExtensionNavigation).not.toHaveBeenCalled();
     });
 
-    it('should navigate without onBeforeNavigate if not provided', async () => {
+    it('should not navigate when onBeforeNavigate is not provided', async () => {
       const extension: AppExtensionConfig = {
         id: 'test-extension',
         extensionPointId: 'org.bahmni.registration.navigation',
@@ -253,13 +262,9 @@ describe('RegistrationActions', () => {
       const button = screen.getByText('VIEW_PATIENT');
       fireEvent.click(button);
 
-      await waitFor(() => {
-        expect(mockHandleExtensionNavigation).toHaveBeenCalledWith(
-          '#/patient/123',
-          {},
-          expect.any(Function),
-        );
-      });
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      expect(mockHandleExtensionNavigation).not.toHaveBeenCalled();
     });
   });
 });
