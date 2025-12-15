@@ -11,4 +11,4 @@ export const GET_ACTIVE_VISIT_URL = (patientUuid: string) =>
   `/visit?patient=${patientUuid}&includeInactive=false&v=custom:(uuid,visitType,startDatetime,stopDatetime)`;
 
 export const GET_VISIT_LOCATION = (loginLocation: string) =>
-  OPENMRS_REST_V1 + `/location/${loginLocation}?v=custom:(uuid)`;
+  OPENMRS_REST_V1 + `/bahmnicore/visitLocation/${loginLocation}`;

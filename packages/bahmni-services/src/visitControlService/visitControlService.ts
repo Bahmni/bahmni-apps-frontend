@@ -71,6 +71,7 @@ export const checkIfActiveVisitExists = async (
 /**
  * Creates a new visit for a patient with the specified visit type
  * Automatically sets the visit location based on the user's login location
+ * Fetches the correct visit location UUID from Bahmni's visitLocation endpoint
  * Dispatches an audit event after successful visit creation
  * @param patientUuid - The UUID of the patient
  * @param visitType - The visit type object containing name and uuid
