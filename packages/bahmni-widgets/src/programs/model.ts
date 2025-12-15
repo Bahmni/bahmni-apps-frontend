@@ -1,6 +1,3 @@
-/**
- * Enum representing the possible statuses of a program enrollment
- */
 export enum ProgramStatus {
   InProgress = 'in-progress',
   Submitted = 'submitted',
@@ -14,7 +11,7 @@ export enum ProgramStatus {
 /**
  * Interface representing a formatted program for easier consumption by components
  */
-export interface ProgramViewModel {
+export interface formattedProgram {
   readonly id: string;
   readonly uuid: string;
   readonly programName: string;

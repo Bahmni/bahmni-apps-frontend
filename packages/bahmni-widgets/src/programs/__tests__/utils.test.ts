@@ -1,6 +1,6 @@
 import { ProgramEnrollment } from '@bahmni/services';
 import { ProgramStatus } from '../model';
-import { createProgramViewModels } from '../utils';
+import { mapPrograms } from '../utils';
 
 describe('Program Utils', () => {
   const mockBaseProgram: ProgramEnrollment = {
@@ -36,7 +36,7 @@ describe('Program Utils', () => {
         },
       ];
 
-      const result = createProgramViewModels(programs);
+      const result = mapPrograms(programs);
 
       expect(result).toHaveLength(2);
       expect(result[0].programName).toBe('HIV Program');
@@ -44,7 +44,7 @@ describe('Program Utils', () => {
     });
 
     it('should return empty array for empty input', () => {
-      const result = createProgramViewModels([]);
+      const result = mapPrograms([]);
       expect(result).toEqual([]);
     });
 
@@ -55,6 +55,10 @@ describe('Program Utils', () => {
         location: {
           uuid: 'location-uuid',
           display: 'Main Hospital',
+        },
+        outcome: {
+          uuid: 'outcome-uuid',
+          display: 'Cured',
         },
         states: [
           {
@@ -87,7 +91,7 @@ describe('Program Utils', () => {
         ],
       };
 
-      const result = createProgramViewModels([program]);
+      const result = mapPrograms([program]);
 
       expect(result[0]).toMatchObject({
         id: 'program-uuid-1',
@@ -97,7 +101,7 @@ describe('Program Utils', () => {
         destination: 'Main Hospital',
         dateEnrolled: '2023-01-15T10:00:00.000Z',
         dateEnded: '2023-12-31T10:00:00.000Z',
-        outcome: 'Active Treatment',
+        outcome: 'Cured',
         outcomeDetails: null,
         status: ProgramStatus.Completed,
         statusKey: 'PROGRAMS_STATUS_COMPLETED',
@@ -112,7 +116,7 @@ describe('Program Utils', () => {
         dateCompleted: null,
       };
 
-      const result = createProgramViewModels([program]);
+      const result = mapPrograms([program]);
 
       expect(result[0].status).toBe(ProgramStatus.InProgress);
       expect(result[0].statusKey).toBe('PROGRAMS_STATUS_IN_PROGRESS');
@@ -125,7 +129,7 @@ describe('Program Utils', () => {
         dateCompleted: '2023-12-31T10:00:00.000Z',
       };
 
-      const result = createProgramViewModels([program]);
+      const result = mapPrograms([program]);
 
       expect(result[0].status).toBe(ProgramStatus.Completed);
       expect(result[0].statusKey).toBe('PROGRAMS_STATUS_COMPLETED');
@@ -138,15 +142,19 @@ describe('Program Utils', () => {
         dateEnded: '2023-12-31T10:00:00.000Z',
       };
 
-      const result = createProgramViewModels([program]);
+      const result = mapPrograms([program]);
 
       expect(result[0].status).toBe(ProgramStatus.Completed);
       expect(result[0].dateEnded).toBe('2023-12-31T10:00:00.000Z');
     });
 
-    it('should extract outcome from current state (endDate = null)', () => {
+    it('should extract outcome from program.outcome.display', () => {
       const program: ProgramEnrollment = {
         ...mockBaseProgram,
+        outcome: {
+          uuid: 'outcome-uuid',
+          display: 'Cured',
+        },
         states: [
           {
             uuid: 'state-1',
@@ -177,14 +185,15 @@ describe('Program Utils', () => {
         ],
       };
 
-      const result = createProgramViewModels([program]);
+      const result = mapPrograms([program]);
 
-      expect(result[0].outcome).toBe('Current State');
+      expect(result[0].outcome).toBe('Cured');
     });
 
-    it('should extract outcome from most recent state when all have endDate', () => {
+    it('should return null outcome when program.outcome is null', () => {
       const program: ProgramEnrollment = {
         ...mockBaseProgram,
+        outcome: null,
         states: [
           {
             uuid: 'state-1',
@@ -199,34 +208,21 @@ describe('Program Utils', () => {
               },
             },
           },
-          {
-            uuid: 'state-2',
-            startDate: '2023-06-15T10:00:00.000Z',
-            endDate: '2023-12-15T10:00:00.000Z',
-            state: {
-              uuid: 'state-concept-2',
-              display: 'Most Recent State',
-              concept: {
-                uuid: 'concept-2',
-                display: 'Most Recent State',
-              },
-            },
-          },
         ],
       };
 
-      const result = createProgramViewModels([program]);
+      const result = mapPrograms([program]);
 
-      expect(result[0].outcome).toBe('Most Recent State');
+      expect(result[0].outcome).toBeNull();
     });
 
-    it('should return null outcome when no states exist', () => {
+    it('should return null outcome when program.outcome is undefined', () => {
       const program: ProgramEnrollment = {
         ...mockBaseProgram,
         states: [],
       };
 
-      const result = createProgramViewModels([program]);
+      const result = mapPrograms([program]);
 
       expect(result[0].outcome).toBeNull();
     });
@@ -252,7 +248,7 @@ describe('Program Utils', () => {
         ],
       };
 
-      const result = createProgramViewModels([program]);
+      const result = mapPrograms([program]);
 
       expect(result[0].dateEnrolled).toBe('2023-02-01T10:00:00.000Z');
     });
@@ -289,7 +285,7 @@ describe('Program Utils', () => {
         ],
       };
 
-      const result = createProgramViewModels([program]);
+      const result = mapPrograms([program]);
 
       expect(result[0].referenceNumber).toBe('REF-67890');
     });
@@ -316,7 +312,7 @@ describe('Program Utils', () => {
         ],
       };
 
-      const result = createProgramViewModels([program]);
+      const result = mapPrograms([program]);
 
       expect(result[0].referenceNumber).toBe('Concept Reference');
     });
@@ -327,7 +323,7 @@ describe('Program Utils', () => {
         attributes: [],
       };
 
-      const result = createProgramViewModels([program]);
+      const result = mapPrograms([program]);
 
       expect(result[0].referenceNumber).toBe('');
     });
@@ -351,7 +347,7 @@ describe('Program Utils', () => {
         attributes: [],
       };
 
-      const result = createProgramViewModels([program]);
+      const result = mapPrograms([program]);
 
       expect(result[0].programName).toBe('Program Display');
     });
@@ -375,7 +371,7 @@ describe('Program Utils', () => {
         attributes: [],
       };
 
-      const result = createProgramViewModels([program]);
+      const result = mapPrograms([program]);
 
       expect(result[0].programName).toBe('Program Display');
     });
@@ -386,7 +382,7 @@ describe('Program Utils', () => {
         location: null,
       };
 
-      const result = createProgramViewModels([program]);
+      const result = mapPrograms([program]);
 
       expect(result[0].destination).toBeNull();
     });
@@ -396,7 +392,7 @@ describe('Program Utils', () => {
         ...mockBaseProgram,
       };
 
-      const result = createProgramViewModels([program]);
+      const result = mapPrograms([program]);
 
       expect(result[0].destination).toBeNull();
     });

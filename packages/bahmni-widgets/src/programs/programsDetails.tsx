@@ -1,71 +1,51 @@
 import { SortableDataTable, StatusTag } from '@bahmni/design-system';
-import {
-  getPatientPrograms,
-  useTranslation,
-  formatDate,
-  DATE_FORMAT,
-} from '@bahmni/services';
-import { useQuery } from '@tanstack/react-query';
-import React, { useEffect, useMemo, useState } from 'react';
-import { usePatientUUID } from '../hooks/usePatientUUID';
-import { useNotification } from '../notification';
-import { ProgramViewModel } from './model';
+import { useTranslation, formatDate, DATE_FORMAT } from '@bahmni/services';
+import React, { useMemo } from 'react';
+import { formattedProgram } from './model';
 import styles from './ProgramsDetails.module.scss';
-import { createProgramViewModels } from './utils';
+import usePrograms from './usePrograms';
 
-// Query Keys for React Query
-export const programsQueryKeys = (patientUUID: string) =>
-  ['programs', patientUUID] as const;
+interface ProgramsDetailsProps {
+  config?: {
+    fields?: string[];
+  };
+}
 
-const fetchPrograms = async (
-  patientUUID: string,
-): Promise<ProgramViewModel[]> => {
-  const response = await getPatientPrograms(patientUUID!);
-  return createProgramViewModels([
-    ...response.activePrograms,
-    ...response.endedPrograms,
-  ]);
+// Mapping of column keys to their translation keys
+const COLUMN_HEADERS: Record<string, string> = {
+  programName: 'PROGRAMS_EPISODE_OF_CARE',
+  referenceNumber: 'PROGRAMS_REFERENCE_NUMBER',
+  destination: 'PROGRAMS_DESTINATION',
+  startDate: 'PROGRAMS_START_DATE',
+  endDate: 'PROGRAMS_END_DATE',
+  outcome: 'PROGRAMS_OUTCOME',
+  status: 'PROGRAMS_STATUS',
 };
 
 /**
  * Component to display patient programs using SortableDataTable
  */
-const ProgramsDetails: React.FC = () => {
-  const [programs, setPrograms] = useState<ProgramViewModel[]>([]);
-  const patientUUID = usePatientUUID();
+const ProgramsDetails: React.FC<ProgramsDetailsProps> = ({ config }) => {
   const { t } = useTranslation();
-  const { addNotification } = useNotification();
+  const { programs, isLoading, hasError } = usePrograms();
 
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: programsQueryKeys(patientUUID!),
-    enabled: !!patientUUID,
-    queryFn: () => fetchPrograms(patientUUID!),
-  });
-
-  useEffect(() => {
-    if (isError)
-      addNotification({
-        title: t('ERROR_DEFAULT_TITLE'),
-        message: error.message,
-        type: 'error',
-      });
-    if (data) setPrograms(data);
-  }, [data, isLoading, isError, error, t, addNotification]);
+  // Get visible columns from config
+  const column_Headers = useMemo(() => {
+    return config?.fields ?? [];
+  }, [config?.fields]);
 
   const headers = useMemo(
-    () => [
-      { key: 'programName', header: t('PROGRAMS_EPISODE_OF_CARE') },
-      { key: 'referenceNumber', header: t('PROGRAMS_REFERENCE_NUMBER') },
-      { key: 'destination', header: t('PROGRAMS_DESTINATION') },
-      { key: 'startDate', header: t('PROGRAMS_START_DATE') },
-      { key: 'endDate', header: t('PROGRAMS_END_DATE') },
-      { key: 'outcome', header: t('PROGRAMS_OUTCOME') },
-      { key: 'status', header: t('PROGRAMS_STATUS') },
-    ],
-    [t],
+    () =>
+      column_Headers
+        .filter((key) => COLUMN_HEADERS[key])
+        .map((key) => ({
+          key,
+          header: t(COLUMN_HEADERS[key]),
+        })),
+    [column_Headers, t],
   );
 
-  const renderCell = (program: ProgramViewModel, cellId: string) => {
+  const renderCell = (program: formattedProgram, cellId: string) => {
     switch (cellId) {
       case 'programName':
         return <span>{program.programName}</span>;
@@ -118,12 +98,12 @@ const ProgramsDetails: React.FC = () => {
   };
 
   return (
-    <SortableDataTable<ProgramViewModel>
+    <SortableDataTable<formattedProgram>
       headers={headers}
       ariaLabel={t('PROGRAMS_TABLE_ARIA_LABEL')}
       rows={programs}
       loading={isLoading}
-      errorStateMessage={isError ? error?.message : null}
+      errorStateMessage={hasError ? t('ERROR_DEFAULT_TITLE') : null}
       emptyStateMessage={t('PROGRAMS_NO_DATA')}
       renderCell={renderCell}
       className={styles.programsTableBody}

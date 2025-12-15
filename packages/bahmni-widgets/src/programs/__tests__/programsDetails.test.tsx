@@ -64,6 +64,10 @@ const mockProgramEnrollment = {
   dateEnrolled: '2023-01-15T10:00:00.000Z',
   dateCompleted: null,
   dateEnded: null,
+  outcome: {
+    uuid: 'outcome-uuid',
+    display: 'Active Treatment',
+  },
   states: [
     {
       uuid: 'state-uuid',
@@ -104,6 +108,10 @@ const mockCompletedProgram = {
   uuid: 'program-uuid-2',
   dateCompleted: '2023-12-31T10:00:00.000Z',
   dateEnded: '2023-12-31T10:00:00.000Z',
+  outcome: {
+    uuid: 'outcome-uuid-2',
+    display: 'Cured',
+  },
 };
 
 describe('ProgramsDetails', () => {
@@ -118,11 +126,25 @@ describe('ProgramsDetails', () => {
   });
 
   describe('Component States', () => {
+    const defaultConfig = {
+      fields: [
+        'programName',
+        'referenceNumber',
+        'destination',
+        'startDate',
+        'endDate',
+        'outcome',
+        'status',
+      ],
+    };
+
     it('should render loading state when data is being fetched', () => {
       mockedUsePatientUUID.mockReturnValue('patient-uuid');
       mockedGetPatientPrograms.mockImplementation(() => new Promise(() => {}));
 
-      render(<ProgramsDetails />, { wrapper: createWrapper() });
+      render(<ProgramsDetails config={defaultConfig} />, {
+        wrapper: createWrapper(),
+      });
 
       expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
     });
@@ -134,7 +156,9 @@ describe('ProgramsDetails', () => {
         endedPrograms: [],
       });
 
-      render(<ProgramsDetails />, { wrapper: createWrapper() });
+      render(<ProgramsDetails config={defaultConfig} />, {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
@@ -145,7 +169,9 @@ describe('ProgramsDetails', () => {
     it('should not fetch programs when patientUUID is null', () => {
       mockedUsePatientUUID.mockReturnValue(null);
 
-      render(<ProgramsDetails />, { wrapper: createWrapper() });
+      render(<ProgramsDetails config={defaultConfig} />, {
+        wrapper: createWrapper(),
+      });
 
       expect(mockedGetPatientPrograms).not.toHaveBeenCalled();
     });
@@ -155,7 +181,9 @@ describe('ProgramsDetails', () => {
       const errorMessage = 'Failed to fetch programs';
       mockedGetPatientPrograms.mockRejectedValue(new Error(errorMessage));
 
-      render(<ProgramsDetails />, { wrapper: createWrapper() });
+      render(<ProgramsDetails config={defaultConfig} />, {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(mockAddNotification).toHaveBeenCalledWith({
@@ -168,6 +196,18 @@ describe('ProgramsDetails', () => {
   });
 
   describe('Data Display', () => {
+    const defaultConfig = {
+      fields: [
+        'programName',
+        'referenceNumber',
+        'destination',
+        'startDate',
+        'endDate',
+        'outcome',
+        'status',
+      ],
+    };
+
     it('should render table with correct headers', async () => {
       mockedUsePatientUUID.mockReturnValue('patient-uuid');
       mockedGetPatientPrograms.mockResolvedValue({
@@ -175,7 +215,9 @@ describe('ProgramsDetails', () => {
         endedPrograms: [],
       });
 
-      render(<ProgramsDetails />, { wrapper: createWrapper() });
+      render(<ProgramsDetails config={defaultConfig} />, {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(screen.getByRole('table')).toHaveAttribute(
@@ -203,13 +245,20 @@ describe('ProgramsDetails', () => {
         endedPrograms: [],
       });
 
-      render(<ProgramsDetails />, { wrapper: createWrapper() });
+      render(<ProgramsDetails config={defaultConfig} />, {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(screen.getByText('HIV Program')).toBeInTheDocument();
         expect(screen.getByText('REF-12345')).toBeInTheDocument();
         expect(screen.getByText('Main Hospital')).toBeInTheDocument();
-        expect(screen.getByText('Active Treatment')).toBeInTheDocument();
+        const activeTreatmentElements = screen.getAllByText(
+          (content, element) => {
+            return element?.textContent === 'Active Treatment';
+          },
+        );
+        expect(activeTreatmentElements.length).toBeGreaterThan(0);
         expect(
           screen.getByText('PROGRAMS_STATUS_IN_PROGRESS'),
         ).toBeInTheDocument();
@@ -223,7 +272,9 @@ describe('ProgramsDetails', () => {
         endedPrograms: [mockCompletedProgram],
       });
 
-      render(<ProgramsDetails />, { wrapper: createWrapper() });
+      render(<ProgramsDetails config={defaultConfig} />, {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         const rows = screen.getAllByRole('row');
@@ -231,9 +282,76 @@ describe('ProgramsDetails', () => {
         expect(rows).toHaveLength(3);
       });
     });
+
+    it('should only display columns specified in config', async () => {
+      mockedUsePatientUUID.mockReturnValue('patient-uuid');
+      mockedGetPatientPrograms.mockResolvedValue({
+        activePrograms: [mockProgramEnrollment],
+        endedPrograms: [],
+      });
+
+      const limitedConfig = {
+        fields: ['programName', 'referenceNumber', 'status'],
+      };
+
+      render(<ProgramsDetails config={limitedConfig} />, {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('PROGRAMS_EPISODE_OF_CARE'),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText('PROGRAMS_REFERENCE_NUMBER'),
+        ).toBeInTheDocument();
+        expect(screen.getByText('PROGRAMS_STATUS')).toBeInTheDocument();
+        expect(
+          screen.queryByText('PROGRAMS_DESTINATION'),
+        ).not.toBeInTheDocument();
+        expect(
+          screen.queryByText('PROGRAMS_START_DATE'),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByText('PROGRAMS_END_DATE')).not.toBeInTheDocument();
+        expect(screen.queryByText('PROGRAMS_OUTCOME')).not.toBeInTheDocument();
+      });
+    });
+
+    it('should render empty table when no columns are configured', async () => {
+      mockedUsePatientUUID.mockReturnValue('patient-uuid');
+      mockedGetPatientPrograms.mockResolvedValue({
+        activePrograms: [mockProgramEnrollment],
+        endedPrograms: [],
+      });
+
+      const emptyConfig = {
+        fields: [],
+      };
+
+      render(<ProgramsDetails config={emptyConfig} />, {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        const headers = screen.queryAllByRole('columnheader');
+        expect(headers).toHaveLength(0);
+      });
+    });
   });
 
   describe('Cell Rendering', () => {
+    const defaultConfig = {
+      fields: [
+        'programName',
+        'referenceNumber',
+        'destination',
+        'startDate',
+        'endDate',
+        'outcome',
+        'status',
+      ],
+    };
+
     it('should render all cell types with populated data correctly', async () => {
       mockedUsePatientUUID.mockReturnValue('patient-uuid');
       mockedGetPatientPrograms.mockResolvedValue({
@@ -241,7 +359,9 @@ describe('ProgramsDetails', () => {
         endedPrograms: [],
       });
 
-      render(<ProgramsDetails />, { wrapper: createWrapper() });
+      render(<ProgramsDetails config={defaultConfig} />, {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(screen.getByText('HIV Program')).toBeInTheDocument();
@@ -266,7 +386,9 @@ describe('ProgramsDetails', () => {
         endedPrograms: [mockCompletedProgram],
       });
 
-      render(<ProgramsDetails />, { wrapper: createWrapper() });
+      render(<ProgramsDetails config={defaultConfig} />, {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(
@@ -282,6 +404,7 @@ describe('ProgramsDetails', () => {
       const programWithMissingData = {
         ...mockProgramEnrollment,
         location: null,
+        outcome: null,
         states: [],
         dateEnded: null,
       };
@@ -292,7 +415,9 @@ describe('ProgramsDetails', () => {
         endedPrograms: [],
       });
 
-      render(<ProgramsDetails />, { wrapper: createWrapper() });
+      render(<ProgramsDetails config={defaultConfig} />, {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         const ellipses = screen.getAllByText('…');
@@ -303,6 +428,18 @@ describe('ProgramsDetails', () => {
   });
 
   describe('Query Integration', () => {
+    const defaultConfig = {
+      fields: [
+        'programName',
+        'referenceNumber',
+        'destination',
+        'startDate',
+        'endDate',
+        'outcome',
+        'status',
+      ],
+    };
+
     it('should use correct query key with patient UUID', async () => {
       const patientUUID = 'test-patient-uuid';
       mockedUsePatientUUID.mockReturnValue(patientUUID);
@@ -311,7 +448,9 @@ describe('ProgramsDetails', () => {
         endedPrograms: [],
       });
 
-      render(<ProgramsDetails />, { wrapper: createWrapper() });
+      render(<ProgramsDetails config={defaultConfig} />, {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(mockedGetPatientPrograms).toHaveBeenCalledWith(patientUUID);
@@ -325,7 +464,7 @@ describe('ProgramsDetails', () => {
         endedPrograms: [],
       });
 
-      const { rerender } = render(<ProgramsDetails />, {
+      const { rerender } = render(<ProgramsDetails config={defaultConfig} />, {
         wrapper: createWrapper(),
       });
 
@@ -338,7 +477,7 @@ describe('ProgramsDetails', () => {
         endedPrograms: [],
       });
 
-      rerender(<ProgramsDetails />);
+      rerender(<ProgramsDetails config={defaultConfig} />);
 
       await waitFor(() => {
         const rows = screen.getAllByRole('row');
@@ -348,6 +487,18 @@ describe('ProgramsDetails', () => {
   });
 
   describe('Accessibility', () => {
+    const defaultConfig = {
+      fields: [
+        'programName',
+        'referenceNumber',
+        'destination',
+        'startDate',
+        'endDate',
+        'outcome',
+        'status',
+      ],
+    };
+
     it('should pass accessibility tests with data', async () => {
       mockedUsePatientUUID.mockReturnValue('patient-uuid');
       mockedGetPatientPrograms.mockResolvedValue({
@@ -355,7 +506,7 @@ describe('ProgramsDetails', () => {
         endedPrograms: [],
       });
 
-      const { container } = render(<ProgramsDetails />, {
+      const { container } = render(<ProgramsDetails config={defaultConfig} />, {
         wrapper: createWrapper(),
       });
 
@@ -374,7 +525,7 @@ describe('ProgramsDetails', () => {
         endedPrograms: [],
       });
 
-      const { container } = render(<ProgramsDetails />, {
+      const { container } = render(<ProgramsDetails config={defaultConfig} />, {
         wrapper: createWrapper(),
       });
 

@@ -1,5 +1,5 @@
 import { ProgramEnrollment } from '@bahmni/services';
-import { ProgramViewModel, ProgramStatus } from './model';
+import { formattedProgram, ProgramStatus } from './model';
 
 const determineProgramStatus = (program: ProgramEnrollment): ProgramStatus => {
   const endDate = program.dateCompleted ?? program.dateEnded;
@@ -91,8 +91,7 @@ const getMostRecentState = (
 const extractOutcome = (
   program: ProgramEnrollment,
 ): { text: string | null; details: string | null } => {
-  const state = getMostRecentState(program);
-  const text = state?.state?.concept?.display ?? null;
+  const text = program.outcome?.display ?? null;
   return { text, details: null };
 };
 
@@ -126,13 +125,11 @@ const getReferenceNumber = (program: ProgramEnrollment): string => {
  * @param programs - Array of program enrollments to transform
  * @returns Array of ProgramViewModel ready for table rendering
  */
-export function createProgramViewModels(
-  programs: ProgramEnrollment[],
-): ProgramViewModel[] {
-  return programs.map((program) => createProgramViewModel(program));
+export function mapPrograms(programs: ProgramEnrollment[]): formattedProgram[] {
+  return programs.map((program) => formatProgramDetails(program));
 }
 
-function createProgramViewModel(program: ProgramEnrollment): ProgramViewModel {
+function formatProgramDetails(program: ProgramEnrollment): formattedProgram {
   const status = determineProgramStatus(program);
   const { text: outcomeText, details: outcomeDetails } =
     extractOutcome(program);
