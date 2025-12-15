@@ -195,7 +195,11 @@ const PatientSearchPage: React.FC = () => {
         className={`${styles[getAppointmentStatusClassName(String(status))]}`}
         data-testid={`appointment-status-${uuid}`}
       >
-        {String(status)}
+        {t(
+          `REGISTRATION_SEARCH_PAGE_APPOINTMENT_STATUS_${String(status)
+            .replace(/([a-z])([A-Z])/g, '$1_$2')
+            .toUpperCase()}`,
+        )}
       </Tag>
     );
   };

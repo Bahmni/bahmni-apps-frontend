@@ -1113,5 +1113,47 @@ describe('PatientSearchPage', () => {
         ).toHaveBeenCalled();
       });
     });
+
+    it('should correctly translate appointment status', async () => {
+      mockSearchData = {
+        totalCount: 2,
+        pageOfResults: mockAppointmentData,
+      };
+
+      mockOnSearchArgs = [
+        mockSearchData,
+        'test-search',
+        false,
+        false,
+        true,
+        'appointment',
+      ];
+
+      (useQuery as jest.Mock).mockReturnValue({
+        data: {
+          totalCount: 2,
+          pageOfResults: mockAppointmentData,
+        },
+        error: null,
+        isLoading: false,
+      });
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(getRegistrationConfig).toHaveBeenCalled();
+      });
+
+      const searchInput = screen.getByPlaceholderText(
+        'Search by name or patient ID',
+      );
+      fireEvent.input(searchInput, { target: { value: 'APT' } });
+      fireEvent.click(screen.getByTestId('search-patient-search-button'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Scheduled')).toBeInTheDocument();
+        expect(screen.getByText('Arrived')).toBeInTheDocument();
+      });
+    });
   });
 });
