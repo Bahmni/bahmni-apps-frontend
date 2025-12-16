@@ -263,6 +263,7 @@ describe('Widget Registry', () => {
         'treatment',
         'flowSheet',
         'ordersControl',
+        'programs',
       ];
 
       expect(types).toHaveLength(expectedTypes.length);
@@ -392,7 +393,7 @@ describe('Widget Registry', () => {
       resetWidgetRegistry();
       const countAfterReset = getAllWidgetTypes().length;
 
-      expect(countAfterReset).toBe(8); // Only built-in widgets
+      expect(countAfterReset).toBe(9); // Only built-in widgets
       expect(countWithCustom).toBeGreaterThan(countAfterReset);
     });
   });

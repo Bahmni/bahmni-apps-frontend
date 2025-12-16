@@ -241,3 +241,4 @@ export {
 } from './vitalFlowSheetService';
 
 export { getServiceRequests } from './orderRequestService';
+export { getPatientPrograms, type ProgramEnrollment } from './programService';
