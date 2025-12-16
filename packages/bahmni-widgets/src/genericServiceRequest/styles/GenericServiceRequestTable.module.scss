@@ -1,0 +1,36 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.requestName {
+  @include type-style("heading-compact-01");
+  color: $text-primary;
+}
+
+.serviceRequestTableBody {
+  td {
+    width: 25%;
+    border-block-end: 0 !important;
+  }
+  td:first-child {
+    width: 50%;
+  }
+}
+
+.urgentCell {
+  background-color: $yellow-20 !important;
+  color: $yellow-70 !important;
+}
+
+.customAccordianItem {
+  background-color: $layer-01;
+  :global(.cds--accordion__content) {
+    margin-inline-start: 0rem !important;
+    padding-inline: 0rem !important;
+  }
+  :global(.cds--accordion__wrapper) {
+    padding-block: 0rem !important;
+    padding-block-end: 0rem !important;
+  }
+}

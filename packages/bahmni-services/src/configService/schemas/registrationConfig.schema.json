@@ -198,10 +198,10 @@
       "description": "Patient name related fields configuration",
       "additionalProperties": true,
       "properties": {
-        "defaultIdentifierPrefix": { 
+        "defaultIdentifierPrefix": {
           "type": "string",
           "description": "Default prefix for patient identifiers"
-       },
+        },
         "showEnterManually": { "type": "boolean" },
         "showMiddleName": { "type": "boolean" },
         "showLastName": { "type": "boolean" },
@@ -210,10 +210,10 @@
         "isGenderMandatory": { "type": "boolean" },
         "isDateOfBirthMandatory": { "type": "boolean" },
         "isLastNameMandatory": { "type": "boolean" },
-        "patientNameDisplayOrder": { 
-          "type": "array", 
-          "description": "Order in which patient name fields should be displayed", 
-          "items": { "type": "string" } 
+        "patientNameDisplayOrder": {
+          "type": "array",
+          "description": "Order in which patient name fields should be displayed",
+          "items": { "type": "string" }
         },
         "showBirthTime": { "type": "boolean" },
         "showDOBEstimated": { "type": "boolean" },
@@ -248,7 +248,7 @@
           "description": "Additional patient information configuration",
           "additionalProperties": true,
           "properties": {
-            "translationKey": { 
+            "translationKey": {
               "type": "string",
               "description": "Translation key for the section title"
             },
@@ -259,13 +259,13 @@
                 "type": "object",
                 "required": ["field", "translationKey"],
                 "properties": {
-                  "field": { 
+                  "field": {
                     "type": "string",
-                    "description": "Field name" 
+                    "description": "Field name"
                   },
-                  "translationKey": { 
+                  "translationKey": {
                     "type": "string",
-                    "description": "Translation key for the field label" 
+                    "description": "Translation key for the field label"
                   }
                 }
               }
@@ -276,10 +276,10 @@
           "type": "object",
           "additionalProperties": true,
           "properties": {
-            "translationKey": { 
+            "translationKey": {
               "type": "string",
               "description": "Translation key for the section title"
-           },
+            },
             "attributes": {
               "type": "array",
               "description": "Array of attribute fields with translation keys",
@@ -287,13 +287,13 @@
                 "type": "object",
                 "required": ["field", "translationKey"],
                 "properties": {
-                  "field": { 
+                  "field": {
                     "type": "string",
-                    "description": "Field name" 
-                   },
-                  "translationKey": { 
+                    "description": "Field name"
+                  },
+                  "translationKey": {
                     "type": "string",
-                    "description": "Translation key for the field label" 
+                    "description": "Translation key for the field label"
                   }
                 }
               }
@@ -314,14 +314,14 @@
         "^.*$": {
           "type": "object",
           "properties": {
-            "pattern": { 
+            "pattern": {
               "type": "string",
               "description": "Regular expression pattern for field validation"
-           },
-            "errorMessage": { 
+            },
+            "errorMessage": {
               "type": "string",
-            "description": "Error message to display when validation fails"
-           }
+              "description": "Error message to display when validation fails"
+            }
           }
         }
       }
