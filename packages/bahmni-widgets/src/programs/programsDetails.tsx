@@ -4,6 +4,7 @@ import React, { useMemo } from 'react';
 import { formattedProgram } from './model';
 import styles from './ProgramsDetails.module.scss';
 import usePrograms from './usePrograms';
+import { parseAttributeField, generateTranslationKey } from './utils';
 
 interface ProgramsDetailsProps {
   config?: {
@@ -27,25 +28,42 @@ const COLUMN_HEADERS: Record<string, string> = {
  */
 const ProgramsDetails: React.FC<ProgramsDetailsProps> = ({ config }) => {
   const { t } = useTranslation();
-  const { programs, isLoading, hasError } = usePrograms();
+  const { programs, isLoading, hasError } = usePrograms(config?.fields);
 
   // Get visible columns from config
   const column_Headers = useMemo(() => {
     return config?.fields ?? [];
   }, [config?.fields]);
 
-  const headers = useMemo(
-    () =>
-      column_Headers
-        .filter((key) => COLUMN_HEADERS[key])
-        .map((key) => ({
-          key,
-          header: t(COLUMN_HEADERS[key]),
-        })),
-    [column_Headers, t],
-  );
+  const headers = useMemo(() => {
+    return column_Headers.map((field) => {
+      const parsed = parseAttributeField(field);
+
+      if (parsed.isAttribute && parsed.path && parsed.property) {
+        // Generate dynamic translation key for path-based fields
+        const translationKey = generateTranslationKey(
+          parsed.path,
+          parsed.property,
+        );
+        return {
+          key: field,
+          header: t(translationKey),
+        };
+      }
+
+      return {
+        key: field,
+        header: t(COLUMN_HEADERS[field] || field),
+      };
+    });
+  }, [column_Headers, t]);
 
   const renderCell = (program: formattedProgram, cellId: string) => {
+    const parsed = parseAttributeField(cellId);
+    if (parsed.isAttribute) {
+      return <span>{program.attributes[cellId] || '…'}</span>;
+    }
+
     switch (cellId) {
       case 'programName':
         return <span>{program.programName}</span>;

@@ -5,11 +5,7 @@ import { useNotification } from '../notification';
 import { formattedProgram } from './model';
 import { mapPrograms } from './utils';
 
-/**
- * Hook to fetch and manage programs for the current patient
- * @returns Object containing programs, loading state, and error state
- */
-export default function usePrograms() {
+export default function usePrograms(configFields?: string[]) {
   const [programs, setPrograms] = useState<formattedProgram[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [hasError, setHasError] = useState<boolean>(false);
@@ -29,10 +25,10 @@ export default function usePrograms() {
 
       try {
         const response = await getPatientPrograms(patientUUID);
-        const mappedPrograms = mapPrograms([
-          ...response.activePrograms,
-          ...response.endedPrograms,
-        ]);
+        const mappedPrograms = mapPrograms(
+          [...response.activePrograms, ...response.endedPrograms],
+          configFields,
+        );
 
         setPrograms(mappedPrograms);
       } catch (error) {
@@ -49,7 +45,7 @@ export default function usePrograms() {
     }
 
     fetchPrograms();
-  }, [patientUUID, t, addNotification]);
+  }, [patientUUID, t, addNotification, configFields]);
 
   return { programs, isLoading, hasError };
 }

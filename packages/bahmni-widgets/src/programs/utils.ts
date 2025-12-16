@@ -120,21 +120,123 @@ const getReferenceNumber = (program: ProgramEnrollment): string => {
   return '';
 };
 
-/**
- * Transforms an array of ProgramEnrollment into ProgramViewModel array
- * @param programs - Array of program enrollments to transform
- * @returns Array of ProgramViewModel ready for table rendering
- */
-export function mapPrograms(programs: ProgramEnrollment[]): formattedProgram[] {
-  return programs.map((program) => formatProgramDetails(program));
+export function parseAttributeField(field: string): {
+  isAttribute: boolean;
+  attributeName: string | null;
+  fieldKey: string;
+  path: string | null;
+  property: string | null;
+} {
+  if (field.includes(':')) {
+    const [path, property] = field.split(':', 2);
+    return {
+      isAttribute: true,
+      attributeName: property,
+      fieldKey: field,
+      path,
+      property,
+    };
+  }
+  return {
+    isAttribute: false,
+    attributeName: null,
+    fieldKey: field,
+    path: null,
+    property: null,
+  };
 }
 
-function formatProgramDetails(program: ProgramEnrollment): formattedProgram {
+export function generateTranslationKey(path: string, property: string): string {
+  const responseProperty = path.trim().toUpperCase().replace(/\s+/g, '_');
+  const fieldName = property.trim().toUpperCase().replace(/\s+/g, '_');
+  return `PROGRAM_${responseProperty}_${fieldName}`;
+}
+
+function toCamelCase(property: string): string {
+  return property
+    .split(/[\s_-]+/)
+    .map((word, index) => {
+      if (index === 0) {
+        return word.toLowerCase();
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join('');
+}
+
+export function getValueByPath(
+  program: ProgramEnrollment,
+  path: string,
+  property: string,
+): string {
+  if (path.toLowerCase() !== 'attributes') {
+    return '';
+  }
+
+  if (!program.attributes || program.attributes.length === 0) {
+    return '';
+  }
+
+  const camelProperty = toCamelCase(property);
+
+  // First try to find by matching attributeType.display
+  const attrByType = program.attributes.find(
+    (attr) =>
+      !attr.voided &&
+      attr.attributeType.display.toLowerCase() === property.toLowerCase(),
+  );
+
+  if (attrByType) {
+    return typeof attrByType.value === 'string'
+      ? attrByType.value
+      : attrByType.value.display;
+  }
+
+  // Then try to access the property directly on first attribute
+  const firstAttr = program.attributes.find((attr) => !attr.voided);
+  if (firstAttr && camelProperty in firstAttr) {
+    const value = (firstAttr as unknown as Record<string, unknown>)[
+      camelProperty
+    ];
+    return typeof value === 'string'
+      ? value
+      : ((value as { display?: string })?.display ?? '');
+  }
+
+  return '';
+}
+
+export function mapPrograms(
+  programs: ProgramEnrollment[],
+  configFields?: string[],
+): formattedProgram[] {
+  return programs.map((program) => formatProgramDetails(program, configFields));
+}
+
+function formatProgramDetails(
+  program: ProgramEnrollment,
+  configFields?: string[],
+): formattedProgram {
   const status = determineProgramStatus(program);
   const { text: outcomeText, details: outcomeDetails } =
     extractOutcome(program);
   const referenceNumber = getReferenceNumber(program);
   const currentStateStartDate = getCurrentStateStartDate(program);
+
+  // Build attributes map based on config
+  const attributes: Record<string, string> = {};
+  if (configFields) {
+    configFields.forEach((field) => {
+      const parsed = parseAttributeField(field);
+      if (parsed.isAttribute && parsed.path && parsed.property) {
+        attributes[field] = getValueByPath(
+          program,
+          parsed.path,
+          parsed.property,
+        );
+      }
+    });
+  }
 
   return {
     id: program.uuid,
@@ -149,5 +251,6 @@ function formatProgramDetails(program: ProgramEnrollment): formattedProgram {
     status,
     statusKey: getStatusTranslationKey(status),
     statusClassName: getStatusClassName(status),
+    attributes,
   };
 }

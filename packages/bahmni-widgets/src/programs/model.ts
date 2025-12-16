@@ -24,4 +24,5 @@ export interface formattedProgram {
   readonly status: ProgramStatus;
   readonly statusKey: string;
   readonly statusClassName: string;
+  readonly attributes: Record<string, string>;
 }
