@@ -11,6 +11,7 @@ import styles from './styles/DashboardSection.module.scss';
 export interface DashboardSectionProps {
   section: DashboardSectionConfig;
   ref: React.RefObject<HTMLDivElement | null>;
+  episodeOfCareUuids: string[];
   encounterUuids: string[];
   visitUuids: string[];
 }
@@ -24,6 +25,7 @@ export interface DashboardSectionProps {
 const DashboardSection: React.FC<DashboardSectionProps> = ({
   section,
   ref,
+  episodeOfCareUuids,
   encounterUuids,
   visitUuids,
 }) => {
@@ -56,6 +58,7 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
         >
           <WidgetComponent
             config={control.config}
+            episodeOfCareUuids={episodeOfCareUuids}
             encounterUuids={encounterUuids}
             visitUuids={visitUuids}
           />

@@ -262,6 +262,7 @@ describe('Widget Registry', () => {
         'pacsOrders',
         'treatment',
         'flowSheet',
+        'ordersControl',
         'programs',
       ];
 
