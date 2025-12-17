@@ -1,96 +1,104 @@
-import { SortableDataTable, StatusTag } from '@bahmni/design-system';
-import { useTranslation, formatDate, DATE_FORMAT } from '@bahmni/services';
+import { SortableDataTable, Tag } from '@bahmni/design-system';
+import {
+  useTranslation,
+  formatDate,
+  DATE_FORMAT,
+  getPatientPrograms,
+} from '@bahmni/services';
+import { useQuery } from '@tanstack/react-query';
 import React, { useMemo } from 'react';
-import { formattedProgram } from './model';
+import { usePatientUUID } from '../hooks/usePatientUUID';
+import { PatientProgramViewModel } from './model';
 import styles from './ProgramsDetails.module.scss';
-import usePrograms from './usePrograms';
-import { parseAttributeField, generateTranslationKey } from './utils';
+import {
+  createProgramHeaders,
+  createPatientProgramViewModal,
+  extractProgramAttributeNames,
+} from './utils';
+
+export const programsQueryKeys = (
+  patientUUID: string,
+  programAttributes: string[],
+) => ['programs', patientUUID, programAttributes] as const;
+
+const fetchPatientPrograms = async (
+  patientUUID: string,
+  programAttributes: string[],
+): Promise<PatientProgramViewModel[]> => {
+  const response = await getPatientPrograms(patientUUID!);
+  return createPatientProgramViewModal(response, programAttributes);
+};
 
 interface ProgramsDetailsProps {
-  config?: {
-    fields?: string[];
+  config: {
+    fields: string[];
   };
 }
-
-// Mapping of column keys to their translation keys
-const COLUMN_HEADERS: Record<string, string> = {
-  programName: 'PROGRAMS_EPISODE_OF_CARE',
-  referenceNumber: 'PROGRAMS_REFERENCE_NUMBER',
-  destination: 'PROGRAMS_DESTINATION',
-  startDate: 'PROGRAMS_START_DATE',
-  endDate: 'PROGRAMS_END_DATE',
-  outcome: 'PROGRAMS_OUTCOME',
-  status: 'PROGRAMS_STATUS',
-};
 
 /**
  * Component to display patient programs using SortableDataTable
  */
 const ProgramsDetails: React.FC<ProgramsDetailsProps> = ({ config }) => {
   const { t } = useTranslation();
-  const { programs, isLoading, hasError } = usePrograms(config?.fields);
+  const patientUUID = usePatientUUID();
 
-  // Get visible columns from config
-  const column_Headers = useMemo(() => {
-    return config?.fields ?? [];
-  }, [config?.fields]);
+  const programAttributes = useMemo(
+    () => extractProgramAttributeNames(config?.fields),
+    [config?.fields],
+  );
 
-  const headers = useMemo(() => {
-    return column_Headers.map((field) => {
-      const parsed = parseAttributeField(field);
+  const { data, isLoading, isError } = useQuery({
+    queryKey: programsQueryKeys(patientUUID!, programAttributes),
+    enabled: !!patientUUID,
+    queryFn: () => fetchPatientPrograms(patientUUID!, programAttributes),
+  });
 
-      if (parsed.isAttribute && parsed.path && parsed.property) {
-        // Generate dynamic translation key for path-based fields
-        const translationKey = generateTranslationKey(
-          parsed.path,
-          parsed.property,
-        );
-        return {
-          key: field,
-          header: t(translationKey),
-        };
-      }
+  const headers = useMemo(
+    () => createProgramHeaders(config.fields, t),
+    [config?.fields],
+  );
 
-      return {
-        key: field,
-        header: t(COLUMN_HEADERS[field] || field),
-      };
-    });
-  }, [column_Headers, t]);
-
-  const renderCell = (program: formattedProgram, cellId: string) => {
-    const parsed = parseAttributeField(cellId);
-    if (parsed.isAttribute) {
-      return <span>{program.attributes[cellId] || '…'}</span>;
-    }
-
+  const renderCell = (program: PatientProgramViewModel, cellId: string) => {
     switch (cellId) {
       case 'programName':
-        return <span>{program.programName}</span>;
-      case 'referenceNumber':
-        return <span>{program.referenceNumber}</span>;
-      case 'destination':
-        return <span>{program.destination ?? '…'}</span>;
+        return (
+          <span
+            id={`${program.uuid}-program-name`}
+            data-testid={`${program.uuid}-program-name-test-id`}
+          >
+            {program.programName}
+          </span>
+        );
       case 'startDate':
         return (
-          <span>
+          <span
+            id={`${program.uuid}-start-date`}
+            data-testid={`${program.uuid}-start-date-test-id`}
+          >
             {formatDate(program.dateEnrolled, t, DATE_FORMAT).formattedResult}
           </span>
         );
       case 'endDate':
-        return (
-          <span>
-            {program.dateEnded
-              ? formatDate(program.dateEnded, t, DATE_FORMAT).formattedResult
-              : '…'}
+        return program.dateCompleted ? (
+          <span
+            id={`${program.uuid}-end-date`}
+            data-testid={`${program.uuid}-end-date-test-id`}
+          >
+            {formatDate(program.dateCompleted, t, DATE_FORMAT).formattedResult}
           </span>
+        ) : (
+          '-'
         );
       case 'outcome':
         return (
-          <div className={styles.outcomeContainer}>
-            {program.outcome ? (
+          <div
+            id={`${program.uuid}-outcome`}
+            data-testid={`${program.uuid}-outcome-test-id`}
+            className={styles.outcome}
+          >
+            {program.outcomeName ? (
               <>
-                <span className={styles.outcomeText}>{program.outcome}</span>
+                <h3 className={styles.outcomeText}>{program.outcomeName}</h3>
                 {program.outcomeDetails && (
                   <p className={styles.outcomeDetails}>
                     {program.outcomeDetails}
@@ -98,34 +106,49 @@ const ProgramsDetails: React.FC<ProgramsDetailsProps> = ({ config }) => {
                 )}
               </>
             ) : (
-              <span>…</span>
+              <span>-</span>
             )}
           </div>
         );
-      case 'status':
+      case 'state':
         return (
-          <StatusTag
-            label={t(program.statusKey)}
-            dotClassName={styles[program.statusClassName]}
-            testId={`program-status-${program.uuid}`}
-          />
+          <Tag
+            id={`${program.uuid}-state`}
+            testId={`${program.uuid}-state-test-id`}
+            type="blue"
+          >
+            {program.currentStateName}
+          </Tag>
         );
       default:
-        return null;
+        return (
+          <span
+            id={`${program.uuid}-${cellId}`}
+            data-testid={`${program.uuid}-${cellId}-test-id`}
+          >
+            {program.attributes[cellId] ?? '-'}
+          </span>
+        );
     }
   };
 
   return (
-    <SortableDataTable<formattedProgram>
-      headers={headers}
-      ariaLabel={t('PROGRAMS_TABLE_ARIA_LABEL')}
-      rows={programs}
-      loading={isLoading}
-      errorStateMessage={hasError ? t('ERROR_DEFAULT_TITLE') : null}
-      emptyStateMessage={t('PROGRAMS_NO_DATA')}
-      renderCell={renderCell}
-      className={styles.programsTableBody}
-    />
+    <div
+      id="patient-programs-table"
+      data-testid="patient-programs-table-test-id"
+      aria-label="patient-programs-table-aria-label"
+    >
+      <SortableDataTable
+        headers={headers}
+        ariaLabel={t('PROGRAMS_TABLE_ARIA_LABEL')}
+        rows={data ?? []}
+        loading={isLoading}
+        errorStateMessage={isError ? t('ERROR_DEFAULT_TITLE') : null}
+        emptyStateMessage={t('PROGRAMS_NO_DATA')}
+        renderCell={renderCell}
+        className={styles.table}
+      />
+    </div>
   );
 };
 

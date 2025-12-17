@@ -1,400 +1,422 @@
-import { ProgramEnrollment } from '@bahmni/services';
-import { ProgramStatus } from '../model';
-import { mapPrograms } from '../utils';
+import { PatientProgramsResponse } from '@bahmni/services';
+import {
+  createProgramHeaders,
+  createPatientProgramViewModal,
+  extractProgramAttributeNames,
+} from '../utils';
 
-describe('Program Utils', () => {
-  const mockBaseProgram: ProgramEnrollment = {
-    uuid: 'program-uuid-1',
-    display: 'Test Program',
-    patient: {
-      uuid: 'patient-uuid',
-      display: 'John Doe',
-    },
-    program: {
-      uuid: 'program-type-uuid',
-      name: 'HIV Program',
-      display: 'HIV Program',
-    },
-    dateEnrolled: '2023-01-15T10:00:00.000Z',
-    dateCompleted: null,
-    states: [],
-    attributes: [],
-  };
-
-  describe('createProgramViewModels', () => {
-    it('should transform an array of program enrollments into view models', () => {
-      const programs: ProgramEnrollment[] = [
-        mockBaseProgram,
-        {
-          ...mockBaseProgram,
-          uuid: 'program-uuid-2',
-          program: {
-            uuid: 'program-type-uuid-2',
-            name: 'TB Program',
-            display: 'TB Program',
-          },
-        },
-      ];
-
-      const result = mapPrograms(programs);
-
-      expect(result).toHaveLength(2);
-      expect(result[0].programName).toBe('HIV Program');
-      expect(result[1].programName).toBe('TB Program');
+describe('Utils', () => {
+  describe('extractProgramAttributeNames', () => {
+    it('should return empty array when fields is empty', () => {
+      const emptyResult = extractProgramAttributeNames([]);
+      expect(emptyResult).toEqual([]);
+      const undefinedResult = extractProgramAttributeNames(undefined);
+      expect(undefinedResult).toEqual([]);
     });
 
-    it('should return empty array for empty input', () => {
-      const result = mapPrograms([]);
+    it('should filter out known fields', () => {
+      const fields = [
+        'programName',
+        'customAttribute1',
+        'startDate',
+        'customAttribute2',
+        'outcome',
+      ];
+      const result = extractProgramAttributeNames(fields);
+      expect(result).toEqual(['customAttribute1', 'customAttribute2']);
+    });
+
+    it('should return all fields when none are known fields', () => {
+      const fields = ['customAttr1', 'customAttr2', 'customAttr3'];
+      const result = extractProgramAttributeNames(fields);
+      expect(result).toEqual(['customAttr1', 'customAttr2', 'customAttr3']);
+    });
+
+    it('should return empty array when all fields are known fields', () => {
+      const fields = [
+        'programName',
+        'startDate',
+        'endDate',
+        'outcome',
+        'state',
+      ];
+      const result = extractProgramAttributeNames(fields);
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('createProgramHeaders', () => {
+    const mockT = (key: string) => key;
+
+    it('should return empty array for empty fields', () => {
+      const fields: string[] = [];
+      const result = createProgramHeaders(fields, mockT);
+
       expect(result).toEqual([]);
     });
 
-    it('should handle program with all fields populated', () => {
-      const program: ProgramEnrollment = {
-        ...mockBaseProgram,
-        dateCompleted: '2023-12-31T10:00:00.000Z',
-        location: {
-          uuid: 'location-uuid',
-          display: 'Main Hospital',
-        },
-        outcome: {
-          uuid: 'outcome-uuid',
-          display: 'Cured',
-        },
-        states: [
+    it('should use translation function for headers', () => {
+      const customT = (key: string) => `translated_${key}`;
+      const fields = ['state'];
+      const result = createProgramHeaders(fields, customT);
+
+      expect(result).toEqual([
+        { key: 'state', header: 'translated_PROGRAMS_TABLE_HEADER_STATE' },
+      ]);
+    });
+
+    it.each([
+      'supported_country',
+      'Supported Country',
+      'supported country',
+      'Supported country',
+      'supportedCountry',
+    ])(
+      'should normalize "%s" to PROGRAMS_TABLE_HEADER_SUPPORTED_COUNTRY',
+      (field) => {
+        const result = createProgramHeaders([field], mockT);
+        expect(result).toEqual([
           {
-            uuid: 'state-uuid',
-            startDate: '2023-01-15T10:00:00.000Z',
-            endDate: null,
-            state: {
-              uuid: 'state-concept-uuid',
-              display: 'Active Treatment',
-              concept: {
-                uuid: 'concept-uuid',
-                display: 'Active Treatment',
-              },
-            },
+            key: field,
+            header: 'PROGRAMS_TABLE_HEADER_SUPPORTED_COUNTRY',
           },
-        ],
-        attributes: [
-          {
-            uuid: 'attr-uuid',
-            display: 'Reference Number',
-            attributeType: {
-              uuid: 'attr-type-uuid',
-              display: 'Reference',
-              description: 'Reference Number',
-              retired: false,
-              format: 'string',
-            },
-            value: 'REF-12345',
-          },
+        ]);
+      },
+    );
+  });
+
+  describe('createPatientProgramViewModal', () => {
+    const mockState = (
+      uuid: string,
+      name: string,
+      startDate: string,
+      endDate: string | null,
+    ) =>
+      ({
+        uuid,
+        startDate,
+        endDate,
+        state: { concept: { name: { name } } },
+      }) as any;
+
+    const mockEnrollment = (overrides: any) =>
+      ({
+        uuid: 'enrollment-1',
+        program: { name: 'Test Program' },
+        dateEnrolled: '2024-01-01',
+        dateCompleted: null,
+        outcome: null,
+        states: [],
+        attributes: [],
+        ...overrides,
+      }) as any;
+
+    const mockAttribute = (display: string, value: any) =>
+      ({
+        uuid: 'attr-1',
+        attributeType: { uuid: 'attr-type-1', display },
+        value,
+        voided: false,
+      }) as any;
+
+    it('should return empty array when results array is empty', () => {
+      const response: PatientProgramsResponse = { results: [] };
+      const result = createPatientProgramViewModal(response, []);
+      expect(result).toEqual([]);
+    });
+
+    it('should map enrollment with null dateCompleted to find state with null endDate', () => {
+      const response: PatientProgramsResponse = {
+        results: [
+          mockEnrollment({
+            uuid: 'enrollment-uuid-1',
+            program: { name: 'HIV Program' },
+            states: [
+              mockState('state-1', 'Initial State', '2024-01-01', '2024-02-01'),
+              mockState('state-2', 'Active State', '2024-02-01', null),
+            ],
+          }),
         ],
       };
 
-      const result = mapPrograms([program]);
+      const result = createPatientProgramViewModal(response, []);
 
-      expect(result[0]).toMatchObject({
-        id: 'program-uuid-1',
-        uuid: 'program-uuid-1',
-        programName: 'HIV Program',
-        referenceNumber: 'REF-12345',
-        destination: 'Main Hospital',
-        dateEnrolled: '2023-01-15T10:00:00.000Z',
-        dateEnded: '2023-12-31T10:00:00.000Z',
-        outcome: 'Cured',
-        outcomeDetails: null,
-        status: ProgramStatus.Completed,
-        statusKey: 'PROGRAMS_STATUS_COMPLETED',
-        statusClassName: 'completedStatus',
+      expect(result).toEqual([
+        {
+          id: 'enrollment-uuid-1',
+          uuid: 'enrollment-uuid-1',
+          programName: 'HIV Program',
+          dateEnrolled: '2024-01-01',
+          dateCompleted: null,
+          outcomeName: null,
+          outcomeDetails: null,
+          currentStateName: 'Active State',
+          attributes: {},
+        },
+      ]);
+    });
+
+    it('should map enrollment with dateCompleted to find state with latest endDate', () => {
+      const response: PatientProgramsResponse = {
+        results: [
+          mockEnrollment({
+            uuid: 'enrollment-uuid-2',
+            program: { name: 'TB Program' },
+            dateCompleted: '2024-06-01',
+            outcome: { name: { name: 'Cured' } },
+            states: [
+              mockState(
+                'state-1',
+                'Initial Treatment',
+                '2024-01-01',
+                '2024-03-01',
+              ),
+              mockState(
+                'state-2',
+                'Continuation Phase',
+                '2024-03-01',
+                '2024-06-01',
+              ),
+              mockState(
+                'state-3',
+                'Temporary State',
+                '2024-02-01',
+                '2024-02-15',
+              ),
+            ],
+          }),
+        ],
+      };
+
+      const result = createPatientProgramViewModal(response, []);
+
+      expect(result).toEqual([
+        {
+          id: 'enrollment-uuid-2',
+          uuid: 'enrollment-uuid-2',
+          programName: 'TB Program',
+          dateEnrolled: '2024-01-01',
+          dateCompleted: '2024-06-01',
+          outcomeName: 'Cured',
+          outcomeDetails: null,
+          currentStateName: 'Continuation Phase',
+          attributes: {},
+        },
+      ]);
+    });
+
+    it('should handle multiple enrollments with correct uuid mapping', () => {
+      const response: PatientProgramsResponse = {
+        results: [
+          mockEnrollment({
+            uuid: 'enrollment-1',
+            program: { name: 'Program 1' },
+            states: [mockState('state-1', 'State 1', '2024-01-01', null)],
+          }),
+          mockEnrollment({
+            uuid: 'enrollment-2',
+            program: { name: 'Program 2' },
+            dateEnrolled: '2024-02-01',
+            states: [mockState('state-2', 'State 2', '2024-02-01', null)],
+          }),
+          mockEnrollment({
+            uuid: 'enrollment-3',
+            program: { name: 'Program 3' },
+            dateEnrolled: '2024-03-01',
+            states: [mockState('state-3', 'State 3', '2024-03-01', null)],
+          }),
+        ],
+      };
+
+      const result = createPatientProgramViewModal(response, []);
+
+      expect(result).toHaveLength(3);
+      expect(result[0].id).toBe('enrollment-1');
+      expect(result[1].id).toBe('enrollment-2');
+      expect(result[2].id).toBe('enrollment-3');
+      expect(result[0].programName).toBe('Program 1');
+      expect(result[1].programName).toBe('Program 2');
+      expect(result[2].programName).toBe('Program 3');
+    });
+
+    it('should handle outcome with null name gracefully', () => {
+      const response: PatientProgramsResponse = {
+        results: [
+          mockEnrollment({
+            uuid: 'enrollment-uuid-3',
+            program: { name: 'Diabetes Program' },
+            dateCompleted: '2024-12-01',
+            outcome: { name: null },
+            states: [
+              mockState('state-1', 'Final State', '2024-01-01', '2024-12-01'),
+            ],
+          }),
+        ],
+      };
+
+      const result = createPatientProgramViewModal(response, []);
+      expect(result[0].outcomeName).toBeNull();
+    });
+
+    it('should return empty attributes object when programAttributes is empty', () => {
+      const response: PatientProgramsResponse = {
+        results: [
+          mockEnrollment({
+            uuid: 'enrollment-uuid-4',
+            states: [mockState('state-1', 'Test State', '2024-01-01', null)],
+          }),
+        ],
+      };
+
+      const result = createPatientProgramViewModal(response, []);
+      expect(result[0].attributes).toEqual({});
+    });
+
+    it('should extract outcomeDetails from outcome descriptions', () => {
+      const response: PatientProgramsResponse = {
+        results: [
+          mockEnrollment({
+            uuid: 'enrollment-uuid-10',
+            dateCompleted: '2024-12-01',
+            outcome: {
+              uuid: 'outcome-1',
+              display: 'Treatment Completed',
+              name: { name: 'Treatment Completed' },
+              descriptions: [
+                {
+                  uuid: 'desc-1',
+                  description: 'Patient completed treatment successfully',
+                  locale: 'en',
+                },
+              ],
+            },
+            states: [
+              mockState('state-1', 'Completed', '2024-01-01', '2024-12-01'),
+            ],
+          }),
+        ],
+      };
+
+      const result = createPatientProgramViewModal(response, []);
+      expect(result[0].outcomeName).toBe('Treatment Completed');
+      expect(result[0].outcomeDetails).toBe(
+        'Patient completed treatment successfully',
+      );
+    });
+
+    it('should return null for outcomeDetails when descriptions is empty', () => {
+      const response: PatientProgramsResponse = {
+        results: [
+          mockEnrollment({
+            uuid: 'enrollment-uuid-11',
+            dateCompleted: '2024-12-01',
+            outcome: {
+              uuid: 'outcome-1',
+              display: 'Treatment Completed',
+              name: { name: 'Treatment Completed' },
+              descriptions: [],
+            },
+            states: [
+              mockState('state-1', 'Completed', '2024-01-01', '2024-12-01'),
+            ],
+          }),
+        ],
+      };
+
+      const result = createPatientProgramViewModal(response, []);
+      expect(result[0].outcomeName).toBe('Treatment Completed');
+      expect(result[0].outcomeDetails).toBeNull();
+    });
+
+    it('should extract attribute with string value', () => {
+      const response: PatientProgramsResponse = {
+        results: [
+          mockEnrollment({
+            uuid: 'enrollment-uuid-5',
+            states: [mockState('state-1', 'Test State', '2024-01-01', null)],
+            attributes: [mockAttribute('Registration Number', 'REG123456')],
+          }),
+        ],
+      };
+
+      const result = createPatientProgramViewModal(response, [
+        'Registration Number',
+      ]);
+      expect(result[0].attributes).toEqual({
+        'Registration Number': 'REG123456',
       });
     });
 
-    it('should determine InProgress status for active program', () => {
-      const program: ProgramEnrollment = {
-        ...mockBaseProgram,
-        dateEnrolled: '2023-01-15T10:00:00.000Z',
-        dateCompleted: null,
-      };
-
-      const result = mapPrograms([program]);
-
-      expect(result[0].status).toBe(ProgramStatus.InProgress);
-      expect(result[0].statusKey).toBe('PROGRAMS_STATUS_IN_PROGRESS');
-      expect(result[0].statusClassName).toBe('inProgressStatus');
-    });
-
-    it('should determine Completed status when dateCompleted is set', () => {
-      const program: ProgramEnrollment = {
-        ...mockBaseProgram,
-        dateCompleted: '2023-12-31T10:00:00.000Z',
-      };
-
-      const result = mapPrograms([program]);
-
-      expect(result[0].status).toBe(ProgramStatus.Completed);
-      expect(result[0].statusKey).toBe('PROGRAMS_STATUS_COMPLETED');
-      expect(result[0].statusClassName).toBe('completedStatus');
-    });
-
-    it('should determine Completed status when dateEnded is set', () => {
-      const program: ProgramEnrollment = {
-        ...mockBaseProgram,
-        dateEnded: '2023-12-31T10:00:00.000Z',
-      };
-
-      const result = mapPrograms([program]);
-
-      expect(result[0].status).toBe(ProgramStatus.Completed);
-      expect(result[0].dateEnded).toBe('2023-12-31T10:00:00.000Z');
-    });
-
-    it('should extract outcome from program.outcome.display', () => {
-      const program: ProgramEnrollment = {
-        ...mockBaseProgram,
-        outcome: {
-          uuid: 'outcome-uuid',
-          display: 'Cured',
-        },
-        states: [
-          {
-            uuid: 'state-1',
-            startDate: '2023-01-15T10:00:00.000Z',
-            endDate: '2023-06-15T10:00:00.000Z',
-            state: {
-              uuid: 'state-concept-1',
-              display: 'Initial State',
-              concept: {
+    it('should extract attribute with Concept value', () => {
+      const response: PatientProgramsResponse = {
+        results: [
+          mockEnrollment({
+            uuid: 'enrollment-uuid-6',
+            states: [mockState('state-1', 'Test State', '2024-01-01', null)],
+            attributes: [
+              mockAttribute('Treatment Category', {
                 uuid: 'concept-1',
-                display: 'Initial State',
-              },
-            },
-          },
-          {
-            uuid: 'state-2',
-            startDate: '2023-06-15T10:00:00.000Z',
-            endDate: null,
-            state: {
-              uuid: 'state-concept-2',
-              display: 'Current State',
-              concept: {
-                uuid: 'concept-2',
-                display: 'Current State',
-              },
-            },
-          },
+                display: 'Category I',
+                name: { name: 'Category I' },
+              }),
+            ],
+          }),
         ],
       };
 
-      const result = mapPrograms([program]);
-
-      expect(result[0].outcome).toBe('Cured');
+      const result = createPatientProgramViewModal(response, [
+        'Treatment Category',
+      ]);
+      expect(result[0].attributes).toEqual({
+        'Treatment Category': 'Category I',
+      });
     });
 
-    it('should return null outcome when program.outcome is null', () => {
-      const program: ProgramEnrollment = {
-        ...mockBaseProgram,
-        outcome: null,
-        states: [
-          {
-            uuid: 'state-1',
-            startDate: '2023-01-15T10:00:00.000Z',
-            endDate: '2023-06-15T10:00:00.000Z',
-            state: {
-              uuid: 'state-concept-1',
-              display: 'Initial State',
-              concept: {
+    it('should return null for attribute not found in enrollment', () => {
+      const response: PatientProgramsResponse = {
+        results: [
+          mockEnrollment({
+            uuid: 'enrollment-uuid-7',
+            states: [mockState('state-1', 'Test State', '2024-01-01', null)],
+          }),
+        ],
+      };
+
+      const result = createPatientProgramViewModal(response, [
+        'Non-Existent Attribute',
+      ]);
+      expect(result[0].attributes).toEqual({ 'Non-Existent Attribute': null });
+    });
+
+    it('should handle multiple attributes with mix of found and not found', () => {
+      const response: PatientProgramsResponse = {
+        results: [
+          mockEnrollment({
+            uuid: 'enrollment-uuid-8',
+            states: [mockState('state-1', 'Test State', '2024-01-01', null)],
+            attributes: [
+              mockAttribute('Registration Number', 'REG123'),
+              mockAttribute('Category', {
                 uuid: 'concept-1',
-                display: 'Initial State',
-              },
-            },
-          },
+                display: 'Cat A',
+                name: { name: 'Cat A' },
+              }),
+            ],
+          }),
         ],
       };
 
-      const result = mapPrograms([program]);
+      const result = createPatientProgramViewModal(response, [
+        'Registration Number',
+        'Category',
+        'Missing Attribute',
+      ]);
 
-      expect(result[0].outcome).toBeNull();
-    });
-
-    it('should return null outcome when program.outcome is undefined', () => {
-      const program: ProgramEnrollment = {
-        ...mockBaseProgram,
-        states: [],
-      };
-
-      const result = mapPrograms([program]);
-
-      expect(result[0].outcome).toBeNull();
-    });
-
-    it('should use current state start date as dateEnrolled when available', () => {
-      const program: ProgramEnrollment = {
-        ...mockBaseProgram,
-        dateEnrolled: '2023-01-15T10:00:00.000Z',
-        states: [
-          {
-            uuid: 'state-1',
-            startDate: '2023-02-01T10:00:00.000Z',
-            endDate: null,
-            state: {
-              uuid: 'state-concept-1',
-              display: 'Current State',
-              concept: {
-                uuid: 'concept-1',
-                display: 'Current State',
-              },
-            },
-          },
-        ],
-      };
-
-      const result = mapPrograms([program]);
-
-      expect(result[0].dateEnrolled).toBe('2023-02-01T10:00:00.000Z');
-    });
-
-    it('should extract reference number from first non-voided attribute with string value', () => {
-      const program: ProgramEnrollment = {
-        ...mockBaseProgram,
-        attributes: [
-          {
-            uuid: 'attr-1',
-            display: 'Voided Attribute',
-            attributeType: {
-              uuid: 'attr-type-1',
-              display: 'Type 1',
-              description: 'Description',
-              retired: false,
-              format: 'string',
-            },
-            value: 'VOIDED-REF',
-            voided: true,
-          },
-          {
-            uuid: 'attr-2',
-            display: 'Valid Attribute',
-            attributeType: {
-              uuid: 'attr-type-2',
-              display: 'Type 2',
-              description: 'Description',
-              retired: false,
-              format: 'string',
-            },
-            value: 'REF-67890',
-          },
-        ],
-      };
-
-      const result = mapPrograms([program]);
-
-      expect(result[0].referenceNumber).toBe('REF-67890');
-    });
-
-    it('should extract reference number from attribute with Concept value', () => {
-      const program: ProgramEnrollment = {
-        ...mockBaseProgram,
-        attributes: [
-          {
-            uuid: 'attr-1',
-            display: 'Concept Attribute',
-            attributeType: {
-              uuid: 'attr-type-1',
-              display: 'Type 1',
-              description: 'Description',
-              retired: false,
-              format: 'concept',
-            },
-            value: {
-              uuid: 'concept-uuid',
-              display: 'Concept Reference',
-            },
-          },
-        ],
-      };
-
-      const result = mapPrograms([program]);
-
-      expect(result[0].referenceNumber).toBe('Concept Reference');
-    });
-
-    it('should return empty string for reference number when no valid attributes', () => {
-      const program: ProgramEnrollment = {
-        ...mockBaseProgram,
-        attributes: [],
-      };
-
-      const result = mapPrograms([program]);
-
-      expect(result[0].referenceNumber).toBe('');
-    });
-
-    it('should use program.display as program name when program.name is null', () => {
-      const program: ProgramEnrollment = {
-        uuid: 'program-uuid-1',
-        display: 'Enrollment Display',
-        patient: {
-          uuid: 'patient-uuid',
-          display: 'John Doe',
-        },
-        program: {
-          uuid: 'program-type-uuid',
-          display: 'Program Display',
-          name: null as any,
-        },
-        dateEnrolled: '2023-01-15T10:00:00.000Z',
-        dateCompleted: null,
-        states: [],
-        attributes: [],
-      };
-
-      const result = mapPrograms([program]);
-
-      expect(result[0].programName).toBe('Program Display');
-    });
-
-    it('should use program.display as program name when program.name is undefined', () => {
-      const program: ProgramEnrollment = {
-        uuid: 'program-uuid-1',
-        display: 'Enrollment Display',
-        patient: {
-          uuid: 'patient-uuid',
-          display: 'John Doe',
-        },
-        program: {
-          uuid: 'program-type-uuid',
-          display: 'Program Display',
-          name: undefined as any,
-        },
-        dateEnrolled: '2023-01-15T10:00:00.000Z',
-        dateCompleted: null,
-        states: [],
-        attributes: [],
-      };
-
-      const result = mapPrograms([program]);
-
-      expect(result[0].programName).toBe('Program Display');
-    });
-
-    it('should handle null location', () => {
-      const program: ProgramEnrollment = {
-        ...mockBaseProgram,
-        location: null,
-      };
-
-      const result = mapPrograms([program]);
-
-      expect(result[0].destination).toBeNull();
-    });
-
-    it('should handle undefined location', () => {
-      const program: ProgramEnrollment = {
-        ...mockBaseProgram,
-      };
-
-      const result = mapPrograms([program]);
-
-      expect(result[0].destination).toBeNull();
+      expect(result[0].attributes).toEqual({
+        'Registration Number': 'REG123',
+        Category: 'Cat A',
+        'Missing Attribute': null,
+      });
     });
   });
 });
