@@ -3,6 +3,7 @@ import {
   convertToBasicInfoData,
   convertToPersonAttributesData,
   convertToAddressData,
+  convertToRelationshipsData,
 } from '../patientDataConverter';
 
 const mockPatientData: PatientProfileResponse = {
@@ -150,6 +151,125 @@ describe('patientDataConverter', () => {
       expect(result).not.toHaveProperty('phoneNumber');
       expect(result).not.toHaveProperty('altPhoneNumber');
       expect(result).not.toHaveProperty('occupation');
+    });
+  });
+
+  describe('convertToRelationshipsData', () => {
+    it('should convert patient relationships to RelationshipData array', () => {
+      const mockDataWithRelationships = {
+        ...mockPatientData,
+        patient: {
+          ...mockPatientData.patient,
+          uuid: 'person-a-uuid',
+        },
+        relationships: [
+          {
+            uuid: 'rel-uuid-1',
+            display: 'Parent/Child',
+            personA: {
+              uuid: 'person-a-uuid',
+              display: 'John Doe (GAN123456)',
+            },
+            personB: {
+              uuid: 'person-b-uuid',
+              display: 'Jane Smith (GAN789012)',
+            },
+            relationshipType: {
+              uuid: 'rel-type-1',
+              display: 'Parent/Child',
+            },
+            voided: false,
+            startDate: '2024-01-01T00:00:00.000+0000',
+            endDate: '2024-12-31T00:00:00.000+0000',
+          },
+        ],
+      } as unknown as PatientProfileResponse;
+
+      const result = convertToRelationshipsData(mockDataWithRelationships);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('rel-uuid-1');
+      expect(result[0].relationshipType).toBe('rel-type-1');
+      expect(result[0].patientUuid).toBe('person-b-uuid');
+      expect(result[0].patientName).toBe('Jane Smith (GAN789012)');
+      expect(result[0].tillDate).toBe('2024-12-31');
+      expect(result[0].isExisting).toBe(true);
+    });
+
+    it('should return empty array when no relationships exist', () => {
+      const result = convertToRelationshipsData(mockPatientData);
+      expect(result).toEqual([]);
+    });
+
+    it('should handle relationships without end date', () => {
+      const mockDataWithRelationships = {
+        ...mockPatientData,
+        patient: {
+          ...mockPatientData.patient,
+          uuid: 'person-a-uuid',
+        },
+        relationships: [
+          {
+            uuid: 'rel-uuid-1',
+            display: 'Parent/Child',
+            personA: {
+              uuid: 'person-a-uuid',
+              display: 'John Doe (GAN123456)',
+            },
+            personB: {
+              uuid: 'person-b-uuid',
+              display: 'Jane Smith (GAN789012)',
+            },
+            relationshipType: {
+              uuid: 'rel-type-1',
+              display: 'Parent/Child',
+            },
+            voided: false,
+            startDate: '2024-01-01T00:00:00.000+0000',
+            endDate: null,
+          },
+        ],
+      } as unknown as PatientProfileResponse;
+
+      const result = convertToRelationshipsData(mockDataWithRelationships);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].tillDate).toBe('');
+    });
+
+    it('should extract patient name correctly from display string', () => {
+      const mockDataWithRelationships = {
+        ...mockPatientData,
+        patient: {
+          ...mockPatientData.patient,
+          uuid: 'person-a-uuid',
+        },
+        relationships: [
+          {
+            uuid: 'rel-uuid-1',
+            display: 'Sibling/Sibling',
+            personA: {
+              uuid: 'person-a-uuid',
+              display: 'Test Patient (ABC123)',
+            },
+            personB: {
+              uuid: 'person-b-uuid',
+              display: 'Another Patient (XYZ789)',
+            },
+            relationshipType: {
+              uuid: 'rel-type-1',
+              display: 'Sibling/Sibling',
+            },
+            voided: false,
+            startDate: '2024-01-01T00:00:00.000+0000',
+            endDate: null,
+          },
+        ],
+      } as unknown as PatientProfileResponse;
+
+      const result = convertToRelationshipsData(mockDataWithRelationships);
+
+      expect(result[0].patientName).toBe('Another Patient (XYZ789)');
     });
   });
 });

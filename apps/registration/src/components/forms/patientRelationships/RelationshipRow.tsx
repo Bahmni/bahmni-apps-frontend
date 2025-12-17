@@ -5,9 +5,12 @@ import {
   DatePickerInput,
   ComboBox,
   Close,
+  Link,
 } from '@bahmni/design-system';
+import { getPatientUrlExternal } from '../../../constants/app';
 import type { PatientSuggestion } from '../../../hooks/usePatientSearch';
 import type { RelationshipData } from './PatientRelationships';
+import styles from './styles/index.module.scss';
 
 // Relationship field constants
 const RELATIONSHIP_FIELDS = {
@@ -52,6 +55,50 @@ export const RelationshipRow = ({
   onRemove,
   t,
 }: RelationshipRowProps) => {
+  const isExisting = relationship.isExisting === true;
+
+  const relationshipTypeDisplay = isExisting
+    ? relationship.relationshipTypeLabel
+    : relationshipTypes.find((rt) => rt.uuid === relationship.relationshipType)
+        ?.aIsToB;
+
+  if (isExisting) {
+    return {
+      id: relationship.id,
+      relationshipType: (
+        <span className={styles.readOnlyText}>
+          {relationshipTypeDisplay ?? '-'}
+        </span>
+      ),
+      patientId: (
+        <Link
+          href={getPatientUrlExternal(relationship.patientUuid!)}
+          className={styles.patientLink}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {relationship.patientName}
+        </Link>
+      ),
+      tillDate: (
+        <span className={styles.readOnlyText}>
+          {relationship.tillDate ?? '-'}
+        </span>
+      ),
+      actions: (
+        <Button
+          kind="ghost"
+          size="sm"
+          hasIconOnly
+          iconDescription={t('REGISTRATION_REMOVE')}
+          onClick={() => onRemove(relationship.id)}
+        >
+          <Close size={16} />
+        </Button>
+      ),
+    };
+  }
+
   return {
     id: relationship.id,
     relationshipType: (

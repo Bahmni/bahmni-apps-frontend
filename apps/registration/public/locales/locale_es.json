@@ -49,6 +49,7 @@
   "CREATE_PATIENT_SECTION_BASIC_INFO": "Información básica",
   "CREATE_PATIENT_SECTION_CONTACT_INFO": "Información de contacto",
   "CREATE_PATIENT_SECTION_RELATIONSHIPS": "Relaciones",
+  "CREATE_PATIENT_SECTION_RELATIONSHIPS_INFO": "Información de Relaciones",
   "CREATE_PATIENT_SELECT": "Seleccionar",
   "CREATE_PATIENT_START_OPD_VISIT": "Iniciar visita OPD",
   "CREATE_PATIENT_STATE": "Estado",

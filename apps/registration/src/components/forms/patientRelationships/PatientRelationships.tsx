@@ -1,11 +1,9 @@
 import { Button, SimpleDataTable, Tile } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
-import { useState, useImperativeHandle } from 'react';
-import type { PatientSuggestion } from '../../../hooks/usePatientSearch';
-import { usePatientSearch } from '../../../hooks/usePatientSearch';
-import { useRelationshipValidation } from '../../../hooks/useRelationshipValidation';
+import { useImperativeHandle } from 'react';
 import { RelationshipRow } from './RelationshipRow';
 import styles from './styles/index.module.scss';
+import { usePatientRelationship } from './usePatientRelationship';
 
 const RELATIONSHIP_FIELDS = {
   RELATIONSHIP_TYPE: 'relationshipType',
@@ -17,16 +15,20 @@ const RELATIONSHIP_FIELDS = {
 export interface RelationshipData {
   id: string;
   relationshipType: string;
+  relationshipTypeLabel?: string;
   patientId: string;
   patientUuid?: string;
   patientName?: string;
   tillDate: string;
+  isExisting?: boolean;
+  isDeleted?: boolean;
 }
 
 export interface PatientRelationshipsRef {
   getData: () => RelationshipData[];
   validate: () => boolean;
   clearData: () => void;
+  removeDeletedRelationships: () => void;
 }
 
 interface PatientRelationshipsProps {
@@ -40,121 +42,27 @@ export const PatientRelationships = ({
 }: PatientRelationshipsProps) => {
   const { t } = useTranslation();
 
-  const [relationships, setRelationships] = useState<RelationshipData[]>(
-    initialData?.length
-      ? initialData
-      : [
-          {
-            id: `rel-${Date.now()}`,
-            relationshipType: '',
-            patientId: '',
-            tillDate: '',
-          },
-        ],
-  );
-
   const {
+    relationships,
     relationshipTypes,
     validationErrors,
-    validateRelationships,
-    clearFieldError,
-    clearAllErrors,
-  } = useRelationshipValidation();
-
-  const {
     getPatientSuggestions,
-    handleSearch,
-    clearSearch,
-    clearAllSearches,
-    setSearchTerms,
-  } = usePatientSearch();
-
-  const updateRelationship = (
-    id: string,
-    field: keyof RelationshipData,
-    value: string,
-  ) => {
-    setRelationships((prev) =>
-      prev.map((rel) => {
-        if (rel.id === id) {
-          if (field === RELATIONSHIP_FIELDS.RELATIONSHIP_TYPE) {
-            return {
-              ...rel,
-              [field]: value,
-              patientId: '',
-              patientUuid: '',
-              patientName: '',
-            };
-          }
-          return { ...rel, [field]: value };
-        }
-        return rel;
-      }),
-    );
-
-    if (
-      field === RELATIONSHIP_FIELDS.RELATIONSHIP_TYPE ||
-      field === RELATIONSHIP_FIELDS.PATIENT_ID
-    ) {
-      clearFieldError(id, field);
-    }
-    if (field === RELATIONSHIP_FIELDS.RELATIONSHIP_TYPE) {
-      clearSearch(id);
-      setSearchTerms((prev) => ({ ...prev, [id]: '' }));
-    }
-  };
-
-  const handlePatientSearch = (rowId: string, searchValue: string) => {
-    handleSearch(rowId, searchValue);
-    updateRelationship(rowId, RELATIONSHIP_FIELDS.PATIENT_ID, searchValue);
-  };
-
-  const handlePatientSelect = (
-    rowId: string,
-    selectedItem: PatientSuggestion | null,
-  ) => {
-    if (selectedItem) {
-      setRelationships((prev) =>
-        prev.map((rel) =>
-          rel.id === rowId
-            ? {
-                ...rel,
-                patientId: selectedItem.identifier,
-                patientUuid: selectedItem.id,
-                patientName: selectedItem.name,
-              }
-            : rel,
-        ),
-      );
-      setSearchTerms((prev) => ({ ...prev, [rowId]: selectedItem.text }));
-    }
-  };
-
-  const addRelationship = () => {
-    setRelationships((prev) => [
-      ...prev,
-      {
-        id: `rel-${Date.now()}`,
-        relationshipType: '',
-        patientId: '',
-        tillDate: '',
-      },
-    ]);
-  };
-
-  const removeRelationship = (id: string) => {
-    setRelationships((prev) => prev.filter((rel) => rel.id !== id));
-    clearSearch(id);
-  };
+    updateRelationship,
+    handlePatientSearch,
+    handlePatientSelect,
+    addRelationship,
+    removeRelationship,
+    getData,
+    validate,
+    clearData,
+    removeDeletedRelationships,
+  } = usePatientRelationship({ initialData });
 
   useImperativeHandle(ref, () => ({
-    getData: () => relationships,
-    validate: () => validateRelationships(relationships),
-    clearData: () => {
-      setRelationships([]);
-      clearAllSearches();
-      clearAllErrors();
-    },
+    getData,
+    validate,
+    clearData,
+    removeDeletedRelationships,
   }));
 
   const headers = [
@@ -171,7 +79,7 @@ export const PatientRelationships = ({
       key: RELATIONSHIP_FIELDS.PATIENT_ID,
       header: (
         <span>
-          {t('REGISTRATION_PATIENT_ID')}
+          {t('REGISTRATION_PATIENT_NAME_OR_ID')}
           <span className={styles.requiredAsterisk}>*</span>
         </span>
       ),
@@ -180,28 +88,30 @@ export const PatientRelationships = ({
     { key: RELATIONSHIP_FIELDS.ACTIONS, header: t('REGISTRATION_ACTIONS') },
   ];
 
-  const rows = relationships.map((rel) => {
-    const suggestions = getPatientSuggestions(rel.id);
-    const rowErrors = validationErrors[rel.id] ?? {};
+  const rows = relationships
+    .filter((rel) => !rel.isDeleted)
+    .map((rel) => {
+      const suggestions = getPatientSuggestions(rel.id);
+      const rowErrors = validationErrors[rel.id] ?? {};
 
-    return RelationshipRow({
-      relationship: rel,
-      relationshipTypes,
-      suggestions,
-      errors: rowErrors,
-      onUpdateRelationship: updateRelationship,
-      onPatientSearch: handlePatientSearch,
-      onPatientSelect: handlePatientSelect,
-      onRemove: removeRelationship,
-      t,
+      return RelationshipRow({
+        relationship: rel,
+        relationshipTypes,
+        suggestions,
+        errors: rowErrors,
+        onUpdateRelationship: updateRelationship,
+        onPatientSearch: handlePatientSearch,
+        onPatientSelect: handlePatientSelect,
+        onRemove: removeRelationship,
+        t,
+      });
     });
-  });
 
   return (
     <div className={styles.relationshipSection}>
       <Tile className={styles.headerTile}>
         <span className={styles.headerTitle}>
-          {t('CREATE_PATIENT_SECTION_RELATIONSHIPS')}
+          {t('CREATE_PATIENT_SECTION_RELATIONSHIPS_INFO')}
         </span>
       </Tile>
 
