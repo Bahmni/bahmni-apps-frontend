@@ -8,7 +8,6 @@ import {
   calculateOnsetDate,
   formatDateDistance,
   sortByDate,
-  dateComparator,
   formatDateAndTime,
   calculateAgeinYearsAndMonths,
 } from '../date';
@@ -552,42 +551,6 @@ describe('sortByDate', () => {
 
     const singleItem = [{ id: 1, date: '2025-01-15T10:00:00Z' }];
     expect(sortByDate(singleItem, 'date')).toEqual(singleItem);
-  });
-});
-
-describe('dateComparator', () => {
-  const today = new Date();
-  const todayString = today.toLocaleDateString();
-
-  it('should return true for today when dates match', () => {
-    expect(dateComparator(todayString, 'today')).toBe(true);
-  });
-
-  it('should return false for today when date is not today', () => {
-    const yesterday = subDays(today, 1).toLocaleDateString();
-    expect(dateComparator(yesterday, 'today')).toBe(false);
-  });
-
-  it('should return true for past when date is before today', () => {
-    const yesterday = subDays(today, 1).toLocaleDateString();
-    expect(dateComparator(yesterday, 'past')).toBe(true);
-  });
-
-  it('should return false for past when date is today or future', () => {
-    expect(dateComparator(todayString, 'past')).toBe(false);
-    const tomorrow = addDays(today, 1).toLocaleDateString();
-    expect(dateComparator(tomorrow, 'past')).toBe(false);
-  });
-
-  it('should return true for future when date is after today', () => {
-    const tomorrow = addDays(today, 1).toLocaleDateString();
-    expect(dateComparator(tomorrow, 'future')).toBe(true);
-  });
-
-  it('should return false for future when date is today or past', () => {
-    expect(dateComparator(todayString, 'future')).toBe(false);
-    const yesterday = subDays(today, 1).toLocaleDateString();
-    expect(dateComparator(yesterday, 'future')).toBe(false);
   });
 });
 

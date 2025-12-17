@@ -444,27 +444,3 @@ export function sortByDate(
     return ascending ? diff : -diff;
   });
 }
-
-/**
- *  Compare given date with specified timeframe: 'past', 'today', or 'future'.
- *  @dateFrom string - The date string to compare (in a format parseable by Date constructor)
- *  @timeframe string - The timeframe to compare against ('past', 'today', 'future')
- *  @returns boolean - true if the date matches the specified timeframe, false otherwise
- */
-
-export const dateComparator = (
-  dateFrom: string,
-  timeframe: string,
-): boolean => {
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const givenDate = new Date(dateFrom);
-
-  const comparator = {
-    today: () => isSameDay(givenDate, today),
-    past: () => isBefore(givenDate, today),
-    future: () => isAfter(givenDate, today),
-  };
-
-  return comparator[timeframe as keyof typeof comparator]();
-};

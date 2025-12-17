@@ -103,7 +103,6 @@ export {
   getTodayDate,
   calculateAgeinYearsAndMonths,
   formatDateAndTime,
-  dateComparator,
 } from './date';
 export { type Notification, notificationService } from './notification';
 export {

@@ -6,8 +6,8 @@ import {
   formatUrl,
   PatientSearchResultBundle,
   hasPrivilege,
-  dateComparator,
 } from '@bahmni/services';
+import { isSameDay, isBefore, isAfter } from 'date-fns';
 import { NavigateFunction } from 'react-router-dom';
 import { PatientSearchViewModel } from './utils';
 
@@ -138,7 +138,20 @@ export const appDateValidator = (
   rules: string[],
   row: PatientSearchViewModel<AppointmentSearchResult>,
 ) => {
-  return rules.some((ruleValue) =>
-    dateComparator(row.appointmentDate as string, ruleValue),
-  );
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const appointmentDate = new Date(row.appointmentDate as string);
+
+  return rules.some((ruleValue) => {
+    switch (ruleValue) {
+      case 'today':
+        return isSameDay(appointmentDate, today);
+      case 'past':
+        return isBefore(appointmentDate, today);
+      case 'future':
+        return isAfter(appointmentDate, today);
+      default:
+        return false;
+    }
+  });
 };
