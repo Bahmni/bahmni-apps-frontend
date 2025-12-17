@@ -2,7 +2,7 @@ import { getPatientPrograms, PatientProgramsResponse } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import { useNotification } from '../../notification';
-import ProgramsDetails from '../programsDetails';
+import PatientProgramsTable from '../PatientProgramsTable';
 
 jest.mock('../../notification');
 jest.mock('@bahmni/services', () => ({
@@ -411,7 +411,7 @@ const mockPatientProgramsWithAttributes: PatientProgramsResponse = {
   ],
 };
 
-describe('ProgramsDetails Integration', () => {
+describe('PatientProgramsTable Integration', () => {
   const queryClient: QueryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -439,7 +439,7 @@ describe('ProgramsDetails Integration', () => {
 
     render(
       <QueryClientProvider client={queryClient}>
-        <ProgramsDetails
+        <PatientProgramsTable
           config={{
             fields: ['programName', 'startDate', 'endDate', 'state', 'outcome'],
           }}
@@ -486,7 +486,7 @@ describe('ProgramsDetails Integration', () => {
 
     render(
       <QueryClientProvider client={queryClient}>
-        <ProgramsDetails
+        <PatientProgramsTable
           config={{
             fields: ['programName', 'startDate', 'endDate', 'state'],
           }}
@@ -510,7 +510,7 @@ describe('ProgramsDetails Integration', () => {
 
     render(
       <QueryClientProvider client={queryClient}>
-        <ProgramsDetails
+        <PatientProgramsTable
           config={{
             fields: [
               'programName',
@@ -544,7 +544,7 @@ describe('ProgramsDetails Integration', () => {
 
     render(
       <QueryClientProvider client={queryClient}>
-        <ProgramsDetails
+        <PatientProgramsTable
           config={{
             fields: ['programName', 'startDate', 'state'],
           }}

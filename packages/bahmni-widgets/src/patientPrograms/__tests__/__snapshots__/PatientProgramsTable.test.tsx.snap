@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ProgramsDetails should match snapshot with program data 1`] = `
+exports[`PatientProgramsTable should match snapshot with program data 1`] = `
 <div>
   <div
     aria-label="patient-programs-table-aria-label"

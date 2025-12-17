@@ -1,4 +1,4 @@
 export {
-  default as ProgramsDetails,
+  default as PatientProgramsTable,
   programsQueryKeys,
-} from './programsDetails';
+} from './PatientProgramsTable';

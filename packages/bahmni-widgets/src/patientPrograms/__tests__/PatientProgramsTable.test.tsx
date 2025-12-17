@@ -5,7 +5,7 @@ import {
 } from '@tanstack/react-query';
 import { render, screen, act } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import ProgramsDetails from '../programsDetails';
+import PatientProgramsTable from '../PatientProgramsTable';
 
 expect.extend(toHaveNoViolations);
 
@@ -21,7 +21,7 @@ jest.mock('@bahmni/services', () => ({
   getPatientPrograms: jest.fn(),
 }));
 
-describe('ProgramsDetails', () => {
+describe('PatientProgramsTable', () => {
   const queryClient: QueryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -40,7 +40,7 @@ describe('ProgramsDetails', () => {
 
   const wrapper = (
     <QueryClientProvider client={queryClient}>
-      <ProgramsDetails
+      <PatientProgramsTable
         config={{
           fields: ['programName', 'startDate', 'endDate', 'state', 'outcome'],
         }}
@@ -138,7 +138,7 @@ describe('ProgramsDetails', () => {
   it('should render custom program attributes', () => {
     const wrapperWithAttributes = (
       <QueryClientProvider client={queryClient}>
-        <ProgramsDetails
+        <PatientProgramsTable
           config={{
             fields: [
               'programName',

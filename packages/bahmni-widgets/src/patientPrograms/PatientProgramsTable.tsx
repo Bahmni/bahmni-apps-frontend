@@ -9,7 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useMemo } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { PatientProgramViewModel } from './model';
-import styles from './ProgramsDetails.module.scss';
+import styles from './PatientProgramsTable.module.scss';
 import {
   createProgramHeaders,
   createPatientProgramViewModal,
@@ -29,7 +29,7 @@ const fetchPatientPrograms = async (
   return createPatientProgramViewModal(response, programAttributes);
 };
 
-interface ProgramsDetailsProps {
+interface PatientProgramsTableProps {
   config: {
     fields: string[];
   };
@@ -38,7 +38,9 @@ interface ProgramsDetailsProps {
 /**
  * Component to display patient programs using SortableDataTable
  */
-const ProgramsDetails: React.FC<ProgramsDetailsProps> = ({ config }) => {
+const PatientProgramsTable: React.FC<PatientProgramsTableProps> = ({
+  config,
+}) => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
 
@@ -152,4 +154,4 @@ const ProgramsDetails: React.FC<ProgramsDetailsProps> = ({ config }) => {
   );
 };
 
-export default ProgramsDetails;
+export default PatientProgramsTable;
