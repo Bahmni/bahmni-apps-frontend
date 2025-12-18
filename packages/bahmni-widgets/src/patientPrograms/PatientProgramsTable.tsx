@@ -146,7 +146,7 @@ const PatientProgramsTable: React.FC<PatientProgramsTableProps> = ({
         rows={data ?? []}
         loading={isLoading}
         errorStateMessage={isError ? t('ERROR_DEFAULT_TITLE') : null}
-        emptyStateMessage={t('PROGRAMS_NO_DATA')}
+        emptyStateMessage={t('PROGRAMS_TABLE_MESSAGE_NO_DATA')}
         renderCell={renderCell}
         className={styles.table}
       />
