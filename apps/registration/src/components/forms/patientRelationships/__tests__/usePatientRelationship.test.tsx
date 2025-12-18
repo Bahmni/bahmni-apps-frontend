@@ -267,7 +267,7 @@ describe('usePatientRelationship', () => {
       });
 
       expect(mockHandleSearch).toHaveBeenCalledWith(relationshipId, 'John');
-      expect(result.current.relationships[0].patientId).toBe('John');
+      expect(result.current.relationships[0].patientId).toBe('');
     });
 
     it('should handle patient selection and update relationship', () => {

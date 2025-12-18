@@ -90,9 +90,8 @@ export const usePatientRelationship = ({
   const handlePatientSearch = useCallback(
     (rowId: string, searchValue: string) => {
       handleSearch(rowId, searchValue);
-      updateRelationship(rowId, RELATIONSHIP_FIELDS.PATIENT_ID, searchValue);
     },
-    [handleSearch, updateRelationship],
+    [handleSearch],
   );
 
   const handlePatientSelect = useCallback(
