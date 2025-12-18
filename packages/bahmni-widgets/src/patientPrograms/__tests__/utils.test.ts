@@ -96,7 +96,7 @@ describe('Utils', () => {
         uuid,
         startDate,
         endDate,
-        state: { concept: { name: { name } } },
+        state: { concept: { display: name } },
       }) as any;
 
     const mockEnrollment = (overrides: any) =>

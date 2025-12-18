@@ -117,7 +117,7 @@ const PatientProgramsTable: React.FC<PatientProgramsTableProps> = ({
           <Tag
             id={`${program.uuid}-state`}
             testId={`${program.uuid}-state-test-id`}
-            type="blue"
+            type="outline"
           >
             {program.currentStateName}
           </Tag>

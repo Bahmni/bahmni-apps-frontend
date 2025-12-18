@@ -22,12 +22,6 @@
 .table {
   td {
     width: 14%;
-  }
-  td:nth-child(1) {
     @include type-style("body-compact-01");
-    width: 16%;
-  }
-  td:nth-child(7) {
-    padding-inline: 0 !important;
   }
 }

@@ -347,7 +347,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
               </td>
               <td>
                 <div
-                  class="cds--tag cds--tag--blue"
+                  class="cds--tag cds--tag--outline"
                   data-testid="program-uuid-1-state-test-id"
                   id="program-uuid-1-state"
                 >
@@ -399,7 +399,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
               </td>
               <td>
                 <div
-                  class="cds--tag cds--tag--blue"
+                  class="cds--tag cds--tag--outline"
                   data-testid="program-uuid-2-state-test-id"
                   id="program-uuid-2-state"
                 >

@@ -38,12 +38,12 @@ function getCurrentStateName(
       return dateA - dateB;
     });
     const latestState = sortedStates[sortedStates.length - 1];
-    return latestState.state.concept.name!.name!;
+    return latestState.state.concept.display ?? '';
   } else {
     const activeState = enrollment.states.find(
       (state) => state.endDate === null,
     );
-    return activeState!.state.concept.name!.name!;
+    return activeState!.state.concept.display ?? '';
   }
 }
 
