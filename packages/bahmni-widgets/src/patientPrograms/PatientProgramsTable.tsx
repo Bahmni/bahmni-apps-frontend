@@ -113,7 +113,7 @@ const PatientProgramsTable: React.FC<PatientProgramsTableProps> = ({
           </div>
         );
       case 'state':
-        return (
+        return program.currentStateName ? (
           <Tag
             id={`${program.uuid}-state`}
             testId={`${program.uuid}-state-test-id`}
@@ -121,6 +121,8 @@ const PatientProgramsTable: React.FC<PatientProgramsTableProps> = ({
           >
             {program.currentStateName}
           </Tag>
+        ) : (
+          '-'
         );
       default:
         return (

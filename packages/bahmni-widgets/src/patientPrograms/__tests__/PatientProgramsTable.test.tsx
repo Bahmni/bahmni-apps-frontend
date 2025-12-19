@@ -162,7 +162,7 @@ describe('PatientProgramsTable', () => {
           dateCompleted: null,
           outcomeName: null,
           outcomeDetails: null,
-          currentStateName: 'On ART',
+          currentStateName: null,
           attributes: {
             'Registration Number': 'REG123456',
             'Treatment Category': 'Category I',
