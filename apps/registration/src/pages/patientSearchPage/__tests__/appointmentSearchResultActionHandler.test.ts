@@ -13,6 +13,7 @@ import {
   handleActionButtonClick,
   isActionButtonEnabled,
   shouldRenderActionButton,
+  appDateValidator,
 } from '../appointmentSearchResultActionHandler';
 import { PatientSearchViewModel } from '../utils';
 
@@ -640,6 +641,123 @@ describe('appointmentSearchResultActionHandler', () => {
       };
 
       expect(shouldRenderActionButton(action, mockUserPrivileges)).toBe(false);
+    });
+  });
+
+  describe('appDateValidator', () => {
+    const createMockRow = (
+      appointmentDate: string,
+    ): PatientSearchViewModel<AppointmentSearchResult> => ({
+      uuid: 'patient-uuid-1',
+      birthDate: new Date('1990-01-01'),
+      extraIdentifiers: null,
+      personId: 1,
+      deathDate: null,
+      identifier: 'PAT001',
+      addressFieldValue: null,
+      givenName: 'John',
+      middleName: '',
+      familyName: 'Doe',
+      gender: 'M',
+      dateCreated: new Date(),
+      activeVisitUuid: '',
+      customAttribute: '',
+      hasBeenAdmitted: false,
+      age: '33',
+      patientProgramAttributeValue: null,
+      appointmentUuid: 'appt-uuid-1',
+      appointmentNumber: 'APT-001',
+      appointmentDate,
+      appointmentStatus: 'Scheduled',
+      appointmentReason: 'Checkup',
+      id: 'PAT001',
+      name: 'John Doe',
+    });
+
+    const getTodayDateString = () => {
+      const now = new Date();
+      return new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+      ).toISOString();
+    };
+
+    const getPastDateString = () => {
+      const date = new Date();
+      date.setDate(date.getDate() - 5);
+      return date.toISOString();
+    };
+
+    const getFutureDateString = () => {
+      const date = new Date();
+      date.setDate(date.getDate() + 5);
+      return date.toISOString();
+    };
+
+    it('should return true for "today" rule when appointment is today', () => {
+      const row = createMockRow(getTodayDateString());
+      expect(appDateValidator(['today'], row)).toBe(true);
+    });
+
+    it('should return false for "today" rule when appointment is in the past', () => {
+      const row = createMockRow(getPastDateString());
+      expect(appDateValidator(['today'], row)).toBe(false);
+    });
+
+    it('should return false for "today" rule when appointment is in the future', () => {
+      const row = createMockRow(getFutureDateString());
+      expect(appDateValidator(['today'], row)).toBe(false);
+    });
+
+    it('should return true for "past" rule when appointment is in the past', () => {
+      const row = createMockRow(getPastDateString());
+      expect(appDateValidator(['past'], row)).toBe(true);
+    });
+
+    it('should return false for "past" rule when appointment is today', () => {
+      const row = createMockRow(getTodayDateString());
+      expect(appDateValidator(['past'], row)).toBe(false);
+    });
+
+    it('should return false for "past" rule when appointment is in the future', () => {
+      const row = createMockRow(getFutureDateString());
+      expect(appDateValidator(['past'], row)).toBe(false);
+    });
+
+    it('should return true for "future" rule when appointment is in the future', () => {
+      const row = createMockRow(getFutureDateString());
+      expect(appDateValidator(['future'], row)).toBe(true);
+    });
+
+    it('should return false for "future" rule when appointment is today', () => {
+      const row = createMockRow(getTodayDateString());
+      expect(appDateValidator(['future'], row)).toBe(false);
+    });
+
+    it('should return false for "future" rule when appointment is in the past', () => {
+      const row = createMockRow(getPastDateString());
+      expect(appDateValidator(['future'], row)).toBe(false);
+    });
+
+    it('should return true when at least one rule matches', () => {
+      const row = createMockRow(getTodayDateString());
+      expect(appDateValidator(['past', 'today', 'future'], row)).toBe(true);
+    });
+
+    it('should return false when no rules match', () => {
+      const row = createMockRow(getTodayDateString());
+      expect(appDateValidator(['past', 'future'], row)).toBe(false);
+    });
+
+    it('should return false for unknown rule values', () => {
+      const row = createMockRow(getTodayDateString());
+      expect(appDateValidator(['unknown', 'invalid'], row)).toBe(false);
+    });
+
+    it('should return false for empty rules array', () => {
+      const row = createMockRow(getTodayDateString());
+      expect(appDateValidator([], row)).toBe(false);
     });
   });
 });

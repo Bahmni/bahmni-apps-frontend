@@ -11,7 +11,7 @@ export { LabInvestigation } from './labinvestigation';
 export { SearchPatient } from './searchPatient';
 export { VitalFlowSheet } from './vitalFlowSheet';
 export { GenericServiceRequestTable } from './genericServiceRequest';
-export { ProgramsDetails } from './programs';
+export { PatientProgramsTable } from './patientPrograms';
 
 // Notification System
 export {

@@ -1,0 +1,27 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.outcome {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-02;
+  h3 {
+    @include type-style("body-compact-01");
+    font-weight: 500;
+    color: $text-primary;
+  }
+  p {
+    @include type-style("label-01");
+    color: $text-secondary;
+    margin: 0;
+  }
+}
+
+.table {
+  td {
+    width: 14%;
+    @include type-style("body-compact-01");
+  }
+}

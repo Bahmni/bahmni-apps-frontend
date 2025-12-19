@@ -1,0 +1,440 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PatientProgramsTable should match snapshot with program data 1`] = `
+<div>
+  <div
+    aria-label="patient-programs-table-aria-label"
+    data-testid="patient-programs-table-test-id"
+    id="patient-programs-table"
+  >
+    <div
+      class="table _sortableDataTableBody_1xyik_1"
+      data-testid="sortable-data-table"
+    >
+      <div
+        class="cds--data-table-content"
+      >
+        <table
+          aria-label="PROGRAMS_TABLE_ARIA_LABEL"
+          class="cds--data-table cds--data-table--md cds--data-table--sort cds--data-table--visible-overflow-menu"
+        >
+          <thead>
+            <tr>
+              <th
+                aria-sort="none"
+                class="cds--table-sort__header"
+                scope="col"
+              >
+                <div
+                  class="cds--table-sort__description"
+                  id="table-sort-«ra»"
+                >
+                  Click to sort rows by PROGRAMS_TABLE_HEADER_PROGRAM_NAME header in ascending order
+                </div>
+                <button
+                  aria-describedby="table-sort-«ra»"
+                  class="cds--table-sort"
+                  type="button"
+                >
+                  <span
+                    class="cds--table-sort__flex"
+                  >
+                    <div
+                      class="cds--table-header-label"
+                    >
+                      PROGRAMS_TABLE_HEADER_PROGRAM_NAME
+                    </div>
+                    <svg
+                      aria-hidden="true"
+                      class="cds--table-sort__icon"
+                      fill="currentColor"
+                      focusable="false"
+                      height="20"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      />
+                    </svg>
+                    <svg
+                      aria-hidden="true"
+                      class="cds--table-sort__icon-unsorted"
+                      fill="currentColor"
+                      focusable="false"
+                      height="20"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      />
+                    </svg>
+                    <div
+                      class="cds--table-header-label--decorator-inner"
+                    />
+                  </span>
+                </button>
+              </th>
+              <th
+                aria-sort="none"
+                class="cds--table-sort__header"
+                scope="col"
+              >
+                <div
+                  class="cds--table-sort__description"
+                  id="table-sort-«rb»"
+                >
+                  Click to sort rows by PROGRAMS_TABLE_HEADER_START_DATE header in ascending order
+                </div>
+                <button
+                  aria-describedby="table-sort-«rb»"
+                  class="cds--table-sort"
+                  type="button"
+                >
+                  <span
+                    class="cds--table-sort__flex"
+                  >
+                    <div
+                      class="cds--table-header-label"
+                    >
+                      PROGRAMS_TABLE_HEADER_START_DATE
+                    </div>
+                    <svg
+                      aria-hidden="true"
+                      class="cds--table-sort__icon"
+                      fill="currentColor"
+                      focusable="false"
+                      height="20"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      />
+                    </svg>
+                    <svg
+                      aria-hidden="true"
+                      class="cds--table-sort__icon-unsorted"
+                      fill="currentColor"
+                      focusable="false"
+                      height="20"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      />
+                    </svg>
+                    <div
+                      class="cds--table-header-label--decorator-inner"
+                    />
+                  </span>
+                </button>
+              </th>
+              <th
+                aria-sort="none"
+                class="cds--table-sort__header"
+                scope="col"
+              >
+                <div
+                  class="cds--table-sort__description"
+                  id="table-sort-«rc»"
+                >
+                  Click to sort rows by PROGRAMS_TABLE_HEADER_END_DATE header in ascending order
+                </div>
+                <button
+                  aria-describedby="table-sort-«rc»"
+                  class="cds--table-sort"
+                  type="button"
+                >
+                  <span
+                    class="cds--table-sort__flex"
+                  >
+                    <div
+                      class="cds--table-header-label"
+                    >
+                      PROGRAMS_TABLE_HEADER_END_DATE
+                    </div>
+                    <svg
+                      aria-hidden="true"
+                      class="cds--table-sort__icon"
+                      fill="currentColor"
+                      focusable="false"
+                      height="20"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      />
+                    </svg>
+                    <svg
+                      aria-hidden="true"
+                      class="cds--table-sort__icon-unsorted"
+                      fill="currentColor"
+                      focusable="false"
+                      height="20"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      />
+                    </svg>
+                    <div
+                      class="cds--table-header-label--decorator-inner"
+                    />
+                  </span>
+                </button>
+              </th>
+              <th
+                aria-sort="none"
+                class="cds--table-sort__header"
+                scope="col"
+              >
+                <div
+                  class="cds--table-sort__description"
+                  id="table-sort-«rd»"
+                >
+                  Click to sort rows by PROGRAMS_TABLE_HEADER_STATE header in ascending order
+                </div>
+                <button
+                  aria-describedby="table-sort-«rd»"
+                  class="cds--table-sort"
+                  type="button"
+                >
+                  <span
+                    class="cds--table-sort__flex"
+                  >
+                    <div
+                      class="cds--table-header-label"
+                    >
+                      PROGRAMS_TABLE_HEADER_STATE
+                    </div>
+                    <svg
+                      aria-hidden="true"
+                      class="cds--table-sort__icon"
+                      fill="currentColor"
+                      focusable="false"
+                      height="20"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      />
+                    </svg>
+                    <svg
+                      aria-hidden="true"
+                      class="cds--table-sort__icon-unsorted"
+                      fill="currentColor"
+                      focusable="false"
+                      height="20"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      />
+                    </svg>
+                    <div
+                      class="cds--table-header-label--decorator-inner"
+                    />
+                  </span>
+                </button>
+              </th>
+              <th
+                aria-sort="none"
+                class="cds--table-sort__header"
+                scope="col"
+              >
+                <div
+                  class="cds--table-sort__description"
+                  id="table-sort-«re»"
+                >
+                  Click to sort rows by PROGRAMS_TABLE_HEADER_OUTCOME header in ascending order
+                </div>
+                <button
+                  aria-describedby="table-sort-«re»"
+                  class="cds--table-sort"
+                  type="button"
+                >
+                  <span
+                    class="cds--table-sort__flex"
+                  >
+                    <div
+                      class="cds--table-header-label"
+                    >
+                      PROGRAMS_TABLE_HEADER_OUTCOME
+                    </div>
+                    <svg
+                      aria-hidden="true"
+                      class="cds--table-sort__icon"
+                      fill="currentColor"
+                      focusable="false"
+                      height="20"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      />
+                    </svg>
+                    <svg
+                      aria-hidden="true"
+                      class="cds--table-sort__icon-unsorted"
+                      fill="currentColor"
+                      focusable="false"
+                      height="20"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      />
+                    </svg>
+                    <div
+                      class="cds--table-header-label--decorator-inner"
+                    />
+                  </span>
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody
+            aria-live="polite"
+          >
+            <tr>
+              <td>
+                <span
+                  data-testid="program-uuid-1-program-name-test-id"
+                  id="program-uuid-1-program-name"
+                >
+                  HIV Program
+                </span>
+              </td>
+              <td>
+                <span
+                  data-testid="program-uuid-1-start-date-test-id"
+                  id="program-uuid-1-start-date"
+                >
+                  15/01/2023
+                </span>
+              </td>
+              <td>
+                -
+              </td>
+              <td>
+                <div
+                  class="cds--tag cds--tag--outline"
+                  data-testid="program-uuid-1-state-test-id"
+                  id="program-uuid-1-state"
+                >
+                  <span
+                    class="cds--tag__label"
+                    dir="auto"
+                    title="On ART"
+                  >
+                    On ART
+                  </span>
+                </div>
+              </td>
+              <td>
+                <div
+                  class="outcome"
+                  data-testid="program-uuid-1-outcome-test-id"
+                  id="program-uuid-1-outcome"
+                >
+                  <span>
+                    -
+                  </span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span
+                  data-testid="program-uuid-2-program-name-test-id"
+                  id="program-uuid-2-program-name"
+                >
+                  TB Program
+                </span>
+              </td>
+              <td>
+                <span
+                  data-testid="program-uuid-2-start-date-test-id"
+                  id="program-uuid-2-start-date"
+                >
+                  10/06/2022
+                </span>
+              </td>
+              <td>
+                <span
+                  data-testid="program-uuid-2-end-date-test-id"
+                  id="program-uuid-2-end-date"
+                >
+                  10/01/2023
+                </span>
+              </td>
+              <td>
+                <div
+                  class="cds--tag cds--tag--outline"
+                  data-testid="program-uuid-2-state-test-id"
+                  id="program-uuid-2-state"
+                >
+                  <span
+                    class="cds--tag__label"
+                    dir="auto"
+                    title="Treatment Complete"
+                  >
+                    Treatment Complete
+                  </span>
+                </div>
+              </td>
+              <td>
+                <div
+                  class="outcome"
+                  data-testid="program-uuid-2-outcome-test-id"
+                  id="program-uuid-2-outcome"
+                >
+                  <h3
+                    class="outcomeText"
+                  >
+                    Cured
+                  </h3>
+                  <p
+                    class="outcomeDetails"
+                  >
+                    Patient completed treatment successfully
+                  </p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+`;

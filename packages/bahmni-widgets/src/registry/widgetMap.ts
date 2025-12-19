@@ -8,7 +8,7 @@ export const builtInWidgets: WidgetConfig[] = [
   },
   {
     type: 'programs',
-    component: lazy(() => import('../programs/programsDetails')),
+    component: lazy(() => import('../patientPrograms/PatientProgramsTable')),
   },
   {
     type: 'conditions',
