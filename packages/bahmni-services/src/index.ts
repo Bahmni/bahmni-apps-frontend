@@ -64,7 +64,7 @@ export {
   type VisitTypes,
   type VisitData,
   type ActiveVisit,
-} from './visitControlService';
+} from './visitService';
 export {
   searchAppointmentsByAttribute,
   updateAppointmentStatus,

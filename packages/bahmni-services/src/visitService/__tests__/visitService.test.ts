@@ -2,7 +2,7 @@ import type { VisitType } from '../models';
 import {
   checkIfActiveVisitExists,
   createVisitForPatient,
-} from '../visitControlService';
+} from '../visitService';
 
 const mockGetUserLoginLocation = jest.fn();
 const mockDispatchAuditEvent = jest.fn();
@@ -31,7 +31,7 @@ jest.mock('../../auditLogService/constants', () => ({
   },
 }));
 
-describe('visitControlService', () => {
+describe('visitService', () => {
   const mockLoginLocation = {
     uuid: '9772f68d-9fc5-4470-9b87-2b6139011cad3',
   } as any;

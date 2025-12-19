@@ -4,4 +4,4 @@ export {
   checkIfActiveVisitExists,
   createVisitForPatient,
   getActiveVisitByPatient,
-} from './visitControlService';
+} from './visitService';
