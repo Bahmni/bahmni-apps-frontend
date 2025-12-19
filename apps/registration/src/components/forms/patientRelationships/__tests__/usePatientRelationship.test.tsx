@@ -293,16 +293,39 @@ describe('usePatientRelationship', () => {
       expect(mockSetSearchTerms).toHaveBeenCalled();
     });
 
-    it('should not update relationship when patient selection is null', () => {
+    it('should clear patient data when patient selection is null', () => {
       const { result } = renderHook(() => usePatientRelationship({}));
       const relationshipId = result.current.relationships[0].id;
-      const initialRelationship = { ...result.current.relationships[0] };
+      const selectedPatient = {
+        id: 'patient-uuid-1',
+        identifier: 'PAT001',
+        name: 'John Doe',
+        text: 'John Doe (PAT001)',
+      };
 
+      act(() => {
+        result.current.handlePatientSelect(relationshipId, selectedPatient);
+      });
+
+      expect(result.current.relationships[0]).toMatchObject({
+        patientId: 'PAT001',
+        patientUuid: 'patient-uuid-1',
+        patientName: 'John Doe',
+      });
       act(() => {
         result.current.handlePatientSelect(relationshipId, null);
       });
 
-      expect(result.current.relationships[0]).toEqual(initialRelationship);
+      expect(result.current.relationships[0]).toMatchObject({
+        patientId: '',
+        patientUuid: '',
+        patientName: '',
+      });
+      expect(mockSetSearchTerms).toHaveBeenCalled();
+      expect(mockClearFieldError).toHaveBeenCalledWith(
+        relationshipId,
+        'patientId',
+      );
     });
   });
 
