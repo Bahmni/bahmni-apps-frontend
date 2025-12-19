@@ -9,6 +9,6 @@ export interface PatientProgramViewModel {
   readonly dateCompleted: string | null;
   readonly outcomeName: string | null;
   readonly outcomeDetails: string | null;
-  readonly currentStateName: string;
+  readonly currentStateName: string | null;
   readonly attributes: Record<string, string | null>;
 }

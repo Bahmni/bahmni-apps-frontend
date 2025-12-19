@@ -28,6 +28,9 @@ export function createProgramHeaders(
 function getCurrentStateName(
   enrollment: PatientProgramsResponse['results'][0],
 ): string {
+  if (enrollment.states.length === 0) {
+    return null;
+  }
   if (enrollment.dateCompleted !== null) {
     const statesWithEndDate = enrollment.states.filter(
       (state) => state.endDate !== null,

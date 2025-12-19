@@ -239,7 +239,7 @@ describe('Utils', () => {
       expect(result[2].programName).toBe('Program 3');
     });
 
-    it('should handle outcome with null name gracefully', () => {
+    it('should handle undefined outcome and state with null name gracefully', () => {
       const response: PatientProgramsResponse = {
         results: [
           mockEnrollment({
@@ -247,15 +247,14 @@ describe('Utils', () => {
             program: { name: 'Diabetes Program' },
             dateCompleted: '2024-12-01',
             outcome: { name: null },
-            states: [
-              mockState('state-1', 'Final State', '2024-01-01', '2024-12-01'),
-            ],
+            states: [],
           }),
         ],
       };
 
       const result = createPatientProgramViewModal(response, []);
       expect(result[0].outcomeName).toBeNull();
+      expect(result[0].currentStateName).toBeNull();
     });
 
     it('should return empty attributes object when programAttributes is empty', () => {
