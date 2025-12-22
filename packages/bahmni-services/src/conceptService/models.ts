@@ -87,3 +87,15 @@ export interface ConceptAttribute {
     resourceAlias?: string;
   }>;
 }
+
+export interface ConceptSearchByNameResponse {
+  results: Array<{
+    uuid: string;
+    display: string;
+    links: Array<{
+      rel: string;
+      uri: string;
+      resourceAlias?: string;
+    }>;
+  }>;
+}

@@ -132,6 +132,8 @@ export {
   searchFHIRConcepts,
   searchFHIRConceptsByName,
   getConceptById,
+  getConceptUuidByName,
+  getConceptUuidsByNames,
   type ConceptSearch,
   type ConceptClass,
 } from './conceptService';
@@ -188,6 +190,13 @@ export {
 
 export { getCurrentUser, getUserLoginLocation, type User } from './userService';
 export { USER_PINNED_PREFERENCE_URL } from './observationFormsService/constants';
+export {
+  getPatientObservations,
+  formatObservations,
+  extractObservationValue,
+  type FHIRObservationBundle,
+  type FormattedObservation,
+} from './observationService';
 export {
   getCurrentProvider,
   type Provider,
