@@ -1,4 +1,4 @@
-import { SortableDataTable } from '@bahmni/design-system';
+import { SortableDataTable, TooltipIcon } from '@bahmni/design-system';
 import {
   FULL_MONTH_DATE_FORMAT,
   ISO_DATE_FORMAT,
@@ -177,7 +177,16 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
         case 'testName':
           return (
             <>
-              <p className={styles.requestName}>{request.testName}</p>
+              <p className={styles.requestName}>
+                <span>{request.testName}</span>
+                {request.note && (
+                  <TooltipIcon
+                    iconName="fa-file-lines"
+                    content={request.note}
+                    ariaLabel={request.note}
+                  />
+                )}
+              </p>
               {request.priority === 'stat' && (
                 <Tag type="red">{t('SERVICE_REQUEST_PRIORITY_URGENT')}</Tag>
               )}

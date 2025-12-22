@@ -980,6 +980,94 @@ describe('consultationBundleService', () => {
         });
       });
     });
+
+    describe('Note Handling', () => {
+      it('should include note in service request resource when note is provided', () => {
+        const serviceRequestWithNote: ServiceRequestInputEntry = {
+          ...mockServiceRequest,
+          note: 'Patient requires fasting before test',
+        };
+
+        const serviceRequestsMap = new Map<
+          string,
+          ServiceRequestInputEntry[]
+        >();
+        serviceRequestsMap.set('lab', [serviceRequestWithNote]);
+
+        const result = createServiceRequestBundleEntries({
+          selectedServiceRequests: serviceRequestsMap,
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        const serviceRequest = result[0].resource as ServiceRequest;
+        expect(serviceRequest.note).toBeDefined();
+        expect(serviceRequest.note).toHaveLength(1);
+        expect(serviceRequest.note![0].text).toBe(
+          'Patient requires fasting before test',
+        );
+      });
+
+      it('should not include note field when note is undefined', () => {
+        const serviceRequestWithoutNote: ServiceRequestInputEntry = {
+          ...mockServiceRequest,
+          note: undefined,
+        };
+
+        const serviceRequestsMap = new Map<
+          string,
+          ServiceRequestInputEntry[]
+        >();
+        serviceRequestsMap.set('lab', [serviceRequestWithoutNote]);
+
+        const result = createServiceRequestBundleEntries({
+          selectedServiceRequests: serviceRequestsMap,
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        const serviceRequest = result[0].resource as ServiceRequest;
+        expect(serviceRequest.note).toBeUndefined();
+      });
+
+      it('should handle multiple service requests with mixed note presence', () => {
+        const requestWithNote: ServiceRequestInputEntry = {
+          ...mockServiceRequest,
+          id: 'req-1',
+          note: 'First request note',
+        };
+
+        const requestWithoutNote: ServiceRequestInputEntry = {
+          ...mockServiceRequest,
+          id: 'req-2',
+          note: undefined,
+        };
+
+        const serviceRequestsMap = new Map<
+          string,
+          ServiceRequestInputEntry[]
+        >();
+        serviceRequestsMap.set('lab', [requestWithNote, requestWithoutNote]);
+
+        const result = createServiceRequestBundleEntries({
+          selectedServiceRequests: serviceRequestsMap,
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(2);
+
+        const firstRequest = result[0].resource as ServiceRequest;
+        const secondRequest = result[1].resource as ServiceRequest;
+
+        expect(firstRequest.note).toBeDefined();
+        expect(firstRequest.note![0].text).toBe('First request note');
+        expect(secondRequest.note).toBeUndefined();
+      });
+    });
   });
 
   describe('createConditionsBundleEntries', () => {

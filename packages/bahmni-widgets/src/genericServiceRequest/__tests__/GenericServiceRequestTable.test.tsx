@@ -645,6 +645,50 @@ describe('GenericServiceRequestTable', () => {
       });
     });
 
+    it('renders testName cell with note tooltip when note is provided', async () => {
+      const serviceRequestWithNote = {
+        ...testServiceRequest,
+        note: 'This is a test note for the service request',
+      };
+
+      mockGroupByDate.mockReturnValue([
+        { date: '2023-12-01', items: [serviceRequestWithNote] },
+      ]);
+
+      render(
+        <GenericServiceRequestTable config={{ orderType: 'Lab Order' }} />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Test Service Request')).toBeInTheDocument();
+        const tooltipIcon = screen.getByLabelText(
+          'This is a test note for the service request',
+        );
+        expect(tooltipIcon).toBeInTheDocument();
+      });
+    });
+
+    it('renders testName cell without note tooltip when note is not provided', async () => {
+      render(
+        <GenericServiceRequestTable config={{ orderType: 'Lab Order' }} />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Test Service Request')).toBeInTheDocument();
+        // Verify no tooltip icon is present by checking there's no element with aria-label matching the note pattern
+        const tooltipIcons = screen.queryAllByRole('button', {
+          name: /show information/i,
+        });
+        expect(tooltipIcons).toHaveLength(0);
+      });
+    });
+
     it('renders orderedBy cell with practitioner name', async () => {
       render(
         <GenericServiceRequestTable config={{ orderType: 'Lab Order' }} />,
@@ -677,6 +721,106 @@ describe('GenericServiceRequestTable', () => {
 
       await waitFor(() => {
         expect(screen.queryByText('Dr. Test')).not.toBeInTheDocument();
+      });
+    });
+
+    it('renders status cell with "In Progress" tag for active status', async () => {
+      render(
+        <GenericServiceRequestTable config={{ orderType: 'Lab Order' }} />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('In Progress')).toBeInTheDocument();
+      });
+    });
+
+    it('renders status cell with "Completed" tag for completed status', async () => {
+      const completedServiceRequest = {
+        ...testServiceRequest,
+        status: 'completed',
+      };
+
+      mockGroupByDate.mockReturnValue([
+        { date: '2023-12-01', items: [completedServiceRequest] },
+      ]);
+
+      render(
+        <GenericServiceRequestTable config={{ orderType: 'Lab Order' }} />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Completed')).toBeInTheDocument();
+      });
+    });
+
+    it('renders status cell with "Revoked" tag for revoked status', async () => {
+      const revokedServiceRequest = {
+        ...testServiceRequest,
+        status: 'revoked',
+      };
+
+      mockGroupByDate.mockReturnValue([
+        { date: '2023-12-01', items: [revokedServiceRequest] },
+      ]);
+
+      render(
+        <GenericServiceRequestTable config={{ orderType: 'Lab Order' }} />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Revoked')).toBeInTheDocument();
+      });
+    });
+
+    it('renders status cell with "UNKNOWN_STATUS" tag for unknown status', async () => {
+      const unknownServiceRequest = {
+        ...testServiceRequest,
+        status: 'unknown',
+      };
+
+      mockGroupByDate.mockReturnValue([
+        { date: '2023-12-01', items: [unknownServiceRequest] },
+      ]);
+
+      mockUseTranslation.mockReturnValue({
+        t: (key: string) => {
+          const translations: Record<string, string> = {
+            SERVICE_REQUEST_TEST_NAME: 'Test Name',
+            SERVICE_REQUEST_ORDERED_BY: 'Ordered By',
+            SERVICE_REQUEST_ORDERED_STATUS: 'Status',
+            SERVICE_REQUEST_HEADING: 'Service Requests',
+            NO_SERVICE_REQUESTS: 'No service requests recorded',
+            SERVICE_REQUEST_PRIORITY_URGENT: 'Urgent',
+            ERROR_DEFAULT_TITLE: 'Error',
+            IN_PROGRESS_STATUS: 'In Progress',
+            COMPLETED_STATUS: 'Completed',
+            REVOKED_STATUS: 'Revoked',
+            UNKNOWN_STATUS: 'Unknown',
+          };
+          return translations[key] || key;
+        },
+        i18n: {} as any,
+        ready: true,
+      } as any);
+
+      render(
+        <GenericServiceRequestTable config={{ orderType: 'Lab Order' }} />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Unknown')).toBeInTheDocument();
       });
     });
   });
@@ -1144,11 +1288,11 @@ describe('GenericServiceRequestTable', () => {
     });
 
     describe('edge cases for emptyEncounterFilter', () => {
-      it('should handle null episodeOfCareUuids with empty encounterUuids (emptyEncounterFilter = true)', async () => {
+      it('should handle undefined episodeOfCareUuids with empty encounterUuids (emptyEncounterFilter = true)', async () => {
         render(
           <GenericServiceRequestTable
             config={{ orderType: 'Lab Order' }}
-            episodeOfCareUuids={null}
+            episodeOfCareUuids={undefined}
             encounterUuids={[]}
           />,
           {
@@ -1163,30 +1307,11 @@ describe('GenericServiceRequestTable', () => {
         });
       });
 
-      it('should handle null values for both props (emptyEncounterFilter = false)', async () => {
+      it('should handle undefined values for both props (emptyEncounterFilter = false)', async () => {
         render(
           <GenericServiceRequestTable
             config={{ orderType: 'Lab Order' }}
-            episodeOfCareUuids={null}
-            encounterUuids={null}
-          />,
-          {
-            wrapper: createWrapper(),
-          },
-        );
-
-        await waitFor(() => {
-          expect(screen.getAllByTestId('accordian-table-title')).toHaveLength(
-            1,
-          );
-        });
-      });
-
-      it('should handle mixed null and undefined values (emptyEncounterFilter = false)', async () => {
-        render(
-          <GenericServiceRequestTable
-            config={{ orderType: 'Lab Order' }}
-            episodeOfCareUuids={null}
+            episodeOfCareUuids={undefined}
             encounterUuids={undefined}
           />,
           {

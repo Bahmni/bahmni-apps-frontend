@@ -36,6 +36,8 @@ function formatRadiologyInvestigations(
       })
       .filter((id) => id.length > 0);
 
+    const note = order.note?.[0]?.text;
+
     return {
       id: order.id as string,
       testName: order.code!.text!,
@@ -43,6 +45,7 @@ function formatRadiologyInvestigations(
       orderedBy: order.requester!.display!,
       orderedDate: orderedDate,
       ...(replaces && replaces.length > 0 && { replaces }),
+      ...(note && { note }),
     };
   });
 }

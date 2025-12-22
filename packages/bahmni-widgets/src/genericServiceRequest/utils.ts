@@ -77,6 +77,8 @@ export function mapServiceRequest(
       })
       .filter((id: string) => id.length > 0);
 
+    const note = order.note?.[0]?.text;
+
     return {
       id: order.id as string,
       testName: order.code!.text!,
@@ -85,6 +87,7 @@ export function mapServiceRequest(
       orderedDate: orderedDate,
       status: order.status!,
       ...(replaces && replaces.length > 0 && { replaces }),
+      ...(note && { note }),
     };
   });
 }

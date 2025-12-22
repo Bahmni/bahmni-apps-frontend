@@ -6,4 +6,5 @@ export interface ServiceRequestViewModel {
   orderedDate: string;
   status: string;
   replaces?: string[];
+  note?: string;
 }

@@ -6,6 +6,9 @@
 .requestName {
   @include type-style("heading-compact-01");
   color: $text-primary;
+  display: flex;
+  align-items: center;
+  gap: $spacing-02;
 }
 
 .serviceRequestTableBody {

@@ -1,4 +1,4 @@
-import { ServiceRequest, Reference } from 'fhir/r4';
+import { ServiceRequest, Reference, Annotation } from 'fhir/r4';
 import { SupportedServiceRequestPriority } from '../../models/serviceRequest';
 import { createCodeableConcept, createCoding } from './codeableConceptCreator';
 
@@ -9,6 +9,7 @@ import { createCodeableConcept, createCoding } from './codeableConceptCreator';
  * @param encounterReference - Reference to the encounter
  * @param requesterReference - Reference to the practitioner requesting the service
  * @param priority - Priority of the request (routine, urgent, asap, stat)
+ * @param note
  * @returns FHIR ServiceRequest resource
  */
 export const createServiceRequestResource = (
@@ -17,8 +18,9 @@ export const createServiceRequestResource = (
   encounterReference: Reference,
   requesterReference: Reference,
   priority: SupportedServiceRequestPriority,
+  note?: string,
 ): ServiceRequest => {
-  return {
+  const resource: ServiceRequest = {
     resourceType: 'ServiceRequest',
     status: 'active',
     intent: 'order',
@@ -28,4 +30,10 @@ export const createServiceRequestResource = (
     encounter: encounterReference,
     requester: requesterReference,
   };
+
+  if (note && note.trim() !== '') {
+    resource.note = [{ text: note }] as Annotation[];
+  }
+
+  return resource;
 };

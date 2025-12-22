@@ -18,6 +18,7 @@ export interface FormattedLabTest {
   readonly formattedDate: string; // Formatted date for display
   readonly result?: string | LabTestResult[];
   readonly testType: string; // "Panel" or not
+  readonly note?: string;
 }
 
 /**

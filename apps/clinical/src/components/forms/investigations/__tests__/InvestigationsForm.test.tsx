@@ -41,7 +41,7 @@ jest.mock('@bahmni/design-system', () => ({
 jest.mock('../SelectedInvestigationItem', () => ({
   __esModule: true,
 
-  default: ({ investigation, onPriorityChange }: any) => (
+  default: ({ investigation, onPriorityChange, onNoteChange }: any) => (
     <div data-testid="selected-investigation-item">
       <span>{investigation.display}</span>
       <input
@@ -50,6 +50,12 @@ jest.mock('../SelectedInvestigationItem', () => ({
           onPriorityChange(e.target.checked ? 'stat' : 'routine')
         }
         aria-label="Set as urgent"
+      />
+      <input
+        type="text"
+        onChange={(e) => onNoteChange(e.target.value)}
+        aria-label="Add note"
+        placeholder="Add a note"
       />
     </div>
   ),
@@ -80,6 +86,7 @@ const mockStore = {
   addServiceRequest: jest.fn(),
   removeServiceRequest: jest.fn(),
   updatePriority: jest.fn(),
+  updateNote: jest.fn(),
   reset: jest.fn(),
   getState: jest.fn(() => ({
     selectedServiceRequests: new Map(),
@@ -418,6 +425,136 @@ describe('InvestigationsForm', () => {
         'Laboratory',
         'cbc-001',
         'stat',
+      );
+    });
+
+    test('updates note when note input is changed', async () => {
+      const selectedMap = new Map([
+        [
+          'Laboratory',
+          [
+            {
+              id: 'cbc-001',
+              display: 'Complete Blood Count',
+              selectedPriority: 'routine',
+            },
+          ],
+        ],
+      ]);
+
+      (useServiceRequestStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedServiceRequests: selectedMap,
+      });
+
+      const user = userEvent.setup();
+
+      render(<InvestigationsForm />);
+
+      const noteInput = screen.getByLabelText('Add note');
+      await user.type(noteInput, 'Patient has low hemoglobin');
+
+      expect(mockStore.updateNote).toHaveBeenCalledWith(
+        'Laboratory',
+        'cbc-001',
+        'Patient has low hemoglobin',
+      );
+    });
+
+    test('updates note for multiple investigations independently', async () => {
+      const selectedMap = new Map([
+        [
+          'Laboratory',
+          [
+            {
+              id: 'cbc-001',
+              display: 'Complete Blood Count',
+              selectedPriority: 'routine',
+            },
+            {
+              id: 'glucose-001',
+              display: 'Blood Glucose Test',
+              selectedPriority: 'stat',
+            },
+          ],
+        ],
+      ]);
+
+      (useServiceRequestStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedServiceRequests: selectedMap,
+      });
+
+      const user = userEvent.setup();
+
+      render(<InvestigationsForm />);
+
+      const noteInputs = screen.getAllByLabelText('Add note');
+      expect(noteInputs).toHaveLength(2);
+
+      await user.type(noteInputs[0], 'Note for CBC');
+      expect(mockStore.updateNote).toHaveBeenCalledWith(
+        'Laboratory',
+        'cbc-001',
+        'Note for CBC',
+      );
+
+      await user.type(noteInputs[1], 'Note for Glucose');
+      expect(mockStore.updateNote).toHaveBeenCalledWith(
+        'Laboratory',
+        'glucose-001',
+        'Note for Glucose',
+      );
+    });
+
+    test('updates note for investigations across different categories', async () => {
+      const selectedMap = new Map([
+        [
+          'Laboratory',
+          [
+            {
+              id: 'cbc-001',
+              display: 'Complete Blood Count',
+              selectedPriority: 'routine',
+            },
+          ],
+        ],
+        [
+          'Radiology',
+          [
+            {
+              id: 'xray-001',
+              display: 'Chest X-Ray',
+              selectedPriority: 'routine',
+            },
+          ],
+        ],
+      ]);
+
+      (useServiceRequestStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedServiceRequests: selectedMap,
+      });
+
+      const user = userEvent.setup();
+
+      render(<InvestigationsForm />);
+
+      const noteInputs = screen.getAllByLabelText('Add note');
+      expect(noteInputs).toHaveLength(2);
+
+      await user.type(noteInputs[0], 'CBC note');
+      expect(mockStore.updateNote).toHaveBeenCalledWith(
+        'Laboratory',
+        'cbc-001',
+        'CBC note',
+      );
+
+      await user.type(noteInputs[1], 'X-Ray note');
+      expect(mockStore.updateNote).toHaveBeenCalledWith(
+        'Radiology',
+        'xray-001',
+        'X-Ray note',
       );
     });
   });

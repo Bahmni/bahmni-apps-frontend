@@ -8,4 +8,5 @@ export interface RadiologyInvestigation {
   orderedBy: string;
   orderedDate: string;
   replaces?: string[]; // Array of IDs that this investigation replaces
+  note?: string; // Optional note associated with the radiology investigation
 }

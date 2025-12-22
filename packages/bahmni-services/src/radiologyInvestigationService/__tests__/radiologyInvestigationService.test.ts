@@ -360,5 +360,135 @@ describe('radiologyInvestigationService', () => {
         // replaces field should not be present
       });
     });
+
+    it('should extract note when present', async () => {
+      const mockBundle: Bundle = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: {
+              resourceType: 'ServiceRequest',
+              id: 'order-1',
+              status: 'active',
+              intent: 'order',
+              subject: { reference: 'Patient/test-patient-uuid' },
+              code: {
+                text: 'X-Ray',
+              },
+              priority: 'routine',
+              requester: {
+                display: 'Dr. Smith',
+              },
+              occurrencePeriod: {
+                start: '2023-10-15T10:30:00.000Z',
+              },
+              note: [
+                {
+                  text: 'Patient should be fasting',
+                },
+              ],
+            } as ServiceRequest,
+          },
+        ],
+      };
+
+      mockGet.mockResolvedValue(mockBundle);
+
+      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual({
+        id: 'order-1',
+        testName: 'X-Ray',
+        priority: 'routine',
+        orderedBy: 'Dr. Smith',
+        orderedDate: '2023-10-15T10:30:00.000Z',
+        note: 'Patient should be fasting',
+      });
+    });
+
+    it('should handle ServiceRequest without note field', async () => {
+      const mockBundle: Bundle = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: {
+              resourceType: 'ServiceRequest',
+              id: 'order-1',
+              status: 'active',
+              intent: 'order',
+              subject: { reference: 'Patient/test-patient-uuid' },
+              code: {
+                text: 'X-Ray',
+              },
+              priority: 'routine',
+              requester: {
+                display: 'Dr. Smith',
+              },
+              occurrencePeriod: {
+                start: '2023-10-15T10:30:00.000Z',
+              },
+            } as ServiceRequest,
+          },
+        ],
+      };
+
+      mockGet.mockResolvedValue(mockBundle);
+
+      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual({
+        id: 'order-1',
+        testName: 'X-Ray',
+        priority: 'routine',
+        orderedBy: 'Dr. Smith',
+        orderedDate: '2023-10-15T10:30:00.000Z',
+      });
+    });
+
+    it('should handle ServiceRequest with empty note array', async () => {
+      const mockBundle: Bundle = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: {
+              resourceType: 'ServiceRequest',
+              id: 'order-1',
+              status: 'active',
+              intent: 'order',
+              subject: { reference: 'Patient/test-patient-uuid' },
+              code: {
+                text: 'X-Ray',
+              },
+              priority: 'routine',
+              requester: {
+                display: 'Dr. Smith',
+              },
+              occurrencePeriod: {
+                start: '2023-10-15T10:30:00.000Z',
+              },
+              note: [],
+            } as ServiceRequest,
+          },
+        ],
+      };
+
+      mockGet.mockResolvedValue(mockBundle);
+
+      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual({
+        id: 'order-1',
+        testName: 'X-Ray',
+        priority: 'routine',
+        orderedBy: 'Dr. Smith',
+        orderedDate: '2023-10-15T10:30:00.000Z',
+      });
+    });
   });
 });

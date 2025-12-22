@@ -21,6 +21,7 @@ const InvestigationsForm: React.FC = React.memo(() => {
     selectedServiceRequests,
     addServiceRequest,
     updatePriority,
+    updateNote,
     removeServiceRequest,
   } = useServiceRequestStore();
 
@@ -182,6 +183,9 @@ const InvestigationsForm: React.FC = React.memo(() => {
                   investigation={serviceRequest}
                   onPriorityChange={(priority) =>
                     updatePriority(category, serviceRequest.id, priority)
+                  }
+                  onNoteChange={(note) =>
+                    updateNote(category, serviceRequest.id, note)
                   }
                 />
               </SelectedItem>

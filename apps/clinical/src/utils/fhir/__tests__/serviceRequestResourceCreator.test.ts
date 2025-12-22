@@ -273,5 +273,60 @@ describe('serviceRequestResourceCreator', () => {
       expect(mockCreateCoding).toHaveBeenCalledWith(serviceConceptUUID);
       expect(mockCreateCodeableConcept).toHaveBeenCalledWith([mockCoding]);
     });
+
+    it('should include note field when note is provided', () => {
+      const note = 'Patient requires fasting before test';
+
+      const result = createServiceRequestResource(
+        serviceConceptUUID,
+        subjectReference,
+        encounterReference,
+        requesterReference,
+        'routine',
+        note,
+      );
+
+      expect(result.note).toBeDefined();
+      expect(result.note).toHaveLength(1);
+      expect(result.note![0].text).toBe(note);
+    });
+
+    it('should not include note field when note is not provided', () => {
+      const result = createServiceRequestResource(
+        serviceConceptUUID,
+        subjectReference,
+        encounterReference,
+        requesterReference,
+        'routine',
+      );
+
+      expect(result.note).toBeUndefined();
+    });
+
+    it('should not include note field when note is empty string', () => {
+      const result = createServiceRequestResource(
+        serviceConceptUUID,
+        subjectReference,
+        encounterReference,
+        requesterReference,
+        'routine',
+        '',
+      );
+
+      expect(result.note).toBeUndefined();
+    });
+
+    it('should not include note field when note is only whitespace', () => {
+      const result = createServiceRequestResource(
+        serviceConceptUUID,
+        subjectReference,
+        encounterReference,
+        requesterReference,
+        'routine',
+        '   ',
+      );
+
+      expect(result.note).toBeUndefined();
+    });
   });
 });

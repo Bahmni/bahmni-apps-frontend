@@ -1,4 +1,4 @@
-import { Tag } from '@bahmni/design-system';
+import { Tag, TooltipIcon } from '@bahmni/design-system';
 import {
   useTranslation,
   FormattedLabTest,
@@ -24,6 +24,13 @@ const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({
             <span className={styles.testInfo}>
               {t(`LAB_TEST_${test.testType.toUpperCase()}`)}
             </span>
+          )}
+          {test.note && (
+            <TooltipIcon
+              iconName="fa-file-lines"
+              content={test.note}
+              ariaLabel={test.note}
+            />
           )}
           {test.priority === LabTestPriority.stat && (
             <Tag type="red" data-testid={`lab-test-priority-${test.priority}`}>

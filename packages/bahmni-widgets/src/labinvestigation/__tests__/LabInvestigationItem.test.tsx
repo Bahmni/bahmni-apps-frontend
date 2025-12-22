@@ -34,7 +34,7 @@ describe('LabInvestigationItem', () => {
     jest.clearAllMocks();
 
     mockUseTranslation.mockReturnValue({
-      t: (key: string) => {
+      t: ((key: string) => {
         const translations: Record<string, string> = {
           LAB_TEST_PANEL: 'Panel',
           LAB_TEST_STAT: 'STAT',
@@ -43,8 +43,8 @@ describe('LabInvestigationItem', () => {
           LAB_TEST_RESULTS_PENDING: 'Results Pending',
         };
         return translations[key] || key;
-      },
-    });
+      }) as any,
+    } as any);
   });
 
   it('renders test name', () => {
@@ -107,5 +107,28 @@ describe('LabInvestigationItem', () => {
     expect(screen.getByText('STAT')).toBeInTheDocument();
     expect(screen.getByText('Ordered by: Dr. Smith')).toBeInTheDocument();
     expect(screen.getByText('Results Pending ....')).toBeInTheDocument();
+  });
+
+  it('renders note tooltip when note is present', () => {
+    const testWithNote = {
+      ...baseLabTest,
+      note: 'Patient fasting required',
+    };
+    render(<LabInvestigationItem test={testWithNote} />);
+
+    const tooltipButton = screen.getByRole('button', {
+      name: 'Show information',
+    });
+    expect(tooltipButton).toBeInTheDocument();
+    expect(screen.getByText('Patient fasting required')).toBeInTheDocument();
+  });
+
+  it('does not render note tooltip when note is absent', () => {
+    render(<LabInvestigationItem test={baseLabTest} />);
+
+    const tooltipButton = screen.queryByRole('button', {
+      name: 'Show information',
+    });
+    expect(tooltipButton).not.toBeInTheDocument();
   });
 });

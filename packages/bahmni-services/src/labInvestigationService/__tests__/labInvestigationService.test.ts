@@ -296,6 +296,45 @@ describe('labInvestigationService', () => {
 
       expect(result[0].formattedDate).toBe('2025-05-08');
     });
+
+    it('should extract note when present', () => {
+      const mockTests = [
+        createMockServiceRequest({
+          id: 'test-1',
+          note: [{ text: 'Patient should be fasting' }],
+        }),
+      ];
+
+      const result = formatLabTests(mockTests, mockUseTranslation().t);
+
+      expect(result[0].note).toBe('Patient should be fasting');
+    });
+
+    it('should handle missing note', () => {
+      const mockTests = [
+        createMockServiceRequest({
+          id: 'test-1',
+          note: undefined,
+        }),
+      ];
+
+      const result = formatLabTests(mockTests, mockUseTranslation().t);
+
+      expect(result[0].note).toBeUndefined();
+    });
+
+    it('should handle empty note array', () => {
+      const mockTests = [
+        createMockServiceRequest({
+          id: 'test-1',
+          note: [],
+        }),
+      ];
+
+      const result = formatLabTests(mockTests, mockUseTranslation().t);
+
+      expect(result[0].note).toBeUndefined();
+    });
   });
 
   describe('groupLabTestsByDate', () => {

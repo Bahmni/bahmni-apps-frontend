@@ -1,11 +1,21 @@
+@use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
 
 .selectedInvestigationTitle {
   @include type-style("heading-compact-01");
   margin: 0;
   justify-self: start;
   align-items: start !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.addInvestigationNote {
+  @include type-style("body-compact-01");
+  display: block;
+  margin-top: $spacing-02;
 }
 
 .selectedInvestigationUrgentPriority {

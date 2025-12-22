@@ -137,6 +137,8 @@
   "INPUT_VALUE_REQUIRED": "Please enter a value",
   "INVALID_RESPONSE": "Invalid response received from the server",
   "INVESTIGATIONS_ADDED": "Added {{investigationType}}",
+  "INVESTIGATION_ADD_NOTE": "Add Note",
+  "INVESTIGATION_ADD_NOTE_PLACEHOLDER": "Add notes for the investigation",
   "INVESTIGATIONS_FORM_TITLE": "Order Investigations/Procedures",
   "INVESTIGATIONS_SEARCH_ARIA_LABEL": "Search for investigations/prcedures",
   "INVESTIGATIONS_SEARCH_PLACEHOLDER": "Search to add investigations/procedures",

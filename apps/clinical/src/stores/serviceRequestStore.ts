@@ -18,6 +18,11 @@ export interface ServiceRequestState {
     serviceRequestId: string,
     priority: SupportedServiceRequestPriority,
   ) => void;
+  updateNote: (
+    category: string,
+    serviceRequestId: string,
+    note: string,
+  ) => void;
   reset: () => void;
   getState: () => ServiceRequestState;
 }
@@ -85,6 +90,29 @@ export const useServiceRequestStore = create<ServiceRequestState>(
         return {
           ...serviceRequest,
           selectedPriority: priority,
+        };
+      });
+
+      set((state) => ({
+        selectedServiceRequests: new Map(state.selectedServiceRequests).set(
+          category,
+          updatedList,
+        ),
+      }));
+    },
+
+    updateNote: (category: string, serviceRequestId: string, note: string) => {
+      const currentServiceRequests =
+        get().selectedServiceRequests.get(category);
+      if (!currentServiceRequests) return;
+
+      const updatedList = currentServiceRequests.map((serviceRequest) => {
+        if (serviceRequest.id !== serviceRequestId) {
+          return serviceRequest;
+        }
+        return {
+          ...serviceRequest,
+          note: note,
         };
       });
 

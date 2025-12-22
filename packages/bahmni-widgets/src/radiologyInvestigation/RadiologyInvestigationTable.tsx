@@ -1,4 +1,4 @@
-import { SortableDataTable } from '@bahmni/design-system';
+import { SortableDataTable, TooltipIcon } from '@bahmni/design-system';
 import {
   RadiologyInvestigation,
   useTranslation,
@@ -73,7 +73,14 @@ const RadiologyInvestigationTable: React.FC = () => {
           return (
             <>
               <p className={styles.investigationName}>
-                {investigation.testName}
+                <span>{investigation.testName}</span>
+                {investigation.note && (
+                  <TooltipIcon
+                    iconName="fa-file-lines"
+                    content={investigation.note}
+                    ariaLabel={investigation.note}
+                  />
+                )}
               </p>
               {investigation.priority === 'stat' && (
                 <Tag type="red">{t('RADIOLOGY_PRIORITY_URGENT')}</Tag>

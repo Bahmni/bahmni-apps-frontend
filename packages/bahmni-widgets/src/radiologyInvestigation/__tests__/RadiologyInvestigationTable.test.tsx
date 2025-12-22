@@ -82,7 +82,7 @@ describe('RadiologyInvestigationTable', () => {
     jest.clearAllMocks();
 
     mockUseTranslation.mockReturnValue({
-      t: (key: string) => {
+      t: ((key: string) => {
         const translations: Record<string, string> = {
           RADIOLOGY_TEST_NAME: 'Test Name',
           RADIOLOGY_RESULTS: 'Results',
@@ -92,8 +92,8 @@ describe('RadiologyInvestigationTable', () => {
           RADIOLOGY_PRIORITY_URGENT: 'Urgent',
         };
         return translations[key] || key;
-      },
-    });
+      }) as any,
+    } as any);
 
     mockFormatDate.mockReturnValue({ formattedResult: '01/12/2023' });
     mockFilterRadiologyInvestionsReplacementEntries.mockImplementation(
@@ -367,6 +367,52 @@ describe('RadiologyInvestigationTable', () => {
 
       render(<RadiologyInvestigationTable />);
       expect(screen.queryByText('Dr. Test')).not.toBeInTheDocument();
+    });
+
+    it('renders note tooltip when note is present', () => {
+      const investigationWithNote = {
+        ...testInvestigation,
+        note: 'Patient should be fasting',
+      };
+
+      mockGroupByDate.mockReturnValue([
+        { date: '2023-12-01', items: [investigationWithNote] },
+      ]);
+
+      mockUseRadiologyInvestigation.mockReturnValue({
+        radiologyInvestigations: [investigationWithNote],
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      render(<RadiologyInvestigationTable />);
+
+      const tooltipButton = screen.getByRole('button', {
+        name: 'Show information',
+      });
+      expect(tooltipButton).toBeInTheDocument();
+      expect(screen.getByText('Patient should be fasting')).toBeInTheDocument();
+    });
+
+    it('does not render note tooltip when note is absent', () => {
+      mockGroupByDate.mockReturnValue([
+        { date: '2023-12-01', items: [testInvestigation] },
+      ]);
+
+      mockUseRadiologyInvestigation.mockReturnValue({
+        radiologyInvestigations: [testInvestigation],
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      render(<RadiologyInvestigationTable />);
+
+      const tooltipButton = screen.queryByRole('button', {
+        name: 'Show information',
+      });
+      expect(tooltipButton).not.toBeInTheDocument();
     });
   });
 

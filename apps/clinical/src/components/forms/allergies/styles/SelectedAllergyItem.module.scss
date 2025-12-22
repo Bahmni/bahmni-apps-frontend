@@ -16,35 +16,6 @@
   @include type-style("body-compact-01");
   display: block;
   margin-top: $spacing-02;
-  color: $link-primary;
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
-  }
-
-  &[aria-disabled="true"] {
-    color: $text-disabled;
-    cursor: not-allowed;
-    text-decoration: none;
-
-    &:hover {
-      text-decoration: none;
-      color: $text-disabled;
-    }
-
-    &:focus {
-      text-decoration: none;
-      color: $text-disabled;
-      outline: none;
-    }
-
-    &:active {
-      text-decoration: none;
-      color: $text-disabled;
-      outline: none;
-    }
-  }
 }
 
 .selectedAllergySeverity {
