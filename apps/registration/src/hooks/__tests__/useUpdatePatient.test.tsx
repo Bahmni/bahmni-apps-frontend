@@ -1173,5 +1173,216 @@ describe('useUpdatePatient', () => {
       const callArgs = mockUpdatePatient.mock.calls[0][1];
       expect(callArgs.relationships).toHaveLength(2);
     });
+
+    it('should filter out empty relationships', async () => {
+      const formDataWithEmptyRelationships = {
+        ...mockFormData,
+        relationships: [
+          {
+            id: 'rel-1',
+            relationshipType: '',
+            patientId: '',
+            tillDate: '',
+          },
+        ],
+      };
+
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useUpdatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(formDataWithEmptyRelationships);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const callArgs = mockUpdatePatient.mock.calls[0][1];
+      expect(callArgs.relationships).toEqual([]);
+    });
+
+    it('should filter out incomplete relationships without patientUuid', async () => {
+      const formDataWithIncompleteRelationships = {
+        ...mockFormData,
+        relationships: [
+          {
+            id: 'rel-1',
+            relationshipType: 'rel-type-uuid-1',
+            patientId: 'GAN789012',
+            patientUuid: '',
+            tillDate: '',
+          },
+        ],
+      };
+
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useUpdatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(formDataWithIncompleteRelationships);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const callArgs = mockUpdatePatient.mock.calls[0][1];
+      expect(callArgs.relationships).toEqual([]);
+    });
+
+    it('should filter out incomplete relationships without relationshipType', async () => {
+      const formDataWithIncompleteRelationships = {
+        ...mockFormData,
+        relationships: [
+          {
+            id: 'rel-1',
+            relationshipType: '',
+            patientId: 'GAN789012',
+            patientUuid: 'related-patient-uuid',
+            tillDate: '',
+          },
+        ],
+      };
+
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useUpdatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(formDataWithIncompleteRelationships);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const callArgs = mockUpdatePatient.mock.calls[0][1];
+      expect(callArgs.relationships).toEqual([]);
+    });
+
+    it('should only include valid relationships and filter out empty ones', async () => {
+      const formDataWithMixedRelationships = {
+        ...mockFormData,
+        relationships: [
+          {
+            id: 'rel-1',
+            relationshipType: 'rel-type-uuid-1',
+            patientId: 'GAN789012',
+            patientUuid: 'related-patient-uuid-1',
+            tillDate: '31/12/2024',
+          },
+          {
+            id: 'rel-2',
+            relationshipType: '',
+            patientId: '',
+            tillDate: '',
+          },
+          {
+            id: 'rel-3',
+            relationshipType: 'rel-type-uuid-2',
+            patientId: 'GAN654321',
+            patientUuid: 'related-patient-uuid-2',
+            tillDate: '',
+          },
+        ],
+      };
+
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useUpdatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(formDataWithMixedRelationships);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const callArgs = mockUpdatePatient.mock.calls[0][1];
+      expect(callArgs.relationships).toHaveLength(2);
+      expect(callArgs.relationships[0]).toMatchObject({
+        relationshipType: { uuid: 'rel-type-uuid-1' },
+        personB: { uuid: 'related-patient-uuid-1' },
+      });
+      expect(callArgs.relationships[1]).toMatchObject({
+        relationshipType: { uuid: 'rel-type-uuid-2' },
+        personB: { uuid: 'related-patient-uuid-2' },
+      });
+    });
+
+    it('should not filter out existing relationships that are marked for deletion', async () => {
+      const formDataWithDeletedRelationships = {
+        ...mockFormData,
+        relationships: [
+          {
+            id: 'existing-rel-uuid-1',
+            relationshipType: 'rel-type-uuid-1',
+            patientId: 'GAN789012',
+            patientUuid: 'related-patient-uuid-1',
+            tillDate: '',
+            isExisting: true,
+            isDeleted: true,
+          },
+        ],
+      };
+
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useUpdatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(formDataWithDeletedRelationships);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const callArgs = mockUpdatePatient.mock.calls[0][1];
+      expect(callArgs.relationships).toHaveLength(1);
+      expect(callArgs.relationships[0]).toMatchObject({
+        uuid: 'existing-rel-uuid-1',
+        personA: { uuid: 'patient-uuid-123' },
+        personB: { uuid: 'related-patient-uuid-1' },
+        relationshipType: { uuid: 'rel-type-uuid-1' },
+        voided: true,
+      });
+    });
+
+    it('should filter out existing relationships that are not deleted', async () => {
+      const formDataWithExistingRelationships = {
+        ...mockFormData,
+        relationships: [
+          {
+            id: 'existing-rel-uuid-1',
+            relationshipType: 'rel-type-uuid-1',
+            patientId: 'GAN789012',
+            patientUuid: 'related-patient-uuid-1',
+            tillDate: '',
+            isExisting: true,
+            isDeleted: false,
+          },
+        ],
+      };
+
+      mockUpdatePatient.mockResolvedValue(mockSuccessResponse);
+
+      const { result } = renderHook(() => useUpdatePatient(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate(formDataWithExistingRelationships);
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const callArgs = mockUpdatePatient.mock.calls[0][1];
+      expect(callArgs.relationships).toEqual([]);
+    });
   });
 });

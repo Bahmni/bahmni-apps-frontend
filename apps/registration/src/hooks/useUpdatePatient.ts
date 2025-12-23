@@ -141,7 +141,9 @@ function transformFormDataToPayload(
 
   const transformedRelationships = (relationships ?? [])
     .filter((rel) => {
-      return !rel.isExisting || rel.isDeleted;
+      if (rel.isDeleted) return true;
+      if (rel.isExisting) return false;
+      return rel.relationshipType && rel.patientUuid;
     })
     .map((rel) => {
       if (rel.isDeleted) {
