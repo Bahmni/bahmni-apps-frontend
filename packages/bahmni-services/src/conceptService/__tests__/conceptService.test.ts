@@ -6,6 +6,8 @@ import {
   searchFHIRConcepts,
   searchFHIRConceptsByName,
   getConceptById,
+  getConceptUuidByName,
+  getConceptUuidsByNames,
 } from '../conceptService';
 import {
   FHIR_VALUESET_URL,
@@ -207,6 +209,114 @@ describe('conceptService', () => {
         expect.stringContaining(
           'filter=test%20%E6%B5%8B%E8%AF%95%20%E3%83%86%E3%82%B9%E3%83%88',
         ),
+      );
+    });
+  });
+
+  describe('getConceptUuidByName', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should return concept UUID when concept is found', async () => {
+      const mockResponse = {
+        results: [{ uuid: 'concept-uuid-123', display: 'Temperature' }],
+      };
+      (api.get as jest.Mock).mockResolvedValue(mockResponse);
+
+      const result = await getConceptUuidByName('Temperature');
+
+      expect(result).toBe('concept-uuid-123');
+    });
+
+    it('should return null when concept is not found', async () => {
+      const mockResponse = { results: [] };
+      (api.get as jest.Mock).mockResolvedValue(mockResponse);
+
+      const result = await getConceptUuidByName('NonExistentConcept');
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null when response has no results property', async () => {
+      const mockResponse = {};
+      (api.get as jest.Mock).mockResolvedValue(mockResponse);
+
+      const result = await getConceptUuidByName('Temperature');
+
+      expect(result).toBeNull();
+    });
+
+    it('should handle API errors', async () => {
+      const mockError = new Error('API error');
+      (api.get as jest.Mock).mockRejectedValue(mockError);
+
+      await expect(getConceptUuidByName('Temperature')).rejects.toThrow(
+        mockError,
+      );
+    });
+  });
+
+  describe('getConceptUuidsByNames', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should return array of UUIDs for multiple concept names', async () => {
+      (api.get as jest.Mock)
+        .mockResolvedValueOnce({
+          results: [{ uuid: 'uuid-1', display: 'Temperature' }],
+        })
+        .mockResolvedValueOnce({
+          results: [{ uuid: 'uuid-2', display: 'Blood Pressure' }],
+        });
+
+      const result = await getConceptUuidsByNames([
+        'Temperature',
+        'Blood Pressure',
+      ]);
+
+      expect(result).toEqual(['uuid-1', 'uuid-2']);
+      expect(result).toHaveLength(2);
+    });
+
+    it('should filter out null values when some concepts are not found', async () => {
+      (api.get as jest.Mock)
+        .mockResolvedValueOnce({
+          results: [{ uuid: 'uuid-1', display: 'Temperature' }],
+        })
+        .mockResolvedValueOnce({ results: [] });
+
+      const result = await getConceptUuidsByNames([
+        'Temperature',
+        'NonExistent',
+      ]);
+
+      expect(result).toEqual(['uuid-1']);
+      expect(result).toHaveLength(1);
+    });
+
+    it('should return empty array when no concepts are found', async () => {
+      (api.get as jest.Mock).mockResolvedValue({ results: [] });
+
+      const result = await getConceptUuidsByNames(['Concept1', 'Concept2']);
+
+      expect(result).toEqual([]);
+    });
+
+    it('should handle empty concept names array', async () => {
+      const result = await getConceptUuidsByNames([]);
+
+      expect(result).toEqual([]);
+      expect(api.get).not.toHaveBeenCalled();
+    });
+
+    it('should handle API errors', async () => {
+      const mockError = new Error('API error');
+      (api.get as jest.Mock).mockRejectedValue(mockError);
+
+      await expect(getConceptUuidsByNames(['Temperature'])).rejects.toThrow(
+        mockError,
       );
     });
   });
