@@ -264,6 +264,7 @@ describe('Widget Registry', () => {
         'flowSheet',
         'ordersControl',
         'programs',
+        'observations',
         'forms',
       ];
 
