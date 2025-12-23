@@ -1,5 +1,5 @@
 export { getPatientObservations } from './observationService';
-export { formatObservations, extractObservationValue } from './utils';
+export { formatObservations } from './utils';
 export {
   type FHIRObservationBundle,
   type FormattedObservation,

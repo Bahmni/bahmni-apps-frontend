@@ -5,17 +5,29 @@ export interface FHIRObservationBundle {
   resourceType: 'Bundle';
   total: number;
   entry: Array<{
-    resource: {
-      id: string;
-      code: {
-        text: string;
-      };
-      effectiveDateTime: string;
-      valueString?: string;
-      valueQuantity?: { value: number };
-      valueCodeableConcept?: { text: string };
-      hasMember?: Array<{ reference: string }>;
-    };
+    resource:
+      | {
+          resourceType: 'Observation';
+          id: string;
+          code: {
+            text: string;
+          };
+          effectiveDateTime: string;
+          valueString?: string;
+          valueQuantity?: { value: number };
+          valueCodeableConcept?: { text: string };
+          hasMember?: Array<{ reference: string }>;
+          encounter?: { reference: string };
+        }
+      | {
+          resourceType: 'Encounter';
+          id: string;
+          participant?: Array<{
+            individual?: {
+              display?: string;
+            };
+          }>;
+        };
   }>;
 }
 
@@ -28,5 +40,6 @@ export interface FormattedObservation {
   value: string;
   date: string;
   isParent: boolean;
+  recordedBy?: string;
   children: FormattedObservation[];
 }

@@ -11,5 +11,5 @@ export const FHIR_OBSERVATION_URL = (
   conceptCodes: string[],
 ) => {
   const codeParams = conceptCodes.join(',');
-  return `${OPENMRS_FHIR_R4}/Observation?patient=${patientUuid}&code=${codeParams}&_include=Observation:has-member&_sort=-date`;
+  return `${OPENMRS_FHIR_R4}/Observation?patient=${patientUuid}&code=${codeParams}&_include=Observation:has-member&_include=Observation:encounter&_sort=-_lastUpdated`;
 };

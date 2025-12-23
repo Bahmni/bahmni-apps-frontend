@@ -109,7 +109,10 @@ export const SortableDataTable = <T extends { id: string }>({
             </TableHead>
             <TableBody>
               {tableRows.map((row) => {
-                const originalRow = rowMap.get(row.id)!;
+                const originalRow = rowMap.get(row.id);
+                if (!originalRow) {
+                  return null;
+                }
                 return (
                   <TableRow {...getRowProps({ row })} key={row.id}>
                     {row.cells.map((cell) => (

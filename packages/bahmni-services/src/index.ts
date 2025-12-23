@@ -193,7 +193,6 @@ export { USER_PINNED_PREFERENCE_URL } from './observationFormsService/constants'
 export {
   getPatientObservations,
   formatObservations,
-  extractObservationValue,
   type FHIRObservationBundle,
   type FormattedObservation,
 } from './observationService';

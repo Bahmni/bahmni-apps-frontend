@@ -1,4 +1,4 @@
-import { formatDate } from '../date/date';
+import { formatDateAndTime } from '../date/date';
 import { FHIRObservationBundle, FormattedObservation } from './models';
 
 /**
@@ -18,55 +18,72 @@ export const extractObservationValue = (
 /**
  * Format FHIR observation bundle into display format with parent-child relationships
  * @param bundle - FHIR observation bundle
- * @param t - Translation function
  * @returns Array of formatted observations with nested children
  */
 export function formatObservations(
   bundle: FHIRObservationBundle,
-  t: (key: string) => string,
 ): FormattedObservation[] {
   if (!bundle.entry || bundle.entry.length === 0) {
     return [];
   }
 
-  // Create a map of all observations by ID
+  // Build encounter map for practitioner lookup
+  const encounterMap = new Map<string, string>();
+  bundle.entry.forEach((entry) => {
+    if (entry.resource.resourceType === 'Encounter') {
+      const practitionerName =
+        entry.resource.participant?.[0]?.individual?.display;
+      if (practitionerName) {
+        encounterMap.set(entry.resource.id, practitionerName);
+      }
+    }
+  });
+
   const observationMap = new Map<string, FormattedObservation>();
 
   bundle.entry.forEach((entry) => {
+    if (entry.resource.resourceType !== 'Observation') return;
+
     const obs = entry.resource;
-    const dateResult = formatDate(obs.effectiveDateTime, t);
+    const date = new Date(obs.effectiveDateTime);
+    const formattedDate = formatDateAndTime(date.getTime(), true);
+
+    // Extract encounter ID and get practitioner name
+    const encounterId = obs.encounter?.reference.split('/')[1];
+    const recordedBy = encounterId ? encounterMap.get(encounterId) : undefined;
 
     observationMap.set(obs.id, {
       id: obs.id,
       conceptName: obs.code.text,
       value: extractObservationValue(obs),
-      date: dateResult.formattedResult || obs.effectiveDateTime,
+      date: formattedDate,
       isParent: !!obs.hasMember,
+      recordedBy,
       children: [],
     });
   });
 
-  // Link children to parents
+  const childIds = new Set<string>();
+
   bundle.entry.forEach((entry) => {
+    if (entry.resource.resourceType !== 'Observation') return;
+
     const obs = entry.resource;
     if (obs.hasMember) {
       obs.hasMember.forEach((member) => {
         const childId = member.reference.split('/')[1];
         const child = observationMap.get(childId);
         const parent = observationMap.get(obs.id);
+
         if (child && parent) {
-          parent.children.push(child);
+          parent.children.push({ ...child, isParent: false, children: [] });
+          childIds.add(childId);
         }
       });
     }
   });
 
-  // Return only parent observations (children are nested)
   return Array.from(observationMap.values()).filter(
-    (obs) =>
-      obs.isParent ||
-      !Array.from(observationMap.values()).some((parent) =>
-        parent.children.some((child) => child.id === obs.id),
-      ),
+    (obs) => !childIds.has(obs.id),
   );
 }
