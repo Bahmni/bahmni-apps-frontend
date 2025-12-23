@@ -4,7 +4,7 @@ import {
   getConceptUuidsByNames,
   type FormattedObservation,
 } from '@bahmni/services';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
@@ -24,70 +24,88 @@ interface UseObservationsResult {
 export const useObservations = (
   config: ObservationConfig,
 ): UseObservationsResult => {
+  const { conceptNames = [], conceptCodes = [] } = config;
   const [observations, setObservations] = useState<FormattedObservation[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+
   const { addNotification } = useNotification();
   const patientUUID = usePatientUUID();
   const { t } = useTranslation();
 
-  const fetchObservations = useCallback(async () => {
-    if (!patientUUID) {
-      setError(new Error('Invalid patient UUID'));
-      addNotification({
-        type: 'error',
-        title: t('ERROR'),
-        message: t('INVALID_PATIENT_UUID'),
-      });
-      return;
-    }
-
-    if (!config.conceptNames?.length && !config.conceptCodes?.length) {
-      setObservations([]);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Get concept UUIDs from concept names if provided
-      let conceptCodes = config.conceptCodes ?? [];
-      if (config.conceptNames?.length) {
-        const uuids = await getConceptUuidsByNames(config.conceptNames);
-        conceptCodes = [...conceptCodes, ...uuids];
-      }
-
-      if (conceptCodes.length === 0) {
-        setObservations([]);
-        return;
-      }
-
-      // Fetch observations
-      const bundle = await getPatientObservations(patientUUID, conceptCodes);
-      const formattedObs = formatObservations(bundle);
-      setObservations(formattedObs);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to fetch observations';
-      addNotification({
-        type: 'error',
-        title: t('ERROR'),
-        message: errorMessage,
-      });
-      setError(err instanceof Error ? err : new Error(errorMessage));
-    } finally {
-      setLoading(false);
-    }
-  }, [patientUUID, config, addNotification, t]);
-
   useEffect(() => {
-    fetchObservations();
-  }, [fetchObservations]);
+    // no patient → treat as empty state
+    if (!patientUUID) {
+      setObservations([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
 
-  return {
-    observations,
-    loading,
-    error,
-  };
+    // no concepts → nothing to fetch
+    if (!conceptNames.length && !conceptCodes.length) {
+      setObservations([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchObservations = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        let allConceptCodes = [...conceptCodes];
+
+        if (conceptNames.length) {
+          const uuids = await getConceptUuidsByNames(conceptNames);
+          allConceptCodes = [...allConceptCodes, ...uuids];
+        }
+
+        if (!allConceptCodes.length) {
+          if (!cancelled) {
+            setObservations([]);
+          }
+          return;
+        }
+
+        const bundle = await getPatientObservations(
+          patientUUID,
+          allConceptCodes,
+        );
+        const formattedObs = formatObservations(bundle);
+
+        if (!cancelled) {
+          setObservations(formattedObs);
+        }
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : 'Failed to fetch observations';
+
+        if (!cancelled) {
+          setError(err instanceof Error ? err : new Error(message));
+        }
+
+        addNotification({
+          type: 'error',
+          title: t('ERROR'),
+          message: message,
+        });
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchObservations();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [patientUUID, conceptNames, conceptCodes, addNotification, t]);
+
+  return { observations, loading, error };
 };

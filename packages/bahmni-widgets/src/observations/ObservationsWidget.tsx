@@ -1,74 +1,116 @@
-import { SortableDataTable } from '@bahmni/design-system';
-import React, { useMemo } from 'react';
+import { SortableDataTable, Modal } from '@bahmni/design-system';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type WidgetProps } from '../registry/model';
 import { type ObservationConfig } from './models';
 import styles from './styles/ObservationsWidget.module.scss';
 import { useObservations } from './useObservations';
+import { isImageValue, isVideoValue, getMediaUrl } from './utils';
 
-/**
- * Component to display patient observations in a hierarchical structure
- * Supports parent-child observation relationships (e.g., Chief Complaint with sub-observations)
- */
 const ObservationsWidget: React.FC<WidgetProps> = ({ config }) => {
   const { t } = useTranslation();
   const observationConfig = (config ?? {}) as ObservationConfig;
   const { observations, loading, error } = useObservations(observationConfig);
+  const [preview, setPreview] = useState<{
+    url: string;
+    type: 'image' | 'video';
+  } | null>(null);
+
+  const renderObservationValue = (
+    value: string,
+    conceptName: string,
+  ): React.ReactNode => {
+    if (!value) return value;
+
+    const mediaUrl = getMediaUrl(value);
+    const handleError = (e: React.SyntheticEvent<HTMLElement>) => {
+      e.currentTarget.style.display = 'none';
+      e.currentTarget.parentElement!.textContent = value;
+    };
+
+    if (isImageValue(value)) {
+      return (
+        <img
+          src={mediaUrl}
+          alt={conceptName}
+          className={styles.observationImage}
+          onClick={() => setPreview({ url: mediaUrl, type: 'image' })}
+          onError={handleError}
+        />
+      );
+    }
+
+    if (isVideoValue(value)) {
+      return (
+        <video
+          src={mediaUrl}
+          className={styles.observationVideo}
+          onClick={() => setPreview({ url: mediaUrl, type: 'video' })}
+          onError={handleError}
+        />
+      );
+    }
+
+    return value;
+  };
 
   // Group observations by date
-  const groupedByDate = useMemo(() => {
-    const dateGroups = new Map<string, typeof observations>();
+  const dateGroups = new Map<string, typeof observations>();
+  observations.forEach((obs) => {
+    if (!dateGroups.has(obs.date)) {
+      dateGroups.set(obs.date, []);
+    }
+    dateGroups.get(obs.date)!.push(obs);
+  });
 
-    observations.forEach((obs) => {
-      if (!dateGroups.has(obs.date)) {
-        dateGroups.set(obs.date, []);
-      }
-      dateGroups.get(obs.date)!.push(obs);
-    });
+  if (dateGroups.size === 0) {
+    dateGroups.set('', []);
+  }
 
-    return Array.from(dateGroups.entries()).map(([date, obs]) => {
-      const rows: Array<{
-        id: string;
-        conceptName: React.ReactNode;
-        value: React.ReactNode;
-      }> = [];
+  const groupedByDate = Array.from(dateGroups.entries()).map(([date, obs]) => {
+    const rows: Array<{
+      id: string;
+      conceptName: React.ReactNode;
+      value: React.ReactNode;
+    }> = [];
 
-      // Get the first observation with recordedBy for the header
-      const firstObservationWithRecorder = obs.find((o) => o.recordedBy);
-      const recordedByText = firstObservationWithRecorder?.recordedBy
-        ? `${t('ALLERGY_LIST_RECORDED_BY')} ${firstObservationWithRecorder.recordedBy}`
-        : '';
+    const firstObservationWithRecorder = obs.find((o) => o.recordedBy);
+    const recordedByText = firstObservationWithRecorder?.recordedBy
+      ? `${t('ALLERGY_LIST_RECORDED_BY')} ${firstObservationWithRecorder.recordedBy}`
+      : '';
 
-      obs.forEach((observation) => {
-        rows.push({
-          id: observation.id,
-          conceptName: observation.conceptName,
-          value: observation.value,
-        });
-
-        if (observation.children.length > 0) {
-          observation.children.forEach((child) => {
-            rows.push({
-              id: child.id,
-              conceptName: (
-                <div className={styles.childRow}>{child.conceptName}</div>
-              ),
-              value: child.value,
-            });
-          });
-        }
+    obs.forEach((observation) => {
+      rows.push({
+        id: observation.id,
+        conceptName: observation.conceptName,
+        value: renderObservationValue(
+          observation.value,
+          observation.conceptName,
+        ),
       });
 
-      return {
-        date,
-        headers: [
-          { key: 'conceptName', header: date },
-          { key: 'value', header: recordedByText },
-        ],
-        rows,
-      };
+      if (observation.children.length > 0) {
+        observation.children.forEach((child) => {
+          rows.push({
+            id: child.id,
+            conceptName: (
+              <div className={styles.childRow}>{child.conceptName}</div>
+            ),
+            value: renderObservationValue(child.value, child.conceptName),
+          });
+        });
+      }
     });
-  }, [observations, t]);
+
+    return {
+      date,
+      headers: [
+        { key: 'conceptName', header: date },
+        { key: 'value', header: recordedByText },
+      ],
+      rows,
+    };
+  });
 
   if (error) {
     return (
@@ -79,19 +121,42 @@ const ObservationsWidget: React.FC<WidgetProps> = ({ config }) => {
   }
 
   return (
-    <div data-testid="observations-widget">
-      {groupedByDate.map((group) => (
-        <SortableDataTable
-          key={group.date}
-          headers={group.headers}
-          ariaLabel={t('OBSERVATIONS_DISPLAY_CONTROL_HEADING')}
-          rows={group.rows}
-          loading={loading}
-          emptyStateMessage={t('NO_OBSERVATIONS')}
-          className={styles.observationsTable}
-        />
-      ))}
-    </div>
+    <>
+      <div data-testid="observations-widget">
+        {groupedByDate.map((group) => (
+          <SortableDataTable
+            key={group.date}
+            headers={group.headers}
+            ariaLabel={t('OBSERVATIONS_DISPLAY_CONTROL_HEADING')}
+            rows={group.rows}
+            loading={loading}
+            emptyStateMessage={t('NO_OBSERVATIONS')}
+            className={styles.observationsTable}
+            sortable={[]}
+          />
+        ))}
+      </div>
+
+      {preview && (
+        <Modal
+          open
+          onRequestClose={() => setPreview(null)}
+          passiveModal
+          modalHeading=""
+          className={styles.mediaPreviewModal}
+        >
+          <Modal.Body>
+            <div className={styles.mediaPreviewContainer}>
+              {preview.type === 'image' ? (
+                <img src={preview.url} alt="" />
+              ) : (
+                <video src={preview.url} controls autoPlay />
+              )}
+            </div>
+          </Modal.Body>
+        </Modal>
+      )}
+    </>
   );
 };
 

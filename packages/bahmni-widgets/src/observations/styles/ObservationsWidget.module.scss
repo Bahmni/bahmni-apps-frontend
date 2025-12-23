@@ -1,3 +1,6 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+
 .observationsTable {
   width: 100%;
 }
@@ -61,4 +64,37 @@
   margin-left: auto;
   color: var(--cds-text-secondary);
   font-size: 0.875rem;
+}
+
+.observationImage,
+.observationVideo {
+  width: $spacing-12 !important;
+  height: $spacing-12 !important;
+  object-fit: cover;
+  cursor: pointer;
+  display: block;
+}
+
+.mediaPreviewModal {
+
+  :global(.cds--modal-container) {
+    width: $spacing-05 * 25 !important;
+  }
+
+  :global(.cds--modal-content) {
+    padding: $spacing-05 !important;
+  }
+
+  .mediaPreviewContainer {
+    aspect-ratio: 3/4;
+    background: $layer-02;
+    display: flex;
+
+    img,
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
 }

@@ -52,10 +52,12 @@ export function formatObservations(
     const encounterId = obs.encounter?.reference.split('/')[1];
     const recordedBy = encounterId ? encounterMap.get(encounterId) : undefined;
 
+    const value = obs.hasMember ? '' : extractObservationValue(obs);
+
     observationMap.set(obs.id, {
       id: obs.id,
       conceptName: obs.code.text,
-      value: extractObservationValue(obs),
+      value,
       date: formattedDate,
       isParent: !!obs.hasMember,
       recordedBy,
