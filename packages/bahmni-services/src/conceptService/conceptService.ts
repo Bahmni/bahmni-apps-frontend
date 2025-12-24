@@ -67,16 +67,3 @@ export async function getConceptUuidByName(
 
   return null;
 }
-
-/**
- * Get concept UUIDs for multiple concept names
- * @param conceptNames - Array of fully specified concept names
- * @returns Promise resolving to array of concept UUIDs
- */
-export async function getConceptUuidsByNames(
-  conceptNames: string[],
-): Promise<string[]> {
-  const promises = conceptNames.map((name) => getConceptUuidByName(name));
-  const uuids = await Promise.all(promises);
-  return uuids.filter((uuid): uuid is string => uuid !== null);
-}

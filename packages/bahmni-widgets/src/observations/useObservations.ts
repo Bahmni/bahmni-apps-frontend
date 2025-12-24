@@ -1,7 +1,7 @@
 import {
   getPatientObservations,
   formatObservations,
-  getConceptUuidsByNames,
+  useConcept,
   type FormattedObservation,
 } from '@bahmni/services';
 import { useState, useEffect } from 'react';
@@ -32,6 +32,7 @@ export const useObservations = (
   const { addNotification } = useNotification();
   const patientUUID = usePatientUUID();
   const { t } = useTranslation();
+  const { getConceptUuids } = useConcept();
 
   useEffect(() => {
     // no patient → treat as empty state
@@ -60,7 +61,7 @@ export const useObservations = (
         let allConceptCodes = [...conceptCodes];
 
         if (conceptNames.length) {
-          const uuids = await getConceptUuidsByNames(conceptNames);
+          const uuids = await getConceptUuids(conceptNames);
           allConceptCodes = [...allConceptCodes, ...uuids];
         }
 
@@ -105,7 +106,14 @@ export const useObservations = (
     return () => {
       cancelled = true;
     };
-  }, [patientUUID, conceptNames, conceptCodes, addNotification, t]);
+  }, [
+    patientUUID,
+    conceptNames,
+    conceptCodes,
+    addNotification,
+    t,
+    getConceptUuids,
+  ]);
 
   return { observations, loading, error };
 };

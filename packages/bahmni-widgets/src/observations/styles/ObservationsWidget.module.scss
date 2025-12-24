@@ -1,13 +1,31 @@
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
 
-.observationsTable {
-  width: 100%;
+.accordion {
+  background-color: var(--cds-layer-01);
+}
+
+.accordionItem {
+  :global(.cds--accordion__content),
+  :global(.cds--accordion__wrapper) {
+    padding-block: 0 !important;
+    padding-inline: 0 !important;
+    margin-block: 0 !important;
+    margin-inline: 0 !important;
+  }
 }
 
 .errorMessage {
   color: var(--cds-text-error);
   padding: $spacing-05;
+}
+
+.emptyState {
+  @include type-style("body-compact-01");
+  background-color: $background;
+  padding: $spacing-06 $spacing-05;
+  text-align: center;
 }
 
 .childRow {

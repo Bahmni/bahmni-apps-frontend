@@ -1,4 +1,9 @@
-import { SortableDataTable, Modal } from '@bahmni/design-system';
+import {
+  SortableDataTable,
+  Modal,
+  Accordion,
+  AccordionItem,
+} from '@bahmni/design-system';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type WidgetProps } from '../registry/model';
@@ -72,21 +77,21 @@ const ObservationsWidget: React.FC<WidgetProps> = ({ config }) => {
       id: string;
       conceptName: React.ReactNode;
       value: React.ReactNode;
+      recordedBy: React.ReactNode;
     }> = [];
-
-    const firstObservationWithRecorder = obs.find((o) => o.recordedBy);
-    const recordedByText = firstObservationWithRecorder?.recordedBy
-      ? `${t('ALLERGY_LIST_RECORDED_BY')} ${firstObservationWithRecorder.recordedBy}`
-      : '';
 
     obs.forEach((observation) => {
       rows.push({
         id: observation.id,
         conceptName: observation.conceptName,
-        value: renderObservationValue(
-          observation.value,
-          observation.conceptName,
-        ),
+        value:
+          observation.children.length > 0
+            ? ''
+            : renderObservationValue(
+                observation.value,
+                observation.conceptName,
+              ),
+        recordedBy: observation.recordedBy ?? '',
       });
 
       if (observation.children.length > 0) {
@@ -97,6 +102,7 @@ const ObservationsWidget: React.FC<WidgetProps> = ({ config }) => {
               <div className={styles.childRow}>{child.conceptName}</div>
             ),
             value: renderObservationValue(child.value, child.conceptName),
+            recordedBy: '',
           });
         });
       }
@@ -105,8 +111,9 @@ const ObservationsWidget: React.FC<WidgetProps> = ({ config }) => {
     return {
       date,
       headers: [
-        { key: 'conceptName', header: date },
-        { key: 'value', header: recordedByText },
+        { key: 'conceptName', header: t('OBSERVATION_NAME') },
+        { key: 'value', header: t('OBSERVATION_VALUE') },
+        { key: 'recordedBy', header: t('ALLERGY_LIST_RECORDED_BY') },
       ],
       rows,
     };
@@ -120,21 +127,37 @@ const ObservationsWidget: React.FC<WidgetProps> = ({ config }) => {
     );
   }
 
+  if (observations.length === 0) {
+    return (
+      <div data-testid="observations-widget" className={styles.emptyState}>
+        {t('NO_OBSERVATIONS')}
+      </div>
+    );
+  }
+
   return (
     <>
       <div data-testid="observations-widget">
-        {groupedByDate.map((group) => (
-          <SortableDataTable
-            key={group.date}
-            headers={group.headers}
-            ariaLabel={t('OBSERVATIONS_DISPLAY_CONTROL_HEADING')}
-            rows={group.rows}
-            loading={loading}
-            emptyStateMessage={t('NO_OBSERVATIONS')}
-            className={styles.observationsTable}
-            sortable={[]}
-          />
-        ))}
+        <Accordion align="start" size="lg" className={styles.accordion}>
+          {groupedByDate.map((group, index) => (
+            <AccordionItem
+              key={group.date}
+              title={group.date}
+              open={index === 0}
+              className={styles.accordionItem}
+            >
+              <SortableDataTable
+                headers={group.headers}
+                ariaLabel={t('OBSERVATIONS_DISPLAY_CONTROL_HEADING')}
+                rows={group.rows}
+                loading={loading}
+                emptyStateMessage={t('NO_OBSERVATIONS')}
+                className={styles.observationsTable}
+                sortable={[]}
+              />
+            </AccordionItem>
+          ))}
+        </Accordion>
       </div>
 
       {preview && (

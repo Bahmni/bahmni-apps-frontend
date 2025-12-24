@@ -212,6 +212,8 @@
   "NO_MEDICATION_HISTORY": "No hay historial de medicamentos",
   "NO_OBSERVATIONS": "No se registraron observaciones",
   "NO_RADIOLOGY_INVESTIGATIONS": "No se encontraron investigaciones de radiología",
+  "OBSERVATION_NAME": "Observación",
+  "OBSERVATION_VALUE": "Valor",
   "NO_SERVICE_REQUESTS": "No hay solicitudes de servicio registradas",
   "NO_VITAL_SIGNS_DATA": "No se encontraron datos de signos vitales",
   "OBSERVATION_FORMS_ADDED_FORMS": "Formularios Agregados",

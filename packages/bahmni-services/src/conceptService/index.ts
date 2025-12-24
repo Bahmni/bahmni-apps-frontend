@@ -4,6 +4,6 @@ export {
   searchFHIRConceptsByName,
   getConceptById,
   getConceptUuidByName,
-  getConceptUuidsByNames,
 } from './conceptService';
 export { type ConceptSearch, type ConceptClass } from './models';
+export { useConcept } from './useConcept';
