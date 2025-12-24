@@ -46,6 +46,17 @@
   color: $teal-70 !important;
 }
 
+.completedStatus {
+  background-color: $green-20 !important;
+  color: $green-70 !important;
+}
+
+.missedStatus,
+.cancelledStatus {
+  background-color: $red-20 !important;
+  color: $red-70 !important;
+}
+
 @include breakpoint-down(lg) {
   .main {
     padding: $spacing-06 $spacing-08;

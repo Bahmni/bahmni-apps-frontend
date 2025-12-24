@@ -59,6 +59,36 @@ describe('appointmentSearchResultActionHandler', () => {
       expect(getAppointmentStatusClassName('ARRIVED')).toBe('arrivedStatus');
     });
 
+    it('should return missedStatus for missed status', () => {
+      expect(getAppointmentStatusClassName('Missed')).toBe('missedStatus');
+      expect(getAppointmentStatusClassName('missed')).toBe('missedStatus');
+      expect(getAppointmentStatusClassName('MISSED')).toBe('missedStatus');
+    });
+
+    it('should return completedStatus for completed status', () => {
+      expect(getAppointmentStatusClassName('Completed')).toBe(
+        'completedStatus',
+      );
+      expect(getAppointmentStatusClassName('completed')).toBe(
+        'completedStatus',
+      );
+      expect(getAppointmentStatusClassName('COMPLETED')).toBe(
+        'completedStatus',
+      );
+    });
+
+    it('should return cancelledStatus for cancelled status', () => {
+      expect(getAppointmentStatusClassName('Cancelled')).toBe(
+        'cancelledStatus',
+      );
+      expect(getAppointmentStatusClassName('cancelled')).toBe(
+        'cancelledStatus',
+      );
+      expect(getAppointmentStatusClassName('CANCELLED')).toBe(
+        'cancelledStatus',
+      );
+    });
+
     it('should return checkedInStatus for checked in status', () => {
       expect(getAppointmentStatusClassName('CheckedIn')).toBe(
         'checkedInStatus',
@@ -74,9 +104,9 @@ describe('appointmentSearchResultActionHandler', () => {
       );
     });
 
-    it('should return scheduledStatus for unknown status', () => {
-      expect(getAppointmentStatusClassName('Unknown')).toBe('scheduledStatus');
-      expect(getAppointmentStatusClassName('')).toBe('scheduledStatus');
+    it('should return defaultStatus for unknown status', () => {
+      expect(getAppointmentStatusClassName('Unknown')).toBe('defaultStatus');
+      expect(getAppointmentStatusClassName('')).toBe('defaultStatus');
     });
   });
 
