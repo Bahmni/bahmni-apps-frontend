@@ -92,7 +92,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     isEncounterDetailsFormReady,
     practitioner,
     patientUUID,
-    hasError,
+    isError,
     reset: resetEncounterDetails,
   } = useEncounterDetailsStore();
 
@@ -353,7 +353,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   // Otherwise, render consultation ActionArea with consultation content
   return (
     <ActionArea
-      title={hasError ? '' : t('CONSULTATION_ACTION_NEW')}
+      title={isError ? '' : t('CONSULTATION_ACTION_NEW')}
       primaryButtonText={t('CONSULTATION_PAD_DONE_BUTTON')}
       onPrimaryButtonClick={handleOnPrimaryButtonClick}
       isPrimaryButtonDisabled={
@@ -362,7 +362,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       secondaryButtonText={t('CONSULTATION_PAD_CANCEL_BUTTON')}
       onSecondaryButtonClick={handleOnSecondaryButtonClick}
       content={
-        hasError ? (
+        isError ? (
           <Grid className={styles.emptyState}>
             <Column
               sm={4}

@@ -267,7 +267,7 @@ describe('BasicForm', () => {
     setPractitioner: jest.fn(),
     setUser: jest.fn(),
     setPatientUUID: jest.fn(),
-    setHasError: jest.fn(),
+    setIsError: jest.fn(),
     reset: jest.fn(),
     getState: jest.fn(),
   };
@@ -345,7 +345,7 @@ describe('BasicForm', () => {
       // Assert - Component should still render without crashing
       expect(screen.getByTestId('grid')).toBeInTheDocument();
       // The error from useActiveVisit should be handled by the normal error flow
-      expect(mockStoreState.setHasError).toHaveBeenCalledWith(true);
+      expect(mockStoreState.setIsError).toHaveBeenCalledWith(true);
     });
   });
 
@@ -397,7 +397,7 @@ describe('BasicForm', () => {
 
       // Assert
       await waitFor(() => {
-        expect(mockStoreState.setHasError).toHaveBeenCalledWith(true);
+        expect(mockStoreState.setIsError).toHaveBeenCalledWith(true);
       });
     });
   });

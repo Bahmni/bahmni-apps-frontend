@@ -1,7 +1,7 @@
 export {
-  getPatientLabTestsBundle,
   getPatientLabInvestigations,
   groupLabTestsByDate,
+  formatLabTests,
 } from './labInvestigationService';
 export {
   type FormattedLabTest,

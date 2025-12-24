@@ -7,13 +7,14 @@ import { SERVICE_REQUESTS_URL } from './constants';
  * @param category - Optional category UUID to filter by
  * @param patientUuid - Patient UUID to filter by
  * @param encounterUuids - Optional encounter UUIDs to filter by
- * @param visitUuids - Optional visit UUIDs to filter by
+ * @param numberOfVisits
  * @returns Promise resolving to ServiceRequest Bundle
  */
 export async function getServiceRequests(
   category: string,
   patientUuid: string,
   encounterUuids?: string[],
+  numberOfVisits?: number,
 ): Promise<Bundle<ServiceRequest>> {
   let encounterUuidsString: string | undefined;
 
@@ -22,6 +23,11 @@ export async function getServiceRequests(
   }
 
   return await get<Bundle<ServiceRequest>>(
-    SERVICE_REQUESTS_URL(category, patientUuid, encounterUuidsString),
+    SERVICE_REQUESTS_URL(
+      category,
+      patientUuid,
+      encounterUuidsString,
+      numberOfVisits,
+    ),
   );
 }

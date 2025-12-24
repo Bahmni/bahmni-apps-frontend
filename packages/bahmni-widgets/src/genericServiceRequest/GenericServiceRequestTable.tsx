@@ -1,4 +1,10 @@
-import { SortableDataTable, TooltipIcon } from '@bahmni/design-system';
+import {
+  SortableDataTable,
+  TooltipIcon,
+  Accordion,
+  AccordionItem,
+  Tag,
+} from '@bahmni/design-system';
 import {
   FULL_MONTH_DATE_FORMAT,
   ISO_DATE_FORMAT,
@@ -7,9 +13,10 @@ import {
   getOrderTypes,
   getServiceRequests,
   groupByDate,
+  shouldEnableEncounterFilter,
   useTranslation,
+  ORDER_TYPE_QUERY_KEY,
 } from '@bahmni/services';
-import { Accordion, AccordionItem, Tag } from '@carbon/react';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useMemo } from 'react';
 
@@ -19,8 +26,6 @@ import { WidgetProps } from '../registry/model';
 import { ServiceRequestViewModel } from './models';
 import styles from './styles/GenericServiceRequestTable.module.scss';
 import { mapServiceRequest, sortServiceRequestsByPriority } from './utils';
-
-export const orderTypesQueryKeys = () => ['orderTypes'] as const;
 
 export const genericServiceRequestQueryKeys = (
   categoryUuid: string,
@@ -57,8 +62,10 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
   const { addNotification } = useNotification();
   const categoryName = (config?.orderType as string) || '';
 
-  const emptyEncounterFilter =
-    episodeOfCareUuids?.length === 0 ? false : encounterUuids?.length === 0;
+  const emptyEncounterFilter = shouldEnableEncounterFilter(
+    episodeOfCareUuids,
+    encounterUuids,
+  );
 
   const {
     data: orderTypesData,
@@ -66,7 +73,7 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
     isError: isOrderTypesError,
     error: orderTypesError,
   } = useQuery({
-    queryKey: orderTypesQueryKeys(),
+    queryKey: ORDER_TYPE_QUERY_KEY,
     queryFn: getOrderTypes,
   });
 
@@ -234,6 +241,7 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
           emptyStateMessage={t('NO_SERVICE_REQUESTS')}
           renderCell={renderCell}
           className={styles.serviceRequestTableBody}
+          data-testid="sortable-data-table"
         />
       ) : (
         <Accordion align="start">
@@ -250,7 +258,7 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
                 title={formattedDate}
                 key={date}
                 className={styles.customAccordianItem}
-                data-testid={'accordian-table-title'}
+                testId={'accordian-table-title'}
                 open={index === 0}
               >
                 <SortableDataTable
@@ -263,6 +271,7 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
                   emptyStateMessage={t('NO_SERVICE_REQUESTS')}
                   renderCell={renderCell}
                   className={styles.serviceRequestTableBody}
+                  data-testid="sortable-data-table"
                 />
               </AccordionItem>
             );

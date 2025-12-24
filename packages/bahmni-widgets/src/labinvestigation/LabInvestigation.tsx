@@ -1,17 +1,110 @@
 import { Accordion, AccordionItem, SkeletonText } from '@bahmni/design-system';
 import {
   groupLabTestsByDate,
+  shouldEnableEncounterFilter,
   useTranslation,
   LabTestsByDate,
+  FormattedLabTest,
+  getOrderTypes,
+  getFormattedError,
+  getPatientLabInvestigations,
+  ORDER_TYPE_QUERY_KEY,
 } from '@bahmni/services';
-import React, { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import React, { useMemo, useEffect } from 'react';
+import { usePatientUUID } from '../hooks/usePatientUUID';
+import { useNotification } from '../notification';
+import { WidgetProps } from '../registry/model';
 import LabInvestigationItem from './LabInvestigationItem';
 import styles from './styles/LabInvestigation.module.scss';
-import useLabInvestigations from './useLabInvestigations';
 
-const LabInvestigation: React.FC = () => {
+const LabInvestigation: React.FC<WidgetProps> = ({
+  config,
+  encounterUuids,
+  episodeOfCareUuids,
+}) => {
   const { t } = useTranslation();
-  const { labTests, isLoading, hasError } = useLabInvestigations();
+  const patientUUID = usePatientUUID();
+  const { addNotification } = useNotification();
+  const categoryName = config?.orderType as string;
+  const numberOfVisits = config?.numberOfVisits as number;
+
+  const emptyEncounterFilter = shouldEnableEncounterFilter(
+    episodeOfCareUuids,
+    encounterUuids,
+  );
+
+  const {
+    data: orderTypesData,
+    isLoading: isLoadingOrderTypes,
+    isError: isOrderTypesError,
+    error: orderTypesError,
+  } = useQuery({
+    queryKey: ORDER_TYPE_QUERY_KEY,
+    queryFn: getOrderTypes,
+  });
+
+  const categoryUuid = useMemo(() => {
+    if (!orderTypesData || !categoryName) return '';
+    const orderType = orderTypesData.results.find(
+      (ot) => ot.display.toLowerCase() === categoryName.toLowerCase(),
+    );
+    return orderType?.uuid ?? '';
+  }, [orderTypesData, categoryName]);
+
+  const {
+    data: labTestsData,
+    isLoading: isLoadingLabInvestigations,
+    isError: isLabInvestigationsError,
+    error: labInvestigationsError,
+  } = useQuery<FormattedLabTest[]>({
+    queryKey: [
+      'labInvestigations',
+      categoryUuid,
+      patientUUID,
+      encounterUuids,
+      numberOfVisits,
+    ],
+    enabled: !!patientUUID && !!categoryUuid && !emptyEncounterFilter,
+    queryFn: () =>
+      getPatientLabInvestigations(
+        patientUUID!,
+        categoryUuid,
+        t,
+        encounterUuids,
+        numberOfVisits,
+      ),
+  });
+
+  useEffect(() => {
+    if (isOrderTypesError) {
+      const { message } = getFormattedError(orderTypesError);
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message,
+        type: 'error',
+      });
+    }
+    if (isLabInvestigationsError) {
+      const { message } = getFormattedError(labInvestigationsError);
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message,
+        type: 'error',
+      });
+    }
+  }, [
+    isOrderTypesError,
+    orderTypesError,
+    isLabInvestigationsError,
+    labInvestigationsError,
+    addNotification,
+    t,
+  ]);
+
+  const labTests: FormattedLabTest[] = labTestsData ?? [];
+  const isLoading = isLoadingOrderTypes || isLoadingLabInvestigations;
+  const hasError = isOrderTypesError || isLabInvestigationsError;
 
   // Group the lab tests by date
   const labTestsByDate = useMemo<LabTestsByDate[]>(() => {
@@ -35,7 +128,7 @@ const LabInvestigation: React.FC = () => {
     );
   }
 
-  if (!isLoading && labTests.length === 0) {
+  if (!isLoading && (labTests.length === 0 || emptyEncounterFilter)) {
     return (
       <div className={styles.labInvestigationTableBodyError}>
         {t('LAB_TEST_UNAVAILABLE')}

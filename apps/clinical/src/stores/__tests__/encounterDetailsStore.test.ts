@@ -96,7 +96,7 @@ describe('encounterDetailsStore', () => {
       expect(result.current.isEncounterDetailsFormReady).toBe(false);
       expect(result.current.activeVisit).toBeNull();
       expect(result.current.activeVisitError).toBeNull();
-      expect(result.current.hasError).toBe(false);
+      expect(result.current.isError).toBe(false);
       expect(result.current.practitioner).toBeNull();
       expect(result.current.user).toBeNull();
     });
@@ -107,10 +107,10 @@ describe('encounterDetailsStore', () => {
       const { result } = renderHook(() => useEncounterDetailsStore());
 
       act(() => {
-        result.current.setHasError(true);
+        result.current.setIsError(true);
       });
 
-      expect(result.current.hasError).toBe(true);
+      expect(result.current.isError).toBe(true);
     });
 
     it('should set hasError to false', () => {
@@ -118,40 +118,40 @@ describe('encounterDetailsStore', () => {
 
       // First set to true
       act(() => {
-        result.current.setHasError(true);
+        result.current.setIsError(true);
       });
-      expect(result.current.hasError).toBe(true);
+      expect(result.current.isError).toBe(true);
 
       // Then set to false
       act(() => {
-        result.current.setHasError(false);
+        result.current.setIsError(false);
       });
-      expect(result.current.hasError).toBe(false);
+      expect(result.current.isError).toBe(false);
     });
 
     it('should include hasError in getState', () => {
       const { result } = renderHook(() => useEncounterDetailsStore());
 
       act(() => {
-        result.current.setHasError(true);
+        result.current.setIsError(true);
       });
 
       const state = result.current.getState();
-      expect(state.hasError).toBe(true);
+      expect(state.isError).toBe(true);
     });
 
     it('should reset hasError to false on reset', () => {
       const { result } = renderHook(() => useEncounterDetailsStore());
 
       act(() => {
-        result.current.setHasError(true);
+        result.current.setIsError(true);
       });
-      expect(result.current.hasError).toBe(true);
+      expect(result.current.isError).toBe(true);
 
       act(() => {
         result.current.reset();
       });
-      expect(result.current.hasError).toBe(false);
+      expect(result.current.isError).toBe(false);
     });
   });
 
@@ -484,7 +484,7 @@ describe('encounterDetailsStore', () => {
         result.current.setEncounterDetailsFormReady(true);
         result.current.setActiveVisit(mockActiveVisit);
         result.current.setActiveVisitError(mockError);
-        result.current.setHasError(true);
+        result.current.setIsError(true);
       });
 
       // Verify values were set
@@ -495,7 +495,7 @@ describe('encounterDetailsStore', () => {
       expect(result.current.isEncounterDetailsFormReady).toBe(true);
       expect(result.current.activeVisit).not.toBeNull();
       expect(result.current.activeVisitError).not.toBeNull();
-      expect(result.current.hasError).toBe(true);
+      expect(result.current.isError).toBe(true);
 
       // Reset
       act(() => {
@@ -511,7 +511,7 @@ describe('encounterDetailsStore', () => {
       expect(result.current.isEncounterDetailsFormReady).toBe(false);
       expect(result.current.activeVisit).toBeNull();
       expect(result.current.activeVisitError).toBeNull();
-      expect(result.current.hasError).toBe(false);
+      expect(result.current.isError).toBe(false);
     });
   });
 

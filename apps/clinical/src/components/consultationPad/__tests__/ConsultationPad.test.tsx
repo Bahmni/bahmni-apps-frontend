@@ -331,7 +331,7 @@ const createMockEncounterDetailsStore = () => ({
   practitioner: { uuid: 'practitioner-123' },
   user: { uuid: 'user-123' },
   patientUUID: 'patient-123',
-  hasError: false,
+  isError: false,
   reset: jest.fn(),
 });
 
@@ -550,12 +550,12 @@ describe('ConsultationPad', () => {
       );
     });
 
-    it('should render error state when hasError is true', () => {
-      mockEncounterDetailsStore.hasError = true;
+    it('should render error state when isError is true', () => {
+      mockEncounterDetailsStore.isError = true;
 
       renderWithProvider();
 
-      expect(screen.getByTestId('action-area-title')).toHaveTextContent('');
+      expect(screen.getByTestId('action-area-title')).toBeEmptyDOMElement();
       expect(screen.getByText('Something went wrong')).toBeInTheDocument();
       expect(
         screen.getByText(
@@ -724,7 +724,7 @@ describe('ConsultationPad', () => {
     });
 
     it('should match snapshot for error state', () => {
-      mockEncounterDetailsStore.hasError = true;
+      mockEncounterDetailsStore.isError = true;
       const { container } = renderWithProvider();
       expect(container).toMatchSnapshot();
     });

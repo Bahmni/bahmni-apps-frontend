@@ -6,10 +6,9 @@ import {
   getLabTests,
   formatLabTests,
   groupLabTestsByDate,
-  getPatientLabTestsByDate,
-  getPatientLabTestsBundle,
   mapLabTestPriority,
   determineTestType,
+  filterLabTestEntries,
 } from '../labInvestigationService';
 import { LabTestPriority, FormattedLabTest } from '../models';
 
@@ -38,7 +37,6 @@ describe('labInvestigationService', () => {
   });
 
   const patientUUID = '58493859-63f7-48b6-bd0b-698d5a119a21';
-
   const createMockServiceRequest = (
     overrides: Partial<ServiceRequest> = {},
   ): ServiceRequest => ({
@@ -148,8 +146,27 @@ describe('labInvestigationService', () => {
     });
   });
 
-  describe('getPatientLabTestsBundle', () => {
-    it('should fetch and filter lab test bundle', async () => {
+  describe('filterLabTestEntries', () => {
+    it('should return empty array when bundle has no entries', () => {
+      const emptyBundle = createMockBundle([]);
+      const result = filterLabTestEntries(emptyBundle);
+      expect(result).toEqual([]);
+    });
+
+    it('should return all entries when none have replaces field', () => {
+      const mockBundle = createMockBundle([
+        createMockServiceRequest({ id: 'test-1' }),
+        createMockServiceRequest({ id: 'test-2' }),
+        createMockServiceRequest({ id: 'test-3' }),
+      ]);
+
+      const result = filterLabTestEntries(mockBundle);
+
+      expect(result).toHaveLength(3);
+      expect(result.map((r) => r.id)).toEqual(['test-1', 'test-2', 'test-3']);
+    });
+
+    it('should filter out entries that have replaces field', () => {
       const mockBundle = createMockBundle([
         createMockServiceRequest({ id: 'test-1' }),
         createMockServiceRequest({
@@ -159,39 +176,96 @@ describe('labInvestigationService', () => {
         createMockServiceRequest({ id: 'test-3' }),
       ]);
 
-      (get as jest.Mock).mockResolvedValue(mockBundle);
+      const result = filterLabTestEntries(mockBundle);
 
-      const result = await getPatientLabTestsBundle(patientUUID);
-
-      expect(get).toHaveBeenCalledWith(expect.stringContaining(patientUUID));
-      expect(result.entry).toHaveLength(1);
-      expect(result.entry?.[0].resource?.id).toBe('test-3');
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('test-3');
     });
 
-    it('should handle empty bundle', async () => {
-      const emptyBundle = createMockBundle([]);
-      (get as jest.Mock).mockResolvedValue(emptyBundle);
+    it('should filter out entries that are being replaced', () => {
+      const mockBundle = createMockBundle([
+        createMockServiceRequest({ id: 'test-1' }),
+        createMockServiceRequest({ id: 'test-2' }),
+        createMockServiceRequest({
+          id: 'test-3',
+          replaces: [{ reference: 'ServiceRequest/test-1' }],
+        }),
+      ]);
 
-      const result = await getPatientLabTestsBundle(patientUUID);
+      const result = filterLabTestEntries(mockBundle);
 
-      expect(result.entry).toEqual([]);
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('test-2');
     });
 
-    it('should handle bundle without entry field', async () => {
-      const bundleNoEntry = { ...createMockBundle([]), entry: undefined };
-      (get as jest.Mock).mockResolvedValue(bundleNoEntry);
+    it('should handle multiple replaces references', () => {
+      const mockBundle = createMockBundle([
+        createMockServiceRequest({ id: 'test-1' }),
+        createMockServiceRequest({ id: 'test-2' }),
+        createMockServiceRequest({ id: 'test-3' }),
+        createMockServiceRequest({
+          id: 'test-4',
+          replaces: [
+            { reference: 'ServiceRequest/test-1' },
+            { reference: 'ServiceRequest/test-2' },
+          ],
+        }),
+      ]);
 
-      const result = await getPatientLabTestsBundle(patientUUID);
+      const result = filterLabTestEntries(mockBundle);
 
-      expect(result.entry).toEqual([]);
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('test-3');
     });
 
-    it('should throw error when API call fails', async () => {
-      (get as jest.Mock).mockRejectedValue(new Error('API Error'));
+    it('should handle chain of replacements', () => {
+      const mockBundle = createMockBundle([
+        createMockServiceRequest({ id: 'test-1' }),
+        createMockServiceRequest({
+          id: 'test-2',
+          replaces: [{ reference: 'ServiceRequest/test-1' }],
+        }),
+        createMockServiceRequest({
+          id: 'test-3',
+          replaces: [{ reference: 'ServiceRequest/test-2' }],
+        }),
+        createMockServiceRequest({ id: 'test-4' }),
+      ]);
 
-      await expect(getPatientLabTestsBundle(patientUUID)).rejects.toThrow(
-        'API Error',
-      );
+      const result = filterLabTestEntries(mockBundle);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('test-4');
+    });
+
+    it('should handle replaces with invalid reference format', () => {
+      const mockBundle = createMockBundle([
+        createMockServiceRequest({ id: 'test-1' }),
+        createMockServiceRequest({
+          id: 'test-2',
+          replaces: [{ reference: 'invalid-reference' }],
+        }),
+      ]);
+
+      const result = filterLabTestEntries(mockBundle);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('test-1');
+    });
+
+    it('should handle replaces with empty reference', () => {
+      const mockBundle = createMockBundle([
+        createMockServiceRequest({ id: 'test-1' }),
+        createMockServiceRequest({
+          id: 'test-2',
+          replaces: [{ reference: '' }],
+        }),
+      ]);
+
+      const result = filterLabTestEntries(mockBundle);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('test-1');
     });
   });
 
@@ -402,43 +476,6 @@ describe('labInvestigationService', () => {
 
     it('should handle empty array', () => {
       const result = groupLabTestsByDate([]);
-      expect(result).toEqual([]);
-    });
-  });
-
-  describe('getPatientLabTestsByDate', () => {
-    it('should fetch, format, and group lab tests', async () => {
-      const mockBundle = createMockBundle([
-        createMockServiceRequest({
-          id: 'test-1',
-          code: { text: 'Blood Test' },
-          occurrencePeriod: { start: '2025-05-08T12:44:24+00:00' },
-          requester: { display: 'Dr. Smith' },
-        }),
-      ]);
-
-      (get as jest.Mock).mockResolvedValue(mockBundle);
-
-      const result = await getPatientLabTestsByDate(
-        patientUUID,
-        mockUseTranslation().t,
-      );
-
-      expect(result).toHaveLength(1);
-      expect(result[0].date).toBe('May 8, 2025');
-      expect(result[0].tests).toHaveLength(1);
-      expect(result[0].tests[0].testName).toBe('Blood Test');
-    });
-
-    it('should handle empty results', async () => {
-      const emptyBundle = createMockBundle([]);
-      (get as jest.Mock).mockResolvedValue(emptyBundle);
-
-      const result = await getPatientLabTestsByDate(
-        patientUUID,
-        mockUseTranslation().t,
-      );
-
       expect(result).toEqual([]);
     });
   });

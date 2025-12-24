@@ -143,9 +143,9 @@ export {
   type RadiologyInvestigation,
 } from './radiologyInvestigationService';
 export {
-  getPatientLabTestsBundle,
   getPatientLabInvestigations,
   groupLabTestsByDate,
+  formatLabTests,
   type FormattedLabTest,
   LabTestPriority,
   type LabTestsByDate,
@@ -156,6 +156,7 @@ export {
   type FlattenedInvestigations,
   type OrderType,
   type OrderTypeResponse,
+  ORDER_TYPE_QUERY_KEY,
 } from './investigationService';
 
 export {
@@ -188,7 +189,10 @@ export {
 } from './providerService';
 export { findActiveEncounterInSession } from './encounterSessionService';
 
-export { getActiveVisit } from './encounterService';
+export {
+  getActiveVisit,
+  shouldEnableEncounterFilter,
+} from './encounterService';
 
 export {
   getEncountersAndVisitsForEOC,

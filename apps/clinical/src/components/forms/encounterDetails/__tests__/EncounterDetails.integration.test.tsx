@@ -306,7 +306,7 @@ describe('BasicForm Integration Tests', () => {
     });
     await waitFor(() => {
       const store = useEncounterDetailsStore.getState();
-      expect(store.hasError).toBe(true);
+      expect(store.isError).toBe(true);
     });
   });
 
@@ -330,7 +330,7 @@ describe('BasicForm Integration Tests', () => {
     });
     await waitFor(() => {
       const store = useEncounterDetailsStore.getState();
-      expect(store.hasError).toBe(true);
+      expect(store.isError).toBe(true);
     });
   });
 
@@ -353,7 +353,7 @@ describe('BasicForm Integration Tests', () => {
     });
     await waitFor(() => {
       const store = useEncounterDetailsStore.getState();
-      expect(store.hasError).toBe(true);
+      expect(store.isError).toBe(true);
     });
   });
 
@@ -460,7 +460,7 @@ describe('BasicForm Integration Tests', () => {
     });
     await waitFor(() => {
       const store = useEncounterDetailsStore.getState();
-      expect(store.hasError).toBe(true);
+      expect(store.isError).toBe(true);
     });
   });
 });
