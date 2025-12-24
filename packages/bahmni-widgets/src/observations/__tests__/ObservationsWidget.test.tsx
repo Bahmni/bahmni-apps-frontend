@@ -180,9 +180,7 @@ describe('ObservationsWidget', () => {
 
     render(<ObservationsWidget config={mockConfig} />);
 
-    expect(
-      screen.getByText(/ALLERGY_LIST_RECORDED_BY Dr. Smith/),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
   });
 
   it('should render image thumbnail for image values', () => {

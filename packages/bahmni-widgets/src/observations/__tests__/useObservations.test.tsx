@@ -1,7 +1,7 @@
 import {
   formatObservations,
-  getConceptUuidsByNames,
   getPatientObservations,
+  useConcept,
 } from '@bahmni/services';
 import { renderHook, waitFor } from '@testing-library/react';
 
@@ -23,8 +23,7 @@ const mockGetPatientObservations =
 const mockFormatObservations = formatObservations as jest.MockedFunction<
   typeof formatObservations
 >;
-const mockGetConceptUuidsByNames =
-  getConceptUuidsByNames as jest.MockedFunction<typeof getConceptUuidsByNames>;
+const mockUseConcept = useConcept as jest.MockedFunction<typeof useConcept>;
 const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
 >;
@@ -35,6 +34,7 @@ const mockUseNotification = useNotification as jest.MockedFunction<
 describe('useObservations', () => {
   const mockAddNotification = jest.fn();
   const mockPatientUUID = 'patient-123';
+  const mockGetConceptUuids = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -45,6 +45,9 @@ describe('useObservations', () => {
       notifications: [],
     });
     mockUsePatientUUID.mockReturnValue(mockPatientUUID);
+    mockUseConcept.mockReturnValue({
+      getConceptUuids: mockGetConceptUuids,
+    });
   });
 
   it('should fetch observations with concept codes successfully', async () => {
@@ -104,7 +107,7 @@ describe('useObservations', () => {
     ];
     const mockUuids = ['uuid-1'];
 
-    mockGetConceptUuidsByNames.mockResolvedValue(mockUuids);
+    mockGetConceptUuids.mockResolvedValue(mockUuids);
     mockGetPatientObservations.mockResolvedValue(mockBundle as any);
     mockFormatObservations.mockReturnValue(mockFormattedObs);
 
@@ -118,7 +121,7 @@ describe('useObservations', () => {
       expect(result.current.loading).toBe(false);
     });
 
-    expect(mockGetConceptUuidsByNames).toHaveBeenCalledWith(['Temperature']);
+    expect(mockGetConceptUuids).toHaveBeenCalledWith(['Temperature']);
     expect(mockGetPatientObservations).toHaveBeenCalledWith(
       mockPatientUUID,
       mockUuids,
@@ -149,9 +152,9 @@ describe('useObservations', () => {
     });
   });
 
-  it('should handle error when getConceptUuidsByNames fails', async () => {
+  it('should handle error when getConceptUuids fails', async () => {
     const error = new Error('Failed to fetch concept UUIDs');
-    mockGetConceptUuidsByNames.mockRejectedValue(error);
+    mockGetConceptUuids.mockRejectedValue(error);
 
     const { result } = renderHook(() =>
       useObservations({
