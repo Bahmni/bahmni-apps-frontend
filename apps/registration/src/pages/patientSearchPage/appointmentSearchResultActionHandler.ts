@@ -17,11 +17,17 @@ export const getAppointmentStatusClassName = (status: string): string => {
       return 'scheduledStatus';
     case 'arrived':
       return 'arrivedStatus';
+    case 'completed':
+      return 'completedStatus';
     case 'checkedin':
     case 'checked in':
       return 'checkedInStatus';
+    case 'missed':
+      return 'missedStatus';
+    case 'cancelled':
+      return 'cancelledStatus';
     default:
-      return 'scheduledStatus';
+      return 'defaultStatus';
   }
 };
 
