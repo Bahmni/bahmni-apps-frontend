@@ -2,17 +2,31 @@ import { formatDateAndTime } from '../date/date';
 import { FHIRObservationBundle, FormattedObservation } from './models';
 
 /**
- * Extract value from FHIR observation
+ * Extract value and unit from FHIR observation
  */
 export const extractObservationValue = (
   observation: FHIRObservationBundle['entry'][0]['resource'],
-): string => {
-  if (observation.valueString) return observation.valueString;
-  if (observation.valueQuantity)
-    return observation.valueQuantity.value.toString();
-  if (observation.valueCodeableConcept)
-    return observation.valueCodeableConcept.text;
-  return '';
+): { value: string; unit?: string } => {
+  if (observation.resourceType === 'Encounter') {
+    return { value: '' };
+  }
+
+  if (observation.valueString) {
+    return { value: observation.valueString };
+  }
+
+  if (observation.valueQuantity) {
+    return {
+      value: observation.valueQuantity.value.toString(),
+      unit: observation.valueQuantity.unit,
+    };
+  }
+
+  if (observation.valueCodeableConcept) {
+    return { value: observation.valueCodeableConcept.text };
+  }
+
+  return { value: '' };
 };
 
 /**
@@ -52,12 +66,15 @@ export function formatObservations(
     const encounterId = obs.encounter?.reference.split('/')[1];
     const recordedBy = encounterId ? encounterMap.get(encounterId) : undefined;
 
-    const value = obs.hasMember ? '' : extractObservationValue(obs);
+    const extracted = obs.hasMember
+      ? { value: '', unit: undefined }
+      : extractObservationValue(obs);
 
     observationMap.set(obs.id, {
       id: obs.id,
       conceptName: obs.code.text,
-      value,
+      value: extracted.value,
+      unit: extracted.unit,
       date: formattedDate,
       isParent: !!obs.hasMember,
       recordedBy,

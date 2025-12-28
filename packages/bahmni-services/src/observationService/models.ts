@@ -14,7 +14,7 @@ export interface FHIRObservationBundle {
           };
           effectiveDateTime: string;
           valueString?: string;
-          valueQuantity?: { value: number };
+          valueQuantity?: { value: number; unit?: string };
           valueCodeableConcept?: { text: string };
           hasMember?: Array<{ reference: string }>;
           encounter?: { reference: string };
@@ -38,6 +38,7 @@ export interface FormattedObservation {
   id: string;
   conceptName: string;
   value: string;
+  unit?: string;
   date: string;
   isParent: boolean;
   recordedBy?: string;

@@ -14,10 +14,10 @@ describe('observationService utils', () => {
 
       const result = extractObservationValue(observation);
 
-      expect(result).toBe('Normal');
+      expect(result).toEqual({ value: 'Normal' });
     });
 
-    it('should extract valueQuantity when present', () => {
+    it('should extract valueQuantity with unit when present', () => {
       const observation = {
         resourceType: 'Observation' as const,
         id: 'obs-2',
@@ -28,7 +28,21 @@ describe('observationService utils', () => {
 
       const result = extractObservationValue(observation);
 
-      expect(result).toBe('98.6');
+      expect(result).toEqual({ value: '98.6', unit: 'F' });
+    });
+
+    it('should extract valueQuantity without unit when unit is not present', () => {
+      const observation = {
+        resourceType: 'Observation' as const,
+        id: 'obs-2b',
+        code: { text: 'Count' },
+        valueQuantity: { value: 5 },
+        effectiveDateTime: '2024-01-01T10:00:00Z',
+      };
+
+      const result = extractObservationValue(observation);
+
+      expect(result).toEqual({ value: '5', unit: undefined });
     });
 
     it('should extract valueCodeableConcept text when present', () => {
@@ -42,10 +56,10 @@ describe('observationService utils', () => {
 
       const result = extractObservationValue(observation);
 
-      expect(result).toBe('A+');
+      expect(result).toEqual({ value: 'A+' });
     });
 
-    it('should return empty string when no value is present', () => {
+    it('should return empty value when no value is present', () => {
       const observation = {
         resourceType: 'Observation' as const,
         id: 'obs-4',
@@ -55,7 +69,7 @@ describe('observationService utils', () => {
 
       const result = extractObservationValue(observation);
 
-      expect(result).toBe('');
+      expect(result).toEqual({ value: '' });
     });
 
     it('should prioritize valueString over other value types', () => {
@@ -71,7 +85,18 @@ describe('observationService utils', () => {
 
       const result = extractObservationValue(observation);
 
-      expect(result).toBe('String value');
+      expect(result).toEqual({ value: 'String value' });
+    });
+
+    it('should return empty value for Encounter resources', () => {
+      const observation = {
+        resourceType: 'Encounter' as const,
+        id: 'enc-1',
+      };
+
+      const result = extractObservationValue(observation);
+
+      expect(result).toEqual({ value: '' });
     });
   });
 

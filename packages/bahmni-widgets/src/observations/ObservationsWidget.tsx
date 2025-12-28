@@ -81,27 +81,37 @@ const ObservationsWidget: React.FC<WidgetProps> = ({ config }) => {
     }> = [];
 
     obs.forEach((observation) => {
+      const observationValue = renderObservationValue(
+        observation.value,
+        observation.conceptName,
+      );
+      const valueWithUnit = observation.unit
+        ? `${observationValue} ${observation.unit}`
+        : observationValue;
+
       rows.push({
         id: observation.id,
         conceptName: observation.conceptName,
-        value:
-          observation.children.length > 0
-            ? ''
-            : renderObservationValue(
-                observation.value,
-                observation.conceptName,
-              ),
+        value: observation.children.length > 0 ? '' : valueWithUnit,
         recordedBy: observation.recordedBy ?? '',
       });
 
       if (observation.children.length > 0) {
         observation.children.forEach((child) => {
+          const childValue = renderObservationValue(
+            child.value,
+            child.conceptName,
+          );
+          const childValueWithUnit = child.unit
+            ? `${childValue} ${child.unit}`
+            : childValue;
+
           rows.push({
             id: child.id,
             conceptName: (
               <div className={styles.childRow}>{child.conceptName}</div>
             ),
-            value: renderObservationValue(child.value, child.conceptName),
+            value: childValueWithUnit,
             recordedBy: '',
           });
         });
