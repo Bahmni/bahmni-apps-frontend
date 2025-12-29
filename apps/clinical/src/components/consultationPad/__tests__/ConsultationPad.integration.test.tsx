@@ -38,6 +38,17 @@ jest.mock('../../../services/consultationBundleService');
 jest.mock('../../../services/locationService');
 jest.mock('../../../services/encounterConceptsService');
 
+jest.mock('@bahmni/form2-controls', () => ({
+  Container: jest.fn(({ metadata }) => (
+    <div data-testid="form2-container">
+      Form Container with metadata: {JSON.stringify(metadata)}
+    </div>
+  )),
+}));
+
+// Mock the form2-controls CSS
+jest.mock('@bahmni/form2-controls/dist/bundle.css', () => ({}));
+
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getFormattedError: jest.fn(),

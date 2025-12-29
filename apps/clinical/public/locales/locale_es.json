@@ -222,6 +222,8 @@
   "OBSERVATION_FORM_LOADING_METADATA": "Cargando los metadatos del formulario...",
   "OBSERVATION_FORM_LOADING_METADATA_ERROR": "Error al cargar los metadatos del formulario",
   "OBSERVATION_FORM_SAVE_BUTTON": "Guardar Formulario",
+  "OBSERVATION_FORM_VALIDATION_ERROR_TITLE": "Los campos obligatorios son requeridos",
+  "OBSERVATION_FORM_VALIDATION_ERROR_SUBTITLE": "Por favor complete todos los campos obligatorios antes de guardar el formulario",
   "PARTICIPANT": "Partícipe(es)",
   "PATIENT_HEADER_LABEL": "Cabecera del Paciente",
   "PINNED_FORMS_INVALID_DATA": "Datos de formularios anclados no válidos",

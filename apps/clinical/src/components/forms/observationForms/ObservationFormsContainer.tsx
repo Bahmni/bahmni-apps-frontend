@@ -2,6 +2,7 @@ import {
   ActionArea,
   Icon,
   ICON_SIZE,
+  InlineNotification,
   SkeletonText,
 } from '@bahmni/design-system';
 import {
@@ -9,6 +10,7 @@ import {
   FormMetadata as Form2FormMetadata,
 } from '@bahmni/form2-controls';
 import '@bahmni/form2-controls/dist/bundle.css';
+import './styles/form2-controls-fixes.scss';
 import {
   fetchFormMetadata,
   FormMetadata,
@@ -18,7 +20,7 @@ import {
 } from '@bahmni/services';
 import { usePatientUUID } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_FORM_API_NAMES } from '../../../constants/forms';
 import styles from './styles/ObservationFormsContainer.module.scss';
@@ -54,6 +56,10 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
 }) => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
+
+  const formContainerRef = useRef<Container>(null);
+  const [showValidationError, setShowValidationError] = useState(false);
+  const [showFieldErrors, setShowFieldErrors] = useState(false);
 
   // Fetch form metadata using TanStack Query
   const {
@@ -95,6 +101,8 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   };
 
   const handleDiscardForm = () => {
+    setShowValidationError(false);
+    setShowFieldErrors(false);
     // Remove the form from selected forms list if callback is provided
     if (viewingForm && onRemoveForm) {
       onRemoveForm(viewingForm.uuid);
@@ -104,13 +112,37 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   };
 
   const handleSaveForm = () => {
-    // TODO: Implement form saving logic
-    onViewingFormChange(null);
+    if (formContainerRef.current) {
+      setShowFieldErrors(true);
+      const { errors } = formContainerRef.current.getValue();
+      if (errors && errors.length > 0) {
+        setShowValidationError(true);
+        return;
+      }
+
+      setShowValidationError(false);
+
+      // TODO: Implement actual save logic with observations
+      onViewingFormChange(null);
+    }
   };
 
   // Form view content when a form is selected
   const formViewContent = (
     <div className={styles.formView}>
+      {showValidationError && (
+        <div className={styles.errorNotificationWrapper}>
+          <InlineNotification
+            kind="error"
+            title={t('OBSERVATION_FORM_VALIDATION_ERROR_TITLE')}
+            subtitle={t('OBSERVATION_FORM_VALIDATION_ERROR_SUBTITLE')}
+            lowContrast
+            hideCloseButton={false}
+            onClose={() => setShowValidationError(false)}
+          />
+        </div>
+      )}
+
       <div className={styles.formContent}>
         {isLoadingMetadata ? (
           <SkeletonText width="100%" lineCount={3} />
@@ -118,12 +150,13 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
           <div>{error.message}</div>
         ) : formMetadata && patientUUID ? (
           <Container
+            ref={formContainerRef}
             metadata={formMetadata.schema as Form2FormMetadata}
             observations={[]}
             patient={{ uuid: patientUUID }}
             translations={{}}
-            validate={false}
-            validateForm={false}
+            validate={showFieldErrors}
+            validateForm
             collapse={false}
             locale={getUserPreferredLocale()}
             onValueUpdated={() => {}}
@@ -164,6 +197,8 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         onSecondaryButtonClick={handleDiscardForm}
         tertiaryButtonText={t('OBSERVATION_FORM_BACK_BUTTON')}
         onTertiaryButtonClick={() => {
+          setShowValidationError(false);
+          setShowFieldErrors(false);
           onViewingFormChange(null);
         }}
         content={formViewContent}

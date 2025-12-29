@@ -93,6 +93,15 @@ describe('useObservationFormsSearch', () => {
       message: 'Something went wrong',
     });
 
+    // Reset useUserPrivilege mock to default state
+    const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
+    (useUserPrivilege as jest.Mock).mockReturnValue({
+      userPrivileges: [
+        { name: 'app:clinical:observationForms' },
+        { name: 'app:clinical:locationpicker' },
+      ],
+    });
+
     // Mock privilege service
     (getCurrentUserPrivileges as jest.Mock).mockResolvedValue([
       { name: 'app:clinical:observationForms' },
@@ -132,10 +141,10 @@ describe('useObservationFormsSearch', () => {
       const serviceError = new Error('Service error');
       (fetchObservationForms as jest.Mock).mockRejectedValue(serviceError);
 
-      // Mock getFormattedError to return null message to test fallback
+      // Mock getFormattedError to return an object with null/undefined message to test fallback
       (getFormattedError as jest.Mock).mockReturnValue({
         title: 'Error',
-        message: null,
+        message: undefined,
       });
 
       const { result } = renderHook(() => useObservationFormsSearch(), {
@@ -146,10 +155,12 @@ describe('useObservationFormsSearch', () => {
         expect(result.current.isLoading).toBe(false);
       });
 
+      // The fallback should use the translation for ERROR_FETCHING_CONCEPTS
       expect(result.current.error?.message).toBe(
         'An unexpected error occurred. Please try again later.',
       );
       expect(result.current.forms).toEqual([]);
+      expect(getFormattedError).toHaveBeenCalledWith(serviceError);
     });
   });
 
