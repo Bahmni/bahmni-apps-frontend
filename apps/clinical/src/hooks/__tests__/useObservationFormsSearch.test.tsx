@@ -148,9 +148,13 @@ describe('useObservationFormsSearch', () => {
         wrapper,
       });
 
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
+      await waitFor(
+        () => {
+          expect(result.current.isLoading).toBe(false);
+          expect(result.current.error).not.toBeNull();
+        },
+        { timeout: 5000 },
+      );
 
       // The fallback should use the translation for ERROR_FETCHING_CONCEPTS
       expect(result.current.error?.message).toBe(
