@@ -10,7 +10,12 @@ import { type WidgetProps } from '../registry/model';
 import { type ObservationConfig } from './models';
 import styles from './styles/ObservationsWidget.module.scss';
 import { useObservations } from './useObservations';
-import { isImageValue, isVideoValue, getMediaUrl } from './utils';
+import {
+  isImageValue,
+  isVideoValue,
+  getMediaUrl,
+  formatObservationsForDisplay,
+} from './utils';
 
 const ObservationsWidget: React.FC<WidgetProps> = ({ config }) => {
   const { t } = useTranslation();
@@ -59,75 +64,16 @@ const ObservationsWidget: React.FC<WidgetProps> = ({ config }) => {
     return value;
   };
 
-  // Group observations by date
-  const dateGroups = new Map<string, typeof observations>();
-  observations.forEach((obs) => {
-    if (!dateGroups.has(obs.date)) {
-      dateGroups.set(obs.date, []);
-    }
-    dateGroups.get(obs.date)!.push(obs);
-  });
-
-  if (dateGroups.size === 0) {
-    dateGroups.set('', []);
-  }
-
-  const groupedByDate = Array.from(dateGroups.entries()).map(([date, obs]) => {
-    const rows: Array<{
-      id: string;
-      conceptName: React.ReactNode;
-      value: React.ReactNode;
-      recordedBy: React.ReactNode;
-    }> = [];
-
-    obs.forEach((observation) => {
-      const observationValue = renderObservationValue(
-        observation.value,
-        observation.conceptName,
-      );
-      const valueWithUnit = observation.unit
-        ? `${observationValue} ${observation.unit}`
-        : observationValue;
-
-      rows.push({
-        id: observation.id,
-        conceptName: observation.conceptName,
-        value: observation.children.length > 0 ? '' : valueWithUnit,
-        recordedBy: observation.recordedBy ?? '',
-      });
-
-      if (observation.children.length > 0) {
-        observation.children.forEach((child) => {
-          const childValue = renderObservationValue(
-            child.value,
-            child.conceptName,
-          );
-          const childValueWithUnit = child.unit
-            ? `${childValue} ${child.unit}`
-            : childValue;
-
-          rows.push({
-            id: child.id,
-            conceptName: (
-              <div className={styles.childRow}>{child.conceptName}</div>
-            ),
-            value: childValueWithUnit,
-            recordedBy: '',
-          });
-        });
-      }
-    });
-
-    return {
-      date,
-      headers: [
-        { key: 'conceptName', header: t('OBSERVATION_NAME') },
-        { key: 'value', header: t('OBSERVATION_VALUE') },
-        { key: 'recordedBy', header: t('ALLERGY_LIST_RECORDED_BY') },
-      ],
-      rows,
-    };
-  });
+  const groupedByDate = formatObservationsForDisplay(
+    observations,
+    renderObservationValue,
+    (conceptName) => <div className={styles.childRow}>{conceptName}</div>,
+    {
+      conceptName: t('OBSERVATION_NAME'),
+      value: t('OBSERVATION_VALUE'),
+      recordedBy: t('ALLERGY_LIST_RECORDED_BY'),
+    },
+  );
 
   if (error) {
     return (
