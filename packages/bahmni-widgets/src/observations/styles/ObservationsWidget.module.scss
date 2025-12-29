@@ -45,23 +45,50 @@
 }
 
 .mediaPreviewModal {
+  :global(.cds--modal) {
+    position: fixed !important;
+    top: $spacing-10 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: calc(100vh - $spacing-10) !important;
+    z-index: 99999 !important;
+  }
+
   :global(.cds--modal-container) {
-    width: calc($spacing-05 * 25);
+    width: 65vw;
+    max-width: calc($spacing-13 * 12);
+    height: 70vh;
   }
 
   :global(.cds--modal-content) {
-    padding: $spacing-05;
+    padding: $spacing-03;
+    padding-top: $spacing-08;
+    height: 100%;
+  }
+
+  :global(.cds--modal-body) {
+    height: 100%;
+    padding: 0;
+  }
+
+  :global(.cds--modal-close) {
+    position: absolute !important;
+    top: $spacing-03 !important;
+    right: $spacing-03 !important;
   }
 
   .mediaPreviewContainer {
-    aspect-ratio: 3/4;
+    width: 100%;
+    height: 100%;
     background: var(--cds-layer-02);
     display: flex;
+    align-items: center;
+    justify-content: center;
 
     img,
     video {
-      width: 100%;
-      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
       object-fit: contain;
     }
   }
