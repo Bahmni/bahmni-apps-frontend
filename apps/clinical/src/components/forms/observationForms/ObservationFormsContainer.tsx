@@ -59,7 +59,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
 
   const formContainerRef = useRef<Container>(null);
   const [showValidationError, setShowValidationError] = useState(false);
-  const [showFieldErrors, setShowFieldErrors] = useState(false);
 
   // Fetch form metadata using TanStack Query
   const {
@@ -102,7 +101,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
 
   const handleDiscardForm = () => {
     setShowValidationError(false);
-    setShowFieldErrors(false);
     // Remove the form from selected forms list if callback is provided
     if (viewingForm && onRemoveForm) {
       onRemoveForm(viewingForm.uuid);
@@ -113,7 +111,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
 
   const handleSaveForm = () => {
     if (formContainerRef.current) {
-      setShowFieldErrors(true);
       const { errors } = formContainerRef.current.getValue();
       if (errors && errors.length > 0) {
         setShowValidationError(true);
@@ -155,7 +152,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
             observations={[]}
             patient={{ uuid: patientUUID }}
             translations={{}}
-            validate={showFieldErrors}
+            validate={showValidationError}
             validateForm
             collapse={false}
             locale={getUserPreferredLocale()}
@@ -198,7 +195,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         tertiaryButtonText={t('OBSERVATION_FORM_BACK_BUTTON')}
         onTertiaryButtonClick={() => {
           setShowValidationError(false);
-          setShowFieldErrors(false);
           onViewingFormChange(null);
         }}
         content={formViewContent}
