@@ -76,7 +76,7 @@ export const useObservations = (
           patientUUID,
           allConceptCodes,
         );
-        const formattedObs = formatObservations(bundle);
+        const formattedObs = formatObservations(bundle, t);
 
         if (!cancelled) {
           setObservations(formattedObs);

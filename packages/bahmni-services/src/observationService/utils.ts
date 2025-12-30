@@ -1,4 +1,5 @@
-import { formatDateAndTime } from '../date/date';
+import { OBSERVATION_DATE_TIME_FORMAT } from '../date/constants';
+import { formatDate } from '../date/date';
 import { FHIRObservationBundle, FormattedObservation } from './models';
 
 /**
@@ -32,10 +33,12 @@ export const extractObservationValue = (
 /**
  * Format FHIR observation bundle into display format with parent-child relationships
  * @param bundle - FHIR observation bundle
+ * @param t - Translation function for date formatting
  * @returns Array of formatted observations with nested children
  */
 export function formatObservations(
   bundle: FHIRObservationBundle,
+  t: (key: string) => string,
 ): FormattedObservation[] {
   if (!bundle.entry || bundle.entry.length === 0) {
     return [];
@@ -59,8 +62,11 @@ export function formatObservations(
     if (entry.resource.resourceType !== 'Observation') return;
 
     const obs = entry.resource;
-    const date = new Date(obs.effectiveDateTime);
-    const formattedDate = formatDateAndTime(date.getTime(), true);
+    const formattedDate = formatDate(
+      obs.effectiveDateTime,
+      t,
+      OBSERVATION_DATE_TIME_FORMAT,
+    ).formattedResult;
 
     // Extract encounter ID and get practitioner name
     const encounterId = obs.encounter?.reference.split('/')[1];

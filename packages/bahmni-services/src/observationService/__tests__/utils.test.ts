@@ -1,6 +1,8 @@
 import { FHIRObservationBundle } from '../models';
 import { extractObservationValue, formatObservations } from '../utils';
 
+const mockT = (key: string) => key;
+
 describe('observationService utils', () => {
   describe('extractObservationValue', () => {
     it('should extract valueString when present', () => {
@@ -108,7 +110,7 @@ describe('observationService utils', () => {
         entry: [],
       };
 
-      const result = formatObservations(bundle);
+      const result = formatObservations(bundle, mockT);
 
       expect(result).toEqual([]);
     });
@@ -119,7 +121,7 @@ describe('observationService utils', () => {
         total: 0,
       };
 
-      const result = formatObservations(bundle as FHIRObservationBundle);
+      const result = formatObservations(bundle as FHIRObservationBundle, mockT);
 
       expect(result).toEqual([]);
     });
@@ -142,7 +144,7 @@ describe('observationService utils', () => {
         ],
       };
 
-      const result = formatObservations(bundle);
+      const result = formatObservations(bundle, mockT);
 
       expect(result).toHaveLength(1);
       expect(result[0]).toMatchObject({
@@ -196,7 +198,7 @@ describe('observationService utils', () => {
         ],
       };
 
-      const result = formatObservations(bundle);
+      const result = formatObservations(bundle, mockT);
 
       expect(result).toHaveLength(1);
       expect(result[0]).toMatchObject({
@@ -253,7 +255,7 @@ describe('observationService utils', () => {
         ],
       };
 
-      const result = formatObservations(bundle);
+      const result = formatObservations(bundle, mockT);
 
       expect(result).toHaveLength(1);
       expect(result[0]).toMatchObject({
@@ -283,7 +285,7 @@ describe('observationService utils', () => {
         ],
       };
 
-      const result = formatObservations(bundle);
+      const result = formatObservations(bundle, mockT);
 
       expect(result).toHaveLength(1);
       expect(result[0]).toMatchObject({
@@ -324,7 +326,7 @@ describe('observationService utils', () => {
         ],
       };
 
-      const result = formatObservations(bundle);
+      const result = formatObservations(bundle, mockT);
 
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe('obs-parent');
@@ -355,7 +357,7 @@ describe('observationService utils', () => {
         ],
       };
 
-      const result = formatObservations(bundle);
+      const result = formatObservations(bundle, mockT);
 
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe('obs-1');
@@ -380,7 +382,7 @@ describe('observationService utils', () => {
         ],
       };
 
-      const result = formatObservations(bundle);
+      const result = formatObservations(bundle, mockT);
 
       expect(result).toHaveLength(1);
       expect(result[0].value).toBe('');
