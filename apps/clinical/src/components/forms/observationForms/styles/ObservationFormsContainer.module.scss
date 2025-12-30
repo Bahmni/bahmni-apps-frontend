@@ -8,6 +8,15 @@
   background-color: $background;
 }
 
+.errorNotificationWrapper {
+  padding: $spacing-04 $spacing-06 0 $spacing-06;
+
+  :global(.cds--inline-notification) {
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
 .formContent {
   flex: 1;
   overflow: auto;

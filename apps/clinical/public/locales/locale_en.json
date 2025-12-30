@@ -222,6 +222,8 @@
   "OBSERVATION_FORM_LOADING_METADATA": "Loading form's metadata...",
   "OBSERVATION_FORM_LOADING_METADATA_ERROR": "Error loading form metadata",
   "OBSERVATION_FORM_SAVE_BUTTON": "Save Form",
+  "OBSERVATION_FORM_VALIDATION_ERROR_TITLE": "Mandatory fields are required",
+  "OBSERVATION_FORM_VALIDATION_ERROR_SUBTITLE": "Please fill in all required fields before saving the form",
   "PARTICIPANT": "Participant(s)",
   "PATIENT_HEADER_LABEL": "Patient Header",
   "PINNED_FORMS_INVALID_DATA": "Invalid pinned forms data",
