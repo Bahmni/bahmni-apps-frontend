@@ -73,7 +73,6 @@ const renderLabInvestigations = (
     },
   });
 
-  // eslint-disable-next-line react/display-name
   return (
     <QueryClientProvider client={queryClient}>
       <LabInvestigation
