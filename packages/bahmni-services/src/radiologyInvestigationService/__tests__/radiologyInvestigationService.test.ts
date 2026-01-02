@@ -18,6 +18,7 @@ describe('radiologyInvestigationService', () => {
 
   describe('getPatientRadiologyInvestigations', () => {
     const mockPatientUUID = 'test-patient-uuid';
+    const mockCategoryUUID = 'd3561dc0-5e07-11ef-8f7c-0242ac120002';
 
     it('should fetch and format radiology investigations', async () => {
       const mockBundle: Bundle = {
@@ -32,10 +33,15 @@ describe('radiologyInvestigationService', () => {
 
       mockGet.mockResolvedValue(mockBundle);
 
-      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
+      const result = await getPatientRadiologyInvestigations(
+        mockPatientUUID,
+        mockCategoryUUID,
+        undefined,
+        5,
+      );
 
       expect(mockGet).toHaveBeenCalledWith(
-        `/openmrs/ws/fhir2/R4/ServiceRequest?category=d3561dc0-5e07-11ef-8f7c-0242ac120002&patient=${mockPatientUUID}&_count=100&_sort=-_lastUpdated&numberOfVisits=5`,
+        `/openmrs/ws/fhir2/R4/ServiceRequest?_sort=-_lastUpdated&category=${mockCategoryUUID}&patient=${mockPatientUUID}&numberOfVisits=5`,
       );
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({
@@ -56,7 +62,10 @@ describe('radiologyInvestigationService', () => {
 
       mockGet.mockResolvedValue(mockBundle);
 
-      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
+      const result = await getPatientRadiologyInvestigations(
+        mockPatientUUID,
+        mockCategoryUUID,
+      );
 
       expect(result).toEqual([]);
     });
@@ -70,7 +79,10 @@ describe('radiologyInvestigationService', () => {
 
       mockGet.mockResolvedValue(mockBundle);
 
-      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
+      const result = await getPatientRadiologyInvestigations(
+        mockPatientUUID,
+        mockCategoryUUID,
+      );
 
       expect(result).toEqual([]);
     });
@@ -80,7 +92,7 @@ describe('radiologyInvestigationService', () => {
       mockGet.mockRejectedValue(error);
 
       await expect(
-        getPatientRadiologyInvestigations(mockPatientUUID),
+        getPatientRadiologyInvestigations(mockPatientUUID, mockCategoryUUID),
       ).rejects.toThrow('API Error');
     });
 
@@ -113,7 +125,10 @@ describe('radiologyInvestigationService', () => {
 
       mockGet.mockResolvedValue(mockBundle);
 
-      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
+      const result = await getPatientRadiologyInvestigations(
+        mockPatientUUID,
+        mockCategoryUUID,
+      );
 
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({
@@ -192,7 +207,10 @@ describe('radiologyInvestigationService', () => {
 
       mockGet.mockResolvedValue(mockBundle);
 
-      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
+      const result = await getPatientRadiologyInvestigations(
+        mockPatientUUID,
+        mockCategoryUUID,
+      );
 
       expect(result).toHaveLength(3);
       expect(result[0].id).toBe('order-1');
@@ -253,7 +271,10 @@ describe('radiologyInvestigationService', () => {
 
       mockGet.mockResolvedValue(mockBundle);
 
-      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
+      const result = await getPatientRadiologyInvestigations(
+        mockPatientUUID,
+        mockCategoryUUID,
+      );
 
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({
@@ -279,7 +300,10 @@ describe('radiologyInvestigationService', () => {
 
       mockGet.mockResolvedValue(mockBundle);
 
-      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
+      const result = await getPatientRadiologyInvestigations(
+        mockPatientUUID,
+        mockCategoryUUID,
+      );
 
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({
@@ -305,7 +329,10 @@ describe('radiologyInvestigationService', () => {
 
       mockGet.mockResolvedValue(mockBundle);
 
-      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
+      const result = await getPatientRadiologyInvestigations(
+        mockPatientUUID,
+        mockCategoryUUID,
+      );
 
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({
@@ -348,7 +375,10 @@ describe('radiologyInvestigationService', () => {
 
       mockGet.mockResolvedValue(mockBundle);
 
-      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
+      const result = await getPatientRadiologyInvestigations(
+        mockPatientUUID,
+        mockCategoryUUID,
+      );
 
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({
@@ -395,7 +425,10 @@ describe('radiologyInvestigationService', () => {
 
       mockGet.mockResolvedValue(mockBundle);
 
-      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
+      const result = await getPatientRadiologyInvestigations(
+        mockPatientUUID,
+        mockCategoryUUID,
+      );
 
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({
@@ -437,7 +470,10 @@ describe('radiologyInvestigationService', () => {
 
       mockGet.mockResolvedValue(mockBundle);
 
-      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
+      const result = await getPatientRadiologyInvestigations(
+        mockPatientUUID,
+        mockCategoryUUID,
+      );
 
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({
@@ -479,7 +515,10 @@ describe('radiologyInvestigationService', () => {
 
       mockGet.mockResolvedValue(mockBundle);
 
-      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
+      const result = await getPatientRadiologyInvestigations(
+        mockPatientUUID,
+        mockCategoryUUID,
+      );
 
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({

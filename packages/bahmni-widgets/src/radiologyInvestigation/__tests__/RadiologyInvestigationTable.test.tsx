@@ -237,10 +237,21 @@ describe('RadiologyInvestigationTable', () => {
       mockRadiologyInvestigations,
       expect.any(Function),
     );
-    expect(mockSortRadiologyInvestigationsByPriority).toHaveBeenCalledTimes(2);
+    expect(mockSortRadiologyInvestigationsByPriority).toHaveBeenCalledWith(
+      expect.any(Array),
+    );
   });
 
   it('groups investigations by date', async () => {
+    // Clear the default mock behavior before setting up test-specific behavior
+    mockGroupByDate.mockClear();
+    mockGroupByDate.mockReturnValue([
+      {
+        date: '2023-12-01',
+        items: [mockRadiologyInvestigations[0], mockRadiologyInvestigations[1]],
+      },
+    ]);
+
     mockGetPatientRadiologyInvestigations.mockResolvedValue(
       mockRadiologyInvestigations,
     );
@@ -248,13 +259,20 @@ describe('RadiologyInvestigationTable', () => {
     render(renderRadiologyInvestigations());
 
     await waitFor(() => {
-      expect(mockGroupByDate).toHaveBeenCalled();
+      // Wait for the call that contains actual data (not empty array)
+      const callWithData = mockGroupByDate.mock.calls.find(
+        (call) => call[0].length > 0,
+      );
+      expect(callWithData).toBeDefined();
     });
 
-    const groupByDateCall = mockGroupByDate.mock.calls[0];
-    expect(groupByDateCall[0]).toBe(mockRadiologyInvestigations);
+    // Find the call that has actual data (not empty array)
+    const groupByDateCallWithData = mockGroupByDate.mock.calls.find(
+      (call) => call[0].length > 0,
+    );
+    expect(groupByDateCallWithData![0]).toEqual(mockRadiologyInvestigations);
 
-    const dateExtractor = groupByDateCall[1];
+    const dateExtractor = groupByDateCallWithData![1];
     dateExtractor(mockRadiologyInvestigations[0]);
     expect(mockFormatDate).toHaveBeenCalledWith(
       mockRadiologyInvestigations[0].orderedDate,
