@@ -4,13 +4,14 @@
 @use "@carbon/react/scss/theme" as *;
 
 .textAreaWCloseContainer {
-  padding-inline: 0 !important;
+  padding-inline-start: 0 !important;
+  padding-inline-end: 0 !important;
   margin-block-start: $spacing-05;
-  margin-inline-end: 0 !important;
+  margin-inline-start: 0 !important;
+  margin-inline-end: $spacing-05 !important;
   margin-block-end: $spacing-05;
   display: flex !important;
   position: relative;
-
   :global {
     .cds--text-area__label-wrapper {
       justify-content: flex-end;
@@ -21,12 +22,10 @@
 }
 
 .textAreaWCloseContainerWInvalid {
-  padding-inline: 0 !important;
   margin-block-start: $spacing-05;
-  margin-inline-end: 0 !important;
+  margin-inline-end: $spacing-05 !important;
   display: flex !important;
   position: relative;
-
   :global {
     .cds--text-area__label-wrapper {
       justify-content: flex-end;

@@ -5,7 +5,8 @@
   @include type-style("heading-compact-01");
   margin: 0;
   justify-self: start;
-  align-items: start !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 
 .selectedConditionDuration {
