@@ -237,45 +237,39 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
 
   return (
     <div data-testid="radiology-investigations-table">
-      {processedInvestigations.length === 0 ? (
-        <div className={styles.radiologyInvestigationTableBodyError}>
-          {t('NO_RADIOLOGY_INVESTIGATIONS')}
-        </div>
-      ) : (
-        <Accordion align="start">
-          {processedInvestigations.map((investigationsByDate, index) => {
-            const { date, investigations } = investigationsByDate;
-            const formattedDate = formatDate(
-              date,
-              t,
-              FULL_MONTH_DATE_FORMAT,
-            ).formattedResult;
+      <Accordion align="start">
+        {processedInvestigations.map((investigationsByDate, index) => {
+          const { date, investigations } = investigationsByDate;
+          const formattedDate = formatDate(
+            date,
+            t,
+            FULL_MONTH_DATE_FORMAT,
+          ).formattedResult;
 
-            return (
-              <AccordionItem
-                title={formattedDate}
-                key={date}
-                className={styles.customAccordianItem}
-                testId={'accordian-table-title'}
-                open={index === 0}
-              >
-                <SortableDataTable
-                  headers={headers}
-                  ariaLabel={t('RADIOLOGY_INVESTIGATION_HEADING')}
-                  rows={investigations}
-                  loading={false}
-                  errorStateMessage={''}
-                  sortable={sortable}
-                  emptyStateMessage={t('NO_RADIOLOGY_INVESTIGATIONS')}
-                  renderCell={renderCell}
-                  className={styles.radiologyInvestigationTableBody}
-                  data-testid="sortable-data-table"
-                />
-              </AccordionItem>
-            );
-          })}
-        </Accordion>
-      )}
+          return (
+            <AccordionItem
+              title={formattedDate}
+              key={date}
+              className={styles.customAccordianItem}
+              testId={'accordian-table-title'}
+              open={index === 0}
+            >
+              <SortableDataTable
+                headers={headers}
+                ariaLabel={t('RADIOLOGY_INVESTIGATION_HEADING')}
+                rows={investigations}
+                loading={false}
+                errorStateMessage={''}
+                sortable={sortable}
+                emptyStateMessage={t('NO_RADIOLOGY_INVESTIGATIONS')}
+                renderCell={renderCell}
+                className={styles.radiologyInvestigationTableBody}
+                data-testid="sortable-data-table"
+              />
+            </AccordionItem>
+          );
+        })}
+      </Accordion>
     </div>
   );
 };
