@@ -42,4 +42,8 @@ export const builtInWidgets: WidgetConfig[] = [
       () => import('../genericServiceRequest/GenericServiceRequestTable'),
     ),
   },
+  {
+    type: 'forms',
+    component: lazy(() => import('../forms/FormsTable')),
+  },
 ];

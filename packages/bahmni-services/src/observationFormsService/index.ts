@@ -1,6 +1,7 @@
 export {
   fetchObservationForms,
   fetchFormMetadata,
+  getPatientFormData,
 } from './observationFormsService';
 export {
   type ObservationForm,
@@ -11,4 +12,6 @@ export {
   type FormMetadata,
   type FormMetadataApiResponse,
   type FormResource,
+  type FormResponseData,
+  type FormProvider,
 } from './models';

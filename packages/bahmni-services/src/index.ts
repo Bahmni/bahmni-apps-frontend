@@ -229,12 +229,14 @@ export {
 export {
   fetchObservationForms,
   fetchFormMetadata,
+  getPatientFormData,
   type ObservationForm,
   type FormApiResponse,
   type ApiNameTranslation,
   type FormPrivilege,
   type ApiFormPrivilege,
   type FormMetadata,
+  type FormResponseData,
 } from './observationFormsService';
 
 export {
