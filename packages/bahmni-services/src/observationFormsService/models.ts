@@ -52,3 +52,19 @@ export interface FormMetadata {
   published: boolean;
   schema: unknown; // The parsed form schema/definition
 }
+
+export interface FormProvider {
+  providerName: string;
+  uuid: string;
+}
+
+export interface FormResponseData {
+  formType: string;
+  formName: string;
+  formVersion: number;
+  visitUuid: string;
+  visitStartDateTime: number;
+  encounterUuid: string;
+  encounterDateTime: number;
+  providers: FormProvider[];
+}

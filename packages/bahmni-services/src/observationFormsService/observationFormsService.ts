@@ -1,11 +1,17 @@
+import { get } from '../api/api';
 import { getUserPreferredLocale } from '../i18n/translationService';
-import { OBSERVATION_FORMS_URL, FORM_METADATA_URL } from './constants';
+import {
+  OBSERVATION_FORMS_URL,
+  FORM_METADATA_URL,
+  FORM_DATA_URL,
+} from './constants';
 import {
   ObservationForm,
   ApiNameTranslation,
   FormApiResponse,
   FormMetadata,
   FormMetadataApiResponse,
+  FormResponseData,
 } from './models';
 
 /**
@@ -110,4 +116,27 @@ export const fetchFormMetadata = async (
     published: data.published,
     schema: formSchema,
   };
+};
+
+/**
+ * Fetches patient form data for a given patient
+ * @param patientUuid - The UUID of the patient
+ * @param numberOfVisits - Optional number of visits to fetch form data for
+ * @returns Promise resolving to an array of form response data
+ * @throws Error if the patient UUID is invalid or the request fails
+ */
+export const getPatientFormData = async (
+  patientUuid: string,
+  numberOfVisits?: number,
+): Promise<FormResponseData[]> => {
+  try {
+    const url = FORM_DATA_URL(patientUuid, numberOfVisits);
+    const data = await get<FormResponseData[]>(url);
+
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    throw new Error(
+      `Failed to fetch form data for patient ${patientUuid}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
+  }
 };
