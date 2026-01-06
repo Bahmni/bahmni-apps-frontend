@@ -84,6 +84,118 @@ describe('RadiologyInvestigationTable', () => {
     });
   });
 
+  it('should fetch order types and resolve categoryUuid when config has orderType', () => {
+    const mockOrderTypesData = {
+      results: [
+        { uuid: 'radiology-uuid-123', display: 'Radiology Order' },
+        { uuid: 'lab-uuid-456', display: 'Lab Order' },
+      ],
+    };
+
+    (useQuery as jest.Mock)
+      .mockReturnValueOnce({
+        data: mockOrderTypesData,
+        isLoading: false,
+        isError: false,
+        error: null,
+      })
+      .mockReturnValueOnce({
+        data: [],
+        isLoading: false,
+        isError: false,
+        error: null,
+      });
+
+    const wrapperWithConfig = (
+      <QueryClientProvider client={queryClient}>
+        <RadiologyInvestigationTable config={{ orderType: 'Radiology Order' }} />
+      </QueryClientProvider>
+    );
+
+    render(wrapperWithConfig);
+
+    expect(useQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        queryKey: ['orderTypes'],
+        enabled: true,
+      }),
+    );
+
+    expect(useQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        enabled: true,
+      }),
+    );
+  });
+
+  it('should not fetch radiology investigations when order type is not found', () => {
+    const mockOrderTypesData = {
+      results: [{ uuid: 'lab-uuid-456', display: 'Lab Order' }],
+    };
+
+    (useQuery as jest.Mock)
+      .mockReturnValueOnce({
+        data: mockOrderTypesData,
+        isLoading: false,
+        isError: false,
+        error: null,
+      })
+      .mockReturnValueOnce({
+        data: null,
+        isLoading: false,
+        isError: false,
+        error: null,
+      });
+
+    const wrapperWithConfig = (
+      <QueryClientProvider client={queryClient}>
+        <RadiologyInvestigationTable
+          config={{ orderType: 'Non-existent Order Type' }}
+        />
+      </QueryClientProvider>
+    );
+
+    render(wrapperWithConfig);
+
+    const radiologyQueryCalls = (useQuery as jest.Mock).mock.calls.filter(
+      (call) => call[0]?.queryKey?.[0] === 'radiologyInvestigation',
+    );
+    const lastRadiologyCall =
+      radiologyQueryCalls[radiologyQueryCalls.length - 1];
+
+    expect(lastRadiologyCall[0].enabled).toBe(false);
+  });
+
+  it('should show error notification when order types query fails', () => {
+    (useQuery as jest.Mock)
+      .mockReturnValueOnce({
+        data: null,
+        isLoading: false,
+        isError: true,
+        error: new Error('Failed to fetch order types'),
+      })
+      .mockReturnValueOnce({
+        data: null,
+        isLoading: false,
+        isError: false,
+        error: null,
+      });
+
+    const wrapperWithConfig = (
+      <QueryClientProvider client={queryClient}>
+        <RadiologyInvestigationTable config={{ orderType: 'Radiology Order' }} />
+      </QueryClientProvider>
+    );
+
+    render(wrapperWithConfig);
+
+    expect(mockAddNotification).toHaveBeenCalledWith({
+      type: 'error',
+      title: 'ERROR_DEFAULT_TITLE',
+      message: 'Failed to fetch order types',
+    });
+  });
+
   it('should show empty state when there is no data', () => {
     (useQuery as jest.Mock).mockReturnValue({
       data: [],

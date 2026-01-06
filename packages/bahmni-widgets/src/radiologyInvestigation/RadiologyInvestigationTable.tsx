@@ -12,16 +12,16 @@ import {
   formatDate,
   FULL_MONTH_DATE_FORMAT,
   ISO_DATE_FORMAT,
+  shouldEnableEncounterFilter,
   getOrderTypes,
   ORDER_TYPE_QUERY_KEY,
-  getPatientRadiologyInvestigations,
-  shouldEnableEncounterFilter,
   getFormattedError,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import React, { useMemo, useCallback, useEffect, useState } from 'react';
+import React, { useMemo, useCallback, useEffect } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
+import { WidgetProps } from '../registry/model';
 import { RadiologyInvestigationViewModel } from './models';
 import styles from './styles/RadiologyInvestigationTable.module.scss';
 import {
@@ -35,8 +35,16 @@ export const radiologyInvestigationQueryKeys = (patientUUID: string) =>
 
 const fetchRadiologyInvestigations = async (
   patientUUID: string,
+  category: string,
+  encounterUuids?: string[],
+  numberOfVisits?: number,
 ): Promise<RadiologyInvestigationViewModel[]> => {
-  const response = await getPatientRadiologyInvestigations(patientUUID!);
+  const response = await getPatientRadiologyInvestigations(
+    patientUUID!,
+    category,
+    encounterUuids,
+    numberOfVisits,
+  );
   return createRadiologyInvestigationViewModels(response);
 };
 
@@ -44,28 +52,52 @@ const fetchRadiologyInvestigations = async (
  * Component to display patient radiology investigations grouped by date in accordion format
  * Each accordion item contains an SortableDataTable with radiology investigations for that date
  */
-const RadiologyInvestigationTable: React.FC = () => {
-  const [radiologyInvestigations, setRadiologyInvestigations] = useState<
-    RadiologyInvestigationViewModel[]
-  >([]);
+const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
+  config,
+  encounterUuids,
+  episodeOfCareUuids,
+}) => {
   const patientUUID = usePatientUUID();
   const { t } = useTranslation();
   const { addNotification } = useNotification();
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: radiologyInvestigationQueryKeys(patientUUID!),
-    enabled: !!patientUUID,
-    queryFn: () => fetchRadiologyInvestigations(patientUUID!),
+  const categoryName = config?.orderType as string;
+  const numberOfVisits = config?.numberOfVisits as number;
+
+  const emptyEncounterFilter = shouldEnableEncounterFilter(
+    episodeOfCareUuids,
+    encounterUuids,
+  );
+
+  const {
+    data: orderTypesData,
+    isLoading: isLoadingOrderTypes,
+    isError: isOrderTypesError,
+    error: orderTypesError,
+  } = useQuery({
+    queryKey: ORDER_TYPE_QUERY_KEY,
+    queryFn: getOrderTypes,
+    enabled: !!categoryName,
   });
 
-  useEffect(() => {
-    if (isError)
-      addNotification({
-        title: t('ERROR_DEFAULT_TITLE'),
-        message: error.message,
-        type: 'error',
-      });
-    if (data) setRadiologyInvestigations(data);
-  }, [data, isLoading, isError, error]);
+  const categoryUuid = useMemo(() => {
+    if (!orderTypesData || !categoryName) return '';
+    const orderType = orderTypesData.results.find(
+      (ot) => ot.display.toLowerCase() === categoryName.toLowerCase(),
+    );
+    return orderType?.uuid ?? '';
+  }, [orderTypesData, categoryName]);
+
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: radiologyInvestigationQueryKeys(patientUUID!),
+    enabled: !!patientUUID && !!categoryUuid && !emptyEncounterFilter,
+    queryFn: () =>
+      fetchRadiologyInvestigations(
+        patientUUID!,
+        categoryUuid,
+        encounterUuids,
+        numberOfVisits,
+      ),
+  });
 
   const headers = useMemo(
     () => [
@@ -85,10 +117,28 @@ const RadiologyInvestigationTable: React.FC = () => {
     [],
   );
 
+  const loading = isLoading || isLoadingOrderTypes;
+  const errorMessage =
+    isError && error
+      ? getFormattedError(error).message
+      : isOrderTypesError && orderTypesError
+        ? getFormattedError(orderTypesError).message
+        : '';
+  const hasError = isError || isOrderTypesError;
+
+  useEffect(() => {
+    if (hasError)
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: errorMessage,
+        type: 'error',
+      });
+  }, [hasError, errorMessage]);
+
   const processedInvestigations = useMemo(() => {
-    const investigations = radiologyInvestigations ?? [];
-    const filteredInvestigations =
-      filterRadiologyInvestionsReplacementEntries(investigations);
+    const filteredInvestigations = filterRadiologyInvestionsReplacementEntries(
+      data ?? [],
+    );
 
     const grouped = groupByDate(filteredInvestigations, (investigation) => {
       const result = formatDate(investigation.orderedDate, t, ISO_DATE_FORMAT);
@@ -106,7 +156,7 @@ const RadiologyInvestigationTable: React.FC = () => {
         investigationsByDate.investigations,
       ),
     }));
-  }, [radiologyInvestigations, t]);
+  }, [data]);
 
   const renderCell = useCallback(
     (investigation: RadiologyInvestigationViewModel, cellId: string) => {
@@ -167,13 +217,13 @@ const RadiologyInvestigationTable: React.FC = () => {
       data-testid="radiology-investigations-table-test-id"
       aria-label="radiology-investigations-table-aria-label"
     >
-      {isLoading || !!error || processedInvestigations.length === 0 ? (
+      {loading || !!hasError || processedInvestigations.length === 0 ? (
         <SortableDataTable
           headers={headers}
           ariaLabel={t('RADIOLOGY_INVESTIGATION_HEADING')}
           rows={[]}
-          loading={isLoading}
-          errorStateMessage={error?.message}
+          loading={loading}
+          errorStateMessage={errorMessage}
           emptyStateMessage={t('NO_RADIOLOGY_INVESTIGATIONS')}
           renderCell={renderCell}
           className={styles.radiologyInvestigationTableBody}
