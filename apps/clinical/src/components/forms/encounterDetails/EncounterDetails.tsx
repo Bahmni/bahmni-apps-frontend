@@ -11,8 +11,9 @@ import {
   DATE_FORMAT,
   formatDate,
   type Provider,
+  type User,
 } from '@bahmni/services';
-import { usePatientUUID, useActivePractitioner } from '@bahmni/widgets';
+import { usePatientUUID } from '@bahmni/widgets';
 import React, { useEffect, useMemo } from 'react';
 import { useActiveVisit } from '../../../hooks/useActiveVisit';
 import { useEncounterConcepts } from '../../../hooks/useEncounterConcepts';
@@ -25,7 +26,20 @@ import styles from './styles/EncounterDetails.module.scss';
 // Constants
 const CONSULTATION_ENCOUNTER_NAME = 'Consultation';
 
-const EncounterDetails: React.FC = () => {
+interface EncounterDetailsProps {
+  /** Pre-fetched user to avoid redundant API calls */
+  practitionerState: {
+    practitioner: Provider | null;
+    user: User | null;
+    loading: boolean;
+    error: Error | null;
+    refetch: () => void;
+  };
+}
+
+const EncounterDetails: React.FC<EncounterDetailsProps> = ({
+  practitionerState,
+}: EncounterDetailsProps) => {
   const { t } = useTranslation();
 
   // Get patient UUID from hook
@@ -47,12 +61,13 @@ const EncounterDetails: React.FC = () => {
     loading: loadingEncounterConcepts,
     error: encounterConceptsError,
   } = useEncounterConcepts();
+
   const {
     practitioner,
     user,
     loading: loadingPractitioner,
     error: practitionerError,
-  } = useActivePractitioner();
+  } = practitionerState;
 
   // Store selectors - only get what we need
   const {

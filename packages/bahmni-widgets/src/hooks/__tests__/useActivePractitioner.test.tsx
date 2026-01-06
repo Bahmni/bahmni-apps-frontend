@@ -280,4 +280,49 @@ describe('useActivePractitioner hook', () => {
     expect(mockedGetCurrentUser).toHaveBeenCalledTimes(2);
     expect(mockedGetCurrentProvider).toHaveBeenCalledTimes(2);
   });
+
+  it('should use pre-fetched user when provided in options', async () => {
+    // Arrange
+    mockedGetCurrentProvider.mockResolvedValueOnce(mockProvider);
+
+    // Act - Pass pre-fetched user
+    const { result } = renderHook(() =>
+      useActivePractitioner({ user: mockUser }),
+    );
+
+    // Wait for async operations
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    // Assert - getCurrentUser should NOT be called when user is provided
+    expect(mockedGetCurrentUser).not.toHaveBeenCalled();
+    expect(mockedGetCurrentProvider).toHaveBeenCalledWith(mockUser.uuid);
+    expect(result.current.user).toEqual(mockUser);
+    expect(result.current.practitioner).toEqual(mockProvider);
+    expect(result.current.error).toBeNull();
+    expect(result.current.loading).toBe(false);
+  });
+
+  it('should fetch user when options.user is null', async () => {
+    // Arrange
+    mockedGetCurrentUser.mockResolvedValueOnce(mockUser);
+    mockedGetCurrentProvider.mockResolvedValueOnce(mockProvider);
+
+    // Act - Pass null user
+    const { result } = renderHook(() => useActivePractitioner({ user: null }));
+
+    // Wait for async operations
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    // Assert - getCurrentUser should be called when user is null
+    expect(mockedGetCurrentUser).toHaveBeenCalled();
+    expect(mockedGetCurrentProvider).toHaveBeenCalledWith(mockUser.uuid);
+    expect(result.current.user).toEqual(mockUser);
+    expect(result.current.practitioner).toEqual(mockProvider);
+    expect(result.current.error).toBeNull();
+    expect(result.current.loading).toBe(false);
+  });
 });

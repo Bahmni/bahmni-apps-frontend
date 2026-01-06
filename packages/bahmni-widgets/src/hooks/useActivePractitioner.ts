@@ -16,23 +16,38 @@ interface useActivePractitionerResult {
   refetch: () => void;
 }
 
+interface useActivePractitionerOptions {
+  /** Optional pre-fetched user to avoid redundant API calls */
+  user?: User | null;
+}
+
 /**
  * Custom hook to fetch and manage the active practitioner's details
+ * @param options - Optional configuration including pre-fetched user
  * @returns Object containing practitioner, loading state, error state, and refetch function
  */
-export const useActivePractitioner = (): useActivePractitionerResult => {
+export const useActivePractitioner = (
+  options?: useActivePractitionerOptions,
+): useActivePractitionerResult => {
   const [activePractitioner, setActivePractitioner] = useState<Provider | null>(
     null,
   );
-  const [activeUser, setActiveUser] = useState<User | null>(null);
+  const [activeUser, setActiveUser] = useState<User | null>(
+    options?.user ?? null,
+  );
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const { t } = useTranslation();
+  const userUuid = options?.user?.uuid;
 
   const fetchActivePractitioner = useCallback(async () => {
     try {
       setLoading(true);
-      const user = await getCurrentUser();
+
+      // Use provided user or fetch if not available
+
+      const user = options?.user ?? (await getCurrentUser());
+
       if (!user) {
         setError(new Error(t('ERROR_FETCHING_USER_DETAILS')));
         return;
@@ -51,11 +66,11 @@ export const useActivePractitioner = (): useActivePractitionerResult => {
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, [options?.user, t]);
 
   useEffect(() => {
     fetchActivePractitioner();
-  }, [fetchActivePractitioner]);
+  }, [fetchActivePractitioner, userUuid]); // Depend on UUID only
 
   return {
     practitioner: activePractitioner,

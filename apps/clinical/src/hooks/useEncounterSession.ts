@@ -1,7 +1,12 @@
-import { findActiveEncounterInSession } from '@bahmni/services';
-import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
+import { findActiveEncounterInSession, Provider } from '@bahmni/services';
+import { usePatientUUID } from '@bahmni/widgets';
 import { Encounter } from 'fhir/r4';
 import { useState, useEffect } from 'react';
+
+interface UseEncounterSessionOptions {
+  /** The practitioner to use for session filtering */
+  practitioner: Provider | null;
+}
 
 interface UseEncounterSessionReturn {
   hasActiveSession: boolean;
@@ -16,10 +21,14 @@ interface UseEncounterSessionReturn {
 /**
  * Hook to manage encounter session state
  * Determines if there's an active encounter session for the current patient
+ * @param options - Options containing the practitioner to use for session filtering
  * @returns Object containing session state and utilities
  */
 
-export function useEncounterSession(): UseEncounterSessionReturn {
+export function useEncounterSession(
+  options: UseEncounterSessionOptions,
+): UseEncounterSessionReturn {
+  const { practitioner } = options;
   const [hasActiveSession, setHasActiveSession] = useState<boolean>(false);
   const [activeEncounter, setActiveEncounter] = useState<Encounter | null>(
     null,
@@ -30,7 +39,6 @@ export function useEncounterSession(): UseEncounterSessionReturn {
   const [error, setError] = useState<string | null>(null);
 
   const patientUUID = usePatientUUID();
-  const { practitioner } = useActivePractitioner();
 
   const fetchSessionState = async () => {
     if (!patientUUID) {

@@ -1,5 +1,6 @@
 import { Button } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
+import { useActivePractitioner } from '@bahmni/widgets';
 import React from 'react';
 import { useEncounterSession } from '../../hooks/useEncounterSession';
 import styles from './styles/PatientHeader.module.scss';
@@ -21,7 +22,10 @@ const ConsultationActionButton: React.FC<ConsultationActionButtonProps> = ({
   setIsActionAreaVisible,
 }) => {
   const { t } = useTranslation();
-  const { editActiveEncounter, isLoading } = useEncounterSession();
+  const { practitioner } = useActivePractitioner();
+  const { editActiveEncounter, isLoading } = useEncounterSession({
+    practitioner,
+  });
 
   return (
     <Button
