@@ -1,6 +1,6 @@
 import {
   getPatientRadiologyInvestigations,
-  getOrderTypes,
+  getCategoryUuidFromOrderTypes,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
@@ -12,21 +12,14 @@ jest.mock('../../notification');
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getPatientRadiologyInvestigations: jest.fn(),
-  getOrderTypes: jest.fn(),
+  getCategoryUuidFromOrderTypes: jest.fn(),
 }));
 jest.mock('../../hooks/usePatientUUID', () => ({
   usePatientUUID: jest.fn(() => 'test-patient-uuid'),
 }));
 const mockAddNotification = jest.fn();
 
-const mockOrderTypesData = {
-  results: [
-    {
-      uuid: 'radiology-uuid-123',
-      display: 'Radiology Order',
-    },
-  ],
-};
+const mockCategoryUuid = 'radiology-uuid-123';
 
 const mockValidRadiologyInvestigations: ServiceRequest[] = [
   {
@@ -119,7 +112,9 @@ describe('RadiologyInvestigationTable', () => {
   );
 
   it('should show radiology investigations table when patient has investigations', async () => {
-    (getOrderTypes as jest.Mock).mockResolvedValue(mockOrderTypesData);
+    (getCategoryUuidFromOrderTypes as jest.Mock).mockResolvedValue(
+      mockCategoryUuid,
+    );
     (getPatientRadiologyInvestigations as jest.Mock).mockReturnValue(
       mockValidRadiologyInvestigations,
     );
@@ -136,7 +131,9 @@ describe('RadiologyInvestigationTable', () => {
   });
 
   it('should show error state when an error occurs', async () => {
-    (getOrderTypes as jest.Mock).mockResolvedValue(mockOrderTypesData);
+    (getCategoryUuidFromOrderTypes as jest.Mock).mockResolvedValue(
+      mockCategoryUuid,
+    );
     const errorMessage = 'Failed to fetch radiology investigations from server';
     (getPatientRadiologyInvestigations as jest.Mock).mockRejectedValue(
       new Error(errorMessage),

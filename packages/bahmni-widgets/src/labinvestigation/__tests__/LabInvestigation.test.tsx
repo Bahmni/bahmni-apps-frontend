@@ -4,7 +4,7 @@ import {
   LabTestPriority,
   groupLabTestsByDate,
   useTranslation,
-  getOrderTypes,
+  getCategoryUuidFromOrderTypes,
   getPatientLabInvestigations,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -17,7 +17,7 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   groupLabTestsByDate: jest.fn(),
   useTranslation: jest.fn(),
-  getOrderTypes: jest.fn(),
+  getCategoryUuidFromOrderTypes: jest.fn(),
   getPatientLabInvestigations: jest.fn(),
 }));
 jest.mock('react-router-dom', () => ({
@@ -44,9 +44,10 @@ const mockUseTranslation = useTranslation as jest.MockedFunction<
   typeof useTranslation
 >;
 
-const mockGetOrderTypes = getOrderTypes as jest.MockedFunction<
-  typeof getOrderTypes
->;
+const mockGetCategoryUuidFromOrderTypes =
+  getCategoryUuidFromOrderTypes as jest.MockedFunction<
+    typeof getCategoryUuidFromOrderTypes
+  >;
 const mockGetPatientLabInvestigations =
   getPatientLabInvestigations as jest.MockedFunction<
     typeof getPatientLabInvestigations
@@ -156,16 +157,7 @@ describe('LabInvestigation', () => {
       clearAllNotifications: jest.fn(),
     });
 
-    // Mock getOrderTypes to return order types data
-    mockGetOrderTypes.mockResolvedValue({
-      results: [
-        {
-          uuid: 'lab-order-type-uuid',
-          display: 'Lab Order',
-          conceptClasses: [],
-        },
-      ],
-    } as any);
+    mockGetCategoryUuidFromOrderTypes.mockResolvedValue('lab-order-type-uuid');
   });
 
   it('renders loading state with message', async () => {

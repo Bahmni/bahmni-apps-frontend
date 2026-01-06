@@ -8,7 +8,10 @@ import {
   PANEL_CONCEPT_CLASS_NAME,
   FHIR_CONCEPT_CLASS_EXTENSION_URL,
 } from '../constants';
-import { getFlattenedInvestigations } from '../investigationService';
+import {
+  getFlattenedInvestigations,
+  getCategoryUuidFromOrderTypes,
+} from '../investigationService';
 import { OrderTypeResponse } from '../model';
 
 jest.mock('../../conceptService');
@@ -649,6 +652,47 @@ describe('investigationService', () => {
       // Should only have one GLU investigation
       expect(result).toHaveLength(1);
       expect(result[0].code).toBe('GLU');
+    });
+  });
+
+  describe('getCategoryUuidFromOrderTypes', () => {
+    const mockOrderTypeResponse: OrderTypeResponse = {
+      results: [
+        {
+          uuid: 'lab-order-uuid',
+          display: 'Lab Order',
+          conceptClasses: [],
+        },
+        {
+          uuid: 'radiology-order-uuid',
+          display: 'Radiology Order',
+          conceptClasses: [],
+        },
+        {
+          uuid: 'procedure-order-uuid',
+          display: 'Procedure Order',
+          conceptClasses: [],
+        },
+      ],
+    };
+
+    beforeEach(() => {
+      (api.get as jest.Mock).mockResolvedValue(mockOrderTypeResponse);
+    });
+
+    it('should return uuid when category name matches (case insensitive)', async () => {
+      const result = await getCategoryUuidFromOrderTypes('Lab Order');
+      expect(result).toBe('lab-order-uuid');
+    });
+
+    it('should return undefined when category name is not found', async () => {
+      const result = await getCategoryUuidFromOrderTypes('Non Existent Order');
+      expect(result).toBeUndefined();
+    });
+
+    it('should return undefined when category name is undefined', async () => {
+      const result = await getCategoryUuidFromOrderTypes(undefined);
+      expect(result).toBeUndefined();
     });
   });
 });

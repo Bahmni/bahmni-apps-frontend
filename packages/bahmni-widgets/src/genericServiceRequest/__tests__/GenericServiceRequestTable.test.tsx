@@ -5,7 +5,7 @@ import {
   ISO_DATE_FORMAT,
   useTranslation,
   getFormattedError,
-  getOrderTypes,
+  getCategoryUuidFromOrderTypes,
   getServiceRequests,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -27,7 +27,7 @@ jest.mock('@bahmni/services', () => ({
   groupByDate: jest.fn(),
   formatDate: jest.fn(),
   getFormattedError: jest.fn(),
-  getOrderTypes: jest.fn(),
+  getCategoryUuidFromOrderTypes: jest.fn(),
   getServiceRequests: jest.fn(),
 }));
 
@@ -52,9 +52,10 @@ const mockFormatDate = formatDate as jest.MockedFunction<typeof formatDate>;
 const mockGetFormattedError = getFormattedError as jest.MockedFunction<
   typeof getFormattedError
 >;
-const mockGetOrderTypes = getOrderTypes as jest.MockedFunction<
-  typeof getOrderTypes
->;
+const mockGetCategoryUuidFromOrderTypes =
+  getCategoryUuidFromOrderTypes as jest.MockedFunction<
+    typeof getCategoryUuidFromOrderTypes
+  >;
 const mockGetServiceRequests = getServiceRequests as jest.MockedFunction<
   typeof getServiceRequests
 >;
@@ -228,14 +229,14 @@ describe('GenericServiceRequestTable', () => {
     });
     mockSortServiceRequestsByPriority.mockImplementation((data) => data);
     mockGroupByDate.mockReturnValue([]);
-    mockGetOrderTypes.mockResolvedValue(mockOrderTypes);
+    mockGetCategoryUuidFromOrderTypes.mockResolvedValue('lab-uuid');
     mockGetServiceRequests.mockResolvedValue(mockServiceRequestBundle);
     mockMapServiceRequest.mockReturnValue(mockServiceRequests);
   });
 
   describe('Loading state', () => {
     it('renders loading state while fetching order types', async () => {
-      mockGetOrderTypes.mockImplementation(
+      mockGetCategoryUuidFromOrderTypes.mockImplementation(
         () => new Promise(() => {}), // Never resolves
       );
 
@@ -271,7 +272,9 @@ describe('GenericServiceRequestTable', () => {
 
   describe('Error handling', () => {
     it('renders error state when order types fetch fails', async () => {
-      mockGetOrderTypes.mockRejectedValue(new Error('Order types error'));
+      mockGetCategoryUuidFromOrderTypes.mockRejectedValue(
+        new Error('Order types error'),
+      );
 
       render(
         <GenericServiceRequestTable config={{ orderType: 'Lab Order' }} />,
@@ -311,7 +314,9 @@ describe('GenericServiceRequestTable', () => {
     });
 
     it('displays error message in table when there is an error', async () => {
-      mockGetOrderTypes.mockRejectedValue(new Error('Network error'));
+      mockGetCategoryUuidFromOrderTypes.mockRejectedValue(
+        new Error('Network error'),
+      );
 
       render(
         <GenericServiceRequestTable config={{ orderType: 'Lab Order' }} />,
@@ -499,6 +504,8 @@ describe('GenericServiceRequestTable', () => {
     });
 
     it('handles orderType name with different casing', async () => {
+      mockGetCategoryUuidFromOrderTypes.mockResolvedValue('radiology-uuid');
+
       render(
         <GenericServiceRequestTable
           config={{ orderType: 'RADIOLOGY ORDER' }}

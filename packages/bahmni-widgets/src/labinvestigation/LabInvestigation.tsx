@@ -5,10 +5,9 @@ import {
   useTranslation,
   LabTestsByDate,
   FormattedLabTest,
-  getOrderTypes,
+  getCategoryUuidFromOrderTypes,
   getFormattedError,
   getPatientLabInvestigations,
-  ORDER_TYPE_QUERY_KEY,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useMemo, useEffect } from 'react';
@@ -35,22 +34,15 @@ const LabInvestigation: React.FC<WidgetProps> = ({
   );
 
   const {
-    data: orderTypesData,
+    data: categoryUuid,
     isLoading: isLoadingOrderTypes,
     isError: isOrderTypesError,
     error: orderTypesError,
   } = useQuery({
-    queryKey: ORDER_TYPE_QUERY_KEY,
-    queryFn: getOrderTypes,
+    queryKey: ['categoryUuid', categoryName],
+    queryFn: () => getCategoryUuidFromOrderTypes(categoryName),
+    enabled: !!categoryName,
   });
-
-  const categoryUuid = useMemo(() => {
-    if (!orderTypesData || !categoryName) return '';
-    const orderType = orderTypesData.results.find(
-      (ot) => ot.display.toLowerCase() === categoryName.toLowerCase(),
-    );
-    return orderType?.uuid ?? '';
-  }, [orderTypesData, categoryName]);
 
   const {
     data: labTestsData,

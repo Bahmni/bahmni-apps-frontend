@@ -13,8 +13,7 @@ import {
   FULL_MONTH_DATE_FORMAT,
   ISO_DATE_FORMAT,
   shouldEnableEncounterFilter,
-  getOrderTypes,
-  ORDER_TYPE_QUERY_KEY,
+  getCategoryUuidFromOrderTypes,
   getFormattedError,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
@@ -69,23 +68,15 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
   );
 
   const {
-    data: orderTypesData,
+    data: categoryUuid,
     isLoading: isLoadingOrderTypes,
     isError: isOrderTypesError,
     error: orderTypesError,
   } = useQuery({
-    queryKey: ORDER_TYPE_QUERY_KEY,
-    queryFn: getOrderTypes,
+    queryKey: ['categoryUuid', categoryName],
+    queryFn: () => getCategoryUuidFromOrderTypes(categoryName),
     enabled: !!categoryName,
   });
-
-  const categoryUuid = useMemo(() => {
-    if (!orderTypesData || !categoryName) return '';
-    const orderType = orderTypesData.results.find(
-      (ot) => ot.display.toLowerCase() === categoryName.toLowerCase(),
-    );
-    return orderType?.uuid ?? '';
-  }, [orderTypesData, categoryName]);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: radiologyInvestigationQueryKeys(patientUUID!),

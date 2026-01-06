@@ -152,6 +152,7 @@ export {
 export {
   getFlattenedInvestigations,
   getOrderTypes,
+  getCategoryUuidFromOrderTypes,
   type FlattenedInvestigations,
   type OrderType,
   type OrderTypeResponse,

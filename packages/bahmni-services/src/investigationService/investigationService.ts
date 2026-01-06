@@ -102,3 +102,14 @@ export const getFlattenedInvestigations = async (): Promise<
   const orderTypes = await getOrderTypes();
   return flattenInvestigations(valueSet, flattenOrderType(orderTypes));
 };
+
+export const getCategoryUuidFromOrderTypes = async (
+  categoryName: string | undefined,
+): Promise<string | undefined> => {
+  if (!categoryName) return undefined;
+  const orderTypesData = await getOrderTypes();
+  const orderType = orderTypesData.results.find(
+    (ot) => ot.display.toLowerCase() === categoryName.toLowerCase(),
+  );
+  return orderType?.uuid;
+};

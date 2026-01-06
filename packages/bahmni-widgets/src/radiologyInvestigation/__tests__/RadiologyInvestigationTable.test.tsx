@@ -84,17 +84,12 @@ describe('RadiologyInvestigationTable', () => {
     });
   });
 
-  it('should fetch order types and resolve categoryUuid when config has orderType', () => {
-    const mockOrderTypesData = {
-      results: [
-        { uuid: 'radiology-uuid-123', display: 'Radiology Order' },
-        { uuid: 'lab-uuid-456', display: 'Lab Order' },
-      ],
-    };
+  it('should fetch categoryUuid and resolve when config has orderType', () => {
+    const mockCategoryUuid = 'radiology-uuid-123';
 
     (useQuery as jest.Mock)
       .mockReturnValueOnce({
-        data: mockOrderTypesData,
+        data: mockCategoryUuid,
         isLoading: false,
         isError: false,
         error: null,
@@ -108,7 +103,9 @@ describe('RadiologyInvestigationTable', () => {
 
     const wrapperWithConfig = (
       <QueryClientProvider client={queryClient}>
-        <RadiologyInvestigationTable config={{ orderType: 'Radiology Order' }} />
+        <RadiologyInvestigationTable
+          config={{ orderType: 'Radiology Order' }}
+        />
       </QueryClientProvider>
     );
 
@@ -116,7 +113,7 @@ describe('RadiologyInvestigationTable', () => {
 
     expect(useQuery).toHaveBeenCalledWith(
       expect.objectContaining({
-        queryKey: ['orderTypes'],
+        queryKey: ['categoryUuid', 'Radiology Order'],
         enabled: true,
       }),
     );
@@ -129,13 +126,9 @@ describe('RadiologyInvestigationTable', () => {
   });
 
   it('should not fetch radiology investigations when order type is not found', () => {
-    const mockOrderTypesData = {
-      results: [{ uuid: 'lab-uuid-456', display: 'Lab Order' }],
-    };
-
     (useQuery as jest.Mock)
       .mockReturnValueOnce({
-        data: mockOrderTypesData,
+        data: undefined,
         isLoading: false,
         isError: false,
         error: null,
@@ -183,7 +176,9 @@ describe('RadiologyInvestigationTable', () => {
 
     const wrapperWithConfig = (
       <QueryClientProvider client={queryClient}>
-        <RadiologyInvestigationTable config={{ orderType: 'Radiology Order' }} />
+        <RadiologyInvestigationTable
+          config={{ orderType: 'Radiology Order' }}
+        />
       </QueryClientProvider>
     );
 
