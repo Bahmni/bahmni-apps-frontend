@@ -68,6 +68,14 @@ export const Profile = ({
   const { patientUuid: patientUuidFromUrl } = useParams<{
     patientUuid: string;
   }>();
+
+  // Extract field visibility and validation flags
+  const showMiddleName = patientInfoConfig?.showMiddleName ?? false;
+  const showLastName = patientInfoConfig?.showLastName ?? false;
+  const isMiddleNameMandatory =
+    patientInfoConfig?.isMiddleNameMandatory ?? false;
+  const isLastNameMandatory = patientInfoConfig?.isLastNameMandatory ?? false;
+
   const getRequiredLabel = (labelKey: string, isRequired: boolean) => {
     return (
       <>
@@ -301,26 +309,28 @@ export const Profile = ({
       isValid = false;
     }
 
-    const isMiddleNameMandatory =
-      patientInfoConfig?.isMiddleNameMandatory ?? false;
-    if (isMiddleNameMandatory && !formData.middleName.trim()) {
+    if (
+      showMiddleName &&
+      isMiddleNameMandatory &&
+      !formData.middleName.trim()
+    ) {
       newValidationErrors.middleName = t(
         'CREATE_PATIENT_VALIDATION_MIDDLE_NAME_REQUIRED',
       );
       isValid = false;
-    } else if (formData.middleName.length > MAX_NAME_LENGTH) {
+    } else if (showMiddleName && formData.middleName.length > MAX_NAME_LENGTH) {
       newValidationErrors.middleName = t(
         'CREATE_PATIENT_VALIDATION_MIDDLE_NAME_MAX_LENGTH',
       );
       isValid = false;
     }
-    const isLastNameMandatory = patientInfoConfig?.isLastNameMandatory ?? true;
-    if (isLastNameMandatory && !formData.lastName.trim()) {
+
+    if (showLastName && isLastNameMandatory && !formData.lastName.trim()) {
       newValidationErrors.lastName = t(
         'CREATE_PATIENT_VALIDATION_LAST_NAME_REQUIRED',
       );
       isValid = false;
-    } else if (formData.lastName.length > MAX_NAME_LENGTH) {
+    } else if (showLastName && formData.lastName.length > MAX_NAME_LENGTH) {
       newValidationErrors.lastName = t(
         'CREATE_PATIENT_VALIDATION_LAST_NAME_MAX_LENGTH',
       );
@@ -494,12 +504,12 @@ export const Profile = ({
               onBlur={() => handleNameBlur('firstName')}
             />
 
-            {(patientInfoConfig?.showMiddleName ?? true) && (
+            {showMiddleName && (
               <TextInput
                 id="middle-name"
                 labelText={getRequiredLabel(
                   'CREATE_PATIENT_MIDDLE_NAME',
-                  patientInfoConfig?.isMiddleNameMandatory ?? false,
+                  isMiddleNameMandatory,
                 )}
                 placeholder={t('CREATE_PATIENT_MIDDLE_NAME_PLACEHOLDER')}
                 value={formData.middleName}
@@ -514,12 +524,12 @@ export const Profile = ({
               />
             )}
 
-            {patientInfoConfig?.showLastName && (
+            {showLastName && (
               <TextInput
                 id="last-name"
                 labelText={getRequiredLabel(
                   'CREATE_PATIENT_LAST_NAME',
-                  patientInfoConfig?.isLastNameMandatory ?? true,
+                  isLastNameMandatory,
                 )}
                 placeholder={t('CREATE_PATIENT_LAST_NAME')}
                 value={formData.lastName}
