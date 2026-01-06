@@ -5,10 +5,13 @@ import {
   mockRadiologyInvestigationBundle,
   mockEmptyRadiologyInvestigationBundle,
   mockMalformedBundle,
+  mockRadiologyInvestigationBundleWithImagingStudy,
+  mockImagingStudies,
 } from '../__mocks__/mocks';
 import {
   getPatientRadiologyInvestigationBundle,
   getPatientRadiologyInvestigations,
+  getPatientRadiologyInvestigationBundleWithImagingStudy,
 } from '../radiologyInvestigationService';
 
 jest.mock('../../orderRequestService');
@@ -117,115 +120,43 @@ describe('radiologyInvestigationService', () => {
     });
   });
 
-  describe('encounterUuids parameter handling', () => {
-    const mockPatientUUID = 'test-patient-uuid';
-    const mockCategoryUUID = 'd3561dc0-5e07-11ef-8f7c-0242ac120002';
-    const mockBundle: Bundle = {
-      resourceType: 'Bundle',
-      type: 'searchset',
-      entry: [
-        {
-          resource: mockRadiologyTestBasic,
-        },
-      ],
-    };
+  describe('getPatientRadiologyInvestigationBundleWithImagingStudy', () => {
+    const mockCategory = 'd3561dc0-5e07-11ef-8f7c-0242ac120002';
 
-    beforeEach(() => {
-      mockGet.mockResolvedValue(mockBundle);
-    });
+    it('should fetch bundle with both ServiceRequest and ImagingStudy resources', async () => {
+      (getServiceRequests as jest.Mock).mockResolvedValueOnce(
+        mockRadiologyInvestigationBundleWithImagingStudy,
+      );
 
-    it('should pass multiple encounterUuids to the API call', async () => {
-      const encounterUuids = ['encounter-1', 'encounter-2', 'encounter-3'];
+      const result =
+        await getPatientRadiologyInvestigationBundleWithImagingStudy(
+          mockPatientUUID,
+          mockCategory,
+        );
 
-      await getPatientRadiologyInvestigations(
+      expect(getServiceRequests).toHaveBeenCalledWith(
+        mockCategory,
         mockPatientUUID,
-        mockCategoryUUID,
-        encounterUuids,
-      );
-
-      expect(mockGet).toHaveBeenCalledWith(
-        `/openmrs/ws/fhir2/R4/ServiceRequest?_sort=-_lastUpdated&category=${mockCategoryUUID}&patient=${mockPatientUUID}&encounter=encounter-1,encounter-2,encounter-3`,
-      );
-    });
-
-    it('should pass single encounterUuid to the API call', async () => {
-      const encounterUuids = ['encounter-123'];
-
-      await getPatientRadiologyInvestigations(
-        mockPatientUUID,
-        mockCategoryUUID,
-        encounterUuids,
-      );
-
-      expect(mockGet).toHaveBeenCalledWith(
-        expect.stringContaining('encounter=encounter-123'),
-      );
-    });
-
-    it('should include only numberOfVisits when encounterUuids is undefined', async () => {
-      await getPatientRadiologyInvestigations(
-        mockPatientUUID,
-        mockCategoryUUID,
         undefined,
-        3,
+        undefined,
+        'ImagingStudy:basedon',
       );
-
-      const calledUrl = mockGet.mock.calls[0][0];
-      expect(calledUrl).not.toContain('encounter=');
-
-      expect(mockGet).toHaveBeenCalledWith(
-        `/openmrs/ws/fhir2/R4/ServiceRequest?_sort=-_lastUpdated&category=${mockCategoryUUID}&patient=${mockPatientUUID}&numberOfVisits=3`,
+      expect(result).toEqual(mockRadiologyInvestigationBundleWithImagingStudy);
+      expect(result.entry).toHaveLength(
+        mockRadiologyInvestigations.length + mockImagingStudies.length,
       );
     });
 
-    it('should not include encounter parameter when encounterUuids is null', async () => {
-      await getPatientRadiologyInvestigations(
-        mockPatientUUID,
-        mockCategoryUUID,
-        null as any,
-      );
+    it('should propagate errors from the API', async () => {
+      const error = new Error('Network error');
+      (getServiceRequests as jest.Mock).mockRejectedValueOnce(error);
 
-      const calledUrl = mockGet.mock.calls[0][0];
-      expect(calledUrl).not.toContain('encounter=');
-    });
-
-    it('should not include encounter parameter when encounterUuids is empty array', async () => {
-      await getPatientRadiologyInvestigations(
-        mockPatientUUID,
-        mockCategoryUUID,
-        [],
-      );
-
-      const calledUrl = mockGet.mock.calls[0][0];
-      expect(calledUrl).not.toContain('encounter=');
-    });
-
-    it('should prioritize encounterUuids over numberOfVisits when both are provided', async () => {
-      const encounterUuids = ['encounter-1', 'encounter-2'];
-
-      await getPatientRadiologyInvestigations(
-        mockPatientUUID,
-        mockCategoryUUID,
-        encounterUuids,
-        5,
-      );
-
-      const calledUrl = mockGet.mock.calls[0][0];
-      expect(calledUrl).toContain('encounter=encounter-1,encounter-2');
-      expect(calledUrl).not.toContain('numberOfVisits=');
-    });
-
-    it('should include numberOfVisits when encounterUuids is empty array', async () => {
-      await getPatientRadiologyInvestigations(
-        mockPatientUUID,
-        mockCategoryUUID,
-        [],
-        10,
-      );
-
-      const calledUrl = mockGet.mock.calls[0][0];
-      expect(calledUrl).toContain('numberOfVisits=10');
-      expect(calledUrl).not.toContain('encounter=');
+      await expect(
+        getPatientRadiologyInvestigationBundleWithImagingStudy(
+          mockPatientUUID,
+          mockCategory,
+        ),
+      ).rejects.toThrow('Network error');
     });
   });
 });

@@ -1,4 +1,4 @@
-import type { Bundle, ServiceRequest } from 'fhir/r4';
+import type { Bundle, ServiceRequest, Resource } from 'fhir/r4';
 import { get } from '../api';
 import { SERVICE_REQUESTS_URL } from './constants';
 
@@ -8,26 +8,29 @@ import { SERVICE_REQUESTS_URL } from './constants';
  * @param patientUuid - Patient UUID to filter by
  * @param encounterUuids - Optional encounter UUIDs to filter by
  * @param numberOfVisits
+ * @param revinclude - Optional _revinclude parameter for related resources
  * @returns Promise resolving to ServiceRequest Bundle
  */
-export async function getServiceRequests(
+export async function getServiceRequests<T extends Resource = ServiceRequest>(
   category: string,
   patientUuid: string,
   encounterUuids?: string[],
   numberOfVisits?: number,
-): Promise<Bundle<ServiceRequest>> {
+  revinclude?: string,
+): Promise<Bundle<T>> {
   let encounterUuidsString: string | undefined;
 
   if (encounterUuids && encounterUuids.length > 0) {
     encounterUuidsString = encounterUuids.join(',');
   }
 
-  return await get<Bundle<ServiceRequest>>(
+  return await get<Bundle<T>>(
     SERVICE_REQUESTS_URL(
       category,
       patientUuid,
       encounterUuidsString,
       numberOfVisits,
+      revinclude,
     ),
   );
 }

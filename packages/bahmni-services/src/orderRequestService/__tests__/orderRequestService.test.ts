@@ -57,6 +57,67 @@ describe('serviceRequestService', () => {
     jest.clearAllMocks();
   });
 
+  describe('SERVICE_REQUESTS_URL', () => {
+    const category = '3f224d3e-afd7-4e90-8f14-34cf481b6d0f';
+    const patientUuid = '6db60a96-a688-4891-b9f6-59c78db52215';
+
+    it('should construct URL with required parameters only', () => {
+      const url = SERVICE_REQUESTS_URL(category, patientUuid);
+
+      expect(url).toBe(
+        `/openmrs/ws/fhir2/R4/ServiceRequest?_sort=-_lastUpdated&category=${category}&patient=${patientUuid}`,
+      );
+    });
+
+    it('should construct URL with numberOfVisits parameter', () => {
+      const numberOfVisits = 5;
+      const url = SERVICE_REQUESTS_URL(
+        category,
+        patientUuid,
+        undefined,
+        numberOfVisits,
+        undefined,
+      );
+
+      expect(url).toBe(
+        `/openmrs/ws/fhir2/R4/ServiceRequest?_sort=-_lastUpdated&category=${category}&patient=${patientUuid}&numberOfVisits=${numberOfVisits}`,
+      );
+    });
+
+    it('should prioritize encounterUuids over numberOfVisits', () => {
+      const encounterUuids = 'encounter-1';
+      const numberOfVisits = 5;
+      const url = SERVICE_REQUESTS_URL(
+        category,
+        patientUuid,
+        encounterUuids,
+        numberOfVisits,
+        undefined,
+      );
+
+      expect(url).toBe(
+        `/openmrs/ws/fhir2/R4/ServiceRequest?_sort=-_lastUpdated&category=${category}&patient=${patientUuid}&encounter=${encounterUuids}`,
+      );
+      expect(url).not.toContain('numberOfVisits');
+    });
+
+    it('should construct URL with all parameters', () => {
+      const encounterUuids = 'encounter-1,encounter-2';
+      const revinclude = 'ImagingStudy:basedon';
+      const url = SERVICE_REQUESTS_URL(
+        category,
+        patientUuid,
+        encounterUuids,
+        undefined,
+        revinclude,
+      );
+
+      expect(url).toBe(
+        `/openmrs/ws/fhir2/R4/ServiceRequest?_sort=-_lastUpdated&category=${category}&patient=${patientUuid}&_revinclude=${revinclude}&encounter=${encounterUuids}`,
+      );
+    });
+  });
+
   describe('getServiceRequests', () => {
     it('should fetch service requests with required parameters', async () => {
       const category = '3f224d3e-afd7-4e90-8f14-34cf481b6d0f';
@@ -78,6 +139,70 @@ describe('serviceRequestService', () => {
       const result = await getServiceRequests(category, patientUuid);
 
       expect(result).toEqual(mockServiceRequestBundle);
+    });
+
+    it('should fetch service requests with encounterUuids', async () => {
+      const category = '3f224d3e-afd7-4e90-8f14-34cf481b6d0f';
+      const patientUuid = '6db60a96-a688-4891-b9f6-59c78db52215';
+      const encounterUuids = ['encounter-1', 'encounter-2'];
+      mockedGet.mockResolvedValueOnce(mockServiceRequestBundle);
+
+      await getServiceRequests(category, patientUuid, encounterUuids);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        SERVICE_REQUESTS_URL(
+          category,
+          patientUuid,
+          'encounter-1,encounter-2',
+          undefined,
+          undefined,
+        ),
+      );
+    });
+
+    it('should fetch service requests with empty encounterUuids array', async () => {
+      const category = '3f224d3e-afd7-4e90-8f14-34cf481b6d0f';
+      const patientUuid = '6db60a96-a688-4891-b9f6-59c78db52215';
+      const encounterUuids: string[] = [];
+      mockedGet.mockResolvedValueOnce(mockServiceRequestBundle);
+
+      await getServiceRequests(category, patientUuid, encounterUuids);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        SERVICE_REQUESTS_URL(
+          category,
+          patientUuid,
+          undefined,
+          undefined,
+          undefined,
+        ),
+      );
+    });
+
+    it('should fetch service requests with all optional parameters', async () => {
+      const category = '3f224d3e-afd7-4e90-8f14-34cf481b6d0f';
+      const patientUuid = '6db60a96-a688-4891-b9f6-59c78db52215';
+      const encounterUuids = ['encounter-1'];
+      const revinclude = 'ImagingStudy:basedon';
+      mockedGet.mockResolvedValueOnce(mockServiceRequestBundle);
+
+      await getServiceRequests(
+        category,
+        patientUuid,
+        encounterUuids,
+        undefined,
+        revinclude,
+      );
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        SERVICE_REQUESTS_URL(
+          category,
+          patientUuid,
+          'encounter-1',
+          undefined,
+          revinclude,
+        ),
+      );
     });
   });
 });

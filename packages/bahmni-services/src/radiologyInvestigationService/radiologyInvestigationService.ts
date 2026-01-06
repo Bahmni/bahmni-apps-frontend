@@ -1,4 +1,4 @@
-import { Bundle, ServiceRequest } from 'fhir/r4';
+import { Bundle, ServiceRequest, ImagingStudy } from 'fhir/r4';
 import { getServiceRequests } from '../orderRequestService';
 
 /**
@@ -20,6 +20,29 @@ export async function getPatientRadiologyInvestigationBundle(
     patientUUID,
     encounterUuids,
     numberOfVisits,
+  );
+}
+
+/**
+ * Fetches radiology investigations bundle with ImagingStudy resources included
+ * @param patientUUID - The UUID of the patient
+ * @param category - The category of the investigations
+ * @param encounterUuids - Optional array of encounter UUIDs to filter the investigations
+ * @param numberOfVisits - Optional number of visits to consider
+ * @returns Promise resolving to a Bundle containing both ServiceRequest and ImagingStudy resources
+ */
+export async function getPatientRadiologyInvestigationBundleWithImagingStudy(
+  patientUUID: string,
+  category: string,
+  encounterUuids?: string[],
+  numberOfVisits?: number,
+): Promise<Bundle<ServiceRequest | ImagingStudy>> {
+  return await getServiceRequests<ServiceRequest | ImagingStudy>(
+    category,
+    patientUUID,
+    encounterUuids,
+    numberOfVisits,
+    'ImagingStudy:basedon',
   );
 }
 
