@@ -5,11 +5,15 @@ import {
   FULL_MONTH_DATE_FORMAT,
   ISO_DATE_FORMAT,
   useTranslation,
+  getOrderTypes,
+  getPatientRadiologyInvestigations,
 } from '@bahmni/services';
-import { render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { render, screen, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import { usePatientUUID } from '../../hooks/usePatientUUID';
+import { useNotification } from '../../notification';
 import RadiologyInvestigationTable from '../RadiologyInvestigationTable';
-import { useRadiologyInvestigation } from '../useRadiologyInvestigation';
 import {
   sortRadiologyInvestigationsByPriority,
   filterRadiologyInvestionsReplacementEntries,
@@ -17,12 +21,13 @@ import {
 
 expect.extend(toHaveNoViolations);
 
-jest.mock('../useRadiologyInvestigation');
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   useTranslation: jest.fn(),
   groupByDate: jest.fn(),
   formatDate: jest.fn(),
+  getOrderTypes: jest.fn(),
+  getPatientRadiologyInvestigations: jest.fn(),
 }));
 
 jest.mock('../utils', () => ({
@@ -34,14 +39,30 @@ jest.mock('react-router-dom', () => ({
   useParams: jest.fn(),
 }));
 
-const mockUseRadiologyInvestigation =
-  useRadiologyInvestigation as jest.MockedFunction<
-    typeof useRadiologyInvestigation
-  >;
+jest.mock('../../notification', () => ({
+  useNotification: jest.fn(),
+}));
+
+jest.mock('../../hooks/usePatientUUID', () => ({
+  usePatientUUID: jest.fn(),
+}));
+
 const mockUseTranslation = useTranslation as jest.MockedFunction<
   typeof useTranslation
 >;
-
+const mockGetOrderTypes = getOrderTypes as jest.MockedFunction<
+  typeof getOrderTypes
+>;
+const mockGetPatientRadiologyInvestigations =
+  getPatientRadiologyInvestigations as jest.MockedFunction<
+    typeof getPatientRadiologyInvestigations
+  >;
+const mockUseNotification = useNotification as jest.MockedFunction<
+  typeof useNotification
+>;
+const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
+  typeof usePatientUUID
+>;
 const mockGroupByDate = groupByDate as jest.MockedFunction<typeof groupByDate>;
 const mockFormatDate = formatDate as jest.MockedFunction<typeof formatDate>;
 const mockSortRadiologyInvestigationsByPriority =
@@ -52,6 +73,32 @@ const mockFilterRadiologyInvestionsReplacementEntries =
   filterRadiologyInvestionsReplacementEntries as jest.MockedFunction<
     typeof filterRadiologyInvestionsReplacementEntries
   >;
+
+const renderRadiologyInvestigations = (
+  config = { orderType: 'Radiology Order' },
+  encounterUuids?: string[],
+  episodeOfCareUuids?: string[],
+) => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        staleTime: 0,
+        gcTime: 0,
+      },
+    },
+  });
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RadiologyInvestigationTable
+        config={config}
+        encounterUuids={encounterUuids}
+        episodeOfCareUuids={episodeOfCareUuids}
+      />
+    </QueryClientProvider>
+  );
+};
 
 const mockRadiologyInvestigations: RadiologyInvestigation[] = [
   {
@@ -78,6 +125,8 @@ const mockRadiologyInvestigations: RadiologyInvestigation[] = [
 ];
 
 describe('RadiologyInvestigationTable', () => {
+  const mockAddNotification = jest.fn();
+
   beforeEach(() => {
     jest.clearAllMocks();
 
@@ -90,9 +139,29 @@ describe('RadiologyInvestigationTable', () => {
           RADIOLOGY_INVESTIGATION_HEADING: 'Radiology Investigations',
           NO_RADIOLOGY_INVESTIGATIONS: 'No radiology investigations recorded',
           RADIOLOGY_PRIORITY_URGENT: 'Urgent',
+          RADIOLOGY_ERROR_LOADING: 'Error loading radiology investigations',
+          ERROR_DEFAULT_TITLE: 'Error',
         };
         return translations[key] || key;
       }) as any,
+    } as any);
+
+    mockUsePatientUUID.mockReturnValue('patient-123');
+    mockUseNotification.mockReturnValue({
+      addNotification: mockAddNotification,
+      notifications: [],
+      removeNotification: jest.fn(),
+      clearAllNotifications: jest.fn(),
+    });
+
+    mockGetOrderTypes.mockResolvedValue({
+      results: [
+        {
+          uuid: 'radiology-order-type-uuid',
+          display: 'Radiology Order',
+          conceptClasses: [],
+        },
+      ],
     } as any);
 
     mockFormatDate.mockReturnValue({ formattedResult: '01/12/2023' });
@@ -105,45 +174,45 @@ describe('RadiologyInvestigationTable', () => {
     mockGroupByDate.mockReturnValue([]);
   });
 
-  it('renders loading state', () => {
-    mockUseRadiologyInvestigation.mockReturnValue({
-      radiologyInvestigations: [],
-      loading: true,
-      error: null,
-      refetch: jest.fn(),
-    });
+  it('renders loading state', async () => {
+    mockGetPatientRadiologyInvestigations.mockImplementation(
+      () => new Promise(() => {}), // Never resolves
+    );
 
-    render(<RadiologyInvestigationTable />);
-    expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
+    render(renderRadiologyInvestigations());
+
+    await waitFor(() => {
+      expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
+    });
   });
 
-  it('renders error state', () => {
-    mockUseRadiologyInvestigation.mockReturnValue({
-      radiologyInvestigations: [],
-      loading: false,
-      error: new Error('Network error'),
-      refetch: jest.fn(),
-    });
+  it('renders error state', async () => {
+    mockGetPatientRadiologyInvestigations.mockRejectedValue(
+      new Error('Network error'),
+    );
 
-    render(<RadiologyInvestigationTable />);
-    expect(screen.getByText('Network error')).toBeInTheDocument();
+    render(renderRadiologyInvestigations());
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('Error loading radiology investigations'),
+      ).toBeInTheDocument();
+    });
   });
 
-  it('renders empty state', () => {
-    mockUseRadiologyInvestigation.mockReturnValue({
-      radiologyInvestigations: [],
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
+  it('renders empty state', async () => {
+    mockGetPatientRadiologyInvestigations.mockResolvedValue([]);
 
-    render(<RadiologyInvestigationTable />);
-    expect(
-      screen.getByText('No radiology investigations recorded'),
-    ).toBeInTheDocument();
+    render(renderRadiologyInvestigations());
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('No radiology investigations recorded'),
+      ).toBeInTheDocument();
+    });
   });
 
-  it('processes data through transformation pipeline', () => {
+  it('processes data through transformation pipeline', async () => {
     mockGroupByDate.mockReturnValue([
       {
         date: '2023-12-01',
@@ -152,39 +221,58 @@ describe('RadiologyInvestigationTable', () => {
       { date: '2023-11-30', items: [mockRadiologyInvestigations[2]] },
     ]);
 
-    mockUseRadiologyInvestigation.mockReturnValue({
-      radiologyInvestigations: mockRadiologyInvestigations,
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
+    mockGetPatientRadiologyInvestigations.mockResolvedValue(
+      mockRadiologyInvestigations,
+    );
+
+    render(renderRadiologyInvestigations());
+
+    await waitFor(() => {
+      expect(
+        mockFilterRadiologyInvestionsReplacementEntries,
+      ).toHaveBeenCalledWith(mockRadiologyInvestigations);
     });
 
-    render(<RadiologyInvestigationTable />);
-
-    expect(
-      mockFilterRadiologyInvestionsReplacementEntries,
-    ).toHaveBeenCalledWith(mockRadiologyInvestigations);
     expect(mockGroupByDate).toHaveBeenCalledWith(
       mockRadiologyInvestigations,
       expect.any(Function),
     );
-    expect(mockSortRadiologyInvestigationsByPriority).toHaveBeenCalledTimes(2);
+    expect(mockSortRadiologyInvestigationsByPriority).toHaveBeenCalledWith(
+      expect.any(Array),
+    );
   });
 
-  it('groups investigations by date', () => {
-    mockUseRadiologyInvestigation.mockReturnValue({
-      radiologyInvestigations: mockRadiologyInvestigations,
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
+  it('groups investigations by date', async () => {
+    // Clear the default mock behavior before setting up test-specific behavior
+    mockGroupByDate.mockClear();
+    mockGroupByDate.mockReturnValue([
+      {
+        date: '2023-12-01',
+        items: [mockRadiologyInvestigations[0], mockRadiologyInvestigations[1]],
+      },
+    ]);
+
+    mockGetPatientRadiologyInvestigations.mockResolvedValue(
+      mockRadiologyInvestigations,
+    );
+
+    render(renderRadiologyInvestigations());
+
+    await waitFor(() => {
+      // Wait for the call that contains actual data (not empty array)
+      const callWithData = mockGroupByDate.mock.calls.find(
+        (call) => call[0].length > 0,
+      );
+      expect(callWithData).toBeDefined();
     });
 
-    render(<RadiologyInvestigationTable />);
+    // Find the call that has actual data (not empty array)
+    const groupByDateCallWithData = mockGroupByDate.mock.calls.find(
+      (call) => call[0].length > 0,
+    );
+    expect(groupByDateCallWithData![0]).toEqual(mockRadiologyInvestigations);
 
-    const groupByDateCall = mockGroupByDate.mock.calls[0];
-    expect(groupByDateCall[0]).toBe(mockRadiologyInvestigations);
-
-    const dateExtractor = groupByDateCall[1];
+    const dateExtractor = groupByDateCallWithData![1];
     dateExtractor(mockRadiologyInvestigations[0]);
     expect(mockFormatDate).toHaveBeenCalledWith(
       mockRadiologyInvestigations[0].orderedDate,
@@ -193,7 +281,7 @@ describe('RadiologyInvestigationTable', () => {
     );
   });
 
-  it('formats dates for accordion titles', () => {
+  it('formats dates for accordion titles', async () => {
     mockGroupByDate.mockReturnValue([
       {
         date: '2023-12-01',
@@ -202,22 +290,22 @@ describe('RadiologyInvestigationTable', () => {
       { date: '2023-11-30', items: [mockRadiologyInvestigations[2]] },
     ]);
 
-    mockUseRadiologyInvestigation.mockReturnValue({
-      radiologyInvestigations: mockRadiologyInvestigations,
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
-
-    render(<RadiologyInvestigationTable />);
-    expect(mockFormatDate).toHaveBeenCalledWith(
-      '2023-12-01',
-      mockUseTranslation().t,
-      FULL_MONTH_DATE_FORMAT,
+    mockGetPatientRadiologyInvestigations.mockResolvedValue(
+      mockRadiologyInvestigations,
     );
+
+    render(renderRadiologyInvestigations());
+
+    await waitFor(() => {
+      expect(mockFormatDate).toHaveBeenCalledWith(
+        '2023-12-01',
+        mockUseTranslation().t,
+        FULL_MONTH_DATE_FORMAT,
+      );
+    });
   });
 
-  it('renders accordion with grouped data', () => {
+  it('renders accordion with grouped data', async () => {
     mockGroupByDate.mockReturnValue([
       {
         date: '2023-12-01',
@@ -226,16 +314,16 @@ describe('RadiologyInvestigationTable', () => {
       { date: '2023-11-30', items: [mockRadiologyInvestigations[2]] },
     ]);
 
-    mockUseRadiologyInvestigation.mockReturnValue({
-      radiologyInvestigations: mockRadiologyInvestigations,
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
+    mockGetPatientRadiologyInvestigations.mockResolvedValue(
+      mockRadiologyInvestigations,
+    );
+
+    render(renderRadiologyInvestigations());
+
+    await waitFor(() => {
+      expect(screen.getAllByTestId('accordian-table-title')).toHaveLength(2);
     });
 
-    render(<RadiologyInvestigationTable />);
-
-    expect(screen.getAllByTestId('accordian-table-title')).toHaveLength(2);
     expect(screen.getAllByTestId('sortable-data-table')).toHaveLength(2);
   });
 
@@ -248,39 +336,39 @@ describe('RadiologyInvestigationTable', () => {
       orderedDate: '2023-12-01T10:30:00.000Z',
     };
 
-    it('renders testName cell with investigation name', () => {
+    it('renders testName cell with investigation name', async () => {
       mockGroupByDate.mockReturnValue([
         { date: '2023-12-01', items: [testInvestigation] },
       ]);
 
-      mockUseRadiologyInvestigation.mockReturnValue({
-        radiologyInvestigations: [testInvestigation],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
+      mockGetPatientRadiologyInvestigations.mockResolvedValue([
+        testInvestigation,
+      ]);
 
-      render(<RadiologyInvestigationTable />);
-      expect(screen.getByText('Test Investigation')).toBeInTheDocument();
+      render(renderRadiologyInvestigations());
+
+      await waitFor(() => {
+        expect(screen.getByText('Test Investigation')).toBeInTheDocument();
+      });
     });
 
-    it('renders testName cell with urgent tag for stat priority', () => {
+    it('renders testName cell with urgent tag for stat priority', async () => {
       mockGroupByDate.mockReturnValue([
         { date: '2023-12-01', items: [testInvestigation] },
       ]);
 
-      mockUseRadiologyInvestigation.mockReturnValue({
-        radiologyInvestigations: [testInvestigation],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
+      mockGetPatientRadiologyInvestigations.mockResolvedValue([
+        testInvestigation,
+      ]);
 
-      render(<RadiologyInvestigationTable />);
-      expect(screen.getByText('Urgent')).toBeInTheDocument();
+      render(renderRadiologyInvestigations());
+
+      await waitFor(() => {
+        expect(screen.getByText('Urgent')).toBeInTheDocument();
+      });
     });
 
-    it('renders testName cell without tag for routine priority', () => {
+    it('renders testName cell without tag for routine priority', async () => {
       const routineInvestigation = {
         ...testInvestigation,
         priority: 'routine',
@@ -290,86 +378,92 @@ describe('RadiologyInvestigationTable', () => {
         { date: '2023-12-01', items: [routineInvestigation] },
       ]);
 
-      mockUseRadiologyInvestigation.mockReturnValue({
-        radiologyInvestigations: [routineInvestigation],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
+      mockGetPatientRadiologyInvestigations.mockResolvedValue([
+        routineInvestigation,
+      ]);
+
+      render(renderRadiologyInvestigations());
+
+      await waitFor(() => {
+        expect(screen.getByText('Test Investigation')).toBeInTheDocument();
       });
 
-      render(<RadiologyInvestigationTable />);
       expect(screen.queryByText('Urgent')).not.toBeInTheDocument();
     });
 
-    it('renders testName cell without tag for empty priority', () => {
+    it('renders testName cell without tag for empty priority', async () => {
       const emptyPriorityInvestigation = { ...testInvestigation, priority: '' };
 
       mockGroupByDate.mockReturnValue([
         { date: '2023-12-01', items: [emptyPriorityInvestigation] },
       ]);
 
-      mockUseRadiologyInvestigation.mockReturnValue({
-        radiologyInvestigations: [emptyPriorityInvestigation],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
+      mockGetPatientRadiologyInvestigations.mockResolvedValue([
+        emptyPriorityInvestigation,
+      ]);
+
+      render(renderRadiologyInvestigations());
+
+      await waitFor(() => {
+        expect(screen.getByText('Test Investigation')).toBeInTheDocument();
       });
 
-      render(<RadiologyInvestigationTable />);
       expect(screen.queryByText('Urgent')).not.toBeInTheDocument();
     });
 
-    it('renders results cell with placeholder', () => {
+    it('renders results cell with placeholder', async () => {
       mockGroupByDate.mockReturnValue([
         { date: '2023-12-01', items: [testInvestigation] },
       ]);
 
-      mockUseRadiologyInvestigation.mockReturnValue({
-        radiologyInvestigations: [testInvestigation],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
+      mockGetPatientRadiologyInvestigations.mockResolvedValue([
+        testInvestigation,
+      ]);
 
-      render(<RadiologyInvestigationTable />);
-      expect(screen.getByText('--')).toBeInTheDocument();
+      render(renderRadiologyInvestigations());
+
+      await waitFor(() => {
+        expect(screen.getByText('--')).toBeInTheDocument();
+      });
     });
 
-    it('renders orderedBy cell with doctor name', () => {
+    it('renders orderedBy cell with doctor name', async () => {
       mockGroupByDate.mockReturnValue([
         { date: '2023-12-01', items: [testInvestigation] },
       ]);
 
-      mockUseRadiologyInvestigation.mockReturnValue({
-        radiologyInvestigations: [testInvestigation],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
+      mockGetPatientRadiologyInvestigations.mockResolvedValue([
+        testInvestigation,
+      ]);
 
-      render(<RadiologyInvestigationTable />);
-      expect(screen.getByText('Dr. Test')).toBeInTheDocument();
+      render(renderRadiologyInvestigations());
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Test')).toBeInTheDocument();
+      });
     });
 
-    it('renders orderedBy cell with empty string when not provided', () => {
+    it('renders orderedBy cell with empty string when not provided', async () => {
       const noOrderedByInvestigation = { ...testInvestigation, orderedBy: '' };
 
       mockGroupByDate.mockReturnValue([
         { date: '2023-12-01', items: [noOrderedByInvestigation] },
       ]);
 
-      mockUseRadiologyInvestigation.mockReturnValue({
-        radiologyInvestigations: [noOrderedByInvestigation],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
+      mockGetPatientRadiologyInvestigations.mockResolvedValue([
+        noOrderedByInvestigation,
+      ]);
+
+      render(renderRadiologyInvestigations());
+
+      await waitFor(() => {
+        expect(screen.getByText('Test Investigation')).toBeInTheDocument();
       });
 
-      render(<RadiologyInvestigationTable />);
       expect(screen.queryByText('Dr. Test')).not.toBeInTheDocument();
     });
 
-    it('renders note tooltip when note is present', () => {
+    it('renders note tooltip when note is present', async () => {
       const investigationWithNote = {
         ...testInvestigation,
         note: 'Patient should be fasting',
@@ -379,35 +473,36 @@ describe('RadiologyInvestigationTable', () => {
         { date: '2023-12-01', items: [investigationWithNote] },
       ]);
 
-      mockUseRadiologyInvestigation.mockReturnValue({
-        radiologyInvestigations: [investigationWithNote],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
+      mockGetPatientRadiologyInvestigations.mockResolvedValue([
+        investigationWithNote,
+      ]);
+
+      render(renderRadiologyInvestigations());
+
+      await waitFor(() => {
+        const tooltipButton = screen.getByRole('button', {
+          name: 'Show information',
+        });
+        expect(tooltipButton).toBeInTheDocument();
       });
 
-      render(<RadiologyInvestigationTable />);
-
-      const tooltipButton = screen.getByRole('button', {
-        name: 'Show information',
-      });
-      expect(tooltipButton).toBeInTheDocument();
       expect(screen.getByText('Patient should be fasting')).toBeInTheDocument();
     });
 
-    it('does not render note tooltip when note is absent', () => {
+    it('does not render note tooltip when note is absent', async () => {
       mockGroupByDate.mockReturnValue([
         { date: '2023-12-01', items: [testInvestigation] },
       ]);
 
-      mockUseRadiologyInvestigation.mockReturnValue({
-        radiologyInvestigations: [testInvestigation],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
+      mockGetPatientRadiologyInvestigations.mockResolvedValue([
+        testInvestigation,
+      ]);
 
-      render(<RadiologyInvestigationTable />);
+      render(renderRadiologyInvestigations());
+
+      await waitFor(() => {
+        expect(screen.getByText('Test Investigation')).toBeInTheDocument();
+      });
 
       const tooltipButton = screen.queryByRole('button', {
         name: 'Show information',
@@ -417,24 +512,24 @@ describe('RadiologyInvestigationTable', () => {
   });
 
   describe('Edge cases', () => {
-    it('handles single date group', () => {
+    it('handles single date group', async () => {
       const singleDateInvestigations = [mockRadiologyInvestigations[0]];
       mockGroupByDate.mockReturnValue([
         { date: '2023-12-01', items: singleDateInvestigations },
       ]);
 
-      mockUseRadiologyInvestigation.mockReturnValue({
-        radiologyInvestigations: singleDateInvestigations,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
+      mockGetPatientRadiologyInvestigations.mockResolvedValue(
+        singleDateInvestigations,
+      );
 
-      render(<RadiologyInvestigationTable />);
-      expect(screen.getAllByTestId('accordian-table-title')).toHaveLength(1);
+      render(renderRadiologyInvestigations());
+
+      await waitFor(() => {
+        expect(screen.getAllByTestId('accordian-table-title')).toHaveLength(1);
+      });
     });
 
-    it('handles replacement filtering', () => {
+    it('handles replacement filtering', async () => {
       const investigationsWithReplacements = [
         ...mockRadiologyInvestigations,
         {
@@ -451,21 +546,20 @@ describe('RadiologyInvestigationTable', () => {
         mockRadiologyInvestigations,
       );
 
-      mockUseRadiologyInvestigation.mockReturnValue({
-        radiologyInvestigations: investigationsWithReplacements,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
+      mockGetPatientRadiologyInvestigations.mockResolvedValue(
+        investigationsWithReplacements,
+      );
+
+      render(renderRadiologyInvestigations());
+
+      await waitFor(() => {
+        expect(
+          mockFilterRadiologyInvestionsReplacementEntries,
+        ).toHaveBeenCalledWith(investigationsWithReplacements);
       });
-
-      render(<RadiologyInvestigationTable />);
-
-      expect(
-        mockFilterRadiologyInvestionsReplacementEntries,
-      ).toHaveBeenCalledWith(investigationsWithReplacements);
     });
 
-    it('handles mixed priority values correctly', () => {
+    it('handles mixed priority values correctly', async () => {
       const mixedPriorityInvestigations: RadiologyInvestigation[] = [
         {
           id: 'order-1',
@@ -494,44 +588,158 @@ describe('RadiologyInvestigationTable', () => {
         { date: '2023-12-01', items: mixedPriorityInvestigations },
       ]);
 
-      mockUseRadiologyInvestigation.mockReturnValue({
-        radiologyInvestigations: mixedPriorityInvestigations,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
+      mockGetPatientRadiologyInvestigations.mockResolvedValue(
+        mixedPriorityInvestigations,
+      );
+
+      render(renderRadiologyInvestigations());
+
+      await waitFor(() => {
+        expect(screen.getByText('Stat Test')).toBeInTheDocument();
       });
 
-      render(<RadiologyInvestigationTable />);
-
-      expect(screen.getByText('Stat Test')).toBeInTheDocument();
       expect(screen.getByText('Routine Test')).toBeInTheDocument();
       expect(screen.getByText('Empty Priority Test')).toBeInTheDocument();
       expect(screen.getAllByText('Urgent')).toHaveLength(1);
     });
   });
 
-  describe('Accessibility', () => {
-    it('has no accessibility violations with data', async () => {
-      mockUseRadiologyInvestigation.mockReturnValue({
-        radiologyInvestigations: mockRadiologyInvestigations,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
+  describe('emptyEncounterFilter condition', () => {
+    it('should not fetch radiology investigations when emptyEncounterFilter is true (episodeOfCareUuids has values and encounterUuids is empty)', async () => {
+      mockGetPatientRadiologyInvestigations.mockResolvedValue(
+        mockRadiologyInvestigations,
+      );
+
+      render(
+        renderRadiologyInvestigations(
+          { orderType: 'Radiology Order' },
+          [], // empty encounterUuids
+          ['episode-1'], // episodeOfCareUuids has values
+        ),
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('No radiology investigations recorded'),
+        ).toBeInTheDocument();
       });
 
-      const { container } = render(<RadiologyInvestigationTable />);
+      // Verify that getPatientRadiologyInvestigations was NOT called
+      expect(mockGetPatientRadiologyInvestigations).not.toHaveBeenCalled();
+    });
+
+    it('should fetch radiology investigations when emptyEncounterFilter is false (episodeOfCareUuids is empty)', async () => {
+      mockGroupByDate.mockReturnValue([
+        {
+          date: '2023-12-01',
+          items: [
+            mockRadiologyInvestigations[0],
+            mockRadiologyInvestigations[1],
+          ],
+        },
+      ]);
+
+      mockGetPatientRadiologyInvestigations.mockResolvedValue(
+        mockRadiologyInvestigations,
+      );
+
+      render(
+        renderRadiologyInvestigations(
+          { orderType: 'Radiology Order' },
+          ['encounter-1'], // encounterUuids has values
+          [], // empty episodeOfCareUuids
+        ),
+      );
+
+      await waitFor(() => {
+        expect(mockGetPatientRadiologyInvestigations).toHaveBeenCalled();
+      });
+    });
+
+    it('should fetch radiology investigations when emptyEncounterFilter is false (both have values)', async () => {
+      mockGroupByDate.mockReturnValue([
+        {
+          date: '2023-12-01',
+          items: [
+            mockRadiologyInvestigations[0],
+            mockRadiologyInvestigations[1],
+          ],
+        },
+      ]);
+
+      mockGetPatientRadiologyInvestigations.mockResolvedValue(
+        mockRadiologyInvestigations,
+      );
+
+      render(
+        renderRadiologyInvestigations(
+          { orderType: 'Radiology Order' },
+          ['encounter-1'], // encounterUuids has values
+          ['episode-1'], // episodeOfCareUuids has values
+        ),
+      );
+
+      await waitFor(() => {
+        expect(mockGetPatientRadiologyInvestigations).toHaveBeenCalled();
+      });
+    });
+
+    it('should fetch radiology investigations when emptyEncounterFilter is false (no episode provided)', async () => {
+      mockGroupByDate.mockReturnValue([
+        {
+          date: '2023-12-01',
+          items: [
+            mockRadiologyInvestigations[0],
+            mockRadiologyInvestigations[1],
+          ],
+        },
+      ]);
+
+      mockGetPatientRadiologyInvestigations.mockResolvedValue(
+        mockRadiologyInvestigations,
+      );
+
+      render(renderRadiologyInvestigations({ orderType: 'Radiology Order' }));
+
+      await waitFor(() => {
+        expect(mockGetPatientRadiologyInvestigations).toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('Accessibility', () => {
+    it('has no accessibility violations with data', async () => {
+      mockGroupByDate.mockReturnValue([
+        {
+          date: '2023-12-01',
+          items: [mockRadiologyInvestigations[0]],
+        },
+      ]);
+
+      mockGetPatientRadiologyInvestigations.mockResolvedValue(
+        mockRadiologyInvestigations,
+      );
+
+      const { container } = render(renderRadiologyInvestigations());
+
+      await waitFor(() => {
+        expect(screen.getByText('Chest X-Ray')).toBeInTheDocument();
+      });
+
       expect(await axe(container)).toHaveNoViolations();
     });
 
     it('has no accessibility violations in empty state', async () => {
-      mockUseRadiologyInvestigation.mockReturnValue({
-        radiologyInvestigations: [],
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
+      mockGetPatientRadiologyInvestigations.mockResolvedValue([]);
+
+      const { container } = render(renderRadiologyInvestigations());
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('No radiology investigations recorded'),
+        ).toBeInTheDocument();
       });
 
-      const { container } = render(<RadiologyInvestigationTable />);
       expect(await axe(container)).toHaveNoViolations();
     });
   });
