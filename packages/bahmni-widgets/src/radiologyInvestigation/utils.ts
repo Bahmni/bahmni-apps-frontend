@@ -1,8 +1,6 @@
-import {
-  RadiologyInvestigation,
-  getPriorityByOrder,
-  filterReplacementEntries,
-} from '@bahmni/services';
+import { getPriorityByOrder, filterReplacementEntries } from '@bahmni/services';
+import { ServiceRequest } from 'fhir/r4';
+import { RadiologyInvestigationViewModel } from './models';
 
 /**
  * Priority order for radiology investigation priorities (case insensitive)
@@ -28,8 +26,8 @@ export const getRadiologyPriority = (priority: string): number => {
  * @returns New sorted array (does not mutate original)
  */
 export const sortRadiologyInvestigationsByPriority = (
-  investigations: RadiologyInvestigation[],
-): RadiologyInvestigation[] => {
+  investigations: RadiologyInvestigationViewModel[],
+): RadiologyInvestigationViewModel[] => {
   return [...investigations].sort((a, b) => {
     return getRadiologyPriority(a.priority) - getRadiologyPriority(b.priority);
   });
@@ -43,11 +41,43 @@ export const sortRadiologyInvestigationsByPriority = (
  * @returns Filtered array without replacement-related entries
  */
 export const filterRadiologyInvestionsReplacementEntries = (
-  investigations: RadiologyInvestigation[],
-): RadiologyInvestigation[] => {
+  investigations: RadiologyInvestigationViewModel[],
+): RadiologyInvestigationViewModel[] => {
   return filterReplacementEntries(
     investigations,
     (investigation) => investigation.id,
     (investigation) => investigation.replaces,
   );
 };
+
+/**
+ * Transforms FHIR ServiceRequest resources into radiology investigation view models
+ * @param serviceRequests - Array of FHIR ServiceRequest resources
+ * @returns Array of RadiologyInvestigationViewModel view models ready for table rendering
+ */
+export function createRadiologyInvestigationViewModels(
+  serviceRequests: ServiceRequest[],
+): RadiologyInvestigationViewModel[] {
+  return serviceRequests.map((order) => {
+    const orderedDate = order.occurrencePeriod?.start as string;
+
+    const replaces = order.replaces
+      ?.map((replace) => {
+        const reference = replace.reference ?? '';
+        return reference.split('/').pop() ?? '';
+      })
+      .filter((id) => id.length > 0);
+
+    const note = order.note?.[0]?.text;
+
+    return {
+      id: order.id as string,
+      testName: order.code!.text!,
+      priority: order.priority!,
+      orderedBy: order.requester!.display!,
+      orderedDate: orderedDate,
+      ...(replaces && replaces.length > 0 && { replaces }),
+      ...(note && { note }),
+    };
+  });
+}

@@ -1,1 +1,4 @@
-export { default as RadiologyInvestigationTable } from './RadiologyInvestigationTable';
+export {
+  default as RadiologyInvestigationTable,
+  radiologyInvestigationQueryKeys,
+} from './RadiologyInvestigationTable';
