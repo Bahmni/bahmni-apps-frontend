@@ -29,7 +29,7 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
   episodeOfCareUuids,
   encounterUuids,
   visitUuids,
-  isActionAreaVisible
+  isActionAreaVisible,
 }) => {
   const { t } = useTranslation();
 

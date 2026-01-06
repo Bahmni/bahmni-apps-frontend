@@ -28,7 +28,7 @@ export interface DashboardContainerProps {
 const DashboardContainer: React.FC<DashboardContainerProps> = ({
   sections,
   activeItemId,
-  isActionAreaVisible
+  isActionAreaVisible,
 }) => {
   const { t } = useTranslation();
   const patientUuid = usePatientUUID();
