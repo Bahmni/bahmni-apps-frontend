@@ -16,6 +16,7 @@ import styles from './styles/DashboardContainer.module.scss';
 export interface DashboardContainerProps {
   sections: DashboardSectionConfig[];
   activeItemId?: string | null;
+  isActionAreaVisible: boolean;
 }
 
 /**
@@ -27,6 +28,7 @@ export interface DashboardContainerProps {
 const DashboardContainer: React.FC<DashboardContainerProps> = ({
   sections,
   activeItemId,
+  isActionAreaVisible
 }) => {
   const { t } = useTranslation();
   const patientUuid = usePatientUUID();
@@ -110,6 +112,7 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
             episodeOfCareUuids={allEpisodeOfCareIds}
             encounterUuids={allEncounterIds}
             visitUuids={allVisitIds}
+            isActionAreaVisible={isActionAreaVisible}
           />
         </article>
       ))}

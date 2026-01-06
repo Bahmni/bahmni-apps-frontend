@@ -14,6 +14,7 @@ export interface DashboardSectionProps {
   episodeOfCareUuids: string[];
   encounterUuids: string[];
   visitUuids: string[];
+  isActionAreaVisible: boolean;
 }
 
 /**
@@ -28,6 +29,7 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
   episodeOfCareUuids,
   encounterUuids,
   visitUuids,
+  isActionAreaVisible
 }) => {
   const { t } = useTranslation();
 
@@ -61,6 +63,7 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
             episodeOfCareUuids={episodeOfCareUuids}
             encounterUuids={encounterUuids}
             visitUuids={visitUuids}
+            isActionAreaVisible={isActionAreaVisible}
           />
         </Suspense>
         {showDivider && <div className={styles.divider} />}
