@@ -1,46 +1,17 @@
 import { Bundle, ServiceRequest } from 'fhir/r4';
-import { getServiceRequests } from '../orderRequestService';
-import { RadiologyInvestigation } from './models';
+import { get } from '../api';
+import { PATIENT_RADIOLOGY_RESOURCE_URL } from './constants';
 
 /**
  * Fetches radiology investigations for a given patient UUID from the FHIR R4 endpoint
  * @param patientUUID - The UUID of the patient
  * @returns Promise resolving to a Bundle containing radiology investigations
  */
-
-/**
- * Formats FHIR radiology investigations into a more user-friendly format
- * @param bundle - The FHIR bundle to format
- * @returns An array of formatted radiology order investigation objects
- */
-function formatRadiologyInvestigations(
-  bundle: Bundle,
-): RadiologyInvestigation[] {
-  const orders =
-    bundle.entry?.map((entry) => entry.resource as ServiceRequest) ?? [];
-
-  return orders.map((order) => {
-    const orderedDate = order.occurrencePeriod?.start as string;
-
-    const replaces = order.replaces
-      ?.map((replace) => {
-        const reference = replace.reference ?? '';
-        return reference.split('/').pop() ?? '';
-      })
-      .filter((id) => id.length > 0);
-
-    const note = order.note?.[0]?.text;
-
-    return {
-      id: order.id as string,
-      testName: order.code!.text!,
-      priority: order.priority!,
-      orderedBy: order.requester!.display!,
-      orderedDate: orderedDate,
-      ...(replaces && replaces.length > 0 && { replaces }),
-      ...(note && { note }),
-    };
-  });
+export async function getPatientRadiologyInvestigationBundle(
+  patientUUID: string,
+): Promise<Bundle> {
+  const url = PATIENT_RADIOLOGY_RESOURCE_URL(patientUUID);
+  return await get<Bundle>(url);
 }
 
 /**
@@ -53,15 +24,11 @@ function formatRadiologyInvestigations(
  */
 export async function getPatientRadiologyInvestigations(
   patientUUID: string,
-  category: string,
-  encounterUuids?: string[],
-  numberOfVisits?: number,
-): Promise<RadiologyInvestigation[]> {
-  const bundle = await getServiceRequests(
-    category,
-    patientUUID,
-    encounterUuids,
-    numberOfVisits,
-  );
-  return formatRadiologyInvestigations(bundle);
+): Promise<ServiceRequest[]> {
+  const bundle = await getPatientRadiologyInvestigationBundle(patientUUID);
+  const radiologyInvestigations =
+    bundle.entry
+      ?.filter((entry) => entry.resource?.resourceType === 'ServiceRequest')
+      .map((entry) => entry.resource as ServiceRequest) ?? [];
+  return radiologyInvestigations;
 }
