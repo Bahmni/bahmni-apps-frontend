@@ -139,7 +139,7 @@ export {
 } from './medicationRequestService';
 export {
   getPatientRadiologyInvestigations,
-  type RadiologyInvestigation,
+  getPatientRadiologyInvestigationBundle,
 } from './radiologyInvestigationService';
 export {
   getPatientLabInvestigations,

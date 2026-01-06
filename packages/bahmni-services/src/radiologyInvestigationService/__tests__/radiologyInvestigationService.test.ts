@@ -1,4 +1,4 @@
-import { get } from '../../api';
+import { getServiceRequests } from '../../orderRequestService';
 import {
   mockPatientUUID,
   mockRadiologyInvestigations,
@@ -11,7 +11,7 @@ import {
   getPatientRadiologyInvestigations,
 } from '../radiologyInvestigationService';
 
-jest.mock('../../api');
+jest.mock('../../orderRequestService');
 
 describe('radiologyInvestigationService', () => {
   beforeEach(() => {
@@ -19,57 +19,70 @@ describe('radiologyInvestigationService', () => {
     jest.spyOn(console, 'error').mockImplementation();
   });
 
-  describe('mockRadiologyInvestigations', () => {
+  describe('getPatientRadiologyInvestigationBundle', () => {
+    const mockCategory = 'd3561dc0-5e07-11ef-8f7c-0242ac120002';
+
     it('should fetch service request bundle for a valid patient UUID', async () => {
-      (get as jest.Mock).mockResolvedValueOnce(
+      (getServiceRequests as jest.Mock).mockResolvedValueOnce(
         mockRadiologyInvestigationBundle,
       );
 
-      const result =
-        await getPatientRadiologyInvestigationBundle(mockPatientUUID);
+      const result = await getPatientRadiologyInvestigationBundle(
+        mockPatientUUID,
+        mockCategory,
+      );
 
-      expect(get).toHaveBeenCalledWith(
-        `/openmrs/ws/fhir2/R4/ServiceRequest?category=d3561dc0-5e07-11ef-8f7c-0242ac120002&patient=${mockPatientUUID}&_count=100&_sort=-_lastUpdated&numberOfVisits=5`,
+      expect(getServiceRequests).toHaveBeenCalledWith(
+        mockCategory,
+        mockPatientUUID,
+        undefined,
+        undefined,
       );
       expect(result).toEqual(mockRadiologyInvestigationBundle);
     });
 
     it('should propagate errors from the API', async () => {
       const error = new Error('Network error');
-      (get as jest.Mock).mockRejectedValueOnce(error);
+      (getServiceRequests as jest.Mock).mockRejectedValueOnce(error);
 
       await expect(
-        getPatientRadiologyInvestigationBundle(mockPatientUUID),
+        getPatientRadiologyInvestigationBundle(mockPatientUUID, mockCategory),
       ).rejects.toThrow('Network error');
     });
   });
 
   describe('getPatientRadiologyInvestigations', () => {
+    const mockCategory = 'd3561dc0-5e07-11ef-8f7c-0242ac120002';
+
     it('should fetch conditions for a valid patient UUID', async () => {
-      (get as jest.Mock).mockResolvedValueOnce(
+      (getServiceRequests as jest.Mock).mockResolvedValueOnce(
         mockRadiologyInvestigationBundle,
       );
 
       const result = await getPatientRadiologyInvestigations(
         mockPatientUUID,
-        mockCategoryUUID,
-        undefined,
-        5,
+        mockCategory,
       );
 
-      expect(get).toHaveBeenCalledWith(
-        `/openmrs/ws/fhir2/R4/ServiceRequest?category=d3561dc0-5e07-11ef-8f7c-0242ac120002&patient=${mockPatientUUID}&_count=100&_sort=-_lastUpdated&numberOfVisits=5`,
+      expect(getServiceRequests).toHaveBeenCalledWith(
+        mockCategory,
+        mockPatientUUID,
+        undefined,
+        undefined,
       );
       expect(result).toEqual(mockRadiologyInvestigations);
     });
 
     it('should return empty array when no investigations exist', async () => {
       const patientUUID = 'no-investigations';
-      (get as jest.Mock).mockResolvedValueOnce(
+      (getServiceRequests as jest.Mock).mockResolvedValueOnce(
         mockEmptyRadiologyInvestigationBundle,
       );
 
-      const result = await getPatientRadiologyInvestigations(patientUUID);
+      const result = await getPatientRadiologyInvestigations(
+        patientUUID,
+        mockCategory,
+      );
 
       expect(result).toEqual([]);
       expect(result).toHaveLength(0);
@@ -80,16 +93,26 @@ describe('radiologyInvestigationService', () => {
         ...mockRadiologyInvestigationBundle,
         entry: undefined,
       };
-      (get as jest.Mock).mockResolvedValueOnce(malformedResponse);
+      (getServiceRequests as jest.Mock).mockResolvedValueOnce(
+        malformedResponse,
+      );
 
-      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
+      const result = await getPatientRadiologyInvestigations(
+        mockPatientUUID,
+        mockCategory,
+      );
       expect(result).toEqual([]);
     });
 
     it('should filter out invalid resource types', async () => {
-      (get as jest.Mock).mockResolvedValueOnce(mockMalformedBundle);
+      (getServiceRequests as jest.Mock).mockResolvedValueOnce(
+        mockMalformedBundle,
+      );
 
-      const result = await getPatientRadiologyInvestigations(mockPatientUUID);
+      const result = await getPatientRadiologyInvestigations(
+        mockPatientUUID,
+        mockCategory,
+      );
       expect(result).toEqual([]);
     });
   });
