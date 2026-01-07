@@ -4,8 +4,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { BrowserRouter } from 'react-router-dom';
-import { useCreateVisit } from '../../../hooks/useVisit';
 import { useFilteredExtensions } from '../../../hooks/useFilteredExtensions';
+import { useCreateVisit } from '../../../hooks/useVisit';
 import * as extensionNavigation from '../../../utils/extensionNavigation';
 import { RegistrationActions } from '../RegistrationActions';
 
