@@ -107,7 +107,7 @@ export const RelationshipRow = ({
         titleText=""
         label={t('REGISTRATION_SELECT')}
         items={relationshipTypes}
-        itemToString={(item) => item?.aIsToB ?? ''}
+        itemToString={(item) => (item ? `${item.aIsToB}/ ${item.bIsToA}` : '')}
         selectedItem={
           relationshipTypes.find(
             (rt) => rt.uuid === relationship.relationshipType,
