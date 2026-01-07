@@ -37,3 +37,9 @@
     max-block-size: 100%;
   }
 }
+
+.formContent {
+  padding: $spacing-05;
+  overflow-y: auto;
+  max-height: 70vh;
+}
