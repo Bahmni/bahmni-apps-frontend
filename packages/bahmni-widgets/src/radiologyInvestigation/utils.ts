@@ -1,6 +1,10 @@
 import { getPriorityByOrder, filterReplacementEntries } from '@bahmni/services';
-import { ServiceRequest } from 'fhir/r4';
-import { RadiologyInvestigationViewModel } from './models';
+import {
+  ServiceRequest,
+  Bundle,
+  ImagingStudy as FhirImagingStudy,
+} from 'fhir/r4';
+import { RadiologyInvestigationViewModel, ImagingStudy } from './models';
 
 /**
  * Priority order for radiology investigation priorities (case insensitive)
@@ -50,14 +54,70 @@ export const filterRadiologyInvestionsReplacementEntries = (
   );
 };
 
+const extractServiceRequests = (
+  bundle: Bundle<ServiceRequest | FhirImagingStudy>,
+): ServiceRequest[] => {
+  return (
+    bundle.entry
+      ?.filter((entry) => entry.resource?.resourceType === 'ServiceRequest')
+      .map((entry) => entry.resource as ServiceRequest) ?? []
+  );
+};
+
+const extractImagingStudies = (
+  bundle: Bundle<ServiceRequest | FhirImagingStudy>,
+): FhirImagingStudy[] => {
+  return (
+    bundle.entry
+      ?.filter((entry) => entry.resource?.resourceType === 'ImagingStudy')
+      .map((entry) => entry.resource as FhirImagingStudy) ?? []
+  );
+};
+
+const findMatchingImagingStudies = (
+  serviceRequestId: string,
+  imagingStudies: FhirImagingStudy[],
+): FhirImagingStudy[] => {
+  return imagingStudies.filter((imagingStudy) => {
+    return imagingStudy.basedOn?.some((basedOnRef) => {
+      const referencedId = basedOnRef.reference?.split('/').pop() ?? '';
+      return referencedId === serviceRequestId;
+    });
+  });
+};
+
+const transformToImagingStudyViewModel = (
+  fhirImagingStudy: FhirImagingStudy,
+): ImagingStudy => {
+  const dicomUid =
+    fhirImagingStudy.identifier?.find(
+      (identifier) => identifier.system === 'urn:dicom:uid',
+    )?.value ?? '';
+
+  return {
+    id: fhirImagingStudy.id as string,
+    StudyInstanceUIDs: dicomUid,
+    status: fhirImagingStudy.status,
+  };
+};
+
+export const getAvailableImagingStudies = (
+  imagingStudies?: ImagingStudy[],
+): ImagingStudy[] => {
+  return imagingStudies?.filter((study) => study.status === 'available') ?? [];
+};
+
 /**
- * Transforms FHIR ServiceRequest resources into radiology investigation view models
- * @param serviceRequests - Array of FHIR ServiceRequest resources
+ * Transforms FHIR Bundle containing ServiceRequest and ImagingStudy resources into radiology investigation view models
+ * @param bundle - FHIR Bundle containing ServiceRequest and ImagingStudy resources
  * @returns Array of RadiologyInvestigationViewModel view models ready for table rendering
  */
 export function createRadiologyInvestigationViewModels(
-  serviceRequests: ServiceRequest[],
+  bundle: Bundle<ServiceRequest | FhirImagingStudy>,
 ): RadiologyInvestigationViewModel[] {
+  const serviceRequests = extractServiceRequests(bundle);
+  const imagingStudies = extractImagingStudies(bundle);
+
   return serviceRequests.map((order) => {
     const orderedDate = order.occurrencePeriod?.start as string;
 
@@ -70,6 +130,15 @@ export function createRadiologyInvestigationViewModels(
 
     const note = order.note?.[0]?.text;
 
+    const matchingFhirImagingStudies = findMatchingImagingStudies(
+      order.id as string,
+      imagingStudies,
+    );
+
+    const imagingStudiesViewModels = matchingFhirImagingStudies.map(
+      transformToImagingStudyViewModel,
+    );
+
     return {
       id: order.id as string,
       testName: order.code!.text!,
@@ -78,6 +147,9 @@ export function createRadiologyInvestigationViewModels(
       orderedDate: orderedDate,
       ...(replaces && replaces.length > 0 && { replaces }),
       ...(note && { note }),
+      ...(imagingStudiesViewModels.length > 0 && {
+        imagingStudies: imagingStudiesViewModels,
+      }),
     };
   });
 }

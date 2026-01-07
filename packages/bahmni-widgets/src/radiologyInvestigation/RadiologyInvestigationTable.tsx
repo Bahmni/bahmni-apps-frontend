@@ -4,9 +4,10 @@ import {
   Tag,
   Accordion,
   AccordionItem,
+  Link,
 } from '@bahmni/design-system';
 import {
-  getPatientRadiologyInvestigations,
+  getPatientRadiologyInvestigationBundleWithImagingStudy,
   useTranslation,
   groupByDate,
   formatDate,
@@ -27,6 +28,7 @@ import {
   sortRadiologyInvestigationsByPriority,
   filterRadiologyInvestionsReplacementEntries,
   createRadiologyInvestigationViewModels,
+  getAvailableImagingStudies,
 } from './utils';
 
 export const radiologyInvestigationQueryKeys = (patientUUID: string) =>
@@ -38,7 +40,7 @@ const fetchRadiologyInvestigations = async (
   encounterUuids?: string[],
   numberOfVisits?: number,
 ): Promise<RadiologyInvestigationViewModel[]> => {
-  const response = await getPatientRadiologyInvestigations(
+  const response = await getPatientRadiologyInvestigationBundleWithImagingStudy(
     patientUUID!,
     category,
     encounterUuids,
@@ -61,6 +63,7 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
   const { addNotification } = useNotification();
   const categoryName = config?.orderType as string;
   const numberOfVisits = config?.numberOfVisits as number;
+  const pacsViewerUrl = config?.pacsViewerUrl as string;
 
   const emptyEncounterFilter = shouldEnableEncounterFilter(
     episodeOfCareUuids,
@@ -84,7 +87,7 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
     queryFn: () =>
       fetchRadiologyInvestigations(
         patientUUID!,
-        categoryUuid,
+        categoryUuid!,
         encounterUuids,
         numberOfVisits,
       ),
@@ -149,58 +152,97 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
     }));
   }, [data]);
 
-  const renderCell = useCallback(
-    (investigation: RadiologyInvestigationViewModel, cellId: string) => {
-      switch (cellId) {
-        case 'testName':
-          return (
-            <div
-              id={`${investigation.id}-test-name`}
-              data-testid={`${investigation.id}-test-name-test-id`}
-            >
-              <p className={styles.investigationName}>
-                <span>{investigation.testName}</span>
-                {investigation.note && (
-                  <TooltipIcon
-                    iconName="fa-file-lines"
-                    content={investigation.note}
-                    ariaLabel={investigation.note}
-                  />
-                )}
-              </p>
-              {investigation.priority === 'stat' && (
-                <Tag
-                  id={`${investigation.id}-priority`}
-                  testId={`${investigation.id}-priority-test-id`}
-                  type="red"
+  const renderResultsCell = useCallback(
+    (investigation: RadiologyInvestigationViewModel) => {
+      const availableStudies = getAvailableImagingStudies(
+        investigation.imagingStudies,
+      );
+
+      if (availableStudies.length > 0 && pacsViewerUrl) {
+        return (
+          <div
+            id={`${investigation.id}-results`}
+            data-testid={`${investigation.id}-results-test-id`}
+          >
+            {availableStudies.map((study, index) => {
+              const viewerUrl = pacsViewerUrl.replace(
+                '{{StudyInstanceUIDs}}',
+                study.StudyInstanceUIDs,
+              );
+              return (
+                <Link
+                  key={study.id}
+                  href={viewerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  id={`${investigation.id}-result-link-${index}`}
+                  testId={`${investigation.id}-result-link-${index}-test-id`}
                 >
-                  {t('RADIOLOGY_PRIORITY_URGENT')}
-                </Tag>
-              )}
-            </div>
-          );
-        case 'results':
-          return (
-            <span
-              id={`${investigation.id}-results`}
-              data-testid={`${investigation.id}-results-test-id`}
-            >
-              --
-            </span>
-          );
-        case 'orderedBy':
-          return (
-            <span
-              id={`${investigation.id}-ordered-by`}
-              data-testid={`${investigation.id}-ordered-by-test-id`}
-            >
-              {investigation.orderedBy}
-            </span>
-          );
+                  {t('RADIOLOGY_VIEW_RESULTS')}
+                </Link>
+              );
+            })}
+          </div>
+        );
       }
+
+      return (
+        <span
+          id={`${investigation.id}-results`}
+          data-testid={`${investigation.id}-results-test-id`}
+        >
+          --
+        </span>
+      );
     },
-    [t],
+    [pacsViewerUrl, t],
   );
+
+  const renderCell = (
+    investigation: RadiologyInvestigationViewModel,
+    cellId: string,
+  ) => {
+    switch (cellId) {
+      case 'testName':
+        return (
+          <div
+            id={`${investigation.id}-test-name`}
+            data-testid={`${investigation.id}-test-name-test-id`}
+          >
+            <p className={styles.investigationName}>
+              <span>{investigation.testName}</span>
+              {investigation.note && (
+                <TooltipIcon
+                  iconName="fa-file-lines"
+                  content={investigation.note}
+                  ariaLabel={investigation.note}
+                />
+              )}
+            </p>
+            {investigation.priority === 'stat' && (
+              <Tag
+                id={`${investigation.id}-priority`}
+                testId={`${investigation.id}-priority-test-id`}
+                type="red"
+              >
+                {t('RADIOLOGY_PRIORITY_URGENT')}
+              </Tag>
+            )}
+          </div>
+        );
+      case 'results':
+        return renderResultsCell(investigation);
+      case 'orderedBy':
+        return (
+          <span
+            id={`${investigation.id}-ordered-by`}
+            data-testid={`${investigation.id}-ordered-by-test-id`}
+          >
+            {investigation.orderedBy}
+          </span>
+        );
+    }
+  };
 
   return (
     <div

@@ -140,6 +140,7 @@ export {
 export {
   getPatientRadiologyInvestigations,
   getPatientRadiologyInvestigationBundle,
+  getPatientRadiologyInvestigationBundleWithImagingStudy,
 } from './radiologyInvestigationService';
 export {
   getPatientLabInvestigations,

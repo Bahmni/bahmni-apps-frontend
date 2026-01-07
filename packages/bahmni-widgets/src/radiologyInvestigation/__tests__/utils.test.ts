@@ -1,85 +1,22 @@
-import { ServiceRequest } from 'fhir/r4';
-import { RadiologyInvestigationViewModel } from '../models';
+import {
+  createMockRadiologyInvestigation,
+  mockRadiologyInvestigationsForFiltering,
+  mockRadiologyChainReplacement,
+  createMockServiceRequestBundle,
+  createMockServiceRequest,
+  createMockImagingStudy,
+  createMockBundleWithServiceRequestAndImagingStudy,
+  mockImagingStudies,
+  mockImagingStudiesWithoutAvailable,
+} from '../__mocks__/mocks';
 import {
   PRIORITY_ORDER,
   getRadiologyPriority,
   sortRadiologyInvestigationsByPriority,
   filterRadiologyInvestionsReplacementEntries,
   createRadiologyInvestigationViewModels,
+  getAvailableImagingStudies,
 } from '../utils';
-
-const createMockRadiologyInvestigation = (
-  id: string,
-  testName: string,
-  priority: string,
-  replaces?: string[],
-): RadiologyInvestigationViewModel => ({
-  id,
-  testName,
-  priority,
-  orderedBy: 'Dr. Test',
-  orderedDate: '2023-01-01',
-  ...(replaces && replaces.length > 0 && { replaces }),
-});
-
-const mockRadiologyInvestigationsForFiltering: RadiologyInvestigationViewModel[] =
-  [
-    {
-      id: '207172a2-27e3-4fef-bea2-85fb826575e4',
-      testName: 'MRI - Replacing',
-      priority: 'routine',
-      orderedBy: 'Dr. Test',
-      orderedDate: '2023-01-01',
-      replaces: ['271f2b4f-a239-418b-ba9e-f23014093df3'],
-    },
-    {
-      id: '271f2b4f-a239-418b-ba9e-f23014093df3',
-      testName: 'MRI - Replaced',
-      priority: 'completed',
-      orderedBy: 'Dr. Test',
-      orderedDate: '2023-01-01',
-    },
-    {
-      id: '9c847638-295b-4e3e-933d-47d5cad34faf',
-      testName: 'X-Ray - Standalone',
-      priority: 'routine',
-      orderedBy: 'Dr. Test',
-      orderedDate: '2023-01-01',
-    },
-  ];
-
-const mockRadiologyChainReplacement: RadiologyInvestigationViewModel[] = [
-  {
-    id: 'chain-3',
-    testName: 'Third Version',
-    priority: 'stat',
-    orderedBy: 'Dr. Test',
-    orderedDate: '2023-01-01',
-    replaces: ['chain-2'],
-  },
-  {
-    id: 'chain-2',
-    testName: 'Second Version',
-    priority: 'routine',
-    orderedBy: 'Dr. Test',
-    orderedDate: '2023-01-01',
-    replaces: ['chain-1'],
-  },
-  {
-    id: 'chain-1',
-    testName: 'First Version',
-    priority: 'routine',
-    orderedBy: 'Dr. Test',
-    orderedDate: '2023-01-01',
-  },
-  {
-    id: 'standalone',
-    testName: 'Standalone',
-    priority: 'routine',
-    orderedBy: 'Dr. Test',
-    orderedDate: '2023-01-01',
-  },
-];
 
 describe('radiologyInvestigation utilities', () => {
   describe('PRIORITY_ORDER', () => {
@@ -178,25 +115,9 @@ describe('radiologyInvestigation utilities', () => {
 
   describe('createRadiologyInvestigationViewModels', () => {
     it('should transform FHIR ServiceRequest to view model', () => {
-      const serviceRequest: ServiceRequest = {
-        resourceType: 'ServiceRequest',
-        id: 'order-1',
-        status: 'active',
-        intent: 'order',
-        subject: { reference: 'Patient/123' },
-        code: {
-          text: 'Chest X-Ray',
-        },
-        priority: 'stat',
-        requester: {
-          display: 'Dr. Smith',
-        },
-        occurrencePeriod: {
-          start: '2023-10-15T10:30:00.000Z',
-        },
-      };
+      const bundle = createMockServiceRequestBundle(createMockServiceRequest());
 
-      const result = createRadiologyInvestigationViewModels([serviceRequest]);
+      const result = createRadiologyInvestigationViewModels(bundle);
 
       expect(result).toEqual([
         {
@@ -210,66 +131,163 @@ describe('radiologyInvestigation utilities', () => {
     });
 
     it('should handle ServiceRequest with replaces field', () => {
-      const serviceRequest: ServiceRequest = {
-        resourceType: 'ServiceRequest',
-        id: 'order-new',
-        status: 'active',
-        intent: 'order',
-        subject: { reference: 'Patient/123' },
-        code: {
-          text: 'Updated X-Ray',
-        },
-        priority: 'stat',
-        requester: {
-          display: 'Dr. Smith',
-        },
-        occurrencePeriod: {
-          start: '2023-10-15T10:30:00.000Z',
-        },
-        replaces: [
-          {
-            reference: 'ServiceRequest/order-1',
-            type: 'ServiceRequest',
+      const bundle = createMockServiceRequestBundle(
+        createMockServiceRequest({
+          id: 'order-new',
+          code: {
+            text: 'Updated X-Ray',
           },
-        ],
-      };
+          replaces: [
+            {
+              reference: 'ServiceRequest/order-1',
+              type: 'ServiceRequest',
+            },
+          ],
+        }),
+      );
 
-      const result = createRadiologyInvestigationViewModels([serviceRequest]);
+      const result = createRadiologyInvestigationViewModels(bundle);
 
       expect(result[0].replaces).toEqual(['order-1']);
     });
 
     it('should handle ServiceRequest with note field', () => {
-      const serviceRequest: ServiceRequest = {
-        resourceType: 'ServiceRequest',
-        id: 'order-1',
-        status: 'active',
-        intent: 'order',
-        subject: { reference: 'Patient/123' },
-        code: {
-          text: 'Chest X-Ray',
-        },
-        priority: 'stat',
-        requester: {
-          display: 'Dr. Smith',
-        },
-        occurrencePeriod: {
-          start: '2023-10-15T10:30:00.000Z',
-        },
-        note: [
-          {
-            text: 'Patient should be fasting',
-          },
-        ],
-      };
+      const bundle = createMockServiceRequestBundle(
+        createMockServiceRequest({
+          note: [
+            {
+              text: 'Patient should be fasting',
+            },
+          ],
+        }),
+      );
 
-      const result = createRadiologyInvestigationViewModels([serviceRequest]);
+      const result = createRadiologyInvestigationViewModels(bundle);
 
       expect(result[0].note).toBe('Patient should be fasting');
     });
 
-    it('should handle empty array', () => {
-      const result = createRadiologyInvestigationViewModels([]);
+    it('should handle empty bundle', () => {
+      const bundle = createMockServiceRequestBundle(createMockServiceRequest());
+      bundle.entry = [];
+
+      const result = createRadiologyInvestigationViewModels(bundle);
+      expect(result).toEqual([]);
+    });
+
+    it('should match ImagingStudy to ServiceRequest and include in view model', () => {
+      const serviceRequest = createMockServiceRequest({
+        code: { text: 'CT Scan' },
+        priority: 'routine',
+      });
+      const imagingStudy = createMockImagingStudy();
+      const bundle = createMockBundleWithServiceRequestAndImagingStudy(
+        serviceRequest,
+        [imagingStudy],
+      );
+
+      const result = createRadiologyInvestigationViewModels(bundle);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].imagingStudies).toEqual([
+        {
+          id: 'imaging-1',
+          StudyInstanceUIDs: '1.2.840.113619.2.55.3.1',
+          status: 'available',
+        },
+      ]);
+    });
+
+    it('should handle multiple ImagingStudies for a single ServiceRequest', () => {
+      const serviceRequest = createMockServiceRequest({
+        code: { text: 'MRI' },
+        requester: { display: 'Dr. Jones' },
+        occurrencePeriod: { start: '2023-10-16T14:00:00.000Z' },
+      });
+      const imagingStudy1 = createMockImagingStudy();
+      const imagingStudy2 = createMockImagingStudy({
+        id: 'imaging-2',
+        identifier: [
+          {
+            system: 'urn:dicom:uid',
+            value: '1.2.840.113619.2.55.3.2',
+          },
+        ],
+      });
+      const bundle = createMockBundleWithServiceRequestAndImagingStudy(
+        serviceRequest,
+        [imagingStudy1, imagingStudy2],
+      );
+
+      const result = createRadiologyInvestigationViewModels(bundle);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].imagingStudies).toHaveLength(2);
+      expect(result[0].imagingStudies?.[0].StudyInstanceUIDs).toBe(
+        '1.2.840.113619.2.55.3.1',
+      );
+      expect(result[0].imagingStudies?.[1].StudyInstanceUIDs).toBe(
+        '1.2.840.113619.2.55.3.2',
+      );
+    });
+
+    it('should not include ImagingStudies without DICOM UID identifier', () => {
+      const serviceRequest = createMockServiceRequest({
+        code: { text: 'Ultrasound' },
+        priority: 'routine',
+        requester: { display: 'Dr. Brown' },
+        occurrencePeriod: { start: '2023-10-17T09:00:00.000Z' },
+      });
+      const imagingStudy = createMockImagingStudy({
+        identifier: [
+          {
+            system: 'other-system',
+            value: 'some-other-id',
+          },
+        ],
+      });
+      const bundle = createMockBundleWithServiceRequestAndImagingStudy(
+        serviceRequest,
+        [imagingStudy],
+      );
+
+      const result = createRadiologyInvestigationViewModels(bundle);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].imagingStudies).toEqual([
+        {
+          id: 'imaging-1',
+          StudyInstanceUIDs: '',
+          status: 'available',
+        },
+      ]);
+    });
+  });
+
+  describe('getAvailableImagingStudies', () => {
+    it('should return empty array when no imaging studies provided', () => {
+      const result = getAvailableImagingStudies(undefined);
+      expect(result).toEqual([]);
+    });
+
+    it('should return empty array when imaging studies array is empty', () => {
+      const result = getAvailableImagingStudies([]);
+      expect(result).toEqual([]);
+    });
+
+    it('should return only studies with status "available"', () => {
+      const result = getAvailableImagingStudies(mockImagingStudies);
+
+      expect(result).toHaveLength(2);
+      expect(result[0].id).toBe('study-1');
+      expect(result[1].id).toBe('study-3');
+    });
+
+    it('should return empty array when no studies have status "available"', () => {
+      const result = getAvailableImagingStudies(
+        mockImagingStudiesWithoutAvailable,
+      );
+
       expect(result).toEqual([]);
     });
   });

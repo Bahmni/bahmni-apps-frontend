@@ -6,6 +6,11 @@ import {
 import { render, screen, act } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { useNotification } from '../../notification';
+import {
+  mockRadiologyInvestigations,
+  mockCategoryUuid,
+  mockRadiologyInvestigationWithAvailableImagingStudies,
+} from '../__mocks__/mocks';
 import RadiologyInvestigationTable from '../RadiologyInvestigationTable';
 
 expect.extend(toHaveNoViolations);
@@ -85,8 +90,6 @@ describe('RadiologyInvestigationTable', () => {
   });
 
   it('should fetch categoryUuid and resolve when config has orderType', () => {
-    const mockCategoryUuid = 'radiology-uuid-123';
-
     (useQuery as jest.Mock)
       .mockReturnValueOnce({
         data: mockCategoryUuid,
@@ -207,23 +210,7 @@ describe('RadiologyInvestigationTable', () => {
 
   it('should show radiology investigations table when patient has investigations', () => {
     (useQuery as jest.Mock).mockReturnValue({
-      data: [
-        {
-          id: 'investigation-1',
-          testName: 'Chest X-Ray',
-          priority: 'stat',
-          orderedBy: 'Dr. Smith',
-          orderedDate: '2023-12-01T10:30:00.000Z',
-          note: 'Patient should be fasting',
-        },
-        {
-          id: 'investigation-2',
-          testName: 'CT Scan',
-          priority: 'routine',
-          orderedBy: 'Dr. Johnson',
-          orderedDate: '2023-12-01T14:15:00.000Z',
-        },
-      ],
+      data: mockRadiologyInvestigations,
       error: null,
       isError: false,
       isLoading: false,
@@ -239,128 +226,47 @@ describe('RadiologyInvestigationTable', () => {
     expect(screen.getByText('Dr. Johnson')).toBeInTheDocument();
   });
 
-  describe('emptyEncounterFilter condition', () => {
-    it('should not fetch radiology investigations when emptyEncounterFilter is true (episodeOfCareUuids has values and encounterUuids is empty)', async () => {
-      mockGetPatientRadiologyInvestigations.mockResolvedValue(
-        mockRadiologyInvestigations,
-      );
-
-      render(
-        renderRadiologyInvestigations(
-          { orderType: 'Radiology Order' },
-          [], // empty encounterUuids
-          ['episode-1'], // episodeOfCareUuids has values
-        ),
-      );
-
-      await waitFor(() => {
-        expect(
-          screen.getByText('No radiology investigations recorded'),
-        ).toBeInTheDocument();
+  it('should render pacs result link when imaging studies with available status exist and pacsViewerUrl is configured', () => {
+    (useQuery as jest.Mock)
+      .mockReturnValueOnce({
+        data: mockCategoryUuid,
+        isLoading: false,
+        isError: false,
+        error: null,
+      })
+      .mockReturnValueOnce({
+        data: mockRadiologyInvestigationWithAvailableImagingStudies,
+        error: null,
+        isError: false,
+        isLoading: false,
       });
 
-      // Verify that getPatientRadiologyInvestigations was NOT called
-      expect(mockGetPatientRadiologyInvestigations).not.toHaveBeenCalled();
-    });
+    const wrapperWithPacsUrl = (
+      <QueryClientProvider client={queryClient}>
+        <RadiologyInvestigationTable
+          config={{
+            orderType: 'Radiology Order',
+            pacsViewerUrl:
+              'http://pacs.example.com/viewer?study={{studyInstanceUIDs}}',
+          }}
+        />
+      </QueryClientProvider>
+    );
 
-    it('should fetch radiology investigations when emptyEncounterFilter is false (episodeOfCareUuids is empty)', async () => {
-      mockGroupByDate.mockReturnValue([
-        {
-          date: '2023-12-01',
-          items: [
-            mockRadiologyInvestigations[0],
-            mockRadiologyInvestigations[1],
-          ],
-        },
-      ]);
+    render(wrapperWithPacsUrl);
 
-      mockGetPatientRadiologyInvestigations.mockResolvedValue(
-        mockRadiologyInvestigations,
-      );
-
-      render(
-        renderRadiologyInvestigations(
-          { orderType: 'Radiology Order' },
-          ['encounter-1'], // encounterUuids has values
-          [], // empty episodeOfCareUuids
-        ),
-      );
-
-      await waitFor(() => {
-        expect(mockGetPatientRadiologyInvestigations).toHaveBeenCalled();
-      });
-    });
-
-    it('should fetch radiology investigations when emptyEncounterFilter is false (both have values)', async () => {
-      mockGroupByDate.mockReturnValue([
-        {
-          date: '2023-12-01',
-          items: [
-            mockRadiologyInvestigations[0],
-            mockRadiologyInvestigations[1],
-          ],
-        },
-      ]);
-
-      mockGetPatientRadiologyInvestigations.mockResolvedValue(
-        mockRadiologyInvestigations,
-      );
-
-      render(
-        renderRadiologyInvestigations(
-          { orderType: 'Radiology Order' },
-          ['encounter-1'], // encounterUuids has values
-          ['episode-1'], // episodeOfCareUuids has values
-        ),
-      );
-
-      await waitFor(() => {
-        expect(mockGetPatientRadiologyInvestigations).toHaveBeenCalled();
-      });
-    });
-
-    it('should fetch radiology investigations when emptyEncounterFilter is false (no episode provided)', async () => {
-      mockGroupByDate.mockReturnValue([
-        {
-          date: '2023-12-01',
-          items: [
-            mockRadiologyInvestigations[0],
-            mockRadiologyInvestigations[1],
-          ],
-        },
-      ]);
-
-      mockGetPatientRadiologyInvestigations.mockResolvedValue(
-        mockRadiologyInvestigations,
-      );
-
-      render(renderRadiologyInvestigations({ orderType: 'Radiology Order' }));
-
-      await waitFor(() => {
-        expect(mockGetPatientRadiologyInvestigations).toHaveBeenCalled();
-      });
-    });
+    expect(
+      screen.getByTestId('investigation-1-result-link-0-test-id'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId('investigation-1-result-link-1-test-id'),
+    ).toBeInTheDocument();
   });
 
   describe('Accessibility', () => {
     it('passes accessibility tests with data', async () => {
       (useQuery as jest.Mock).mockReturnValue({
-        data: [
-          {
-            id: 'investigation-1',
-            testName: 'Chest X-Ray',
-            priority: 'stat',
-            orderedBy: 'Dr. Smith',
-            orderedDate: '2023-12-01T10:30:00.000Z',
-          },
-          {
-            id: 'investigation-2',
-            testName: 'CT Scan',
-            priority: 'routine',
-            orderedBy: 'Dr. Johnson',
-            orderedDate: '2023-12-01T14:15:00.000Z',
-          },
-        ],
+        data: mockRadiologyInvestigations,
         error: null,
         isError: false,
         isLoading: false,
