@@ -16,9 +16,12 @@ import {
   shouldEnableEncounterFilter,
   getCategoryUuidFromOrderTypes,
   getFormattedError,
+  dispatchAuditEvent,
+  AUDIT_LOG_EVENT_DETAILS,
+  AuditEventType,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import React, { useMemo, useCallback, useEffect } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetProps } from '../registry/model';
@@ -152,51 +155,59 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
     }));
   }, [data]);
 
-  const renderResultsCell = useCallback(
-    (investigation: RadiologyInvestigationViewModel) => {
-      const availableStudies = getAvailableImagingStudies(
-        investigation.imagingStudies,
-      );
+  const handleRadiologyResultClick = () => {
+    dispatchAuditEvent({
+      eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_RADIOLOGY_RESULTS
+        .eventType as AuditEventType,
+      patientUuid: patientUUID!,
+    });
+  };
 
-      if (availableStudies.length > 0 && pacsViewerUrl) {
-        return (
-          <div
-            id={`${investigation.id}-results`}
-            data-testid={`${investigation.id}-results-test-id`}
-          >
-            {availableStudies.map((study, index) => {
-              const viewerUrl = pacsViewerUrl.replace(
-                '{{StudyInstanceUIDs}}',
-                study.StudyInstanceUIDs,
-              );
-              return (
-                <Link
-                  key={study.id}
-                  href={viewerUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  id={`${investigation.id}-result-link-${index}`}
-                  testId={`${investigation.id}-result-link-${index}-test-id`}
-                >
-                  {t('RADIOLOGY_VIEW_RESULTS')}
-                </Link>
-              );
-            })}
-          </div>
-        );
-      }
+  const renderResultsCell = (
+    investigation: RadiologyInvestigationViewModel,
+  ) => {
+    const availableStudies = getAvailableImagingStudies(
+      investigation.imagingStudies,
+    );
 
+    if (availableStudies.length > 0 && pacsViewerUrl) {
       return (
-        <span
+        <div
           id={`${investigation.id}-results`}
           data-testid={`${investigation.id}-results-test-id`}
         >
-          --
-        </span>
+          {availableStudies.map((study, index) => {
+            const viewerUrl = pacsViewerUrl.replace(
+              '{{StudyInstanceUIDs}}',
+              study.StudyInstanceUIDs,
+            );
+            return (
+              <Link
+                key={study.id}
+                href={viewerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                id={`${investigation.id}-result-link-${index}`}
+                testId={`${investigation.id}-result-link-${index}-test-id`}
+                onClick={() => handleRadiologyResultClick()}
+              >
+                {t('RADIOLOGY_VIEW_RESULTS')}
+              </Link>
+            );
+          })}
+        </div>
       );
-    },
-    [pacsViewerUrl, t],
-  );
+    }
+
+    return (
+      <span
+        id={`${investigation.id}-results`}
+        data-testid={`${investigation.id}-results-test-id`}
+      >
+        --
+      </span>
+    );
+  };
 
   const renderCell = (
     investigation: RadiologyInvestigationViewModel,
@@ -244,13 +255,18 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
     }
   };
 
-  return (
-    <div
-      id="radiology-investigations-table"
-      data-testid="radiology-investigations-table-test-id"
-      aria-label="radiology-investigations-table-aria-label"
-    >
-      {loading || !!hasError || processedInvestigations.length === 0 ? (
+  if (
+    loading ||
+    !!hasError ||
+    processedInvestigations.length === 0 ||
+    emptyEncounterFilter
+  ) {
+    return (
+      <div
+        id="radiology-investigations-table"
+        data-testid="radiology-investigations-table-test-id"
+        aria-label="radiology-investigations-table-aria-label"
+      >
         <SortableDataTable
           headers={headers}
           ariaLabel={t('RADIOLOGY_INVESTIGATION_HEADING')}
@@ -266,22 +282,12 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
     );
   }
 
-  if (
-    !loading &&
-    (processedInvestigations.length === 0 || emptyEncounterFilter)
-  ) {
-    return (
-      <div
-        className={styles.radiologyInvestigationTableBodyError}
-        data-testid="radiology-investigations-table"
-      >
-        {t('NO_RADIOLOGY_INVESTIGATIONS')}
-      </div>
-    );
-  }
-
   return (
-    <div data-testid="radiology-investigations-table">
+    <div
+      id="radiology-investigations-table"
+      data-testid="radiology-investigations-table-test-id"
+      aria-label="radiology-investigations-table-aria-label"
+    >
       <Accordion align="start">
         {processedInvestigations.map((investigationsByDate, index) => {
           const { date, investigations } = investigationsByDate;
@@ -291,31 +297,30 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
             FULL_MONTH_DATE_FORMAT,
           ).formattedResult;
 
-            return (
-              <AccordionItem
-                title={formattedDate}
-                key={date}
-                className={styles.customAccordianItem}
-                testId={'accordian-table-title'}
-                open={index === 0}
-              >
-                <SortableDataTable
-                  headers={headers}
-                  ariaLabel={t('RADIOLOGY_INVESTIGATION_HEADING')}
-                  rows={investigations}
-                  loading={isLoading}
-                  errorStateMessage={''}
-                  sortable={sortable}
-                  emptyStateMessage={t('NO_RADIOLOGY_INVESTIGATIONS')}
-                  renderCell={renderCell}
-                  className={styles.radiologyInvestigationTableBody}
-                  data-testid="sortable-data-table"
-                />
-              </AccordionItem>
-            );
-          })}
-        </Accordion>
-      )}
+          return (
+            <AccordionItem
+              title={formattedDate}
+              key={date}
+              className={styles.customAccordianItem}
+              testId={'accordian-table-title'}
+              open={index === 0}
+            >
+              <SortableDataTable
+                headers={headers}
+                ariaLabel={t('RADIOLOGY_INVESTIGATION_HEADING')}
+                rows={investigations}
+                loading={isLoading}
+                errorStateMessage={''}
+                sortable={sortable}
+                emptyStateMessage={t('NO_RADIOLOGY_INVESTIGATIONS')}
+                renderCell={renderCell}
+                className={styles.radiologyInvestigationTableBody}
+                data-testid="sortable-data-table"
+              />
+            </AccordionItem>
+          );
+        })}
+      </Accordion>
     </div>
   );
 };

@@ -4,6 +4,7 @@ import {
   useQuery,
 } from '@tanstack/react-query';
 import { render, screen, act } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { useNotification } from '../../notification';
 import {
@@ -26,6 +27,7 @@ jest.mock('@tanstack/react-query', () => ({
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getPatientRadiologyInvestigations: jest.fn(),
+  dispatchAuditEvent: jest.fn(),
 }));
 
 const mockAddNotification = jest.fn();
@@ -226,7 +228,9 @@ describe('RadiologyInvestigationTable', () => {
     expect(screen.getByText('Dr. Johnson')).toBeInTheDocument();
   });
 
-  it('should render pacs result link when imaging studies with available status exist and pacsViewerUrl is configured', () => {
+  it('should render pacs result link when imaging studies with available status exist and pacsViewerUrl is configured', async () => {
+    const { dispatchAuditEvent } = jest.requireMock('@bahmni/services');
+
     (useQuery as jest.Mock)
       .mockReturnValueOnce({
         data: mockCategoryUuid,
@@ -247,7 +251,7 @@ describe('RadiologyInvestigationTable', () => {
           config={{
             orderType: 'Radiology Order',
             pacsViewerUrl:
-              'http://pacs.example.com/viewer?study={{studyInstanceUIDs}}',
+              'http://pacs.example.com/viewer?study={{StudyInstanceUIDs}}',
           }}
         />
       </QueryClientProvider>
@@ -255,12 +259,22 @@ describe('RadiologyInvestigationTable', () => {
 
     render(wrapperWithPacsUrl);
 
-    expect(
-      screen.getByTestId('investigation-1-result-link-0-test-id'),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByTestId('investigation-1-result-link-1-test-id'),
-    ).toBeInTheDocument();
+    const firstLink = screen.getByTestId(
+      'investigation-1-result-link-0-test-id',
+    );
+    const secondLink = screen.getByTestId(
+      'investigation-1-result-link-1-test-id',
+    );
+
+    expect(firstLink).toBeInTheDocument();
+    expect(secondLink).toBeInTheDocument();
+
+    await userEvent.click(firstLink);
+
+    expect(dispatchAuditEvent).toHaveBeenCalledWith({
+      eventType: 'VIEWED_RADIOLOGY_RESULTS',
+      patientUuid: 'test-patient-uuid',
+    });
   });
 
   describe('Accessibility', () => {

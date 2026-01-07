@@ -41,6 +41,10 @@ export const AUDIT_LOG_EVENT_DETAILS = {
     message: 'EDIT_PATIENT_DETAILS_MESSAGE',
     module: MODULE_LABELS.REGISTRATION,
   },
+  VIEWED_RADIOLOGY_RESULTS: {
+    eventType: 'VIEWED_RADIOLOGY_RESULTS',
+    message: 'VIEWED_RADIOLOGY_RESULTS_MESSAGE',
+  },
 };
 
 export const AUDIT_LOG_URL = OPENMRS_REST_V1 + '/auditlog';
