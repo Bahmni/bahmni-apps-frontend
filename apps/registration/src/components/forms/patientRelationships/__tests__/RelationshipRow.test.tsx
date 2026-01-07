@@ -223,7 +223,7 @@ describe('RelationshipRow', () => {
     await user.click(dropdown);
 
     const listbox = screen.getByRole('listbox');
-    expect(within(listbox).getByText('Parent/Child')).toBeInTheDocument();
-    expect(within(listbox).getByText('Sibling/Sibling')).toBeInTheDocument();
+    expect(within(listbox).getByText('Parent/ Child')).toBeInTheDocument();
+    expect(within(listbox).getByText('Sibling/ Sibling')).toBeInTheDocument();
   });
 });
