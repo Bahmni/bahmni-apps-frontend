@@ -1,9 +1,9 @@
 import { Button, Dropdown } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { useParams } from 'react-router-dom';
-import { useActiveVisit } from '../../hooks/useActiveVisit';
 import { useRegistrationConfig } from '../../hooks/useRegistrationConfig';
-import { useVisitTypes } from '../../hooks/useVisitTypes';
+import { useActiveVisit, useVisitTypes } from '../../hooks/useVisit';
+import { transformVisitTypesToArray } from '../../utils/visitUtils';
 import styles from './styles/VisitTypeSelector.module.scss';
 
 interface VisitTypeSelectorProps {
@@ -17,8 +17,9 @@ export const VisitTypeSelector = ({
   const { patientUuid } = useParams<{ patientUuid: string }>();
   const { hasActiveVisit } = useActiveVisit(patientUuid);
   const { registrationConfig } = useRegistrationConfig();
-  const { visitTypes: visitTypesArray, isLoading: isLoadingVisitTypes } =
-    useVisitTypes();
+  const { visitTypes, isLoading: isLoadingVisitTypes } = useVisitTypes();
+
+  const visitTypesArray = transformVisitTypesToArray(visitTypes);
 
   const defaultVisitType =
     visitTypesArray.find(

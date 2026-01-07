@@ -4,13 +4,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { BrowserRouter } from 'react-router-dom';
-import { useCreateVisit } from '../../../hooks/useCreateVisit';
+import { useCreateVisit } from '../../../hooks/useVisit';
 import { useFilteredExtensions } from '../../../hooks/useFilteredExtensions';
 import * as extensionNavigation from '../../../utils/extensionNavigation';
 import { RegistrationActions } from '../RegistrationActions';
 
 jest.mock('../../../hooks/useFilteredExtensions');
-jest.mock('../../../hooks/useCreateVisit');
+jest.mock('../../../hooks/useVisit');
 jest.mock('../../../utils/extensionNavigation');
 
 const mockCreateVisit = jest.fn();

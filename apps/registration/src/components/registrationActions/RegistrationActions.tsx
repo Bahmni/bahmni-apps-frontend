@@ -5,8 +5,8 @@ import {
   type VisitType,
 } from '@bahmni/services';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useCreateVisit } from '../../hooks/useCreateVisit';
 import { useFilteredExtensions } from '../../hooks/useFilteredExtensions';
+import { useCreateVisit } from '../../hooks/useVisit';
 import { VisitTypeSelector } from '../../pages/PatientRegister/visitTypeSelector';
 import { handleExtensionNavigation } from '../../utils/extensionNavigation';
 
