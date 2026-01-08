@@ -23,6 +23,8 @@ import {
   getFormattedError,
   fetchObservationForms,
   ObservationForm,
+  FormsEncounter,
+  getFormsDataByEncounterUuid,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useState } from 'react';
@@ -98,6 +100,41 @@ const FormsTable: React.FC<WidgetProps> = ({ isActionAreaVisible = false }) => {
     queryFn: () => fetchFormMetadata(selectedFormUuid!),
     enabled: !!selectedFormUuid && isModalOpen,
   });
+
+  const {
+    data: formsEncounterData,
+    isLoading: isLoadingEncounterData,
+    error: formDataError,
+  } = useQuery<FormsEncounter>({
+    queryKey: ['formsEncounter', selectedRecord?.encounterUuid],
+    queryFn: () =>
+      getFormsDataByEncounterUuid(selectedRecord!.encounterUuid, false),
+    enabled: !!selectedRecord?.encounterUuid && isModalOpen,
+  });
+
+  // Filter observations to only include those belonging to the selected form
+  const filteredObservations = useMemo(() => {
+    if (!formsEncounterData?.observations || !selectedRecord?.formName) {
+      return [];
+    }
+    
+    // Debug: Log the form name and observations
+    console.log('Selected Form Name:', selectedRecord.formName);
+    console.log('All Observations:', formsEncounterData.observations);
+    
+    // Filter observations by formFieldPath that includes the form name
+    const filtered = formsEncounterData.observations.filter(
+      (obs) =>
+        'formFieldPath' in obs &&
+        typeof obs.formFieldPath === 'string' &&
+        obs.formFieldPath.includes(selectedRecord.formName),
+    );
+    
+    console.log('Filtered Observations:', filtered);
+    console.log('Filtered Count:', filtered.length);
+    
+    return filtered;
+  }, [formsEncounterData?.observations, selectedRecord?.formName]);
 
   const headers = useMemo(
     () => [
@@ -245,17 +282,22 @@ const FormsTable: React.FC<WidgetProps> = ({ isActionAreaVisible = false }) => {
             className={isActionAreaVisible ? styles.leftPanelModal : ''}
           >
             <div className={styles.formContent}>
-              {isLoadingMetadata ? (
+              {isLoadingMetadata || isLoadingEncounterData ? (
                 <SkeletonText width="100%" lineCount={3} />
               ) : metadataError ? (
                 <div>
                   {getFormattedError(metadataError).message ??
                     t('ERROR_FETCHING_FORM_METADATA')}
                 </div>
+              ) : formDataError ? (
+                <div>
+                  {getFormattedError(formDataError).message ??
+                    t('ERROR_FETCHING_FORM_DATA')}
+                </div>
               ) : formMetadata && patientUuid ? (
                 <Container
                   metadata={formMetadata.schema as Form2FormMetadata}
-                  observations={[]}
+                  observations={filteredObservations}
                   patient={{ uuid: patientUuid }}
                   translations={{}}
                   validate={false}
