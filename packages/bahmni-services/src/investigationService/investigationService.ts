@@ -14,6 +14,7 @@ const fetchInvestigations = async (): Promise<ValueSet> => {
   return await searchFHIRConceptsByName(ALL_ORDERABLES_CONCEPT_NAME);
 };
 
+// TODO: Optimize by caching concept classes, using Service Workers
 export const getOrderTypes = async (): Promise<OrderTypeResponse> => {
   return await get(ORDER_TYPE_URL);
 };

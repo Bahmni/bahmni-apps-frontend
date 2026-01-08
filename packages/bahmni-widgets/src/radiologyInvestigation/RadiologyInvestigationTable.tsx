@@ -98,7 +98,7 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
 
   const headers = useMemo(
     () => [
-      { key: 'testName', header: t('RADIOLOGY_TEST_NAME') },
+      { key: 'testName', header: t('RADIOLOGY_INVESTIGATION_NAME') },
       { key: 'results', header: t('RADIOLOGY_RESULTS') },
       { key: 'orderedBy', header: t('RADIOLOGY_ORDERED_BY') },
     ],

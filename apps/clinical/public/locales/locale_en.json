@@ -239,7 +239,7 @@
   "RADIOLOGY_ORDERED_BY": "Ordered By",
   "RADIOLOGY_PRIORITY_URGENT": "Urgent",
   "RADIOLOGY_RESULTS": "Results",
-  "RADIOLOGY_TEST_NAME": "Test Name",
+  "RADIOLOGY_INVESTIGATION_NAME": "Procedure Name",
   "RADIOLOGY_VIEW_RESULTS": "View Results",
   "REACTIONS": "Reaction(s)",
   "REVOKED_STATUS": "Canceled",
