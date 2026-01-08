@@ -106,14 +106,7 @@ export const useObservations = (
     return () => {
       cancelled = true;
     };
-  }, [
-    patientUUID,
-    conceptNames,
-    conceptCodes,
-    addNotification,
-    t,
-    getConceptUuids,
-  ]);
+  }, [patientUUID, addNotification, t, getConceptUuids]);
 
   return { observations, loading, error };
 };
