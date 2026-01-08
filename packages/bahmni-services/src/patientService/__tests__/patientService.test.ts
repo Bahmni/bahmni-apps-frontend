@@ -11,8 +11,6 @@ import {
   PRIMARY_IDENTIFIER_TYPE_PROPERTY,
   CREATE_PATIENT_URL,
   ADDRESS_HIERARCHY_URL,
-  VISIT_TYPES_URL,
-  CREATE_VISIT_URL,
 } from '../constants';
 import {
   getPatientById,
@@ -28,10 +26,6 @@ import {
   createPatient,
   getGenders,
   getAddressHierarchyEntries,
-  getVisitTypes,
-  createVisit,
-  getActiveVisitByPatient,
-  getVisitLocationUUID,
   getPatientImageAsDataUrl,
   getPatientProfile,
 } from '../patientService';
@@ -1670,78 +1664,6 @@ describe('Patient Service', () => {
         ADDRESS_HIERARCHY_URL('cityVillage', 'Bo', 20),
       );
       expect(result).toEqual([]);
-    });
-  });
-
-  describe('getVisitTypes', () => {
-    it('should fetch visit types correctly', async () => {
-      const mockResponse = {
-        visitTypes: {
-          OPD: 'c22a5000-3f10-11e4-adec-0800271c1b75',
-          IPD: 'd22a5000-3f10-11e4-adec-0800271c1b76',
-        },
-      };
-      mockedGet.mockResolvedValueOnce(mockResponse);
-
-      const result = await getVisitTypes();
-
-      expect(mockedGet).toHaveBeenCalledWith(VISIT_TYPES_URL());
-      expect(result).toEqual({
-        visitTypes: {
-          OPD: 'c22a5000-3f10-11e4-adec-0800271c1b75',
-          IPD: 'd22a5000-3f10-11e4-adec-0800271c1b76',
-        },
-      });
-    });
-  });
-
-  describe('createVisit', () => {
-    it('should create a visit with correct data', async () => {
-      const visitData = {
-        patient: 'c22a5000-3f10-11e4-adec-0800271c1b75',
-        visitType: 'd22a5000-3f10-11e4-adec-0800271c1b76',
-        location: 'd22a5000-3f10-11e4-adec-0800271c1b79',
-      };
-      const mockResponse = { uuid: 'd22a5000-3f10-11e4-adec-0800271c1b76' };
-      mockedPost.mockResolvedValueOnce(mockResponse);
-
-      const result = await createVisit(visitData);
-
-      expect(mockedPost).toHaveBeenCalledWith(CREATE_VISIT_URL, visitData);
-      expect(result).toEqual(mockResponse);
-    });
-  });
-
-  describe('getActiveVisitByPatient', () => {
-    it('should fetch active visits for a patient', async () => {
-      const patientUuid = 'c22a5000-3f10-11e4-adec-0800271c1b75';
-      const mockResponse = { results: [] };
-      mockedGet.mockResolvedValueOnce(mockResponse);
-
-      const result = await getActiveVisitByPatient(patientUuid);
-
-      expect(mockedGet).toHaveBeenCalledWith(
-        expect.stringContaining(
-          `/ws/rest/v1/visit?includeInactive=false&patient=${patientUuid}`,
-        ),
-      );
-      expect(result).toEqual(mockResponse);
-    });
-  });
-  describe('getVisitLocationUUID', () => {
-    it('should fetch visit location from login location', async () => {
-      const loginLocation = 'c22a5000-3f10-11e4-adec-0800271c1b75';
-      const mockResponse = { uuid: '72636eba-29bf-4d6c-97c4-4b04d87a95b5' };
-      mockedGet.mockResolvedValueOnce(mockResponse);
-
-      const result = await getVisitLocationUUID(loginLocation);
-
-      expect(mockedGet).toHaveBeenCalledWith(
-        expect.stringContaining(
-          `/ws/rest/v1/bahmnicore/visitLocation/${loginLocation}`,
-        ),
-      );
-      expect(result).toEqual(mockResponse);
     });
   });
 

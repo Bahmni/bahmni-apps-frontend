@@ -1,41 +1,33 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { RegistrationConfigProvider } from '../../../providers/RegistrationConfigProvider';
 import { VisitTypeSelector } from '../visitTypeSelector';
 
 Element.prototype.scrollIntoView = jest.fn();
 
 const mockGetVisitTypes = jest.fn();
-const mockCreateVisit = jest.fn();
-const mockGetUserLoginLocation = jest.fn();
-const mockGetActiveVisitByPatient = jest.fn();
-const mockGetVisitLocationUUID = jest.fn();
+const mockCheckIfActiveVisitExists = jest.fn();
 const mockGetRegistrationConfig = jest.fn();
-const mockAddNotification = jest.fn();
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getVisitTypes: () => mockGetVisitTypes(),
-  createVisit: (data: any) => mockCreateVisit(data),
-  getUserLoginLocation: () => mockGetUserLoginLocation(),
-  getActiveVisitByPatient: (patientUuid: string) =>
-    mockGetActiveVisitByPatient(patientUuid),
-  getVisitLocationUUID: (loginLocation: string) =>
-    mockGetVisitLocationUUID(loginLocation),
+  checkIfActiveVisitExists: (patientUuid: string) =>
+    mockCheckIfActiveVisitExists(patientUuid),
   getRegistrationConfig: () => mockGetRegistrationConfig(),
   useTranslation: () => ({
     t: (key: string, params?: Record<string, any>) => {
       if (key === 'START_VISIT_TYPE' && params?.visitType) {
         return `Start ${params.visitType} visit`;
       }
+      if (key === 'ENTER_VISIT_DETAILS') {
+        return 'Enter Visit Details';
+      }
       return key;
     },
   }),
-  dispatchAuditEvent: jest.fn(),
-}));
-
-jest.mock('@bahmni/widgets', () => ({
-  useNotification: jest.fn(),
 }));
 
 const mockVisitTypes = {
@@ -46,14 +38,9 @@ const mockVisitTypes = {
   },
 };
 
-const mockLoginLocation = {
-  name: 'Support',
-  uuid: '9772f68d-9fc5-4470-9b87-2b6139011cad3',
-};
-
 describe('VisitTypeSelector', () => {
   let queryClient: QueryClient;
-  let mockOnVisitSave: jest.Mock;
+  let mockOnVisitTypeSelect: jest.Mock;
 
   beforeEach(() => {
     queryClient = new QueryClient({
@@ -63,51 +50,72 @@ describe('VisitTypeSelector', () => {
         },
       },
     });
-    mockOnVisitSave = jest.fn();
+    mockOnVisitTypeSelect = jest.fn();
     jest.clearAllMocks();
     queryClient.clear();
 
-    const { useNotification } = jest.requireMock('@bahmni/widgets');
-    useNotification.mockReturnValue({
-      addNotification: mockAddNotification,
-    });
-
-    mockGetUserLoginLocation.mockReturnValue(mockLoginLocation);
     mockGetVisitTypes.mockResolvedValue(mockVisitTypes);
-    mockGetActiveVisitByPatient.mockResolvedValue({ results: [] });
-    mockGetVisitLocationUUID.mockResolvedValue({
-      uuid: '72636eba-29bf-4d6c-97c4-4b04d87a95b5',
-    });
+    mockCheckIfActiveVisitExists.mockResolvedValue(false);
     mockGetRegistrationConfig.mockResolvedValue({
       patientSearch: { customAttributes: [], appointment: [] },
       defaultVisitType: 'OPD',
     });
-    mockCreateVisit.mockResolvedValue({
-      location: mockLoginLocation.uuid,
-      patient: '9891a8b4-7404-4c05-a207-5ec9d34fc719',
-      visitType: '54f43754-c6ce-4472-890e-0f28acaeaea6',
-    });
   });
 
-  const renderComponent = () => {
+  const renderComponent = (patientUuid?: string) => {
+    const initialEntries = patientUuid
+      ? [`/patient/${patientUuid}`]
+      : ['/patient/new'];
+
     return render(
-      <QueryClientProvider client={queryClient}>
-        <VisitTypeSelector onVisitSave={mockOnVisitSave} />
-      </QueryClientProvider>,
+      <MemoryRouter initialEntries={initialEntries}>
+        <QueryClientProvider client={queryClient}>
+          <RegistrationConfigProvider>
+            <Routes>
+              <Route
+                path="/patient/:patientUuid?"
+                element={
+                  <VisitTypeSelector
+                    onVisitTypeSelect={mockOnVisitTypeSelect}
+                  />
+                }
+              />
+            </Routes>
+          </RegistrationConfigProvider>
+        </QueryClientProvider>
+      </MemoryRouter>,
     );
   };
 
-  it('shows the button with the right text and look', async () => {
+  it('shows the button with the right text for new patient', async () => {
     renderComponent();
 
     await waitFor(() => expect(mockGetVisitTypes).toHaveBeenCalled());
+    await waitFor(() => expect(mockGetRegistrationConfig).toHaveBeenCalled());
 
-    const button = screen.getByRole('button');
+    const button = await screen.findByRole('button', {
+      name: /Start OPD visit/i,
+    });
     expect(button).toBeInTheDocument();
     expect(button).toHaveAttribute('id', 'visit-button');
   });
 
-  it('shows the dropdown with the correct list of items', async () => {
+  it('shows "Enter Visit Details" when patient has active visit', async () => {
+    const patientUuid = '9891a8b4-7404-4c05-a207-5ec9d34fc719';
+    mockCheckIfActiveVisitExists.mockResolvedValue(true);
+
+    renderComponent(patientUuid);
+
+    await waitFor(() => expect(mockGetVisitTypes).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(mockCheckIfActiveVisitExists).toHaveBeenCalledWith(patientUuid),
+    );
+
+    const button = screen.getByRole('button');
+    expect(button).toHaveTextContent('Enter Visit Details');
+  });
+
+  it('shows the dropdown with the correct list of items when no active visit', async () => {
     const user = userEvent.setup();
     renderComponent();
 
@@ -124,10 +132,22 @@ describe('VisitTypeSelector', () => {
     });
   });
 
-  it('button click will save the patient', async () => {
+  it('hides dropdown when patient has active visit', async () => {
     const patientUuid = '9891a8b4-7404-4c05-a207-5ec9d34fc719';
-    mockOnVisitSave.mockResolvedValue(patientUuid);
+    mockCheckIfActiveVisitExists.mockResolvedValue(true);
 
+    renderComponent(patientUuid);
+
+    await waitFor(() => expect(mockGetVisitTypes).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(mockCheckIfActiveVisitExists).toHaveBeenCalledWith(patientUuid),
+    );
+
+    const dropdown = screen.queryByRole('combobox');
+    expect(dropdown).not.toBeInTheDocument();
+  });
+
+  it('button click calls onVisitTypeSelect with selected visit type', async () => {
     renderComponent();
     const user = userEvent.setup();
 
@@ -137,14 +157,14 @@ describe('VisitTypeSelector', () => {
     await user.click(button);
 
     await waitFor(() => {
-      expect(mockOnVisitSave).toHaveBeenCalled();
+      expect(mockOnVisitTypeSelect).toHaveBeenCalledWith({
+        name: 'OPD',
+        uuid: '54f43754-c6ce-4472-890e-0f28acaeaea6',
+      });
     });
   });
 
-  it('dropdown selection will save the patient', async () => {
-    const patientUuid = '9891a8b4-7404-4c05-a207-5ec9d34fc719';
-    mockOnVisitSave.mockResolvedValue(patientUuid);
-
+  it('dropdown selection calls onVisitTypeSelect with selected visit type', async () => {
     renderComponent();
     const user = userEvent.setup();
 
@@ -157,91 +177,10 @@ describe('VisitTypeSelector', () => {
     await user.click(optionToSelect);
 
     await waitFor(() => {
-      expect(mockOnVisitSave).toHaveBeenCalled();
-    });
-  });
-
-  it('should show error notification when getVisitTypes query fails', async () => {
-    const error = new Error('Failed to fetch visit types');
-    mockGetVisitTypes.mockRejectedValue(error);
-
-    renderComponent();
-
-    await waitFor(() => {
-      expect(mockGetVisitTypes).toHaveBeenCalled();
-      expect(mockAddNotification).toHaveBeenCalledWith({
-        title: 'ERROR_DEFAULT_TITLE',
-        message: error.message,
-        type: 'error',
-        timeout: 5000,
+      expect(mockOnVisitTypeSelect).toHaveBeenCalledWith({
+        name: 'IPD',
+        uuid: 'b7494a80-fdf9-49bb-bb40-396c47b40343',
       });
     });
-  });
-
-  it('should show error notification when createVisit query fails', async () => {
-    const patientUuid = '9891a8b4-7404-4c05-a207-5ec9d34fc719';
-    const error = new Error('Failed to create visit');
-    mockOnVisitSave.mockResolvedValue(patientUuid);
-    mockCreateVisit.mockRejectedValue(error);
-
-    delete (window as any).location;
-    window.location = { href: '', pathname: '' } as any;
-
-    renderComponent();
-    const user = userEvent.setup();
-
-    await waitFor(() => expect(mockGetVisitTypes).toHaveBeenCalled());
-
-    const button = screen.getByRole('button');
-    await user.click(button);
-
-    await waitFor(() => {
-      expect(mockOnVisitSave).toHaveBeenCalled();
-      expect(mockAddNotification).toHaveBeenCalledWith({
-        title: 'ERROR_DEFAULT_TITLE',
-        message: error.message,
-        type: 'error',
-        timeout: 5000,
-      });
-    });
-  });
-
-  it('should log audit event when visit is successfully created', async () => {
-    const { dispatchAuditEvent, AUDIT_LOG_EVENT_DETAILS } =
-      jest.requireMock('@bahmni/services');
-
-    const patientUuid = '9891a8b4-7404-4c05-a207-5ec9d34fc719';
-    mockOnVisitSave.mockResolvedValue(patientUuid);
-
-    delete (window as any).location;
-    window.location = { href: '', pathname: '' } as any;
-
-    renderComponent();
-    const user = userEvent.setup();
-
-    await waitFor(() => expect(mockGetVisitTypes).toHaveBeenCalled());
-
-    const button = screen.getByRole('button');
-    await user.click(button);
-
-    await waitFor(() => {
-      expect(mockOnVisitSave).toHaveBeenCalled();
-    });
-
-    await waitFor(() => {
-      expect(mockCreateVisit).toHaveBeenCalled();
-    });
-
-    await waitFor(
-      () => {
-        expect(dispatchAuditEvent).toHaveBeenCalledWith({
-          eventType: AUDIT_LOG_EVENT_DETAILS.OPEN_VISIT.eventType,
-          patientUuid,
-          messageParams: { visitType: 'OPD' },
-          module: AUDIT_LOG_EVENT_DETAILS.OPEN_VISIT.module,
-        });
-      },
-      { timeout: 3000 },
-    );
   });
 });

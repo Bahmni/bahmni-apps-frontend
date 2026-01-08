@@ -15,13 +15,9 @@ export {
   getPrimaryIdentifierType,
   createPatient,
   updatePatient,
-  createVisit,
-  getActiveVisitByPatient,
   getIdentifierData,
   getGenders,
   getAddressHierarchyEntries,
-  getVisitTypes,
-  getVisitLocationUUID,
   getOrderedAddressHierarchyLevels,
   getPatientImageAsDataUrl,
   getPatientProfile,
@@ -35,7 +31,6 @@ export {
   type IdentifierTypesResponse,
   type CreatePatientRequest,
   type CreatePatientResponse,
-  type VisitData,
   type PatientName,
   type PatientAddress,
   type PatientIdentifier,
@@ -60,6 +55,16 @@ export {
   MAX_NAME_LENGTH,
   MAX_PHONE_NUMBER_LENGTH,
 } from './patientService';
+export {
+  getVisitTypes,
+  checkIfActiveVisitExists,
+  createVisitForPatient,
+  getActiveVisitByPatient,
+  type VisitType,
+  type VisitTypes,
+  type VisitData,
+  type ActiveVisit,
+} from './visitService';
 export {
   searchAppointmentsByAttribute,
   updateAppointmentStatus,

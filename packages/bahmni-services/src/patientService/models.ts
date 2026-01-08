@@ -153,23 +153,6 @@ export interface OrderedAddressHierarchyLevel {
 
 export type OrderedAddressHierarchyLevels = OrderedAddressHierarchyLevel[];
 
-export interface VisitType {
-  visitTypes: Record<string, string>;
-}
-
-export interface VisitData {
-  patient: string;
-  visitType: string;
-  location: string;
-}
-
-export interface VisitLocationResponse {
-  uuid: string;
-}
-
-export interface ActiveVisit {
-  results: string[];
-}
 export interface AppointmentSearchResult extends PatientSearchResult {
   appointmentNumber?: string;
   appointmentDate?: string;

@@ -1,13 +1,18 @@
 import { Button, Icon, ICON_SIZE } from '@bahmni/design-system';
-import { AppExtensionConfig, useTranslation } from '@bahmni/services';
+import {
+  AppExtensionConfig,
+  useTranslation,
+  type VisitType,
+} from '@bahmni/services';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useFilteredExtensions } from '../../hooks/useFilteredExtensions';
+import { useCreateVisit } from '../../hooks/useVisit';
 import { VisitTypeSelector } from '../../pages/PatientRegister/visitTypeSelector';
 import { handleExtensionNavigation } from '../../utils/extensionNavigation';
 
 export interface RegistrationActionsProps {
   extensionPointId?: string;
-  onBeforeNavigate?: () => Promise<unknown>;
+  onBeforeNavigate?: () => Promise<string | null>;
 }
 
 /**
@@ -27,6 +32,7 @@ export const RegistrationActions = ({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const routeParams = useParams();
+  const { createVisit } = useCreateVisit();
   const { filteredExtensions, isLoading } = useFilteredExtensions({
     extensionPointId,
   });
@@ -43,23 +49,30 @@ export const RegistrationActions = ({
     return null;
   }
 
+  const handleVisitTypeSelect = async (
+    visitType: VisitType,
+    extension: AppExtensionConfig,
+  ) => {
+    if (!onBeforeNavigate) return;
+
+    const patientUuid = await onBeforeNavigate();
+    if (!patientUuid) return;
+
+    await createVisit(patientUuid, visitType);
+
+    if (extension.url) {
+      handleExtensionNavigation(extension.url, routeContext, navigate);
+    }
+  };
+
   const handleClick = async (extension: AppExtensionConfig) => {
-    try {
-      if (extension.type !== 'startVisit' && onBeforeNavigate) {
-        const result = await onBeforeNavigate();
+    if (!onBeforeNavigate) return;
 
-        if (!result) {
-          return;
-        }
-      }
+    const result = await onBeforeNavigate();
+    if (!result) return;
 
-      if (extension.url) {
-        handleExtensionNavigation(extension.url, routeContext, navigate);
-      }
-    } catch {
-      // Parent callback threw an error (e.g., validation failed)
-      // Error should have already been handled by parent (notification shown)
-      // Simply prevent navigation by not proceeding
+    if (extension.url) {
+      handleExtensionNavigation(extension.url, routeContext, navigate);
     }
   };
 
@@ -70,9 +83,9 @@ export const RegistrationActions = ({
           return (
             <VisitTypeSelector
               key={extension.id}
-              patientUuid={routeContext.patientUuid}
-              onVisitSave={onBeforeNavigate as () => Promise<string | null>}
-              onNavigate={() => handleClick(extension)}
+              onVisitTypeSelect={(visitType) =>
+                handleVisitTypeSelect(visitType, extension)
+              }
             />
           );
         }
