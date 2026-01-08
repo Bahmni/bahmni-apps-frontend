@@ -1044,10 +1044,10 @@
     "@babel/helper-string-parser" "^7.27.1"
     "@babel/helper-validator-identifier" "^7.27.1"
 
-"@bahmni/form2-controls@^0.0.2-dev.18":
-  version "0.0.2-dev.18"
-  resolved "https://registry.npmjs.org/@bahmni/form2-controls/-/form2-controls-0.0.2-dev.18.tgz#bfce415722159cddd8dc06091f050c61ce0b1a5e"
-  integrity sha512-430B6m/wncfz6aaWiSfN5aZYOQucdjwBptXCkVwTbuhWQUtw1bXHifQjsBTc5kiziC9Lz6+Tzx/5/uQSOt3LZA==
+"@bahmni/form2-controls@0.0.3-dev.19":
+  version "0.0.3-dev.19"
+  resolved "https://registry.yarnpkg.com/@bahmni/form2-controls/-/form2-controls-0.0.3-dev.19.tgz#216657ef5f31ab1e836c107e05aafd616c3fd90e"
+  integrity sha512-L57Yfuyy2sqEIBEVevCAjTP3eznzSM5zr253bbOwsMpvQMuFGFY3hIoaFYxc6PJMIp625PLCtFxsNP7A91CEIA==
   dependencies:
     ajv "^8.17.1"
     base64-inline-loader "^1.1.0"
@@ -13417,10 +13417,10 @@ react-is@^19.0.0:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-19.1.1.tgz#038ebe313cf18e1fd1235d51c87360eb87f7c36a"
   integrity sha512-tr41fA15Vn8p4X9ntI+yCyeGSf1TlYaY5vlTZfQmeLBrFo3psOPX6HhTDnFNL9uj3EhP0KAQ80cugCl4b4BERA==
 
-react-is@^19.2.1:
-  version "19.2.1"
-  resolved "https://registry.yarnpkg.com/react-is/-/react-is-19.2.1.tgz#712fa6ee30c8398dc34260017325dad92b9224c5"
-  integrity sha512-L7BnWgRbMwzMAubQcS7sXdPdNLmKlucPlopgAzx7FtYbksWZgEWiuYM5x9T6UqS2Ne0rsgQTq5kY2SGqpzUkYA==
+react-is@^19.2.3:
+  version "19.2.3"
+  resolved "https://registry.yarnpkg.com/react-is/-/react-is-19.2.3.tgz#eec2feb69c7fb31f77d0b5c08c10ae1c88886b29"
+  integrity sha512-qJNJfu81ByyabuG7hPFEbXqNcWSU3+eVus+KJs+0ncpGfMyYdvSmxiJxbWR65lYi1I+/0HBcliO029gc4F+PnA==
 
 react-refresh@^0.10.0:
   version "0.10.0"
@@ -13463,11 +13463,11 @@ react-select@5.10.2:
     use-isomorphic-layout-effect "^1.2.0"
 
 react-test-renderer@^19.0.0:
-  version "19.2.1"
-  resolved "https://registry.yarnpkg.com/react-test-renderer/-/react-test-renderer-19.2.1.tgz#a2c91e0a47539431f1c7979c1076b1a25a8accdb"
-  integrity sha512-xsyf515ij+d8Rs/tsDZSJYXn+GdYO/IOw9BVFtjJbrrFR+dL1yZQQN1ChxY6otYAsCeAHhU0XsKyJUzP6omyvQ==
+  version "19.2.3"
+  resolved "https://registry.yarnpkg.com/react-test-renderer/-/react-test-renderer-19.2.3.tgz#d20f5193867c98b2df9e13b4e72bb83f311f6a43"
+  integrity sha512-TMR1LnSFiWZMJkCgNf5ATSvAheTT2NvKIwiVwdBPHxjBI7n/JbWd4gaZ16DVd9foAXdvDz+sB5yxZTwMjPRxpw==
   dependencies:
-    react-is "^19.2.1"
+    react-is "^19.2.3"
     scheduler "^0.27.0"
 
 react-textarea-autosize@^8.5.9:

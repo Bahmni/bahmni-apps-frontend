@@ -309,6 +309,7 @@ const FormsTable: React.FC<WidgetProps> = ({ isActionAreaVisible = false }) => {
                   collapse={false}
                   locale={getUserPreferredLocale()}
                   onValueUpdated={() => {}}
+                  readonly
                 />
               ) : (
                 <div>{t('OBSERVATION_FORM_LOADING_METADATA_ERROR')}</div>
