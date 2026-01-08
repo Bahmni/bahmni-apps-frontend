@@ -2,19 +2,23 @@ import {
   FormattedAllergy,
   AllergyStatus,
   AllergySeverity,
+  getFormattedAllergies,
 } from '@bahmni/services';
-import { render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { render, screen, waitFor } from '@testing-library/react';
+import { useNotification } from '../../notification';
 import AllergiesTable from '../AllergiesTable';
-import { useAllergies } from '../useAllergies';
 
-jest.mock('../useAllergies');
+jest.mock('../../notification');
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  getFormattedAllergies: jest.fn(),
+}));
 jest.mock('../../hooks/usePatientUUID', () => ({
   usePatientUUID: jest.fn(() => 'test-patient-uuid'),
 }));
 
-const mockedUseAllergies = useAllergies as jest.MockedFunction<
-  typeof useAllergies
->;
+const mockAddNotification = jest.fn();
 
 const mockSingleAllergy: FormattedAllergy[] = [
   {
@@ -85,78 +89,95 @@ const mockMultipleAllergies: FormattedAllergy[] = [
 ];
 
 describe('AllergiesTable Integration', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    jest.spyOn(console, 'error').mockImplementation();
+  const queryClient: QueryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        staleTime: 0,
+      },
+    },
   });
 
-  it('displays patient allergies with all critical information for clinical review', () => {
-    mockedUseAllergies.mockReturnValue({
-      allergies: mockSingleAllergy,
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (useNotification as jest.Mock).mockReturnValue({
+      addNotification: mockAddNotification,
+    });
+  });
+
+  afterEach(() => {
+    queryClient.clear();
+  });
+
+  const wrapper = (
+    <QueryClientProvider client={queryClient}>
+      <AllergiesTable />
+    </QueryClientProvider>
+  );
+
+  it('displays patient allergies with all critical information for clinical review', async () => {
+    (getFormattedAllergies as jest.Mock).mockResolvedValue(mockSingleAllergy);
+
+    render(wrapper);
+
+    expect(screen.getByTestId('allergy-table')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
     });
 
-    render(<AllergiesTable />);
-
-    expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
     expect(screen.getByText('[ALLERGY_TYPE_FOOD]')).toBeInTheDocument();
     expect(screen.getByText('SEVERITY_MODERATE')).toBeInTheDocument();
     expect(screen.getByText('ALLERGY_LIST_ACTIVE')).toBeInTheDocument();
     expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
     expect(screen.getByText('Hives')).toBeInTheDocument();
+    expect(getFormattedAllergies).toHaveBeenCalledTimes(1);
   });
 
-  it('shows loading state while fetching allergy data', () => {
-    mockedUseAllergies.mockReturnValue({
-      allergies: [],
-      loading: true,
-      error: null,
-      refetch: jest.fn(),
+  it('shows empty state when patient has no recorded allergies', async () => {
+    (getFormattedAllergies as jest.Mock).mockResolvedValue([]);
+
+    render(wrapper);
+
+    expect(screen.getByTestId('allergy-table')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText('NO_ALLERGIES')).toBeInTheDocument();
     });
-
-    render(<AllergiesTable />);
-
-    expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
   });
 
-  it('shows empty state when patient has no recorded allergies', () => {
-    mockedUseAllergies.mockReturnValue({
-      allergies: [],
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
+  it('shows error state when allergy data cannot be fetched', async () => {
+    const errorMessage = 'Failed to fetch allergies';
+    (getFormattedAllergies as jest.Mock).mockRejectedValue(
+      new Error(errorMessage),
+    );
+
+    render(wrapper);
+
+    expect(screen.getByTestId('allergy-table')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('sortable-table-error')).toBeInTheDocument();
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        type: 'error',
+        title: 'ERROR_DEFAULT_TITLE',
+        message: 'Failed to fetch allergies',
+      });
     });
-
-    render(<AllergiesTable />);
-
-    expect(screen.getByText('NO_ALLERGIES')).toBeInTheDocument();
   });
 
-  it('shows error state when allergy data cannot be fetched', () => {
-    const mockError = new Error('Failed to fetch allergies');
-    mockedUseAllergies.mockReturnValue({
-      allergies: [],
-      loading: false,
-      error: mockError,
-      refetch: jest.fn(),
+  it('displays multiple allergies sorted by severity for patient safety', async () => {
+    (getFormattedAllergies as jest.Mock).mockResolvedValue(
+      mockMultipleAllergies,
+    );
+
+    render(wrapper);
+
+    expect(screen.getByTestId('allergy-table')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText('Shellfish Allergy')).toBeInTheDocument();
     });
-
-    render(<AllergiesTable />);
-
-    expect(screen.getByText('Failed to fetch allergies')).toBeInTheDocument();
-  });
-
-  it('displays multiple allergies sorted by severity for patient safety', () => {
-    mockedUseAllergies.mockReturnValue({
-      allergies: mockMultipleAllergies,
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
-
-    render(<AllergiesTable />);
 
     const allergies = screen.getAllByRole('row').slice(1); // Skip header row
     const allergyNames = allergies.map(

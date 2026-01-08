@@ -3,24 +3,29 @@ import {
   AllergySeverity,
   AllergyStatus,
 } from '@bahmni/services';
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from '@tanstack/react-query';
 import { render, screen, act } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import { useNotification } from '../../notification';
 import AllergiesTable from '../AllergiesTable';
-import { useAllergies } from '../useAllergies';
 
 expect.extend(toHaveNoViolations);
 
-jest.mock('../useAllergies');
-jest.mock('react-router-dom', () => ({
-  useParams: jest.fn(),
+jest.mock('../../notification');
+jest.mock('../../hooks/usePatientUUID', () => ({
+  usePatientUUID: jest.fn(() => 'test-patient-uuid'),
 }));
-jest.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-    i18n: {
-      changeLanguage: () => new Promise(() => {}),
-    },
-  }),
+jest.mock('@tanstack/react-query', () => ({
+  ...jest.requireActual('@tanstack/react-query'),
+  useQuery: jest.fn(),
+}));
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  getFormattedAllergies: jest.fn(),
 }));
 jest.mock('@bahmni/design-system', () => ({
   ...jest.requireActual('@bahmni/design-system'),
@@ -39,9 +44,7 @@ jest.mock('@bahmni/design-system', () => ({
   ),
 }));
 
-const mockedUseAllergies = useAllergies as jest.MockedFunction<
-  typeof useAllergies
->;
+const mockAddNotification = jest.fn();
 
 const mockAllergy: FormattedAllergy = {
   id: 'allergy-1',
@@ -97,49 +100,76 @@ const mockSortedAllergies: FormattedAllergy[] = [
 ];
 
 describe('AllergiesTable', () => {
+  const queryClient: QueryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
+    (useNotification as jest.Mock).mockReturnValue({
+      addNotification: mockAddNotification,
+    });
   });
+
+  afterEach(() => {
+    queryClient.clear();
+  });
+
+  const wrapper = (
+    <QueryClientProvider client={queryClient}>
+      <AllergiesTable />
+    </QueryClientProvider>
+  );
 
   describe('Component States', () => {
     it('displays loading state', () => {
-      mockedUseAllergies.mockReturnValue({
-        allergies: [],
-        loading: true,
+      (useQuery as jest.Mock).mockReturnValue({
+        data: null,
         error: null,
-        refetch: jest.fn(),
+        isError: null,
+        isLoading: true,
       });
 
-      render(<AllergiesTable />);
+      render(wrapper);
 
+      expect(screen.getByTestId('allergy-table')).toBeInTheDocument();
       expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
     });
 
     it('displays error state with error message', () => {
-      const error = new Error('Network error');
-      mockedUseAllergies.mockReturnValue({
-        allergies: [],
-        loading: false,
-        error,
-        refetch: jest.fn(),
+      (useQuery as jest.Mock).mockReturnValue({
+        data: null,
+        error: new Error('Network error'),
+        isError: true,
+        isLoading: false,
       });
 
-      render(<AllergiesTable />);
+      render(wrapper);
 
-      expect(screen.getByTestId('allergies-table-error')).toBeInTheDocument();
-      expect(screen.getByText('Network error')).toBeInTheDocument();
+      expect(screen.getByTestId('allergy-table')).toBeInTheDocument();
+      expect(screen.getByTestId('sortable-table-error')).toBeInTheDocument();
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        type: 'error',
+        title: 'ERROR_DEFAULT_TITLE',
+        message: 'Network error',
+      });
     });
 
     it('displays empty state when no allergies', () => {
-      mockedUseAllergies.mockReturnValue({
-        allergies: [],
-        loading: false,
+      (useQuery as jest.Mock).mockReturnValue({
+        data: [],
         error: null,
-        refetch: jest.fn(),
+        isError: false,
+        isLoading: false,
       });
 
-      render(<AllergiesTable />);
+      render(wrapper);
 
+      expect(screen.getByTestId('allergy-table')).toBeInTheDocument();
       expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
       expect(screen.getByText('NO_ALLERGIES')).toBeInTheDocument();
     });
@@ -147,14 +177,14 @@ describe('AllergiesTable', () => {
 
   describe('Data Display', () => {
     it('renders table with headers when allergies exist', () => {
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergy],
-        loading: false,
+      (useQuery as jest.Mock).mockReturnValue({
+        data: [mockAllergy],
         error: null,
-        refetch: jest.fn(),
+        isError: false,
+        isLoading: false,
       });
 
-      render(<AllergiesTable />);
+      render(wrapper);
 
       expect(screen.getByRole('table')).toHaveAttribute(
         'aria-label',
@@ -167,14 +197,14 @@ describe('AllergiesTable', () => {
     });
 
     it('displays allergy information correctly', () => {
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergy],
-        loading: false,
+      (useQuery as jest.Mock).mockReturnValue({
+        data: [mockAllergy],
         error: null,
-        refetch: jest.fn(),
+        isError: false,
+        isLoading: false,
       });
 
-      render(<AllergiesTable />);
+      render(wrapper);
 
       expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
       expect(screen.getByText('[ALLERGY_TYPE_FOOD]')).toBeInTheDocument();
@@ -185,27 +215,27 @@ describe('AllergiesTable', () => {
     });
 
     it('displays inactive status correctly', () => {
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockInactiveAllergy],
-        loading: false,
+      (useQuery as jest.Mock).mockReturnValue({
+        data: [mockInactiveAllergy],
         error: null,
-        refetch: jest.fn(),
+        isError: false,
+        isLoading: false,
       });
 
-      render(<AllergiesTable />);
+      render(wrapper);
 
       expect(screen.getByText('ALLERGY_LIST_INACTIVE')).toBeInTheDocument();
     });
 
     it('displays tooltip when allergy has notes', () => {
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyWithNote],
-        loading: false,
+      (useQuery as jest.Mock).mockReturnValue({
+        data: [mockAllergyWithNote],
         error: null,
-        refetch: jest.fn(),
+        isError: false,
+        isLoading: false,
       });
 
-      render(<AllergiesTable />);
+      render(wrapper);
 
       const tooltip = screen.getByTestId('tooltip-icon');
       expect(tooltip).toBeInTheDocument();
@@ -216,14 +246,14 @@ describe('AllergiesTable', () => {
     });
 
     it('displays multiple reaction manifestations', () => {
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergyWithMultipleReactions],
-        loading: false,
+      (useQuery as jest.Mock).mockReturnValue({
+        data: [mockAllergyWithMultipleReactions],
         error: null,
-        refetch: jest.fn(),
+        isError: false,
+        isLoading: false,
       });
 
-      render(<AllergiesTable />);
+      render(wrapper);
 
       expect(
         screen.getByText('Hives, Difficulty breathing, Anaphylaxis'),
@@ -233,14 +263,14 @@ describe('AllergiesTable', () => {
 
   describe('Allergy Sorting', () => {
     it('displays allergies sorted by severity (severe → moderate → mild)', () => {
-      mockedUseAllergies.mockReturnValue({
-        allergies: mockSortedAllergies,
-        loading: false,
+      (useQuery as jest.Mock).mockReturnValue({
+        data: mockSortedAllergies,
         error: null,
-        refetch: jest.fn(),
+        isError: false,
+        isLoading: false,
       });
 
-      render(<AllergiesTable />);
+      render(wrapper);
 
       const allergyNames = screen.getAllByText(
         /Severe Allergy|Moderate Allergy|Mild Allergy/,
@@ -258,14 +288,14 @@ describe('AllergiesTable', () => {
         reactions: undefined,
       };
 
-      mockedUseAllergies.mockReturnValue({
-        allergies: [allergyWithoutReactions],
-        loading: false,
+      (useQuery as jest.Mock).mockReturnValue({
+        data: [allergyWithoutReactions],
         error: null,
-        refetch: jest.fn(),
+        isError: false,
+        isLoading: false,
       });
 
-      render(<AllergiesTable />);
+      render(wrapper);
 
       expect(
         screen.getByText('ALLERGY_TABLE_NOT_AVAILABLE'),
@@ -278,14 +308,14 @@ describe('AllergiesTable', () => {
         recorder: undefined,
       };
 
-      mockedUseAllergies.mockReturnValue({
-        allergies: [allergyWithoutRecorder],
-        loading: false,
+      (useQuery as jest.Mock).mockReturnValue({
+        data: [allergyWithoutRecorder],
         error: null,
-        refetch: jest.fn(),
+        isError: false,
+        isLoading: false,
       });
 
-      render(<AllergiesTable />);
+      render(wrapper);
 
       expect(
         screen.getByText('ALLERGY_TABLE_NOT_AVAILABLE'),
@@ -295,14 +325,14 @@ describe('AllergiesTable', () => {
 
   describe('Accessibility', () => {
     it('passes accessibility tests with data', async () => {
-      mockedUseAllergies.mockReturnValue({
-        allergies: [mockAllergy],
-        loading: false,
+      (useQuery as jest.Mock).mockReturnValue({
+        data: [mockAllergy],
         error: null,
-        refetch: jest.fn(),
+        isError: false,
+        isLoading: false,
       });
 
-      const { container } = render(<AllergiesTable />);
+      const { container } = render(wrapper);
 
       await act(async () => {
         const results = await axe(container);
@@ -311,14 +341,14 @@ describe('AllergiesTable', () => {
     });
 
     it('passes accessibility tests in empty state', async () => {
-      mockedUseAllergies.mockReturnValue({
-        allergies: [],
-        loading: false,
+      (useQuery as jest.Mock).mockReturnValue({
+        data: [],
         error: null,
-        refetch: jest.fn(),
+        isError: false,
+        isLoading: false,
       });
 
-      const { container } = render(<AllergiesTable />);
+      const { container } = render(wrapper);
 
       await act(async () => {
         const results = await axe(container);

@@ -255,3 +255,10 @@ export {
   type ProgramEnrollment,
   type PatientProgramsResponse,
 } from './programService';
+
+export {
+  dispatchConsultationSaved,
+  useConsultationSaved,
+  CONSULTATION_SAVED_EVENT,
+  type ConsultationSavedEventPayload,
+} from './events/consultationEvents';

@@ -8,7 +8,7 @@
   "ALLERGIES_FORM_TITLE": "Allergies",
   "ALLERGIES_SEARCH_ARIA_LABEL": "Search for allergies",
   "ALLERGIES_SEARCH_PLACEHOLDER": "Search to add new allergy",
-  "ALLERGY_ALREADY_SELECTED": "Already added",
+  "ALLERGY_ALREADY_ADDED": "Allergen is already added",
   "ALLERGY_LIST_ACTIVE": "Active",
   "ALLERGY_LIST_INACTIVE": "Inactive",
   "ALLERGY_LIST_RECORDED_BY": "Recorded By",

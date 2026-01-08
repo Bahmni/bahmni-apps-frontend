@@ -3,15 +3,22 @@ import {
   Tile,
   BoxWHeader,
   SelectedItem,
+  InlineNotification,
 } from '@bahmni/design-system';
-import { useTranslation } from '@bahmni/services';
-import React, { useMemo, useState } from 'react';
+import { useTranslation, getFormattedAllergies } from '@bahmni/services';
+import { useNotification, usePatientUUID } from '@bahmni/widgets';
+import { useQuery } from '@tanstack/react-query';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import useAllergenSearch from '../../../hooks/useAllergenSearch';
 import { AllergenConcept } from '../../../models/allergy';
 import { useAllergyStore } from '../../../stores/allergyStore';
 import { getCategoryDisplayName } from '../../../utils/allergy';
 import SelectedAllergyItem from './SelectedAllergyItem';
 import styles from './styles/AllergiesForm.module.scss';
+
+// Query key for allergies
+const allergiesQueryKeys = (patientUUID: string) =>
+  ['allergies', patientUUID] as const;
 
 /**
  * AllergiesForm component
@@ -21,7 +28,14 @@ import styles from './styles/AllergiesForm.module.scss';
  */
 const AllergiesForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
+  const patientUUID = usePatientUUID();
+  const { addNotification } = useNotification();
   const [searchAllergenTerm, setSearchAllergenTerm] = useState('');
+  const [showDuplicateNotification, setShowDuplicateNotification] =
+    useState(false);
+  const [duplicateAllergyId, setDuplicateAllergyId] = useState<string | null>(
+    null,
+  );
 
   // Use Zustand store
   const {
@@ -41,9 +55,73 @@ const AllergiesForm: React.FC = React.memo(() => {
     error,
   } = useAllergenSearch(searchAllergenTerm);
 
+  // Fetch existing allergies from backend
+  const {
+    data: existingAllergies,
+    isLoading: existingAllergiesLoading,
+    error: existingAllergiesError,
+  } = useQuery({
+    queryKey: allergiesQueryKeys(patientUUID!),
+    enabled: !!patientUUID,
+    queryFn: () => getFormattedAllergies(patientUUID!),
+  });
+
+  useEffect(() => {
+    if (existingAllergiesError) {
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: existingAllergiesError.message,
+        type: 'error',
+      });
+    }
+  }, [existingAllergiesLoading, existingAllergiesError, addNotification, t]);
+
   const handleSearch = (searchTerm: string) => {
     setSearchAllergenTerm(searchTerm);
   };
+
+  const isDuplicateAllergy = useCallback(
+    (allergyId: string): boolean => {
+      // Check against existing allergies from backend
+      const isExistingAllergy = existingAllergies?.some(
+        (a) => a.id === allergyId,
+      );
+
+      // Check against currently selected allergies in the form
+      const isSelectedAllergy = selectedAllergies.some(
+        (a) => a.id === allergyId,
+      );
+
+      // We need || here (not ??) because we're checking boolean false values
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+      return !!(isExistingAllergy || isSelectedAllergy);
+    },
+    [existingAllergies, selectedAllergies],
+  );
+
+  // Clear notification when search term is cleared or when the duplicate allergy is no longer a duplicate
+  useEffect(() => {
+    if (showDuplicateNotification) {
+      // If search is cleared, hide notification
+      if (searchAllergenTerm === '') {
+        setShowDuplicateNotification(false);
+        setDuplicateAllergyId(null);
+        return;
+      }
+
+      // If the duplicate allergy was removed from selectedAllergies, hide notification
+      if (duplicateAllergyId && !isDuplicateAllergy(duplicateAllergyId)) {
+        setShowDuplicateNotification(false);
+        setDuplicateAllergyId(null);
+      }
+    }
+  }, [
+    searchAllergenTerm,
+    selectedAllergies,
+    showDuplicateNotification,
+    duplicateAllergyId,
+    isDuplicateAllergy,
+  ]);
 
   const handleOnChange = (
     selectedItem:
@@ -55,18 +133,28 @@ const AllergiesForm: React.FC = React.memo(() => {
       return;
     }
 
+    // Check for duplicate BEFORE adding
+    if (isDuplicateAllergy(selectedItem.uuid)) {
+      setDuplicateAllergyId(selectedItem.uuid);
+      setShowDuplicateNotification(true);
+      return; // Don't add duplicate!
+    }
+
+    // Successfully added, clear any previous duplicate notification
+    setShowDuplicateNotification(false);
+    setDuplicateAllergyId(null);
     addAllergy(selectedItem as AllergenConcept);
   };
 
   const filteredSearchResults = useMemo(() => {
     if (searchAllergenTerm.length === 0) return [];
-    if (isLoading) {
+    if (isLoading || existingAllergiesLoading) {
       return [
         {
           uuid: '',
           display: t('LOADING_CONCEPTS'),
           type: null,
-          disabled: isLoading,
+          disabled: true,
         },
       ];
     }
@@ -83,7 +171,7 @@ const AllergiesForm: React.FC = React.memo(() => {
       ];
     }
 
-    if (error) {
+    if (error || existingAllergiesError) {
       return [
         {
           uuid: '',
@@ -101,7 +189,7 @@ const AllergiesForm: React.FC = React.memo(() => {
       return {
         ...item,
         display: isAlreadySelected
-          ? `${item.display} (${t('ALLERGY_ALREADY_SELECTED')})`
+          ? `${item.display} (${t('ALLERGY_ALREADY_ADDED')})`
           : item.display,
         type: isAlreadySelected ? null : item.type,
         disabled: isAlreadySelected,
@@ -109,9 +197,11 @@ const AllergiesForm: React.FC = React.memo(() => {
     });
   }, [
     isLoading,
+    existingAllergiesLoading,
     searchResults,
     searchAllergenTerm,
     error,
+    existingAllergiesError,
     selectedAllergies,
     t,
   ]);
@@ -141,6 +231,16 @@ const AllergiesForm: React.FC = React.memo(() => {
         autoAlign
         aria-label={t('ALLERGIES_SEARCH_ARIA_LABEL')}
       />
+      {showDuplicateNotification && (
+        <InlineNotification
+          kind="error"
+          lowContrast
+          subtitle={t('ALLERGY_ALREADY_ADDED')}
+          onClose={() => setShowDuplicateNotification(false)}
+          hideCloseButton={false}
+          className={styles.duplicateNotification}
+        />
+      )}
       {selectedAllergies && selectedAllergies.length > 0 && (
         <BoxWHeader
           title={t('ALLERGIES_ADDED_ALLERGIES')}
